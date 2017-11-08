@@ -24,8 +24,11 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 
-public class SNIDCappingRuleTest {
+import static org.junit.Assert.assertEquals;
+
+public class IPCappingRuleTest {
 
     String TRANSACTION_TABLE_NAME = "prod_transactional";
     String TRANSACTION_CF_DEFAULT = "x";
@@ -39,7 +42,7 @@ public class SNIDCappingRuleTest {
     private Connection connection;
     private HTable transactionalTable;
     private HBaseAdmin hbaseAdmin;
-    private long current = System.currentTimeMillis();
+    private ZonedDateTime now = ZonedDateTime.now();
 
     @Before
     public void setUp() throws Exception {
@@ -59,8 +62,7 @@ public class SNIDCappingRuleTest {
         sqlContext = sparkSession.sqlContext();
         javaSparkContext = JavaSparkContext.fromSparkContext(sparkContext);
         initHBaseTransactionTable();
-        SNIDCappingRule.init(javaSparkContext, configuration, sqlContext);
-
+        IPCappingRule.init(javaSparkContext, configuration, sqlContext);
     }
 
     @After
@@ -69,14 +71,22 @@ public class SNIDCappingRuleTest {
         hbaseUtility.shutdownMiniCluster();
     }
 
-
+    @Test
+    public void testReadEvents() throws Exception {
+        long threashHold = 3l;
+        Dataset<Row> schemaRDD = IPCappingRule.readEvents(now.toInstant().toEpochMilli(),now.plusDays(1).toInstant().toEpochMilli());
+        assertEquals(schemaRDD.count(), 6);
+    }
 
     @Test
-    public void readEvents() throws Exception {
-        Dataset<Row> invalidsRDD = SNIDCappingRule.filterEvents(current,current+10);
-        SNIDCappingRule.writeInvalidEvents(invalidsRDD);
-        SNIDCappingRule.readEvents(current,current+10);
-
+    public void testFilterEvents() throws Exception {
+        long threashHold = 3l;
+        Dataset<Row> invalidsRDD = IPCappingRule.filterEvents(now.toInstant().toEpochMilli(),now.plusDays(1).toInstant().toEpochMilli(), threashHold);
+        assertEquals(invalidsRDD.count(), 4);
+        IPCappingRule.writeInvalidEvents(invalidsRDD);
+        Dataset<Row> resultRDD = IPCappingRule.readEvents(now.toInstant().toEpochMilli(),now.plusDays(1).toInstant().toEpochMilli());
+        Dataset<Row> invalidsRDDAfterWritten = resultRDD.filter(resultRDD.col("valid").equalTo(false));
+        assertEquals(invalidsRDDAfterWritten.count(), 4);
     }
 
     private void initHBaseTransactionTable() throws IOException {
@@ -85,15 +95,17 @@ public class SNIDCappingRuleTest {
                 .setCompressionType(Compression.Algorithm.NONE));
         hbaseAdmin.createTable(tableDesc);
 
+        String requestHeaderValid = "Cookie: aaa ;|X-eBay-Client-IP: 50.206.232.22|Connection: keep-alive|User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
+        String requestHeaderInvalid = "Cookie: aaa ;|X-eBay-Client-IP: 11.11.11.11|Connection: keep-alive|User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
 
-        addEvent(transactionalTable, new Event(1001, current, 0, 2, 100, true, true));
-        addEvent(transactionalTable, new Event(1002, current + 10, 0, 3, 101, true, true));
-        addEvent(transactionalTable, new Event(1003, current + 10, 0, 3, 101, true, true));
-        addEvent(transactionalTable, new Event(1004, current + 10, 0, 3, 101, true, true));
-        addEvent(transactionalTable, new Event(1005, current + 10, 0, 3, 101, true, true));
-        addEvent(transactionalTable, new Event(1006, current + 10, 0, 4, 102, true, true));
-        addEvent(transactionalTable, new Event(1007, current + 10, 0, 5, 103, true, true));
-        addEvent(transactionalTable, new Event(1008, current + 100, 0, 6, 104, true, true));
+        addEvent(transactionalTable, new Event((now.toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 1, 100, requestHeaderValid,true, true));
+        addEvent(transactionalTable, new Event((now.plusMinutes(1).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 2, 101, requestHeaderValid,true, true));
+        addEvent(transactionalTable, new Event((now.plusMinutes(2).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 3, 101, requestHeaderValid,true, true));
+        addEvent(transactionalTable, new Event((now.plusHours(1).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 4, 101, requestHeaderInvalid,true, true));
+        addEvent(transactionalTable, new Event((now.plusHours(2).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 5, 101, requestHeaderInvalid,true, true));
+        addEvent(transactionalTable, new Event((now.plusHours(3).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 6, 102, requestHeaderInvalid,true, true));
+        addEvent(transactionalTable, new Event((now.plusHours(23).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 7, 103, requestHeaderInvalid,true, true));
+        addEvent(transactionalTable, new Event(((now.plusHours(25).toInstant().toEpochMilli()) & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 8, 104, requestHeaderInvalid,true, true));
     }
 
     private <T> void putCell(Put put, String family, String qualifier, T value)  {
@@ -128,6 +140,7 @@ public class SNIDCappingRuleTest {
         putCell(put, TRANSACTION_CF_DEFAULT, "publisher_id", event.getPublisherId());
         putCell(put, TRANSACTION_CF_DEFAULT, "campaign_id", event.getCampaignId());
         putCell(put, TRANSACTION_CF_DEFAULT, "snid", event.getSnid());
+        putCell(put, TRANSACTION_CF_DEFAULT, "request_headers", event.getRequestHeaders());
         putCell(put, TRANSACTION_CF_DEFAULT, "is_tracked", event.getTracked());
         putCell(put, TRANSACTION_CF_DEFAULT, "is_valid", event.getValid());
         table.put(put);

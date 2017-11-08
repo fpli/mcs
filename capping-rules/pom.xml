@@ -64,6 +64,11 @@
       <version>1.0.0-RELEASE</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-server</artifactId>
+    </dependency>
+
     <!-- Test -->
     <dependency>
       <groupId>com.ebay.traffic</groupId>
