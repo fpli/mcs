@@ -51,7 +51,7 @@ public class Event implements Serializable {
         this.requestHeaders = requestHeaders;
     }
 
-    public boolean getTracked() {
+    public boolean isTracked() {
         return isTracked;
     }
 
@@ -59,12 +59,20 @@ public class Event implements Serializable {
         isTracked = tracked;
     }
 
-    public boolean getValid() {
-        return isValid;
+    public String getFilterFailedRule() {
+        return filterFailedRule;
     }
 
-    public void setValid(boolean valid) {
-        isValid = valid;
+    public void setFilterFailedRule(String filterFailedRule) {
+        this.filterFailedRule = filterFailedRule;
+    }
+
+    public boolean isFilterPassed() {
+        return filterPassed;
+    }
+
+    public void setFilterPassed(boolean filterPassed) {
+        this.filterPassed = filterPassed;
     }
 
     private long snapshotId;
@@ -74,18 +82,21 @@ public class Event implements Serializable {
     private long snid;
     private String requestHeaders;
     private boolean isTracked;
-    private boolean isValid;
+    private String filterFailedRule;
+    private boolean filterPassed;
+
 
     public Event() {
 
     }
 
-    public Event(long snapshotId, boolean isValid) {
+    public Event(long snapshotId, String filterFailedRule, boolean filterPassed) {
         this.snapshotId = snapshotId;
-        this.isValid = isValid;
+        this.filterFailedRule = filterFailedRule;
+        this.filterPassed = filterPassed;
     }
 
-    public Event(long snapshotId, long timestamp, long publisherId, long campaignId, long snid, String requestHeaders, boolean isTracked, boolean isValid) {
+    public Event(long snapshotId, long timestamp, long publisherId, long campaignId, long snid, String requestHeaders, boolean isTracked, String filterFailedRule, boolean filterPassed) {
         this.snapshotId = snapshotId;
         this.timestamp = timestamp;
         this.publisherId = publisherId;
@@ -93,6 +104,7 @@ public class Event implements Serializable {
         this.snid = snid;
         this.requestHeaders = requestHeaders;
         this.isTracked = isTracked;
-        this.isValid = true;
+        this.filterFailedRule = "None";
+        this.filterPassed = true;
     }
 }

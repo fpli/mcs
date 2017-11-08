@@ -74,18 +74,19 @@ public class IPCappingRuleTest {
     @Test
     public void testReadEvents() throws Exception {
         long threashHold = 3l;
-        Dataset<Row> schemaRDD = IPCappingRule.readEvents(now.toInstant().toEpochMilli(),now.plusDays(1).toInstant().toEpochMilli());
+        Dataset<Row> schemaRDD = IPCappingRule.readEvents(now.toInstant().toEpochMilli(), now.plusDays(1).toInstant().toEpochMilli());
         assertEquals(schemaRDD.count(), 6);
     }
 
     @Test
     public void testFilterEvents() throws Exception {
         long threashHold = 3l;
-        Dataset<Row> invalidsRDD = IPCappingRule.filterEvents(now.toInstant().toEpochMilli(),now.plusDays(1).toInstant().toEpochMilli(), threashHold);
+        Dataset<Row> invalidsRDD = IPCappingRule.filterEvents(now.toInstant().toEpochMilli(), now.plusDays(1).toInstant().toEpochMilli(), threashHold);
         assertEquals(invalidsRDD.count(), 4);
         IPCappingRule.writeInvalidEvents(invalidsRDD);
-        Dataset<Row> resultRDD = IPCappingRule.readEvents(now.toInstant().toEpochMilli(),now.plusDays(1).toInstant().toEpochMilli());
-        Dataset<Row> invalidsRDDAfterWritten = resultRDD.filter(resultRDD.col("valid").equalTo(false));
+        Dataset<Row> resultRDD = IPCappingRule.readEvents(now.toInstant().toEpochMilli(), now.plusDays(1).toInstant().toEpochMilli());
+        resultRDD.show();
+        Dataset<Row> invalidsRDDAfterWritten = resultRDD.filter(resultRDD.col("filterPassed").equalTo(false));
         assertEquals(invalidsRDDAfterWritten.count(), 4);
     }
 
@@ -98,36 +99,32 @@ public class IPCappingRuleTest {
         String requestHeaderValid = "Cookie: aaa ;|X-eBay-Client-IP: 50.206.232.22|Connection: keep-alive|User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
         String requestHeaderInvalid = "Cookie: aaa ;|X-eBay-Client-IP: 11.11.11.11|Connection: keep-alive|User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
 
-        addEvent(transactionalTable, new Event((now.toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 1, 100, requestHeaderValid,true, true));
-        addEvent(transactionalTable, new Event((now.plusMinutes(1).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 2, 101, requestHeaderValid,true, true));
-        addEvent(transactionalTable, new Event((now.plusMinutes(2).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 3, 101, requestHeaderValid,true, true));
-        addEvent(transactionalTable, new Event((now.plusHours(1).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 4, 101, requestHeaderInvalid,true, true));
-        addEvent(transactionalTable, new Event((now.plusHours(2).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 5, 101, requestHeaderInvalid,true, true));
-        addEvent(transactionalTable, new Event((now.plusHours(3).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 6, 102, requestHeaderInvalid,true, true));
-        addEvent(transactionalTable, new Event((now.plusHours(23).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 7, 103, requestHeaderInvalid,true, true));
-        addEvent(transactionalTable, new Event(((now.plusHours(25).toInstant().toEpochMilli()) & ~IPCappingRule.TIME_MASK) <<24l, now.toInstant().toEpochMilli(), 0, 8, 104, requestHeaderInvalid,true, true));
+        addEvent(transactionalTable, new Event((now.toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) << 24l, now.toInstant().toEpochMilli(), 0, 1, 100, requestHeaderValid, true, "None", true));
+        addEvent(transactionalTable, new Event((now.plusMinutes(1).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) << 24l, now.toInstant().toEpochMilli(), 0, 2, 101, requestHeaderValid, true, "None", true));
+        addEvent(transactionalTable, new Event((now.plusMinutes(2).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) << 24l, now.toInstant().toEpochMilli(), 0, 3, 101, requestHeaderValid, true, "None", true));
+        addEvent(transactionalTable, new Event((now.plusHours(1).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) << 24l, now.toInstant().toEpochMilli(), 0, 4, 101, requestHeaderInvalid, true, "None", true));
+        addEvent(transactionalTable, new Event((now.plusHours(2).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) << 24l, now.toInstant().toEpochMilli(), 0, 5, 101, requestHeaderInvalid, true, "None", true));
+        addEvent(transactionalTable, new Event((now.plusHours(3).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) << 24l, now.toInstant().toEpochMilli(), 0, 6, 102, requestHeaderInvalid, true, "None", true));
+        addEvent(transactionalTable, new Event((now.plusHours(23).toInstant().toEpochMilli() & ~IPCappingRule.TIME_MASK) << 24l, now.toInstant().toEpochMilli(), 0, 7, 103, requestHeaderInvalid, true, "None", true));
+        addEvent(transactionalTable, new Event(((now.plusHours(25).toInstant().toEpochMilli()) & ~IPCappingRule.TIME_MASK) << 24l, now.toInstant().toEpochMilli(), 0, 8, 104, requestHeaderInvalid, true, "None", true));
     }
 
-    private <T> void putCell(Put put, String family, String qualifier, T value)  {
+    private <T> void putCell(Put put, String family, String qualifier, T value) {
 
         byte[] bytes;
-        if(value instanceof Long) {
+        if (value instanceof Long) {
             bytes = Bytes.toBytes(((Long) value).longValue());
-        }
-        else if(value instanceof  String) {
-            bytes = Bytes.toBytes((String)value);
-        }
-        else if(value instanceof Boolean) {
+        } else if (value instanceof String) {
+            bytes = Bytes.toBytes((String) value);
+        } else if (value instanceof Boolean) {
             bytes = Bytes.toBytes(((Boolean) value).booleanValue());
-        }
-        else if(value instanceof Timestamp) {
+        } else if (value instanceof Timestamp) {
             ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
             String str = ((Timestamp) value).toString();
             int bufferSize = str.getBytes().length;
             System.arraycopy(str.getBytes(), 0, buffer.array(), 0, bufferSize);
             bytes = buffer.array();
-        }
-        else{
+        } else {
             bytes = Bytes.toBytes(value.toString());
         }
 
@@ -141,8 +138,9 @@ public class IPCappingRuleTest {
         putCell(put, TRANSACTION_CF_DEFAULT, "campaign_id", event.getCampaignId());
         putCell(put, TRANSACTION_CF_DEFAULT, "snid", event.getSnid());
         putCell(put, TRANSACTION_CF_DEFAULT, "request_headers", event.getRequestHeaders());
-        putCell(put, TRANSACTION_CF_DEFAULT, "is_tracked", event.getTracked());
-        putCell(put, TRANSACTION_CF_DEFAULT, "is_valid", event.getValid());
+        putCell(put, TRANSACTION_CF_DEFAULT, "is_tracked", event.isTracked());
+        putCell(put, TRANSACTION_CF_DEFAULT, "filter_failed_rule", event.getFilterFailedRule());
+        putCell(put, TRANSACTION_CF_DEFAULT, "filter_passed", event.isFilterPassed());
         table.put(put);
     }
 

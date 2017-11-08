@@ -14,6 +14,7 @@ import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.util.Base64;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.log4j.Logger;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -30,6 +31,7 @@ import java.nio.ByteBuffer;
 
 public class IPCappingRule {
     private static IPCappingRule IPCappingRule = new IPCappingRule();
+    private static final Logger logger = Logger.getLogger(IPCappingRule.class);
     protected JavaSparkContext javaSparkContext;
     protected Configuration config;
     protected SQLContext sqlContext;
@@ -55,12 +57,13 @@ public class IPCappingRule {
     public static Dataset<Row> readEvents(long timestampStart, long timestampStop) {
         try {
             HBaseAdmin.checkHBaseAvailable(IPCappingRule.config);
-            System.out.println("HBase is running!");
+            logger.info("HBase is running!");
         } catch (MasterNotRunningException e) {
-            System.out.println("HBase is not running!");
-            System.exit(1);
+            logger.error("HBase is not running!");
+            logger.error(e.getMessage());
         } catch (Exception ce) {
-            ce.printStackTrace();
+            logger.error("Unexpected exception when check HBase!");
+            logger.error(ce.getMessage());
         }
 
         IPCappingRule.config.set(TableInputFormat.INPUT_TABLE, "prod_transactional");
@@ -95,21 +98,20 @@ public class IPCappingRule {
 
                         Result r = entry._2;
                         long keyRow = Bytes.toLong(r.getRow());
-                        System.out.println("keyRow: " + keyRow);
 
                         Event event = new Event();
                         event.setSnapshotId(keyRow);
                         event.setTimestamp((Long) Bytes.toLong(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("request_timestamp"))));
                         event.setCampaignId((Long) Bytes.toLong(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("campaign_id"))));
                         event.setRequestHeaders((String) Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("request_headers"))));
-                        event.setValid((Boolean) Bytes.toBoolean(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("is_valid"))));
+                        event.setFilterFailedRule((String) Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("filter_failed_rule"))));
+                        event.setFilterPassed((Boolean) Bytes.toBoolean(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("filter_passed"))));
                         event.setSnid((Long)Bytes.toLong(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("snid"))));
                         return new Tuple2<Long, Event>(keyRow, event);
                     }
                 });
         Dataset<Row> schemaRDD = IPCappingRule.sqlContext.createDataFrame(rowPairRDD.values(), Event.class);
-        System.out.println("Original events:");
-        schemaRDD.show();
+        //schemaRDD.show();
         return schemaRDD;
     }
 
@@ -127,8 +129,6 @@ public class IPCappingRule {
         Dataset<Row> res = df.withColumn("isValid", functions.when(df.col("count").$greater(threshhold), false).otherwise(true));
         Dataset<Row> invalids = res.filter(res.col("isValid").equalTo(false));
 
-        System.out.println("Filtered result:");
-        invalids.show();
         return invalids;
     }
 
@@ -146,7 +146,7 @@ public class IPCappingRule {
         JavaRDD<Event> records = invalids.toJavaRDD().map(new Function<Row, Event>() {
             @Override
             public Event call(Row row) throws Exception {
-                Event event = new Event(row.getLong(row.fieldIndex("snapshotId")), row.getBoolean(row.fieldIndex("isValid")));
+                Event event = new Event(row.getLong(row.fieldIndex("snapshotId")), "IPCappingRule", row.getBoolean(row.fieldIndex("isValid")));
                 return event;
             }
         });
@@ -157,8 +157,11 @@ public class IPCappingRule {
                     throws Exception {
                 Put put = new Put(Bytes.toBytes(event.getSnapshotId()));
                 put.add(Bytes.toBytes("x"),
-                        Bytes.toBytes("is_valid"),
-                        Bytes.toBytes(event.getValid()));
+                        Bytes.toBytes("filter_passed"),
+                        Bytes.toBytes(event.isFilterPassed()));
+                put.add(Bytes.toBytes("x"),
+                        Bytes.toBytes("filter_failed_rule"),
+                        Bytes.toBytes(event.getFilterFailedRule()));
 
                 return new Tuple2<ImmutableBytesWritable, Put>(
                         new ImmutableBytesWritable(), put);
@@ -175,8 +178,7 @@ public class IPCappingRule {
         config.set("hbase.master", "lvschocolatemaster-1448895.stratus.lvs.ebay.com:60000");
         config.set("zookeeper.znode.parent", "/hbase-unsecure");
 
-        SparkSession sparkSession = SparkSession.builder().master("yarn-cluster").appName("cappingrule")
-                .config("spark.sql.shuffle.partitions", "1")
+        SparkSession sparkSession = SparkSession.builder().master("yarn-cluster").appName("ipcappingrule")
                 .config("spark.sql.warehouse.dir", System.getProperty("java.io.tmpdir"))
                 .getOrCreate();
         SparkContext sparkContext = sparkSession.sparkContext();
