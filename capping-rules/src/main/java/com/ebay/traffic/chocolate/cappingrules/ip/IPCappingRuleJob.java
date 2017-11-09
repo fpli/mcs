@@ -236,7 +236,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
     this.hbaseConf = hbaseConf;
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     Options options = new Options();
     Option jobName = new Option((String) null, "jobName", true, "The job name");
     options.addOption(jobName);
@@ -282,6 +282,8 @@ public class IPCappingRuleJob extends BaseSparkJob {
     job.initHBaseConf();
     try {
       job.run();
+    } catch (Exception ex) {
+      System.exit(1);
     } finally {
       job.stop();
     }
