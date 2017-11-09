@@ -82,6 +82,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
       Event event = new Event();
       event.setSnapshotId(keyRow);
       event.setRequestHeaders((String) Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("request_headers"))));
+      event.setChannelAction((String) Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("channel_action"))));
       event.setFilterFailedRule((String) Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("filter_failed_rule"))));
       event.setFilterPassed((Boolean) Bytes.toBoolean(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("filter_passed"))));
       return new Tuple2<Long, Event>(keyRow, event);
@@ -110,6 +111,10 @@ public class IPCappingRuleJob extends BaseSparkJob {
       put.add(Bytes.toBytes("x"),
         Bytes.toBytes("filter_passed"),
         Bytes.toBytes(event.isFilterPassed()));
+      //TODO:remove put channel_action after testing on testing table
+      put.add(Bytes.toBytes("x"),
+        Bytes.toBytes("channel_action"),
+        Bytes.toBytes("CLICK"));
       put.add(Bytes.toBytes("x"),
         Bytes.toBytes("filter_failed_rule"),
         Bytes.toBytes(event.getFilterFailedRule()));
@@ -161,7 +166,8 @@ public class IPCappingRuleJob extends BaseSparkJob {
 
     JavaPairRDD<Long, Event> rowPairRDD = hBaseRDD.mapToPair(readHBaseMapFunc);
     Dataset<Row> schemaRDD = sqlsc().createDataFrame(rowPairRDD.values(), Event.class);
-    return schemaRDD;
+    schemaRDD.show();
+    return schemaRDD.filter(schemaRDD.col("channelAction").equalTo("CLICK"));
   }
 
   /**

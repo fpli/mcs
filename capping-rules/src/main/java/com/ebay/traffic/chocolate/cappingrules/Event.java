@@ -40,6 +40,14 @@ public class Event implements Serializable {
     this.campaignId = campaignId;
   }
 
+  public String getChannelAction() {
+    return channelAction;
+  }
+
+  public void setChannelAction(String channelAction) {
+    this.channelAction = channelAction;
+  }
+
   public long getSnid() {
     return snid;
   }
@@ -84,6 +92,7 @@ public class Event implements Serializable {
   private long timestamp;
   private long publisherId;
   private long campaignId;
+  private String channelAction;
   private long snid;
   private String requestHeaders;
   private boolean isTracked;
@@ -101,11 +110,12 @@ public class Event implements Serializable {
     this.filterPassed = filterPassed;
   }
 
-  public Event(long snapshotId, long timestamp, long publisherId, long campaignId, long snid, String requestHeaders, boolean isTracked, String filterFailedRule, boolean filterPassed) {
+  public Event(long snapshotId, long timestamp, long publisherId, long campaignId, String channelAction, long snid, String requestHeaders, boolean isTracked, String filterFailedRule, boolean filterPassed) {
     this.snapshotId = snapshotId;
     this.timestamp = timestamp;
     this.publisherId = publisherId;
     this.campaignId = campaignId;
+    this.channelAction = channelAction;
     this.snid = snid;
     this.requestHeaders = requestHeaders;
     this.isTracked = isTracked;

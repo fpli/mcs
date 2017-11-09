@@ -78,14 +78,18 @@ public class TestIPCappingRuleJob {
     String requestHeaderValid = "Cookie: aaa ;|X-eBay-Client-IP: 50.206.232.22|Connection: keep-alive|User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
     String requestHeaderInvalid = "Cookie: aaa ;|X-eBay-Client-IP: 11.11.11.11|Connection: keep-alive|User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
 
-    addEvent(transactionalTable, new Event((yesterday.toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 1, 100, requestHeaderValid, true, "None", true));
-    addEvent(transactionalTable, new Event((yesterday.plusMinutes(1).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 2, 101, requestHeaderValid, true, "None", true));
-    addEvent(transactionalTable, new Event((yesterday.plusMinutes(2).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 3, 101, requestHeaderValid, true, "None", true));
-    addEvent(transactionalTable, new Event((yesterday.plusHours(1).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 4, 101, requestHeaderInvalid, true, "None", true));
-    addEvent(transactionalTable, new Event((yesterday.plusHours(2).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 5, 101, requestHeaderInvalid, true, "None", true));
-    addEvent(transactionalTable, new Event((yesterday.plusHours(3).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 6, 102, requestHeaderInvalid, true, "None", true));
-    addEvent(transactionalTable, new Event((yesterday.plusHours(23).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 7, 103, requestHeaderInvalid, true, "None", true));
-    addEvent(transactionalTable, new Event(((yesterday.plusHours(25).toInstant().toEpochMilli()) & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 8, 104, requestHeaderInvalid, true, "None", true));
+    addEvent(transactionalTable, new Event((yesterday.toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 1, "IMPRESSION", 100, requestHeaderValid, true, "None", true));
+    addEvent(transactionalTable, new Event((yesterday.plusMinutes(1).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 2, "IMPRESSION",101, requestHeaderValid, true, "None", true));
+    addEvent(transactionalTable, new Event((yesterday.plusMinutes(2).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 3, "IMPRESSION",101, requestHeaderValid, true, "None", true));
+    addEvent(transactionalTable, new Event((yesterday.plusHours(1).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 4, "CLICK",101, requestHeaderInvalid, true, "None", true));
+    addEvent(transactionalTable, new Event((yesterday.plusHours(2).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 5, "CLICK",101, requestHeaderInvalid, true, "None", true));
+    addEvent(transactionalTable, new Event((yesterday.plusHours(3).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 6, "CLICK",102, requestHeaderInvalid, true, "None", true));
+    addEvent(transactionalTable, new Event((yesterday.plusHours(4).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 7, "CLICK",103, requestHeaderInvalid, true, "None", true));
+    addEvent(transactionalTable, new Event((yesterday.plusHours(5).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 4, "IMPRESSION",101, requestHeaderInvalid, true, "None", true));
+    addEvent(transactionalTable, new Event((yesterday.plusHours(6).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 5, "IMPRESSION",101, requestHeaderInvalid, true, "None", true));
+    addEvent(transactionalTable, new Event((yesterday.plusHours(7).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 6, "IMPRESSION",102, requestHeaderInvalid, true, "None", true));
+    addEvent(transactionalTable, new Event((yesterday.plusHours(23).toInstant().toEpochMilli() & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 7, "IMPRESSION",103, requestHeaderInvalid, true, "None", true));
+    addEvent(transactionalTable, new Event(((yesterday.plusHours(25).toInstant().toEpochMilli()) & ~TIME_MASK) << 24l, yesterday.toInstant().toEpochMilli(), 0, 8, "IMPRESSION",104, requestHeaderInvalid, true, "None", true));
   }
 
   private void initHBaseCappingResultTable() throws IOException {
@@ -122,6 +126,7 @@ public class TestIPCappingRuleJob {
     putCell(put, TRANSACTION_CF_DEFAULT, "request_timestamp", event.getTimestamp());
     putCell(put, TRANSACTION_CF_DEFAULT, "publisher_id", event.getPublisherId());
     putCell(put, TRANSACTION_CF_DEFAULT, "campaign_id", event.getCampaignId());
+    putCell(put, TRANSACTION_CF_DEFAULT,"channel_action", event.getChannelAction());
     putCell(put, TRANSACTION_CF_DEFAULT, "snid", event.getSnid());
     putCell(put, TRANSACTION_CF_DEFAULT, "request_headers", event.getRequestHeaders());
     putCell(put, TRANSACTION_CF_DEFAULT, "is_tracked", event.isTracked());
