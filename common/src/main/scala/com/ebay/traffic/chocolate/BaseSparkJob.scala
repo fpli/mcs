@@ -12,7 +12,7 @@ import scala.reflect.ClassTag
 /**
   * Created by yliu29 on 11/8/17.
   *
-  * Basic class for feeds spark jobs
+  * Basic class for chocolate spark jobs
   */
 abstract class BaseSparkJob(val jobName: String,
                         val mode: String = "yarn",

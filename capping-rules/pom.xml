@@ -100,8 +100,8 @@
   </dependencies>
 
   <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
-    <testSourceDirectory>src/test/java</testSourceDirectory>
+    <sourceDirectory>src/main/scala</sourceDirectory>
+    <testSourceDirectory>src/test/scala</testSourceDirectory>
     <outputDirectory>target/classes</outputDirectory>
     <testOutputDirectory>target/test-classes</testOutputDirectory>
     <resources>
