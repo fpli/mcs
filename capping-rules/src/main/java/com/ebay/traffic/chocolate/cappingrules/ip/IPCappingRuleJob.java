@@ -166,7 +166,6 @@ public class IPCappingRuleJob extends BaseSparkJob {
 
     JavaPairRDD<Long, Event> rowPairRDD = hBaseRDD.mapToPair(readHBaseMapFunc);
     Dataset<Row> schemaRDD = sqlsc().createDataFrame(rowPairRDD.values(), Event.class);
-    schemaRDD.show();
     return schemaRDD.filter(schemaRDD.col("channelAction").equalTo("CLICK"));
   }
 
