@@ -72,20 +72,20 @@ public class Event implements Serializable {
     isTracked = tracked;
   }
 
-  public String getFilterFailedRule() {
-    return filterFailedRule;
+  public String getCappingFailedRule() {
+    return cappingFailedRule;
   }
 
-  public void setFilterFailedRule(String filterFailedRule) {
-    this.filterFailedRule = filterFailedRule;
+  public void setCappingFailedRule(String cappingFailedRule) {
+    this.cappingFailedRule = cappingFailedRule;
   }
 
-  public boolean isFilterPassed() {
-    return filterPassed;
+  public boolean isCappingPassed() {
+    return cappingPassed;
   }
 
-  public void setFilterPassed(boolean filterPassed) {
-    this.filterPassed = filterPassed;
+  public void setCappingPassed(boolean cappingPassed) {
+    this.cappingPassed = cappingPassed;
   }
 
   private long snapshotId;
@@ -96,21 +96,20 @@ public class Event implements Serializable {
   private long snid;
   private String requestHeaders;
   private boolean isTracked;
-  private String filterFailedRule;
-  private boolean filterPassed;
-
+  private String cappingFailedRule;
+  private boolean cappingPassed;
 
   public Event() {
 
   }
 
-  public Event(long snapshotId, String filterFailedRule, boolean filterPassed) {
+  public Event(long snapshotId, String cappingFailedRule, boolean cappingPassed) {
     this.snapshotId = snapshotId;
-    this.filterFailedRule = filterFailedRule;
-    this.filterPassed = filterPassed;
+    this.cappingFailedRule = cappingFailedRule;
+    this.cappingPassed = cappingPassed;
   }
 
-  public Event(long snapshotId, long timestamp, long publisherId, long campaignId, String channelAction, long snid, String requestHeaders, boolean isTracked, String filterFailedRule, boolean filterPassed) {
+  public Event(long snapshotId, long timestamp, long publisherId, long campaignId, String channelAction, long snid, String requestHeaders, boolean isTracked, String cappingFailedRule, boolean cappingPassed) {
     this.snapshotId = snapshotId;
     this.timestamp = timestamp;
     this.publisherId = publisherId;
@@ -119,7 +118,7 @@ public class Event implements Serializable {
     this.snid = snid;
     this.requestHeaders = requestHeaders;
     this.isTracked = isTracked;
-    this.filterFailedRule = "None";
-    this.filterPassed = true;
+    this.cappingFailedRule = null;
+    this.cappingPassed = true;
   }
 }

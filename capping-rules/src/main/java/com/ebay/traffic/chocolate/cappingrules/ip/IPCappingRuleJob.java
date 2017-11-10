@@ -83,8 +83,8 @@ public class IPCappingRuleJob extends BaseSparkJob {
       event.setSnapshotId(keyRow);
       event.setRequestHeaders((String) Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("request_headers"))));
       event.setChannelAction((String) Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("channel_action"))));
-      event.setFilterFailedRule((String) Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("filter_failed_rule"))));
-      event.setFilterPassed((Boolean) Bytes.toBoolean(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("filter_passed"))));
+      event.setCappingFailedRule((String) Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("capping_failed_rule"))));
+      event.setCappingPassed((Boolean) Bytes.toBoolean(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("capping_passed"))));
       return new Tuple2<Long, Event>(keyRow, event);
     }
   };
@@ -95,7 +95,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
   static Function<Row, Event> mapFunc = new Function<Row, Event>() {
     @Override
     public Event call(Row row) throws Exception {
-      Event event = new Event(row.getLong(row.fieldIndex("snapshotId")), "IPCappingRule", row.getBoolean(row.fieldIndex("isValid")));
+      Event event = new Event(row.getLong(row.fieldIndex("snapshotId")), "IPCappingRule", row.getBoolean(row.fieldIndex("cappingPassed")));
       return event;
     }
   };
@@ -109,15 +109,15 @@ public class IPCappingRuleJob extends BaseSparkJob {
       throws Exception {
       Put put = new Put(Bytes.toBytes(event.getSnapshotId()));
       put.add(Bytes.toBytes("x"),
-        Bytes.toBytes("filter_passed"),
-        Bytes.toBytes(event.isFilterPassed()));
+        Bytes.toBytes("capping_passed"),
+        Bytes.toBytes(event.isCappingPassed()));
       //TODO:remove put channel_action after testing on testing table
       put.add(Bytes.toBytes("x"),
         Bytes.toBytes("channel_action"),
         Bytes.toBytes("CLICK"));
       put.add(Bytes.toBytes("x"),
-        Bytes.toBytes("filter_failed_rule"),
-        Bytes.toBytes(event.getFilterFailedRule()));
+        Bytes.toBytes("capping_failed_rule"),
+        Bytes.toBytes(event.getCappingFailedRule()));
 
       return new Tuple2<ImmutableBytesWritable, Put>(
         new ImmutableBytesWritable(), put);
@@ -166,6 +166,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
 
     JavaPairRDD<Long, Event> rowPairRDD = hBaseRDD.mapToPair(readHBaseMapFunc);
     Dataset<Row> schemaRDD = sqlsc().createDataFrame(rowPairRDD.values(), Event.class);
+    schemaRDD.show();
     return schemaRDD.filter(schemaRDD.col("channelAction").equalTo("CLICK"));
   }
 
@@ -185,8 +186,8 @@ public class IPCappingRuleJob extends BaseSparkJob {
 
     WindowSpec window = Window.partitionBy(schemaRDDWithIPTrim.col("ip")).orderBy(schemaRDDWithIPTrim.col("ip"));
     Dataset<Row> df = schemaRDDWithIPTrim.withColumn("count", functions.count("*").over(window));
-    Dataset<Row> res = df.withColumn("isValid", functions.when(df.col("count").$greater(threshold), false).otherwise(true));
-    Dataset<Row> invalids = res.filter(res.col("isValid").equalTo(false));
+    Dataset<Row> res = df.withColumn("cappingPassed", functions.when(df.col("count").$greater(threshold), false).otherwise(true));
+    Dataset<Row> invalids = res.filter(res.col("cappingPassed").equalTo(false));
     return invalids;
   }
 
@@ -202,7 +203,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
     try {
       newAPIJobConfiguration = Job.getInstance(hbaseConf);
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e.toString());
     }
     newAPIJobConfiguration.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, table);
     newAPIJobConfiguration.setOutputFormatClass(org.apache.hadoop.hbase.mapreduce.TableOutputFormat.class);
