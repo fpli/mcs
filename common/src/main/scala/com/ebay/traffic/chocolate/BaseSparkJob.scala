@@ -15,8 +15,8 @@ import scala.reflect.ClassTag
   * Basic class for chocolate spark jobs
   */
 abstract class BaseSparkJob(val jobName: String,
-                        val mode: String = "yarn",
-                        val enableHiveSupport: Boolean = false) extends Serializable {
+                            val mode: String = "yarn",
+                            val enableHiveSupport: Boolean = false) extends Serializable {
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -52,8 +52,18 @@ abstract class BaseSparkJob(val jobName: String,
     spark.sparkContext
   }
 
-  def javaSparkContext(): JavaSparkContext = {
-    JavaSparkContext.fromSparkContext(sc)
+  /**
+    * The java spark context
+    */
+  @transient lazy val jsc = {
+    JavaSparkContext.fromSparkContext(sc);
+  }
+
+  /**
+    * The sql context
+    */
+  @transient lazy val sqlsc = {
+    spark.sqlContext;
   }
 
   /**
@@ -76,7 +86,7 @@ abstract class BaseSparkJob(val jobName: String,
   /**
     * Split the row string to fields of string array using delimiter.
     *
-    * @param line the row string
+    * @param line   the row string
     * @param colSep the delimiter
     * @return the fields
     */
@@ -88,6 +98,7 @@ abstract class BaseSparkJob(val jobName: String,
     * :: DeveloperApi ::
     * Implemented by subclasses to run the spark job.
     */
+  @throws(classOf[Exception])
   def run()
 
   /**
@@ -112,7 +123,7 @@ abstract class BaseSparkJob(val jobName: String,
     require(values.length == schema.fields.length
       || values.length == schema.fields.length + 1)
     try {
-      Row(values zip schema map(e => {
+      Row(values zip schema map (e => {
         if (e._1.length == 0) {
           null
         } else {
@@ -145,11 +156,11 @@ abstract class BaseSparkJob(val jobName: String,
   /**
     * Read table files as Dataframe.
     *
-    * @param inputPath the input path of table files
-    * @param schema the dataframe schema of table
-    * @param inputFormat the input file format, it can be "parquet", "orc", "csv", "sequence"
-    * @param delimiter the delimiter for fields in the file,
-    *                  the value can be one of 'bel', 'tab', 'space', 'comma', 'del'.
+    * @param inputPath     the input path of table files
+    * @param schema        the dataframe schema of table
+    * @param inputFormat   the input file format, it can be "parquet", "orc", "csv", "sequence"
+    * @param delimiter     the delimiter for fields in the file,
+    *                      the value can be one of 'bel', 'tab', 'space', 'comma', 'del'.
     * @param broadcastHint whether to broadcast the dataframe
     * @return the dataframe
     */
@@ -164,6 +175,7 @@ abstract class BaseSparkJob(val jobName: String,
         spark.conf.set("spark.sql.orc.filterPushdown", "true")
         spark.read.orc(inputPath)
       }
+
       /**
         * case "csv" => spark.read.format("com.databricks.spark.csv")
         * .option("delimiter", delimiterMap(delimiter))
@@ -190,10 +202,10 @@ abstract class BaseSparkJob(val jobName: String,
     *
     * This method is deprecated, recommend to use readFilesAsDF
     *
-    * @param inputPath the input path of table files
+    * @param inputPath   the input path of table files
     * @param inputFormat the input file format, it can be "csv", "sequence"
-    * @param delimiter the delimiter for fields in the file,
-    *                  the value can be one of 'bel', 'tab', 'space', 'comma', 'del'.
+    * @param delimiter   the delimiter for fields in the file,
+    *                    the value can be one of 'bel', 'tab', 'space', 'comma', 'del'.
     * @return the RDD
     */
   @deprecated
@@ -210,6 +222,7 @@ abstract class BaseSparkJob(val jobName: String,
   }
 
   import scala.reflect.runtime.universe._
+
   /**
     * Read table files as Dataframe.
     * It internally reads the table files as RDD[Array[String]] first,
@@ -244,14 +257,14 @@ abstract class BaseSparkJob(val jobName: String,
     *
     * @note for csv, we ignore the compression format,
     *       since compressed csv is not splittable and will affect performance
-    * @param df the dataframe
-    * @param tableName the table name to save as
+    * @param df              the dataframe
+    * @param tableName       the table name to save as
     * @param partitionColumn the column to partition by before saving
-    * @param outputFormat the output file format, it can be "csv", "parquet", "orc"
-    * @param writeMode the save mode
-    * @param delimiter the delimiter for fields in the file,
-    *                  the value can be one of 'bel', 'tab', 'space', 'comma', 'del'.
-    * @param compressFormat the compression codec used to compress the output
+    * @param outputFormat    the output file format, it can be "csv", "parquet", "orc"
+    * @param writeMode       the save mode
+    * @param delimiter       the delimiter for fields in the file,
+    *                        the value can be one of 'bel', 'tab', 'space', 'comma', 'del'.
+    * @param compressFormat  the compression codec used to compress the output
     */
   @deprecated
   def saveAsTable(df: DataFrame, tableName: String,
@@ -296,14 +309,14 @@ abstract class BaseSparkJob(val jobName: String,
     *
     * @note for csv, it's recommended not use the compression format,
     *       since compressed csv is not splittable and will affect performance
-    * @param df the dataframe
-    * @param outputPath the output path
-    * @param compressFormat the compression codec used to compress the output
-    * @param outputFormat the output file format
-    * @param delimiter the delimiter for fields in output file,
-    *                  the value can be one of 'bel', 'tab', 'space', 'comma', 'del'.
-    * @param headerHint output the header for csv
-    * @param writeMode the save mode
+    * @param df              the dataframe
+    * @param outputPath      the output path
+    * @param compressFormat  the compression codec used to compress the output
+    * @param outputFormat    the output file format
+    * @param delimiter       the delimiter for fields in output file,
+    *                        the value can be one of 'bel', 'tab', 'space', 'comma', 'del'.
+    * @param headerHint      output the header for csv
+    * @param writeMode       the save mode
     * @param partitionColumn the column to partition by before saving
     */
   def saveDFToFiles(df: DataFrame, outputPath: String, compressFormat: String = "snappy",

@@ -2,87 +2,123 @@ package com.ebay.traffic.chocolate.cappingrules;
 
 import java.io.Serializable;
 
+/**
+ * POJ for HBase stored click&impression events
+ *
+ * @author xiangli4
+ */
 public class Event implements Serializable {
-    public Long getSnapshotId() {
-        return snapshotId;
-    }
+  public long getSnapshotId() {
+    return snapshotId;
+  }
 
-    public void setSnapshotId(Long snapshotId) {
-        this.snapshotId = snapshotId;
-    }
+  public void setSnapshotId(long snapshotId) {
+    this.snapshotId = snapshotId;
+  }
 
-    public Long getTimestamp() {
-        return timestamp;
-    }
+  public long getTimestamp() {
+    return timestamp;
+  }
 
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
-    }
+  public void setTimestamp(long timestamp) {
+    this.timestamp = timestamp;
+  }
 
-    public Long getPublisherId() {
-        return publisherId;
-    }
+  public long getPublisherId() {
+    return publisherId;
+  }
 
-    public void setPublisherId(Long publisherId) {
-        this.publisherId = publisherId;
-    }
+  public void setPublisherId(long publisherId) {
+    this.publisherId = publisherId;
+  }
 
-    public Long getCampaignId() {
-        return campaignId;
-    }
+  public long getCampaignId() {
+    return campaignId;
+  }
 
-    public void setCampaignId(Long campaignId) {
-        this.campaignId = campaignId;
-    }
+  public void setCampaignId(long campaignId) {
+    this.campaignId = campaignId;
+  }
 
-    public Long getSnid() {
-        return snid;
-    }
+  public String getChannelAction() {
+    return channelAction;
+  }
 
-    public void setSnid(Long snid) {
-        this.snid = snid;
-    }
+  public void setChannelAction(String channelAction) {
+    this.channelAction = channelAction;
+  }
 
-    public Boolean getTracked() {
-        return isTracked;
-    }
+  public long getSnid() {
+    return snid;
+  }
 
-    public void setTracked(Boolean tracked) {
-        isTracked = tracked;
-    }
+  public void setSnid(long snid) {
+    this.snid = snid;
+  }
 
-    public Boolean getValid() {
-        return isValid;
-    }
+  public String getRequestHeaders() {
+    return requestHeaders;
+  }
 
-    public void setValid(Boolean valid) {
-        isValid = valid;
-    }
+  public void setRequestHeaders(String requestHeaders) {
+    this.requestHeaders = requestHeaders;
+  }
 
-    private Long snapshotId;
-    private Long timestamp;
-    private Long publisherId;
-    private Long campaignId;
-    private Long snid;
-    private Boolean isTracked;
-    private Boolean isValid;
+  public boolean isTracked() {
+    return isTracked;
+  }
 
-    public Event() {
+  public void setTracked(boolean tracked) {
+    isTracked = tracked;
+  }
 
-    }
+  public String getCappingFailedRule() {
+    return cappingFailedRule;
+  }
 
-    public Event(long snapshotId, boolean isValid) {
-        this.snapshotId = snapshotId;
-        this.isValid = isValid;
-    }
+  public void setCappingFailedRule(String cappingFailedRule) {
+    this.cappingFailedRule = cappingFailedRule;
+  }
 
-    public Event(long snapshotId, Long timestamp, long publisherId, long campaignId, long snid, boolean isTracked, boolean isValid) {
-        this.snapshotId = snapshotId;
-        this.timestamp = timestamp;
-        this.publisherId = publisherId;
-        this.campaignId = campaignId;
-        this.snid = snid;
-        this.isTracked = isTracked;
-        this.isValid = true;
-    }
+  public boolean isCappingPassed() {
+    return cappingPassed;
+  }
+
+  public void setCappingPassed(boolean cappingPassed) {
+    this.cappingPassed = cappingPassed;
+  }
+
+  private long snapshotId;
+  private long timestamp;
+  private long publisherId;
+  private long campaignId;
+  private String channelAction;
+  private long snid;
+  private String requestHeaders;
+  private boolean isTracked;
+  private String cappingFailedRule;
+  private boolean cappingPassed;
+
+  public Event() {
+
+  }
+
+  public Event(long snapshotId, String cappingFailedRule, boolean cappingPassed) {
+    this.snapshotId = snapshotId;
+    this.cappingFailedRule = cappingFailedRule;
+    this.cappingPassed = cappingPassed;
+  }
+
+  public Event(long snapshotId, long timestamp, long publisherId, long campaignId, String channelAction, long snid, String requestHeaders, boolean isTracked, String cappingFailedRule, boolean cappingPassed) {
+    this.snapshotId = snapshotId;
+    this.timestamp = timestamp;
+    this.publisherId = publisherId;
+    this.campaignId = campaignId;
+    this.channelAction = channelAction;
+    this.snid = snid;
+    this.requestHeaders = requestHeaders;
+    this.isTracked = isTracked;
+    this.cappingFailedRule = null;
+    this.cappingPassed = true;
+  }
 }

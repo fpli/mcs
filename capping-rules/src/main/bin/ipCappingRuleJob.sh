@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - IPCappingRuleJob
 
-usage="Usage: ipCappingRuleJob.sh [table] [time] [timeRange]"
+usage="Usage: ipCappingRuleJob.sh [table] [time] [timeRange] [threshold]"
 
 # if no args specified, show usage
 if [ $# -le 2 ]; then
@@ -17,6 +17,7 @@ bin=`cd "$bin">/dev/null; pwd`
 TABLE=$1
 TIME=$2
 TIMERANGE=$3
+THRESHOLD=$4
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
@@ -47,4 +48,5 @@ ${SPARK_HOME}/bin/spark-submit \
       --mode yarn \
       --table ${TABLE} \
       --time ${TIME} \
-      --time_range ${TIMERANGE}
+      --timeRange ${TIMERANGE} \
+      --threshold ${THRESHOLD}
