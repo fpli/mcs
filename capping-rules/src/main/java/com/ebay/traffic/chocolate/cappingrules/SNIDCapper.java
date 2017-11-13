@@ -25,8 +25,7 @@ public class SNIDCapper extends BaseSparkJob {
   // The high 26f bits of system time - which means our snapshots are valid from 24 Sep 2015
   protected static final long HIGH_24 = 0x15000000000l;
   private final static byte[] columnX = Bytes.toBytes("x");
-  //  protected JavaSparkContext javaSparkContext;
-//  protected SQLContext sqlContext;
+  
   static PairFunction<Event, ImmutableBytesWritable, Put> writeHBaseMapFunc = new PairFunction<Event,
       ImmutableBytesWritable, Put>() {
     @Override
@@ -156,11 +155,8 @@ public class SNIDCapper extends BaseSparkJob {
         startTimestamp, time);
     
     JavaPairRDD<Long, Event> filterResult = filterWithCapper(hbaseData);
-    
-    genericCappingJob.writeToHbase(filterResult, table, writeHBaseMapFunc);
-    //for test
-    numberOfRow = filterResult.count();
-    filteredResult = filterResult;
+    //TODO write to testing table
+    genericCappingJob.writeToHbase(filterResult, "snid_capping_result", writeHBaseMapFunc);
   }
   
   /**
@@ -185,13 +181,5 @@ public class SNIDCapper extends BaseSparkJob {
    */
   public void setHBaseConf(Configuration hbaseConf) {
     this.hbaseConf = hbaseConf;
-  }
-  
-  public long getNumberOfRow() {
-    return numberOfRow;
-  }
-  
-  public JavaPairRDD<Long, Event> getFilteredResult() {
-    return filteredResult;
   }
 }
