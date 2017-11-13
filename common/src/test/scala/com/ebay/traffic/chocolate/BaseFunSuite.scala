@@ -39,7 +39,7 @@ abstract class BaseFunSuite extends FunSuite with BeforeAndAfterAll {
     *
     * The temp directory is a random directory, e.g. feeds-ad1sdxzcvasdfxx
     *
-    * @param root the root path for the temp directory
+    * @param root       the root path for the temp directory
     * @param namePrefix the prefix for the random temp file
     * @return java.io.File of the temp directory
     */
@@ -56,7 +56,7 @@ abstract class BaseFunSuite extends FunSuite with BeforeAndAfterAll {
     *
     * The temp directory is a random directory, e.g. feeds-ad1sdxzcvasdfxx
     *
-    * @param root the root path for the temp directory
+    * @param root       the root path for the temp directory
     * @param namePrefix the prefix for the random temp file
     * @return java.io.File of the temp directory
     */
@@ -80,7 +80,9 @@ abstract class BaseFunSuite extends FunSuite with BeforeAndAfterAll {
         if (dir.exists() || !dir.mkdirs()) {
           dir = null
         }
-      } catch { case e: SecurityException => dir = null; }
+      } catch {
+        case e: SecurityException => dir = null;
+      }
     }
 
     dir.getCanonicalFile

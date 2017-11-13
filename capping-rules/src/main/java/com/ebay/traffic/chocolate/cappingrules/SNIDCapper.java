@@ -117,7 +117,7 @@ public class SNIDCapper extends BaseSparkJob {
   public static void main(String[] args) throws Exception {
     Options options = GenericCappingJob.getJobOptions("ClickImp Mapping Rule");
     
-    CommandLineParser parser = new DefaultParser();
+    CommandLineParser parser = new BasicParser();
     HelpFormatter formatter = new HelpFormatter();
     CommandLine cmd;
     
@@ -150,7 +150,7 @@ public class SNIDCapper extends BaseSparkJob {
    */
   @Override
   public void run() throws Exception {
-    GenericCappingJob genericCappingJob = new GenericCappingJob(hbaseConf, javaSparkContext());
+    GenericCappingJob genericCappingJob = new GenericCappingJob(hbaseConf, jsc());
     long startTimestamp = time - timeRange;
     JavaPairRDD<ImmutableBytesWritable, Result> hbaseData = genericCappingJob.readFromHabse(table,
         startTimestamp, time);
@@ -177,9 +177,7 @@ public class SNIDCapper extends BaseSparkJob {
     JavaPairRDD<Long, Iterable<Event>> groupbySnid = snidCapperRDD.groupByKey();
     
     JavaPairRDD<Long, Event> resultRDD = groupbySnid.flatMapToPair(mapGroupedRDD);
-    
     return resultRDD;
-    
   }
   
   /**

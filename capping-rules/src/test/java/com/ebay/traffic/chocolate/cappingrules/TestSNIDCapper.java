@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Iterator;
 
 public class TestSNIDCapper {
   final String TRANSACTION_TABLE_NAME = "prod_transactional";
@@ -66,11 +67,16 @@ public class TestSNIDCapper {
     SNIDCapper job = new SNIDCapper("TestSNIDCappingRule", "local[4]", TRANSACTION_TABLE_NAME,time,timeRange);
     job.setHBaseConf(hbaseConf);
     job.run();
-    GenericCappingJob genericCappingJob = new GenericCappingJob(hbaseConf, job.javaSparkContext());
+    GenericCappingJob genericCappingJob = new GenericCappingJob(hbaseConf, job.jsc());
     long startTimestamp = time - timeRange;
     JavaPairRDD<ImmutableBytesWritable, Result> hbaseData = genericCappingJob.readFromHabse(TRANSACTION_TABLE_NAME,
         startTimestamp, time);
     Assert.assertEquals(14, hbaseData.count());
+    Iterator<Event> eventIterator = job.getFilteredResult().values().toLocalIterator();
+    while(eventIterator.hasNext()){
+      Event e = eventIterator.next();
+      Assert.assertEquals(false, e.getImpressed());
+    }
     Assert.assertEquals(7, job.getNumberOfRow());
     job.stop();
   }
