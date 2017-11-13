@@ -1,14 +1,13 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
+import org.apache.commons.lang3.Validate;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.io.compress.Compression;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -20,9 +19,9 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
-import java.util.Date;
+import java.util.Calendar;
 
-public class TestSNIDCappingRule {
+public class TestSNIDCapper {
   final String TRANSACTION_TABLE_NAME = "prod_transactional";
   final String TRANSACTION_CF_DEFAULT = "x";
   final String CAPPINGRESULT_TABLE_NAME = "capping_result";
@@ -60,15 +59,19 @@ public class TestSNIDCappingRule {
 
   @Test
   public void testSNIDCappingRuleJob() throws Exception {
-    SNIDCappingRule job = new SNIDCappingRule("TestSNIDCappingRule", "local[4]", TRANSACTION_TABLE_NAME, new Date()
-        .getTime(),
-        1000*60*60*24*4);
+    Calendar c = Calendar.getInstance();
+    c.add(Calendar.HOUR, 1);
+    long time = c.getTimeInMillis();
+    long timeRange = 1000*60*60*24*4;
+    SNIDCapper job = new SNIDCapper("TestSNIDCappingRule", "local[4]", TRANSACTION_TABLE_NAME,time,timeRange);
     job.setHBaseConf(hbaseConf);
     job.run();
-    JavaPairRDD<Long, Event> result = job.readEvents(TRANSACTION_TABLE_NAME);
-    Assert.assertEquals(12, result.count());
-    //Dataset<Row> modifiedResult = result.filter(result.col("cappingPassed").equalTo(false));
-    Assert.assertEquals(4, job.getNumberOfRow());
+    GenericCappingJob genericCappingJob = new GenericCappingJob(hbaseConf, job.javaSparkContext());
+    long startTimestamp = time - timeRange;
+    JavaPairRDD<ImmutableBytesWritable, Result> hbaseData = genericCappingJob.readFromHabse(TRANSACTION_TABLE_NAME,
+        startTimestamp, time);
+    Assert.assertEquals(14, hbaseData.count());
+    Assert.assertEquals(7, job.getNumberOfRow());
     job.stop();
   }
 
@@ -77,19 +80,41 @@ public class TestSNIDCappingRule {
     tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT)
             .setCompressionType(Compression.Algorithm.NONE));
     hbaseAdmin.createTable(tableDesc);
-
-    addEvent(transactionalTable, new Event(6889640599780065280l, "CLICK", 100));
-    addEvent(transactionalTable, new Event(6889640599780081664l, "IMPRESSION", 100));
-    addEvent(transactionalTable, new Event(6889640599780098048l, "CLICK", 200));
-    addEvent(transactionalTable, new Event(6889640599780114432l, "IMPRESSION", 200));
-    addEvent(transactionalTable, new Event(6889640599780130816l, "CLICK", 300));
-    addEvent(transactionalTable, new Event(6889640599780147200l, "CLICK", 300));
-    addEvent(transactionalTable, new Event(6889640599780163584l, "CLICK", 300));
-    addEvent(transactionalTable, new Event(6889640599780179968l, "IMPRESSION", 300));
-    addEvent(transactionalTable, new Event(6889640599780196352l, "CLICK", 400));
-    addEvent(transactionalTable, new Event(6889640599780212736l, "CLICK", 400));
-    addEvent(transactionalTable, new Event(6889640599780229120l, "CLICK", 400));
-    addEvent(transactionalTable, new Event(6889640599780245504l, "CLICK", 400));
+    Calendar c = Calendar.getInstance();
+    c.add(Calendar.HOUR, -5);
+    c.add(Calendar.MINUTE, 10);
+    // click happens after impression on same host and different host
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(),201), "IMPRESSION", 200));
+    c.add(Calendar.SECOND, 20);
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(),201), "CLICK", 200));
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(),202), "CLICK", 200));
+    c.add(Calendar.SECOND, 40);
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(),202), "CLICK", 200));
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(),203), "CLICK", 200));
+    // click&impression happens at same time
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(), 100), "CLICK", 100));
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(), 101), "IMPRESSION", 100));
+    // click happens before impression
+    c.add(Calendar.SECOND, 40);
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(), 300), "CLICK", 400));
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(), 301), "CLICK", 400));
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(), 302), "CLICK", 400));
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(), 303), "IMPRESSION", 400));
+    // only click no impression
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(),201), "CLICK", 300));
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(),202), "CLICK", 300));
+    addEvent(transactionalTable, new Event(getSnapshotId(c.getTimeInMillis(),203), "CLICK", 300));
+  }
+  
+  // Mask for the high 24 bits in a timestamp
+  private static final long TIME_MASK = 0xFFFFFFl << 40l;
+  /** Maximum driver ID constant. */
+  public static final long MAX_DRIVER_ID = 0x3FFl;
+  // Mask for the driver ID
+  private static final long DRIVER_MASK = MAX_DRIVER_ID << 14l;
+  private long getSnapshotId(long epochMilliseconds, long driverId){
+    Validate.isTrue(driverId >= 0 && driverId <= MAX_DRIVER_ID);
+    return ((epochMilliseconds & ~TIME_MASK) << 24l) | (driverId << 14l);
   }
 
   private <T> void putCell(Put put, String family, String qualifier, T value)  {
