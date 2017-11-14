@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
+import com.ebay.traffic.chocolate.cappingrules.Rules.SNIDCapper;
+import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperResult;
 import org.apache.commons.lang3.Validate;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
@@ -32,23 +34,22 @@ public class TestSNIDCapper {
   private final static byte[] columnX = Bytes.toBytes("x");
   // Mask for the high 24 bits in a timestamp
   private static final long TIME_MASK = 0xFFFFFFl << 40l;
-  static PairFunction<Tuple2<ImmutableBytesWritable, Result>, Long, Event> readHBaseResultMapFunc = new
-      PairFunction<Tuple2<ImmutableBytesWritable, Result>, Long, Event>() {
-    @Override
-    public Tuple2<Long, Event> call(
-        Tuple2<ImmutableBytesWritable, Result> entry) throws Exception {
-      
-      Result r = entry._2;
-      long keyrow = Bytes.toLong(r.getRow());
-      
-      Event event = new Event();
-      event.setSnapshotId(keyrow);
-      //event.setChannelAction(Bytes.toString(r.getValue(columnX, Bytes.toBytes("channel_action"))));
-      event.setImpressed(Bytes.toBoolean(r.getValue(columnX, Bytes.toBytes("is_impressed"))));
-      event.setImpSnapshotId(Bytes.toLong(r.getValue(columnX, Bytes.toBytes("imp_snapshot_id"))));
-      return new Tuple2<>(keyrow, event);
-    }
-  };
+  static PairFunction<Tuple2<ImmutableBytesWritable, Result>, Long, SNIDCapperResult> readHBaseResultMapFunc = new
+      PairFunction<Tuple2<ImmutableBytesWritable, Result>, Long, SNIDCapperResult>() {
+        @Override
+        public Tuple2<Long, SNIDCapperResult> call(
+            Tuple2<ImmutableBytesWritable, Result> entry) throws Exception {
+          
+          Result r = entry._2;
+          long keyrow = Bytes.toLong(r.getRow());
+          
+          SNIDCapperResult snidResult = new SNIDCapperResult();
+          snidResult.setSnapshotId(keyrow);
+          snidResult.setImpressed(Bytes.toBoolean(r.getValue(columnX, Bytes.toBytes("is_impressed"))));
+          snidResult.setImpSnapshotId(Bytes.toLong(r.getValue(columnX, Bytes.toBytes("imp_snapshot_id"))));
+          return new Tuple2<>(keyrow, snidResult);
+        }
+      };
   final String TRANSACTION_TABLE_NAME = "prod_transactional";
   final String TRANSACTION_CF_DEFAULT = "x";
   final String CAPPINGRESULT_TABLE_NAME = "snid_capping_result";
@@ -57,7 +58,7 @@ public class TestSNIDCapper {
   private Connection hbaseConnection;
   private HTable transactionalTable;
   private HBaseAdmin hbaseAdmin;
-
+  
   @Before
   public void setUp() throws Exception {
     hbaseUtility = new HBaseTestingUtility();
@@ -74,7 +75,7 @@ public class TestSNIDCapper {
   
   private void initHBaseCappingResultTable() throws IOException {
     HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(CAPPINGRESULT_TABLE_NAME));
-    tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT).setCompressionType(Compression.Algorithm.NONE));
+    tableDesc.addFamily(new HColumnDescriptor(CAPPINGRESULT_TABLE_NAME).setCompressionType(Compression.Algorithm.NONE));
     hbaseAdmin.createTable(tableDesc);
   }
   
@@ -82,37 +83,38 @@ public class TestSNIDCapper {
   public void tearDown() throws Exception {
     hbaseUtility.shutdownMiniCluster();
   }
-
+  
   @Test
   public void testSNIDCappingRuleJob() throws Exception {
     Calendar c = Calendar.getInstance();
     c.add(Calendar.HOUR, 1);
     long time = c.getTimeInMillis();
     long timeRange = 1000 * 60 * 60 * 24 * 4;
-    SNIDCapper job = new SNIDCapper("TestSNIDCappingRule", "local[4]", TRANSACTION_TABLE_NAME, time, timeRange);
-    job.setHBaseConf(hbaseConf);
+    SNIDCapper job = new SNIDCapper("TestSNIDCappingRule", "local[4]", TRANSACTION_TABLE_NAME,
+        CAPPINGRESULT_TABLE_NAME, "2017-11-13 00:00:00", "2017-11-15 23:59:59");
+    job.setHbaseConf(hbaseConf);
     job.run();
     
     //validate original test data
-    GenericCappingJob genericCappingJob = new GenericCappingJob(hbaseConf, job.jsc());
+    //GenericCappingJob genericCappingJob = new GenericCappingJob(hbaseConf, job.jsc());
     long startTimestamp = time - timeRange;
-    JavaPairRDD<ImmutableBytesWritable, Result> testData = genericCappingJob.readFromHabse(TRANSACTION_TABLE_NAME,
+    JavaPairRDD<ImmutableBytesWritable, Result> testData = job.readFromHabse(TRANSACTION_TABLE_NAME,
         startTimestamp, time);
     Assert.assertEquals(14, testData.count());
     //validate result data
-    JavaPairRDD<ImmutableBytesWritable, Result> resultData = genericCappingJob.readFromHabse(CAPPINGRESULT_TABLE_NAME,
+    JavaPairRDD<ImmutableBytesWritable, Result> resultData = job.readFromHabse(CAPPINGRESULT_TABLE_NAME,
         startTimestamp, time);
     Assert.assertEquals(7, resultData.count());
-    JavaPairRDD<Long, Event> resultMapRDD = resultData.mapToPair(readHBaseResultMapFunc);
-    Iterator<Event> eventIterator = resultMapRDD.values().toLocalIterator();
+    JavaPairRDD<Long, SNIDCapperResult> resultMapRDD = resultData.mapToPair(readHBaseResultMapFunc);
+    Iterator<SNIDCapperResult> eventIterator = resultMapRDD.values().toLocalIterator();
     while (eventIterator.hasNext()) {
-      Event e = eventIterator.next();
+      SNIDCapperResult e = eventIterator.next();
       Assert.assertEquals(false, e.getImpressed());
       Assert.assertNotEquals(java.util.Optional.of(0), e.getImpSnapshotId());
     }
     job.stop();
   }
-
+  
   private void initHBaseTransactionTable() throws IOException {
     HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(TRANSACTION_TABLE_NAME));
     tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT)
