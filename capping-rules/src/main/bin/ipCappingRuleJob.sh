@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - IPCappingRuleJob
 
-usage="Usage: ipCappingRuleJob.sh [table] [writeTable] [time] [timeRange] [threshold]"
+usage="Usage: ipCappingRuleJob.sh [table] [time] [timeRange] [threshold]"
 
 # if no args specified, show usage
 if [ $# -le 2 ]; then
