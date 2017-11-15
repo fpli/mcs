@@ -49,7 +49,7 @@ public abstract class AbstractTest {
           SNIDCapperResult snidResult = new SNIDCapperResult();
           snidResult.setSnapshotId(keyrow);
           snidResult.setImpressed(Bytes.toBoolean(r.getValue(columnX, Bytes.toBytes("is_impressed"))));
-          snidResult.setImpSnapshotId(Bytes.toLong(r.getValue(columnX, Bytes.toBytes("imp_snapshot_id"))));
+          //snidResult.setImpSnapshotId(Bytes.toLong(r.getValue(columnX, Bytes.toBytes("imp_snapshot_id"))));
           return new Tuple2<Long, SNIDCapperResult>(keyrow, snidResult);
         }
       };
@@ -115,7 +115,7 @@ public abstract class AbstractTest {
     while (eventIterator.hasNext()) {
       SNIDCapperResult e = eventIterator.next();
       Assert.assertEquals(false, e.getImpressed());
-      Assert.assertNotEquals(java.util.Optional.of(0), e.getImpSnapshotId());
+      //Assert.assertNotEquals(java.util.Optional.of(0), e.getImpSnapshotId());
     }
     job.stop();
   }

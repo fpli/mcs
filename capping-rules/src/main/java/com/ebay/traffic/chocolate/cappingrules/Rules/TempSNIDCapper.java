@@ -36,16 +36,14 @@ public class TempSNIDCapper extends AbstractCapper {
           
           Result r = entry._2;
           
-          String requestHeader = Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("request_headers")));
-          requestHeader = requestHeader.substring(requestHeader.indexOf("X-eBay-Client-IP"));
-          requestHeader = requestHeader.substring(0, requestHeader.indexOf("|"));
-          requestHeader = requestHeader.split(":")[1].trim().replace(".", "");
-          
           SNIDCapperIdentity snidIdentity = new SNIDCapperIdentity();
           snidIdentity.setSnapshotId(Bytes.toLong(r.getRow()));
           snidIdentity.setChannelAction(Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("channel_action"))));
+          
+          String requestHeader = Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("request_headers")));
+          requestHeader = requestHeader.split("X-eBay-Client-IP:")[1];
+          requestHeader = requestHeader.split("\\|")[0].trim().replace(".", "");
           long snid = Long.valueOf(requestHeader);
-          snidIdentity.setSnid(snid);
           return new Tuple2<Long, SNIDCapperIdentity>(snid, snidIdentity);
         }
       };
@@ -78,7 +76,7 @@ public class TempSNIDCapper extends AbstractCapper {
               if (getTimeMillis(clickEvent.getSnapshotId()) <= impTime) {
                 resultEvent.setSnapshotId(clickEvent.getSnapshotId());
                 resultEvent.setImpressed(false);
-                resultEvent.setImpSnapshotId(impSnapshotId);
+                //resultEvent.setImpSnapshotId(impSnapshotId);
                 results.add(new Tuple2<Long, SNIDCapperResult>(resultEvent.getSnapshotId(), resultEvent));
               }
             }
@@ -93,7 +91,7 @@ public class TempSNIDCapper extends AbstractCapper {
         throws Exception {
       Put put = new Put(Bytes.toBytes(snidResult.getSnapshotId()));
       put.add(columnFamily, Bytes.toBytes("is_impressed"), Bytes.toBytes(snidResult.getImpressed()));
-      put.add(columnFamily, Bytes.toBytes("imp_snapshot_id"), Bytes.toBytes(snidResult.getImpSnapshotId()));
+      //put.add(columnFamily, Bytes.toBytes("imp_snapshot_id"), Bytes.toBytes(snidResult.getImpSnapshotId()));
       
       return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
     }

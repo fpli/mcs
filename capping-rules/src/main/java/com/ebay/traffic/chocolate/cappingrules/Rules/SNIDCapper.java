@@ -74,7 +74,7 @@ public class SNIDCapper extends AbstractCapper {
               if (getTimeMillis(clickEvent.getSnapshotId()) <= impTime) {
                 resultEvent.setSnapshotId(clickEvent.getSnapshotId());
                 resultEvent.setImpressed(false);
-                resultEvent.setImpSnapshotId(impSnapshotId);
+                //resultEvent.setImpSnapshotId(impSnapshotId);
                 results.add(new Tuple2<Long, SNIDCapperResult>(resultEvent.getSnapshotId(), resultEvent));
               }
             }
@@ -89,7 +89,7 @@ public class SNIDCapper extends AbstractCapper {
         throws Exception {
       Put put = new Put(Bytes.toBytes(snidResult.getSnapshotId()));
       put.add(columnFamily, Bytes.toBytes("is_impressed"), Bytes.toBytes(snidResult.getImpressed()));
-      put.add(columnFamily, Bytes.toBytes("imp_snapshot_id"), Bytes.toBytes(snidResult.getImpSnapshotId()));
+      //put.add(columnFamily, Bytes.toBytes("imp_snapshot_id"), Bytes.toBytes(snidResult.getImpSnapshotId()));
       
       return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
     }

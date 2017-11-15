@@ -23,63 +23,7 @@ import java.util.Calendar;
 import java.util.Iterator;
 
 public class TestSNIDCapper extends AbstractTest{
-//  /**
-//   * Maximum driver ID constant.
-//   */
-//  public static final long MAX_DRIVER_ID = 0x3FFl;
-//  private final static byte[] columnX = Bytes.toBytes("x");
-//  // Mask for the high 24 bits in a timestamp
-//  private static final long TIME_MASK = 0xFFFFFFl << 40l;
-//  static PairFunction<Tuple2<ImmutableBytesWritable, Result>, Long, SNIDCapperResult> readHBaseResultMapFunc = new
-//      PairFunction<Tuple2<ImmutableBytesWritable, Result>, Long, SNIDCapperResult>() {
-//        @Override
-//        public Tuple2<Long, SNIDCapperResult> call(
-//            Tuple2<ImmutableBytesWritable, Result> entry) throws Exception {
-//
-//          Result r = entry._2;
-//          long keyrow = Bytes.toLong(r.getRow());
-//
-//          SNIDCapperResult snidResult = new SNIDCapperResult();
-//          snidResult.setSnapshotId(keyrow);
-//          snidResult.setImpressed(Bytes.toBoolean(r.getValue(columnX, Bytes.toBytes("is_impressed"))));
-//          snidResult.setImpSnapshotId(Bytes.toLong(r.getValue(columnX, Bytes.toBytes("imp_snapshot_id"))));
-//          return new Tuple2<Long, SNIDCapperResult>(keyrow, snidResult);
-//        }
-//      };
-//  final String TRANSACTION_TABLE_NAME = "prod_transactional";
-//  final String TRANSACTION_CF_DEFAULT = "x";
-//  final String CAPPINGRESULT_TABLE_NAME = "snid_capping_result";
-//  private HBaseTestingUtility hbaseUtility;
-//  private Configuration hbaseConf;
-//  private Connection hbaseConnection;
-//  private HTable transactionalTable;
-//  private HBaseAdmin hbaseAdmin;
-//
-//  @Before
-//  public void setUp() throws Exception {
-//    hbaseUtility = new HBaseTestingUtility();
-//    hbaseUtility.startMiniCluster();
-//
-//    hbaseConf = hbaseUtility.getConfiguration();
-//    hbaseConnection = hbaseUtility.getConnection();
-//    hbaseAdmin = hbaseUtility.getHBaseAdmin();
-//    transactionalTable = new HTable(TableName.valueOf(TRANSACTION_TABLE_NAME), hbaseConnection);
-//
-//    initHBaseTransactionTable();
-//    initHBaseCappingResultTable();
-//  }
-//
-//  private void initHBaseCappingResultTable() throws IOException {
-//    HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(CAPPINGRESULT_TABLE_NAME));
-//    tableDesc.addFamily(new HColumnDescriptor(CAPPINGRESULT_TABLE_NAME).setCompressionType(Compression.Algorithm.NONE));
-//    hbaseAdmin.createTable(tableDesc);
-//  }
-//
-//  @After
-//  public void tearDown() throws Exception {
-//    hbaseUtility.shutdownMiniCluster();
-//  }
-  
+
   @Test
   public void testSNIDCappingRuleJob() throws Exception {
     Calendar c = Calendar.getInstance();
@@ -106,7 +50,7 @@ public class TestSNIDCapper extends AbstractTest{
     while (eventIterator.hasNext()) {
       SNIDCapperResult e = eventIterator.next();
       Assert.assertEquals(false, e.getImpressed());
-      Assert.assertNotEquals(java.util.Optional.of(0), e.getImpSnapshotId());
+      //Assert.assertNotEquals(java.util.Optional.of(0), e.getImpSnapshotId());
     }
     job.stop();
   }

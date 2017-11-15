@@ -21,12 +21,8 @@ import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.Iterator;
 
 /**
@@ -65,10 +61,8 @@ public abstract class AbstractCapper extends BaseSparkJob {
     super(jobName, mode, false);
     this.originalTable = originalTable;
     this.resultTable = resultTable;
-    Date startDate = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(startTime);
-    Date endDate = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(startTime);
-    this.startTimestamp = ZonedDateTime.from(startDate.toInstant().atZone(ZoneId.systemDefault())).toEpochSecond();
-    this.endTimestamp = ZonedDateTime.from(endDate.toInstant().atZone(ZoneId.systemDefault())).toEpochSecond();
+    this.startTimestamp = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(startTime).getTime() / 1000;
+    this.endTimestamp = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(endTime).getTime() / 1000;
   }
   
   public static Options getJobOptions(String cappingRuleDescription) {
@@ -149,9 +143,9 @@ public abstract class AbstractCapper extends BaseSparkJob {
     HBaseAdmin.checkHBaseAvailable(hbaseConf);
     hbaseConf.set(TableInputFormat.INPUT_TABLE, table);
     
-    ByteBuffer buffer = ByteBuffer.allocate(Long.SIZE);
+    
+    
     byte[] startRow = Bytes.toBytes((startTimestamp & ~TIME_MASK) << 24l);
-    buffer = ByteBuffer.allocate(Long.SIZE);
     byte[] stopRow = Bytes.toBytes((stopTimestamp & ~TIME_MASK) << 24l);
     
     Scan scan = new Scan();

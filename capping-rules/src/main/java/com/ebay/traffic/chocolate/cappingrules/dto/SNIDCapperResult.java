@@ -6,7 +6,7 @@ package com.ebay.traffic.chocolate.cappingrules.dto;
 public class SNIDCapperResult implements CapperIdentity{
   private long snapshotId;
   private Boolean isImpressed;
-  private long impSnapshotId;
+  //private long impSnapshotId;
   
   public long getSnapshotId() {
     return snapshotId;
@@ -24,11 +24,11 @@ public class SNIDCapperResult implements CapperIdentity{
     isImpressed = impressed;
   }
 
-  public long getImpSnapshotId() {
-    return impSnapshotId;
-  }
-
-  public void setImpSnapshotId(long impSnapshotId) {
-    this.impSnapshotId = impSnapshotId;
-  }
+//  public long getImpSnapshotId() {
+//    return impSnapshotId;
+//  }
+//
+//  public void setImpSnapshotId(long impSnapshotId) {
+//    this.impSnapshotId = impSnapshotId;
+//  }
 }
