@@ -60,7 +60,6 @@ public class TestIPCappingRuleJob {
   public void testIPCappingRuleJob() throws Exception {
     IPCappingRuleJob job = new IPCappingRuleJob("TestIPCappingRuleJob", "local[4]", TRANSACTION_TABLE_NAME, today.toInstant().toEpochMilli(), today.toInstant().toEpochMilli() - yesterday.toInstant().toEpochMilli(), 3);
     job.setHBaseConf(hbaseConf);
-    job.setWriteTable("capping_result");
     job.run();
     Dataset<Row> result = job.readEvents("capping_result");
     result.show();

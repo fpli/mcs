@@ -15,10 +15,9 @@ bin=`cd "$bin">/dev/null; pwd`
 . ${bin}/chocolate-env.sh
 
 TABLE=$1
-WRITETABLE=$2
-TIME=$3
-TIMERANGE=$4
-THRESHOLD=$5
+TIME=$2
+TIMERANGE=$3
+THRESHOLD=$4
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
@@ -45,10 +44,9 @@ ${SPARK_HOME}/bin/spark-submit \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=8192 \
     ${bin}/../lib/chocolate-capping-rules-*.jar \
-      --appName ${JOB_NAME} \
+      --jobName ${JOB_NAME} \
       --mode yarn \
       --table ${TABLE} \
-      --writeTable ${WRITETABLE} \
       --time ${TIME} \
       --timeRange ${TIMERANGE} \
       --threshold ${THRESHOLD}

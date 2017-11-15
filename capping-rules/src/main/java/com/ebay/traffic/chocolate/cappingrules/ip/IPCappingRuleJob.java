@@ -43,7 +43,6 @@ public class IPCappingRuleJob extends BaseSparkJob {
   private final long threshold;
   private static final long TIME_MASK = 0xFFFFFFl << 40l;
   private static Configuration hbaseConfigForTest;
-  private static String writeTable;
 
   // Only for test
   private long numberOfRow;
@@ -128,7 +127,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
     @Override
     public void call(Iterator<Tuple2<ImmutableBytesWritable, Put>> tupleIter) throws Exception {
 
-      HTable transactionalTable = new HTable(TableName.valueOf(writeTable), ConnectionFactory.createConnection(getHBaseConf()));
+      HTable transactionalTable = new HTable(TableName.valueOf("capping_result"), ConnectionFactory.createConnection(getHBaseConf()));
       Tuple2<ImmutableBytesWritable, Put> tuple = null;
       while(tupleIter.hasNext()) {
         tuple = tupleIter.next();
@@ -248,12 +247,6 @@ public class IPCappingRuleJob extends BaseSparkJob {
     this.hbaseConfigForTest = hbaseConf;
   }
 
-  /**
-   * In testing mode, we set this to a different table from prod_transactional
-   */
-  public void setWriteTable(String writeTable) {
-    this.writeTable = writeTable;
-  }
 
   public static void main(String[] args) {
     Options options = new Options();
@@ -267,11 +260,6 @@ public class IPCappingRuleJob extends BaseSparkJob {
     Option table = new Option((String) null, "table", true, "HBase table");
     table.setRequired(true);
     options.addOption(table);
-
-    Option writeTable = new Option((String) null, "writeTable", true, "HBase table");
-    writeTable.setRequired(true);
-    options.addOption(writeTable);
-
 
     Option time = new Option((String) null, "time", true, "The time point for IP capping rule");
     time.setRequired(true);
@@ -302,8 +290,6 @@ public class IPCappingRuleJob extends BaseSparkJob {
     IPCappingRuleJob job = new IPCappingRuleJob(cmd.getOptionValue("jobName"),
       cmd.getOptionValue("mode"), cmd.getOptionValue("table"), Long.parseLong(cmd.getOptionValue("time")),
       Long.parseLong(cmd.getOptionValue("timeRange")), Long.parseLong(cmd.getOptionValue("threshold")));
-    job.setWriteTable(cmd.getOptionValue("writeTable"));
-
     try {
       job.run();
     } catch (Exception ex) {
