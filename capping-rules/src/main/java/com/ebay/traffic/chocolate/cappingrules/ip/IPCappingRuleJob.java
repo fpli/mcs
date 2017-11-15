@@ -180,7 +180,6 @@ public class IPCappingRuleJob extends BaseSparkJob {
 
     JavaPairRDD<Long, IPCappingEvent> rowPairRDD = hBaseRDD.mapToPair(readHBaseMapFunc);
     Dataset<Row> schemaRDD = sqlsc().createDataFrame(rowPairRDD.values(), IPCappingEvent.class);
-    schemaRDD.show();
     return schemaRDD;
   }
 
@@ -203,7 +202,6 @@ public class IPCappingRuleJob extends BaseSparkJob {
     Dataset<Row> df = schemaRDDWithIPTrim.withColumn("count", functions.count("*").over(window));
     Dataset<Row> res = df.withColumn("cappingPassedTmp", functions.when(df.col("count").$greater(threshold), false).otherwise(true));
     Dataset<Row> invalids = res.filter(res.col("cappingPassedTmp").equalTo(false));
-    invalids.show();
     return invalids;
   }
 
