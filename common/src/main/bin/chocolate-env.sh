@@ -18,7 +18,7 @@ if [ -z "${SPARK_CONF_DIR}" ]; then
 fi
 
 SPARK_EVENTLOG_DIR=hdfs://lvschocolatemaster-1448895.stratus.lvs.ebay.com:8020/app-logs/spark/logs
-HISTORY_SERVER=http://lvschocolateingester-1448925.stratus.lvs.ebay.com:18080/
+HISTORY_SERVER=http://lvschocolatepits-1583698.stratus.lvs.ebay.com:18080/
 
 FILES="file:///${SPARK_CONF_DIR}/hbase-site.xml,file:///${HADOOP_CONF_DIR}/ssl-client.xml"
 
