@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - IPCappingRuleJob
 
-usage="Usage: ipCappingRuleJob.sh [table] [time] [timeRange] [threshold]"
+usage="Usage: ipCappingRuleJob.sh [table] [writeTable] [time] [timeRange] [threshold]"
 
 # if no args specified, show usage
 if [ $# -le 2 ]; then
@@ -15,9 +15,10 @@ bin=`cd "$bin">/dev/null; pwd`
 . ${bin}/chocolate-env.sh
 
 TABLE=$1
-TIME=$2
-TIMERANGE=$3
-THRESHOLD=$4
+WRITETABLE=$2
+TIME=$3
+TIMERANGE=$4
+THRESHOLD=$5
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
@@ -47,6 +48,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --appName ${JOB_NAME} \
       --mode yarn \
       --table ${TABLE} \
+      --writeTable ${WRITETABLE} \
       --time ${TIME} \
       --timeRange ${TIMERANGE} \
       --threshold ${THRESHOLD}

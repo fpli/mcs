@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.cappingrules.ip;
 
 import com.ebay.traffic.chocolate.BaseSparkJob;
-import com.ebay.traffic.chocolate.cappingrules.Event;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -44,6 +43,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
   private final long threshold;
   private static final long TIME_MASK = 0xFFFFFFl << 40l;
   private static Configuration hbaseConfigForTest;
+  private static String writeTable;
 
   // Only for test
   private long numberOfRow;
@@ -70,15 +70,15 @@ public class IPCappingRuleJob extends BaseSparkJob {
   /**
    * PairFunction used to map hbase to event poj
    */
-  static PairFunction<Tuple2<ImmutableBytesWritable, Result>, Long, Event> readHBaseMapFunc = new PairFunction<Tuple2<ImmutableBytesWritable, Result>, Long, Event>() {
+  static PairFunction<Tuple2<ImmutableBytesWritable, Result>, Long, IPCappingEvent> readHBaseMapFunc = new PairFunction<Tuple2<ImmutableBytesWritable, Result>, Long, IPCappingEvent>() {
     @Override
-    public Tuple2<Long, Event> call(
+    public Tuple2<Long, IPCappingEvent> call(
       Tuple2<ImmutableBytesWritable, Result> entry) throws Exception {
 
       Result r = entry._2;
       long keyRow = Bytes.toLong(r.getRow());
 
-      Event event = new Event();
+      IPCappingEvent event = new IPCappingEvent();
       event.setSnapshotId(keyRow);
       event.setRequestHeaders((String) Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("request_headers"))));
       event.setChannelAction((String) Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("channel_action"))));
@@ -86,28 +86,17 @@ public class IPCappingRuleJob extends BaseSparkJob {
       if(cappingPassed!=null) {
         event.setCappingPassed((Boolean) Bytes.toBoolean(cappingPassed));
       }
-      byte[] ip = r.getValue(Bytes.toBytes("x"), Bytes.toBytes("ip"));
-      if(ip!=null) {
-        event.setIp((String) Bytes.toString(ip));
-      }
-      byte[] count = r.getValue(Bytes.toBytes("x"), Bytes.toBytes("count"));
-      if(count!=null) {
-        event.setCount((String) Bytes.toString(count));
-      }
-      return new Tuple2<Long, Event>(keyRow, event);
+      return new Tuple2<Long, IPCappingEvent>(keyRow, event);
     }
   };
 
   /**
    * map function used to read from dataframe to javardd
    */
-  static Function<Row, Event> mapFunc = new Function<Row, Event>() {
+  static Function<Row, IPCappingEvent> mapFunc = new Function<Row, IPCappingEvent>() {
     @Override
-    public Event call(Row row) throws Exception {
-      Event event = new Event(row.getLong(row.fieldIndex("snapshotId")), "IPCappingRule", row.getBoolean(row.fieldIndex("cappingPassedTmp")));
-      //TODO: remove ip here. It's just for testing
-      event.setIp(row.getString(row.fieldIndex("ip")));
-      event.setCount(String.valueOf(row.getLong(row.fieldIndex("count"))));
+    public IPCappingEvent call(Row row) throws Exception {
+      IPCappingEvent event = new IPCappingEvent(row.getLong(row.fieldIndex("snapshotId")), "IPCappingRule", row.getBoolean(row.fieldIndex("cappingPassedTmp")));
       return event;
     }
   };
@@ -115,28 +104,17 @@ public class IPCappingRuleJob extends BaseSparkJob {
   /**
    * pairFunction used to map poj to hbase for writing
    */
-  static PairFunction<Event, ImmutableBytesWritable, Put> writeHBaseMapFunc = new PairFunction<Event, ImmutableBytesWritable, Put>() {
+  static PairFunction<IPCappingEvent, ImmutableBytesWritable, Put> writeHBaseMapFunc = new PairFunction<IPCappingEvent, ImmutableBytesWritable, Put>() {
     @Override
-    public Tuple2<ImmutableBytesWritable, Put> call(Event event)
+    public Tuple2<ImmutableBytesWritable, Put> call(IPCappingEvent event)
       throws Exception {
       Put put = new Put(Bytes.toBytes(event.getSnapshotId()));
       put.add(Bytes.toBytes("x"),
         Bytes.toBytes("capping_passed"),
         Bytes.toBytes(false));
-      //TODO:remove put channel_action after testing on testing table
-      put.add(Bytes.toBytes("x"),
-        Bytes.toBytes("channel_action"),
-        Bytes.toBytes("CLICK"));
       put.add(Bytes.toBytes("x"),
         Bytes.toBytes("capping_failed_rule"),
         Bytes.toBytes("IPCappingRule"));
-      //TODO: remove these 2 fields when going production
-      put.add(Bytes.toBytes("x"),
-        Bytes.toBytes("ip"),
-        Bytes.toBytes(event.getIp()));
-      put.add(Bytes.toBytes("x"),
-        Bytes.toBytes("count"),
-        Bytes.toBytes(event.getCount()));
       return new Tuple2<ImmutableBytesWritable, Put>(
         new ImmutableBytesWritable(), put);
     }
@@ -150,7 +128,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
     @Override
     public void call(Iterator<Tuple2<ImmutableBytesWritable, Put>> tupleIter) throws Exception {
 
-      HTable transactionalTable = new HTable(TableName.valueOf("capping_result"), ConnectionFactory.createConnection(getHBaseConf()));
+      HTable transactionalTable = new HTable(TableName.valueOf(writeTable), ConnectionFactory.createConnection(getHBaseConf()));
       Tuple2<ImmutableBytesWritable, Put> tuple = null;
       while(tupleIter.hasNext()) {
         tuple = tupleIter.next();
@@ -201,9 +179,10 @@ public class IPCappingRuleJob extends BaseSparkJob {
     JavaPairRDD<ImmutableBytesWritable, Result> hBaseRDD =
       jsc().newAPIHadoopRDD(hbaseConf, TableInputFormat.class, ImmutableBytesWritable.class, Result.class);
 
-    JavaPairRDD<Long, Event> rowPairRDD = hBaseRDD.mapToPair(readHBaseMapFunc);
-    Dataset<Row> schemaRDD = sqlsc().createDataFrame(rowPairRDD.values(), Event.class);
-    return schemaRDD.filter(schemaRDD.col("channelAction").equalTo("CLICK"));
+    JavaPairRDD<Long, IPCappingEvent> rowPairRDD = hBaseRDD.mapToPair(readHBaseMapFunc);
+    Dataset<Row> schemaRDD = sqlsc().createDataFrame(rowPairRDD.values(), IPCappingEvent.class);
+    schemaRDD.show();
+    return schemaRDD;
   }
 
   /**
@@ -215,7 +194,8 @@ public class IPCappingRuleJob extends BaseSparkJob {
   public Dataset<Row> filterEvents(String table) throws Exception {
 
     Dataset<Row> schemaRDD = readEvents(table);
-    Dataset<Row> schemaRDDWithIP = schemaRDD.withColumn("headerWithIP", functions.split(schemaRDD.col("requestHeaders"), "X-eBay-Client-IP:").getItem(1));
+    Dataset<Row> schemaRDDClick = schemaRDD.filter(schemaRDD.col("channelAction").equalTo("CLICK"));
+    Dataset<Row> schemaRDDWithIP = schemaRDDClick.withColumn("headerWithIP", functions.split(schemaRDDClick.col("requestHeaders"), "X-eBay-Client-IP:").getItem(1));
     Dataset<Row> schemaRDDWithIPOnly = schemaRDDWithIP.withColumn("headerWithIPOnly", functions.split(schemaRDDWithIP.col("headerWithIP"), "\\|").getItem(0));
     Dataset<Row> schemaRDDWithIPTrim = schemaRDDWithIPOnly.withColumn("ip", functions.trim(schemaRDDWithIPOnly.col("headerWithIPOnly")))
       .drop("headerWithIP").drop("headerWithIPOnly");
@@ -224,6 +204,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
     Dataset<Row> df = schemaRDDWithIPTrim.withColumn("count", functions.count("*").over(window));
     Dataset<Row> res = df.withColumn("cappingPassedTmp", functions.when(df.col("count").$greater(threshold), false).otherwise(true));
     Dataset<Row> invalids = res.filter(res.col("cappingPassedTmp").equalTo(false));
+    invalids.show();
     return invalids;
   }
 
@@ -232,11 +213,10 @@ public class IPCappingRuleJob extends BaseSparkJob {
    * write invalids events back to hbase
    *
    * @param invalids invalids events
-   * @param table    hbase table writing to
    */
-  public void writeInvalidEvents(Dataset<Row> invalids, String table) throws IOException {
+  public void writeInvalidEvents(Dataset<Row> invalids) throws IOException {
 
-    JavaRDD<Event> records = invalids.toJavaRDD().map(mapFunc);
+    JavaRDD<IPCappingEvent> records = invalids.toJavaRDD().map(mapFunc);
     JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = records.mapToPair(writeHBaseMapFunc);
     hbasePuts.foreachPartition(hbasePutFunc);
   }
@@ -247,8 +227,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
   @Override
   public void run() throws Exception {
     Dataset<Row> failedRecords = filterEvents(this.table);
-    //TODO: change it back to prod_transacational table
-    writeInvalidEvents(failedRecords, "capping_result");
+    writeInvalidEvents(failedRecords);
   }
 
   /**
@@ -269,6 +248,13 @@ public class IPCappingRuleJob extends BaseSparkJob {
     this.hbaseConfigForTest = hbaseConf;
   }
 
+  /**
+   * In testing mode, we set this to a different table from prod_transactional
+   */
+  public void setWriteTable(String writeTable) {
+    this.writeTable = writeTable;
+  }
+
   public static void main(String[] args) {
     Options options = new Options();
     Option jobName = new Option((String) null, "jobName", true, "The job name");
@@ -281,6 +267,11 @@ public class IPCappingRuleJob extends BaseSparkJob {
     Option table = new Option((String) null, "table", true, "HBase table");
     table.setRequired(true);
     options.addOption(table);
+
+    Option writeTable = new Option((String) null, "writeTable", true, "HBase table");
+    writeTable.setRequired(true);
+    options.addOption(writeTable);
+
 
     Option time = new Option((String) null, "time", true, "The time point for IP capping rule");
     time.setRequired(true);
@@ -311,6 +302,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
     IPCappingRuleJob job = new IPCappingRuleJob(cmd.getOptionValue("jobName"),
       cmd.getOptionValue("mode"), cmd.getOptionValue("table"), Long.parseLong(cmd.getOptionValue("time")),
       Long.parseLong(cmd.getOptionValue("timeRange")), Long.parseLong(cmd.getOptionValue("threshold")));
+    job.setWriteTable(cmd.getOptionValue("writeTable"));
 
     try {
       job.run();
