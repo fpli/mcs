@@ -14,6 +14,8 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 
 import java.io.IOException;
@@ -25,6 +27,7 @@ import java.util.List;
  * Created by yimeng on 11/12/17.
  */
 public class TempSNIDCapper extends AbstractCapper {
+  private static final Logger logger = LoggerFactory.getLogger(TempSNIDCapper.class);
   static PairFunction<Tuple2<ImmutableBytesWritable, Result>, Long, SNIDCapperIdentity> readHBaseMapFunc = new
       PairFunction<Tuple2<ImmutableBytesWritable, Result>, Long, SNIDCapperIdentity>() {
         @Override
@@ -32,18 +35,18 @@ public class TempSNIDCapper extends AbstractCapper {
             Tuple2<ImmutableBytesWritable, Result> entry) throws Exception {
           
           Result r = entry._2;
-          long snid = Bytes.toLong(r.getValue(columnFamily, Bytes.toBytes("snid")));
-  
+          
           String requestHeader = Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("request_headers")));
           requestHeader = requestHeader.substring(requestHeader.indexOf("X-eBay-Client-IP"));
           requestHeader = requestHeader.substring(0, requestHeader.indexOf("|"));
           requestHeader = requestHeader.split(":")[1].trim().replace(".", "");
           
           SNIDCapperIdentity snidIdentity = new SNIDCapperIdentity();
-          snidIdentity.setSnapshotId(Long.valueOf(requestHeader));
+          snidIdentity.setSnapshotId(Bytes.toLong(r.getRow()));
           snidIdentity.setChannelAction(Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("channel_action"))));
+          long snid = Long.valueOf(requestHeader);
           snidIdentity.setSnid(snid);
-          return new Tuple2<>(snid, snidIdentity);
+          return new Tuple2<Long, SNIDCapperIdentity>(snid, snidIdentity);
         }
       };
   
@@ -76,7 +79,7 @@ public class TempSNIDCapper extends AbstractCapper {
                 resultEvent.setSnapshotId(clickEvent.getSnapshotId());
                 resultEvent.setImpressed(false);
                 resultEvent.setImpSnapshotId(impSnapshotId);
-                results.add(new Tuple2<>(resultEvent.getSnapshotId(), resultEvent));
+                results.add(new Tuple2<Long, SNIDCapperResult>(resultEvent.getSnapshotId(), resultEvent));
               }
             }
           }
@@ -120,6 +123,7 @@ public class TempSNIDCapper extends AbstractCapper {
     TempSNIDCapper job = new TempSNIDCapper(cmd.getOptionValue("jobName"),
         cmd.getOptionValue("mode"), cmd.getOptionValue("originalTable"), cmd.getOptionValue("resultTable"), cmd
         .getOptionValue("startTime"), cmd.getOptionValue("endTime"));
+    getHBaseConf();
     try {
       job.run();
     } finally {
@@ -141,7 +145,8 @@ public class TempSNIDCapper extends AbstractCapper {
     
     JavaPairRDD<Long, SNIDCapperResult> filterResult = (JavaPairRDD<Long, SNIDCapperResult>) writeData;
     JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = filterResult.values().mapToPair(writeHBaseMapFunc);
-    hbasePuts.saveAsNewAPIHadoopDataset(newAPIJobConfiguration.getConfiguration());
+    //hbasePuts.saveAsNewAPIHadoopDataset(newAPIJobConfiguration.getConfiguration());
+    hbasePuts.foreachPartition(hbasePutFunc);
   }
   
   @Override

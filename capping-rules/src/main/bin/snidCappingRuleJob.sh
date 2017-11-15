@@ -33,7 +33,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.cappingrules.Rules.SNIDCapper \
+    --class com.ebay.traffic.chocolate.cappingrules.Rules.TempSNIDCapper \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
@@ -48,5 +48,5 @@ ${SPARK_HOME}/bin/spark-submit \
       --mode yarn \
       --originalTable ${ORIGINAL_TABLE} \
       --resultTable ${RESULT_TABLE} \
-      --startTime ${START_TIME} \
-      --endTime ${END_TIME}
+      --startTime "${START_TIME}" \
+      --endTime "${END_TIME}"

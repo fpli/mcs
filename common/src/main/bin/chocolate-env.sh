@@ -2,25 +2,25 @@
 # chocolate-env.sh
 
 if [ -z "${HADOOP_HOME}" ]; then
-  export HADOOP_HOME=/apache/hadoop/
+  export HADOOP_HOME=/usr/hdp/current/hadoop-client
 fi
 
 if [ -z "${HADOOP_CONF_DIR}" ]; then
-  export HADOOP_CONF_DIR=/apache/hadoop/conf
+  export HADOOP_CONF_DIR=/usr/hdp/current/hadoop-yarn-client/etc/hadoop/
 fi
 
 if [ -z "${SPARK_HOME}" ]; then
-  export SPARK_HOME=/apache/spark/
+  export SPARK_HOME=/home/hbase/spark/
 fi
 
 if [ -z "${SPARK_CONF_DIR}" ]; then
-  export SPARK_CONF_DIR=/apache/spark/conf
+  export SPARK_CONF_DIR=/home/hbase/spark/conf/
 fi
 
 SPARK_EVENTLOG_DIR=hdfs://lvschocolatemaster-1448895.stratus.lvs.ebay.com:8020/app-logs/spark/logs
 HISTORY_SERVER=http://lvschocolatepits-1583698.stratus.lvs.ebay.com:18080/
 
-FILES="file:///${SPARK_CONF_DIR}/hbase-site.xml,file:///${SPARK_CONF_DIR}/hive-site.xml,file:///${HADOOP_CONF_DIR}/ssl-client.xml"
+FILES="file:///${SPARK_CONF_DIR}/hbase-site.xml,file:///${HADOOP_CONF_DIR}/ssl-client.xml"
 
 QUEUE_NAME=default
 SPARK_YARN_MAX_APP_ATTEMPTS=3

@@ -6,46 +6,69 @@ import com.google.protobuf.ServiceException;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.util.Base64;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.function.VoidFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.Tuple2;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.Iterator;
 
 /**
  * Created by yimeng on 11/12/17.
  */
 public abstract class AbstractCapper extends BaseSparkJob {
-  private final Logger logger = LoggerFactory.getLogger(this.getClass());
   // format timestamp to byte
   protected static final long TIME_MASK = 0xFFFFFFl << 40l;
   protected static final long HIGH_24 = 0x15000000000l;
   protected static final byte[] columnFamily = Bytes.toBytes("x");
   protected static final String INPUT_DATE_FORMAT = "yyyy-MM-dd hh:mm:ss";
+  protected static String resultTable = "snid_capping_result";
+  protected static Configuration hbaseConf;
+  protected static VoidFunction<Iterator<Tuple2<ImmutableBytesWritable, Put>>> hbasePutFunc = new
+      VoidFunction<Iterator<Tuple2<ImmutableBytesWritable, Put>>>() {
+        
+        @Override
+        public void call(Iterator<Tuple2<ImmutableBytesWritable, Put>> tupleIter) throws Exception {
+          
+          HTable transactionalTable = new HTable(TableName.valueOf(resultTable), ConnectionFactory.createConnection());
+          Tuple2<ImmutableBytesWritable, Put> tuple = null;
+          while (tupleIter.hasNext()) {
+            tuple = tupleIter.next();
+            transactionalTable.put(tuple._2);
+          }
+          transactionalTable.close();
+        }
+      };
   protected final String originalTable;
-  protected final String resultTable;
   protected final long startTimestamp;
   protected final long endTimestamp;
-  protected Configuration hbaseConf;
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
   
   public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String startTime,
-                           String endTime) throws ParseException {
+                        String endTime) throws ParseException {
     super(jobName, mode, false);
     this.originalTable = originalTable;
     this.resultTable = resultTable;
-    this.startTimestamp = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(startTime).getTime();
-    this.endTimestamp = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(endTime).getTime();
+    Date startDate = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(startTime);
+    Date endDate = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(startTime);
+    this.startTimestamp = ZonedDateTime.from(startDate.toInstant().atZone(ZoneId.systemDefault())).toEpochSecond();
+    this.endTimestamp = ZonedDateTime.from(endDate.toInstant().atZone(ZoneId.systemDefault())).toEpochSecond();
   }
   
   public static Options getJobOptions(String cappingRuleDescription) {
@@ -57,19 +80,37 @@ public abstract class AbstractCapper extends BaseSparkJob {
     mode.setRequired(true);
     options.addOption(mode);
     
-    Option table = new Option((String) null, "table", true, "HBase table");
-    table.setRequired(true);
-    options.addOption(table);
+    Option originalTable = new Option((String) null, "originalTable", true, "originalTable read from HBase");
+    originalTable.setRequired(true);
+    options.addOption(originalTable);
     
-    Option time = new Option((String) null, "time", true, "The time point for " + cappingRuleDescription);
-    time.setRequired(true);
-    options.addOption(time);
+    Option resultTable = new Option((String) null, "resultTable", true, "resultTable write to HBase");
+    resultTable.setRequired(true);
+    options.addOption(resultTable);
     
-    Option timeRange = new Option((String) null, "time_range", true, "time range for " + cappingRuleDescription);
-    timeRange.setRequired(true);
-    options.addOption(timeRange);
+    Option startTime = new Option((String) null, "startTime", true, "the startTime for " + cappingRuleDescription);
+    startTime.setRequired(true);
+    options.addOption(startTime);
+    
+    Option endTime = new Option((String) null, "endTime", true, "the endTime for " + cappingRuleDescription);
+    endTime.setRequired(true);
+    options.addOption(endTime);
     
     return options;
+  }
+  
+  public static long getTimeMillis(long snapshotId) {
+    return snapshotId >>> 24l | HIGH_24;
+  }
+  
+  /**
+   * Initialize hbase config
+   */
+  protected static Configuration getHBaseConf() {
+    if (hbaseConf == null) {
+      hbaseConf = HBaseConfiguration.create();
+    }
+    return hbaseConf;
   }
   
   public void setHbaseConf(Configuration hbaseConf) {
@@ -90,7 +131,6 @@ public abstract class AbstractCapper extends BaseSparkJob {
     writeToHbase(filterResult, resultTable);
   }
   
-  
   /**
    * Read Data with data range from hbase
    *
@@ -101,13 +141,18 @@ public abstract class AbstractCapper extends BaseSparkJob {
    */
   protected JavaPairRDD<ImmutableBytesWritable, Result> readFromHabse(String table, long startTimestamp, long
       stopTimestamp) throws IOException, ServiceException {
+    
+    logger.info("originalTable = " + table);
+    logger.info("startTimestamp = " + startTimestamp);
+    logger.info("stopTimestamp = " + stopTimestamp);
+    
     HBaseAdmin.checkHBaseAvailable(hbaseConf);
     hbaseConf.set(TableInputFormat.INPUT_TABLE, table);
     
     ByteBuffer buffer = ByteBuffer.allocate(Long.SIZE);
-    byte[] startRow = buffer.putLong((startTimestamp & ~TIME_MASK) << 24l).array();
+    byte[] startRow = Bytes.toBytes((startTimestamp & ~TIME_MASK) << 24l);
     buffer = ByteBuffer.allocate(Long.SIZE);
-    byte[] stopRow = buffer.putLong((stopTimestamp & ~TIME_MASK) << 24l).array();
+    byte[] stopRow = Bytes.toBytes((stopTimestamp & ~TIME_MASK) << 24l);
     
     Scan scan = new Scan();
     scan.setStartRow(startRow);
@@ -121,16 +166,10 @@ public abstract class AbstractCapper extends BaseSparkJob {
     
     JavaPairRDD<ImmutableBytesWritable, Result> hBaseRDD =
         jsc().newAPIHadoopRDD(hbaseConf, TableInputFormat.class, ImmutableBytesWritable.class, Result.class);
-    
     return hBaseRDD;
   }
   
   protected abstract <T> T filterWithCapper(JavaPairRDD<ImmutableBytesWritable, Result> hbaseData);
   
   public abstract <T> void writeToHbase(T writeData, String table);
-  
-  public static long getTimeMillis(long snapshotId) {
-    return snapshotId >>> 24l | HIGH_24;
-  }
-  
 }

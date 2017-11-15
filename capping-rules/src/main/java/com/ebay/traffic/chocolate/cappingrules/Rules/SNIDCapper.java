@@ -5,6 +5,9 @@ import com.ebay.traffic.chocolate.cappingrules.constant.ChannelAction;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperIdentity;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperResult;
 import org.apache.commons.cli.*;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -14,6 +17,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.api.java.function.VoidFunction;
 import scala.Tuple2;
 
 import java.io.IOException;
@@ -38,7 +42,7 @@ public class SNIDCapper extends AbstractCapper {
           snidIdentity.setSnapshotId(Bytes.toLong(r.getRow()));
           snidIdentity.setChannelAction(Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("channel_action"))));
           snidIdentity.setSnid(snid);
-          return new Tuple2<>(snid, snidIdentity);
+          return new Tuple2<Long, SNIDCapperIdentity>(snid, snidIdentity);
         }
       };
   
@@ -71,7 +75,7 @@ public class SNIDCapper extends AbstractCapper {
                 resultEvent.setSnapshotId(clickEvent.getSnapshotId());
                 resultEvent.setImpressed(false);
                 resultEvent.setImpSnapshotId(impSnapshotId);
-                results.add(new Tuple2<>(resultEvent.getSnapshotId(), resultEvent));
+                results.add(new Tuple2<Long, SNIDCapperResult>(resultEvent.getSnapshotId(), resultEvent));
               }
             }
           }
@@ -88,6 +92,20 @@ public class SNIDCapper extends AbstractCapper {
       put.add(columnFamily, Bytes.toBytes("imp_snapshot_id"), Bytes.toBytes(snidResult.getImpSnapshotId()));
       
       return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
+    }
+  };
+  static VoidFunction<Iterator<Tuple2<ImmutableBytesWritable, Put>>> hbasePutFunc = new VoidFunction<Iterator<Tuple2<ImmutableBytesWritable, Put>>>() {
+    
+    @Override
+    public void call(Iterator<Tuple2<ImmutableBytesWritable, Put>> tupleIter) throws Exception {
+      
+      HTable transactionalTable = new HTable(TableName.valueOf("capping_result"), ConnectionFactory.createConnection());
+      Tuple2<ImmutableBytesWritable, Put> tuple = null;
+      while (tupleIter.hasNext()) {
+        tuple = tupleIter.next();
+        transactionalTable.put(tuple._2);
+      }
+      transactionalTable.close();
     }
   };
   
@@ -115,6 +133,7 @@ public class SNIDCapper extends AbstractCapper {
     SNIDCapper job = new SNIDCapper(cmd.getOptionValue("jobName"),
         cmd.getOptionValue("mode"), cmd.getOptionValue("originalTable"), cmd.getOptionValue("resultTable"), cmd
         .getOptionValue("startTime"), cmd.getOptionValue("endTime"));
+    getHBaseConf();
     try {
       job.run();
     } finally {
@@ -136,7 +155,8 @@ public class SNIDCapper extends AbstractCapper {
     
     JavaPairRDD<Long, SNIDCapperResult> filterResult = (JavaPairRDD<Long, SNIDCapperResult>) writeData;
     JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = filterResult.values().mapToPair(writeHBaseMapFunc);
-    hbasePuts.saveAsNewAPIHadoopDataset(newAPIJobConfiguration.getConfiguration());
+    //hbasePuts.saveAsNewAPIHadoopDataset(newAPIJobConfiguration.getConfiguration());
+    hbasePuts.foreachPartition(hbasePutFunc);
   }
   
   @Override
