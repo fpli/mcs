@@ -41,8 +41,13 @@ public class TempSNIDCapper extends AbstractCapper {
           snidIdentity.setChannelAction(Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("channel_action"))));
           
           String requestHeader = Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("request_headers")));
-          requestHeader = requestHeader.split("X-eBay-Client-IP:")[1];
-          requestHeader = requestHeader.split("\\|")[0].trim().replace(".", "");
+          String[] ipStr = requestHeader.split("X-eBay-Client-IP:");
+          if (ipStr.length > 1) {
+            requestHeader = ipStr[1];
+            requestHeader = requestHeader.split("\\|")[0].trim().replace(".", "");
+          } else {
+            requestHeader = "0";
+          }
           long snid = Long.valueOf(requestHeader);
           return new Tuple2<Long, SNIDCapperIdentity>(snid, snidIdentity);
         }

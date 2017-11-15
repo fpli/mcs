@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.cappingrules;
 
 import com.ebay.traffic.chocolate.BaseSparkJob;
 import com.ebay.traffic.chocolate.cappingrules.dto.CapperIdentity;
+import com.ebay.traffic.chocolate.cappingrules.dto.SnapshotId;
 import com.google.protobuf.ServiceException;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -61,8 +62,8 @@ public abstract class AbstractCapper extends BaseSparkJob {
     super(jobName, mode, false);
     this.originalTable = originalTable;
     this.resultTable = resultTable;
-    this.startTimestamp = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(startTime).getTime() / 1000;
-    this.endTimestamp = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(endTime).getTime() / 1000;
+    this.startTimestamp = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(startTime).getTime();
+    this.endTimestamp = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(endTime).getTime();
   }
   
   public static Options getJobOptions(String cappingRuleDescription) {
@@ -142,11 +143,14 @@ public abstract class AbstractCapper extends BaseSparkJob {
     
     HBaseAdmin.checkHBaseAvailable(hbaseConf);
     hbaseConf.set(TableInputFormat.INPUT_TABLE, table);
+  
+    SnapshotId startId = new SnapshotId(0,startTimestamp);
+    SnapshotId endId = new SnapshotId(0, endTimestamp);
     
-    
-    
-    byte[] startRow = Bytes.toBytes((startTimestamp & ~TIME_MASK) << 24l);
-    byte[] stopRow = Bytes.toBytes((stopTimestamp & ~TIME_MASK) << 24l);
+//    byte[] startRow = Bytes.toBytes((startTimestamp & ~TIME_MASK) << 24l);
+//    byte[] stopRow = Bytes.toBytes((stopTimestamp & ~TIME_MASK) << 24l);
+    byte[] startRow = startId.getRowIdentifier(startId, 1);
+    byte[] stopRow = endId.getRowIdentifier(endId, 293);
     
     Scan scan = new Scan();
     scan.setStartRow(startRow);
@@ -160,6 +164,7 @@ public abstract class AbstractCapper extends BaseSparkJob {
     
     JavaPairRDD<ImmutableBytesWritable, Result> hBaseRDD =
         jsc().newAPIHadoopRDD(hbaseConf, TableInputFormat.class, ImmutableBytesWritable.class, Result.class);
+    logger.info("scanResultCount = " + hBaseRDD.count());
     return hBaseRDD;
   }
   
