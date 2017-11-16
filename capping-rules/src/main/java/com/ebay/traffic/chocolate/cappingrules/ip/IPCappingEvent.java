@@ -7,32 +7,31 @@ package com.ebay.traffic.chocolate.cappingrules.ip;
  */
 public class IPCappingEvent {
   private byte[] identifier;
-  private long snapshotId;
   private String channelAction;
   private String requestHeaders;
   private String cappingFailedRule;
   private boolean cappingPassed;
 
   public IPCappingEvent() {
-
+    this.cappingPassed = true;
+    this.cappingFailedRule = "None";
   }
 
-  public IPCappingEvent(long snapshotId, String cappingFailedRule, boolean cappingPassed) {
-    this.snapshotId = snapshotId;
-    this.cappingFailedRule = cappingFailedRule;
-    this.cappingPassed = cappingPassed;
-  }
-
-  public IPCappingEvent(byte[] identifier, long snapshotId, String cappingFailedRule, boolean cappingPassed) {
+  public IPCappingEvent(byte[] identifier, String channelAction, String requestHeaders) {
     this.identifier = identifier;
-    this.snapshotId = snapshotId;
+    this.channelAction = channelAction;
+    this.requestHeaders = requestHeaders;
+  }
+
+  public IPCappingEvent(byte[] identifier, String cappingFailedRule, boolean cappingPassed) {
+    this.identifier = identifier;
     this.cappingFailedRule = cappingFailedRule;
     this.cappingPassed = cappingPassed;
   }
 
-  public IPCappingEvent(long snapshotId, String channelAction, String requestHeaders, boolean cappingPassed) {
-    this.snapshotId = snapshotId;
-    this.channelAction = channelAction;
+  public IPCappingEvent(byte[] identifier, String cappingFailedRule, String requestHeaders, boolean cappingPassed) {
+    this.identifier = identifier;
+    this.cappingFailedRule = cappingFailedRule;
     this.requestHeaders = requestHeaders;
     this.cappingPassed = cappingPassed;
   }
@@ -43,14 +42,6 @@ public class IPCappingEvent {
 
   public void setIdentifier(byte[] identifier) {
     this.identifier = identifier;
-  }
-
-  public long getSnapshotId() {
-    return snapshotId;
-  }
-
-  public void setSnapshotId(long snapshotId) {
-    this.snapshotId = snapshotId;
   }
 
   public String getChannelAction() {

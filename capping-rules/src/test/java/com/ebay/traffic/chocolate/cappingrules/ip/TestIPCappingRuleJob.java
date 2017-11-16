@@ -14,7 +14,6 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.junit.*;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
@@ -36,9 +35,9 @@ public class TestIPCappingRuleJob {
   private Connection hbaseConnection;
   private HTable transactionalTable;
   private HBaseAdmin hbaseAdmin;
-  private long TIME_MASK = 0xFFFFFFl << 40l;
   private ZonedDateTime yesterday = ZonedDateTime.now().minusDays(1);
   private ZonedDateTime today = yesterday.plusDays(1);
+  private IPCappingRuleJob job;
 
   @Before
   public void setUp() throws Exception {
@@ -49,7 +48,10 @@ public class TestIPCappingRuleJob {
     hbaseConnection = hbaseUtility.getConnection();
     hbaseAdmin = hbaseUtility.getHBaseAdmin();
     transactionalTable = new HTable(TableName.valueOf(TRANSACTION_TABLE_NAME), hbaseConnection);
-
+    job = new IPCappingRuleJob("TestIPCappingRuleJob", "local[4]", TRANSACTION_TABLE_NAME, today
+      .toInstant().toEpochMilli(), today.toInstant().toEpochMilli() - yesterday.toInstant().toEpochMilli(), 8);
+    HBaseConnection.setConfiguration(hbaseConf);
+    IPCappingRuleJob.setMod((short) 3);
     initHBaseTransactionTable();
     initHBaseCappingResultTable();
   }
@@ -75,10 +77,6 @@ public class TestIPCappingRuleJob {
 
   @Test
   public void testIPCappingRuleJob() throws Exception {
-    IPCappingRuleJob job = new IPCappingRuleJob("TestIPCappingRuleJob", "local[4]", TRANSACTION_TABLE_NAME, today
-      .toInstant().toEpochMilli(), today.toInstant().toEpochMilli() - yesterday.toInstant().toEpochMilli(), 8);
-    HBaseConnection.setConfiguration(hbaseConf);
-    IPCappingRuleJob.setMod((short)3);
     job.run();
     Dataset<Row> result = job.readEvents("capping_result");
     result.show();
@@ -101,6 +99,10 @@ public class TestIPCappingRuleJob {
     }
   }
 
+  private byte[] generateIdentity(int hour, short modValue) {
+    return job.generateIdentifier(yesterday.plusHours(hour).toInstant().toEpochMilli(), modValue);
+  }
+
   private void initHBaseTransactionTable() throws IOException {
     HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(TRANSACTION_TABLE_NAME));
     tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT)
@@ -114,71 +116,50 @@ public class TestIPCappingRuleJob {
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 " +
       "Safari/537.36";
 
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.toInstant().toEpochMilli() & ~TIME_MASK) << 24l,
-      "IMPRESSION", requestHeaderValid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusMinutes(1).toInstant().toEpochMilli() &
-      ~TIME_MASK) << 24l, "IMPRESSION", requestHeaderValid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusMinutes(2).toInstant().toEpochMilli() &
-      ~TIME_MASK) << 24l, "IMPRESSION", requestHeaderValid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(1).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderInvalid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(2).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderInvalid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(3).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderInvalid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(4).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderInvalid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(5).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderInvalid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(6).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderValid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(7).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderValid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(8).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderValid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(9).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "IMPRESSION", requestHeaderInvalid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(10).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "IMPRESSION", requestHeaderInvalid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(11).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "IMPRESSION", requestHeaderInvalid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(23).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "IMPRESSION", requestHeaderInvalid, true), 0);
-    addEvent(transactionalTable, new IPCappingEvent(((yesterday.plusHours(25).toInstant().toEpochMilli()) &
-      ~TIME_MASK) << 24l, "IMPRESSION", requestHeaderInvalid, true), 0);
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(0, (short) 0), "IMPRESSION", requestHeaderValid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(1, (short) 0), "IMPRESSION", requestHeaderValid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(2, (short) 0), "IMPRESSION", requestHeaderValid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(3, (short) 0), "CLICK", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(4, (short) 0), "CLICK", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(5, (short) 0), "CLICK", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(6, (short) 0), "CLICK", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(7, (short) 0), "CLICK", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(8, (short) 0), "CLICK", requestHeaderValid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(9, (short) 0), "CLICK", requestHeaderValid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(10, (short) 0), "CLICK", requestHeaderValid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(11, (short) 0), "IMPRESSION",
+      requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(12, (short) 0), "IMPRESSION",
+      requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(13, (short) 0), "IMPRESSION",
+      requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(14, (short) 0), "IMPRESSION",
+      requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(25, (short) 0), "IMPRESSION",
+      requestHeaderInvalid));
 
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.toInstant().toEpochMilli() & ~TIME_MASK) << 24l,
-      "IMPRESSION", requestHeaderValid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusMinutes(1).toInstant().toEpochMilli() &
-      ~TIME_MASK) << 24l, "IMPRESSION", requestHeaderValid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusMinutes(2).toInstant().toEpochMilli() &
-      ~TIME_MASK) << 24l, "IMPRESSION", requestHeaderValid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(1).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderInvalid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(2).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderInvalid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(3).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderInvalid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(4).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderInvalid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(5).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderInvalid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(6).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderValid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(7).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderValid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(8).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "CLICK", requestHeaderValid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(9).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "IMPRESSION", requestHeaderInvalid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(10).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "IMPRESSION", requestHeaderInvalid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(11).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "IMPRESSION", requestHeaderInvalid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent((yesterday.plusHours(23).toInstant().toEpochMilli() & ~TIME_MASK)
-      << 24l, "IMPRESSION", requestHeaderInvalid, true), 1);
-    addEvent(transactionalTable, new IPCappingEvent(((yesterday.plusHours(25).toInstant().toEpochMilli()) &
-      ~TIME_MASK) << 24l, "IMPRESSION", requestHeaderInvalid, true), 0);
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(0, (short) 1),
+      "IMPRESSION", requestHeaderValid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(1, (short) 1), "IMPRESSION", requestHeaderValid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(2, (short) 1), "IMPRESSION", requestHeaderValid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(3, (short) 1), "CLICK", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(4, (short) 1), "CLICK", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(5, (short) 1), "CLICK", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(6, (short) 1), "CLICK", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(7, (short) 1), "CLICK", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(8, (short) 1), "CLICK", requestHeaderValid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(9, (short) 1), "CLICK", requestHeaderValid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(10, (short) 1), "CLICK", requestHeaderValid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(11, (short) 1), "IMPRESSION",
+      requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(12, (short) 1), "IMPRESSION",
+      requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(13, (short) 1), "IMPRESSION",
+      requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(14, (short) 0), "IMPRESSION",
+      requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(25, (short) 0), "IMPRESSION",
+      requestHeaderInvalid));
   }
 
   private void initHBaseCappingResultTable() throws IOException {
@@ -203,8 +184,8 @@ public class TestIPCappingRuleJob {
       int bufferSize = str.getBytes().length;
       System.arraycopy(str.getBytes(), 0, buffer.array(), 0, bufferSize);
       bytes = buffer.array();
-    } else if(value instanceof  byte[]) {
-      bytes = (byte[])value;
+    } else if (value instanceof byte[]) {
+      bytes = (byte[]) value;
     } else {
       bytes = null;
     }
@@ -212,25 +193,9 @@ public class TestIPCappingRuleJob {
     put.add(Bytes.toBytes(family), Bytes.toBytes(qualifier), bytes);
   }
 
-  private void addEvent(HTable table, IPCappingEvent event, int slice) throws IOException {
+  private void addEvent(HTable table, IPCappingEvent event) throws IOException {
 
-    ByteArrayOutputStream stream = new ByteArrayOutputStream(10);
-    ByteBuffer buffer = ByteBuffer.allocate(Short.BYTES);
-    short modValue = (short)slice;
-    buffer.putShort(modValue);
-
-    try {
-      stream.write(buffer.array());
-      stream.write(Bytes.toBytes(event.getSnapshotId()));
-    } catch (IOException e) {
-      System.out.println("Failed to write modulo value to stream");
-    }
-
-    //byte[] modValue = Bytes.toBytes(slice);
-    byte[] identifier = ByteBuffer.wrap(stream.toByteArray()).array();
-
-    Put put = new Put(identifier);
-    putCell(put, TRANSACTION_CF_DEFAULT, "snapshot_id", event.getSnapshotId());
+    Put put = new Put(event.getIdentifier());
     putCell(put, TRANSACTION_CF_DEFAULT, "channel_action", event.getChannelAction());
     putCell(put, TRANSACTION_CF_DEFAULT, "request_headers", event.getRequestHeaders());
     table.put(put);

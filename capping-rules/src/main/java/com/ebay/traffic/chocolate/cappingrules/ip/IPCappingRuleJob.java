@@ -3,17 +3,12 @@ package com.ebay.traffic.chocolate.cappingrules.ip;
 import com.ebay.traffic.chocolate.BaseSparkJob;
 import com.ebay.traffic.chocolate.cappingrules.HBaseConnection;
 import com.ebay.traffic.chocolate.cappingrules.HBaseScanIterator;
-import com.google.common.collect.Iterators;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
-import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
-import org.apache.hadoop.hbase.util.Base64;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -51,10 +46,6 @@ public class IPCappingRuleJob extends BaseSparkJob {
   private final long threshold;
   private static final long TIME_MASK = 0xFFFFFFl << 40l;
   private static short MOD = 293;
-  private static Configuration hbaseConfigForTest;
-
-  // Only for test
-  private long numberOfRow;
 
   /**
    * Conctructor of the rule
@@ -78,30 +69,24 @@ public class IPCappingRuleJob extends BaseSparkJob {
   /**
    * PairFunction used to map hbase to event poj
    */
-  static PairFunction<Result, Long, IPCappingEvent> readHBaseMapFunc = new
-    PairFunction<Result, Long, IPCappingEvent>() {
+  static Function<Result, IPCappingEvent> readHBaseMapFunc = new
+    Function<Result, IPCappingEvent>() {
       @Override
-      public Tuple2<Long, IPCappingEvent> call(
+      public IPCappingEvent call(
         Result entry) throws Exception {
-
         Result r = entry;
         byte[] keyRowBytes = r.getRow();
-        byte[] snapshotIdBytes = new byte[keyRowBytes.length - 2];
-        System.arraycopy(keyRowBytes, 2, snapshotIdBytes, 0, snapshotIdBytes.length);
-        long snapshotId = Bytes.toLong(snapshotIdBytes);
 
         IPCappingEvent event = new IPCappingEvent();
         event.setIdentifier(keyRowBytes);
-        event.setSnapshotId(snapshotId);
-        event.setRequestHeaders((String) Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("request_headers")
-        )));
-        event.setChannelAction((String) Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("channel_action")
-        )));
+        event.setRequestHeaders(Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("request_headers"))));
+        event.setChannelAction(Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("channel_action"))));
         byte[] cappingPassed = r.getValue(Bytes.toBytes("x"), Bytes.toBytes("capping_passed"));
         if (cappingPassed != null) {
-          event.setCappingPassed((Boolean) Bytes.toBoolean(cappingPassed));
+          event.setCappingPassed(Bytes.toBoolean(cappingPassed));
         }
-        return new Tuple2<Long, IPCappingEvent>(snapshotId, event);
+        event.setCappingFailedRule(Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("capping_failed_rule"))));
+        return event;
       }
     };
 
@@ -111,8 +96,8 @@ public class IPCappingRuleJob extends BaseSparkJob {
   static Function<Row, IPCappingEvent> mapFunc = new Function<Row, IPCappingEvent>() {
     @Override
     public IPCappingEvent call(Row row) throws Exception {
-      IPCappingEvent event = new IPCappingEvent((byte[]) row.get(row.fieldIndex("identifier")), row.getLong(row
-        .fieldIndex("snapshotId")), "IPCappingRule", row.getBoolean(row.fieldIndex("cappingPassedTmp")));
+      IPCappingEvent event = new IPCappingEvent((byte[]) row.get(row.fieldIndex("identifier")), "IPCappingRule", row
+        .getBoolean(row.fieldIndex("cappingPassedTmp")));
       return event;
     }
   };
@@ -157,6 +142,31 @@ public class IPCappingRuleJob extends BaseSparkJob {
     };
 
   /**
+   * Generate 10 bytes row key
+   *
+   * @param timestamp start time
+   * @param modValue  slice value
+   * @return row key byte array
+   */
+  public byte[] generateIdentifier(long timestamp, short modValue) {
+    byte[] snapshotID = Bytes.toBytes((timestamp & ~TIME_MASK) << 24l);
+
+    ByteArrayOutputStream streamStart = new ByteArrayOutputStream(10);
+    ByteBuffer bufferStart = ByteBuffer.allocate(Short.BYTES);
+    bufferStart.putShort(modValue);
+
+    try {
+      streamStart.write(bufferStart.array());
+      streamStart.write(snapshotID);
+    } catch (IOException e) {
+      logger.error("Failed to write modulo value to stream", e);
+    }
+
+    byte[] identifier = ByteBuffer.wrap(streamStart.toByteArray()).array();
+    return identifier;
+  }
+
+  /**
    * Read events into dataframe
    *
    * @param table hbase table
@@ -168,68 +178,42 @@ public class IPCappingRuleJob extends BaseSparkJob {
       slices.add(i);
     }
 
-    JavaRDD<Result> javaRDD = jsc().parallelize(slices, slices.size()).mapPartitions(new
-                                                                                       FlatMapFunction<Iterator<Integer>, Result>() {
+    JavaRDD<Result> javaRDD = jsc().parallelize(slices, slices.size()).mapPartitions(
+      new FlatMapFunction<Iterator<Integer>, Result>() {
 
       @Override
-      public HBaseScanIterator call(Iterator<Integer> integerIterator) throws Exception {
+      public HBaseScanIterator call(Iterator<Integer>
+             integerIterator) throws Exception {
         Integer slice;
-
         slice = integerIterator.next();
         Configuration hbaseConf = HBaseConnection.getConfiguration();
         try {
           HBaseAdmin.checkHBaseAvailable(hbaseConf);
-          logger.info("HBase is running!");
-        } catch (MasterNotRunningException e) {
-          logger.error("HBase is not running!");
+          logger.info("HBase is " + "running!");
+        } catch
+          (MasterNotRunningException e) {
+          logger.error("HBase is " + "not running!");
           logger.error(e.getMessage());
           throw new MasterNotRunningException(e);
         } catch (Exception ce) {
-          logger.error("Unexpected exception when check HBase!");
+          logger.error("Unexpected" + " exception when check" + " HBase!");
           logger.error(ce.getMessage());
           throw new Exception(ce);
         }
 
         long timestampStart = time - timeRange;
         long timestampStop = time;
-        byte[] timestampStartBytes = Bytes.toBytes((timestampStart & ~TIME_MASK) << 24l);
-        byte[] timestampStopBytes = Bytes.toBytes((timestampStop & ~TIME_MASK) << 24l);
 
-        ByteArrayOutputStream streamStart = new ByteArrayOutputStream(10);
-        ByteBuffer bufferStart = ByteBuffer.allocate(Short.BYTES);
-        short modValue = slice.shortValue();
-        bufferStart.putShort(modValue);
-
-        try {
-          streamStart.write(bufferStart.array());
-          streamStart.write(timestampStartBytes);
-        } catch (IOException e) {
-          logger.error("Failed to write modulo value to stream", e);
-        }
-
-        //byte[] modValue = Bytes.toBytes(slice);
-        byte[] rowkeyStartBytes = ByteBuffer.wrap(streamStart.toByteArray()).array();
-
-        ByteArrayOutputStream streamStop = new ByteArrayOutputStream(10);
-        ByteBuffer bufferStop = ByteBuffer.allocate(Short.BYTES);
-        bufferStop.putShort(modValue);
-
-        try {
-          streamStop.write(bufferStop.array());
-          streamStop.write(timestampStopBytes);
-        } catch (IOException e) {
-          logger.error("Failed to write modulo value to stream", e);
-        }
-
-        byte[] rowkeyStopBytes = ByteBuffer.wrap(streamStop.toByteArray()).array();
+        byte[] rowkeyStartBytes = generateIdentifier(timestampStart, slice.shortValue());
+        byte[] rowkeyStopBytes = generateIdentifier(timestampStop, slice.shortValue());
 
         HBaseScanIterator hBaseScanIterator = new HBaseScanIterator(table, rowkeyStartBytes, rowkeyStopBytes);
         return hBaseScanIterator;
       }
     });
 
-    JavaPairRDD<Long, IPCappingEvent> rowPairRDD = javaRDD.mapToPair(readHBaseMapFunc);
-    Dataset<Row> schemaRDD = sqlsc().createDataFrame(rowPairRDD.values(), IPCappingEvent.class);
+    JavaRDD<IPCappingEvent> rowRDD = javaRDD.map(readHBaseMapFunc);
+    Dataset<Row> schemaRDD = sqlsc().createDataFrame(rowRDD, IPCappingEvent.class);
     return schemaRDD;
   }
 
@@ -259,7 +243,6 @@ public class IPCappingRuleJob extends BaseSparkJob {
     return invalids;
   }
 
-
   /**
    * write invalids events back to hbase
    *
@@ -279,18 +262,6 @@ public class IPCappingRuleJob extends BaseSparkJob {
   public void run() throws Exception {
     Dataset<Row> failedRecords = filterEvents(this.table);
     writeInvalidEvents(failedRecords);
-  }
-
-  /**
-   * When in unit test, the configuration is set by setHBaseConf. In production, we create from environment.
-   *
-   * @return hbase configuration
-   */
-  private static Configuration getHBaseConf() {
-    if (hbaseConfigForTest == null) {
-      return HBaseConfiguration.create();
-    }
-    return hbaseConfigForTest;
   }
 
   /**
