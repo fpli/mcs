@@ -1,6 +1,8 @@
 package com.ebay.traffic.chocolate.cappingrules.ip;
 
 import com.ebay.traffic.chocolate.cappingrules.Event;
+import com.ebay.traffic.chocolate.cappingrules.HBaseConnection;
+import com.ebay.traffic.chocolate.cappingrules.HBaseScanIterator;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -55,6 +57,20 @@ public class TestIPCappingRuleJob {
   @After
   public void tearDown() throws Exception {
     hbaseUtility.shutdownMiniCluster();
+  }
+
+  @Test
+  public void testHBaseScanIterator() throws Exception {
+    HBaseConnection.setConfiguration(hbaseConf);
+    HBaseScanIterator iter = new HBaseScanIterator(TRANSACTION_TABLE_NAME);
+    Result result = null;
+    int numberOfRow = 0;
+    while (iter.hasNext()) {
+      result = iter.next();
+      numberOfRow++;
+    }
+    Assert.assertEquals(numberOfRow, 12);
+    iter.close();
   }
 
   @Test
