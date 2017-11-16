@@ -6,6 +6,7 @@ package com.ebay.traffic.chocolate.cappingrules.ip;
  * @author xiangli4
  */
 public class IPCappingEvent {
+  private byte[] identifier;
   private long snapshotId;
   private String channelAction;
   private String requestHeaders;
@@ -22,11 +23,26 @@ public class IPCappingEvent {
     this.cappingPassed = cappingPassed;
   }
 
+  public IPCappingEvent(byte[] identifier, long snapshotId, String cappingFailedRule, boolean cappingPassed) {
+    this.identifier = identifier;
+    this.snapshotId = snapshotId;
+    this.cappingFailedRule = cappingFailedRule;
+    this.cappingPassed = cappingPassed;
+  }
+
   public IPCappingEvent(long snapshotId, String channelAction, String requestHeaders, boolean cappingPassed) {
     this.snapshotId = snapshotId;
     this.channelAction = channelAction;
     this.requestHeaders = requestHeaders;
     this.cappingPassed = cappingPassed;
+  }
+
+  public byte[] getIdentifier() {
+    return identifier;
+  }
+
+  public void setIdentifier(byte[] identifier) {
+    this.identifier = identifier;
   }
 
   public long getSnapshotId() {
