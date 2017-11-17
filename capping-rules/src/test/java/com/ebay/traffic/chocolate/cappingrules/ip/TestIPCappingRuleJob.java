@@ -86,19 +86,6 @@ public class TestIPCappingRuleJob {
     job.stop();
   }
 
-  @Test
-  public void testTimeStamp() {
-    long timestamp = 1510755792123l;
-
-    for (short i = 0; i < 293; i++) {
-      byte[] bytes = Bytes.toBytes(i);
-      System.out.println(bytes.length);
-      for (int j = 0; j < bytes.length; j++) {
-        System.out.println(Integer.toBinaryString(bytes[j] & 255 | 256).substring(1));
-      }
-    }
-  }
-
   private byte[] generateIdentity(int hour, short modValue) {
     return job.generateIdentifier(yesterday.plusHours(hour).toInstant().toEpochMilli(), modValue);
   }
@@ -127,19 +114,13 @@ public class TestIPCappingRuleJob {
     addEvent(transactionalTable, new IPCappingEvent(generateIdentity(8, (short) 0), "CLICK", requestHeaderValid));
     addEvent(transactionalTable, new IPCappingEvent(generateIdentity(9, (short) 0), "CLICK", requestHeaderValid));
     addEvent(transactionalTable, new IPCappingEvent(generateIdentity(10, (short) 0), "CLICK", requestHeaderValid));
-    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(11, (short) 0), "IMPRESSION",
-      requestHeaderInvalid));
-    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(12, (short) 0), "IMPRESSION",
-      requestHeaderInvalid));
-    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(13, (short) 0), "IMPRESSION",
-      requestHeaderInvalid));
-    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(14, (short) 0), "IMPRESSION",
-      requestHeaderInvalid));
-    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(25, (short) 0), "IMPRESSION",
-      requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(11, (short) 0), "IMPRESSION", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(12, (short) 0), "IMPRESSION", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(13, (short) 0), "IMPRESSION", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(14, (short) 0), "IMPRESSION", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(25, (short) 0), "IMPRESSION", requestHeaderInvalid));
 
-    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(0, (short) 1),
-      "IMPRESSION", requestHeaderValid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(0, (short) 1), "IMPRESSION", requestHeaderValid));
     addEvent(transactionalTable, new IPCappingEvent(generateIdentity(1, (short) 1), "IMPRESSION", requestHeaderValid));
     addEvent(transactionalTable, new IPCappingEvent(generateIdentity(2, (short) 1), "IMPRESSION", requestHeaderValid));
     addEvent(transactionalTable, new IPCappingEvent(generateIdentity(3, (short) 1), "CLICK", requestHeaderInvalid));
@@ -150,16 +131,11 @@ public class TestIPCappingRuleJob {
     addEvent(transactionalTable, new IPCappingEvent(generateIdentity(8, (short) 1), "CLICK", requestHeaderValid));
     addEvent(transactionalTable, new IPCappingEvent(generateIdentity(9, (short) 1), "CLICK", requestHeaderValid));
     addEvent(transactionalTable, new IPCappingEvent(generateIdentity(10, (short) 1), "CLICK", requestHeaderValid));
-    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(11, (short) 1), "IMPRESSION",
-      requestHeaderInvalid));
-    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(12, (short) 1), "IMPRESSION",
-      requestHeaderInvalid));
-    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(13, (short) 1), "IMPRESSION",
-      requestHeaderInvalid));
-    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(14, (short) 0), "IMPRESSION",
-      requestHeaderInvalid));
-    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(25, (short) 0), "IMPRESSION",
-      requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(11, (short) 1), "IMPRESSION", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(12, (short) 1), "IMPRESSION", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(13, (short) 1), "IMPRESSION", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(14, (short) 0), "IMPRESSION", requestHeaderInvalid));
+    addEvent(transactionalTable, new IPCappingEvent(generateIdentity(25, (short) 0), "IMPRESSION", requestHeaderInvalid));
   }
 
   private void initHBaseCappingResultTable() throws IOException {

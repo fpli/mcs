@@ -76,5 +76,4 @@ public class IPCappingEvent {
     this.cappingPassed = cappingPassed;
   }
 
-
 }
