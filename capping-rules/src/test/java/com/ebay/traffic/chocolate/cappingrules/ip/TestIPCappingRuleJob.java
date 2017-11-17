@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.cappingrules.ip;
 
 import com.ebay.traffic.chocolate.cappingrules.HBaseConnection;
 import com.ebay.traffic.chocolate.cappingrules.HBaseScanIterator;
+import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -26,21 +27,21 @@ import java.time.ZonedDateTime;
  */
 
 public class TestIPCappingRuleJob {
-  final String TRANSACTION_TABLE_NAME = "prod_transactional";
-  final String CAPPINGRESULT_TABLE_NAME = "capping_result";
-  final String TRANSACTION_CF_DEFAULT = "x";
+  final static String TRANSACTION_TABLE_NAME = "prod_transactional";
+  final static String CAPPINGRESULT_TABLE_NAME = "capping_result";
+  final static String TRANSACTION_CF_DEFAULT = "x";
 
-  private HBaseTestingUtility hbaseUtility;
-  private Configuration hbaseConf;
-  private Connection hbaseConnection;
-  private HTable transactionalTable;
-  private HBaseAdmin hbaseAdmin;
-  private ZonedDateTime yesterday = ZonedDateTime.now().minusDays(1);
-  private ZonedDateTime today = yesterday.plusDays(1);
-  private IPCappingRuleJob job;
+  private static HBaseTestingUtility hbaseUtility;
+  private static Configuration hbaseConf;
+  private static Connection hbaseConnection;
+  private static HTable transactionalTable;
+  private static HBaseAdmin hbaseAdmin;
+  private static ZonedDateTime yesterday = ZonedDateTime.now().minusDays(1);
+  private static ZonedDateTime today = yesterday.plusDays(1);
+  private static IPCappingRuleJob job;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
     hbaseUtility = new HBaseTestingUtility();
     hbaseUtility.startMiniCluster();
 
@@ -56,14 +57,13 @@ public class TestIPCappingRuleJob {
     initHBaseCappingResultTable();
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterClass
+  public static void tearDown() throws Exception {
     hbaseUtility.shutdownMiniCluster();
   }
 
   @Test
   public void testHBaseScanIterator() throws Exception {
-    HBaseConnection.setConfiguration(hbaseConf);
     HBaseScanIterator iter = new HBaseScanIterator(TRANSACTION_TABLE_NAME);
     Result result = null;
     int numberOfRow = 0;
@@ -71,8 +71,21 @@ public class TestIPCappingRuleJob {
       result = iter.next();
       numberOfRow++;
     }
-    Assert.assertEquals(numberOfRow, 12);
+    Assert.assertEquals(numberOfRow, 30);
     iter.close();
+  }
+
+  @Test
+  public void testParseOptions() throws Exception {
+    String[] args = {"--jobName",  "IPCappingRule", "--mode", "yarn", "--table",  "prod_transactional",
+      "--time", "12345", "--timeRange", "123", "--threshold", "1000"};
+    CommandLine cmd = IPCappingRuleJob.parseOptions(args);
+    Assert.assertEquals("IPCappingRule", cmd.getOptionValue("jobName"));
+    Assert.assertEquals("yarn", cmd.getOptionValue("mode"));
+    Assert.assertEquals("prod_transactional", cmd.getOptionValue("table"));
+    Assert.assertEquals("12345", cmd.getOptionValue("time"));
+    Assert.assertEquals("123", cmd.getOptionValue("timeRange"));
+    Assert.assertEquals("1000", cmd.getOptionValue("threshold"));
   }
 
   @Test
@@ -86,11 +99,11 @@ public class TestIPCappingRuleJob {
     job.stop();
   }
 
-  private byte[] generateIdentity(int hour, short modValue) {
+  private static byte[] generateIdentity(int hour, short modValue) {
     return job.generateIdentifier(yesterday.plusHours(hour).toInstant().toEpochMilli(), modValue);
   }
 
-  private void initHBaseTransactionTable() throws IOException {
+  private static void initHBaseTransactionTable() throws IOException {
     HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(TRANSACTION_TABLE_NAME));
     tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT)
       .setCompressionType(Compression.Algorithm.NONE));
@@ -138,14 +151,14 @@ public class TestIPCappingRuleJob {
     addEvent(transactionalTable, new IPCappingEvent(generateIdentity(25, (short) 0), "IMPRESSION", requestHeaderInvalid));
   }
 
-  private void initHBaseCappingResultTable() throws IOException {
+  private static void initHBaseCappingResultTable() throws IOException {
     HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(CAPPINGRESULT_TABLE_NAME));
     tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT)
       .setCompressionType(Compression.Algorithm.NONE));
     hbaseAdmin.createTable(tableDesc);
   }
 
-  private <T> void putCell(Put put, String family, String qualifier, T value) {
+  private static <T> void putCell(Put put, String family, String qualifier, T value) {
 
     byte[] bytes;
     if (value instanceof Long) {
@@ -169,7 +182,7 @@ public class TestIPCappingRuleJob {
     put.add(Bytes.toBytes(family), Bytes.toBytes(qualifier), bytes);
   }
 
-  private void addEvent(HTable table, IPCappingEvent event) throws IOException {
+  private static void addEvent(HTable table, IPCappingEvent event) throws IOException {
 
     Put put = new Put(event.getIdentifier());
     putCell(put, TRANSACTION_CF_DEFAULT, "channel_action", event.getChannelAction());
