@@ -84,6 +84,22 @@ public class Event implements Serializable {
     return cappingPassed;
   }
 
+  public String getIp() {
+    return ip;
+  }
+
+  public void setIp(String ip) {
+    this.ip = ip;
+  }
+
+  public String getCount() {
+    return count;
+  }
+
+  public void setCount(String count) {
+    this.count = count;
+  }
+
   public void setCappingPassed(boolean cappingPassed) {
     this.cappingPassed = cappingPassed;
   }
@@ -98,9 +114,12 @@ public class Event implements Serializable {
   private boolean isTracked;
   private String cappingFailedRule;
   private boolean cappingPassed;
+  //TODO: remove these 2 fields when going production
+  private String ip;
+  private String count;
 
   public Event() {
-
+    this.cappingPassed = true;
   }
 
   public Event(long snapshotId, String cappingFailedRule, boolean cappingPassed) {
@@ -109,7 +128,8 @@ public class Event implements Serializable {
     this.cappingPassed = cappingPassed;
   }
 
-  public Event(long snapshotId, long timestamp, long publisherId, long campaignId, String channelAction, long snid, String requestHeaders, boolean isTracked, String cappingFailedRule, boolean cappingPassed) {
+  public Event(long snapshotId, long timestamp, long publisherId, long campaignId, String channelAction, long snid,
+               String requestHeaders, boolean isTracked) {
     this.snapshotId = snapshotId;
     this.timestamp = timestamp;
     this.publisherId = publisherId;
@@ -118,7 +138,5 @@ public class Event implements Serializable {
     this.snid = snid;
     this.requestHeaders = requestHeaders;
     this.isTracked = isTracked;
-    this.cappingFailedRule = null;
-    this.cappingPassed = true;
   }
 }
