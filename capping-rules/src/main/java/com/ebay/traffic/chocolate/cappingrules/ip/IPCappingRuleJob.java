@@ -271,8 +271,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
     MOD = mod;
   }
 
-
-  public static void main(String[] args) {
+  public static CommandLine parseOptions(String[] args) {
     Options options = new Options();
     Option jobName = new Option((String) null, "jobName", true, "The job name");
     options.addOption(jobName);
@@ -308,8 +307,15 @@ public class IPCappingRuleJob extends BaseSparkJob {
       formatter.printHelp("IPCappingRuleJob", options);
 
       System.exit(1);
-      return;
+      return null;
     }
+    return cmd;
+  }
+
+
+  public static void main(String[] args) {
+
+    CommandLine cmd = parseOptions(args);
 
     IPCappingRuleJob job = new IPCappingRuleJob(cmd.getOptionValue("jobName"),
       cmd.getOptionValue("mode"), cmd.getOptionValue("table"), Long.parseLong(cmd.getOptionValue("time")),
