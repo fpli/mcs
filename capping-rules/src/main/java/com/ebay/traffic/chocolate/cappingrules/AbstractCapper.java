@@ -1,69 +1,52 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
 import com.ebay.traffic.chocolate.BaseSparkJob;
-import com.ebay.traffic.chocolate.cappingrules.dto.CapperIdentity;
-import com.ebay.traffic.chocolate.cappingrules.dto.SnapshotId;
 import com.google.protobuf.ServiceException;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
-import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
-import org.apache.hadoop.hbase.util.Base64;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by yimeng on 11/12/17.
  */
 public abstract class AbstractCapper extends BaseSparkJob {
-  // format timestamp to byte
-  protected static final long TIME_MASK = 0xFFFFFFl << 40l;
-  protected static final long HIGH_24 = 0x15000000000l;
-  protected static final byte[] columnFamily = Bytes.toBytes("x");
   protected static final String INPUT_DATE_FORMAT = "yyyy-MM-dd hh:mm:ss";
-  protected static String resultTable = "snid_capping_result";
-  protected static Configuration hbaseConf;
-  protected static VoidFunction<Iterator<Tuple2<ImmutableBytesWritable, Put>>> hbasePutFunc = new
-      VoidFunction<Iterator<Tuple2<ImmutableBytesWritable, Put>>>() {
-        
-        @Override
-        public void call(Iterator<Tuple2<ImmutableBytesWritable, Put>> tupleIter) throws Exception {
-          
-          HTable transactionalTable = new HTable(TableName.valueOf(resultTable), ConnectionFactory.createConnection());
-          Tuple2<ImmutableBytesWritable, Put> tuple = null;
-          while (tupleIter.hasNext()) {
-            tuple = tupleIter.next();
-            transactionalTable.put(tuple._2);
-          }
-          transactionalTable.close();
-        }
-      };
+  protected static short MOD = 293;
+  protected final byte[] columnFamily = Bytes.toBytes("x");
   protected final String originalTable;
-  protected final long startTimestamp;
-  protected final long endTimestamp;
-  private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  protected final String resultTable;
+  protected final String startTime;
+  protected final String stopTime;
+  private final Logger logger;
   
   public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String startTime,
-                        String endTime) throws ParseException {
+                        String stopTime) {
     super(jobName, mode, false);
     this.originalTable = originalTable;
     this.resultTable = resultTable;
-    this.startTimestamp = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(startTime).getTime();
-    this.endTimestamp = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(endTime).getTime();
+    this.startTime = startTime;
+    this.stopTime = stopTime;
+    logger = logger();
   }
   
   public static Options getJobOptions(String cappingRuleDescription) {
@@ -94,81 +77,75 @@ public abstract class AbstractCapper extends BaseSparkJob {
     return options;
   }
   
-  public static long getTimeMillis(long snapshotId) {
-    return snapshotId >>> 24l | HIGH_24;
-  }
-  
-  /**
-   * Initialize hbase config
-   */
-  protected static Configuration getHBaseConf() {
-    if (hbaseConf == null) {
-      hbaseConf = HBaseConfiguration.create();
-    }
-    return hbaseConf;
-  }
-  
-  public void setHbaseConf(Configuration hbaseConf) {
-    this.hbaseConf = hbaseConf;
-  }
-  
   /**
    * run capping job
    */
   @Override
-  public void run() throws Exception {
-    
-    JavaPairRDD<ImmutableBytesWritable, Result> hbaseData = readFromHabse(originalTable,
-        startTimestamp, endTimestamp);
-    
-    JavaPairRDD<Long, CapperIdentity> filterResult = filterWithCapper(hbaseData);
-    
-    writeToHbase(filterResult, resultTable);
-  }
+  public abstract void run() throws Exception;
   
   /**
    * Read Data with data range from hbase
    *
-   * @param table          HBase table
-   * @param startTimestamp scan row start timestamp
-   * @param stopTimestamp  scan row stop timestamp
    * @return hbase scan result
    */
-  protected JavaPairRDD<ImmutableBytesWritable, Result> readFromHabse(String table, long startTimestamp, long
-      stopTimestamp) throws IOException, ServiceException {
-    
-    logger.info("originalTable = " + table);
+  protected JavaRDD<Result> readFromHabse() throws IOException, ServiceException, ParseException {
+    List<Integer> slices = new ArrayList<Integer>(MOD);
+    for (int i = 0; i < MOD; i++) {
+      slices.add(i);
+    }
+    SimpleDateFormat sdf = new SimpleDateFormat(INPUT_DATE_FORMAT);
+    long startTimestamp = sdf.parse(startTime).getTime();
+    long stopTimestamp = sdf.parse(stopTime).getTime();
+    logger.info("originalTable = " + originalTable);
     logger.info("startTimestamp = " + startTimestamp);
     logger.info("stopTimestamp = " + stopTimestamp);
     
-    HBaseAdmin.checkHBaseAvailable(hbaseConf);
-    hbaseConf.set(TableInputFormat.INPUT_TABLE, table);
-  
-    SnapshotId startId = new SnapshotId(0,startTimestamp);
-    SnapshotId endId = new SnapshotId(0, endTimestamp);
-    
-//    byte[] startRow = Bytes.toBytes((startTimestamp & ~TIME_MASK) << 24l);
-//    byte[] stopRow = Bytes.toBytes((stopTimestamp & ~TIME_MASK) << 24l);
-    byte[] startRow = startId.getRowIdentifier(startId, 1);
-    byte[] stopRow = endId.getRowIdentifier(endId, 293);
-    
-    Scan scan = new Scan();
-    scan.setStartRow(startRow);
-    scan.setStopRow(stopRow);
-    
-    try {
-      hbaseConf.set(TableInputFormat.SCAN, Base64.encodeBytes(ProtobufUtil.toScan(scan).toByteArray()));
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    
-    JavaPairRDD<ImmutableBytesWritable, Result> hBaseRDD =
-        jsc().newAPIHadoopRDD(hbaseConf, TableInputFormat.class, ImmutableBytesWritable.class, Result.class);
-    logger.info("scanResultCount = " + hBaseRDD.count());
-    return hBaseRDD;
+    JavaRDD<Result> javaRDD = jsc().parallelize(slices, slices.size()).mapPartitions(
+        new FlatMapFunction<Iterator<Integer>, Result>() {
+          @Override
+          public HBaseScanIterator call(Iterator<Integer>
+                                            integerIterator) throws Exception {
+            Integer slice;
+            slice = integerIterator.next();
+            Configuration hbaseConf = HBaseConnection.getConfiguration();
+            try {
+              HBaseAdmin.checkHBaseAvailable(hbaseConf);
+              logger.info("HBase is running!");
+            } catch
+                (MasterNotRunningException e) {
+              logger.error("HBase is not running!");
+              logger.error(e.getMessage());
+              throw new MasterNotRunningException(e);
+            } catch (Exception ce) {
+              logger.error("Unexpected exception when check HBase!");
+              logger.error(ce.getMessage());
+              throw new Exception(ce);
+            }
+            
+            byte[] startRowKey = IdentifierUtil.generateIdentifier(startTimestamp, 0, slice.shortValue());
+            byte[] stopRowKey = IdentifierUtil.generateIdentifier(stopTimestamp, 0, slice.shortValue());
+            
+            HBaseScanIterator hBaseScanIterator = new HBaseScanIterator(originalTable, startRowKey, stopRowKey);
+            return hBaseScanIterator;
+          }
+        });
+    return javaRDD;
   }
   
-  protected abstract <T> T filterWithCapper(JavaPairRDD<ImmutableBytesWritable, Result> hbaseData);
+  protected abstract <T> T filterWithCapper(JavaRDD<Result> hbaseData);
   
   public abstract <T> void writeToHbase(T writeData, String table);
+  
+  public class PutDataToHase implements VoidFunction<Iterator<Tuple2<ImmutableBytesWritable, Put>>> {
+    public void call(Iterator<Tuple2<ImmutableBytesWritable, Put>> tupleIter) throws Exception {
+      HTable transactionalTable = new HTable(TableName.valueOf(resultTable), HBaseConnection.getConnection());
+      logger.info("---ResultTable = " + resultTable);
+      Tuple2<ImmutableBytesWritable, Put> tuple = null;
+      while (tupleIter.hasNext()) {
+        tuple = tupleIter.next();
+        transactionalTable.put(tuple._2);
+      }
+      transactionalTable.close();
+    }
+  }
 }

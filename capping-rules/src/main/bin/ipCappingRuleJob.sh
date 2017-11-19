@@ -44,7 +44,7 @@ ${SPARK_HOME}/bin/spark-submit \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=8192 \
     ${bin}/../lib/chocolate-capping-rules-*.jar \
-      --appName ${JOB_NAME} \
+      --jobName ${JOB_NAME} \
       --mode yarn \
       --table ${TABLE} \
       --time ${TIME} \

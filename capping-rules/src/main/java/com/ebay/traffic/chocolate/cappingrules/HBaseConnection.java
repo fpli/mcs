@@ -61,6 +61,18 @@ public class HBaseConnection {
       }
     }
   }
+  
+  /**
+   * Set HBase Connection.
+   * @param conc The HBase Configuration.
+   */
+  public static void setConnection(Connection conc) {
+    synchronized (HBaseConnection.class) {
+      if (connection == null) {
+        connection = conc;
+      }
+    }
+  }
 
   @Override
   protected void finalize() throws Throwable {
