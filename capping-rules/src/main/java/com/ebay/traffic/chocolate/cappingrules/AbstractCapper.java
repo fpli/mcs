@@ -94,8 +94,8 @@ public abstract class AbstractCapper extends BaseSparkJob {
       slices.add(i);
     }
     SimpleDateFormat sdf = new SimpleDateFormat(INPUT_DATE_FORMAT);
-    long startTimestamp = sdf.parse(startTime).getTime();
-    long stopTimestamp = sdf.parse(stopTime).getTime();
+    final long startTimestamp = sdf.parse(startTime).getTime();
+    final long stopTimestamp = sdf.parse(stopTime).getTime();
     logger.info("originalTable = " + originalTable);
     logger.info("startTimestamp = " + startTimestamp);
     logger.info("stopTimestamp = " + stopTimestamp);
