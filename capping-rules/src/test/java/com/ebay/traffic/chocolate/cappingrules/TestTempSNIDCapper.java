@@ -18,7 +18,7 @@ import java.util.Calendar;
 public class TestTempSNIDCapper extends AbstractTest {
   
   @Test
-  public void testSNIDCapper() throws Exception {
+  public void testTempSNIDCapper() throws Exception {
     HBaseScanIterator iter = new HBaseScanIterator(TRANSACTION_TABLE_NAME);
     Assert.assertEquals(15, getCount(iter));
     iter.close();

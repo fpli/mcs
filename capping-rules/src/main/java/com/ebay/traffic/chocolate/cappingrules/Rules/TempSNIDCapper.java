@@ -89,7 +89,7 @@ public class TempSNIDCapper extends AbstractCapper {
       }
       snidCapperEvent.setSnid(ipAddress);
       logger().info(" ----- ipAddress = " + ipAddress);
-      return new Tuple2<>(ipAddress, snidCapperEvent);
+      return new Tuple2<String, SNIDCapperEvent>(ipAddress, snidCapperEvent);
     }
   }
 }
