@@ -35,7 +35,8 @@ public abstract class AbstractCapper extends BaseSparkJob {
   protected final String originalTable;
   protected final String resultTable;
   protected final String startTime;
-  protected final String stopTime;;
+  protected final String stopTime;
+  ;
   
   public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String startTime,
                         String stopTime) {
@@ -43,7 +44,8 @@ public abstract class AbstractCapper extends BaseSparkJob {
     this.originalTable = originalTable;
     this.resultTable = resultTable;
     this.startTime = startTime;
-    this.stopTime = stopTime;;
+    this.stopTime = stopTime;
+    ;
   }
   
   public static Options getJobOptions(String cappingRuleDescription) {
@@ -73,12 +75,6 @@ public abstract class AbstractCapper extends BaseSparkJob {
     
     return options;
   }
-  
-  /**
-   * run capping job
-   */
-  @Override
-  public abstract void run() throws Exception;
   
   /**
    * Read Data with data range from hbase
@@ -134,15 +130,23 @@ public abstract class AbstractCapper extends BaseSparkJob {
   public abstract <T> void writeToHbase(T writeData, String table);
   
   public class PutDataToHase implements VoidFunction<Iterator<Tuple2<ImmutableBytesWritable, Put>>> {
-    public void call(Iterator<Tuple2<ImmutableBytesWritable, Put>> tupleIter) throws Exception {
+    public void call(Iterator<Tuple2<ImmutableBytesWritable, Put>> tupleIter) throws IOException {
+      
       HTable transactionalTable = new HTable(TableName.valueOf(resultTable), HBaseConnection.getConnection());
+      
       logger().info("---ResultTable = " + resultTable);
       Tuple2<ImmutableBytesWritable, Put> tuple = null;
-      while (tupleIter.hasNext()) {
-        tuple = tupleIter.next();
-        transactionalTable.put(tuple._2);
+      try {
+        while (tupleIter.hasNext()) {
+          tuple = tupleIter.next();
+          transactionalTable.put(tuple._2);
+        }
+      } catch (IOException e) {
+        logger().error(e.getMessage());
+        throw e;
+      }finally {
+        transactionalTable.close();
       }
-      transactionalTable.close();
     }
   }
 }

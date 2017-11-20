@@ -6,15 +6,15 @@ if [ -z "${HADOOP_HOME}" ]; then
 fi
 
 if [ -z "${HADOOP_CONF_DIR}" ]; then
-  export HADOOP_CONF_DIR=/usr/hdp/current/hadoop-yarn-client/etc/hadoop/
+  export HADOOP_CONF_DIR=/usr/hdp/current/hadoop-client/etc/hadoop/
 fi
 
 if [ -z "${SPARK_HOME}" ]; then
-  export SPARK_HOME=/home/hbase/spark/
+  export SPARK_HOME=/apache/spark/
 fi
 
 if [ -z "${SPARK_CONF_DIR}" ]; then
-  export SPARK_CONF_DIR=/home/hbase/spark/conf/
+  export SPARK_CONF_DIR=/apache/spark/conf/
 fi
 
 SPARK_EVENTLOG_DIR=hdfs://lvschocolatemaster-1448895.stratus.lvs.ebay.com:8020/app-logs/spark/logs

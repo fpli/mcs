@@ -1,5 +1,5 @@
 #!/bin/bash
-# run spark job on YARN - IPCappingRuleJob
+# run spark job on YARN - SNIDCapperJob
 
 usage="Usage: snidCappingRuleJob.sh [originalTable] [resultTable] [startTime] [endTime]"
 

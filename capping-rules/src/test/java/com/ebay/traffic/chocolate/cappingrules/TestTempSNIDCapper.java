@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class TestTempSNIDCapper extends AbstractTest {
+public class TestTempSNIDCapper extends AbstractCappingRuleTest {
   
   @Test
   public void testTempSNIDCapper() throws Exception {

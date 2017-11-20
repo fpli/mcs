@@ -17,7 +17,7 @@ import java.sql.Timestamp;
 /**
  * Created by yimeng on 11/15/17.
  */
-public abstract class AbstractTest {
+public abstract class AbstractCappingRuleTest {
   
   protected final String TRANSACTION_TABLE_NAME = "prod_transactional";
   protected final String RESULT_TABLE_NAME = "capping_result";
@@ -30,7 +30,6 @@ public abstract class AbstractTest {
     hbaseUtility.startMiniCluster();
     
     HBaseConnection.setConfiguration(hbaseUtility.getConfiguration());
-    HBaseConnection.setConnection(hbaseUtility.getConnection());
     
     initHBaseTransactionTable();
     initHBaseCappingResultTable();
