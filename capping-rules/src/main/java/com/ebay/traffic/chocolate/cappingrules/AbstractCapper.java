@@ -16,7 +16,6 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.VoidFunction;
-import org.slf4j.Logger;
 import scala.Tuple2;
 
 import java.io.IOException;
@@ -36,8 +35,7 @@ public abstract class AbstractCapper extends BaseSparkJob {
   protected final String originalTable;
   protected final String resultTable;
   protected final String startTime;
-  protected final String stopTime;
-  private final Logger logger;
+  protected final String stopTime;;
   
   public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String startTime,
                         String stopTime) {
@@ -45,8 +43,7 @@ public abstract class AbstractCapper extends BaseSparkJob {
     this.originalTable = originalTable;
     this.resultTable = resultTable;
     this.startTime = startTime;
-    this.stopTime = stopTime;
-    logger = logger();
+    this.stopTime = stopTime;;
   }
   
   public static Options getJobOptions(String cappingRuleDescription) {
@@ -96,9 +93,9 @@ public abstract class AbstractCapper extends BaseSparkJob {
     SimpleDateFormat sdf = new SimpleDateFormat(INPUT_DATE_FORMAT);
     final long startTimestamp = sdf.parse(startTime).getTime();
     final long stopTimestamp = sdf.parse(stopTime).getTime();
-    logger.info("originalTable = " + originalTable);
-    logger.info("startTimestamp = " + startTimestamp);
-    logger.info("stopTimestamp = " + stopTimestamp);
+    logger().info("originalTable = " + originalTable);
+    logger().info("startTimestamp = " + startTimestamp);
+    logger().info("stopTimestamp = " + stopTimestamp);
     
     JavaRDD<Result> javaRDD = jsc().parallelize(slices, slices.size()).mapPartitions(
         new FlatMapFunction<Iterator<Integer>, Result>() {
@@ -110,15 +107,15 @@ public abstract class AbstractCapper extends BaseSparkJob {
             Configuration hbaseConf = HBaseConnection.getConfiguration();
             try {
               HBaseAdmin.checkHBaseAvailable(hbaseConf);
-              logger.info("HBase is running!");
+              logger().info("HBase is running!");
             } catch
                 (MasterNotRunningException e) {
-              logger.error("HBase is not running!");
-              logger.error(e.getMessage());
+              logger().error("HBase is not running!");
+              logger().error(e.getMessage());
               throw new MasterNotRunningException(e);
             } catch (Exception ce) {
-              logger.error("Unexpected exception when check HBase!");
-              logger.error(ce.getMessage());
+              logger().error("Unexpected exception when check HBase!");
+              logger().error(ce.getMessage());
               throw new Exception(ce);
             }
             
@@ -139,7 +136,7 @@ public abstract class AbstractCapper extends BaseSparkJob {
   public class PutDataToHase implements VoidFunction<Iterator<Tuple2<ImmutableBytesWritable, Put>>> {
     public void call(Iterator<Tuple2<ImmutableBytesWritable, Put>> tupleIter) throws Exception {
       HTable transactionalTable = new HTable(TableName.valueOf(resultTable), HBaseConnection.getConnection());
-      logger.info("---ResultTable = " + resultTable);
+      logger().info("---ResultTable = " + resultTable);
       Tuple2<ImmutableBytesWritable, Put> tuple = null;
       while (tupleIter.hasNext()) {
         tuple = tupleIter.next();

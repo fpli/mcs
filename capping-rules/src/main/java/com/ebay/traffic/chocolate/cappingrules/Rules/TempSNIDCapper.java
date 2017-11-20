@@ -62,7 +62,7 @@ public class TempSNIDCapper extends AbstractCapper {
   
   @Override
   public <T> T filterWithCapper(JavaRDD<Result> hbaseData) {
-    JavaPairRDD<String, SNIDCapperEvent> snidCapperRDD = hbaseData.mapToPair(snidCapper.new ReadDataFromHase());
+    JavaPairRDD<String, SNIDCapperEvent> snidCapperRDD = hbaseData.mapToPair(new ReadDataFromHase());
     
     JavaPairRDD<String, Iterable<SNIDCapperEvent>> groupbySnid = snidCapperRDD.groupByKey();
     
@@ -76,22 +76,20 @@ public class TempSNIDCapper extends AbstractCapper {
   
   public class ReadDataFromHase implements PairFunction<Result, String, SNIDCapperEvent> {
     public Tuple2<String, SNIDCapperEvent> call(Result entry) throws Exception {
-      Result r = entry;
-      String snid = Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("snid")));
-      
       SNIDCapperEvent snidCapperEvent = new SNIDCapperEvent();
-      snidCapperEvent.setRowIdentifier(r.getRow());
-      snidCapperEvent.setChannelAction(Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("channel_action"))));
-      String ipAddress = Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("request_headers")));
+      snidCapperEvent.setRowIdentifier(entry.getRow());
+      snidCapperEvent.setChannelAction(Bytes.toString(entry.getValue(columnFamily, Bytes.toBytes("channel_action"))));
+      String ipAddress = Bytes.toString(entry.getValue(columnFamily, Bytes.toBytes("request_headers")));
       String[] ipStr = ipAddress.split("X-eBay-Client-IP:");
       if (ipStr.length > 1) {
         ipAddress = ipStr[1];
-        ipAddress = ipAddress.split("\\|")[0].trim();
+        ipAddress = ipAddress.split("\\|")[0].trim().replace(".", "");
       } else {
         ipAddress = "0";
       }
       snidCapperEvent.setSnid(ipAddress);
-      return new Tuple2<String, SNIDCapperEvent>(snid, snidCapperEvent);
+      logger().info(" ----- ipAddress = " + ipAddress);
+      return new Tuple2<>(ipAddress, snidCapperEvent);
     }
   }
 }

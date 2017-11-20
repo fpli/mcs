@@ -94,7 +94,7 @@ public class SNIDCapper extends AbstractCapper {
       snidCapperEvent.setRowIdentifier(r.getRow());
       snidCapperEvent.setChannelAction(Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("channel_action"))));
       snidCapperEvent.setSnid(snid);
-      return new Tuple2<String, SNIDCapperEvent>(snid, snidCapperEvent);
+      return new Tuple2<>(snid, snidCapperEvent);
     }
   }
   
@@ -138,7 +138,7 @@ public class SNIDCapper extends AbstractCapper {
       Put put = new Put(snidCapperEvent.getRowIdentifier());
       put.add(columnFamily, Bytes.toBytes("is_impressed"), Bytes.toBytes(snidCapperEvent.isImpressed()));
       //put.add(columnFamily, Bytes.toBytes("imp_row_key"), snidCapperEvent.getImpRowIdentifier());
-      return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
+      return new Tuple2<>(new ImmutableBytesWritable(), put);
     }
   }
 }
