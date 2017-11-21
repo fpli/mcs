@@ -1,8 +1,8 @@
 package com.ebay.traffic.chocolate.cappingrules.Rules;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
 import com.ebay.traffic.chocolate.cappingrules.IdentifierUtil;
-import com.ebay.traffic.chocolate.cappingrules.constant.ChannelAction;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperEvent;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.hbase.client.Put;
@@ -103,12 +103,12 @@ public class SNIDCapper extends AbstractCapper {
     public Iterator<Tuple2<byte[], SNIDCapperEvent>> call(Tuple2<String, Iterable<SNIDCapperEvent>> t)
         throws Exception {
       List<Tuple2<byte[], SNIDCapperEvent>> results = new ArrayList<Tuple2<byte[], SNIDCapperEvent>>();
-      Iterator<SNIDCapperEvent> ite1 = t._2.iterator();
-      byte[] impRowIdentifier;
-      long impTime = Long.MAX_VALUE;
+      Iterator<SNIDCapperEvent> snidEventIte1 = t._2.iterator();
+      byte[] impRowIdentifier = null;
+      long impTime = Long.MAX_VALUE;;
       SNIDCapperEvent impEvent = null;
-      while (ite1.hasNext()) {
-        impEvent = ite1.next();
+      while (snidEventIte1.hasNext()) {
+        impEvent = snidEventIte1.next();
         if (ChannelAction.IMPRESSION.name().equalsIgnoreCase(impEvent.getChannelAction())) {
           impRowIdentifier = impEvent.getRowIdentifier();
           impTime = IdentifierUtil.getTimeMillisFromRowkey(impRowIdentifier);
@@ -116,16 +116,18 @@ public class SNIDCapper extends AbstractCapper {
         }
       }
       
-      Iterator<SNIDCapperEvent> ite2 = t._2.iterator();
+      Iterator<SNIDCapperEvent> snidEventIte2 = t._2.iterator();
       SNIDCapperEvent clickEvent = null;
-      while (ite2.hasNext()) {
-        clickEvent = ite2.next();
+      while (snidEventIte2.hasNext()) {
+        clickEvent = snidEventIte2.next();
         if (ChannelAction.CLICK.name().equalsIgnoreCase(clickEvent.getChannelAction())) {
-          if (IdentifierUtil.getTimeMillisFromRowkey(clickEvent.getRowIdentifier()) <= impTime) {
+          if (IdentifierUtil.getTimeMillisFromRowkey(clickEvent.getRowIdentifier()) > impTime) {
+            clickEvent.setImpressed(true);
+            clickEvent.setImpRowIdentifier(impRowIdentifier);
+          }else{
             clickEvent.setImpressed(false);
-            //clickEvent.setImpRowIdentifier(impRowIdentifier);
-            results.add(new Tuple2<byte[], SNIDCapperEvent>(clickEvent.getRowIdentifier(), clickEvent));
           }
+          results.add(new Tuple2<byte[], SNIDCapperEvent>(clickEvent.getRowIdentifier(), clickEvent));
         }
       }
       return results.iterator();
@@ -137,7 +139,7 @@ public class SNIDCapper extends AbstractCapper {
         throws Exception {
       Put put = new Put(snidCapperEvent.getRowIdentifier());
       put.add(columnFamily, Bytes.toBytes("is_impressed"), Bytes.toBytes(snidCapperEvent.isImpressed()));
-      //put.add(columnFamily, Bytes.toBytes("imp_row_key"), snidCapperEvent.getImpRowIdentifier());
+      put.add(columnFamily, Bytes.toBytes("imp_row_key"), snidCapperEvent.getImpRowIdentifier());
       return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
     }
   }

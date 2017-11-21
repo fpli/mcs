@@ -33,7 +33,7 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
     job.run();
     
     HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME);
-    Assert.assertEquals(7, getCount(resultTableItr));
+    Assert.assertEquals(12, getCount(resultTableItr));
     resultTableItr.close();
     
     job.stop();
