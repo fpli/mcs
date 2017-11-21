@@ -49,7 +49,7 @@ public class TestIPCappingRuleJob {
     hbaseConnection = hbaseUtility.getConnection();
     hbaseAdmin = hbaseUtility.getHBaseAdmin();
     transactionalTable = new HTable(TableName.valueOf(TRANSACTION_TABLE_NAME), hbaseConnection);
-    job = new IPCappingRuleJob("TestIPCappingRuleJob", "local[4]", TRANSACTION_TABLE_NAME, today
+    job = new IPCappingRuleJob("TestIPCappingRuleJob", "local[4]", TRANSACTION_TABLE_NAME, CAPPINGRESULT_TABLE_NAME, today
       .toInstant().toEpochMilli(), today.toInstant().toEpochMilli() - yesterday.toInstant().toEpochMilli(), 8);
     HBaseConnection.setConfiguration(hbaseConf);
     IPCappingRuleJob.setMod((short) 3);
@@ -78,7 +78,7 @@ public class TestIPCappingRuleJob {
   @Test
   public void testParseOptions() throws Exception {
     String[] args = {"--jobName",  "IPCappingRule", "--mode", "yarn", "--table",  "prod_transactional",
-      "--time", "12345", "--timeRange", "123", "--threshold", "1000"};
+      "--resultTable", "capping_result", "--time", "12345", "--timeRange", "123", "--threshold", "1000"};
     CommandLine cmd = IPCappingRuleJob.parseOptions(args);
     Assert.assertEquals("IPCappingRule", cmd.getOptionValue("jobName"));
     Assert.assertEquals("yarn", cmd.getOptionValue("mode"));

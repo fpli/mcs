@@ -15,9 +15,10 @@ bin=`cd "$bin">/dev/null; pwd`
 . ${bin}/chocolate-env.sh
 
 TABLE=$1
-TIME=$2
-TIMERANGE=$3
-THRESHOLD=$4
+RESULTABLE=$2
+TIME=$3
+TIMERANGE=$4
+THRESHOLD=$5
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
@@ -47,6 +48,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --jobName ${JOB_NAME} \
       --mode yarn \
       --table ${TABLE} \
+      --resultTable ${RESULTABLE} \
       --time ${TIME} \
       --timeRange ${TIMERANGE} \
       --threshold ${THRESHOLD}
