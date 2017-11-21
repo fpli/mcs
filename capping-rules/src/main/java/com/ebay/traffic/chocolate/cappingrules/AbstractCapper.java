@@ -29,13 +29,13 @@ import java.util.List;
  * Created by yimeng on 11/12/17.
  */
 public abstract class AbstractCapper extends BaseSparkJob {
-  protected static final String INPUT_DATE_FORMAT = "yyyy-MM-dd hh:mm:ss";
+  //hbase prefix of row identifier
   protected static short MOD = 293;
+  //hbase column family
   protected final byte[] columnFamily = Bytes.toBytes("x");
-  protected final String originalTable;
-  protected final String resultTable;
-  protected final String startTime;
-  protected final String stopTime;
+  //spark job input parameter
+  protected final String originalTable, resultTable, startTime, stopTime;
+  protected static final String INPUT_DATE_FORMAT = "yyyy-MM-dd hh:mm:ss";
   ;
   
   public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String startTime,
