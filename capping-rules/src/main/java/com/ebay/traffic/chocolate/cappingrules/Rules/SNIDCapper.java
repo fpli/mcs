@@ -121,6 +121,9 @@ public class SNIDCapper extends AbstractCapper {
       while (snidEventIte2.hasNext()) {
         clickEvent = snidEventIte2.next();
         if (ChannelAction.CLICK.name().equalsIgnoreCase(clickEvent.getChannelAction())) {
+          if(clickEvent.isImpressed()){
+            continue;
+          }
           if (IdentifierUtil.getTimeMillisFromRowkey(clickEvent.getRowIdentifier()) > impTime) {
             clickEvent.setImpressed(true);
             clickEvent.setImpRowIdentifier(impRowIdentifier);
