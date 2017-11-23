@@ -13,6 +13,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
+import org.hsqldb.lib.StringUtil;
 import scala.Tuple2;
 
 import java.util.ArrayList;
@@ -105,10 +106,14 @@ public class SNIDCapper extends AbstractCapper {
       List<Tuple2<byte[], SNIDCapperEvent>> results = new ArrayList<Tuple2<byte[], SNIDCapperEvent>>();
       Iterator<SNIDCapperEvent> snidEventIte1 = t._2.iterator();
       byte[] impRowIdentifier = null;
-      long impTime = Long.MAX_VALUE;;
+      long impTime = Long.MAX_VALUE;
+      ;
       SNIDCapperEvent impEvent = null;
       while (snidEventIte1.hasNext()) {
         impEvent = snidEventIte1.next();
+        if (StringUtil.isEmpty(impEvent.getSnid())) {
+          continue;
+        }
         if (ChannelAction.IMPRESSION.name().equalsIgnoreCase(impEvent.getChannelAction())) {
           impRowIdentifier = impEvent.getRowIdentifier();
           impTime = IdentifierUtil.getTimeMillisFromRowkey(impRowIdentifier);
@@ -120,14 +125,17 @@ public class SNIDCapper extends AbstractCapper {
       SNIDCapperEvent clickEvent = null;
       while (snidEventIte2.hasNext()) {
         clickEvent = snidEventIte2.next();
+        if (StringUtil.isEmpty(impEvent.getSnid())) {
+          continue;
+        }
         if (ChannelAction.CLICK.name().equalsIgnoreCase(clickEvent.getChannelAction())) {
-          if(clickEvent.isImpressed()){
+          if (clickEvent.isImpressed()) {
             continue;
           }
           if (IdentifierUtil.getTimeMillisFromRowkey(clickEvent.getRowIdentifier()) > impTime) {
             clickEvent.setImpressed(true);
             clickEvent.setImpRowIdentifier(impRowIdentifier);
-          }else{
+          } else {
             clickEvent.setImpressed(false);
           }
           results.add(new Tuple2<byte[], SNIDCapperEvent>(clickEvent.getRowIdentifier(), clickEvent));

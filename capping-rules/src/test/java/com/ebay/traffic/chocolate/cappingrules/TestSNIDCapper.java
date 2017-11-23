@@ -20,7 +20,7 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
   @Test
   public void testSNIDCapper() throws Exception {
     HBaseScanIterator iter = new HBaseScanIterator(TRANSACTION_TABLE_NAME);
-    Assert.assertEquals(15, getCount(iter));
+    Assert.assertEquals(22, getCount(iter));
     iter.close();
     
     Calendar c = Calendar.getInstance();
@@ -68,6 +68,25 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
         (short) 0), "100", "CLICK"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 104,
         (short) 10), "100", "CLICK"));
+    
+    // click happens after impression on same host and different host with empty snid
+    c.add(Calendar.MINUTE, 1);
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
+        (short) 0), "", "IMPRESSION"));
+    c.add(Calendar.SECOND, 20);
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
+        (short) 0), "", "IMPRESSION"));
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
+        (short) 1), "", "CLICK"));
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 102,
+        (short) 2), "", "CLICK"));
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 103,
+        (short) 2), "", "CLICK"));
+    c.add(Calendar.SECOND, 40);
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
+        (short) 0), "", "CLICK"));
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 104,
+        (short) 10), "", "CLICK"));
     
     // click&impression happens at same time
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 200,
