@@ -20,7 +20,7 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
   @Test
   public void testSNIDCapper() throws Exception {
     HBaseScanIterator iter = new HBaseScanIterator(TRANSACTION_TABLE_NAME);
-    Assert.assertEquals(22, getCount(iter));
+    Assert.assertEquals(26, getCount(iter));
     iter.close();
     
     Calendar c = Calendar.getInstance();
@@ -29,7 +29,7 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
     String startTime = new SimpleDateFormat("yyyy-MM-dd 00:00:00").format(c.getTime());
     
     SNIDCapper job = new SNIDCapper("TestSNIDCapper", "local[4]", TRANSACTION_TABLE_NAME,
-        RESULT_TABLE_NAME, startTime, stopTime);
+        RESULT_TABLE_NAME, startTime, stopTime, "EPN");
     job.run();
     
     HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME);
@@ -55,69 +55,82 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
     
     // click happens after impression on same host and different host
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
-        (short) 0), "100", "IMPRESSION"));
+        (short) 0), "100", "IMPRESSION", "EPN"));
     c.add(Calendar.SECOND, 20);
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
-        (short) 1), "100", "CLICK"));
+        (short) 1), "100", "CLICK", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 102,
-        (short) 2), "100", "CLICK"));
+        (short) 2), "100", "CLICK", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 103,
-        (short) 2), "100", "CLICK"));
+        (short) 2), "100", "CLICK", "EPN"));
     c.add(Calendar.SECOND, 40);
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
-        (short) 0), "100", "CLICK"));
+        (short) 0), "100", "CLICK", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 104,
-        (short) 10), "100", "CLICK"));
+        (short) 10), "100", "CLICK", "EPN"));
     
     // click happens after impression on same host and different host with empty snid
     c.add(Calendar.MINUTE, 1);
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
-        (short) 0), "", "IMPRESSION"));
+        (short) 0), "", "IMPRESSION", "EPN"));
     c.add(Calendar.SECOND, 20);
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
-        (short) 0), "", "IMPRESSION"));
+        (short) 0), null, "IMPRESSION", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
-        (short) 1), "", "CLICK"));
+        (short) 1), "", "CLICK", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 102,
-        (short) 2), "", "CLICK"));
+        (short) 2), null, "CLICK", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 103,
-        (short) 2), "", "CLICK"));
+        (short) 2), "", "CLICK", "EPN"));
     c.add(Calendar.SECOND, 40);
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
-        (short) 0), "", "CLICK"));
+        (short) 0), "", "CLICK", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 104,
-        (short) 10), "", "CLICK"));
+        (short) 10), "", "CLICK", "EPN"));
     
     // click&impression happens at same time
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 200,
-        (short) 0), "200", "IMPRESSION"));
+        (short) 0), "200", "IMPRESSION", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 201,
-        (short) 1), "200", "CLICK"));
+        (short) 1), "200", "CLICK", "EPN"));
     
     // click happens before impression
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 300,
-        (short) 1), "300", "CLICK"));
+        (short) 1), "300", "CLICK", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 301,
-        (short) 1), "300", "CLICK"));
+        (short) 1), "300", "CLICK", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 303,
-        (short) 2), "300", "CLICK"));
+        (short) 2), "300", "CLICK", "EPN"));
     c.add(Calendar.SECOND, 20);
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 300,
-        (short) 0), "300", "IMPRESSION"));
+        (short) 0), "300", "IMPRESSION", "EPN"));
     
     // only click no impression
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 400,
-        (short) 1), "400", "CLICK"));
+        (short) 1), "400", "CLICK", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 401,
-        (short) 1), "400", "CLICK"));
+        (short) 1), "400", "CLICK", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 402,
-        (short) 1), "400", "CLICK"));
+        (short) 1), "400", "CLICK", "EPN"));
+  
+    // click happens after impression on other channels
+    c.add(Calendar.MINUTE, 1);
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
+        (short) 0), "100", "IMPRESSION", "DAP"));
+    c.add(Calendar.SECOND, 20);
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
+        (short) 1), "100", "CLICK", "DAP"));
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 102,
+        (short) 2), "100", "CLICK", "DAP"));
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 103,
+        (short) 2), "100", "CLICK", "DAP"));
   }
   
   private void addEvent(HTable table, SNIDCapperEvent snidCapperEvent) throws IOException {
     Put put = new Put(snidCapperEvent.getRowIdentifier());
     putCell(put, TRANSACTION_CF_DEFAULT, "snid", snidCapperEvent.getSnid());
     putCell(put, TRANSACTION_CF_DEFAULT, "channel_action", snidCapperEvent.getChannelAction());
+    putCell(put, TRANSACTION_CF_DEFAULT, "channel_type", snidCapperEvent.getChannelType());
     table.put(put);
   }
 }

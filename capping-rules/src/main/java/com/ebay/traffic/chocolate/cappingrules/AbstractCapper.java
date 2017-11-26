@@ -12,7 +12,6 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.VoidFunction;
@@ -31,21 +30,19 @@ import java.util.List;
 public abstract class AbstractCapper extends BaseSparkJob {
   //hbase prefix of row identifier
   protected static short MOD = 293;
-  //hbase column family
-  protected final byte[] columnFamily = Bytes.toBytes("x");
   //spark job input parameter
-  protected final String originalTable, resultTable, startTime, stopTime;
+  protected final String originalTable, resultTable, startTime, stopTime, channelType;
   protected static final String INPUT_DATE_FORMAT = "yyyy-MM-dd hh:mm:ss";
-  ;
+  
   
   public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String startTime,
-                        String stopTime) {
+                        String stopTime, String channelType) {
     super(jobName, mode, false);
     this.originalTable = originalTable;
     this.resultTable = resultTable;
     this.startTime = startTime;
     this.stopTime = stopTime;
-    ;
+    this.channelType = channelType;
   }
   
   public static Options getJobOptions(String cappingRuleDescription) {
@@ -72,6 +69,10 @@ public abstract class AbstractCapper extends BaseSparkJob {
     Option endTime = new Option((String) null, "endTime", true, "the endTime for " + cappingRuleDescription);
     endTime.setRequired(true);
     options.addOption(endTime);
+  
+    Option channelType = new Option((String) null, "channelType", true, "the channelType for " + cappingRuleDescription);
+    endTime.setRequired(true);
+    options.addOption(channelType);
     
     return options;
   }
@@ -119,7 +120,7 @@ public abstract class AbstractCapper extends BaseSparkJob {
             byte[] startRowKey = IdentifierUtil.generateIdentifier(startTimestamp, 0, slice.shortValue());
             byte[] stopRowKey = IdentifierUtil.generateIdentifier(stopTimestamp, 0, slice.shortValue());
             
-            HBaseScanIterator hBaseScanIterator = new HBaseScanIterator(originalTable, startRowKey, stopRowKey);
+            HBaseScanIterator hBaseScanIterator = new HBaseScanIterator(originalTable, startRowKey, stopRowKey, channelType);
             return hBaseScanIterator;
           }
         });

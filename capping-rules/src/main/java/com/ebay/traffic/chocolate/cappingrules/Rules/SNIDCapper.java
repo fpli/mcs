@@ -3,7 +3,9 @@ package com.ebay.traffic.chocolate.cappingrules.Rules;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
 import com.ebay.traffic.chocolate.cappingrules.IdentifierUtil;
+import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperEvent;
+import jodd.util.StringUtil;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -13,7 +15,6 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
-import org.hsqldb.lib.StringUtil;
 import scala.Tuple2;
 
 import java.util.ArrayList;
@@ -26,8 +27,8 @@ import java.util.List;
 public class SNIDCapper extends AbstractCapper {
   
   public SNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
-      stopTime) {
-    super(jobName, mode, originalTable, resultTable, startTime, stopTime);
+      stopTime, String channelType) {
+    super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType);
   }
   
   public static void main(String[] args) throws Exception {
@@ -48,7 +49,7 @@ public class SNIDCapper extends AbstractCapper {
     
     SNIDCapper job = new SNIDCapper(cmd.getOptionValue("jobName"),
         cmd.getOptionValue("mode"), cmd.getOptionValue("originalTable"), cmd.getOptionValue("resultTable"), cmd
-        .getOptionValue("startTime"), cmd.getOptionValue("endTime"));
+        .getOptionValue("startTime"), cmd.getOptionValue("endTime"), cmd.getOptionValue("channelType"));
     try {
       job.run();
     } finally {
@@ -89,11 +90,11 @@ public class SNIDCapper extends AbstractCapper {
   public class ReadDataFromHase implements PairFunction<Result, String, SNIDCapperEvent> {
     public Tuple2<String, SNIDCapperEvent> call(Result entry) throws Exception {
       Result r = entry;
-      String snid = Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("snid")));
+      String snid = Bytes.toString(r.getValue(HBaseConstant.COLUMN_FAMILY, Bytes.toBytes("snid")));
       
       SNIDCapperEvent snidCapperEvent = new SNIDCapperEvent();
       snidCapperEvent.setRowIdentifier(r.getRow());
-      snidCapperEvent.setChannelAction(Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("channel_action"))));
+      snidCapperEvent.setChannelAction(Bytes.toString(r.getValue(HBaseConstant.COLUMN_FAMILY, Bytes.toBytes("channel_action"))));
       snidCapperEvent.setSnid(snid);
       return new Tuple2<String, SNIDCapperEvent>(snid, snidCapperEvent);
     }
@@ -149,8 +150,8 @@ public class SNIDCapper extends AbstractCapper {
     public Tuple2<ImmutableBytesWritable, Put> call(SNIDCapperEvent snidCapperEvent)
         throws Exception {
       Put put = new Put(snidCapperEvent.getRowIdentifier());
-      put.add(columnFamily, Bytes.toBytes("is_impressed"), Bytes.toBytes(snidCapperEvent.isImpressed()));
-      put.add(columnFamily, Bytes.toBytes("imp_row_key"), snidCapperEvent.getImpRowIdentifier());
+      put.add(HBaseConstant.COLUMN_FAMILY, Bytes.toBytes("is_impressed"), Bytes.toBytes(snidCapperEvent.isImpressed()));
+      put.add(HBaseConstant.COLUMN_FAMILY, Bytes.toBytes("imp_row_key"), snidCapperEvent.getImpRowIdentifier());
       return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
     }
   }
