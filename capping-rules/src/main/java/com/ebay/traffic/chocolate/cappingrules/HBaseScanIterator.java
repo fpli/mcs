@@ -20,7 +20,7 @@ import java.util.Iterator;
  * The iterator for HBase scan.
  */
 public class HBaseScanIterator implements Iterator<Result> {
-  private final Iterator<Result> iter;
+  private Iterator<Result> iter;
   private HTable table;
   private ResultScanner rs;
   
@@ -50,16 +50,7 @@ public class HBaseScanIterator implements Iterator<Result> {
   
   public HBaseScanIterator(String tableName, byte[] startRowKey, byte[] stopRowKey)
       throws IOException {
-    table = new HTable(TableName.valueOf(tableName), HBaseConnection.getConnection());
-    Scan scan = new Scan();
-    if (startRowKey != null) {
-      scan.setStartRow(startRowKey);
-    }
-    if (stopRowKey != null) {
-      scan.setStopRow(stopRowKey);
-    }
-    rs = table.getScanner(scan);
-    iter = rs.iterator();
+    this(tableName, startRowKey, stopRowKey, null);
   }
   
   @Override
