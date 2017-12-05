@@ -11,8 +11,6 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.io.compress.Compression;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
 import org.junit.*;
 
 import java.io.IOException;
@@ -91,12 +89,32 @@ public class TestIPCappingRuleJob {
   @Test
   public void testIPCappingRuleJob() throws Exception {
     job.run();
-    Dataset<Row> result = job.readEvents("capping_result");
-    result.show();
-    Assert.assertEquals(10, result.count());
-    Dataset<Row> modifiedResult = result.filter(result.col("cappingPassed").equalTo(false));
-    Assert.assertEquals(10, modifiedResult.count());
+    HBaseScanIterator resultTableItr = new HBaseScanIterator("capping_result");
+    Assert.assertEquals(16, getCount(resultTableItr));
+    resultTableItr = new HBaseScanIterator("capping_result");
+    Assert.assertEquals(10, getFailedCount(resultTableItr));
     job.stop();
+  }
+
+  protected int getFailedCount(HBaseScanIterator iter) {
+    int count = 0;
+    while(iter.hasNext()) {
+      Result result = iter.next();
+      String failedRule = Bytes.toString(result.getValue(Bytes.toBytes("x"), Bytes.toBytes("capping_failed_rule")));
+      if(failedRule.equals("IPCappingRule")) {
+        count ++;
+      }
+    }
+    return count;
+  }
+
+  protected int getCount(HBaseScanIterator iter) {
+    int numberOfRow = 0;
+    while (iter.hasNext()) {
+      iter.next();
+      numberOfRow++;
+    }
+    return numberOfRow;
   }
 
   private static byte[] generateIdentity(int hour, short modValue) {

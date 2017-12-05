@@ -1,11 +1,13 @@
 package com.ebay.traffic.chocolate.cappingrules.ip;
 
+import java.io.Serializable;
+
 /**
  * POJ for HBase stored click&impression events for ip capping use
  *
  * @author xiangli4
  */
-public class IPCappingEvent {
+public class IPCappingEvent implements Serializable {
   private byte[] identifier;
   private String channelAction;
   private String requestHeaders;
@@ -21,19 +23,6 @@ public class IPCappingEvent {
     this.identifier = identifier;
     this.channelAction = channelAction;
     this.requestHeaders = requestHeaders;
-  }
-
-  public IPCappingEvent(byte[] identifier, String cappingFailedRule, boolean cappingPassed) {
-    this.identifier = identifier;
-    this.cappingFailedRule = cappingFailedRule;
-    this.cappingPassed = cappingPassed;
-  }
-
-  public IPCappingEvent(byte[] identifier, String cappingFailedRule, String requestHeaders, boolean cappingPassed) {
-    this.identifier = identifier;
-    this.cappingFailedRule = cappingFailedRule;
-    this.requestHeaders = requestHeaders;
-    this.cappingPassed = cappingPassed;
   }
 
   public byte[] getIdentifier() {

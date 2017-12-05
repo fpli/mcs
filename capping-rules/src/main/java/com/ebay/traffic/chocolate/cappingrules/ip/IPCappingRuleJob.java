@@ -12,19 +12,9 @@ import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.FlatMapFunction;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.PairFunction;
-import org.apache.spark.api.java.function.VoidFunction;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.expressions.Window;
-import org.apache.spark.sql.expressions.WindowSpec;
-import org.apache.spark.sql.functions;
+import org.apache.spark.api.java.function.*;
 import org.slf4j.Logger;
 import scala.Tuple2;
-
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -70,207 +60,28 @@ public class IPCappingRuleJob extends BaseSparkJob {
   }
 
   /**
-   * PairFunction used to map hbase to event poj
+   * Main function
+   * @param args
    */
-  class ReadHBaseMapFunc implements Function<Result, IPCappingEvent> {
-      @Override
-      public IPCappingEvent call(
-        Result entry) throws Exception {
-        Result r = entry;
-        byte[] keyRowBytes = r.getRow();
-
-        IPCappingEvent event = new IPCappingEvent();
-        event.setIdentifier(keyRowBytes);
-        event.setRequestHeaders(Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("request_headers"))));
-        event.setChannelAction(Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("channel_action"))));
-        byte[] cappingPassed = r.getValue(Bytes.toBytes("x"), Bytes.toBytes("capping_passed"));
-        if (cappingPassed != null) {
-          event.setCappingPassed(Bytes.toBoolean(cappingPassed));
-        }
-        event.setCappingFailedRule(Bytes.toString(r.getValue(Bytes.toBytes("x"), Bytes.toBytes("capping_failed_rule"))));
-        return event;
-      }
-    };
-
-  /**
-   * map function used to read from dataframe to javardd
-   */
-  class MapFunc implements Function<Row, IPCappingEvent> {
-    @Override
-    public IPCappingEvent call(Row row) throws Exception {
-      IPCappingEvent event = new IPCappingEvent((byte[]) row.get(row.fieldIndex("identifier")), "IPCappingRule", row
-        .getBoolean(row.fieldIndex("cappingPassedTmp")));
-      return event;
-    }
-  };
-
-  /**
-   * pairFunction used to map poj to hbase for writing
-   */
-  class WriteHBaseMapFunc implements PairFunction<IPCappingEvent, ImmutableBytesWritable, Put> {
-      @Override
-      public Tuple2<ImmutableBytesWritable, Put> call(IPCappingEvent event)
-        throws Exception {
-        Put put = new Put(event.getIdentifier());
-        put.add(Bytes.toBytes("x"),
-          Bytes.toBytes("capping_passed"),
-          Bytes.toBytes(false));
-        put.add(Bytes.toBytes("x"),
-          Bytes.toBytes("capping_failed_rule"),
-          Bytes.toBytes("IPCappingRule"));
-        return new Tuple2<ImmutableBytesWritable, Put>(
-          new ImmutableBytesWritable(), put);
-      }
-    };
-
-  /**
-   * Function used to write hbase
-   */
-  class HBasePutFunc implements VoidFunction<Iterator<Tuple2<ImmutableBytesWritable, Put>>> {
-
-      @Override
-      public void call(Iterator<Tuple2<ImmutableBytesWritable, Put>> tupleIter) throws Exception {
-
-        HTable transactionalTable = new HTable(TableName.valueOf(resultTable), HBaseConnection.getConnection());
-        Tuple2<ImmutableBytesWritable, Put> tuple = null;
-        while (tupleIter.hasNext()) {
-          tuple = tupleIter.next();
-          transactionalTable.put(tuple._2);
-        }
-        transactionalTable.close();
-      }
-    };
-
-  /**
-   * Generate 10 bytes row key
-   *
-   * @param timestamp start time
-   * @param modValue  slice value
-   * @return row key byte array
-   */
-  public byte[] generateIdentifier(long timestamp, short modValue) {
-    byte[] snapshotID = Bytes.toBytes((timestamp & ~TIME_MASK) << 24l);
-
-    ByteArrayOutputStream streamStart = new ByteArrayOutputStream(10);
-    ByteBuffer bufferStart = ByteBuffer.allocate(Short.BYTES);
-    bufferStart.putShort(modValue);
-
+  public static void main(String[] args) {
+    CommandLine cmd = parseOptions(args);
+    IPCappingRuleJob job = new IPCappingRuleJob(cmd.getOptionValue("jobName"),
+      cmd.getOptionValue("mode"), cmd.getOptionValue("table"), cmd.getOptionValue("resultTable"), Long.parseLong(cmd.getOptionValue("time")),
+      Long.parseLong(cmd.getOptionValue("timeRange")), Long.parseLong(cmd.getOptionValue("threshold")));
     try {
-      streamStart.write(bufferStart.array());
-      streamStart.write(snapshotID);
-    } catch (IOException e) {
-      logger.error("Failed to write modulo value to stream", e);
+      job.run();
+    } catch (Exception ex) {
+      System.exit(1);
+    } finally {
+      job.stop();
     }
-
-    byte[] identifier = ByteBuffer.wrap(streamStart.toByteArray()).array();
-    return identifier;
   }
 
   /**
-   * Read events into dataframe
-   *
-   * @param table hbase table
-   * @return dataframe containing the data in the scan range
+   * Parse command line arguments
+   * @param args arguments
+   * @return CommandLine used to get every argument
    */
-  public Dataset<Row> readEvents(final String table) {
-    List<Integer> slices = new ArrayList<Integer>(MOD);
-    for (int i = 0; i < MOD; i++) {
-      slices.add(i);
-    }
-
-    JavaRDD<Result> javaRDD = jsc().parallelize(slices, slices.size()).mapPartitions(
-      new FlatMapFunction<Iterator<Integer>, Result>() {
-
-      @Override
-      public HBaseScanIterator call(Iterator<Integer>
-             integerIterator) throws Exception {
-        Integer slice;
-        slice = integerIterator.next();
-        Configuration hbaseConf = HBaseConnection.getConfiguration();
-        try {
-          HBaseAdmin.checkHBaseAvailable(hbaseConf);
-          logger.info("HBase is " + "running!");
-        } catch
-          (MasterNotRunningException e) {
-          logger.error("HBase is " + "not running!");
-          logger.error(e.getMessage());
-          throw new MasterNotRunningException(e);
-        } catch (Exception ce) {
-          logger.error("Unexpected" + " exception when check" + " HBase!");
-          logger.error(ce.getMessage());
-          throw new Exception(ce);
-        }
-
-        long timestampStart = time - timeRange;
-        long timestampStop = time;
-
-        byte[] rowkeyStartBytes = generateIdentifier(timestampStart, slice.shortValue());
-        byte[] rowkeyStopBytes = generateIdentifier(timestampStop, slice.shortValue());
-
-        HBaseScanIterator hBaseScanIterator = new HBaseScanIterator(table, rowkeyStartBytes, rowkeyStopBytes);
-        return hBaseScanIterator;
-      }
-    });
-
-    JavaRDD<IPCappingEvent> rowRDD = javaRDD.map(new ReadHBaseMapFunc());
-    Dataset<Row> schemaRDD = sqlsc().createDataFrame(rowRDD, IPCappingEvent.class);
-    return schemaRDD;
-  }
-
-  /**
-   * Filter ipcapping events
-   *
-   * @param table hbase table
-   * @return invalids events which don't pass the capping rule
-   */
-  public Dataset<Row> filterEvents(String table) throws Exception {
-
-    Dataset<Row> schemaRDD = readEvents(table);
-    Dataset<Row> schemaRDDClick = schemaRDD.filter(schemaRDD.col("channelAction").equalTo("CLICK"));
-    Dataset<Row> schemaRDDWithIP = schemaRDDClick.withColumn("headerWithIP", functions.split(schemaRDDClick.col
-      ("requestHeaders"), "X-eBay-Client-IP:").getItem(1));
-    Dataset<Row> schemaRDDWithIPOnly = schemaRDDWithIP.withColumn("headerWithIPOnly", functions.split(schemaRDDWithIP
-      .col("headerWithIP"), "\\|").getItem(0));
-    Dataset<Row> schemaRDDWithIPTrim = schemaRDDWithIPOnly.withColumn("ip", functions.trim(schemaRDDWithIPOnly.col
-      ("headerWithIPOnly")))
-      .drop("headerWithIP").drop("headerWithIPOnly");
-
-    WindowSpec window = Window.partitionBy(schemaRDDWithIPTrim.col("ip")).orderBy(schemaRDDWithIPTrim.col("ip"));
-    Dataset<Row> df = schemaRDDWithIPTrim.withColumn("count", functions.count("*").over(window));
-    Dataset<Row> res = df.withColumn("cappingPassedTmp", functions.when(df.col("count").$greater(threshold), false)
-      .otherwise(true));
-    Dataset<Row> invalids = res.filter(res.col("cappingPassedTmp").equalTo(false));
-    return invalids;
-  }
-
-  /**
-   * write invalids events back to hbase
-   *
-   * @param invalids invalids events
-   */
-  public void writeInvalidEvents(Dataset<Row> invalids) throws IOException {
-
-    JavaRDD<IPCappingEvent> records = invalids.toJavaRDD().map(new MapFunc());
-    JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = records.mapToPair(new WriteHBaseMapFunc());
-    hbasePuts.foreachPartition(new HBasePutFunc());
-  }
-
-  /**
-   * Filter rule entrance
-   */
-  @Override
-  public void run() throws Exception {
-    Dataset<Row> failedRecords = filterEvents(this.table);
-    writeInvalidEvents(failedRecords);
-  }
-
-  /**
-   * Only for test
-   */
-  public static void setMod(short mod) {
-    MOD = mod;
-  }
-
   public static CommandLine parseOptions(String[] args) {
     Options options = new Options();
     Option jobName = new Option((String) null, "jobName", true, "The job name");
@@ -316,19 +127,216 @@ public class IPCappingRuleJob extends BaseSparkJob {
     return cmd;
   }
 
-  public static void main(String[] args) {
+  /**
+   * Filter rule entrance
+   */
+  @Override
+  public void run() throws Exception {
+    JavaRDD<IPCappingEvent> filteredRecords = filterEvents(this.table);
+    writeFilteredEvents(filteredRecords);
+  }
 
-    CommandLine cmd = parseOptions(args);
+  /**
+   * Generate 10 bytes row key
+   *
+   * @param timestamp start time
+   * @param modValue  slice value
+   * @return row key byte array
+   */
+  public byte[] generateIdentifier(long timestamp, short modValue) {
+    byte[] snapshotID = Bytes.toBytes((timestamp & ~TIME_MASK) << 24l);
 
-    IPCappingRuleJob job = new IPCappingRuleJob(cmd.getOptionValue("jobName"),
-      cmd.getOptionValue("mode"), cmd.getOptionValue("table"), cmd.getOptionValue("resultTable"), Long.parseLong(cmd.getOptionValue("time")),
-      Long.parseLong(cmd.getOptionValue("timeRange")), Long.parseLong(cmd.getOptionValue("threshold")));
+    ByteArrayOutputStream streamStart = new ByteArrayOutputStream(10);
+    ByteBuffer bufferStart = ByteBuffer.allocate(Short.BYTES);
+    bufferStart.putShort(modValue);
+
     try {
-      job.run();
-    } catch (Exception ex) {
-      System.exit(1);
-    } finally {
-      job.stop();
+      streamStart.write(bufferStart.array());
+      streamStart.write(snapshotID);
+    } catch (IOException e) {
+      logger.error("Failed to write modulo value to stream", e);
     }
+
+    byte[] identifier = ByteBuffer.wrap(streamStart.toByteArray()).array();
+    return identifier;
+  }
+
+  /**
+   * Filter ipcapping events
+   *
+   * @param table hbase table
+   * @return invalids events which don't pass the capping rule
+   */
+  public JavaRDD<IPCappingEvent> filterEvents(String table) throws Exception {
+    JavaPairRDD<String, IPCappingEvent> pairRDD = readEvents(table);
+    JavaPairRDD<String, IPCappingEvent> clickRDD = pairRDD.filter(new FilterClick());
+    JavaPairRDD<String, Iterable<IPCappingEvent>>  groupByIpRDD = clickRDD.groupByKey();
+    JavaRDD<IPCappingEvent> resultRDD = groupByIpRDD.flatMap(new FilterOnIp());
+    return resultRDD;
+  }
+
+  /**
+   * Write records back to hbase
+   * @param filteredRecords
+   */
+  public void writeFilteredEvents(JavaRDD<IPCappingEvent> filteredRecords) {
+    JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = filteredRecords.mapToPair(new WriteHBaseMapFunc());
+    hbasePuts.foreachPartition(new HBasePutFunc());
+  }
+
+  /**
+   * Read events into dataframe
+   *
+   * @param table hbase table
+   * @return dataframe containing the data in the scan range
+   */
+  public JavaPairRDD<String, IPCappingEvent> readEvents(final String table) {
+    List<Integer> slices = new ArrayList<Integer>(MOD);
+    for (int i = 0; i < MOD; i++) {
+      slices.add(i);
+    }
+
+    JavaRDD<Result> javaRDD = jsc().parallelize(slices, slices.size()).mapPartitions(
+      new FlatMapFunction<Iterator<Integer>, Result>() {
+
+        @Override
+        public HBaseScanIterator call(Iterator<Integer>
+                                        integerIterator) throws Exception {
+          Integer slice;
+          slice = integerIterator.next();
+          Configuration hbaseConf = HBaseConnection.getConfiguration();
+          try {
+            HBaseAdmin.checkHBaseAvailable(hbaseConf);
+            logger.info("HBase is " + "running!");
+          } catch
+            (MasterNotRunningException e) {
+            logger.error("HBase is " + "not running!");
+            logger.error(e.getMessage());
+            throw new MasterNotRunningException(e);
+          } catch (Exception ce) {
+            logger.error("Unexpected" + " exception when check" + " HBase!");
+            logger.error(ce.getMessage());
+            throw new Exception(ce);
+          }
+
+          long timestampStart = time - timeRange;
+          long timestampStop = time;
+
+          byte[] rowkeyStartBytes = generateIdentifier(timestampStart, slice.shortValue());
+          byte[] rowkeyStopBytes = generateIdentifier(timestampStop, slice.shortValue());
+
+          HBaseScanIterator hBaseScanIterator = new HBaseScanIterator(table, rowkeyStartBytes, rowkeyStopBytes);
+          return hBaseScanIterator;
+        }
+      });
+
+    JavaPairRDD<String, IPCappingEvent> pairRDD = javaRDD.mapToPair(new ReadDataFromHase());
+    return pairRDD;
+  }
+
+  /**
+   * Read data from hbase and create JavaPairRDD with IP as key, Event as value
+   */
+  public class ReadDataFromHase implements PairFunction<Result, String, IPCappingEvent> {
+    public Tuple2<String, IPCappingEvent> call(Result entry) throws Exception {
+      IPCappingEvent ipCappingEvent = new IPCappingEvent();
+      ipCappingEvent.setIdentifier(entry.getRow());
+      ipCappingEvent.setChannelAction(Bytes.toString(entry.getValue(Bytes.toBytes("x"), Bytes.toBytes("channel_action"))));
+      String ipAddress = Bytes.toString(entry.getValue(Bytes.toBytes("x"), Bytes.toBytes("request_headers")));
+      String[] ipStr = ipAddress.split("X-eBay-Client-IP:");
+      if (ipStr.length > 1) {
+        ipAddress = ipStr[1];
+        ipAddress = ipAddress.split("\\|")[0].trim().replace(".", "");
+      } else {
+        ipAddress = "0";
+      }
+      return new Tuple2<String, IPCappingEvent>(ipAddress, ipCappingEvent);
+    }
+  }
+
+  /**
+   * Only need Click Events
+   */
+  class FilterClick implements Function<Tuple2<String, IPCappingEvent>, Boolean> {
+
+    @Override
+    public Boolean call(Tuple2<String, IPCappingEvent> eventTuple) throws Exception {
+      return eventTuple._2.getChannelAction().equals("CLICK");
+    }
+  }
+
+  /**
+   * Filter on IP count
+   */
+  class FilterOnIp implements FlatMapFunction<Tuple2<String, Iterable<IPCappingEvent>>, IPCappingEvent> {
+
+    @Override
+    public Iterator<IPCappingEvent> call(Tuple2<String, Iterable<IPCappingEvent>> stringIterableTuple2) throws
+    Exception {
+      int count = 0;
+      Iterator<IPCappingEvent> iterator1 = stringIterableTuple2._2.iterator();
+      while(iterator1.hasNext()) {
+        iterator1.next();
+        count ++;
+      }
+      List<IPCappingEvent> result = new ArrayList<>();
+      Iterator<IPCappingEvent> iterator2 = stringIterableTuple2._2.iterator();
+      while(iterator2.hasNext()) {
+        IPCappingEvent event = iterator2.next();
+        if(count > threshold) {
+          event.setCappingPassed(false);
+          event.setCappingFailedRule("IPCappingRule");
+        }
+        else {
+          event.setCappingPassed(true);
+        }
+        result.add(event);
+      }
+      return result.iterator();
+    }
+  }
+
+  /**
+   * pairFunction used to map poj to hbase for writing
+   */
+  class WriteHBaseMapFunc implements PairFunction<IPCappingEvent, ImmutableBytesWritable, Put> {
+    @Override
+    public Tuple2<ImmutableBytesWritable, Put> call(IPCappingEvent event)
+      throws Exception {
+      Put put = new Put(event.getIdentifier());
+      put.add(Bytes.toBytes("x"),
+        Bytes.toBytes("capping_passed"),
+        Bytes.toBytes(event.isCappingPassed()));
+      put.add(Bytes.toBytes("x"),
+        Bytes.toBytes("capping_failed_rule"),
+        Bytes.toBytes(event.getCappingFailedRule()));
+      return new Tuple2<ImmutableBytesWritable, Put>(
+        new ImmutableBytesWritable(), put);
+    }
+  };
+
+  /**
+   * Function used to write hbase
+   */
+  class HBasePutFunc implements VoidFunction<Iterator<Tuple2<ImmutableBytesWritable, Put>>> {
+
+    @Override
+    public void call(Iterator<Tuple2<ImmutableBytesWritable, Put>> tupleIter) throws Exception {
+
+      HTable transactionalTable = new HTable(TableName.valueOf(resultTable), HBaseConnection.getConnection());
+      Tuple2<ImmutableBytesWritable, Put> tuple = null;
+      while (tupleIter.hasNext()) {
+        tuple = tupleIter.next();
+        transactionalTable.put(tuple._2);
+      }
+      transactionalTable.close();
+    }
+  };
+
+  /**
+   * Only for test
+   */
+  public static void setMod(short mod) {
+    MOD = mod;
   }
 }

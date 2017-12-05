@@ -2,11 +2,11 @@
 # chocolate-env.sh
 
 if [ -z "${HADOOP_HOME}" ]; then
-  export HADOOP_HOME=/apache/hadoop/
+  export HADOOP_HOME=/usr/hdp/current/hadoop-client
 fi
 
 if [ -z "${HADOOP_CONF_DIR}" ]; then
-  export HADOOP_CONF_DIR=/apache/hadoop/conf
+  export HADOOP_CONF_DIR=/usr/hdp/current/hadoop-client/etc/hadoop/
 fi
 
 if [ -z "${SPARK_HOME}" ]; then
@@ -14,7 +14,7 @@ if [ -z "${SPARK_HOME}" ]; then
 fi
 
 if [ -z "${SPARK_CONF_DIR}" ]; then
-  export SPARK_CONF_DIR=/apache/spark/conf
+  export SPARK_CONF_DIR=/apache/spark/conf/
 fi
 
 SPARK_EVENTLOG_DIR=hdfs://lvschocolatemaster-1448895.stratus.lvs.ebay.com:8020/app-logs/spark/logs
