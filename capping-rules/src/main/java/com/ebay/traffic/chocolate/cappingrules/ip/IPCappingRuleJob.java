@@ -279,7 +279,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
         iterator1.next();
         count ++;
       }
-      List<IPCappingEvent> result = new ArrayList<>();
+      List<IPCappingEvent> result = new ArrayList<IPCappingEvent>();
       Iterator<IPCappingEvent> iterator2 = stringIterableTuple2._2.iterator();
       while(iterator2.hasNext()) {
         IPCappingEvent event = iterator2.next();
@@ -313,7 +313,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
       return new Tuple2<ImmutableBytesWritable, Put>(
         new ImmutableBytesWritable(), put);
     }
-  };
+  }
 
   /**
    * Function used to write hbase
@@ -331,7 +331,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
       }
       transactionalTable.close();
     }
-  };
+  }
 
   /**
    * Only for test

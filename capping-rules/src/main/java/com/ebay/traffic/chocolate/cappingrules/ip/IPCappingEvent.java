@@ -45,10 +45,6 @@ public class IPCappingEvent implements Serializable {
     return requestHeaders;
   }
 
-  public void setRequestHeaders(String requestHeaders) {
-    this.requestHeaders = requestHeaders;
-  }
-
   public String getCappingFailedRule() {
     return cappingFailedRule;
   }
