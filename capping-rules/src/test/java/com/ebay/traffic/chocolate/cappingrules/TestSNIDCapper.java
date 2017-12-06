@@ -67,11 +67,11 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
   @Test
   public void testSNIDCapperWithTimeWindow() throws Exception {
     SNIDCapper job = new SNIDCapper("TestSNIDCapper", "local[4]", TRANSACTION_TABLE_NAME,
-        RESULT_TABLE_NAME_WITH_TIME_WINDOW, startTime, stopTime, "EPN", 30);
+        RESULT_TABLE_NAME_WITH_TIME_WINDOW, startTime, stopTime, "EPN", 8);
     job.run();
     
     HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME_WITH_TIME_WINDOW);
-    Assert.assertEquals(12, getCount(resultTableItr));
+    Assert.assertEquals(5, getCount(resultTableItr));
     resultTableItr.close();
     
     job.stop();
@@ -85,7 +85,7 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
     hbaseUtility.getHBaseAdmin().createTable(tableDesc);
     
     Calendar c = Calendar.getInstance();
-    c.add(Calendar.MINUTE, -10);
+    c.add(Calendar.MINUTE, -5);
     
     HTable transactionalTable = new HTable(TableName.valueOf(TRANSACTION_TABLE_NAME), HBaseConnection.getConnection());
     
@@ -106,7 +106,7 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
         (short) 10), "100", "CLICK", "EPN"));
     
     // click happens after impression on same host and different host with empty snid
-    c.add(Calendar.MINUTE, 1);
+    c.add(Calendar.MINUTE, -10);
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
         (short) 0), "", "IMPRESSION", "EPN"));
     c.add(Calendar.SECOND, 20);
@@ -150,7 +150,7 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
         (short) 1), "400", "CLICK", "EPN"));
     
     // click happens after impression on other channels
-    c.add(Calendar.MINUTE, 1);
+    c.add(Calendar.MINUTE, -5);
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
         (short) 0), "100", "IMPRESSION", "DAP"));
     c.add(Calendar.SECOND, 20);
@@ -162,7 +162,7 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
         (short) 2), "100", "CLICK", "DAP"));
   
     // click happens after impression on same host and different host before 30mins
-    c.add(Calendar.MINUTE, -60);
+    c.add(Calendar.MINUTE, -10);
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
         (short) 0), "100", "IMPRESSION", "EPN"));
     c.add(Calendar.SECOND, 20);

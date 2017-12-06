@@ -24,7 +24,7 @@ public class TempSNIDCapper extends AbstractCapper {
   }
   
   public TempSNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
-      stopTime, String channelType, Integer updateTimeWindow) throws java.text.ParseException {
+      stopTime, String channelType, int updateTimeWindow) throws java.text.ParseException {
     super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
   }
   
@@ -60,7 +60,7 @@ public class TempSNIDCapper extends AbstractCapper {
     
     JavaRDD<Result> hbaseData = readFromHabse();
     
-    snidCapper = new SNIDCapper(jobName(), mode(), originalTable, resultTable, startTime, stopTime, channelType);
+    snidCapper = new SNIDCapper(jobName(), mode(), originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
     JavaPairRDD<Long, SNIDCapperEvent> filterResult = this.filterWithCapper(hbaseData);
     
     snidCapper.writeToHbase(filterResult, resultTable);
