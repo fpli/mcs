@@ -159,40 +159,6 @@ public class IPCappingRuleJob extends BaseSparkJob {
   }
 
   /**
-   * Generate 10 bytes row key
-   *
-   * @param timestamp timestamp
-   * @param modValue  slice value
-   * @return row key byte array
-   */
-  public byte[] generateIdentifier(long timestamp, short modValue) {
-    byte[] snapshotID = Bytes.toBytes((timestamp & ~TIME_MASK) << 24l);
-
-    ByteArrayOutputStream streamStart = new ByteArrayOutputStream(10);
-    ByteBuffer bufferStart = ByteBuffer.allocate(Short.BYTES);
-    bufferStart.putShort(modValue);
-
-    try {
-      streamStart.write(bufferStart.array());
-      streamStart.write(snapshotID);
-    } catch (IOException e) {
-      logger.error("Failed to write modulo value to stream", e);
-    }
-
-    byte[] identifier = ByteBuffer.wrap(streamStart.toByteArray()).array();
-    return identifier;
-  }
-
-  /*
-    Get timestamp from row key identifier
-   */
-  public long getTimestampFromIdentifier(byte[] identifier) {
-    ByteBuffer buffer = ByteBuffer.allocate(10);
-    buffer.put(identifier);
-    return buffer.getLong(2) >>> 24l | HIGH_24;
-  }
-
-  /**
    * Filter IPCapping events. It reads all records from last time range. But only wirte records in last time window.
    * 1. Pick out click events.
    * 2. Group by records IP.
@@ -206,10 +172,10 @@ public class IPCappingRuleJob extends BaseSparkJob {
    *
    */
   public JavaRDD<IPCappingEvent> filterEvents(String table) throws Exception {
-    JavaPairRDD<String, IPCappingEvent> pairRDD = readEvents(table);
-    JavaPairRDD<String, IPCappingEvent> clickRDD = pairRDD.filter(new FilterClick());
-    JavaPairRDD<String, Iterable<IPCappingEvent>>  groupByIpRDD = clickRDD.groupByKey();
-    JavaRDD<IPCappingEvent> resultRDD = groupByIpRDD.flatMap(new FilterOnIp());
+    JavaPairRDD<String, IPCappingEvent> eventRDD = readEvents(table);
+    JavaPairRDD<String, IPCappingEvent> clickRDD = eventRDD.filter(new FilterClick());
+    JavaPairRDD<String, Iterable<IPCappingEvent>>  groupedClickRDD = clickRDD.groupByKey();
+    JavaRDD<IPCappingEvent> resultRDD = groupedClickRDD.flatMap(new FilterOnIp());
     return resultRDD;
   }
 
@@ -218,7 +184,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
    * @param filteredRecords Last time window records which have already run the filter
    */
   public void writeFilteredEvents(JavaRDD<IPCappingEvent> filteredRecords) {
-    JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = filteredRecords.mapToPair(new WriteHBaseMapFunc());
+    JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = filteredRecords.mapToPair(new Event2HBasePutFunc());
     hbasePuts.foreachPartition(new HBasePutFunc());
   }
 
@@ -268,14 +234,14 @@ public class IPCappingRuleJob extends BaseSparkJob {
         }
       });
 
-    JavaPairRDD<String, IPCappingEvent> pairRDD = javaRDD.mapToPair(new ReadDataFromHase());
+    JavaPairRDD<String, IPCappingEvent> pairRDD = javaRDD.mapToPair(new HBaseResult2EventFunc());
     return pairRDD;
   }
 
   /**
    * Read data from HBase and create JavaPairRDD with IP as key, Event as value.
    */
-  public class ReadDataFromHase implements PairFunction<Result, String, IPCappingEvent> {
+  public class HBaseResult2EventFunc implements PairFunction<Result, String, IPCappingEvent> {
     public Tuple2<String, IPCappingEvent> call(Result entry) throws Exception {
       IPCappingEvent ipCappingEvent = new IPCappingEvent();
       ipCappingEvent.setIdentifier(entry.getRow());
@@ -339,7 +305,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
   /**
    * pairFunction used to map poj to HBase for writing
    */
-  class WriteHBaseMapFunc implements PairFunction<IPCappingEvent, ImmutableBytesWritable, Put> {
+  class Event2HBasePutFunc implements PairFunction<IPCappingEvent, ImmutableBytesWritable, Put> {
     @Override
     public Tuple2<ImmutableBytesWritable, Put> call(IPCappingEvent event)
       throws Exception {
@@ -371,6 +337,40 @@ public class IPCappingRuleJob extends BaseSparkJob {
       }
       transactionalTable.close();
     }
+  }
+
+  /**
+   * Generate 10 bytes row key
+   *
+   * @param timestamp timestamp
+   * @param modValue  slice value
+   * @return row key byte array
+   */
+  public byte[] generateIdentifier(long timestamp, short modValue) {
+    byte[] snapshotID = Bytes.toBytes((timestamp & ~TIME_MASK) << 24l);
+
+    ByteArrayOutputStream streamStart = new ByteArrayOutputStream(10);
+    ByteBuffer bufferStart = ByteBuffer.allocate(Short.BYTES);
+    bufferStart.putShort(modValue);
+
+    try {
+      streamStart.write(bufferStart.array());
+      streamStart.write(snapshotID);
+    } catch (IOException e) {
+      logger.error("Failed to write modulo value to stream", e);
+    }
+
+    byte[] identifier = ByteBuffer.wrap(streamStart.toByteArray()).array();
+    return identifier;
+  }
+
+  /*
+    Get timestamp from row key identifier
+   */
+  public long getTimestampFromIdentifier(byte[] identifier) {
+    ByteBuffer buffer = ByteBuffer.allocate(10);
+    buffer.put(identifier);
+    return buffer.getLong(2) >>> 24l | HIGH_24;
   }
 
   /**
