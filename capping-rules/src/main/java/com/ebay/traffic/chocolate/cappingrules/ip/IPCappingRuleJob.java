@@ -29,13 +29,31 @@ import java.util.List;
  * @author xiangli4
  */
 public class IPCappingRuleJob extends BaseSparkJob {
+  // slf4j logger
   private final Logger logger;
+  // Rule name. It will be written to HBase if one record does not pass.
+  private final String RULE_NAME = "IPCappingRule";
+  // Capping passed column name.
+  private final String CAPPING_PASSED_COL = "capping_passed";
+  // Capping failed rule column name.
+  private final String CAPPING_FAILED_RULE_COL = "capping_failed_rule";
+  // Input table name. Read records from this table.
   private final String table;
+  // Result table name. In production we have it the same as input table.
   private final String resultTable;
+  // The scan stop time. In each job, it should be the current timestamp in millisecond.
   private final long time;
+  // The scan range. If it is a day, it will be 24*60*60*1000.
   private final long timeRange;
+  // Write HBase time window start time. The value is get from time - timeWindow.
+  private final long windowStartTime;
+  // IP count threshold. Used to judge is an IP is invalid.
   private final long threshold;
+  // Mask for the high 24 bits in a timestamp.
   private static final long TIME_MASK = 0xFFFFFFl << 40l;
+  // The high 26f bits of system time.
+  private static final long HIGH_24 = 0x10000000000l;
+  // Constant representing the default modulus for modulus-based row identifiers.
   private static short MOD = 293;
 
   /**
@@ -49,25 +67,26 @@ public class IPCappingRuleJob extends BaseSparkJob {
    * @param timeRange time range from start time to end time
    * @param threshold ip occurance threshold
    */
-  public IPCappingRuleJob(String jobName, String mode, String table, String resultTable, long time, long timeRange, long threshold) {
+  public IPCappingRuleJob(String jobName, String mode, String table, String resultTable, long time, long timeRange, long timeWindow, long threshold) {
     super(jobName, mode, false);
     this.table = table;
     this.resultTable = resultTable;
     this.time = time;
     this.timeRange = timeRange;
+    this.windowStartTime = time - timeWindow;
     this.threshold = threshold;
     this.logger = logger();
   }
 
   /**
-   * Main function
+   * Main function. Get parameters and then run the job.
    * @param args
    */
   public static void main(String[] args) {
     CommandLine cmd = parseOptions(args);
     IPCappingRuleJob job = new IPCappingRuleJob(cmd.getOptionValue("jobName"),
       cmd.getOptionValue("mode"), cmd.getOptionValue("table"), cmd.getOptionValue("resultTable"), Long.parseLong(cmd.getOptionValue("time")),
-      Long.parseLong(cmd.getOptionValue("timeRange")), Long.parseLong(cmd.getOptionValue("threshold")));
+      Long.parseLong(cmd.getOptionValue("timeRange")), Long.parseLong(cmd.getOptionValue("timeWindow")), Long.parseLong(cmd.getOptionValue("threshold")));
     try {
       job.run();
     } catch (Exception ex) {
@@ -107,6 +126,10 @@ public class IPCappingRuleJob extends BaseSparkJob {
     timeRange.setRequired(true);
     options.addOption(timeRange);
 
+    Option timeWindow = new Option((String) null, "timeWindow", true, "time window for IP capping rule");
+    timeWindow.setRequired(true);
+    options.addOption(timeWindow);
+
     Option threshold = new Option((String) null, "threshold", true, "threshold for IP capping rule");
     threshold.setRequired(true);
     options.addOption(threshold);
@@ -120,7 +143,6 @@ public class IPCappingRuleJob extends BaseSparkJob {
     } catch (ParseException e) {
       System.out.println(e.getMessage());
       formatter.printHelp("IPCappingRuleJob", options);
-
       System.exit(1);
       return null;
     }
@@ -139,7 +161,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
   /**
    * Generate 10 bytes row key
    *
-   * @param timestamp start time
+   * @param timestamp timestamp
    * @param modValue  slice value
    * @return row key byte array
    */
@@ -161,11 +183,27 @@ public class IPCappingRuleJob extends BaseSparkJob {
     return identifier;
   }
 
+  /*
+    Get timestamp from row key identifier
+   */
+  public long getTimestampFromIdentifier(byte[] identifier) {
+    ByteBuffer buffer = ByteBuffer.allocate(10);
+    buffer.put(identifier);
+    return buffer.getLong(2) >>> 24l | HIGH_24;
+  }
+
   /**
-   * Filter ipcapping events
+   * Filter IPCapping events. It reads all records from last time range. But only wirte records in last time window.
+   * 1. Pick out click events.
+   * 2. Group by records IP.
+   * 3. Count each group to check if it is larger than threshold.
+   * 4. Mark each record if it is passed.
+   *    Failed Records: capping_failed_rule = IPCaIPCappingRule, capping_passed = false
+   *    Passed Records: capping_failed_rule = None,              capping_passed = true
    *
-   * @param table hbase table
-   * @return invalids events which don't pass the capping rule
+   * @param table HBase table we read from
+   * @return JavaRDD containing records in last time window.
+   *
    */
   public JavaRDD<IPCappingEvent> filterEvents(String table) throws Exception {
     JavaPairRDD<String, IPCappingEvent> pairRDD = readEvents(table);
@@ -176,8 +214,8 @@ public class IPCappingRuleJob extends BaseSparkJob {
   }
 
   /**
-   * Write records back to hbase
-   * @param filteredRecords
+   * Write records back to HBase
+   * @param filteredRecords Last time window records which have already run the filter
    */
   public void writeFilteredEvents(JavaRDD<IPCappingEvent> filteredRecords) {
     JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = filteredRecords.mapToPair(new WriteHBaseMapFunc());
@@ -185,10 +223,10 @@ public class IPCappingRuleJob extends BaseSparkJob {
   }
 
   /**
-   * Read events into dataframe
+   * Read events by slices into JavaPairRDD with IP as Key, records with this IP as Value
    *
-   * @param table hbase table
-   * @return dataframe containing the data in the scan range
+   * @param table HBase table to read from
+   * @return JavaPariRDD containing the data in the scan range
    */
   public JavaPairRDD<String, IPCappingEvent> readEvents(final String table) {
     List<Integer> slices = new ArrayList<Integer>(MOD);
@@ -235,7 +273,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
   }
 
   /**
-   * Read data from hbase and create JavaPairRDD with IP as key, Event as value
+   * Read data from HBase and create JavaPairRDD with IP as key, Event as value.
    */
   public class ReadDataFromHase implements PairFunction<Result, String, IPCappingEvent> {
     public Tuple2<String, IPCappingEvent> call(Result entry) throws Exception {
@@ -255,10 +293,9 @@ public class IPCappingRuleJob extends BaseSparkJob {
   }
 
   /**
-   * Only need Click Events
+   * IPCapping only cares click events
    */
   class FilterClick implements Function<Tuple2<String, IPCappingEvent>, Boolean> {
-
     @Override
     public Boolean call(Tuple2<String, IPCappingEvent> eventTuple) throws Exception {
       return eventTuple._2.getChannelAction().equals("CLICK");
@@ -266,10 +303,9 @@ public class IPCappingRuleJob extends BaseSparkJob {
   }
 
   /**
-   * Filter on IP count
+   * Filter on IP count. We only return records whose timestamp are in the current time window range.
    */
   class FilterOnIp implements FlatMapFunction<Tuple2<String, Iterable<IPCappingEvent>>, IPCappingEvent> {
-
     @Override
     public Iterator<IPCappingEvent> call(Tuple2<String, Iterable<IPCappingEvent>> stringIterableTuple2) throws
     Exception {
@@ -285,19 +321,23 @@ public class IPCappingRuleJob extends BaseSparkJob {
         IPCappingEvent event = iterator2.next();
         if(count > threshold) {
           event.setCappingPassed(false);
-          event.setCappingFailedRule("IPCappingRule");
+          event.setCappingFailedRule(RULE_NAME);
         }
         else {
           event.setCappingPassed(true);
         }
-        result.add(event);
+        //Only write last 30 minutes data
+        long eventTimestamp = getTimestampFromIdentifier(event.getIdentifier());
+        if(eventTimestamp > windowStartTime) {
+          result.add(event);
+        }
       }
       return result.iterator();
     }
   }
 
   /**
-   * pairFunction used to map poj to hbase for writing
+   * pairFunction used to map poj to HBase for writing
    */
   class WriteHBaseMapFunc implements PairFunction<IPCappingEvent, ImmutableBytesWritable, Put> {
     @Override
@@ -305,10 +345,10 @@ public class IPCappingRuleJob extends BaseSparkJob {
       throws Exception {
       Put put = new Put(event.getIdentifier());
       put.add(Bytes.toBytes("x"),
-        Bytes.toBytes("capping_passed"),
+        Bytes.toBytes(CAPPING_PASSED_COL),
         Bytes.toBytes(event.isCappingPassed()));
       put.add(Bytes.toBytes("x"),
-        Bytes.toBytes("capping_failed_rule"),
+        Bytes.toBytes(CAPPING_FAILED_RULE_COL),
         Bytes.toBytes(event.getCappingFailedRule()));
       return new Tuple2<ImmutableBytesWritable, Put>(
         new ImmutableBytesWritable(), put);
