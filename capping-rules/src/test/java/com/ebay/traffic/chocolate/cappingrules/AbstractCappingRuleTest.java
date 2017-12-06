@@ -7,8 +7,8 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.io.compress.Compression;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -19,37 +19,37 @@ import java.sql.Timestamp;
  */
 public abstract class AbstractCappingRuleTest {
   
-  protected final String TRANSACTION_TABLE_NAME = "prod_transactional";
-  protected final String RESULT_TABLE_NAME = "capping_result";
-  protected final String TRANSACTION_CF_DEFAULT = "x";
-  protected HBaseTestingUtility hbaseUtility;
+  protected static final String TRANSACTION_TABLE_NAME = "prod_transactional";
+  protected static final String RESULT_TABLE_NAME = "capping_result";
+  protected static final String TRANSACTION_CF_DEFAULT = "x";
+  protected static HBaseTestingUtility hbaseUtility;
   
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
     hbaseUtility = new HBaseTestingUtility();
     hbaseUtility.startMiniCluster();
     
     HBaseConnection.setConfiguration(hbaseUtility.getConfiguration());
     
-    initHBaseTransactionTable();
-    initHBaseCappingResultTable();
+    //initHBaseTransactionTable();
+    initHBaseCappingResultTable(RESULT_TABLE_NAME);
   }
   
-  @After
-  public void tearDown() throws Exception {
+  @AfterClass
+  public static void tearDown() throws Exception {
     hbaseUtility.shutdownMiniCluster();
   }
   
-  protected void initHBaseCappingResultTable() throws IOException {
-    HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(RESULT_TABLE_NAME));
+  protected static void initHBaseCappingResultTable(String resultTable) throws IOException {
+    HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(resultTable));
     tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT)
         .setCompressionType(Compression.Algorithm.NONE));
     hbaseUtility.getHBaseAdmin().createTable(tableDesc);
   }
   
-  protected abstract void initHBaseTransactionTable() throws IOException;
+  //protected abstract void initHBaseTransactionTable() throws IOException;
   
-  protected <T> void putCell(Put put, String family, String qualifier, T value) {
+  protected static  <T> void putCell(Put put, String family, String qualifier, T value) {
     byte[] bytes;
     if (value instanceof Long) {
       bytes = Bytes.toBytes(((Long) value).longValue());
@@ -69,7 +69,7 @@ public abstract class AbstractCappingRuleTest {
     put.add(Bytes.toBytes(family), Bytes.toBytes(qualifier), bytes);
   }
   
-  protected int getCount(HBaseScanIterator iter) {
+  protected static int getCount(HBaseScanIterator iter) {
     int numberOfRow = 0;
     while (iter.hasNext()) {
       iter.next();

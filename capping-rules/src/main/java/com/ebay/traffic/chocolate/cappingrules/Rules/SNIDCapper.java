@@ -17,6 +17,7 @@ import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import scala.Tuple2;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +31,12 @@ public class SNIDCapper extends AbstractCapper {
       stopTime, String channelType) {
     super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType);
   }
+  
+  public SNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
+      stopTime, String channelType, int updateTimeWindow) throws java.text.ParseException {
+    super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
+  }
+  
   
   public static void main(String[] args) throws Exception {
     Options options = getJobOptions("ClickImp Mapping Rule");
@@ -46,10 +53,11 @@ public class SNIDCapper extends AbstractCapper {
       System.exit(1);
       return;
     }
-    
+  
     SNIDCapper job = new SNIDCapper(cmd.getOptionValue("jobName"),
         cmd.getOptionValue("mode"), cmd.getOptionValue("originalTable"), cmd.getOptionValue("resultTable"), cmd
-        .getOptionValue("startTime"), cmd.getOptionValue("endTime"), cmd.getOptionValue("channelType"));
+        .getOptionValue("startTime"), cmd.getOptionValue("endTime"), cmd.getOptionValue("channelType"), Integer.valueOf(cmd
+        .getOptionValue("updateTimeWindow")));
     try {
       job.run();
     } finally {
@@ -124,6 +132,9 @@ public class SNIDCapper extends AbstractCapper {
       
       Iterator<SNIDCapperEvent> snidEventIte2 = t._2.iterator();
       SNIDCapperEvent clickEvent = null;
+      long stopTimestampWindow = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(stopTime).getTime();
+      stopTimestampWindow = stopTimestampWindow - updateTimeWindow * 60 * 1000;
+      long clickTimestamp = 0;
       while (snidEventIte2.hasNext()) {
         clickEvent = snidEventIte2.next();
         if (StringUtil.isEmpty(impEvent.getSnid())) {
@@ -133,7 +144,12 @@ public class SNIDCapper extends AbstractCapper {
           if (clickEvent.isImpressed()) {
             continue;
           }
-          if (IdentifierUtil.getTimeMillisFromRowkey(clickEvent.getRowIdentifier()) > impTime) {
+          clickTimestamp = IdentifierUtil.getTimeMillisFromRowkey(clickEvent.getRowIdentifier());
+          //only write latest clicks by time window
+          if(updateTimeWindow > 0 && clickTimestamp < stopTimestampWindow){
+            continue;
+          }
+          if (clickTimestamp > impTime) {
             clickEvent.setImpressed(true);
             clickEvent.setImpRowIdentifier(impRowIdentifier);
           } else {

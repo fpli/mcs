@@ -23,6 +23,11 @@ public class TempSNIDCapper extends AbstractCapper {
     super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType);
   }
   
+  public TempSNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
+      stopTime, String channelType, Integer updateTimeWindow) throws java.text.ParseException {
+    super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
+  }
+  
   public static void main(String[] args) throws Exception {
     Options options = getJobOptions("ClickImp Mapping Rule");
     
@@ -34,14 +39,15 @@ public class TempSNIDCapper extends AbstractCapper {
       cmd = parser.parse(options, args);
     } catch (ParseException e) {
       System.out.println(e.getMessage());
-      formatter.printHelp("SNIDCappingRuleJob", options);
+      formatter.printHelp("TempSNIDCappingRuleJob", options);
       System.exit(1);
       return;
     }
     
     TempSNIDCapper job = new TempSNIDCapper(cmd.getOptionValue("jobName"),
         cmd.getOptionValue("mode"), cmd.getOptionValue("originalTable"), cmd.getOptionValue("resultTable"), cmd
-        .getOptionValue("startTime"), cmd.getOptionValue("endTime"),  cmd.getOptionValue("channelType"));
+        .getOptionValue("startTime"), cmd.getOptionValue("endTime"),  cmd.getOptionValue("channelType"), Integer.valueOf(cmd
+        .getOptionValue("updateTimeWindow")));
     try {
       job.run();
     } finally {

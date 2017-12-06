@@ -32,8 +32,9 @@ public abstract class AbstractCapper extends BaseSparkJob {
   protected static short MOD = 293;
   //spark job input parameter
   protected final String originalTable, resultTable, startTime, stopTime, channelType;
+  //update HBase data time window - in minutes
+  protected int updateTimeWindow = 0;
   protected static final String INPUT_DATE_FORMAT = "yyyy-MM-dd hh:mm:ss";
-  
   
   public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String startTime,
                         String stopTime, String channelType) {
@@ -43,6 +44,12 @@ public abstract class AbstractCapper extends BaseSparkJob {
     this.startTime = startTime;
     this.stopTime = stopTime;
     this.channelType = channelType;
+  }
+  
+  public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String startTime,
+                        String stopTime, String channelType, Integer updateTimeWindow) throws ParseException {
+    this(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType);
+    this.updateTimeWindow = updateTimeWindow;
   }
   
   public static Options getJobOptions(String cappingRuleDescription) {
@@ -73,6 +80,10 @@ public abstract class AbstractCapper extends BaseSparkJob {
     Option channelType = new Option((String) null, "channelType", true, "the channelType for " + cappingRuleDescription);
     endTime.setRequired(true);
     options.addOption(channelType);
+    
+    Option updateTimeWindow = new Option((String) null, "updateTimeWindow", true, "the updateTimeWindow for " + cappingRuleDescription);
+    updateTimeWindow.setRequired(false);
+    options.addOption(updateTimeWindow);
     
     return options;
   }

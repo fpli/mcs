@@ -9,6 +9,7 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.io.compress.Compression;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -17,12 +18,17 @@ import java.util.Calendar;
 
 public class TestTempSNIDCapper extends AbstractCappingRuleTest {
   
-  @Test
-  public void testTempSNIDCapper() throws Exception {
+  @Before
+  public void initialHbaseTable() throws IOException {
+    initHBaseTransactionTable();
+    
     HBaseScanIterator iter = new HBaseScanIterator(TRANSACTION_TABLE_NAME);
     Assert.assertEquals(19, getCount(iter));
     iter.close();
-    
+  }
+  
+  @Test
+  public void testTempSNIDCapper() throws Exception {
     Calendar c = Calendar.getInstance();
     String stopTime = new SimpleDateFormat("yyyy-MM-dd 59:59:59").format(c.getTime());
     c.add(Calendar.DATE, -1);
@@ -39,7 +45,7 @@ public class TestTempSNIDCapper extends AbstractCappingRuleTest {
     job.stop();
   }
   
-  @Override
+  
   protected void initHBaseTransactionTable() throws IOException {
     
     HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(TRANSACTION_TABLE_NAME));
