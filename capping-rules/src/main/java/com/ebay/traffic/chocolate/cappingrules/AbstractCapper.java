@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * Abstract Capper for all Capping rules
+ *
  * Created by yimeng on 11/12/17.
  */
 public abstract class AbstractCapper extends BaseSparkJob {
@@ -32,10 +34,21 @@ public abstract class AbstractCapper extends BaseSparkJob {
   protected static short MOD = 293;
   //spark job input parameter
   protected final String originalTable, resultTable, startTime, stopTime, channelType;
-  //update HBase data time window - in minutes
-  protected int updateTimeWindow = 0;
+  //update HBase data window start time
+  protected long updateWindowStartTime = 0;
   protected static final String INPUT_DATE_FORMAT = "yyyy-MM-dd hh:mm:ss";
   
+  /**
+   * Default Constructor without updateTimeWindow which will update all scanned data
+   *
+   * @param jobName       spark job name
+   * @param mode          spark submit mode
+   * @param originalTable HBase table which data queried from
+   * @param resultTable   HBase table which data stored in
+   * @param startTime     scan start time
+   * @param stopTime      scan stop time
+   * @param channelType   marketing channel like EPN, DAP, SEARCH
+   */
   public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String startTime,
                         String stopTime, String channelType) {
     super(jobName, mode, false);
@@ -46,12 +59,34 @@ public abstract class AbstractCapper extends BaseSparkJob {
     this.channelType = channelType;
   }
   
+  /**
+   * Constructor for Capping Rule with updateTimeWindow
+   *
+   * @param jobName          spark job name
+   * @param mode             spark submit mode
+   * @param originalTable    HBase table which data queried from
+   * @param resultTable      HBase table which data stored in
+   * @param startTime        scan start time
+   * @param stopTime         scan stop time
+   * @param channelType      marketing channel like EPN, DAP, SEARCH
+   * @param updateTimeWindow HBase data update time window
+   */
   public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String startTime,
                         String stopTime, String channelType, Integer updateTimeWindow) throws ParseException {
     this(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType);
-    this.updateTimeWindow = updateTimeWindow;
+    if(updateTimeWindow > 0){
+      updateWindowStartTime = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(stopTime).getTime();
+      updateWindowStartTime = updateWindowStartTime - updateTimeWindow * 60 * 1000;
+    }
   }
   
+  /**
+   * Get job running parameters
+   *
+   * @param cappingRuleDescription capping rule descriptions
+   *
+   * @return running params
+   */
   public static Options getJobOptions(String cappingRuleDescription) {
     Options options = new Options();
     Option jobName = new Option((String) null, "jobName", true, "The job name");
@@ -81,7 +116,7 @@ public abstract class AbstractCapper extends BaseSparkJob {
     endTime.setRequired(true);
     options.addOption(channelType);
     
-    Option updateTimeWindow = new Option((String) null, "updateTimeWindow", true, "the updateTimeWindow for " + cappingRuleDescription);
+    Option updateTimeWindow = new Option((String) null, "updateTimeWindow", true, "the timeWindowMinutes for " + cappingRuleDescription);
     updateTimeWindow.setRequired(false);
     options.addOption(updateTimeWindow);
     
@@ -138,10 +173,26 @@ public abstract class AbstractCapper extends BaseSparkJob {
     return javaRDD;
   }
   
+  /**
+   * Abstract method to filter data by specific capping rules
+   *
+   * @param hbaseData scaneed HBase data
+   *
+   * @return filtered data
+   */
   protected abstract <T> T filterWithCapper(JavaRDD<Result> hbaseData);
   
-  public abstract <T> void writeToHbase(T writeData, String table);
+  /**
+   * Abstract method to write data back to HBase by specific capping rules
+   *
+   * @param writeData filtered data
+   *
+   */
+  public abstract <T> void writeToHbase(T writeData);
   
+  /**
+   * Common method to write HBase which connect Hbase to write data
+   */
   public class PutDataToHase implements VoidFunction<Iterator<Tuple2<ImmutableBytesWritable, Put>>> {
     public void call(Iterator<Tuple2<ImmutableBytesWritable, Put>> tupleIter) throws IOException {
       

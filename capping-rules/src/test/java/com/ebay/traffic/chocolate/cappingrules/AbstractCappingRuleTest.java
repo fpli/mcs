@@ -4,6 +4,7 @@ import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.io.compress.Compression;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -23,6 +24,7 @@ public abstract class AbstractCappingRuleTest {
   protected static final String RESULT_TABLE_NAME = "capping_result";
   protected static final String TRANSACTION_CF_DEFAULT = "x";
   protected static HBaseTestingUtility hbaseUtility;
+  protected static HTable transactionalTable;
   
   @BeforeClass
   public static void setUp() throws Exception {
@@ -31,13 +33,21 @@ public abstract class AbstractCappingRuleTest {
     
     HBaseConnection.setConfiguration(hbaseUtility.getConfiguration());
     
-    //initHBaseTransactionTable();
+    initHBaseTransactionTable();
     initHBaseCappingResultTable(RESULT_TABLE_NAME);
   }
   
   @AfterClass
   public static void tearDown() throws Exception {
     hbaseUtility.shutdownMiniCluster();
+  }
+ 
+  protected static void initHBaseTransactionTable() throws IOException {
+    HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(TRANSACTION_TABLE_NAME));
+    tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT)
+        .setCompressionType(Compression.Algorithm.NONE));
+    hbaseUtility.getHBaseAdmin().createTable(tableDesc);
+    transactionalTable = new HTable(TableName.valueOf(TRANSACTION_TABLE_NAME), HBaseConnection.getConnection());
   }
   
   protected static void initHBaseCappingResultTable(String resultTable) throws IOException {

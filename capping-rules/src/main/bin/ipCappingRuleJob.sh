@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - IPCappingRuleJob
 
-usage="Usage: ipCappingRuleJob.sh [table] [resultTable] [time] [timeWindow] [updateTimeWindow] [threshold] using milisecond timestamp\n"
+usage="Usage: ipCappingRuleJob.sh [originalTable] [resultTable] [startTime] [endTime] [channelType] [updateTimeWindow] [threshold]"
 
 # if no args specified, show usage
 if [ $# -le 2 ]; then
@@ -14,12 +14,13 @@ bin=`cd "$bin">/dev/null; pwd`
 
 . ${bin}/chocolate-env.sh
 
-TABLE=$1
-RESULTABLE=$2
-TIME=$3
-TIMEWINDOW=$4
-UPDATETIMEWINDOW=$5
-THRESHOLD=$6
+ORIGINAL_TABLE=$1
+RESULT_TABLE=$2
+START_TIME=$3
+END_TIME=$4
+CHANNEL_TYPE=$5
+UPDATE_TIME_WINDOW=$6
+THRESHOLD=$7
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
@@ -35,7 +36,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.cappingrules.ip.IPCappingRuleJob \
+    --class com.ebay.traffic.chocolate.cappingrules.Rules.IPCapper \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
@@ -46,11 +47,12 @@ ${SPARK_HOME}/bin/spark-submit \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=8192 \
     ${bin}/../lib/chocolate-capping-rules-*.jar \
-      --jobName ${JOB_NAME} \
-      --mode yarn \
-      --table ${TABLE} \
-      --resultTable ${RESULTABLE} \
-      --time ${TIME} \
-      --timeWindow ${TIMEWINDOW} \
-      --updateTimeWindow ${UPDATETIMEWINDOW} \
-      --threshold ${THRESHOLD}
+     --jobName ${JOB_NAME} \
+     --mode yarn \
+     --originalTable ${ORIGINAL_TABLE} \
+     --resultTable ${RESULT_TABLE} \
+     --startTime "${START_TIME}" \
+     --endTime "${END_TIME}" \
+     --channelType ${CHANNEL_TYPE} \
+     --updateTimeWindow ${UPDATE_TIME_WINDOW} \
+     --threshold ${THRESHOLD}

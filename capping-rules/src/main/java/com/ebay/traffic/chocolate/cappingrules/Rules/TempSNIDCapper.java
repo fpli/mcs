@@ -12,11 +12,14 @@ import org.apache.spark.api.java.function.PairFunction;
 import scala.Tuple2;
 
 /**
+ * Temporary class for testing SNID Capping Rule
+ *
  * Created by yimeng on 11/12/17.
  */
 public class TempSNIDCapper extends AbstractCapper {
   
   private SNIDCapper snidCapper;
+  private int updateTimeWindow;
   
   public TempSNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
       stopTime, String channelType) {
@@ -26,6 +29,7 @@ public class TempSNIDCapper extends AbstractCapper {
   public TempSNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
       stopTime, String channelType, int updateTimeWindow) throws java.text.ParseException {
     super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
+    this.updateTimeWindow = updateTimeWindow;
   }
   
   public static void main(String[] args) throws Exception {
@@ -63,7 +67,7 @@ public class TempSNIDCapper extends AbstractCapper {
     snidCapper = new SNIDCapper(jobName(), mode(), originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
     JavaPairRDD<Long, SNIDCapperEvent> filterResult = this.filterWithCapper(hbaseData);
     
-    snidCapper.writeToHbase(filterResult, resultTable);
+    snidCapper.writeToHbase(filterResult);
   }
   
   @Override
@@ -77,7 +81,7 @@ public class TempSNIDCapper extends AbstractCapper {
   }
   
   @Override
-  public <T> void writeToHbase(T writeData, String table) {
+  public <T> void writeToHbase(T writeData) {
   }
   
   public class ReadDataFromHase implements PairFunction<Result, String, SNIDCapperEvent> {

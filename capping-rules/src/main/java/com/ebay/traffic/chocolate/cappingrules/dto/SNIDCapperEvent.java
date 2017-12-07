@@ -1,43 +1,20 @@
 package com.ebay.traffic.chocolate.cappingrules.dto;
 
-import java.io.Serializable;
-
 /**
  * Created by yimeng on 11/14/17.
  */
-public class SNIDCapperEvent implements Serializable {
-  private byte[] rowIdentifier;
+public class SNIDCapperEvent extends BaseEvent {
   private String snid;
-  private String channelAction;
   private boolean isImpressed;
   private byte[] impRowIdentifier;
-  private String channelType;
   
   public SNIDCapperEvent() {
-  
+    super();
   }
   
   public SNIDCapperEvent(byte[] rowIdentifier, String snid, String channelAction, String channelType) {
-    this.rowIdentifier = rowIdentifier;
+    super(rowIdentifier, channelType, channelAction);
     this.snid = snid;
-    this.channelAction = channelAction;
-    this.channelType = channelType;
-  }
-  
-  public String getChannelType() {
-    return channelType;
-  }
-  
-  public void setChannelType(String channelType) {
-    this.channelType = channelType;
-  }
-  
-  public byte[] getRowIdentifier() {
-    return rowIdentifier;
-  }
-  
-  public void setRowIdentifier(byte[] rowIdentifier) {
-    this.rowIdentifier = rowIdentifier;
   }
   
   public String getSnid() {
@@ -46,14 +23,6 @@ public class SNIDCapperEvent implements Serializable {
   
   public void setSnid(String snid) {
     this.snid = snid;
-  }
-  
-  public String getChannelAction() {
-    return channelAction;
-  }
-  
-  public void setChannelAction(String channelAction) {
-    this.channelAction = channelAction;
   }
   
   public boolean isImpressed() {
@@ -71,5 +40,4 @@ public class SNIDCapperEvent implements Serializable {
   public void setImpRowIdentifier(byte[] impRowIdentifier) {
     this.impRowIdentifier = impRowIdentifier;
   }
-  
 }
