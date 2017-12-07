@@ -98,11 +98,11 @@ public class SNIDCapper extends AbstractCapper {
   public class ReadDataFromHase implements PairFunction<Result, String, SNIDCapperEvent> {
     public Tuple2<String, SNIDCapperEvent> call(Result entry) throws Exception {
       Result r = entry;
-      String snid = Bytes.toString(r.getValue(HBaseConstant.COLUMN_FAMILY, Bytes.toBytes("snid")));
+      String snid = Bytes.toString(r.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("snid")));
       
       SNIDCapperEvent snidCapperEvent = new SNIDCapperEvent();
       snidCapperEvent.setRowIdentifier(r.getRow());
-      snidCapperEvent.setChannelAction(Bytes.toString(r.getValue(HBaseConstant.COLUMN_FAMILY, Bytes.toBytes("channel_action"))));
+      snidCapperEvent.setChannelAction(Bytes.toString(r.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("channel_action"))));
       snidCapperEvent.setSnid(snid);
       return new Tuple2<String, SNIDCapperEvent>(snid, snidCapperEvent);
     }
@@ -135,8 +135,10 @@ public class SNIDCapper extends AbstractCapper {
       long stopTimestampWindow = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(stopTime).getTime();
       stopTimestampWindow = stopTimestampWindow - updateTimeWindow * 60 * 1000;
       long clickTimestamp = 0;
+      byte[] clickRowIdentifier = null;
       while (snidEventIte2.hasNext()) {
         clickEvent = snidEventIte2.next();
+        clickRowIdentifier = clickEvent.getRowIdentifier();
         if (StringUtil.isEmpty(impEvent.getSnid())) {
           continue;
         }
@@ -144,7 +146,7 @@ public class SNIDCapper extends AbstractCapper {
           if (clickEvent.isImpressed()) {
             continue;
           }
-          clickTimestamp = IdentifierUtil.getTimeMillisFromRowkey(clickEvent.getRowIdentifier());
+          clickTimestamp = IdentifierUtil.getTimeMillisFromRowkey(clickRowIdentifier);
           //only write latest clicks by time window
           if(updateTimeWindow > 0 && clickTimestamp < stopTimestampWindow){
             continue;
@@ -155,7 +157,7 @@ public class SNIDCapper extends AbstractCapper {
           } else {
             clickEvent.setImpressed(false);
           }
-          results.add(new Tuple2<byte[], SNIDCapperEvent>(clickEvent.getRowIdentifier(), clickEvent));
+          results.add(new Tuple2<byte[], SNIDCapperEvent>(clickRowIdentifier, clickEvent));
         }
       }
       return results.iterator();
@@ -166,8 +168,8 @@ public class SNIDCapper extends AbstractCapper {
     public Tuple2<ImmutableBytesWritable, Put> call(SNIDCapperEvent snidCapperEvent)
         throws Exception {
       Put put = new Put(snidCapperEvent.getRowIdentifier());
-      put.add(HBaseConstant.COLUMN_FAMILY, Bytes.toBytes("is_impressed"), Bytes.toBytes(snidCapperEvent.isImpressed()));
-      put.add(HBaseConstant.COLUMN_FAMILY, Bytes.toBytes("imp_row_key"), snidCapperEvent.getImpRowIdentifier());
+      put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("is_impressed"), Bytes.toBytes(snidCapperEvent.isImpressed()));
+      put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("imp_row_key"), snidCapperEvent.getImpRowIdentifier());
       return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
     }
   }

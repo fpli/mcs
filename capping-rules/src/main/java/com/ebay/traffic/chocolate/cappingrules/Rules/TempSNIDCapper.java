@@ -84,8 +84,8 @@ public class TempSNIDCapper extends AbstractCapper {
     public Tuple2<String, SNIDCapperEvent> call(Result entry) throws Exception {
       SNIDCapperEvent snidCapperEvent = new SNIDCapperEvent();
       snidCapperEvent.setRowIdentifier(entry.getRow());
-      snidCapperEvent.setChannelAction(Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY, Bytes.toBytes("channel_action"))));
-      String ipAddress = Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY, Bytes.toBytes("request_headers")));
+      snidCapperEvent.setChannelAction(Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("channel_action"))));
+      String ipAddress = Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("request_headers")));
       String[] ipStr = ipAddress.split("X-eBay-Client-IP:");
       if (ipStr.length > 1) {
         ipAddress = ipStr[1];

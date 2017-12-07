@@ -38,32 +38,31 @@ public class TestTempSNIDCapper extends AbstractCappingRuleTest {
     startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
   }
   
-  
-//  @Test
-//  public void testTempSNIDCapper() throws Exception {
-//    TempSNIDCapper job = new TempSNIDCapper("TestTempSNIDCapper", "local[4]", TRANSACTION_TABLE_NAME,
-//        RESULT_TABLE_NAME, startTime, stopTime, null);
-//    job.run();
-//
-//    HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME);
-//    Assert.assertEquals(20, getCount(resultTableItr));
-//    resultTableItr.close();
-//
-//    job.stop();
-//  }
-//
-//  @Test
-//  public void testTempSNIDCapperWithChannel() throws Exception {
-//    TempSNIDCapper job = new TempSNIDCapper("TestTempSNIDCapper", "local[4]", TRANSACTION_TABLE_NAME,
-//        RESULT_TABLE_NAME_WITH_CHANNEL, startTime, stopTime, "EPN");
-//    job.run();
-//
-//    HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME_WITH_CHANNEL);
-//    Assert.assertEquals(17, getCount(resultTableItr));
-//    resultTableItr.close();
-//
-//    job.stop();
-//  }
+  @Test
+  public void testTempSNIDCapper() throws Exception {
+    TempSNIDCapper job = new TempSNIDCapper("TestTempSNIDCapper", "local[4]", TRANSACTION_TABLE_NAME,
+        RESULT_TABLE_NAME, startTime, stopTime, null);
+    job.run();
+
+    HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME);
+    Assert.assertEquals(20, getCount(resultTableItr));
+    resultTableItr.close();
+
+    job.stop();
+  }
+
+  @Test
+  public void testTempSNIDCapperWithChannel() throws Exception {
+    TempSNIDCapper job = new TempSNIDCapper("TestTempSNIDCapper", "local[4]", TRANSACTION_TABLE_NAME,
+        RESULT_TABLE_NAME_WITH_CHANNEL, startTime, stopTime, "EPN");
+    job.run();
+
+    HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME_WITH_CHANNEL);
+    Assert.assertEquals(17, getCount(resultTableItr));
+    resultTableItr.close();
+
+    job.stop();
+  }
   
   @Test
   public void testTempSNIDCapperWithTimeWindow() throws Exception {
