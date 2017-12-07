@@ -3,7 +3,9 @@ package com.ebay.traffic.chocolate.cappingrules.Rules;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
 import com.ebay.traffic.chocolate.cappingrules.IdentifierUtil;
+import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperEvent;
+import jodd.util.StringUtil;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -15,6 +17,7 @@ import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import scala.Tuple2;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -25,9 +28,15 @@ import java.util.List;
 public class SNIDCapper extends AbstractCapper {
   
   public SNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
-      stopTime) {
-    super(jobName, mode, originalTable, resultTable, startTime, stopTime);
+      stopTime, String channelType) {
+    super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType);
   }
+  
+  public SNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
+      stopTime, String channelType, int updateTimeWindow) throws java.text.ParseException {
+    super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
+  }
+  
   
   public static void main(String[] args) throws Exception {
     Options options = getJobOptions("ClickImp Mapping Rule");
@@ -44,10 +53,11 @@ public class SNIDCapper extends AbstractCapper {
       System.exit(1);
       return;
     }
-    
+  
     SNIDCapper job = new SNIDCapper(cmd.getOptionValue("jobName"),
         cmd.getOptionValue("mode"), cmd.getOptionValue("originalTable"), cmd.getOptionValue("resultTable"), cmd
-        .getOptionValue("startTime"), cmd.getOptionValue("endTime"));
+        .getOptionValue("startTime"), cmd.getOptionValue("endTime"), cmd.getOptionValue("channelType"), Integer.valueOf(cmd
+        .getOptionValue("updateTimeWindow")));
     try {
       job.run();
     } finally {
@@ -88,11 +98,11 @@ public class SNIDCapper extends AbstractCapper {
   public class ReadDataFromHase implements PairFunction<Result, String, SNIDCapperEvent> {
     public Tuple2<String, SNIDCapperEvent> call(Result entry) throws Exception {
       Result r = entry;
-      String snid = Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("snid")));
+      String snid = Bytes.toString(r.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("snid")));
       
       SNIDCapperEvent snidCapperEvent = new SNIDCapperEvent();
       snidCapperEvent.setRowIdentifier(r.getRow());
-      snidCapperEvent.setChannelAction(Bytes.toString(r.getValue(columnFamily, Bytes.toBytes("channel_action"))));
+      snidCapperEvent.setChannelAction(Bytes.toString(r.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("channel_action"))));
       snidCapperEvent.setSnid(snid);
       return new Tuple2<String, SNIDCapperEvent>(snid, snidCapperEvent);
     }
@@ -105,10 +115,14 @@ public class SNIDCapper extends AbstractCapper {
       List<Tuple2<byte[], SNIDCapperEvent>> results = new ArrayList<Tuple2<byte[], SNIDCapperEvent>>();
       Iterator<SNIDCapperEvent> snidEventIte1 = t._2.iterator();
       byte[] impRowIdentifier = null;
-      long impTime = Long.MAX_VALUE;;
+      long impTime = Long.MAX_VALUE;
+      ;
       SNIDCapperEvent impEvent = null;
       while (snidEventIte1.hasNext()) {
         impEvent = snidEventIte1.next();
+        if (StringUtil.isEmpty(impEvent.getSnid())) {
+          continue;
+        }
         if (ChannelAction.IMPRESSION.name().equalsIgnoreCase(impEvent.getChannelAction())) {
           impRowIdentifier = impEvent.getRowIdentifier();
           impTime = IdentifierUtil.getTimeMillisFromRowkey(impRowIdentifier);
@@ -118,16 +132,32 @@ public class SNIDCapper extends AbstractCapper {
       
       Iterator<SNIDCapperEvent> snidEventIte2 = t._2.iterator();
       SNIDCapperEvent clickEvent = null;
+      long stopTimestampWindow = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(stopTime).getTime();
+      stopTimestampWindow = stopTimestampWindow - updateTimeWindow * 60 * 1000;
+      long clickTimestamp = 0;
+      byte[] clickRowIdentifier = null;
       while (snidEventIte2.hasNext()) {
         clickEvent = snidEventIte2.next();
+        clickRowIdentifier = clickEvent.getRowIdentifier();
+        if (StringUtil.isEmpty(impEvent.getSnid())) {
+          continue;
+        }
         if (ChannelAction.CLICK.name().equalsIgnoreCase(clickEvent.getChannelAction())) {
-          if (IdentifierUtil.getTimeMillisFromRowkey(clickEvent.getRowIdentifier()) > impTime) {
+          if (clickEvent.isImpressed()) {
+            continue;
+          }
+          clickTimestamp = IdentifierUtil.getTimeMillisFromRowkey(clickRowIdentifier);
+          //only write latest clicks by time window
+          if(updateTimeWindow > 0 && clickTimestamp < stopTimestampWindow){
+            continue;
+          }
+          if (clickTimestamp > impTime) {
             clickEvent.setImpressed(true);
             clickEvent.setImpRowIdentifier(impRowIdentifier);
-          }else{
+          } else {
             clickEvent.setImpressed(false);
           }
-          results.add(new Tuple2<byte[], SNIDCapperEvent>(clickEvent.getRowIdentifier(), clickEvent));
+          results.add(new Tuple2<byte[], SNIDCapperEvent>(clickRowIdentifier, clickEvent));
         }
       }
       return results.iterator();
@@ -138,8 +168,8 @@ public class SNIDCapper extends AbstractCapper {
     public Tuple2<ImmutableBytesWritable, Put> call(SNIDCapperEvent snidCapperEvent)
         throws Exception {
       Put put = new Put(snidCapperEvent.getRowIdentifier());
-      put.add(columnFamily, Bytes.toBytes("is_impressed"), Bytes.toBytes(snidCapperEvent.isImpressed()));
-      put.add(columnFamily, Bytes.toBytes("imp_row_key"), snidCapperEvent.getImpRowIdentifier());
+      put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("is_impressed"), Bytes.toBytes(snidCapperEvent.isImpressed()));
+      put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("imp_row_key"), snidCapperEvent.getImpRowIdentifier());
       return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
     }
   }

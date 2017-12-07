@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.cappingrules.Rules;
 
 import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
+import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperEvent;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.hbase.client.Result;
@@ -15,9 +16,16 @@ import scala.Tuple2;
  */
 public class TempSNIDCapper extends AbstractCapper {
   
+  private SNIDCapper snidCapper;
+  
   public TempSNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
-      stopTime) {
-    super(jobName, mode, originalTable, resultTable, startTime, stopTime);
+      stopTime, String channelType) {
+    super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType);
+  }
+  
+  public TempSNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
+      stopTime, String channelType, int updateTimeWindow) throws java.text.ParseException {
+    super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
   }
   
   public static void main(String[] args) throws Exception {
@@ -31,14 +39,15 @@ public class TempSNIDCapper extends AbstractCapper {
       cmd = parser.parse(options, args);
     } catch (ParseException e) {
       System.out.println(e.getMessage());
-      formatter.printHelp("SNIDCappingRuleJob", options);
+      formatter.printHelp("TempSNIDCappingRuleJob", options);
       System.exit(1);
       return;
     }
     
     TempSNIDCapper job = new TempSNIDCapper(cmd.getOptionValue("jobName"),
         cmd.getOptionValue("mode"), cmd.getOptionValue("originalTable"), cmd.getOptionValue("resultTable"), cmd
-        .getOptionValue("startTime"), cmd.getOptionValue("endTime"));
+        .getOptionValue("startTime"), cmd.getOptionValue("endTime"),  cmd.getOptionValue("channelType"), Integer.valueOf(cmd
+        .getOptionValue("updateTimeWindow")));
     try {
       job.run();
     } finally {
@@ -46,19 +55,16 @@ public class TempSNIDCapper extends AbstractCapper {
     }
   }
   
-  private SNIDCapper snidCapper;
-  
   @Override
   public void run() throws Exception {
     
     JavaRDD<Result> hbaseData = readFromHabse();
-  
-    snidCapper = new SNIDCapper(jobName(), mode(), originalTable, resultTable, startTime, stopTime);
+    
+    snidCapper = new SNIDCapper(jobName(), mode(), originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
     JavaPairRDD<Long, SNIDCapperEvent> filterResult = this.filterWithCapper(hbaseData);
-  
+    
     snidCapper.writeToHbase(filterResult, resultTable);
   }
-  
   
   @Override
   public <T> T filterWithCapper(JavaRDD<Result> hbaseData) {
@@ -78,8 +84,8 @@ public class TempSNIDCapper extends AbstractCapper {
     public Tuple2<String, SNIDCapperEvent> call(Result entry) throws Exception {
       SNIDCapperEvent snidCapperEvent = new SNIDCapperEvent();
       snidCapperEvent.setRowIdentifier(entry.getRow());
-      snidCapperEvent.setChannelAction(Bytes.toString(entry.getValue(columnFamily, Bytes.toBytes("channel_action"))));
-      String ipAddress = Bytes.toString(entry.getValue(columnFamily, Bytes.toBytes("request_headers")));
+      snidCapperEvent.setChannelAction(Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("channel_action"))));
+      String ipAddress = Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("request_headers")));
       String[] ipStr = ipAddress.split("X-eBay-Client-IP:");
       if (ipStr.length > 1) {
         ipAddress = ipStr[1];

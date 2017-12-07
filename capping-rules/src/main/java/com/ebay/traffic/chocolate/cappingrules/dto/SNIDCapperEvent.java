@@ -11,15 +11,25 @@ public class SNIDCapperEvent implements Serializable {
   private String channelAction;
   private boolean isImpressed;
   private byte[] impRowIdentifier;
+  private String channelType;
   
   public SNIDCapperEvent() {
   
   }
   
-  public SNIDCapperEvent(byte[] rowIdentifier, String snid, String channelAction) {
+  public SNIDCapperEvent(byte[] rowIdentifier, String snid, String channelAction, String channelType) {
     this.rowIdentifier = rowIdentifier;
     this.snid = snid;
     this.channelAction = channelAction;
+    this.channelType = channelType;
+  }
+  
+  public String getChannelType() {
+    return channelType;
+  }
+  
+  public void setChannelType(String channelType) {
+    this.channelType = channelType;
   }
   
   public byte[] getRowIdentifier() {
@@ -37,19 +47,19 @@ public class SNIDCapperEvent implements Serializable {
   public void setSnid(String snid) {
     this.snid = snid;
   }
-
+  
   public String getChannelAction() {
     return channelAction;
   }
-
+  
   public void setChannelAction(String channelAction) {
     this.channelAction = channelAction;
   }
-
+  
   public boolean isImpressed() {
     return isImpressed;
   }
-
+  
   public void setImpressed(boolean impressed) {
     isImpressed = impressed;
   }

@@ -20,7 +20,7 @@ public class IdentifierUtil {
    * Mask for the high 24 bits in a timestamp
    */
   public static final long TIME_MASK = 0xFFFFFFl << 40l;
-  protected static final long HIGH_24 = 0x15000000000l;
+  protected static final long HIGH_24 = 0x10000000000l;
   
   public static long getSnapshotId(long epochMilliseconds, int driverId) {
     Validate.isTrue(driverId >= 0 && driverId <= MAX_DRIVER_ID);
