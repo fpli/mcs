@@ -6,6 +6,9 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by yimeng on 11/18/17.
@@ -20,6 +23,11 @@ public class IdentifierUtil {
    * Mask for the high 24 bits in a timestamp
    */
   public static final long TIME_MASK = 0xFFFFFFl << 40l;
+  /**
+   * Date formatters to format dates from HBase to Cassandra-schema-compliant format
+   */
+  public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
+  public static final DateFormat MONTH_FORMAT = new SimpleDateFormat("yyyyMM");
   protected static final long HIGH_24 = 0x10000000000l;
   
   public static long getSnapshotId(long epochMilliseconds, int driverId) {
@@ -54,7 +62,14 @@ public class IdentifierUtil {
     return getTimeMillisForSnapshotId(snapshotId);
   }
   
-  public byte[] generateIdentifier(long timestamp, short modValue) throws IOException {
+  /**
+   * Generate 10 bytes row key
+   *
+   * @param timestamp timestamp
+   * @param modValue  slice value
+   * @return row key byte array
+   */
+  public static byte[] generateIdentifier(long timestamp, short modValue) throws IOException {
     byte[] snapshotID = Bytes.toBytes((timestamp & ~TIME_MASK) << 24l);
     
     java.io.ByteArrayOutputStream streamStart = new java.io.ByteArrayOutputStream(10);
@@ -65,5 +80,13 @@ public class IdentifierUtil {
     
     byte[] identifier = ByteBuffer.wrap(streamStart.toByteArray()).array();
     return identifier;
+  }
+  
+  public static int getMonthFromSnapshotId(long snapshotId) {
+    return Integer.valueOf(MONTH_FORMAT.format(new Date(getTimeMillisForSnapshotId(snapshotId))));
+  }
+  
+  public static int getDayFromSnapshotId(long snapshotId) {
+    return Integer.valueOf(DATE_FORMAT.format(new Date(getTimeMillisForSnapshotId(snapshotId))));
   }
 }

@@ -2,12 +2,8 @@ package com.ebay.traffic.chocolate.cappingrules;
 
 import com.ebay.traffic.chocolate.cappingrules.Rules.TempSNIDCapper;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperEvent;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.io.compress.Compression;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,7 +20,7 @@ public class TestTempSNIDCapper extends AbstractCappingRuleTest {
   
   @BeforeClass
   public static void initialHbaseTable() throws IOException {
-    initHBaseTransactionTable();
+    setDataIntoTransactionTable();
     initHBaseCappingResultTable(RESULT_TABLE_NAME_WITH_CHANNEL);
     initHBaseCappingResultTable(RESULT_TABLE_NAME_WITH_TIME_WINDOW);
     
@@ -78,17 +74,17 @@ public class TestTempSNIDCapper extends AbstractCappingRuleTest {
   }
   
   
-  protected static void initHBaseTransactionTable() throws IOException {
+  protected static void setDataIntoTransactionTable() throws IOException {
     
-    HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(TRANSACTION_TABLE_NAME));
-    tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT)
-        .setCompressionType(Compression.Algorithm.NONE));
-    hbaseUtility.getHBaseAdmin().createTable(tableDesc);
+//    HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(TRANSACTION_TABLE_NAME));
+//    tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT)
+//        .setCompressionType(Compression.Algorithm.NONE));
+//    hbaseUtility.getHBaseAdmin().createTable(tableDesc);
     
     Calendar c = Calendar.getInstance();
     c.add(Calendar.MINUTE, -10);
     
-    HTable transactionalTable = new HTable(TableName.valueOf(TRANSACTION_TABLE_NAME), HBaseConnection.getConnection());
+//    HTable transactionalTable = new HTable(TableName.valueOf(TRANSACTION_TABLE_NAME), HBaseConnection.getConnection());
   
     String requestHeader = "Cookie: aaa ;|X-eBay-Client-IP: 50.206.232.22|Connection: keep-alive|User-Agent: " +
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 " +

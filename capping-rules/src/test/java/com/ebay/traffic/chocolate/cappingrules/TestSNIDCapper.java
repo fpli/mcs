@@ -2,12 +2,8 @@ package com.ebay.traffic.chocolate.cappingrules;
 
 import com.ebay.traffic.chocolate.cappingrules.Rules.SNIDCapper;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperEvent;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.io.compress.Compression;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,7 +20,7 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
   
   @BeforeClass
   public static void initialHbaseTable() throws IOException {
-    initHBaseTransactionTable();
+    setDataIntoTransactionTable();
     initHBaseCappingResultTable(RESULT_TABLE_NAME_WITH_CHANNEL);
     initHBaseCappingResultTable(RESULT_TABLE_NAME_WITH_TIME_WINDOW);
     
@@ -77,17 +73,18 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
     job.stop();
   }
   
-  protected static void initHBaseTransactionTable() throws IOException {
+  protected static void setDataIntoTransactionTable() throws IOException {
     
-    HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(TRANSACTION_TABLE_NAME));
-    tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT)
-        .setCompressionType(Compression.Algorithm.NONE));
-    hbaseUtility.getHBaseAdmin().createTable(tableDesc);
+//    HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(TRANSACTION_TABLE_NAME));
+//    tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT)
+//        .setCompressionType(Compression.Algorithm.NONE));
+//    hbaseUtility.getHBaseAdmin().createTable(tableDesc);
     
     Calendar c = Calendar.getInstance();
     c.add(Calendar.MINUTE, -5);
     
-    HTable transactionalTable = new HTable(TableName.valueOf(TRANSACTION_TABLE_NAME), HBaseConnection.getConnection());
+   // HTable transactionalTable = new HTable(TableName.valueOf(TRANSACTION_TABLE_NAME), HBaseConnection.getConnection
+    // ());
     
     // click happens after impression on same host and different host
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 101,
