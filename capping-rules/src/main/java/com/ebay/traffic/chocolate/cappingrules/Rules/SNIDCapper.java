@@ -167,9 +167,13 @@ public class SNIDCapper extends AbstractCapper {
   
   /**
    * Filter data by session Id
-   * step1: tie click to impression
-   * step2: identify if the click happened after impression
-   * step3: only store data in update time window
+   * step1: find impression by sessionId
+   * step2: tie click to impression
+   *        step 2-1: ignore the event which haven't session id on it
+   *        step 2-2: skip the click event which already attached flag
+   *        step 2-3: ignore the clicks which happened before update time window
+   *        step 2-4: set impressed flag in click event
+   * step3: only return click data with result flag in update time window
    */
   public class FilterDataBySnid implements PairFlatMapFunction<Tuple2<String, Iterable<SNIDCapperEvent>>, byte[],
       SNIDCapperEvent> {
@@ -179,7 +183,8 @@ public class SNIDCapper extends AbstractCapper {
       Iterator<SNIDCapperEvent> snidEventIte1 = t._2.iterator();
       byte[] impRowIdentifier = null;
       long impTime = Long.MAX_VALUE;
-      ;
+      
+      //step1: find impression by sessionId
       SNIDCapperEvent impEvent = null;
       while (snidEventIte1.hasNext()) {
         impEvent = snidEventIte1.next();
@@ -192,28 +197,30 @@ public class SNIDCapper extends AbstractCapper {
           break;
         }
       }
-      
+  
+      //step2: tie click to impression
       Iterator<SNIDCapperEvent> snidEventIte2 = t._2.iterator();
       SNIDCapperEvent clickEvent = null;
-//      long stopTimestampWindow = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(stopTime).getTime();
-//      stopTimestampWindow = stopTimestampWindow - updateTimeWindow * 60 * 1000;
       long clickTimestamp = 0;
       byte[] clickRowIdentifier = null;
       while (snidEventIte2.hasNext()) {
         clickEvent = snidEventIte2.next();
         clickRowIdentifier = clickEvent.getRowIdentifier();
+        //step 2-1: ignore clicks which haven't session id on it
         if (StringUtil.isEmpty(impEvent.getSnid())) {
           continue;
         }
         if (ChannelAction.CLICK.name().equalsIgnoreCase(clickEvent.getChannelAction())) {
+          //step 2-2: skip the click event which already attached flag
           if (clickEvent.isImpressed()) {
             continue;
           }
           clickTimestamp = IdentifierUtil.getTimeMillisFromRowkey(clickRowIdentifier);
-          //only write latest clicks by time window
+          //step 2-3: ignore the clicks which happened before update time window
           if (updateWindowStartTime > 0 && clickTimestamp < updateWindowStartTime) {
             continue;
           }
+          //step2-4: set impressed flag in click event
           if (clickTimestamp > impTime) {
             clickEvent.setImpressed(true);
             clickEvent.setImpRowIdentifier(impRowIdentifier);
@@ -223,6 +230,7 @@ public class SNIDCapper extends AbstractCapper {
           results.add(new Tuple2<byte[], SNIDCapperEvent>(clickRowIdentifier, clickEvent));
         }
       }
+      //step3: only return click data with result flag in update time window
       return results.iterator();
     }
   }
