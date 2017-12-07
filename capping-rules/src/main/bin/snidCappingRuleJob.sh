@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - SNIDCapperJob
 
-usage="Usage: snidCappingRuleJob.sh [originalTable] [resultTable] [startTime] [endTime]"
+usage="Usage: snidCappingRuleJob.sh [originalTable] [resultTable] [startTime] [endTime] [channelType] [updateTimeWindow]"
 
 # if no args specified, show usage
 if [ $# -le 2 ]; then
@@ -18,6 +18,8 @@ ORIGINAL_TABLE=$1
 RESULT_TABLE=$2
 START_TIME=$3
 END_TIME=$4
+CHANNEL_TYPE=$5
+UPDATE_TIME_WINDOW=$6
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
@@ -49,4 +51,6 @@ ${SPARK_HOME}/bin/spark-submit \
       --originalTable ${ORIGINAL_TABLE} \
       --resultTable ${RESULT_TABLE} \
       --startTime "${START_TIME}" \
-      --endTime "${END_TIME}"
+      --endTime "${END_TIME}" \
+      --channelType ${CHANNEL_TYPE} \
+      --updateTimeWindow ${UPDATE_TIME_WINDOW}
