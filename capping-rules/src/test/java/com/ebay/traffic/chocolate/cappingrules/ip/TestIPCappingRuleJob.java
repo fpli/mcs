@@ -76,14 +76,14 @@ public class TestIPCappingRuleJob {
   @Test
   public void testParseOptions() throws Exception {
     String[] args = {"--jobName",  "IPCappingRule", "--mode", "yarn", "--table",  "prod_transactional",
-      "--resultTable", "capping_result", "--time", "12345", "--timeRange", "123", "--timeWindow", "1800000", "--threshold", "1000"};
+      "--resultTable", "capping_result", "--time", "12345", "--timeWindow", "123", "--updateTimeWindow", "1800000", "--threshold", "1000"};
     CommandLine cmd = IPCappingRuleJob.parseOptions(args);
     Assert.assertEquals("IPCappingRule", cmd.getOptionValue("jobName"));
     Assert.assertEquals("yarn", cmd.getOptionValue("mode"));
     Assert.assertEquals("prod_transactional", cmd.getOptionValue("table"));
     Assert.assertEquals("12345", cmd.getOptionValue("time"));
-    Assert.assertEquals("123", cmd.getOptionValue("timeRange"));
-    Assert.assertEquals("1800000", cmd.getOptionValue("timeWindow"));
+    Assert.assertEquals("123", cmd.getOptionValue("timeWindow"));
+    Assert.assertEquals("1800000", cmd.getOptionValue("updateTimeWindow"));
     Assert.assertEquals("1000", cmd.getOptionValue("threshold"));
   }
 

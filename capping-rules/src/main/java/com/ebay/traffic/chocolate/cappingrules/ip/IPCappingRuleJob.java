@@ -44,9 +44,9 @@ public class IPCappingRuleJob extends BaseSparkJob {
   // The scan stop time. In each job, it should be the current timestamp in millisecond.
   private final long time;
   // The scan range. If it is a day, it will be 24*60*60*1000.
-  private final long timeRange;
+  private final long timeWindow;
   // Write HBase time window start time. The value is get from time - timeWindow.
-  private final long windowStartTime;
+  private final long updateWindowStartTime;
   // IP count threshold. Used to judge is an IP is invalid.
   private final long threshold;
   // Mask for the high 24 bits in a timestamp.
@@ -64,16 +64,17 @@ public class IPCappingRuleJob extends BaseSparkJob {
    * @param table     hbase table we query from
    * @param resultTable result table
    * @param time      scan stop time
-   * @param timeRange time range from start time to end time
+   * @param timeWindow scan time window from start time to end time
+   * @param updateTimeWindow update time window for HBase
    * @param threshold ip occurance threshold
    */
-  public IPCappingRuleJob(String jobName, String mode, String table, String resultTable, long time, long timeRange, long timeWindow, long threshold) {
+  public IPCappingRuleJob(String jobName, String mode, String table, String resultTable, long time, long timeWindow, long updateTimeWindow, long threshold) {
     super(jobName, mode, false);
     this.table = table;
     this.resultTable = resultTable;
     this.time = time;
-    this.timeRange = timeRange;
-    this.windowStartTime = time - timeWindow;
+    this.timeWindow = updateTimeWindow;
+    this.updateWindowStartTime = time - timeWindow;
     this.threshold = threshold;
     this.logger = logger();
   }
@@ -86,7 +87,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
     CommandLine cmd = parseOptions(args);
     IPCappingRuleJob job = new IPCappingRuleJob(cmd.getOptionValue("jobName"),
       cmd.getOptionValue("mode"), cmd.getOptionValue("table"), cmd.getOptionValue("resultTable"), Long.parseLong(cmd.getOptionValue("time")),
-      Long.parseLong(cmd.getOptionValue("timeRange")), Long.parseLong(cmd.getOptionValue("timeWindow")), Long.parseLong(cmd.getOptionValue("threshold")));
+      Long.parseLong(cmd.getOptionValue("timeWindow")), Long.parseLong(cmd.getOptionValue("updateTimeWindow")), Long.parseLong(cmd.getOptionValue("threshold")));
     try {
       job.run();
     } catch (Exception ex) {
@@ -122,13 +123,13 @@ public class IPCappingRuleJob extends BaseSparkJob {
     time.setRequired(true);
     options.addOption(time);
 
-    Option timeRange = new Option((String) null, "timeRange", true, "time range for IP capping rule");
-    timeRange.setRequired(true);
-    options.addOption(timeRange);
-
     Option timeWindow = new Option((String) null, "timeWindow", true, "time window for IP capping rule");
     timeWindow.setRequired(true);
     options.addOption(timeWindow);
+
+    Option updateTimeWindow = new Option((String) null, "updateTimeWindow", true, "update time window for IP capping rule");
+    updateTimeWindow.setRequired(true);
+    options.addOption(updateTimeWindow);
 
     Option threshold = new Option((String) null, "threshold", true, "threshold for IP capping rule");
     threshold.setRequired(true);
@@ -223,7 +224,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
             throw new Exception(ce);
           }
 
-          long timestampStart = time - timeRange;
+          long timestampStart = time - timeWindow;
           long timestampStop = time;
 
           byte[] rowkeyStartBytes = generateIdentifier(timestampStart, slice.shortValue());
@@ -294,7 +295,7 @@ public class IPCappingRuleJob extends BaseSparkJob {
         }
         //Only write last 30 minutes data
         long eventTimestamp = getTimestampFromIdentifier(event.getIdentifier());
-        if(eventTimestamp > windowStartTime) {
+        if(eventTimestamp > updateWindowStartTime) {
           result.add(event);
         }
       }
