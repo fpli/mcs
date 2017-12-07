@@ -39,7 +39,7 @@ public class HBaseScanIterator implements Iterator<Result> {
       scan.setStopRow(stopRowKey);
     }
     if (StringUtils.isNotEmpty(channelType)) {
-      SingleColumnValueFilter colValFilter = new SingleColumnValueFilter(HBaseConstant.COLUMN_FAMILY, HBaseConstant.COLUMN_CHANNEL_TYPE
+      SingleColumnValueFilter colValFilter = new SingleColumnValueFilter(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COLUMN_CHANNEL_TYPE
           , CompareFilter.CompareOp.EQUAL, Bytes.toBytes(channelType));
       scan.setFilter(colValFilter);
     }
