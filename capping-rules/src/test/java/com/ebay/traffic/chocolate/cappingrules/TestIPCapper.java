@@ -40,19 +40,20 @@ public class TestIPCapper extends AbstractCappingRuleTest {
   @Test
   public void testParseOptions() throws Exception {
     String[] args = {"--jobName", "IPCappingRule", "--mode", "yarn", "--originalTable", "prod_transactional",
-        "--resultTable", "capping_result", "--startTime", "2017-10-11 00:00:00", "--endTime", "2017-10-12 00:00:00",
-        "--channelType", "EPN",
-        "--updateTimeWindow", "123",
+        "--resultTable", "capping_result", "--channelType", "EPN",
+        "--scanStopTime", "2017-10-12 00:00:00",
+        "--scanTimeWindow", "24",
+        "--updateTimeWindow", "15",
         "--threshold", "1000"};
     CommandLine cmd = IPCapper.parseOptions(args);
     Assert.assertEquals("IPCappingRule", cmd.getOptionValue("jobName"));
     Assert.assertEquals("yarn", cmd.getOptionValue("mode"));
     Assert.assertEquals("prod_transactional", cmd.getOptionValue("originalTable"));
     Assert.assertEquals("capping_result", cmd.getOptionValue("resultTable"));
-    Assert.assertEquals("2017-10-11 00:00:00", cmd.getOptionValue("startTime"));
-    Assert.assertEquals("2017-10-12 00:00:00", cmd.getOptionValue("endTime"));
     Assert.assertEquals("EPN", cmd.getOptionValue("channelType"));
-    Assert.assertEquals("123", cmd.getOptionValue("updateTimeWindow"));
+    Assert.assertEquals("2017-10-12 00:00:00", cmd.getOptionValue("scanStopTime"));
+    Assert.assertEquals("24", cmd.getOptionValue("scanTimeWindow"));
+    Assert.assertEquals("15", cmd.getOptionValue("updateTimeWindow"));
     Assert.assertEquals("1000", cmd.getOptionValue("threshold"));
   }
   
@@ -65,7 +66,7 @@ public class TestIPCapper extends AbstractCappingRuleTest {
     String startTime = sdf.format(today.getTime());
     
     IPCapper job = new IPCapper("TestIPCappingRuleJob", "local[4]", TRANSACTION_TABLE_NAME, RESULT_TABLE_NAME,
-        startTime, stopTime, "EPN", 4*60, 8);
+        "EPN", stopTime, 24*60, 4*60, 8);
   
     //IPCappingRuleJob.setMod((short) 3);
     job.run();

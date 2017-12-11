@@ -46,14 +46,15 @@ public class IPCapper extends AbstractCapper {
    * @param mode             spark submit mode
    * @param originalTable    HBase table which data queried from
    * @param resultTable      HBase table which data stored in
-   * @param startTime        scan start time
-   * @param stopTime         scan stop time
    * @param channelType      marketing channel like EPN, DAP, SEARCH
-   * @param updateTimeWindow HBase data update time window
+   * @param scanStopTime     scan stop time
+   * @param scanTimeWindow   scan time window (minutes)
+   * @param updateTimeWindow HBase data update time window (minutes)
+   * @param threshold        IP Capping rule threshold
    */
-  public IPCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
-      stopTime, String channelType, int updateTimeWindow, long threshold) throws java.text.ParseException {
-    super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
+  public IPCapper(String jobName, String mode, String originalTable, String resultTable, String channelType, String
+      scanStopTime, int scanTimeWindow, int updateTimeWindow, long threshold) throws java.text.ParseException {
+    super(jobName, mode, originalTable, resultTable, channelType, scanStopTime, scanTimeWindow, updateTimeWindow);
     this.threshold = threshold;
   }
   
@@ -64,10 +65,11 @@ public class IPCapper extends AbstractCapper {
    */
   public static void main(String[] args) throws java.text.ParseException {
     CommandLine cmd = parseOptions(args);
+  
     IPCapper job = new IPCapper(cmd.getOptionValue("jobName"),
         cmd.getOptionValue("mode"), cmd.getOptionValue("originalTable"), cmd.getOptionValue("resultTable"), cmd
-        .getOptionValue("startTime"), cmd.getOptionValue("endTime"), cmd.getOptionValue("channelType"), Integer.valueOf(cmd
-        .getOptionValue("updateTimeWindow")), Long.valueOf(cmd.getOptionValue("threshold")));
+        .getOptionValue("channelType"), cmd.getOptionValue("scanStopTime"), Integer.valueOf(cmd.getOptionValue
+        ("scanTimeWindow")), Integer.valueOf(cmd.getOptionValue("updateTimeWindow")), Long.valueOf(cmd.getOptionValue("threshold")));
     
     try {
       job.run();

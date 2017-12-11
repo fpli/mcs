@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - IPCappingRuleJob
 
-usage="Usage: ipCappingRuleJob.sh [originalTable] [resultTable] [startTime] [endTime] [channelType] [updateTimeWindow] [threshold]"
+usage="Usage: ipCappingRuleJob.sh [originalTable] [resultTable] [channelType] [scanStopTime] [scanTimeWindow] [updateTimeWindow] [threshold]"
 
 # if no args specified, show usage
 if [ $# -le 2 ]; then
@@ -16,9 +16,9 @@ bin=`cd "$bin">/dev/null; pwd`
 
 ORIGINAL_TABLE=$1
 RESULT_TABLE=$2
-START_TIME=$3
-END_TIME=$4
-CHANNEL_TYPE=$5
+CHANNEL_TYPE=$3
+SCAN_STOP_TIME=$4
+SCAN_TIME_WINDOW=$5
 UPDATE_TIME_WINDOW=$6
 THRESHOLD=$7
 
@@ -51,8 +51,8 @@ ${SPARK_HOME}/bin/spark-submit \
      --mode yarn \
      --originalTable ${ORIGINAL_TABLE} \
      --resultTable ${RESULT_TABLE} \
-     --startTime "${START_TIME}" \
-     --endTime "${END_TIME}" \
      --channelType ${CHANNEL_TYPE} \
-     --updateTimeWindow ${UPDATE_TIME_WINDOW} \
+     --scanStopTime "${SCAN_STOP_TIME}" \
+     --scanTimeWindow ${SCAN_TIME_WINDOW} \
+     --updateTimeWindow ${UPDATE_TIME_WINDOW}\
      --threshold ${THRESHOLD}

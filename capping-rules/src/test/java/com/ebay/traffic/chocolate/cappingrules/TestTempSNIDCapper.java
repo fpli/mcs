@@ -13,16 +13,11 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class TestTempSNIDCapper extends AbstractCappingRuleTest {
-  protected static final String RESULT_TABLE_NAME_WITH_CHANNEL = "capping_result_with_channel";
-  protected static final String RESULT_TABLE_NAME_WITH_TIME_WINDOW = "capping_result_with_time_window";
-  private static String startTime;
   private static String stopTime;
   
   @BeforeClass
   public static void initialHbaseTable() throws IOException {
     setDataIntoTransactionTable();
-    initHBaseCappingResultTable(RESULT_TABLE_NAME_WITH_CHANNEL);
-    initHBaseCappingResultTable(RESULT_TABLE_NAME_WITH_TIME_WINDOW);
     
     HBaseScanIterator iter = new HBaseScanIterator(TRANSACTION_TABLE_NAME);
     Assert.assertEquals(25, getCount(iter));
@@ -30,43 +25,15 @@ public class TestTempSNIDCapper extends AbstractCappingRuleTest {
     
     Calendar c = Calendar.getInstance();
     stopTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
-    c.add(Calendar.DATE, -1);
-    startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
   }
   
   @Test
   public void testTempSNIDCapper() throws Exception {
     TempSNIDCapper job = new TempSNIDCapper("TestTempSNIDCapper", "local[4]", TRANSACTION_TABLE_NAME,
-        RESULT_TABLE_NAME, startTime, stopTime, null);
-    job.run();
-
-    HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME);
-    Assert.assertEquals(20, getCount(resultTableItr));
-    resultTableItr.close();
-
-    job.stop();
-  }
-
-  @Test
-  public void testTempSNIDCapperWithChannel() throws Exception {
-    TempSNIDCapper job = new TempSNIDCapper("TestTempSNIDCapper", "local[4]", TRANSACTION_TABLE_NAME,
-        RESULT_TABLE_NAME_WITH_CHANNEL, startTime, stopTime, "EPN");
-    job.run();
-
-    HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME_WITH_CHANNEL);
-    Assert.assertEquals(17, getCount(resultTableItr));
-    resultTableItr.close();
-
-    job.stop();
-  }
-  
-  @Test
-  public void testTempSNIDCapperWithTimeWindow() throws Exception {
-    TempSNIDCapper job = new TempSNIDCapper("TestTempSNIDCapper", "local[4]", TRANSACTION_TABLE_NAME,
-        RESULT_TABLE_NAME_WITH_TIME_WINDOW, startTime, stopTime, "EPN", 30);
+        RESULT_TABLE_NAME, "EPN", stopTime, 24*60, 30);
     job.run();
     
-    HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME_WITH_TIME_WINDOW);
+    HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME);
     Assert.assertEquals(12, getCount(resultTableItr));
     resultTableItr.close();
     
@@ -76,16 +43,9 @@ public class TestTempSNIDCapper extends AbstractCappingRuleTest {
   
   protected static void setDataIntoTransactionTable() throws IOException {
     
-//    HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(TRANSACTION_TABLE_NAME));
-//    tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT)
-//        .setCompressionType(Compression.Algorithm.NONE));
-//    hbaseUtility.getHBaseAdmin().createTable(tableDesc);
-    
     Calendar c = Calendar.getInstance();
     c.add(Calendar.MINUTE, -10);
     
-//    HTable transactionalTable = new HTable(TableName.valueOf(TRANSACTION_TABLE_NAME), HBaseConnection.getConnection());
-  
     String requestHeader = "Cookie: aaa ;|X-eBay-Client-IP: 50.206.232.22|Connection: keep-alive|User-Agent: " +
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 " +
         "Safari/537.36";
