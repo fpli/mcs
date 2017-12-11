@@ -37,33 +37,33 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
   @Test
   public void testSNIDCapper() throws Exception {
     SNIDCapper job = new SNIDCapper("TestSNIDCapper", "local[4]", TRANSACTION_TABLE_NAME,
-        RESULT_TABLE_NAME, startTime, stopTime, null);
+        RESULT_TABLE_NAME, stopTime, 24 * 60);
     job.run();
-
+    
     HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME);
     Assert.assertEquals(20, getCount(resultTableItr));
     resultTableItr.close();
-
+    
     job.stop();
   }
-
+  
   @Test
   public void testSNIDCapperWithChannel() throws Exception {
     SNIDCapper job = new SNIDCapper("TestSNIDCapper", "local[4]", TRANSACTION_TABLE_NAME,
-        RESULT_TABLE_NAME_WITH_CHANNEL, startTime, stopTime, "EPN");
+        RESULT_TABLE_NAME_WITH_CHANNEL, "EPN", stopTime, 24 * 60);
     job.run();
-
+    
     HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME_WITH_CHANNEL);
     Assert.assertEquals(17, getCount(resultTableItr));
     resultTableItr.close();
-
+    
     job.stop();
   }
   
   @Test
   public void testSNIDCapperWithTimeWindow() throws Exception {
     SNIDCapper job = new SNIDCapper("TestSNIDCapper", "local[4]", TRANSACTION_TABLE_NAME,
-        RESULT_TABLE_NAME_WITH_TIME_WINDOW, startTime, stopTime, "EPN", 8);
+        RESULT_TABLE_NAME_WITH_TIME_WINDOW, "EPN", stopTime, 24 * 60, 8);
     job.run();
     
     HBaseScanIterator resultTableItr = new HBaseScanIterator(RESULT_TABLE_NAME_WITH_TIME_WINDOW);
@@ -74,7 +74,7 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
   }
   
   protected static void setDataIntoTransactionTable() throws IOException {
-    
+  
 //    HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(TRANSACTION_TABLE_NAME));
 //    tableDesc.addFamily(new HColumnDescriptor(TRANSACTION_CF_DEFAULT)
 //        .setCompressionType(Compression.Algorithm.NONE));

@@ -31,36 +31,49 @@ import java.util.List;
 public class SNIDCapper extends AbstractCapper {
   
   /**
-   * Default Constructor without updateTimeWindow which will update all scanned data
-   *
-   * @param jobName       spark job name
-   * @param mode          spark submit mode
-   * @param originalTable HBase table which data queried from
-   * @param resultTable   HBase table which data stored in
-   * @param startTime     scan start time
-   * @param stopTime      scan stop time
-   * @param channelType   marketing channel like EPN, DAP, SEARCH
-   */
-  public SNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
-      stopTime, String channelType) {
-    super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType);
-  }
-  
-  /**
    * Constructor for SNID Capping Rule with updateTimeWindow
    *
    * @param jobName          spark job name
    * @param mode             spark submit mode
    * @param originalTable    HBase table which data queried from
    * @param resultTable      HBase table which data stored in
-   * @param startTime        scan start time
-   * @param stopTime         scan stop time
    * @param channelType      marketing channel like EPN, DAP, SEARCH
-   * @param updateTimeWindow HBase data update time window
+   * @param scanStopTime     scan stop time
+   * @param scanTimeWindow   scan time window (minutes)
+   * @param updateTimeWindow HBase data update time window (minutes)
    */
-  public SNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
-      stopTime, String channelType, int updateTimeWindow) throws java.text.ParseException {
-    super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
+  public SNIDCapper(String jobName, String mode, String originalTable, String resultTable, String channelType, String
+      scanStopTime, int scanTimeWindow, int updateTimeWindow) throws java.text.ParseException {
+    super(jobName, mode, originalTable, resultTable, channelType, scanStopTime, scanTimeWindow, updateTimeWindow);
+  }
+  
+  /**
+   * Constructor for SNID Capping Rule without updateTimeWindow/channelType
+   *
+   * @param jobName        spark job name
+   * @param mode           spark submit mode
+   * @param originalTable  HBase table which data queried from
+   * @param scanStopTime   scan stop time
+   * @param scanTimeWindow scan time window (minutes)
+   */
+  public SNIDCapper(String jobName, String mode, String originalTable, String resultTable, String scanStopTime, int scanTimeWindow) throws java.text.ParseException {
+    super(jobName, mode, originalTable, resultTable, null, scanStopTime, scanTimeWindow, 0);
+  }
+  
+  /**
+   * Constructor for SNID Capping Rule without updateTimeWindow
+   *
+   * @param jobName        spark job name
+   * @param mode           spark submit mode
+   * @param originalTable  HBase table which data queried from
+   * @param resultTable    HBase table which data stored in
+   * @param channelType    marketing channel like EPN, DAP, SEARCH
+   * @param scanStopTime   scan stop time
+   * @param scanTimeWindow scan time window (minutes)
+   */
+  public SNIDCapper(String jobName, String mode, String originalTable, String resultTable, String channelType, String
+      scanStopTime, int scanTimeWindow) throws java.text.ParseException {
+    super(jobName, mode, originalTable, resultTable, channelType, scanStopTime, scanTimeWindow);
   }
   
   /**
@@ -83,11 +96,11 @@ public class SNIDCapper extends AbstractCapper {
       System.exit(1);
       return;
     }
-    
+  
     SNIDCapper job = new SNIDCapper(cmd.getOptionValue("jobName"),
         cmd.getOptionValue("mode"), cmd.getOptionValue("originalTable"), cmd.getOptionValue("resultTable"), cmd
-        .getOptionValue("startTime"), cmd.getOptionValue("endTime"), cmd.getOptionValue("channelType"), Integer.valueOf(cmd
-        .getOptionValue("updateTimeWindow")));
+        .getOptionValue("channelType"), cmd.getOptionValue("scanStopTime"), Integer.valueOf(cmd.getOptionValue
+        ("scanTimeWindow")), Integer.valueOf(cmd.getOptionValue("updateTimeWindow")));
     try {
       job.run();
     } finally {
@@ -169,10 +182,10 @@ public class SNIDCapper extends AbstractCapper {
    * Filter data by session Id
    * step1: find impression by sessionId
    * step2: tie click to impression
-   *        step 2-1: ignore the event which haven't session id on it
-   *        step 2-2: skip the click event which already attached flag
-   *        step 2-3: ignore the clicks which happened before update time window
-   *        step 2-4: set impressed flag in click event
+   * step 2-1: ignore the event which haven't session id on it
+   * step 2-2: skip the click event which already attached flag
+   * step 2-3: ignore the clicks which happened before update time window
+   * step 2-4: set impressed flag in click event
    * step3: only return click data with result flag in update time window
    */
   public class FilterDataBySnid implements PairFlatMapFunction<Tuple2<String, Iterable<SNIDCapperEvent>>, byte[],
@@ -197,7 +210,7 @@ public class SNIDCapper extends AbstractCapper {
           break;
         }
       }
-  
+      
       //step2: tie click to impression
       Iterator<SNIDCapperEvent> snidEventIte2 = t._2.iterator();
       SNIDCapperEvent clickEvent = null;
