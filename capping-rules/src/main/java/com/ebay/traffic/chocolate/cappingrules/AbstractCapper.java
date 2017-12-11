@@ -26,37 +26,32 @@ import java.util.List;
 
 /**
  * Abstract Capper for all Capping rules
- *
+ * <p>
  * Created by yimeng on 11/12/17.
  */
 public abstract class AbstractCapper extends BaseSparkJob {
+  protected static final String INPUT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
   //hbase prefix of row identifier
   protected static short MOD = 293;
   //spark job input parameter
-  protected final String originalTable, resultTable, startTime, stopTime, channelType;
+  protected final String originalTable, resultTable, channelType, scanStopTime;
   //update HBase data window start time
-  protected long updateWindowStartTime = 0;
-  protected static final String INPUT_DATE_FORMAT = "yyyy-MM-dd hh:mm:ss";
+  protected long scanTimeWindowStartTime, scanTimeWindowStopTime, updateWindowStartTime = 0;
   
   /**
-   * Default Constructor without updateTimeWindow which will update all scanned data
+   * Constructor for Capping Rule with updateTimeWindow
    *
-   * @param jobName       spark job name
-   * @param mode          spark submit mode
-   * @param originalTable HBase table which data queried from
-   * @param resultTable   HBase table which data stored in
-   * @param startTime     scan start time
-   * @param stopTime      scan stop time
-   * @param channelType   marketing channel like EPN, DAP, SEARCH
+   * @param jobName        spark job name
+   * @param mode           spark submit mode
+   * @param originalTable  HBase table which data queried from
+   * @param resultTable    HBase table which data stored in
+   * @param channelType    marketing channel like EPN, DAP, SEARCH
+   * @param scanStopTime   scan stop time
+   * @param scanTimeWindow scan time window (minutes)
    */
-  public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String startTime,
-                        String stopTime, String channelType) {
-    super(jobName, mode, false);
-    this.originalTable = originalTable;
-    this.resultTable = resultTable;
-    this.startTime = startTime;
-    this.stopTime = stopTime;
-    this.channelType = channelType;
+  public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String channelType,
+                        String scanStopTime, Integer scanTimeWindow) throws ParseException {
+    this(jobName, mode, originalTable, resultTable, channelType, scanStopTime, scanTimeWindow, 0);
   }
   
   /**
@@ -66,17 +61,28 @@ public abstract class AbstractCapper extends BaseSparkJob {
    * @param mode             spark submit mode
    * @param originalTable    HBase table which data queried from
    * @param resultTable      HBase table which data stored in
-   * @param startTime        scan start time
-   * @param stopTime         scan stop time
    * @param channelType      marketing channel like EPN, DAP, SEARCH
-   * @param updateTimeWindow HBase data update time window
+   * @param scanStopTime     scan stop time
+   * @param scanTimeWindow   scan time window (minutes)
+   * @param updateTimeWindow HBase data update time window (minutes)
    */
-  public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String startTime,
-                        String stopTime, String channelType, Integer updateTimeWindow) throws ParseException {
-    this(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType);
-    if(updateTimeWindow > 0){
-      updateWindowStartTime = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(stopTime).getTime();
-      updateWindowStartTime = updateWindowStartTime - updateTimeWindow * 60 * 1000;
+  public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String channelType,
+                        String scanStopTime, Integer scanTimeWindow, Integer updateTimeWindow) throws ParseException {
+    super(jobName, mode, false);
+    this.originalTable = originalTable;
+    this.resultTable = resultTable;
+    this.channelType = channelType;
+    this.scanStopTime = scanStopTime;
+    logger().info("=======hbase originalTable ======" + originalTable);
+    logger().info("=======hbase resultTable ======" + resultTable);
+    logger().info("=======channelType ======" + channelType);
+    logger().info("=======hbase scanStopTime ======" + scanStopTime);
+    logger().info("=======hbase scanTimeWindow ======" + scanTimeWindow);
+    logger().info("=======hbase updateTimeWindow ======" + updateTimeWindow);
+    scanTimeWindowStopTime = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(scanStopTime).getTime();
+    scanTimeWindowStartTime = scanTimeWindowStopTime - scanTimeWindow * 60 * 1000;
+    if (updateTimeWindow > 0) {
+      updateWindowStartTime = scanTimeWindowStopTime - updateTimeWindow * 60 * 1000;
     }
   }
   
@@ -84,7 +90,6 @@ public abstract class AbstractCapper extends BaseSparkJob {
    * Get job running parameters
    *
    * @param cappingRuleDescription capping rule descriptions
-   *
    * @return running params
    */
   public static Options getJobOptions(String cappingRuleDescription) {
@@ -104,19 +109,20 @@ public abstract class AbstractCapper extends BaseSparkJob {
     resultTable.setRequired(true);
     options.addOption(resultTable);
     
-    Option startTime = new Option((String) null, "startTime", true, "the startTime for " + cappingRuleDescription);
-    startTime.setRequired(true);
-    options.addOption(startTime);
-    
-    Option endTime = new Option((String) null, "endTime", true, "the endTime for " + cappingRuleDescription);
-    endTime.setRequired(true);
-    options.addOption(endTime);
-  
     Option channelType = new Option((String) null, "channelType", true, "the channelType for " + cappingRuleDescription);
-    endTime.setRequired(true);
+    channelType.setRequired(true);
     options.addOption(channelType);
     
-    Option updateTimeWindow = new Option((String) null, "updateTimeWindow", true, "the timeWindowMinutes for " + cappingRuleDescription);
+    Option scanStopTime = new Option((String) null, "scanStopTime", true, "the scanStopTime for " + cappingRuleDescription);
+    scanStopTime.setRequired(true);
+    options.addOption(scanStopTime);
+    
+    Option scanTimeWindow = new Option((String) null, "scanTimeWindow", true, "the scanTimeWindow for " + cappingRuleDescription);
+    scanTimeWindow.setRequired(true);
+    options.addOption(scanTimeWindow);
+    
+    Option updateTimeWindow = new Option((String) null, "updateTimeWindow", true, "the timeWindowMinutes for " +
+        cappingRuleDescription);
     updateTimeWindow.setRequired(false);
     options.addOption(updateTimeWindow);
     
@@ -133,13 +139,10 @@ public abstract class AbstractCapper extends BaseSparkJob {
     for (int i = 0; i < MOD; i++) {
       slices.add(i);
     }
-    
-    SimpleDateFormat sdf = new SimpleDateFormat(INPUT_DATE_FORMAT);
-    final long startTimestamp = sdf.parse(startTime).getTime();
-    final long stopTimestamp = sdf.parse(stopTime).getTime();
+
     logger().info("originalTable = " + originalTable);
-    logger().info("startTimestamp = " + startTimestamp);
-    logger().info("stopTimestamp = " + stopTimestamp);
+    logger().info("startTimestamp = " + scanTimeWindowStartTime);
+    logger().info("stopTimestamp = " + scanTimeWindowStopTime);
     
     JavaRDD<Result> javaRDD = jsc().parallelize(slices, slices.size()).mapPartitions(
         new FlatMapFunction<Iterator<Integer>, Result>() {
@@ -163,8 +166,8 @@ public abstract class AbstractCapper extends BaseSparkJob {
               throw new Exception(ce);
             }
             
-            byte[] startRowKey = IdentifierUtil.generateIdentifier(startTimestamp, 0, slice.shortValue());
-            byte[] stopRowKey = IdentifierUtil.generateIdentifier(stopTimestamp, 0, slice.shortValue());
+            byte[] startRowKey = IdentifierUtil.generateIdentifier(scanTimeWindowStartTime, 0, slice.shortValue());
+            byte[] stopRowKey = IdentifierUtil.generateIdentifier(scanTimeWindowStopTime, 0, slice.shortValue());
             
             HBaseScanIterator hBaseScanIterator = new HBaseScanIterator(originalTable, startRowKey, stopRowKey, channelType);
             return hBaseScanIterator;
@@ -177,7 +180,6 @@ public abstract class AbstractCapper extends BaseSparkJob {
    * Abstract method to filter data by specific capping rules
    *
    * @param hbaseData scaneed HBase data
-   *
    * @return filtered data
    */
   protected abstract <T> T filterWithCapper(JavaRDD<Result> hbaseData);
@@ -186,7 +188,6 @@ public abstract class AbstractCapper extends BaseSparkJob {
    * Abstract method to write data back to HBase by specific capping rules
    *
    * @param writeData filtered data
-   *
    */
   public abstract <T> void writeToHbase(T writeData);
   
@@ -208,7 +209,7 @@ public abstract class AbstractCapper extends BaseSparkJob {
       } catch (IOException e) {
         logger().error(e.getMessage());
         throw e;
-      }finally {
+      } finally {
         transactionalTable.close();
       }
     }

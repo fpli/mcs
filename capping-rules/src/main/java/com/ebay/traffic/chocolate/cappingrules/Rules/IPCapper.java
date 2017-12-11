@@ -46,14 +46,15 @@ public class IPCapper extends AbstractCapper {
    * @param mode             spark submit mode
    * @param originalTable    HBase table which data queried from
    * @param resultTable      HBase table which data stored in
-   * @param startTime        scan start time
-   * @param stopTime         scan stop time
    * @param channelType      marketing channel like EPN, DAP, SEARCH
-   * @param updateTimeWindow HBase data update time window
+   * @param scanStopTime     scan stop time
+   * @param scanTimeWindow   scan time window (minutes)
+   * @param updateTimeWindow HBase data update time window (minutes)
+   * @param threshold        IP Capping rule threshold
    */
-  public IPCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
-      stopTime, String channelType, int updateTimeWindow, long threshold) throws java.text.ParseException {
-    super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
+  public IPCapper(String jobName, String mode, String originalTable, String resultTable, String channelType, String
+      scanStopTime, int scanTimeWindow, int updateTimeWindow, long threshold) throws java.text.ParseException {
+    super(jobName, mode, originalTable, resultTable, channelType, scanStopTime, scanTimeWindow, updateTimeWindow);
     this.threshold = threshold;
   }
   
@@ -64,10 +65,11 @@ public class IPCapper extends AbstractCapper {
    */
   public static void main(String[] args) throws java.text.ParseException {
     CommandLine cmd = parseOptions(args);
+  
     IPCapper job = new IPCapper(cmd.getOptionValue("jobName"),
         cmd.getOptionValue("mode"), cmd.getOptionValue("originalTable"), cmd.getOptionValue("resultTable"), cmd
-        .getOptionValue("startTime"), cmd.getOptionValue("endTime"), cmd.getOptionValue("channelType"), Integer.valueOf(cmd
-        .getOptionValue("updateTimeWindow")), Long.valueOf(cmd.getOptionValue("threshold")));
+        .getOptionValue("channelType"), cmd.getOptionValue("scanStopTime"), Integer.valueOf(cmd.getOptionValue
+        ("scanTimeWindow")), Integer.valueOf(cmd.getOptionValue("updateTimeWindow")), Long.valueOf(cmd.getOptionValue("threshold")));
     
     try {
       job.run();
@@ -107,9 +109,9 @@ public class IPCapper extends AbstractCapper {
   }
   
   /**
-   * Run SNID Capping Rule
+   * Run IP Capping Rule
    * step1 : scan data from HBase
-   * step2: filter data by SNID Capping Rule
+   * step2: filter data by ip Capping Rule
    * step3: write data back to HBase
    *
    * @throws Exception job runtime exception
@@ -124,7 +126,7 @@ public class IPCapper extends AbstractCapper {
   }
   
   /**
-   * Filter IPCapping events. It reads all records from last time range. But only wirte records in last time window.
+   * Filter IPCapping events. It reads all records from last time range. But only write records in last time window.
    * 1. Pick out click events.
    * 2. Group by records IP.
    * 3. Count each group to check if it is larger than threshold.
@@ -210,7 +212,7 @@ public class IPCapper extends AbstractCapper {
         } else {
           event.setCappingPassed(true);
         }
-        //Only write last 30 minutes data
+        //Only write last 15 minutes data
         long eventTimestamp = IdentifierUtil.getTimeMillisFromRowkey(event.getRowIdentifier());
         if (eventTimestamp > updateWindowStartTime) {
           result.add(event);

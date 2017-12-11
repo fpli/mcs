@@ -13,22 +13,18 @@ import scala.Tuple2;
 
 /**
  * Temporary class for testing SNID Capping Rule
- *
+ * <p>
  * Created by yimeng on 11/12/17.
  */
 public class TempSNIDCapper extends AbstractCapper {
   
   private SNIDCapper snidCapper;
-  private int updateTimeWindow;
+  private Integer scanTimeWindow, updateTimeWindow;
   
-  public TempSNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
-      stopTime, String channelType) {
-    super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType);
-  }
-  
-  public TempSNIDCapper(String jobName, String mode, String originalTable, String resultTable, String startTime, String
-      stopTime, String channelType, int updateTimeWindow) throws java.text.ParseException {
-    super(jobName, mode, originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
+  public TempSNIDCapper(String jobName, String mode, String originalTable, String resultTable, String channelType, String
+      scanStopTime, int scanTimeWindow, int updateTimeWindow) throws java.text.ParseException {
+    super(jobName, mode, originalTable, resultTable, channelType, scanStopTime, scanTimeWindow, updateTimeWindow);
+    this.scanTimeWindow = scanTimeWindow;
     this.updateTimeWindow = updateTimeWindow;
   }
   
@@ -50,8 +46,9 @@ public class TempSNIDCapper extends AbstractCapper {
     
     TempSNIDCapper job = new TempSNIDCapper(cmd.getOptionValue("jobName"),
         cmd.getOptionValue("mode"), cmd.getOptionValue("originalTable"), cmd.getOptionValue("resultTable"), cmd
-        .getOptionValue("startTime"), cmd.getOptionValue("endTime"),  cmd.getOptionValue("channelType"), Integer.valueOf(cmd
-        .getOptionValue("updateTimeWindow")));
+        .getOptionValue("channelType"), cmd.getOptionValue("scanStopTime"), Integer.valueOf(cmd.getOptionValue
+        ("scanTimeWindow")), Integer.valueOf(cmd.getOptionValue("updateTimeWindow")));
+    
     try {
       job.run();
     } finally {
@@ -64,7 +61,8 @@ public class TempSNIDCapper extends AbstractCapper {
     
     JavaRDD<Result> hbaseData = readFromHabse();
     
-    snidCapper = new SNIDCapper(jobName(), mode(), originalTable, resultTable, startTime, stopTime, channelType, updateTimeWindow);
+    snidCapper = new SNIDCapper(jobName(), mode(), originalTable, resultTable, channelType, scanStopTime, scanTimeWindow,
+        updateTimeWindow);
     JavaPairRDD<Long, SNIDCapperEvent> filterResult = this.filterWithCapper(hbaseData);
     
     snidCapper.writeToHbase(filterResult);
