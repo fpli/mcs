@@ -116,13 +116,34 @@ cp "$CHOCOLATE_HOME"/ingester/target/ingester-*-fat.jar "$CHOCOLATE_INGESTER_BIN
 
 mkdir -p "$CHOCOLATE_INGESTER_BIN/bin"
 mkdir -p "$CHOCOLATE_INGESTER_BIN/conf"
-cp "$CHOCOLATE_HOME"/ingester/src/bin/* "$CHOCOLATE_INGESTER_BIN"/bin
-cp "$CHOCOLATE_HOME"/ingester/src/conf/* "$CHOCOLATE_INGESTER_BIN"/conf
+# Generate bin and conf from template
+cp "$CHOCOLATE_HOME"/ingester/src/bin/start_ingester_template.sh "$CHOCOLATE_INGESTER_BIN"/bin/start_ingester_phx.sh
+cp "$CHOCOLATE_HOME"/ingester/src/bin/start_ingester_template.sh "$CHOCOLATE_INGESTER_BIN"/bin/start_ingester_slc.sh
+cp "$CHOCOLATE_HOME"/ingester/src/bin/start_ingester_template.sh "$CHOCOLATE_INGESTER_BIN"/bin/start_ingester_lvs.sh
+sed -i '' "s/flume_template/flume_phx/g" "$CHOCOLATE_INGESTER_BIN"/bin/start_ingester_phx.sh
+sed -i '' "s/flume_template/flume_slc/g" "$CHOCOLATE_INGESTER_BIN"/bin/start_ingester_slc.sh
+sed -i '' "s/flume_template/flume_lvs/g" "$CHOCOLATE_INGESTER_BIN"/bin/start_ingester_lvs.sh
+
+ZOOKEEPER_PHX="phxchocolatemaster-1446515.stratus.phx.ebay.com:2181,phxchocolatemaster-1446516.stratus.phx.ebay.com:2181,phxchocolatemaster-1446517.stratus.phx.ebay.com:2181,phxchocolatemaster-1650436.stratus.phx.ebay.com:2181,phxchocolatemaster-1650437.stratus.phx.ebay.com:2181"
+ZOOKEEPER_SLC="slcchocolatemaster-1154249.stratus.slc.ebay.com:2181,slcchocolatemaster-1154250.stratus.slc.ebay.com:2181,slcchocolatemaster-1154251.stratus.slc.ebay.com:2181,slcchocolatemaster-1241743.stratus.slc.ebay.com:2181,slcchocolatemaster-1241744.stratus.slc.ebay.com:2181"
+ZOOKEEPER_LVS="lvschocolatemaster-1448894.stratus.lvs.ebay.com:2181,lvschocolatemaster-1448895.stratus.lvs.ebay.com:2181,lvschocolatemaster-1448897.stratus.lvs.ebay.com:2181,lvschocolatemaster-1582061.stratus.lvs.ebay.com:2181,lvschocolatemaster-1582062.stratus.lvs.ebay.com:2181"
+cp "$CHOCOLATE_HOME"/ingester/src/conf/flume_template.conf "$CHOCOLATE_INGESTER_BIN"/conf/flume_phx.conf
+cp "$CHOCOLATE_HOME"/ingester/src/conf/flume_template.conf "$CHOCOLATE_INGESTER_BIN"/conf/flume_slc.conf
+cp "$CHOCOLATE_HOME"/ingester/src/conf/flume_template.conf "$CHOCOLATE_INGESTER_BIN"/conf/flume_lvs.conf
+sed -i '' "s/zookeeperConnectTemplate/$ZOOKEEPER_PHX/g" "$CHOCOLATE_INGESTER_BIN"/conf/flume_phx.conf
+sed -i '' "s/zookeeperConnectTemplate/$ZOOKEEPER_SLC/g" "$CHOCOLATE_INGESTER_BIN"/conf/flume_slc.conf
+sed -i '' "s/zookeeperConnectTemplate/$ZOOKEEPER_LVS/g" "$CHOCOLATE_INGESTER_BIN"/conf/flume_lvs.conf
+
+
 
 if [ "$MAKE_TGZ" == "true" ]; then
   TARDIR_NAME=chocolate-cappingrule
   tar czf "$TARDIR_NAME.tgz" -C "$DISTDIR" "$TARDIR_NAME"
   mv "$TARDIR_NAME.tgz" "$DISTDIR"
+  TARDIR_NAME=ingester
+  tar czf "$TARDIR_NAME.tgz" -C "$DISTDIR" "$TARDIR_NAME"
+  mv "$TARDIR_NAME.tgz" "$DISTDIR"
+
 fi
 
 if [ "$MAKE_TGZ" == "true" ]; then

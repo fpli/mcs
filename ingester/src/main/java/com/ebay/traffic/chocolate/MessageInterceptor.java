@@ -1,12 +1,11 @@
 package com.ebay.traffic.chocolate;
 
-import com.ebay.traffic.chocolate.avro.FilterMessage;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.interceptor.Interceptor;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.*;
 
 public class MessageInterceptor implements Interceptor {
@@ -19,14 +18,18 @@ public class MessageInterceptor implements Interceptor {
 
   @Override
   public Event intercept(Event event) {
-    try {
-      FilterMessage message = FilterMessage.fromByteBuffer(ByteBuffer.wrap(event.getBody()));
-      Map<String, String> headers = event.getHeaders();
-      headers.put(TIMESTAMP, message.getTimestamp().toString());
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    String timestamp = getTimestamp(event.getBody());
+    Map<String, String> headers = event.getHeaders();
+    headers.put(TIMESTAMP, timestamp);
     return event;
+  }
+
+  public String getTimestamp(byte[] message) {
+    String json = new String(message);
+    JsonParser jsonParser = new JsonParser();
+    JsonObject jsonObject = (JsonObject) jsonParser.parse(json);
+    String timestamp = jsonObject.get(TIMESTAMP).getAsString();
+    return timestamp;
   }
 
   @Override

@@ -12,7 +12,7 @@ if [ -z "${HADOOP_HOME}" ]; then
 fi
 
 if [ -z "${FLUME_HOME}" ]; then
-  export FLUME_HOME=/home/hdfs/flume-1.8.0
+  export FLUME_HOME=/apache/flume-1.8.0
 fi
 
-${FLUME_HOME}/bin/flume-ng agent --conf ${FLUME_HOME}/conf --conf-file ${bin}/../../conf/flume_slc.conf --classpath ${bin}/../../lib/ingester-*.jar --name a1 -Dflume.root.logger=INFO,console -Xloggc:${bin}/../../logs/ingester.log
+${FLUME_HOME}/bin/flume-ng agent --conf ${FLUME_HOME}/conf --conf-file ${bin}/../conf/flume_template.conf --classpath ${bin}/../lib/ingester-*.jar --name a1 -Dflume.root.logger=INFO,console -Xloggc:${bin}/../logs/ingester.log
