@@ -109,6 +109,16 @@ mkdir -p "$CHOCOLATE_CAPPING_RULE_BIN/bin"
 cp "$CHOCOLATE_HOME"/common/src/main/bin/* "$CHOCOLATE_CAPPING_RULE_BIN"/bin
 cp -r "$CHOCOLATE_HOME"/capping-rules/src/main/bin/* "$CHOCOLATE_CAPPING_RULE_BIN"/bin
 
+# Chocolate Flume Ingester
+CHOCOLATE_INGESTER_BIN="$DISTDIR/ingester"
+mkdir -p "$CHOCOLATE_INGESTER_BIN/lib"
+cp "$CHOCOLATE_HOME"/ingester/target/ingester-*-fat.jar "$CHOCOLATE_INGESTER_BIN"/lib/
+
+mkdir -p "$CHOCOLATE_INGESTER_BIN/bin"
+mkdir -p "$CHOCOLATE_INGESTER_BIN/conf"
+cp "$CHOCOLATE_HOME"/ingester/src/bin/* "$CHOCOLATE_INGESTER_BIN"/bin
+cp "$CHOCOLATE_HOME"/ingester/src/conf/* "$CHOCOLATE_INGESTER_BIN"/conf
+
 if [ "$MAKE_TGZ" == "true" ]; then
   TARDIR_NAME=chocolate-cappingrule
   tar czf "$TARDIR_NAME.tgz" -C "$DISTDIR" "$TARDIR_NAME"
@@ -119,3 +129,5 @@ if [ "$MAKE_TGZ" == "true" ]; then
   TARDIR_NAME=chocolate-$VERSION-bin
   tar czf "$TARDIR_NAME.tgz" -C "$CHOCOLATE_HOME" "$TARDIR_NAME"
 fi
+
+
