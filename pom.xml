@@ -27,6 +27,7 @@
   <modules>
     <module>common</module>
     <module>capping-rules</module>
+    <module>ingester</module>
   </modules>
 
   <dependencyManagement>
@@ -125,6 +126,24 @@
         <groupId>com.ebay.app.raptor.chocolate</groupId>
         <artifactId>common</artifactId>
         <version>1.0.0-RELEASE</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro</artifactId>
+        <version>1.8.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.flume</groupId>
+        <artifactId>flume-ng-sdk</artifactId>
+        <version>1.8.0</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.flume</groupId>
+        <artifactId>flume-ng-core</artifactId>
+        <version>1.8.0</version>
+        <scope>compile</scope>
       </dependency>
 
       <!-- test -->
