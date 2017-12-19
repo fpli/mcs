@@ -117,12 +117,7 @@ cp "$CHOCOLATE_HOME"/ingester/target/ingester-*-fat.jar "$CHOCOLATE_INGESTER_BIN
 mkdir -p "$CHOCOLATE_INGESTER_BIN/bin"
 mkdir -p "$CHOCOLATE_INGESTER_BIN/conf"
 # Generate bin and conf from template
-cp "$CHOCOLATE_HOME"/ingester/src/bin/start_ingester_template.sh "$CHOCOLATE_INGESTER_BIN"/bin/start_ingester_phx.sh
-cp "$CHOCOLATE_HOME"/ingester/src/bin/start_ingester_template.sh "$CHOCOLATE_INGESTER_BIN"/bin/start_ingester_slc.sh
-cp "$CHOCOLATE_HOME"/ingester/src/bin/start_ingester_template.sh "$CHOCOLATE_INGESTER_BIN"/bin/start_ingester_lvs.sh
-sed -i '' "s/flume_template/flume_phx/g" "$CHOCOLATE_INGESTER_BIN"/bin/start_ingester_phx.sh
-sed -i '' "s/flume_template/flume_slc/g" "$CHOCOLATE_INGESTER_BIN"/bin/start_ingester_slc.sh
-sed -i '' "s/flume_template/flume_lvs/g" "$CHOCOLATE_INGESTER_BIN"/bin/start_ingester_lvs.sh
+cp "$CHOCOLATE_HOME"/ingester/src/bin/start_ingester.sh "$CHOCOLATE_INGESTER_BIN"/bin/
 
 ZOOKEEPER_PHX="phxchocolatemaster-1446515.stratus.phx.ebay.com:2181,phxchocolatemaster-1446516.stratus.phx.ebay.com:2181,phxchocolatemaster-1446517.stratus.phx.ebay.com:2181,phxchocolatemaster-1650436.stratus.phx.ebay.com:2181,phxchocolatemaster-1650437.stratus.phx.ebay.com:2181"
 ZOOKEEPER_SLC="slcchocolatemaster-1154249.stratus.slc.ebay.com:2181,slcchocolatemaster-1154250.stratus.slc.ebay.com:2181,slcchocolatemaster-1154251.stratus.slc.ebay.com:2181,slcchocolatemaster-1241743.stratus.slc.ebay.com:2181,slcchocolatemaster-1241744.stratus.slc.ebay.com:2181"
