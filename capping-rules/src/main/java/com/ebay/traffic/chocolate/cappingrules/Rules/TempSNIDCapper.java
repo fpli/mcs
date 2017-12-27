@@ -59,7 +59,7 @@ public class TempSNIDCapper extends AbstractCapper {
   @Override
   public void run() throws Exception {
     
-    JavaRDD<Result> hbaseData = readFromHabse();
+    JavaRDD<Result> hbaseData = readFromHbase();
     
     snidCapper = new SNIDCapper(jobName(), mode(), originalTable, resultTable, channelType, scanStopTime, scanTimeWindow,
         updateTimeWindow);

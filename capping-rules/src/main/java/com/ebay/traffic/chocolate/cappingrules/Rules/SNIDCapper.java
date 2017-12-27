@@ -119,7 +119,7 @@ public class SNIDCapper extends AbstractCapper {
   @Override
   public void run() throws Exception {
     // scan data from HBase
-    JavaRDD<Result> hbaseData = readFromHabse();
+    JavaRDD<Result> hbaseData = readFromHbase();
     
     // filter data by SNID Capping Rule
     JavaPairRDD<Long, SNIDCapperEvent> filterResult = filterWithCapper(hbaseData);

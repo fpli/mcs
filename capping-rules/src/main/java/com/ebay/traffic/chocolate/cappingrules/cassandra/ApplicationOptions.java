@@ -50,6 +50,7 @@ public class ApplicationOptions extends AbstractApplicationOptions {
     Properties prop = new Properties();
     prop.load(inputStream);
     instance.initInstance(prop);
+    inputStream.close();
   }
   
   /**

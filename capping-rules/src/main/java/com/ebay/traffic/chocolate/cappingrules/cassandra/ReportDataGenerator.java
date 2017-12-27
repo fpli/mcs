@@ -80,7 +80,7 @@ public class ReportDataGenerator extends AbstractCapper {
   public void run() throws Exception {
     
     // collect data from hbase
-    JavaRDD<Result> hbaseData = readFromHabse();
+    JavaRDD<Result> hbaseData = readFromHbase();
     
     //Get CampaignReport & PartnerReport
     JavaRDD<List<RawReportRecord>> campaignReport = getReportByReportType(hbaseData, ReportType.CAMPAIGN);

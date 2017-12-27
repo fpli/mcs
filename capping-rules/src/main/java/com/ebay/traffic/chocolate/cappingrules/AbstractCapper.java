@@ -134,7 +134,7 @@ public abstract class AbstractCapper extends BaseSparkJob {
    *
    * @return hbase scan result
    */
-  protected JavaRDD<Result> readFromHabse() throws IOException, ServiceException, ParseException {
+  protected JavaRDD<Result> readFromHbase() throws IOException, ServiceException, ParseException {
     List<Integer> slices = new ArrayList<Integer>(MOD);
     for (int i = 0; i < MOD; i++) {
       slices.add(i);
