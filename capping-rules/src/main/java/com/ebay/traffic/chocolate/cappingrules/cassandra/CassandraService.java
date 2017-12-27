@@ -19,6 +19,9 @@ public class CassandraService {
       "/idauth/site/token?client_id=urn:ebay-marketplace-consumerid:c81d6f26-6600-4e61-ac56-e1987122efc5&client_secret=d1e63a54-a36d-42f3-ab5f-f366982881da&grant_type=client_credentials&scope=https://api.ebay.com/oauth/scope/@public%20https://api.ebay.com/oauth/scope/core@application";
   private static final String CHOCO_SVC_PATH = "/marketing/tracking/v1/report/gen?reporttype=";
   private static Logger logger = LoggerFactory.getLogger(CassandraService.class);
+  private static CassandraService cassandraService = new CassandraService();
+  
+  public static CassandraService getInstance(){ return cassandraService; }
   
   public static String getOauthToken(URL oauthURL) throws IOException {
     HttpURLConnection conn = null;

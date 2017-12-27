@@ -179,7 +179,7 @@ public abstract class AbstractCapper extends BaseSparkJob {
   /**
    * Abstract method to filter data by specific capping rules
    *
-   * @param hbaseData scaneed HBase data
+   * @param hbaseData scanned HBase data
    * @return filtered data
    */
   protected abstract <T> T filterWithCapper(JavaRDD<Result> hbaseData);

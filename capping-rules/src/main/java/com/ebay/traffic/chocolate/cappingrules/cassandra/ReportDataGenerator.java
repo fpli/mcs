@@ -19,6 +19,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.api.java.function.VoidFunction;
 import scala.Tuple2;
 
 import java.net.URL;
@@ -28,6 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * Aggregate tracking data and Generate report data into Cassandra
+ * <p>
  * Created by yimeng on 11/22/17.
  */
 public class ReportDataGenerator extends AbstractCapper {
@@ -35,6 +38,19 @@ public class ReportDataGenerator extends AbstractCapper {
   private String storageType = StorageType.CASSANDRA.name();
   private String env = Env.QA.name();
   
+  /**
+   * Constructor for report data generator
+   *
+   * @param jobName       spark job name
+   * @param mode          spark submit mode
+   * @param originalTable HBase table which data queried from
+   * @param resultTable   HBase table which data stored in
+   * @param channelType   marketing channel like EPN, DAP, SEARCH
+   * @param scanStopTime  scan stop time
+   * @param storageType   HBase/Cassandra
+   * @param env           QA/PROD
+   * @throws java.text.ParseException
+   */
   public ReportDataGenerator(String jobName, String mode, String originalTable, String resultTable, String channelType,
                              String scanStopTime, Integer scanTimeWindow, String storageType, String env) throws
       java.text.ParseException {
@@ -43,6 +59,11 @@ public class ReportDataGenerator extends AbstractCapper {
     this.env = env;
   }
   
+  /**
+   * Main function. Get parameters and then run the job.
+   *
+   * @param args
+   */
   public static void main(String[] args) throws Exception {
     Options options = getJobOptions("ReportDataGenerator");
     Option storageType = new Option((String) null, "storageType", true, "the storageType for ReportDataGenerator");
@@ -76,6 +97,14 @@ public class ReportDataGenerator extends AbstractCapper {
     }
   }
   
+  /**
+   * Run reportGeneratorJob
+   * Step1: scan data from HBase
+   * Step2: aggregate event count
+   * Step3: save aggregate event count as report data to cassandra
+   *
+   * @throws Exception
+   */
   @Override
   public void run() throws Exception {
     
@@ -95,10 +124,17 @@ public class ReportDataGenerator extends AbstractCapper {
       writeToCassandra(campaignReport, ReportType.CAMPAIGN);
       writeToCassandra(partnerReport, ReportType.PARTNER);
     } else {
-      logger().warn("Data is not stored in any persistent data base.");
+      logger().warn("Please assign a persistent data base otherwise data will not be stored");
     }
   }
   
+  /**
+   * Get aggregated event count for report
+   *
+   * @param hbaseData  scanned data from hbase
+   * @param reportType campaign/partner
+   * @return
+   */
   public JavaRDD<List<RawReportRecord>> getReportByReportType(JavaRDD<Result> hbaseData, ReportType reportType) {
     JavaPairRDD<Long, FilterResultEvent> campaignResultRDD = hbaseData.mapToPair(new ReadDataByReportType(reportType));
     
@@ -109,6 +145,13 @@ public class ReportDataGenerator extends AbstractCapper {
     return resultRDD;
   }
   
+  /**
+   * Write report data to HBase result table
+   * Only work when storageType = HBase
+   *
+   * @param writeData aggregated report data
+   * @param <T>
+   */
   @Override
   public <T> void writeToHbase(T writeData) {
     JavaRDD<List<RawReportRecord>> resultRDD = (JavaRDD<List<RawReportRecord>>) writeData;
@@ -116,29 +159,63 @@ public class ReportDataGenerator extends AbstractCapper {
     hbasePuts.foreachPartition(new PutDataToHase());
   }
   
+  /**
+   * Write Data to Cassandra
+   *
+   * @param resultRDD  data list from HBase
+   * @param reportType campaign/partner
+   * @throws Exception
+   */
   public void writeToCassandra(JavaRDD<List<RawReportRecord>> resultRDD, ReportType reportType) throws Exception {
-    Iterator<List<RawReportRecord>> reportIte = resultRDD.toLocalIterator();
-    
     ApplicationOptions.init("GingerClient.properties");
     ApplicationOptions applicationOptions = ApplicationOptions.getInstance();
-  
+    
     URL oauthSvcURL = CassandraService.getOauthSvcEndPoint(applicationOptions, env);
     String oauthToken = CassandraService.getOauthToken(oauthSvcURL);
-    URL chocorptURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, env, reportType);
+    URL chocorptSvcURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, env, reportType);
     
-    CassandraService cassandraService = new CassandraService();
-    List<RawReportRecord> recordList = null;
-    while (reportIte.hasNext()) {
-      recordList = reportIte.next();
-      cassandraService.saveReportRecordList(oauthToken, chocorptURL, recordList);
-    }
+    //save to cassandra
+    resultRDD.foreachPartition(new SaveDataToCassandra(oauthToken, chocorptSvcURL));
   }
   
+  /**
+   * Override parent method and do nothing
+   *
+   * @param hbaseData scanned HBase data
+   * @param <T>
+   * @return
+   */
   @Override
   protected <T> T filterWithCapper(JavaRDD<Result> hbaseData) {
     return null;
   }
   
+  /**
+   * Write data to Cassandra which call chocolate report service to write data
+   */
+  public class SaveDataToCassandra implements VoidFunction<Iterator<List<RawReportRecord>>> {
+    private String oauthToken;
+    private URL chocorptSvcURL;
+    
+    public SaveDataToCassandra(String oauthToken, URL chocorptSvcURL) {
+      this.oauthToken = oauthToken;
+      this.chocorptSvcURL = chocorptSvcURL;
+    }
+    
+    public void call(Iterator<List<RawReportRecord>> reportIte) throws Exception {
+      
+      CassandraService cassandraService = CassandraService.getInstance();
+      List<RawReportRecord> recordList = null;
+      while (reportIte.hasNext()) {
+        recordList = reportIte.next();
+        cassandraService.saveReportRecordList(oauthToken, chocorptSvcURL, recordList);
+      }
+    }
+  }
+  
+  /**
+   * Group by reportType(campaign/partner)
+   */
   public class ReadDataByReportType implements PairFunction<Result, Long, FilterResultEvent> {
     ReportType reportType;
     
@@ -179,6 +256,9 @@ public class ReportDataGenerator extends AbstractCapper {
     }
   }
   
+  /**
+   * Aggregate event count for different report type
+   */
   public class CountByReportType implements Function<Tuple2<Long, Iterable<FilterResultEvent>>,
       List<RawReportRecord>> {
     ReportType reportType;
@@ -211,7 +291,7 @@ public class ReportDataGenerator extends AbstractCapper {
         
         //set 1st record timestamp/snapshotId on the same day
         timestamp = IdentifierUtil.getTimeMillisForSnapshotId(snapshotId);
-        tmpTimestamp = reportRecord.getTimestamp() == 0? Long.MAX_VALUE : reportRecord.getTimestamp();
+        tmpTimestamp = reportRecord.getTimestamp() == 0 ? Long.MAX_VALUE : reportRecord.getTimestamp();
         if (timestamp <= tmpTimestamp) {
           reportRecord.setTimestamp(timestamp);
           reportRecord.setSnapshotId(snapshotId);
@@ -247,6 +327,9 @@ public class ReportDataGenerator extends AbstractCapper {
     }
   }
   
+  /**
+   * write report data to HBase result table when storage type is HBASE
+   */
   public class WriteHBaseMap implements PairFlatMapFunction<List<RawReportRecord>, ImmutableBytesWritable, Put> {
     public Iterator<Tuple2<ImmutableBytesWritable, Put>> call(List<RawReportRecord> reportRecordList)
         throws Exception {
