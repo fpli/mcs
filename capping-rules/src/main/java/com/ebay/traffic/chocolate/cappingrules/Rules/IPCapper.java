@@ -118,7 +118,7 @@ public class IPCapper extends AbstractCapper {
    */
   @Override
   public void run() throws Exception {
-    JavaRDD<Result> hbaseData = readFromHabse();
+    JavaRDD<Result> hbaseData = readFromHbase();
     
     JavaRDD<IPCapperEvent> filterResult = filterWithCapper(hbaseData);
     
