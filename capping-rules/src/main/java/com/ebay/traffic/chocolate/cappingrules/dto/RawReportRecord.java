@@ -1,9 +1,11 @@
 package com.ebay.traffic.chocolate.cappingrules.dto;
 
+import java.io.Serializable;
+
 /**
  * Created by yimeng on 11/23/17.
  */
-public class RawReportRecord {
+public class RawReportRecord implements Serializable {
   public long id; // Partner id or campaign id depending on report type.
   public int month;
   public int day;
@@ -22,24 +24,24 @@ public class RawReportRecord {
    * Constructors
    */
   public RawReportRecord() { }
-  
-  public RawReportRecord(long id, int month, int day, long timestamp, long snapshotId, int clicks, int impressions,
-                         int grossImpressions, int viewableImpressions) {
-    this.id = id;
-    this.day = day;
-    this.timestamp = timestamp;
-    this.snapshotId = snapshotId;
-    this.clicks = clicks;
-    this.impressions = impressions;
-    this.grossImpressions = grossImpressions;
-    this.viewableImpressions = viewableImpressions;
-    
-  }
+//
+//  public RawReportRecord(long id, int month, int day, long timestamp, long snapshotId, int clicks, int impressions,
+//                         int grossImpressions, int viewableImpressions) {
+//    this.id = id;
+//    this.day = day;
+//    this.timestamp = timestamp;
+//    this.snapshotId = snapshotId;
+//    this.clicks = clicks;
+//    this.impressions = impressions;
+//    this.grossImpressions = grossImpressions;
+//    this.viewableImpressions = viewableImpressions;
+//
+//  }
   
   public RawReportRecord(long id, int month, int day, long timestamp,
                          long snapshotId, int clicks, int grossClicks, int impressions,
                          int grossImpressions, int viewableImpressions,
-                         int grossViewableImpressions, int mobileCLicks) {
+                         int grossViewableImpressions, int mobileCLicks, int mobileImpressions) {
     this.id = id;
     this.month = month;
     this.day = day;
@@ -52,6 +54,7 @@ public class RawReportRecord {
     this.viewableImpressions = viewableImpressions;
     this.grossViewableImpressions = grossViewableImpressions;
     this.mobileClicks = mobileCLicks;
+    this.mobileImpressions = mobileImpressions;
   }
   
   public int getMobileClicks() {

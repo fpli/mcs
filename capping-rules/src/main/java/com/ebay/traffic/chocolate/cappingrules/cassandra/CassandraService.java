@@ -49,31 +49,16 @@ public class CassandraService {
     return chocoAuth;
   }
   
-  public static URL getCassandraSvcEndPoint(ApplicationOptions applicationOptions, String env, ReportType reportType)
+  public static URL getCassandraSvcEndPoint(ApplicationOptions applicationOptions, ReportType reportType)
       throws IOException {
-    String endpoint = null;
-    if (Env.QA.name().equalsIgnoreCase(env)) {
-      endpoint = applicationOptions.getByNameString(ApplicationOptions.CHOCO_CASSANDRA_SVC_END_POINT
-          + "." + Env.QA.name().toLowerCase());
-    } else {
-      endpoint = applicationOptions.getByNameString(ApplicationOptions.CHOCO_CASSANDRA_SVC_END_POINT
-          + "." + Env.PROD.name().toLowerCase());
-    }
-    endpoint += CHOCO_SVC_PATH + reportType.name();
+    String endpoint = applicationOptions.getByNameString(ApplicationOptions.CHOCO_CASSANDRA_SVC_END_POINT) +
+        CHOCO_SVC_PATH + reportType.name();
     return new URL(endpoint);
   }
   
-  public static URL getOauthSvcEndPoint(ApplicationOptions applicationOptions, String env)
+  public static URL getOauthSvcEndPoint(ApplicationOptions applicationOptions)
       throws IOException {
-    String endpoint = null;
-    if (Env.QA.name().equalsIgnoreCase(env)) {
-      endpoint = applicationOptions.getByNameString(ApplicationOptions.CHOCO_OAUTH_SVC_END_POINT
-          + "." + Env.QA.name().toLowerCase());
-    } else {
-      endpoint = applicationOptions.getByNameString(ApplicationOptions.CHOCO_OAUTH_SVC_END_POINT
-          + "." + Env.PROD.name().toLowerCase());
-    }
-    endpoint += OAUTH_SVC_PATH;
+    String endpoint = applicationOptions.getByNameString(ApplicationOptions.CHOCO_OAUTH_SVC_END_POINT) + OAUTH_SVC_PATH;
     return new URL(endpoint);
   }
   
@@ -85,20 +70,20 @@ public class CassandraService {
       env = Env.QA.name();
     }
     
-    ApplicationOptions.init("GingerClient.properties");
+    ApplicationOptions.init("GingerClient.properties", env);
     ApplicationOptions applicationOptions = ApplicationOptions.getInstance();
     
-    URL oauthSvcURL = CassandraService.getOauthSvcEndPoint(applicationOptions, env);
+    URL oauthSvcURL = CassandraService.getOauthSvcEndPoint(applicationOptions);
     String oauthToken = CassandraService.getOauthToken(oauthSvcURL);
     
     CassandraService cassandraService = new CassandraService();
     //CampaignReport
-    URL campaignURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, env, ReportType.CAMPAIGN);
+    URL campaignURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, ReportType.CAMPAIGN);
     RawReportRecord reportRecord = new RawReportRecord(98765432102l, 201712, 20171212, 98765432100001l,
-        698765432100001l, 1, 2, 3, 5, 8, 11, 19);
+        698765432100001l, 1, 2, 3, 5, 8, 11, 19, 20);
     cassandraService.saveReportRecord(oauthToken, campaignURL, reportRecord);
     //PartnerReport
-    URL partnerURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, env, ReportType.CAMPAIGN);
+    URL partnerURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, ReportType.CAMPAIGN);
     cassandraService.saveReportRecord(oauthToken, partnerURL, reportRecord);
   }
   
