@@ -9,13 +9,12 @@
     <groupId>com.ebay.traffic</groupId>
     <artifactId>chocolate-capping-rules</artifactId>
     <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
     <name>chocolate capping rules</name>
 
     <properties>
         <gson.version>2.8.2</gson.version>
-        <cassandra.version>2.1.10.3</cassandra.version>
-        <spark.cassandra.version>1.5.0</spark.cassandra.version>
-        <guava.version>15.0</guava.version>
+        <trackdata.version>1.0.6-SNAPSHOT</trackdata.version>
     </properties>
 
     <dependencies>
@@ -24,52 +23,6 @@
             <artifactId>chocolate-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>${gson.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
-        <!-- Cassandra Connection -->
-        <dependency>
-            <groupId>com.datastax.cassandra</groupId>
-            <artifactId>cassandra-driver-core</artifactId>
-            <version>${cassandra.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.datastax.cassandra</groupId>
-            <artifactId>cassandra-driver-mapping</artifactId>
-            <version>${cassandra.version}</version>
-        </dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>com.datastax.spark</groupId>-->
-            <!--<artifactId>spark-cassandra-connector_2.11</artifactId>-->
-            <!--<version>${spark.cassandra.version}</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>com.datastax.spark</groupId>-->
-            <!--<artifactId>spark-cassandra-connector-java_2.10</artifactId>-->
-            <!--<version>1.6.0-M1</version>-->
-            <!--<exclusions>-->
-                <!--<exclusion>-->
-                    <!--<groupId>com.google.guava</groupId>-->
-                    <!--<artifactId>guava</artifactId>-->
-                <!--</exclusion>-->
-            <!--</exclusions>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -94,16 +47,15 @@
             <scope>provided</scope>
         </dependency>
 
-
-        <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-client</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-client</artifactId>
         </dependency>
 
         <dependency>
@@ -144,22 +96,26 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
-            <version>${hadoop.version}</version>
+            <version>2.5.1</version>
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.cassandraunit</groupId>
-            <artifactId>cassandra-unit</artifactId>
-            <version>2.1.9.2</version>
-            <scope>test</scope>
-        </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.9.5</version>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${gson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.traffic.chocolate</groupId>
+            <artifactId>trackdata</artifactId>
+            <version>${trackdata.version}</version>
+        </dependency>
+        <!-- the dependency of cassandra-all -->
+        <dependency>
+            <groupId>com.boundary</groupId>
+            <artifactId>high-scale-lib</artifactId>
+            <version>1.0.6</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

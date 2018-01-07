@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.cappingrules.cassandra;
 
 import com.ebay.app.raptor.chocolate.common.AbstractApplicationOptions;
-import com.ebay.traffic.chocolate.cappingrules.constant.Env;
+import com.ebay.traffic.chocolate.report.constant.Env;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +77,9 @@ public class ApplicationOptions extends AbstractApplicationOptions {
    * @throws IOException if properties could not be loaded
    */
   public static void init(String propertiesFile, String env) throws IOException {
-    if (Env.QA.name().equalsIgnoreCase(env)) {
+    if (Env.DEV.name().equalsIgnoreCase(env)) {
+      init(Env.DEV.name().toLowerCase() + SLASH + propertiesFile);
+    } else if (Env.QA.name().equalsIgnoreCase(env)) {
       init(Env.QA.name().toLowerCase() + SLASH + propertiesFile);
     } else {
       init(Env.PROD.name().toLowerCase() + SLASH + propertiesFile);

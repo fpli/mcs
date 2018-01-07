@@ -1,17 +1,16 @@
 package com.ebay.traffic.chocolate.cappingrules.cassandra;
 
-import com.datastax.driver.mapping.Mapper;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
 import com.ebay.traffic.chocolate.cappingrules.IdentifierUtil;
-import com.ebay.traffic.chocolate.cappingrules.constant.Env;
 import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.constant.ReportType;
 import com.ebay.traffic.chocolate.cappingrules.constant.StorageType;
-import com.ebay.traffic.chocolate.cappingrules.dto.CampaignReport;
 import com.ebay.traffic.chocolate.cappingrules.dto.FilterResultEvent;
-import com.ebay.traffic.chocolate.cappingrules.dto.PartnerReport;
-import com.ebay.traffic.chocolate.cappingrules.dto.RawReportRecord;
+import com.ebay.traffic.chocolate.report.cassandra.CassandraConfiguration;
+import com.ebay.traffic.chocolate.report.cassandra.RawReportRecord;
+import com.ebay.traffic.chocolate.report.cassandra.ReportHelper;
+import com.ebay.traffic.chocolate.report.constant.Env;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -32,13 +31,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+;
+
 /**
  * Aggregate tracking data and Generate report data into Cassandra
  * <p>
  * Created by yimeng on 11/22/17.
  */
 public class ReportDataGenerator extends AbstractCapper {
-  
   private String storageType = StorageType.CASSANDRA.name();
   private String env = Env.QA.name();
   
@@ -118,6 +118,13 @@ public class ReportDataGenerator extends AbstractCapper {
     //Get CampaignReport & PartnerReport
     JavaRDD<List<RawReportRecord>> campaignReport = getReportByReportType(hbaseData, ReportType.CAMPAIGN);
     JavaRDD<List<RawReportRecord>> partnerReport = getReportByReportType(hbaseData, ReportType.PARTNER);
+  
+    //Save CampaignReport & PartnerReport
+//    StorageFactory sf = StorageFactory.getInstance(storageType);
+//    IStorage campaignStorage = sf.getStorage(resultTable, env, ReportType.CAMPAIGN);
+//    campaignStorage.writeToStorage(campaignReport);
+//    IStorage partnerStorage = sf.getStorage(resultTable, env, ReportType.PARTNER);
+//    partnerStorage.writeToStorage(partnerReport);
     
     if (StorageType.HBASE.name().equalsIgnoreCase(storageType)) {
       //Save to HBase
@@ -126,13 +133,14 @@ public class ReportDataGenerator extends AbstractCapper {
     } else if (StorageType.CASSANDRA.name().equalsIgnoreCase(storageType)) {
       //Save to Cassandra
       try {
-        cassandraClient = CassandraClient.getInstance(env);
-        writeToCassandra(campaignReport, ReportType.CAMPAIGN);
-        writeToCassandra(partnerReport, ReportType.PARTNER);
-      }catch (IOException e){
+        campaignReport.foreachPartition(new SaveReportRecords(ReportType.CAMPAIGN));
+        partnerReport.foreachPartition(new SaveReportRecords(ReportType.PARTNER));
+      } catch (IOException e) {
         throw e;
-      }finally {
-        cassandraClient.closeClient();
+      } finally {
+//        if (reportHelper != null) {
+//          reportHelper.closeCassandraConnection();
+//        }
       }
     } else {
       logger().warn("Please assign a persistent data base otherwise data will not be stored");
@@ -155,7 +163,7 @@ public class ReportDataGenerator extends AbstractCapper {
     
     return resultRDD;
   }
-  
+
   /**
    * Write report data to HBase result table
    * Only work when storageType = HBase
@@ -170,67 +178,6 @@ public class ReportDataGenerator extends AbstractCapper {
     hbasePuts.foreachPartition(new PutDataToHase());
   }
   
-  private static Mapper<CampaignReport> campaignReportMapper;
-  private static Mapper<PartnerReport> partnerReportMapper;
-  private static CassandraClient cassandraClient;
-  /**
-   * Write Data to Cassandra
-   *
-   * @param resultRDD  data list from HBase
-   * @param reportType campaign/partner
-   * @throws Exception
-   */
-  public void writeToCassandra(JavaRDD<List<RawReportRecord>> resultRDD, ReportType reportType) throws Exception {
-//    ApplicationOptions.init("cassandra.properties", env);
-//    ApplicationOptions applicationOptions = ApplicationOptions.getInstance();
-//
-//    URL oauthSvcURL = CassandraService.getOauthSvcEndPoint(applicationOptions);
-//    String oauthToken = CassandraService.getOauthToken(oauthSvcURL);
-//    URL chocorptSvcURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, reportType);
-//    save to cassandra by service
-//    resultRDD.foreachPartition(new SaveDataToCassandraByService(oauthToken, chocorptSvcURL));
-//
-//    CassandraConnector cassandraConnector = CassandraConnection.getConnection(env);
-//    String keyspace = applicationOptions.getStringProperty(ApplicationOptions.CHOCO_CASSANDRA_KEYSPACE);
-//    String tableName = null;
-//    if(ReportType.CAMPAIGN == reportType){
-//      tableName = "campaign_report";
-//    }else{
-//      tableName = "partner_report";
-//    }
-  
-    //save to cassandra
-    if (ReportType.CAMPAIGN.equals(reportType)) {
-      campaignReportMapper = cassandraClient.getMappingManager().mapper(CampaignReport.class);
-      resultRDD.foreachPartition(new VoidFunction<Iterator<List<RawReportRecord>>>() {
-        public void call(Iterator<List<RawReportRecord>> reportIte) throws Exception {
-          if (reportIte == null) return;
-          List<RawReportRecord> recordList = null;
-          while (reportIte.hasNext()) {
-            recordList = reportIte.next();
-            for (RawReportRecord reportRecord : recordList) {
-              campaignReportMapper.save(new CampaignReport(reportRecord));
-            }
-          }
-        }
-      });
-    } else {
-      partnerReportMapper = cassandraClient.getMappingManager().mapper(PartnerReport.class);
-      resultRDD.foreachPartition(new VoidFunction<Iterator<List<RawReportRecord>>>() {
-        public void call(Iterator<List<RawReportRecord>> reportIte) throws Exception {
-          if (reportIte == null) return;
-          List<RawReportRecord> recordList = null;
-          while (reportIte.hasNext()) {
-            recordList = reportIte.next();
-            for (RawReportRecord reportRecord : recordList) {
-              partnerReportMapper.save(new PartnerReport(reportRecord));
-            }
-          }
-        }
-      });
-    }
-  }
-  
   /**
    * Override parent method and do nothing
    *
@@ -241,76 +188,32 @@ public class ReportDataGenerator extends AbstractCapper {
   @Override
   protected <T> T filterWithCapper(JavaRDD<Result> hbaseData) { return null; }
   
-  
   /**
    * Write data to Cassandra which call chocolate report service to write data
    */
-  public class SaveCampaignReport implements VoidFunction<Iterator<List<RawReportRecord>>> {
-    private Mapper<CampaignReport> mapper;
-    
-    public SaveCampaignReport(Mapper<CampaignReport> mapper) {
-      this.mapper = mapper;
+  public class SaveReportRecords implements VoidFunction<Iterator<List<RawReportRecord>>> {
+    private ReportType reportType;
+
+
+    public SaveReportRecords(ReportType reportType) throws IOException {
+      this.reportType = reportType;
     }
+
     public void call(Iterator<List<RawReportRecord>> reportIte) throws Exception {
-      if(reportIte == null) return;
+      if (reportIte == null) return;
+      ReportHelper reportHelper = ReportHelper.getInstance();
+      CassandraConfiguration cassandraConf = CassandraConfiguration.createConfiguration(env);
+      reportHelper.connectToCassandra(cassandraConf);
       List<RawReportRecord> recordList = null;
       while (reportIte.hasNext()) {
         recordList = reportIte.next();
-        for(RawReportRecord reportRecord : recordList){
-          mapper.save(new CampaignReport(reportRecord));
+        for (RawReportRecord reportRecord : recordList) {
+          if (ReportType.CAMPAIGN.equals(reportType)) {
+            reportHelper.saveCampaignReport(reportRecord);
+          }else{
+            reportHelper.savePartnerReport(reportRecord);
+          }
         }
-      }
-    }
-  }
-  
-//  public class SavePartnerReport implements VoidFunction<Iterator<List<RawReportRecord>>> {
-//    private Mapper<PartnerReport> mapper;
-//
-//    public SavePartnerReport(Mapper<CampaignReport> mapper) {
-//      this.mapper = mapper;
-//    }
-//    public void call(Iterator<List<RawReportRecord>> reportIte) throws Exception {
-//      if(reportIte == null) return;
-//      List<RawReportRecord> recordList = null;
-//      while (reportIte.hasNext()) {
-//        recordList = reportIte.next();
-//        for(RawReportRecord reportRecord : recordList){
-//          mapper.save(new CampaignReport(reportRecord));
-//        }
-//      }
-//    }
-//  }
-  
-  /**
-   * Write data to Cassandra which call chocolate report service to write data
-   */
-  public class SaveDataToCassandra implements VoidFunction<Iterator<List<RawReportRecord>>> {
-    private String keyspace;
-    private String cassandraTable;
-//    private CassandraConnector cassandraConnector;
-  
-//    public SaveDataToCassandra(String keyspace, String cassandraTable, CassandraConnector cassandraConnector) {
-    public SaveDataToCassandra(String keyspace, String cassandraTable) {
-      this.keyspace = keyspace;
-      this.cassandraTable = cassandraTable;
-//      this.cassandraConnector = cassandraConnector;
-    }
-    
-    public void call(Iterator<List<RawReportRecord>> reportIte) throws Exception {
-      if(reportIte == null) return;
-  
-//      WriteConf writeConf = WriteConf.fromSparkConf(CassandraConnection.getConfiguration(Env.QA.name()));
-  
-  
-      List<RawReportRecord> recordList = null;
-      while (reportIte.hasNext()) {
-        recordList = reportIte.next();
-        JavaRDD<RawReportRecord> recordJavaRDD = jsc().parallelize(recordList);
-        //logger().warn("----------------recordJavaRDD.count()" + recordJavaRDD.count());
-//        CassandraJavaUtil.javaFunctions(recordJavaRDD).writerBuilder(keyspace, cassandraTable, CassandraJavaUtil.mapToRow
-//            (RawReportRecord.class)).saveToCassandra();
-//        CassandraJavaUtil.javaFunctions(recordJavaRDD).rddFunctions.saveToCassandra(keyspace, cassandraTable,
-//            null, writeConf, cassandraConnector, CassandraJavaUtil.mapToRow(RawReportRecord.class));
       }
     }
   }
@@ -458,7 +361,7 @@ public class ReportDataGenerator extends AbstractCapper {
   public class WriteHBaseMap implements PairFlatMapFunction<List<RawReportRecord>, ImmutableBytesWritable, Put> {
     public Iterator<Tuple2<ImmutableBytesWritable, Put>> call(List<RawReportRecord> reportRecordList)
         throws Exception {
-      
+
       List<Tuple2<ImmutableBytesWritable, Put>> recordList = new ArrayList<Tuple2<ImmutableBytesWritable, Put>>();
       for (RawReportRecord reportRecord : reportRecordList) {
         Put put = new Put(Bytes.toBytes(reportRecord.getId()));
@@ -476,7 +379,6 @@ public class ReportDataGenerator extends AbstractCapper {
         put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("mobile_impressions"), Bytes.toBytes(reportRecord.getMobileImpressions()));
         recordList.add(new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put));
       }
-      
       return recordList.iterator();
     }
   }
