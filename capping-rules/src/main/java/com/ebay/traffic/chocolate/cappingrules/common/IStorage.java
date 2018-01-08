@@ -1,6 +1,8 @@
 package com.ebay.traffic.chocolate.cappingrules.common;
 
-public interface IStorage<T> {
+import java.io.Serializable;
+
+public interface IStorage<T> extends Serializable {
   
   public void writeToStorage(T records);
 }

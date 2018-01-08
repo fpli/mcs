@@ -26,15 +26,7 @@ public class ApplicationOptions extends AbstractApplicationOptions {
    * The end point of oauth token service
    */
   public static final String CHOCO_OAUTH_SVC_END_POINT = "chocorprtService.oauthClient.endpointUri";
-  
-  /**
-   * Cassandra Connection Related Configurations
-   */
-  public static final String CHOCO_CASSANDRA_HOST = "choco.cassandra.host";
-  public static final String CHOCO_CASSANDRA_PORT = "choco.cassandra.port";
-  public static final String CHOCO_CASSANDRA_KEYSPACE = "choco.cassandra.keyspace";
-  public static final String CHOCO_CASSANDRA_USERNAME = "choco.cassandra.username";
-  public static final String CHOCO_CASSANDRA_PASSWORD = "choco.cassandra.password";
+
   
   public static final String SLASH = "/";
   /**
@@ -94,11 +86,7 @@ public class ApplicationOptions extends AbstractApplicationOptions {
   public static ApplicationOptions getInstance() {
     return instance;
   }
-  
-  public String getCassandraUserName() {
-    return getStringProperty(CHOCO_CASSANDRA_HOST);
-  }
-  
+
   /**
    * Get a property's value
    *

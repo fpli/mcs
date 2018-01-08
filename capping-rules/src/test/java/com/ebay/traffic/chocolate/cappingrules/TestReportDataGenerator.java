@@ -1,7 +1,9 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 import com.ebay.traffic.chocolate.cappingrules.cassandra.ApplicationOptions;
 import com.ebay.traffic.chocolate.cappingrules.cassandra.ReportDataGenerator;
 import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
@@ -60,36 +62,43 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
     ReportDataGenerator job = new ReportDataGenerator("TestReportDataGenerator", "local[4]",
         TRANSACTION_TABLE_NAME, RESULT_TABLE_NAME, "EPN", stopTime, 30, StorageType.CASSANDRA.name(), env);
     job.run();
-    job.stop();
 
-    //Validation
-    CassandraConfiguration cassandraConf = CassandraConfiguration.createConfiguration(env);
-    ReportHelper reportClient = ReportHelper.getInstance();
-    reportClient.connectToCassandra(cassandraConf);
-    int month = Integer.valueOf(IdentifierUtil.MONTH_FORMAT.format(testDataCalendar.getTimeInMillis()));
-    int day = Integer.valueOf(IdentifierUtil.DATE_FORMAT.format(testDataCalendar.getTimeInMillis()));
-    long timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
+    ReportHelper reportClient = null;
+    try {
+      //Validation
+      CassandraConfiguration cassandraConf = CassandraConfiguration.createConfiguration(env);
+      reportClient = ReportHelper.getInstance();
+      reportClient.connectToCassandra(cassandraConf);
+      int month = Integer.valueOf(IdentifierUtil.MONTH_FORMAT.format(testDataCalendar.getTimeInMillis()));
+      int day = Integer.valueOf(IdentifierUtil.DATE_FORMAT.format(testDataCalendar.getTimeInMillis()));
+      long timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
 
-    //Partner-1
-    ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp);
-    assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5,3, 10 ,4);
-    
-    rs = reportClient.getCampaignReport(76543210001l, timestamp);
-    assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5,3 ,7 ,4);
+      //Partner-1
+      ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp);
+      assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 10, 4);
 
-    timestamp += 1500;
-    rs = reportClient.getCampaignReport(76543210002l, timestamp);
-    assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0,0 ,3 ,0);
+      rs = reportClient.getCampaignReport(76543210001l, timestamp);
+      assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 7, 4);
 
-    //Partner-2
-    timestamp += 1500;
-    rs = reportClient.getPartnerReport(1234560002l, timestamp);
-    assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0,0 ,3 ,0);
+      timestamp += 1500;
+      rs = reportClient.getCampaignReport(76543210002l, timestamp);
+      assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 3, 0);
 
-    rs = reportClient.getCampaignReport(76543210003l, timestamp);
-    assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0,0 ,3 ,0);
-  
-    reportClient.closeCassandraConnection();
+      //Partner-2
+      timestamp += 1500;
+      rs = reportClient.getPartnerReport(1234560002l, timestamp);
+      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+
+      rs = reportClient.getCampaignReport(76543210003l, timestamp);
+      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+    }catch(Exception e){
+      throw e;
+    }finally{
+      if(reportClient != null){
+        reportClient.closeCassandraConnection();
+      }
+      job.stop();
+    }
   }
 
   private void assertCassandrData(Row row, Integer month, Integer day, Long timestamp, Integer grossClick, Integer clicks,
@@ -167,7 +176,6 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
 //    job.run();
 //
 //    //Validation
-////    CassandraClient cassandraClient = CassandraClient.getInstance(env);
 ////    cassandraSession = cassandraClient.getSession(env);
 //    ReportHelper reportHelper = ReportHelper.getInstance();
 //
