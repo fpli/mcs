@@ -1,12 +1,15 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.ebay.traffic.chocolate.cappingrules.cassandra.ApplicationOptions;
 import com.ebay.traffic.chocolate.cappingrules.cassandra.ReportDataGenerator;
-import com.ebay.traffic.chocolate.cappingrules.constant.CassandraConstant;
 import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.constant.StorageType;
 import com.ebay.traffic.chocolate.cappingrules.dto.FilterResultEvent;
+import com.ebay.traffic.chocolate.report.cassandra.CassandraConfiguration;
+import com.ebay.traffic.chocolate.report.cassandra.ReportHelper;
+import com.ebay.traffic.chocolate.report.constant.CassandraConstants;
 import com.ebay.traffic.chocolate.report.constant.Env;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
@@ -31,8 +34,6 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
 
   private static String stopTime;
   private static Calendar testDataCalendar = Calendar.getInstance();
-  private static String CQL_CAMPAIGN = "select * from campaign_report where campaign_id = %d and month = %d and day = %d and timestamp = %d";
-  private static String CQL_PARTNER = "select * from partner_report where partner_id = %d and month = %d and day = %d and timestamp = %d";
 
   @BeforeClass
   public static void initialHbaseTable() throws IOException {
@@ -59,75 +60,54 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
     ReportDataGenerator job = new ReportDataGenerator("TestReportDataGenerator", "local[4]",
         TRANSACTION_TABLE_NAME, RESULT_TABLE_NAME, "EPN", stopTime, 30, StorageType.CASSANDRA.name(), env);
     job.run();
+    job.stop();
 
     //Validation
-//    CassandraClient cassandraClient = CassandraClient.getInstance(env);
-//    Session cassandraSession = cassandraClient.getSession(env);
+    CassandraConfiguration cassandraConf = CassandraConfiguration.createConfiguration(env);
+    ReportHelper reportClient = ReportHelper.getInstance();
+    reportClient.connectToCassandra(cassandraConf);
+    int month = Integer.valueOf(IdentifierUtil.MONTH_FORMAT.format(testDataCalendar.getTimeInMillis()));
+    int day = Integer.valueOf(IdentifierUtil.DATE_FORMAT.format(testDataCalendar.getTimeInMillis()));
+    long timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
 
-//
-//    CassandraConf cassandraConf = CassandraConnection.getCassandraConf(env);
-//    CassandraConf cassandraConf = new CassandraConf();
-//    cassandraConf.setKeyspace(CassandraConstants.REPORT_KEYSPACE);
-//    cassandraConf.setHost("sc-chocolaterpt01.db.stratus.qa.ebay.com,sc-chocolaterpt02.db.stratus.qa.ebay.com,sc-chocolaterpt03.db.stratus.qa.ebay.com");
-//    cassandraConf.setPort(9042);
-//    ReportHelper reportClient = ReportHelper.getInstance();
-//    reportClient.connectToCassandra(cassandraConf);
-//    int month = Integer.valueOf(IdentifierUtil.MONTH_FORMAT.format(testDataCalendar.getTimeInMillis()));
-//    int day = Integer.valueOf(IdentifierUtil.DATE_FORMAT.format(testDataCalendar.getTimeInMillis()));
-//    long timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
-//
-//    //Partner-1
-//    String cqlStatement = String.format(CQL_PARTNER, 1234560001l, month, day, timestamp);
-//    logger.info(cqlStatement);
-//
-//    reportClient.closeCassandraConnection();
-//    ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp);
-////    ResultSet rs = cassandraSession.execute(cqlStatement);
-//    assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5,3, 10 ,4);
-//    reportClient.closeCassandraConnection();
-//    cqlStatement = String.format(CQL_CAMPAIGN, 76543210001l, month, day, timestamp);
-//    logger.info(cqlStatement);
-//    rs = cassandraSession.execute(cqlStatement);
-//    assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5,3 ,7 ,4);
-//
-//    timestamp += 1500;
-//    cqlStatement = String.format(CQL_CAMPAIGN, 76543210002l, month, day, timestamp);
-//    logger.info(cqlStatement);
-//    rs = cassandraSession.execute(cqlStatement);
-//    assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0,0 ,3 ,0);
-//
-//    //Partner-2
-//    timestamp += 1500;
-//    cqlStatement = String.format(CQL_PARTNER, 1234560002l, month, day, timestamp);
-//    logger.info(cqlStatement);
-//    rs = cassandraSession.execute(cqlStatement);
-//    assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0,0 ,3 ,0);
-//
-//    cqlStatement = String.format(CQL_CAMPAIGN, 76543210003l, month, day, timestamp);
-//    logger.info(cqlStatement);
-//    rs = cassandraSession.execute(cqlStatement);
-//    assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0,0 ,3 ,0);
-//
-//    cassandraClient.closeClient();
-//    job.stop();
+    //Partner-1
+    ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp);
+    assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5,3, 10 ,4);
+    
+    rs = reportClient.getCampaignReport(76543210001l, timestamp);
+    assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5,3 ,7 ,4);
+
+    timestamp += 1500;
+    rs = reportClient.getCampaignReport(76543210002l, timestamp);
+    assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0,0 ,3 ,0);
+
+    //Partner-2
+    timestamp += 1500;
+    rs = reportClient.getPartnerReport(1234560002l, timestamp);
+    assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0,0 ,3 ,0);
+
+    rs = reportClient.getCampaignReport(76543210003l, timestamp);
+    assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0,0 ,3 ,0);
+  
+    reportClient.closeCassandraConnection();
   }
 
   private void assertCassandrData(Row row, Integer month, Integer day, Long timestamp, Integer grossClick, Integer clicks,
                              Integer grossImp,  Integer imp, Integer grossViewImp, Integer viewImp, Integer mobileClick, Integer mobileImp) {
-    Assert.assertEquals(Long.valueOf(month),Long.valueOf(row.getInt(CassandraConstant.MONTH_COLUMN)));
-    Assert.assertEquals(Long.valueOf(day), Long.valueOf(row.getInt(CassandraConstant.DAY_COLUMN)));
-    Assert.assertEquals(Long.valueOf(timestamp), Long.valueOf(row.getLong(CassandraConstant.TIMESTAMP)));
-    Assert.assertEquals(Long.valueOf(clicks), Long.valueOf(row.getInt(CassandraConstant.CLICKS_COLUMN)));
-    Assert.assertEquals(Long.valueOf(grossClick), Long.valueOf(row.getInt(CassandraConstant.GROSS_CLICKS_COLUMN)));
-    Assert.assertEquals(Long.valueOf(imp), Long.valueOf(row.getInt(CassandraConstant.IMPRESSIONS_COLUMN)));
-    Assert.assertEquals(Long.valueOf(grossImp), Long.valueOf(row.getInt(CassandraConstant.GROSS_IMPRESSIONS_COLUMN)));
-    Assert.assertEquals(Long.valueOf(viewImp), Long.valueOf(row.getInt(CassandraConstant.VIEWABLE_IMPRESSIONS_COLUMN)));
-    Assert.assertEquals(Long.valueOf(grossViewImp), Long.valueOf(row.getInt(CassandraConstant.GROSS_VIEWABLE_IMPRESSIONS_COLUMN)));
-    Assert.assertEquals(Long.valueOf(mobileClick), Long.valueOf(row.getInt(CassandraConstant.MOBILE_CLICKS_COLUMN)));
-    Assert.assertEquals(Long.valueOf(mobileImp), Long.valueOf(row.getInt(CassandraConstant.MOBILE_IMPRESSIONS_COLUMN)));
+    Assert.assertEquals(Long.valueOf(month),Long.valueOf(row.getInt(CassandraConstants.MONTH_COLUMN)));
+    Assert.assertEquals(Long.valueOf(day), Long.valueOf(row.getInt(CassandraConstants.DAY_COLUMN)));
+    Assert.assertEquals(Long.valueOf(timestamp), Long.valueOf(row.getLong(CassandraConstants.TIMESTAMP)));
+    Assert.assertEquals(Long.valueOf(clicks), Long.valueOf(row.getInt(CassandraConstants.CLICKS_COLUMN)));
+    Assert.assertEquals(Long.valueOf(grossClick), Long.valueOf(row.getInt(CassandraConstants.GROSS_CLICKS_COLUMN)));
+    Assert.assertEquals(Long.valueOf(imp), Long.valueOf(row.getInt(CassandraConstants.IMPRESSIONS_COLUMN)));
+    Assert.assertEquals(Long.valueOf(grossImp), Long.valueOf(row.getInt(CassandraConstants.GROSS_IMPRESSIONS_COLUMN)));
+    Assert.assertEquals(Long.valueOf(viewImp), Long.valueOf(row.getInt(CassandraConstants.VIEWABLE_IMPRESSIONS_COLUMN)));
+    Assert.assertEquals(Long.valueOf(grossViewImp), Long.valueOf(row.getInt(CassandraConstants.GROSS_VIEWABLE_IMPRESSIONS_COLUMN)));
+    Assert.assertEquals(Long.valueOf(mobileClick), Long.valueOf(row.getInt(CassandraConstants.MOBILE_CLICKS_COLUMN)));
+    Assert.assertEquals(Long.valueOf(mobileImp), Long.valueOf(row.getInt(CassandraConstants.MOBILE_IMPRESSIONS_COLUMN)));
   }
 
-  private static final String CQL_CREATE_KEYSPACE = "CREATE KEYSPACE IF NOT EXISTS " + CassandraConstant.REPORT_KEYSPACE +
+  private static final String CQL_CREATE_KEYSPACE = "CREATE KEYSPACE IF NOT EXISTS " + CassandraConstants.REPORT_KEYSPACE +
       " WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor':1} AND DURABLE_WRITES =  true";
   private static final String SCHAMA1 =
       "    month int," +
