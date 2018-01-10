@@ -24,34 +24,27 @@ import java.util.List;
 
 public class HBaseStorage implements IStorage<JavaRDD<List<RawReportRecord>>> {
   private static final Logger logger = LoggerFactory.getLogger(ApplicationOptions.class);
-  private static String resultTable;
-  private static HBaseStorage hBaseStorage;
-  
-  private HBaseStorage(){}
-  
-  public static HBaseStorage getInstance(String _resultTable){
-    if(hBaseStorage == null){
-      hBaseStorage = new HBaseStorage();
-    }
-    resultTable = _resultTable;
-    return hBaseStorage;
+  private String resultTable;
+  private HBaseStorage hBaseStorage;
+
+  public HBaseStorage(String resultTable) {
+    this.resultTable = resultTable;
   }
-  
+
   @Override
   public void writeToStorage(JavaRDD<List<RawReportRecord>> reportRecords) {
     JavaRDD<List<RawReportRecord>> resultRDD = (JavaRDD<List<RawReportRecord>>) reportRecords;
     JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = resultRDD.flatMapToPair(new WriteHBaseMap());
     hbasePuts.foreachPartition(new PutDataToHase());
   }
-  
-  
+
   /**
    * write report data to HBase result table when storage type is HBASE
    */
   public class WriteHBaseMap implements PairFlatMapFunction<List<RawReportRecord>, ImmutableBytesWritable, Put> {
     public Iterator<Tuple2<ImmutableBytesWritable, Put>> call(List<RawReportRecord> reportRecordList)
         throws Exception {
-      
+
       List<Tuple2<ImmutableBytesWritable, Put>> recordList = new ArrayList<Tuple2<ImmutableBytesWritable, Put>>();
       for (RawReportRecord reportRecord : reportRecordList) {
         Put put = new Put(Bytes.toBytes(reportRecord.getId()));
@@ -72,16 +65,15 @@ public class HBaseStorage implements IStorage<JavaRDD<List<RawReportRecord>>> {
       return recordList.iterator();
     }
   }
-  
+
   /**
    * Common method to write HBase which connect Hbase to write data
    */
   public class PutDataToHase implements VoidFunction<Iterator<Tuple2<ImmutableBytesWritable, Put>>> {
     public void call(Iterator<Tuple2<ImmutableBytesWritable, Put>> tupleIter) throws IOException {
-      
+
       HTable transactionalTable = new HTable(TableName.valueOf(resultTable), HBaseConnection.getConnection());
-      
-      logger.info("---ResultTable = " + resultTable);
+
       Tuple2<ImmutableBytesWritable, Put> tuple = null;
       try {
         while (tupleIter.hasNext()) {

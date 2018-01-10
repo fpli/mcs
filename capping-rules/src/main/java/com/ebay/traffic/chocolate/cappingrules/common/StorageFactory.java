@@ -14,13 +14,13 @@ public class StorageFactory {
 
   public IStorage getStorage(String storeTable, String env, ReportType reportType) {
     if (StorageType.HBASE.name().equalsIgnoreCase(storageType)) {
-      return HBaseStorage.getInstance(storeTable);
+      return new HBaseStorage(storeTable);
     } else if (StorageType.CASSANDRA.name().equalsIgnoreCase(storageType)) {
-      return CassandraStorage.getInstance(env, reportType);
+      return new CassandraStorage(env, reportType);
     } else if (StorageType.COUCHBASE.name().equalsIgnoreCase(storageType)) {
-      return CouchBaseStorage.getInstance();
+      return new CouchBaseStorage();
     } else {
-      return HBaseStorage.getInstance(storeTable);
+      return new HBaseStorage(storeTable);
     }
   }
 }
