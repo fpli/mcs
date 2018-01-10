@@ -22,6 +22,7 @@
     <kafka.version>0.10.2.0</kafka.version>
     <hbase.version>1.1.2</hbase.version>
     <jacoco.dump.skip>true</jacoco.dump.skip>
+    <chocolate.common.version>2.4.2-RELEASE</chocolate.common.version>
   </properties>
 
   <modules>
@@ -125,7 +126,7 @@
       <dependency>
         <groupId>com.ebay.app.raptor.chocolate</groupId>
         <artifactId>common</artifactId>
-        <version>1.0.0-RELEASE</version>
+        <version>${chocolate.common.version}</version>
       </dependency>
 
       <!-- test -->
