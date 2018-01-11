@@ -6,10 +6,8 @@
     <artifactId>chocolate</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <groupId>com.ebay.traffic</groupId>
   <artifactId>chocolate-common</artifactId>
   <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
   <name>chocolate common</name>
 
   <dependencies>

@@ -3,12 +3,16 @@ package com.ebay.traffic.chocolate.cappingrules.cassandra;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
 import com.ebay.traffic.chocolate.cappingrules.IdentifierUtil;
-import com.ebay.traffic.chocolate.cappingrules.constant.Env;
+import com.ebay.traffic.chocolate.cappingrules.common.IStorage;
+import com.ebay.traffic.chocolate.cappingrules.common.StorageFactory;
 import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.constant.ReportType;
 import com.ebay.traffic.chocolate.cappingrules.constant.StorageType;
 import com.ebay.traffic.chocolate.cappingrules.dto.FilterResultEvent;
-import com.ebay.traffic.chocolate.cappingrules.dto.RawReportRecord;
+import com.ebay.traffic.chocolate.report.cassandra.CassandraConfiguration;
+import com.ebay.traffic.chocolate.report.cassandra.RawReportRecord;
+import com.ebay.traffic.chocolate.report.cassandra.ReportHelper;
+import com.ebay.traffic.chocolate.report.constant.Env;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -22,11 +26,14 @@ import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 import scala.Tuple2;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+;
 
 /**
  * Aggregate tracking data and Generate report data into Cassandra
@@ -34,7 +41,6 @@ import java.util.List;
  * Created by yimeng on 11/22/17.
  */
 public class ReportDataGenerator extends AbstractCapper {
-  
   private String storageType = StorageType.CASSANDRA.name();
   private String env = Env.QA.name();
   
@@ -114,18 +120,13 @@ public class ReportDataGenerator extends AbstractCapper {
     //Get CampaignReport & PartnerReport
     JavaRDD<List<RawReportRecord>> campaignReport = getReportByReportType(hbaseData, ReportType.CAMPAIGN);
     JavaRDD<List<RawReportRecord>> partnerReport = getReportByReportType(hbaseData, ReportType.PARTNER);
-    
-    if (StorageType.HBASE.name().equalsIgnoreCase(storageType)) {
-      //Save to HBase
-      writeToHbase(campaignReport);
-      writeToHbase(partnerReport);
-    } else if (StorageType.CASSANDRA.name().equalsIgnoreCase(storageType)) {
-      //Save to Cassandra
-      writeToCassandra(campaignReport, ReportType.CAMPAIGN);
-      writeToCassandra(partnerReport, ReportType.PARTNER);
-    } else {
-      logger().warn("Please assign a persistent data base otherwise data will not be stored");
-    }
+
+    //Save CampaignReport & PartnerReport
+    StorageFactory sf = new StorageFactory();
+    IStorage campaignStorage = sf.getStorage(storageType);
+    campaignStorage.writeToStorage(campaignReport, resultTable, env, ReportType.CAMPAIGN);
+    IStorage partnerStorage = sf.getStorage(storageType);
+    partnerStorage.writeToStorage(partnerReport, resultTable, env, ReportType.PARTNER);
   }
   
   /**
@@ -144,7 +145,7 @@ public class ReportDataGenerator extends AbstractCapper {
     
     return resultRDD;
   }
-  
+
   /**
    * Write report data to HBase result table
    * Only work when storageType = HBase
@@ -153,30 +154,7 @@ public class ReportDataGenerator extends AbstractCapper {
    * @param <T>
    */
   @Override
-  public <T> void writeToHbase(T writeData) {
-    JavaRDD<List<RawReportRecord>> resultRDD = (JavaRDD<List<RawReportRecord>>) writeData;
-    JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = resultRDD.flatMapToPair(new WriteHBaseMap());
-    hbasePuts.foreachPartition(new PutDataToHase());
-  }
-  
-  /**
-   * Write Data to Cassandra
-   *
-   * @param resultRDD  data list from HBase
-   * @param reportType campaign/partner
-   * @throws Exception
-   */
-  public void writeToCassandra(JavaRDD<List<RawReportRecord>> resultRDD, ReportType reportType) throws Exception {
-    ApplicationOptions.init("GingerClient.properties");
-    ApplicationOptions applicationOptions = ApplicationOptions.getInstance();
-    
-    URL oauthSvcURL = CassandraService.getOauthSvcEndPoint(applicationOptions, env);
-    String oauthToken = CassandraService.getOauthToken(oauthSvcURL);
-    URL chocorptSvcURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, env, reportType);
-    
-    //save to cassandra
-    resultRDD.foreachPartition(new SaveDataToCassandra(oauthToken, chocorptSvcURL));
-  }
+  public <T> void writeToHbase(T writeData) {}
   
   /**
    * Override parent method and do nothing
@@ -186,33 +164,8 @@ public class ReportDataGenerator extends AbstractCapper {
    * @return
    */
   @Override
-  protected <T> T filterWithCapper(JavaRDD<Result> hbaseData) {
-    return null;
-  }
-  
-  /**
-   * Write data to Cassandra which call chocolate report service to write data
-   */
-  public class SaveDataToCassandra implements VoidFunction<Iterator<List<RawReportRecord>>> {
-    private String oauthToken;
-    private URL chocorptSvcURL;
-    
-    public SaveDataToCassandra(String oauthToken, URL chocorptSvcURL) {
-      this.oauthToken = oauthToken;
-      this.chocorptSvcURL = chocorptSvcURL;
-    }
-    
-    public void call(Iterator<List<RawReportRecord>> reportIte) throws Exception {
-      
-      CassandraService cassandraService = CassandraService.getInstance();
-      List<RawReportRecord> recordList = null;
-      while (reportIte.hasNext()) {
-        recordList = reportIte.next();
-        cassandraService.saveReportRecordList(oauthToken, chocorptSvcURL, recordList);
-      }
-    }
-  }
-  
+  protected <T> T filterWithCapper(JavaRDD<Result> hbaseData) { return null; }
+
   /**
    * Group by reportType(campaign/partner)
    */
@@ -324,35 +277,6 @@ public class ReportDataGenerator extends AbstractCapper {
       }
       
       return new ArrayList<RawReportRecord>(report.values());
-    }
-  }
-  
-  /**
-   * write report data to HBase result table when storage type is HBASE
-   */
-  public class WriteHBaseMap implements PairFlatMapFunction<List<RawReportRecord>, ImmutableBytesWritable, Put> {
-    public Iterator<Tuple2<ImmutableBytesWritable, Put>> call(List<RawReportRecord> reportRecordList)
-        throws Exception {
-      
-      List<Tuple2<ImmutableBytesWritable, Put>> recordList = new ArrayList<Tuple2<ImmutableBytesWritable, Put>>();
-      for (RawReportRecord reportRecord : reportRecordList) {
-        Put put = new Put(Bytes.toBytes(reportRecord.getId()));
-        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("month"), Bytes.toBytes(reportRecord.getMonth()));
-        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("day"), Bytes.toBytes(reportRecord.getDay()));
-        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("timestamp"), Bytes.toBytes(reportRecord.getTimestamp()));
-        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("snapshot_id"), Bytes.toBytes(reportRecord.getSnapshotId()));
-        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("gross_clicks"), Bytes.toBytes(reportRecord.getGrossClicks()));
-        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("clicks"), Bytes.toBytes(reportRecord.getClicks()));
-        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("gross_impressions"), Bytes.toBytes(reportRecord.getGrossImpressions()));
-        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("impressions"), Bytes.toBytes(reportRecord.getImpressions()));
-        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("gross_view_impressions"), Bytes.toBytes(reportRecord.getGrossViewableImpressions()));
-        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("view_impressions"), Bytes.toBytes(reportRecord.getViewableImpressions()));
-        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("mobile_clicks"), Bytes.toBytes(reportRecord.getMobileClicks()));
-        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("mobile_impressions"), Bytes.toBytes(reportRecord.getMobileImpressions()));
-        recordList.add(new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put));
-      }
-      
-      return recordList.iterator();
     }
   }
 }

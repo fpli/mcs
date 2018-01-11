@@ -6,6 +6,6 @@ package com.ebay.traffic.chocolate.cappingrules.constant;
 public enum StorageType {
   HBASE,
   CASSANDRA,
-  FILE,
+  HDFS,
   COUCHBASE;
 }

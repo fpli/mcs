@@ -1,8 +1,8 @@
 package com.ebay.traffic.chocolate.cappingrules.cassandra;
 
-import com.ebay.traffic.chocolate.cappingrules.constant.Env;
 import com.ebay.traffic.chocolate.cappingrules.constant.ReportType;
-import com.ebay.traffic.chocolate.cappingrules.dto.RawReportRecord;
+import com.ebay.traffic.chocolate.report.cassandra.RawReportRecord;
+import com.ebay.traffic.chocolate.report.constant.Env;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -20,9 +20,9 @@ public class CassandraService {
   private static final String CHOCO_SVC_PATH = "/marketing/tracking/v1/report/gen?reporttype=";
   private static Logger logger = LoggerFactory.getLogger(CassandraService.class);
   private static CassandraService cassandraService = new CassandraService();
-  
+
   public static CassandraService getInstance(){ return cassandraService; }
-  
+
   public static String getOauthToken(URL oauthURL) throws IOException {
     HttpURLConnection conn = null;
     String chocoAuth = null;
@@ -31,11 +31,11 @@ public class CassandraService {
       conn = (HttpURLConnection) oauthURL.openConnection();
       conn.setRequestMethod("GET");
       conn.setRequestProperty("Accept", "application/json");
-      
+
       if (conn.getResponseCode() != 200) {
         throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode());
       }
-      
+
       String output = IOUtils.toString(conn.getInputStream());
       logger.info(output);
       chocoAuth = output.substring(output.indexOf("\"access_token\": ") + 18);
@@ -48,35 +48,20 @@ public class CassandraService {
     }
     return chocoAuth;
   }
-  
-  public static URL getCassandraSvcEndPoint(ApplicationOptions applicationOptions, String env, ReportType reportType)
+
+  public static URL getCassandraSvcEndPoint(ApplicationOptions applicationOptions, ReportType reportType)
       throws IOException {
-    String endpoint = null;
-    if (Env.QA.name().equalsIgnoreCase(env)) {
-      endpoint = applicationOptions.getByNameString(ApplicationOptions.CHOCO_CASSANDRA_SVC_END_POINT
-          + "." + Env.QA.name().toLowerCase());
-    } else {
-      endpoint = applicationOptions.getByNameString(ApplicationOptions.CHOCO_CASSANDRA_SVC_END_POINT
-          + "." + Env.PROD.name().toLowerCase());
-    }
-    endpoint += CHOCO_SVC_PATH + reportType.name();
+    String endpoint = applicationOptions.getByNameString(ApplicationOptions.CHOCO_CASSANDRA_SVC_END_POINT) +
+        CHOCO_SVC_PATH + reportType.name();
     return new URL(endpoint);
   }
-  
-  public static URL getOauthSvcEndPoint(ApplicationOptions applicationOptions, String env)
+
+  public static URL getOauthSvcEndPoint(ApplicationOptions applicationOptions)
       throws IOException {
-    String endpoint = null;
-    if (Env.QA.name().equalsIgnoreCase(env)) {
-      endpoint = applicationOptions.getByNameString(ApplicationOptions.CHOCO_OAUTH_SVC_END_POINT
-          + "." + Env.QA.name().toLowerCase());
-    } else {
-      endpoint = applicationOptions.getByNameString(ApplicationOptions.CHOCO_OAUTH_SVC_END_POINT
-          + "." + Env.PROD.name().toLowerCase());
-    }
-    endpoint += OAUTH_SVC_PATH;
+    String endpoint = applicationOptions.getByNameString(ApplicationOptions.CHOCO_OAUTH_SVC_END_POINT) + OAUTH_SVC_PATH;
     return new URL(endpoint);
   }
-  
+
   public static void main(String[] arg) throws Exception {
     String env = null;
     if (arg != null && arg.length > 0) {
@@ -84,33 +69,33 @@ public class CassandraService {
     } else {
       env = Env.QA.name();
     }
-    
-    ApplicationOptions.init("GingerClient.properties");
+
+    ApplicationOptions.init("cassandra.properties", env);
     ApplicationOptions applicationOptions = ApplicationOptions.getInstance();
-    
-    URL oauthSvcURL = CassandraService.getOauthSvcEndPoint(applicationOptions, env);
+
+    URL oauthSvcURL = CassandraService.getOauthSvcEndPoint(applicationOptions);
     String oauthToken = CassandraService.getOauthToken(oauthSvcURL);
-    
+
     CassandraService cassandraService = new CassandraService();
     //CampaignReport
-    URL campaignURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, env, ReportType.CAMPAIGN);
+    URL campaignURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, ReportType.CAMPAIGN);
     RawReportRecord reportRecord = new RawReportRecord(98765432102l, 201712, 20171212, 98765432100001l,
-        698765432100001l, 1, 2, 3, 5, 8, 11, 19);
+        698765432100001l, 1, 2, 3, 5, 8, 11, 19, 20);
     cassandraService.saveReportRecord(oauthToken, campaignURL, reportRecord);
     //PartnerReport
-    URL partnerURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, env, ReportType.CAMPAIGN);
+    URL partnerURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, ReportType.CAMPAIGN);
     cassandraService.saveReportRecord(oauthToken, partnerURL, reportRecord);
   }
-  
+
   public void saveReportRecordList(String oauthToken, URL chocorptURL, List<RawReportRecord> reportRecordList) throws
       Exception {
     for (RawReportRecord record : reportRecordList) {
       saveReportRecord(oauthToken, chocorptURL, record);
     }
   }
-  
+
   public void saveReportRecord(String chocoAuth, URL chocorptURL, RawReportRecord reportRecord) throws IOException {
-    
+
     HttpURLConnection chocorptConn = null;
     try {
       chocorptConn = (HttpURLConnection) chocorptURL.openConnection();
@@ -120,17 +105,17 @@ public class CassandraService {
       chocorptConn.setRequestProperty("Content-Type", "application/json");
       chocorptConn.setRequestProperty("Authorization", "bearer " + chocoAuth);
       chocorptConn.setRequestMethod("POST");
-      
+
       String requestPayload = new Gson().toJson(reportRecord);
       OutputStream os = chocorptConn.getOutputStream();
       os.write(requestPayload.getBytes());
       os.flush();
-      
+
       if (chocorptConn.getResponseCode() != HttpURLConnection.HTTP_OK) {
         logger.error(chocorptConn.getErrorStream().toString());
         throw new RuntimeException("Failed : HTTP error code : " + chocorptConn.getResponseCode());
       }
-      
+
       String response = IOUtils.toString(chocorptConn.getInputStream());
       logger.info("cassandraRecord == " + response);
     } catch (IOException e) {

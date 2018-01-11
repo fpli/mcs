@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
+import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.Validate;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -14,25 +15,15 @@ import java.util.Date;
  * Created by yimeng on 11/18/17.
  */
 public class IdentifierUtil {
-  
-  /**
-   * Maximum driver ID constant
-   */
-  public static final long MAX_DRIVER_ID = 0x3FFl;
-  /**
-   * Mask for the high 24 bits in a timestamp
-   */
-  public static final long TIME_MASK = 0xFFFFFFl << 40l;
   /**
    * Date formatters to format dates from HBase to Cassandra-schema-compliant format
    */
   public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
   public static final DateFormat MONTH_FORMAT = new SimpleDateFormat("yyyyMM");
-  protected static final long HIGH_24 = 0x10000000000l;
-  
+
   public static long getSnapshotId(long epochMilliseconds, int driverId) {
-    Validate.isTrue(driverId >= 0 && driverId <= MAX_DRIVER_ID);
-    return ((epochMilliseconds & ~TIME_MASK) << 24l) | (driverId << 14l);
+    SnapshotId snapshotId = new SnapshotId(driverId, epochMilliseconds);
+    return snapshotId.getRepresentation();
   }
   
   public static byte[] generateIdentifier(long timestamp, int driverId, short modValue) throws IOException {
@@ -48,7 +39,7 @@ public class IdentifierUtil {
   }
   
   public static long getTimeMillisForSnapshotId(long snapshotId) {
-    return snapshotId >>> 24l | HIGH_24;
+    return snapshotId >>> 22l;
   }
   
   public static long getTimeMillisFromRowkey(byte[] rowIdentifier) {
@@ -70,7 +61,8 @@ public class IdentifierUtil {
    * @return row key byte array
    */
   public static byte[] generateIdentifier(long timestamp, short modValue) throws IOException {
-    byte[] snapshotID = Bytes.toBytes((timestamp & ~TIME_MASK) << 24l);
+    SnapshotId snapshotId = new SnapshotId(0, timestamp);
+    byte[] snapshotID = Bytes.toBytes(snapshotId.getRepresentation());
     
     java.io.ByteArrayOutputStream streamStart = new java.io.ByteArrayOutputStream(10);
     ByteBuffer bufferStart = ByteBuffer.allocate(Short.BYTES);
