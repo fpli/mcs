@@ -4,23 +4,19 @@ import com.ebay.traffic.chocolate.cappingrules.constant.ReportType;
 import com.ebay.traffic.chocolate.cappingrules.constant.StorageType;
 
 public class StorageFactory {
-  private String storageType;
-  
-  private StorageFactory(){}
-  
-  public StorageFactory(String storageType){
-    this.storageType = storageType;
+
+  public StorageFactory(){
   }
 
-  public IStorage getStorage(String storeTable, String env, ReportType reportType) {
+  public IStorage getStorage(String storageType){
     if (StorageType.HBASE.name().equalsIgnoreCase(storageType)) {
-      return new HBaseStorage(storeTable);
+      return new HBaseStorage();
     } else if (StorageType.CASSANDRA.name().equalsIgnoreCase(storageType)) {
-      return new CassandraStorage(env, reportType);
+      return new CassandraStorage();
     } else if (StorageType.COUCHBASE.name().equalsIgnoreCase(storageType)) {
       return new CouchBaseStorage();
     } else {
-      return new HBaseStorage(storeTable);
+      return new HBaseStorage();
     }
   }
 }

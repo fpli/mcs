@@ -121,13 +121,12 @@ public class ReportDataGenerator extends AbstractCapper {
     JavaRDD<List<RawReportRecord>> campaignReport = getReportByReportType(hbaseData, ReportType.CAMPAIGN);
     JavaRDD<List<RawReportRecord>> partnerReport = getReportByReportType(hbaseData, ReportType.PARTNER);
 
-      logger().info("--------------Environments="  + env);
     //Save CampaignReport & PartnerReport
-    StorageFactory sf = new StorageFactory(storageType);
-    IStorage campaignStorage = sf.getStorage(resultTable, env, ReportType.CAMPAIGN);
-    campaignStorage.writeToStorage(campaignReport);
-    IStorage partnerStorage = sf.getStorage(resultTable, env, ReportType.PARTNER);
-    partnerStorage.writeToStorage(partnerReport);
+    StorageFactory sf = new StorageFactory();
+    IStorage campaignStorage = sf.getStorage(storageType);
+    campaignStorage.writeToStorage(campaignReport, resultTable, env, ReportType.CAMPAIGN);
+    IStorage partnerStorage = sf.getStorage(storageType);
+    partnerStorage.writeToStorage(partnerReport, resultTable, env, ReportType.PARTNER);
   }
   
   /**

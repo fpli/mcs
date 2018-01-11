@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.cappingrules.common;
 import com.ebay.traffic.chocolate.cappingrules.HBaseConnection;
 import com.ebay.traffic.chocolate.cappingrules.cassandra.ApplicationOptions;
 import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
+import com.ebay.traffic.chocolate.cappingrules.constant.ReportType;
 import com.ebay.traffic.chocolate.report.cassandra.RawReportRecord;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HTable;
@@ -25,14 +26,12 @@ import java.util.List;
 public class HBaseStorage implements IStorage<JavaRDD<List<RawReportRecord>>> {
   private static final Logger logger = LoggerFactory.getLogger(ApplicationOptions.class);
   private String resultTable;
-  private HBaseStorage hBaseStorage;
 
-  public HBaseStorage(String resultTable) {
-    this.resultTable = resultTable;
-  }
+  public HBaseStorage() {}
 
   @Override
-  public void writeToStorage(JavaRDD<List<RawReportRecord>> reportRecords) {
+  public void writeToStorage(JavaRDD<List<RawReportRecord>> reportRecords, String storeTable, String env, ReportType reportType) {
+    this.resultTable = storeTable;
     JavaRDD<List<RawReportRecord>> resultRDD = (JavaRDD<List<RawReportRecord>>) reportRecords;
     JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = resultRDD.flatMapToPair(new WriteHBaseMap());
     hbasePuts.foreachPartition(new PutDataToHase());
