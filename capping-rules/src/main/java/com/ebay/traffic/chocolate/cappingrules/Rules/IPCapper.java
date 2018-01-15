@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.cappingrules.Rules;
 import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
 import com.ebay.traffic.chocolate.cappingrules.HBaseConnection;
 import com.ebay.traffic.chocolate.cappingrules.IdentifierUtil;
+import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.dto.IPCapperEvent;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.hbase.TableName;
@@ -32,10 +33,6 @@ import java.util.List;
 public class IPCapper extends AbstractCapper {
   // Rule name. It will be written to HBase if one record does not pass.
   private final String RULE_NAME = "IPCappingRule";
-  // Capping passed column name.
-  private final String CAPPING_PASSED_COL = "capping_passed";
-  // Capping failed rule column name.
-  private final String CAPPING_FAILED_RULE_COL = "capping_failed_rule";
   // IP count threshold. Used to judge is an IP is invalid
   private final long threshold;
   
@@ -230,12 +227,8 @@ public class IPCapper extends AbstractCapper {
     public Tuple2<ImmutableBytesWritable, Put> call(IPCapperEvent event)
         throws Exception {
       Put put = new Put(event.getRowIdentifier());
-      put.add(Bytes.toBytes("x"),
-          Bytes.toBytes(CAPPING_PASSED_COL),
-          Bytes.toBytes(event.isCappingPassed()));
-      put.add(Bytes.toBytes("x"),
-          Bytes.toBytes(CAPPING_FAILED_RULE_COL),
-          Bytes.toBytes(event.getCappingFailedRule()));
+      put.add(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_CAPPING_PASSED, Bytes.toBytes(event.isCappingPassed()));
+      put.add(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_CAPPING_FAILED_RULE, Bytes.toBytes(event.getCappingFailedRule()));
       return new Tuple2<ImmutableBytesWritable, Put>(
           new ImmutableBytesWritable(), put);
     }

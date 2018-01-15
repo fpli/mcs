@@ -255,8 +255,8 @@ public class SNIDCapper extends AbstractCapper {
     public Tuple2<ImmutableBytesWritable, Put> call(SNIDCapperEvent snidCapperEvent)
         throws Exception {
       Put put = new Put(snidCapperEvent.getRowIdentifier());
-      put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("is_impressed"), Bytes.toBytes(snidCapperEvent.isImpressed()));
-      put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("imp_row_key"), snidCapperEvent.getImpRowIdentifier());
+      put.add(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_IS_IMPRESSED, Bytes.toBytes(snidCapperEvent.isImpressed()));
+      put.add(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_IMP_ROW_KEY, snidCapperEvent.getImpRowIdentifier());
       return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
     }
   }

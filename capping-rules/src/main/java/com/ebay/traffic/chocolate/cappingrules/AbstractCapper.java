@@ -106,7 +106,7 @@ public abstract class AbstractCapper extends BaseSparkJob {
     options.addOption(originalTable);
     
     Option resultTable = new Option((String) null, "resultTable", true, "resultTable write to HBase");
-    resultTable.setRequired(true);
+    resultTable.setRequired(false);
     options.addOption(resultTable);
     
     Option channelType = new Option((String) null, "channelType", true, "the channelType for " + cappingRuleDescription);
