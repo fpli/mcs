@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.traffic.chocolate.cappingrules.dto.EventSchema;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperEvent;
 import com.ebay.traffic.chocolate.cappingrules.hdfs.HDFSFileGenerator;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -29,7 +30,7 @@ public class TestHDFSFileGenerator extends AbstractCappingRuleTest {
     setDataIntoTransactionTable();
 
     HBaseScanIterator iter = new HBaseScanIterator(TRANSACTION_TABLE_NAME);
-    Assert.assertEquals(3, getCount(iter));
+    Assert.assertEquals(4, getCount(iter));
     iter.close();
     
     Calendar c = Calendar.getInstance();
@@ -67,7 +68,7 @@ public class TestHDFSFileGenerator extends AbstractCappingRuleTest {
     c.add(Calendar.MINUTE, 1);
     SnapshotId snapshotId2 = new SnapshotId(0, c.getTimeInMillis());
     addEvent(transactionalTable, new EventSchema(generateIdentifier(snapshotId2), snapshotId2.getRepresentation(),
-        98765432102l, 12345678902l,  "CLICK", "EPN", "request-header-2", c.getTimeInMillis(),  "snid-1",
+        98765432102l, 12345678902l,  "CLICK", "EPN", "request-header-2", c.getTimeInMillis(),  "undefined",
         IdentifierUtil.getMonthFromSnapshotId(snapshotId2.getRepresentation()), true, true, null,   true, generateIdentifier(snapshotId1),
         true,null));
 
@@ -77,6 +78,13 @@ public class TestHDFSFileGenerator extends AbstractCappingRuleTest {
         98765432102l, 12345678902l,  "CLICK", "DAP", "request-header-2", c.getTimeInMillis(),  "snid-1",
         IdentifierUtil.getMonthFromSnapshotId(snapshotId3.getRepresentation()), true, true, null,   false, null,
         true,null));
+
+    c.add(Calendar.MINUTE, 1);
+    SnapshotId snapshotId4 = new SnapshotId(0, c.getTimeInMillis());
+    addEvent(transactionalTable, new EventSchema(generateIdentifier(snapshotId4), snapshotId4.getRepresentation(),
+        98765432102l, 12345678902l,  "CLICK", "DAP", "request-header-2", c.getTimeInMillis(), null,
+        IdentifierUtil.getMonthFromSnapshotId(snapshotId4.getRepresentation()), null, true, null,   false, null,
+        null,null));
   }
 
 
@@ -101,17 +109,23 @@ public class TestHDFSFileGenerator extends AbstractCappingRuleTest {
     putCell(put, TRANSACTION_CF_DEFAULT, "request_headers", eventSchema.getRequestHeaders());
     putCell(put, TRANSACTION_CF_DEFAULT, "request_timestamp", eventSchema.getRequestTimestamp());
     putCell(put, TRANSACTION_CF_DEFAULT, "http_method", eventSchema.getHttpMethod());
-    putCell(put, TRANSACTION_CF_DEFAULT, "snid", eventSchema.getSnid());
     putCell(put, TRANSACTION_CF_DEFAULT, "month", String.valueOf(eventSchema.getMonth()));
-    putCell(put, TRANSACTION_CF_DEFAULT, "is_mobile", eventSchema.getMobile());
+    if(StringUtils.isNotEmpty(eventSchema.getSnid())){
+      putCell(put, TRANSACTION_CF_DEFAULT, "snid", eventSchema.getSnid());
+    }
+    if(eventSchema.getMobile() != null){
+      putCell(put, TRANSACTION_CF_DEFAULT, "is_mobile", eventSchema.getMobile());
+    }
     putCell(put, TRANSACTION_CF_DEFAULT, "filter_passed", eventSchema.getFilterPassed());
     putCell(put, TRANSACTION_CF_DEFAULT, "filter_failed_rule", eventSchema.getFilterFailedRule());
     if(eventSchema.getImpressed() != null){
       putCell(put, TRANSACTION_CF_DEFAULT, "is_impressed", eventSchema.getImpressed());
+      putCell(put, TRANSACTION_CF_DEFAULT, "imp_row_key", eventSchema.getImpRowIdentifier());
     }
-    putCell(put, TRANSACTION_CF_DEFAULT, "imp_row_key", eventSchema.getImpRowIdentifier());
-    putCell(put, TRANSACTION_CF_DEFAULT, "capping_passed", eventSchema.getCappingPassed());
-    putCell(put, TRANSACTION_CF_DEFAULT, "capping_failed_rule", eventSchema.getCappingFailedRule());
+    if(eventSchema.getCappingPassed() != null){
+      putCell(put, TRANSACTION_CF_DEFAULT, "capping_passed", eventSchema.getCappingPassed());
+      putCell(put, TRANSACTION_CF_DEFAULT, "capping_failed_rule", eventSchema.getCappingFailedRule());
+    }
     table.put(put);
   }
 }

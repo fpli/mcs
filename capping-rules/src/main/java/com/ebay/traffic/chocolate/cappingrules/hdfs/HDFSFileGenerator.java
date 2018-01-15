@@ -121,16 +121,24 @@ public class HDFSFileGenerator extends AbstractCapper {
       eventSchema.setRequestHeaders(Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_REQUEST_HEADERS)));
       eventSchema.setRequestTimestamp(Bytes.toLong(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_REQUEST_TIMESTAMP)));
       eventSchema.setHttpMethod(Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_HTTP_METHOD)));
-      eventSchema.setSnid(Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_SNID)));
       eventSchema.setMonth(Bytes.toInt(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_MONTH)));
-      eventSchema.setMobile(Bytes.toBoolean(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_IS_MOBILE)));
       eventSchema.setFilterPassed(Bytes.toBoolean(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_FILTER_PASSED)));
       eventSchema.setFilterFailedRule(Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_FILTER_FAILED_RULE)));
 
+      try{
+        eventSchema.setSnid(Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_SNID)));
+      } catch (NullPointerException e){
+        logger().warn("There is no column named 'snid'. ");
+      }
+      try {
+        eventSchema.setMobile(Bytes.toBoolean(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_IS_MOBILE)));
+      } catch (NullPointerException e) {
+        logger().warn("There is no column named 'is_mobile'. ");
+      }
       try {
         eventSchema.setImpressed(Bytes.toBoolean(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_IS_IMPRESSED)));
       } catch (NullPointerException e) {
-        logger().warn("There is no column named 'impressed'. ");
+        logger().warn("There is no column named 'is_impressed'. ");
       }
       try {
         eventSchema.setImpRowIdentifier(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_IMP_ROW_KEY));
@@ -145,7 +153,7 @@ public class HDFSFileGenerator extends AbstractCapper {
       try {
         eventSchema.setCappingPassed(Bytes.toBoolean(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_CAPPING_PASSED)));
       } catch (NullPointerException e) {
-        logger().warn("There is no column named 'impressed'. ");
+        logger().warn("There is no column named 'capping_passed'. ");
       }
       return eventSchema;
     }
