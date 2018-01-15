@@ -24,7 +24,7 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
     initHBaseCappingResultTable(RESULT_TABLE_NAME_WITH_TIME_WINDOW);
     
     HBaseScanIterator iter = new HBaseScanIterator(TRANSACTION_TABLE_NAME);
-    Assert.assertEquals(32, getCount(iter));
+    Assert.assertEquals(35, getCount(iter));
     iter.close();
     
     Calendar c = Calendar.getInstance();
@@ -98,6 +98,12 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
         (short) 0), "100", "CLICK", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 104,
         (short) 10), "100", "CLICK", "EPN"));
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 104,
+        (short) 3), null, "CLICK", "EPN"));
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 105,
+        (short) 2), "undefined", "CLICK", "EPN"));
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 106,
+        (short) 1), "UNDEFINED", "CLICK", "EPN"));
     
     // click happens after impression on same host and different host with empty snid
     c.add(Calendar.MINUTE, -10);

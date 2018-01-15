@@ -29,6 +29,7 @@ import java.util.List;
  * Created by yimeng on 11/12/17.
  */
 public class SNIDCapper extends AbstractCapper {
+  private static final String SNID_DEFAULT_VALUE = "undefined";
   
   /**
    * Constructor for SNID Capping Rule with updateTimeWindow
@@ -220,7 +221,7 @@ public class SNIDCapper extends AbstractCapper {
         clickEvent = snidEventIte2.next();
         clickRowIdentifier = clickEvent.getRowIdentifier();
         //step 2-1: ignore clicks which haven't session id on it
-        if (StringUtil.isEmpty(impEvent.getSnid())) {
+        if (StringUtil.isEmpty(impEvent.getSnid()) || SNID_DEFAULT_VALUE.equalsIgnoreCase(impEvent.getSnid())) {
           continue;
         }
         if (ChannelAction.CLICK.name().equalsIgnoreCase(clickEvent.getChannelAction())) {
