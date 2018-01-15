@@ -59,12 +59,10 @@ public class TestIPCapper extends AbstractCappingRuleTest {
   
   @Test
   public void testIPCappingRuleJob() throws Exception {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     Calendar today = Calendar.getInstance();
-    String stopTime = sdf.format(today.getTime());
+    String stopTime = IdentifierUtil.INPUT_DATE_FORMAT.format(today.getTime());
     today.add(Calendar.DATE, -1);
-    String startTime = sdf.format(today.getTime());
-    
+
     IPCapper job = new IPCapper("TestIPCappingRuleJob", "local[4]", TRANSACTION_TABLE_NAME, RESULT_TABLE_NAME,
         "EPN", stopTime, 24*60, 4*60, 8);
   

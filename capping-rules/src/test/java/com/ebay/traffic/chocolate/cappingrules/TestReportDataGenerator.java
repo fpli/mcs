@@ -1,9 +1,7 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
-import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 import com.ebay.traffic.chocolate.cappingrules.cassandra.ApplicationOptions;
 import com.ebay.traffic.chocolate.cappingrules.cassandra.ReportDataGenerator;
 import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
@@ -45,7 +43,7 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
     Assert.assertEquals(48, getCount(iter));
     iter.close();
 
-    stopTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(testDataCalendar.getTime());
+    stopTime = IdentifierUtil.INPUT_DATE_FORMAT.format(testDataCalendar.getTime());
     //testDataCalendar.add(Calendar.MINUTE, -10);
   }
 
@@ -150,7 +148,7 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
   private static final String CQL_CREATE_PARTNER_REPORT = "CREATE TABLE chocolaterptks.partner_report (" +
       " partner_id bigint," +  SCHAMA1 + PRIMARY_KEY_PARTNER + SCHAMA2;
 
-//
+
 //  /**
 //   * Test store report data to Cassandra
 //   * <br/>

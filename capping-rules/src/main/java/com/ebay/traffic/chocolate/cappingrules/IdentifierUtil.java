@@ -22,9 +22,11 @@ public class IdentifierUtil {
   private static final TimeZone TIMEZONE = TimeZone.getTimeZone("UTC");
   public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
   public static final DateFormat MONTH_FORMAT = new SimpleDateFormat("yyyyMM");
+  public static final DateFormat INPUT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   static {
     DATE_FORMAT.setTimeZone(TIMEZONE);
     MONTH_FORMAT.setTimeZone(TIMEZONE);
+    INPUT_DATE_FORMAT.setTimeZone(TIMEZONE);
   }
 
   public static long getSnapshotId(long epochMilliseconds, int driverId) {
@@ -76,5 +78,10 @@ public class IdentifierUtil {
   
   public static int getDayFromSnapshotId(long snapshotId) {
     return Integer.valueOf(DATE_FORMAT.format(new Date(getTimeMillisForSnapshotId(snapshotId))));
+  }
+
+
+  public static void main(String[] args){
+    System.out.println(INPUT_DATE_FORMAT.format(IdentifierUtil.getTimeMillisForSnapshotId(6358501488210014208l)));
   }
 }

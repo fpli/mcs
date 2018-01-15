@@ -79,7 +79,8 @@ public abstract class AbstractCapper extends BaseSparkJob {
     logger().info("=======hbase scanStopTime ======" + scanStopTime);
     logger().info("=======hbase scanTimeWindow ======" + scanTimeWindow);
     logger().info("=======hbase updateTimeWindow ======" + updateTimeWindow);
-    scanTimeWindowStopTime = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(scanStopTime).getTime();
+//    scanTimeWindowStopTime = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(scanStopTime).getTime();
+    scanTimeWindowStopTime = IdentifierUtil.INPUT_DATE_FORMAT.parse(scanStopTime).getTime();
     scanTimeWindowStartTime = scanTimeWindowStopTime - scanTimeWindow * 60 * 1000;
     if (updateTimeWindow > 0) {
       updateWindowStartTime = scanTimeWindowStopTime - updateTimeWindow * 60 * 1000;

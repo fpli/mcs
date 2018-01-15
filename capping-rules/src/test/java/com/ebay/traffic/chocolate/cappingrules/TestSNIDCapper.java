@@ -15,7 +15,6 @@ import java.util.Calendar;
 public class TestSNIDCapper extends AbstractCappingRuleTest {
   protected static final String RESULT_TABLE_NAME_WITH_CHANNEL = "capping_result_with_channel";
   protected static final String RESULT_TABLE_NAME_WITH_TIME_WINDOW = "capping_result_with_time_window";
-  private static String startTime;
   private static String stopTime;
   
   @BeforeClass
@@ -29,9 +28,7 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
     iter.close();
     
     Calendar c = Calendar.getInstance();
-    stopTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
-    c.add(Calendar.DATE, -1);
-    startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
+    stopTime = IdentifierUtil.INPUT_DATE_FORMAT.format(c.getTime());
   }
   
   @Test

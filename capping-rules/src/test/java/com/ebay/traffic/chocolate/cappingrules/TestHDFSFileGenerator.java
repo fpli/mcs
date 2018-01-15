@@ -33,7 +33,7 @@ public class TestHDFSFileGenerator extends AbstractCappingRuleTest {
     iter.close();
     
     Calendar c = Calendar.getInstance();
-    stopTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
+    stopTime = IdentifierUtil.INPUT_DATE_FORMAT.format(c.getTime());
   }
   
   @Test
