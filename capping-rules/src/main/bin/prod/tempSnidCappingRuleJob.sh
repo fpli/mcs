@@ -1,6 +1,7 @@
-# run spark job on YARN - HDFSFileGeneratorJob
+#!/bin/bash
+# run spark job on YARN - SNIDCapperJob
 
-usage="Usage: hdfsFileGenerator.sh [originalTable] [channelType] [scanStopTime] [scanTimeWindow] [filePath] [numberOfPartition]"
+usage="Usage: snidCappingRuleJob.sh [originalTable] [resultTable] [channelType] [scanStopTime] [scanTimeWindow] [updateTimeWindow]"
 
 # if no args specified, show usage
 if [ $# -le 2 ]; then
@@ -9,23 +10,23 @@ if [ $# -le 2 ]; then
 fi
 
 bin=`dirname "$0"`
-bin=`cd "$bin">/dev/null; pwd`
+bin=`cd ..>/dev/null; pwd`
 
 . ${bin}/chocolate-env.sh
 
 ORIGINAL_TABLE=$1
-CHANNEL_TYPE=$2
-SCAN_STOP_TIME=$3
-SCAN_TIME_WINDOW=$4
-FILE_PATH=$5
-NUMBER_OF_PARTITION=$6
+RESULT_TABLE=$2
+CHANNEL_TYPE=$3
+SCAN_STOP_TIME=$4
+SCAN_TIME_WINDOW=$5
+UPDATE_TIME_WINDOW=$6
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
 EXECUTOR_MEMORY=12g
 EXECUTOR_CORES=3
 
-JOB_NAME="HDFSFileGenerator"
+JOB_NAME="TempSNIDCappingRule"
 
 for f in $(find $bin/../conf -name '*');
 do
@@ -34,7 +35,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.cappingrules.hdfs.HDFSFileGenerator \
+    --class com.ebay.traffic.chocolate.cappingrules.Rules.TempSNIDCapper \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
@@ -48,8 +49,8 @@ ${SPARK_HOME}/bin/spark-submit \
       --jobName ${JOB_NAME} \
       --mode yarn \
       --originalTable ${ORIGINAL_TABLE} \
+      --resultTable ${RESULT_TABLE} \
       --channelType ${CHANNEL_TYPE} \
       --scanStopTime "${SCAN_STOP_TIME}" \
       --scanTimeWindow ${SCAN_TIME_WINDOW} \
-      --filePath "${FILE_PATH}" \
-      --numberOfPartition ${NUMBER_OF_PARTITION} \
+      --updateTimeWindow ${UPDATE_TIME_WINDOW}

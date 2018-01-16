@@ -1,6 +1,6 @@
-# run spark job on YARN - ReportDataGeneratorJob
+# run spark job on YARN - HDFSFileGeneratorJob
 
-usage="Usage: reportGeneratorJob.sh [originalTable] [resultTable] [channelType] [scanStopTime] [scanTimeWindow] [storageType] [env]"
+usage="Usage: hdfsFileGenerator.sh [originalTable] [channelType] [scanStopTime] [scanTimeWindow] [filePath] [numberOfPartition]"
 
 # if no args specified, show usage
 if [ $# -le 2 ]; then
@@ -9,24 +9,23 @@ if [ $# -le 2 ]; then
 fi
 
 bin=`dirname "$0"`
-bin=`cd "$bin">/dev/null; pwd`
+bin=`cd ..>/dev/null; pwd`
 
 . ${bin}/chocolate-env-qa.sh
 
 ORIGINAL_TABLE=$1
-RESULT_TABLE=$2
-CHANNEL_TYPE=$3
-SCAN_STOP_TIME=$4
-SCAN_TIME_WINDOW=$5
-STORAGE_TYPE=$6
-ENV=$7
+CHANNEL_TYPE=$2
+SCAN_STOP_TIME=$3
+SCAN_TIME_WINDOW=$4
+FILE_PATH=$5
+NUMBER_OF_PARTITION=$6
 
 DRIVER_MEMORY=1g
 EXECUTOR_NUMBER=2
 EXECUTOR_MEMORY=512M
 EXECUTOR_CORES=3
 
-JOB_NAME="ReportDataGenerator"
+JOB_NAME="HDFSFileGenerator"
 
 for f in $(find $bin/../conf -name '*');
 do
@@ -35,7 +34,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.cappingrules.cassandra.ReportDataGenerator \
+    --class com.ebay.traffic.chocolate.cappingrules.hdfs.HDFSFileGenerator \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
@@ -49,9 +48,8 @@ ${SPARK_HOME}/bin/spark-submit \
       --jobName ${JOB_NAME} \
       --mode yarn \
       --originalTable ${ORIGINAL_TABLE} \
-      --resultTable ${RESULT_TABLE} \
       --channelType ${CHANNEL_TYPE} \
       --scanStopTime "${SCAN_STOP_TIME}" \
       --scanTimeWindow ${SCAN_TIME_WINDOW} \
-      --storageType ${STORAGE_TYPE} \
-      --env ${ENV} \
+      --filePath "${FILE_PATH}" \
+      --numberOfPartition ${NUMBER_OF_PARTITION} \

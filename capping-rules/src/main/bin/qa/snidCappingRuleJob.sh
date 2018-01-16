@@ -10,9 +10,9 @@ if [ $# -le 2 ]; then
 fi
 
 bin=`dirname "$0"`
-bin=`cd "$bin">/dev/null; pwd`
+bin=`cd ..>/dev/null; pwd`
 
-. ${bin}/chocolate-env.sh
+. ${bin}/chocolate-env-qa.sh
 
 ORIGINAL_TABLE=$1
 RESULT_TABLE=$2
@@ -21,12 +21,12 @@ SCAN_STOP_TIME=$4
 SCAN_TIME_WINDOW=$5
 UPDATE_TIME_WINDOW=$6
 
-DRIVER_MEMORY=10g
-EXECUTOR_NUMBER=30
-EXECUTOR_MEMORY=12g
+DRIVER_MEMORY=1g
+EXECUTOR_NUMBER=2
+EXECUTOR_MEMORY=512M
 EXECUTOR_CORES=3
 
-JOB_NAME="TempSNIDCappingRule"
+JOB_NAME="SNIDCappingRule"
 
 for f in $(find $bin/../conf -name '*');
 do
@@ -35,7 +35,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.cappingrules.Rules.TempSNIDCapper \
+    --class com.ebay.traffic.chocolate.cappingrules.Rules.SNIDCapper \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
@@ -44,7 +44,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
-    --conf spark.yarn.executor.memoryOverhead=8192 \
+    --conf spark.yarn.executor.memoryOverhead=1024 \
     ${bin}/../lib/chocolate-capping-rules-*.jar \
       --jobName ${JOB_NAME} \
       --mode yarn \

@@ -106,7 +106,7 @@ cp "$CHOCOLATE_HOME"/capping-rules/target/chocolate-capping-rules-*-fat.jar "$CH
 #cp -r "$CHOCOLATE_HOME"/capping-rules/src/main/conf/* "$CHOCOLATE_CAPPING_RULE_BIN"/conf
 
 mkdir -p "$CHOCOLATE_CAPPING_RULE_BIN/bin"
-cp "$CHOCOLATE_HOME"/common/src/main/bin/* "$CHOCOLATE_CAPPING_RULE_BIN"/bin
+cp -r "$CHOCOLATE_HOME"/common/src/main/bin/* "$CHOCOLATE_CAPPING_RULE_BIN"/bin
 cp -r "$CHOCOLATE_HOME"/capping-rules/src/main/bin/* "$CHOCOLATE_CAPPING_RULE_BIN"/bin
 
 if [ "$MAKE_TGZ" == "true" ]; then
