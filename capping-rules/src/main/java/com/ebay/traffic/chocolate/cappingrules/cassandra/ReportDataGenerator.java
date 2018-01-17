@@ -260,7 +260,7 @@ public class ReportDataGenerator extends AbstractCapper {
         reportRecord.setDay(IdentifierUtil.getDayFromSnapshotId(snapshotId));
         
         validRecord = (retEvent.getFilterPassed() && retEvent.isCappingPassed() && retEvent.isImpressed()) ? 1 : 0;
-        mobileRecord = retEvent.getMobile() ? 1 : 0;
+        mobileRecord = retEvent.getMobile() && (retEvent.getFilterPassed() && retEvent.isCappingPassed() && retEvent.isImpressed()) ? 1 : 0;
         
         if (ChannelAction.IMPRESSION.name().equalsIgnoreCase(retEvent.getChannelAction())) {
           reportRecord.setGrossImpressions(reportRecord.getGrossImpressions() + 1);

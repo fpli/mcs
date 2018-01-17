@@ -74,14 +74,14 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
 
       //Partner-1
       ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp, false);
-      assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 10, 4);
+      assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 4, 4);
 
       rs = reportClient.getCampaignReport(76543210001l, timestamp, false);
-      assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 7, 4);
+      assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 2, 4);
 
       timestamp += 1500;
       rs = reportClient.getCampaignReport(76543210002l, timestamp, false);
-      assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 3, 0);
+      assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 2, 0);
 
       //Partner-2
       timestamp += 1500;
@@ -122,14 +122,14 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
 
       //Partner-1
       ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp, true);
-      assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 10, 4);
+      assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 4, 4);
 
       rs = reportClient.getCampaignReport(76543210001l, timestamp, true);
-      assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 7, 4);
+      assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 2, 4);
 
       timestamp += 1500;
       rs = reportClient.getCampaignReport(76543210002l, timestamp, true);
-      assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 3, 0);
+      assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 2, 0);
 
       //Partner-2
       timestamp += 1500;
@@ -294,16 +294,16 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
       long id = Bytes.toLong(result.getRow());
       if (id == 76543210001l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
-        assertHbaseData(result, month, day, timestamp, 10, 4, 9, 4, 5, 3, 7 ,4);
+        assertHbaseData(result, month, day, timestamp, 10, 4, 9, 4, 5, 3, 2 ,4);
       } else if (id == 76543210002l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000 + 1500;
-        assertHbaseData(result, month, day, timestamp, 11, 5, 0, 0, 0, 0, 3, 0);
+        assertHbaseData(result, month, day, timestamp, 11, 5, 0, 0, 0, 0, 2, 0);
       } else if (id == 76543210003l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000 + 3000;
         assertHbaseData(result, month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
       } else if (id == 1234560001l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
-        assertHbaseData(result, month, day, timestamp, 21, 9, 9, 4, 5, 3, 10, 4);
+        assertHbaseData(result, month, day, timestamp, 21, 9, 9, 4, 5, 3, 4, 4);
       } else if (id == 1234560002l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000 + 1500 + 1500;
         assertHbaseData(result, month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
