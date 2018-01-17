@@ -30,7 +30,6 @@ import java.util.List;
  * Created by yimeng on 11/12/17.
  */
 public abstract class AbstractCapper extends BaseSparkJob {
-  protected static final String INPUT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
   //hbase prefix of row identifier
   protected static short MOD = 293;
   //spark job input parameter

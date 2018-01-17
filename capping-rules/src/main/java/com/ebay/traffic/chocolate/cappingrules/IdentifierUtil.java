@@ -22,7 +22,7 @@ public class IdentifierUtil {
   private static final TimeZone TIMEZONE = TimeZone.getTimeZone("UTC");
   public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
   public static final DateFormat MONTH_FORMAT = new SimpleDateFormat("yyyyMM");
-  public static final DateFormat INPUT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  public static final DateFormat INPUT_DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmss");
   static {
     DATE_FORMAT.setTimeZone(TIMEZONE);
     MONTH_FORMAT.setTimeZone(TIMEZONE);
