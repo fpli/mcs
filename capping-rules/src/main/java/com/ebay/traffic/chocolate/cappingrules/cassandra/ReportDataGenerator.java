@@ -9,25 +9,17 @@ import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.constant.ReportType;
 import com.ebay.traffic.chocolate.cappingrules.constant.StorageType;
 import com.ebay.traffic.chocolate.cappingrules.dto.FilterResultEvent;
-import com.ebay.traffic.chocolate.report.cassandra.CassandraConfiguration;
 import com.ebay.traffic.chocolate.report.cassandra.RawReportRecord;
-import com.ebay.traffic.chocolate.report.cassandra.ReportHelper;
 import com.ebay.traffic.chocolate.report.constant.Env;
 import org.apache.commons.cli.*;
-import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
-import org.apache.spark.api.java.function.VoidFunction;
 import scala.Tuple2;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,17 +35,15 @@ import java.util.List;
 public class ReportDataGenerator extends AbstractCapper {
   private String storageType = StorageType.CASSANDRA.name();
   private String env = Env.QA.name();
-  
+
   /**
-   * Constructor for report data generator
-   *
    * @param jobName       spark job name
    * @param mode          spark submit mode
    * @param originalTable HBase table which data queried from
    * @param resultTable   HBase table which data stored in
    * @param channelType   marketing channel like EPN, DAP, SEARCH
    * @param scanStopTime  scan stop time
-   * @param storageType   HBase/Cassandra
+   * @param storageType   HBASE/CASSANDRA/SMOKE_CASSANDRA
    * @param env           QA/PROD
    * @throws java.text.ParseException
    */

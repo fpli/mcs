@@ -4,7 +4,6 @@ import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
 import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.dto.EventSchema;
 import org.apache.commons.cli.*;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.spark.api.java.JavaRDD;
@@ -23,15 +22,19 @@ import org.apache.spark.sql.Row;
 public class HDFSFileGenerator extends AbstractCapper {
   private String filePath;
   private Integer numberOfPartition = 0;
+
   /**
-   * Constructor for SNID Capping Rule without updateTimeWindow
+   * Constructor for HDFS Parquet File Generator
    *
-   * @param jobName        spark job name
-   * @param mode           spark submit mode
-   * @param originalTable  HBase table which data queried from
-   * @param channelType    marketing channel like EPN, DAP, SEARCH
-   * @param scanStopTime   scan stop time
-   * @param scanTimeWindow scan time window (minutes)
+   * @param jobName           spark job name
+   * @param mode              spark submit mode
+   * @param originalTable     HBase table which data queried from
+   * @param channelType       marketing channel like EPN, DAP, SEARCH
+   * @param scanStopTime      scan stop time
+   * @param scanTimeWindow    scan time window (minutes)
+   * @param filePath          hdfs file store path
+   * @param numberOfPartition default=0 will use hbase scan partition as default partition like 293, but we could change it by this param
+   * @throws java.text.ParseException
    */
   public HDFSFileGenerator(String jobName, String mode, String originalTable, String channelType, String
       scanStopTime, int scanTimeWindow, String filePath, Integer numberOfPartition) throws java.text.ParseException {
@@ -82,8 +85,7 @@ public class HDFSFileGenerator extends AbstractCapper {
   /**
    * Run SNID Capping Rule
    * step1 : scan data from HBase
-   * step2: filter data by SNID Capping Rule
-   * step3: write data back to HBase
+   * step2: dump data to parquet files
    *
    * @throws Exception job runtime exception
    */
