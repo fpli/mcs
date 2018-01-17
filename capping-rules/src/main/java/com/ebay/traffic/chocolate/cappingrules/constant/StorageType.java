@@ -7,5 +7,6 @@ public enum StorageType {
   HBASE,
   CASSANDRA,
   HDFS,
-  COUCHBASE;
+  COUCHBASE,
+  SMOKE_CASSANDRA;
 }

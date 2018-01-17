@@ -34,6 +34,8 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
 
   private static String stopTime;
   private static Calendar testDataCalendar = Calendar.getInstance();
+  private static ReportHelper reportClient = null;
+
 
   @BeforeClass
   public static void initialHbaseTable() throws IOException {
@@ -61,7 +63,6 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
         TRANSACTION_TABLE_NAME, RESULT_TABLE_NAME, "EPN", stopTime, 30, StorageType.CASSANDRA.name(), env);
     job.run();
 
-    ReportHelper reportClient = null;
     try {
       //Validation
       CassandraConfiguration cassandraConf = CassandraConfiguration.createConfiguration(env);
@@ -72,22 +73,70 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
       long timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
 
       //Partner-1
-      ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp);
+      ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp, false);
       assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 10, 4);
 
-      rs = reportClient.getCampaignReport(76543210001l, timestamp);
+      rs = reportClient.getCampaignReport(76543210001l, timestamp, false);
       assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 7, 4);
 
       timestamp += 1500;
-      rs = reportClient.getCampaignReport(76543210002l, timestamp);
+      rs = reportClient.getCampaignReport(76543210002l, timestamp, false);
       assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 3, 0);
 
       //Partner-2
       timestamp += 1500;
-      rs = reportClient.getPartnerReport(1234560002l, timestamp);
+      rs = reportClient.getPartnerReport(1234560002l, timestamp, false);
       assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
 
-      rs = reportClient.getCampaignReport(76543210003l, timestamp);
+      rs = reportClient.getCampaignReport(76543210003l, timestamp, false);
+      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+    }catch(Exception e){
+      throw e;
+    }finally{
+      job.stop();
+    }
+  }
+
+  /**
+   * Test store report data to Cassandra
+   * <br/>
+   * could be commented if only want to run without QA cassandra connection
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testSaveToSmokeCassandraQA() throws Exception {
+    String env = Env.QA.name();
+    ReportDataGenerator job = new ReportDataGenerator("TestReportDataGenerator", "local[4]",
+        TRANSACTION_TABLE_NAME, RESULT_TABLE_NAME, "EPN", stopTime, 30, StorageType.SMOKE_CASSANDRA.name(), env);
+    job.run();
+
+    try {
+      //Validation
+      CassandraConfiguration cassandraConf = CassandraConfiguration.createConfiguration(env);
+      reportClient = ReportHelper.getInstance();
+      reportClient.connectToCassandra(cassandraConf);
+      int month = Integer.valueOf(IdentifierUtil.MONTH_FORMAT.format(testDataCalendar.getTimeInMillis()));
+      int day = Integer.valueOf(IdentifierUtil.DATE_FORMAT.format(testDataCalendar.getTimeInMillis()));
+      long timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
+
+      //Partner-1
+      ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp, true);
+      assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 10, 4);
+
+      rs = reportClient.getCampaignReport(76543210001l, timestamp, true);
+      assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 7, 4);
+
+      timestamp += 1500;
+      rs = reportClient.getCampaignReport(76543210002l, timestamp, true);
+      assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 3, 0);
+
+      //Partner-2
+      timestamp += 1500;
+      rs = reportClient.getPartnerReport(1234560002l, timestamp, true);
+      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+
+      rs = reportClient.getCampaignReport(76543210003l, timestamp, true);
       assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
     }catch(Exception e){
       throw e;
@@ -113,40 +162,40 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
     Assert.assertEquals(Long.valueOf(mobileClick), Long.valueOf(row.getInt(CassandraConstants.MOBILE_CLICKS_COLUMN)));
     Assert.assertEquals(Long.valueOf(mobileImp), Long.valueOf(row.getInt(CassandraConstants.MOBILE_IMPRESSIONS_COLUMN)));
   }
-
-  private static final String CQL_CREATE_KEYSPACE = "CREATE KEYSPACE IF NOT EXISTS " + CassandraConstants.REPORT_KEYSPACE +
-      " WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor':1} AND DURABLE_WRITES =  true";
-  private static final String SCHAMA1 =
-      "    month int," +
-      "    day int," +
-      "    timestamp bigint," +
-      "    snapshot_id bigint," +
-      "    clicks int," +
-      "    gross_clicks int," +
-      "    gross_impressions int," +
-      "    gross_view_impressions int," +
-      "    impressions int," +
-      "    mobile_clicks int," +
-      "    mobile_impressions int," +
-      "    view_impressions int,";
-  private static final String PRIMARY_KEY_CAMPAIGN = " PRIMARY KEY ((campaign_id, ";
-  private static final String PRIMARY_KEY_PARTNER = " PRIMARY KEY ((partner_id, ";
-  private static final String SCHAMA2 =    "month), day, timestamp, snapshot_id)" +
-      ") WITH read_repair_chance = 0.0" +
-      "   AND dclocal_read_repair_chance = 0.1" +
-      "   AND gc_grace_seconds = 864000" +
-      "   AND bloom_filter_fp_chance = 0.01" +
-      "   AND caching = { 'keys' : 'ALL', 'rows_per_partition' : 'NONE' }" +
-      "   AND comment = ''" +
-      "   AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold' : 32, 'min_threshold' : 4 }" +
-      "   AND default_time_to_live = 0" +
-      "   AND speculative_retry = '99PERCENTILE'" +
-      "   AND min_index_interval = 128" +
-      "   AND max_index_interval = 2048;";
-  private static final String CQL_CREATE_CAMPAIGN_REPORT = "CREATE TABLE chocolaterptks.campaign_report (" +
-      " campaign_id bigint," + SCHAMA1 + PRIMARY_KEY_CAMPAIGN + SCHAMA2;
-  private static final String CQL_CREATE_PARTNER_REPORT = "CREATE TABLE chocolaterptks.partner_report (" +
-      " partner_id bigint," +  SCHAMA1 + PRIMARY_KEY_PARTNER + SCHAMA2;
+//
+//  private static final String CQL_CREATE_KEYSPACE = "CREATE KEYSPACE IF NOT EXISTS " + CassandraConstants.REPORT_KEYSPACE +
+//      " WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor':1} AND DURABLE_WRITES =  true";
+//  private static final String SCHAMA1 =
+//      "    month int," +
+//      "    day int," +
+//      "    timestamp bigint," +
+//      "    snapshot_id bigint," +
+//      "    clicks int," +
+//      "    gross_clicks int," +
+//      "    gross_impressions int," +
+//      "    gross_view_impressions int," +
+//      "    impressions int," +
+//      "    mobile_clicks int," +
+//      "    mobile_impressions int," +
+//      "    view_impressions int,";
+//  private static final String PRIMARY_KEY_CAMPAIGN = " PRIMARY KEY ((campaign_id, ";
+//  private static final String PRIMARY_KEY_PARTNER = " PRIMARY KEY ((partner_id, ";
+//  private static final String SCHAMA2 =    "month), day, timestamp, snapshot_id)" +
+//      ") WITH read_repair_chance = 0.0" +
+//      "   AND dclocal_read_repair_chance = 0.1" +
+//      "   AND gc_grace_seconds = 864000" +
+//      "   AND bloom_filter_fp_chance = 0.01" +
+//      "   AND caching = { 'keys' : 'ALL', 'rows_per_partition' : 'NONE' }" +
+//      "   AND comment = ''" +
+//      "   AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold' : 32, 'min_threshold' : 4 }" +
+//      "   AND default_time_to_live = 0" +
+//      "   AND speculative_retry = '99PERCENTILE'" +
+//      "   AND min_index_interval = 128" +
+//      "   AND max_index_interval = 2048;";
+//  private static final String CQL_CREATE_CAMPAIGN_REPORT = "CREATE TABLE chocolaterptks.campaign_report (" +
+//      " campaign_id bigint," + SCHAMA1 + PRIMARY_KEY_CAMPAIGN + SCHAMA2;
+//  private static final String CQL_CREATE_PARTNER_REPORT = "CREATE TABLE chocolaterptks.partner_report (" +
+//      " partner_id bigint," +  SCHAMA1 + PRIMARY_KEY_PARTNER + SCHAMA2;
 
 
 //  /**

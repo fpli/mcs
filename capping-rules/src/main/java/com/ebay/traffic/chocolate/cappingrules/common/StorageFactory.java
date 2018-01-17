@@ -13,6 +13,8 @@ public class StorageFactory {
       return new HBaseStorage();
     } else if (StorageType.CASSANDRA.name().equalsIgnoreCase(storageType)) {
       return new CassandraStorage();
+    } else if (StorageType.SMOKE_CASSANDRA.name().equalsIgnoreCase(storageType)) {
+      return new SmokeCassandraStorage();
     } else if (StorageType.COUCHBASE.name().equalsIgnoreCase(storageType)) {
       return new CouchBaseStorage();
     } else {
