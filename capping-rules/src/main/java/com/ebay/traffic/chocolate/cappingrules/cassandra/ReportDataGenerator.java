@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-;
-
 /**
  * Aggregate tracking data and Generate report data into Cassandra
  * <p>
@@ -218,7 +216,7 @@ public class ReportDataGenerator extends AbstractCapper {
       
       HashMap<Integer, RawReportRecord> report = new HashMap<Integer, RawReportRecord>();
       
-      int day, validRecord, mobileRecord = 0;
+      int day, validRecordCnt, validMobileCnt, grossMobileCnt = 0;
       long snapshotId, timestamp, tmpTimestamp = Long.MAX_VALUE;
       RawReportRecord reportRecord = null;
       FilterResultEvent retEvent;
@@ -248,21 +246,24 @@ public class ReportDataGenerator extends AbstractCapper {
         }
         reportRecord.setMonth(IdentifierUtil.getMonthFromSnapshotId(snapshotId));
         reportRecord.setDay(IdentifierUtil.getDayFromSnapshotId(snapshotId));
-        
-        validRecord = (retEvent.getFilterPassed() && retEvent.isCappingPassed() && retEvent.isImpressed()) ? 1 : 0;
-        mobileRecord = retEvent.getMobile() && (retEvent.getFilterPassed() && retEvent.isCappingPassed() && retEvent.isImpressed()) ? 1 : 0;
-        
+
+        validRecordCnt = (retEvent.getFilterPassed() && retEvent.isCappingPassed() && retEvent.isImpressed()) ? 1 : 0;
+        validMobileCnt = retEvent.getMobile() && (retEvent.getFilterPassed() && retEvent.isCappingPassed() && retEvent.isImpressed()) ? 1 : 0;
+        grossMobileCnt = retEvent.getMobile() ? 1 : 0;
+
         if (ChannelAction.IMPRESSION.name().equalsIgnoreCase(retEvent.getChannelAction())) {
           reportRecord.setGrossImpressions(reportRecord.getGrossImpressions() + 1);
-          reportRecord.setImpressions(reportRecord.getImpressions() + validRecord);
-          reportRecord.setMobileImpressions(reportRecord.getMobileImpressions() + mobileRecord);
+          reportRecord.setImpressions(reportRecord.getImpressions() + validRecordCnt);
+          reportRecord.setMobileImpressions(reportRecord.getMobileImpressions() + validMobileCnt);
+          reportRecord.setGrossMobileImpressions(reportRecord.getGrossMobileImpressions() + grossMobileCnt);
         } else if (ChannelAction.CLICK.name().equalsIgnoreCase(retEvent.getChannelAction())) {
           reportRecord.setGrossClicks(reportRecord.getGrossClicks() + 1);
-          reportRecord.setClicks(reportRecord.getClicks() + validRecord);
-          reportRecord.setMobileClicks(reportRecord.getMobileClicks() + mobileRecord);
+          reportRecord.setClicks(reportRecord.getClicks() + validRecordCnt);
+          reportRecord.setMobileClicks(reportRecord.getMobileClicks() + validMobileCnt);
+          reportRecord.setGrossMobileClicks(reportRecord.getGrossMobileClicks() + grossMobileCnt);
         } else {
           reportRecord.setGrossViewableImpressions(reportRecord.getGrossViewableImpressions() + 1);
-          reportRecord.setViewableImpressions(reportRecord.getViewableImpressions() + validRecord);
+          reportRecord.setViewableImpressions(reportRecord.getViewableImpressions() + validRecordCnt);
         }
       }
       

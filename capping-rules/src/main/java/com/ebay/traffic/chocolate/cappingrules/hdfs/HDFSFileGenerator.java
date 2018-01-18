@@ -13,11 +13,9 @@ import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 
 /**
- * SNID Capping Rule is to identify if the click could uniquely tie back to its originating impression.
- * SNID = SessionId which is the unique id to tie impress and click
+ * Dump hbase data to hdfs parquet files
  * <p>
- * <p>
- * Created by yimeng on 11/12/17.
+ * Created by yimeng on 01/18/18.
  */
 public class HDFSFileGenerator extends AbstractCapper {
   private String filePath;
@@ -96,7 +94,6 @@ public class HDFSFileGenerator extends AbstractCapper {
 
     JavaRDD<EventSchema> rowRDD = hbaseData.map(new ReadDataFromHase());
     if(numberOfPartition > 0){
-      //repartition the file if each file is too large
       rowRDD = rowRDD.repartition(numberOfPartition);
     }
     Dataset<Row> schemaDS = sqlsc().createDataFrame(rowRDD, EventSchema.class);

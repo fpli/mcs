@@ -23,12 +23,26 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Save data to hbase tables
+ * <p>
+ * Created by yimeng on 01/07/18
+ */
 public class HBaseStorage implements IStorage<JavaRDD<List<RawReportRecord>>> {
   private static final Logger logger = LoggerFactory.getLogger(ApplicationOptions.class);
   private String resultTable;
 
   public HBaseStorage() {}
 
+
+  /**
+   * Write data to cassandra table: campaign_report/partner_report
+   *
+   * @param reportRecords aggregate report data
+   * @param storeTable    hbase table - only used for HBASE storage
+   * @param env           QA/PROD
+   * @param reportType    CAMPAIGN/PARTNER -- used by cassandra table
+   */
   @Override
   public void writeToStorage(JavaRDD<List<RawReportRecord>> reportRecords, String storeTable, String env, ReportType reportType) {
     this.resultTable = storeTable;
@@ -59,6 +73,8 @@ public class HBaseStorage implements IStorage<JavaRDD<List<RawReportRecord>>> {
         put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("view_impressions"), Bytes.toBytes(reportRecord.getViewableImpressions()));
         put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("mobile_clicks"), Bytes.toBytes(reportRecord.getMobileClicks()));
         put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("mobile_impressions"), Bytes.toBytes(reportRecord.getMobileImpressions()));
+        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("gross_mobile_clicks"), Bytes.toBytes(reportRecord.getGrossMobileClicks()));
+        put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("gross_mobile_impressions"), Bytes.toBytes(reportRecord.getGrossMobileImpressions()));
         recordList.add(new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put));
       }
       return recordList.iterator();

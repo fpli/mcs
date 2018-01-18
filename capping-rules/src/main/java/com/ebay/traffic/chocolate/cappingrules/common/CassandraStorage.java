@@ -12,10 +12,23 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Save aggregate count data to cassandra tables
+ * <p>
+ * Created by yimeng on 01/07/18
+ */
 public class CassandraStorage implements IStorage<JavaRDD<List<RawReportRecord>>> {
 
   public CassandraStorage() {}
 
+  /**
+   * Write data to cassandra table: campaign_report/partner_report
+   *
+   * @param reportRecords aggregate report data
+   * @param storeTable    hbase table - only used for HBASE storage
+   * @param env           QA/PROD
+   * @param reportType    CAMPAIGN/PARTNER
+   */
   @Override
   public void writeToStorage(JavaRDD<List<RawReportRecord>> reportRecords, String storeTable, String env, ReportType reportType) {
     reportRecords.foreachPartition(new VoidFunction<Iterator<List<RawReportRecord>>>() {

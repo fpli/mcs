@@ -39,7 +39,7 @@ public class TestHDFSFileGenerator extends AbstractCappingRuleTest {
   
   @Test
   public void testHDFSFileGenerator() throws Exception {
-    String filePath = "/Users/yimeng/Downloads/chocolate-";
+    String filePath = createTempPath$default$1();
     HDFSFileGenerator job = new HDFSFileGenerator("TestHDFSFileGenerator", "local[4]", TRANSACTION_TABLE_NAME,
         "EPN", stopTime, 24 * 60, filePath, 1);
     job.run();

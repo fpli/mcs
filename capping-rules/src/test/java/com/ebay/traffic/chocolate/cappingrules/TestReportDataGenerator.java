@@ -74,22 +74,22 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
 
       //Partner-1
       ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp, false);
-      assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 4, 4);
+      assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 4, 4, 10, 4);
 
       rs = reportClient.getCampaignReport(76543210001l, timestamp, false);
-      assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 2, 4);
+      assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 2, 4, 7, 4);
 
       timestamp += 1500;
       rs = reportClient.getCampaignReport(76543210002l, timestamp, false);
-      assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 2, 0);
+      assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 2, 0, 3, 0);
 
       //Partner-2
       timestamp += 1500;
       rs = reportClient.getPartnerReport(1234560002l, timestamp, false);
-      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0, 3, 0);
 
       rs = reportClient.getCampaignReport(76543210003l, timestamp, false);
-      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0, 3, 0);
     }catch(Exception e){
       throw e;
     }finally{
@@ -122,22 +122,22 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
 
       //Partner-1
       ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp, true);
-      assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 4, 4);
+      assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 4, 4, 10, 4);
 
       rs = reportClient.getCampaignReport(76543210001l, timestamp, true);
-      assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 2, 4);
+      assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 2, 4, 7, 4);
 
       timestamp += 1500;
       rs = reportClient.getCampaignReport(76543210002l, timestamp, true);
-      assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 2, 0);
+      assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 2, 0,3, 0);
 
       //Partner-2
       timestamp += 1500;
       rs = reportClient.getPartnerReport(1234560002l, timestamp, true);
-      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0, 3, 0);
 
       rs = reportClient.getCampaignReport(76543210003l, timestamp, true);
-      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0, 3, 0);
     }catch(Exception e){
       throw e;
     }finally{
@@ -149,7 +149,7 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
   }
 
   private void assertCassandrData(Row row, Integer month, Integer day, Long timestamp, Integer grossClick, Integer clicks,
-                             Integer grossImp,  Integer imp, Integer grossViewImp, Integer viewImp, Integer mobileClick, Integer mobileImp) {
+                             Integer grossImp,  Integer imp, Integer grossViewImp, Integer viewImp, Integer mobileClick, Integer mobileImp, Integer grossMobileClick, Integer grossMobileImp) {
     Assert.assertEquals(Long.valueOf(month),Long.valueOf(row.getInt(CassandraConstants.MONTH_COLUMN)));
     Assert.assertEquals(Long.valueOf(day), Long.valueOf(row.getInt(CassandraConstants.DAY_COLUMN)));
     Assert.assertEquals(Long.valueOf(timestamp), Long.valueOf(row.getLong(CassandraConstants.TIMESTAMP)));
@@ -161,6 +161,8 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
     Assert.assertEquals(Long.valueOf(grossViewImp), Long.valueOf(row.getInt(CassandraConstants.GROSS_VIEWABLE_IMPRESSIONS_COLUMN)));
     Assert.assertEquals(Long.valueOf(mobileClick), Long.valueOf(row.getInt(CassandraConstants.MOBILE_CLICKS_COLUMN)));
     Assert.assertEquals(Long.valueOf(mobileImp), Long.valueOf(row.getInt(CassandraConstants.MOBILE_IMPRESSIONS_COLUMN)));
+    Assert.assertEquals(Long.valueOf(grossMobileClick), Long.valueOf(row.getInt(CassandraConstants.GROSS_MOBILE_CLICKS_COLUMN)));
+    Assert.assertEquals(Long.valueOf(grossMobileImp), Long.valueOf(row.getInt(CassandraConstants.GROSS_MOBILE_IMPRESSIONS_COLUMN)));
   }
 //
 //  private static final String CQL_CREATE_KEYSPACE = "CREATE KEYSPACE IF NOT EXISTS " + CassandraConstants.REPORT_KEYSPACE +
@@ -294,19 +296,19 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
       long id = Bytes.toLong(result.getRow());
       if (id == 76543210001l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
-        assertHbaseData(result, month, day, timestamp, 10, 4, 9, 4, 5, 3, 2 ,4);
+        assertHbaseData(result, month, day, timestamp, 10, 4, 9, 4, 5, 3, 2 ,4, 7, 4);
       } else if (id == 76543210002l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000 + 1500;
-        assertHbaseData(result, month, day, timestamp, 11, 5, 0, 0, 0, 0, 2, 0);
+        assertHbaseData(result, month, day, timestamp, 11, 5, 0, 0, 0, 0, 2, 0, 3, 0);
       } else if (id == 76543210003l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000 + 3000;
-        assertHbaseData(result, month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+        assertHbaseData(result, month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0, 3, 0);
       } else if (id == 1234560001l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
-        assertHbaseData(result, month, day, timestamp, 21, 9, 9, 4, 5, 3, 4, 4);
+        assertHbaseData(result, month, day, timestamp, 21, 9, 9, 4, 5, 3, 4, 4, 10, 4);
       } else if (id == 1234560002l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000 + 1500 + 1500;
-        assertHbaseData(result, month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+        assertHbaseData(result, month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0, 3, 0);
       }
       numberOfRow++;
     }
@@ -317,7 +319,7 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
   }
 
   private void assertHbaseData(Result result, Integer month, Integer day, Long timestamp, Integer grossClick, Integer clicks,
-                               Integer grossImp,  Integer imp, Integer grossViewImp, Integer viewImp, Integer mobileClick, Integer mobileImp){
+                               Integer grossImp,  Integer imp, Integer grossViewImp, Integer viewImp, Integer mobileClick, Integer mobileImp, Integer grossMobileClick, Integer grossMobileImp){
     Assert.assertEquals(Long.valueOf(month),Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("month")))));
     Assert.assertEquals(Long.valueOf(day), Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("day")))));
     Assert.assertEquals(Long.valueOf(timestamp), Long.valueOf(Bytes.toLong(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("timestamp")))));
@@ -329,6 +331,8 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
     Assert.assertEquals(Long.valueOf(viewImp), Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("view_impressions")))));
     Assert.assertEquals(Long.valueOf(mobileClick), Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("mobile_clicks")))));
     Assert.assertEquals(Long.valueOf(mobileImp), Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("mobile_impressions")))));
+    Assert.assertEquals(Long.valueOf(grossMobileClick), Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("gross_mobile_clicks")))));
+    Assert.assertEquals(Long.valueOf(grossMobileImp), Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("gross_mobile_impressions")))));
   }
 
   protected static void setDataIntoTransactionTable() throws IOException {
