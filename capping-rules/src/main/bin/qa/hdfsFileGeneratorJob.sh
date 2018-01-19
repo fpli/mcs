@@ -1,3 +1,4 @@
+#!/bin/bash
 # run spark job on YARN - HDFSFileGeneratorJob
 
 usage="Usage: hdfsFileGenerator.sh [originalTable] [channelType] [scanStopTime] [scanTimeWindow] [filePath] [numberOfPartition]"
@@ -9,7 +10,7 @@ if [ $# -le 2 ]; then
 fi
 
 bin=`dirname "$0"`
-bin=`cd ..>/dev/null; pwd`
+bin=`cd "../$bin">/dev/null; pwd`
 
 . ${bin}/chocolate-env-qa.sh
 
