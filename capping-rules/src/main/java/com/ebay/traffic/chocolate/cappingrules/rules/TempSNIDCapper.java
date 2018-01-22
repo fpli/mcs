@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.cappingrules.rules;
 
-import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
+import com.ebay.traffic.chocolate.cappingrules.AbstractSparkHbase;
 import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperEvent;
 import org.apache.commons.cli.*;
@@ -16,7 +16,7 @@ import scala.Tuple2;
  * <p>
  * Created by yimeng on 11/12/17.
  */
-public class TempSNIDCapper extends AbstractCapper {
+public class TempSNIDCapper extends AbstractSparkHbase {
   
   private SNIDCapper snidCapper;
   private Integer scanTimeWindow, updateTimeWindow;

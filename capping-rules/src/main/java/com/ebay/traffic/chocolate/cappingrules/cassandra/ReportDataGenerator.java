@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.cappingrules.cassandra;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
+import com.ebay.traffic.chocolate.cappingrules.AbstractSparkHbase;
 import com.ebay.traffic.chocolate.cappingrules.IdentifierUtil;
 import com.ebay.traffic.chocolate.cappingrules.common.IStorage;
 import com.ebay.traffic.chocolate.cappingrules.common.StorageFactory;
@@ -30,7 +30,7 @@ import java.util.List;
  * <p>
  * Created by yimeng on 11/22/17.
  */
-public class ReportDataGenerator extends AbstractCapper {
+public class ReportDataGenerator extends AbstractSparkHbase {
   private String storageType = StorageType.CASSANDRA.name();
   private String env = Env.QA.name();
 

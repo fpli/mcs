@@ -22,7 +22,7 @@ import java.util.Calendar;
  * @author xiangli4
  */
 
-public class TestIPCapper extends AbstractCappingRuleTest {
+public class TestIPCapper extends AbstractSparkHbaseTest {
   
   @BeforeClass
   public static void initialHbaseTables() throws Exception {

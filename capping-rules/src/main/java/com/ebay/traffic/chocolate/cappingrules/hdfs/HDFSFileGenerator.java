@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.cappingrules.hdfs;
 
-import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
+
+import com.ebay.traffic.chocolate.cappingrules.AbstractSparkHbase;
 import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.dto.EventSchema;
 import org.apache.commons.cli.*;
@@ -17,7 +18,7 @@ import org.apache.spark.sql.Row;
  * <p>
  * Created by yimeng on 01/18/18.
  */
-public class HDFSFileGenerator extends AbstractCapper {
+public class HDFSFileGenerator extends AbstractSparkHbase {
   private String filePath;
   private Integer numberOfPartition = 0;
 

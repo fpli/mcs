@@ -11,7 +11,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Calendar;
 
-public class TestSNIDCapper extends AbstractCappingRuleTest {
+public class TestSNIDCapper extends AbstractSparkHbaseTest {
   protected static final String RESULT_TABLE_NAME_WITH_CHANNEL = "capping_result_with_channel";
   protected static final String RESULT_TABLE_NAME_WITH_TIME_WINDOW = "capping_result_with_time_window";
   private static String stopTime;

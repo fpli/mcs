@@ -2,27 +2,19 @@ package com.ebay.traffic.chocolate.cappingrules;
 
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.traffic.chocolate.cappingrules.dto.EventSchema;
-import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperEvent;
 import com.ebay.traffic.chocolate.cappingrules.hdfs.HDFSFileGenerator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import scala.Function1;
-import scala.collection.Iterator;
-import scala.runtime.BoxedUnit;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class TestHDFSFileGenerator extends AbstractCappingRuleTest {
+public class TestHDFSFileGenerator extends AbstractSparkHbaseTest {
   private static String stopTime;
 
   @BeforeClass

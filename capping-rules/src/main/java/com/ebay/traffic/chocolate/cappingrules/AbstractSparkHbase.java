@@ -19,7 +19,6 @@ import scala.Tuple2;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,7 +28,7 @@ import java.util.List;
  * <p>
  * Created by yimeng on 11/12/17.
  */
-public abstract class AbstractCapper extends BaseSparkJob {
+public abstract class AbstractSparkHbase extends BaseSparkJob {
   //hbase prefix of row identifier
   protected static short MOD = 293;
   //spark job input parameter
@@ -48,8 +47,8 @@ public abstract class AbstractCapper extends BaseSparkJob {
    * @param scanStopTime   scan stop time
    * @param scanTimeWindow scan time window (minutes)
    */
-  public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String channelType,
-                        String scanStopTime, Integer scanTimeWindow) throws ParseException {
+  public AbstractSparkHbase(String jobName, String mode, String originalTable, String resultTable, String channelType,
+                            String scanStopTime, Integer scanTimeWindow) throws ParseException {
     this(jobName, mode, originalTable, resultTable, channelType, scanStopTime, scanTimeWindow, 0);
   }
   
@@ -65,8 +64,8 @@ public abstract class AbstractCapper extends BaseSparkJob {
    * @param scanTimeWindow   scan time window (minutes)
    * @param updateTimeWindow HBase data update time window (minutes)
    */
-  public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String channelType,
-                        String scanStopTime, Integer scanTimeWindow, Integer updateTimeWindow) throws ParseException {
+  public AbstractSparkHbase(String jobName, String mode, String originalTable, String resultTable, String channelType,
+                            String scanStopTime, Integer scanTimeWindow, Integer updateTimeWindow) throws ParseException {
     super(jobName, mode, false);
     this.originalTable = originalTable;
     this.resultTable = resultTable;

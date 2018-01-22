@@ -19,7 +19,7 @@ import java.sql.Timestamp;
 /**
  * Created by yimeng on 11/15/17.
  */
-public abstract class AbstractCappingRuleTest extends BaseFunSuite {
+public abstract class AbstractSparkHbaseTest extends BaseFunSuite {
   
   protected static final String TRANSACTION_TABLE_NAME = "prod_transactional";
   protected static final String RESULT_TABLE_NAME = "capping_result";

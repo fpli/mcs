@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.cappingrules.rules;
 
-import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
+import com.ebay.traffic.chocolate.cappingrules.AbstractSparkHbase;
 import com.ebay.traffic.chocolate.cappingrules.HBaseConnection;
 import com.ebay.traffic.chocolate.cappingrules.IdentifierUtil;
 import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author xiangli4
  */
-public class IPCapper extends AbstractCapper {
+public class IPCapper extends AbstractSparkHbase {
   // Rule name. It will be written to HBase if one record does not pass.
   private final String RULE_NAME = "IPCappingRule";
   // IP count threshold. Used to judge is an IP is invalid

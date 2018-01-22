@@ -11,7 +11,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Calendar;
 
-public class TestTempSNIDCapper extends AbstractCappingRuleTest {
+public class TestTempSNIDCapper extends AbstractSparkHbaseTest {
   private static String stopTime;
   
   @BeforeClass
