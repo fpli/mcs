@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
-import com.ebay.traffic.chocolate.cappingrules.Rules.IPCapper;
+import com.ebay.traffic.chocolate.cappingrules.rules.IPCapper;
 import com.ebay.traffic.chocolate.cappingrules.dto.IPCapperEvent;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.hbase.client.HTable;
@@ -14,7 +14,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**

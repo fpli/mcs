@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
-import com.ebay.traffic.chocolate.cappingrules.Rules.TempSNIDCapper;
+import com.ebay.traffic.chocolate.cappingrules.rules.TempSNIDCapper;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperEvent;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
@@ -9,7 +9,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class TestTempSNIDCapper extends AbstractCappingRuleTest {

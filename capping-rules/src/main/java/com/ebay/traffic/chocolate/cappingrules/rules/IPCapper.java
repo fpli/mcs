@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.cappingrules.Rules;
+package com.ebay.traffic.chocolate.cappingrules.rules;
 
 import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
 import com.ebay.traffic.chocolate.cappingrules.HBaseConnection;
