@@ -36,7 +36,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.cappingrules.Rules.IPCapper \
+    --class com.ebay.traffic.chocolate.cappingrules.rules.IPCapper \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \

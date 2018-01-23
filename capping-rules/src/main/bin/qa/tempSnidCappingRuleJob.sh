@@ -35,7 +35,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.cappingrules.Rules.TempSNIDCapper \
+    --class com.ebay.traffic.chocolate.cappingrules.rules.TempSNIDCapper \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
