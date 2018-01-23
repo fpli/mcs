@@ -106,9 +106,9 @@ public class IPCapper extends AbstractSparkHbase {
   }
   
   /**
-   * Run SNID Capping Rule
+   * Run IP Capping Rule
    * step1 : scan data from HBase
-   * step2: filter data by SNID Capping Rule
+   * step2: filter data by ip Capping Rule
    * step3: write data back to HBase
    *
    * @throws Exception job runtime exception
@@ -123,7 +123,7 @@ public class IPCapper extends AbstractSparkHbase {
   }
   
   /**
-   * Filter IPCapping events. It reads all records from last time range. But only wirte records in last time window.
+   * Filter IPCapping events. It reads all records from last time range. But only write records in last time window.
    * 1. Pick out click events.
    * 2. Group by records IP.
    * 3. Count each group to check if it is larger than threshold.
@@ -209,7 +209,7 @@ public class IPCapper extends AbstractSparkHbase {
         } else {
           event.setCappingPassed(true);
         }
-        //Only write last 30 minutes data
+        //Only write last 15 minutes data
         long eventTimestamp = IdentifierUtil.getTimeMillisFromRowkey(event.getRowIdentifier());
         if (eventTimestamp > updateWindowStartTime) {
           result.add(event);
