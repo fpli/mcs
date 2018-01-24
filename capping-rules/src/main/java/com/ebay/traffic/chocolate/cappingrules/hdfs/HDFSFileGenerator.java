@@ -102,7 +102,7 @@ public class HDFSFileGenerator extends AbstractSparkHbase {
     // save file as parquet format
     schemaDS.write()
         //.option("compression", "gzip")
-        .parquet(filePath + scanStopTime.replaceAll("\\W+", ""));
+        .parquet(filePath + scanStopTime + "-" + channelType);
   }
 
   /**
