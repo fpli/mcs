@@ -1,3 +1,4 @@
+#!/bin/bash
 # run spark job on YARN - ReportDataGeneratorJob
 
 usage="Usage: reportGeneratorJob.sh [originalTable] [resultTable] [channelType] [scanStopTime] [scanTimeWindow] [storageType] [env]"
@@ -9,7 +10,7 @@ if [ $# -le 2 ]; then
 fi
 
 bin=`dirname "$0"`
-bin=`cd "$bin">/dev/null; pwd`
+bin=`cd "../$bin">/dev/null; pwd`
 
 . ${bin}/chocolate-env-qa.sh
 

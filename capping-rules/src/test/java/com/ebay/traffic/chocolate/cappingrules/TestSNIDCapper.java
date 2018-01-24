@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
-import com.ebay.traffic.chocolate.cappingrules.Rules.SNIDCapper;
+import com.ebay.traffic.chocolate.cappingrules.rules.SNIDCapper;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperEvent;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
@@ -9,13 +9,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class TestSNIDCapper extends AbstractCappingRuleTest {
+public class TestSNIDCapper extends AbstractSparkHbaseTest {
   protected static final String RESULT_TABLE_NAME_WITH_CHANNEL = "capping_result_with_channel";
   protected static final String RESULT_TABLE_NAME_WITH_TIME_WINDOW = "capping_result_with_time_window";
-  private static String startTime;
   private static String stopTime;
   
   @BeforeClass
@@ -25,13 +23,11 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
     initHBaseCappingResultTable(RESULT_TABLE_NAME_WITH_TIME_WINDOW);
     
     HBaseScanIterator iter = new HBaseScanIterator(TRANSACTION_TABLE_NAME);
-    Assert.assertEquals(32, getCount(iter));
+    Assert.assertEquals(35, getCount(iter));
     iter.close();
     
     Calendar c = Calendar.getInstance();
-    stopTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
-    c.add(Calendar.DATE, -1);
-    startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
+    stopTime = IdentifierUtil.INPUT_DATE_FORMAT.format(c.getTime());
   }
   
   @Test
@@ -101,6 +97,12 @@ public class TestSNIDCapper extends AbstractCappingRuleTest {
         (short) 0), "100", "CLICK", "EPN"));
     addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 104,
         (short) 10), "100", "CLICK", "EPN"));
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 104,
+        (short) 3), null, "CLICK", "EPN"));
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 105,
+        (short) 2), "undefined", "CLICK", "EPN"));
+    addEvent(transactionalTable, new SNIDCapperEvent(IdentifierUtil.generateIdentifier(c.getTimeInMillis(), 106,
+        (short) 1), "UNDEFINED", "CLICK", "EPN"));
     
     // click happens after impression on same host and different host with empty snid
     c.add(Calendar.MINUTE, -10);

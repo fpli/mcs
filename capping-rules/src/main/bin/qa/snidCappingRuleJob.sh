@@ -1,7 +1,7 @@
 #!/bin/bash
-# run spark job on YARN - ReportDataGeneratorJob
+# run spark job on YARN - SNIDCapperJob
 
-usage="Usage: reportGeneratorJob.sh [originalTable] [resultTable] [channelType] [scanStopTime] [scanTimeWindow] [storageType] [env]"
+usage="Usage: snidCappingRuleJob.sh [originalTable] [resultTable] [channelType] [scanStopTime] [scanTimeWindow] [updateTimeWindow]"
 
 # if no args specified, show usage
 if [ $# -le 2 ]; then
@@ -10,33 +10,32 @@ if [ $# -le 2 ]; then
 fi
 
 bin=`dirname "$0"`
-bin=`cd "$bin">/dev/null; pwd`
+bin=`cd "../$bin">/dev/null; pwd`
 
-. ${bin}/chocolate-env.sh
+. ${bin}/chocolate-env-qa.sh
 
 ORIGINAL_TABLE=$1
 RESULT_TABLE=$2
 CHANNEL_TYPE=$3
 SCAN_STOP_TIME=$4
 SCAN_TIME_WINDOW=$5
-STORAGE_TYPE=$6
-ENV=$7
+UPDATE_TIME_WINDOW=$6
 
-DRIVER_MEMORY=10g
-EXECUTOR_NUMBER=30
-EXECUTOR_MEMORY=12g
+DRIVER_MEMORY=1g
+EXECUTOR_NUMBER=2
+EXECUTOR_MEMORY=512M
 EXECUTOR_CORES=3
 
-JOB_NAME="ReportDataGeneratorJob"
+JOB_NAME="SNIDCappingRule"
 
-#for f in $(find $bin/../conf -name '*');
-#do
-#  FILES=${FILES},file://$f;
-#done
+for f in $(find $bin/../conf -name '*');
+do
+  FILES=${FILES},file://$f;
+done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.cappingrules.cassandra.ReportDataGenerator \
+    --class com.ebay.traffic.chocolate.cappingrules.rules.SNIDCapper \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
@@ -45,7 +44,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
-    --conf spark.yarn.executor.memoryOverhead=8192 \
+    --conf spark.yarn.executor.memoryOverhead=1024 \
     ${bin}/../lib/chocolate-capping-rules-*.jar \
       --jobName ${JOB_NAME} \
       --mode yarn \
@@ -54,5 +53,4 @@ ${SPARK_HOME}/bin/spark-submit \
       --channelType ${CHANNEL_TYPE} \
       --scanStopTime "${SCAN_STOP_TIME}" \
       --scanTimeWindow ${SCAN_TIME_WINDOW} \
-      --storageType ${STORAGE_TYPE} \
-      --env ${ENV}
+      --updateTimeWindow ${UPDATE_TIME_WINDOW}

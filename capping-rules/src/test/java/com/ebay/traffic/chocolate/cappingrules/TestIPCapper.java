@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
-import com.ebay.traffic.chocolate.cappingrules.Rules.IPCapper;
+import com.ebay.traffic.chocolate.cappingrules.rules.IPCapper;
 import com.ebay.traffic.chocolate.cappingrules.dto.IPCapperEvent;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.hbase.client.HTable;
@@ -14,7 +14,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
@@ -23,7 +22,7 @@ import java.util.Calendar;
  * @author xiangli4
  */
 
-public class TestIPCapper extends AbstractCappingRuleTest {
+public class TestIPCapper extends AbstractSparkHbaseTest {
   
   @BeforeClass
   public static void initialHbaseTables() throws Exception {
@@ -59,12 +58,10 @@ public class TestIPCapper extends AbstractCappingRuleTest {
   
   @Test
   public void testIPCappingRuleJob() throws Exception {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     Calendar today = Calendar.getInstance();
-    String stopTime = sdf.format(today.getTime());
+    String stopTime = IdentifierUtil.INPUT_DATE_FORMAT.format(today.getTime());
     today.add(Calendar.DATE, -1);
-    String startTime = sdf.format(today.getTime());
-    
+
     IPCapper job = new IPCapper("TestIPCappingRuleJob", "local[4]", TRANSACTION_TABLE_NAME, RESULT_TABLE_NAME,
         "EPN", stopTime, 24*60, 4*60, 8);
   

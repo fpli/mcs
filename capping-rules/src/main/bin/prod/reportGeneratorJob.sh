@@ -1,7 +1,7 @@
 #!/bin/bash
-# run spark job on YARN - SNIDCapperJob
+# run spark job on YARN - ReportDataGeneratorJob
 
-usage="Usage: snidCappingRuleJob.sh [originalTable] [resultTable] [channelType] [scanStopTime] [scanTimeWindow] [updateTimeWindow]"
+usage="Usage: reportGeneratorJob.sh [originalTable] [resultTable] [channelType] [scanStopTime] [scanTimeWindow] [storageType] [env]"
 
 # if no args specified, show usage
 if [ $# -le 2 ]; then
@@ -10,7 +10,7 @@ if [ $# -le 2 ]; then
 fi
 
 bin=`dirname "$0"`
-bin=`cd "$bin">/dev/null; pwd`
+bin=`cd "../$bin">/dev/null; pwd`
 
 . ${bin}/chocolate-env.sh
 
@@ -19,23 +19,24 @@ RESULT_TABLE=$2
 CHANNEL_TYPE=$3
 SCAN_STOP_TIME=$4
 SCAN_TIME_WINDOW=$5
-UPDATE_TIME_WINDOW=$6
+STORAGE_TYPE=$6
+ENV=$7
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
 EXECUTOR_MEMORY=12g
 EXECUTOR_CORES=3
 
-JOB_NAME="TempSNIDCappingRule"
+JOB_NAME="ReportDataGeneratorJob"
 
-for f in $(find $bin/../conf -name '*');
-do
-  FILES=${FILES},file://$f;
-done
+#for f in $(find $bin/../conf -name '*');
+#do
+#  FILES=${FILES},file://$f;
+#done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.cappingrules.Rules.TempSNIDCapper \
+    --class com.ebay.traffic.chocolate.cappingrules.cassandra.ReportDataGenerator \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
@@ -53,4 +54,5 @@ ${SPARK_HOME}/bin/spark-submit \
       --channelType ${CHANNEL_TYPE} \
       --scanStopTime "${SCAN_STOP_TIME}" \
       --scanTimeWindow ${SCAN_TIME_WINDOW} \
-      --updateTimeWindow ${UPDATE_TIME_WINDOW}
+      --storageType ${STORAGE_TYPE} \
+      --env ${ENV}

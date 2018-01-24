@@ -1,6 +1,6 @@
-package com.ebay.traffic.chocolate.cappingrules.Rules;
+package com.ebay.traffic.chocolate.cappingrules.rules;
 
-import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
+import com.ebay.traffic.chocolate.cappingrules.AbstractSparkHbase;
 import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperEvent;
 import org.apache.commons.cli.*;
@@ -16,7 +16,7 @@ import scala.Tuple2;
  * <p>
  * Created by yimeng on 11/12/17.
  */
-public class TempSNIDCapper extends AbstractCapper {
+public class TempSNIDCapper extends AbstractSparkHbase {
   
   private SNIDCapper snidCapper;
   private Integer scanTimeWindow, updateTimeWindow;
@@ -86,8 +86,8 @@ public class TempSNIDCapper extends AbstractCapper {
     public Tuple2<String, SNIDCapperEvent> call(Result entry) throws Exception {
       SNIDCapperEvent snidCapperEvent = new SNIDCapperEvent();
       snidCapperEvent.setRowIdentifier(entry.getRow());
-      snidCapperEvent.setChannelAction(Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("channel_action"))));
-      String ipAddress = Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("request_headers")));
+      snidCapperEvent.setChannelAction(Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_CHANNEL_ACTION)));
+      String ipAddress = Bytes.toString(entry.getValue(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_REQUEST_HEADERS));
       String[] ipStr = ipAddress.split("X-eBay-Client-IP:");
       if (ipStr.length > 1) {
         ipAddress = ipStr[1];

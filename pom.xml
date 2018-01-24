@@ -8,8 +8,8 @@
   <packaging>pom</packaging>
 
   <properties>
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <CodeCacheSize>512m</CodeCacheSize>
     <encoding>UTF-8</encoding>
     <java.version>1.8</java.version>

@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.cappingrules.cassandra;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
+import com.ebay.traffic.chocolate.cappingrules.AbstractSparkHbase;
 import com.ebay.traffic.chocolate.cappingrules.IdentifierUtil;
 import com.ebay.traffic.chocolate.cappingrules.common.IStorage;
 import com.ebay.traffic.chocolate.cappingrules.common.StorageFactory;
@@ -9,51 +9,39 @@ import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.constant.ReportType;
 import com.ebay.traffic.chocolate.cappingrules.constant.StorageType;
 import com.ebay.traffic.chocolate.cappingrules.dto.FilterResultEvent;
-import com.ebay.traffic.chocolate.report.cassandra.CassandraConfiguration;
 import com.ebay.traffic.chocolate.report.cassandra.RawReportRecord;
-import com.ebay.traffic.chocolate.report.cassandra.ReportHelper;
 import com.ebay.traffic.chocolate.report.constant.Env;
 import org.apache.commons.cli.*;
-import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
-import org.apache.spark.api.java.function.VoidFunction;
 import scala.Tuple2;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-
-;
 
 /**
  * Aggregate tracking data and Generate report data into Cassandra
  * <p>
  * Created by yimeng on 11/22/17.
  */
-public class ReportDataGenerator extends AbstractCapper {
+public class ReportDataGenerator extends AbstractSparkHbase {
   private String storageType = StorageType.CASSANDRA.name();
   private String env = Env.QA.name();
-  
+
   /**
-   * Constructor for report data generator
-   *
    * @param jobName       spark job name
    * @param mode          spark submit mode
    * @param originalTable HBase table which data queried from
    * @param resultTable   HBase table which data stored in
    * @param channelType   marketing channel like EPN, DAP, SEARCH
    * @param scanStopTime  scan stop time
-   * @param storageType   HBase/Cassandra
+   * @param storageType   HBASE/CASSANDRA/SMOKE_CASSANDRA
    * @param env           QA/PROD
    * @throws java.text.ParseException
    */
@@ -228,7 +216,7 @@ public class ReportDataGenerator extends AbstractCapper {
       
       HashMap<Integer, RawReportRecord> report = new HashMap<Integer, RawReportRecord>();
       
-      int day, validRecord, mobileRecord = 0;
+      int day, validRecordCnt, validMobileCnt, grossMobileCnt = 0;
       long snapshotId, timestamp, tmpTimestamp = Long.MAX_VALUE;
       RawReportRecord reportRecord = null;
       FilterResultEvent retEvent;
@@ -258,21 +246,24 @@ public class ReportDataGenerator extends AbstractCapper {
         }
         reportRecord.setMonth(IdentifierUtil.getMonthFromSnapshotId(snapshotId));
         reportRecord.setDay(IdentifierUtil.getDayFromSnapshotId(snapshotId));
-        
-        validRecord = (retEvent.getFilterPassed() && retEvent.isCappingPassed() && retEvent.isImpressed()) ? 1 : 0;
-        mobileRecord = retEvent.getMobile() ? 1 : 0;
-        
+
+        validRecordCnt = (retEvent.getFilterPassed() && retEvent.isCappingPassed() && retEvent.isImpressed()) ? 1 : 0;
+        validMobileCnt = retEvent.getMobile() && (retEvent.getFilterPassed() && retEvent.isCappingPassed() && retEvent.isImpressed()) ? 1 : 0;
+        grossMobileCnt = retEvent.getMobile() ? 1 : 0;
+
         if (ChannelAction.IMPRESSION.name().equalsIgnoreCase(retEvent.getChannelAction())) {
           reportRecord.setGrossImpressions(reportRecord.getGrossImpressions() + 1);
-          reportRecord.setImpressions(reportRecord.getImpressions() + validRecord);
-          reportRecord.setMobileImpressions(reportRecord.getMobileImpressions() + mobileRecord);
+          reportRecord.setImpressions(reportRecord.getImpressions() + validRecordCnt);
+          reportRecord.setMobileImpressions(reportRecord.getMobileImpressions() + validMobileCnt);
+          reportRecord.setGrossMobileImpressions(reportRecord.getGrossMobileImpressions() + grossMobileCnt);
         } else if (ChannelAction.CLICK.name().equalsIgnoreCase(retEvent.getChannelAction())) {
           reportRecord.setGrossClicks(reportRecord.getGrossClicks() + 1);
-          reportRecord.setClicks(reportRecord.getClicks() + validRecord);
-          reportRecord.setMobileClicks(reportRecord.getMobileClicks() + mobileRecord);
+          reportRecord.setClicks(reportRecord.getClicks() + validRecordCnt);
+          reportRecord.setMobileClicks(reportRecord.getMobileClicks() + validMobileCnt);
+          reportRecord.setGrossMobileClicks(reportRecord.getGrossMobileClicks() + grossMobileCnt);
         } else {
           reportRecord.setGrossViewableImpressions(reportRecord.getGrossViewableImpressions() + 1);
-          reportRecord.setViewableImpressions(reportRecord.getViewableImpressions() + validRecord);
+          reportRecord.setViewableImpressions(reportRecord.getViewableImpressions() + validRecordCnt);
         }
       }
       

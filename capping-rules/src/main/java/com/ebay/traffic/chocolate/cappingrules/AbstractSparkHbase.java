@@ -19,7 +19,6 @@ import scala.Tuple2;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,8 +28,7 @@ import java.util.List;
  * <p>
  * Created by yimeng on 11/12/17.
  */
-public abstract class AbstractCapper extends BaseSparkJob {
-  protected static final String INPUT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+public abstract class AbstractSparkHbase extends BaseSparkJob {
   //hbase prefix of row identifier
   protected static short MOD = 293;
   //spark job input parameter
@@ -49,8 +47,8 @@ public abstract class AbstractCapper extends BaseSparkJob {
    * @param scanStopTime   scan stop time
    * @param scanTimeWindow scan time window (minutes)
    */
-  public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String channelType,
-                        String scanStopTime, Integer scanTimeWindow) throws ParseException {
+  public AbstractSparkHbase(String jobName, String mode, String originalTable, String resultTable, String channelType,
+                            String scanStopTime, Integer scanTimeWindow) throws ParseException {
     this(jobName, mode, originalTable, resultTable, channelType, scanStopTime, scanTimeWindow, 0);
   }
   
@@ -66,8 +64,8 @@ public abstract class AbstractCapper extends BaseSparkJob {
    * @param scanTimeWindow   scan time window (minutes)
    * @param updateTimeWindow HBase data update time window (minutes)
    */
-  public AbstractCapper(String jobName, String mode, String originalTable, String resultTable, String channelType,
-                        String scanStopTime, Integer scanTimeWindow, Integer updateTimeWindow) throws ParseException {
+  public AbstractSparkHbase(String jobName, String mode, String originalTable, String resultTable, String channelType,
+                            String scanStopTime, Integer scanTimeWindow, Integer updateTimeWindow) throws ParseException {
     super(jobName, mode, false);
     this.originalTable = originalTable;
     this.resultTable = resultTable;
@@ -79,7 +77,8 @@ public abstract class AbstractCapper extends BaseSparkJob {
     logger().info("=======hbase scanStopTime ======" + scanStopTime);
     logger().info("=======hbase scanTimeWindow ======" + scanTimeWindow);
     logger().info("=======hbase updateTimeWindow ======" + updateTimeWindow);
-    scanTimeWindowStopTime = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(scanStopTime).getTime();
+//    scanTimeWindowStopTime = new SimpleDateFormat(INPUT_DATE_FORMAT).parse(scanStopTime).getTime();
+    scanTimeWindowStopTime = IdentifierUtil.INPUT_DATE_FORMAT.parse(scanStopTime).getTime();
     scanTimeWindowStartTime = scanTimeWindowStopTime - scanTimeWindow * 60 * 1000;
     if (updateTimeWindow > 0) {
       updateWindowStartTime = scanTimeWindowStopTime - updateTimeWindow * 60 * 1000;
@@ -106,7 +105,7 @@ public abstract class AbstractCapper extends BaseSparkJob {
     options.addOption(originalTable);
     
     Option resultTable = new Option((String) null, "resultTable", true, "resultTable write to HBase");
-    resultTable.setRequired(true);
+    resultTable.setRequired(false);
     options.addOption(resultTable);
     
     Option channelType = new Option((String) null, "channelType", true, "the channelType for " + cappingRuleDescription);

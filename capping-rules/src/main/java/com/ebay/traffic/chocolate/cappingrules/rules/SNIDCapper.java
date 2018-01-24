@@ -1,7 +1,7 @@
-package com.ebay.traffic.chocolate.cappingrules.Rules;
+package com.ebay.traffic.chocolate.cappingrules.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-import com.ebay.traffic.chocolate.cappingrules.AbstractCapper;
+import com.ebay.traffic.chocolate.cappingrules.AbstractSparkHbase;
 import com.ebay.traffic.chocolate.cappingrules.IdentifierUtil;
 import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
 import com.ebay.traffic.chocolate.cappingrules.dto.SNIDCapperEvent;
@@ -28,7 +28,8 @@ import java.util.List;
  * <p>
  * Created by yimeng on 11/12/17.
  */
-public class SNIDCapper extends AbstractCapper {
+public class SNIDCapper extends AbstractSparkHbase {
+  private static final String SNID_DEFAULT_VALUE = "undefined";
   
   /**
    * Constructor for SNID Capping Rule with updateTimeWindow
@@ -220,7 +221,7 @@ public class SNIDCapper extends AbstractCapper {
         clickEvent = snidEventIte2.next();
         clickRowIdentifier = clickEvent.getRowIdentifier();
         //step 2-1: ignore clicks which haven't session id on it
-        if (StringUtil.isEmpty(impEvent.getSnid())) {
+        if (StringUtil.isEmpty(impEvent.getSnid()) || SNID_DEFAULT_VALUE.equalsIgnoreCase(impEvent.getSnid())) {
           continue;
         }
         if (ChannelAction.CLICK.name().equalsIgnoreCase(clickEvent.getChannelAction())) {
@@ -255,8 +256,8 @@ public class SNIDCapper extends AbstractCapper {
     public Tuple2<ImmutableBytesWritable, Put> call(SNIDCapperEvent snidCapperEvent)
         throws Exception {
       Put put = new Put(snidCapperEvent.getRowIdentifier());
-      put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("is_impressed"), Bytes.toBytes(snidCapperEvent.isImpressed()));
-      put.add(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("imp_row_key"), snidCapperEvent.getImpRowIdentifier());
+      put.add(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_IS_IMPRESSED, Bytes.toBytes(snidCapperEvent.isImpressed()));
+      put.add(HBaseConstant.COLUMN_FAMILY_X, HBaseConstant.COL_IMP_ROW_KEY, snidCapperEvent.getImpRowIdentifier());
       return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
     }
   }

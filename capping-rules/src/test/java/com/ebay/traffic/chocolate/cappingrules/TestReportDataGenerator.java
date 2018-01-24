@@ -1,9 +1,7 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
-import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 import com.ebay.traffic.chocolate.cappingrules.cassandra.ApplicationOptions;
 import com.ebay.traffic.chocolate.cappingrules.cassandra.ReportDataGenerator;
 import com.ebay.traffic.chocolate.cappingrules.constant.HBaseConstant;
@@ -24,18 +22,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
  * Created by yimeng on 11/26/17.
  */
 
-public class TestReportDataGenerator extends AbstractCappingRuleTest{
+public class TestReportDataGenerator extends AbstractSparkHbaseTest {
   private static final Logger logger = LoggerFactory.getLogger(ApplicationOptions.class);
 
   private static String stopTime;
   private static Calendar testDataCalendar = Calendar.getInstance();
+  private static ReportHelper reportClient = null;
+
 
   @BeforeClass
   public static void initialHbaseTable() throws IOException {
@@ -45,7 +44,7 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
     Assert.assertEquals(48, getCount(iter));
     iter.close();
 
-    stopTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(testDataCalendar.getTime());
+    stopTime = IdentifierUtil.INPUT_DATE_FORMAT.format(testDataCalendar.getTime());
     //testDataCalendar.add(Calendar.MINUTE, -10);
   }
 
@@ -63,7 +62,6 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
         TRANSACTION_TABLE_NAME, RESULT_TABLE_NAME, "EPN", stopTime, 30, StorageType.CASSANDRA.name(), env);
     job.run();
 
-    ReportHelper reportClient = null;
     try {
       //Validation
       CassandraConfiguration cassandraConf = CassandraConfiguration.createConfiguration(env);
@@ -74,23 +72,71 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
       long timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
 
       //Partner-1
-      ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp);
-      assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 10, 4);
+      ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp, false);
+      assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 4, 4, 10, 4);
 
-      rs = reportClient.getCampaignReport(76543210001l, timestamp);
-      assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 7, 4);
+      rs = reportClient.getCampaignReport(76543210001l, timestamp, false);
+      assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 2, 4, 7, 4);
 
       timestamp += 1500;
-      rs = reportClient.getCampaignReport(76543210002l, timestamp);
-      assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 3, 0);
+      rs = reportClient.getCampaignReport(76543210002l, timestamp, false);
+      assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 2, 0, 3, 0);
 
       //Partner-2
       timestamp += 1500;
-      rs = reportClient.getPartnerReport(1234560002l, timestamp);
-      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+      rs = reportClient.getPartnerReport(1234560002l, timestamp, false);
+      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0, 3, 0);
 
-      rs = reportClient.getCampaignReport(76543210003l, timestamp);
-      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+      rs = reportClient.getCampaignReport(76543210003l, timestamp, false);
+      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0, 3, 0);
+    }catch(Exception e){
+      throw e;
+    }finally{
+      job.stop();
+    }
+  }
+
+  /**
+   * Test store report data to Cassandra
+   * <br/>
+   * could be commented if only want to run without QA cassandra connection
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testSaveToSmokeCassandraQA() throws Exception {
+    String env = Env.QA.name();
+    ReportDataGenerator job = new ReportDataGenerator("TestReportDataGenerator", "local[4]",
+        TRANSACTION_TABLE_NAME, RESULT_TABLE_NAME, "EPN", stopTime, 30, StorageType.SMOKE_CASSANDRA.name(), env);
+    job.run();
+
+    try {
+      //Validation
+      CassandraConfiguration cassandraConf = CassandraConfiguration.createConfiguration(env);
+      reportClient = ReportHelper.getInstance();
+      reportClient.connectToCassandra(cassandraConf);
+      int month = Integer.valueOf(IdentifierUtil.MONTH_FORMAT.format(testDataCalendar.getTimeInMillis()));
+      int day = Integer.valueOf(IdentifierUtil.DATE_FORMAT.format(testDataCalendar.getTimeInMillis()));
+      long timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
+
+      //Partner-1
+      ResultSet rs = reportClient.getPartnerReport(1234560001l, timestamp, true);
+      assertCassandrData(rs.one(), month, day, timestamp, 21, 9, 9, 4, 5, 3, 4, 4, 10, 4);
+
+      rs = reportClient.getCampaignReport(76543210001l, timestamp, true);
+      assertCassandrData(rs.one(), month, day, timestamp, 10, 4, 9, 4, 5, 3, 2, 4, 7, 4);
+
+      timestamp += 1500;
+      rs = reportClient.getCampaignReport(76543210002l, timestamp, true);
+      assertCassandrData(rs.one(), month, day, timestamp, 11, 5, 0, 0, 0, 0, 2, 0,3, 0);
+
+      //Partner-2
+      timestamp += 1500;
+      rs = reportClient.getPartnerReport(1234560002l, timestamp, true);
+      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0, 3, 0);
+
+      rs = reportClient.getCampaignReport(76543210003l, timestamp, true);
+      assertCassandrData(rs.one(), month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0, 3, 0);
     }catch(Exception e){
       throw e;
     }finally{
@@ -102,7 +148,7 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
   }
 
   private void assertCassandrData(Row row, Integer month, Integer day, Long timestamp, Integer grossClick, Integer clicks,
-                             Integer grossImp,  Integer imp, Integer grossViewImp, Integer viewImp, Integer mobileClick, Integer mobileImp) {
+                             Integer grossImp,  Integer imp, Integer grossViewImp, Integer viewImp, Integer mobileClick, Integer mobileImp, Integer grossMobileClick, Integer grossMobileImp) {
     Assert.assertEquals(Long.valueOf(month),Long.valueOf(row.getInt(CassandraConstants.MONTH_COLUMN)));
     Assert.assertEquals(Long.valueOf(day), Long.valueOf(row.getInt(CassandraConstants.DAY_COLUMN)));
     Assert.assertEquals(Long.valueOf(timestamp), Long.valueOf(row.getLong(CassandraConstants.TIMESTAMP)));
@@ -114,43 +160,45 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
     Assert.assertEquals(Long.valueOf(grossViewImp), Long.valueOf(row.getInt(CassandraConstants.GROSS_VIEWABLE_IMPRESSIONS_COLUMN)));
     Assert.assertEquals(Long.valueOf(mobileClick), Long.valueOf(row.getInt(CassandraConstants.MOBILE_CLICKS_COLUMN)));
     Assert.assertEquals(Long.valueOf(mobileImp), Long.valueOf(row.getInt(CassandraConstants.MOBILE_IMPRESSIONS_COLUMN)));
+    Assert.assertEquals(Long.valueOf(grossMobileClick), Long.valueOf(row.getInt(CassandraConstants.GROSS_MOBILE_CLICKS_COLUMN)));
+    Assert.assertEquals(Long.valueOf(grossMobileImp), Long.valueOf(row.getInt(CassandraConstants.GROSS_MOBILE_IMPRESSIONS_COLUMN)));
   }
-
-  private static final String CQL_CREATE_KEYSPACE = "CREATE KEYSPACE IF NOT EXISTS " + CassandraConstants.REPORT_KEYSPACE +
-      " WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor':1} AND DURABLE_WRITES =  true";
-  private static final String SCHAMA1 =
-      "    month int," +
-      "    day int," +
-      "    timestamp bigint," +
-      "    snapshot_id bigint," +
-      "    clicks int," +
-      "    gross_clicks int," +
-      "    gross_impressions int," +
-      "    gross_view_impressions int," +
-      "    impressions int," +
-      "    mobile_clicks int," +
-      "    mobile_impressions int," +
-      "    view_impressions int,";
-  private static final String PRIMARY_KEY_CAMPAIGN = " PRIMARY KEY ((campaign_id, ";
-  private static final String PRIMARY_KEY_PARTNER = " PRIMARY KEY ((partner_id, ";
-  private static final String SCHAMA2 =    "month), day, timestamp, snapshot_id)" +
-      ") WITH read_repair_chance = 0.0" +
-      "   AND dclocal_read_repair_chance = 0.1" +
-      "   AND gc_grace_seconds = 864000" +
-      "   AND bloom_filter_fp_chance = 0.01" +
-      "   AND caching = { 'keys' : 'ALL', 'rows_per_partition' : 'NONE' }" +
-      "   AND comment = ''" +
-      "   AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold' : 32, 'min_threshold' : 4 }" +
-      "   AND default_time_to_live = 0" +
-      "   AND speculative_retry = '99PERCENTILE'" +
-      "   AND min_index_interval = 128" +
-      "   AND max_index_interval = 2048;";
-  private static final String CQL_CREATE_CAMPAIGN_REPORT = "CREATE TABLE chocolaterptks.campaign_report (" +
-      " campaign_id bigint," + SCHAMA1 + PRIMARY_KEY_CAMPAIGN + SCHAMA2;
-  private static final String CQL_CREATE_PARTNER_REPORT = "CREATE TABLE chocolaterptks.partner_report (" +
-      " partner_id bigint," +  SCHAMA1 + PRIMARY_KEY_PARTNER + SCHAMA2;
-
 //
+//  private static final String CQL_CREATE_KEYSPACE = "CREATE KEYSPACE IF NOT EXISTS " + CassandraConstants.REPORT_KEYSPACE +
+//      " WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor':1} AND DURABLE_WRITES =  true";
+//  private static final String SCHAMA1 =
+//      "    month int," +
+//      "    day int," +
+//      "    timestamp bigint," +
+//      "    snapshot_id bigint," +
+//      "    clicks int," +
+//      "    gross_clicks int," +
+//      "    gross_impressions int," +
+//      "    gross_view_impressions int," +
+//      "    impressions int," +
+//      "    mobile_clicks int," +
+//      "    mobile_impressions int," +
+//      "    view_impressions int,";
+//  private static final String PRIMARY_KEY_CAMPAIGN = " PRIMARY KEY ((campaign_id, ";
+//  private static final String PRIMARY_KEY_PARTNER = " PRIMARY KEY ((partner_id, ";
+//  private static final String SCHAMA2 =    "month), day, timestamp, snapshot_id)" +
+//      ") WITH read_repair_chance = 0.0" +
+//      "   AND dclocal_read_repair_chance = 0.1" +
+//      "   AND gc_grace_seconds = 864000" +
+//      "   AND bloom_filter_fp_chance = 0.01" +
+//      "   AND caching = { 'keys' : 'ALL', 'rows_per_partition' : 'NONE' }" +
+//      "   AND comment = ''" +
+//      "   AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold' : 32, 'min_threshold' : 4 }" +
+//      "   AND default_time_to_live = 0" +
+//      "   AND speculative_retry = '99PERCENTILE'" +
+//      "   AND min_index_interval = 128" +
+//      "   AND max_index_interval = 2048;";
+//  private static final String CQL_CREATE_CAMPAIGN_REPORT = "CREATE TABLE chocolaterptks.campaign_report (" +
+//      " campaign_id bigint," + SCHAMA1 + PRIMARY_KEY_CAMPAIGN + SCHAMA2;
+//  private static final String CQL_CREATE_PARTNER_REPORT = "CREATE TABLE chocolaterptks.partner_report (" +
+//      " partner_id bigint," +  SCHAMA1 + PRIMARY_KEY_PARTNER + SCHAMA2;
+
+
 //  /**
 //   * Test store report data to Cassandra
 //   * <br/>
@@ -247,19 +295,19 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
       long id = Bytes.toLong(result.getRow());
       if (id == 76543210001l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
-        assertHbaseData(result, month, day, timestamp, 10, 4, 9, 4, 5, 3, 7 ,4);
+        assertHbaseData(result, month, day, timestamp, 10, 4, 9, 4, 5, 3, 2 ,4, 7, 4);
       } else if (id == 76543210002l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000 + 1500;
-        assertHbaseData(result, month, day, timestamp, 11, 5, 0, 0, 0, 0, 3, 0);
+        assertHbaseData(result, month, day, timestamp, 11, 5, 0, 0, 0, 0, 2, 0, 3, 0);
       } else if (id == 76543210003l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000 + 3000;
-        assertHbaseData(result, month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+        assertHbaseData(result, month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0, 3, 0);
       } else if (id == 1234560001l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000;
-        assertHbaseData(result, month, day, timestamp, 21, 9, 9, 4, 5, 3, 10, 4);
+        assertHbaseData(result, month, day, timestamp, 21, 9, 9, 4, 5, 3, 4, 4, 10, 4);
       } else if (id == 1234560002l) {
         timestamp = testDataCalendar.getTimeInMillis() - 10 * 60 * 1000 + 1500 + 1500;
-        assertHbaseData(result, month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0);
+        assertHbaseData(result, month, day, timestamp, 13, 7, 0, 0, 0, 0, 3, 0, 3, 0);
       }
       numberOfRow++;
     }
@@ -270,7 +318,7 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
   }
 
   private void assertHbaseData(Result result, Integer month, Integer day, Long timestamp, Integer grossClick, Integer clicks,
-                               Integer grossImp,  Integer imp, Integer grossViewImp, Integer viewImp, Integer mobileClick, Integer mobileImp){
+                               Integer grossImp,  Integer imp, Integer grossViewImp, Integer viewImp, Integer mobileClick, Integer mobileImp, Integer grossMobileClick, Integer grossMobileImp){
     Assert.assertEquals(Long.valueOf(month),Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("month")))));
     Assert.assertEquals(Long.valueOf(day), Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("day")))));
     Assert.assertEquals(Long.valueOf(timestamp), Long.valueOf(Bytes.toLong(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("timestamp")))));
@@ -282,6 +330,8 @@ public class TestReportDataGenerator extends AbstractCappingRuleTest{
     Assert.assertEquals(Long.valueOf(viewImp), Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("view_impressions")))));
     Assert.assertEquals(Long.valueOf(mobileClick), Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("mobile_clicks")))));
     Assert.assertEquals(Long.valueOf(mobileImp), Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("mobile_impressions")))));
+    Assert.assertEquals(Long.valueOf(grossMobileClick), Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("gross_mobile_clicks")))));
+    Assert.assertEquals(Long.valueOf(grossMobileImp), Long.valueOf(Bytes.toInt(result.getValue(HBaseConstant.COLUMN_FAMILY_X, Bytes.toBytes("gross_mobile_impressions")))));
   }
 
   protected static void setDataIntoTransactionTable() throws IOException {

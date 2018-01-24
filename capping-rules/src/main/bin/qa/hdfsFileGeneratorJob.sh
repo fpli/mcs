@@ -1,7 +1,7 @@
 #!/bin/bash
-# run spark job on YARN - SNIDCapperJob
+# run spark job on YARN - HDFSFileGeneratorJob
 
-usage="Usage: snidCappingRuleJob.sh [originalTable] [resultTable] [channelType] [scanStopTime] [scanTimeWindow] [updateTimeWindow]"
+usage="Usage: hdfsFileGenerator.sh [originalTable] [channelType] [scanStopTime] [scanTimeWindow] [filePath] [numberOfPartition]"
 
 # if no args specified, show usage
 if [ $# -le 2 ]; then
@@ -10,23 +10,23 @@ if [ $# -le 2 ]; then
 fi
 
 bin=`dirname "$0"`
-bin=`cd "$bin">/dev/null; pwd`
+bin=`cd "../$bin">/dev/null; pwd`
 
-. ${bin}/chocolate-env.sh
+. ${bin}/chocolate-env-qa.sh
 
 ORIGINAL_TABLE=$1
-RESULT_TABLE=$2
-CHANNEL_TYPE=$3
-SCAN_STOP_TIME=$4
-SCAN_TIME_WINDOW=$5
-UPDATE_TIME_WINDOW=$6
+CHANNEL_TYPE=$2
+SCAN_STOP_TIME=$3
+SCAN_TIME_WINDOW=$4
+FILE_PATH=$5
+NUMBER_OF_PARTITION=$6
 
-DRIVER_MEMORY=10g
-EXECUTOR_NUMBER=30
-EXECUTOR_MEMORY=12g
+DRIVER_MEMORY=1g
+EXECUTOR_NUMBER=2
+EXECUTOR_MEMORY=512M
 EXECUTOR_CORES=3
 
-JOB_NAME="SNIDCappingRule"
+JOB_NAME="HDFSFileGenerator"
 
 for f in $(find $bin/../conf -name '*');
 do
@@ -35,7 +35,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.cappingrules.Rules.SNIDCapper \
+    --class com.ebay.traffic.chocolate.cappingrules.hdfs.HDFSFileGenerator \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
@@ -44,13 +44,13 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
-    --conf spark.yarn.executor.memoryOverhead=8192 \
+    --conf spark.yarn.executor.memoryOverhead=1024 \
     ${bin}/../lib/chocolate-capping-rules-*.jar \
       --jobName ${JOB_NAME} \
       --mode yarn \
       --originalTable ${ORIGINAL_TABLE} \
-      --resultTable ${RESULT_TABLE} \
       --channelType ${CHANNEL_TYPE} \
       --scanStopTime "${SCAN_STOP_TIME}" \
       --scanTimeWindow ${SCAN_TIME_WINDOW} \
-      --updateTimeWindow ${UPDATE_TIME_WINDOW}
+      --filePath "${FILE_PATH}" \
+      --numberOfPartition ${NUMBER_OF_PARTITION} \

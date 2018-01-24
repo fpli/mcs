@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
+import com.ebay.traffic.chocolate.BaseFunSuite;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -18,7 +19,7 @@ import java.sql.Timestamp;
 /**
  * Created by yimeng on 11/15/17.
  */
-public abstract class AbstractCappingRuleTest {
+public abstract class AbstractSparkHbaseTest extends BaseFunSuite {
   
   protected static final String TRANSACTION_TABLE_NAME = "prod_transactional";
   protected static final String RESULT_TABLE_NAME = "capping_result";

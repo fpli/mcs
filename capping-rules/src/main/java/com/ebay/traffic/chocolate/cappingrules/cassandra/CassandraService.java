@@ -80,7 +80,7 @@ public class CassandraService {
     //CampaignReport
     URL campaignURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, ReportType.CAMPAIGN);
     RawReportRecord reportRecord = new RawReportRecord(98765432102l, 201712, 20171212, 98765432100001l,
-        698765432100001l, 1, 2, 3, 5, 8, 11, 19, 20);
+        698765432100001l, 1, 2, 3, 5, 8, 11, 19, 20, 21, 22);
     cassandraService.saveReportRecord(oauthToken, campaignURL, reportRecord);
     //PartnerReport
     URL partnerURL = CassandraService.getCassandraSvcEndPoint(applicationOptions, ReportType.CAMPAIGN);

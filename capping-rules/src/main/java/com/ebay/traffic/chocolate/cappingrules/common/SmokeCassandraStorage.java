@@ -13,16 +13,16 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Save aggregate count data to cassandra tables
+ * This storage is only for smoke testing which will save data to smoke data tables
  * <p>
  * Created by yimeng on 01/07/18
  */
-public class CassandraStorage implements IStorage<JavaRDD<List<RawReportRecord>>> {
+public class SmokeCassandraStorage implements IStorage<JavaRDD<List<RawReportRecord>>> {
 
-  public CassandraStorage() {}
+  public SmokeCassandraStorage() {}
 
   /**
-   * Write data to cassandra table: campaign_report/partner_report
+   * Write data to cassandra smoke table: campaign_report_smoke/partner_report_smoke
    *
    * @param reportRecords aggregate report data
    * @param storeTable    hbase table - only used for HBASE storage
@@ -43,9 +43,9 @@ public class CassandraStorage implements IStorage<JavaRDD<List<RawReportRecord>>
           recordList = reportIte.next();
           for (RawReportRecord reportRecord : recordList) {
             if (ReportType.CAMPAIGN.equals(reportType)) {
-              reportHelper.saveCampaignReport(reportRecord);
+              reportHelper.saveCampaignReportSmoke(reportRecord);
             } else {
-              reportHelper.savePartnerReport(reportRecord);
+              reportHelper.savePartnerReportSmoke(reportRecord);
             }
           }
         }

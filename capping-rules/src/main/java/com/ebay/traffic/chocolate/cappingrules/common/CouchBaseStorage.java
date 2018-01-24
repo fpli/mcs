@@ -6,6 +6,12 @@ import org.apache.spark.api.java.JavaRDD;
 
 import java.util.List;
 
+
+/**
+ * Save data to couchbase tables
+ * <p>
+ * Created by yimeng on 01/07/18
+ */
 public class CouchBaseStorage implements IStorage<JavaRDD<List<RawReportRecord>>> {
 
   public CouchBaseStorage(){}
