@@ -1,0 +1,3 @@
+type=command
+command=bash snidCapper.sh
+dependencies=setCapperTime
