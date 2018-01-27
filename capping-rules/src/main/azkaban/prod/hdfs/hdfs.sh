@@ -13,6 +13,5 @@ pwd
 echo "on remote server's param = $scanStopTime"
 export HADOOP_USER_NAME=spark
 echo $HADOOP_USER_NAME
-./ipCappingRuleJob.sh prod_transactional prod_transactional EPN $scanStopTime 1440 15 300
 ./hdfsFileGeneratorJob.sh prod_transactional EPN $scanStopTime 1440 "/user/spark/hdfs/hbase/" 0
 EOSSH
