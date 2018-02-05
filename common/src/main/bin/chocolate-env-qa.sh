@@ -17,8 +17,8 @@ if [ -z "${SPARK_CONF_DIR}" ]; then
   export SPARK_CONF_DIR=/usr/hdp/2.5.0.0-1245/spark2/conf
 fi
 
-SPARK_EVENTLOG_DIR=hdfs://chocolate-qa-lvs-1-6317.lvs01.dev.ebayc3.com:8020/app-logs/spark/logs
-HISTORY_SERVER=http://chocolate-qa-lvs-1-6317.lvs01.dev.ebayc3.com:18081
+SPARK_EVENTLOG_DIR=hdfs://choco-2024312.lvs02.dev.ebayc3.com/app-logs/spark/logs
+HISTORY_SERVER=http://choco-2024115.lvs02.dev.ebayc3.com:18081
 
 FILES="file:///${SPARK_CONF_DIR}/hbase-site.xml,file:///${HADOOP_CONF_DIR}/ssl-client.xml"
 
