@@ -29,6 +29,7 @@
     <module>common</module>
     <module>capping-rules</module>
     <module>ingester</module>
+    <module>tools</module>
   </modules>
 
   <dependencyManagement>
