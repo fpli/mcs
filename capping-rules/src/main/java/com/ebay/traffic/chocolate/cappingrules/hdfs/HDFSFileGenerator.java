@@ -165,7 +165,7 @@ public class HDFSFileGenerator extends AbstractSparkHbase {
    * @return
    */
   public Dataset<EventSchema> readFromParquet(String filePath){
-    String fileName = filePath + scanStopTime.replaceAll("\\W+", "");
+    String fileName = filePath + scanStopTime + "-" + channelType;
     return sqlsc().read().parquet(fileName).as(Encoders.bean(EventSchema.class));
   }
 
