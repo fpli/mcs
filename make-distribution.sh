@@ -129,7 +129,10 @@ sed -i '' "s/zookeeperConnectTemplate/$ZOOKEEPER_PHX/g" "$CHOCOLATE_INGESTER_BIN
 sed -i '' "s/zookeeperConnectTemplate/$ZOOKEEPER_SLC/g" "$CHOCOLATE_INGESTER_BIN"/conf/flume_slc.conf
 sed -i '' "s/zookeeperConnectTemplate/$ZOOKEEPER_LVS/g" "$CHOCOLATE_INGESTER_BIN"/conf/flume_lvs.conf
 
-
+# Chocolcate Tools - distcp
+CHOCOLATE_TOOLS_DISTCP_BIN="$DISTDIR/hadoop-distcp"
+mkdir -p "$CHOCOLATE_TOOLS_DISTCP_BIN/lib"
+cp "$CHOCOLATE_HOME"/tools/hadoop-distcp/target/hadoop-distcp-*-fat.jar "$CHOCOLATE_TOOLS_DISTCP_BIN"/lib/
 
 if [ "$MAKE_TGZ" == "true" ]; then
   TARDIR_NAME=chocolate-cappingrule
