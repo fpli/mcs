@@ -11,6 +11,7 @@ import org.apache.hadoop.hbase.io.compress.Compression;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -19,6 +20,7 @@ import java.sql.Timestamp;
 /**
  * Created by yimeng on 11/15/17.
  */
+@Ignore
 public abstract class AbstractSparkHbaseTest extends BaseFunSuite {
   
   protected static final String TRANSACTION_TABLE_NAME = "prod_transactional";
