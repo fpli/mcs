@@ -6,11 +6,13 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Calendar;
 
+@Ignore
 public class TestTempSNIDCapper extends AbstractSparkHbaseTest {
   private static String stopTime;
   

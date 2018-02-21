@@ -6,11 +6,13 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Calendar;
 
+@Ignore
 public class TestSNIDCapper extends AbstractSparkHbaseTest {
   protected static final String RESULT_TABLE_NAME_WITH_CHANNEL = "capping_result_with_channel";
   protected static final String RESULT_TABLE_NAME_WITH_TIME_WINDOW = "capping_result_with_time_window";

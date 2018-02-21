@@ -9,6 +9,7 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -21,7 +22,7 @@ import java.util.Calendar;
  *
  * @author xiangli4
  */
-
+@Ignore
 public class TestIPCapper extends AbstractSparkHbaseTest {
   
   @BeforeClass
