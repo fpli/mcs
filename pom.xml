@@ -40,9 +40,10 @@
     <module>common</module>
     <module>spark-common</module>
     <module>kafka-common</module>
-    <module>capping-rules</module>
+    <module>listener</module>
     <module>filter</module>
     <module>ingester</module>
+    <module>capping-rules</module>
     <module>tools</module>
   </modules>
 

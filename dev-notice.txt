@@ -1,3 +1,6 @@
+listener:
+  git: 3385c4aa797296bd18291a4c5c12e122f98d0706
+
 filter:
   git: 3ef1701e13728cdfa2a6a7375b09fd7cad3c93e0
 
