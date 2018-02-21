@@ -1,0 +1,9 @@
+filter:
+  git: 3ef1701e13728cdfa2a6a7375b09fd7cad3c93e0
+
+common:
+  git: a63ad54aa4d28e7d7ea7030cd42bb36511c42cb1
+
+temporarily remove tests for hadoop-distcp
+
+temporarily disable tests for capping-rules

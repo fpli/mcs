@@ -1,0 +1,58 @@
+{
+	"namespace": "com.ebay.app.raptor.chocolate.avro.versions",
+	"type": "record",
+	"name": "FilterMessageV0",
+	"pk": ["snapshot_id"],
+	"fields": [{
+		"name": "snapshot_id",
+		"type": "long"
+	}, {
+		"name": "timestamp",
+		"type": "long"
+	}, {
+		"name": "publisher_id",
+		"type": "long"
+	}, {
+		"name": "campaign_id",
+		"type": "long"
+	}, {
+		"name": "request_headers",
+		"type": "string"
+	}, {
+		"name": "uri",
+		"type": "string"
+	}, {
+		"name": "response_headers",
+		"type": "string"
+	}, {
+		"name": "valid",
+		"type": ["boolean", "null"]
+	}, {
+		"name": "filter_failed",
+		"type": ["string", "null"]
+	}, {
+		"name": "channel_action",
+		"type": {
+			"name": "ChannelAction",
+        	"namespace": "com.ebay.app.raptor.chocolate.avro",
+			"type": "enum",
+			"symbols": ["CLICK", "IMPRESSION", "VIEWABLE", "SERVE", "PAGE_IMP", "VIEW_ITEM", "VIEW_TIME", "APP_FIRST_START"]
+		}
+    }, {
+		"name": "channel_type",
+		"type": {
+			"name": "ChannelType",
+        	"namespace": "com.ebay.app.raptor.chocolate.avro",
+			"type": "enum",
+			"symbols": ["EPN", "DISPLAY"]
+		}
+	}, {
+		"name": "http_method",
+		"type": {
+			"name": "HttpMethod",
+        	"namespace": "com.ebay.app.raptor.chocolate.avro",
+			"type": "enum",
+			"symbols": ["CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE"]
+		}
+	}]
+}

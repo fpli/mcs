@@ -1,0 +1,59 @@
+[
+  {
+    "channelType": "DEFAULT",
+    "filterRules": [
+      {
+        "ruleName": "PrefetchRule",
+        "ruleWeight": 1.0
+      },
+      {
+        "ruleName": "TwoPassIABRule",
+        "ruleWeight": 1.0
+      },
+      {
+        "ruleName": "InternalTrafficRule",
+        "ruleWeight": 1.0
+      }
+    ]
+  },
+  {
+    "channelType": "EPN",
+    "filterRules": [
+      {
+        "ruleName": "PublisherValidRule",
+        "ruleWeight": 1.0
+      },
+      {
+        "ruleName": "EPNDomainBlacklistRule",
+        "ruleWeight": 0.5
+      },
+      {
+        "ruleName": "IPBlacklistRule",
+        "ruleWeight": 0.5
+      },
+      {
+        "ruleName": "CGUIDStalenessWindowRule",
+        "ruleWeight": 0.5,
+        "windowStart": 500
+      },
+      {
+        "ruleName": "CampaignClickThroughRateRule",
+        "ruleWeight": 0.5
+      },
+      {
+        "ruleName": "RepeatClickRule",
+        "ruleWeight": 0.5,
+        "timeoutMS": 500
+      }
+    ]
+  },
+  {
+    "channelType": "DISPLAY",
+    "filterRules": [
+      {
+        "ruleName": "IPBlacklistRule",
+        "ruleWeight": 0.0
+      }
+    ]
+  }
+]
