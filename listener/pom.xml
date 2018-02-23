@@ -13,13 +13,6 @@
     <name>chocolate listener</name>
     <description>Chocolate Listener on Raptor IO</description>
 
-    <repositories>
-        <repository>
-            <id>releases</id>
-            <url>http://phxaisepapp018.phx.ebay.com:8080/nexus/content/repositories/releases</url>
-        </repository>
-    </repositories>
-
     <dependencies>
       <!-- raptor.io components dependencies -->
       <dependency>
@@ -107,17 +100,18 @@
       <!--Jetty dependencies end here -->
 
       <dependency>
+        <groupId>com.ebay.traffic</groupId>
+        <artifactId>chocolate-kafkacommon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.apache.kafka</groupId>
         <artifactId>kafka_2.10</artifactId>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>com.ebay.app.raptor.chocolate</groupId>
-        <artifactId>common</artifactId>
-        <version>${chocolate.common.version}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>

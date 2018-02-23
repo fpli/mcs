@@ -1,10 +1,8 @@
 package com.ebay.traffic.chocolate.listener.channel;
 
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
-import com.ebay.traffic.chocolate.init.KafkaProducers;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
-import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -70,18 +68,14 @@ public class ChannelFactory {
             StringBuffer sb = new StringBuffer();
             sb.append("Received test URL;");
             sb = deriveWarningMessage(sb, servletRequest);
-            KafkaProducers.getInstance().getChannelProducerMap().put(ChannelIdEnum.NINE,
-                    KafkaProducers.getInstance().getKafkaProducer(ChannelIdEnum.EPN));
             logger.info(sb.toString());
         }
-        
+
         switch (channel.getLogicalChannel()) {
         case EPN:
-            return new EpnChannel(MessageObjectParser.getInstance(), MetricsClient.getInstance(),
-                    KafkaProducers.getInstance().getKafkaProducer(channel), channelAction, channel.getLogicalChannel());
+            return new EpnChannel(channelAction, channel.getLogicalChannel());
         case DISPLAY:
-            return new DisplayChannel(MessageObjectParser.getInstance(),MetricsClient.getInstance(),
-                    KafkaProducers.getInstance().getKafkaProducer(channel), channelAction, channel.getLogicalChannel());
+            return new DisplayChannel(channelAction, channel.getLogicalChannel());
         default:
             return defaultChannelResult(servletRequest);
         }

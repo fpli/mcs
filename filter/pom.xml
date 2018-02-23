@@ -13,13 +13,6 @@
     <name>chocolate filter</name>
     <description>Chocolate Filter on Raptor IO</description>
 
-    <repositories>
-        <repository>
-            <id>releases</id>
-            <url>http://phxaisepapp018.phx.ebay.com:8080/nexus/content/repositories/releases</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>com.ebay.raptorio.component</groupId>

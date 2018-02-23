@@ -2,9 +2,11 @@ package com.ebay.traffic.chocolate.listener.channel;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
-import com.ebay.traffic.chocolate.init.KafkaProducerWrapper;
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.*;
 import org.apache.commons.lang3.Validate;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 
@@ -26,7 +28,8 @@ public class DisplayChannel implements Channel {
 
     private final MessageObjectParser parser;
     private final MetricsClient metricsClient;
-    private final KafkaProducerWrapper kafka;
+    private final String kafkaTopic;
+    private final Producer<Long, ListenerMessage> producer;
     private final ChannelActionEnum channelActionEnum;
     private final LogicalChannelEnum logicalChannelEnum;
 
@@ -47,24 +50,24 @@ public class DisplayChannel implements Channel {
 
         long startTime = startTimerAndLogData(request);
 
-        ListenerMessage message = parser.parseHeader(request, response, startTime, -1L, logicalChannelEnum, channelActionEnum, null);
+        ListenerMessage message = parser.parseHeader(request, response, startTime,
+                -1L, logicalChannelEnum, channelActionEnum, null);
 
-        String json = convertToJson(message);
-
-        if (json != null) {
-            kafka.send(json);
+        if (message != null) {
+            producer.send(new ProducerRecord<>(kafkaTopic,
+                    message.getSnapshotId(), message), KafkaSink.callback);
         }
 
         stopTimerAndLogData(startTime, message.toString());
     }
 
-    DisplayChannel(MessageObjectParser parser, MetricsClient metricsClient, KafkaProducerWrapper kafka, ChannelActionEnum channelActionEnum,
-                   LogicalChannelEnum logicalChannelEnum) {
+    DisplayChannel(ChannelActionEnum channelActionEnum, LogicalChannelEnum logicalChannelEnum) {
         Validate.isTrue(channelActionEnum != null, "Channel action must not be null");
         Validate.isTrue(LogicalChannelEnum.DISPLAY == logicalChannelEnum, "Logical channel should be Display");
-        this.parser = parser;
-        this.metricsClient = metricsClient;
-        this.kafka = kafka;
+        this.parser = MessageObjectParser.getInstance();
+        this.metricsClient = MetricsClient.getInstance();
+        this.kafkaTopic = ListenerOptions.getInstance().getKafkaChannelTopic(ChannelIdEnum.DAP);
+        this.producer = KafkaSink.get();
         this.channelActionEnum = channelActionEnum;
         this.logicalChannelEnum = logicalChannelEnum;
     }

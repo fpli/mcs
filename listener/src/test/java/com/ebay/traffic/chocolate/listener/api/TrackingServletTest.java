@@ -2,12 +2,10 @@ package com.ebay.traffic.chocolate.listener.api;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
-import com.ebay.traffic.chocolate.init.KafkaProducerWrapper;
-import com.ebay.traffic.chocolate.init.KafkaProducers;
-import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
-import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
-import com.ebay.traffic.chocolate.listener.util.LogicalChannelEnum;
-import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
+import com.ebay.traffic.chocolate.listener.util.*;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,23 +21,27 @@ import java.io.IOException;
 import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({KafkaProducers.class})
+@PrepareForTest({ListenerOptions.class, KafkaSink.class})
 public class TrackingServletTest {
     
     private MetricsClient mockMetrics;
-    private KafkaProducerWrapper mockKafka;
+    private Producer mockProducer;
     private TrackingServlet servlet;
     private MessageObjectParser mockParser;
 
     @Before
     public void setUp() {
         mockMetrics = mock(MetricsClient.class);
-        mockKafka = mock(KafkaProducerWrapper.class);
         mockParser = mock(MessageObjectParser.class);
-        PowerMockito.mockStatic(KafkaProducers.class);
-        KafkaProducers kafkaProducers = mock(KafkaProducers.class);
-        PowerMockito.when(KafkaProducers.getInstance()).thenReturn(kafkaProducers);
-        PowerMockito.when(kafkaProducers.getKafkaProducer(ChannelIdEnum.EPN)).thenReturn(mockKafka);
+
+        ListenerOptions mockOptions = mock(ListenerOptions.class);
+        PowerMockito.mockStatic(ListenerOptions.class);
+        PowerMockito.when(ListenerOptions.getInstance()).thenReturn(mockOptions);
+        PowerMockito.when(mockOptions.getKafkaChannelTopic(ChannelIdEnum.EPN)).thenReturn("epn");
+
+        mockProducer = mock(org.apache.kafka.clients.producer.KafkaProducer.class);
+        PowerMockito.mockStatic(KafkaSink.class);
+        PowerMockito.when(KafkaSink.get()).thenReturn(mockProducer);
 
         servlet = new TrackingServlet(mockMetrics, mockParser);
         servlet.init();
@@ -51,15 +53,16 @@ public class TrackingServletTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         ListenerMessage mockObject = mock(ListenerMessage.class);
-        
+
         when(request.getRequestURL()).thenReturn(clickURL);
         when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN), eq(ChannelActionEnum.CLICK), eq(null))).thenReturn(mockObject);
+        when(mockObject.getSnapshotId()).thenReturn(111L);
         when(mockObject.writeToJSON()).thenReturn("hello");
         servlet.doGet(request, response);
         
         verify(request, atLeastOnce()).getRequestURL();
-        verify(mockObject, atLeastOnce()).writeToJSON();
-        verify(mockKafka, atLeastOnce()).send(12345L, "hello");
+        verify(mockProducer, atLeastOnce()).send(
+                new ProducerRecord<>("epn", 111L, mockObject), KafkaSink.callback);
         verify(mockMetrics, atLeastOnce()).meter("VimpCount");
         verify(mockMetrics, atLeastOnce()).meter("VimpSuccess");
     }
@@ -74,11 +77,13 @@ public class TrackingServletTest {
         when(request.getRequestURL()).thenReturn(clickURL);
         when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN), eq(ChannelActionEnum.CLICK), eq("foo"))).thenReturn(mockObject);
         when(mockObject.writeToJSON()).thenReturn("hello");
+        when(mockObject.getSnapshotId()).thenReturn(111L);
         servlet.doGet(request, response);
         
         verify(request, atLeastOnce()).getRequestURL();
         verify(mockObject, never()).writeToJSON();
-        verify(mockKafka, never()).send(12345L, "hello");
+        verify(mockProducer, never()).send(
+                new ProducerRecord<>("epn", 111L, mockObject), KafkaSink.callback);
         verify(mockMetrics, atLeastOnce()).meter("VimpCount");
         verify(mockMetrics, never()).meter("VimpSuccess");
     }
@@ -93,11 +98,13 @@ public class TrackingServletTest {
         when(request.getRequestURL()).thenReturn(clickURL);
         when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN), eq(ChannelActionEnum.CLICK), eq("bar"))).thenReturn(mockObject);
         when(mockObject.writeToJSON()).thenReturn("hello");
+        when(mockObject.getSnapshotId()).thenReturn(111L);
         servlet.doGet(request, response);
         
         verify(request, atLeastOnce()).getRequestURL();
         verify(mockObject, never()).writeToJSON();
-        verify(mockKafka, never()).send(12345L, "hello");
+        verify(mockProducer, never()).send(
+                new ProducerRecord<>("epn", 111L, mockObject), KafkaSink.callback);
         verify(mockMetrics, atLeastOnce()).meter("VimpCount");
         verify(mockMetrics, never()).meter("VimpSuccess");
     }
@@ -113,7 +120,8 @@ public class TrackingServletTest {
         servlet.doGet(request, response);
         
         verify(request, atLeastOnce()).getRequestURL();
-        verify(mockKafka, never()).send(12345L, "hello");
+        verify(mockProducer, never()).send(
+                new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
         verify(mockMetrics, atLeastOnce()).meter("VimpCount");
         verify(mockMetrics, never()).meter("VimpSuccess");
     }
@@ -126,13 +134,12 @@ public class TrackingServletTest {
         ListenerMessage mockObject = mock(ListenerMessage.class);
         
         when(request.getRequestURL()).thenReturn(clickURL);
-        when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN), eq(ChannelActionEnum.CLICK), eq(null))).thenReturn(mockObject);
-        when(mockObject.writeToJSON()).thenReturn(null);
+        when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN), eq(ChannelActionEnum.CLICK), eq(null))).thenReturn(null);
         servlet.doGet(request, response);
         
         verify(request, atLeastOnce()).getRequestURL();
-        verify(mockObject, atLeastOnce()).writeToJSON();
-        verify(mockKafka, never()).send(12345L, null);
+        verify(mockProducer, never()).send(
+                new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
         verify(mockMetrics, atLeastOnce()).meter("VimpCount");
         verify(mockMetrics, never()).meter("VimpSuccess");
     }
@@ -147,14 +154,13 @@ public class TrackingServletTest {
         ListenerMessage mockObject = mock(ListenerMessage.class);
 
         when(request.getRequestURL()).thenReturn(clickURL);
-        when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(7876756567L), eq(LogicalChannelEnum.EPN), eq(ChannelActionEnum.IMPRESSION), eq(null))).thenReturn(mockObject);
-        when(mockObject.writeToJSON()).thenReturn(null);
+        when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(7876756567L), eq(LogicalChannelEnum.EPN), eq(ChannelActionEnum.IMPRESSION), eq(null))).thenReturn(null);
         when(response.getOutputStream()).thenReturn(mockOut);
         servlet.doGet(request, response);
 
         verify(request, atLeastOnce()).getRequestURL();
-        verify(mockObject, atLeastOnce()).writeToJSON();
-        verify(mockKafka, never()).send(7876756567L, null);
+        verify(mockProducer, never()).send(
+                new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
         verify(mockMetrics, atLeastOnce()).meter("VimpCount");
         verify(mockMetrics, never()).meter("VimpSuccess");
     }

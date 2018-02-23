@@ -1,11 +1,14 @@
 package com.ebay.traffic.chocolate.init;
 
+import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.cratchit.server.Clerk;
 import com.ebay.cratchit.server.Replayable;
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
 import org.apache.commons.lang3.Validate;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -21,7 +24,7 @@ public class ListenerInitializer {
      * @throws IOException if problems with the journal
      */
     public static void init(ListenerOptions options) {
-        KafkaProducers.init();
+        KafkaSink.initialize(options);
         initFrontier(options.getFrontierUrl(), options.getFrontierAppSvcName());
         // We will erase Journal feature soon, currently options.isJournalEnabled() is set as false.
         /*if (options.isJournalEnabled())
@@ -52,8 +55,9 @@ public class ListenerInitializer {
      * The terminate method to stop all services gracefully
      */
     static void terminate() {
-        logger.info("stop Kafka producer");
-        KafkaProducers.closeAll();
+        logger.info("close Kafka producer");
+        Producer<Long, ListenerMessage> producer = KafkaSink.get();
+        producer.close();
 
         logger.info("stop Frontier client");
         MetricsClient.getInstance().terminate();

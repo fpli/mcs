@@ -1,8 +1,12 @@
 package com.ebay.traffic.chocolate.listener.channel;
 
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -12,6 +16,7 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * Most of the other test methods are in ChannelMapTest.java 
@@ -20,7 +25,7 @@ import static org.junit.Assert.assertTrue;
  */
 @SuppressWarnings("javadoc")
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ListenerOptions.class})
+@PrepareForTest({ListenerOptions.class, KafkaSink.class})
 @PowerMockIgnore( {"javax.management.*"})
 public class ChannelFactoryTest {
     @Test
@@ -35,6 +40,10 @@ public class ChannelFactoryTest {
         kafkaProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.LongSerializer");
         kafkaProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         ListenerOptions.kafkaPros = kafkaProps;
+
+        Producer mockProducer = mock(KafkaProducer.class);
+        PowerMockito.mockStatic(KafkaSink.class);
+        PowerMockito.when(KafkaSink.get()).thenReturn(mockProducer);
 
         mock.setRequestURI("/var/log/stuff/xyz");
         assertEquals(DefaultChannel.class, ChannelFactory.getChannel(mock).getClass());

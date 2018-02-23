@@ -5,9 +5,11 @@ import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.cratchit.server.Clerk;
 import com.ebay.cratchit.server.Journal;
 import com.ebay.cratchit.server.Page;
-import com.ebay.traffic.chocolate.init.KafkaProducerWrapper;
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.*;
 import org.apache.commons.lang.Validate;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 
@@ -48,17 +50,18 @@ public class EpnChannel implements Channel {
     });*/
     private final MessageObjectParser parser;
     private final MetricsClient metrics;
-    private final KafkaProducerWrapper kafka;
+    private final String kafkaTopic;
+    private final Producer<Long, ListenerMessage> producer;
     private final ChannelActionEnum channelAction;
     private final LogicalChannelEnum logicalChannel;
 
-    EpnChannel(MessageObjectParser parser, MetricsClient metrics, KafkaProducerWrapper kafka,
-               ChannelActionEnum action, LogicalChannelEnum logicalChannel) {
+    EpnChannel(ChannelActionEnum action, LogicalChannelEnum logicalChannel) {
         Validate.isTrue(action != null, "Channel action must not be null");
         Validate.isTrue(LogicalChannelEnum.EPN == logicalChannel, "Logical channel should be ePN");
-        this.parser = parser;
-        this.metrics = metrics;
-        this.kafka = kafka;
+        this.parser = MessageObjectParser.getInstance();
+        this.metrics = MetricsClient.getInstance();
+        this.kafkaTopic = ListenerOptions.getInstance().getKafkaChannelTopic(ChannelIdEnum.EPN);
+        this.producer = KafkaSink.get();
         this.channelAction = action;
         this.logicalChannel = logicalChannel;
     }
@@ -89,19 +92,18 @@ public class EpnChannel implements Channel {
         String snid = getSnid(request);
 
         // Parse the response
-        ListenerMessage message = parser.parseHeader(request, response, startTime, campaignId, logicalChannel, channelAction, snid);
+        ListenerMessage message = parser.parseHeader(request, response,
+                startTime, campaignId, logicalChannel, channelAction, snid);
 
-        String json = convertToJson(message);
-
-        // Write to journal and send data downstream
-        if (json != null) {
+        if (message != null) {
      /*       Page page = getJournalPage();
             if (page != null) {
                 // This is just a complicated looking way of prepending campaignID into the start of the entry
                 byte[] entry = ByteBuffer.allocate(Long.BYTES + json.getBytes().length).putLong(campaignId).put(json.getBytes()).array();
                 writeToJournal(page, message.getSnapshotId(), entry);
             }*/
-            kafka.send(campaignId, json);
+            producer.send(new ProducerRecord<>(kafkaTopic,
+                    message.getSnapshotId(), message), KafkaSink.callback);
         }
 
         // Stop timing

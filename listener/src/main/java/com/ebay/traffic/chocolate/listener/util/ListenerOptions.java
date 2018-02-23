@@ -5,13 +5,13 @@ import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
 import com.ebay.kernel.context.RuntimeContext;
 
 import com.ebay.traffic.chocolate.init.ListenerInitializer;
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Properties;
 
 /**
@@ -20,7 +20,7 @@ import java.util.Properties;
  * - additional validation of option values
  * - grouping of constants for particular use cases (e.g. kafka)
  */
-public class ListenerOptions extends AbstractApplicationOptions {
+public class ListenerOptions extends AbstractApplicationOptions implements KafkaSink.KafkaConfigurable {
     /** Private logging instance */
     private static final Logger logger = Logger
             .getLogger(ListenerOptions.class);
@@ -29,6 +29,8 @@ public class ListenerOptions extends AbstractApplicationOptions {
      * Singleton instance
      */
     private static final ListenerOptions instance = new ListenerOptions();
+
+    public static final String KAFKA_CLUSTER = "chocolate.listener.kafka.cluster"; //"rheos", "kafka", "rheos,kafka", "kafka,rheos"
 
     /** Listener topic to publish to */
     public static final String KAFKA_EPN_TOPIC_PROPERTY = "chocolate.listener.kafka.topic.epn";
@@ -57,7 +59,9 @@ public class ListenerOptions extends AbstractApplicationOptions {
     public static final String PID_FILE = "chocolate.listener.pidfile";
 
     private static final String KAFKA_PROPERTIES_FILE = "listener-kafka.properties";
+    private static final String RHEOS_KAFKA_PROPERTIES_FILE = "listener-kafka-rheos.properties";
     public static Properties kafkaPros;
+    public static Properties rheosKafkaPros;
 
     /** Static driver ID */
     static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
@@ -76,11 +80,20 @@ public class ListenerOptions extends AbstractApplicationOptions {
     }
 
     /**
+     * @return Return kafka cluster, can be "rheos", "kafka", "rheos,kafka", "kafka,rheos"
+     */
+    @Override
+    public String getKafkaCluster() {
+        return ApplicationOptionsParser.getStringProperty(properties, KAFKA_CLUSTER);
+    }
+
+    /**
      * Application options to load Kafka properties from config file
      *
      * @throws IOException
      *             if properties could not be loaded
      */
+    @Override
     public Properties getKafkaProperties() throws IOException{
         if (kafkaPros == null){
             kafkaPros = new Properties();
@@ -88,6 +101,22 @@ public class ListenerOptions extends AbstractApplicationOptions {
                     + KAFKA_PROPERTIES_FILE));
         }
         return kafkaPros;
+    }
+
+    /**
+     * Application options to load Rheos Kafka properties from config file
+     *
+     * @throws IOException
+     *             if properties could not be loaded
+     */
+    @Override
+    public Properties getRheosKafkaProperties() throws IOException{
+        if (rheosKafkaPros == null){
+            rheosKafkaPros = new Properties();
+            rheosKafkaPros.load(new FileReader(RuntimeContext.getConfigRoot().getFile()
+                    + RHEOS_KAFKA_PROPERTIES_FILE));
+        }
+        return rheosKafkaPros;
     }
 
     /**
@@ -144,15 +173,23 @@ public class ListenerOptions extends AbstractApplicationOptions {
     }
 
     /**
-     * @return the map between channel and the topic.
-     */
-    public HashMap<ChannelIdEnum, String> getKafkaChannelTopicMap() {
-        HashMap<ChannelIdEnum, String> channelTopicMap = new HashMap<>();
-        channelTopicMap.put(ChannelIdEnum.EPN,
-                ApplicationOptionsParser.getStringProperty(properties, KAFKA_EPN_TOPIC_PROPERTY));
-        channelTopicMap.put(ChannelIdEnum.DAP,
-                ApplicationOptionsParser.getStringProperty(properties, KAFKA_DISPLAY_TOPIC_PROPERTY));
-        return channelTopicMap;
+     * @param channelIdEnum the channel ID
+     * @return the configured kafka topic for specific channel.
+    */
+    public String getKafkaChannelTopic(ChannelIdEnum channelIdEnum) {
+        String topic = null;
+        switch(channelIdEnum) {
+            case EPN:
+            case NINE:
+                topic = ApplicationOptionsParser.getStringProperty(properties, KAFKA_EPN_TOPIC_PROPERTY);
+                break;
+            case DAP:
+                topic = ApplicationOptionsParser.getStringProperty(properties, KAFKA_DISPLAY_TOPIC_PROPERTY);
+                break;
+            default:
+                break;
+        }
+        return topic;
     }
 
     /** @return true iff using a dummy (non-existent) kafka. false otherwise. */

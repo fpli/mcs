@@ -2,11 +2,12 @@ package com.ebay.traffic.chocolate.listener.api;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
-import com.ebay.traffic.chocolate.init.KafkaProducerWrapper;
-import com.ebay.traffic.chocolate.init.KafkaProducers;
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
+import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServlet;
@@ -21,8 +22,9 @@ public class TrackingServlet extends HttpServlet {
 
     private static final String SNID_PATTERN = "snid";
 
-    /** Kafka wrapper instance */
-    private KafkaProducerWrapper kafka;
+    private Producer<Long, ListenerMessage> producer;
+
+    private String kafkaTopic;
     
     /** Metrics client instance */
     private MetricsClient metrics;
@@ -37,7 +39,10 @@ public class TrackingServlet extends HttpServlet {
 
     @Override
     public void init() {
-        kafka = KafkaProducers.getInstance().getKafkaProducer(ChannelIdEnum.EPN);
+        ListenerOptions options = ListenerOptions.getInstance();
+        kafkaTopic = options.getKafkaChannelTopic(ChannelIdEnum.EPN);
+        producer = KafkaSink.get();
+
         if (parser == null)
             parser = MessageObjectParser.getInstance();
         if (metrics == null)
@@ -86,13 +91,9 @@ public class TrackingServlet extends HttpServlet {
                 logger.error("Could not create Avro message for url=" + request.getRequestURL());
                 return;
             }
-            String json = message.writeToJSON();
-            if (StringUtils.isEmpty(json)) {
-                logger.error("Could not create JSON message for url=" + request.getRequestURL());
-                return;
-            }
-                        
-            kafka.send(campaignId, json);
+
+            producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
+
             metrics.meter("VimpSuccess");
 
         } catch (Exception e) {

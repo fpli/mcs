@@ -1,4 +1,4 @@
-package com.ebay.traffic.kafka;
+package com.ebay.traffic.chocolate.kafka;
 
 import io.ebay.rheos.kafka.client.StreamConnectorConfig;
 import io.ebay.rheos.schema.avro.RheosEventSerializer;
@@ -20,7 +20,7 @@ import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static com.ebay.traffic.kafka.RheosConstants.*;
+import static com.ebay.traffic.chocolate.kafka.RheosConstants.*;
 
 /**
  * Created by yliu29 on 2/11/18.

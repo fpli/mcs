@@ -1,6 +1,6 @@
-package com.ebay.traffic.kafka;
+package com.ebay.traffic.chocolate.kafka;
 
-import com.ebay.app.raptor.chocolate.avro.FilterMessage;
+import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
@@ -16,15 +16,15 @@ import java.util.Map;
 /**
  * Created by yliu29 on 2/13/18.
  */
-public class RheosFilterMessageDeserializer implements Deserializer<FilterMessage> {
+public class RheosListenerMessageDeserializer implements Deserializer<ListenerMessage> {
   private final DecoderFactory decoderFactory = DecoderFactory.get();
   private final DatumReader<GenericRecord> rheosHeaderReader;
-  private final DatumReader<FilterMessage> reader;
+  private final DatumReader<ListenerMessage> reader;
 
-  public RheosFilterMessageDeserializer() {
+  public RheosListenerMessageDeserializer() {
     rheosHeaderReader = new GenericDatumReader<>(
             RheosEvent.BASE_SCHEMA.getField(RheosEvent.RHEOS_HEADER).schema());
-    reader = new SpecificDatumReader<>(FilterMessage.getClassSchema());
+    reader = new SpecificDatumReader<>(ListenerMessage.getClassSchema());
   }
 
   @Override
@@ -32,12 +32,12 @@ public class RheosFilterMessageDeserializer implements Deserializer<FilterMessag
   }
 
   @Override
-  public FilterMessage deserialize(String topic, byte[] data) {
+  public ListenerMessage deserialize(String topic, byte[] data) {
     try {
       BinaryDecoder decoder = decoderFactory.binaryDecoder(data, null);
       rheosHeaderReader.read(null, decoder);
 
-      FilterMessage message = new FilterMessage();
+      ListenerMessage message = new ListenerMessage();
       message = reader.read(message, decoder);
       return message;
     } catch (Exception e) {

@@ -4,6 +4,11 @@
 
   <!-- Kafka producer start -->
   <property>
+    <name>chocolate.listener.kafka.cluster</name>
+    <value>kafka</value>
+    <description>The kafka cluster, can be "rheos", "kafka", "rheos,kafka", "kafka,rheos".</description>
+  </property>
+  <property>
     <name>chocolate.listener.kafka.topic.epn</name>
     <value>qa_listener</value>
     <description>Kafka topic for epn channel to publish.</description>

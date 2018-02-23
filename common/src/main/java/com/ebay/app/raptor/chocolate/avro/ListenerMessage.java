@@ -45,10 +45,14 @@ public class ListenerMessage extends ListenerMessageV1 {
   }
 
   public String writeToJSON() throws IOException {
+    return new String(writeToBytes());
+  }
+
+  public byte[] writeToBytes() throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     JsonEncoder encoder = EncoderFactory.get().jsonEncoder(getClassSchema(), out);
     this.writer.write(this, encoder);
     encoder.flush();
-    return out.toString();
+    return out.toByteArray();
   }
 }

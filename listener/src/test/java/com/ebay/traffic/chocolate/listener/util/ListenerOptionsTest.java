@@ -1,6 +1,5 @@
 package com.ebay.traffic.chocolate.listener.util;
 
-import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import org.junit.Test;
 
 import java.io.File;
@@ -22,8 +21,8 @@ public class ListenerOptionsTest {
         prop.setProperty(ListenerOptions.KAFKA_DISPLAY_TOPIC_PROPERTY, "DAP");
         ListenerOptions.init(prop);
         ListenerOptions options = ListenerOptions.getInstance();
-        assertEquals("EPN",options.getKafkaChannelTopicMap().get(ChannelIdEnum.EPN));
-        assertEquals("DAP",options.getKafkaChannelTopicMap().get(ChannelIdEnum.DAP));
+        assertEquals("EPN", options.getKafkaChannelTopic(ChannelIdEnum.EPN));
+        assertEquals("DAP", options.getKafkaChannelTopic(ChannelIdEnum.DAP));
     }
 
     @Test

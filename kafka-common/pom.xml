@@ -10,13 +10,6 @@
   <packaging>jar</packaging>
   <name>chocolate kafka-common</name>
 
-  <repositories>
-    <repository>
-      <id>releases</id>
-      <url>http://phxaisepapp018.phx.ebay.com:8080/nexus/content/repositories/releases</url>
-    </repository>
-  </repositories>
-
   <dependencies>
 
     <!-- Rheos -->

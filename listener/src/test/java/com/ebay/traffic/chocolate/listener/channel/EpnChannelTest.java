@@ -2,24 +2,24 @@ package com.ebay.traffic.chocolate.listener.channel;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
-import com.ebay.cratchit.server.Clerk;
 import com.ebay.cratchit.server.Page;
-import com.ebay.traffic.chocolate.init.KafkaProducerWrapper;
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.TestHelper;
-import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
-import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
-import com.ebay.traffic.chocolate.listener.util.LogicalChannelEnum;
-import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
+import com.ebay.traffic.chocolate.listener.util.*;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -27,35 +27,40 @@ import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({ListenerOptions.class, MetricsClient.class, MessageObjectParser.class, KafkaSink.class})
 public class EpnChannelTest {
     private MockHttpServletRequest mockClientRequest;
     private EpnChannel channel;
     private MessageObjectParser mockMessageParser;
     private MetricsClient mockMetrics;
-    private KafkaProducerWrapper mockKafka;
     private MockHttpServletResponse mockProxyResponse;
+    private Producer mockProducer;
 
     @Before
     public void setUp() throws IOException, ExecutionException, InterruptedException {
-        Properties properties = new Properties();
-        properties.setProperty(ListenerOptions.JOURNAL_ENABLED, "true");
-        ListenerOptions.init(properties);
-        Clerk.initialize(new File(System.getProperty("java.io.tmpdir")), null,
-                8192, 8192, 128, ListenerOptions.getInstance().getDriverId());
+        ListenerOptions mockOptions = mock(ListenerOptions.class);
+        PowerMockito.mockStatic(ListenerOptions.class);
+        PowerMockito.when(ListenerOptions.getInstance()).thenReturn(mockOptions);
+        PowerMockito.when(mockOptions.getKafkaChannelTopic(ChannelIdEnum.EPN)).thenReturn("epn");
 
+        mockProducer = mock(org.apache.kafka.clients.producer.KafkaProducer.class);
+        PowerMockito.mockStatic(KafkaSink.class);
+        PowerMockito.when(KafkaSink.get()).thenReturn(mockProducer);
         mockMetrics = mock(MetricsClient.class);
-        mockKafka = mock(KafkaProducerWrapper.class);
+        PowerMockito.mockStatic(MetricsClient.class);
+        PowerMockito.when(MetricsClient.getInstance()).thenReturn(mockMetrics);
         mockMessageParser = mock(MessageObjectParser.class);
+        PowerMockito.mockStatic(MessageObjectParser.class);
+        PowerMockito.when(MessageObjectParser.getInstance()).thenReturn(mockMessageParser);
         mockClientRequest = new MockHttpServletRequest();
         mockProxyResponse = new MockHttpServletResponse();
 
-        channel = new EpnChannel(mockMessageParser, mockMetrics, mockKafka,
-                ChannelActionEnum.IMPRESSION, LogicalChannelEnum.EPN);
+        channel = new EpnChannel(ChannelActionEnum.IMPRESSION, LogicalChannelEnum.EPN);
     }
 
     @After
     public void tearDown() {
-        Clerk.getInstance().delete();
     }
 
     @Test
@@ -133,7 +138,7 @@ public class EpnChannelTest {
 
         spy.process(mockClientRequest, mockProxyResponse);
 
-        verify(mockKafka, times(1)).send(campaignId, payload);
+        verify(mockProducer, times(1)).send(new ProducerRecord<>("epn", snapshotId, mockMessage), KafkaSink.callback);
       //  verify(spy, times(1)).writeToJournal(mockPage, snapshotId, expected);
     }
 
@@ -150,7 +155,7 @@ public class EpnChannelTest {
 
         channel.process(mockClientRequest, mockProxyResponse);
 
-        verify(mockKafka, never()).send(anyInt(), anyObject());
+        verify(mockProducer, never()).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
     }
 
     @Test
@@ -161,17 +166,17 @@ public class EpnChannelTest {
         // with negative number
         mockClientRequest.setParameter("campid",String.valueOf(-1234L));
         channel.process(mockClientRequest, mockProxyResponse);
-        verify(mockKafka, never()).send(anyInt(), anyObject());
+        verify(mockProducer, never()).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
 
         // with string
         mockClientRequest.setParameter("campid","12345abcde");
         channel.process(mockClientRequest, mockProxyResponse);
-        verify(mockKafka, never()).send(anyInt(), anyObject());
+        verify(mockProducer, never()).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
 
         // without campid tag
         mockClientRequest.setParameter("campxid","12345");
         channel.process(mockClientRequest, mockProxyResponse);
-        verify(mockKafka, never()).send(anyInt(), anyObject());
+        verify(mockProducer, never()).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
     }
 
     /*@Test
@@ -183,14 +188,12 @@ public class EpnChannelTest {
 
     @Test(expected=IllegalArgumentException.class)
     public void badChannelType() {
-        new EpnChannel(mockMessageParser, mockMetrics, mockKafka,
-                ChannelActionEnum.IMPRESSION, LogicalChannelEnum.DISPLAY);
+        new EpnChannel(ChannelActionEnum.IMPRESSION, LogicalChannelEnum.DISPLAY);
     }
 
     @Test(expected=IllegalArgumentException.class)
     public void badChannelAction() {
-        new EpnChannel(mockMessageParser, mockMetrics, mockKafka,
-                null, LogicalChannelEnum.DISPLAY);
+        new EpnChannel(null, LogicalChannelEnum.DISPLAY);
     }
 
     /*@Test

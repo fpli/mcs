@@ -1,4 +1,4 @@
-package com.ebay.traffic.kafka;
+package com.ebay.traffic.chocolate.kafka;
 
 import org.apache.avro.generic.GenericRecord;
 import org.apache.commons.io.IOUtils;

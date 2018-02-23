@@ -17,6 +17,7 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ListenerOptions.class})
@@ -36,17 +37,11 @@ public class ListenerInitializerTest {
         properties.setProperty(ListenerOptions.KAFKA_EPN_TOPIC_PROPERTY, "chocolate.listener.kafka.topic.epn");
         properties.setProperty(ListenerOptions.KAFKA_DISPLAY_TOPIC_PROPERTY, "chocolate.listener.kafka.topic.display");
         ListenerOptions.init(properties);
-        Properties kafkaProps = new Properties();
-        kafkaProps.setProperty("bootstrap.servers", "127.0.0.1:9092");
-        kafkaProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.LongSerializer");
-        kafkaProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        ListenerOptions.kafkaPros = kafkaProps;
-        KafkaProducers.getInstance();
     }
 
     @AfterClass
     public static void tearDown() {
-        ListenerInitializer.terminate(); // TODO this throws NPE when running individual unit tests
+        MetricsClient.getInstance().terminate(); // TODO this throws NPE when running individual unit tests
     }
 
     @Test
