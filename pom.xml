@@ -30,6 +30,7 @@
     <module>capping-rules</module>
     <module>ingester</module>
     <module>mkttracksvc</module>
+    <module>tools</module>
   </modules>
 
   <dependencyManagement>
