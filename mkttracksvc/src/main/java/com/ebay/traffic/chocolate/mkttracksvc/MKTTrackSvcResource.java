@@ -11,8 +11,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.client.WebTarget;
 
+import com.ebay.traffic.chocolate.mkttracksvc.snid.DriverId;
+import com.ebay.traffic.chocolate.mkttracksvc.snid.SessionId;
 
-@ApiRef(api = "tracksvc", version = "1")
+
+@ApiRef( api="tracksvc", version="1" )
 @Component
 @Path("/snid")
 public class MKTTrackSvcResource {
@@ -22,17 +25,20 @@ public class MKTTrackSvcResource {
 
   @GET
   @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public')")
-  @Path("/hello")
-  @ApiMethod(resource = "snid")
-  public String hello() {
-    return "Hello from Raptor IO";
+  @Path("/getSnid")
+  @ApiMethod(resource="snid")
+  public long getSnid() {
+    int driverId = DriverId.getDriverIdFromIp();
+    SessionId snid = SessionId.getNext(driverId);
+    return snid.getRepresentation();
+    //return snid.toDebugString();
   }
 
   @GET
   @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public')")
-  @Path("/helloclient")
+  @Path("/getSnidclient")
   @ApiMethod()
   public String testClient() {
-    return target.path("tracksvc/v1/snid/hello").request().get(String.class);
+    return target.path("tracksvc/v1/snid/getSnid").request().get(String.class);
   }
 }
