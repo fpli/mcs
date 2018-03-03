@@ -1,10 +1,10 @@
 package com.ebay.traffic.chocolate.mkttracksvc.snid;
 
-import com.google.common.base.Objects;
-import org.apache.commons.lang3.Validate;
 
+import org.apache.commons.lang3.Validate;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**

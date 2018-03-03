@@ -2,7 +2,6 @@ package com.ebay.traffic.chocolate.mkttracksvc;
 
 import com.ebay.cos.raptor.service.annotations.ApiMethod;
 import com.ebay.cos.raptor.service.annotations.ApiRef;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -24,7 +23,7 @@ public class MKTTrackSvcResource {
   private WebTarget target;
 
   @GET
-  @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public')")
+//  @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public')")
   @Path("/getSnid")
   @ApiMethod(resource="snid")
   public long getSnid() {
@@ -35,7 +34,7 @@ public class MKTTrackSvcResource {
   }
 
   @GET
-  @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public')")
+//  @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public')")
   @Path("/getSnidclient")
   @ApiMethod()
   public String testClient() {

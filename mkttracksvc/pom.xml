@@ -14,7 +14,7 @@
 		<groupId>com.ebay.raptorio.platform</groupId>
 		<artifactId>raptor-io-parent</artifactId>
 		<version>0.5.0-RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath>..</relativePath>
 	</parent>
 
 	<properties>
@@ -43,22 +43,22 @@
 			<groupId>com.ebay.raptorio.component</groupId>
 			<artifactId>raptor-domain-request-starter</artifactId>
 		</dependency>
-        <dependency>
-			<groupId>com.ebay.raptorio.component</groupId>
-			<artifactId>raptor-esams-starter</artifactId>
-		</dependency>
-        <dependency>
-			<groupId>com.ebay.raptorio.component</groupId>
-			<artifactId>raptor-hystrix-starter</artifactId>
-		</dependency>
+        <!--<dependency>-->
+			<!--<groupId>com.ebay.raptorio.component</groupId>-->
+			<!--<artifactId>raptor-esams-starter</artifactId>-->
+		<!--</dependency>-->
+        <!--<dependency>-->
+			<!--<groupId>com.ebay.raptorio.component</groupId>-->
+			<!--<artifactId>raptor-hystrix-starter</artifactId>-->
+		<!--</dependency>-->
         <dependency>
 			<groupId>com.ebay.raptorio.component</groupId>
 			<artifactId>raptor-metadata-starter</artifactId>
 		</dependency>
-        <dependency>
-			<groupId>com.ebay.raptorio.component</groupId>
-			<artifactId>raptor-permutation-starter</artifactId>
-		</dependency>
+        <!--<dependency>-->
+			<!--<groupId>com.ebay.raptorio.component</groupId>-->
+			<!--<artifactId>raptor-permutation-starter</artifactId>-->
+		<!--</dependency>-->
         <dependency>
 			<groupId>com.ebay.raptorio.component</groupId>
 			<artifactId>raptor-qualys-starter</artifactId>
@@ -117,30 +117,30 @@
 			<artifactId>raptor-validateinternals-starter</artifactId>
 		</dependency>
         <!--COS Spec implementation Components-->
-        <dependency>
-			<groupId>com.ebay.raptorio.component</groupId>
-			<artifactId>raptor-core-auth-starter</artifactId>
-		</dependency>
-        <dependency>
-			<groupId>com.ebay.raptorio.component</groupId>
-			<artifactId>raptor-cos-token-starter</artifactId>
-		</dependency>
-        <dependency>
-			<groupId>com.ebay.raptorio.component</groupId>
-			<artifactId>raptor-cos-usercontext-starter</artifactId>
-		</dependency>
-        <dependency>
-			<groupId>com.ebay.standards</groupId>
-			<artifactId>standards-annotation-starter</artifactId>
-		</dependency>
-        <dependency>
-			<groupId>com.ebay.standards</groupId>
-			<artifactId>standards-error-starter</artifactId>
-		</dependency>
-        <dependency>
-			<groupId>com.ebay.standards</groupId>
-			<artifactId>standards-exception-starter</artifactId>
-		</dependency>
+        <!--<dependency>-->
+			<!--<groupId>com.ebay.raptorio.component</groupId>-->
+			<!--<artifactId>raptor-core-auth-starter</artifactId>-->
+		<!--</dependency>-->
+        <!--<dependency>-->
+			<!--<groupId>com.ebay.raptorio.component</groupId>-->
+			<!--<artifactId>raptor-cos-token-starter</artifactId>-->
+		<!--</dependency>-->
+        <!--<dependency>-->
+			<!--<groupId>com.ebay.raptorio.component</groupId>-->
+			<!--<artifactId>raptor-cos-usercontext-starter</artifactId>-->
+		<!--</dependency>-->
+        <!--<dependency>-->
+			<!--<groupId>com.ebay.standards</groupId>-->
+			<!--<artifactId>standards-annotation-starter</artifactId>-->
+		<!--</dependency>-->
+        <!--<dependency>-->
+			<!--<groupId>com.ebay.standards</groupId>-->
+			<!--<artifactId>standards-error-starter</artifactId>-->
+		<!--</dependency>-->
+        <!--<dependency>-->
+			<!--<groupId>com.ebay.standards</groupId>-->
+			<!--<artifactId>standards-exception-starter</artifactId>-->
+		<!--</dependency>-->
         <!--Third Party-->
         <dependency>
 			<groupId>org.springframework.boot</groupId>
