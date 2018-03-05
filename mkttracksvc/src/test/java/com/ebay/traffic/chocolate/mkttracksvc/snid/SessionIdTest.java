@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.mkttracksvc.snid;
 
-import com.google.common.collect.Iterables;
+
+import jersey.repackaged.com.google.common.collect.Iterables;
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;
