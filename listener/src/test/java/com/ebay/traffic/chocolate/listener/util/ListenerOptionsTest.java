@@ -15,17 +15,6 @@ import static org.junit.Assert.*;
 public class ListenerOptionsTest {
 
     @Test
-    public void testGetKafkaChannelTopicMap() {
-        Properties prop = new Properties();
-        prop.setProperty(ListenerOptions.KAFKA_EPN_TOPIC_PROPERTY, "EPN");
-        prop.setProperty(ListenerOptions.KAFKA_DISPLAY_TOPIC_PROPERTY, "DAP");
-        ListenerOptions.init(prop);
-        ListenerOptions options = ListenerOptions.getInstance();
-        assertEquals("EPN", options.getKafkaChannelTopic(ChannelIdEnum.EPN));
-        assertEquals("DAP", options.getKafkaChannelTopic(ChannelIdEnum.DAP));
-    }
-
-    @Test
     public void testGetDummyKafkaHappy() {
         // Test defaults
         {

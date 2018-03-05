@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.listener.api;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -17,6 +18,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
@@ -37,7 +40,10 @@ public class TrackingServletTest {
         ListenerOptions mockOptions = mock(ListenerOptions.class);
         PowerMockito.mockStatic(ListenerOptions.class);
         PowerMockito.when(ListenerOptions.getInstance()).thenReturn(mockOptions);
-        PowerMockito.when(mockOptions.getKafkaChannelTopic(ChannelIdEnum.EPN)).thenReturn("epn");
+
+        Map<ChannelType, String> channelTopics = new HashMap<>();
+        channelTopics.put(ChannelType.EPN, "epn");
+        PowerMockito.when(mockOptions.getSinkKafkaConfigs()).thenReturn(channelTopics);
 
         mockProducer = mock(org.apache.kafka.clients.producer.KafkaProducer.class);
         PowerMockito.mockStatic(KafkaSink.class);

@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.listener.channel;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.cratchit.server.Clerk;
@@ -60,7 +61,7 @@ public class EpnChannel implements Channel {
         Validate.isTrue(LogicalChannelEnum.EPN == logicalChannel, "Logical channel should be ePN");
         this.parser = MessageObjectParser.getInstance();
         this.metrics = MetricsClient.getInstance();
-        this.kafkaTopic = ListenerOptions.getInstance().getKafkaChannelTopic(ChannelIdEnum.EPN);
+        this.kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.EPN);
         this.producer = KafkaSink.get();
         this.channelAction = action;
         this.logicalChannel = logicalChannel;

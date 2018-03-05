@@ -14,45 +14,67 @@ import java.util.Properties;
 /**
  * Created by yliu29 on 2/21/18.
  *
- * Singleton of Kafka producer.
+ * Singleton of Kafka producer. Producer is thread-safe,
+ * we can get better performance by sharing one producer.
  */
 public class KafkaSink {
   private static final Logger LOG = Logger.getLogger(KafkaSink.class);
 
   private static Producer producer;
 
+  /**
+   * Kafka Configurable Interface.
+   */
   public static interface KafkaConfigurable {
-    String getKafkaCluster();
 
-    Properties getKafkaProperties() throws IOException;
+    /**
+     * Get the kafka cluster to sink. Refer to <code>KafkaCluster</code>
+     *
+     * @return Kafka cluster to sink.
+     */
+    String getSinkKafkaCluster();
 
-    Properties getRheosKafkaProperties() throws IOException;
+    /**
+     * Get the kafka properties to sink.
+     *
+     * @param sinkCluster kafka cluster
+     * @return Kafka properties
+     * @throws IOException
+     */
+    Properties getSinkKafkaProperties(KafkaCluster sinkCluster) throws IOException;
   }
 
   private KafkaSink() {
   }
 
+  /**
+   * Initialize the kafka sink.
+   * This method can only be called once.
+   *
+   * @param conf the kafka configurable
+   */
   public static synchronized void initialize(KafkaConfigurable conf) {
     if (producer != null) {
       throw new IllegalStateException("Can only initialize once.");
     }
 
     try {
-      switch (conf.getKafkaCluster()) {
+      switch (conf.getSinkKafkaCluster()) {
         case "kafka":
-          producer = new KafkaProducer(conf.getKafkaProperties());
+          producer = new KafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.KAFKA));
           break;
         case "rheos":
-          producer = new RheosKafkaProducer(conf.getRheosKafkaProperties());
+          producer = new RheosKafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.RHEOS));
           break;
-        case "rheos,kafka":
-          producer = new KafkaWithFallbackProducer(new RheosKafkaProducer(conf.getRheosKafkaProperties()),
-                  new KafkaProducer(conf.getKafkaProperties()));
-          break;
-        case "kafka,rheos":
+        case "rheos" + KafkaCluster.DELIMITER + "kafka":
           producer = new KafkaWithFallbackProducer(
-                  new KafkaProducer(conf.getKafkaProperties()),
-                  new RheosKafkaProducer(conf.getRheosKafkaProperties()));
+                  new RheosKafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.RHEOS)),
+                  new KafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.KAFKA)));
+          break;
+        case "kafka" + KafkaCluster.DELIMITER + "rheos":
+          producer = new KafkaWithFallbackProducer(
+                  new KafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.KAFKA)),
+                  new RheosKafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.RHEOS)));
           break;
         default:
           throw new IllegalArgumentException("Illegal kafka cluster");
@@ -63,6 +85,11 @@ public class KafkaSink {
     }
   }
 
+  /**
+   * Get the producer, which is singleton.
+   *
+   * @return Kafka producer
+   */
   public static <K, V extends GenericRecord> Producer<K, V> get() {
     synchronized (KafkaSink.class) {
       if (producer == null) {
@@ -70,6 +97,18 @@ public class KafkaSink {
       }
     }
     return (Producer<K, V>) producer;
+  }
+
+  /**
+   * Close Kafka producer.
+   *
+   * @throws IOException
+   */
+  public static void close() throws IOException {
+    if (producer != null) {
+      producer.close();
+      producer = null;
+    }
   }
 
   /**

@@ -1,10 +1,13 @@
 package com.ebay.app.raptor.chocolate.filter;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.app.raptor.chocolate.filter.service.FilterContainer;
 import com.ebay.app.raptor.chocolate.filter.service.FilterWorker;
 import com.ebay.app.raptor.chocolate.filter.util.FilterZookeeperClient;
 import com.ebay.kernel.context.RuntimeContext;
+import com.ebay.traffic.chocolate.kafka.KafkaCluster;
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -16,19 +19,21 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 @Configuration
 @Singleton
 public class FilterService {
-  // Logger
   private static final Logger logger = Logger.getLogger(FilterService.class);
 
   private static final String FRONTIER_URL = "chocolate.filter.monitoring.url";
   private static final String FRONTIER_APPSVC = "chocolate.filter.monitoring.appSvc";
-  private static final String THREAD_COUNT = "chocolate.filter.threads";
+  private static final String TOPIC_THREAD_COUNT = "chocolate.filter.topic.threads";
   private static final String RULE_CONFIG_FILENAME = "filter_rule_config.json";
-  private FilterWorker[] filterThreads;
+  private List<FilterWorker> workers = new ArrayList<>();
 
   FilterService() {
     Properties log4jProps = new Properties();
@@ -50,27 +55,49 @@ public class FilterService {
   public void postInit() throws Exception {
     logger.info("Initializer called.");
 
-    ApplicationOptions.init("filter.properties", "filter-kafka.properties");
-    MetricsClient.init(ApplicationOptions.getInstance().getByNameString(FRONTIER_URL), ApplicationOptions.getInstance().getByNameString(FRONTIER_APPSVC));
-    FilterZookeeperClient.init(ApplicationOptions.getInstance());
+    ApplicationOptions.init();
+    MetricsClient.init(ApplicationOptions.getInstance().getByNameString(FRONTIER_URL),
+            ApplicationOptions.getInstance().getByNameString(FRONTIER_APPSVC));
+    ApplicationOptions options = ApplicationOptions.getInstance();
+    FilterZookeeperClient.init(options);
 
     //Initial Rule Configuration Map
-    ApplicationOptions.initFilterRuleConfig( RULE_CONFIG_FILENAME);
-    
-    int threadCount = ApplicationOptions.getInstance().getByNameInteger(THREAD_COUNT);
-    this.filterThreads = new FilterWorker[threadCount];
-    for (int i = 0; i < threadCount; ++i) {
-      KafkaWrapper kafka = new KafkaWrapper();
-      FilterContainer filterSet = FilterContainer.createDefault(ApplicationOptions.filterRuleConfigMap);
-      this.filterThreads[i] = new FilterWorker(filterSet, kafka, MetricsClient.getInstance());
-      this.filterThreads[i].start();
+    ApplicationOptions.initFilterRuleConfig(RULE_CONFIG_FILENAME);
+
+    KafkaSink.initialize(options);
+    int topicThreadCount = options.getByNameInteger(TOPIC_THREAD_COUNT);
+
+    FilterContainer filters = FilterContainer.createDefault(ApplicationOptions.filterRuleConfigMap);
+
+    Map<KafkaCluster, Map<ChannelType, String>> kafkaConfigs = options.getInputKafkaConfigs();
+    Map<ChannelType, String> sinkKafkaConfigs = options.getSinkKafkaConfigs();
+    for (Map.Entry<KafkaCluster, Map<ChannelType, String>> kafkaConfig : kafkaConfigs.entrySet()) {
+      KafkaCluster cluster = kafkaConfig.getKey();
+      Properties properties = options.getInputKafkaProperties(cluster);
+
+      Map<ChannelType, String> channelTopicMap = kafkaConfig.getValue();
+      for (Map.Entry<ChannelType, String> channelTopic : channelTopicMap.entrySet()) {
+        ChannelType channelType = channelTopic.getKey();
+        String topic = channelTopic.getValue();
+        for (int i = 0; i < topicThreadCount; i++) {
+          FilterWorker worker = new FilterWorker(channelType, topic,
+                  properties, sinkKafkaConfigs.get(channelType), filters);
+          worker.start();
+          workers.add(worker);
+        }
+      }
     }
   }
 
   @PreDestroy
   public void shutdown() {
-    for (FilterWorker thread : this.filterThreads) {
-      thread.shutdown();
+    for (FilterWorker worker : workers) {
+      worker.shutdown();
+    }
+    try {
+      KafkaSink.close();
+    } catch (IOException e) {
+      logger.error(e);
     }
   }
 }

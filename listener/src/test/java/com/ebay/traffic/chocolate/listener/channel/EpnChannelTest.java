@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.listener.channel;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.cratchit.server.Page;
@@ -20,6 +21,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -42,7 +45,9 @@ public class EpnChannelTest {
         ListenerOptions mockOptions = mock(ListenerOptions.class);
         PowerMockito.mockStatic(ListenerOptions.class);
         PowerMockito.when(ListenerOptions.getInstance()).thenReturn(mockOptions);
-        PowerMockito.when(mockOptions.getKafkaChannelTopic(ChannelIdEnum.EPN)).thenReturn("epn");
+        Map<ChannelType, String> channelTopics = new HashMap<>();
+        channelTopics.put(ChannelType.EPN, "epn");
+        PowerMockito.when(mockOptions.getSinkKafkaConfigs()).thenReturn(channelTopics);
 
         mockProducer = mock(org.apache.kafka.clients.producer.KafkaProducer.class);
         PowerMockito.mockStatic(KafkaSink.class);

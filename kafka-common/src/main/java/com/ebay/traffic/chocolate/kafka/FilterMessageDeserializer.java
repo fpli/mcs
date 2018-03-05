@@ -9,6 +9,8 @@ import java.util.Map;
 
 /**
  * Created by yliu29 on 2/13/18.
+ *
+ * The Filter Message Deserializer used in Kafka Consumer
  */
 public class FilterMessageDeserializer implements Deserializer<FilterMessage> {
 

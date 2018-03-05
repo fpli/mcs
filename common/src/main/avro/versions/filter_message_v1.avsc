@@ -44,7 +44,7 @@
 			"name": "ChannelType",
         	"namespace": "com.ebay.app.raptor.chocolate.avro",
 			"type": "enum",
-			"symbols": ["EPN", "DISPLAY"]
+			"symbols": ["DEFAULT", "EPN", "DISPLAY"]
 		}
 	}, {
 		"name": "http_method",

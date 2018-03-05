@@ -32,14 +32,11 @@ public class ChannelFactoryTest {
     public void testEpnChannel(){
         MockHttpServletRequest mock = new MockHttpServletRequest();
         Properties properties = new Properties();
-        properties.setProperty(ListenerOptions.KAFKA_EPN_TOPIC_PROPERTY, "chocolate.listener.kafka.topic.epn");
-        properties.setProperty(ListenerOptions.KAFKA_DISPLAY_TOPIC_PROPERTY, "chocolate.listener.kafka.topic.display");
         ListenerOptions.init(properties);
         Properties kafkaProps = new Properties();
         kafkaProps.setProperty("bootstrap.servers", "127.0.0.1:9092");
         kafkaProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.LongSerializer");
         kafkaProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        ListenerOptions.kafkaPros = kafkaProps;
 
         Producer mockProducer = mock(KafkaProducer.class);
         PowerMockito.mockStatic(KafkaSink.class);

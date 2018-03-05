@@ -7,13 +7,10 @@ import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleContent;
 import com.ebay.app.raptor.chocolate.filter.service.BaseFilterWeightedRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRule;
-import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
+import com.ebay.kernel.context.RuntimeContext;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,9 +20,13 @@ import static org.junit.Assert.assertEquals;
 /**
  * Created by spugach on 11/29/16.
  */
-@RunWith(RaptorIOSpringRunner.class)
-@SpringBootTest
 public class BasicRulesTest {
+
+  @BeforeClass
+  public static void setUp() throws IOException {
+    RuntimeContext.setConfigRoot(BasicRulesTest.class.getClassLoader().getResource("META-INF/configuration/Dev/"));
+    ApplicationOptions.initFilterRuleConfig("filter_rule_config.json");
+  }
 
   @Before
   public void addTestRules() throws IOException {

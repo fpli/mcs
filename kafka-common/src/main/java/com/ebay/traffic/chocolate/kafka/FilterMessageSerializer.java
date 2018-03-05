@@ -8,6 +8,8 @@ import java.util.Map;
 
 /**
  * Created by yliu29 on 2/12/18.
+ *
+ * The Filter Message Serializer used in kafka producer
  */
 public class FilterMessageSerializer implements Serializer<FilterMessage> {
 

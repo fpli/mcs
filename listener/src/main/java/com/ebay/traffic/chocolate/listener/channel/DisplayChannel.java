@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.listener.channel;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -66,7 +67,7 @@ public class DisplayChannel implements Channel {
         Validate.isTrue(LogicalChannelEnum.DISPLAY == logicalChannelEnum, "Logical channel should be Display");
         this.parser = MessageObjectParser.getInstance();
         this.metricsClient = MetricsClient.getInstance();
-        this.kafkaTopic = ListenerOptions.getInstance().getKafkaChannelTopic(ChannelIdEnum.DAP);
+        this.kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.DISPLAY);
         this.producer = KafkaSink.get();
         this.channelActionEnum = channelActionEnum;
         this.logicalChannelEnum = logicalChannelEnum;

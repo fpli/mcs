@@ -1,162 +1,179 @@
 package com.ebay.app.raptor.chocolate.filter.service;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
-import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
-import com.ebay.app.raptor.chocolate.filter.KafkaWrapper;
-import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
+import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
+import com.ebay.traffic.chocolate.kafka.KafkaConsumerFactory;
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Created by spugach on 3/3/17.
+ * Created by yliu29 on 2/23/18.
  */
 public class FilterWorker extends Thread {
-    private static final int POLL_STEP_MS = 100;
-    private static final long DEFAULT_PUBLISHER_ID = -1L;
-    // Logging instance.
-    private static final Logger logger = Logger.getLogger(FilterWorker.class);
-    private final MetricsClient metrics;
+  private static final Logger LOG = Logger.getLogger(FilterWorker.class);
 
-    private FilterContainer filters;
-    private KafkaWrapper kafka;
+  private static final long POLL_STEP_MS = 100;
+  private static final long DEFAULT_PUBLISHER_ID = -1L;
 
-    // Shutdown signal.
-    private final AtomicBoolean shutdownRequested;
+  private final MetricsClient metrics;
+  private final FilterContainer filters;
+  private final ChannelType channelType;
+  private final String inputTopic;
+  private final String outputTopic;
 
-    public FilterWorker(FilterContainer filters, KafkaWrapper kafka, MetricsClient metricsClient) {
-        if (null == filters || null == kafka) {
-            throw new IllegalArgumentException();
+  private final Consumer<Long, ListenerMessage> consumer; // in
+  private final Producer<Long, FilterMessage> producer; // out
+
+  // Shutdown signal.
+  private final AtomicBoolean shutdownRequested = new AtomicBoolean(false);
+
+  public FilterWorker(ChannelType channelType, String inputTopic,
+                      Properties properties, String outputTopic,
+                      FilterContainer filters) {
+    this.metrics = MetricsClient.getInstance();
+    this.filters = filters;
+    this.channelType = channelType;
+    this.inputTopic = inputTopic;
+    this.outputTopic = outputTopic;
+
+    this.consumer = KafkaConsumerFactory.create(properties);
+    this.producer = KafkaSink.get();
+  }
+
+  /**
+   * Signals termination.
+   */
+  public void shutdown() {
+    LOG.info("Calling shutdown in FilterWorker.");
+    shutdownRequested.set(true);
+  }
+
+  @Override
+  public void run() {
+    LOG.info("Start filter worker, channel " + channelType +
+            ", input topic " + inputTopic + ", output topic " + outputTopic);
+
+    // Init the metrics that we don't use often
+    this.metrics.meter("FilterError", 0);
+    this.metrics.meter("messageParseFailure", 0);
+    this.metrics.mean("FilterPassedPPM", 0L);
+
+    try {
+      consumer.subscribe(Arrays.asList(inputTopic));
+
+      while (!shutdownRequested.get()) {
+        ConsumerRecords<Long, ListenerMessage> records = consumer.poll(POLL_STEP_MS);
+        Iterator<ConsumerRecord<Long, ListenerMessage>> iterator = records.iterator();
+        int count = 0;
+        int passed = 0;
+        long startTime = System.currentTimeMillis();
+        while (iterator.hasNext()) {
+          ++count;
+          ConsumerRecord<Long, ListenerMessage> record = iterator.next();
+          ListenerMessage message = record.value();
+          metrics.mean("FilterLatency", System.currentTimeMillis() - message.getTimestamp());
+
+          FilterMessage outMessage = processMessage(message);
+
+          if (outMessage.getValid()) {
+            ++passed;
+          }
+
+          producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
         }
 
-        this.shutdownRequested = new AtomicBoolean(false);
-        this.filters = filters;
-        this.kafka = kafka;
-        this.metrics = metricsClient;
-    }
+        if (count > 2000) {
+          // producer flush
+          producer.flush();
 
-    /**
-     * Signals termination.
-     */
-    public void shutdown() {
-        logger.info("Calling shutdown in FilterWorker.");
-        shutdownRequested.set(true);
-    }
-
-    @Override
-    public void run() {
-        // Init the metrics that we don't use often
-        this.metrics.meter("FilterError", 0);
-        this.metrics.meter("messageParseFailure", 0);
-        this.metrics.mean("FilterPassedPPM", 0L);
-
-        try {
-            logger.info(String.format("Connecting Filter to Kafka - In: %s, Out: %s", ApplicationOptions.getInstance().getKafkaInTopic(), ApplicationOptions.getInstance().getKafkaOutTopic()));
-            this.kafka.init(ApplicationOptions.getInstance().getKafkaInTopic(), ApplicationOptions.getInstance().getKafkaOutTopic());
-
-            while (!this.shutdownRequested.get()) {
-                List<ListenerMessage> messages = this.kafka.poll();
-
-                if (null == messages || messages.size() == 0) {
-                    this.metrics.mean("FilterIdle", 1);
-                    Thread.sleep(POLL_STEP_MS);
-                } else {
-                    long cycleStart = System.currentTimeMillis();
-                    long bigCycleStart = System.currentTimeMillis();
-                    this.metrics.meter("FilterThroughput", messages.size());
-                    int messagesPassed = 0;
-                    for (ListenerMessage message : messages) {
-                        this.metrics.mean("FilterLatency", System.currentTimeMillis() - message.getTimestamp());
-
-                        FilterMessage outMessage = processMessage(message);
-
-                        if (outMessage.getValid()) messagesPassed += 1;
-
-                        this.kafka.send(outMessage);
-
-                        long timeSpent = System.currentTimeMillis() - cycleStart;
-                        if (timeSpent >= POLL_STEP_MS) {
-                            this.metrics.mean("FilterIdle", 0);
-                            cycleStart = System.currentTimeMillis();
-                        }
-
-                        Thread.yield();
-                    }
-
-                    this.kafka.flush();
-                    this.metrics.mean("FilterPassedPPM", 1000000L * messagesPassed / messages.size());  // PPM (per million) of valid messages
-
-                    long timeSpent = System.currentTimeMillis() - bigCycleStart;
-                    this.metrics.mean("FilterProcessingTime", timeSpent);
-
-                    // In low load, sleep more
-                    if (10 * timeSpent < POLL_STEP_MS) {
-                        this.metrics.mean("FilterIdle", 1);
-                        Thread.sleep(POLL_STEP_MS);
-                    } else {
-                        this.metrics.mean("FilterIdle", 0);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.warn("Exception in worker thread: ", e);
-            this.metrics.meter("FilterError");
-            //TODO react
-        } finally {
-            this.kafka.close();
+          // update consumer offset
+          consumer.commitSync();
         }
 
-        logger.warn("Shutting down");
+        if (count == 0) {
+          metrics.mean("FilterIdle", 1);
+          Thread.sleep(POLL_STEP_MS);
+        } else {
+          metrics.meter("FilterThroughput", count);
+          metrics.mean("FilterPassedPPM", 1000000L * passed / count);
+          long timeSpent = System.currentTimeMillis() - startTime;
+          metrics.mean("FilterProcessingTime", timeSpent);
+
+          if (timeSpent >= POLL_STEP_MS) {
+            this.metrics.mean("FilterIdle", 0);
+          } else {
+            this.metrics.mean("FilterIdle", 1);
+            Thread.sleep(POLL_STEP_MS);
+          }
+        }
+      }
+    } catch (Exception e) {
+      LOG.warn("Exception in worker thread: ", e);
+      this.metrics.meter("FilterError");
+    } finally {
+      consumer.close();
     }
 
-    public FilterMessage processMessage(ListenerMessage message) {
-        FilterMessage outMessage = new FilterMessage();
-        outMessage.setSnapshotId(message.getSnapshotId());
-        outMessage.setTimestamp(message.getTimestamp());
-        if (message.getPublisherId() == DEFAULT_PUBLISHER_ID) {
-          long publisherId = getPublisherId(message.getCampaignId());
-          outMessage.setPublisherId(publisherId);
-          message.setPublisherId(publisherId);
-        }
-        else
-            outMessage.setPublisherId(message.getPublisherId());
-        outMessage.setCampaignId(message.getCampaignId());
-        outMessage.setRequestHeaders(message.getRequestHeaders());
-        outMessage.setUri(message.getUri());
-        outMessage.setResponseHeaders(message.getResponseHeaders());
-        outMessage.setChannelAction(message.getChannelAction());
-        outMessage.setChannelType(message.getChannelType());
-        outMessage.setHttpMethod(message.getHttpMethod());
-        outMessage.setSnid(message.getSnid());
-        outMessage.setIsTracked(message.getIsTracked());
-        try {
-            FilterResult filtered = this.filters.test(message);
-            outMessage.setValid(filtered.isEventValid());
-            outMessage.setFilterFailed(filtered.getFailedRule().toString());
-        } catch (Exception e) {
-            outMessage.setValid(false);
-            outMessage.setFilterFailed(FilterRuleType.ERROR.getRuleType());
-        }
-        return outMessage;
-    }
+    LOG.warn("Shutting down");
+  }
 
-    /**
-     * Lookup publisherId based on campaignId from publisher cache
-     *
-     * @param campaignId
-     *            Long
-     * @return publisher, in case no match result, use default -1L
-     */
-    public Long getPublisherId(Long campaignId) {
-        Long publisher = CampaignPublisherMappingCache.getInstance().lookup(campaignId);
-        if (publisher == null) {
-            logger.debug(String.format("No match result for campaign %d, use default -1L as publisherId", campaignId));
-            return DEFAULT_PUBLISHER_ID;
-        }
-        return publisher;
+  public FilterMessage processMessage(ListenerMessage message) {
+    FilterMessage outMessage = new FilterMessage();
+    outMessage.setSnapshotId(message.getSnapshotId());
+    outMessage.setTimestamp(message.getTimestamp());
+    if (message.getPublisherId() == DEFAULT_PUBLISHER_ID) {
+      long publisherId = getPublisherId(message.getCampaignId());
+      outMessage.setPublisherId(publisherId);
+      message.setPublisherId(publisherId);
     }
+    else
+      outMessage.setPublisherId(message.getPublisherId());
+    outMessage.setCampaignId(message.getCampaignId());
+    outMessage.setRequestHeaders(message.getRequestHeaders());
+    outMessage.setUri(message.getUri());
+    outMessage.setResponseHeaders(message.getResponseHeaders());
+    outMessage.setChannelAction(message.getChannelAction());
+    outMessage.setChannelType(message.getChannelType());
+    outMessage.setHttpMethod(message.getHttpMethod());
+    outMessage.setSnid(message.getSnid());
+    outMessage.setIsTracked(message.getIsTracked());
+    try {
+      FilterResult filtered = this.filters.test(message);
+      outMessage.setValid(filtered.isEventValid());
+      outMessage.setFilterFailed(filtered.getFailedRule().toString());
+    } catch (Exception e) {
+      outMessage.setValid(false);
+      outMessage.setFilterFailed(FilterRuleType.ERROR.getRuleType());
+    }
+    return outMessage;
+  }
+
+  /**
+   * Lookup publisherId based on campaignId from publisher cache
+   *
+   * @param campaignId
+   * @return publisher, in case no match result, use default -1L
+   */
+  public Long getPublisherId(Long campaignId) {
+    Long publisher = CampaignPublisherMappingCache.getInstance().lookup(campaignId);
+    if (publisher == null) {
+      LOG.debug(String.format("No match result for campaign %d, use default -1L as publisherId", campaignId));
+      return DEFAULT_PUBLISHER_ID;
+    }
+    return publisher;
+  }
 }

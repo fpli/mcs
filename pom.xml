@@ -116,6 +116,12 @@
       </dependency>
 
       <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-clients</artifactId>
+        <version>${kafka.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>com.couchbase.client</groupId>
         <artifactId>java-client</artifactId>
         <version>${couchbase.client.version}</version>

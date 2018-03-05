@@ -8,6 +8,8 @@ import java.util.Map;
 
 /**
  * Created by yliu29 on 2/12/18.
+ *
+ * The Listener Message Serializer used in Kafka Producer.
  */
 public class ListenerMessageSerializer implements Serializer<ListenerMessage> {
 

@@ -2,10 +2,9 @@ package com.ebay.app.raptor.chocolate.filter;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleContent;
-import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
+import com.ebay.kernel.context.RuntimeContext;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
 import java.util.Map;
@@ -17,11 +16,15 @@ import static org.junit.Assert.assertNull;
 
 /**
  * @author jepounds
+ *
+ * TODO: this test class can be removed.
  */
-@SuppressWarnings("javadoc")
-@RunWith(RaptorIOSpringRunner.class)
-@SpringBootTest
 public class ApplicationOptionsTest {
+
+  @BeforeClass
+  public static void setUp() throws IOException {
+    RuntimeContext.setConfigRoot(FilterServiceTest.class.getClassLoader().getResource("META-INF/configuration/Dev/"));
+  }
   
   @Test
   public void testImmediateOptions() {
@@ -90,21 +93,6 @@ public class ApplicationOptionsTest {
     assertEquals(options.getZookeeperString(), zkConnect);
   }
   
-  @Test(expected = UnsupportedOperationException.class)
-  public void testZookeeperConnectMissing() {
-    Properties prop = new Properties();
-    ApplicationOptions.init(prop);
-    ApplicationOptions options = ApplicationOptions.getInstance();
-    options.getZookeeperString();
-  }
-  
-  @Test
-  public void testInit() throws IOException {
-    ApplicationOptions.init("filter.properties", "filter-kafka.properties");
-    ApplicationOptions options = ApplicationOptions.getInstance();
-    assertEquals("dev_listener", options.getKafkaInTopic());
-  }
-  
   @Test
   public void testInitFilterRuleConfig() throws IOException {
     ApplicationOptions.initFilterRuleConfig("filter_rule_config.json");
@@ -123,17 +111,5 @@ public class ApplicationOptionsTest {
     assertEquals(1, dapRule.get("TwoPassIABRule").getRuleWeight(), 0.001);
     assertEquals("IPBlacklistRule", dapRule.get("IPBlacklistRule").getRuleName());
     assertEquals(0, dapRule.get("IPBlacklistRule").getRuleWeight(), 0.001);
-  }
-  
-  @Test
-  public void testGetZookeeper() {
-    assertEquals("chocolate-qa-slc-1-4595.slc01.dev.ebayc3.com:2181", ApplicationOptions.getInstance()
-        .getZookeeperString());
-  }
-  
-  @Test
-  public void testGetKafkaTopic() {
-    assertEquals("dev_listener", ApplicationOptions.getInstance().getKafkaInTopic());
-    assertEquals("dev_filter", ApplicationOptions.getInstance().getKafkaOutTopic());
   }
 }

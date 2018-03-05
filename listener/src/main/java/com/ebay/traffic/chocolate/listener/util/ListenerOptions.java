@@ -1,10 +1,11 @@
 package com.ebay.traffic.chocolate.listener.util;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.common.AbstractApplicationOptions;
 import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
 import com.ebay.kernel.context.RuntimeContext;
 
-import com.ebay.traffic.chocolate.init.ListenerInitializer;
+import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import org.apache.log4j.Logger;
 
@@ -12,7 +13,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+
+import static com.ebay.traffic.chocolate.kafka.KafkaCluster.DELIMITER;
 
 /**
  * This class is used for Listener specific options. Some use cases are:
@@ -30,12 +35,15 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
      */
     private static final ListenerOptions instance = new ListenerOptions();
 
-    public static final String KAFKA_CLUSTER = "chocolate.listener.kafka.cluster"; //"rheos", "kafka", "rheos,kafka", "kafka,rheos"
+    /** Kafka cluster, can be "kafka", "rheos", "rheos,kafka", "kafka,rheos". */
+    public static final String KAFKA_CLUSTER = "chocolate.listener.kafka.cluster";
 
     /** Listener topic to publish to */
-    public static final String KAFKA_EPN_TOPIC_PROPERTY = "chocolate.listener.kafka.topic.epn";
-
-    public static final String KAFKA_DISPLAY_TOPIC_PROPERTY = "chocolate.listener.kafka.topic.display";
+    /** prefix of Kafka topic for channels. */
+    // refer to com.ebay.app.raptor.chocolate.avro.ChannelType for channels.
+    // for ePN:  chocolate.listener.kafka.topic.EPN
+    // for display: chocolate.listener.kafka.topic.DISPLAY
+    public static final String KAFKA_TOPIC_PREFIX = "chocolate.listener.kafka.topic.";
 
     /** Whether or not we'll be using a dummy (test context only) */
     static final String KAFKA_USE_DUMMY = "chocolate.listener.kafka.usedummy";
@@ -60,8 +68,11 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
 
     private static final String KAFKA_PROPERTIES_FILE = "listener-kafka.properties";
     private static final String RHEOS_KAFKA_PROPERTIES_FILE = "listener-kafka-rheos.properties";
-    public static Properties kafkaPros;
-    public static Properties rheosKafkaPros;
+    private static Properties kafkaProperties;
+    private static Properties rheosKafkaProperties;
+
+    private String sinkKafkaCluster;
+    private Map<ChannelType, String> sinkKafkaConfigMap = new HashMap<>();
 
     /** Static driver ID */
     static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
@@ -83,52 +94,33 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
      * @return Return kafka cluster, can be "rheos", "kafka", "rheos,kafka", "kafka,rheos"
      */
     @Override
-    public String getKafkaCluster() {
-        return ApplicationOptionsParser.getStringProperty(properties, KAFKA_CLUSTER);
+    public String getSinkKafkaCluster() {
+        return sinkKafkaCluster;
     }
 
     /**
-     * Application options to load Kafka properties from config file
+     * Return sink kafka properties.
      *
+     * @param sinkCluster kafka cluster
+     * @return kafka properties
      * @throws IOException
-     *             if properties could not be loaded
      */
     @Override
-    public Properties getKafkaProperties() throws IOException{
-        if (kafkaPros == null){
-            kafkaPros = new Properties();
-            kafkaPros.load(new FileReader(RuntimeContext.getConfigRoot().getFile()
-                    + KAFKA_PROPERTIES_FILE));
+    public Properties getSinkKafkaProperties(KafkaCluster sinkCluster) throws IOException{
+        if (sinkCluster == KafkaCluster.KAFKA) {
+            return kafkaProperties;
+        } else {
+            return rheosKafkaProperties;
         }
-        return kafkaPros;
     }
 
-    /**
-     * Application options to load Rheos Kafka properties from config file
-     *
-     * @throws IOException
-     *             if properties could not be loaded
-     */
-    @Override
-    public Properties getRheosKafkaProperties() throws IOException{
-        if (rheosKafkaPros == null){
-            rheosKafkaPros = new Properties();
-            rheosKafkaPros.load(new FileReader(RuntimeContext.getConfigRoot().getFile()
-                    + RHEOS_KAFKA_PROPERTIES_FILE));
-        }
-        return rheosKafkaPros;
-    }
-
-    /**
-     * Application options to load from internal jar
-     *
-     * @param propertiesPath
-     *            to load file from
-     * @throws IOException
-     *             if properties could not be loaded
-     */
-    public static void init(String propertiesPath) throws IOException {
-        instance.initInstance(propertiesPath, ListenerInitializer.class);
+    private static Properties loadProperties(String file) throws IOException {
+        String filePath = RuntimeContext.getConfigRoot().getFile() + file;
+        Properties properties = new Properties();
+        FileReader reader = new FileReader(filePath);
+        properties.load(reader);
+        reader.close();
+        return properties;
     }
 
     /**
@@ -139,6 +131,18 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
      */
     public static void init(InputStream stream) throws IOException {
         instance.initInstance(stream);
+        if (kafkaProperties == null) {
+            kafkaProperties = loadProperties(KAFKA_PROPERTIES_FILE);
+        }
+        rheosKafkaProperties = loadProperties(RHEOS_KAFKA_PROPERTIES_FILE);
+        instance.initKafkaConfigs();
+    }
+
+    /**
+     * Only for test
+     */
+    public void setKafkaProperties(Properties properties) {
+        kafkaProperties = properties;
     }
 
     /**
@@ -173,23 +177,31 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
     }
 
     /**
-     * @param channelIdEnum the channel ID
-     * @return the configured kafka topic for specific channel.
-    */
-    public String getKafkaChannelTopic(ChannelIdEnum channelIdEnum) {
-        String topic = null;
-        switch(channelIdEnum) {
-            case EPN:
-            case NINE:
-                topic = ApplicationOptionsParser.getStringProperty(properties, KAFKA_EPN_TOPIC_PROPERTY);
-                break;
-            case DAP:
-                topic = ApplicationOptionsParser.getStringProperty(properties, KAFKA_DISPLAY_TOPIC_PROPERTY);
-                break;
-            default:
-                break;
+     * Kafka topic configs
+     */
+    private void initKafkaConfigs() {
+        sinkKafkaCluster = ApplicationOptionsParser.getStringProperty(properties, KAFKA_CLUSTER);
+        String[] sinkKafkaClusters = sinkKafkaCluster.split(DELIMITER);
+        if (sinkKafkaClusters.length > 2) {
+            throw new IllegalArgumentException("too many values in " + KAFKA_CLUSTER);
         }
-        return topic;
+        Map<String, String> sinkChannelKafkaTopics = getByNamePrefix(KAFKA_TOPIC_PREFIX);
+        for (Map.Entry<String, String> channelTopic : sinkChannelKafkaTopics.entrySet()) {
+            ChannelType channelType = ChannelType.valueOf(channelTopic.getKey());
+            String topics = channelTopic.getValue();
+            String[] topicarray = topics.split(DELIMITER);
+            if (topicarray.length > 2) {
+                throw new IllegalArgumentException("too many values in " + KAFKA_TOPIC_PREFIX + channelTopic.getKey());
+            }
+            sinkKafkaConfigMap.put(channelType, topics);
+        }
+    }
+
+    /**
+     * @return Return kafka channel topic map
+     */
+    public Map<ChannelType, String> getSinkKafkaConfigs() {
+        return sinkKafkaConfigMap;
     }
 
     /** @return true iff using a dummy (non-existent) kafka. false otherwise. */

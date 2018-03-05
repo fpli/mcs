@@ -5,15 +5,10 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
 import com.ebay.app.raptor.chocolate.filter.service.*;
-import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Properties;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
@@ -21,8 +16,6 @@ import static org.junit.Assert.*;
 /**
  * Created by spugach on 11/22/16.
  */
-@RunWith(RaptorIOSpringRunner.class)
-@SpringBootTest
 public class FilterContainerTest {
 
   @Test

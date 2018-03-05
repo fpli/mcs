@@ -24,6 +24,12 @@ import static com.ebay.traffic.chocolate.kafka.RheosConstants.*;
 
 /**
  * Created by yliu29 on 2/11/18.
+ *
+ * Rheos Kafka Producer, it wraps normal avro schema format to Rheos schema format,
+ * which contains an additional Rheos Header.
+ *
+ * This producer accepts normal avro format message, like <code>ListenerMessage</code>,
+ * <code>FilterMessage</code>, internally it sends the message as a rheos event.
  */
 public class RheosKafkaProducer<K, V extends GenericRecord> implements Producer<K, V> {
   private static final Logger LOG = LoggerFactory.getLogger(RheosKafkaProducer.class);
@@ -69,6 +75,12 @@ public class RheosKafkaProducer<K, V extends GenericRecord> implements Producer<
             record.key(), getRheosEvent(record.value())), callback);
   }
 
+  /**
+   * Wraps normal avro schema format to Rheos schema format,
+   * which contains an additional Rheos Header.
+   * @param v normal avro format message
+   * @return rheos event
+   */
   public RheosEvent getRheosEvent(V v) {
     RheosEvent rheosEvent = new RheosEvent(schema);
     long t = System.currentTimeMillis();

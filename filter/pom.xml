@@ -66,19 +66,16 @@
 
         <!--Chocolate dependencies-->
         <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.10</artifactId>
+            <groupId>com.ebay.traffic</groupId>
+            <artifactId>chocolate-kafkacommon</artifactId>
+            <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>1.10.19</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.ebay.app.raptor.chocolate</groupId>
-            <artifactId>common</artifactId>
-            <version>${chocolate.common.version}</version>
         </dependency>
         <dependency>
             <groupId>com.couchbase.client</groupId>
@@ -119,6 +116,30 @@
             <artifactId>raptor-io-test-framework</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- test -->
+        <dependency>
+            <groupId>com.ebay.traffic</groupId>
+            <artifactId>chocolate-kafkacommon</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.11</artifactId>
+            <version>${kafka.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>

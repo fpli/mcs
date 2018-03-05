@@ -9,6 +9,7 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.annotation.InterfaceStability;
 import org.apache.kafka.common.errors.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,12 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by yliu29 on 2/13/18.
+ *
+ * This producer is constructed by two producers, one is primary producer, another
+ * is fallback producer. Internally if there is issue for the primary producer, such
+ * as the corresponding Kafka is down, it switches to use the fallback producer.
+ *
+ * ### Unstable ###
  */
 public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Producer<K, V> {
   private static final Logger LOG = LoggerFactory.getLogger(KafkaWithFallbackProducer.class);
@@ -85,16 +92,36 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
 
   @Override
   public Future<RecordMetadata> send(ProducerRecord<K, V> record, Callback callback) {
+    String topics = record.topic();
+    String[] topicarray = topics.split(KafkaCluster.DELIMITER);
+    String topic1 = topicarray[0];
+    String topic2 = topic1;
+    if (topicarray.length > 1) {
+      topic2 = topicarray[1];
+    }
+
     Producer<K, V> producer = getCurrent();
     try {
-      return producer.send(record, callback);
+      ProducerRecord<K, V> pr = null;
+      if (producer == producer1) {
+        pr = new ProducerRecord<>(topic1, record.key(), record.value());
+      } else {
+        pr = new ProducerRecord<>(topic2, record.key(), record.value());
+      }
+      return producer.send(pr, callback);
     } catch (TimeoutException e) {
       // wait for "max.block.ms", if there is timeout for current producer, then switch to another producer
       LOG.warn("Send timeout", e);
       Producer<K, V> fallback = doSwitch(producer);
       if (fallback != null) {
         try {
-          return fallback.send(record, callback);
+          ProducerRecord<K, V> pr = null;
+          if (fallback == producer1) {
+            pr = new ProducerRecord<>(topic1, record.key(), record.value());
+          } else {
+            pr = new ProducerRecord<>(topic2, record.key(), record.value());
+          }
+          return fallback.send(pr, callback);
         } catch (Exception e1) {
           // if there is exception while using fallback, throw it.
           LOG.error(e1.getMessage(), e1);

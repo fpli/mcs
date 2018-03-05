@@ -6,6 +6,8 @@ import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceConfigurationError;
 
@@ -146,5 +148,23 @@ public class AbstractApplicationOptions {
         }
 
         return Float.parseFloat(properties.getProperty(key));
+    }
+
+  /**
+   * Get properties by key prefix.
+   *
+   * @param prefix the key prefix
+   * @return properties
+   */
+    public Map<String, String> getByNamePrefix(String prefix) {
+        Map<String, String> result = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+            String key = (String)entry.getKey();
+            if (key.startsWith(prefix)) {
+                key = key.substring(key.lastIndexOf(".") + 1, key.length());
+                result.put(key, (String)entry.getValue());
+            }
+        }
+        return result;
     }
 }

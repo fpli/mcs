@@ -5,17 +5,13 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.junit.Assert;
-import org.junit.Test;
+import org.apache.kafka.clients.producer.*;
+import org.junit.*;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Properties;
 
-import static com.ebay.traffic.chocolate.kafka.TestMessageSerialization.*;
+import static com.ebay.traffic.chocolate.common.TestHelper.*;
 
 /**
  * Created by yliu29 on 2/14/18.
@@ -24,40 +20,31 @@ public class TestRheosKafkaProducer {
 
   @Test
   public void testRheosKafkaProducer() throws Exception {
+    final String topic = "marketingtech.ap.tracking-events.filtered-epn";
 
-    final String topic = "misc.crossdcs.marketing-tracking.tracking-events-epn-filtered";
-
-    KafkaSink.KafkaConfigurable conf = new KafkaSink.KafkaConfigurable() {
-
-      @Override
-      public String getKafkaCluster() {
-        return "rheos";
-      }
-
-      @Override
-      public Properties getKafkaProperties() throws IOException {
-        return null;
-      }
-
-      @Override
-      public Properties getRheosKafkaProperties() throws IOException {
-        return TestMessageSerialization.loadProperties("rheos-kafka-filter-producer.properties");
-      }
-    };
-
-    KafkaSink.initialize(conf);
-
-    Producer<Long, FilterMessage> producer = KafkaSink.get();
+    Producer<Long, FilterMessage> producer =
+            new RheosKafkaProducer<>(loadProperties("rheos-kafka-filter-producer.properties"));
 
     FilterMessage message1 = newFilterMessage(1L, 11L, 111L);
     FilterMessage message2 = newFilterMessage(2L, 22L, 222L);
     FilterMessage message3 = newFilterMessage(3L, 33L, 333L);
 
-    producer.send(new ProducerRecord<>(topic, 1L, message1));
-    producer.send(new ProducerRecord<>(topic, 3L, message3));
-    producer.send(new ProducerRecord<>(topic, 2L, message2));
+    Callback callback = new Callback() {
+      @Override
+      public void onCompletion(RecordMetadata recordMetadata, Exception e) {
+        if (e != null) {
+          e.printStackTrace();
+        }
+      }
+    };
+
+    producer.send(new ProducerRecord<>(topic, 1L, message1), callback);
+    producer.send(new ProducerRecord<>(topic, 3L, message3), callback);
+    producer.send(new ProducerRecord<>(topic, 2L, message2), callback);
     producer.flush();
     producer.close();
+
+    System.out.println("Producer sent 3 message.");
 
     Consumer<Long, FilterMessage> consumer =
             new KafkaConsumer<>(loadProperties("rheos-kafka-filter-consumer.properties"));

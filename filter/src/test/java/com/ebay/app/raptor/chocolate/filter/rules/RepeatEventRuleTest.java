@@ -6,16 +6,13 @@ import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleContent;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRule;
-import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
+import com.ebay.kernel.context.RuntimeContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -23,9 +20,13 @@ import static org.junit.Assert.assertEquals;
 /**
  * Created by spugach on 12/19/16.
  */
-@RunWith(RaptorIOSpringRunner.class)
-@SpringBootTest
 public class RepeatEventRuleTest {
+    @BeforeClass
+    public static void setUp() throws IOException {
+        RuntimeContext.setConfigRoot(BasicRulesTest.class.getClassLoader().getResource("META-INF/configuration/Dev/"));
+        ApplicationOptions.initFilterRuleConfig("filter_rule_config.json");
+    }
+
     @Before
     public void addTestRules() throws IOException {
         //Default Testing Data from configuration file

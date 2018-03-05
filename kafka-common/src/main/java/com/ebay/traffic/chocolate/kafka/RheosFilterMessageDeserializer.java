@@ -15,6 +15,10 @@ import java.util.Map;
 
 /**
  * Created by yliu29 on 2/13/18.
+ *
+ * The Filter Message Deserializer used in Kafka Consumer of Rheos.
+ * The raw data is serialization format of rheos event. Internally it
+ * skips rheos header, and deserialize the remaining data to a filter message.
  */
 public class RheosFilterMessageDeserializer implements Deserializer<FilterMessage> {
   private final DecoderFactory decoderFactory = DecoderFactory.get();
@@ -35,8 +39,10 @@ public class RheosFilterMessageDeserializer implements Deserializer<FilterMessag
   public FilterMessage deserialize(String topic, byte[] data) {
     try {
       BinaryDecoder decoder = decoderFactory.binaryDecoder(data, null);
+      // skips the rheos header
       rheosHeaderReader.read(null, decoder);
 
+      // deserialize the remaining data to a filter message.
       FilterMessage message = new FilterMessage();
       message = reader.read(message, decoder);
       return message;

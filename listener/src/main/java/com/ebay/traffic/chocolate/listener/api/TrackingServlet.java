@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.listener.api;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -40,7 +41,7 @@ public class TrackingServlet extends HttpServlet {
     @Override
     public void init() {
         ListenerOptions options = ListenerOptions.getInstance();
-        kafkaTopic = options.getKafkaChannelTopic(ChannelIdEnum.EPN);
+        kafkaTopic = options.getSinkKafkaConfigs().get(ChannelType.EPN);
         producer = KafkaSink.get();
 
         if (parser == null)
