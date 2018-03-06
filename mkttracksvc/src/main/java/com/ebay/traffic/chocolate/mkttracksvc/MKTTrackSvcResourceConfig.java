@@ -13,9 +13,9 @@ import java.util.Set;
 @Configuration
 @ApplicationPath("/tracksvc/v1")
 public class MKTTrackSvcResourceConfig extends Application {
-  @Autowired
-  @Qualifier("ets-feature")
-  private Feature etsFeature;
+//  @Autowired
+//  @Qualifier("ets-feature")
+//  private Feature etsFeature;
 
   @Override
   public Set<Class<?>> getClasses() {
@@ -27,7 +27,7 @@ public class MKTTrackSvcResourceConfig extends Application {
   @Override
   public Set<Object> getSingletons() {
     Set<Object> providers = new LinkedHashSet<Object>();
-    providers.add(etsFeature);
+//    providers.add(etsFeature);
     return providers;
   }
 
