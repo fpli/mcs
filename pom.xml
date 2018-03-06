@@ -42,6 +42,7 @@
     <module>kafka-common</module>
     <module>listener</module>
     <module>filter</module>
+    <module>spark-nrt</module>
     <module>ingester</module>
     <module>capping-rules</module>
     <module>tools</module>
