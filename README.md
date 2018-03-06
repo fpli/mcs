@@ -10,7 +10,7 @@ The system has two outputs, one is real-time events in Rheos Kafka, another is 1
 ### Data Quality
 * **Zero data loss**
 * **Zero duplication**
-The above two are our goals. The system leverages Kafka's at-least-once feature to guarantee zero data loss, each component in the system will update the consumer's offset only if it has delivered the event messages to next persistence storage. The spark NRT job will do de-dupe for the events before persistence on Hadoop.<br />
+<br />The above two are our goals. The system leverages Kafka's at-least-once feature to guarantee zero data loss, each component in the system will update the consumer's offset only if it has delivered the event messages to next persistence storage. The spark NRT job will do de-dupe for the events before persistence on Hadoop.<br />
 Currently we use Rheos Kafka to store the final real-time events, it uses 0.10.0.x version of Kafka which doesn't support exactly-once, so "Zero duplication" is only for batch events on Apollo Hadoop. One thing needs to mention, currently the rapto.io instances may be unstable occasionally, or due to redeploy listener services, few events in buffer of the Kafka producer will lose, the percentage is quite small, < 0.5%, We will enhance this in future version.
 
 ### System Availability, Scalability
