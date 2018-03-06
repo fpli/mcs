@@ -53,19 +53,20 @@ public class DriverIdTest {
      public void testDriverIdParseFromHost() {
         // String positions
         final int driverIdRange = Long.valueOf(SessionId.MAX_DRIVER_ID).intValue() + 1;
-        System.out.println(DriverId.getDriverIdFromIp("7777-localhost", 1l));
-        System.out.println(DriverId.getDriverIdFromIp("7777", 1l));
-        System.out.println(DriverId.getDriverIdFromIp("localhost-7777-localhost", 1l));
-        System.out.println(DriverId.getDriverIdFromIp("localhost7777", 1l));
-        System.out.println(DriverId.getDriverIdFromIp("localhost1-7777", 1l));
-        System.out.println(DriverId.getDriverIdFromIp("localhost7777-1", 1l));
+        //System.out.println(DriverId.getDriverIdFromIp("7777-localhost", 1l));
+        assertEquals(97, DriverId.getDriverIdFromIp("7777-localhost", 1l));
+        assertEquals(97, DriverId.getDriverIdFromIp("7777", 1l));
+        assertEquals(97, DriverId.getDriverIdFromIp("localhost-7777-localhost", 1l));
+        assertEquals(97, DriverId.getDriverIdFromIp("localhost7777", 1l));
+        assertEquals(97, DriverId.getDriverIdFromIp("localhost1-7777", 1l));
+        assertEquals(97, DriverId.getDriverIdFromIp("localhost7777-1", 1l));
 
         // Have a mixture of numbers and sequencing
-        System.out.println(DriverId.getDriverIdFromIp("localhost7777-1-93423421142342423l-23423421423142342423", 1l));
-        System.out.println(DriverId.getDriverIdFromIp("localhost93423421142342423-7777-1-l-23423421423142342423", 1l));
-        System.out.println(DriverId.getDriverIdFromIp("localhost7777-1-23423421423142342423-93423421142342423", 1l));
-        System.out.println(DriverId.getDriverIdFromIp("localhost7777-93423421142342423-1-93423421142342423l-23423421423142342423", 1l));
-        System.out.println(DriverId.getDriverIdFromIp("93423421142342423localhost7777-1-23423421423142342423", 1l));
+        assertEquals(23, DriverId.getDriverIdFromIp("localhost7777-1-93423421142342423l-23423421423142342423", 1l));
+        assertEquals(23, DriverId.getDriverIdFromIp("localhost93423421142342423-7777-1-l-23423421423142342423", 1l));
+        assertEquals(23, DriverId.getDriverIdFromIp("localhost7777-1-23423421423142342423-93423421142342423", 1l));
+        assertEquals(23, DriverId.getDriverIdFromIp("localhost7777-93423421142342423-1-93423421142342423l-23423421423142342423", 1l));
+        assertEquals(23, DriverId.getDriverIdFromIp("93423421142342423localhost7777-1-23423421423142342423", 1l));
 
     }
 }
