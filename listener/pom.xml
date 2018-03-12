@@ -6,6 +6,7 @@
         <groupId>com.ebay.traffic</groupId>
         <artifactId>chocolate</artifactId>
         <version>3.0-SNAPSHOT</version>
+		<relativePath>..</relativePath>
     </parent>
     <groupId>com.ebay.traffic</groupId>
     <artifactId>chocolate-listener</artifactId>
