@@ -187,7 +187,18 @@
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>
-        </plugin>
+          <version>1.4.1.ebay-SNAPSHOT</version>
+<!--           <executions>
+	          <execution>
+		          <goals>
+		          	<goal>repackage</goal>
+		          </goals>
+		          <configuration>
+		          	<classifier>exec</classifier>
+		          </configuration>
+	          </execution>
+          </executions> -->
+        </plugin> 
         <!-- raptor.io plugin -->
         <plugin>
           <groupId>com.ebay.raptor.build</groupId>
