@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.cappingrules
 
-import com.ebay.traffic.chocolate.BaseFunSuite
+import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import org.apache.hadoop.hbase._
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable

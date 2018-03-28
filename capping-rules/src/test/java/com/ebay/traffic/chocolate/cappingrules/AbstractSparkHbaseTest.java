@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
-import com.ebay.traffic.chocolate.BaseFunSuite;
+import com.ebay.traffic.chocolate.spark.BaseFunSuite;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;

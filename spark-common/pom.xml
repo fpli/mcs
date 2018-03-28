@@ -40,7 +40,34 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.ebay.traffic</groupId>
+      <artifactId>chocolate-kafkacommon</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+      <version>${kafka.version}</version>
+    </dependency>
+
+    <!-- test -->
+    <dependency>
+      <groupId>com.ebay.traffic</groupId>
+      <artifactId>chocolate-kafkacommon</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+
     <!-- Test -->
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka_2.11</artifactId>
+      <version>${kafka.version}</version>
+      <scope>test</scope>
+    </dependency>
 
   </dependencies>
 
@@ -48,7 +75,7 @@
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
     <outputDirectory>target/classes</outputDirectory>
-    <testOutputDirectory>target/test-classes</testOutputDirectory>
+    <testOutputDirectory>${project.basedir}/target/test-classes</testOutputDirectory>
     <resources>
       <resource>
         <directory>${project.basedir}/src/main/resources</directory>

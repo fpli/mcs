@@ -42,15 +42,15 @@ public class MiniKafkaCluster {
 
   private final String dir;
 
-  MiniKafkaCluster() {
+  public MiniKafkaCluster() {
     this(DEFAULT_BROKERS, null);
   }
 
-  MiniKafkaCluster(MiniZookeeperCluster zookeeper) {
+  public MiniKafkaCluster(MiniZookeeperCluster zookeeper) {
     this(DEFAULT_BROKERS, zookeeper);
   }
 
-  MiniKafkaCluster(int brokerNum, MiniZookeeperCluster zookeeper) {
+  public MiniKafkaCluster(int brokerNum, MiniZookeeperCluster zookeeper) {
     assert brokerNum > 0;
 
     this.brokerNum = brokerNum;
@@ -104,7 +104,7 @@ public class MiniKafkaCluster {
    *
    * @throws IOException
    */
-  void shutdown() throws IOException {
+  public void shutdown() throws IOException {
     assert started;
     assert !shutdown;
     shutdown = true;

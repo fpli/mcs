@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.cappingrules;
 
-import com.ebay.traffic.chocolate.BaseSparkJob;
+import com.ebay.traffic.chocolate.spark.BaseSparkJob;
 import com.google.protobuf.ServiceException;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;

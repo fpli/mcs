@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate
+package com.ebay.traffic.chocolate.spark
 
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.rdd.RDD
@@ -167,13 +167,30 @@ abstract class BaseSparkJob(val jobName: String,
   def readFilesAsDF(inputPath: String, schema: StructType = null,
                     inputFormat: String = "parquet", delimiter: String = "del",
                     broadcastHint: Boolean = false): DataFrame = {
+    readFilesAsDFEx(Array(inputPath), schema, inputFormat, delimiter, broadcastHint)
+  }
+
+  /**
+    * Read table files as Dataframe.
+    *
+    * @param inputPaths    the input paths of table files
+    * @param schema        the dataframe schema of table
+    * @param inputFormat   the input file format, it can be "parquet", "orc", "csv", "sequence"
+    * @param delimiter     the delimiter for fields in the file,
+    *                      the value can be one of 'bel', 'tab', 'space', 'comma', 'del'.
+    * @param broadcastHint whether to broadcast the dataframe
+    * @return the dataframe
+    */
+  def readFilesAsDFEx(inputPaths: Array[String], schema: StructType = null,
+                    inputFormat: String = "parquet", delimiter: String = "del",
+                    broadcastHint: Boolean = false): DataFrame = {
     require(delimiterMap.contains(delimiter),
       "the value of delimiter can be one of 'bel', 'tab', 'space', 'comma', 'del'")
     val df = inputFormat match {
-      case "parquet" => spark.read.parquet(inputPath)
+      case "parquet" => spark.read.parquet(inputPaths: _*)
       case "orc" => {
         spark.conf.set("spark.sql.orc.filterPushdown", "true")
-        spark.read.orc(inputPath)
+        spark.read.orc(inputPaths: _*)
       }
 
       /**
@@ -183,12 +200,12 @@ abstract class BaseSparkJob(val jobName: String,
         * .load(inputPath)
         */
       case "csv" => {
-        spark.createDataFrame(sc.textFile(inputPath)
+        spark.createDataFrame(sc.textFile(inputPaths.mkString(","))
           .map(asRow(_, delimiterMap(delimiter)))
           .map(toDfRow(_, schema)).filter(_ != null), schema)
       }
       case "sequence" => {
-        spark.createDataFrame(sc.sequenceFile[String, String](inputPath)
+        spark.createDataFrame(sc.sequenceFile[String, String](inputPaths.mkString(","))
           .values.map(asRow(_, delimiterMap(delimiter)))
           .map(toDfRow(_, schema)).filter(_ != null), schema)
       }

@@ -22,7 +22,7 @@ public class TestHelper {
    * Create a temp directory for test
    * The temp directory will be deleted when test finished.
    *
-   * The temp directory is a random directory, e.g. feeds-ad1sdxzcvasdfxx
+   * The temp directory is a random directory, e.g. chocolate-ad1sdxzcvasdfxx
    *
    * @param root       the root path for the temp directory
    * @param namePrefix the prefix for the random temp file
@@ -47,7 +47,7 @@ public class TestHelper {
    * Create a temp directory for test
    * The temp directory will be deleted when test finished.
    *
-   * The temp directory is a random directory, e.g. feeds-ad1sdxzcvasdfxx
+   * The temp directory is a random directory, e.g. chocolate-ad1sdxzcvasdfxx
    *
    * @return java.io.File of the temp directory
    */
@@ -59,7 +59,7 @@ public class TestHelper {
    * Create a temp directory for test
    * The temp directory will be deleted when test finished.
    *
-   * The temp directory is a random directory, e.g. feeds-ad1sdxzcvasdfxx
+   * The temp directory is a random directory, e.g. chocolate-ad1sdxzcvasdfxx
    *
    * @param namePrefix the prefix for the random temp file
    * @return java.io.File of the temp directory
@@ -150,6 +150,23 @@ public class TestHelper {
   /**
    * Create filter message
    *
+   * @param snapshotId the snapshot ID
+   * @param publisherId the publisher ID
+   * @param campaignId the campaign ID
+   * @param timestamp the timestamp
+   * @return filter message
+   */
+  public static FilterMessage newFilterMessage(long snapshotId,
+                                               long publisherId,
+                                               long campaignId,
+                                               long timestamp) {
+    return newFilterMessage(ChannelType.EPN, ChannelAction.CLICK,
+            snapshotId, publisherId, campaignId, timestamp);
+  }
+
+  /**
+   * Create filter message
+   *
    * @param channelType channel type
    * @param channelAction channel action
    * @param snapshotId the snapshot ID
@@ -162,9 +179,30 @@ public class TestHelper {
                                                long snapshotId,
                                                long publisherId,
                                                long campaignId) {
+    return newFilterMessage(channelType, channelAction, snapshotId,
+            publisherId, campaignId, System.currentTimeMillis());
+  }
+
+  /**
+   * Create filter message
+   *
+   * @param channelType channel type
+   * @param channelAction channel action
+   * @param snapshotId the snapshot ID
+   * @param publisherId the publisher ID
+   * @param campaignId the campaign ID
+   * @param timestamp the timestamp
+   * @return filter message
+   */
+  public static FilterMessage newFilterMessage(ChannelType channelType,
+                                               ChannelAction channelAction,
+                                               long snapshotId,
+                                               long publisherId,
+                                               long campaignId,
+                                               long timestamp) {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
-    message.setTimestamp(System.currentTimeMillis());
+    message.setTimestamp(timestamp);
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
     message.setRequestHeaders("");

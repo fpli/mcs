@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate
+package com.ebay.traffic.chocolate.spark
 
 import java.io.{File, IOException}
 import java.net.{URL, URLClassLoader}
@@ -37,14 +37,14 @@ abstract class BaseFunSuite extends FunSuite with BeforeAndAfterAll {
     * Create a temp directory for test
     * The temp directory will be deleted when test finished.
     *
-    * The temp directory is a random directory, e.g. feeds-ad1sdxzcvasdfxx
+    * The temp directory is a random directory, e.g. chocolate-ad1sdxzcvasdfxx
     *
     * @param root       the root path for the temp directory
     * @param namePrefix the prefix for the random temp file
     * @return java.io.File of the temp directory
     */
   final def createTempDir(root: String = System.getProperty("java.io.tmpdir"),
-                          namePrefix: String = "feeds"): File = {
+                          namePrefix: String = "chocolate"): File = {
     val dir = createDirectory(root, namePrefix)
     sys.addShutdownHook(deleteRecursively(dir))
     dir
@@ -54,18 +54,18 @@ abstract class BaseFunSuite extends FunSuite with BeforeAndAfterAll {
     * Create a temp directory for test
     * The temp directory will be deleted when test finished.
     *
-    * The temp directory is a random directory, e.g. feeds-ad1sdxzcvasdfxx
+    * The temp directory is a random directory, e.g. chocolate-ad1sdxzcvasdfxx
     *
     * @param root       the root path for the temp directory
     * @param namePrefix the prefix for the random temp file
     * @return java.io.File of the temp directory
     */
   final def createTempPath(root: String = System.getProperty("java.io.tmpdir"),
-                           namePrefix: String = "feeds"): String = {
+                           namePrefix: String = "chocolate"): String = {
     createTempDir(root, namePrefix).getCanonicalPath
   }
 
-  private def createDirectory(root: String, namePrefix: String = "feeds"): File = {
+  private def createDirectory(root: String, namePrefix: String = "chocolate"): File = {
     var attempts = 0
     val maxAttempts = 10
     var dir: File = null
