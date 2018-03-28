@@ -15,7 +15,7 @@
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.DISPLAY</name>
-    <value>qa_listener_display</value>
+    <value>qa_listener_display2</value>
     <description>Kafka topic for display channel to publish.</description>
   </property>
   <!-- Kafka producer end -->
