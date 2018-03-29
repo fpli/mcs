@@ -1,10 +1,10 @@
 #!/bin/bash
 # run spark job on YARN - DedupeAndSink
 
-usage="Usage: dedupeAndSink.sh [channel] [kafkaTopic] [workDir] [outputDir] [partitions]"
+usage="Usage: dedupeAndSink.sh [channel] [kafkaTopic] [workDir] [outputDir]"
 
 # if no args specified, show usage
-if [ $# -le 4 ]; then
+if [ $# -le 3 ]; then
   echo $usage
   exit 1
 fi
@@ -18,7 +18,6 @@ CHANNEL=$1
 KAFKA_TOPIC=$2
 WORK_DIR=$3
 OUTPUT_DIR=$4
-PARTITIONS=$5
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=3
@@ -51,4 +50,5 @@ ${SPARK_HOME}/bin/spark-submit \
       --kafkaTopic ${KAFKA_TOPIC} \
       --workDir "${WORK_DIR}" \
       --outputDir ${OUTPUT_DIR} \
-      --partitions "${PARTITIONS}"
+      --partitions "3" \
+      --maxConsumeSize "3000"

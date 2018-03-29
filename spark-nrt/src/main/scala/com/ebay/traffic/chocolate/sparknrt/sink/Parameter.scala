@@ -11,7 +11,8 @@ case class Parameter(appName: String = "DedupeAndSink",
                      kafkaTopic: String = "",
                      workDir: String = "",
                      outputDir: String = "",
-                     partitions: Int = 3)
+                     partitions: Int = 3,
+                     maxConsumeSize: Long = 100000000l)
 
 object Parameter {
 
@@ -52,6 +53,11 @@ object Parameter {
       .optional
       .valueName("partitions")
       .action((cont, param) => param.copy(partitions = cont))
+
+    opt[Long]("maxConsumeSize")
+      .optional
+      .valueName("maxConsumeSize")
+      .action((cont, param) => param.copy(maxConsumeSize = cont))
   }
 
   def apply(args: Array[String]): Parameter = parser.parse(args, Parameter()) match {

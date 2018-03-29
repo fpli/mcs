@@ -42,6 +42,8 @@ class DedupeAndSink(params: Parameter)
     properties
   }
 
+  lazy val DATE_COL = "date"
+
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
   def getDateString(timestamp: Long): String = {
@@ -62,13 +64,13 @@ class DedupeAndSink(params: Parameter)
     new SecureRandom()
   }
 
-  lazy val baseDir = params.workDir + "/dedupe/"
+  lazy val baseDir = params.workDir + "/dedupe/" + params.channel + "/"
   lazy val baseTempDir = baseDir + "/tmp/"
   lazy val sparkDir = baseDir + "/spark/"
   lazy val outputDir = params.outputDir
 
   @transient lazy val metadata = {
-    Metadata(params.workDir)
+    Metadata(params.workDir, params.channel)
   }
 
   val SNAPSHOT_ID_COL = "snapshot_id"
@@ -77,11 +79,12 @@ class DedupeAndSink(params: Parameter)
 
   override def run() = {
 
-    // clean date under base dir
+    // clean base dir
     fs.delete(new Path(baseDir), true)
     fs.mkdirs(new Path(baseDir))
 
-    val kafkaRDD = new KafkaRDD[java.lang.Long, FilterMessage](sc, params.kafkaTopic, properties)
+    val kafkaRDD = new KafkaRDD[java.lang.Long, FilterMessage](
+      sc, params.kafkaTopic, properties, params.maxConsumeSize)
 
     val dates =
     kafkaRDD.mapPartitions(iter => {
@@ -91,7 +94,7 @@ class DedupeAndSink(params: Parameter)
       // output messages to files
       while (iter.hasNext) {
         val message = iter.next().value()
-        val date = getDateString(message.getTimestamp) // get the event date
+        val date = DATE_COL + "=" + getDateString(message.getTimestamp) // get the event date
         var writer = writers.get(date)
         if (writer == null) {
           val file = "/" + date + "/" + Math.abs(rand.nextLong()) + ".parquet"
@@ -140,6 +143,9 @@ class DedupeAndSink(params: Parameter)
 
     // commit offsets of kafka RDDs
     kafkaRDD.commitOffsets()
+
+    // delete the dir
+    fs.delete(new Path(baseDir), true)
   }
 
   /**

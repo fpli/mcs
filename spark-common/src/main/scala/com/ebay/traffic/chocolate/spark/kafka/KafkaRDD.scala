@@ -15,11 +15,9 @@ import org.apache.spark.{Partition, SparkContext, TaskContext}
 class KafkaRDD[K, V](
                       @transient val sc: SparkContext,
                       val topic: String,
-                      val kafkaProperties: util.Properties
+                      val kafkaProperties: util.Properties,
+                      val maxConsumeSize: Long = 100000000l // maximum number of events can be consumed in one task: 100M
                     ) extends RDD[ConsumerRecord[K, V]](sc, Nil) {
-  // maximum number of events can be consumed in one task: 100M
-  val MAX_CONSUME_SIZE = 100000000l
-
   val POLL_STEP_MS = 100
 
   @transient lazy val consumer = {
@@ -49,7 +47,7 @@ class KafkaRDD[K, V](
       val tp = endOffset.getKey
       val position = consumer.position(tp)
       log.info(s"###topic-partition: ${tp}, position: ${position}")
-      val until = Math.min(endOffset.getValue, position + MAX_CONSUME_SIZE)
+      val until = Math.min(endOffset.getValue, position + maxConsumeSize)
       untilOffsets.put(endOffset.getKey, new OffsetAndMetadata(until))
     }
     consumer.unsubscribe()

@@ -12,10 +12,10 @@ import org.apache.hadoop.fs.Path
 /**
   * Created by yliu29 on 3/23/18.
   */
-class Metadata(workDir: String) {
+class Metadata(workDir: String, channel: String) {
 
-  lazy val DEDUPE_COMP_META = workDir + "/meta/dedupe_comp.meta"
-  lazy val DEDUPE_OUTPUT_META_DIR = workDir + "/meta/output/"
+  lazy val DEDUPE_COMP_META = workDir + "/meta/" + channel + "/dedupe_comp.meta"
+  lazy val DEDUPE_OUTPUT_META_DIR = workDir + "/meta/" + channel + "/output/"
   lazy val DEDUPE_OUTPUT_META_PREFIX =  "dedupe_output_"
 
   lazy val jsonMapper = new ObjectMapper()
@@ -108,8 +108,8 @@ class Metadata(workDir: String) {
 
 object Metadata {
 
-  def apply(workDir: String): Metadata = {
-    new Metadata(workDir)
+  def apply(workDir: String, channel: String): Metadata = {
+    new Metadata(workDir, channel)
   }
 
 }
