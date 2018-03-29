@@ -9,9 +9,9 @@ case class Parameter(appName: String = "DedupeAndSink",
                      mode: String = "yarn",
                      channel: String = "",
                      kafkaTopic: String = "",
-                     tagFile: String = "",
                      workDir: String = "",
-                     outputDir: String = "")
+                     outputDir: String = "",
+                     partitions: Int = 3)
 
 object Parameter {
 
@@ -38,11 +38,6 @@ object Parameter {
       .valueName("kafka topic")
       .action((cont, param) => param.copy(kafkaTopic = cont))
 
-    opt[String]("tagFile")
-      .required
-      .valueName("tag file")
-      .action((cont, param) => param.copy(tagFile = cont))
-
     opt[String]("workDir")
       .required
       .valueName("workDir")
@@ -52,6 +47,11 @@ object Parameter {
       .required
       .valueName("outputDir")
       .action((cont, param) => param.copy(outputDir = cont))
+
+    opt[Int]("partitions")
+      .optional
+      .valueName("partitions")
+      .action((cont, param) => param.copy(partitions = cont))
   }
 
   def apply(args: Array[String]): Parameter = parser.parse(args, Parameter()) match {

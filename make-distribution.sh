@@ -96,23 +96,35 @@ mkdir -p "$DISTDIR"
 echo "Chocolate $VERSION$GITREVSTRING built for Spark $SPARK_VERSION" > "$DISTDIR/RELEASE"
 echo "Build flags: $@" >> "$DISTDIR/RELEASE"
 
+# Chocolate Spark NRT
+CHOCOLATE_SPARK_NRT_BIN="$DISTDIR/chocolate-sparknrt"
+mkdir -p "$CHOCOLATE_SPARK_NRT_BIN/lib"
+cp "$CHOCOLATE_HOME"/spark-nrt/target/chocolate-spark-nrt-*-fat.jar "$CHOCOLATE_SPARK_NRT_BIN"/lib/
+
+mkdir -p "$CHOCOLATE_SPARK_NRT_BIN/conf"
+cp -r "$CHOCOLATE_HOME"/spark-nrt/src/main/conf/* "$CHOCOLATE_SPARK_NRT_BIN"/conf
+
+mkdir -p "$CHOCOLATE_SPARK_NRT_BIN/bin"
+cp -r "$CHOCOLATE_HOME"/spark-common/src/main/bin/* "$CHOCOLATE_SPARK_NRT_BIN"/bin
+cp -r "$CHOCOLATE_HOME"/spark-nrt/src/main/bin/* "$CHOCOLATE_SPARK_NRT_BIN"/bin
+
 # Chocolate Capping Rule
 CHOCOLATE_CAPPING_RULE_BIN="$DISTDIR/chocolate-cappingrule"
 mkdir -p "$CHOCOLATE_CAPPING_RULE_BIN/lib"
 cp "$CHOCOLATE_HOME"/capping-rules/target/chocolate-capping-rules-*-fat.jar "$CHOCOLATE_CAPPING_RULE_BIN"/lib/
 
 #mkdir -p "$CHOCOLATE_CAPPING_RULE_BIN/conf"
-#cp -r "$CHOCOLATE_HOME"/common/src/main/conf/* "$CHOCOLATE_CAPPING_RULE_BIN"/conf
+#cp -r "$CHOCOLATE_HOME"/spark-common/src/main/conf/* "$CHOCOLATE_CAPPING_RULE_BIN"/conf
 #cp -r "$CHOCOLATE_HOME"/capping-rules/src/main/conf/* "$CHOCOLATE_CAPPING_RULE_BIN"/conf
 
 mkdir -p "$CHOCOLATE_CAPPING_RULE_BIN/bin"
-cp -r "$CHOCOLATE_HOME"/common/src/main/bin/* "$CHOCOLATE_CAPPING_RULE_BIN"/bin
+cp -r "$CHOCOLATE_HOME"/spark-common/src/main/bin/* "$CHOCOLATE_CAPPING_RULE_BIN"/bin
 cp -r "$CHOCOLATE_HOME"/capping-rules/src/main/bin/* "$CHOCOLATE_CAPPING_RULE_BIN"/bin
 
 # Chocolate Flume Ingester
 CHOCOLATE_INGESTER_BIN="$DISTDIR/ingester"
 mkdir -p "$CHOCOLATE_INGESTER_BIN/lib"
-cp "$CHOCOLATE_HOME"/ingester/target/ingester-*-fat.jar "$CHOCOLATE_INGESTER_BIN"/lib/
+cp "$CHOCOLATE_HOME"/ingester/target/chocolate-ingester-*-fat.jar "$CHOCOLATE_INGESTER_BIN"/lib/
 
 mkdir -p "$CHOCOLATE_INGESTER_BIN/bin"
 mkdir -p "$CHOCOLATE_INGESTER_BIN/conf"

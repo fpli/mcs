@@ -265,7 +265,7 @@ public class BasicRulesTest {
     assertEquals(1.0f, rule.test(req), 0.001);
     req.setSourceIP("204.79.197.200");
     req.setReferrerDomain("chocolate-qa-slc-1-4595.slc01.dev.ebayc3.com");
-    assertEquals(1.0f, rule.test(req), 0.001);
+    assertEquals(0.0f, rule.test(req), 0.001);
     req.setReferrerDomain("localhost");
     assertEquals(1.0f, rule.test(req), 0.001);
     
@@ -280,7 +280,7 @@ public class BasicRulesTest {
     assertEquals(2.0f, rule.test(req), 0.001);
     req.setSourceIP("204.79.197.200");
     req.setReferrerDomain("chocolate-qa-slc-1-4595.slc01.dev.ebayc3.com");
-    assertEquals(2.0f, rule.test(req), 0.001);
+    assertEquals(0.0f, rule.test(req), 0.001);
     req.setReferrerDomain("localhost");
     assertEquals(2.0f, rule.test(req), 0.001);
   }

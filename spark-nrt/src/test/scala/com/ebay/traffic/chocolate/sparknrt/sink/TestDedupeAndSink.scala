@@ -24,7 +24,6 @@ class TestDedupeAndSink extends BaseFunSuite {
     "--mode", "local[8]",
     "--channel", "EPN",
     "--kafkaTopic", topic,
-    "--tagFile", "",
     "--workDir", workDir,
     "--outputDir", outputDir
   )
@@ -74,17 +73,20 @@ class TestDedupeAndSink extends BaseFunSuite {
     job.run()
 
     val metadata = Metadata(workDir)
-    val dcm = metadata.readDedupeCompMeta
-    assert (dcm.contains("2018-01-01"))
-    assert (dcm.contains("2018-01-02"))
+    val dom = metadata.readDedupeOutputMeta
+    assert (dom.length == 1)
+    assert (dom(0)._2.contains("2018-01-01"))
+    assert (dom(0)._2.contains("2018-01-02"))
 
-    val df1 = job.readFilesAsDFEx(dcm.get("2018-01-01").get)
+    val df1 = job.readFilesAsDFEx(dom(0)._2.get("2018-01-01").get)
     df1.show()
     assert (df1.count() == 2)
 
-    val df2 = job.readFilesAsDFEx(dcm.get("2018-01-02").get)
+    val df2 = job.readFilesAsDFEx(dom(0)._2.get("2018-01-02").get)
     df2.show()
     assert (df2.count() == 1)
+
+    metadata.deleteDedupeOutputMeta(dom(0)._1)
 
 
     val message4 = sendFilterMessage(4L, 44L, 444L, "2018-01-01")
@@ -96,16 +98,19 @@ class TestDedupeAndSink extends BaseFunSuite {
     job.run()
 
     val metadata1 = Metadata(workDir)
-    val dcm1 = metadata1.readDedupeCompMeta
-    assert (dcm1.contains("2018-01-01"))
-    assert (dcm1.contains("2018-01-02"))
+    val dom1 = metadata1.readDedupeOutputMeta
+    assert (dom1.length == 1)
+    assert (dom1(0)._2.contains("2018-01-01"))
+    assert (dom1(0)._2.contains("2018-01-02"))
 
-    val df11 = job.readFilesAsDFEx(dcm1.get("2018-01-01").get)
+    val df11 = job.readFilesAsDFEx(dom1(0)._2.get("2018-01-01").get)
     df11.show()
     assert (df11.count() == 1)
 
-    val df22 = job.readFilesAsDFEx(dcm1.get("2018-01-02").get)
+    val df22 = job.readFilesAsDFEx(dom1(0)._2.get("2018-01-02").get)
     df22.show()
     assert (df22.count() == 1)
+
+    metadata.deleteDedupeOutputMeta(dom1(0)._1)
   }
 }

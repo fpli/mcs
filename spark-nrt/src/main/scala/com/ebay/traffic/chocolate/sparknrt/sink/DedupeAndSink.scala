@@ -136,6 +136,7 @@ class DedupeAndSink(params: Parameter)
     val metaFiles = new MetaFiles(dates.map(date => dedupe(date)))
 
     metadata.writeDedupeCompMeta(metaFiles)
+    metadata.writeDedupeOutputMeta(metaFiles)
 
     // commit offsets of kafka RDDs
     kafkaRDD.commitOffsets()
@@ -160,7 +161,7 @@ class DedupeAndSink(params: Parameter)
     }
 
     // reduce the number of file
-    df = df.repartition(3)
+    df = df.repartition(params.partitions)
 
     saveDFToFiles(df, sparkDir)
 

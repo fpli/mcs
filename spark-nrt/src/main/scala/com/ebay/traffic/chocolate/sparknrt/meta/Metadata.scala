@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.meta
 
 import java.io.ByteArrayOutputStream
+import java.io.OutputStream
 
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -14,7 +15,8 @@ import org.apache.hadoop.fs.Path
 class Metadata(workDir: String) {
 
   lazy val DEDUPE_COMP_META = workDir + "/meta/dedupe_comp.meta"
-  //lazy val DEDUPE_OUTPUT_META = workDir + "/meta/dedupe_output.meta"
+  lazy val DEDUPE_OUTPUT_META_DIR = workDir + "/meta/output/"
+  lazy val DEDUPE_OUTPUT_META_PREFIX =  "dedupe_output_"
 
   lazy val jsonMapper = new ObjectMapper()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -28,6 +30,31 @@ class Metadata(workDir: String) {
     val fs = FileSystem.get(hadoopConf)
     sys.addShutdownHook(fs.close())
     fs
+  }
+
+  /**
+    * Dedupe output meta
+    */
+  def readDedupeOutputMeta(): Array[(String, Map[String, Array[String]])] = {
+    val status = fs.listStatus(new Path(DEDUPE_OUTPUT_META_DIR))
+    status.map(s => s.getPath).filter(path => path.getName.startsWith(DEDUPE_OUTPUT_META_PREFIX))
+      .map(path => {
+        val file = path.toString
+        val content = readFileContent(file)
+        val metaFiles = readMetaFiles(content).metaFiles.map(dateFiles => {
+          (dateFiles.date, dateFiles.files)
+        }).toMap
+        (file, metaFiles)
+      })
+  }
+
+  def writeDedupeOutputMeta(dedupeOutputMeta: MetaFiles) = {
+    val time = System.currentTimeMillis()
+    writeMetaFiles(dedupeOutputMeta, DEDUPE_OUTPUT_META_DIR + DEDUPE_OUTPUT_META_PREFIX + time + ".meta")
+  }
+
+  def deleteDedupeOutputMeta(metaFile: String) = {
+    fs.delete(new Path(metaFile), true)
   }
 
   /**
@@ -73,7 +100,7 @@ class Metadata(workDir: String) {
   }
 
   private def writeMetaFiles(metaFiles: MetaFiles, file: String) = {
-    val out = fs.create(new Path(file), true)
+    val out: OutputStream = fs.create(new Path(file), true)
     jsonMapper.writeValue(out, metaFiles)
     out.close()
   }
