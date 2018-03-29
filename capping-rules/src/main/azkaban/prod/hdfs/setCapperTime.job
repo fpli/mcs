@@ -1,2 +1,0 @@
-type=command
-command=bash -c "date -d '1 days ago' +%Y%m%d235959 > rundate-hdfs.text"
