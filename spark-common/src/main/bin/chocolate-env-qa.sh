@@ -20,7 +20,7 @@ fi
 SPARK_EVENTLOG_DIR=hdfs://choco-2024312.lvs02.dev.ebayc3.com/app-logs/spark/logs
 HISTORY_SERVER=http://choco-2024115.lvs02.dev.ebayc3.com:18081
 
-FILES="file:///${SPARK_CONF_DIR}/hbase-site.xml,file:///${HADOOP_CONF_DIR}/ssl-client.xml"
+FILES="file:///${HADOOP_CONF_DIR}/ssl-client.xml"
 
 QUEUE_NAME=default
 SPARK_YARN_MAX_APP_ATTEMPTS=3

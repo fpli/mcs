@@ -6,7 +6,7 @@ if [ -z "${HADOOP_HOME}" ]; then
 fi
 
 if [ -z "${HADOOP_CONF_DIR}" ]; then
-  export HADOOP_CONF_DIR=/usr/hdp/current/hadoop-client/etc/hadoop/
+  export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop/
 fi
 
 if [ -z "${SPARK_HOME}" ]; then
@@ -14,13 +14,13 @@ if [ -z "${SPARK_HOME}" ]; then
 fi
 
 if [ -z "${SPARK_CONF_DIR}" ]; then
-  export SPARK_CONF_DIR=/apache/spark/conf/
+  export SPARK_CONF_DIR=${SPARK_HOME}/conf/
 fi
 
 SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/spark/logs
 HISTORY_SERVER=http://lvschocolatepits-1583698.stratus.lvs.ebay.com:18080/
 
-FILES="file:///${SPARK_CONF_DIR}/hbase-site.xml,file:///${HADOOP_CONF_DIR}/ssl-client.xml"
+FILES="file:///${HADOOP_CONF_DIR}/ssl-client.xml"
 
 QUEUE_NAME=default
 SPARK_YARN_MAX_APP_ATTEMPTS=3

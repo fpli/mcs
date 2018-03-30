@@ -10,9 +10,9 @@ if [ $# -le 3 ]; then
 fi
 
 bin=`dirname "$0"`
-bin=`cd "../$bin">/dev/null; pwd`
+bin=`cd "$bin">/dev/null; pwd`
 
-. ${bin}/chocolate-env.sh
+. ${bin}/../chocolate-env.sh
 
 CHANNEL=$1
 KAFKA_TOPIC=$2
@@ -26,7 +26,7 @@ EXECUTOR_CORES=4
 
 JOB_NAME="DedupeAndSink"
 
-for f in $(find $bin/../conf/prod -name '*');
+for f in $(find $bin/../../conf/prod -name '*');
 do
   FILES=${FILES},file://$f;
 done
@@ -43,8 +43,8 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=8192 \
-    ${bin}/../lib/chocolate-spark-nrt-*.jar \
-      --jobName ${JOB_NAME} \
+    ${bin}/../../lib/chocolate-spark-nrt-*.jar \
+      --appName ${JOB_NAME} \
       --mode yarn \
       --channel ${CHANNEL} \
       --kafkaTopic ${KAFKA_TOPIC} \

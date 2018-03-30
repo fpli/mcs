@@ -31,7 +31,6 @@
     <zookeeper.version>3.4.6</zookeeper.version>
     <curator.version>2.7.1</curator.version>
     <couchbase.client.version>2.5.3</couchbase.client.version>
-    <hbase.version>1.1.2</hbase.version>
     <rheos.version>0.0.7-SNAPSHOT</rheos.version>
     <jackson.version>2.9.5</jackson.version>
     <jacoco.dump.skip>true</jacoco.dump.skip>
@@ -105,18 +104,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.apache.hbase</groupId>
-        <artifactId>hbase-client</artifactId>
-        <version>${hbase.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.hbase</groupId>
-        <artifactId>hbase-server</artifactId>
-        <version>${hbase.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.apache.kafka</groupId>
         <artifactId>kafka_2.10</artifactId>
         <version>${kafka.version}</version>
@@ -132,13 +119,6 @@
         <groupId>com.couchbase.client</groupId>
         <artifactId>java-client</artifactId>
         <version>${couchbase.client.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.hbase</groupId>
-        <artifactId>hbase-testing-util</artifactId>
-        <version>${hbase.version}</version>
-        <scope>test</scope>
       </dependency>
 
       <dependency>
@@ -367,7 +347,17 @@
             </goals>
             <configuration>
               <shadedArtifactAttached>true</shadedArtifactAttached>
-              <shadedClassifierName>fat</shadedClassifierName>>
+              <shadedClassifierName>fat</shadedClassifierName>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
           </execution>
         </executions>
