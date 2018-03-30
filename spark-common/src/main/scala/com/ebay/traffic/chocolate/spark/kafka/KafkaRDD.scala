@@ -46,8 +46,8 @@ class KafkaRDD[K, V](
       val endOffset = endOffsetIter.next()
       val tp = endOffset.getKey
       val position = consumer.position(tp)
-      log.info(s"###topic-partition: ${tp}, position: ${position}")
       val until = Math.min(endOffset.getValue, position + maxConsumeSize)
+      log.info(s"###topic-partition: ${tp}, position: ${position}, until: ${until}")
       untilOffsets.put(endOffset.getKey, new OffsetAndMetadata(until))
     }
     consumer.unsubscribe()

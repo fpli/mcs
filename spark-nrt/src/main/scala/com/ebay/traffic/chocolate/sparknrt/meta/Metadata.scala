@@ -45,7 +45,10 @@ class Metadata(workDir: String, channel: String) {
           (dateFiles.date, dateFiles.files)
         }).toMap
         (file, metaFiles)
-      })
+      }).sortBy(e => {
+      val name = e._1.substring(e._1.lastIndexOf("/") + 1)
+      name.substring(DEDUPE_OUTPUT_META_PREFIX.length, name.lastIndexOf(".")).toLong
+    })
   }
 
   def writeDedupeOutputMeta(dedupeOutputMeta: MetaFiles) = {

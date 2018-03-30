@@ -79,9 +79,14 @@ class DedupeAndSink(params: Parameter)
 
   override def run() = {
 
+    logger.info("baseDir: " + baseDir)
+    logger.info("outputDir: " + outputDir)
+
     // clean base dir
     fs.delete(new Path(baseDir), true)
     fs.mkdirs(new Path(baseDir))
+    fs.mkdirs(new Path(baseTempDir))
+    fs.mkdirs(new Path(sparkDir))
 
     val kafkaRDD = new KafkaRDD[java.lang.Long, FilterMessage](
       sc, params.kafkaTopic, properties, params.maxConsumeSize)
@@ -99,6 +104,8 @@ class DedupeAndSink(params: Parameter)
         if (writer == null) {
           val file = "/" + date + "/" + Math.abs(rand.nextLong()) + ".parquet"
           files.put(date, file)
+
+          logger.info("Create AvroParquetWriter for path: " + baseTempDir + file)
 
           writer = AvroParquetWriter.
             builder[GenericRecord](new Path(baseTempDir + file))
@@ -125,12 +132,16 @@ class DedupeAndSink(params: Parameter)
         writer.close() // close the parquet writer
         val file = files.get(date)
         // rename tmp files to final files
+        fs.mkdirs(new Path(baseDir + "/" + date))
         fs.rename(new Path(baseTempDir + file), new Path(baseDir + file))
+        logger.info("Rename after writing parquet file, from: " + baseTempDir + file + " to: " + baseDir + file)
         dates += date
       }
 
       dates.iterator
     }).distinct().collect()
+
+    logger.info("dedupe output date: " + dates.mkString(","))
 
     // delete the tmp dir
     fs.delete(new Path(baseTempDir), true)
@@ -171,14 +182,18 @@ class DedupeAndSink(params: Parameter)
 
     saveDFToFiles(df, sparkDir)
 
-    val dateOutputDir = outputDir + "/" + date
+    val dateOutputPath = new Path(outputDir + "/" + date)
     var max = -1
-    if (fs.exists(new Path(dateOutputDir))) {
-      val outputStatus = fs.listStatus(new Path(dateOutputDir))
-      max = outputStatus.map(status => {
-        val name = status.getPath.getName
-        Integer.valueOf(name.substring(5, name.indexOf(".")))
-      }).sortBy(i => i).last
+    if (fs.exists(dateOutputPath)) {
+      val outputStatus = fs.listStatus(dateOutputPath)
+      if (outputStatus.length > 0) {
+        max = outputStatus.map(status => {
+          val name = status.getPath.getName
+          Integer.valueOf(name.substring(5, name.indexOf(".")))
+        }).sortBy(i => i).last
+      }
+    } else {
+      fs.mkdirs(dateOutputPath)
     }
 
     val fileStatus = fs.listStatus(new Path(sparkDir))
@@ -187,7 +202,8 @@ class DedupeAndSink(params: Parameter)
       .map(swi => {
         val src = swi._1.getPath
         val seq = ("%5d" format max + 1 + swi._2).replace(" ", "0")
-        val target = new Path(dateOutputDir + s"/part-${seq}.snappy.parquet")
+        val target = new Path(dateOutputPath, s"part-${seq}.snappy.parquet")
+        logger.info("Rename from: " + src.toString + " to: " + target.toString)
         fs.rename(src, target)
         target.toString
       })
