@@ -1,6 +1,6 @@
 #
-#	IAB_ABC_International_List_of_Valid_Browsers_201801_23-143907
-#	January 23, 2018
+#	IAB_ABC_International_List_of_Valid_Browsers_201802_20-082342
+#	February 20, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
@@ -266,6 +266,8 @@ Spinner|1|1
 Sportacular/|1|1
 SpotXchange|1|0
 Spotify|1|0
+Spotx Web Proxy|1|0
+Spotx+Web+Proxy|1|0
 Sunrise|1|0
 Surviving_HS|1|1
 Syabas|1|0
@@ -365,7 +367,6 @@ mipla_a|1|1
 mipla_w8rt|1|1
 nook browser|1|1
 nook+browser|1|1
-okhttp/|1|0
 partner frontier|1|0
 partner+frontier|1|0
 pb0.6b|1|1
@@ -539,3 +540,4 @@ xbox|1|1
 # November 2017 - no changes
 # December 2017 - added "ANVSDK", added "LG Browser", added "LG+Browser", added "NBC", added "QtWebKit"
 # January 2018 - added "IMAtvOS", added "Apple TV", added "Apple+TV", added "XboxOne", removed "NBC"
+# February 2018 - added "Spotx Web Proxy", added "Spotx+Web+Proxy", removed "okhttp/"

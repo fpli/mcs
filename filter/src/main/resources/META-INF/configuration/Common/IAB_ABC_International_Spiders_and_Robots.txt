@@ -1,6 +1,6 @@
 #
-#	IAB_ABC_International_Spiders_and_Robots_201801_23-143907
-#	January 23, 2018
+#	IAB_ABC_International_Spiders_and_Robots_201802_20-082342
+#	February 20, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
@@ -153,6 +153,7 @@ MS+Search|1||0|1|0
 MSNPTC|1||1|1|0
 nbot|1||0|0|0
 newsnow|1||0|0|0
+ng/2.0|1||0|0|1
 nutch|1||0|0|0
 nutscrape|1||0|0|0
 ocelli|1||0|0|0
@@ -481,12 +482,14 @@ AddThis.com|1||1|2|0
 Mediatoolkitbot|1||1|2|0
 MetaCommentBot|1||1|2|0
 Wotbox/|1||1|2|0
-googleweblight|1||0|2|0
 CJBot|1||0|2|0
 PiplBot|1||1|2|0
 MojeekBot|1||1|2|0
 Quantcastbot|1||1|2|0
 arianna.libero.it|1||1|2|1
+okhttp/|1||1|2|0
+LittleScraper|1||1|2|1
+ken-webarchiving|1||0|2|0
 aport|1|netaporter, OperaPortable|0|2|0
 b2w|1|B2WTenisnew|0|0|0
 combine|1|Combined|0|0|0
@@ -499,7 +502,6 @@ grub|1|DoodleGrub, MacGruber|0|0|0
 harvest|1|ghostharvest|0|1|0
 httrack|1|FlightTrack|0|1|0
 ibot|1|ibotta|0|0|0
-ng/2.0|1|DoneDrinking/2.0, Banking/2.0|0|0|0
 nomad|1|sanomadigital|0|1|0
 obot|1|robotics, TheRobotFree|0|0|0
 pita|1|spital, Capital|0|1|0
@@ -645,6 +647,7 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 #freefind|0||0|0|0|12/23/2009
 #geniebot|0||0|0|0|6/23/2010
 #go!zilla|0||0|1|0|12/23/2010
+#googleweblight|0||0|2|0|2/21/2014
 #gulliver|0||0|0|0|6/23/2010
 #hapax|0||0|0|0|6/22/2011
 #hit list|0||0|0|0|12/23/2009
@@ -951,3 +954,4 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 # November 2017 - (1) PiplBot (2) MojeekBot
 # December 2017 - (1) Quantcastbot
 # January 2018 - (1) arianna.libero.it
+# February 2018 - (1) added okhttp/, (2) added LittleScraper, (3) added ken-webarchiving, (4) removed googleweblight, (5) changed "ng/2.0" from contains to starts with, (6) removed "DoneDrinking/2.0" as an exception to "ng/2.0", (7) removed "Banking/2.0" as an exception to "ng/2.0"
