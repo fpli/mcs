@@ -4,7 +4,7 @@
     <public>false</public>
     <!-- Mandatory field -->
     <description>Chocolate Filtering service</description>
-    <name>chocolate-filter</name>
+    <name>chocofil</name>
     <lifecycleState>Deployed</lifecycleState>
     <!-- Optional field: true if your application invokes services that require an IAFToken -->
     <!--<secureService>true</secureService>-->
