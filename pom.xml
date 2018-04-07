@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.4.0-RELEASE</version>
+    <version>0.5.0-RELEASE</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.ebay.traffic</groupId>
@@ -45,6 +45,7 @@
     <module>filter</module>
     <module>spark-nrt</module>
     <module>tools</module>
+    <module>trackapi</module>
   </modules>
 
   <dependencyManagement>
