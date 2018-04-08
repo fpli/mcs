@@ -5,17 +5,17 @@
   <!-- Kafka producer start -->
   <property>
     <name>chocolate.listener.kafka.cluster</name>
-    <value>kafka</value>
+    <value>rheos,kafka</value>
     <description>The kafka cluster, can be "rheos", "kafka", "rheos,kafka", "kafka,rheos".</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.EPN</name>
-    <value>qa_listener</value>
+    <value>marketingtech.ap.tracking-events.listened-epn,qa_listener</value>
     <description>Kafka topic for epn channel to publish.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.DISPLAY</name>
-    <value>qa_listener_display2</value>
+    <value>marketingtech.ap.tracking-events.listened-display,qa_listener_display2</value>
     <description>Kafka topic for display channel to publish.</description>
   </property>
   <!-- Kafka producer end -->
