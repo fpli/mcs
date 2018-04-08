@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.listener.util;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import org.apache.commons.lang3.Validate;
@@ -46,9 +47,9 @@ public class MessageObjectParser {
      * @return ListenerMessage  as the parse result.
      */
     public ListenerMessage parseHeader(
-            final HttpServletRequest clientRequest,
-            final HttpServletResponse proxyResponse, Long startTime, Long campaignId,
-            final LogicalChannelEnum logicalChannel, final ChannelActionEnum action, String snid) {
+        final HttpServletRequest clientRequest,
+        final HttpServletResponse proxyResponse, Long startTime, Long campaignId,
+        final ChannelType channelType, final ChannelActionEnum action, String snid) {
 
         ListenerMessage record = new ListenerMessage();
         // Set URI first as multipleRedirectHandler may overwrite URI
@@ -56,7 +57,7 @@ public class MessageObjectParser {
         // Handle multiple redirect logic, rover use 301 for redirect
         // Set the channel type + HTTP headers + channel action
 
-        record.setChannelType(logicalChannel.getAvro());
+        record.setChannelType(channelType);
         record.setHttpMethod(this.getMethod(clientRequest).getAvro());
         record.setChannelAction(action.getAvro());
         // Format record

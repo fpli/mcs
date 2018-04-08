@@ -135,7 +135,7 @@ public class EpnChannelTest {
         when(mockMessage.writeToJSON()).thenReturn(payload);
         when(mockMessageParser.responseShouldBeFiltered(mockClientRequest,mockProxyResponse)).thenReturn(false);
         when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), eq(campaignId),
-                eq(LogicalChannelEnum.EPN), eq(ChannelActionEnum.IMPRESSION), anyString())).thenReturn(mockMessage);
+                eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.IMPRESSION), anyString())).thenReturn(mockMessage);
         when(mockMessage.getSnapshotId()).thenReturn(snapshotId);
         when(mockMessage.toString()).thenReturn(kafkaMessage);
         when(mockPage.isActive()).thenReturn(true);
@@ -155,7 +155,7 @@ public class EpnChannelTest {
         // set up stubs
         when(mockMessage.writeToJSON()).thenThrow(new IOException());
         when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), anyLong(),
-                eq(LogicalChannelEnum.EPN), eq(ChannelActionEnum.IMPRESSION), eq("")))
+                eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.IMPRESSION), eq("")))
                 .thenReturn(mockMessage);
 
         channel.process(mockClientRequest, mockProxyResponse);
