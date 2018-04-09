@@ -8,8 +8,9 @@
 		<relativePath>..</relativePath>
 	</parent>
 
+	<groupId>com.ebay.traffic</groupId>
 	<artifactId>chocolate-trackapi</artifactId>
-	<packaging>jar</packaging>
+	<packaging>war</packaging>
 	<description>Chocolate tracking API on Raptor IO</description>
 	<name>chocolate trackapi</name>
 
