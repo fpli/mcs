@@ -57,7 +57,7 @@ public class FilterZookeeperClient {
     private final String zkDriverIdNodePath;
 
     /**Constructor for FilterZookeeperClient*/
-    private FilterZookeeperClient(String zkConnStr, String zkRootDir, String zkDriverIdNodePath) {
+    public FilterZookeeperClient(String zkConnStr, String zkRootDir, String zkDriverIdNodePath) {
         logger.info("Initialized cache with zkRootDir=" + zkRootDir + " conn str=" + zkConnStr +
                 " zkDriverIdNodePath=" + zkDriverIdNodePath);
         Validate.isTrue(StringUtils.isNotBlank(zkConnStr), "ZK conn str can't be blank");
@@ -83,8 +83,8 @@ public class FilterZookeeperClient {
     public static synchronized void init(ApplicationOptions options) {
         final Consumer<PublisherCacheEntry> callback = t -> {
             logger.debug("Got new entry from Zookeeper=" + t.toString());
-            CouchbaseClient.getInstance().addMappingRecord(t.getCampaignId(), t.getPublisherId());
             CampaignPublisherMappingCache.getInstance().addMapping(t.getCampaignId(), t.getPublisherId());
+            CouchbaseClient.getInstance().addMappingRecord(t.getCampaignId(), t.getPublisherId());
         };
         init(callback, options.getPublisherCacheZkConnectString(), options.getPublisherCacheZkRoot(),
                 options.getZkDriverIdNode());
@@ -103,8 +103,6 @@ public class FilterZookeeperClient {
             throw new RuntimeException(e);
         }
     }
-
-
 
     /**
      * Initialize.
@@ -176,7 +174,7 @@ public class FilterZookeeperClient {
      * @throws IOException
      *             if poor formatting
      */
-    public static PublisherCacheEntry fromBytes(final byte[] bytes)
+    public PublisherCacheEntry fromBytes(final byte[] bytes)
             throws IOException {
         JsonDecoder decoder = DecoderFactory.get().jsonDecoder(
                 PublisherCacheEntry.SCHEMA$, new String(bytes));
@@ -199,6 +197,7 @@ public class FilterZookeeperClient {
         driverIdNode = null;
         zkCache = null;
         client = null;
+        INSTANCE = null;
     }
 
     /**
@@ -210,7 +209,7 @@ public class FilterZookeeperClient {
      * @throws IOException
      *             if something happens.
      */
-    public static byte[] toBytes(final PublisherCacheEntry entry)
+    public byte[] toBytes(final PublisherCacheEntry entry)
             throws IOException {
         Validate.notNull(entry, "Entry can't be null");
 

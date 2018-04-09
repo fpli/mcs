@@ -18,6 +18,9 @@ public class CampaignPublisherMappingCache {
     /** CampaignId - PublisherId cache */
     final ConcurrentHashMap<Long, Long> cache = new ConcurrentHashMap<>();
 
+    private static final long DEFAULT_PUBLISHER_ID = -1L;
+
+
     @Override
     public String toString() {
         return "cache size= " + cache.size();
@@ -46,12 +49,14 @@ public class CampaignPublisherMappingCache {
      * @param campaignId the campaignId key
      * @return null if there is no such campaignId
      */
-    public Long lookup(long campaignId) {
+    public Long lookup(long campaignId) throws InterruptedException{
         Long publisherId = cache.get(campaignId);
         if (publisherId == null) {
             publisherId = CouchbaseClient.getInstance().getPublisherID(campaignId);
-            cache.putIfAbsent(campaignId, publisherId);
+            if (publisherId != DEFAULT_PUBLISHER_ID)
+              cache.putIfAbsent(campaignId, publisherId);
         }
+      logger.debug("Get publisherID " + publisherId + " for campaignID " + campaignId);
         return publisherId;
     }
 

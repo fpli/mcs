@@ -92,6 +92,8 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     private static final String COUCHBASE_USER = "chocolate.filter.couchbase.user";
     /**Couchbase password*/
     private static final String COUCHBASE_PASSWORD = "chocolate.filter.couchbase.password";
+    /** Couchbase connection timeout*/
+    private static final String COUCHBASE_TIMEOUT = "chocolate.filter.couchbase.timeout";
 
     /** zk connection string **/
     private String zkConnectionString;
@@ -238,6 +240,15 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
             throw new UnsupportedOperationException(COUCHBASE_PASSWORD + " not found in properties file!");
         }
         return properties.getProperty(COUCHBASE_PASSWORD);
+    }
+
+    /**Get Couchbase timeout*/
+    public long getCouchbaseTimeout() {
+      if (!properties.containsKey(COUCHBASE_TIMEOUT)) {
+        logger.fatal(COUCHBASE_TIMEOUT + " not found in properties file!");
+        throw new UnsupportedOperationException(COUCHBASE_TIMEOUT + " not found in properties file!");
+      }
+      return Long.parseLong(properties.getProperty(COUCHBASE_TIMEOUT));
     }
 
     /**
