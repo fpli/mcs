@@ -92,7 +92,7 @@ class IPCappingRule(params: Parameter)
       ipCountPath=ipCountPath:+ipCountPathYesterday
     }
 
-    dfIP = readFilesAsDFEx(ipCountPath.toArray).groupBy($"IP").agg(sum($"count") as "amnt").filter($"amnt" > 5)
+    dfIP = readFilesAsDFEx(ipCountPath.toArray).groupBy($"IP").agg(sum($"count") as "amnt").filter($"amnt" > params.ipThreshold)
       .withColumn("filter_failed_1", lit("IPCapping")).drop($"count").drop($"amnt")
 
     df = df.join(dfIP, $"IP_1" === $"IP", "left_outer")

@@ -47,9 +47,7 @@ class CappingRuleJob(params: Parameter)
 
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
-  lazy val inputDir = params.inputDir
   lazy val baseDir = params.workDir + "/capping/" + params.channel + "/"
-  lazy val baseTempDir = baseDir + "/tmp/"
   lazy val sparkDir = baseDir + "/spark/"
   lazy val outputDir = params.outputDir
 
@@ -80,7 +78,7 @@ class CappingRuleJob(params: Parameter)
         }
       }
 
-      // capping rules
+      // apply capping rules
       val cappingRuleContainer = new CappingRuleContainer(params, spark)
       val datesArray = dates.toArray()
       val metaFiles = new MetaFiles(datesArray.map(date => capping(date.asInstanceOf[String], datesFilesMap.get(date), cappingRuleContainer)))
@@ -88,6 +86,13 @@ class CappingRuleJob(params: Parameter)
     }
   }
 
+  /**
+    * capping logic
+    * @param date date
+    * @param input input file paths
+    * @param cappingRuleContainer container of capping rules
+    * @return DateFiles
+    */
   def capping(date: String, input: Array[String], cappingRuleContainer: CappingRuleContainer): DateFiles = {
     // clean base dir
     cappingRuleContainer.cleanBaseDir()

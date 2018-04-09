@@ -5,9 +5,11 @@ import com.ebay.traffic.chocolate.sparknrt.capping.rules.{IPCappingRule, SnidCap
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.{DataFrame, SparkSession}
-
 import scala.collection.mutable
 
+/**
+  * Created by xiangli4 on 4/8/18.
+  */
 class CappingRuleContainer(params: Parameter, sparkSession: SparkSession){
 
   @transient lazy val channelsRules = mutable.HashMap(

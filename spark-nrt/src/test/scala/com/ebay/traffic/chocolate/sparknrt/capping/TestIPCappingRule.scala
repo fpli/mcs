@@ -18,7 +18,7 @@ class TestIPCappingRule extends BaseFunSuite {
   val inputDir = tmpPath + "/inputDir/"
   val workDir = tmpPath + "/workDir/"
   val outputDir = tmpPath + "/outputDir/"
-
+  val ipThreshold = "5"
   val channel = "EPN"
 
   val args = Array(
@@ -26,7 +26,8 @@ class TestIPCappingRule extends BaseFunSuite {
     "--channel", channel,
     "--inputDir", inputDir,
     "--workDir", workDir,
-    "--outputDir", outputDir
+    "--outputDir", outputDir,
+    "--ipThreshold", ipThreshold
   )
 
   @transient lazy val hadoopConf = {
@@ -112,12 +113,12 @@ class TestIPCappingRule extends BaseFunSuite {
       inputDir + "/date=2018-01-01/part-00001.snappy.parquet"))
     val df_1 = job.test(dateFiles_1)
     df_1.show()
-    assert (df_1.filter($"filter_failed"==="IPCapping").count() == 0)
+    assert(df_1.filter($"filter_failed" === "IPCapping").count() == 0)
 
     val dateFiles_2 = new DateFiles("2018-01-02", Array(inputDir + "/date=2018-01-02/part-00000.snappy.parquet",
       inputDir + "/date=2018-01-02/part-00001.snappy.parquet"))
     val df_2 = job.test(dateFiles_2)
     df_2.show()
-    assert (df_2.filter($"filter_failed"==="IPCapping").count() == 3)
+    assert(df_2.filter($"filter_failed" === "IPCapping").count() == 3)
   }
 }

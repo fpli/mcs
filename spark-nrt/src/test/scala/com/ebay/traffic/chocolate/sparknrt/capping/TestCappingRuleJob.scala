@@ -17,7 +17,7 @@ class TestCappingRuleJob extends BaseFunSuite {
   val inputDir = tmpPath + "/inputDir/"
   val workDir = tmpPath + "/workDir/"
   val outputDir = tmpPath + "/outputDir/"
-
+  val ipThreshold = "5"
   val channel = "EPN"
 
   val args = Array(
@@ -25,7 +25,8 @@ class TestCappingRuleJob extends BaseFunSuite {
     "--channel", channel,
     "--inputDir", inputDir,
     "--workDir", workDir,
-    "--outputDir", outputDir
+    "--outputDir", outputDir,
+    "--ipThreshold", ipThreshold
   )
 
   @transient lazy val hadoopConf = {

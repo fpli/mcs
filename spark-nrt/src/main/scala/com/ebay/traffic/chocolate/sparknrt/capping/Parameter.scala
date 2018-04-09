@@ -2,6 +2,9 @@ package com.ebay.traffic.chocolate.sparknrt.capping
 
 import scopt.OptionParser
 
+/**
+  * Created by xiangli4 on 4/8/18.
+  */
 case class Parameter(appName: String = "CappingRule",
                      mode: String = "yarn",
                      channel: String = "",
@@ -14,8 +17,8 @@ case class Parameter(appName: String = "CappingRule",
 
 object Parameter {
 
-  private lazy val parser = new OptionParser[Parameter]("DedupeAndSink") {
-    head("DedupeAndSink")
+  private lazy val parser = new OptionParser[Parameter]("CappingRule") {
+    head("CappingRule")
 
     opt[String]("appName")
       .optional
@@ -51,6 +54,11 @@ object Parameter {
       .optional
       .valueName("partitions")
       .action((cont, param) => param.copy(partitions = cont))
+
+    opt[Int]("ipThreshold")
+      .optional
+      .valueName("ipThreshold")
+      .action((cont, param) => param.copy(ipThreshold = cont))
 
     opt[Long]("maxConsumeSize")
       .optional
