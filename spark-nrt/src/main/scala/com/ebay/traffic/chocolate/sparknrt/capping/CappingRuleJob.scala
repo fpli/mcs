@@ -99,7 +99,6 @@ class CappingRuleJob(params: Parameter)
     val dateFiles = new DateFiles(date, input)
     // run every capping rule
     var df = cappingRuleContainer.test(params, dateFiles)
-    df.show()
 
     // save result to spark dir
     df = df.repartition(params.partitions)

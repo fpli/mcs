@@ -50,21 +50,32 @@ class IPCappingRule(params: Parameter)
   import spark.implicits._
 
   override def cleanBaseDir() = {
-//    fs.delete(new Path(baseDir), true)
-//    fs.mkdirs(new Path(baseDir))
-//    fs.mkdirs(new Path(baseTempDir))
+    fs.delete(new Path(baseTempDir), true)
+    fs.mkdirs(new Path(baseTempDir))
   }
 
   override def test(dateFiles: DateFiles): DataFrame = {
 
     // filter click only, count ip and save to tmp file
     var dfIP = readFilesAsDFEx(dateFiles.files).filter($"channel_action" === "CLICK")
-      .select(split($"request_headers", "X-EBAY-CLIENT-IP: ")(1).alias("tmpIP"))
+    val timestamp = dfIP.select($"timestamp").first().getLong(0)
+
+    dfIP = dfIP.select(split($"request_headers", "X-EBAY-CLIENT-IP: ")(1).alias("tmpIP"))
       .select(split($"tmpIP", """\|""")(0).alias("IP"))
       .groupBy($"IP").agg(count(lit(1)).alias("count"))
       .drop($"request_headers")
       .drop($"tmpIP")
-    saveDFToFiles(dfIP, baseTempDir + DATE_COL + "=" + dateFiles.date)
+
+    // reduce the number of ip count file to 1
+    dfIP = dfIP.repartition(1)
+    val tempPath = baseTempDir + DATE_COL + "=" + dateFiles.date
+    saveDFToFiles(dfIP, tempPath)
+
+    // rename file name to include timestamp
+    val fileStatus = fs.listStatus(new Path(tempPath))
+    val src = fileStatus.filter(status => status.getPath.getName != "_SUCCESS")(0).getPath
+    val target = new Path(tempPath, s"part-${timestamp}.snappy.parquet")
+    fs.rename(src, target)
 
     // IP rule
     var df = readFilesAsDFEx(dateFiles.files)
@@ -85,14 +96,14 @@ class IPCappingRule(params: Parameter)
     if(fs.exists(new Path(ipCountPathToday))) {
       ipCountPath=ipCountPath:+ipCountPathToday
     }
-    if (fs.exists(new Path(ipCountTempPathYesterday))) {
-      ipCountPath=ipCountPath:+ipCountTempPathYesterday
-    }
+    // read only 24 hours data
     if(fs.exists(new Path(ipCountPathYesterday))) {
-      ipCountPath=ipCountPath:+ipCountPathYesterday
+      val fileStatus = fs.listStatus(new Path(ipCountPathYesterday))
+        .filter(status => String.valueOf(status.getPath.getName.substring(5, status.getPath.getName.indexOf("."))) >= (timestamp - 86400000).toString)
+        .map(status => ipCountPath=ipCountPath:+status.getPath.toString)
     }
 
-    dfIP = readFilesAsDFEx(ipCountPath.toArray).groupBy($"IP").agg(sum($"count") as "amnt").filter($"amnt" > params.ipThreshold)
+    dfIP = readFilesAsDFEx(ipCountPath.toArray).groupBy($"IP").agg(sum($"count") as "amnt").filter($"amnt" >= params.ipThreshold)
       .withColumn("filter_failed_1", lit("IPCapping")).drop($"count").drop($"amnt")
 
     df = df.join(dfIP, $"IP_1" === $"IP", "left_outer")
@@ -109,15 +120,7 @@ class IPCappingRule(params: Parameter)
     // rename tmp files to final files
     val dateOutputPath = new Path(baseDir + DATE_COL + "=" + dateFiles.date)
     var max = -1
-    if (fs.exists(dateOutputPath)) {
-      val outputStatus = fs.listStatus(dateOutputPath)
-      if (outputStatus.length > 0) {
-        max = outputStatus.map(status => {
-          val name = status.getPath.getName
-          Integer.valueOf(name.substring(5, name.indexOf(".")))
-        }).sortBy(i => i).last
-      }
-    } else {
+    if (!fs.exists(dateOutputPath)) {
       fs.mkdirs(dateOutputPath)
     }
 
@@ -126,7 +129,8 @@ class IPCappingRule(params: Parameter)
       .zipWithIndex
       .map(swi => {
         val src = swi._1.getPath
-        val seq = ("%5d" format max + 1 + swi._2).replace(" ", "0")
+        val name = src.getName
+        val seq = String.valueOf(name.substring(5, name.indexOf(".")))
         val target = new Path(dateOutputPath, s"part-${seq}.snappy.parquet")
         logger.info("Rename from: " + src.toString + " to: " + target.toString)
         fs.rename(src, target)
