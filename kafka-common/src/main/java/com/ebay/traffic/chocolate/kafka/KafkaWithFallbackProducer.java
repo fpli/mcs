@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  *
  * This producer is constructed by two producers, one is primary producer, another
  * is fallback producer. Internally if there is issue for the primary producer, such
- * as the corresponding Kafka is down, it switches to use the fallback producer.
+ * as the Kafka is outage, it switches to use the fallback producer.
  *
  * ### Unstable ###
  */
@@ -38,17 +38,14 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
   private long time = 0;
 
   public KafkaWithFallbackProducer(Producer<K, V> producer1, Producer<K, V> producer2) {
+    assert producer1 != null;
     this.producer1 = producer1;
     this.producer2 = producer2;
-    if (producer1 != null) {
-      current = producer1;
-    } else {
-      current = producer2;
-    }
+    this.current = producer1;
   }
 
   private synchronized Producer<K, V> getCurrent() {
-    if (producer1 != null && current == producer2) {
+    if (current == producer2) {
       // we are using the fallback producer, need to check whether primary kafka is back after "interval".
       long curr = System.currentTimeMillis();
       if (curr - time > interval) {
@@ -86,55 +83,45 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
   }
 
   @Override
-  public Future<RecordMetadata> send(ProducerRecord<K, V> record) {
+  public synchronized Future<RecordMetadata> send(ProducerRecord<K, V> record) {
     return send(record, null);
   }
 
   @Override
-  public Future<RecordMetadata> send(ProducerRecord<K, V> record, Callback callback) {
+  public synchronized Future<RecordMetadata> send(ProducerRecord<K, V> record, Callback callback) {
     String topics = record.topic();
     String[] topicarray = topics.split(KafkaCluster.DELIMITER);
     String topic1 = topicarray[0];
-    String topic2 = topic1;
-    if (topicarray.length > 1) {
-      topic2 = topicarray[1];
-    }
+    String topic2 = topicarray.length > 1 ? topicarray[1] : topic1;
 
     Producer<K, V> producer = getCurrent();
-    try {
-      ProducerRecord<K, V> pr = null;
-      if (producer == producer1) {
-        pr = new ProducerRecord<>(topic1, record.key(), record.value());
-      } else {
-        pr = new ProducerRecord<>(topic2, record.key(), record.value());
-      }
-      return producer.send(pr, callback);
-    } catch (TimeoutException e) {
-      // wait for "max.block.ms", if there is timeout for current producer, then switch to another producer
-      LOG.warn("Send timeout", e);
-      Producer<K, V> fallback = doSwitch(producer);
-      if (fallback != null) {
-        try {
-          ProducerRecord<K, V> pr = null;
-          if (fallback == producer1) {
-            pr = new ProducerRecord<>(topic1, record.key(), record.value());
-          } else {
-            pr = new ProducerRecord<>(topic2, record.key(), record.value());
-          }
-          return fallback.send(pr, callback);
-        } catch (Exception e1) {
-          // if there is exception while using fallback, throw it.
-          LOG.error(e1.getMessage(), e1);
+    String topic = producer == producer1 ? topic1 : topic2;
+    ProducerRecord<K, V> pr = new ProducerRecord<>(topic, record.key(), record.value());
+
+    Callback cb = (recordMetadata, e) -> {
+
+      if (e != null && e instanceof TimeoutException) {
+        // Currently TimeoutException happens in two cases: 1. Failed to update metadata after "max.block.ms", 2.
+        // Block "buffer.memory" is full and can't get space in "max.block.ms". Both these two cases will block
+        // current thread.
+        // wait for "max.block.ms", if there is timeout for current producer, then switch to another producer
+        LOG.warn("Send timeout", e);
+
+        Producer<K, V> fallback = doSwitch(producer);
+        if (fallback != null) {
+          String ftopic = fallback == producer1 ? topic1 : topic2;
+          ProducerRecord<K, V> fpr = new ProducerRecord<>(ftopic, record.key(), record.value());
+          fallback.send(fpr, callback);
         }
       }
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
-    }
-    return null;
+      callback.onCompletion(recordMetadata, e);
+    };
+
+    return producer.send(pr, cb);
   }
 
   @Override
-  public void flush() {
+  public synchronized void flush() {
     try {
       getCurrent().flush();
     } catch (Exception e) {
@@ -143,7 +130,7 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
   }
 
   @Override
-  public List<PartitionInfo> partitionsFor(String topic) {
+  public synchronized List<PartitionInfo> partitionsFor(String topic) {
     try {
       return getCurrent().partitionsFor(topic);
     } catch (Exception e) {
@@ -153,7 +140,7 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
   }
 
   @Override
-  public Map<MetricName, ? extends Metric> metrics() {
+  public synchronized Map<MetricName, ? extends Metric> metrics() {
     try {
       return getCurrent().metrics();
     } catch (Exception e) {
@@ -163,12 +150,12 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
   }
 
   @Override
-  public void close() {
+  public synchronized void close() {
     IOUtils.closeQuietly(producer1, producer2);
   }
 
   @Override
-  public void close(long timeout, TimeUnit timeUnit) {
+  public synchronized void close(long timeout, TimeUnit timeUnit) {
     try {
       producer1.close(timeout, timeUnit);
     } catch (Exception e) {
