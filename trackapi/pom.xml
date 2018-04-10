@@ -8,7 +8,6 @@
 		<relativePath>..</relativePath>
 	</parent>
 
-	<groupId>com.ebay.traffic</groupId>
 	<artifactId>chocolate-trackapi</artifactId>
 	<packaging>war</packaging>
 	<description>Chocolate tracking API on Raptor IO</description>
@@ -188,6 +187,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>1.4.1.ebay-SNAPSHOT</version>
 			</plugin>
 			<!-- raptor.io plugin -->
 			<plugin>
@@ -198,143 +198,17 @@
 				<groupId>com.ebay.raptor.build</groupId>
 				<artifactId>assembler-maven-plugin</artifactId>
 			</plugin>
-			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>com.ebay.raptor.build</groupId>
-				<artifactId>maven-content-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.7.9</version>
-				<executions>
-
-					<!-- Configure Jacoco for unit tests. -->
-					<execution>
-						<id>pre-unit-test</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-						<configuration>
-							<append>true</append>
-							<destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
-							<propertyName>surefireArgLine</propertyName>
-						</configuration>
-					</execution>
-
-					<!-- Set reporting for Jacoco unit tests. -->
-					<execution>
-						<id>ut-report</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-						<configuration>
-							<append>true</append>
-							<dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
-							<outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
-						</configuration>
-					</execution>
-
-					<!-- Configure Jacoco for integrity tests. -->
-					<execution>
-						<id>pre-integration-test</id>
-						<goals>
-							<goal>prepare-agent-integration</goal>
-						</goals>
-						<configuration>
-							<append>true</append>
-							<destFile>${project.build.directory}/coverage-reports/jacoco-it.exec</destFile>
-							<propertyName>failsafeArgLine</propertyName>
-						</configuration>
-					</execution>
-
-					<!-- Set reporting for Jacoco integrity tests. -->
-					<execution>
-						<id>dump</id>
-						<phase>post-integration-test</phase>
-						<goals>
-							<goal>dump</goal>
-						</goals>
-						<configuration>
-							<append>true</append>
-							<destFile>${project.build.directory}/coverage-reports/jacoco-it.exec</destFile>
-							<skip>${jacoco.dump.skip}</skip>
-						</configuration>
-					</execution>
-					<execution>
-						<id>it-report</id>
-						<phase>post-integration-test</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-						<configuration>
-							<append>true</append>
-							<dataFile>${project.build.directory}/coverage-reports/jacoco-it.exec</dataFile>
-							<outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
-						</configuration>
-					</execution>
-
-					<!-- Merge the data file of Jacoco integrity + unit tests. -->
-					<execution>
-						<id>merge-results</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>merge</goal>
-						</goals>
-						<configuration>
-							<fileSets>
-								<fileSet>
-									<directory>${project.build.directory}/coverage-reports</directory>
-									<includes>
-										<include>*.exec</include>
-									</includes>
-								</fileSet>
-							</fileSets>
-							<destFile>${project.build.directory}/coverage-reports/aggregate.exec</destFile>
-						</configuration>
-					</execution>
-
-					<!-- Set reporting for Jacoco merged data. -->
-					<execution>
-						<id>post-merge-report</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-						<configuration>
-							<dataFile>${project.build.directory}/coverage-reports/aggregate.exec</dataFile>
-							<outputDirectory>${project.reporting.outputDirectory}/jacoco-aggregate</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-				<configuration>
-					<destFile>${basedir}/target/jacoco-unit.exec</destFile>
-					<dataFile>${basedir}/target/jacoco-unit.exec</dataFile>
-					<append>true</append>
-					<propertyName>surefireArgLine</propertyName>
-					<excludes>
-						<!-- These are utility classes which are not used in production code paths. -->
-						<exclude>**/PublisherCacheZKDeleteUtility.*</exclude>
-						<exclude>**/PublisherCacheZKListUtility.*</exclude>
-						<exclude>**/PublisherCacheZKAddUtility.*</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
 		</plugins>
 
-		<sourceDirectory>src/main/java</sourceDirectory>
-		<testSourceDirectory>src/test/java</testSourceDirectory>
-		<outputDirectory>target/classes</outputDirectory>
-		<testOutputDirectory>target/test-classes</testOutputDirectory>
-		<resources>
-			<resource>
-				<directory>${project.basedir}/src/main/resources</directory>
-			</resource>
-		</resources>
+		<!--<sourceDirectory>src/main/java</sourceDirectory>-->
+		<!--<testSourceDirectory>src/test/java</testSourceDirectory>-->
+		<!--<outputDirectory>target/classes</outputDirectory>-->
+		<!--<testOutputDirectory>target/test-classes</testOutputDirectory>-->
+		<!--<resources>-->
+			<!--<resource>-->
+				<!--<directory>${project.basedir}/src/main/resources</directory>-->
+			<!--</resource>-->
+		<!--</resources>-->
 	</build>
 
 
