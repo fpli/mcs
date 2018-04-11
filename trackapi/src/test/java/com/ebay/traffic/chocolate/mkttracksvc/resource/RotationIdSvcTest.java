@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.mkttracksvc.resource;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
+import com.ebay.traffic.chocolate.mkttracksvc.entity.ServiceResponse;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -50,7 +51,8 @@ public class RotationIdSvcTest {
         .request().accept(MediaType.APPLICATION_JSON_TYPE)
         .post(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
     Assert.assertEquals(200, result.getStatus());
-    RotationInfo rotationResponse = result.readEntity(RotationInfo.class);
+    ServiceResponse serviceResponse = result.readEntity(ServiceResponse.class);
+    RotationInfo rotationResponse = serviceResponse.getRotationInfo();
     Assert.assertEquals("0010077-000000001-000000002", rotationResponse.getRotationId().substring(0, rotationResponse.getRotationId().lastIndexOf("-")));
     Assert.assertEquals("1", String.valueOf(rotationResponse.getChannelId()));
     Assert.assertEquals("77", String.valueOf(rotationResponse.getSiteId()));
@@ -81,7 +83,8 @@ public class RotationIdSvcTest {
         .request().accept(MediaType.APPLICATION_JSON_TYPE)
         .post(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
     Assert.assertEquals(200, createResult.getStatus());
-    RotationInfo createResponse = createResult.readEntity(RotationInfo.class);
+    ServiceResponse serviceResponse = createResult.readEntity(ServiceResponse.class);
+    RotationInfo createResponse = serviceResponse.getRotationInfo();
 
     //Update
     String rid = createResponse.getRotationId();
@@ -92,7 +95,8 @@ public class RotationIdSvcTest {
         .request().accept(MediaType.APPLICATION_JSON_TYPE)
         .put(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
     Assert.assertEquals(200, updateResult.getStatus());
-    RotationInfo updateResponse = updateResult.readEntity(RotationInfo.class);
+    serviceResponse = updateResult.readEntity(ServiceResponse.class);
+    RotationInfo updateResponse = serviceResponse.getRotationInfo();
 
 
     Assert.assertEquals(rid, updateResponse.getRotationId());
@@ -122,7 +126,8 @@ public class RotationIdSvcTest {
         .request().accept(MediaType.APPLICATION_JSON_TYPE)
         .post(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
     Assert.assertEquals(200, result.getStatus());
-    RotationInfo createResponse = result.readEntity(RotationInfo.class);
+    ServiceResponse serviceResponse = result.readEntity(ServiceResponse.class);
+    RotationInfo createResponse = serviceResponse.getRotationInfo();
 
     //Deactivate
     String rid = createResponse.getRotationId();
@@ -130,7 +135,8 @@ public class RotationIdSvcTest {
         .request().accept(MediaType.APPLICATION_JSON_TYPE)
         .put(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
     Assert.assertEquals(200, updateResult.getStatus());
-    RotationInfo updateResponse = updateResult.readEntity(RotationInfo.class);
+    serviceResponse = updateResult.readEntity(ServiceResponse.class);
+    RotationInfo updateResponse = serviceResponse.getRotationInfo();
     Assert.assertEquals(rid, updateResponse.getRotationId());
     Assert.assertFalse(updateResponse.getActive());
     Assert.assertEquals("CatherineTesting RotationName", updateResponse.getRotationName());
@@ -144,7 +150,8 @@ public class RotationIdSvcTest {
         .request().accept(MediaType.APPLICATION_JSON_TYPE)
         .put(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
     Assert.assertEquals(200, updateResult.getStatus());
-    updateResponse = updateResult.readEntity(RotationInfo.class);
+    serviceResponse = updateResult.readEntity(ServiceResponse.class);
+    updateResponse = serviceResponse.getRotationInfo();
     Assert.assertTrue(updateResponse.getActive());
   }
 }
