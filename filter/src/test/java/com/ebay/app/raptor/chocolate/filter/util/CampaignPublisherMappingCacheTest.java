@@ -2,28 +2,34 @@ package com.ebay.app.raptor.chocolate.filter.util;
 
 import com.ebay.app.raptor.chocolate.avro.PublisherCacheEntry;
 import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
-import org.apache.curator.test.TestingServer;
+import com.ebay.traffic.chocolate.common.MiniZookeeperCluster;
 import org.junit.*;
+
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class CampaignPublisherMappingCacheTest {
     private static ApplicationOptions options = mock(ApplicationOptions.class);
-    private static TestingServer zkServer;
+    private static MiniZookeeperCluster zookeeperCluster;
     private static final String zkRootDir = "/chocolate/filter/unit-test-pubcache";
     private static final String zkDriverIdPath = "/chocolate/filter/driverid/23423423";
+    private static FilterZookeeperClient zookeeperClient;
 
     @BeforeClass
     public static void setUp() throws Exception{
-        zkServer = TestHelper.initializeZkServer();
-        when(options.getPublisherCacheZkConnectString()).thenReturn(zkServer.getConnectString());
-        when(options.getPublisherCacheZkRoot()).thenReturn(zkRootDir);
-        when(options.getZkDriverIdNode()).thenReturn(zkDriverIdPath);
+        zookeeperCluster = new MiniZookeeperCluster();
+        zookeeperCluster.start();
+        zookeeperClient = new FilterZookeeperClient(zookeeperCluster.getConnectionString(),
+            zkRootDir, zkDriverIdPath);
+        zookeeperClient.start(t -> {
+        CampaignPublisherMappingCache.getInstance().addMapping(t.getCampaignId(), t.getPublisherId());
+        CouchbaseClient.getInstance().addMappingRecord(t.getCampaignId(), t.getPublisherId());
+      });
 
-        FilterZookeeperClient.init(options);
     }
+
 
     @Before
     public void construct() throws Exception{
@@ -38,9 +44,10 @@ public class CampaignPublisherMappingCacheTest {
     }
 
     @AfterClass
-  public static void tearDown() {
-      FilterZookeeperClient.getInstance().close();
-      TestHelper.terminateZkServer();
+  public static void tearDown() throws IOException{
+      zookeeperClient.close();
+      zookeeperCluster.shutdown();
+      CouchbaseClient.close();
   }
 
     @Test
@@ -49,8 +56,8 @@ public class CampaignPublisherMappingCacheTest {
         entry1.setCampaignId(11111L);
         entry1.setPublisherId(55555L);
         entry1.setTimestamp(99999L);
-        byte[] bytes = FilterZookeeperClient.toBytes(entry1);
-        PublisherCacheEntry result = FilterZookeeperClient.fromBytes(bytes);
+        byte[] bytes = zookeeperClient.toBytes(entry1);
+        PublisherCacheEntry result = zookeeperClient.fromBytes(bytes);
         assertEquals(result.getCampaignId(), entry1.getCampaignId());
         assertEquals(result.getPublisherId(), entry1.getPublisherId());
     }
@@ -66,10 +73,10 @@ public class CampaignPublisherMappingCacheTest {
         entry2.setCampaignId(22222L);
         entry2.setPublisherId(66666L);
         entry2.setTimestamp(88888L);
-        FilterZookeeperClient.getInstance().addEntry(entry1);
-        FilterZookeeperClient.getInstance().addEntry(entry2);
+      zookeeperClient.addEntry(entry1);
+      zookeeperClient.addEntry(entry2);
 
-        FilterZookeeperClient.getInstance().iterate(
+      zookeeperClient.iterate(
                 t -> CampaignPublisherMappingCache.getInstance().
                         addMapping(t.getCampaignId(), t.getPublisherId()));
 
@@ -88,8 +95,8 @@ public class CampaignPublisherMappingCacheTest {
         entry2.setCampaignId(22222L);
         entry2.setPublisherId(66666L);
         entry2.setTimestamp(88888L);
-        FilterZookeeperClient.getInstance().addEntry(entry1);
-        FilterZookeeperClient.getInstance().addEntry(entry2);
+      zookeeperClient.addEntry(entry1);
+      zookeeperClient.addEntry(entry2);
 
         CampaignPublisherMappingCache.getInstance().cache.clear();
         CouchbaseClient.getInstance().addMappingRecord(11111, 55555);
@@ -100,7 +107,7 @@ public class CampaignPublisherMappingCacheTest {
     }
 
     @Test
-    public void testInsertAndGetCouchBaseRecord() {
+    public void testInsertAndGetCouchBaseRecord() throws InterruptedException{
         CouchbaseClient.getInstance().addMappingRecord(11111L,55555L);
         assertEquals(55555L, CouchbaseClient.getInstance().getPublisherID(11111L));
     }
