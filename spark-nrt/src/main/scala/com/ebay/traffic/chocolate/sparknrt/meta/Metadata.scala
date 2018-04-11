@@ -12,11 +12,11 @@ import org.apache.hadoop.fs.Path
 /**
   * Created by yliu29 on 3/23/18.
   */
-class Metadata(workDir: String, channel: String) {
+class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
 
   lazy val DEDUPE_COMP_META = workDir + "/meta/" + channel + "/dedupe_comp.meta"
-  lazy val DEDUPE_OUTPUT_META_DIR = workDir + "/meta/" + channel + "/output/"
-  lazy val DEDUPE_OUTPUT_META_PREFIX =  "dedupe_output_"
+  lazy val DEDUPE_OUTPUT_META_DIR = workDir + "/meta/" + channel + "/output/" + usage + "/"
+  lazy val DEDUPE_OUTPUT_META_PREFIX =  usage + "_output_"
 
   lazy val jsonMapper = new ObjectMapper()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -111,9 +111,17 @@ class Metadata(workDir: String, channel: String) {
 
 object Metadata {
 
-  def apply(workDir: String, channel: String): Metadata = {
-    new Metadata(workDir, channel)
+  def apply(workDir: String, channel: String, usage: MetadataEnum.Value): Metadata = {
+    new Metadata(workDir, channel, usage)
   }
+
+}
+
+// Enum of Metadata usages
+object MetadataEnum extends Enumeration {
+
+  val dedupe = Value(0)
+  val capping = Value(1)
 
 }
 

@@ -4,7 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.FilterMessage
 import com.ebay.traffic.chocolate.common.{KafkaTestHelper, MiniKafkaCluster, TestHelper}
 import com.ebay.traffic.chocolate.kafka.{FilterMessageDeserializer, FilterMessageSerializer}
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
-import com.ebay.traffic.chocolate.sparknrt.meta.Metadata
+import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.kafka.clients.producer.{Callback, Producer, ProducerRecord}
 import org.apache.kafka.common.serialization.{LongDeserializer, LongSerializer}
 
@@ -80,7 +80,7 @@ class TestDedupeAndSink extends BaseFunSuite {
 
     job.run()
 
-    val metadata = Metadata(workDir, channel)
+    val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
     val dom = metadata.readDedupeOutputMeta
     assert (dom.length == 1)
     assert (dom(0)._2.contains(DATE_COL1))
@@ -96,7 +96,6 @@ class TestDedupeAndSink extends BaseFunSuite {
 
     metadata.deleteDedupeOutputMeta(dom(0)._1)
 
-
     val message4 = sendFilterMessage(4L, 44L, 444L, date1)
     val message5 = sendFilterMessage(5L, 55L, 555L, date2)
     sendFilterMessage(1L, 11L, 111L, date1) // send duplicate message
@@ -105,7 +104,7 @@ class TestDedupeAndSink extends BaseFunSuite {
 
     job.run()
 
-    val metadata1 = Metadata(workDir, channel)
+    val metadata1 = Metadata(workDir, channel, MetadataEnum.dedupe)
     val dom1 = metadata1.readDedupeOutputMeta
     assert (dom1.length == 1)
     assert (dom1(0)._2.contains(DATE_COL1))

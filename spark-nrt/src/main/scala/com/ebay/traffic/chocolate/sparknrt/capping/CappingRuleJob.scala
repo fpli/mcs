@@ -1,12 +1,9 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
 import java.text.SimpleDateFormat
-import java.util
 
-import com.ebay.traffic.chocolate.spark.BaseSparkJob
-import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata}
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
+import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 
 /**
   * Created by xiangli4 on 3/30/18.
@@ -23,27 +20,15 @@ object CappingRuleJob extends App {
 }
 
 class CappingRuleJob(params: Parameter)
-  extends BaseSparkJob(params.appName, params.mode) {
-
-  @transient lazy val hadoopConf = {
-    new Configuration()
-  }
-
-  @transient lazy val fs = {
-    val fs = FileSystem.get(hadoopConf)
-    sys.addShutdownHook(fs.close())
-    fs
-  }
+  extends BaseSparkNrtJob(params.appName, params.mode) {
 
   @transient lazy val inputMetadata = {
-    Metadata(params.inputDir, params.channel)
+    Metadata(params.workDir, params.channel, MetadataEnum.dedupe)
   }
 
   @transient lazy val outputMetadata = {
-    Metadata(params.workDir, params.channel)
+    Metadata(params.workDir, params.channel, MetadataEnum.capping)
   }
-
-  lazy val DATE_COL = "date"
 
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
@@ -53,36 +38,19 @@ class CappingRuleJob(params: Parameter)
 
   override def run(): Unit = {
 
-    // manage output files from upstream
-    val metaFiles = inputMetadata.readDedupeOutputMeta()
     val dedupeOutputMeta = inputMetadata.readDedupeOutputMeta()
-    val dates = new util.HashSet[String]()
-    val datesFilesMap = new util.HashMap[String, Array[String]]()
-    if (dedupeOutputMeta != null) {
-      val iteratorMeta = dedupeOutputMeta.iterator
-      while (iteratorMeta.hasNext) {
-        val metaFile = iteratorMeta.next()
-        val iteratorOfDate = metaFile._2.iterator
-        while (iteratorOfDate.hasNext) {
-          val dateFilesEntry = iteratorOfDate.next()
-          val date = dateFilesEntry._1
-          dates.add(date)
-          var input = dateFilesEntry._2
-          if (datesFilesMap.containsKey(date)) {
-            input = input.union(datesFilesMap.get(date))
-            datesFilesMap.put(date, input)
-          }
-          else {
-            datesFilesMap.put(date, input)
-          }
-        }
-      }
 
+    if(dedupeOutputMeta.length > 0) {
+      val file = dedupeOutputMeta(0)._1
+      val datesFiles = dedupeOutputMeta(0)._2
       // apply capping rules
-      val cappingRuleContainer = new CappingRuleContainer(params, spark)
-      val datesArray = dates.toArray()
-      val metaFiles = new MetaFiles(datesArray.map(date => capping(date.asInstanceOf[String], datesFilesMap.get(date), cappingRuleContainer)))
+      val datesArray = datesFiles.keys.toArray
+      val metaFiles = new MetaFiles(datesArray.map(
+        date => capping(date, datesFiles.get(date).get,
+          new CappingRuleContainer(params, new DateFiles(date, datesFiles.get(date).get), this)))
+      )
       outputMetadata.writeDedupeOutputMeta(metaFiles)
+      inputMetadata.deleteDedupeOutputMeta(file)
     }
   }
 
@@ -106,31 +74,8 @@ class CappingRuleJob(params: Parameter)
     saveDFToFiles(df, sparkDir)
 
     // rename result to output dir
-    val dateOutputPath = new Path(outputDir + "/" + DATE_COL + "=" + date)
-    var max = -1
-    if (fs.exists(dateOutputPath)) {
-      val outputStatus = fs.listStatus(dateOutputPath)
-      if (outputStatus.length > 0) {
-        max = outputStatus.map(status => {
-          val name = status.getPath.getName
-          Integer.valueOf(name.substring(5, name.indexOf(".")))
-        }).sortBy(i => i).last
-      }
-    } else {
-      fs.mkdirs(dateOutputPath)
-    }
+    val files = renameFiles(outputDir, sparkDir, date)
 
-    val fileStatus = fs.listStatus(new Path(sparkDir))
-    val files = fileStatus.filter(status => status.getPath.getName != "_SUCCESS")
-      .zipWithIndex
-      .map(swi => {
-        val src = swi._1.getPath
-        val seq = ("%5d" format max + 1 + swi._2).replace(" ", "0")
-        val target = new Path(dateOutputPath, s"part-${seq}.snappy.parquet")
-        logger.info("Rename from: " + src.toString + " to: " + target.toString)
-        fs.rename(src, target)
-        target.toString
-      })
     // rename base temp files
     cappingRuleContainer.renameBaseTempFiles(dateFiles)
     new DateFiles(date, files)

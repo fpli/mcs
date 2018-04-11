@@ -5,20 +5,20 @@ import java.util.Calendar
 
 import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import com.ebay.traffic.chocolate.sparknrt.capping.{CappingRule, Parameter}
-import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, Metadata}
+import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.functions.{count, lit, split, sum}
 import org.apache.spark.sql.DataFrame
+import org.slf4j.LoggerFactory
 
 // only for test
-class SnidCappingRule(params: Parameter, bit: Long)
-  extends BaseSparkJob(params.appName, params.mode) with CappingRule {
+class SnidCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingRuleJobObj: BaseSparkJob) extends CappingRule {
 
-  lazy val inputDir = params.inputDir
+  @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
+
   lazy val baseDir = params.workDir + "/capping/" + params.channel + "/snid/"
   lazy val baseTempDir = baseDir + "/tmp/"
-  lazy val outputDir = params.outputDir
 
   lazy val DATE_COL = "date"
 
@@ -32,29 +32,23 @@ class SnidCappingRule(params: Parameter, bit: Long)
     fs
   }
 
-  @transient lazy val inputMetadata = {
-    Metadata(params.inputDir, params.channel)
-  }
-
-  @transient lazy val outputMetadata = {
-    Metadata(params.workDir, params.channel)
-  }
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
-  override def cleanBaseDir() = {}
+  override def preTest() = {}
 
   lazy val cappingBit = bit
 
-  import spark.implicits._
-  override def test(dateFiles: DateFiles): DataFrame = {
+  import cappingRuleJobObj.spark.implicits._
+
+  override def test(): DataFrame = {
     // filter click only, count ip and save to tmp file
-    var dfIP = readFilesAsDFEx(dateFiles.files).filter($"channel_action" === "CLICK")
+    var dfIP = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).filter($"channel_action" === "CLICK")
       .select(split($"request_headers", "X-EBAY-CLIENT-IP: ")(1).alias("tmpIP"))
       .select(split($"tmpIP", """\|""")(0).alias("IP"))
       .groupBy($"IP").agg(count(lit(1)).alias("count"))
       .drop($"request_headers")
       .drop($"tmpIP")
-    saveDFToFiles(dfIP, baseTempDir + DATE_COL + "=" + dateFiles.date)
+    cappingRuleJobObj.saveDFToFiles(dfIP, baseTempDir + DATE_COL + "=" + dateFiles.date)
 
     // rename tmp files to final files
     val dateOutputPath = new Path(baseDir + DATE_COL + "=" + dateFiles.date)
@@ -87,7 +81,7 @@ class SnidCappingRule(params: Parameter, bit: Long)
     fs.delete(new Path(baseTempDir), true)
 
     // IP rule
-    var df = readFilesAsDFEx(dateFiles.files)
+    var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
       .withColumn("tmpIP", split($"request_headers", "X-EBAY-CLIENT-IP: ")(1))
       .withColumn("IP_1", split($"tmpIP", """\|""")(0))
       .drop($"tmpIP")
@@ -105,7 +99,7 @@ class SnidCappingRule(params: Parameter, bit: Long)
     else {
       ipCountPath = Array(ipCountPath1)
     }
-    dfIP = readFilesAsDFEx(ipCountPath).groupBy($"IP").agg(sum($"count") as "amnt").filter($"amnt" === 2)
+    dfIP = cappingRuleJobObj.readFilesAsDFEx(ipCountPath).groupBy($"IP").agg(sum($"count") as "amnt").filter($"amnt" === 2)
       .withColumn("capping", lit(cappingBit)).drop($"count").drop($"amnt")
 
     df = df.join(dfIP, $"IP_1" === $"IP", "left_outer")
@@ -115,11 +109,5 @@ class SnidCappingRule(params: Parameter, bit: Long)
     df
   }
 
-  override def renameBaseTempFiles(dateFiles: DateFiles) = {}
-
-  /**
-    * :: DeveloperApi ::
-    * Implemented by subclasses to run the spark job.
-    */
-  override def run(): Unit = ???
+  override def postTest() = {}
 }

@@ -5,37 +5,37 @@ import com.ebay.traffic.chocolate.sparknrt.capping.rules.{IPCappingRule, SnidCap
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.spark.sql.functions.coalesce
 import org.apache.spark.sql.functions.lit
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.DataFrame
 import scala.collection.mutable
 
 /**
   * Created by xiangli4 on 4/8/18.
   */
-class CappingRuleContainer(params: Parameter, sparkSession: SparkSession) {
+class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj: CappingRuleJob) {
 
   @transient lazy val channelsRules = mutable.HashMap(
     ChannelType.EPN -> mutable.HashMap(
-      CappingRuleEnum.IPCappingRule -> new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)),
-      CappingRuleEnum.SnidCappingRUle -> new SnidCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRUle))
+      CappingRuleEnum.IPCappingRule ->
+        new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj),
+      CappingRuleEnum.SnidCappingRUle ->
+        new SnidCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRUle), dateFiles, sparkJobObj)
     ),
     ChannelType.DISPLAY -> mutable.HashMap(
     )
   )
-  @transient lazy val spark = sparkSession
 
   def cleanBaseDir() = {
     val channelRules = channelsRules.get(ChannelType.valueOf(params.channel)).iterator
     while (channelRules.hasNext) {
       val rules = channelRules.next().iterator
-      var df: DataFrame = null
       while (rules.hasNext) {
         val rule = rules.next()._2
-        rule.cleanBaseDir()
+        rule.preTest()
       }
     }
   }
 
-  import spark.implicits._
+  import sparkJobObj.spark.implicits._
 
   def test(params: Parameter, dateFiles: DateFiles): DataFrame = {
     val channelRules = channelsRules.get(ChannelType.valueOf(params.channel)).iterator
@@ -44,7 +44,7 @@ class CappingRuleContainer(params: Parameter, sparkSession: SparkSession) {
       val rules = channelRules.next().iterator
       while (rules.hasNext) {
         val rule = rules.next()._2
-        val df = rule.test(dateFiles)
+        val df = rule.test()
         dfs = dfs :+ df
       }
     }
@@ -75,7 +75,7 @@ class CappingRuleContainer(params: Parameter, sparkSession: SparkSession) {
       val rules = channelRules.next().iterator
       while (rules.hasNext) {
         val rule = rules.next()._2
-        rule.renameBaseTempFiles(dateFiles)
+        rule.postTest()
       }
     }
   }

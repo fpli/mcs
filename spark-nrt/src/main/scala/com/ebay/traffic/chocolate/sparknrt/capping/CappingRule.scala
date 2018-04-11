@@ -1,21 +1,27 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
-import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
-import org.apache.spark.sql.{DataFrame}
+import com.ebay.traffic.chocolate.spark.BaseSparkJob
+import org.apache.spark.sql.DataFrame
 
 /**
   * Created by xiangli4 on 4/8/18.
   */
 trait CappingRule {
+
+  // capping rule result bit value
   def cappingBit: Long
 
-  def cleanBaseDir()
+  // clean jobs before test
+  def preTest()
 
-  def test(dateFiles: DateFiles): DataFrame
+  // test logic
+  def test(): DataFrame
 
-  def renameBaseTempFiles(dateFiles: DateFiles)
+  // clean jobs after test
+  def postTest()
 }
 
+// Enum of CappingRule name and bitmap value
 object CappingRuleEnum extends Enumeration {
   implicit def getBitValue(value: Value): Long = {
     0x1 << value.id
