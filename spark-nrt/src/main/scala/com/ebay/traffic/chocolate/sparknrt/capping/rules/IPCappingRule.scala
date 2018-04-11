@@ -17,7 +17,7 @@ import org.apache.spark.sql.functions.sum
 /**
   * Created by xiangli4 on 4/8/18.
   */
-class IPCappingRule(params: Parameter)
+class IPCappingRule(params: Parameter, bit: Long)
   extends BaseSparkJob(params.appName, params.mode) with CappingRule {
 
   @transient lazy val hadoopConf = {
@@ -53,6 +53,8 @@ class IPCappingRule(params: Parameter)
     fs.delete(new Path(baseTempDir), true)
     fs.mkdirs(new Path(baseTempDir))
   }
+
+  lazy val cappingBit = bit
 
   override def test(dateFiles: DateFiles): DataFrame = {
 
@@ -92,27 +94,24 @@ class IPCappingRule(params: Parameter)
     val ipCountTempPathYesterday = baseTempDir + DATE_COL + "=" + sdf.format(dateBefore1Day)
     val ipCountPathYesterday = baseDir + DATE_COL + "=" + sdf.format(dateBefore1Day)
     var ipCountPath: List[String] = List()
-    ipCountPath = ipCountPath:+ipCountTempPathToday
-    if(fs.exists(new Path(ipCountPathToday))) {
-      ipCountPath=ipCountPath:+ipCountPathToday
+    ipCountPath = ipCountPath :+ ipCountTempPathToday
+    if (fs.exists(new Path(ipCountPathToday))) {
+      ipCountPath = ipCountPath :+ ipCountPathToday
     }
     // read only 24 hours data
-    if(fs.exists(new Path(ipCountPathYesterday))) {
+    if (fs.exists(new Path(ipCountPathYesterday))) {
       val fileStatus = fs.listStatus(new Path(ipCountPathYesterday))
         .filter(status => String.valueOf(status.getPath.getName.substring(5, status.getPath.getName.indexOf("."))) >= (timestamp - 86400000).toString)
-        .map(status => ipCountPath=ipCountPath:+status.getPath.toString)
+        .map(status => ipCountPath = ipCountPath :+ status.getPath.toString)
     }
 
     dfIP = readFilesAsDFEx(ipCountPath.toArray).groupBy($"IP").agg(sum($"count") as "amnt").filter($"amnt" >= params.ipThreshold)
-      .withColumn("filter_failed_1", lit("IPCapping")).drop($"count").drop($"amnt")
+      .withColumn("capping", lit(cappingBit)).drop($"count").drop($"amnt")
 
     df = df.join(dfIP, $"IP_1" === $"IP", "left_outer")
-      .select(df.col("*"), $"filter_failed_1")
-      .drop($"filter_failed")
-      .withColumnRenamed("filter_failed_1","filter_failed")
+      .select(df.col("*"), $"capping")
       .drop("IP_1")
       .drop("IP")
-      .drop("filter_failed_1")
     df
   }
 

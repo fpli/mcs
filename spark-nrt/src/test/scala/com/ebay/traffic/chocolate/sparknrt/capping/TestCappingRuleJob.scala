@@ -12,6 +12,9 @@ import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 
+/**
+  * Created by xiangli4 on 4/8/18.
+  */
 class TestCappingRuleJob extends BaseFunSuite {
   val tmpPath = createTempPath()
   val inputDir = tmpPath + "/inputDir/"
@@ -61,7 +64,6 @@ class TestCappingRuleJob extends BaseFunSuite {
     var meta: MetaFiles = new MetaFiles(Array(dateFiles0))
 
     fs.mkdirs(new Path("file://" + inputDir + "/date=2017-12-31/"))
-    // test dedupe output meta
     metadata.writeDedupeOutputMeta(meta)
 
     val timestamp1 = getTimestamp("2018-01-01")
@@ -81,7 +83,7 @@ class TestCappingRuleJob extends BaseFunSuite {
     val df0 = job.readFilesAsDFEx(Array(outputDir + "/date=2018-01-01/"))
     df0.show()
     assert (df0.count() == 1)
-    assert(df0.filter($"filter_failed"==="IPCapping").count() == 0)
+    assert(df0.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
 
 
     val dateFiles1 = new DateFiles("2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
@@ -142,11 +144,11 @@ class TestCappingRuleJob extends BaseFunSuite {
     val df1 = job.readFilesAsDFEx(Array(outputDir + "/date=2018-01-01/"))
     df1.show()
     assert (df1.count() == 5)
-    assert(df1.filter($"filter_failed"==="IPCapping").count() == 0)
+    assert(df1.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
 
     val df2 = job.readFilesAsDFEx(Array(outputDir + "/date=2018-01-02/"))
     df2.show()
     assert (df2.count() == 8)
-    assert(df2.filter($"filter_failed"==="IPCapping").count() == 3)
+    assert(df2.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 3)
   }
 }

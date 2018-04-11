@@ -13,6 +13,9 @@ import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 
+/**
+  * Created by xiangli4 on 3/30/18.
+  */
 class TestIPCappingRule extends BaseFunSuite {
   val tmpPath = createTempPath()
   val inputDir = tmpPath + "/inputDir/"
@@ -41,7 +44,7 @@ class TestIPCappingRule extends BaseFunSuite {
   }
 
   val params = Parameter(args)
-  val job = new IPCappingRule(params)
+  val job = new IPCappingRule(params, 0x1l << CappingRuleEnum.IPCappingRule.id)
 
   def getTimestamp(date: String): Long = {
     job.sdf.parse(date).getTime
@@ -64,7 +67,6 @@ class TestIPCappingRule extends BaseFunSuite {
 
 
     fs.mkdirs(new Path("file://" + inputDir + "/date=2017-12-31/"))
-    // test dedupe output meta
     metadata.writeDedupeOutputMeta(meta)
 
     val timestamp1 = getTimestamp("2018-01-01")
@@ -83,7 +85,7 @@ class TestIPCappingRule extends BaseFunSuite {
     val dateFiles_0 = new DateFiles("2018-01-01", Array(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
     val df_0 = job.test(dateFiles_0)
     df_0.show()
-    assert(df_0.filter($"filter_failed" === "IPCapping").count() == 0)
+    assert(df_0.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
     job.renameBaseTempFiles(dateFiles_0)
 
     val dateFiles1 = new DateFiles("2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
@@ -142,14 +144,14 @@ class TestIPCappingRule extends BaseFunSuite {
       inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
     val df_1 = job.test(dateFiles_1)
     df_1.show()
-    assert(df_1.filter($"filter_failed" === "IPCapping").count() == 0)
+    assert(df_1.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
     job.renameBaseTempFiles(dateFiles_1)
 
     val dateFiles_2 = new DateFiles("2018-01-02", Array(inputDir + "/date=2018-01-02/part-00001.snappy.parquet",
       inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
     val df_2 = job.test(dateFiles_2)
     df_2.show()
-    assert(df_2.filter($"filter_failed" === "IPCapping").count() == 3)
+    assert(df_2.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 3)
     job.renameBaseTempFiles(dateFiles2)
   }
 }

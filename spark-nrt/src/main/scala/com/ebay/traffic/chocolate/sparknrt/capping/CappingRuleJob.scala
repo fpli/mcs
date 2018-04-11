@@ -88,8 +88,9 @@ class CappingRuleJob(params: Parameter)
 
   /**
     * capping logic
-    * @param date date
-    * @param input input file paths
+    *
+    * @param date                 date
+    * @param input                input file paths
     * @param cappingRuleContainer container of capping rules
     * @return DateFiles
     */

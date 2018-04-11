@@ -12,7 +12,7 @@ import org.apache.spark.sql.functions.{count, lit, split, sum}
 import org.apache.spark.sql.DataFrame
 
 // only for test
-class SnidCappingRule(params: Parameter)
+class SnidCappingRule(params: Parameter, bit: Long)
   extends BaseSparkJob(params.appName, params.mode) with CappingRule {
 
   lazy val inputDir = params.inputDir
@@ -42,6 +42,9 @@ class SnidCappingRule(params: Parameter)
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
   override def cleanBaseDir() = {}
+
+  lazy val cappingBit = bit
+
   import spark.implicits._
   override def test(dateFiles: DateFiles): DataFrame = {
     // filter click only, count ip and save to tmp file
@@ -103,15 +106,12 @@ class SnidCappingRule(params: Parameter)
       ipCountPath = Array(ipCountPath1)
     }
     dfIP = readFilesAsDFEx(ipCountPath).groupBy($"IP").agg(sum($"count") as "amnt").filter($"amnt" === 2)
-      .withColumn("filter_failed_1", lit("SnidCapping")).drop($"count").drop($"amnt")
+      .withColumn("capping", lit(cappingBit)).drop($"count").drop($"amnt")
 
     df = df.join(dfIP, $"IP_1" === $"IP", "left_outer")
-      .select(df.col("*"), $"filter_failed_1")
-      .drop($"filter_failed")
-      .withColumnRenamed("filter_failed_1","filter_failed")
+      .select(df.col("*"), $"capping")
       .drop("IP_1")
       .drop("IP")
-      .drop("filter_failed_1")
     df
   }
 
