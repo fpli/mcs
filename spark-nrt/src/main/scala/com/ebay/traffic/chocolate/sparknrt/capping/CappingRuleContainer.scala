@@ -17,14 +17,14 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
     ChannelType.EPN -> mutable.HashMap(
       CappingRuleEnum.IPCappingRule ->
         new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj),
-      CappingRuleEnum.SnidCappingRUle ->
-        new SnidCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRUle), dateFiles, sparkJobObj)
+      CappingRuleEnum.SnidCappingRule ->
+        new SnidCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule), dateFiles, sparkJobObj)
     ),
     ChannelType.DISPLAY -> mutable.HashMap(
     )
   )
 
-  def cleanBaseDir() = {
+  def preTest() = {
     val channelRules = channelsRules.get(ChannelType.valueOf(params.channel)).iterator
     while (channelRules.hasNext) {
       val rules = channelRules.next().iterator
@@ -37,7 +37,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
 
   import sparkJobObj.spark.implicits._
 
-  def test(params: Parameter, dateFiles: DateFiles): DataFrame = {
+  def test(params: Parameter): DataFrame = {
     val channelRules = channelsRules.get(ChannelType.valueOf(params.channel)).iterator
     var dfs: List[DataFrame] = List()
     while (channelRules.hasNext) {
@@ -68,7 +68,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
     df
   }
 
-  def renameBaseTempFiles(dateFiles: DateFiles) = {
+  def postTest() = {
     val channelRules = channelsRules.get(ChannelType.valueOf(params.channel)).iterator
     var dfs: List[DataFrame] = List()
     while (channelRules.hasNext) {

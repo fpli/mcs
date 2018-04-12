@@ -34,7 +34,7 @@ class CappingRuleJob(params: Parameter)
 
   lazy val baseDir = params.workDir + "/capping/" + params.channel + "/"
   lazy val sparkDir = baseDir + "/spark/"
-  lazy val outputDir = params.outputDir
+  lazy val outputDir = params.outputDir + params.channel + "/"
 
   override def run(): Unit = {
 
@@ -64,10 +64,10 @@ class CappingRuleJob(params: Parameter)
     */
   def capping(date: String, input: Array[String], cappingRuleContainer: CappingRuleContainer): DateFiles = {
     // clean base dir
-    cappingRuleContainer.cleanBaseDir()
+    cappingRuleContainer.preTest()
     val dateFiles = new DateFiles(date, input)
     // run every capping rule
-    var df = cappingRuleContainer.test(params, dateFiles)
+    var df = cappingRuleContainer.test(params)
 
     // save result to spark dir
     df = df.repartition(params.partitions)
@@ -77,7 +77,7 @@ class CappingRuleJob(params: Parameter)
     val files = renameFiles(outputDir, sparkDir, date)
 
     // rename base temp files
-    cappingRuleContainer.renameBaseTempFiles(dateFiles)
+    cappingRuleContainer.postTest()
     new DateFiles(date, files)
   }
 }

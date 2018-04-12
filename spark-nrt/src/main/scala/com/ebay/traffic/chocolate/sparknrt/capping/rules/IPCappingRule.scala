@@ -110,23 +110,15 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
   override def postTest() = {
     // rename tmp files to final files
     val dateOutputPath = new Path(baseDir + DATE_COL + "=" + dateFiles.date)
-    var max = -1
     if (!fs.exists(dateOutputPath)) {
       fs.mkdirs(dateOutputPath)
     }
 
     val fileStatus = fs.listStatus(new Path(baseTempDir + DATE_COL + "=" + dateFiles.date))
-    val files = fileStatus.filter(status => status.getPath.getName != "_SUCCESS")
-      .zipWithIndex
-      .map(swi => {
-        val src = swi._1.getPath
-        val name = src.getName
-        val seq = String.valueOf(name.substring(5, name.indexOf(".")))
-        val target = new Path(dateOutputPath, s"part-${seq}.snappy.parquet")
-        logger.info("Rename from: " + src.toString + " to: " + target.toString)
-        fs.rename(src, target)
-        target.toString
-      })
+    val src = fileStatus.filter(status => status.getPath.getName != "_SUCCESS").toList(0).getPath
+    val fileName = src.getName
+    val dest = new Path(dateOutputPath, fileName)
+    fs.rename(src, dest)
 
     // delete the tmp dir
     fs.delete(new Path(baseTempDir), true)
