@@ -21,7 +21,7 @@ class KafkaRDD[K, V](
                       val kafkaProperties: util.Properties,
                       val maxConsumeSize: Long = 100000000l // maximum number of events can be consumed in one task: 100M
                     ) extends RDD[ConsumerRecord[K, V]](sc, Nil) {
-  val POLL_STEP_MS = 3000
+  val POLL_STEP_MS = 30000
 
   @transient lazy val consumer = {
     kafkaProperties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
@@ -122,28 +122,29 @@ class KafkaRDD[K, V](
                                 ) extends Iterator[ConsumerRecord[K, V]] {
     val topicPartition = part.tp
     // get current position of consumer group for kafka topic partition
-    var pos = consumer.position(topicPartition)
+    var offset = consumer.position(topicPartition)
     log.info(s"KafkaRDDIterator: ${topicPartition}, " +
-      s"position: ${pos}, untilOffset: ${part.untilOffset}, index: ${part.index}")
+      s"position: ${offset}, untilOffset: ${part.untilOffset}, index: ${part.index}")
 
     var buffer: util.Iterator[ConsumerRecord[K, V]] = null
 
-    override def hasNext: Boolean = pos < part.untilOffset
+    override def hasNext: Boolean = offset < part.untilOffset
 
     override def next(): ConsumerRecord[K, V] = {
       assert (hasNext, "Can't call next() once there is no more records")
 
-      pos = pos + 1
-
-      if (buffer != null && buffer.hasNext) {
+      val record = if (buffer != null && buffer.hasNext) {
         buffer.next
       } else {
-        poll(POLL_STEP_MS, pos - 1)
+        poll(POLL_STEP_MS)
       }
+
+      offset = offset + 1
+      record
     }
 
     /** poll records from kafka topic partition **/
-    private def poll(timeout: Long, offset: Long): ConsumerRecord[K, V] = {
+    private def poll(timeout: Long): ConsumerRecord[K, V] = {
       var result : ConsumerRecord[K, V] = null
 
       buffer = null
@@ -154,8 +155,20 @@ class KafkaRDD[K, V](
           result = iter.next
           if (result.offset() > offset) {
             log.warn(s"Cannot fetch records in [${offset}, ${result.offset})")
+            if (result.offset() >= part.untilOffset) {
+              throw new IllegalStateException(
+                s"Tried to fetch ${offset} but the returned record offset was ${result.offset} " +
+                  s"which exceeded untilOffset ${part.untilOffset}")
+            } else {
+              log.warn(s"Skip missing records in [$offset, ${result.offset})")
+              offset = result.offset()
+              if (offset + 1 < part.untilOffset) {
+                consumer.seek(topicPartition, offset + 1)
+              }
+            }
           } else if (result.offset() < offset) {
-            log.warn(s"Tried to fetch ${offset} but the returned record offset was ${result.offset}")
+            throw new IllegalStateException(
+              s"Tried to fetch ${offset} but the returned record offset was ${result.offset}")
           }
           buffer = iter
         } else {
@@ -164,10 +177,18 @@ class KafkaRDD[K, V](
           // - Cannot fetch any data before timeout. TimeoutException will be thrown.
           val range = getAvailableOffsetRange()
           log.info(s"KafkaRDDIterator iterating: ${topicPartition}, " +
-            s"offset: ${offset}, available offset range: [${range.earliest}, ${range.latest})")
+            s"offset: ${offset}, available offset range: [${range.earliest}, ${range.latest}]")
           if (offset < range.earliest || offset > range.latest) {
-            throw new OffsetOutOfRangeException(
-              Map(topicPartition -> java.lang.Long.valueOf(offset)).asJava)
+            if (offset < range.earliest && range.earliest < part.untilOffset) {
+              log.warn(s"Skip missing records in [$offset, ${range.earliest})")
+              offset = range.earliest
+              consumer.seek(topicPartition, offset)
+            } else {
+              throw new IllegalStateException(
+                s"Tried to fetch ${offset} but the latest offset was ${range.latest}")
+            }
+//            throw new OffsetOutOfRangeException(
+//              Map(topicPartition -> java.lang.Long.valueOf(offset)).asJava)
           } else {
             throw new TimeoutException(
               s"Cannot fetch record for offset ${offset} in ${timeout} milliseconds")
