@@ -125,6 +125,7 @@ class KafkaRDD[K, V](
     var offset = consumer.position(topicPartition)
     log.info(s"KafkaRDDIterator: ${topicPartition}, " +
       s"position: ${offset}, untilOffset: ${part.untilOffset}, index: ${part.index}")
+    var reset = false
 
     var buffer: util.Iterator[ConsumerRecord[K, V]] = null
 
@@ -149,6 +150,10 @@ class KafkaRDD[K, V](
 
       buffer = null
       while (buffer == null) {
+        if (reset) { // if reset flag is true, we need to do seek
+          consumer.seek(topicPartition, offset)
+          reset = false
+        }
         val records = consumer.poll(timeout)
         val iter = records.iterator()
         if (iter.hasNext) {
@@ -162,9 +167,7 @@ class KafkaRDD[K, V](
             } else {
               log.warn(s"Skip missing records in [$offset, ${result.offset})")
               offset = result.offset()
-              if (offset + 1 < part.untilOffset) {
-                consumer.seek(topicPartition, offset + 1)
-              }
+              reset = true
             }
           } else if (result.offset() < offset) {
             throw new IllegalStateException(
@@ -182,7 +185,7 @@ class KafkaRDD[K, V](
             if (offset < range.earliest && range.earliest < part.untilOffset) {
               log.warn(s"Skip missing records in [$offset, ${range.earliest})")
               offset = range.earliest
-              consumer.seek(topicPartition, offset)
+              reset = true
             } else {
               throw new IllegalStateException(
                 s"Tried to fetch ${offset} but the latest offset was ${range.latest}")
