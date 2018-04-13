@@ -154,6 +154,7 @@ class DedupeAndSink(params: Parameter)
 
     // commit offsets of kafka RDDs
     kafkaRDD.commitOffsets()
+    kafkaRDD.close()
 
     // delete the dir
     fs.delete(new Path(baseDir), true)

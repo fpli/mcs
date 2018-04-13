@@ -103,6 +103,7 @@ class TestKafkaRDD extends BaseFunSuite {
     if (commit) {
       kafkaRDD.commitOffsets()
     }
+    kafkaRDD.close()
     assert(result.length == expected.size)
 
     result.foreach(kv => {
