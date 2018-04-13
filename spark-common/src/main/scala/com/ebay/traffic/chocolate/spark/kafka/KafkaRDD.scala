@@ -106,6 +106,13 @@ class KafkaRDD[K, V](
   }
 
   /**
+    * Close kafka consumer
+    */
+  def close() = {
+    consumer.close()
+  }
+
+  /**
     * Class of kafka RDD iterator
     */
   private class KafkaRDDIterator(
@@ -157,7 +164,7 @@ class KafkaRDD[K, V](
           // - Cannot fetch any data before timeout. TimeoutException will be thrown.
           val range = getAvailableOffsetRange()
           log.info(s"KafkaRDDIterator iterating: ${topicPartition}, " +
-            s"offset: ${offset}, available offset range: [${range.earliest}, ${range.latest}]")
+            s"offset: ${offset}, available offset range: [${range.earliest}, ${range.latest})")
           if (offset < range.earliest || offset > range.latest) {
             throw new OffsetOutOfRangeException(
               Map(topicPartition -> java.lang.Long.valueOf(offset)).asJava)
