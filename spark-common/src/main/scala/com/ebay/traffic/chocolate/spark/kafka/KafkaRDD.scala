@@ -131,12 +131,12 @@ class KafkaRDD[K, V](
       if (buffer != null && buffer.hasNext) {
         buffer.next
       } else {
-        poll(POLL_STEP_MS)
+        poll(POLL_STEP_MS, pos - 1)
       }
     }
 
     /** poll records from kafka topic partition **/
-    private def poll(timeout: Long): ConsumerRecord[K, V] = {
+    private def poll(timeout: Long, offset: Long): ConsumerRecord[K, V] = {
       var result : ConsumerRecord[K, V] = null
 
       buffer = null
@@ -145,10 +145,10 @@ class KafkaRDD[K, V](
         val iter = records.iterator()
         if (iter.hasNext) {
           result = iter.next
-          if (result.offset() > pos) {
-            log.warn(s"Cannot fetch records in [$pos, ${result.offset})")
-          } else if (result.offset() < pos) {
-            log.warn(s"Tried to fetch ${pos} but the returned record offset was ${result.offset}")
+          if (result.offset() > offset) {
+            log.warn(s"Cannot fetch records in [${offset}, ${result.offset})")
+          } else if (result.offset() < offset) {
+            log.warn(s"Tried to fetch ${offset} but the returned record offset was ${result.offset}")
           }
           buffer = iter
         } else {
@@ -157,13 +157,13 @@ class KafkaRDD[K, V](
           // - Cannot fetch any data before timeout. TimeoutException will be thrown.
           val range = getAvailableOffsetRange()
           log.info(s"KafkaRDDIterator iterating: ${topicPartition}, " +
-            s"position: ${pos}, available offset range: [${range.earliest}, ${range.latest}]")
-          if (pos < range.earliest || pos > range.latest) {
+            s"offset: ${offset}, available offset range: [${range.earliest}, ${range.latest}]")
+          if (offset < range.earliest || offset > range.latest) {
             throw new OffsetOutOfRangeException(
-              Map(topicPartition -> java.lang.Long.valueOf(pos)).asJava)
+              Map(topicPartition -> java.lang.Long.valueOf(offset)).asJava)
           } else {
             throw new TimeoutException(
-              s"Cannot fetch record for offset ${pos} in ${timeout} milliseconds")
+              s"Cannot fetch record for offset ${offset} in ${timeout} milliseconds")
           }
         }
       }
