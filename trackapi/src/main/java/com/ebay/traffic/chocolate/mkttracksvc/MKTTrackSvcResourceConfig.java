@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.mkttracksvc;
 
-import com.ebay.traffic.chocolate.mkttracksvc.resource.RotationIdSvc;
-import com.ebay.traffic.chocolate.mkttracksvc.resource.SessionIdSvc;
+import com.ebay.traffic.chocolate.mkttracksvc.resource.RotationIdResource;
+import com.ebay.traffic.chocolate.mkttracksvc.resource.SessionIdResource;
 import org.springframework.context.annotation.Configuration;
 
 import javax.ws.rs.ApplicationPath;
@@ -22,8 +22,8 @@ public class MKTTrackSvcResourceConfig extends Application {
   @Override
   public Set<Class<?>> getClasses() {
     Set<Class<?>> providers = new LinkedHashSet<Class<?>>();
-    providers.add(SessionIdSvc.class);
-    providers.add(RotationIdSvc.class);
+    providers.add(SessionIdResource.class);
+    providers.add(RotationIdResource.class);
     return providers;
   }
 }

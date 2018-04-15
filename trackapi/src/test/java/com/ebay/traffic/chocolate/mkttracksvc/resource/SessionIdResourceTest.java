@@ -20,7 +20,7 @@ import javax.ws.rs.core.Response;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
     properties = {"GingerClient.testService.testClient.endpointUri=http://localhost",
         "GingerClient.testService.testClient.readTimeout=5000"})
-public class SessionIdSvcTest {
+public class SessionIdResourceTest {
   @LocalServerPort
   private int port;
 

@@ -16,7 +16,7 @@ import javax.ws.rs.client.WebTarget;
 @ApiRef(api = "tracksvc", version = "1")
 @Component
 @Path("/snid")
-public class SessionIdSvc {
+public class SessionIdResource {
 
   @Inject
   @Named("myService.myClient")

@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.mkttracksvc.snid;
+package com.ebay.traffic.chocolate.mkttracksvc.util;
 
 import com.ebay.traffic.chocolate.mkttracksvc.util.DriverId;
 import com.ebay.traffic.chocolate.mkttracksvc.util.SessionId;

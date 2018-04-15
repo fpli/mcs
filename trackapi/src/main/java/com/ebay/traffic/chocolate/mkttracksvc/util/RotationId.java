@@ -20,12 +20,13 @@ public class RotationId {
    */
   public synchronized static String getNext(RotationInfo rotationReq) {
 //    long squence = counter.incrementAndGet();
-    String identity = supplyDigit(rotationReq.getChannelId(), 3) + supplyDigit(rotationReq.getSiteId(), 4);
+    String identity = supplyDigit(rotationReq.getChannel_id(), 3) + supplyDigit(rotationReq.getSite_id(), 4);
     String randomId = String.valueOf(System.currentTimeMillis() + DriverId.getDriverIdFromIp());
-    String campaignId = (rotationReq.getCampaignId() == null) ? randomId : rotationReq.getCampaignId();
-    String customizedId = rotationReq.getCustomizedId() == null ? randomId : rotationReq.getCustomizedId();
+    String campaignId = (rotationReq.getCampaign_id() == null) ? randomId : rotationReq.getCampaign_id();
+    String customizedId1 = rotationReq.getCustomized_id1() == null ? String.valueOf(Long.valueOf(randomId) + 1) : rotationReq.getCustomized_id1();
+    String customizedId2 = rotationReq.getCustomized_id2() == null ? String.valueOf(Long.valueOf(randomId) + 2) : rotationReq.getCustomized_id2();
 
-    String rId = identity + HYPHEN + String.valueOf(campaignId) + HYPHEN + customizedId + HYPHEN + System.currentTimeMillis();
+    String rId = identity + HYPHEN + String.valueOf(campaignId) + HYPHEN + customizedId1 + HYPHEN + customizedId2;
 
 //    checkAndClearCounter();
     return rId;

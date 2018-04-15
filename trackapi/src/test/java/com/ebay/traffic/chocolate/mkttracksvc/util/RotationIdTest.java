@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.mkttracksvc.rotationid;
+package com.ebay.traffic.chocolate.mkttracksvc.util;
 
 import com.ebay.globalenv.SiteEnum;
 import com.ebay.traffic.chocolate.mkttracksvc.constant.TrackingChannelEnum;
@@ -15,14 +15,15 @@ public class RotationIdTest {
   public void testGetNextCustomizedRotationId() {
 
     RotationInfo rotationRequest = new RotationInfo();
-    rotationRequest.setChannelId(TrackingChannelEnum.AFFILIATES.getId());
-    rotationRequest.setSiteId(SiteEnum.EBAY_DE.getId());
-    rotationRequest.setCampaignId("000000001");
-    rotationRequest.setCustomizedId("000000002");
-    rotationRequest.setRotationName("CatherineTesting RotationName");
+    rotationRequest.setChannel_id(TrackingChannelEnum.AFFILIATES.getId());
+    rotationRequest.setSite_id(SiteEnum.EBAY_DE.getId());
+    rotationRequest.setCampaign_id("000000001");
+    rotationRequest.setCustomized_id1("000000002");
+    rotationRequest.setCustomized_id2("000000003");
+    rotationRequest.setRotation_name("CatherineTesting RotationName");
     // Customized rotationId
     String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("0010077-000000001-000000002", rotationId.substring(0, rotationId.lastIndexOf("-")));
+    Assert.assertEquals("0010077-000000001-000000002-000000003", rotationId);
   }
 
 
@@ -30,9 +31,9 @@ public class RotationIdTest {
   public void testGetNextAutoGenRotationId() {
 
     RotationInfo rotationRequest = new RotationInfo();
-    rotationRequest.setChannelId(14);
-    rotationRequest.setSiteId(11);
-    rotationRequest.setRotationName("CatherineTesting RotationName");
+    rotationRequest.setChannel_id(14);
+    rotationRequest.setSite_id(11);
+    rotationRequest.setRotation_name("CatherineTesting RotationName");
 
     String rotationId = RotationId.getNext(rotationRequest);
     String[] rotationIdStr = rotationId.split("-");
@@ -45,6 +46,10 @@ public class RotationIdTest {
     Assert.assertEquals(current.get(Calendar.MONTH), c.get(Calendar.MONTH));
     Assert.assertEquals(current.get(Calendar.DATE), c.get(Calendar.DATE));
     c.setTimeInMillis(Long.valueOf(rotationIdStr[2]));
+    Assert.assertEquals(current.get(Calendar.YEAR), c.get(Calendar.YEAR));
+    Assert.assertEquals(current.get(Calendar.MONTH), c.get(Calendar.MONTH));
+    Assert.assertEquals(current.get(Calendar.DATE), c.get(Calendar.DATE));
+    c.setTimeInMillis(Long.valueOf(rotationIdStr[3]));
     Assert.assertEquals(current.get(Calendar.YEAR), c.get(Calendar.YEAR));
     Assert.assertEquals(current.get(Calendar.MONTH), c.get(Calendar.MONTH));
     Assert.assertEquals(current.get(Calendar.DATE), c.get(Calendar.DATE));

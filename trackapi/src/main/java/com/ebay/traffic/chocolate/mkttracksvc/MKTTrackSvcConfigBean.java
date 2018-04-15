@@ -13,11 +13,12 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "mkttracksvc")
 public class MKTTrackSvcConfigBean extends BaseConfigBean {
-  private static BeanPropertyInfo CouchBase_Cluster = createBeanPropertyInfo("cbCluster", "CouchBase_Cluster", true);
-  private static BeanPropertyInfo CouchBase_Connection_TImeout = createBeanPropertyInfo("cbConnectionTimeout", "CouchBase_Connection_TImeout", true);
-  private static BeanPropertyInfo CouchBase_Query_Timeout = createBeanPropertyInfo("cbQueryTimeout", "CouchBase_Query_Timeout", true);
-  private static BeanPropertyInfo CouchBase_Buket_Timeout = createBeanPropertyInfo("cbBucketTimeout", "CouchBase_Buket_Timeout", true);
-  private static BeanPropertyInfo CouchBase_Bucket_Rotation = createBeanPropertyInfo("cbBucketRotation", "CouchBase_Bucket_Rotation", true);
+  private static BeanPropertyInfo CouchBase_Cluster = createBeanPropertyInfo("cbCluster", "couchbase_cluster", true);
+  private static BeanPropertyInfo CouchBase_POOL_SIZE = createBeanPropertyInfo("cbPoolSize", "couchbase_pool_size", true);
+  private static BeanPropertyInfo CouchBase_Connection_TImeout = createBeanPropertyInfo("cbConnectionTimeout", "couchbase_connection_timeout", true);
+  private static BeanPropertyInfo CouchBase_Query_Timeout = createBeanPropertyInfo("cbQueryTimeout", "couchbase_query_timeout", true);
+  private static BeanPropertyInfo CouchBase_Buket_Timeout = createBeanPropertyInfo("cbBucketTimeout", "couchbase_bucket_timeout", true);
+  private static BeanPropertyInfo CouchBase_Bucket_Rotation = createBeanPropertyInfo("cbBucketRotation", "couchBase_bucket_rotation", true);
 
 
   public MKTTrackSvcConfigBean() throws ConfigCategoryCreateException {
@@ -31,6 +32,7 @@ public class MKTTrackSvcConfigBean extends BaseConfigBean {
   }
 
 
+  private Integer cbPoolSize;
   private String cbCluster;
   private Integer cbConnectionTimeout;
   private Integer cbQueryTimeout;
@@ -38,6 +40,14 @@ public class MKTTrackSvcConfigBean extends BaseConfigBean {
   private String cbBucketRotation;
   private String cbRotationUser;
   private String cbRotationPwd;
+
+  public Integer getCbPoolSize() {
+    return cbPoolSize;
+  }
+
+  public void setCbPoolSize(Integer cbPoolSize) {
+    changeProperty(CouchBase_POOL_SIZE, this.cbPoolSize, cbPoolSize);
+  }
 
   public String getCbCluster() {
     return cbCluster;

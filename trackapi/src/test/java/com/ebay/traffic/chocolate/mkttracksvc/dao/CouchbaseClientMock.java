@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.mkttracksvc.util;
+package com.ebay.traffic.chocolate.mkttracksvc.dao;
 
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
