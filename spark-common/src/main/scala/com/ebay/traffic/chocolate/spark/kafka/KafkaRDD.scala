@@ -1,11 +1,14 @@
 package com.ebay.traffic.chocolate.spark.kafka
 
 import java.util
+import java.util.concurrent.TimeoutException
 
 import org.apache.kafka.clients.consumer._
 import org.apache.kafka.common.TopicPartition
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext, TaskContext}
+
+import scala.collection.JavaConverters._
 
 /**
   * Created by yliu29 on 3/12/18.
@@ -18,7 +21,7 @@ class KafkaRDD[K, V](
                       val kafkaProperties: util.Properties,
                       val maxConsumeSize: Long = 100000000l // maximum number of events can be consumed in one task: 100M
                     ) extends RDD[ConsumerRecord[K, V]](sc, Nil) {
-  val POLL_STEP_MS = 100
+  val POLL_STEP_MS = 30000
 
   @transient lazy val consumer = {
     kafkaProperties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
@@ -103,6 +106,13 @@ class KafkaRDD[K, V](
   }
 
   /**
+    * Close kafka consumer
+    */
+  def close() = {
+    consumer.close()
+  }
+
+  /**
     * Class of kafka RDD iterator
     */
   private class KafkaRDDIterator(
@@ -110,22 +120,28 @@ class KafkaRDD[K, V](
                                   val consumer: Consumer[K, V],
                                   val context: TaskContext
                                 ) extends Iterator[ConsumerRecord[K, V]] {
+    val topicPartition = part.tp
     // get current position of consumer group for kafka topic partition
-    var pos = consumer.position(part.tp)
+    var offset = consumer.position(topicPartition)
+    log.info(s"KafkaRDDIterator: ${topicPartition}, " +
+      s"position: ${offset}, untilOffset: ${part.untilOffset}, index: ${part.index}")
+    var reset = false
+
     var buffer: util.Iterator[ConsumerRecord[K, V]] = null
 
-    override def hasNext: Boolean = pos < part.untilOffset
+    override def hasNext: Boolean = offset < part.untilOffset
 
     override def next(): ConsumerRecord[K, V] = {
       assert (hasNext, "Can't call next() once there is no more records")
 
-      pos = pos + 1
-
-      if (buffer != null && buffer.hasNext) {
+      val record = if (buffer != null && buffer.hasNext) {
         buffer.next
       } else {
         poll(POLL_STEP_MS)
       }
+
+      offset = offset + 1
+      record
     }
 
     /** poll records from kafka topic partition **/
@@ -134,16 +150,69 @@ class KafkaRDD[K, V](
 
       buffer = null
       while (buffer == null) {
+        if (reset) { // if reset flag is true, we need to do seek
+          consumer.seek(topicPartition, offset)
+          reset = false
+        }
         val records = consumer.poll(timeout)
         val iter = records.iterator()
         if (iter.hasNext) {
           result = iter.next
+          if (result.offset() > offset) {
+            log.warn(s"Cannot fetch records in [${offset}, ${result.offset})")
+            if (result.offset() >= part.untilOffset) {
+              throw new IllegalStateException(
+                s"Tried to fetch ${offset} but the returned record offset was ${result.offset} " +
+                  s"which exceeded untilOffset ${part.untilOffset}")
+            } else {
+              log.warn(s"Skip missing records in [$offset, ${result.offset})")
+              offset = result.offset()
+              reset = true
+            }
+          } else if (result.offset() < offset) {
+            throw new IllegalStateException(
+              s"Tried to fetch ${offset} but the returned record offset was ${result.offset}")
+          }
           buffer = iter
         } else {
-          Thread.sleep(POLL_STEP_MS)
+          // We cannot fetch anything after `poll`. Two possible cases:
+          // - `offset` is out of range so that Kafka returns nothing.
+          // - Cannot fetch any data before timeout. TimeoutException will be thrown.
+          val range = getAvailableOffsetRange()
+          log.info(s"KafkaRDDIterator iterating: ${topicPartition}, " +
+            s"offset: ${offset}, available offset range: [${range.earliest}, ${range.latest}]")
+          if (offset < range.earliest || offset > range.latest) {
+            if (offset < range.earliest && range.earliest < part.untilOffset) {
+              log.warn(s"Skip missing records in [$offset, ${range.earliest})")
+              offset = range.earliest
+              reset = true
+            } else {
+              throw new IllegalStateException(
+                s"Tried to fetch ${offset} but the latest offset was ${range.latest}")
+            }
+//            throw new OffsetOutOfRangeException(
+//              Map(topicPartition -> java.lang.Long.valueOf(offset)).asJava)
+          } else {
+            throw new TimeoutException(
+              s"Cannot fetch record for offset ${offset} in ${timeout} milliseconds")
+          }
         }
       }
       result
+    }
+
+    case class AvailableOffsetRange(earliest: Long, latest: Long)
+
+    /**
+      * Return the available offset range of the current partition. It's a pair of the earliest offset
+      * and the latest offset.
+      */
+    def getAvailableOffsetRange(): AvailableOffsetRange = {
+      consumer.seekToBeginning(Set(topicPartition).asJava)
+      val earliestOffset = consumer.position(topicPartition)
+      consumer.seekToEnd(Set(topicPartition).asJava)
+      val latestOffset = consumer.position(topicPartition)
+      AvailableOffsetRange(earliestOffset, latestOffset)
     }
   }
 }

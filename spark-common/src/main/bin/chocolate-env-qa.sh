@@ -10,15 +10,15 @@ if [ -z "${HADOOP_CONF_DIR}" ]; then
 fi
 
 if [ -z "${SPARK_HOME}" ]; then
-  export SPARK_HOME=/usr/hdp/2.5.0.0-1245/spark2
+  export SPARK_HOME=/apache/spark-2.3.0-bin-hadoop2.7/
 fi
 
 if [ -z "${SPARK_CONF_DIR}" ]; then
-  export SPARK_CONF_DIR=/usr/hdp/2.5.0.0-1245/spark2/conf
+  export SPARK_CONF_DIR=/apache/spark-2.3.0-bin-hadoop2.7/conf
 fi
 
-SPARK_EVENTLOG_DIR=hdfs://choco-2024312.lvs02.dev.ebayc3.com/app-logs/spark/logs
-HISTORY_SERVER=http://choco-2024115.lvs02.dev.ebayc3.com:18081
+SPARK_EVENTLOG_DIR=hdfs://choco-cent-1659401.slc07.dev.ebayc3.com:8020/app-logs/spark/logs
+HISTORY_SERVER=http://choco-cent-1659370.slc07.dev.ebayc3.com:18080
 
 FILES="file:///${HADOOP_CONF_DIR}/ssl-client.xml"
 
