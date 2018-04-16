@@ -2,12 +2,10 @@ package com.ebay.traffic.chocolate.listener;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
 import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
 import com.ebay.traffic.chocolate.common.MiniZookeeperCluster;
-import com.ebay.traffic.chocolate.init.ListenerInitializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
@@ -23,10 +21,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -118,5 +120,29 @@ public class ListenerServiceTest {
       }
     }
     Assert.assertTrue(hasClick && hasVimp && hasImp);
+  }
+
+  @Test
+  public void testPostMethodSuccessfully() throws Exception{
+    String page = "http://www.ebay.com/itm/The-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-/380963112068";
+    String clickURL = "http://127.0.0.1:" + port + "/1c/1-12345";
+
+    HttpHeaders headers = new HttpHeaders();
+    MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+    map.add("page", page);
+    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+    ResponseEntity<String> response = restTemplate.postForEntity(clickURL, request, String.class);
+    Assert.assertEquals(HttpStatus.FOUND, response.getStatusCode());
+
+    // wait few seconds to let Listener worker threads run first.
+    Thread.sleep(2000);
+
+    Consumer<Long, ListenerMessage> consumer = kafkaCluster.createConsumer(
+        LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessages = pollFromKafkaTopic(
+        consumer, Arrays.asList("dev_listener"), 1, 60 * 1000);
+    consumer.close();
+
+    Assert.assertEquals(1, listenerMessages.size());
   }
 }

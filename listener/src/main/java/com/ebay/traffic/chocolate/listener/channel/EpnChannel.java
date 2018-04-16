@@ -94,7 +94,7 @@ public class EpnChannel implements Channel {
 
         // Parse the response
         ListenerMessage message = parser.parseHeader(request, response,
-                startTime, campaignId, logicalChannel, channelAction, snid);
+                startTime, campaignId, logicalChannel.getAvro(), channelAction, snid);
 
         if (message != null) {
      /*       Page page = getJournalPage();

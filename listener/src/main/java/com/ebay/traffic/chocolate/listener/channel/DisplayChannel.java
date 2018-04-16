@@ -52,7 +52,7 @@ public class DisplayChannel implements Channel {
         long startTime = startTimerAndLogData(request);
 
         ListenerMessage message = parser.parseHeader(request, response, startTime,
-                -1L, logicalChannelEnum, channelActionEnum, null);
+                -1L, logicalChannelEnum.getAvro(), channelActionEnum, null);
 
         if (message != null) {
             producer.send(new ProducerRecord<>(kafkaTopic,
