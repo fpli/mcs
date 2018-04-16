@@ -40,13 +40,20 @@ public class CouchbaseClient {
 
     /**Singleton */
     private CouchbaseClient() {
-        CouchbaseEnvironment env = DefaultCouchbaseEnvironment.builder().
-                connectTimeout(10000).queryTimeout(5000).build();
-        this.cluster = CouchbaseCluster.create(env, ApplicationOptions.getInstance().getCouchBaseCluster());
+      CouchbaseEnvironment env = DefaultCouchbaseEnvironment.builder().
+          connectTimeout(10000).queryTimeout(5000).build();
+      this.cluster = CouchbaseCluster.create(env, ApplicationOptions.getInstance().getCouchBaseCluster());
+      try {
         cluster.authenticate(ApplicationOptions.getInstance().getCouchBaseUser(),
-                ApplicationOptions.getInstance().getCouchbasePassword());
+            ApplicationOptions.getInstance().getCouchbasePassword());
         this.bucket = cluster.openBucket(ApplicationOptions.getInstance().getCouchBaseBucket(),
-                1200, TimeUnit.SECONDS);
+            1200, TimeUnit.SECONDS);
+      } catch (Exception e) {
+        logger.error("Couchbase init error");
+        throw e;
+      } finally {
+        cluster.disconnect();
+      }
       this.buffer = new LinkedBlockingDeque<>();
     }
 
