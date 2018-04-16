@@ -37,6 +37,7 @@ abstract class BaseSparkJob(val jobName: String,
       builder.master(mode)
         .appName("SparkUnitTesting")
         .config("spark.sql.shuffle.partitions", "1")
+        .config("spark.driver.bindAddress", "127.0.0.1")
         .config("spark.sql.warehouse.dir", System.getProperty("java.io.tmpdir"))
       // for test, hive support is not enabled. Use in-memory catalog implementation
     } else if (enableHiveSupport) {
