@@ -131,7 +131,7 @@ public class FilterWorker extends Thread {
     LOG.warn("Shutting down");
   }
 
-  public FilterMessage processMessage(ListenerMessage message) {
+  private FilterMessage processMessage(ListenerMessage message) throws InterruptedException {
     FilterMessage outMessage = new FilterMessage();
     outMessage.setSnapshotId(message.getSnapshotId());
     outMessage.setTimestamp(message.getTimestamp());
@@ -168,9 +168,9 @@ public class FilterWorker extends Thread {
    * @param campaignId
    * @return publisher, in case no match result, use default -1L
    */
-  public Long getPublisherId(Long campaignId) {
-    Long publisher = CampaignPublisherMappingCache.getInstance().lookup(campaignId);
-    if (publisher == null) {
+  private Long getPublisherId(Long campaignId) throws InterruptedException {
+    long publisher = CampaignPublisherMappingCache.getInstance().lookup(campaignId);
+    if (publisher == DEFAULT_PUBLISHER_ID) {
       LOG.debug(String.format("No match result for campaign %d, use default -1L as publisherId", campaignId));
       return DEFAULT_PUBLISHER_ID;
     }

@@ -18,7 +18,7 @@ class TestKafkaRDD extends BaseFunSuite {
   var kafkaCluster: MiniKafkaCluster = null
 
   lazy val conf = {
-    new SparkConf().setAppName("test").setMaster("local[8]")
+    new SparkConf().setAppName("test").setMaster("local[8]").set("spark.driver.bindAddress", "127.0.0.1")
   }
 
   lazy val sc = {
@@ -103,6 +103,7 @@ class TestKafkaRDD extends BaseFunSuite {
     if (commit) {
       kafkaRDD.commitOffsets()
     }
+    kafkaRDD.close()
     assert(result.length == expected.size)
 
     result.foreach(kv => {
