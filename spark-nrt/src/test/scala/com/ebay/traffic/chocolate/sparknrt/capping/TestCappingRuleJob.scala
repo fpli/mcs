@@ -19,7 +19,7 @@ class TestCappingRuleJob extends BaseFunSuite {
   val tmpPath = createTempPath()
   val inputDir = tmpPath + "/inputDir/"
   val workDir = tmpPath + "/workDir/"
-  val outputDir = tmpPath + "/capping/"
+  val outputDir = tmpPath + "/outputDir/"
   val ipThreshold = "6"
   val channel = "EPN"
 
@@ -80,7 +80,7 @@ class TestCappingRuleJob extends BaseFunSuite {
     writer1_0.close()
     // handle 1st meta containing 1 meta 1 date 1 file
     job.run()
-    val df0 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/date=2018-01-01/"))
+    val df0 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-01/"))
     df0.show()
     assert (df0.count() == 1)
     assert(df0.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
@@ -157,12 +157,12 @@ class TestCappingRuleJob extends BaseFunSuite {
     // handle 3rd meta containing 1 meta 1 date 1 file
     job.run()
 
-    val df1 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/date=2018-01-01/"))
+    val df1 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-01/"))
     df1.show()
     assert (df1.count() == 5)
     assert(df1.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
 
-    val df2 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/date=2018-01-02/"))
+    val df2 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-02/"))
     df2.show()
     assert (df2.count() == 9)
     //only the last batch has 1 ip rule faild
