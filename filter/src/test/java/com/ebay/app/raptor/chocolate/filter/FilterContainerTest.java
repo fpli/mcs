@@ -45,7 +45,7 @@ public class FilterContainerTest {
     
     FilterResult result = filter.test(lm);
     assertEquals(true, result.isEventValid());
-    assertEquals(FilterRuleType.NONE, result.getFailedRule());
+    assertEquals(0, result.getFailedRule().longValue());
   }
   
   @Test
@@ -61,7 +61,7 @@ public class FilterContainerTest {
     
     FilterResult result = filter.test(lm);
     assertEquals(false, result.isEventValid());
-    assertEquals(FilterRuleType.IAB_BOT_LIST, result.getFailedRule());
+    assertEquals(8, result.getFailedRule().longValue());
   }
   
   @Test
@@ -78,7 +78,7 @@ public class FilterContainerTest {
     filter.put(ChannelType.EPN, ruleMap);
     
     FilterResult result = filter.test(lm);
-    assertEquals(FilterRuleType.PREFETCH, result.getFailedRule());
+    assertEquals(2, result.getFailedRule().longValue());
     assertEquals(1, rule1.times);
     assertEquals(1, rule2.times);
   }
@@ -97,7 +97,7 @@ public class FilterContainerTest {
     
     FilterResult result = filter.test(lm);
     assertEquals(true, result.isEventValid());
-    assertEquals(FilterRuleType.NONE, result.getFailedRule());
+    assertEquals(0, result.getFailedRule().longValue());
   }
   
   @Test
@@ -112,8 +112,8 @@ public class FilterContainerTest {
     filter.put(ChannelType.EPN, ruleMap);
     
     FilterResult result = filter.test(lm);
-    assertEquals(false, result.isEventValid());
-    assertEquals(FilterRuleType.IAB_BOT_LIST, result.getFailedRule());
+    assertEquals(true, result.isEventValid());
+    assertEquals(0, result.getFailedRule().longValue());
   }
   
   @Test

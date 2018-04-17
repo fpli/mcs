@@ -11,14 +11,14 @@ import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
  */
 public class FilterResult {
     private boolean isValid;
-    private FilterRuleType failedRule;
+    private Long failedRule;
 
     /**
      * Create a FilterResult with all its attributes
      * @param isValid true = passed (good), false = failed (bad)
      * @param failedRule rule that the event failed (or RuleType.NONE if passed)
      */
-    public FilterResult(boolean isValid, FilterRuleType failedRule) {
+    public FilterResult(boolean isValid, Long failedRule) {
         this.isValid = isValid;
         this.failedRule = failedRule;
     }
@@ -27,7 +27,7 @@ public class FilterResult {
         return this.isValid;
     }
 
-    public FilterRuleType getFailedRule() {
+    public Long getFailedRule() {
         return this.failedRule;
     }
 }

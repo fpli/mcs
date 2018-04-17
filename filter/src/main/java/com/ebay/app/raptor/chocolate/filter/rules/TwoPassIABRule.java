@@ -5,7 +5,7 @@ import com.ebay.app.raptor.chocolate.common.ZooKeeperConnection;
 import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.filter.rules.uamatch.BlacklistEntry;
 import com.ebay.app.raptor.chocolate.filter.rules.uamatch.WhitelistEntry;
-import com.ebay.app.raptor.chocolate.filter.service.BaseFilterWeightedRule;
+import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 import com.ebay.kernel.context.RuntimeContext;
 import org.apache.log4j.Logger;
@@ -22,7 +22,7 @@ import java.util.List;
  * <p>
  * Created by spugach on 11/17/16.
  */
-public class TwoPassIABRule extends BaseFilterWeightedRule {
+public class TwoPassIABRule extends BaseFilterRule {
   public static final String FILTERING_IAB_WHITELIST_ZK_PATH = "chocolate.filter.iabtest.whitelist";
   public static final String FILTERING_IAB_BLACKLIST_ZK_PATH = "chocolate.filter.iabtest.blacklist";
   private static final String IAB_WHITELIST_FILENAME = "IAB_ABC_International_List_of_Valid_Browsers.txt";
@@ -138,8 +138,7 @@ public class TwoPassIABRule extends BaseFilterWeightedRule {
    * @return fail weight
    */
   @Override
-  public float test(FilterRequest event) {
-    return isUserAgentValid(event.getUserAgent()) ? 0 : getRuleWeight();
+  public float test(FilterRequest event) { return isUserAgentValid(event.getUserAgent()) ? 0 : 1;
   }
   
   /**

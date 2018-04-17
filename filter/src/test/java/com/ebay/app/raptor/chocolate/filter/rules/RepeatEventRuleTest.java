@@ -31,20 +31,18 @@ public class RepeatEventRuleTest {
     public void addTestRules() throws IOException {
         //Default Testing Data from configuration file
         Map<ChannelType, Map<String, FilterRuleContent>> filterRules = ApplicationOptions.filterRuleConfigMap;
-    
+
         //Testing Data for EPN channel
         FilterRuleContent ruleConentEPN = new FilterRuleContent();
         ruleConentEPN.setRuleName(RepeatClickRule.class.getSimpleName());
         ruleConentEPN.setTimeoutMS(1000);
-        ruleConentEPN.setRuleWeight(1.0f);
         filterRules.get(ChannelType.EPN).put(RepeatClickRule.class.getSimpleName(), ruleConentEPN);
-    
+
         //Testing Data for DAP channel
         FilterRuleContent ruleConentDAP = new FilterRuleContent();
         ruleConentDAP.setTimeoutMS(1500);
-        ruleConentDAP.setRuleWeight(2.0f);
         filterRules.get(ChannelType.DISPLAY).put(RepeatClickRule.class.getSimpleName(), ruleConentDAP);
-        
+
     }
 
     @After

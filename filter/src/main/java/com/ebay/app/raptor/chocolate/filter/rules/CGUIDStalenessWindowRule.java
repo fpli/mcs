@@ -2,7 +2,7 @@ package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.filter.service.BaseFilterWeightedRule;
+import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 
 /**
@@ -10,7 +10,7 @@ import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
  * <p>
  * Created by spugach on 1/9/17.
  */
-public class CGUIDStalenessWindowRule extends BaseFilterWeightedRule {
+public class CGUIDStalenessWindowRule extends BaseFilterRule {
   private long windowStart = 500L;
   
   /**
@@ -35,6 +35,6 @@ public class CGUIDStalenessWindowRule extends BaseFilterWeightedRule {
    */
   @Override
   public float test(FilterRequest event) {
-    return (event.getRequestCGUID() == null) || (event.getTimestamp() > event.getRequestCGUIDTimestamp() + windowStart) ? 0 : this.filterRuleContent.getRuleWeight();
+    return (event.getRequestCGUID() == null) || (event.getTimestamp() > event.getRequestCGUIDTimestamp() + windowStart) ? 0 : 1;
   }
 }

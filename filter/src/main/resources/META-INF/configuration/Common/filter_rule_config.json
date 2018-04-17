@@ -3,46 +3,28 @@
     "channelType": "DEFAULT",
     "filterRules": [
       {
-        "ruleName": "PrefetchRule",
-        "ruleWeight": 1.0
-      },
+        "ruleName": "PrefetchRule"},
       {
-        "ruleName": "TwoPassIABRule",
-        "ruleWeight": 1.0
-      },
+        "ruleName": "TwoPassIABRule"},
       {
-        "ruleName": "InternalTrafficRule",
-        "ruleWeight": 1.0
-      }
+        "ruleName": "InternalTrafficRule"}
     ]
   },
   {
     "channelType": "EPN",
     "filterRules": [
       {
-        "ruleName": "PublisherValidRule",
-        "ruleWeight": 1.0
-      },
+        "ruleName": "PublisherValidRule"},
       {
-        "ruleName": "EPNDomainBlacklistRule",
-        "ruleWeight": 0.5
-      },
+        "ruleName": "EPNDomainBlacklistRule"},
       {
-        "ruleName": "IPBlacklistRule",
-        "ruleWeight": 0.5
-      },
+        "ruleName": "IPBlacklistRule"},
       {
         "ruleName": "CGUIDStalenessWindowRule",
-        "ruleWeight": 0.5,
         "windowStart": 500
       },
       {
-        "ruleName": "CampaignClickThroughRateRule",
-        "ruleWeight": 0.5
-      },
-      {
         "ruleName": "RepeatClickRule",
-        "ruleWeight": 0.5,
         "timeoutMS": 500
       }
     ]
@@ -51,9 +33,7 @@
     "channelType": "DISPLAY",
     "filterRules": [
       {
-        "ruleName": "IPBlacklistRule",
-        "ruleWeight": 0.0
-      }
+        "ruleName": "IPBlacklistRule"}
     ]
   }
 ]
