@@ -7,12 +7,11 @@ import java.util.{Date, Properties}
 
 import com.ebay.app.raptor.chocolate.avro.FilterMessage
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
-import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import com.ebay.traffic.chocolate.spark.kafka.KafkaRDD
-import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata}
+import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
+import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import org.apache.avro.generic.GenericRecord
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
@@ -34,7 +33,7 @@ object DedupeAndSink extends App {
 }
 
 class DedupeAndSink(params: Parameter)
-  extends BaseSparkJob(params.appName, params.mode) {
+  extends BaseSparkNrtJob(params.appName, params.mode) {
 
   @transient var properties: Properties = {
     val properties = new Properties()
@@ -42,22 +41,10 @@ class DedupeAndSink(params: Parameter)
     properties
   }
 
-  lazy val DATE_COL = "date"
-
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
   def getDateString(timestamp: Long): String = {
     sdf.format(new Date(timestamp))
-  }
-
-  @transient lazy val hadoopConf = {
-    new Configuration()
-  }
-
-  @transient lazy val fs = {
-    val fs = FileSystem.get(hadoopConf)
-    sys.addShutdownHook(fs.close())
-    fs
   }
 
   @transient lazy val rand = {
@@ -70,7 +57,7 @@ class DedupeAndSink(params: Parameter)
   lazy val outputDir = params.outputDir
 
   @transient lazy val metadata = {
-    Metadata(params.workDir, params.channel)
+    Metadata(params.workDir, params.channel, MetadataEnum.dedupe)
   }
 
   val SNAPSHOT_ID_COL = "snapshot_id"
@@ -183,31 +170,7 @@ class DedupeAndSink(params: Parameter)
 
     saveDFToFiles(df, sparkDir)
 
-    val dateOutputPath = new Path(outputDir + "/" + date)
-    var max = -1
-    if (fs.exists(dateOutputPath)) {
-      val outputStatus = fs.listStatus(dateOutputPath)
-      if (outputStatus.length > 0) {
-        max = outputStatus.map(status => {
-          val name = status.getPath.getName
-          Integer.valueOf(name.substring(5, name.indexOf(".")))
-        }).sortBy(i => i).last
-      }
-    } else {
-      fs.mkdirs(dateOutputPath)
-    }
-
-    val fileStatus = fs.listStatus(new Path(sparkDir))
-    val files = fileStatus.filter(status => status.getPath.getName != "_SUCCESS")
-      .zipWithIndex
-      .map(swi => {
-        val src = swi._1.getPath
-        val seq = ("%5d" format max + 1 + swi._2).replace(" ", "0")
-        val target = new Path(dateOutputPath, s"part-${seq}.snappy.parquet")
-        logger.info("Rename from: " + src.toString + " to: " + target.toString)
-        fs.rename(src, target)
-        target.toString
-      })
+    val files = renameFiles(outputDir, sparkDir, date)
 
     new DateFiles(date, files)
   }
