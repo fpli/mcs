@@ -32,9 +32,8 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
     fs
   }
 
-  lazy val DATE_COL = "date"
-
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
+  lazy val DATE_COL = "date"
 
   lazy val baseDir = params.workDir + "/capping/" + params.channel + "/ip/"
   lazy val baseTempDir = baseDir + "/tmp/"
@@ -62,7 +61,7 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
 
     // reduce the number of ip count file to 1
     dfIP = dfIP.repartition(1)
-    val tempPath = baseTempDir + DATE_COL + "=" + dateFiles.date
+    val tempPath = baseTempDir + dateFiles.date
     cappingRuleJobObj.saveDFToFiles(dfIP, tempPath)
 
     // rename file name to include timestamp
@@ -77,10 +76,10 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
       .withColumn("IP_1", split($"tmpIP", """\|""")(0))
       .drop($"tmpIP")
 
-    val ipCountTempPathToday = baseTempDir + DATE_COL + "=" + dateFiles.date
-    val ipCountPathToday = baseDir + DATE_COL + "=" + dateFiles.date
+    val ipCountTempPathToday = baseTempDir + dateFiles.date
+    val ipCountPathToday = baseDir + dateFiles.date
     val cal = Calendar.getInstance
-    cal.setTime(sdf.parse((dateFiles.date.asInstanceOf[String])))
+    cal.setTime(sdf.parse((dateFiles.date.asInstanceOf[String]).substring(DATE_COL.length + 1)))
     cal.add(Calendar.DATE, -1)
     val dateBefore1Day = cal.getTime
     val ipCountTempPathYesterday = baseTempDir + DATE_COL + "=" + sdf.format(dateBefore1Day)
@@ -93,7 +92,7 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
     // read only 24 hours data
     if (fs.exists(new Path(ipCountPathYesterday))) {
       val fileStatus = fs.listStatus(new Path(ipCountPathYesterday))
-        .filter(status => String.valueOf(status.getPath.getName.substring(5, status.getPath.getName.indexOf("."))) >= (timestamp - 86400000).toString)
+        .filter(status => String.valueOf(status.getPath.getName.substring(DATE_COL.length + 1, status.getPath.getName.indexOf("."))) >= (timestamp - 86400000).toString)
         .map(status => ipCountPath = ipCountPath :+ status.getPath.toString)
     }
 
@@ -109,12 +108,12 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
 
   override def postTest() = {
     // rename tmp files to final files
-    val dateOutputPath = new Path(baseDir + DATE_COL + "=" + dateFiles.date)
+    val dateOutputPath = new Path(baseDir + dateFiles.date)
     if (!fs.exists(dateOutputPath)) {
       fs.mkdirs(dateOutputPath)
     }
 
-    val fileStatus = fs.listStatus(new Path(baseTempDir + DATE_COL + "=" + dateFiles.date))
+    val fileStatus = fs.listStatus(new Path(baseTempDir + dateFiles.date))
     val src = fileStatus.filter(status => status.getPath.getName != "_SUCCESS").toList(0).getPath
     val fileName = src.getName
     val dest = new Path(dateOutputPath, fileName)

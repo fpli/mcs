@@ -59,7 +59,7 @@ class TestCappingRuleJob extends BaseFunSuite {
   test("test capping rules") {
     val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
 
-    val dateFiles0 = new DateFiles("2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
+    val dateFiles0 = new DateFiles("date=2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
     var meta: MetaFiles = new MetaFiles(Array(dateFiles0))
 
     fs.mkdirs(new Path("file://" + inputDir + "/date=2017-12-31/"))
@@ -85,12 +85,12 @@ class TestCappingRuleJob extends BaseFunSuite {
     assert (df0.count() == 1)
     assert(df0.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
 
-    val dateFiles1 = new DateFiles("2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
-    val dateFiles2 = new DateFiles("2018-01-02", Array("file://" + inputDir + "/date=2018-01-02/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
+    val dateFiles1 = new DateFiles("date=2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
+    val dateFiles2 = new DateFiles("date=2018-01-02", Array("file://" + inputDir + "/date=2018-01-02/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
     meta = new MetaFiles(Array(dateFiles1, dateFiles2))
     metadata.writeDedupeOutputMeta(meta)
 
-    val dateFiles3 = new DateFiles("2018-01-02", Array("file://" + inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
+    val dateFiles3 = new DateFiles("date=2018-01-02", Array("file://" + inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
     meta = new MetaFiles(Array(dateFiles3))
     metadata.writeDedupeOutputMeta(meta)
 

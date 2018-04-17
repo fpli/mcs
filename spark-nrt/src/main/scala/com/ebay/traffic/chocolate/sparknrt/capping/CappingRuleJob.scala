@@ -34,7 +34,7 @@ class CappingRuleJob(params: Parameter)
 
   lazy val baseDir = params.workDir + "/capping/" + params.channel + "/"
   lazy val sparkDir = baseDir + "/spark/"
-  lazy val outputDir = params.outputDir + params.channel + "/"
+  lazy val outputDir = params.outputDir + "/" + params.channel + "/capping/"
 
   override def run(): Unit = {
 
@@ -45,6 +45,7 @@ class CappingRuleJob(params: Parameter)
       val datesFiles = dedupeOutputMeta(0)._2
       // apply capping rules
       val datesArray = datesFiles.keys.toArray
+      // Be very careful here! DateFiles constructor takes 'date=yyy-MM-dd' as the key
       val metaFiles = new MetaFiles(datesArray.map(
         date => capping(date, datesFiles.get(date).get,
           new CappingRuleContainer(params, new DateFiles(date, datesFiles.get(date).get), this)))
@@ -57,7 +58,7 @@ class CappingRuleJob(params: Parameter)
   /**
     * capping logic
     *
-    * @param date                 date
+    * @param date                 date string includes date col =: date=yyy-MM-dd
     * @param input                input file paths
     * @param cappingRuleContainer container of capping rules
     * @return DateFiles
@@ -65,7 +66,7 @@ class CappingRuleJob(params: Parameter)
   def capping(date: String, input: Array[String], cappingRuleContainer: CappingRuleContainer): DateFiles = {
     // clean base dir
     cappingRuleContainer.preTest()
-    val dateFiles = new DateFiles(date, input)
+
     // run every capping rule
     var df = cappingRuleContainer.test(params)
 

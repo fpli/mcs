@@ -8,6 +8,9 @@ import org.apache.spark.sql.DataFrame
   */
 trait CappingRule {
 
+  // date col name
+  def DATE_COL: String
+
   // capping rule result bit value
   def cappingBit: Long
 

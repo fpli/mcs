@@ -63,7 +63,7 @@ class TestIPCappingRule extends BaseFunSuite {
   test("test ip capping rule") {
     val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
 
-    val dateFiles0 = new DateFiles("2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
+    val dateFiles0 = new DateFiles("date=2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
     var meta: MetaFiles = new MetaFiles(Array(dateFiles0))
 
     fs.mkdirs(new Path("file://" + inputDir + "/date=2017-12-31/"))
@@ -82,7 +82,7 @@ class TestIPCappingRule extends BaseFunSuite {
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 1L, 11L, 111L, timestampBefore24h, "1.1.1.3", writer1_0)
     writer1_0.close()
-    val dateFiles_0 = new DateFiles("2018-01-01", Array(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
+    val dateFiles_0 = new DateFiles("date=2018-01-01", Array(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
 
     val job_0 = new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles_0, sparkJob)
     // handle 1st meta containing 1 meta 1 date 1 file
@@ -91,11 +91,11 @@ class TestIPCappingRule extends BaseFunSuite {
     assert(df_0.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
     job_0.postTest()
 
-    val dateFiles1 = new DateFiles("2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
-    val dateFiles2 = new DateFiles("2018-01-02", Array("file://" + inputDir + "/date=2018-01-02/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
+    val dateFiles1 = new DateFiles("date=2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
+    val dateFiles2 = new DateFiles("date=2018-01-02", Array("file://" + inputDir + "/date=2018-01-02/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
     meta = new MetaFiles(Array(dateFiles1, dateFiles2))
 
-    val dateFiles3 = new DateFiles("2018-01-02", Array("file://" + inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
+    val dateFiles3 = new DateFiles("date=2018-01-02", Array("file://" + inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
     meta = new MetaFiles(Array(dateFiles3))
     metadata.writeDedupeOutputMeta(meta)
 
@@ -156,7 +156,7 @@ class TestIPCappingRule extends BaseFunSuite {
     writer2_2.close()
     writer3.close()
 
-    val dateFiles_1 = new DateFiles("2018-01-01", Array(inputDir + "/date=2018-01-01/part-00001.snappy.parquet",
+    val dateFiles_1 = new DateFiles("date=2018-01-01", Array(inputDir + "/date=2018-01-01/part-00001.snappy.parquet",
       inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
     val job_1 = new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles_1, sparkJob)
     // handle 2nd meta containing 1 meta 2 date 4 file
@@ -165,7 +165,7 @@ class TestIPCappingRule extends BaseFunSuite {
     assert(df_1.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
     job_1.postTest()
 
-    val dateFiles_2 = new DateFiles("2018-01-02", Array(inputDir + "/date=2018-01-02/part-00001.snappy.parquet",
+    val dateFiles_2 = new DateFiles("date=2018-01-02", Array(inputDir + "/date=2018-01-02/part-00001.snappy.parquet",
       inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
     val job_2 = new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles_2, sparkJob)
     // handle 3rd meta containing 1 meta 1 date 1 file

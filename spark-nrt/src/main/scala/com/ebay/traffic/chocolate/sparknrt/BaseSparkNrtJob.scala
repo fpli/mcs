@@ -37,7 +37,7 @@ abstract class BaseSparkNrtJob(override val jobName: String,
     */
   def renameFiles(outputDir: String, sparkDir: String, date: String) = {
     // rename result to output dir
-    val dateOutputPath = new Path(outputDir + "/" + DATE_COL + "=" + date)
+    val dateOutputPath = new Path(outputDir + "/" + date)
     var max = -1
     if (fs.exists(dateOutputPath)) {
       val outputStatus = fs.listStatus(dateOutputPath)
