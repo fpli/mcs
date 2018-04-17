@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.app.raptor.chocolate.filter.service.FilterContainer;
 import com.ebay.app.raptor.chocolate.filter.service.FilterWorker;
+import com.ebay.app.raptor.chocolate.filter.util.CouchbaseClient;
 import com.ebay.app.raptor.chocolate.filter.util.FilterZookeeperClient;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.kafka.KafkaCluster;
@@ -96,6 +97,7 @@ public class FilterService {
     }
     try {
       KafkaSink.close();
+      CouchbaseClient.close();
     } catch (IOException e) {
       logger.error(e);
     }
