@@ -10,7 +10,7 @@ class TestMetadata extends BaseFunSuite {
   test("Test Metadata") {
 
     val tempDir = createTempPath()
-    val metadata = Metadata(tempDir, "EPN")
+    val metadata = Metadata(tempDir, "EPN", MetadataEnum.dedupe)
 
     val dateFiles1 = new DateFiles("2018-3-22", Array("hdfs://nn/file1", "hdfs://nn/file2"))
     val dateFiles2 = new DateFiles("2018-3-23", Array("hdfs://nn/file1", "hdfs://nn/file2", "hdfs://nn/file3"))

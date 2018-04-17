@@ -1,7 +1,8 @@
 package com.ebay.traffic.chocolate.listener.api;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
-import org.apache.commons.lang3.StringUtils;
+import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
 import org.apache.commons.lang3.Validate;
 
 import javax.servlet.http.HttpServletResponse;
@@ -9,8 +10,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author airogers
@@ -21,7 +22,8 @@ public class TrackingEvent {
     private int version, channelID;
     private String collectionID;
     private ChannelActionEnum action;
-    private HashMap<String, Object> payload;
+    private Map<String, Object> payload;
+    private ChannelType channel;
 
     /* some helpful class constants to be used inside and outside the class
      * these are all strings that are used in the API
@@ -63,41 +65,30 @@ public class TrackingEvent {
 
     public static final int CURRENT_VERSION = 1;
 
-    public TrackingEvent(URL url, String queryString) {
-        if (StringUtils.isEmpty(queryString)) queryString = url.getQuery();
-        parsePath(url.getPath());
-        payload = new HashMap<>();
-        try {
-            parsePayload(queryString);
-        } catch (UnsupportedEncodingException e) {
-            // ignored - see javadoc for parsePayload()
-        }
+    public TrackingEvent(URL url, Map<String, String[]> params) {
+      payload = new HashMap<>();
+      parsePath(url.getPath());
+      try {
+        validateParams(params);
+      } catch (UnsupportedEncodingException e){
+        // ignored - see javadoc for parsePayload()
+      }
+    }
+
+    private void validateParams(Map<String, String[]> params) throws UnsupportedEncodingException{
+      if (params.isEmpty()) return;
+      Object val;
+      for (Map.Entry<String, String[]> entry : params.entrySet()) {
+        if (entry.getKey().equals("item") || entry.getKey().equals("product")) {
+          val = Long.parseLong(entry.getValue()[0]);
+        } else
+          val = entry.getValue()[0];
+        payload.put(entry.getKey(), val);
+      }
     }
 
     /* hard coded 1x1 gif pixel, for impression serving */
     public static byte[] pixel = { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x1, 0x0, 0x1, 0x0, (byte) 0x80, 0x0, 0x0, (byte)  0xff, (byte)  0xff,  (byte) 0xff, 0x0, 0x0, 0x0, 0x2c, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x1, 0x0, 0x0, 0x2, 0x2, 0x44, 0x1, 0x0, 0x3b };
-
-    /**
-     * Extracts the key/value pairs from the query string and puts them in a HashMap
-     * @param query - the query string from the URL
-     * @throws UnsupportedEncodingException (this should never get thrown as the encoding is set to UTF-8)
-     */
-    private void parsePayload(String query) throws UnsupportedEncodingException {
-        if (StringUtils.isEmpty(query)) return;
-        for (String pair : query.split("&")) {
-            String kv[] = pair.split("=");
-            Validate.isTrue(kv.length == 2);
-            String key = kv[0];
-            Object val;
-            if (key.equals("item") || key.equals("product")) {
-                val = Long.parseLong(kv[1]);
-            }
-            else {
-                val = URLDecoder.decode(kv[1],  "UTF-8");
-            }
-            payload.put(key, val);
-        }
-    }
 
     /**
      * Parses the various pieces of the URL path
@@ -119,6 +110,12 @@ public class TrackingEvent {
         String[] parts = linkID.split("-");
         channelID = Integer.valueOf(parts[0]);
         collectionID = parts[1];
+        channel = getChannelType(String.valueOf(channelID));
+    }
+
+    private ChannelType getChannelType(String channel) {
+      ChannelIdEnum channelId = ChannelIdEnum.parse(channel);
+      return channelId.getLogicalChannel().getAvro();
     }
 
     /**
@@ -185,7 +182,7 @@ public class TrackingEvent {
     }
 
     private void redirect(HttpServletResponse response) throws IOException {
-        URL url = new URL((String) payload.get(PAGE));
+      URL url = new URL((String)payload.get(PAGE));
         // Use lowercase to avoid case sensitive
         String host = url.getHost().toLowerCase();
         String destination = response.encodeRedirectURL(DEFAULT_DESTINATION);
@@ -217,8 +214,11 @@ public class TrackingEvent {
         return collectionID;
     }
 
-    public HashMap<String, Object> getPayload() {
+    public Map<String, Object> getPayload() {
         return payload;
     }
 
+  public ChannelType getChannel() {
+    return channel;
+  }
 }

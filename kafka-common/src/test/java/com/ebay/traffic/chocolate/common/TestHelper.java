@@ -218,6 +218,43 @@ public class TestHelper {
   }
 
   /**
+   * Create filter message
+   *
+   * @param channelType channel type
+   * @param channelAction channel action
+   * @param snapshotId the snapshot ID
+   * @param publisherId the publisher ID
+   * @param campaignId the campaign ID
+   * @param timestamp the timestamp
+   * @param ip the ip addresss
+   * @return filter message
+   */
+  public static FilterMessage newFilterMessage(ChannelType channelType,
+                                               ChannelAction channelAction,
+                                               long snapshotId,
+                                               long publisherId,
+                                               long campaignId,
+                                               long timestamp,
+                                               String ip) {
+  FilterMessage message = new FilterMessage();
+    message.setSnapshotId(snapshotId);
+    message.setTimestamp(timestamp);
+    message.setCampaignId(campaignId);
+    message.setPublisherId(publisherId);
+    message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-EBAY-CLIENT-IP: " + ip +
+      "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
+    message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
+    message.setResponseHeaders("");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setValid(true);
+    message.setFilterFailed("");
+    message.setSnid("");
+    return message;
+}
+
+  /**
    * Create listener message
    *
    * @param snapshotId the snapshot ID

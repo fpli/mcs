@@ -73,7 +73,7 @@ public class MessageObjectParserTest {
         mockClientRequest.addHeader("Some", "Header");
         mockProxyResponse.setHeader("SomeMore", "Headers");
 
-        ListenerMessage record = parser.parseHeader(mockClientRequest, mockProxyResponse, startTime, campaignId, logicalChannel, action, "foo");
+        ListenerMessage record = parser.parseHeader(mockClientRequest, mockProxyResponse, startTime, campaignId, logicalChannel.getAvro(), action, "foo");
 
         assertEquals("Some: Header", record.getRequestHeaders());
         assertEquals("SomeMore: Headers", record.getResponseHeaders());
@@ -91,7 +91,7 @@ public class MessageObjectParserTest {
         mockClientRequest.addHeader("a", "b");
         mockProxyResponse.setStatus(301);
         mockProxyResponse.setHeader("Location", "https://www.ebay.co.uk/1/2/9?a=b&chocolateSauce=http%3A%2F%2Frover.ebay.com%2Fa%2Fb%2Fc");
-        record = parser.parseHeader(mockClientRequest, mockProxyResponse, startTime, wrongCampaingId, logicalChannel, action, null);
+        record = parser.parseHeader(mockClientRequest, mockProxyResponse, startTime, wrongCampaingId, logicalChannel.getAvro(), action, null);
 
         assertEquals(wrongCampaingId, record.getCampaignId());
         assertEquals("http://rover.ebay.com/a/b/c", record.getUri());
