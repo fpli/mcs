@@ -25,12 +25,12 @@
 		"name": "response_headers",
 		"type": "string"
 	}, {
-		"name": "valid",
-		"type": ["boolean", "null"]
-	}, {
-		"name": "filter_failed",
-		"type": ["string", "null"]
-	}, {
+        "name": "rt_rule_flags",
+        "type": "long"
+    }, {
+       "name": "nrt_rule_flags",
+       "type": "long"
+    }, {
 		"name": "channel_action",
 		"type": {
 			"name": "ChannelAction",

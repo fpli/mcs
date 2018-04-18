@@ -138,7 +138,7 @@ public class TwoPassIABRule extends BaseFilterRule {
    * @return fail weight
    */
   @Override
-  public float test(FilterRequest event) { return isUserAgentValid(event.getUserAgent()) ? 0 : 1;
+  public int test(FilterRequest event) { return isUserAgentValid(event.getUserAgent()) ? 0 : 1;
   }
   
   /**

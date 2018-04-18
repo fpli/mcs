@@ -51,7 +51,7 @@ public abstract class GenericBlacklistRule extends HashSet<String> implements Fi
    * @return fail weight
    */
   @Override
-  public float test(FilterRequest request) {
+  public int test(FilterRequest request) {
     if (this.contains(getFilteredValue(request).toLowerCase())) {
       return 1;
     } else {

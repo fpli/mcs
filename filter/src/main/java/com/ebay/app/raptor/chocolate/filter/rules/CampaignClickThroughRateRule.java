@@ -39,7 +39,7 @@ public class CampaignClickThroughRateRule extends BaseFilterRule {
    * @return fail weight
    */
   @Override
-  public float test(FilterRequest event) {
+  public int test(FilterRequest event) {
     long campaignId = event.getCampaignId();
     int numerator, denominator;
     

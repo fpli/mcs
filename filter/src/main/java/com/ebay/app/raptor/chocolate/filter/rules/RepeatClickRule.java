@@ -75,7 +75,7 @@ public class RepeatClickRule extends BaseFilterRule {
    * @return true if the event is not in the log
    */
   @Override
-  public float test(FilterRequest event) {
+  public int test(FilterRequest event) {
     long timestamp = event.getTimestamp();
     long fingerprint = calculateFingerprint(event);
     

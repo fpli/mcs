@@ -34,7 +34,7 @@ public class CGUIDStalenessWindowRule extends BaseFilterRule {
    * @return fail weight
    */
   @Override
-  public float test(FilterRequest event) {
+  public int test(FilterRequest event) {
     return (event.getRequestCGUID() == null) || (event.getTimestamp() > event.getRequestCGUIDTimestamp() + windowStart) ? 0 : 1;
   }
 }

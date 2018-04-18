@@ -82,7 +82,7 @@ public class WeightedRuleTest {
     }
 
     @Override
-    public float test(FilterRequest event) { return 0; }
+    public int test(FilterRequest event) { return 0; }
   }
 
   public class TestRule1 extends TestRule {

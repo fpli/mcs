@@ -22,7 +22,7 @@ public class PublisherValidRule extends BaseFilterRule {
    * @return fail weight
    */
   @Override
-  public float test(FilterRequest event) {
+  public int test(FilterRequest event) {
     return (event.getPublisherId() >= 0L) ? 0 : 1;
   }
 }

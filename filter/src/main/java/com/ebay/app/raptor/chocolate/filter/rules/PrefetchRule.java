@@ -25,7 +25,7 @@ public class PrefetchRule extends BaseFilterRule {
    * @return fail weight
    */
   @Override
-  public float test(FilterRequest event) {
+  public int test(FilterRequest event) {
     return event.isPrefetch() ? 1 : 0;
   }
 }

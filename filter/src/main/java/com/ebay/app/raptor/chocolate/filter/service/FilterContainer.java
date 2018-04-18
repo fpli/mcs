@@ -57,11 +57,8 @@ public class FilterContainer extends HashMap<ChannelType, HashMap<FilterRuleType
    * @param request event to test
    * @return filtering result summary (is event valid? where did it fail if not valid?)
    */
-  public FilterResult test(ListenerMessage request) {
+  public long test(ListenerMessage request) {
     FilterRequest internalReq = new FilterRequest(request);
-    FilterRuleType resultRule = FilterRuleType.NONE;
-    float failAccumulator = 0;        // Non-critical rules get three strikes
-    float failContribution = 0;
     long rtRuleResult = 0;
     
     Iterator<Entry<FilterRuleType, FilterRule>> filterRuleIte = this.get(request.getChannelType()).entrySet().iterator();
@@ -74,12 +71,12 @@ public class FilterContainer extends HashMap<ChannelType, HashMap<FilterRuleType
         continue;
       }
       
-      float ruleResult = rule.test(internalReq);
+      int ruleResult = rule.test(internalReq);
       if (ruleResult == 1 && ruleEntry.getKey().getRuleDigitPosition() > 0) {
         rtRuleResult = rtRuleResult | (1 << ruleEntry.getKey().getRuleDigitPosition() - 1 );
       }
     }
     
-    return new FilterResult(rtRuleResult > 1 ? false : true, rtRuleResult);
+    return rtRuleResult;
   }
 }

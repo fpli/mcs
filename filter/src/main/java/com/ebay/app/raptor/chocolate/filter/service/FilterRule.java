@@ -20,5 +20,5 @@ public interface FilterRule {
      * @param event event (impression/click) to test
      * @return a value showing the "invalidity" of the event according to the rule
      */
-    float test(FilterRequest event);
+    int test(FilterRequest event);
 }
