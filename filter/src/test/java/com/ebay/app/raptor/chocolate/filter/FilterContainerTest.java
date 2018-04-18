@@ -26,11 +26,11 @@ public class FilterContainerTest {
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     lm.setChannelType(ChannelType.DEFAULT);
     HashMap<FilterRuleType, FilterRule> ruleMap = new HashMap<FilterRuleType, FilterRule>();
-    ruleMap.put(FilterRuleType.PREFETCH, new BaseRuleMock(0));
+    ruleMap.put(FilterRuleType.PREFETCH, new BaseRuleMock(1));
     filter.put(ChannelType.DEFAULT, ruleMap);
-    
-    FilterResult result = filter.test(lm);
-    assertEquals(true, result.isEventValid());
+
+    long result= filter.test(lm);
+    assertEquals(2, result);
   }
   
   @Test
@@ -43,9 +43,8 @@ public class FilterContainerTest {
     ruleMap.put(FilterRuleType.PREFETCH, new BaseRuleMock(0));
     filter.put(ChannelType.DEFAULT, ruleMap);
     
-    FilterResult result = filter.test(lm);
-    assertEquals(true, result.isEventValid());
-    assertEquals(FilterRuleType.NONE, result.getFailedRule());
+    long result= filter.test(lm);
+    assertEquals(0, result);
   }
   
   @Test
@@ -59,9 +58,8 @@ public class FilterContainerTest {
     ruleMap.put(FilterRuleType.IAB_BOT_LIST, new BaseRuleMock(1));
     filter.put(ChannelType.EPN, ruleMap);
     
-    FilterResult result = filter.test(lm);
-    assertEquals(false, result.isEventValid());
-    assertEquals(FilterRuleType.IAB_BOT_LIST, result.getFailedRule());
+    long result= filter.test(lm);
+    assertEquals(8, result);
   }
   
   @Test
@@ -72,13 +70,13 @@ public class FilterContainerTest {
     lm.setChannelType(ChannelType.EPN);
     HashMap<FilterRuleType, FilterRule> ruleMap = new HashMap<FilterRuleType, FilterRule>();
     BaseRuleMock rule1 = new BaseRuleMock(1);
-    BaseRuleMock rule2 = new BaseRuleMock(0);
+    BaseRuleMock rule2 = new BaseRuleMock(1);
     ruleMap.put(FilterRuleType.PREFETCH, rule1);
     ruleMap.put(FilterRuleType.IAB_BOT_LIST, rule2);
     filter.put(ChannelType.EPN, ruleMap);
-    
-    FilterResult result = filter.test(lm);
-    assertEquals(FilterRuleType.PREFETCH, result.getFailedRule());
+
+    long result= filter.test(lm);
+    assertEquals(10, result);
     assertEquals(1, rule1.times);
     assertEquals(1, rule2.times);
   }
@@ -90,14 +88,13 @@ public class FilterContainerTest {
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     lm.setChannelType(ChannelType.EPN);
     HashMap<FilterRuleType, FilterRule> ruleMap = new HashMap<FilterRuleType, FilterRule>();
-    ruleMap.put(FilterRuleType.PREFETCH, new BaseRuleMock(0.3f));
-    ruleMap.put(FilterRuleType.IAB_BOT_LIST, new BaseRuleMock(0.3f));
-    ruleMap.put(FilterRuleType.EPN_DOMAIN_BLACKLIST, new BaseRuleMock(0.3f));
+    ruleMap.put(FilterRuleType.PREFETCH, new BaseRuleMock(1));
+    ruleMap.put(FilterRuleType.IAB_BOT_LIST, new BaseRuleMock(1));
+    ruleMap.put(FilterRuleType.EPN_DOMAIN_BLACKLIST, new BaseRuleMock(1));
     filter.put(ChannelType.EPN, ruleMap);
     
-    FilterResult result = filter.test(lm);
-    assertEquals(true, result.isEventValid());
-    assertEquals(FilterRuleType.NONE, result.getFailedRule());
+    long result= filter.test(lm);
+    assertEquals(26, result);
   }
   
   @Test
@@ -107,13 +104,12 @@ public class FilterContainerTest {
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     lm.setChannelType(ChannelType.EPN);
     HashMap<FilterRuleType, FilterRule> ruleMap = new HashMap<FilterRuleType, FilterRule>();
-    ruleMap.put(FilterRuleType.PREFETCH, new BaseRuleMock(0.3f));
-    ruleMap.put(FilterRuleType.IAB_BOT_LIST, new BaseRuleMock(0.7f));
+    ruleMap.put(FilterRuleType.PREFETCH, new BaseRuleMock(1));
+    ruleMap.put(FilterRuleType.IAB_BOT_LIST, new BaseRuleMock(1));
     filter.put(ChannelType.EPN, ruleMap);
     
-    FilterResult result = filter.test(lm);
-    assertEquals(false, result.isEventValid());
-    assertEquals(FilterRuleType.IAB_BOT_LIST, result.getFailedRule());
+    long result= filter.test(lm);
+    assertEquals(10, result);
   }
   
   @Test
@@ -194,16 +190,16 @@ public class FilterContainerTest {
   
   private class BaseRuleMock implements FilterRule {
     public int times = 0;
-    private float testResult;
+    private int testResult;
     
-    public BaseRuleMock(float result) {
+    public BaseRuleMock(int result) {
       this.testResult = result;
     }
     
     @Override
     public boolean isChannelActionApplicable(ChannelAction action) { return true; }
     
-    public float test(FilterRequest row) {
+    public int test(FilterRequest row) {
       ++times;
       return this.testResult;
     }

@@ -2,7 +2,7 @@ package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.filter.service.BaseFilterWeightedRule;
+import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 
 import java.security.MessageDigest;
@@ -14,7 +14,7 @@ import java.util.HashMap;
  * - double clicks
  * - clicks that follow an impression too quickly
  */
-public class RepeatClickRule extends BaseFilterWeightedRule {
+public class RepeatClickRule extends BaseFilterRule {
   /**
    * Length of log for repeat click rule (ms).
    */
@@ -75,7 +75,7 @@ public class RepeatClickRule extends BaseFilterWeightedRule {
    * @return true if the event is not in the log
    */
   @Override
-  public float test(FilterRequest event) {
+  public int test(FilterRequest event) {
     long timestamp = event.getTimestamp();
     long fingerprint = calculateFingerprint(event);
     
@@ -108,8 +108,8 @@ public class RepeatClickRule extends BaseFilterWeightedRule {
       }
       
       newLog.put(fingerprint, timestamp);
-      
-      return (!found || timestamp - previousEventTS > timeoutMS) ? 0 : getRuleWeight();
+
+      return (!found || timestamp - previousEventTS > timeoutMS) ? 0 : 1;
     }
   }
   

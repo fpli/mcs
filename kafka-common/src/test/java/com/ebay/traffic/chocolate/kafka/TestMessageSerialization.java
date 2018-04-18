@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.kafka;
 import com.ebay.app.raptor.chocolate.avro.*;
 import io.ebay.rheos.schema.avro.RheosEventSerializer;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static com.ebay.traffic.chocolate.common.TestHelper.*;
@@ -10,6 +11,7 @@ import static com.ebay.traffic.chocolate.common.TestHelper.*;
 /**
  * Created by yliu29 on 2/13/18.
  */
+@Ignore
 public class TestMessageSerialization {
 
   @Test

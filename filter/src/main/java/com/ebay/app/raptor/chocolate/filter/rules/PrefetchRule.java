@@ -1,7 +1,7 @@
 package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.filter.service.BaseFilterWeightedRule;
+import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 
 /**
@@ -9,7 +9,7 @@ import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
  * <p>
  * Created by spugach on 12/14/16.
  */
-public class PrefetchRule extends BaseFilterWeightedRule {
+public class PrefetchRule extends BaseFilterRule {
   public PrefetchRule(ChannelType channelType) {
     super(channelType);
   }
@@ -25,7 +25,7 @@ public class PrefetchRule extends BaseFilterWeightedRule {
    * @return fail weight
    */
   @Override
-  public float test(FilterRequest event) {
-    return event.isPrefetch() ? getRuleWeight() : 0;
+  public int test(FilterRequest event) {
+    return event.isPrefetch() ? 1 : 0;
   }
 }

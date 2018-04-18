@@ -2,7 +2,7 @@ package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.filter.service.BaseFilterWeightedRule;
+import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 import org.apache.commons.lang3.math.Fraction;
 
@@ -12,7 +12,7 @@ import java.util.HashMap;
  * tests the click-through rate of campaigns, fails if too high
  * Created by spugach on 1/13/17.
  */
-public class CampaignClickThroughRateRule extends BaseFilterWeightedRule {
+public class CampaignClickThroughRateRule extends BaseFilterRule {
   private static final Object logSync = new Object();
   private static HashMap<Long, Fraction> log = new HashMap<>();
   private float rateLimit;
@@ -39,7 +39,7 @@ public class CampaignClickThroughRateRule extends BaseFilterWeightedRule {
    * @return fail weight
    */
   @Override
-  public float test(FilterRequest event) {
+  public int test(FilterRequest event) {
     long campaignId = event.getCampaignId();
     int numerator, denominator;
     
@@ -68,7 +68,7 @@ public class CampaignClickThroughRateRule extends BaseFilterWeightedRule {
       if (newFraction.floatValue() < rateLimit || filterRuleContent == null) {
         return 0;
       } else {
-        return this.filterRuleContent.getRuleWeight();
+        return 1;
       }
     }
   }

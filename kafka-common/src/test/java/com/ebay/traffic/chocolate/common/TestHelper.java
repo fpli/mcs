@@ -211,8 +211,8 @@ public class TestHelper {
     message.setChannelAction(channelAction);
     message.setChannelType(channelType);
     message.setHttpMethod(HttpMethod.POST);
-    message.setValid(true);
-    message.setFilterFailed("");
+    message.setRtRuleFlags(0L);
+    message.setNrtRuleFlags(0L);
     message.setSnid("");
     return message;
   }
@@ -248,8 +248,8 @@ public class TestHelper {
     message.setChannelAction(channelAction);
     message.setChannelType(channelType);
     message.setHttpMethod(HttpMethod.POST);
-    message.setValid(true);
-    message.setFilterFailed("");
+    message.setRtRuleFlags(0L);
+    message.setNrtRuleFlags(0L);
     message.setSnid("");
     return message;
 }

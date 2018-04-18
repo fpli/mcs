@@ -13,8 +13,8 @@ import org.apache.avro.message.SchemaStore;
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class FilterMessageV1 extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 6979258399092690547L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"FilterMessageV1\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"snapshot_id\",\"type\":\"long\"},{\"name\":\"timestamp\",\"type\":\"long\"},{\"name\":\"publisher_id\",\"type\":\"long\"},{\"name\":\"campaign_id\",\"type\":\"long\"},{\"name\":\"request_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"uri\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"response_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"valid\",\"type\":[\"boolean\",\"null\"]},{\"name\":\"filter_failed\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"channel_action\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelAction\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CLICK\",\"IMPRESSION\",\"VIEWABLE\",\"SERVE\",\"PAGE_IMP\",\"VIEW_ITEM\",\"VIEW_TIME\",\"APP_FIRST_START\"]}},{\"name\":\"channel_type\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\"]}},{\"name\":\"http_method\",\"type\":{\"type\":\"enum\",\"name\":\"HttpMethod\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CONNECT\",\"DELETE\",\"GET\",\"HEAD\",\"OPTIONS\",\"PATCH\",\"POST\",\"PUT\",\"TRACE\"]}},{\"name\":\"snid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"is_tracked\",\"type\":\"boolean\",\"default\":false}],\"pk\":[\"snapshot_id\"]}");
+  private static final long serialVersionUID = 6434906085572287015L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"FilterMessageV1\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"snapshot_id\",\"type\":\"long\"},{\"name\":\"timestamp\",\"type\":\"long\"},{\"name\":\"publisher_id\",\"type\":\"long\"},{\"name\":\"campaign_id\",\"type\":\"long\"},{\"name\":\"request_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"uri\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"response_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rt_rule_flags\",\"type\":\"long\"},{\"name\":\"nrt_rule_flags\",\"type\":\"long\"},{\"name\":\"channel_action\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelAction\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CLICK\",\"IMPRESSION\",\"VIEWABLE\",\"SERVE\",\"PAGE_IMP\",\"VIEW_ITEM\",\"VIEW_TIME\",\"APP_FIRST_START\"]}},{\"name\":\"channel_type\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\"]}},{\"name\":\"http_method\",\"type\":{\"type\":\"enum\",\"name\":\"HttpMethod\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CONNECT\",\"DELETE\",\"GET\",\"HEAD\",\"OPTIONS\",\"PATCH\",\"POST\",\"PUT\",\"TRACE\"]}},{\"name\":\"snid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"is_tracked\",\"type\":\"boolean\",\"default\":false}],\"pk\":[\"snapshot_id\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -58,8 +58,8 @@ public class FilterMessageV1 extends org.apache.avro.specific.SpecificRecordBase
    private java.lang.String request_headers;
    private java.lang.String uri;
    private java.lang.String response_headers;
-   private java.lang.Boolean valid;
-   private java.lang.String filter_failed;
+   private long rt_rule_flags;
+   private long nrt_rule_flags;
    private com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action;
    private com.ebay.app.raptor.chocolate.avro.ChannelType channel_type;
    private com.ebay.app.raptor.chocolate.avro.HttpMethod http_method;
@@ -82,15 +82,15 @@ public class FilterMessageV1 extends org.apache.avro.specific.SpecificRecordBase
    * @param request_headers The new value for request_headers
    * @param uri The new value for uri
    * @param response_headers The new value for response_headers
-   * @param valid The new value for valid
-   * @param filter_failed The new value for filter_failed
+   * @param rt_rule_flags The new value for rt_rule_flags
+   * @param nrt_rule_flags The new value for nrt_rule_flags
    * @param channel_action The new value for channel_action
    * @param channel_type The new value for channel_type
    * @param http_method The new value for http_method
    * @param snid The new value for snid
    * @param is_tracked The new value for is_tracked
    */
-  public FilterMessageV1(java.lang.Long snapshot_id, java.lang.Long timestamp, java.lang.Long publisher_id, java.lang.Long campaign_id, java.lang.String request_headers, java.lang.String uri, java.lang.String response_headers, java.lang.Boolean valid, java.lang.String filter_failed, com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action, com.ebay.app.raptor.chocolate.avro.ChannelType channel_type, com.ebay.app.raptor.chocolate.avro.HttpMethod http_method, java.lang.String snid, java.lang.Boolean is_tracked) {
+  public FilterMessageV1(java.lang.Long snapshot_id, java.lang.Long timestamp, java.lang.Long publisher_id, java.lang.Long campaign_id, java.lang.String request_headers, java.lang.String uri, java.lang.String response_headers, java.lang.Long rt_rule_flags, java.lang.Long nrt_rule_flags, com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action, com.ebay.app.raptor.chocolate.avro.ChannelType channel_type, com.ebay.app.raptor.chocolate.avro.HttpMethod http_method, java.lang.String snid, java.lang.Boolean is_tracked) {
     this.snapshot_id = snapshot_id;
     this.timestamp = timestamp;
     this.publisher_id = publisher_id;
@@ -98,8 +98,8 @@ public class FilterMessageV1 extends org.apache.avro.specific.SpecificRecordBase
     this.request_headers = request_headers;
     this.uri = uri;
     this.response_headers = response_headers;
-    this.valid = valid;
-    this.filter_failed = filter_failed;
+    this.rt_rule_flags = rt_rule_flags;
+    this.nrt_rule_flags = nrt_rule_flags;
     this.channel_action = channel_action;
     this.channel_type = channel_type;
     this.http_method = http_method;
@@ -118,8 +118,8 @@ public class FilterMessageV1 extends org.apache.avro.specific.SpecificRecordBase
     case 4: return request_headers;
     case 5: return uri;
     case 6: return response_headers;
-    case 7: return valid;
-    case 8: return filter_failed;
+    case 7: return rt_rule_flags;
+    case 8: return nrt_rule_flags;
     case 9: return channel_action;
     case 10: return channel_type;
     case 11: return http_method;
@@ -140,8 +140,8 @@ public class FilterMessageV1 extends org.apache.avro.specific.SpecificRecordBase
     case 4: request_headers = (java.lang.String)value$; break;
     case 5: uri = (java.lang.String)value$; break;
     case 6: response_headers = (java.lang.String)value$; break;
-    case 7: valid = (java.lang.Boolean)value$; break;
-    case 8: filter_failed = (java.lang.String)value$; break;
+    case 7: rt_rule_flags = (java.lang.Long)value$; break;
+    case 8: nrt_rule_flags = (java.lang.Long)value$; break;
     case 9: channel_action = (com.ebay.app.raptor.chocolate.avro.ChannelAction)value$; break;
     case 10: channel_type = (com.ebay.app.raptor.chocolate.avro.ChannelType)value$; break;
     case 11: http_method = (com.ebay.app.raptor.chocolate.avro.HttpMethod)value$; break;
@@ -264,35 +264,35 @@ public class FilterMessageV1 extends org.apache.avro.specific.SpecificRecordBase
   }
 
   /**
-   * Gets the value of the 'valid' field.
-   * @return The value of the 'valid' field.
+   * Gets the value of the 'rt_rule_flags' field.
+   * @return The value of the 'rt_rule_flags' field.
    */
-  public java.lang.Boolean getValid() {
-    return valid;
+  public java.lang.Long getRtRuleFlags() {
+    return rt_rule_flags;
   }
 
   /**
-   * Sets the value of the 'valid' field.
+   * Sets the value of the 'rt_rule_flags' field.
    * @param value the value to set.
    */
-  public void setValid(java.lang.Boolean value) {
-    this.valid = value;
+  public void setRtRuleFlags(java.lang.Long value) {
+    this.rt_rule_flags = value;
   }
 
   /**
-   * Gets the value of the 'filter_failed' field.
-   * @return The value of the 'filter_failed' field.
+   * Gets the value of the 'nrt_rule_flags' field.
+   * @return The value of the 'nrt_rule_flags' field.
    */
-  public java.lang.String getFilterFailed() {
-    return filter_failed;
+  public java.lang.Long getNrtRuleFlags() {
+    return nrt_rule_flags;
   }
 
   /**
-   * Sets the value of the 'filter_failed' field.
+   * Sets the value of the 'nrt_rule_flags' field.
    * @param value the value to set.
    */
-  public void setFilterFailed(java.lang.String value) {
-    this.filter_failed = value;
+  public void setNrtRuleFlags(java.lang.Long value) {
+    this.nrt_rule_flags = value;
   }
 
   /**
@@ -414,8 +414,8 @@ public class FilterMessageV1 extends org.apache.avro.specific.SpecificRecordBase
     private java.lang.String request_headers;
     private java.lang.String uri;
     private java.lang.String response_headers;
-    private java.lang.Boolean valid;
-    private java.lang.String filter_failed;
+    private long rt_rule_flags;
+    private long nrt_rule_flags;
     private com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action;
     private com.ebay.app.raptor.chocolate.avro.ChannelType channel_type;
     private com.ebay.app.raptor.chocolate.avro.HttpMethod http_method;
@@ -461,12 +461,12 @@ public class FilterMessageV1 extends org.apache.avro.specific.SpecificRecordBase
         this.response_headers = data().deepCopy(fields()[6].schema(), other.response_headers);
         fieldSetFlags()[6] = true;
       }
-      if (isValidValue(fields()[7], other.valid)) {
-        this.valid = data().deepCopy(fields()[7].schema(), other.valid);
+      if (isValidValue(fields()[7], other.rt_rule_flags)) {
+        this.rt_rule_flags = data().deepCopy(fields()[7].schema(), other.rt_rule_flags);
         fieldSetFlags()[7] = true;
       }
-      if (isValidValue(fields()[8], other.filter_failed)) {
-        this.filter_failed = data().deepCopy(fields()[8].schema(), other.filter_failed);
+      if (isValidValue(fields()[8], other.nrt_rule_flags)) {
+        this.nrt_rule_flags = data().deepCopy(fields()[8].schema(), other.nrt_rule_flags);
         fieldSetFlags()[8] = true;
       }
       if (isValidValue(fields()[9], other.channel_action)) {
@@ -525,12 +525,12 @@ public class FilterMessageV1 extends org.apache.avro.specific.SpecificRecordBase
         this.response_headers = data().deepCopy(fields()[6].schema(), other.response_headers);
         fieldSetFlags()[6] = true;
       }
-      if (isValidValue(fields()[7], other.valid)) {
-        this.valid = data().deepCopy(fields()[7].schema(), other.valid);
+      if (isValidValue(fields()[7], other.rt_rule_flags)) {
+        this.rt_rule_flags = data().deepCopy(fields()[7].schema(), other.rt_rule_flags);
         fieldSetFlags()[7] = true;
       }
-      if (isValidValue(fields()[8], other.filter_failed)) {
-        this.filter_failed = data().deepCopy(fields()[8].schema(), other.filter_failed);
+      if (isValidValue(fields()[8], other.nrt_rule_flags)) {
+        this.nrt_rule_flags = data().deepCopy(fields()[8].schema(), other.nrt_rule_flags);
         fieldSetFlags()[8] = true;
       }
       if (isValidValue(fields()[9], other.channel_action)) {
@@ -825,79 +825,77 @@ public class FilterMessageV1 extends org.apache.avro.specific.SpecificRecordBase
     }
 
     /**
-      * Gets the value of the 'valid' field.
+      * Gets the value of the 'rt_rule_flags' field.
       * @return The value.
       */
-    public java.lang.Boolean getValid() {
-      return valid;
+    public java.lang.Long getRtRuleFlags() {
+      return rt_rule_flags;
     }
 
     /**
-      * Sets the value of the 'valid' field.
-      * @param value The value of 'valid'.
+      * Sets the value of the 'rt_rule_flags' field.
+      * @param value The value of 'rt_rule_flags'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1.Builder setValid(java.lang.Boolean value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1.Builder setRtRuleFlags(long value) {
       validate(fields()[7], value);
-      this.valid = value;
+      this.rt_rule_flags = value;
       fieldSetFlags()[7] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'valid' field has been set.
-      * @return True if the 'valid' field has been set, false otherwise.
+      * Checks whether the 'rt_rule_flags' field has been set.
+      * @return True if the 'rt_rule_flags' field has been set, false otherwise.
       */
-    public boolean hasValid() {
+    public boolean hasRtRuleFlags() {
       return fieldSetFlags()[7];
     }
 
 
     /**
-      * Clears the value of the 'valid' field.
+      * Clears the value of the 'rt_rule_flags' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1.Builder clearValid() {
-      valid = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1.Builder clearRtRuleFlags() {
       fieldSetFlags()[7] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'filter_failed' field.
+      * Gets the value of the 'nrt_rule_flags' field.
       * @return The value.
       */
-    public java.lang.String getFilterFailed() {
-      return filter_failed;
+    public java.lang.Long getNrtRuleFlags() {
+      return nrt_rule_flags;
     }
 
     /**
-      * Sets the value of the 'filter_failed' field.
-      * @param value The value of 'filter_failed'.
+      * Sets the value of the 'nrt_rule_flags' field.
+      * @param value The value of 'nrt_rule_flags'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1.Builder setFilterFailed(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1.Builder setNrtRuleFlags(long value) {
       validate(fields()[8], value);
-      this.filter_failed = value;
+      this.nrt_rule_flags = value;
       fieldSetFlags()[8] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'filter_failed' field has been set.
-      * @return True if the 'filter_failed' field has been set, false otherwise.
+      * Checks whether the 'nrt_rule_flags' field has been set.
+      * @return True if the 'nrt_rule_flags' field has been set, false otherwise.
       */
-    public boolean hasFilterFailed() {
+    public boolean hasNrtRuleFlags() {
       return fieldSetFlags()[8];
     }
 
 
     /**
-      * Clears the value of the 'filter_failed' field.
+      * Clears the value of the 'nrt_rule_flags' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1.Builder clearFilterFailed() {
-      filter_failed = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1.Builder clearNrtRuleFlags() {
       fieldSetFlags()[8] = false;
       return this;
     }
@@ -1108,8 +1106,8 @@ public class FilterMessageV1 extends org.apache.avro.specific.SpecificRecordBase
         record.request_headers = fieldSetFlags()[4] ? this.request_headers : (java.lang.String) defaultValue(fields()[4]);
         record.uri = fieldSetFlags()[5] ? this.uri : (java.lang.String) defaultValue(fields()[5]);
         record.response_headers = fieldSetFlags()[6] ? this.response_headers : (java.lang.String) defaultValue(fields()[6]);
-        record.valid = fieldSetFlags()[7] ? this.valid : (java.lang.Boolean) defaultValue(fields()[7]);
-        record.filter_failed = fieldSetFlags()[8] ? this.filter_failed : (java.lang.String) defaultValue(fields()[8]);
+        record.rt_rule_flags = fieldSetFlags()[7] ? this.rt_rule_flags : (java.lang.Long) defaultValue(fields()[7]);
+        record.nrt_rule_flags = fieldSetFlags()[8] ? this.nrt_rule_flags : (java.lang.Long) defaultValue(fields()[8]);
         record.channel_action = fieldSetFlags()[9] ? this.channel_action : (com.ebay.app.raptor.chocolate.avro.ChannelAction) defaultValue(fields()[9]);
         record.channel_type = fieldSetFlags()[10] ? this.channel_type : (com.ebay.app.raptor.chocolate.avro.ChannelType) defaultValue(fields()[10]);
         record.http_method = fieldSetFlags()[11] ? this.http_method : (com.ebay.app.raptor.chocolate.avro.HttpMethod) defaultValue(fields()[11]);

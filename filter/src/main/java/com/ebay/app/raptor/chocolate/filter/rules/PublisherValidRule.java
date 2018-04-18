@@ -1,7 +1,7 @@
 package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.filter.service.BaseFilterWeightedRule;
+import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 
 /**
@@ -9,7 +9,7 @@ import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
  * <p>
  * Created by jepounds on 2/13/17.
  */
-public class PublisherValidRule extends BaseFilterWeightedRule {
+public class PublisherValidRule extends BaseFilterRule {
   
   public PublisherValidRule(ChannelType channelType) {
     super(channelType);
@@ -22,7 +22,7 @@ public class PublisherValidRule extends BaseFilterWeightedRule {
    * @return fail weight
    */
   @Override
-  public float test(FilterRequest event) {
-    return (event.getPublisherId() >= 0L) ? 0 : getRuleWeight();
+  public int test(FilterRequest event) {
+    return (event.getPublisherId() >= 0L) ? 0 : 1;
   }
 }

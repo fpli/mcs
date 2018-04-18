@@ -89,7 +89,7 @@ public class FilterWorker extends Thread {
 
           FilterMessage outMessage = processMessage(message);
 
-          if (outMessage.getValid()) {
+          if (outMessage.getRtRuleFlags() == 0) {
             ++passed;
           }
 
@@ -152,12 +152,10 @@ public class FilterWorker extends Thread {
     outMessage.setSnid(message.getSnid());
     outMessage.setIsTracked(message.getIsTracked());
     try {
-      FilterResult filtered = this.filters.test(message);
-      outMessage.setValid(filtered.isEventValid());
-      outMessage.setFilterFailed(filtered.getFailedRule().toString());
+      long rtFilterRules = this.filters.test(message);
+      outMessage.setNrtRuleFlags(rtFilterRules);
     } catch (Exception e) {
-      outMessage.setValid(false);
-      outMessage.setFilterFailed(FilterRuleType.ERROR.getRuleType());
+      outMessage.setNrtRuleFlags(Long.valueOf(FilterRuleType.ERROR.getRuleDigitPosition()));
     }
     return outMessage;
   }

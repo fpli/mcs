@@ -51,20 +51,20 @@ public abstract class GenericBlacklistRule extends HashSet<String> implements Fi
    * @return fail weight
    */
   @Override
-  public float test(FilterRequest request) {
+  public int test(FilterRequest request) {
     if (this.contains(getFilteredValue(request).toLowerCase())) {
-      return getRuleWeight();
+      return 1;
     } else {
       return 0;
     }
   }
   
-  public float getRuleWeight() {
-    if (filterRuleContent == null || filterRuleContent.getRuleWeight() == null) {
-      return 0;
-    }
-    return filterRuleContent.getRuleWeight();
-  }
+//  public float getRuleWeight() {
+//    if (filterRuleContent == null || filterRuleContent.getRuleWeight() == null) {
+//      return 0;
+//    }
+//    return filterRuleContent.getRuleWeight();
+//  }
   
   @Override
   public boolean add(String s) {
