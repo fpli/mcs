@@ -16,7 +16,6 @@ import static com.ebay.traffic.chocolate.common.TestHelper.*;
 /**
  * Created by yliu29 on 2/14/18.
  */
-@Ignore
 public class TestRheosKafkaProducer {
 
   @Test

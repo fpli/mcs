@@ -11,7 +11,6 @@ import static com.ebay.traffic.chocolate.common.TestHelper.*;
 /**
  * Created by yliu29 on 2/13/18.
  */
-@Ignore
 public class TestMessageSerialization {
 
   @Test
