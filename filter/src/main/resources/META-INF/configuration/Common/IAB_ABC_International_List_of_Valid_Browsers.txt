@@ -1,6 +1,6 @@
 #
-#	IAB_ABC_International_List_of_Valid_Browsers_201802_20-082342
-#	February 20, 2018
+#	IAB_ABC_International_List_of_Valid_Browsers_201804_20-133817
+#	April 20, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
@@ -127,6 +127,7 @@ France+Explorer|1|1
 GIONEE|1|1
 Go.Web/|1|1
 Gradiente|1|1
+Grundig|1|0
 HD-MMD1010/|1|1
 HD2_|1|1
 HP iPAQ|1|1
@@ -219,9 +220,10 @@ PS4Application|1|0
 PT-|1|1
 PalmCentro|1|1
 Palmscape/|1|1
-Panasonic|1|1
+Panasonic|1|0
 Pandora|1|1
 Pantech|1|1
+Philco|1|0
 Playstation|1|0
 Profile/MIDP|1|0
 QC-/|1|1
@@ -252,6 +254,7 @@ Samsung-SGH|1|1
 Sanyo-|1|1
 ScoreMobile/|1|1
 ScrambleWithFriends|1|1
+Semp|1|0
 Series60|1|0
 Silk-Accelerated|1|0
 SiteKiosk|1|0
@@ -284,6 +287,7 @@ Tapjoy+Downloader|1|1
 TeleNav|1|0
 Textfree|1|1
 TiVo|1|1
+Toshiba|1|0
 TransperaSDK|1|1
 TremorVideo/SSP-AdServer|1|0
 TritonDigitalTracker|1|0
@@ -541,3 +545,5 @@ xbox|1|1
 # December 2017 - added "ANVSDK", added "LG Browser", added "LG+Browser", added "NBC", added "QtWebKit"
 # January 2018 - added "IMAtvOS", added "Apple TV", added "Apple+TV", added "XboxOne", removed "NBC"
 # February 2018 - added "Spotx Web Proxy", added "Spotx+Web+Proxy", removed "okhttp/"
+# March 2018 - added "Toshiba", added "Philco", added "Grundig", added "Semp" and updated the third flag for "Panasonic" from a 1 to 0
+# April 2018 - no changes
