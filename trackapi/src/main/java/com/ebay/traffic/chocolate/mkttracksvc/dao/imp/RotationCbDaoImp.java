@@ -181,6 +181,7 @@ public class RotationCbDaoImp implements RotationCbDao {
     }
     updateInfo.setRotation_name(rotationInfo.getRotation_name());
     updateInfo.setRotation_tag(rotationInfo.getRotation_tag());
+    updateInfo.setChannel_id(rotationInfo.getChannel_id());
     updateInfo.setLast_update_time(System.currentTimeMillis());
     bucket.upsert(StringDocument.create(rotationId, new Gson().toJson(updateInfo)));
     logger.debug("RotationInfo has been modified. rotationId=" + rotationId + " rotationInfo=" + rotationInfo);
