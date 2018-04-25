@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
-import com.ebay.traffic.chocolate.sparknrt.capping.rules.{IPCappingRule, SnidCappingRule}
+import com.ebay.traffic.chocolate.sparknrt.capping.rules.{IPCappingRule}
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.spark.sql.functions.coalesce
 import org.apache.spark.sql.functions.lit
@@ -16,9 +16,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
   @transient lazy val channelsRules = mutable.HashMap(
     ChannelType.EPN -> mutable.HashMap(
       CappingRuleEnum.IPCappingRule ->
-        new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj),
-      CappingRuleEnum.SnidCappingRule ->
-        new SnidCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule), dateFiles, sparkJobObj)
+      new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj)
     ),
     ChannelType.DISPLAY -> mutable.HashMap(
     )
@@ -53,7 +51,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
     var df: DataFrame = null
     val dfIter = dfs.iterator
     if (dfIter.hasNext) {
-      df = dfIter.next()
+      df = dfIter.next().withColumn("nrt_rule_flags", coalesce($"capping", lit(0l))).drop($"capping")
     }
     while (dfIter.hasNext) {
       val rightDf = dfIter.next().withColumnRenamed("snapshot_id", "snapshot_id_right")
@@ -62,7 +60,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
 
       df = df.join(rightDf, $"snapshot_id" === $"snapshot_id_right", "right_outer")
         .drop($"snapshot_id_right")
-        .withColumn("capping", coalesce($"capping", lit(0l)).bitwiseOR(coalesce($"capping_1", lit(0l))))
+        .withColumn("nrt_rule_flags", coalesce($"nrt_rule_flags", lit(0l)).bitwiseOR(coalesce($"capping_1", lit(0l))))
         .drop($"capping_1")
     }
     df
