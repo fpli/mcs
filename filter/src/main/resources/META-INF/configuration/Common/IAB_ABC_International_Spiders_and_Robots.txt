@@ -1,6 +1,6 @@
 #
-#	IAB_ABC_International_Spiders_and_Robots_201802_20-082342
-#	February 20, 2018
+#	IAB_ABC_International_Spiders_and_Robots_201804_20-133817
+#	April 20, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
@@ -490,6 +490,11 @@ arianna.libero.it|1||1|2|1
 okhttp/|1||1|2|0
 LittleScraper|1||1|2|1
 ken-webarchiving|1||0|2|0
+TagInspector|1||0|2|0
+quantcastbtot|1||0|2|0
+JobboerseBot|1||0|2|0
+zgrab/|1||0|2|0
+demandbase|1||1|2|0
 aport|1|netaporter, OperaPortable|0|2|0
 b2w|1|B2WTenisnew|0|0|0
 combine|1|Combined|0|0|0
@@ -955,3 +960,5 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 # December 2017 - (1) Quantcastbot
 # January 2018 - (1) arianna.libero.it
 # February 2018 - (1) added okhttp/, (2) added LittleScraper, (3) added ken-webarchiving, (4) removed googleweblight, (5) changed "ng/2.0" from contains to starts with, (6) removed "DoneDrinking/2.0" as an exception to "ng/2.0", (7) removed "Banking/2.0" as an exception to "ng/2.0"
+# March 2018 - (1) added TagInspector
+# April 2018 - (1) quantcastbtot (2) JobboerseBot (3) zgrab/ (4) demandbase
