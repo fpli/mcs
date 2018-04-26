@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.mkttracksvc.util;
 
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -22,9 +23,9 @@ public class RotationId {
 //    long squence = counter.incrementAndGet();
     String identity = supplyDigit(rotationReq.getChannel_id(), 3) + supplyDigit(rotationReq.getSite_id(), 4);
     String randomId = String.valueOf(System.currentTimeMillis() + DriverId.getDriverIdFromIp());
-    String campaignId = (rotationReq.getCampaign_id() == null) ? randomId : rotationReq.getCampaign_id();
-    String customizedId1 = rotationReq.getCustomized_id1() == null ? String.valueOf(Long.valueOf(randomId) + 1) : rotationReq.getCustomized_id1();
-    String customizedId2 = rotationReq.getCustomized_id2() == null ? String.valueOf(Long.valueOf(randomId) + 2) : rotationReq.getCustomized_id2();
+    String campaignId = StringUtils.isEmpty(rotationReq.getCampaign_id()) ? randomId : rotationReq.getCampaign_id();
+    String customizedId1 = StringUtils.isEmpty(rotationReq.getCustomized_id1()) ? String.valueOf(Long.valueOf(randomId) + 1) : rotationReq.getCustomized_id1();
+    String customizedId2 = StringUtils.isEmpty(rotationReq.getCustomized_id2()) ? String.valueOf(Long.valueOf(randomId) + 2) : rotationReq.getCustomized_id2();
 
     String rId = identity + HYPHEN + String.valueOf(campaignId) + HYPHEN + customizedId1 + HYPHEN + customizedId2;
 

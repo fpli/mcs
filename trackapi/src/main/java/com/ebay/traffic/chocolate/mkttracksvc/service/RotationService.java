@@ -21,6 +21,10 @@ public class RotationService {
 
   @Autowired
   MKTTrackSvcConfigBean mktTrackSvcConfig;
+//
+//  @Autowired
+//  CacheFactory factory;
+
 
   RotationCbDao rotationCbDao;
 

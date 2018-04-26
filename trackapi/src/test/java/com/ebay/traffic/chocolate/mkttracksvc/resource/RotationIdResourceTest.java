@@ -92,7 +92,8 @@ public class RotationIdResourceTest {
     rotationRequest.setRotation_name("UpdatedRotationName");
     rotationTag.put("TestTag-2", "Updated-RotationTag-2");
 
-    Response updateResult = client.target(svcEndPoint).path("/tracksvc/v1/rid/update/" + rid)
+    Response updateResult = client.target(svcEndPoint).path("/tracksvc/v1/rid/update")
+        .queryParam("rid", rid)
         .request().accept(MediaType.APPLICATION_JSON_TYPE)
         .put(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
     Assert.assertEquals(200, updateResult.getStatus());
@@ -136,7 +137,8 @@ public class RotationIdResourceTest {
 
     //Deactivate
     String rid = createResponse.getRotation_id();
-    Response updateResult = client.target(svcEndPoint).path("/tracksvc/v1/rid/deactivate/" + rid)
+    Response updateResult = client.target(svcEndPoint).path("/tracksvc/v1/rid/deactivate/")
+        .queryParam("rid", rid)
         .request().accept(MediaType.APPLICATION_JSON_TYPE)
         .put(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
     Assert.assertEquals(200, updateResult.getStatus());
@@ -151,7 +153,8 @@ public class RotationIdResourceTest {
     Assert.assertEquals("c00000001", updateResponse.getCustomized_id1());
 
     //activate
-    updateResult = client.target(svcEndPoint).path("/tracksvc/v1/rid/activate/" + rid)
+    updateResult = client.target(svcEndPoint).path("/tracksvc/v1/rid/activate")
+        .queryParam("rid", rid)
         .request().accept(MediaType.APPLICATION_JSON_TYPE)
         .put(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
     Assert.assertEquals(200, updateResult.getStatus());
