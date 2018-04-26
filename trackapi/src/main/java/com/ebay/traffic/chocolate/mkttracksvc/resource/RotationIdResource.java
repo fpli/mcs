@@ -7,6 +7,7 @@ import com.ebay.traffic.chocolate.mkttracksvc.entity.ServiceResponse;
 import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
 import com.ebay.traffic.chocolate.mkttracksvc.service.RotationService;
 import com.google.gson.Gson;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,24 +40,31 @@ public class RotationIdResource {
       return getResponse(null, "created. Please input rotation info.");
     }
 
-    if (rotationInfo.getChannel_id() == null) {
-      return getResponse(null, "created. Please set one channel.");
+    if (rotationInfo.getChannel_id() == null || rotationInfo.getChannel_id() < 0) {
+      return getResponse(null, "created. Please set correct channel.");
 
     }
 
-    if (rotationInfo.getSite_id() == null) {
+    if (rotationInfo.getSite_id() == null || rotationInfo.getSite_id() < 0) {
       return getResponse(null, "created. Please set one site.");
     }
+
+    if ((NumberUtils.isNumber(rotationInfo.getCampaign_id()) && Long.valueOf(rotationInfo.getCampaign_id()) < 0)
+        || (NumberUtils.isNumber(rotationInfo.getCustomized_id1()) && Long.valueOf(rotationInfo.getCustomized_id1()) < 0)
+        || (NumberUtils.isNumber(rotationInfo.getCustomized_id2()) && Long.valueOf(rotationInfo.getCustomized_id2()) < 0)) {
+      return getResponse(null, "created. CampaignId/CustomizedId1/CustomizedId2 can't less than 0.");
+    }
+
     ServiceResponse ret = rotationService.addRotationMap(rotationInfo);
     return getResponse(ret, " created.");
   }
 
   @PUT
-  @Path("/update/{rid}")
+  @Path("/update")
   @ApiMethod(resource = "rid")
   @Produces({MediaType.APPLICATION_JSON})
   @Consumes({MediaType.APPLICATION_JSON})
-  public String updateRotationTagOrName(@PathParam("rid") final String rid,
+  public String updateRotationTagOrName(@QueryParam("rid") final String rid,
                                         @RequestBody RotationInfo rotationInfo) throws CBException {
 
     if (StringUtils.isEmpty(rid)) {
@@ -67,11 +75,11 @@ public class RotationIdResource {
   }
 
   @PUT
-  @Path("/activate/{rid}")
+  @Path("/activate")
   @ApiMethod(resource = "rid")
   @Produces({MediaType.APPLICATION_JSON})
   @Consumes({MediaType.APPLICATION_JSON})
-  public String activateRotation(@PathParam("rid") final String rid) throws CBException {
+  public String activateRotation(@QueryParam("rid") final String rid) throws CBException {
 
     if (StringUtils.isEmpty(rid)) {
       return getResponse(null, "activated. Please set rotationId.");
@@ -82,11 +90,11 @@ public class RotationIdResource {
   }
 
   @PUT
-  @Path("/deactivate/{rid}")
+  @Path("/deactivate")
   @ApiMethod(resource = "rid")
   @Produces({MediaType.APPLICATION_JSON})
   @Consumes({MediaType.APPLICATION_JSON})
-  public String deactivateRotation(@PathParam("rid") final String rid) throws CBException {
+  public String deactivateRotation(@QueryParam("rid") final String rid) throws CBException {
     if (StringUtils.isEmpty(rid)) {
       return getResponse(null, "deactivated. Please set rotationId.");
     }
