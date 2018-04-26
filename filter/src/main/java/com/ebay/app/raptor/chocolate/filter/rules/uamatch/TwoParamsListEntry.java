@@ -11,7 +11,7 @@ import java.security.InvalidParameterException;
  *
  * Created by spugach on 11/16/16.
  */
-public class WhitelistEntry {
+public class TwoParamsListEntry {
     private boolean isActive = false;
     private boolean isStart = false;
     private String searchStr;
@@ -20,7 +20,7 @@ public class WhitelistEntry {
      * Create a whitelist entry from IAB list entry (|-separated)
      * @param botListEntry IAB whitelist entry
      */
-    public WhitelistEntry(String botListEntry) {
+    public TwoParamsListEntry(String botListEntry) {
         if (!botListEntry.matches("^[^\\|]+\\|[01]\\|[01]")) {
             throw new InvalidParameterException();
         }

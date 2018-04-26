@@ -31,7 +31,7 @@ public class CGUIDStalenessWindowRule extends BaseFilterRule {
    * Test if the CGUID was created too recently or too long ago
    *
    * @param event event (impression/click) to test
-   * @return fail weight
+   * @return a bit, 0 for pass, 1 for fail
    */
   @Override
   public int test(FilterRequest event) {

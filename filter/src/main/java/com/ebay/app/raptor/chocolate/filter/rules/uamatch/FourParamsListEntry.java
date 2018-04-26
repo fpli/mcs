@@ -12,7 +12,7 @@ import java.security.InvalidParameterException;
  *
  * Created by spugach on 11/16/16.
  */
-public class BlacklistEntry {
+public class FourParamsListEntry {
     private boolean isActive = false;
     private boolean isStart = false;
     private String searchStr;
@@ -22,7 +22,7 @@ public class BlacklistEntry {
      * Create a blacklist entry from IAB list entry (|-separated)
      * @param botListEntry IAB blacklist entry
      */
-    public BlacklistEntry(String botListEntry) {
+    public FourParamsListEntry(String botListEntry) {
         if (!botListEntry.matches("^[^\\|]+\\|[01]\\|[^\\|]*\\|[01]\\|[012]\\|[01]")) {
             throw new InvalidParameterException();
         }

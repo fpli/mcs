@@ -5,9 +5,21 @@
       {
         "ruleName": "PrefetchRule"},
       {
-        "ruleName": "TwoPassIABRule"},
+        "ruleName": "TwoPassIABRule",
+        "whitelistName": "IAB_ABC_International_List_of_Valid_Browsers.txt",
+        "blacklistName": "IAB_ABC_International_Spiders_and_Robots.txt"},
       {
-        "ruleName": "InternalTrafficRule"}
+        "ruleName": "InternalTrafficRule"},
+      {
+        "ruleName": "MissingRefererRule"},
+      {
+        "ruleName": "ProtocolRule"},
+      {
+        "ruleName": "IPBlacklistRule",
+        "listName": "IP_Blacklist_Rover.txt"},
+      {
+        "ruleName": "EBayRobotRule",
+        "listName": "eBay_Spiders_and_Robots_Rover.txt"}
     ]
   },
   {
@@ -16,9 +28,11 @@
       {
         "ruleName": "PublisherValidRule"},
       {
-        "ruleName": "EPNDomainBlacklistRule"},
+        "ruleName": "EPNDomainBlacklistRule",
+        "listName": "EPN_domains_Blacklist.txt"},
       {
-        "ruleName": "IPBlacklistRule"},
+        "ruleName": "IPBlacklistRule",
+        "listName": "IP_Blacklist_EPN.txt"},
       {
         "ruleName": "CGUIDStalenessWindowRule",
         "windowStart": 500
@@ -26,14 +40,18 @@
       {
         "ruleName": "RepeatClickRule",
         "timeoutMS": 500
-      }
+      },
+      {
+        "ruleName": "EBayRobotRule",
+        "listName": "eBay_Spiders_and_Robots_EPN.txt"}
     ]
   },
   {
     "channelType": "DISPLAY",
     "filterRules": [
       {
-        "ruleName": "IPBlacklistRule"}
+        "ruleName": "IPBlacklistRule",
+        "listName": "IP_Blacklist_EPN.txt"}
     ]
   }
 ]

@@ -3,8 +3,8 @@ package com.ebay.app.raptor.chocolate.filter.rules;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.common.ZooKeeperConnection;
 import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
-import com.ebay.app.raptor.chocolate.filter.rules.uamatch.BlacklistEntry;
-import com.ebay.app.raptor.chocolate.filter.rules.uamatch.WhitelistEntry;
+import com.ebay.app.raptor.chocolate.filter.rules.uamatch.FourParamsListEntry;
+import com.ebay.app.raptor.chocolate.filter.rules.uamatch.TwoParamsListEntry;
 import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 import com.ebay.kernel.context.RuntimeContext;
@@ -25,10 +25,10 @@ import java.util.List;
 public class TwoPassIABRule extends BaseFilterRule {
   public static final String FILTERING_IAB_WHITELIST_ZK_PATH = "chocolate.filter.iabtest.whitelist";
   public static final String FILTERING_IAB_BLACKLIST_ZK_PATH = "chocolate.filter.iabtest.blacklist";
-  private static final String IAB_WHITELIST_FILENAME = "IAB_ABC_International_List_of_Valid_Browsers.txt";
-  private static final String IAB_BLACKLIST_FILENAME = "IAB_ABC_International_Spiders_and_Robots.txt";
-  private List<WhitelistEntry> whitelist = new ArrayList<WhitelistEntry>();
-  private List<BlacklistEntry> blacklist = new ArrayList<BlacklistEntry>();
+  private static String whitelistName;
+  private static String blacklistName;
+  private List<TwoParamsListEntry> whitelist = new ArrayList<TwoParamsListEntry>();
+  private List<FourParamsListEntry> blacklist = new ArrayList<FourParamsListEntry>();
   
   public TwoPassIABRule(ChannelType channelType) {
     super(channelType);
@@ -58,7 +58,7 @@ public class TwoPassIABRule extends BaseFilterRule {
    * @param whitelistEntry IAB-format whitelist string
    */
   public void addWhitelistEntry(String whitelistEntry) {
-    this.whitelist.add(new WhitelistEntry(whitelistEntry));
+    this.whitelist.add(new TwoParamsListEntry(whitelistEntry));
   }
   
   /**
@@ -67,7 +67,7 @@ public class TwoPassIABRule extends BaseFilterRule {
    * @param blacklistEntry IAB-format blacklist string
    */
   public void addBlacklistEntry(String blacklistEntry) {
-    this.blacklist.add(new BlacklistEntry(blacklistEntry));
+    this.blacklist.add(new FourParamsListEntry(blacklistEntry));
   }
   
   /**
@@ -110,7 +110,7 @@ public class TwoPassIABRule extends BaseFilterRule {
    */
   private boolean isUserAgentValid(String uaString) {
     boolean result = false;
-    for (WhitelistEntry entry : this.whitelist) {
+    for (TwoParamsListEntry entry : this.whitelist) {
       if (entry.match(uaString)) {
         result = true;
         break;
@@ -121,7 +121,7 @@ public class TwoPassIABRule extends BaseFilterRule {
       return false;
     }
     
-    for (BlacklistEntry entry : this.blacklist) {
+    for (FourParamsListEntry entry : this.blacklist) {
       if (entry.match(uaString)) {
         result = false;
         break;
@@ -135,7 +135,7 @@ public class TwoPassIABRule extends BaseFilterRule {
    * Test the user agent from the request using the IAB two-pass rule (whitelist+blacklist)
    *
    * @param event event (impression/click) to test
-   * @return fail weight
+   * @return a bit, 0 for pass, 1 for fail
    */
   @Override
   public int test(FilterRequest event) { return isUserAgentValid(event.getUserAgent()) ? 0 : 1;
@@ -164,8 +164,10 @@ public class TwoPassIABRule extends BaseFilterRule {
   
   private boolean readFromLocalFiles() {
     try {
-      String wlString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + IAB_WHITELIST_FILENAME)));
-      String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + IAB_BLACKLIST_FILENAME)));
+      whitelistName = this.filterRuleContent.getWhiteListName();
+      blacklistName = this.filterRuleContent.getBlackListName();
+      String wlString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + whitelistName)));
+      String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
       this.readFromStrings(wlString, blString);
     } catch (Exception e) {
       return false;

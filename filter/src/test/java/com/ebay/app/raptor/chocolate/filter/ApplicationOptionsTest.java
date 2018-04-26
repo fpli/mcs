@@ -100,17 +100,23 @@ public class ApplicationOptionsTest {
     Map<String, FilterRuleContent> defaultRule = ApplicationOptions.filterRuleConfigMap.get(ChannelType.DEFAULT);
     assertEquals("PrefetchRule", defaultRule.get("PrefetchRule").getRuleName());
     assertNotNull(defaultRule.get("PrefetchRule"));
+    assertEquals("IP_Blacklist_Rover.txt", defaultRule.get("IPBlacklistRule").getListName());
+    assertEquals("IAB_ABC_International_List_of_Valid_Browsers.txt", defaultRule.get("TwoPassIABRule").getWhiteListName());
+    assertEquals("IAB_ABC_International_Spiders_and_Robots.txt", defaultRule.get("TwoPassIABRule").getBlackListName());
 
     Map<String, FilterRuleContent> epnRule = ApplicationOptions.filterRuleConfigMap.get(ChannelType.EPN);
     assertEquals("PrefetchRule", epnRule.get("PrefetchRule").getRuleName());
     assertNotNull(defaultRule.get("PrefetchRule"));
     assertEquals("EPNDomainBlacklistRule", epnRule.get("EPNDomainBlacklistRule").getRuleName());
     assertNull(defaultRule.get("EPNDomainBlacklistRule"));
+    assertEquals("IP_Blacklist_EPN.txt", epnRule.get("IPBlacklistRule").getListName());
+    assertEquals("eBay_Spiders_and_Robots_EPN.txt", epnRule.get("EBayRobotRule").getListName());
 
     Map<String, FilterRuleContent> dapRule = ApplicationOptions.filterRuleConfigMap.get(ChannelType.DISPLAY);
     assertEquals("TwoPassIABRule", dapRule.get("TwoPassIABRule").getRuleName());
     assertNotNull(defaultRule.get("TwoPassIABRule"));
     assertEquals("IPBlacklistRule", dapRule.get("IPBlacklistRule").getRuleName());
-    assertNull(defaultRule.get("IPBlacklistRule"));
+    assertEquals("eBay_Spiders_and_Robots_Rover.txt", dapRule.get("EBayRobotRule").getListName());
+
   }
 }
