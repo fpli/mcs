@@ -13,13 +13,7 @@
       {
         "ruleName": "MissingRefererRule"},
       {
-        "ruleName": "ProtocolRule"},
-      {
-        "ruleName": "IPBlacklistRule",
-        "listName": "IP_Blacklist_Rover.txt"},
-      {
-        "ruleName": "EBayRobotRule",
-        "listName": "eBay_Spiders_and_Robots_Rover.txt"}
+        "ruleName": "ProtocolRule"}
     ]
   },
   {
@@ -33,14 +27,6 @@
       {
         "ruleName": "IPBlacklistRule",
         "listName": "IP_Blacklist_EPN.txt"},
-      {
-        "ruleName": "CGUIDStalenessWindowRule",
-        "windowStart": 500
-      },
-      {
-        "ruleName": "RepeatClickRule",
-        "timeoutMS": 500
-      },
       {
         "ruleName": "EBayRobotRule",
         "listName": "eBay_Spiders_and_Robots_EPN.txt"}
