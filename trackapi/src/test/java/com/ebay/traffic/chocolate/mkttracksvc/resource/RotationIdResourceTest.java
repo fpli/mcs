@@ -109,6 +109,24 @@ public class RotationIdResourceTest {
     Assert.assertEquals("000000001", updateResponse.getCampaign_id());
     Assert.assertEquals("c00000001", updateResponse.getCustomized_id1());
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, updateResponse.getStatus());
+
+    Map addedRotationTags = new HashMap();
+    //add new fields in rotation tags
+    addedRotationTags.put("TestTag-3", "Updated-RotationTag-3");
+    addedRotationTags.put("TestTag-4", "Updated-RotationTag-4");
+    RotationInfo addedRInfo = new RotationInfo();
+    addedRInfo.setRotation_tag(addedRotationTags);
+
+    Response updateResult2 = client.target(svcEndPoint).path("/tracksvc/v1/rid/update")
+        .queryParam("rid", rid)
+        .request().accept(MediaType.APPLICATION_JSON_TYPE)
+        .put(Entity.entity(addedRInfo, MediaType.APPLICATION_JSON_TYPE));
+    Assert.assertEquals(200, updateResult.getStatus());
+    serviceResponse = updateResult2.readEntity(ServiceResponse.class);
+    updateResponse = serviceResponse.getRotation_info();
+    Assert.assertEquals("Updated-RotationTag-2", updateResponse.getRotation_tag().get("TestTag-2"));
+    Assert.assertEquals("Updated-RotationTag-3", updateResponse.getRotation_tag().get("TestTag-3"));
+    Assert.assertEquals("Updated-RotationTag-4", updateResponse.getRotation_tag().get("TestTag-4"));
   }
 
   @Test

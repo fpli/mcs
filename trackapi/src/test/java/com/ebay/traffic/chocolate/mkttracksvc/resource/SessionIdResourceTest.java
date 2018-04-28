@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.mkttracksvc.resource;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.context.embedded.LocalServerPort;
@@ -20,6 +21,7 @@ import javax.ws.rs.core.Response;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
     properties = {"GingerClient.testService.testClient.endpointUri=http://localhost",
         "GingerClient.testService.testClient.readTimeout=5000"})
+@Ignore
 public class SessionIdResourceTest {
   @LocalServerPort
   private int port;
