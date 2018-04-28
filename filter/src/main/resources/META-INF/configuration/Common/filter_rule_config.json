@@ -22,10 +22,14 @@
       {
         "ruleName": "PublisherValidRule"},
       {
-        "ruleName": "EPNDomainBlacklistRule"},
+        "ruleName": "EPNDomainBlacklistRule",
+        "listName": "EPN_domains_Blacklist.txt"},
       {
-        "ruleName": "IPBlacklistRule"
-      }
+        "ruleName": "IPBlacklistRule",
+        "listName": "IP_Blacklist_EPN.txt"},
+      {
+        "ruleName": "EBayRobotRule",
+        "listName": "eBay_Spiders_and_Robots_EPN.txt"}
     ]
   },
   {
