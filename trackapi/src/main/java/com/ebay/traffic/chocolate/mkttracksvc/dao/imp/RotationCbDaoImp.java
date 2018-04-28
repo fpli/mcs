@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -171,7 +172,7 @@ public class RotationCbDaoImp implements RotationCbDao {
   /**
    * Update RotationInfo by rotationId
    *
-   * @param rotationId
+   * @param rotationId rotation id
    * @param rotationInfo only rotationTag could be modified
    */
   public RotationInfo updateRotationMap(String rotationId, RotationInfo rotationInfo) {
@@ -179,12 +180,22 @@ public class RotationCbDaoImp implements RotationCbDao {
     if (updateInfo == null) {
       return null;
     }
-    updateInfo.setRotation_name(rotationInfo.getRotation_name());
-    updateInfo.setRotation_tag(rotationInfo.getRotation_tag());
-    updateInfo.setChannel_id(rotationInfo.getChannel_id());
+    if(StringUtils.isNotEmpty(rotationInfo.getRotation_name())){
+      updateInfo.setRotation_name(rotationInfo.getRotation_name());
+    }
+    if(rotationInfo.getChannel_id() != null && rotationInfo.getChannel_id() >= 0 ) {
+      updateInfo.setChannel_id(rotationInfo.getChannel_id());
+    }
     updateInfo.setLast_update_time(System.currentTimeMillis());
+    Map updateMap = updateInfo.getRotation_tag();
+    Map<String, Object> rotationTags = rotationInfo.getRotation_tag();
+    for (Map.Entry entry: rotationTags.entrySet()) {
+      updateMap.put(entry.getKey(), entry.getValue());
+    }
+    updateInfo.setRotation_tag(updateMap);
+
     bucket.upsert(StringDocument.create(rotationId, new Gson().toJson(updateInfo)));
-    logger.debug("RotationInfo has been modified. rotationId=" + rotationId + " rotationInfo=" + rotationInfo);
+    logger.debug("RotationInfo has been modified. rotationId=" + rotationId + " rotationInfo=" + updateInfo);
     return updateInfo;
   }
 

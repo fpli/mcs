@@ -49,10 +49,8 @@ public class CouchbaseClient {
         this.bucket = cluster.openBucket(ApplicationOptions.getInstance().getCouchBaseBucket(),
             1200, TimeUnit.SECONDS);
       } catch (Exception e) {
-        logger.error("Couchbase init error");
+        logger.error("Couchbase init error", e);
         throw e;
-      } finally {
-        cluster.disconnect();
       }
       this.buffer = new LinkedBlockingDeque<>();
     }
@@ -93,7 +91,7 @@ public class CouchbaseClient {
       upsert(campaignId, publisherId);
     } catch (Exception e) {
       buffer.add(new Pair<>(campaignId, publisherId));
-      logger.warn("Couchbase upsert operation exception");
+      logger.warn("Couchbase upsert operation exception", e);
     }
   }
 
@@ -114,7 +112,7 @@ public class CouchbaseClient {
         buffer.poll();
       }
     } catch (Exception e) {
-      logger.warn("Couchbase upsert operation exception");
+      logger.warn("Couchbase upsert operation exception", e);
     }
   }
 
@@ -131,11 +129,11 @@ public class CouchbaseClient {
         return Long.parseLong(document.content().toString());
       } catch (NumberFormatException ne) {
         logger.warn("Error in converting publishID " + bucket.get(String.valueOf(campaignId),
-            StringDocument.class).toString() + " to Long");
+            StringDocument.class).toString() + " to Long", ne);
         metrics.meter("ErrorPublishID");
         return DEFAULT_PUBLISHER_ID;
       } catch (Exception e) {
-        logger.warn("Couchbase query operation timeout, will sleep for 30s to retry");
+        logger.warn("Couchbase query operation timeout, will sleep for 30s to retry", e);
         Thread.sleep(30000);
       }
     }
