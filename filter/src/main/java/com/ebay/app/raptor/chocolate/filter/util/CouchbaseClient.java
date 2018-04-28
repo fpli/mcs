@@ -51,8 +51,6 @@ public class CouchbaseClient {
       } catch (Exception e) {
         logger.error("Couchbase init error", e);
         throw e;
-      } finally {
-        cluster.disconnect();
       }
       this.buffer = new LinkedBlockingDeque<>();
     }
