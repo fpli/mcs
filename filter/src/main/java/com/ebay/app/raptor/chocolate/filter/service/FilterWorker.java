@@ -153,9 +153,9 @@ public class FilterWorker extends Thread {
     outMessage.setIsTracked(message.getIsTracked());
     try {
       long rtFilterRules = this.filters.test(message);
-      outMessage.setNrtRuleFlags(rtFilterRules);
+      outMessage.setRtRuleFlags(rtFilterRules);
     } catch (Exception e) {
-      outMessage.setNrtRuleFlags(Long.valueOf(FilterRuleType.ERROR.getRuleDigitPosition()));
+      outMessage.setRtRuleFlags(Long.valueOf(FilterRuleType.ERROR.getRuleDigitPosition()));
     }
     return outMessage;
   }

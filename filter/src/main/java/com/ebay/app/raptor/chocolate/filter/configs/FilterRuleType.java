@@ -8,7 +8,7 @@ import com.ebay.app.raptor.chocolate.filter.rules.*;
  * @author yimeng
  */
 public enum FilterRuleType {
-  NONE("NONE", "NONE", null, -1),     // Either the event is valid, or it failed through several noncritical rules
+  NONE("NONE", "NONE", null, 0),     // Either the event is valid, or it failed through several noncritical rules
   ERROR("ERROR", "ERROR", null, -1), // The event was malformed; still gets marked as failed
   PREFETCH("PREFETCH", "PrefetchRule", PrefetchRule.class, 2),
   INTERNAL("INTERNAL", "InternalTrafficRule", InternalTrafficRule.class, 3),
