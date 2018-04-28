@@ -18,14 +18,7 @@
       {
         "ruleName": "EPNDomainBlacklistRule"},
       {
-        "ruleName": "IPBlacklistRule"},
-      {
-        "ruleName": "CGUIDStalenessWindowRule",
-        "windowStart": 500
-      },
-      {
-        "ruleName": "RepeatClickRule",
-        "timeoutMS": 500
+        "ruleName": "IPBlacklistRule"
       }
     ]
   },
