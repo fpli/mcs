@@ -97,8 +97,7 @@ public class UAMatchTest {
         BlacklistEntry entry1 = new BlacklistEntry("obot|1||0|2|0");
         BlacklistEntry entry2 = new BlacklistEntry("obot|1|robotics|0|2|0");
         BlacklistEntry entry3 = new BlacklistEntry("obot|1|robotto-san, Robotics|0|2|0");
-        assertEquals(true, entry1.match("So robotics!"));
-        assertEquals(false, entry2.match("So robotics!"));
-        assertEquals(false, entry3.match("So Robotics!"));
+        assertEquals(false, entry2.match("SoRobotics!"));
+        assertEquals(false, entry3.match("so robotics!"));
     }
 }

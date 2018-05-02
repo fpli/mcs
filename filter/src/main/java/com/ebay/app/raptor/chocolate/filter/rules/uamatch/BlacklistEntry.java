@@ -55,7 +55,7 @@ public class BlacklistEntry {
 
         if (matched) {
             for (String ex : this.exceptions) {
-                if (!ex.isEmpty() && uaString.contains(ex)) {
+                if (!ex.isEmpty() && uaLower.contains(ex.trim().toLowerCase())) {
                     matched = false;
                     break;
                 }
