@@ -134,11 +134,12 @@ class DedupeAndSink(params: Parameter)
     fs.delete(new Path(baseTempDir), true)
 
     // dedupe
-    val metaFiles = new MetaFiles(dates.map(date => dedupe(date)))
+    if(dates.length>0) {
+      val metaFiles = new MetaFiles(dates.map(date => dedupe(date)))
 
-    metadata.writeDedupeCompMeta(metaFiles)
-    metadata.writeDedupeOutputMeta(metaFiles)
-
+      metadata.writeDedupeCompMeta(metaFiles)
+      metadata.writeDedupeOutputMeta(metaFiles)
+    }
     // commit offsets of kafka RDDs
     kafkaRDD.commitOffsets()
     kafkaRDD.close()
