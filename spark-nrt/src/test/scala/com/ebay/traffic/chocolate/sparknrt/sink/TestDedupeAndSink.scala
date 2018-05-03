@@ -119,5 +119,11 @@ class TestDedupeAndSink extends BaseFunSuite {
     assert (df22.count() == 1)
 
     metadata.deleteDedupeOutputMeta(dom1(0)._1)
+
+    // empty kafka input
+    job.run()
+
+    val dom2 = metadata1.readDedupeOutputMeta
+    assert(dom2.length == 0)
   }
 }
