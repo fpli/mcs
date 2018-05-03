@@ -16,6 +16,7 @@ public class CampaignPublisherMappingCacheTest {
     private static final String zkRootDir = "/chocolate/filter/unit-test-pubcache";
     private static final String zkDriverIdPath = "/chocolate/filter/driverid/23423423";
     private static FilterZookeeperClient zookeeperClient;
+    private static CouchbaseClient couchbaseClient;
 
     @BeforeClass
     public static void setUp() throws Exception{
@@ -23,38 +24,33 @@ public class CampaignPublisherMappingCacheTest {
         zookeeperCluster.start();
         zookeeperClient = new FilterZookeeperClient(zookeeperCluster.getConnectionString(),
             zkRootDir, zkDriverIdPath);
+      CouchbaseClientMock.createClient();
+      couchbaseClient = new CouchbaseClient(CouchbaseClientMock.getCluster(), CouchbaseClientMock.getBucket());
+      CouchbaseClient.init(couchbaseClient);
         zookeeperClient.start(t -> {
         CampaignPublisherMappingCache.getInstance().addMapping(t.getCampaignId(), t.getPublisherId());
-        CouchbaseClient.getInstance().addMappingRecord(t.getCampaignId(), t.getPublisherId());
+        couchbaseClient.addMappingRecord(t.getCampaignId(), t.getPublisherId());
       });
-
-    }
-
-
-    @Before
-    public void construct() throws Exception{
-      CouchbaseClientMock.createClient();
-      CouchbaseClient.init(CouchbaseClientMock.getCluster(), CouchbaseClientMock.getBucket());
     }
 
     @After
     public void destroy() {
       CampaignPublisherMappingCache.destroy();
-      CouchbaseClient.close();
     }
 
     @AfterClass
   public static void tearDown() throws IOException{
       zookeeperClient.close();
       zookeeperCluster.shutdown();
+      CouchbaseClientMock.tearDown();
       CouchbaseClient.close();
   }
 
     @Test
     public void testClient() throws Exception {
         PublisherCacheEntry entry1 = new PublisherCacheEntry();
-        entry1.setCampaignId(11111L);
-        entry1.setPublisherId(55555L);
+        entry1.setCampaignId(10000L);
+        entry1.setPublisherId(20000L);
         entry1.setTimestamp(99999L);
         byte[] bytes = zookeeperClient.toBytes(entry1);
         PublisherCacheEntry result = zookeeperClient.fromBytes(bytes);
@@ -65,13 +61,13 @@ public class CampaignPublisherMappingCacheTest {
     @Test
     public void testLookupWithRecordInCache() throws Exception {
         PublisherCacheEntry entry1 = new PublisherCacheEntry();
-        entry1.setCampaignId(11111L);
-        entry1.setPublisherId(55555L);
+        entry1.setCampaignId(10001L);
+        entry1.setPublisherId(20001L);
         entry1.setTimestamp(99999L);
 
         PublisherCacheEntry entry2 = new PublisherCacheEntry();
-        entry2.setCampaignId(22222L);
-        entry2.setPublisherId(66666L);
+        entry2.setCampaignId(10002L);
+        entry2.setPublisherId(20002L);
         entry2.setTimestamp(88888L);
       zookeeperClient.addEntry(entry1);
       zookeeperClient.addEntry(entry2);
@@ -81,35 +77,34 @@ public class CampaignPublisherMappingCacheTest {
                         addMapping(t.getCampaignId(), t.getPublisherId()));
 
         Thread.sleep(1000);
-        assertEquals(Long.valueOf(55555L),CampaignPublisherMappingCache.getInstance().lookup(11111L));
+        assertEquals(Long.valueOf(20001L),CampaignPublisherMappingCache.getInstance().lookup(10001L));
     }
 
     @Test
     public void testLookupWithCacheMiss() throws Exception {
         PublisherCacheEntry entry1 = new PublisherCacheEntry();
-        entry1.setCampaignId(11111L);
-        entry1.setPublisherId(55555L);
+        entry1.setCampaignId(10003L);
+        entry1.setPublisherId(20003L);
         entry1.setTimestamp(99999L);
 
         PublisherCacheEntry entry2 = new PublisherCacheEntry();
-        entry2.setCampaignId(22222L);
-        entry2.setPublisherId(66666L);
+        entry2.setCampaignId(10004L);
+        entry2.setPublisherId(20004L);
         entry2.setTimestamp(88888L);
       zookeeperClient.addEntry(entry1);
       zookeeperClient.addEntry(entry2);
 
         CampaignPublisherMappingCache.getInstance().cache.clear();
-        CouchbaseClient.getInstance().addMappingRecord(11111, 55555);
-        CouchbaseClient.getInstance().addMappingRecord(22222, 66666);
+      CouchbaseClient.getInstance().addMappingRecord(10003, 20003);
+      CouchbaseClient.getInstance().addMappingRecord(10004, 20004);
 
-        assertEquals(Long.valueOf(66666L),CampaignPublisherMappingCache.getInstance().lookup(22222L));
-        assertEquals(Long.valueOf(66666L),CampaignPublisherMappingCache.getInstance().cache.get(22222L));
+        assertEquals(Long.valueOf(20004L),CampaignPublisherMappingCache.getInstance().lookup(10004L));
+        assertEquals(Long.valueOf(20004L),CampaignPublisherMappingCache.getInstance().cache.get(10004L));
     }
 
     @Test
     public void testInsertAndGetCouchBaseRecord() throws InterruptedException{
-        CouchbaseClient.getInstance().addMappingRecord(11111L,55555L);
-        assertEquals(55555L, CouchbaseClient.getInstance().getPublisherID(11111L));
+      CouchbaseClient.getInstance().addMappingRecord(10005L,20005L);
+        assertEquals(20005L, CouchbaseClient.getInstance().getPublisherID(10005L));
     }
-
 }
