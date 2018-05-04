@@ -9,12 +9,12 @@
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.EPN</name>
-    <value>prod_listener</value>
+    <value>listened-epn</value>
     <description>Kafka topic for epn channel to publish.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.DISPLAY</name>
-    <value>prod_listener_display</value>
+    <value>listened-display</value>
     <description>Kafka topic for display channel to publish.</description>
   </property>
   <!-- Kafka producer end -->
