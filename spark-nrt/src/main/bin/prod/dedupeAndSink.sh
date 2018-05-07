@@ -26,7 +26,7 @@ EXECUTOR_CORES=4
 
 JOB_NAME="DedupeAndSink"
 
-for f in $(find $bin/../../conf/prod -name '*');
+for f in $(find $bin/../../conf/prod -name '*.*');
 do
   FILES=${FILES},file://$f;
 done
