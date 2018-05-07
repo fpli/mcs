@@ -17,7 +17,7 @@ if [ -z "${SPARK_CONF_DIR}" ]; then
   export SPARK_CONF_DIR=${SPARK_HOME}/conf/
 fi
 
-SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/spark/logs
+SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
 HISTORY_SERVER=http://lvschocolatepits-1583698.stratus.lvs.ebay.com:18080/
 
 FILES="file:///${HADOOP_CONF_DIR}/ssl-client.xml"
