@@ -4,6 +4,6 @@ ssh -T -i /usr/azkaban/id_rsa_spark yimeng@lvschocolatepits-1585074.stratus.lvs.
 hostname
 cd /home/spark/chocolate-sparknrt/bin/prod
 pwd
-export HADOOP_USER_NAME=hdfs
+export HADOOP_USER_NAME=spark
 echo $HADOOP_USER_NAME
 ./dedupeAndSink.sh DISPLAY marketingtech.ap.tracking-events.filtered-display /apps/tracking-events-workdir /apps/tracking-events
