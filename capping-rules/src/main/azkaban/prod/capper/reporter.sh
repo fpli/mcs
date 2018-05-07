@@ -13,5 +13,5 @@ pwd
 echo "on remote server's param = $scanStopTime"
 export HADOOP_USER_NAME=spark
 echo $HADOOP_USER_NAME
-./reportGeneratorJob.sh prod_transactional prod_transactional EPN $scanStopTime 1440 15 CASSANDRA PROD
+./reportGeneratorJob.sh prod_transactional prod_transactional EPN $scanStopTime 15 CASSANDRA PROD
 EOSSH
