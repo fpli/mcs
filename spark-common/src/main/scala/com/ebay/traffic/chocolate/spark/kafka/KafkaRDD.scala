@@ -29,6 +29,7 @@ class KafkaRDD[K, V](
   }
 
   @transient lazy val untilOffsets = {
+    log.info(s"###topic: ${topic}, computing endOffsets")
     val kpartitions = new util.ArrayList[TopicPartition]()
     // get kafka partitions
     val iter = consumer.partitionsFor(topic).iterator()
@@ -51,7 +52,9 @@ class KafkaRDD[K, V](
       val position = consumer.position(tp)
       val until = Math.min(endOffset.getValue, position + maxConsumeSize)
       log.info(s"###topic-partition: ${tp}, position: ${position}, until: ${until}")
-      untilOffsets.put(endOffset.getKey, new OffsetAndMetadata(until))
+      if (until > position) {
+        untilOffsets.put(endOffset.getKey, new OffsetAndMetadata(until))
+      }
     }
     consumer.unsubscribe()
 
