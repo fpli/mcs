@@ -71,6 +71,9 @@ public class DefaultChannel implements Channel {
           return;
         }
 
+        if (campaignId == -1L && channel.equals(ChannelIdEnum.EPN))
+          return;
+
         kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(channel.getLogicalChannel().getAvro());
         producer = KafkaSink.get();
       } else {
