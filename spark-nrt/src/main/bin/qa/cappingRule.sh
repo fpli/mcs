@@ -26,7 +26,7 @@ EXECUTOR_CORES=1
 
 JOB_NAME="cappingRule"
 
-for f in $(find $bin/../../conf/qa -name '*');
+for f in $(find $bin/../../conf/qa -name '*.*');
 do
   FILES=${FILES},file://$f;
 done
