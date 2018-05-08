@@ -53,7 +53,7 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
     var dfIP = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).filter($"channel_action" === "CLICK")
     val timestamp = dfIP.select($"timestamp").first().getLong(0)
 
-    dfIP = dfIP.select(split($"request_headers", "X-EBAY-CLIENT-IP: ")(1).alias("tmpIP"))
+    dfIP = dfIP.select(split($"request_headers", "X-eBay-Client-IP: ")(1).alias("tmpIP"))
       .select(split($"tmpIP", """\|""")(0).alias("IP"))
       .groupBy($"IP").agg(count(lit(1)).alias("count"))
       .drop($"request_headers")
@@ -72,7 +72,7 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
 
     // IP rule
     var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
-      .withColumn("tmpIP", split($"request_headers", "X-EBAY-CLIENT-IP: ")(1))
+      .withColumn("tmpIP", split($"request_headers", "X-eBay-Client-IP: ")(1))
       .withColumn("IP_1", split($"tmpIP", """\|""")(0))
       .drop($"tmpIP")
 
