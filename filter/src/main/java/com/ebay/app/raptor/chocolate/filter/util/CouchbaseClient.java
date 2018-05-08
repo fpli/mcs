@@ -55,7 +55,7 @@ public class CouchbaseClient {
       this.buffer = new LinkedBlockingDeque<>();
     }
 
-    private CouchbaseClient(Cluster cluster, Bucket bucket) {
+    public CouchbaseClient(Cluster cluster, Bucket bucket) {
         this.cluster = cluster;
         this.bucket = bucket;
     }
@@ -67,10 +67,10 @@ public class CouchbaseClient {
         logger.info("Initial Couchbase cluster");
     }
 
-    public static void init(Cluster cluster, Bucket bucket) {
+    /**For unit test*/
+    public static void init(CouchbaseClient client) {
         Validate.isTrue(INSTANCE == null, "Instance should be initialized only once");
-        INSTANCE = new CouchbaseClient(cluster, bucket);
-        logger.info("Initial Couchbase cluster Mock for Unit tests");
+        INSTANCE = client;
     }
 
     /**Singleton */

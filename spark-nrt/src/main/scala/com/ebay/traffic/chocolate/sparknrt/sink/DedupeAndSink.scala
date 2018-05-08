@@ -54,7 +54,7 @@ class DedupeAndSink(params: Parameter)
   lazy val baseDir = params.workDir + "/dedupe/" + params.channel + "/"
   lazy val baseTempDir = baseDir + "/tmp/"
   lazy val sparkDir = baseDir + "/spark/"
-  lazy val outputDir = params.outputDir
+  lazy val outputDir = params.outputDir + "/" + params.channel + "/dedupe/"
 
   @transient lazy val metadata = {
     Metadata(params.workDir, params.channel, MetadataEnum.dedupe)
@@ -134,11 +134,12 @@ class DedupeAndSink(params: Parameter)
     fs.delete(new Path(baseTempDir), true)
 
     // dedupe
-    val metaFiles = new MetaFiles(dates.map(date => dedupe(date)))
+    if(dates.length>0) {
+      val metaFiles = new MetaFiles(dates.map(date => dedupe(date)))
 
-    metadata.writeDedupeCompMeta(metaFiles)
-    metadata.writeDedupeOutputMeta(metaFiles)
-
+      metadata.writeDedupeCompMeta(metaFiles)
+      metadata.writeDedupeOutputMeta(metaFiles)
+    }
     // commit offsets of kafka RDDs
     kafkaRDD.commitOffsets()
     kafkaRDD.close()

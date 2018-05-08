@@ -97,8 +97,7 @@ public class UAMatchTest {
         FourParamsListEntry entry1 = new FourParamsListEntry("obot|1||0|2|0");
         FourParamsListEntry entry2 = new FourParamsListEntry("obot|1|robotics|0|2|0");
         FourParamsListEntry entry3 = new FourParamsListEntry("obot|1|robotto-san, Robotics|0|2|0");
-        assertEquals(true, entry1.match("So robotics!"));
-        assertEquals(false, entry2.match("So robotics!"));
-        assertEquals(false, entry3.match("So Robotics!"));
+        assertEquals(false, entry2.match("SoRobotics!"));
+        assertEquals(false, entry3.match("so robotics!"));
     }
 }

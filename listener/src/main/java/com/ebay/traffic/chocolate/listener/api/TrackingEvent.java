@@ -65,7 +65,7 @@ public class TrackingEvent {
 
     public static final int CURRENT_VERSION = 1;
 
-    public TrackingEvent(URL url, Map<String, String[]> params) {
+    public TrackingEvent(URL url, Map<String, String[]> params) throws NumberFormatException {
       payload = new HashMap<>();
       parsePath(url.getPath());
       try {
@@ -75,7 +75,7 @@ public class TrackingEvent {
       }
     }
 
-    private void validateParams(Map<String, String[]> params) throws UnsupportedEncodingException{
+    private void validateParams(Map<String, String[]> params) throws UnsupportedEncodingException, NumberFormatException{
       if (params.isEmpty()) return;
       Object val;
       for (Map.Entry<String, String[]> entry : params.entrySet()) {

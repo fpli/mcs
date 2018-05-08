@@ -42,27 +42,27 @@ public class TrackingEventTest {
     }
 
     @Test
-    public void testCreatingNewEventShouldReturnCorrectVersion() throws MalformedURLException {
+    public void testCreatingNewEventShouldReturnCorrectVersion() throws Exception {
         TrackingEvent event = new TrackingEvent(new URL(clickURL), mockClientRequest.getParameterMap());
         assertEquals(1, event.getVersion());
     }
 
     @Test
-    public void testCreatingNewEventShouldReturnClickEventType() throws MalformedURLException {
+    public void testCreatingNewEventShouldReturnClickEventType() throws Exception {
         TrackingEvent event = new TrackingEvent(new URL(clickURL), mockClientRequest.getParameterMap());
         assertEquals(ChannelActionEnum.CLICK, event.getAction());
         assertEquals(LogicalChannelEnum.EPN, ChannelIdEnum.parse(Integer.toString(event.getChannelID())).getLogicalChannel());
     }
 
     @Test
-    public void testCreatingNewEventShouldReturnVimpEventType() throws MalformedURLException {
+    public void testCreatingNewEventShouldReturnVimpEventType() throws Exception {
         TrackingEvent event = new TrackingEvent(new URL(vimpURL), mockClientRequest.getParameterMap());
         assertEquals(ChannelActionEnum.VIMP, event.getAction());
         assertEquals(LogicalChannelEnum.EPN, ChannelIdEnum.parse(Integer.toString(event.getChannelID())).getLogicalChannel());
     }
 
     @Test
-    public void testCreatingNewEventShouldReturnImpressionEventType() throws MalformedURLException {
+    public void testCreatingNewEventShouldReturnImpressionEventType() throws Exception {
         TrackingEvent event = new TrackingEvent(new URL(impURL), mockClientRequest.getParameterMap());
 
         assertEquals(ChannelActionEnum.IMPRESSION, event.getAction());
@@ -71,13 +71,23 @@ public class TrackingEventTest {
 
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreatingNewEventShouldThrowExceptionWhenVersionIncorrectlySpecified() throws MalformedURLException {
+    public void testCreatingNewEventShouldThrowExceptionWhenVersionIncorrectlySpecified() throws Exception {
         String invalidVersion = "https://c.ebay.com/cc/1-12345?page=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068";
         new TrackingEvent(new URL(invalidVersion), null);
     }
 
+  @Test(expected = NumberFormatException.class)
+  public void testCreatingNewEventShouldThrowExceptionWhenInvalidItem() throws Exception {
+    String invalidItem = "https://c.ebay.com/1c/1-12345?page=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=38096311abdew8";
+    String[] splitClick = invalidItem.split("\\?");
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.setRequestURI(invalidItem);
+    request.setParameters(parsePayload(splitClick[1]));
+    new TrackingEvent(new URL(invalidItem), request.getParameterMap());
+  }
+
     @Test(expected = IllegalArgumentException.class)
-    public void testCreatingNewEventShouldThrowExceptionWhenEventIncorrectlySpecified() throws MalformedURLException, UnsupportedEncodingException{
+    public void testCreatingNewEventShouldThrowExceptionWhenEventIncorrectlySpecified() throws Exception{
         String invalidEvent = "https://c.ebay.com/11/1-12345?page=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068";
       String[] splitClick = invalidEvent.split("\\?");
       MockHttpServletRequest request = new MockHttpServletRequest();
@@ -87,21 +97,21 @@ public class TrackingEventTest {
     }
 
     @Test
-    public void testCreatingNewEventShouldReturnCorrectChannelID() throws MalformedURLException {
+    public void testCreatingNewEventShouldReturnCorrectChannelID() throws Exception {
         TrackingEvent event = new TrackingEvent(new URL(clickURL), mockClientRequest.getParameterMap());
 
         assertEquals(1, event.getChannelID());
     }
 
     @Test
-    public void testCreatingNewEventShouldReturnCorrectCollectionID() throws MalformedURLException {
+    public void testCreatingNewEventShouldReturnCorrectCollectionID() throws Exception {
         TrackingEvent event = new TrackingEvent(new URL(clickURL), mockClientRequest.getParameterMap());
 
         assertEquals("12345", event.getCollectionID());
     }
 
     @Test
-    public void testCreatingNewEventShouldReturnCorrectMapOfPayload() throws MalformedURLException {
+    public void testCreatingNewEventShouldReturnCorrectMapOfPayload() throws Exception {
         TrackingEvent event = new TrackingEvent(new URL(clickURL), mockClientRequest.getParameterMap());
         Map<String, Object> payload = event.getPayload();
 
@@ -109,14 +119,14 @@ public class TrackingEventTest {
     }
 
     @Test
-    public void testCreatingNewEventShouldReturnCorrectMapOfPayloadEvenIfSplit() throws MalformedURLException {
+    public void testCreatingNewEventShouldReturnCorrectMapOfPayloadEvenIfSplit() throws Exception {
         TrackingEvent event = new TrackingEvent(new URL(clickURL), mockClientRequest.getParameterMap());
         Map<String, Object> payload = event.getPayload();
         assertEquals("testval", payload.get("testkey"));
     }
 
     @Test
-    public void testPayloadShouldParseLongValuesForItemIDAndProductID() throws MalformedURLException {
+    public void testPayloadShouldParseLongValuesForItemIDAndProductID() throws Exception {
         TrackingEvent event = new TrackingEvent(new URL(clickURL), mockClientRequest.getParameterMap());
         Map<String, Object> payload = event.getPayload();
 
@@ -124,7 +134,7 @@ public class TrackingEventTest {
     }
 
     @Test
-    public void testPayloadShouldURLDecodeAnyStringValues() throws MalformedURLException {
+    public void testPayloadShouldURLDecodeAnyStringValues() throws Exception {
         TrackingEvent event = new TrackingEvent(new URL(clickURL), mockClientRequest.getParameterMap());
         Map<String, Object> payload = event.getPayload();
 
@@ -133,7 +143,7 @@ public class TrackingEventTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testPayloadShouldThrowExceptionWhenItemIDIsNotANumber() throws MalformedURLException, UnsupportedEncodingException {
+    public void testPayloadShouldThrowExceptionWhenItemIDIsNotANumber() throws Exception {
         String invalidItem = "https://c.ebay.com/1c/1-12345?page=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=3ABC80963112068";
       String[] splitClick = invalidItem.split("\\?");
       MockHttpServletRequest request = new MockHttpServletRequest();
@@ -143,7 +153,7 @@ public class TrackingEventTest {
     }
 
     @Test
-    public void testRespondToEventShouldRedirectToSpecifiedPageURL() throws IOException {
+    public void testRespondToEventShouldRedirectToSpecifiedPageURL() throws Exception {
       String[] splitClick = clickURL.split("\\?");
         HttpServletResponse response = mock(HttpServletResponse.class);
         when(response.encodeRedirectURL(anyString())).thenReturn(page);
@@ -155,7 +165,7 @@ public class TrackingEventTest {
     }
 
     @Test
-    public void testRespondToEventShouldRedirectToEbayDotComIfNonEbayHostSpecified() throws IOException {
+    public void testRespondToEventShouldRedirectToEbayDotComIfNonEbayHostSpecified() throws Exception {
         HttpServletResponse response = mock(HttpServletResponse.class);
         when(response.encodeRedirectURL("http://www.ebay.com")).thenReturn("http://www.ebay.com");
 
@@ -173,7 +183,7 @@ public class TrackingEventTest {
     }
 
     @Test
-    public void testRespondToEventShouldSendAPixelForImpressions() throws IOException {
+    public void testRespondToEventShouldSendAPixelForImpressions() throws Exception {
         HttpServletResponse response = mock(HttpServletResponse.class);
         ServletOutputStream output = mock(ServletOutputStream.class);
         when(response.getOutputStream()).thenReturn(output);
@@ -193,7 +203,7 @@ public class TrackingEventTest {
     }
 
     @Test
-    public void testRespondToEventShouldSetCGUIDIfNotPresent() throws IOException {
+    public void testRespondToEventShouldSetCGUIDIfNotPresent() throws Exception {
         HttpServletResponse response = mock(HttpServletResponse.class);
         when(response.encodeRedirectURL(anyString())).thenReturn(page);
 
