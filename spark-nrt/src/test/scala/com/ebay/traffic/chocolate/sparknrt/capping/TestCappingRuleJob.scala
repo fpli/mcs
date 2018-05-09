@@ -67,6 +67,7 @@ class TestCappingRuleJob extends BaseFunSuite {
 
     val timestamp1 = getTimestamp("2018-01-01")
     val timestamp2 = getTimestamp("2018-01-02")
+    val timestamp3 = getTimestamp("2018-01-03")
     val timestampBefore24h = timestamp1 - 1
 
     val writer1_0 = AvroParquetWriter.
@@ -92,6 +93,11 @@ class TestCappingRuleJob extends BaseFunSuite {
 
     val dateFiles3 = new DateFiles("date=2018-01-02", Array("file://" + inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
     meta = new MetaFiles(Array(dateFiles3))
+    metadata.writeDedupeOutputMeta(meta)
+
+    // no click in this meta
+    val dateFiles4 = new DateFiles("date=2018-01-03", Array("file://" + inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
+    meta = new MetaFiles(Array(dateFiles4))
     metadata.writeDedupeOutputMeta(meta)
 
     val writer1_1 = AvroParquetWriter.
@@ -129,6 +135,13 @@ class TestCappingRuleJob extends BaseFunSuite {
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
 
+    val writer4 = AvroParquetWriter.
+      builder[GenericRecord](new Path(inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
+      .withSchema(FilterMessageV1.getClassSchema())
+      .withConf(hadoopConf)
+      .withCompressionCodec(CompressionCodecName.SNAPPY)
+      .build()
+
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 2L, 11L, 111L, timestamp1, "1.1.1.1", writer1_1)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 3L, 11L, 111L, timestamp1, "1.1.1.2", writer1_1)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 4L, 11L, 111L, timestamp1, "1.1.1.2", writer1_2)
@@ -145,16 +158,22 @@ class TestCappingRuleJob extends BaseFunSuite {
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 14L, 11L, 111L, timestamp2, "1.1.1.2", writer3)
 
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 15L, 11L, 111L, timestamp3, "1.1.1.2", writer4)
+
     writer1_1.close()
     writer1_2.close()
     writer2_1.close()
     writer2_2.close()
     writer3.close()
+    writer4.close()
 
     // handle 2nd meta containing 1 meta 2 date 4 file
     job.run()
 
     // handle 3rd meta containing 1 meta 1 date 1 file
+    job.run()
+
+    // handle 4th meta containing 1 meta 1 date 1 file, no click
     job.run()
 
     val df1 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-01/"))
@@ -167,5 +186,11 @@ class TestCappingRuleJob extends BaseFunSuite {
     assert (df2.count() == 9)
     //only the last batch has 1 ip rule faild
     assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 1)
+
+    val df3 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-03/"))
+    df3.show()
+    assert (df3.count() == 1)
+    //only the last batch has 1 ip rule faild
+    assert(df3.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
   }
 }
