@@ -161,8 +161,9 @@ class TestIPCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 13L, 11L, 111L, timestamp2, "1.1.1.3", writer2_2)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 14L, 11L, 111L, timestamp2, "1.1.1.2", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 15L, 11L, 111L, timestamp2, "1.1.1.2", writer3)
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 15L, 11L, 111L, timestamp3, "1.1.1.2", writer4)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 16L, 11L, 111L, timestamp3, "1.1.1.2", writer4)
 
     writer1_1.close()
     writer1_2.close()

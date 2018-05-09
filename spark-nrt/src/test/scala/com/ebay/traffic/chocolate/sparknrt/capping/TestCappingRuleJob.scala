@@ -157,8 +157,9 @@ class TestCappingRuleJob extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 13L, 11L, 111L, timestamp2, "1.1.1.3", writer2_2)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 14L, 11L, 111L, timestamp2, "1.1.1.2", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 15L, 11L, 111L, timestamp2, "1.1.1.2", writer3)
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 15L, 11L, 111L, timestamp3, "1.1.1.2", writer4)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 16L, 11L, 111L, timestamp3, "1.1.1.2", writer4)
 
     writer1_1.close()
     writer1_2.close()
@@ -183,7 +184,7 @@ class TestCappingRuleJob extends BaseFunSuite {
 
     val df2 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-02/"))
     df2.show()
-    assert (df2.count() == 9)
+    assert (df2.count() == 10)
     //only the last batch has 1 ip rule faild
     assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 1)
 

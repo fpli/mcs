@@ -12,6 +12,7 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.split
 import org.apache.spark.sql.functions.count
 import org.apache.spark.sql.functions.lit
+import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.sum
 import org.slf4j.LoggerFactory
 
@@ -78,7 +79,7 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
       // IP rule
       var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
         .withColumn("tmpIP", split($"request_headers", "X-eBay-Client-IP: ")(1))
-        .withColumn("IP_1", split($"tmpIP", """\|""")(0))
+        .withColumn("IP_1", when($"channel_action" === "CLICK", split($"tmpIP", """\|""")(0)).otherwise("NA"))
         .drop($"tmpIP")
 
       val ipCountTempPathToday = baseTempDir + dateFiles.date
