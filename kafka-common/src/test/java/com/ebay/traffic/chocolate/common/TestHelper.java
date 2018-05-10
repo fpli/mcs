@@ -241,7 +241,7 @@ public class TestHelper {
     message.setTimestamp(timestamp);
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
-    message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-EBAY-CLIENT-IP: " + ip +
+    message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-eBay-Client-IP: " + ip +
       "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
     message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
     message.setResponseHeaders("");

@@ -118,8 +118,10 @@ public class FilterZookeeperClient {
                 "Client must be null at this point");
         this.addEntryCallback = callback;
 
+        logger.info("Curator client starting...");
+
         // Start up the Zookeeper instances.
-        client = CuratorFrameworkFactory.newClient(zkConnStr,
+        client = CuratorFrameworkFactory.newClient(zkConnStr, 60 * 1000, 15 * 1000,
                 new ExponentialBackoffRetry(1000, 3));
         client.start();
 
