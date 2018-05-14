@@ -71,6 +71,7 @@ class TestIPCappingRule extends BaseFunSuite {
 
     val timestamp1 = getTimestamp("2018-01-01")
     val timestamp2 = getTimestamp("2018-01-02")
+    val timestamp3 = getTimestamp("2018-01-03")
     val timestampBefore24h = timestamp1 - 1
 
     val writer1_0 = AvroParquetWriter.
@@ -98,6 +99,10 @@ class TestIPCappingRule extends BaseFunSuite {
     val dateFiles3 = new DateFiles("date=2018-01-02", Array("file://" + inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
     meta = new MetaFiles(Array(dateFiles3))
     metadata.writeDedupeOutputMeta(meta)
+
+    // no click in this meta
+    val dateFiles4 = new DateFiles("date=2018-01-03", Array("file://" + inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
+    meta = new MetaFiles(Array(dateFiles4))
 
     val writer1_1 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00001.snappy.parquet"))
@@ -134,6 +139,13 @@ class TestIPCappingRule extends BaseFunSuite {
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
 
+    val writer4 = AvroParquetWriter.
+      builder[GenericRecord](new Path(inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
+      .withSchema(FilterMessageV1.getClassSchema())
+      .withConf(hadoopConf)
+      .withCompressionCodec(CompressionCodecName.SNAPPY)
+      .build()
+
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 2L, 11L, 111L, timestamp1, "1.1.1.1", writer1_1)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 3L, 11L, 111L, timestamp1, "1.1.1.2", writer1_1)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 4L, 11L, 111L, timestamp1, "1.1.1.2", writer1_2)
@@ -149,12 +161,16 @@ class TestIPCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 13L, 11L, 111L, timestamp2, "1.1.1.3", writer2_2)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 14L, 11L, 111L, timestamp2, "1.1.1.2", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 15L, 11L, 111L, timestamp2, "1.1.1.2", writer3)
+
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 16L, 11L, 111L, timestamp3, "1.1.1.2", writer4)
 
     writer1_1.close()
     writer1_2.close()
     writer2_1.close()
     writer2_2.close()
     writer3.close()
+    writer4.close()
 
     val dateFiles_1 = new DateFiles("date=2018-01-01", Array(inputDir + "/date=2018-01-01/part-00001.snappy.parquet",
       inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
@@ -173,5 +189,14 @@ class TestIPCappingRule extends BaseFunSuite {
     df_2.show()
     assert(df_2.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 3)
     job_2.postTest()
+
+    // handle 4th meta containing 1 meta 1 date 1 file, no click
+    val dateFiles_3 = new DateFiles("date=2018-01-03", Array(inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
+    val job_3 = new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles_3, sparkJob)
+    val df_3 = job_3.test()
+    df_3.show()
+    assert(df_3.filter($"rt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
+    job_3.postTest()
+
   }
 }
