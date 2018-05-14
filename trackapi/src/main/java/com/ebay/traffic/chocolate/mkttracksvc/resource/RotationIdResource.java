@@ -42,7 +42,6 @@ public class RotationIdResource {
 
     if (rotationInfo.getChannel_id() == null || rotationInfo.getChannel_id() < 0) {
       return getResponse(null, "created. Please set correct channel.");
-
     }
 
     if (rotationInfo.getSite_id() == null || rotationInfo.getSite_id() < 0) {
