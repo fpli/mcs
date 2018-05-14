@@ -52,7 +52,7 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
 
     // filter click only, count ip and save to tmp file
     var dfIP = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).filter($"channel_action" === "CLICK")
-    if(dfIP.rdd.isEmpty()) {
+    if(dfIP.rdd.take(1).length == 0) {
       var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).withColumn("capping", lit(0l))
       df
     }
