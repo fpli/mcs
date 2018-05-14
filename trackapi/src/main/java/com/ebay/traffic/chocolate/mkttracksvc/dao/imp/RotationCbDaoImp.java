@@ -189,10 +189,12 @@ public class RotationCbDaoImp implements RotationCbDao {
     updateInfo.setLast_update_time(System.currentTimeMillis());
     Map updateMap = updateInfo.getRotation_tag();
     Map<String, Object> rotationTags = rotationInfo.getRotation_tag();
-    for (Map.Entry entry: rotationTags.entrySet()) {
-      updateMap.put(entry.getKey(), entry.getValue());
+    if (rotationTags != null) {
+      for (Map.Entry entry: rotationTags.entrySet()) {
+        updateMap.put(entry.getKey(), entry.getValue());
+      }
+      updateInfo.setRotation_tag(updateMap);
     }
-    updateInfo.setRotation_tag(updateMap);
 
     bucket.upsert(StringDocument.create(rotationId, new Gson().toJson(updateInfo)));
     logger.debug("RotationInfo has been modified. rotationId=" + rotationId + " rotationInfo=" + updateInfo);
