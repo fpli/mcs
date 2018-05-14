@@ -52,12 +52,14 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
 
     // filter click only, count ip and save to tmp file
     var dfIP = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).filter($"channel_action" === "CLICK")
-    if(dfIP.rdd.take(1).length == 0) {
+    val head = dfIP.take(1)
+    if(head.length == 0) {
       var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).withColumn("capping", lit(0l))
       df
     }
     else {
-      val timestamp = dfIP.select($"timestamp").first().getLong(0)
+      val firstRow = head(0)
+      val timestamp = firstRow.getLong(firstRow.fieldIndex("timestamp"));
 
       dfIP = dfIP.select(split($"request_headers", "X-eBay-Client-IP: ")(1).alias("tmpIP"))
         .select(split($"tmpIP", """\|""")(0).alias("IP"))
