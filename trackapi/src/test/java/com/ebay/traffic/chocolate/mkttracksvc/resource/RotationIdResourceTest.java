@@ -52,7 +52,7 @@ public class RotationIdResourceTest {
     Assert.assertEquals(200, result.getStatus());
     ServiceResponse serviceResponse = result.readEntity(ServiceResponse.class);
     RotationInfo rotationResponse = serviceResponse.getRotation_info();
-    Assert.assertEquals("0010077-000000001-c00000002",
+    Assert.assertEquals("0077-000000001-c00000002",
         rotationResponse.getRotation_id().substring(0, rotationResponse.getRotation_id().lastIndexOf("-")));
     Assert.assertEquals("1", String.valueOf(rotationResponse.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(rotationResponse.getSite_id()));

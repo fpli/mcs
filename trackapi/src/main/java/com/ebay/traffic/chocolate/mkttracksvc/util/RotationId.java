@@ -23,7 +23,7 @@ public class RotationId {
    */
   public synchronized static String getNext(RotationInfo rotationReq) {
     long squence = ridCounter.incrementAndGet();
-    String identity = supplyDigit(rotationReq.getChannel_id(), 3) + supplyDigit(rotationReq.getSite_id(), 4);
+    String identity = supplyDigit(rotationReq.getSite_id(), 4);
     String randomId = String.valueOf(System.currentTimeMillis() + DriverId.getDriverIdFromIp() + squence);
     String campaignId = StringUtils.isEmpty(rotationReq.getCampaign_id()) ? randomId : rotationReq.getCampaign_id();
     String customizedId1 = StringUtils.isEmpty(rotationReq.getCustomized_id1()) ? String.valueOf(Long.valueOf(randomId) + squence + 1) : rotationReq.getCustomized_id1();
