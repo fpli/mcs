@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.mkttracksvc.resource;
 
+import com.ebay.globalenv.SiteEnum;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
@@ -39,7 +40,7 @@ public class RotationIdResourceTest {
 
     RotationInfo rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(1);
-    rotationRequest.setSite_id(77);
+    rotationRequest.setSite_id(SiteEnum.EBAY_DE.getId());
     rotationRequest.setCampaign_id("000000001");
     rotationRequest.setCustomized_id1("c00000002");
     rotationRequest.setRotation_name("CatherineTesting RotationName");
@@ -52,7 +53,7 @@ public class RotationIdResourceTest {
     Assert.assertEquals(200, result.getStatus());
     ServiceResponse serviceResponse = result.readEntity(ServiceResponse.class);
     RotationInfo rotationResponse = serviceResponse.getRotation_info();
-    Assert.assertEquals("0077-000000001-c00000002",
+    Assert.assertEquals("707-000000001-c00000002",
         rotationResponse.getRotation_id().substring(0, rotationResponse.getRotation_id().lastIndexOf("-")));
     Assert.assertEquals("1", String.valueOf(rotationResponse.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(rotationResponse.getSite_id()));
