@@ -113,7 +113,7 @@ public class DefaultChannel implements Channel {
         try {
           campaignId = Long.parseLong(request.getParameter(campaign));
         } catch (NumberFormatException e) {
-          logger.warn("Invalid campaign: " + campaign);
+          logger.warn("Invalid campaign: " + request.getParameter(campaign));
         }
       }
 
