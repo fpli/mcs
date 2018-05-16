@@ -16,14 +16,6 @@ public class MissingRefererRule extends BaseFilterRule {
     super(channelType);
   }
 
-  @Override
-  public boolean isChannelActionApplicable(ChannelAction action) {
-    if (action == ChannelAction.APP_FIRST_START) {  // Most rules don't apply to AppDL events
-      return false;
-    }
-    return true;
-  }
-
   /**
    * @param event event (impression/click) to test
    * @return a bit, 0 for pass, 1 for fail
