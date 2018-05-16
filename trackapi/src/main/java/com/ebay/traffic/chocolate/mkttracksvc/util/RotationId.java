@@ -1,16 +1,10 @@
 package com.ebay.traffic.chocolate.mkttracksvc.util;
 
-import com.ebay.globalenv.SiteEnum;
 import com.ebay.traffic.chocolate.mkttracksvc.constant.MPLXClientEnum;
-import com.ebay.traffic.chocolate.mkttracksvc.dao.imp.RotationCbDaoImp;
-import com.ebay.traffic.chocolate.mkttracksvc.entity.MplxClientSite;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
