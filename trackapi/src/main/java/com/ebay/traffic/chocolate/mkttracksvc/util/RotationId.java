@@ -37,10 +37,10 @@ public class RotationId {
     MPLXClientEnum mplxClientEnum = MPLXClientEnum.getBySiteId(rotationReq.getSite_id());
     String identity = String.valueOf(mplxClientEnum == null ? rotationReq.getSite_id() : mplxClientEnum.getMplxClientId());
     // new definition for rotation Id
-    String randomId = String.valueOf(System.currentTimeMillis() + DriverId.getDriverIdFromIp() + squence);
+    String randomId = String.valueOf(System.currentTimeMillis()) + DriverId.getDriverIdFromIp() + squence;
     String campaignId = StringUtils.isEmpty(rotationReq.getCampaign_id()) ? randomId : rotationReq.getCampaign_id();
-    String customizedId1 = StringUtils.isEmpty(rotationReq.getCustomized_id1()) ? String.valueOf(Long.valueOf(randomId) + squence + 1) : rotationReq.getCustomized_id1();
-    String customizedId2 = StringUtils.isEmpty(rotationReq.getCustomized_id2()) ? String.valueOf(Long.valueOf(randomId) + squence + 2) : rotationReq.getCustomized_id2();
+    String customizedId1 = StringUtils.isEmpty(rotationReq.getCustomized_id1()) ? String.valueOf(Long.valueOf(randomId) + 1) : rotationReq.getCustomized_id1();
+    String customizedId2 = StringUtils.isEmpty(rotationReq.getCustomized_id2()) ? String.valueOf(Long.valueOf(randomId) + 2) : rotationReq.getCustomized_id2();
 
     String rId = identity + HYPHEN + String.valueOf(campaignId) + HYPHEN + customizedId1 + HYPHEN + customizedId2;
 
