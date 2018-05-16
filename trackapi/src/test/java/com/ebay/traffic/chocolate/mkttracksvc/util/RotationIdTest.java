@@ -23,7 +23,7 @@ public class RotationIdTest {
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     // Customized rotationId
     String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("0077-000000001-000000002-000000003", rotationId);
+    Assert.assertEquals("707-000000001-000000002-000000003", rotationId);
   }
 
 
@@ -38,18 +38,18 @@ public class RotationIdTest {
     String rotationId = RotationId.getNext(rotationRequest);
     String[] rotationIdStr = rotationId.split("-");
     Assert.assertEquals(4, rotationIdStr.length);
-    Assert.assertEquals("0011", rotationIdStr[0]);
+    Assert.assertEquals("11", rotationIdStr[0]);
     Calendar current = Calendar.getInstance();
     Calendar c = Calendar.getInstance();
-    c.setTimeInMillis(Long.valueOf(rotationIdStr[1]));
+    c.setTimeInMillis(Long.valueOf(rotationIdStr[1].substring(0,13)));
     Assert.assertEquals(current.get(Calendar.YEAR), c.get(Calendar.YEAR));
     Assert.assertEquals(current.get(Calendar.MONTH), c.get(Calendar.MONTH));
     Assert.assertEquals(current.get(Calendar.DATE), c.get(Calendar.DATE));
-    c.setTimeInMillis(Long.valueOf(rotationIdStr[2]));
+    c.setTimeInMillis(Long.valueOf(rotationIdStr[2].substring(0,13)));
     Assert.assertEquals(current.get(Calendar.YEAR), c.get(Calendar.YEAR));
     Assert.assertEquals(current.get(Calendar.MONTH), c.get(Calendar.MONTH));
     Assert.assertEquals(current.get(Calendar.DATE), c.get(Calendar.DATE));
-    c.setTimeInMillis(Long.valueOf(rotationIdStr[3]));
+    c.setTimeInMillis(Long.valueOf(rotationIdStr[3].substring(0,13)));
     Assert.assertEquals(current.get(Calendar.YEAR), c.get(Calendar.YEAR));
     Assert.assertEquals(current.get(Calendar.MONTH), c.get(Calendar.MONTH));
     Assert.assertEquals(current.get(Calendar.DATE), c.get(Calendar.DATE));
