@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
-import com.ebay.traffic.chocolate.sparknrt.capping.rules.{IPCappingRule}
+import com.ebay.traffic.chocolate.sparknrt.capping.rules.{IPCappingRule, IPPubCappingRule}
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.spark.sql.functions.coalesce
 import org.apache.spark.sql.functions.lit
@@ -13,10 +13,17 @@ import scala.collection.mutable
   */
 class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj: CappingRuleJob) {
 
+  lazy val windowLong = "long"
+  lazy val windowShort = "short"
+
   @transient lazy val channelsRules = mutable.HashMap(
     ChannelType.EPN -> mutable.HashMap(
       CappingRuleEnum.IPCappingRule ->
-      new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj)
+          new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj),
+      CappingRuleEnum.IPPubCappingRule_S ->
+          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S), dateFiles, sparkJobObj, windowShort),
+      CappingRuleEnum.IPPubCappingRule_L ->
+          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L), dateFiles, sparkJobObj, windowLong)
     ),
     ChannelType.DISPLAY -> mutable.HashMap(
     )
@@ -55,13 +62,13 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
     }
     while (dfIter.hasNext) {
       val rightDf = dfIter.next().withColumnRenamed("snapshot_id", "snapshot_id_right")
-        .withColumnRenamed("capping", "capping_1")
-        .select($"snapshot_id_right", $"capping_1")
+          .withColumnRenamed("capping", "capping_1")
+          .select($"snapshot_id_right", $"capping_1")
 
       df = df.join(rightDf, $"snapshot_id" === $"snapshot_id_right", "right_outer")
-        .drop($"snapshot_id_right")
-        .withColumn("nrt_rule_flags", coalesce($"nrt_rule_flags", lit(0l)).bitwiseOR(coalesce($"capping_1", lit(0l))))
-        .drop($"capping_1")
+          .drop($"snapshot_id_right")
+          .withColumn("nrt_rule_flags", coalesce($"nrt_rule_flags", lit(0l)).bitwiseOR(coalesce($"capping_1", lit(0l))))
+          .drop($"capping_1")
     }
     df
   }
