@@ -8,6 +8,8 @@ import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import com.couchbase.client.java.query.N1qlQuery;
 import com.couchbase.client.java.query.N1qlQueryResult;
 import com.couchbase.client.java.query.N1qlQueryRow;
+import com.ebay.app.raptor.chocolate.constant.RotationConstant;
+
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -53,7 +55,7 @@ public class DumpRotationFiles {
   private static void dumpFileFromCouchbase(String output, Long lastUpdateTime, boolean compress) throws IOException {
 
     OutputStream out = null;
-    Integer count = 0;
+    Integer count = 0 ;
     try {
       if (compress) {
         out = new GZIPOutputStream(new FileOutputStream(output +  ".zip"), 8192);
@@ -64,7 +66,7 @@ public class DumpRotationFiles {
       N1qlQueryResult result = bucket.query(N1qlQuery.simple(CB_QUERY_STATEMENT_BY_TIME + lastUpdateTime));
       for (N1qlQueryRow row : result) {
         out.write(row.byteValue());
-        out.write('\n');
+        out.write(RotationConstant.RECORD_SEPARATOR);
         out.flush();
         count++;
       }

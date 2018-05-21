@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.mkttracksvc.resource;
 
+import com.couchbase.client.deps.io.netty.util.internal.StringUtil;
+import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.cos.raptor.service.annotations.ApiMethod;
 import com.ebay.cos.raptor.service.annotations.ApiRef;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
@@ -15,6 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -36,22 +43,9 @@ public class RotationIdResource {
   @Produces({MediaType.APPLICATION_JSON})
   @Consumes({MediaType.APPLICATION_JSON})
   public String createRotationId(@RequestBody RotationInfo rotationInfo) throws CBException {
-    if (rotationInfo == null) {
-      return getResponse(null, "created. Please input rotation info.");
-    }
-
-    if (rotationInfo.getChannel_id() == null || rotationInfo.getChannel_id() < 0) {
-      return getResponse(null, "created. Please set correct channel.");
-    }
-
-    if (rotationInfo.getSite_id() == null || rotationInfo.getSite_id() < 0) {
-      return getResponse(null, "created. Please set one site.");
-    }
-
-    if ((NumberUtils.isNumber(rotationInfo.getCampaign_id()) && Long.valueOf(rotationInfo.getCampaign_id()) < 0)
-        || (NumberUtils.isNumber(rotationInfo.getCustomized_id1()) && Long.valueOf(rotationInfo.getCustomized_id1()) < 0)
-        || (NumberUtils.isNumber(rotationInfo.getCustomized_id2()) && Long.valueOf(rotationInfo.getCustomized_id2()) < 0)) {
-      return getResponse(null, "created. CampaignId/CustomizedId1/CustomizedId2 can't less than 0.");
+    String errors = validateInput(rotationInfo, true);
+    if(StringUtils.isNotEmpty(errors)){
+      return errors;
     }
 
     ServiceResponse ret = rotationService.addRotationMap(rotationInfo);
@@ -69,6 +63,12 @@ public class RotationIdResource {
     if (StringUtils.isEmpty(rid)) {
       return getResponse(null, "modified. Please set rotationId.");
     }
+
+    String errors = validateInput(rotationInfo, false);
+    if(StringUtils.isNotEmpty(errors)){
+      return errors;
+    }
+
     ServiceResponse ret = rotationService.updateRotationMap(rid, rotationInfo);
     return getResponse(ret, " updated.");
   }
@@ -131,5 +131,83 @@ public class RotationIdResource {
       response.setMessage("No rotation info was " + msgInfo);
     }
     return new Gson().toJson(response);
+  }
+
+  private String validateInput(RotationInfo rotationInfo, boolean required){
+    List<String> msgList = new ArrayList<String>();
+    String msgStr = null;
+
+    if (rotationInfo == null) {
+      msgStr = "No rotation info was created. Please input rotation info.";
+      addValueToList(msgList, msgStr);
+    }
+
+    if (rotationInfo.getChannel_id() == null && required) {
+      msgStr = "No rotation info was created. channel_id is required field.";
+      addValueToList(msgList, msgStr);
+    }
+
+    if (rotationInfo.getChannel_id() != null && rotationInfo.getChannel_id() < 0) {
+      msgStr = "No rotation info was created. Please set correct channel, like: 500012";
+      addValueToList(msgList, msgStr);
+    }
+
+
+    if (rotationInfo.getSite_id() == null && required) {
+      msgStr = "No rotation info was created. Please set one site.";
+      addValueToList(msgList, msgStr);
+    }
+
+    if (rotationInfo.getSite_id() != null && rotationInfo.getSite_id() < 0) {
+      msgStr = "No rotation info was created. Please set correct ebay site_id, like: 1";
+      addValueToList(msgList, msgStr);
+    }
+
+    if ((NumberUtils.isNumber(rotationInfo.getCampaign_id()) && Long.valueOf(rotationInfo.getCampaign_id()) < 0)
+        || (NumberUtils.isNumber(rotationInfo.getCustomized_id1()) && Long.valueOf(rotationInfo.getCustomized_id1()) < 0)
+        || (NumberUtils.isNumber(rotationInfo.getCustomized_id2()) && Long.valueOf(rotationInfo.getCustomized_id2()) < 0)) {
+      msgStr = "No rotation info was created. CampaignId/CustomizedId1/CustomizedId2 can't less than 0.";
+      addValueToList(msgList, msgStr);
+    }
+
+    Map<String, String> rotationTag = rotationInfo.getRotation_tag();
+
+    if(rotationTag != null){
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+      //rotation_start_date
+      msgStr = getValidateMsgForDate(rotationTag, RotationConstant.FIELD_ROTATION_START_DATE, sdf);
+      addValueToList(msgList, msgStr);
+      //rotation_end_date
+      msgStr = getValidateMsgForDate(rotationTag, RotationConstant.FIELD_ROTATION_END_DATE, sdf);
+      addValueToList(msgList, msgStr);
+    }
+
+    String responseStr = null;
+    if(msgList.size() > 0){
+      ServiceResponse response = new ServiceResponse();
+      response.setErrors(msgList);
+      responseStr = new Gson().toJson(response);
+    }
+    return responseStr;
+  }
+
+  private String getValidateMsgForDate(Map<String, String> rotationTag, String key, SimpleDateFormat sdf) {
+    String msg = null;
+    if (StringUtils.isNotEmpty(rotationTag.get(key))) {
+      try {
+        sdf.parse(rotationTag.get(key));
+      } catch (ParseException e) {
+        msg = "No rotation info was created. Please set correct format for rotation_start_date. like '20180501'";
+      } finally {
+        return msg;
+      }
+    }
+    return msg;
+  }
+
+  private void addValueToList(List<String> msgList, String msgStr){
+    if(StringUtils.isNotEmpty(msgStr)){
+      msgList.add(msgStr);
+    }
   }
 }

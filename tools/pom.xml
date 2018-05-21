@@ -20,6 +20,14 @@
     <module>zookeeper-tool</module>
   </modules>
 
+  <dependencies>
+    <dependency>
+      <groupId>com.ebay.traffic</groupId>
+      <artifactId>chocolate-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>

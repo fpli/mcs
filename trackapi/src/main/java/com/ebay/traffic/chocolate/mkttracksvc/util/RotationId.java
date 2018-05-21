@@ -5,6 +5,7 @@ import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -31,15 +32,22 @@ public class RotationId {
     MPLXClientEnum mplxClientEnum = MPLXClientEnum.getBySiteId(rotationReq.getSite_id());
     String identity = String.valueOf(mplxClientEnum == null ? rotationReq.getSite_id() : mplxClientEnum.getMplxClientId());
     // new definition for rotation Id
-    String randomId = String.valueOf(System.currentTimeMillis()) + DriverId.getDriverIdFromIp() + squence;
-    String campaignId = StringUtils.isEmpty(rotationReq.getCampaign_id()) ? randomId : rotationReq.getCampaign_id();
-    String customizedId1 = StringUtils.isEmpty(rotationReq.getCustomized_id1()) ? String.valueOf(Long.valueOf(randomId) + 1) : rotationReq.getCustomized_id1();
-    String customizedId2 = StringUtils.isEmpty(rotationReq.getCustomized_id2()) ? String.valueOf(Long.valueOf(randomId) + 2) : rotationReq.getCustomized_id2();
+    Integer driverId = DriverId.getDriverIdFromIp();
+    String campaignId = getUniqueId(rotationReq.getCampaign_id(), driverId);
+    String customizedId1 = getUniqueId(rotationReq.getCustomized_id1(), driverId);
+    String customizedId2 = getUniqueId(rotationReq.getCustomized_id2(), driverId);
 
     String rId = identity + HYPHEN + String.valueOf(campaignId) + HYPHEN + customizedId1 + HYPHEN + customizedId2;
 
     checkAndClearCounter();
     return rId;
+  }
+
+  private static String getUniqueId(String customizedId, Integer driverId){
+    if(StringUtils.isEmpty(customizedId)){
+     return String.valueOf(RotationId18.getNext(driverId).getRepresentation());
+    }
+    return customizedId;
   }
 
   /**
@@ -66,33 +74,11 @@ public class RotationId {
     return ori;
   }
 
-//  private static final String CVS_SPLITER = ",";
-//
-//  public static List<MplxClientSite> getStream(String filePath) throws IOException {
-//    List<MplxClientSite> mplxClientEnumList = new ArrayList<MplxClientSite>();
-//    BufferedReader br = null;
-//    try {
-//      br = new BufferedReader(new FileReader(filePath));
-//      String line;
-//      while ((line = br.readLine()) != null) {
-//        String[] mplxClients = line.split(CVS_SPLITER);
-//        MplxClientSite mplxClientSite = new MplxClientSite(Integer.valueOf(mplxClients[0]), mplxClients[1], Integer.valueOf(mplxClients[3]));
-//        mplxClientEnumList.add(mplxClientSite);
-//      }
-//    } catch (FileNotFoundException e) {
-//      e.printStackTrace();
-//    } catch (IOException e) {
-//      e.printStackTrace();
-//    } finally {
-//      if (br != null) {
-//        try {
-//          br.close();
-//        } catch (IOException e) {
-//          e.printStackTrace();
-//        }
-//      }
-//    }
-//    logger.info("Loaded " + mplxClientEnumList.size() + " clientId -> siteId mappings from file");
-//    return mplxClientEnumList;
-//  }
+  public static void main(String[] args){
+    System.out.println(RotationId18.getNext(1).getRepresentation());
+    System.out.println(Long.toBinaryString(RotationId18.getNext(1).getRepresentation()));
+    System.out.println(RotationId18.getNext(1).getRepresentation());
+    System.out.println(RotationId18.getNext(1).getRepresentation());
+    System.out.println(RotationId18.getNext(1).getRepresentation());
+  }
 }

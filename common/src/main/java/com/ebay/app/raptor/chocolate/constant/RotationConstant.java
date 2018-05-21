@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.constant;
+package com.ebay.app.raptor.chocolate.constant;
 
 public class RotationConstant {
 
@@ -34,12 +34,14 @@ public class RotationConstant {
   public static final byte ROTATION_SEPARATOR = '-';
 
   public static final String CHOCO_ROTATION_INFO = "rotation_info";
+  public static final String FIELD_ROTATION_ID = "rid";
   public static final String CHOCO_ROTATION_ID = "rotation_id";
   public static final String CHOCO_ROTATION_TAG = "rotation_tag";
 
+  public static final String CHOCO_SITE_ID = "site_id";
   public static final String FIELD_CHANNEL_ID = "channel_id";
   public static final String FIELD_ROTATION_NAME = "rotation_name";
-  public static final String FIELD_CAMPAIGN_ID = "campaign_Id";
+  public static final String FIELD_CAMPAIGN_ID = "campaign_id";
   public static final String FIELD_CAMPAIGN_NAME = "campaign_name";
   public static final String FIELD_ROTATION_CLICK_THRU_URL = "rotation_click_thru_url";
   public static final String FIELD_ROTATION_STATUS = "rotation_status";
