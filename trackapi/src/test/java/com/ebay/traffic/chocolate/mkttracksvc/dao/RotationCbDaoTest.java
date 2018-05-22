@@ -50,12 +50,12 @@ public class RotationCbDaoTest {
     rotationRequest.setRotation_tag(rotationTag);
     // Customized rotationId
     String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("0077-500000001-c00000001-c00000003", rotationId);
+    Assert.assertEquals("707-500000001-c00000001-c00000003", rotationId);
     rotationRequest.setRotation_id(rotationId);
 
     rotationCbDao.addRotationMap(rotationId, rotationRequest);
     RotationInfo addedInfo = rotationCbDao.getRotationById(rotationId);
-    Assert.assertEquals("0077-500000001-c00000001-c00000003", addedInfo.getRotation_id());
+    Assert.assertEquals("707-500000001-c00000001-c00000003", addedInfo.getRotation_id());
     Assert.assertEquals("1", String.valueOf(addedInfo.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(addedInfo.getSite_id()));
     Assert.assertEquals("500000001", addedInfo.getCampaign_id());
@@ -103,7 +103,7 @@ public class RotationCbDaoTest {
     rotationTag.put("TestTag-1", "RotationTag-1");
     rotationRequest.setRotation_tag(rotationTag);
     String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("0001-500000001-c00000001-c00000004", rotationId);
+    Assert.assertEquals("711-500000001-c00000001-c00000004", rotationId);
     rotationRequest.setRotation_id(rotationId);
     rotationCbDao.addRotationMap(rotationId, rotationRequest);
 
@@ -141,7 +141,7 @@ public class RotationCbDaoTest {
     rotationTag.put("TestTag-1", "RotationTag-1");
     rotationRequest.setRotation_tag(rotationTag);
     String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("0077-500000001-c00000001-c00000005", rotationId);
+    Assert.assertEquals("707-500000001-c00000001-c00000005", rotationId);
     rotationRequest.setRotation_id(rotationId);
     rotationCbDao.addRotationMap(rotationId, rotationRequest);
 
@@ -167,7 +167,7 @@ public class RotationCbDaoTest {
     rotationTag.put("TestTag", "RotationTag-1");
     rotationRequest.setRotation_tag(rotationTag);
     String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("0077-500000001-c00000001-c00000006", rotationId);
+    Assert.assertEquals("707-500000001-c00000001-c00000006", rotationId);
     rotationRequest.setRotation_id(rotationId);
     rotationCbDao.addRotationMap(rotationId, rotationRequest);
 
