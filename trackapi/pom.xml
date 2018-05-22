@@ -162,6 +162,12 @@
             <groupId>com.couchbase.client</groupId>
             <artifactId>java-client</artifactId>
         </dependency>
+        <!-- chocolate -->
+        <dependency>
+            <groupId>com.ebay.traffic</groupId>
+            <artifactId>chocolate-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>com.couchbase.mock</groupId>

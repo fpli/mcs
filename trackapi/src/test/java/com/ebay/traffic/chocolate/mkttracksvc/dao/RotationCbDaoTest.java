@@ -2,8 +2,7 @@ package com.ebay.traffic.chocolate.mkttracksvc.dao;
 
 import com.ebay.globalenv.SiteEnum;
 import com.ebay.traffic.chocolate.mkttracksvc.MKTTrackSvcConfigBean;
-import com.ebay.traffic.chocolate.mkttracksvc.constant.TrackingChannelEnum;
-import com.ebay.traffic.chocolate.mkttracksvc.dao.CouchbaseClientMock;
+import com.ebay.app.raptor.chocolate.constant.TrackingChannelEnum;
 import com.ebay.traffic.chocolate.mkttracksvc.dao.imp.RotationCbDaoImp;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
@@ -14,7 +13,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Mockito.mock;

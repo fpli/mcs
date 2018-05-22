@@ -216,6 +216,8 @@ public class RotationIdResourceTest {
     Assert.assertEquals(200, createResult.getStatus());
     RotationInfo response = getResult.readEntity(ServiceResponse.class).getRotation_info();
     Assert.assertNotNull(response);
+    Assert.assertNotNull(response.getRid());
+    Assert.assertTrue(String.valueOf(response.getRid()).length() == 18);
     Assert.assertEquals("CatherineTesting RotationName", response.getRotation_name());
     Assert.assertEquals("catherine_testing", response.getRotation_tag().get("vendor_name"));
   }
@@ -256,5 +258,24 @@ public class RotationIdResourceTest {
     Assert.assertTrue(rInfoList != null && rInfoList.size() > 0);
     Assert.assertEquals("TestName", rInfoList.get(0).getRotation_name());
 //    Assert.assertEquals("catherine_testing", rInfoList.get(0).getRotation_tag().get("vendor_name"));
+  }
+
+  @Test
+  public void testValidation() {
+    Configuration configuration = ConfigurationBuilder.newConfig("testService.testClient");
+    Client client = ClientBuilder.newClient(configuration);
+    String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
+    String svcEndPoint = endpoint + ":" + port;
+
+    RotationInfo rotationRequest = new RotationInfo();
+    Response result = client.target(svcEndPoint).path("/tracksvc/v1/rid/create")
+        .request().accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
+    Assert.assertEquals(200, result.getStatus());
+    ServiceResponse response = result.readEntity(ServiceResponse.class);
+    List<String> errorList = response.getErrors();
+    Assert.assertNotNull(errorList);
+    Assert.assertTrue(errorList.get(0).contains("channel"));
+    Assert.assertTrue(errorList.get(1).contains("site"));
   }
 }
