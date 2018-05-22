@@ -49,6 +49,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.couchbase.client</groupId>
+            <artifactId>java-client</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>spark-csv_${scala.compat.version}</artifactId>
         </dependency>
@@ -148,6 +153,14 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_2.11</artifactId>
             <version>${kafka.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>com.couchbase.mock</groupId>
+            <artifactId>CouchbaseMock</artifactId>
+            <version>1.5.12</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
