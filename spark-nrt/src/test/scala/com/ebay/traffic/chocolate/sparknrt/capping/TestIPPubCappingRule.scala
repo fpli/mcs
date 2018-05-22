@@ -16,7 +16,7 @@ import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 
 /**
-  * Created by xiangli4 on 3/30/18.
+  * Created by jialili1 on 5/12/18.
   */
 class TestIPPubCappingRule extends BaseFunSuite {
   lazy val windowLong = "long"
@@ -61,7 +61,7 @@ class TestIPPubCappingRule extends BaseFunSuite {
 
   import sparkJob.spark.implicits._
 
-  test("test ip capping rule") {
+  test("test ip-pub capping rule") {
     val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
 
     val dateFiles0 = new DateFiles("date=2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
@@ -71,8 +71,9 @@ class TestIPPubCappingRule extends BaseFunSuite {
     metadata.writeDedupeOutputMeta(meta)
 
     val timestamp1 = getTimestamp("2018-01-01")
-    val timestamp2 = getTimestamp("2018-01-02")
-    val timestamp3 = timestamp2 - 10800000
+    val timestamp2 = timestamp1 + 10800000
+    val timestamp3 = getTimestamp("2018-01-02")
+    val timestamp4 = getTimestamp("2018-01-03")
     val timestampBefore24h = timestamp1 - 1
 
     val writer1_0 = AvroParquetWriter.
@@ -100,6 +101,10 @@ class TestIPPubCappingRule extends BaseFunSuite {
     val dateFiles3 = new DateFiles("date=2018-01-02", Array("file://" + inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
     meta = new MetaFiles(Array(dateFiles3))
     metadata.writeDedupeOutputMeta(meta)
+
+    // no click in this meta
+    val dateFiles4 = new DateFiles("date=2018-01-03", Array("file://" + inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
+    meta = new MetaFiles(Array(dateFiles4))
 
     val writer1_1 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00001.snappy.parquet"))
@@ -136,6 +141,13 @@ class TestIPPubCappingRule extends BaseFunSuite {
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
+    val writer4 = AvroParquetWriter.
+        builder[GenericRecord](new Path(inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
+        .withSchema(FilterMessageV1.getClassSchema())
+        .withConf(hadoopConf)
+        .withCompressionCodec(CompressionCodecName.SNAPPY)
+        .build()
+
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 2L, 11L, 111L, timestamp1, "1.1.1.1", writer1_1)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 3L, 11L, 111L, timestamp1, "1.1.1.2", writer1_1)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 4L, 11L, 111L, timestamp1, "1.1.1.2", writer1_2)
@@ -144,46 +156,77 @@ class TestIPPubCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6L, 11L, 111L, timestamp2, "1.1.1.1", writer2_1)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 7L, 11L, 111L, timestamp2, "1.1.1.2", writer2_1)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 8L, 11L, 111L, timestamp2, "1.1.1.2", writer2_2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 9L, 11L, 111L, timestamp2, "1.1.1.2", writer2_2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 10L, 11L, 111L, timestamp3, "1.1.1.3", writer2_2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 11L, 11L, 111L, timestamp3, "1.1.1.3", writer2_2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 10L, 11L, 111L, timestamp2, "1.1.1.3", writer2_2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 11L, 11L, 111L, timestamp2, "1.1.1.3", writer2_2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 12L, 11L, 111L, timestamp2, "1.1.1.3", writer2_2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 13L, 11L, 111L, timestamp2, "1.1.1.3", writer2_2)
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 14L, 11L, 111L, timestamp2, "1.1.1.2", writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 15L, 22L, 111L, timestamp2, "1.1.1.3", writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 16L, -1L, 111L, timestamp2, "1.1.1.3", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 14L, 11L, 111L, timestamp3, "1.1.1.3", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 15L, 11L, 111L, timestamp3, "1.1.1.3", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 16L, 22L, 111L, timestamp3, "1.1.1.3", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 17L, -1L, 111L, timestamp3, "1.1.1.3", writer3)
+
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 18L, 11L, 111L, timestamp4, "1.1.1.2", writer4)
 
     writer1_1.close()
     writer1_2.close()
     writer2_1.close()
     writer2_2.close()
     writer3.close()
+    writer4.close()
 
+    // handle 2nd meta containing 1 meta 2 date 4 file
     val dateFiles_1 = new DateFiles("date=2018-01-01", Array(inputDir + "/date=2018-01-01/part-00001.snappy.parquet",
       inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
-    val job_1 = new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L), dateFiles_1, sparkJob, windowLong)
-    // handle 2nd meta containing 1 meta 2 date 4 file
-    val df_1 = job_1.test()
-    df_1.show()
-    assert(df_1.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L)).=!=(0)).count() == 0)
-    job_1.postTest()
+    val job_11 = new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S), dateFiles_1, sparkJob, windowShort)
+    val job_12 = new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L), dateFiles_1, sparkJob, windowLong)
+    val df_11 = job_11.test()
+    val df_12 = job_12.test()
+    df_11.show()
+    df_12.show()
+    assert(df_11.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S)).=!=(0)).count() == 0)
+    assert(df_12.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L)).=!=(0)).count() == 0)
+    job_11.postTest()
+    job_12.postTest()
 
+    // handle 3rd meta containing 1 meta 2 date 1 file
     val dateFiles_2 = new DateFiles("date=2018-01-02", Array(inputDir + "/date=2018-01-02/part-00001.snappy.parquet",
       inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
-    val job_2 = new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S), dateFiles_2, sparkJob, windowShort)
-    // handle 3rd meta containing 1 meta 1 date 1 file
-    val df_2 = job_2.test()
-    df_2.show()
-    assert(df_2.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S)).=!=(0)).count() == 4)
-    job_2.postTest()
+    val job_21 = new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S), dateFiles_2, sparkJob, windowShort)
+    val job_22 = new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L), dateFiles_2, sparkJob, windowLong)
+    val df_21 = job_21.test()
+    val df_22 = job_22.test()
+    System.out.println("show df_2")
+    df_21.show()
+    df_22.show()
+    assert(df_21.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S)).=!=(0)).count() == 2)
+    assert(df_22.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L)).=!=(0)).count() == 2)
+    job_21.postTest()
+    job_22.postTest()
 
-    val dateFiles_3 = new DateFiles("date=2018-01-02", Array(inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
-    val job_3 = new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S), dateFiles_3, sparkJob, windowShort)
     // handle 3rd meta containing 1 meta 1 date 1 file
-    val df_3 = job_3.test()
-    df_3.show()
-    assert(df_3.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S)).=!=(0)).count() == 1)
-    job_3.postTest()
+    val dateFiles_3 = new DateFiles("date=2018-01-02", Array(inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
+    val job_31 = new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S), dateFiles_3, sparkJob, windowShort)
+    val job_32 = new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L), dateFiles_3, sparkJob, windowLong)
+    val df_31 = job_31.test()
+    val df_32 = job_32.test()
+    df_31.show()
+    df_32.show()
+    assert(df_31.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S)).=!=(0)).count() == 1)
+    assert(df_32.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L)).=!=(0)).count() == 0)
+    job_31.postTest()
+    job_32.postTest()
+
+    // handle 4th meta containing 1 meta 1 date 1 file, no click
+    val dateFiles_4 = new DateFiles("date=2018-01-03", Array(inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
+    val job_41 = new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S), dateFiles_4, sparkJob, windowShort)
+    val job_42 = new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L), dateFiles_4, sparkJob, windowLong)
+    val df_41 = job_41.test()
+    val df_42 = job_42.test()
+    df_41.show()
+    df_42.show()
+    assert(df_41.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S)).=!=(0)).count() == 0)
+    assert(df_42.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L)).=!=(0)).count() == 0)
+    job_41.postTest()
+    job_42.postTest()
   }
 }

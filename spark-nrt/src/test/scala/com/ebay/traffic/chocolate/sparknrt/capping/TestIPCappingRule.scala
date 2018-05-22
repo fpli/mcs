@@ -195,7 +195,7 @@ class TestIPCappingRule extends BaseFunSuite {
     val job_3 = new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles_3, sparkJob)
     val df_3 = job_3.test()
     df_3.show()
-    assert(df_3.filter($"rt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
+    assert(df_3.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
     job_3.postTest()
 
   }

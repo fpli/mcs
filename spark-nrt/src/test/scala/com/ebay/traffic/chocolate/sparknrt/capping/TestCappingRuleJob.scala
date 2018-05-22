@@ -71,11 +71,11 @@ class TestCappingRuleJob extends BaseFunSuite {
     val timestampBefore24h = timestamp1 - 1
 
     val writer1_0 = AvroParquetWriter.
-      builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
-      .withConf(hadoopConf)
-      .withCompressionCodec(CompressionCodecName.SNAPPY)
-      .build()
+        builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
+        .withSchema(FilterMessageV1.getClassSchema())
+        .withConf(hadoopConf)
+        .withCompressionCodec(CompressionCodecName.SNAPPY)
+        .build()
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 1L, 11L, 111L, timestampBefore24h, "1.1.1.3", writer1_0)
     writer1_0.close()
@@ -83,7 +83,7 @@ class TestCappingRuleJob extends BaseFunSuite {
     job.run()
     val df0 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-01/"))
     df0.show()
-    assert (df0.count() == 1)
+    assert(df0.count() == 1)
     assert(df0.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
 
     val dateFiles1 = new DateFiles("date=2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
@@ -101,46 +101,46 @@ class TestCappingRuleJob extends BaseFunSuite {
     metadata.writeDedupeOutputMeta(meta)
 
     val writer1_1 = AvroParquetWriter.
-      builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00001.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
-      .withConf(hadoopConf)
-      .withCompressionCodec(CompressionCodecName.SNAPPY)
-      .build()
+        builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00001.snappy.parquet"))
+        .withSchema(FilterMessageV1.getClassSchema())
+        .withConf(hadoopConf)
+        .withCompressionCodec(CompressionCodecName.SNAPPY)
+        .build()
 
     val writer1_2 = AvroParquetWriter.
-      builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
-      .withConf(hadoopConf)
-      .withCompressionCodec(CompressionCodecName.SNAPPY)
-      .build()
+        builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
+        .withSchema(FilterMessageV1.getClassSchema())
+        .withConf(hadoopConf)
+        .withCompressionCodec(CompressionCodecName.SNAPPY)
+        .build()
 
     val writer2_1 = AvroParquetWriter.
-      builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00001.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
-      .withConf(hadoopConf)
-      .withCompressionCodec(CompressionCodecName.SNAPPY)
-      .build()
+        builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00001.snappy.parquet"))
+        .withSchema(FilterMessageV1.getClassSchema())
+        .withConf(hadoopConf)
+        .withCompressionCodec(CompressionCodecName.SNAPPY)
+        .build()
 
     val writer2_2 = AvroParquetWriter.
-      builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
-      .withConf(hadoopConf)
-      .withCompressionCodec(CompressionCodecName.SNAPPY)
-      .build()
+        builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
+        .withSchema(FilterMessageV1.getClassSchema())
+        .withConf(hadoopConf)
+        .withCompressionCodec(CompressionCodecName.SNAPPY)
+        .build()
 
     val writer3 = AvroParquetWriter.
-      builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
-      .withConf(hadoopConf)
-      .withCompressionCodec(CompressionCodecName.SNAPPY)
-      .build()
+        builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
+        .withSchema(FilterMessageV1.getClassSchema())
+        .withConf(hadoopConf)
+        .withCompressionCodec(CompressionCodecName.SNAPPY)
+        .build()
 
     val writer4 = AvroParquetWriter.
-      builder[GenericRecord](new Path(inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
-      .withConf(hadoopConf)
-      .withCompressionCodec(CompressionCodecName.SNAPPY)
-      .build()
+        builder[GenericRecord](new Path(inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
+        .withSchema(FilterMessageV1.getClassSchema())
+        .withConf(hadoopConf)
+        .withCompressionCodec(CompressionCodecName.SNAPPY)
+        .build()
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 2L, 11L, 111L, timestamp1, "1.1.1.1", writer1_1)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 3L, 11L, 111L, timestamp1, "1.1.1.2", writer1_1)
@@ -150,7 +150,7 @@ class TestCappingRuleJob extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6L, 11L, 111L, timestamp2, "1.1.1.1", writer2_1)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 7L, 11L, 111L, timestamp2, "1.1.1.2", writer2_1)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 8L, 11L, 111L, timestamp2, "1.1.1.2", writer2_2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 9L, 11L, 111L, timestamp2, "1.1.1.3", writer2_2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 9L, 22L, 111L, timestamp2, "1.1.1.3", writer2_2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 10L, 11L, 111L, timestamp2, "1.1.1.3", writer2_2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 11L, 11L, 111L, timestamp2, "1.1.1.3", writer2_2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 12L, 11L, 111L, timestamp2, "1.1.1.3", writer2_2)
@@ -179,19 +179,23 @@ class TestCappingRuleJob extends BaseFunSuite {
 
     val df1 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-01/"))
     df1.show()
-    assert (df1.count() == 5)
+    assert(df1.count() == 5)
     assert(df1.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
+    assert(df1.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S)).=!=(0)).count() == 0)
+    assert(df1.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L)).=!=(0)).count() == 0)
 
     val df2 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-02/"))
     df2.show()
-    assert (df2.count() == 10)
-    //only the last batch has 1 ip rule faild
+    assert(df2.count() == 10)
     assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 1)
+    assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S)).=!=(0)).count() == 4)
+    assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L)).=!=(0)).count() == 3)
 
     val df3 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-03/"))
     df3.show()
-    assert (df3.count() == 1)
-    //only the last batch has 1 ip rule faild
+    assert(df3.count() == 1)
     assert(df3.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
+    assert(df3.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S)).=!=(0)).count() == 0)
+    assert(df3.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L)).=!=(0)).count() == 0)
   }
 }
