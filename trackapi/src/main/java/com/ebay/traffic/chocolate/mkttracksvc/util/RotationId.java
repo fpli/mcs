@@ -73,12 +73,4 @@ public class RotationId {
     }
     return ori;
   }
-
-  public static void main(String[] args){
-    System.out.println(RotationId18.getNext(1).getRepresentation());
-    System.out.println(Long.toBinaryString(RotationId18.getNext(1).getRepresentation()));
-    System.out.println(RotationId18.getNext(1).getRepresentation());
-    System.out.println(RotationId18.getNext(1).getRepresentation());
-    System.out.println(RotationId18.getNext(1).getRepresentation());
-  }
 }
