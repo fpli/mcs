@@ -14,7 +14,7 @@ import java.nio.file.Paths;
  * Created by spugach on 11/30/16.
  */
 public class IPBlacklistRule extends GenericBlacklistRule {
-  private static String listName;
+  private static String blacklistName;
   /**
    * required in a seralizable class
    */
@@ -37,8 +37,9 @@ public class IPBlacklistRule extends GenericBlacklistRule {
    */
   public void createFromBundledFile() {
     try {
-      listName = this.filterRuleContent.getListName();
-      String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + listName)));
+      blacklistName = this.filterRuleContent.getListName();
+      System.out.println("IP blacklist: " + blacklistName);
+      String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
       this.readFromString(blString);
     } catch (Exception e) {
       Logger.getLogger(IPBlacklistRule.class).warn("Failed to read IP blacklist");

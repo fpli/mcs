@@ -236,7 +236,7 @@ public class BlacklistRulesTest {
   }
 
   @Test
-  public void testEbayDomainBlacklistRule() {
+  public void testEPNDomainBlacklistRule() {
     EPNDomainBlacklistRule rule = EPNDomainBlacklistRule.createForTest(ChannelType.EPN);
     FilterRequest req = new FilterRequest();
     req.setReferrerDomain("foo");

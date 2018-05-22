@@ -17,7 +17,7 @@ import java.nio.file.Paths;
  */
 public class EPNDomainBlacklistRule extends GenericBlacklistRule {
   public static final String FILTERING_EPN_DOMAIN_LIST_ZK_PATH = "chocolate.filter.epnblacklist.domains";
-  private static String listName;
+  private static String blacklistName;
   /**
    * serialVersionUID required in a serializable class
    */
@@ -55,10 +55,12 @@ public class EPNDomainBlacklistRule extends GenericBlacklistRule {
   
   private boolean readFromLocalFile() {
     try {
-      listName = this.filterRuleContent.getListName();
-      String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + listName)));
+      blacklistName = this.filterRuleContent.getListName();
+      System.out.println("domain blacklist: " + blacklistName);
+      String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
       this.readFromString(blString);
     } catch (Exception e) {
+      Logger.getLogger(EPNDomainBlacklistRule.class).error("Failed to get domain blacklist in local file", e);
       return false;
     }
     

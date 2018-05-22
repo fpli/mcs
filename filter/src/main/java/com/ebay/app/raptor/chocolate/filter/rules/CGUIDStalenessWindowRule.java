@@ -11,7 +11,7 @@ import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
  * Created by spugach on 1/9/17.
  */
 public class CGUIDStalenessWindowRule extends BaseFilterRule {
-  private long windowStart = 500L;
+  private long windowStart;
   
   /**
    * Ctor

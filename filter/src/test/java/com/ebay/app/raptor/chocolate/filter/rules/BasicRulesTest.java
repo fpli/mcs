@@ -43,8 +43,6 @@ public class BasicRulesTest {
     if (filterRules.get(ChannelType.DISPLAY) == null) {
       filterRules.put(ChannelType.DISPLAY, new HashMap<String, FilterRuleContent>());
     }
-    filterRules.get(ChannelType.DISPLAY).put(CGUIDStalenessWindowRule.class.getSimpleName(), new FilterRuleContent
-        (CGUIDStalenessWindowRule.class.getSimpleName()));
     filterRules.get(ChannelType.DISPLAY).put(InternalTrafficRule.class.getSimpleName(), new FilterRuleContent
         (InternalTrafficRule.class.getSimpleName()));
     filterRules.get(ChannelType.DISPLAY).put(ProtocolRule.class.getSimpleName(), new FilterRuleContent
@@ -76,8 +74,18 @@ public class BasicRulesTest {
   public void testProtocolRule() {
     BaseFilterRule wrule = new ProtocolRule(ChannelType.EPN);
     FilterRule rule = wrule;
-
     FilterRequest req = new FilterRequest();
+    assertEquals(1, rule.test(req));
+    req.setProtocol(HttpMethod.GET);
+    assertEquals(0, rule.test(req));
+    req.setProtocol(HttpMethod.POST);
+    assertEquals(0, rule.test(req));
+    req.setProtocol(HttpMethod.PUT);
+    assertEquals(1, rule.test(req));
+
+    wrule = new ProtocolRule(ChannelType.DISPLAY);
+    rule = wrule;
+    req = new FilterRequest();
     assertEquals(1, rule.test(req));
     req.setProtocol(HttpMethod.GET);
     assertEquals(0, rule.test(req));
@@ -110,19 +118,6 @@ public class BasicRulesTest {
     req.setChannelAction(ChannelAction.CLICK);
     req.setRequestCGUID("foo");
     req.setRequestCGUIDTimestamp(10000L);
-    req.setTimestamp(10000L + 490);                // just before the window start
-    assertEquals(1, rule.test(req));
-    req.setTimestamp(10000L + 510);                // just after the window start
-    assertEquals(0, rule.test(req));
-
-    // DISPLAY Channel
-    wrule = new CGUIDStalenessWindowRule(ChannelType.DISPLAY);
-    rule = wrule;
-    req = new FilterRequest();
-    req.setChannelAction(ChannelAction.CLICK);
-    req.setRequestCGUID("foo");
-    req.setRequestCGUIDTimestamp(10000L);
-
     req.setTimestamp(10000L + 490);                // just before the window start
     assertEquals(1, rule.test(req));
     req.setTimestamp(10000L + 510);                // just after the window start

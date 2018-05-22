@@ -100,8 +100,8 @@ public class ApplicationOptionsTest {
     Map<String, FilterRuleContent> defaultRule = ApplicationOptions.filterRuleConfigMap.get(ChannelType.DEFAULT);
     assertEquals("PrefetchRule", defaultRule.get("PrefetchRule").getRuleName());
     assertNotNull(defaultRule.get("PrefetchRule"));
-    assertEquals("IAB_ABC_International_List_of_Valid_Browsers.txt", defaultRule.get("TwoPassIABRule").getWhiteListName());
-    assertEquals("IAB_ABC_International_Spiders_and_Robots.txt", defaultRule.get("TwoPassIABRule").getBlackListName());
+    assertEquals("IAB_ABC_International_List_of_Valid_Browsers.txt", defaultRule.get("TwoPassIABRule").getWhitelistName());
+    assertEquals("IAB_ABC_International_Spiders_and_Robots.txt", defaultRule.get("TwoPassIABRule").getBlacklistName());
 
     Map<String, FilterRuleContent> epnRule = ApplicationOptions.filterRuleConfigMap.get(ChannelType.EPN);
     assertEquals("PrefetchRule", epnRule.get("PrefetchRule").getRuleName());
@@ -109,13 +109,14 @@ public class ApplicationOptionsTest {
     assertEquals("EPNDomainBlacklistRule", epnRule.get("EPNDomainBlacklistRule").getRuleName());
     assertNull(defaultRule.get("EPNDomainBlacklistRule"));
     assertEquals("IP_Blacklist_EPN.txt", epnRule.get("IPBlacklistRule").getListName());
-    assertEquals("IAB_ABC_International_List_of_Valid_Browsers.txt", epnRule.get("TwoPassIABRule").getWhiteListName());
+    assertEquals("IAB_ABC_International_List_of_Valid_Browsers.txt", epnRule.get("TwoPassIABRule").getWhitelistName());
+    assertEquals("500", epnRule.get("CGUIDStalenessWindowRule").getWindowStart());
 
     Map<String, FilterRuleContent> dapRule = ApplicationOptions.filterRuleConfigMap.get(ChannelType.DISPLAY);
     assertEquals("TwoPassIABRule", dapRule.get("TwoPassIABRule").getRuleName());
     assertNotNull(defaultRule.get("TwoPassIABRule"));
     assertEquals("IPBlacklistRule", dapRule.get("IPBlacklistRule").getRuleName());
-    assertEquals("IAB_ABC_International_List_of_Valid_Browsers.txt", dapRule.get("TwoPassIABRule").getWhiteListName());
+    assertEquals("IAB_ABC_International_List_of_Valid_Browsers.txt", dapRule.get("TwoPassIABRule").getWhitelistName());
 
   }
 }

@@ -1,9 +1,6 @@
 package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.common.ZooKeeperConnection;
-import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
-import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleContent;
 import com.ebay.app.raptor.chocolate.filter.rules.uamatch.TwoParamsListEntry;
 import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
@@ -22,7 +19,7 @@ import java.util.List;
  */
 public class EBayRobotRule extends BaseFilterRule {
   private List<TwoParamsListEntry> blacklist = new ArrayList<TwoParamsListEntry>();
-  private String listName = null;
+  private String blacklistName = null;
 
   public EBayRobotRule(ChannelType channelType) {
     super(channelType);
@@ -108,8 +105,9 @@ public class EBayRobotRule extends BaseFilterRule {
 
   private void readFromLocalFiles() {
     try {
-      listName = this.filterRuleContent.getListName();
-      String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + listName)));
+      blacklistName = this.filterRuleContent.getListName();
+      System.out.println("bot blacklist: " + blacklistName);
+      String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
       this.readFromStrings(blString);
     } catch (Exception e) {
       Logger.getLogger(TwoPassIABRule.class).error("Failed to get eBay Spiders and Robots lists", e);

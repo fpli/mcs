@@ -164,8 +164,8 @@ public class TwoPassIABRule extends BaseFilterRule {
   
   private boolean readFromLocalFiles() {
     try {
-      whitelistName = this.filterRuleContent.getWhiteListName();
-      blacklistName = this.filterRuleContent.getBlackListName();
+      whitelistName = this.filterRuleContent.getWhitelistName();
+      blacklistName = this.filterRuleContent.getBlacklistName();
       String wlString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + whitelistName)));
       String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
       this.readFromStrings(wlString, blString);

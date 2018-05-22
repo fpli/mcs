@@ -12,7 +12,7 @@ public class FilterRuleContent {
   private String whitelistName;
   private String blacklistName;
   private Float rateLimit = 0f;
-  private Long windowStart = 500l;
+  private Long windowStart;
   private Integer timeoutMS = 500;
   
   public FilterRuleContent() {}
@@ -36,13 +36,13 @@ public class FilterRuleContent {
    * Constructor for IAB rule testing specifically
    *
    * @param ruleName
-   * @param whiteListName
-   * @param blackListName
+   * @param whitelistName
+   * @param blacklistName
    */
-  public FilterRuleContent(String ruleName, String whiteListName, String blackListName) {
+  public FilterRuleContent(String ruleName, String whitelistName, String blacklistName) {
     this.ruleName = ruleName;
-    this.whitelistName = whiteListName;
-    this.blacklistName = blackListName;
+    this.whitelistName = whitelistName;
+    this.blacklistName = blacklistName;
   }
 
   public FilterRuleContent(String ruleName, String listName, Float rateLimit, Long windowStart, Integer timeoutMS) {
@@ -93,19 +93,19 @@ public class FilterRuleContent {
     this.listName = listName;
   }
 
-  public String getWhiteListName() {
+  public String getWhitelistName() {
     return whitelistName;
   }
 
-  public void setWhiteListName(String whiteListName) {
-    this.whitelistName = whiteListName;
+  public void setWhitelistName(String whitelistName) {
+    this.whitelistName = whitelistName;
   }
 
-  public String getBlackListName() {
+  public String getBlacklistName() {
     return blacklistName;
   }
 
-  public void setBlackListName(String blackListName) {
-    this.blacklistName = blackListName;
+  public void setBlacklistName(String blacklistName) {
+    this.blacklistName = blacklistName;
   }
 }
