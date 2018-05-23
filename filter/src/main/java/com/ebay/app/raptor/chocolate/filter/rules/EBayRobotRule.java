@@ -4,7 +4,11 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.filter.rules.uamatch.TwoParamsListEntry;
 import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
+import com.ebay.kernel.context.RuntimeContext;
+import org.apache.log4j.Logger;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,11 +19,11 @@ import java.util.List;
  */
 public class EBayRobotRule extends BaseFilterRule {
   private List<TwoParamsListEntry> blacklist = new ArrayList<TwoParamsListEntry>();
-  private String blacklistName = this.filterRuleContent.getBlacklistName();;
+  private String blacklistName;
 
   public EBayRobotRule(ChannelType channelType) {
     super(channelType);
-    readFromLocalFiles(blacklistName);
+    this.readFromLocalFiles();
   }
 
   /**
@@ -52,7 +56,6 @@ public class EBayRobotRule extends BaseFilterRule {
    *
    * @param blacklist
    */
-  @Override
   public void readFromStrings(String blacklist) {
     this.clear();
 
@@ -98,5 +101,16 @@ public class EBayRobotRule extends BaseFilterRule {
   @Override
   public int test(FilterRequest event) {
     return isUserAgentValid(event.getUserAgent()) ? 0 : 1;
+  }
+
+  private void readFromLocalFiles() {
+    try {
+      blacklistName = this.filterRuleContent.getBlacklistName();
+      String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
+      this.readFromStrings(blString);
+    } catch (Exception e) {
+      Logger.getLogger(EBayRobotRule.class).error("Failed to get eBay Spiders and Robots lists", e);
+      throw new Error("eBay Spiders and Robots Lists not found", e);
+    }
   }
 }
