@@ -55,8 +55,7 @@ public class EPNDomainBlacklistRule extends GenericBlacklistRule {
   
   private boolean readFromLocalFile() {
     try {
-      blacklistName = this.filterRuleContent.getListName();
-      System.out.println("domain blacklist: " + blacklistName);
+      blacklistName = this.filterRuleContent.getBlacklistName();
       String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
       this.readFromString(blString);
     } catch (Exception e) {

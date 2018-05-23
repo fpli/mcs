@@ -7,11 +7,8 @@ import com.ebay.app.raptor.chocolate.filter.rules.uamatch.FourParamsListEntry;
 import com.ebay.app.raptor.chocolate.filter.rules.uamatch.TwoParamsListEntry;
 import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
-import com.ebay.kernel.context.RuntimeContext;
 import org.apache.log4j.Logger;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,8 +22,8 @@ import java.util.List;
 public class TwoPassIABRule extends BaseFilterRule {
   public static final String FILTERING_IAB_WHITELIST_ZK_PATH = "chocolate.filter.iabtest.whitelist";
   public static final String FILTERING_IAB_BLACKLIST_ZK_PATH = "chocolate.filter.iabtest.blacklist";
-  private static String whitelistName;
-  private static String blacklistName;
+  private String whitelistName = this.filterRuleContent.getWhitelistName();
+  private String blacklistName = this.filterRuleContent.getBlacklistName();
   private List<TwoParamsListEntry> whitelist = new ArrayList<TwoParamsListEntry>();
   private List<FourParamsListEntry> blacklist = new ArrayList<FourParamsListEntry>();
   
@@ -78,6 +75,7 @@ public class TwoPassIABRule extends BaseFilterRule {
    * @param whitelist
    * @param blacklist
    */
+  @Override
   public void readFromStrings(String whitelist, String blacklist) {
     this.clear();
     
@@ -147,7 +145,7 @@ public class TwoPassIABRule extends BaseFilterRule {
    * @return new instance
    */
   public void createFromOptions() {
-    if (!this.readFromLocalFiles()) {
+    if (!(this.readFromLocalFiles(whitelistName) && this.readFromLocalFiles(blacklistName))) {
       ZooKeeperConnection connection = new ZooKeeperConnection();
       try {
         connection.connect(ApplicationOptions.getInstance().getZookeeperString());
@@ -160,19 +158,5 @@ public class TwoPassIABRule extends BaseFilterRule {
         throw new Error("IAB Lists not found", e);
       }
     }
-  }
-  
-  private boolean readFromLocalFiles() {
-    try {
-      whitelistName = this.filterRuleContent.getWhitelistName();
-      blacklistName = this.filterRuleContent.getBlacklistName();
-      String wlString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + whitelistName)));
-      String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
-      this.readFromStrings(wlString, blString);
-    } catch (Exception e) {
-      return false;
-    }
-    
-    return true;
   }
 }

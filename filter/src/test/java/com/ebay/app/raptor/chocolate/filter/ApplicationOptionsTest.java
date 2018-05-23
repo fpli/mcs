@@ -108,7 +108,7 @@ public class ApplicationOptionsTest {
     assertNotNull(defaultRule.get("PrefetchRule"));
     assertEquals("EPNDomainBlacklistRule", epnRule.get("EPNDomainBlacklistRule").getRuleName());
     assertNull(defaultRule.get("EPNDomainBlacklistRule"));
-    assertEquals("IP_Blacklist_EPN.txt", epnRule.get("IPBlacklistRule").getListName());
+    assertEquals("IP_Blacklist_EPN.txt", epnRule.get("IPBlacklistRule").getBlacklistName());
     assertEquals("IAB_ABC_International_List_of_Valid_Browsers.txt", epnRule.get("TwoPassIABRule").getWhitelistName());
     assertEquals("500", epnRule.get("CGUIDStalenessWindowRule").getWindowStart().toString());
 

@@ -26,13 +26,13 @@
         "windowStart": 500},
       {
         "ruleName": "EPNDomainBlacklistRule",
-        "listName": "EPN_domains_Blacklist.txt"},
+        "blacklistName": "EPN_domains_Blacklist.txt"},
       {
         "ruleName": "IPBlacklistRule",
-        "listName": "IP_Blacklist_EPN.txt"},
+        "blacklistName": "IP_Blacklist_EPN.txt"},
       {
         "ruleName": "EBayRobotRule",
-        "listName": "eBay_Spiders_and_Robots_EPN.txt"}
+        "blacklistName": "eBay_Spiders_and_Robots_EPN.txt"}
     ]
   },
   {
@@ -40,7 +40,7 @@
     "filterRules": [
       {
         "ruleName": "IPBlacklistRule",
-        "listName": "IP_Blacklist_EPN.txt"}
+        "blacklistName": "IP_Blacklist_EPN.txt"}
     ]
   }
 ]

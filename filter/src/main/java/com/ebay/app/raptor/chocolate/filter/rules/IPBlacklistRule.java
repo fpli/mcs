@@ -37,16 +37,15 @@ public class IPBlacklistRule extends GenericBlacklistRule {
    */
   public void createFromBundledFile() {
     try {
-      blacklistName = this.filterRuleContent.getListName();
-      System.out.println("IP blacklist: " + blacklistName);
+      blacklistName = this.filterRuleContent.getBlacklistName();
       String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
       this.readFromString(blString);
     } catch (Exception e) {
-      Logger.getLogger(IPBlacklistRule.class).warn("Failed to read IP blacklist");
+      Logger.getLogger(IPBlacklistRule.class).error("Failed to read IP blacklist");
       throw new Error("IP blacklist not found", e);
     }
   }
-  
+
   @Override
   protected String getFilteredValue(FilterRequest request) {
     return request.getSourceIP();

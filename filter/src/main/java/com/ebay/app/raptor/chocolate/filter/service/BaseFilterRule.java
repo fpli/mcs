@@ -4,7 +4,12 @@ import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleContent;
+import com.ebay.app.raptor.chocolate.filter.rules.EBayRobotRule;
+import com.ebay.kernel.context.RuntimeContext;
+import org.apache.log4j.Logger;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 
 /**
@@ -41,7 +46,24 @@ public abstract class BaseFilterRule implements FilterRule {
     if (action == ChannelAction.APP_FIRST_START) {  // Most rules don't apply to AppDL events
       return false;
     }
-    
+    return true;
+  }
+
+  //read list by string
+  public void readFromStrings(String blacklist) {}
+  //for TwoPass rule which has two lists
+  public void readFromStrings(String whitelist, String blacklist) {}
+
+  //read local list
+  public boolean readFromLocalFiles(String listName) {
+    System.out.println("list: " + listName);
+    try {
+      String list = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + listName)));
+      readFromStrings(list);
+    } catch (Exception e) {
+      Logger.getLogger(this.getClass()).error("Failed to get " + listName, e);
+      return false;
+    }
     return true;
   }
 }
