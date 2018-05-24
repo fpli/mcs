@@ -35,11 +35,6 @@ object Parameter {
       .required
       .valueName("workDir")
       .action((cont, param) => param.copy(workDir = cont))
-
-    opt[Int]("partitions")
-      .optional
-      .valueName("partitions")
-      .action((cont, param) => param.copy(partitions = cont))
   }
 
   def apply(args: Array[String]): Parameter = parser.parse(args, Parameter()) match {

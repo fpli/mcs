@@ -26,12 +26,6 @@ object ReportingJob extends App {
 class ReportingJob(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
-  @transient var properties: Properties = {
-    val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("kafka.properties"))
-    properties
-  }
-
   @transient lazy val metadata = {
     Metadata(params.workDir, params.channel, if (params.channel == ChannelType.EPN) MetadataEnum.capping else MetadataEnum.dedupe)
   }
@@ -65,7 +59,11 @@ class ReportingJob(params: Parameter)
   }
 
   def createCouchbaseClient(): CouchbaseClient = {
+    val properties = new Properties
+    properties.load(getClass.getClassLoader.getResourceAsStream("couchbase.properties"))
+
     val couchbaseClient = new CouchbaseClient
+
     couchbaseClient.init(
       properties.getProperty("chocolate.report.couchbase.cluster"),
       properties.getProperty("chocolate.report.couchbase.bucket"),

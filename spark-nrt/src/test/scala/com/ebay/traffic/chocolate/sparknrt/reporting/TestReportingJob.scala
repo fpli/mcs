@@ -49,7 +49,7 @@ class TestReportingJob extends BaseFunSuite {
   }
 
   val params = Parameter(args)
-  var job: ReportingJobWrapper = null
+  var job: ReportingJobWrapper = _
 
   override def beforeAll() = {
     CouchbaseClientMock.startCouchbaseMock()
@@ -103,9 +103,9 @@ class TestReportingJob extends BaseFunSuite {
       "22_2018-05-01_VIEWABLE_MOBILE_FILTERED",
       "22_2018-05-01_VIEWABLE_DESKTOP_RAW",
       "22_2018-05-01_VIEWABLE_DESKTOP_FILTERED")
-    for (i <- 0 until keyArray.length) {
+    for (i <- keyArray.indices) {
       assert(bucket.exists(keyArray(i)))
-      System.out.println(bucket.get(keyArray(i)).toString)
+      System.out.println("key: " + keyArray(i) + " value: " + bucket.get(keyArray(i)).content().toString)
     }
 
     bucket.close
@@ -143,8 +143,8 @@ class TestReportingJob extends BaseFunSuite {
     // prepare metadata file
     val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
 
-    val dateFiles = new DateFiles("date=2018-05-01", Array("file://" + inputDir + "/date=2018-05-01/part-00000.snappy.parquet"))
-    var meta: MetaFiles = new MetaFiles(Array(dateFiles))
+    val dateFiles = DateFiles("date=2018-05-01", Array("file://" + inputDir + "/date=2018-05-01/part-00000.snappy.parquet"))
+    var meta: MetaFiles = MetaFiles(Array(dateFiles))
 
     metadata.writeDedupeOutputMeta(meta)
 
