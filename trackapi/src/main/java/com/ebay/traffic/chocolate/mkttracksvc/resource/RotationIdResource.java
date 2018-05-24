@@ -138,12 +138,11 @@ public class RotationIdResource {
     String msgStr = null;
 
     if (rotationInfo == null) {
-      msgStr = "No rotation info was created. Please input rotation info.";
-      addValueToList(msgList, msgStr);
+      return getResponse(null, "created. Please set rotation_info with json format.");
     }
 
     if (rotationInfo.getChannel_id() == null && required) {
-      msgStr = "No rotation info was created. channel_id is required field.";
+      msgStr = getRequiredMsg(RotationConstant.FIELD_CHANNEL_ID);
       addValueToList(msgList, msgStr);
     }
 
@@ -154,7 +153,7 @@ public class RotationIdResource {
 
 
     if (rotationInfo.getSite_id() == null && required) {
-      msgStr = "No rotation info was created. Please set one site.";
+      msgStr = getRequiredMsg(RotationConstant.CHOCO_SITE_ID);
       addValueToList(msgList, msgStr);
     }
 
@@ -163,12 +162,19 @@ public class RotationIdResource {
       addValueToList(msgList, msgStr);
     }
 
-    if ((NumberUtils.isNumber(rotationInfo.getCampaign_id()) && Long.valueOf(rotationInfo.getCampaign_id()) < 0)
-        || (NumberUtils.isNumber(rotationInfo.getCustomized_id1()) && Long.valueOf(rotationInfo.getCustomized_id1()) < 0)
-        || (NumberUtils.isNumber(rotationInfo.getCustomized_id2()) && Long.valueOf(rotationInfo.getCustomized_id2()) < 0)) {
-      msgStr = "No rotation info was created. CampaignId/CustomizedId1/CustomizedId2 can't less than 0.";
+    if (rotationInfo.getCampaign_id()== null && required) {
+      msgStr = getRequiredMsg(RotationConstant.FIELD_CAMPAIGN_ID);
       addValueToList(msgList, msgStr);
     }
+
+    msgStr = isNumber(rotationInfo.getCampaign_id(), "campaign_id");
+    if(StringUtils.isNotEmpty(msgStr)) addValueToList(msgList, msgStr);
+
+    msgStr = isNumber(rotationInfo.getCustomized_id1(), "customized_id1");
+    if(StringUtils.isNotEmpty(msgStr)) addValueToList(msgList, msgStr);
+
+    msgStr = isNumber(rotationInfo.getCustomized_id2(), "customized_id2");
+    if(StringUtils.isNotEmpty(msgStr)) addValueToList(msgList, msgStr);
 
     Map<String, String> rotationTag = rotationInfo.getRotation_tag();
 
@@ -189,6 +195,23 @@ public class RotationIdResource {
       responseStr = new Gson().toJson(response);
     }
     return responseStr;
+  }
+
+  private String isNumber(String fieldValue, String fieldName){
+    if(StringUtils.isNotEmpty(fieldValue)) {
+      if (!NumberUtils.isNumber(fieldValue)) {
+        return "No rotation info was created. " + fieldName + " should be number(long type) .";
+      }
+      if (Long.valueOf(fieldValue) < 0) {
+        return "No rotation info was created. " + fieldName + " can't be less than 0.";
+      }
+    }
+    return null;
+  }
+
+  private String getRequiredMsg(String fieldName){
+    String msgStr = "No rotation info was created. \"" + fieldName + "\" is required field";
+    return msgStr;
   }
 
   private String getValidateMsgForDate(Map<String, String> rotationTag, String key, SimpleDateFormat sdf) {
