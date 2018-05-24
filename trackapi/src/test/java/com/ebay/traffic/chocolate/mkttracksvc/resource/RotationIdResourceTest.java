@@ -275,7 +275,22 @@ public class RotationIdResourceTest {
     ServiceResponse response = result.readEntity(ServiceResponse.class);
     List<String> errorList = response.getErrors();
     Assert.assertNotNull(errorList);
-    Assert.assertTrue(errorList.get(0).contains("channel"));
-    Assert.assertTrue(errorList.get(1).contains("site"));
+    Assert.assertTrue(errorList.get(0).contains("channel_id"));
+    Assert.assertTrue(errorList.get(1).contains("site_id"));
+    Assert.assertTrue(errorList.get(2).contains("campaign_id"));
+
+    //XC-816
+    rotationRequest = new RotationInfo();
+    rotationRequest.setChannel_id(12345);
+    rotationRequest.setSite_id(12345);
+    rotationRequest.setCampaign_id("1234-abc");
+    result = client.target(svcEndPoint).path("/tracksvc/v1/rid/create")
+        .request().accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
+    Assert.assertEquals(200, result.getStatus());
+    response = result.readEntity(ServiceResponse.class);
+    errorList = response.getErrors();
+    Assert.assertNotNull(errorList);
+    Assert.assertTrue(errorList.get(0).contains("campaign_id"));
   }
 }

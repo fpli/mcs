@@ -463,12 +463,12 @@ public class DumpLegacyRotationFiles {
           JsonArray creativeSets = rotationTag.getArray(RotationConstant.FIELD_CREATIVE_SETS);
           if (creativeSets != null && creativeSets.size() > 0) {
             for (int i = 0; i < creativeSets.size(); i++) {
-              setCreativeSets(out, creativeSets.getObject(i));
+              setCreativeSets(out, creativeSets.getObject(i), rotationInfo);
               count++;
             }
           }
         } else {
-          setCreativeSets(out, rotationTag);
+          setCreativeSets(out, rotationTag, rotationInfo);
           count++;
         }
       }
@@ -481,53 +481,61 @@ public class DumpLegacyRotationFiles {
     System.out.println("Successfully dump " + count + " records into " + filePath);
   }
 
-  private static void setCreativeSets(OutputStream out, JsonObject creativeSets) throws IOException {
+  private static void setCreativeSets(OutputStream out, JsonObject creativeSets, JsonObject rotationInfo) throws IOException {
     if(!creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_ID)){
       return;
     }
-
+    //Creative ID
     if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_ID)) {
       out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_ID).getBytes());
     }
+    //|Creative File Name
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_FILE_NAME)) {
       out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_FILE_NAME).getBytes());
     }
+    //|Creative Location
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_LOCATION)) {
       out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_LOCATION).getBytes());
     }
+    //|Size
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_SIZE)) {
       out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_SIZE).getBytes());
     }
+    //|Org Code
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_ORG_CODE)) {
       out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_ORG_CODE).getBytes());
     }
+    //|Creative Type
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_TYPE)) {
       out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_TYPE).getBytes());
     }
+    //|Campaign ID
     out.write(RotationConstant.FIELD_SEPARATOR);
-    if (creativeSets.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
-      out.write(creativeSets.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
+    if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
+      out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
+    }
+    //|Campaign Name
+    out.write(RotationConstant.FIELD_SEPARATOR);
+    if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_NAME)) {
+      out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_NAME).getBytes());
+    }
+    //|Client ID|Client Name
+    MPLXClientEnum clientEnum = null;
+    if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
+      clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
     }
     out.write(RotationConstant.FIELD_SEPARATOR);
-    if (creativeSets.containsKey(RotationConstant.FIELD_CAMPAIGN_NAME)) {
-      out.write(creativeSets.getString(RotationConstant.FIELD_CAMPAIGN_NAME).getBytes());
+    if (clientEnum != null) {
+      out.write(String.valueOf(clientEnum.getMplxClientId()).getBytes());
     }
     out.write(RotationConstant.FIELD_SEPARATOR);
-    if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_TYPE)) {
-      out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_TYPE).getBytes());
-    }
-    out.write(RotationConstant.FIELD_SEPARATOR);
-    if (creativeSets.containsKey(RotationConstant.FIELD_CLIENT_ID)) {
-      out.write(creativeSets.getString(RotationConstant.FIELD_CLIENT_ID).getBytes());
-    }
-    out.write(RotationConstant.FIELD_SEPARATOR);
-    if (creativeSets.containsKey(RotationConstant.FIELD_CLIENT_NAME)) {
-      out.write(creativeSets.getString(RotationConstant.FIELD_CLIENT_NAME).getBytes());
+    if (clientEnum != null) {
+      out.write(String.valueOf(clientEnum.getMplxClientName()).getBytes());
     }
     out.write(RotationConstant.RECORD_SEPARATOR);
     out.flush();

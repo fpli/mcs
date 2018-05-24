@@ -31,7 +31,7 @@ public class LoadCampaignMappingToCouchbase {
 
   private static void init() throws IOException{
     couchbasePros = new Properties();
-    InputStream in = Object.class.getResourceAsStream("/couchbase.properties");
+    InputStream in = Object.class.getResourceAsStream("/prod/couchbase.properties");
     couchbasePros.load(in);
   }
 
