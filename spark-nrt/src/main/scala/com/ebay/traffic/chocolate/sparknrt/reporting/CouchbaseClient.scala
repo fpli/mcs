@@ -18,6 +18,13 @@ class CouchbaseClient {
   var cluster: Cluster = null
   var bucket: Bucket = null
 
+  /**
+    * Open Couchbase bucket by specifying cluster nodes, bucket name, user, password.
+    * @param nodes Couchbase cluster nodes
+    * @param bucketName bucket name to open
+    * @param user user name
+    * @param password password
+    */
   def init(nodes: String, bucketName: String, user: String, password: String): Unit = {
     val env = DefaultCouchbaseEnvironment.builder()
       .connectTimeout(10000).queryTimeout(5000).build()
@@ -35,11 +42,19 @@ class CouchbaseClient {
     }
   }
 
+  /**
+    * For unit test purpose
+    */
   def init(cluster: Cluster, bucket: Bucket): Unit = {
     this.cluster = cluster
     this.bucket = bucket
   }
 
+  /**
+    * Insert or append data into Couchbase.
+    * @param key key of data
+    * @param mapData value of data organized in Map[String, Any]
+    */
   def upsert(key: String, mapData: Map[String, _]): Unit = {
     try {
       val jsonObject = JsonObject.empty()
@@ -62,6 +77,9 @@ class CouchbaseClient {
     }
   }
 
+  /**
+    * Close bucket connection
+    */
   def close(): Unit = {
     bucket.close
     cluster.disconnect

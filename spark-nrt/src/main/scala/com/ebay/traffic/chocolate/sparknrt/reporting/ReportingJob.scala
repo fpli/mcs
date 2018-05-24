@@ -26,12 +26,16 @@ object ReportingJob extends App {
 class ReportingJob(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
+  // Get capping metadata for EPN, while getting dedupe metadata for Display.
   @transient lazy val metadata = {
     Metadata(params.workDir, params.channel, if (params.channel == ChannelType.EPN) MetadataEnum.capping else MetadataEnum.dedupe)
   }
 
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
+  /**
+    * Check whether current event is sent from mobile by check User-Agent.
+    */
   def checkMobileUserAgent(requestHeaders: String) : Boolean = {
     val parts = requestHeaders.split("\\|")
     for (i <- 0 until parts.length) {
@@ -47,6 +51,10 @@ class ReportingJob(params: Parameter)
     false
   }
 
+  /**
+    * Generate unique key for a Couchbase record.
+    * Format - [publisher id]_[date]_[action]_[MOBILE or DESKTOP]_[RAW or FILTERED]
+    */
   def getUniqueKey(publisherId: String, date: String, action: String, isMob: Boolean, isFiltered: Boolean): String = {
     if (isMob && isFiltered)
       publisherId + "_" + date + "_" + action + "_MOBILE_FILTERED"
@@ -58,6 +66,10 @@ class ReportingJob(params: Parameter)
       publisherId + "_" + date + "_" + action + "_DESKTOP_RAW"
   }
 
+  /**
+    * Create CouchbaseClient connected to Couchbase. This can be overrided in
+    * unit test wrapper class which can connects to a mock Couchbase.
+    */
   def createCouchbaseClient(): CouchbaseClient = {
     val properties = new Properties
     properties.load(getClass.getClassLoader.getResourceAsStream("couchbase.properties"))
