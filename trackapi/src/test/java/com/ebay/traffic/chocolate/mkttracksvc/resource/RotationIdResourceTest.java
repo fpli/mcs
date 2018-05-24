@@ -42,7 +42,7 @@ public class RotationIdResourceTest {
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(SiteEnum.EBAY_DE.getId());
     rotationRequest.setCampaign_id("000000001");
-    rotationRequest.setCustomized_id1("c00000002");
+    rotationRequest.setCustomized_id1("30000002");
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-1", "RotationTag-1");
@@ -53,12 +53,12 @@ public class RotationIdResourceTest {
     Assert.assertEquals(200, result.getStatus());
     ServiceResponse serviceResponse = result.readEntity(ServiceResponse.class);
     RotationInfo rotationResponse = serviceResponse.getRotation_info();
-    Assert.assertEquals("707-000000001-c00000002",
+    Assert.assertEquals("707-000000001-30000002",
         rotationResponse.getRotation_id().substring(0, rotationResponse.getRotation_id().lastIndexOf("-")));
     Assert.assertEquals("1", String.valueOf(rotationResponse.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(rotationResponse.getSite_id()));
     Assert.assertEquals("000000001", rotationResponse.getCampaign_id());
-    Assert.assertEquals("c00000002", rotationResponse.getCustomized_id1());
+    Assert.assertEquals("30000002", rotationResponse.getCustomized_id1());
     Assert.assertEquals("CatherineTesting RotationName", rotationResponse.getRotation_name());
     Assert.assertEquals("RotationTag-1", rotationResponse.getRotation_tag().get("TestTag-1"));
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, rotationResponse.getStatus());
@@ -76,7 +76,7 @@ public class RotationIdResourceTest {
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(77);
     rotationRequest.setCampaign_id("000000001");
-    rotationRequest.setCustomized_id1("c00000001");
+    rotationRequest.setCustomized_id1("30000001");
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-2", "RotationTag-2");
@@ -108,7 +108,7 @@ public class RotationIdResourceTest {
     Assert.assertEquals("1", String.valueOf(updateResponse.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(updateResponse.getSite_id()));
     Assert.assertEquals("000000001", updateResponse.getCampaign_id());
-    Assert.assertEquals("c00000001", updateResponse.getCustomized_id1());
+    Assert.assertEquals("30000001", updateResponse.getCustomized_id1());
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, updateResponse.getStatus());
 
     Map addedRotationTags = new HashMap();
@@ -142,7 +142,7 @@ public class RotationIdResourceTest {
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(77);
     rotationRequest.setCampaign_id("000000001");
-    rotationRequest.setCustomized_id1("c00000001");
+    rotationRequest.setCustomized_id1("30000001");
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-2", "RotationTag-2");
@@ -169,7 +169,7 @@ public class RotationIdResourceTest {
     Assert.assertEquals("1", String.valueOf(updateResponse.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(updateResponse.getSite_id()));
     Assert.assertEquals("000000001", updateResponse.getCampaign_id());
-    Assert.assertEquals("c00000001", updateResponse.getCustomized_id1());
+    Assert.assertEquals("30000001", updateResponse.getCustomized_id1());
 
     //activate
     updateResult = client.target(svcEndPoint).path("/tracksvc/v1/rid/activate")
@@ -194,7 +194,7 @@ public class RotationIdResourceTest {
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(77);
     rotationRequest.setCampaign_id("50000002");
-    rotationRequest.setCustomized_id1("c00000011");
+    rotationRequest.setCustomized_id1("500000011");
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("vendor_name", "catherine_testing");
@@ -234,7 +234,7 @@ public class RotationIdResourceTest {
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(77);
     rotationRequest.setCampaign_id("50000002");
-    rotationRequest.setCustomized_id1("c00000011");
+    rotationRequest.setCustomized_id1("30000011");
     rotationRequest.setRotation_name("TestName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("vendor_name", "catherine_testing");
