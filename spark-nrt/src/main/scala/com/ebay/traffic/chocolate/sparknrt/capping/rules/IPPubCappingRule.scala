@@ -46,39 +46,40 @@ class IPPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
 
   override def test(): DataFrame = {
 
-    //Step 1: Prepare counting data
-    // filter click only, and publisher_id != -1
+    //Step 1: Prepare counting data. If this job only has impression, return snapshot_id and capping = 0.
+    //filter click only, and publisher_id != -1
     var dfIPPub = dfFilterInJob(filterCondition())
 
+    //if job only has impression data, then return df with capping column directly
     val head = dfIPPub.take(1)
     if (head.length == 0) {
-      var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).withColumn("capping", lit(0l))
-      df
+      dfOnlyImrepssion()
     }
     else {
       val firstRow = head(0)
       val timestamp = dfIPPub.select($"timestamp").first().getLong(0)
 
-      //Step 2: Count by ip and publisher_id in this job, then integrate data to 1 file, and add timestamp to file name
+      //Step 2: Count by ip and publisher_id in this job, then integrate data to 1 file, and add timestamp to file name.
       //count by ip and publisher_id in the job
       dfIPPub = dfCountInJob(dfIPPub, selectCondition())
 
-      // reduce the number of counting file to 1, and rename file name to include timestamp
+      //reduce the number of counting file to 1, and rename file name to include timestamp
       repartitionAndRename(dfIPPub, timestamp)
 
-      //Step 3: Read a new df for join purpose, and read previous data for counting purpose
-      //DataFrame for join
-      var df = dfForJoin(cols(0), withColumnCondition())
+      //Step 3: Read a new df for join purpose, just select IP, publisher_id and snapshot_id, and read previous data for counting purpose.
+      //df for join
+      val selectCols: Array[Column] = $"snapshot_id" +: cols
+      var df = dfForJoin(cols(0), withColumnCondition(), selectCols)
 
       //read previous data and add to count path
       val ipCountPath = readCountData(timestamp)
 
-      //Step 4: Count all data, including previous data and data in this job, then join the result with the new df
+      //Step 4: Count all data, including previous data and data in this job, then join the result with the new df, return only snapshot_id and capping.
       //count through whole timeWindow and filter those over threshold
       dfIPPub = dfCountAllAndFilter(dfIPPub, ipCountPath)
 
       //join origin df and counting df
-      df = dfJoin(df, dfIPPub, joinCondition(df, dfIPPub), cols(0))
+      df = dfJoin(df, dfIPPub, joinCondition(df, dfIPPub))
       df
     }
   }

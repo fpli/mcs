@@ -100,8 +100,14 @@ abstract class GenericCountRule(params: Parameter, bit: Long, dateFiles: DateFil
 
   val cols: Array[Column]
 
+  //return manually when there is only impression data in the job
+  def dfOnlyImrepssion(): DataFrame = {
+    cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
+        .withColumn("capping", lit(0l))
+        .select($"snapshot_id", $"capping")
+  }
   //filter click only, and filter according to specific condition
-  def dfFilterInJob(filterCol: Column): DataFrame ={
+  def dfFilterInJob(filterCol: Column): DataFrame = {
     var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
         .filter($"channel_action" === "CLICK")
     if (filterCol != null)
@@ -116,9 +122,10 @@ abstract class GenericCountRule(params: Parameter, bit: Long, dateFiles: DateFil
   }
 
   //Result df for join purpose
-  def dfForJoin(addCol: Column, withColumnCol: Column): DataFrame = {
+  def dfForJoin(addCol: Column, withColumnCol: Column, selectCols: Array[Column]): DataFrame = {
     cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
         .withColumn(addCol.toString(), withColumnCol)
+        .select(selectCols: _*)
   }
 
   //count through whole timeWindow and filter those over threshold
@@ -133,11 +140,9 @@ abstract class GenericCountRule(params: Parameter, bit: Long, dateFiles: DateFil
   }
 
   //join origin df and counting df
-  def dfJoin(df: DataFrame, dfCount: DataFrame, joinCol: Column, dropCol: Column): DataFrame = {
+  def dfJoin(df: DataFrame, dfCount: DataFrame, joinCol: Column): DataFrame = {
     var df1 = df.join(dfCount, joinCol, "left_outer")
-        .select(df.col("*"), dfCount.col("capping"))
-    if (dropCol != null)
-      df1 = df1.drop(dropCol)
+        .select($"snapshot_id", $"capping")
     df1
   }
   //test end

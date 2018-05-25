@@ -54,7 +54,9 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
     var dfIP = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).filter($"channel_action" === "CLICK")
     val head = dfIP.take(1)
     if(head.length == 0) {
-      var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).withColumn("capping", lit(0l))
+      var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
+          .withColumn("capping", lit(0l))
+          .select($"snapshot_id", $"capping")
       df
     }
     else {
@@ -80,9 +82,9 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
 
       // IP rule
       var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
-        .withColumn("tmpIP", split($"request_headers", "X-eBay-Client-IP: ")(1))
-        .withColumn("IP_1", when($"channel_action" === "CLICK", split($"tmpIP", """\|""")(0)).otherwise("NA"))
-        .drop($"tmpIP")
+          .withColumn("tmpIP", split($"request_headers", "X-eBay-Client-IP: ")(1))
+          .withColumn("IP_1", when($"channel_action" === "CLICK", split($"tmpIP", """\|""")(0)).otherwise("NA"))
+          .select($"IP_1", $"snapshot_id")
 
       val ipCountTempPathToday = baseTempDir + dateFiles.date
       val ipCountPathToday = baseDir + dateFiles.date
@@ -108,9 +110,7 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
         .withColumn("capping", lit(cappingBit)).drop($"count").drop($"amnt")
 
       df = df.join(dfIP, $"IP_1" === $"IP", "left_outer")
-        .select(df.col("*"), $"capping")
-        .drop("IP_1")
-        .drop("IP")
+        .select($"snapshot_id", $"capping")
       df
     }
   }

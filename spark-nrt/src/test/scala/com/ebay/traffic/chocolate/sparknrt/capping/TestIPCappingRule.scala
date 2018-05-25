@@ -197,6 +197,5 @@ class TestIPCappingRule extends BaseFunSuite {
     df_3.show()
     assert(df_3.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 0)
     job_3.postTest()
-
   }
 }

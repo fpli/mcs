@@ -60,17 +60,30 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
     if (dfIter.hasNext) {
       df = dfIter.next().withColumn("nrt_rule_flags", coalesce($"capping", lit(0l))).drop($"capping")
     }
+
+    //join all rules' result
     while (dfIter.hasNext) {
       val rightDf = dfIter.next().withColumnRenamed("snapshot_id", "snapshot_id_right")
           .withColumnRenamed("capping", "capping_1")
           .select($"snapshot_id_right", $"capping_1")
 
-      df = df.join(rightDf, $"snapshot_id" === $"snapshot_id_right", "right_outer")
+      df = df.join(rightDf, $"snapshot_id" === $"snapshot_id_right", "left_outer")
           .drop($"snapshot_id_right")
           .withColumn("nrt_rule_flags", coalesce($"nrt_rule_flags", lit(0l)).bitwiseOR(coalesce($"capping_1", lit(0l))))
           .drop($"capping_1")
     }
-    df
+
+    //join with whole df
+    df = df.withColumnRenamed("snapshot_id", "snapshot_id_tmp")
+        .withColumnRenamed("nrt_rule_flags", "nrt_rule_flags_tmp")
+        .select($"snapshot_id_tmp", $"nrt_rule_flags_tmp")
+
+    var dfResult = sparkJobObj.readFilesAsDFEx(dateFiles.files)
+    dfResult = dfResult.join(df, $"snapshot_id" === $"snapshot_id_tmp")
+            .withColumn("nrt_rule_flags", $"nrt_rule_flags_tmp")
+            .drop("snapshot_id_tmp")
+            .drop("nrt_rule_flags_tmp")
+    dfResult
   }
 
   def postTest() = {
