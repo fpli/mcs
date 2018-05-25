@@ -1,9 +1,8 @@
 package com.ebay.traffic.chocolate.mkttracksvc.util;
 
 import com.ebay.globalenv.SiteEnum;
-import com.ebay.traffic.chocolate.mkttracksvc.constant.TrackingChannelEnum;
+import com.ebay.app.raptor.chocolate.constant.TrackingChannelEnum;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
-import com.ebay.traffic.chocolate.mkttracksvc.util.RotationId;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -40,16 +39,19 @@ public class RotationIdTest {
     Assert.assertEquals(4, rotationIdStr.length);
     Assert.assertEquals("11", rotationIdStr[0]);
     Calendar current = Calendar.getInstance();
+    RotationId18 r18 = new RotationId18(Long.valueOf(rotationIdStr[1]));
     Calendar c = Calendar.getInstance();
-    c.setTimeInMillis(Long.valueOf(rotationIdStr[1].substring(0,13)));
+    c.setTimeInMillis(r18.getTimeMillis());
     Assert.assertEquals(current.get(Calendar.YEAR), c.get(Calendar.YEAR));
     Assert.assertEquals(current.get(Calendar.MONTH), c.get(Calendar.MONTH));
     Assert.assertEquals(current.get(Calendar.DATE), c.get(Calendar.DATE));
-    c.setTimeInMillis(Long.valueOf(rotationIdStr[2].substring(0,13)));
+    r18 = new RotationId18(Long.valueOf(rotationIdStr[2]));
+    c.setTimeInMillis(r18.getTimeMillis());
     Assert.assertEquals(current.get(Calendar.YEAR), c.get(Calendar.YEAR));
     Assert.assertEquals(current.get(Calendar.MONTH), c.get(Calendar.MONTH));
     Assert.assertEquals(current.get(Calendar.DATE), c.get(Calendar.DATE));
-    c.setTimeInMillis(Long.valueOf(rotationIdStr[3].substring(0,13)));
+    r18 = new RotationId18(Long.valueOf(rotationIdStr[3]));
+    c.setTimeInMillis(r18.getTimeMillis());
     Assert.assertEquals(current.get(Calendar.YEAR), c.get(Calendar.YEAR));
     Assert.assertEquals(current.get(Calendar.MONTH), c.get(Calendar.MONTH));
     Assert.assertEquals(current.get(Calendar.DATE), c.get(Calendar.DATE));

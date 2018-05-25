@@ -7,6 +7,7 @@ public class RotationInfo implements Serializable {
   public static final String STATUS_ACTIVE = "ACTIVE";
   public static final String STATUS_INACTIVE = "INACTIVE";
 
+  private Long rid;
   private String rotation_id;
   private Integer channel_id;
   private Integer site_id;
@@ -17,6 +18,10 @@ public class RotationInfo implements Serializable {
   private Long last_update_time;
   private Map rotation_tag;
   private String status = STATUS_ACTIVE;
+
+  public Long getRid() { return rid; }
+
+  public void setRid(Long rid) { this.rid = rid; }
 
   public String getRotation_id() {
     return rotation_id;

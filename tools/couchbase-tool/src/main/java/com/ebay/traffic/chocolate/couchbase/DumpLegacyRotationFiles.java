@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.couchbase;
 
+import com.couchbase.client.deps.io.netty.util.internal.StringUtil;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.CouchbaseCluster;
@@ -10,7 +11,10 @@ import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import com.couchbase.client.java.query.N1qlQuery;
 import com.couchbase.client.java.query.N1qlQueryResult;
 import com.couchbase.client.java.query.N1qlQueryRow;
-import com.ebay.traffic.chocolate.constant.RotationConstant;
+import com.ebay.app.raptor.chocolate.constant.MPLXChannelEnum;
+import com.ebay.app.raptor.chocolate.constant.MPLXClientEnum;
+import com.ebay.app.raptor.chocolate.constant.RotationConstant;
+
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -104,7 +108,6 @@ public class DumpLegacyRotationFiles {
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
       for (N1qlQueryRow row : result) {
-        try{
           rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
           if (rotationInfo.containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
             rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
@@ -112,34 +115,45 @@ public class DumpLegacyRotationFiles {
             rotationTag = null;
           }
           // Rotation ID|Rotation String
-          String rotationId;
-          if (rotationTag != null && rotationTag.containsKey(RotationConstant.FIELD_MPLX_ROTATION_ID)) {
-            rotationId = rotationTag.getString(RotationConstant.FIELD_MPLX_ROTATION_ID);
-          } else {
-            rotationId = rotationInfo.getString(RotationConstant.CHOCO_ROTATION_ID);
-          }
-          out.write(rotationId.replaceAll("-", "").getBytes());
+          out.write(String.valueOf(rotationInfo.getLong(RotationConstant.FIELD_ROTATION_ID)).getBytes());
           out.write(RotationConstant.FIELD_SEPARATOR);
-          out.write(rotationId.getBytes());
+          out.write(rotationInfo.getString(RotationConstant.CHOCO_ROTATION_ID).getBytes());
 
+          MPLXClientEnum clientEnum = null;
+          if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
+            clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
+          }
           if (rotationTag == null) {
             //|Rotation Name|Size|
             out.write("|||".getBytes());
             // |Channel ID
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (rotationInfo.containsKey(RotationConstant.FIELD_CHANNEL_ID)) {
-              out.write(rotationInfo.getInt(RotationConstant.FIELD_CHANNEL_ID));
+              Integer channelId = rotationInfo.getInt(RotationConstant.FIELD_CHANNEL_ID);
+              MPLXChannelEnum mplxChannel = MPLXChannelEnum.getByRoverChannelId(rotationInfo.getInt(RotationConstant.FIELD_CHANNEL_ID));
+              channelId = mplxChannel == null? channelId : mplxChannel.getMplxChannelId();
+              out.write(String.valueOf(channelId).getBytes());
             }
-            // |Rotation Click Thru URL|Rotation Status|Rotation Cost (Rate)|Rotation Count|Rotation Count Type|Rotation Date Start|Rotation Date End|Rotation Description|Org Code|TO-Std|TO-JS|TO-text|TO-text-tracer|Vendor ID|Vendor Name|Vendor URL|Vendor Type|Client ID
+            // |Rotation Click Thru URL|Rotation Status|Rotation Cost (Rate)|Rotation Count|Rotation Count Type|Rotation Date Start|Rotation Date End|Rotation Description|Org Code|TO-Std|TO-JS|TO-text|TO-text-tracer|Vendor ID|Vendor Name|Vendor URL|Vendor Type
             out.write("||||||||||||||||||".getBytes());
+            // |Client ID
+            out.write(RotationConstant.FIELD_SEPARATOR);
+            if(clientEnum != null){
+              out.write(String.valueOf(clientEnum.getMplxClientId()).getBytes());
+            }
             // |Campaign ID
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
-              out.write(rotationTag.getLong(RotationConstant.FIELD_CAMPAIGN_ID).byteValue());
+              out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
             }
-            // |Client name|Campaign Name|Placement ID
-            out.write("|||".getBytes());
-          } else if(rotationTag.containsKey(RotationConstant.FIELD_CAMPAIGN_NAME)){
+            // |Client name
+            out.write(RotationConstant.FIELD_SEPARATOR);
+            if(clientEnum != null){
+              out.write(clientEnum.getMplxClientName().getBytes());
+            }
+            // |Campaign Name|Placement ID
+            out.write("||".getBytes());
+          } else {
             // |Rotation Name
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (rotationTag.containsKey(RotationConstant.FIELD_ROTATION_NAME)) {
@@ -153,7 +167,9 @@ public class DumpLegacyRotationFiles {
             // |Channel ID
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (rotationInfo.containsKey(RotationConstant.FIELD_CHANNEL_ID)) {
-              out.write(rotationInfo.getInt(RotationConstant.FIELD_CHANNEL_ID));
+              MPLXChannelEnum mplxChannelEnum = MPLXChannelEnum.getByRoverChannelId(rotationInfo.getInt(RotationConstant.FIELD_CHANNEL_ID));
+              Integer channelId = mplxChannelEnum == null? rotationInfo.getInt(RotationConstant.FIELD_CHANNEL_ID): mplxChannelEnum.getMplxChannelId();
+              out.write(String.valueOf(channelId).getBytes());
             }
             // |Rotation Click Thru URL
             out.write(RotationConstant.FIELD_SEPARATOR);
@@ -167,10 +183,11 @@ public class DumpLegacyRotationFiles {
             }
             // |Rotation Cost (Rate)|Rotation Count|
             out.write(RotationConstant.FIELD_SEPARATOR);
-            out.write(0);
+            out.write(String.valueOf(0).getBytes());
             out.write(RotationConstant.FIELD_SEPARATOR);
-            out.write(0);
+            out.write(String.valueOf(0).getBytes());
             out.write(RotationConstant.FIELD_SEPARATOR);
+
             // Rotation Count Type
             if (rotationTag.containsKey(RotationConstant.FIELD_ROTATION_COUNT_TYPE)) {
               out.write(String.valueOf(rotationTag.get(RotationConstant.FIELD_ROTATION_COUNT_TYPE)).getBytes());
@@ -178,12 +195,16 @@ public class DumpLegacyRotationFiles {
             // |Rotation Date Start
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (rotationTag.containsKey(RotationConstant.FIELD_ROTATION_START_DATE)) {
-              out.write(rotationTag.getString(RotationConstant.FIELD_ROTATION_START_DATE).getBytes());
+              String start = rotationTag.getString(RotationConstant.FIELD_ROTATION_START_DATE);
+              start = StringUtil.isNullOrEmpty(start)? start : start.replace("-", "");
+              out.write(start.getBytes());
             }
             // |Rotation Date End
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (rotationTag.containsKey(RotationConstant.FIELD_ROTATION_END_DATE)) {
-              out.write(rotationTag.getString(RotationConstant.FIELD_ROTATION_END_DATE).getBytes());
+              String end = rotationTag.getString(RotationConstant.FIELD_ROTATION_END_DATE);
+              end = StringUtil.isNullOrEmpty(end)? end : end.replace("-", "");
+              out.write(end.getBytes());
             }
             // |Rotation Description
             out.write(RotationConstant.FIELD_SEPARATOR);
@@ -195,7 +216,7 @@ public class DumpLegacyRotationFiles {
             // |Vendor ID
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (rotationTag.containsKey(RotationConstant.FIELD_VENDOR_ID)) {
-              out.write(rotationTag.getInt(RotationConstant.FIELD_VENDOR_ID));
+              out.write(String.valueOf(rotationTag.getInt(RotationConstant.FIELD_VENDOR_ID)).getBytes());
             }
             // |Vendor Name
             out.write(RotationConstant.FIELD_SEPARATOR);
@@ -208,21 +229,22 @@ public class DumpLegacyRotationFiles {
               out.write(rotationTag.getString(RotationConstant.FIELD_VENDOR_URL).getBytes());
             }
             // |Vendor Type
-            out.write((RotationConstant.FIELD_SEPARATOR + RotationConstant.FIELD_VENDOR_TYPE).getBytes());
+            out.write(RotationConstant.FIELD_SEPARATOR);
+            out.write(RotationConstant.FIELD_VENDOR_TYPE.getBytes());
             // |Client ID
             out.write(RotationConstant.FIELD_SEPARATOR);
-            if (rotationTag.containsKey(RotationConstant.FIELD_CLIENT_ID)) {
-              out.write(rotationTag.getInt(RotationConstant.FIELD_CLIENT_ID).byteValue());
+            if(clientEnum != null){
+              out.write(String.valueOf(clientEnum.getMplxClientId()).getBytes());
             }
             // |Campaign ID
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
-              out.write(rotationTag.getLong(RotationConstant.FIELD_CAMPAIGN_ID).byteValue());
+              out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
             }
             // |Client Name
             out.write(RotationConstant.FIELD_SEPARATOR);
-            if (rotationTag.containsKey(RotationConstant.FIELD_CLIENT_NAME)) {
-              out.write(rotationTag.getString(RotationConstant.FIELD_CLIENT_NAME).getBytes());
+            if(clientEnum != null){
+              out.write(clientEnum.getMplxClientName().getBytes());
             }
             // |Campaign Name
             out.write(RotationConstant.FIELD_SEPARATOR);
@@ -232,16 +254,14 @@ public class DumpLegacyRotationFiles {
             // |Placement ID
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (rotationTag.containsKey(RotationConstant.FIELD_PLACEMENT_ID)) {
-              out.write(rotationTag.getLong(RotationConstant.FIELD_PLACEMENT_ID).byteValue());
+              out.write(String.valueOf(rotationTag.getLong(RotationConstant.FIELD_PLACEMENT_ID)).getBytes());
             }
           }
           // |Perf track 1|Perf track 2|Perf track 3|Perf track 4|Perf track 5|Perf track 6|Perf track 7|Perf track 8|Perf track 9|Perf track 10
           out.write("||||||||||".getBytes());
+          out.write(RotationConstant.RECORD_SEPARATOR);
           out.flush();
           count++;
-        }catch (ClassCastException ce){
-          continue;
-        }
       }
     } catch (IOException e) {
       System.out.println("Error happened when write couchbase data to legacy rotation file");
@@ -263,38 +283,40 @@ public class DumpLegacyRotationFiles {
         out = new BufferedOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_TXT));
       }
       out.write(RotationConstant.FILE_HEADER_CAMPAIGN.getBytes());
+      out.write(RotationConstant.RECORD_SEPARATOR);
 
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
       for (N1qlQueryRow row : result) {
         rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
+        if(rotationInfo == null) continue;
         if (rotationInfo.containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
           rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
         } else {
           rotationTag = null;
         }
-        if (rotationTag == null) {
-          // CLIENT ID|CAMPAIGN ID
-          out.write(RotationConstant.FIELD_SEPARATOR);
-          if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
-            out.write(rotationInfo.getLong(RotationConstant.FIELD_CAMPAIGN_ID).byteValue());
-          }
-          // |CLIENT NAME|CAMPAIGN NAME
-          out.write("||".getBytes());
-        } else {
-          // CLIENT ID|CAMPAIGN ID|CLIENT NAME|CAMPAIGN NAME
-          if (rotationTag.containsKey(RotationConstant.FIELD_CLIENT_ID)) {
-            out.write(rotationTag.getLong(RotationConstant.FIELD_CLIENT_ID).byteValue());
-          }
-          out.write(RotationConstant.FIELD_SEPARATOR);
-          if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
-            out.write(rotationInfo.getLong(RotationConstant.FIELD_CAMPAIGN_ID).byteValue());
-          }
-          out.write(RotationConstant.FIELD_SEPARATOR);
-          if (rotationTag.containsKey(RotationConstant.FIELD_CLIENT_NAME)) {
-            out.write(rotationTag.getString(RotationConstant.FIELD_CLIENT_NAME).getBytes());
-          }
-          out.write(RotationConstant.FIELD_SEPARATOR);
+
+        if(StringUtil.isNullOrEmpty(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_ID))){
+          continue;
+        }
+        // CLIENT ID|CAMPAIGN ID|
+        MPLXClientEnum clientEnum = null;
+        if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
+          clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
+          out.write(String.valueOf(clientEnum.getMplxClientId()).getBytes());
+        }
+        out.write(RotationConstant.FIELD_SEPARATOR);
+        if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
+          out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
+        }
+        out.write(RotationConstant.FIELD_SEPARATOR);
+        // CLIENT NAME|CAMPAIGN NAME
+        if(clientEnum != null){
+          out.write(clientEnum.getMplxClientName().getBytes());
+        }
+        out.write(RotationConstant.FIELD_SEPARATOR);
+        if (rotationTag != null) {
+          // CAMPAIGN NAME
           if (rotationTag.containsKey(RotationConstant.FIELD_CAMPAIGN_NAME)) {
             out.write(rotationTag.getString(RotationConstant.FIELD_CAMPAIGN_NAME).getBytes());
           }
@@ -329,6 +351,14 @@ public class DumpLegacyRotationFiles {
       JsonObject rotationTag = null;
       for (N1qlQueryRow row : result) {
         rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
+        String rotationId;
+        if (rotationTag != null && rotationTag.containsKey(RotationConstant.FIELD_MPLX_ROTATION_ID)) {
+          rotationId = rotationTag.getString(RotationConstant.FIELD_MPLX_ROTATION_ID);
+        } else {
+          rotationId = rotationInfo.getString(RotationConstant.CHOCO_ROTATION_ID);
+        }
+        String rotationId18 = String.valueOf(rotationInfo.getLong(RotationConstant.FIELD_ROTATION_ID));
+
         if (rotationInfo.containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
           rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
         } else {
@@ -340,12 +370,12 @@ public class DumpLegacyRotationFiles {
           JsonArray creativeSets = rotationTag.getArray(RotationConstant.FIELD_CREATIVE_SETS);
           if (creativeSets != null && creativeSets.size() > 0) {
             for (int i = 0; i < creativeSets.size(); i++) {
-              setPositionCreatives(out, creativeSets.getObject(i));
+              setPositionCreatives(out, creativeSets.getObject(i), rotationId18);
               count++;
             }
           }
         } else {
-          setPositionCreatives(out, rotationTag);
+          setPositionCreatives(out, rotationTag, rotationId18);
           count++;
         }
       }
@@ -358,15 +388,17 @@ public class DumpLegacyRotationFiles {
     System.out.println("Successfully dump " + count + " records into " + filePath);
   }
 
-  private static void setPositionCreatives(OutputStream out, JsonObject creativeSets) throws IOException {
+  private static void setPositionCreatives(OutputStream out, JsonObject creativeSets, String rotationId18) throws IOException {
     // Rot-Cr ID|Rotation ID|Creative ID|Creative Set Name|Weight|Creative Click Thru URL|Creative Date Start|Creative Date End|Rot-Cr Status|Org Code
     if (creativeSets.containsKey(RotationConstant.FIELD_ROT_CR_ID)) {
       out.write(String.valueOf(creativeSets.get(RotationConstant.FIELD_ROT_CR_ID)).getBytes());
+    }else {
+      return;
     }
+
     out.write(RotationConstant.FIELD_SEPARATOR);
-    if (creativeSets.containsKey(RotationConstant.FIELD_MPLX_ROTATION_ID)) {
-      out.write(creativeSets.getString(RotationConstant.FIELD_MPLX_ROTATION_ID).getBytes());
-    }
+    out.write(rotationId18.getBytes());
+
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_ID)) {
       out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_ID).getBytes());
@@ -431,12 +463,12 @@ public class DumpLegacyRotationFiles {
           JsonArray creativeSets = rotationTag.getArray(RotationConstant.FIELD_CREATIVE_SETS);
           if (creativeSets != null && creativeSets.size() > 0) {
             for (int i = 0; i < creativeSets.size(); i++) {
-              setCreativeSets(out, creativeSets.getObject(i));
+              setCreativeSets(out, creativeSets.getObject(i), rotationInfo);
               count++;
             }
           }
         } else {
-          setCreativeSets(out, rotationTag);
+          setCreativeSets(out, rotationTag, rotationInfo);
           count++;
         }
       }
@@ -449,50 +481,61 @@ public class DumpLegacyRotationFiles {
     System.out.println("Successfully dump " + count + " records into " + filePath);
   }
 
-  private static void setCreativeSets(OutputStream out, JsonObject creativeSets) throws IOException {
-
+  private static void setCreativeSets(OutputStream out, JsonObject creativeSets, JsonObject rotationInfo) throws IOException {
+    if(!creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_ID)){
+      return;
+    }
+    //Creative ID
     if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_ID)) {
       out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_ID).getBytes());
     }
+    //|Creative File Name
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_FILE_NAME)) {
       out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_FILE_NAME).getBytes());
     }
+    //|Creative Location
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_LOCATION)) {
       out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_LOCATION).getBytes());
     }
+    //|Size
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_SIZE)) {
       out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_SIZE).getBytes());
     }
+    //|Org Code
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_ORG_CODE)) {
       out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_ORG_CODE).getBytes());
     }
+    //|Creative Type
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_TYPE)) {
       out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_TYPE).getBytes());
     }
+    //|Campaign ID
     out.write(RotationConstant.FIELD_SEPARATOR);
-    if (creativeSets.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
-      out.write(creativeSets.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
+    if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
+      out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
+    }
+    //|Campaign Name
+    out.write(RotationConstant.FIELD_SEPARATOR);
+    if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_NAME)) {
+      out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_NAME).getBytes());
+    }
+    //|Client ID|Client Name
+    MPLXClientEnum clientEnum = null;
+    if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
+      clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
     }
     out.write(RotationConstant.FIELD_SEPARATOR);
-    if (creativeSets.containsKey(RotationConstant.FIELD_CAMPAIGN_NAME)) {
-      out.write(creativeSets.getString(RotationConstant.FIELD_CAMPAIGN_NAME).getBytes());
+    if (clientEnum != null) {
+      out.write(String.valueOf(clientEnum.getMplxClientId()).getBytes());
     }
     out.write(RotationConstant.FIELD_SEPARATOR);
-    if (creativeSets.containsKey(RotationConstant.FIELD_CREATIVE_TYPE)) {
-      out.write(creativeSets.getString(RotationConstant.FIELD_CREATIVE_TYPE).getBytes());
-    }
-    out.write(RotationConstant.FIELD_SEPARATOR);
-    if (creativeSets.containsKey(RotationConstant.FIELD_CLIENT_ID)) {
-      out.write(creativeSets.getString(RotationConstant.FIELD_CLIENT_ID).getBytes());
-    }
-    out.write(RotationConstant.FIELD_SEPARATOR);
-    if (creativeSets.containsKey(RotationConstant.FIELD_CLIENT_NAME)) {
-      out.write(creativeSets.getString(RotationConstant.FIELD_CLIENT_NAME).getBytes());
+    if (clientEnum != null) {
+      out.write(String.valueOf(clientEnum.getMplxClientName()).getBytes());
     }
     out.write(RotationConstant.RECORD_SEPARATOR);
     out.flush();
@@ -529,7 +572,9 @@ public class DumpLegacyRotationFiles {
               // Position Id|Position Name|Size|Org Code|Active
               JsonObject position = positions.getObject(i);
               if (position.containsKey(RotationConstant.FIELD_POSITION_ID)) {
-                out.write(position.getInt(RotationConstant.FIELD_POSITION_ID));
+                out.write(String.valueOf(position.getInt(RotationConstant.FIELD_POSITION_ID)).getBytes());
+              }else{
+                continue;
               }
               out.write(RotationConstant.FIELD_SEPARATOR);
               if (position.containsKey(RotationConstant.FIELD_POSITION_NAME)) {
@@ -594,7 +639,9 @@ public class DumpLegacyRotationFiles {
               //Position Id
               JsonObject position = positionArr.getObject(i);
               if (position.containsKey(RotationConstant.FIELD_POSITION_ID)) {
-                out.write(position.getInt(RotationConstant.FIELD_POSITION_ID));
+                out.write(String.valueOf(position.getInt(RotationConstant.FIELD_POSITION_ID)).getBytes());
+              }else{
+                continue;
               }
               // |Set Name
               out.write(RotationConstant.FIELD_SEPARATOR);
@@ -603,13 +650,8 @@ public class DumpLegacyRotationFiles {
               }
               // |Rotation ID
               out.write(RotationConstant.FIELD_SEPARATOR);
-              String rotationId = "";
-              if (rotationTag != null && rotationTag.containsKey(RotationConstant.FIELD_MPLX_ROTATION_ID)) {
-                rotationId = rotationTag.getString(RotationConstant.FIELD_MPLX_ROTATION_ID);
-              } else {
-                rotationId = rotationInfo.getString(RotationConstant.CHOCO_ROTATION_ID);
-              }
-              out.write(rotationId.replaceAll("-", "").getBytes());
+              rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
+              out.write(String.valueOf(rotationInfo.getLong(RotationConstant.FIELD_ROTATION_ID)).getBytes());
               // |Active
               out.write(RotationConstant.FIELD_SEPARATOR);
               if (position.containsKey(RotationConstant.FIELD_POSITION_ACTIVE)) {
@@ -672,11 +714,13 @@ public class DumpLegacyRotationFiles {
 
               // Position Id|Rule ID|Rule Name|Set Name|Active|Start Date|End Date
               if (pRule.containsKey(RotationConstant.FIELD_POSITION_ID)) {
-                out.write(pRule.getInt(RotationConstant.FIELD_POSITION_ID));
+                out.write(String.valueOf(pRule.getInt(RotationConstant.FIELD_POSITION_ID)).getBytes());
+              }else{
+                continue;
               }
               out.write(RotationConstant.FIELD_SEPARATOR);
               if (pRule.containsKey(RotationConstant.FIELD_RULE_ID)) {
-                out.write(pRule.getLong(RotationConstant.FIELD_RULE_ID).byteValue());
+                out.write(String.valueOf(pRule.getLong(RotationConstant.FIELD_RULE_ID)).getBytes());
               }
               out.write(RotationConstant.FIELD_SEPARATOR);
               if (pRule.containsKey(RotationConstant.FIELD_RULE_NAME)) {
@@ -722,7 +766,7 @@ public class DumpLegacyRotationFiles {
       if (compress) {
         out = new GZIPOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_ZIP), 8192);
       } else {
-        out = new BufferedOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_TXT));
+        out = new BufferedOutputStream(new FileOutputStream(filePath));
       }
     } catch (IOException e) {
       System.out.println("Error happened when write couchbase data to legacy rotation file");
@@ -759,13 +803,15 @@ public class DumpLegacyRotationFiles {
           if (ltRoiArr != null && ltRoiArr.size() > 0) {
             for (int i = 0; i < ltRoiArr.size(); i++) {
               JsonObject ltRoi = ltRoiArr.getObject(i);
-
+              if(!ltRoi.containsKey(RotationConstant.FIELD_UNIQUE_ID)){
+                continue;
+              }
               if (ltRoi.containsKey(RotationConstant.FIELD_PACIFIC_TIMESTAMP)) {
                 out.write(ltRoi.getString(RotationConstant.FIELD_PACIFIC_TIMESTAMP).getBytes());
               }
               out.write(RotationConstant.FIELD_SEPARATOR);
               if (ltRoi.containsKey(RotationConstant.FIELD_LT_PLACEMENT_ID)) {
-                out.write(ltRoi.getLong(RotationConstant.FIELD_LT_PLACEMENT_ID).byteValue());
+                out.write(String.valueOf(ltRoi.getLong(RotationConstant.FIELD_LT_PLACEMENT_ID)).getBytes());
               }
               out.write(RotationConstant.FIELD_SEPARATOR);
               if (ltRoi.containsKey(RotationConstant.FIELD_IM_PLACEMENT_ID)) {
@@ -946,6 +992,8 @@ public class DumpLegacyRotationFiles {
             JsonObject roiCredit = roiCreditArr.getObject(i);
             if (roiCredit.containsKey(RotationConstant.FIELD_CLICK_UNIQUE_ID)) {
               out.write(roiCredit.getString(RotationConstant.FIELD_CLICK_UNIQUE_ID).getBytes());
+            }else{
+              continue;
             }
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (roiCredit.containsKey(RotationConstant.FIELD_IM_PLACEMENT_ID)) {
@@ -1117,7 +1165,10 @@ public class DumpLegacyRotationFiles {
             JsonObject roi = roiV2Array.getObject(i);
             if (rotationTag.containsKey(RotationConstant.FIELD_PDT_TIMESTAMP)) {
               out.write(rotationTag.getString(RotationConstant.FIELD_PDT_TIMESTAMP).getBytes());
+            }else{
+              continue;
             }
+
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (roi.containsKey(RotationConstant.FIELD_ROI_PLACEMENT_ID)) {
               out.write(roi.getString(RotationConstant.FIELD_ROI_PLACEMENT_ID).getBytes());
@@ -1235,16 +1286,15 @@ public class DumpLegacyRotationFiles {
         } else {
           rotationTag = null;
         }
-        // Rotation ID|Rotation String
-        String rotationId = "";
-        if (rotationTag != null && rotationTag.containsKey(RotationConstant.FIELD_MPLX_ROTATION_ID)) {
-          rotationId = rotationTag.getString(RotationConstant.FIELD_MPLX_ROTATION_ID);
-        } else {
-          rotationId = rotationInfo.getString(RotationConstant.CHOCO_ROTATION_ID);
-        }
+        String rotationId18 = String.valueOf(rotationInfo.getLong(RotationConstant.FIELD_ROTATION_ID));
 
         if (rotationTag == null) continue;
         if (!rotationTag.containsKey(RotationConstant.FIELD_RULES)) continue;
+
+        MPLXClientEnum clientEnum = null;
+        if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
+          clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
+        }
 
         JsonArray ruleArray = rotationTag.getArray(RotationConstant.FIELD_RULES);
         if (ruleArray != null && ruleArray.size() > 0) {
@@ -1253,6 +1303,8 @@ public class DumpLegacyRotationFiles {
             // RULE ID
             if (rule.containsKey(RotationConstant.FIELD_RULE_ID)) {
               out.write(rule.getString(RotationConstant.FIELD_RULE_ID).getBytes());
+            }else{
+              continue;
             }
             // |RULE NAME
             out.write(RotationConstant.FIELD_SEPARATOR);
@@ -1276,18 +1328,18 @@ public class DumpLegacyRotationFiles {
             }
             // |ROTATION ID
             out.write(RotationConstant.FIELD_SEPARATOR);
-            if (rotationTag.containsKey(RotationConstant.FIELD_MPLX_ROTATION_ID)) {
-              out.write(rotationId.replaceAll("-", "").getBytes());
+            if (rotationInfo.containsKey(RotationConstant.FIELD_ROTATION_ID)) {
+              out.write(rotationId18.getBytes());
             }
             // |ROTATION NAME
             out.write(RotationConstant.FIELD_SEPARATOR);
-            if (rotationTag.containsKey(RotationConstant.FIELD_ROTATION_NAME)) {
-              out.write(rotationTag.getString(RotationConstant.FIELD_ROTATION_NAME).getBytes());
+            if (rotationInfo.containsKey(RotationConstant.FIELD_ROTATION_NAME)) {
+              out.write(rotationInfo.getString(RotationConstant.FIELD_ROTATION_NAME).getBytes());
             }
             // |CAMPAIGN ID
             out.write(RotationConstant.FIELD_SEPARATOR);
-            if (rotationTag.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
-              out.write(rotationTag.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
+            if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
+              out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
             }
             // |CAMPAIGN NAME
             out.write(RotationConstant.FIELD_SEPARATOR);
@@ -1296,13 +1348,14 @@ public class DumpLegacyRotationFiles {
             }
             // |CLIENT ID|CLIENT NAME
             out.write(RotationConstant.FIELD_SEPARATOR);
-            if (rotationTag.containsKey(RotationConstant.FIELD_CLIENT_ID)) {
-              out.write(rotationTag.getString(RotationConstant.FIELD_CLIENT_ID).getBytes());
+            if (clientEnum != null) {
+              out.write(String.valueOf(clientEnum.getMplxClientId()).getBytes());
             }
             out.write(RotationConstant.FIELD_SEPARATOR);
-            if (rotationTag.containsKey(RotationConstant.FIELD_CLIENT_NAME)) {
-              out.write(rotationTag.getString(RotationConstant.FIELD_CLIENT_NAME).getBytes());
+            if (clientEnum != null) {
+              out.write(clientEnum.getMplxClientName().getBytes());
             }
+            out.write(RotationConstant.RECORD_SEPARATOR);
             out.flush();
             count++;
           }

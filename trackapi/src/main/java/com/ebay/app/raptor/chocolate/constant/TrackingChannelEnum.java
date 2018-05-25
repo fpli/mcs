@@ -1,5 +1,6 @@
-package com.ebay.traffic.chocolate.mkttracksvc.constant;
+package com.ebay.app.raptor.chocolate.constant;
 
+import com.ebay.globalenv.SiteEnum;
 import com.ebay.kernel.BaseEnum;
 
 import java.io.ObjectStreamException;
@@ -9,7 +10,6 @@ import java.util.ListIterator;
  * Identify the various marketing channels for which we track.
  */
 public class TrackingChannelEnum extends BaseEnum {
-
   public static final String SOCIAL_MEDIA_CHANNEL_STR = "16";
   /**
    * AFFILIATES = 1

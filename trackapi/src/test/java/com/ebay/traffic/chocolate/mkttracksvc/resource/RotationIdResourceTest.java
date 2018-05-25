@@ -42,7 +42,7 @@ public class RotationIdResourceTest {
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(SiteEnum.EBAY_DE.getId());
     rotationRequest.setCampaign_id("000000001");
-    rotationRequest.setCustomized_id1("c00000002");
+    rotationRequest.setCustomized_id1("30000002");
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-1", "RotationTag-1");
@@ -53,12 +53,12 @@ public class RotationIdResourceTest {
     Assert.assertEquals(200, result.getStatus());
     ServiceResponse serviceResponse = result.readEntity(ServiceResponse.class);
     RotationInfo rotationResponse = serviceResponse.getRotation_info();
-    Assert.assertEquals("707-000000001-c00000002",
+    Assert.assertEquals("707-000000001-30000002",
         rotationResponse.getRotation_id().substring(0, rotationResponse.getRotation_id().lastIndexOf("-")));
     Assert.assertEquals("1", String.valueOf(rotationResponse.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(rotationResponse.getSite_id()));
     Assert.assertEquals("000000001", rotationResponse.getCampaign_id());
-    Assert.assertEquals("c00000002", rotationResponse.getCustomized_id1());
+    Assert.assertEquals("30000002", rotationResponse.getCustomized_id1());
     Assert.assertEquals("CatherineTesting RotationName", rotationResponse.getRotation_name());
     Assert.assertEquals("RotationTag-1", rotationResponse.getRotation_tag().get("TestTag-1"));
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, rotationResponse.getStatus());
@@ -76,7 +76,7 @@ public class RotationIdResourceTest {
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(77);
     rotationRequest.setCampaign_id("000000001");
-    rotationRequest.setCustomized_id1("c00000001");
+    rotationRequest.setCustomized_id1("30000001");
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-2", "RotationTag-2");
@@ -108,7 +108,7 @@ public class RotationIdResourceTest {
     Assert.assertEquals("1", String.valueOf(updateResponse.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(updateResponse.getSite_id()));
     Assert.assertEquals("000000001", updateResponse.getCampaign_id());
-    Assert.assertEquals("c00000001", updateResponse.getCustomized_id1());
+    Assert.assertEquals("30000001", updateResponse.getCustomized_id1());
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, updateResponse.getStatus());
 
     Map addedRotationTags = new HashMap();
@@ -142,7 +142,7 @@ public class RotationIdResourceTest {
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(77);
     rotationRequest.setCampaign_id("000000001");
-    rotationRequest.setCustomized_id1("c00000001");
+    rotationRequest.setCustomized_id1("30000001");
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-2", "RotationTag-2");
@@ -169,7 +169,7 @@ public class RotationIdResourceTest {
     Assert.assertEquals("1", String.valueOf(updateResponse.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(updateResponse.getSite_id()));
     Assert.assertEquals("000000001", updateResponse.getCampaign_id());
-    Assert.assertEquals("c00000001", updateResponse.getCustomized_id1());
+    Assert.assertEquals("30000001", updateResponse.getCustomized_id1());
 
     //activate
     updateResult = client.target(svcEndPoint).path("/tracksvc/v1/rid/activate")
@@ -194,7 +194,7 @@ public class RotationIdResourceTest {
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(77);
     rotationRequest.setCampaign_id("50000002");
-    rotationRequest.setCustomized_id1("c00000011");
+    rotationRequest.setCustomized_id1("500000011");
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("vendor_name", "catherine_testing");
@@ -216,6 +216,8 @@ public class RotationIdResourceTest {
     Assert.assertEquals(200, createResult.getStatus());
     RotationInfo response = getResult.readEntity(ServiceResponse.class).getRotation_info();
     Assert.assertNotNull(response);
+    Assert.assertNotNull(response.getRid());
+    Assert.assertTrue(String.valueOf(response.getRid()).length() == 18);
     Assert.assertEquals("CatherineTesting RotationName", response.getRotation_name());
     Assert.assertEquals("catherine_testing", response.getRotation_tag().get("vendor_name"));
   }
@@ -232,7 +234,7 @@ public class RotationIdResourceTest {
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(77);
     rotationRequest.setCampaign_id("50000002");
-    rotationRequest.setCustomized_id1("c00000011");
+    rotationRequest.setCustomized_id1("30000011");
     rotationRequest.setRotation_name("TestName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("vendor_name", "catherine_testing");
@@ -256,5 +258,39 @@ public class RotationIdResourceTest {
     Assert.assertTrue(rInfoList != null && rInfoList.size() > 0);
     Assert.assertEquals("TestName", rInfoList.get(0).getRotation_name());
 //    Assert.assertEquals("catherine_testing", rInfoList.get(0).getRotation_tag().get("vendor_name"));
+  }
+
+  @Test
+  public void testValidation() {
+    Configuration configuration = ConfigurationBuilder.newConfig("testService.testClient");
+    Client client = ClientBuilder.newClient(configuration);
+    String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
+    String svcEndPoint = endpoint + ":" + port;
+
+    RotationInfo rotationRequest = new RotationInfo();
+    Response result = client.target(svcEndPoint).path("/tracksvc/v1/rid/create")
+        .request().accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
+    Assert.assertEquals(200, result.getStatus());
+    ServiceResponse response = result.readEntity(ServiceResponse.class);
+    List<String> errorList = response.getErrors();
+    Assert.assertNotNull(errorList);
+    Assert.assertTrue(errorList.get(0).contains("channel_id"));
+    Assert.assertTrue(errorList.get(1).contains("site_id"));
+    Assert.assertTrue(errorList.get(2).contains("campaign_id"));
+
+    //XC-816
+    rotationRequest = new RotationInfo();
+    rotationRequest.setChannel_id(12345);
+    rotationRequest.setSite_id(12345);
+    rotationRequest.setCampaign_id("1234-abc");
+    result = client.target(svcEndPoint).path("/tracksvc/v1/rid/create")
+        .request().accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
+    Assert.assertEquals(200, result.getStatus());
+    response = result.readEntity(ServiceResponse.class);
+    errorList = response.getErrors();
+    Assert.assertNotNull(errorList);
+    Assert.assertTrue(errorList.get(0).contains("campaign_id"));
   }
 }
