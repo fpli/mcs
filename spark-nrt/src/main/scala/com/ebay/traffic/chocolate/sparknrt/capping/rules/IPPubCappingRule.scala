@@ -46,14 +46,14 @@ class IPPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
 
   override def test(): DataFrame = {
 
-    //Step 1: Prepare counting data. If this job only has impression, return snapshot_id and capping = 0.
+    //Step 1: Prepare counting data. If this job has no events, return snapshot_id and capping = 0.
     //filter click only, and publisher_id != -1
     var dfIPPub = dfFilterInJob(filterCondition())
 
-    //if job only has impression data, then return df with capping column directly
+    //if job has no events, then return df with capping column directly
     val head = dfIPPub.take(1)
     if (head.length == 0) {
-      dfOnlyImrepssion()
+      dfNoEvents()
     }
     else {
       val firstRow = head(0)

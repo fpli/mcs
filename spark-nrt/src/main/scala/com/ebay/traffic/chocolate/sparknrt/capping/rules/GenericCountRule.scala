@@ -100,8 +100,8 @@ abstract class GenericCountRule(params: Parameter, bit: Long, dateFiles: DateFil
 
   val cols: Array[Column]
 
-  //return manually when there is only impression data in the job
-  def dfOnlyImrepssion(): DataFrame = {
+  //return manually when there is no events in the job
+  def dfNoEvents(): DataFrame = {
     cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
         .withColumn("capping", lit(0l))
         .select($"snapshot_id", $"capping")
