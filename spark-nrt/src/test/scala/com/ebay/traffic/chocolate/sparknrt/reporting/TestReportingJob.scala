@@ -63,7 +63,7 @@ class TestReportingJob extends BaseFunSuite {
 
   test("Test Reporting") {
 
-    val metadata1 = Metadata(workDir, channel, MetadataEnum.dedupe)
+    val metadata1 = Metadata(workDir, channel, MetadataEnum.capping)
     val dedupeMeta = metadata1.readDedupeOutputMeta()
 
     assert (fs.exists(new Path(dedupeMeta(0)._1)))
@@ -141,7 +141,7 @@ class TestReportingJob extends BaseFunSuite {
 
   def createTestDataForDedupe() = {
     // prepare metadata file
-    val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
+    val metadata = Metadata(workDir, channel, MetadataEnum.capping)
 
     val dateFiles = DateFiles("date=2018-05-01", Array("file://" + inputDir + "/date=2018-05-01/part-00000.snappy.parquet"))
     var meta: MetaFiles = MetaFiles(Array(dateFiles))

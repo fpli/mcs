@@ -28,7 +28,7 @@ class ReportingJob(params: Parameter)
 
   // Get capping metadata for EPN, while getting dedupe metadata for Display.
   @transient lazy val metadata = {
-    Metadata(params.workDir, params.channel, if (params.channel == ChannelType.EPN) MetadataEnum.capping else MetadataEnum.dedupe)
+    Metadata(params.workDir, params.channel, if (params.channel == ChannelType.EPN.toString) MetadataEnum.capping else MetadataEnum.dedupe)
   }
 
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
