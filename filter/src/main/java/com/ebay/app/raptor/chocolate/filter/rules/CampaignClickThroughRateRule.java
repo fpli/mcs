@@ -36,7 +36,7 @@ public class CampaignClickThroughRateRule extends BaseFilterRule {
    * Shared side effect.
    *
    * @param event event (impression/click) to test
-   * @return fail weight
+   * @return a bit, 0 for pass, 1 for fail
    */
   @Override
   public int test(FilterRequest event) {
