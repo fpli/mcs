@@ -200,7 +200,7 @@ public class RotationIdResource {
     String msg = null;
     if (StringUtils.isNotEmpty(rotationTag.get(key))) {
       if(!Pattern.matches(date_pattern, rotationTag.get(key))){
-        msg = "No rotation info was created. Please set correct format for rotation_start_date. like '20180501'";
+        msg = "No rotation info was created. Please set correct format for " + key + ". like '20180501'";
       }
     }
     return msg;
