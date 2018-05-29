@@ -14,11 +14,11 @@ import java.nio.file.Paths;
  * Created by spugach on 11/30/16.
  */
 public class IPBlacklistRule extends GenericBlacklistRule {
+  private static String blacklistName;
   /**
    * required in a seralizable class
    */
   private static final long serialVersionUID = 1084924589653810527L;
-  private static final String EPN_BLACKLIST_FILENAME = "EPN_IP_Blacklist.txt";
   
   /**
    * Had to do this explicitly here, because Java doesn't have multiple inheritance
@@ -37,13 +37,15 @@ public class IPBlacklistRule extends GenericBlacklistRule {
    */
   public void createFromBundledFile() {
     try {
-      String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + EPN_BLACKLIST_FILENAME)));
+      blacklistName = this.filterRuleContent.getBlacklistName();
+      String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
       this.readFromString(blString);
     } catch (Exception e) {
-      Logger.getLogger(IPBlacklistRule.class).warn("Failed to read IP blacklist");
+      Logger.getLogger(IPBlacklistRule.class).error("Failed to read IP blacklist");
+      throw new Error("IP blacklist not found", e);
     }
   }
-  
+
   @Override
   protected String getFilteredValue(FilterRequest request) {
     return request.getSourceIP();

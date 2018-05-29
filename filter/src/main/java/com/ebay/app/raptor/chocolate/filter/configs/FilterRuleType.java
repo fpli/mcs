@@ -18,8 +18,11 @@ public enum FilterRuleType {
   CGUID_STALENESS("CGUID_STALENESS", "CGUIDStalenessWindowRule", CGUIDStalenessWindowRule.class, 7),
   CLICKTHROUGH_RATE("CLICKTHROUGH_RATE", "CampaignClickThroughRateRule", CampaignClickThroughRateRule.class, 8),
   REPEAT_CLICK("CLICKTHROUGH_RATE", "RepeatClickRule", RepeatClickRule.class, 9),
-  VALID_PUBLISHER("VALID_PUBLISHER", "PublisherValidRule", PublisherValidRule.class, 10);
-  
+  VALID_PUBLISHER("VALID_PUBLISHER", "PublisherValidRule", PublisherValidRule.class, 10),
+  EBAY_BOT_LIST("EBAY_BOT_LIST", "EBayRobotRule", EBayRobotRule.class, 11),
+  PROTOCOL("PROTOCOL", "ProtocolRule", ProtocolRule.class, 12),
+  MISSINGREFERER("MISSINGREFERER", "MissingRefererRule", MissingRefererRule.class, 13);
+
   private String ruleType;
   private String ruleName;
   private Class ruleClass;

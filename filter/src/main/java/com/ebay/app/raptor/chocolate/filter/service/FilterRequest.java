@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.filter.service;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
+import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -31,6 +32,7 @@ public class FilterRequest {
     private String rotationId;
     private long campaignId = 0;
     private long publisherId = 0;
+    private HttpMethod protocol = null;
 
     /**
      * Default constructor for testing
@@ -81,6 +83,7 @@ public class FilterRequest {
         this.publisherId = message.getPublisherId();
         this.campaignId = message.getCampaignId();
         this.channelAction = message.getChannelAction();
+        this.protocol = message.getHttpMethod();
     }
 
     //
@@ -189,6 +192,14 @@ public class FilterRequest {
 
     public void setPublisherId(long publisherId) {
         this.publisherId = publisherId;
+    }
+
+    public HttpMethod getProtocol() {
+        return this.protocol;
+    }
+
+    public void setProtocol(HttpMethod protocol){
+        this.protocol = protocol;
     }
 
     /**
