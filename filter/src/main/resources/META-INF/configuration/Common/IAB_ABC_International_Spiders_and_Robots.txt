@@ -1,6 +1,6 @@
 #
-#	IAB_ABC_International_Spiders_and_Robots_201804_20-133817
-#	April 20, 2018
+#	IAB_ABC_International_Spiders_and_Robots_201805_17-093758
+#	May 17, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
@@ -495,6 +495,13 @@ quantcastbtot|1||0|2|0
 JobboerseBot|1||0|2|0
 zgrab/|1||0|2|0
 demandbase|1||1|2|0
+Dataprovider.com|1||0|2|0
+OpenVAS|1||0|2|0
+Plukkie/|1||0|2|0
+ips-agent|1||0|2|0
+Yeti/|1||0|2|0
+evc-batch/|1||0|2|0
+CrsspxlBot|1||0|2|0
 aport|1|netaporter, OperaPortable|0|2|0
 b2w|1|B2WTenisnew|0|0|0
 combine|1|Combined|0|0|0
@@ -962,3 +969,4 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 # February 2018 - (1) added okhttp/, (2) added LittleScraper, (3) added ken-webarchiving, (4) removed googleweblight, (5) changed "ng/2.0" from contains to starts with, (6) removed "DoneDrinking/2.0" as an exception to "ng/2.0", (7) removed "Banking/2.0" as an exception to "ng/2.0"
 # March 2018 - (1) added TagInspector
 # April 2018 - (1) quantcastbtot (2) JobboerseBot (3) zgrab/ (4) demandbase
+# May 2018 - (1) Dataprovider.com, (2) OpenVAS, (3) Plukkie/, (4) ips-agent, (5) Yeti/, (6) evc-batch/, (7) CrsspxlBot
