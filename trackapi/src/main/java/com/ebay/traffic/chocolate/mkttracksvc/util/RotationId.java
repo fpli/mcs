@@ -9,7 +9,11 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- *
+ * Generate rotation id which keeps legacy format and split by hyphen <br/>
+ * ex: ClientId-CampaignId-CustomizedId1-CustomizedId2
+ *     707-500000025-3000002-60304335
+ * <br/>
+ * only ClientId and CampaignId are required. other 2 ids could be automatically generated
  */
 public class RotationId {
   private static final Logger logger = Logger.getLogger(RotationId.class);
@@ -17,7 +21,7 @@ public class RotationId {
   // Counter to track all incoming rotation Ids.
   private static final AtomicInteger ridCounter = new AtomicInteger(0);
 
-  private static final String HYPHEN = "-";
+  public static final String HYPHEN = "-";
 
   /**
    * Generate RotationId which contains 4 parts with hyphen like 477-1234-2345-12
@@ -33,9 +37,9 @@ public class RotationId {
     String identity = String.valueOf(mplxClientEnum == null ? rotationReq.getSite_id() : mplxClientEnum.getMplxClientId());
     // new definition for rotation Id
     Integer driverId = DriverId.getDriverIdFromIp();
-    String campaignId = getUniqueId(rotationReq.getCampaign_id(), driverId);
-    String customizedId1 = getUniqueId(rotationReq.getCustomized_id1(), driverId);
-    String customizedId2 = getUniqueId(rotationReq.getCustomized_id2(), driverId);
+    Long campaignId = getUniqueId(rotationReq.getCampaign_id(), driverId);
+    Long customizedId1 = getUniqueId(rotationReq.getCustomized_id1(), driverId);
+    Long customizedId2 = getUniqueId(rotationReq.getCustomized_id2(), driverId);
 
     String rId = identity + HYPHEN + String.valueOf(campaignId) + HYPHEN + customizedId1 + HYPHEN + customizedId2;
 
@@ -43,9 +47,9 @@ public class RotationId {
     return rId;
   }
 
-  private static String getUniqueId(String customizedId, Integer driverId){
-    if(StringUtils.isEmpty(customizedId)){
-     return String.valueOf(RotationId18.getNext(driverId).getRepresentation());
+  private static Long getUniqueId(Long customizedId, Integer driverId){
+    if(customizedId == null) {
+      return RotationId18.getNext(driverId).getRepresentation();
     }
     return customizedId;
   }

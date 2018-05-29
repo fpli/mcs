@@ -41,8 +41,8 @@ public class RotationIdResourceTest {
     RotationInfo rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(SiteEnum.EBAY_DE.getId());
-    rotationRequest.setCampaign_id("000000001");
-    rotationRequest.setCustomized_id1("30000002");
+    rotationRequest.setCampaign_id(1000000001L);
+    rotationRequest.setCustomized_id1(30000002L);
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-1", "RotationTag-1");
@@ -53,12 +53,12 @@ public class RotationIdResourceTest {
     Assert.assertEquals(200, result.getStatus());
     ServiceResponse serviceResponse = result.readEntity(ServiceResponse.class);
     RotationInfo rotationResponse = serviceResponse.getRotation_info();
-    Assert.assertEquals("707-000000001-30000002",
+    Assert.assertEquals("707-1000000001-30000002",
         rotationResponse.getRotation_id().substring(0, rotationResponse.getRotation_id().lastIndexOf("-")));
     Assert.assertEquals("1", String.valueOf(rotationResponse.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(rotationResponse.getSite_id()));
-    Assert.assertEquals("000000001", rotationResponse.getCampaign_id());
-    Assert.assertEquals("30000002", rotationResponse.getCustomized_id1());
+    Assert.assertEquals("1000000001", String.valueOf(rotationResponse.getCampaign_id()));
+    Assert.assertEquals("30000002", String.valueOf(rotationResponse.getCustomized_id1()));
     Assert.assertEquals("CatherineTesting RotationName", rotationResponse.getRotation_name());
     Assert.assertEquals("RotationTag-1", rotationResponse.getRotation_tag().get("TestTag-1"));
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, rotationResponse.getStatus());
@@ -75,8 +75,8 @@ public class RotationIdResourceTest {
     RotationInfo rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(77);
-    rotationRequest.setCampaign_id("000000001");
-    rotationRequest.setCustomized_id1("30000001");
+    rotationRequest.setCampaign_id(1000000001L);
+    rotationRequest.setCustomized_id1(30000001L);
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-2", "RotationTag-2");
@@ -107,8 +107,8 @@ public class RotationIdResourceTest {
     Assert.assertEquals("Updated-RotationTag-2", updateResponse.getRotation_tag().get("TestTag-2"));
     Assert.assertEquals("1", String.valueOf(updateResponse.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(updateResponse.getSite_id()));
-    Assert.assertEquals("000000001", updateResponse.getCampaign_id());
-    Assert.assertEquals("30000001", updateResponse.getCustomized_id1());
+    Assert.assertEquals("1000000001", String.valueOf(updateResponse.getCampaign_id()));
+    Assert.assertEquals("30000001", String.valueOf(updateResponse.getCustomized_id1()));
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, updateResponse.getStatus());
 
     Map addedRotationTags = new HashMap();
@@ -141,8 +141,8 @@ public class RotationIdResourceTest {
     RotationInfo rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(77);
-    rotationRequest.setCampaign_id("000000001");
-    rotationRequest.setCustomized_id1("30000001");
+    rotationRequest.setCampaign_id(1000000001L);
+    rotationRequest.setCustomized_id1(30000001L);
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-2", "RotationTag-2");
@@ -168,8 +168,8 @@ public class RotationIdResourceTest {
     Assert.assertEquals("CatherineTesting RotationName", updateResponse.getRotation_name());
     Assert.assertEquals("1", String.valueOf(updateResponse.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(updateResponse.getSite_id()));
-    Assert.assertEquals("000000001", updateResponse.getCampaign_id());
-    Assert.assertEquals("30000001", updateResponse.getCustomized_id1());
+    Assert.assertEquals("1000000001", String.valueOf(updateResponse.getCampaign_id()));
+    Assert.assertEquals("30000001", String.valueOf(updateResponse.getCustomized_id1()));
 
     //activate
     updateResult = client.target(svcEndPoint).path("/tracksvc/v1/rid/activate")
@@ -193,8 +193,8 @@ public class RotationIdResourceTest {
     RotationInfo rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(77);
-    rotationRequest.setCampaign_id("50000002");
-    rotationRequest.setCustomized_id1("500000011");
+    rotationRequest.setCampaign_id(50000002L);
+    rotationRequest.setCustomized_id1(500000011L);
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("vendor_name", "catherine_testing");
@@ -233,8 +233,8 @@ public class RotationIdResourceTest {
     RotationInfo rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(1);
     rotationRequest.setSite_id(77);
-    rotationRequest.setCampaign_id("50000002");
-    rotationRequest.setCustomized_id1("30000011");
+    rotationRequest.setCampaign_id(50000002L);
+    rotationRequest.setCustomized_id1(30000011L);
     rotationRequest.setRotation_name("TestName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("vendor_name", "catherine_testing");
@@ -283,7 +283,7 @@ public class RotationIdResourceTest {
     rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(12345);
     rotationRequest.setSite_id(12345);
-    rotationRequest.setCampaign_id("1234-abc");
+    rotationRequest.setCampaign_id(null);
     result = client.target(svcEndPoint).path("/tracksvc/v1/rid/create")
         .request().accept(MediaType.APPLICATION_JSON_TYPE)
         .post(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
