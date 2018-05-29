@@ -33,6 +33,10 @@ object CappingRuleEnum extends Enumeration {
   val IPCappingRule = Value(0)
   val IPPubCappingRule_S = Value(1)
   val IPPubCappingRule_L = Value(2)
-  val SnidCappingRule = Value(3)
+  val CGUIDPubCappingRule_S = Value(3)
+  val CGUIDPubCappingRule_L = Value(4)
+  val CGUIDCappingRule_S = Value(5)
+  val CGUIDCappingRule_L = Value(6)
+  val SnidCappingRule = Value(7)
 
 }

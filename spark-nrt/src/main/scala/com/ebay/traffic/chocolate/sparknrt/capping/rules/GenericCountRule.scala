@@ -9,7 +9,7 @@ import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.{Column, DataFrame}
-import org.apache.spark.sql.functions.{count, lit, sum}
+import org.apache.spark.sql.functions.{count, lit, split, sum}
 import org.slf4j.LoggerFactory
 
 /**
@@ -106,6 +106,7 @@ abstract class GenericCountRule(params: Parameter, bit: Long, dateFiles: DateFil
         .withColumn("capping", lit(0l))
         .select($"snapshot_id", $"capping")
   }
+
   //filter click only, and filter according to specific condition
   def dfFilterInJob(filterCol: Column): DataFrame = {
     var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
@@ -121,7 +122,7 @@ abstract class GenericCountRule(params: Parameter, bit: Long, dateFiles: DateFil
         .groupBy(cols: _*).agg(count(lit(1)).alias("count"))
   }
 
-  //Result df for join purpose
+  //read result df for join purpose
   def dfForJoin(addCol: Column, withColumnCol: Column, selectCols: Array[Column]): DataFrame = {
     cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
         .withColumn(addCol.toString(), withColumnCol)
