@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -189,12 +190,19 @@ public class RotationCbDaoImp implements RotationCbDao {
     updateInfo.setLast_update_time(System.currentTimeMillis());
     Map updateMap = updateInfo.getRotation_tag();
     Map<String, Object> rotationTags = rotationInfo.getRotation_tag();
+
     if (rotationTags != null) {
+      if (updateMap == null)
+        updateMap = new HashMap<String, Object>();
+
       for (Map.Entry entry: rotationTags.entrySet()) {
         updateMap.put(entry.getKey(), entry.getValue());
       }
-      updateInfo.setRotation_tag(updateMap);
     }
+
+    if (!updateMap.isEmpty())
+      updateInfo.setRotation_tag(updateMap);
+
 
     bucket.upsert(StringDocument.create(rotationId, new Gson().toJson(updateInfo)));
     logger.debug("RotationInfo has been modified. rotationId=" + rotationId + " rotationInfo=" + updateInfo);
