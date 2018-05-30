@@ -198,16 +198,12 @@ public class RotationCbDaoImp implements RotationCbDao {
 
     if (rotationTags != null) {
       if (updateMap == null)
-        updateMap = new HashMap<String, Object>();
-
+        updateMap = rotationTags;
       for (Map.Entry entry: rotationTags.entrySet()) {
         updateMap.put(entry.getKey(), entry.getValue());
       }
-    }
-
-    if (!updateMap.isEmpty())
       updateInfo.setRotation_tag(updateMap);
-
+    }
 
     bucket.upsert(StringDocument.create(rotationId, new Gson().toJson(updateInfo)));
     logger.debug("RotationInfo has been modified. rotationId=" + rotationId + " rotationInfo=" + updateInfo);
