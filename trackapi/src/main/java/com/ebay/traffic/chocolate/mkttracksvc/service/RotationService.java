@@ -113,7 +113,7 @@ public class RotationService {
       if (rInfo == null) {
         response.setMessage(ErrorMsgConstant.CB_ACTIVATE_ROTATION_ISSUE + rotationId);
       } else {
-        response.setMessage(" status = " + status);
+        response.setRotation_info(rInfo);
       }
     } catch (CBException cbe) {
       response.setMessage(ErrorMsgConstant.CB_CONNECTION_ISSUE);
