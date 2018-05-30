@@ -134,8 +134,10 @@ public class DumpLegacyRotationFiles {
               channelId = mplxChannel == null? channelId : mplxChannel.getMplxChannelId();
               out.write(String.valueOf(channelId).getBytes());
             }
-            // |Rotation Click Thru URL|Rotation Status|Rotation Cost (Rate)|Rotation Count|Rotation Count Type|Rotation Date Start|Rotation Date End|Rotation Description|Org Code|TO-Std|TO-JS|TO-text|TO-text-tracer|Vendor ID|Vendor Name|Vendor URL|Vendor Type
-            out.write("||||||||||||||||||".getBytes());
+            // |Rotation Click Thru URL|Rotation Status
+            out.write(("||" + rotationInfo.getString(RotationConstant.FIELD_ROTATION_STATUS)).getBytes());
+            // |Rotation Cost (Rate)|Rotation Count|Rotation Count Type|Rotation Date Start|Rotation Date End|Rotation Description|Org Code|TO-Std|TO-JS|TO-text|TO-text-tracer|Vendor ID|Vendor Name|Vendor URL|Vendor Type
+            out.write("||||||||||||||||".getBytes());
             // |Client ID
             out.write(RotationConstant.FIELD_SEPARATOR);
             if(clientEnum != null){
@@ -178,8 +180,8 @@ public class DumpLegacyRotationFiles {
             }
             // |Rotation Status
             out.write(RotationConstant.FIELD_SEPARATOR);
-            if (rotationTag.containsKey(RotationConstant.FIELD_ROTATION_STATUS)) {
-              out.write(rotationTag.getString(RotationConstant.FIELD_ROTATION_STATUS).getBytes());
+            if (rotationInfo.containsKey(RotationConstant.FIELD_ROTATION_STATUS)) {
+              out.write(rotationInfo.getString(RotationConstant.FIELD_ROTATION_STATUS).getBytes());
             }
             // |Rotation Cost (Rate)|Rotation Count|
             out.write(RotationConstant.FIELD_SEPARATOR);
