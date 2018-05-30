@@ -76,7 +76,7 @@ class IPPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
 
       //Step 4: Count all data, including previous data and data in this job, then join the result with the new df, return only snapshot_id and capping.
       //count through whole timeWindow and filter those over threshold
-      dfIPPub = dfCountAllAndFilter(dfIPPub, ipPubCountPath)
+      dfIPPub = dfCountAllAndFilter(ipPubCountPath)
 
       //join origin df and counting df
       df = dfJoin(df, dfIPPub, joinCondition(df, dfIPPub))

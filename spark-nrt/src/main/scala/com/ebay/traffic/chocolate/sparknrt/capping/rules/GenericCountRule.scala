@@ -130,7 +130,7 @@ abstract class GenericCountRule(params: Parameter, bit: Long, dateFiles: DateFil
   }
 
   //count through whole timeWindow and filter those over threshold
-  def dfCountAllAndFilter(dfCount: DataFrame, countPath: List[String]): DataFrame = {
+  def dfCountAllAndFilter(countPath: List[String]): DataFrame = {
     cappingRuleJobObj.readFilesAsDFEx(countPath.toArray)
         .groupBy(cols: _*)
         .agg(sum("count") as "amnt")
