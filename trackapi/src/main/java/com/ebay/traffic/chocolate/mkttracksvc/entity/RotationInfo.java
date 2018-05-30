@@ -11,9 +11,9 @@ public class RotationInfo implements Serializable {
   private String rotation_id;
   private Integer channel_id;
   private Integer site_id;
-  private String campaign_id;
-  private String customized_id1;
-  private String customized_id2;
+  private Long campaign_id;
+  private Long customized_id1;
+  private Long customized_id2;
   private String rotation_name;
   private Long last_update_time;
   private Map rotation_tag;
@@ -47,27 +47,27 @@ public class RotationInfo implements Serializable {
     this.site_id = site_id;
   }
 
-  public String getCampaign_id() {
+  public Long getCampaign_id() {
     return campaign_id;
   }
 
-  public void setCampaign_id(String campaign_id) {
+  public void setCampaign_id(Long campaign_id) {
     this.campaign_id = campaign_id;
   }
 
-  public String getCustomized_id1() {
+  public Long getCustomized_id1() {
     return customized_id1;
   }
 
-  public void setCustomized_id1(String customized_id1) {
+  public void setCustomized_id1(Long customized_id1) {
     this.customized_id1 = customized_id1;
   }
 
-  public String getCustomized_id2() {
+  public Long getCustomized_id2() {
     return customized_id2;
   }
 
-  public void setCustomized_id2(String customized_id2) {
+  public void setCustomized_id2(Long customized_id2) {
     this.customized_id2 = customized_id2;
   }
 

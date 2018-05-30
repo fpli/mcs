@@ -22,6 +22,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -162,29 +164,19 @@ public class RotationIdResource {
       addValueToList(msgList, msgStr);
     }
 
-    if (rotationInfo.getCampaign_id()== null && required) {
+    if (rotationInfo.getCampaign_id() == null && required) {
       msgStr = getRequiredMsg(RotationConstant.FIELD_CAMPAIGN_ID);
       addValueToList(msgList, msgStr);
     }
 
-    msgStr = isNumber(rotationInfo.getCampaign_id(), "campaign_id");
-    if(StringUtils.isNotEmpty(msgStr)) addValueToList(msgList, msgStr);
-
-    msgStr = isNumber(rotationInfo.getCustomized_id1(), "customized_id1");
-    if(StringUtils.isNotEmpty(msgStr)) addValueToList(msgList, msgStr);
-
-    msgStr = isNumber(rotationInfo.getCustomized_id2(), "customized_id2");
-    if(StringUtils.isNotEmpty(msgStr)) addValueToList(msgList, msgStr);
-
     Map<String, String> rotationTag = rotationInfo.getRotation_tag();
 
     if(rotationTag != null){
-      SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
       //rotation_start_date
-      msgStr = getValidateMsgForDate(rotationTag, RotationConstant.FIELD_ROTATION_START_DATE, sdf);
+      msgStr = getValidateMsgForDate(rotationTag, RotationConstant.FIELD_ROTATION_START_DATE);
       addValueToList(msgList, msgStr);
       //rotation_end_date
-      msgStr = getValidateMsgForDate(rotationTag, RotationConstant.FIELD_ROTATION_END_DATE, sdf);
+      msgStr = getValidateMsgForDate(rotationTag, RotationConstant.FIELD_ROTATION_END_DATE);
       addValueToList(msgList, msgStr);
     }
 
@@ -197,32 +189,18 @@ public class RotationIdResource {
     return responseStr;
   }
 
-  private String isNumber(String fieldValue, String fieldName){
-    if(StringUtils.isNotEmpty(fieldValue)) {
-      if (!NumberUtils.isNumber(fieldValue)) {
-        return "No rotation info was created. " + fieldName + " should be number(long type) .";
-      }
-      if (Long.valueOf(fieldValue) < 0) {
-        return "No rotation info was created. " + fieldName + " can't be less than 0.";
-      }
-    }
-    return null;
-  }
-
   private String getRequiredMsg(String fieldName){
     String msgStr = "No rotation info was created. \"" + fieldName + "\" is required field";
     return msgStr;
   }
 
-  private String getValidateMsgForDate(Map<String, String> rotationTag, String key, SimpleDateFormat sdf) {
+  private static final String date_pattern = "^2\\d{7}$";
+
+  private String getValidateMsgForDate(Map<String, String> rotationTag, String key) {
     String msg = null;
     if (StringUtils.isNotEmpty(rotationTag.get(key))) {
-      try {
-        sdf.parse(rotationTag.get(key));
-      } catch (ParseException e) {
-        msg = "No rotation info was created. Please set correct format for rotation_start_date. like '20180501'";
-      } finally {
-        return msg;
+      if(!Pattern.matches(date_pattern, rotationTag.get(key))){
+        msg = "No rotation info was created. Please set correct format for " + key + ". like '20180501'";
       }
     }
     return msg;

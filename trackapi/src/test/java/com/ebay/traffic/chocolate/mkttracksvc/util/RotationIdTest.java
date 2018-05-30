@@ -16,13 +16,13 @@ public class RotationIdTest {
     RotationInfo rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(TrackingChannelEnum.AFFILIATES.getId());
     rotationRequest.setSite_id(SiteEnum.EBAY_DE.getId());
-    rotationRequest.setCampaign_id("000000001");
-    rotationRequest.setCustomized_id1("000000002");
-    rotationRequest.setCustomized_id2("000000003");
+    rotationRequest.setCampaign_id(1000000001L);
+    rotationRequest.setCustomized_id1(1000000002L);
+    rotationRequest.setCustomized_id2(1000000003L);
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     // Customized rotationId
     String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("707-000000001-000000002-000000003", rotationId);
+    Assert.assertEquals("707-1000000001-1000000002-1000000003", rotationId);
   }
 
 

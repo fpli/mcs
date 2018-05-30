@@ -144,7 +144,7 @@ public class DumpLegacyRotationFiles {
             // |Campaign ID
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
-              out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
+              out.write(String.valueOf(rotationInfo.getLong(RotationConstant.FIELD_CAMPAIGN_ID)).getBytes());
             }
             // |Client name
             out.write(RotationConstant.FIELD_SEPARATOR);
@@ -239,7 +239,7 @@ public class DumpLegacyRotationFiles {
             // |Campaign ID
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
-              out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
+              out.write(String.valueOf(rotationInfo.getLong(RotationConstant.FIELD_CAMPAIGN_ID)).getBytes());
             }
             // |Client Name
             out.write(RotationConstant.FIELD_SEPARATOR);
@@ -296,7 +296,7 @@ public class DumpLegacyRotationFiles {
           rotationTag = null;
         }
 
-        if(StringUtil.isNullOrEmpty(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_ID))){
+        if(rotationInfo.getLong(RotationConstant.FIELD_CAMPAIGN_ID) == null){
           continue;
         }
         // CLIENT ID|CAMPAIGN ID|
@@ -307,7 +307,7 @@ public class DumpLegacyRotationFiles {
         }
         out.write(RotationConstant.FIELD_SEPARATOR);
         if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
-          out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
+          out.write(String.valueOf(rotationInfo.getLong(RotationConstant.FIELD_CAMPAIGN_ID)).getBytes());
         }
         out.write(RotationConstant.FIELD_SEPARATOR);
         // CLIENT NAME|CAMPAIGN NAME
@@ -517,7 +517,7 @@ public class DumpLegacyRotationFiles {
     //|Campaign ID
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
-      out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
+      out.write(String.valueOf(rotationInfo.getLong(RotationConstant.FIELD_CAMPAIGN_ID)).getBytes());
     }
     //|Campaign Name
     out.write(RotationConstant.FIELD_SEPARATOR);
@@ -1339,7 +1339,7 @@ public class DumpLegacyRotationFiles {
             // |CAMPAIGN ID
             out.write(RotationConstant.FIELD_SEPARATOR);
             if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_ID)) {
-              out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_ID).getBytes());
+              out.write(String.valueOf(rotationInfo.getLong(RotationConstant.FIELD_CAMPAIGN_ID)).getBytes());
             }
             // |CAMPAIGN NAME
             out.write(RotationConstant.FIELD_SEPARATOR);
