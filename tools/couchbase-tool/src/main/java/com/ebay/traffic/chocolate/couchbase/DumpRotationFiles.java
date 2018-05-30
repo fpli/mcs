@@ -58,7 +58,7 @@ public class DumpRotationFiles {
     Integer count = 0 ;
     try {
       if (compress) {
-        out = new GZIPOutputStream(new FileOutputStream(output +  ".zip"), 8192);
+        out = new GZIPOutputStream(new FileOutputStream(output +  ".gz"), 8192);
       } else {
         out = new BufferedOutputStream(new FileOutputStream(output));
       }
