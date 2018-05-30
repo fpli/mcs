@@ -172,7 +172,7 @@ public class RotationIdResource {
     if ((rotationInfo.getCampaign_id() != null && rotationInfo.getCampaign_id() < 0)
         || (rotationInfo.getCustomized_id1() != null && rotationInfo.getCustomized_id1() < 0)
         || (rotationInfo.getCustomized_id2() != null && rotationInfo.getCustomized_id2() < 0)){
-      msgStr = "No rotation info was created. CampaignId/CustomizedId1/CustomizedId2 can't be less than 0";
+      msgStr = "No rotation info was created. campaign_id/customized_id1/customized_id2 can't be less than 0";
       addValueToList(msgList, msgStr);
     }
 
