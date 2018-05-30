@@ -283,7 +283,8 @@ public class RotationIdResourceTest {
     rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(12345);
     rotationRequest.setSite_id(12345);
-    rotationRequest.setCampaign_id(null);
+    rotationRequest.setCampaign_id(-1L);
+    rotationRequest.setCustomized_id1(-2L);
     result = client.target(svcEndPoint).path("/tracksvc/v1/rid/create")
         .request().accept(MediaType.APPLICATION_JSON_TYPE)
         .post(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
