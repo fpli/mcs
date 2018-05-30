@@ -255,6 +255,40 @@ public class TestHelper {
 }
 
   /**
+   * Create filter message
+   *
+   * @param channelType channel type
+   * @param channelAction channel action
+   * @param snapshotId the snapshot ID
+   * @param publisherId the publisher ID
+   * @param timestamp the timestamp
+   * @param snid the snid
+   * @return filter message
+   */
+  public static FilterMessage newFilterMessage(ChannelType channelType,
+                                               ChannelAction channelAction,
+                                               long snapshotId,
+                                               long publisherId,
+                                               long timestamp,
+                                               String snid) {
+    FilterMessage message = new FilterMessage();
+    message.setSnapshotId(snapshotId);
+    message.setTimestamp(timestamp);
+    message.setCampaignId(1l);
+    message.setPublisherId(publisherId);
+    message.setRequestHeaders("");
+    message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
+    message.setResponseHeaders("");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setRtRuleFlags(0L);
+    message.setNrtRuleFlags(0L);
+    message.setSnid(snid);
+    return message;
+  }
+
+  /**
    * Create listener message
    *
    * @param snapshotId the snapshot ID

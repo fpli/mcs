@@ -24,7 +24,7 @@ class TestIPPubCappingRule extends BaseFunSuite {
 
   val tmpPath = createTempPath()
   val inputDir = tmpPath + "/workDir/dedupe"
-  val workDir = tmpPath + "/workDir/capping"
+  val workDir = tmpPath + "/workDir/"
   val outputDir = tmpPath + "/outputDir/"
   val channel = "EPN"
 
