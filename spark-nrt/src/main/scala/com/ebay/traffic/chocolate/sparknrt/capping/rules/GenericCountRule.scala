@@ -9,7 +9,7 @@ import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.{Column, DataFrame}
-import org.apache.spark.sql.functions.{count, lit, split, sum}
+import org.apache.spark.sql.functions.{count, lit, sum}
 import org.slf4j.LoggerFactory
 
 /**
