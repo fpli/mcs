@@ -1,5 +1,5 @@
 #!/bin/bash
-# run spark job on YARN - DedupeAndSink
+# run spark job on YARN - CappingRule
 
 usage="Usage: cappingRule.sh [channel] [workDir] [outputDir] [ipThreshold]"
 
