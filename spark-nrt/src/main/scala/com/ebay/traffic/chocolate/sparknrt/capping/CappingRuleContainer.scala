@@ -23,7 +23,15 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
       CappingRuleEnum.IPPubCappingRule_S ->
           new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S), dateFiles, sparkJobObj, windowShort),
       CappingRuleEnum.IPPubCappingRule_L ->
-          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L), dateFiles, sparkJobObj, windowLong)
+          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L), dateFiles, sparkJobObj, windowLong),
+      CappingRuleEnum.CGUIDPubCappingRule_S ->
+          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDPubCappingRule_S), dateFiles, sparkJobObj, windowShort),
+      CappingRuleEnum.CGUIDPubCappingRule_L ->
+          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDPubCappingRule_L), dateFiles, sparkJobObj, windowLong),
+      CappingRuleEnum.CGUIDCappingRule_S ->
+          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_S), dateFiles, sparkJobObj, windowShort),
+      CappingRuleEnum.CGUIDCappingRule_L ->
+          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_L), dateFiles, sparkJobObj, windowLong)
     ),
     ChannelType.DISPLAY -> mutable.HashMap(
     )

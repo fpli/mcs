@@ -7,79 +7,74 @@ import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.sql.functions._
 
 /**
-  * Created by jialili1 on 5/10/18.
+  * Created by jialili1 on 5/28/18.
   */
-class IPPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingRuleJobObj: BaseSparkJob, window: String)
+class CGUIDCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingRuleJobObj: BaseSparkJob, window: String)
     extends GenericCountRule(params: Parameter, bit: Long, dateFiles: DateFiles,  cappingRuleJobObj: BaseSparkJob, window: String) {
 
   import cappingRuleJobObj.spark.implicits._
 
   //workdir
-  override lazy val fileName = "/ipPub_" + window + "/"
-  //specific columns for ipPub Capping Rule
-  override val cols = Array(col("IP"), col("publisher_id"))
+  override lazy val fileName = "/cguid_" + window + "/"
+  //specific columns for CGUID Capping Rule
+  override val cols = Array(col("CGUID"))
 
-  //filter condition for counting df
-  def filterCondition(): Column = {
-    $"publisher_id" =!= -1
-  }
-
-  //parse IP from request_headers
-  def parseIP(): Column = {
-    split(split($"request_headers", "X-eBay-Client-IP: ")(1), """\|""")(0).alias("IP")
+  //parse CGUID from request_headers
+  def parseCGUID(): Column = {
+    split($"response_headers", "cguid/")(1).substr(0, 32).alias("CGUID")
   }
 
   //counting columns
   def selectCondition(): Array[Column] = {
-    Array(parseIP(), cols(1))
+    Array(parseCGUID())
   }
 
   //add new column if needed
   def withColumnCondition(): Column = {
-    when($"channel_action" === "CLICK", parseIP()).otherwise("NA")
+    when($"channel_action" === "CLICK", parseCGUID()).otherwise("NA")
   }
 
   //final join condition
   def joinCondition(df: DataFrame, dfCount: DataFrame): Column = {
-    df.col(cols(0).toString()) === dfCount.col(cols(0).toString()) && df.col(cols(1).toString()) === dfCount.col(cols(1).toString())
+    df.col(cols(0).toString()) === dfCount.col(cols(0).toString())
   }
 
   override def test(): DataFrame = {
 
     //Step 1: Prepare counting data. If this job has no events, return snapshot_id and capping = 0.
-    //filter click only, and publisher_id != -1
-    var dfIPPub = dfFilterInJob(filterCondition())
+    //filter click only
+    var dfCGUID = dfFilterInJob(null)
 
     //if job has no events, then return df with capping column directly
-    val head = dfIPPub.take(1)
+    val head = dfCGUID.take(1)
     if (head.length == 0) {
       dfNoEvents()
     }
     else {
       val firstRow = head(0)
-      val timestamp = dfIPPub.select($"timestamp").first().getLong(0)
+      val timestamp = dfCGUID.select($"timestamp").first().getLong(0)
 
-      //Step 2: Count by ip and publisher_id in this job, then integrate data to 1 file, and add timestamp to file name.
-      //count by ip and publisher_id in the job
-      dfIPPub = dfCountInJob(dfIPPub, selectCondition())
+      //Step 2: Count by CGUID in this job, then integrate data to 1 file, and add timestamp to file name.
+      //count by CGUID and in the job
+      dfCGUID = dfCountInJob(dfCGUID, selectCondition())
 
       //reduce the number of counting file to 1, and rename file name to include timestamp
-      repartitionAndRename(dfIPPub, timestamp)
+      repartitionAndRename(dfCGUID, timestamp)
 
-      //Step 3: Read a new df for join purpose, just select IP, publisher_id and snapshot_id, and read previous data for counting purpose.
+      //Step 3: Read a new df for join purpose, just select CGUID and snapshot_id, and read previous data for counting purpose.
       //df for join
       val selectCols: Array[Column] = $"snapshot_id" +: cols
       var df = dfForJoin(cols(0), withColumnCondition(), selectCols)
 
       //read previous data and add to count path
-      val ipPubCountPath = readCountData(timestamp)
+      val cguidCountPath = readCountData(timestamp)
 
       //Step 4: Count all data, including previous data and data in this job, then join the result with the new df, return only snapshot_id and capping.
       //count through whole timeWindow and filter those over threshold
-      dfIPPub = dfCountAllAndFilter(ipPubCountPath)
+      dfCGUID = dfCountAllAndFilter(cguidCountPath)
 
       //join origin df and counting df
-      df = dfJoin(df, dfIPPub, joinCondition(df, dfIPPub))
+      df = dfJoin(df, dfCGUID, joinCondition(df, dfCGUID))
       df
     }
   }
