@@ -14,10 +14,12 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
+import org.junit.Ignore
 
 /**
   * Created by jialili1 on 5/29/18.
   */
+@Ignore
 class TestCGUIDPubCappingRule extends BaseFunSuite {
   lazy val windowLong = "long"
   lazy val windowShort = "short"
