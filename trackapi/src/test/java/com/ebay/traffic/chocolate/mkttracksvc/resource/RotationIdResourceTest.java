@@ -62,6 +62,7 @@ public class RotationIdResourceTest {
     Assert.assertEquals("CatherineTesting RotationName", rotationResponse.getRotation_name());
     Assert.assertEquals("RotationTag-1", rotationResponse.getRotation_tag().get("TestTag-1"));
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, rotationResponse.getStatus());
+
   }
 
   @Test
@@ -293,5 +294,35 @@ public class RotationIdResourceTest {
     errorList = response.getErrors();
     Assert.assertNotNull(errorList);
     Assert.assertTrue(errorList.get(0).contains("campaign_id"));
+  }
+
+  @Test
+  public void testResponseMessages() {
+    Configuration configuration = ConfigurationBuilder.newConfig("testService.testClient");
+    Client client = ClientBuilder.newClient(configuration);
+    String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
+    String svcEndPoint = endpoint + ":" + port;
+
+    RotationInfo rotationRequest = new RotationInfo();
+    rotationRequest.setSite_id(77);
+    rotationRequest.setChannel_id(4);
+    rotationRequest.setCampaign_id(12345L);
+    rotationRequest.setCustomized_id1(45523L);
+    rotationRequest.setCustomized_id2(15523L);
+    rotationRequest.setRotation_name("test messages rotation");
+    Response result = client.target(svcEndPoint).path("/tracksvc/v1/rid/create")
+        .request().accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
+    Assert.assertEquals(200, result.getStatus());
+
+    result = client.target(svcEndPoint).path("/tracksvc/v1/rid/create")
+        .request().accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
+
+    ServiceResponse response = result.readEntity(ServiceResponse.class);
+    Assert.assertNotNull(response);
+    Assert.assertNotNull(response.getMessage());
+    Assert.assertTrue( response.getMessage().contains("Can't create new rotation id, since rotationId already existed"));
+
   }
 }

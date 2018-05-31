@@ -84,6 +84,9 @@ public class RotationService {
     try {
       rotationCbDao.connect(mktTrackSvcConfig);
       RotationInfo rInfo = rotationCbDao.updateRotationMap(rotationId, rotationInfo);
+      if(rInfo == null){
+        response.setMessage("No rotation_info updated! since there is no related rotation info in db.");
+      }
       response.setRotation_info(rInfo);
     } catch (CBException cbe) {
       response.setMessage(ErrorMsgConstant.CB_CONNECTION_ISSUE);
@@ -107,7 +110,11 @@ public class RotationService {
     try {
       rotationCbDao.connect(mktTrackSvcConfig);
       rInfo = rotationCbDao.setStatus(rotationId, status);
-      response.setRotation_info(rInfo);
+      if (rInfo == null) {
+        response.setMessage(ErrorMsgConstant.CB_ACTIVATE_ROTATION_ISSUE + rotationId);
+      } else {
+        response.setRotation_info(rInfo);
+      }
     } catch (CBException cbe) {
       response.setMessage(ErrorMsgConstant.CB_CONNECTION_ISSUE);
       throw cbe;

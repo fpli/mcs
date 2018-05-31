@@ -51,7 +51,7 @@ public class RotationIdResource {
     }
 
     ServiceResponse ret = rotationService.addRotationMap(rotationInfo);
-    return getResponse(ret, " created.");
+    return getResponse(ret, "updated.");
   }
 
   @PUT
@@ -63,7 +63,7 @@ public class RotationIdResource {
                                         @RequestBody RotationInfo rotationInfo) throws CBException {
 
     if (StringUtils.isEmpty(rid)) {
-      return getResponse(null, "modified. Please set rotationId.");
+      return getResponse(null, "modified. Please set correct rotationId.");
     }
 
     String errors = validateInput(rotationInfo, false);
@@ -72,7 +72,7 @@ public class RotationIdResource {
     }
 
     ServiceResponse ret = rotationService.updateRotationMap(rid, rotationInfo);
-    return getResponse(ret, " updated.");
+    return getResponse(ret, "updated.");
   }
 
   @PUT
@@ -128,10 +128,11 @@ public class RotationIdResource {
   private String getResponse(ServiceResponse response, String msgInfo) {
     if (response == null) {
       response = new ServiceResponse();
+      if (response.getRotation_info() == null) {
+        response.setMessage("No Rotation info was " + msgInfo);
+      }
     }
-    if (response.getRotation_info() == null) {
-      response.setMessage("No rotation info was " + msgInfo);
-    }
+
     return new Gson().toJson(response);
   }
 
@@ -140,51 +141,52 @@ public class RotationIdResource {
     String msgStr = null;
 
     if (rotationInfo == null) {
-      return getResponse(null, "created. Please set rotation_info with json format.");
-    }
-
-    if (rotationInfo.getChannel_id() == null && required) {
-      msgStr = getRequiredMsg(RotationConstant.FIELD_CHANNEL_ID);
+      msgStr = "No rotation info was created. Please set rotation_info with json format.";
       addValueToList(msgList, msgStr);
-    }
+    }else{
+      if (rotationInfo.getChannel_id() == null && required) {
+        msgStr = getRequiredMsg(RotationConstant.FIELD_CHANNEL_ID);
+        addValueToList(msgList, msgStr);
+      }
 
-    if (rotationInfo.getChannel_id() != null && rotationInfo.getChannel_id() < 0) {
-      msgStr = "No rotation info was created. Please set correct channel, like: 500012";
-      addValueToList(msgList, msgStr);
-    }
+      if (rotationInfo.getChannel_id() != null && rotationInfo.getChannel_id() < 0) {
+        msgStr = "No rotation info was created. Please set correct channel, like: 500012";
+        addValueToList(msgList, msgStr);
+      }
 
 
-    if (rotationInfo.getSite_id() == null && required) {
-      msgStr = getRequiredMsg(RotationConstant.CHOCO_SITE_ID);
-      addValueToList(msgList, msgStr);
-    }
+      if (rotationInfo.getSite_id() == null && required) {
+        msgStr = getRequiredMsg(RotationConstant.CHOCO_SITE_ID);
+        addValueToList(msgList, msgStr);
+      }
 
-    if (rotationInfo.getSite_id() != null && rotationInfo.getSite_id() < 0) {
-      msgStr = "No rotation info was created. Please set correct ebay site_id, like: 1";
-      addValueToList(msgList, msgStr);
-    }
+      if (rotationInfo.getSite_id() != null && rotationInfo.getSite_id() < 0) {
+        msgStr = "No rotation info was created. Please set correct ebay site_id, like: 1";
+        addValueToList(msgList, msgStr);
+      }
 
-    if (rotationInfo.getCampaign_id() == null && required) {
-      msgStr = getRequiredMsg(RotationConstant.FIELD_CAMPAIGN_ID);
-      addValueToList(msgList, msgStr);
-    }
+      if (rotationInfo.getCampaign_id() == null && required) {
+        msgStr = getRequiredMsg(RotationConstant.FIELD_CAMPAIGN_ID);
+        addValueToList(msgList, msgStr);
+      }
 
-    if ((rotationInfo.getCampaign_id() != null && rotationInfo.getCampaign_id() < 0)
-        || (rotationInfo.getCustomized_id1() != null && rotationInfo.getCustomized_id1() < 0)
-        || (rotationInfo.getCustomized_id2() != null && rotationInfo.getCustomized_id2() < 0)){
-      msgStr = "No rotation info was created. campaign_id/customized_id1/customized_id2 can't be less than 0";
-      addValueToList(msgList, msgStr);
-    }
+      if ((rotationInfo.getCampaign_id() != null && rotationInfo.getCampaign_id() < 0)
+          || (rotationInfo.getCustomized_id1() != null && rotationInfo.getCustomized_id1() < 0)
+          || (rotationInfo.getCustomized_id2() != null && rotationInfo.getCustomized_id2() < 0)){
+        msgStr = "No rotation info was created. campaign_id/customized_id1/customized_id2 can't be less than 0";
+        addValueToList(msgList, msgStr);
+      }
 
-    Map<String, String> rotationTag = rotationInfo.getRotation_tag();
+      Map<String, String> rotationTag = rotationInfo.getRotation_tag();
 
-    if(rotationTag != null){
-      //rotation_start_date
-      msgStr = getValidateMsgForDate(rotationTag, RotationConstant.FIELD_ROTATION_START_DATE);
-      addValueToList(msgList, msgStr);
-      //rotation_end_date
-      msgStr = getValidateMsgForDate(rotationTag, RotationConstant.FIELD_ROTATION_END_DATE);
-      addValueToList(msgList, msgStr);
+      if(rotationTag != null){
+        //rotation_start_date
+        msgStr = getValidateMsgForDate(rotationTag, RotationConstant.FIELD_ROTATION_START_DATE);
+        addValueToList(msgList, msgStr);
+        //rotation_end_date
+        msgStr = getValidateMsgForDate(rotationTag, RotationConstant.FIELD_ROTATION_END_DATE);
+        addValueToList(msgList, msgStr);
+      }
     }
 
     String responseStr = null;
