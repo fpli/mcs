@@ -19,6 +19,7 @@ import org.junit.Ignore
 /**
   * Created by jialili1 on 5/29/18.
   */
+@Ignore
 class TestCGUIDPubCappingRule extends BaseFunSuite {
   lazy val windowLong = "long"
   lazy val windowShort = "short"

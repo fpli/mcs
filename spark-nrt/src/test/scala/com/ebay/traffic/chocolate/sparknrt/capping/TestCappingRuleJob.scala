@@ -11,10 +11,12 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
+import org.junit.Ignore
 
 /**
   * Created by xiangli4 on 4/8/18.
   */
+@Ignore
 class TestCappingRuleJob extends BaseFunSuite {
   val tmpPath = createTempPath()
   val inputDir = tmpPath + "/inputDir/"
