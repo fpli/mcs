@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.sparknrt.capping.rules
 
 import java.text.SimpleDateFormat
 import java.util.{Calendar, Properties}
+
 import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import com.ebay.traffic.chocolate.sparknrt.capping.{CappingRule, Parameter}
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles

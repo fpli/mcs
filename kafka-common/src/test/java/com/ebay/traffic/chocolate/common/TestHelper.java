@@ -90,7 +90,7 @@ public class TestHelper {
       attempts++;
       if (attempts > maxAttempts) {
         throw new IOException("Failed to create a temp directory under "
-                + root + " after " + maxAttempts + " attemps!");
+          + root + " after " + maxAttempts + " attemps!");
       }
       try {
         dir = new File(root, namePrefix + "-" + UUID.randomUUID().toString());
@@ -144,7 +144,7 @@ public class TestHelper {
                                                long publisherId,
                                                long campaignId) {
     return newFilterMessage(ChannelType.EPN, ChannelAction.CLICK,
-            snapshotId, publisherId, campaignId);
+      snapshotId, publisherId, campaignId);
   }
 
   /**
@@ -161,7 +161,7 @@ public class TestHelper {
                                                long campaignId,
                                                long timestamp) {
     return newFilterMessage(ChannelType.EPN, ChannelAction.CLICK,
-            snapshotId, publisherId, campaignId, timestamp);
+      snapshotId, publisherId, campaignId, timestamp);
   }
 
   /**
@@ -180,7 +180,7 @@ public class TestHelper {
                                                long publisherId,
                                                long campaignId) {
     return newFilterMessage(channelType, channelAction, snapshotId,
-            publisherId, campaignId, System.currentTimeMillis());
+      publisherId, campaignId, System.currentTimeMillis());
   }
 
   /**
@@ -236,7 +236,7 @@ public class TestHelper {
                                                long campaignId,
                                                long timestamp,
                                                String ip) {
-  FilterMessage message = new FilterMessage();
+    FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
     message.setTimestamp(timestamp);
     message.setCampaignId(campaignId);
@@ -279,10 +279,10 @@ public class TestHelper {
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
     message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|" +
-        "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
+      "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
     message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
     message.setResponseHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|Cookie: cguid/" + cguid +
-        "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
+      "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
     message.setChannelAction(channelAction);
     message.setChannelType(channelType);
     message.setHttpMethod(HttpMethod.POST);
@@ -319,10 +319,10 @@ public class TestHelper {
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
     message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-eBay-Client-IP: " + ip +
-        "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
+      "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
     message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
     message.setResponseHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-eBay-Client-IP: " + ip + "|Cookie: cguid/" + cguid +
-        "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
+      "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
     message.setChannelAction(channelAction);
     message.setChannelType(channelType);
     message.setHttpMethod(HttpMethod.POST);
@@ -378,7 +378,7 @@ public class TestHelper {
                                                    long publisherId,
                                                    long campaignId) {
     return newListenerMessage(ChannelType.EPN, ChannelAction.CLICK,
-            snapshotId, publisherId, campaignId);
+      snapshotId, publisherId, campaignId);
   }
 
   /**
@@ -392,10 +392,10 @@ public class TestHelper {
    * @return listener message
    */
   public static ListenerMessage newListenerMessage(ChannelType channelType,
-                                            ChannelAction channelAction,
-                                            long snapshotId,
-                                            long publisherId,
-                                            long campaignId) {
+                                                   ChannelAction channelAction,
+                                                   long snapshotId,
+                                                   long publisherId,
+                                                   long campaignId) {
     ListenerMessage message = new ListenerMessage();
     message.setSnapshotId(snapshotId);
     message.setTimestamp(System.currentTimeMillis());
@@ -436,7 +436,7 @@ public class TestHelper {
    * @return record map
    */
   public static <K, V> Map<K, V> pollFromKafkaTopic(
-          Consumer<K, V> consumer, List<String> topics, int number, long timeout) {
+    Consumer<K, V> consumer, List<String> topics, int number, long timeout) {
 
     Map<K, V> result = new HashMap<>();
 
