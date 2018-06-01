@@ -76,7 +76,7 @@ class CGUIDPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, ca
 
       //Step 4: Count all data, including previous data and data in this job, then join the result with the new df, return only snapshot_id and capping.
       //count through whole timeWindow and filter those over threshold
-      dfCGUIDPub = dfCappingInJob(null, null, null, cguidPubCountPath)
+      dfCGUIDPub = dfCappingInJob(null, cguidPubCountPath)
 
       //join origin df and counting df
       df = dfJoin(df, dfCGUIDPub, joinCondition(df, dfCGUIDPub))

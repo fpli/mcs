@@ -250,7 +250,7 @@ public class TestHelper {
     message.setHttpMethod(HttpMethod.POST);
     message.setRtRuleFlags(0L);
     message.setNrtRuleFlags(0L);
-    message.setSnid("");
+    message.setSnid("testsnid");
     return message;
   }
 

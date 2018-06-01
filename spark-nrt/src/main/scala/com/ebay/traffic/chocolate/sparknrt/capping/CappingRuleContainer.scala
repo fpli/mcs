@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
-import com.ebay.traffic.chocolate.sparknrt.capping.rules.{IPCappingRule, IPPubCappingRule}
+import com.ebay.traffic.chocolate.sparknrt.capping.rules.{IPCappingRule, IPPubCappingRule, SNIDCappingRule}
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.spark.sql.functions.coalesce
 import org.apache.spark.sql.functions.lit
@@ -31,7 +31,12 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
       CappingRuleEnum.CGUIDCappingRule_S ->
           new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_S), dateFiles, sparkJobObj, windowShort),
       CappingRuleEnum.CGUIDCappingRule_L ->
-          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_L), dateFiles, sparkJobObj, windowLong)
+          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_L), dateFiles, sparkJobObj, windowLong),
+      // Snid capping rule is special. 2 rules are implemented in 1 single rule for better performance
+      // Use SnidCappingRule_L as hashmap key. Actually it doesn't affect what it is
+      CappingRuleEnum.SnidCappingRule_L ->
+          new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
+            CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles, sparkJobObj, windowLong)
     ),
     ChannelType.DISPLAY -> mutable.HashMap(
     )

@@ -21,17 +21,17 @@ abstract class GenericCountRule(params: Parameter, bit: Long, dateFiles: DateFil
   //count by specific columns in the job
   override def dfLoadCappingInJob(dfCapping: DataFrame, selectCols: Array[Column]): DataFrame = {
     dfCapping.select(selectCols: _*)
-        .groupBy(cols: _*).agg(count(lit(1)).alias("count"))
+      .groupBy(cols: _*).agg(count(lit(1)).alias("count"))
   }
 
   //count through whole timeWindow and filter those over threshold
-  override def dfCappingInJob(dfJoin: DataFrame, joinCol: Column, whenCol: Column, cappingPath: List[String]): DataFrame = {
+  override def dfCappingInJob(dfJoin: DataFrame, cappingPath: List[String]): DataFrame = {
     cappingRuleJobObj.readFilesAsDFEx(cappingPath.toArray)
-        .groupBy(cols: _*)
-        .agg(sum("count") as "amnt")
-        .filter($"amnt" >= threshold)
-        .withColumn("capping", lit(cappingBit))
-        .drop("count")
-        .drop("amnt")
+      .groupBy(cols: _*)
+      .agg(sum("count") as "amnt")
+      .filter($"amnt" >= threshold)
+      .withColumn("capping", lit(cappingBit))
+      .drop("count")
+      .drop("amnt")
   }
 }

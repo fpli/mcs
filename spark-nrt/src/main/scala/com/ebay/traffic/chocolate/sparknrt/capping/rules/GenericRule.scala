@@ -2,13 +2,12 @@ package com.ebay.traffic.chocolate.sparknrt.capping.rules
 
 import java.text.SimpleDateFormat
 import java.util.{Calendar, Properties}
-
 import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import com.ebay.traffic.chocolate.sparknrt.capping.{CappingRule, Parameter}
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.spark.sql.functions.{lit, when}
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.{Column, DataFrame}
 import org.slf4j.LoggerFactory
 
@@ -23,7 +22,8 @@ import org.slf4j.LoggerFactory
   * 5. Apply capping rule using df in 4, get capping failed records df. Only get snapshot_id and capping columns
   * 6. Join current batch data with capping failed records df
   */
-abstract class GenericRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingRuleJobObj: BaseSparkJob, window: String) extends CappingRule {
+abstract class GenericRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingRuleJobObj: BaseSparkJob, window: String)
+  extends CappingRule with Serializable {
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
   @transient lazy val hadoopConf = {
@@ -37,14 +37,17 @@ abstract class GenericRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
   }
 
   //get timeWindow
-  @transient var properties: Properties = {
+  @transient lazy val properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("capping_rule.properties"))
     properties
   }
 
+  // used to get threshold
   lazy val ruleName = this.getClass.getSimpleName + "_" + window
+  // used to get time window
   lazy val ruleType = "timeWindow_" + window
+  // time window
   lazy val timeWindow = properties.getProperty(ruleType).toLong
 
   // preTest
@@ -133,7 +136,7 @@ abstract class GenericRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
   }
 
   // 5. Apply capping rule using df in 4, get capping failed records df
-  def dfCappingInJob(dfJoin: DataFrame, joinCol: Column, whenCol: Column, cappingPath: List[String]): DataFrame
+  def dfCappingInJob(dfJoin: DataFrame, cappingPath: List[String]): DataFrame
 
   import cappingRuleJobObj.spark.implicits._
 
@@ -147,8 +150,8 @@ abstract class GenericRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
   }
 
   // 6. Join current batch data with capping failed records df
-  def dfJoin(df: DataFrame, dfCount: DataFrame, joinCol: Column): DataFrame = {
-    var df1 = df.join(dfCount, joinCol, "left_outer")
+  def dfJoin(df: DataFrame, dfCapping: DataFrame, joinCol: Column): DataFrame = {
+    var df1 = df.join(dfCapping, joinCol, "left_outer")
       .select($"snapshot_id", $"capping")
     df1
   }

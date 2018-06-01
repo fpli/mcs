@@ -37,5 +37,5 @@ object CappingRuleEnum extends Enumeration {
   val CGUIDCappingRule_S = Value(5)
   val CGUIDCappingRule_L = Value(6)
   val SnidCappingRule_S = Value(7)
-  val snidCappingRule_L = Value(8)
+  val SnidCappingRule_L = Value(8)
 }
