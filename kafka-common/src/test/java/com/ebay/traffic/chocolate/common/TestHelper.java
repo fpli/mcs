@@ -288,7 +288,7 @@ public class TestHelper {
     message.setHttpMethod(HttpMethod.POST);
     message.setRtRuleFlags(0L);
     message.setNrtRuleFlags(0L);
-    message.setSnid("");
+    message.setSnid("snidtest");
     return message;
   }
 
@@ -328,7 +328,7 @@ public class TestHelper {
     message.setHttpMethod(HttpMethod.POST);
     message.setRtRuleFlags(0L);
     message.setNrtRuleFlags(0L);
-    message.setSnid("");
+    message.setSnid("snidtest");
     return message;
   }
 

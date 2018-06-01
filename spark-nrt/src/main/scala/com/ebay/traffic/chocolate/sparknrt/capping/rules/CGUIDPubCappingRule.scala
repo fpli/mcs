@@ -21,7 +21,7 @@ class CGUIDPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, ca
 
   //filter condition for counting df
   def filterCondition(): Column = {
-    $"publisher_id" =!= -1
+    $"publisher_id" =!= -1 and $"channel_action" === "CLICK"
   }
 
   //parse CGUID from request_headers

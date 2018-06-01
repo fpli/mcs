@@ -3,8 +3,10 @@ package com.ebay.traffic.chocolate.sparknrt.capping.rules
 import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import com.ebay.traffic.chocolate.sparknrt.capping.Parameter
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
+import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.{Column, DataFrame, Row}
 import org.apache.spark.sql.functions._
+
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -91,9 +93,6 @@ class SNIDCappingRule(params: Parameter, bitLong: Long, bitShort: Long, dateFile
           }
         }
       }
-      else {
-        cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), 0l)
-      }
     }
     cappingEvents.iterator
   }
@@ -101,8 +100,13 @@ class SNIDCappingRule(params: Parameter, bitLong: Long, bitShort: Long, dateFile
   override def dfCappingInJob(dfJoin: DataFrame, cappingPath: List[String]): DataFrame = {
 
     // read impression data with snid
-    val dfRight = cappingRuleJobObj.readFilesAsDFEx(cappingPath.toArray)
-    dfRight.show()
+    var dfRight: DataFrame = null
+    if(cappingPath.length != 0 && fs.listStatus(new Path(cappingPath(0))).length != 0) {
+      dfRight = cappingRuleJobObj.readFilesAsDFEx(cappingPath.toArray)
+    }
+    else {
+      dfRight = Seq.empty[(Long, String, Long, String)].toDF("snapshot_id", "snid", "timestamp", "channel_action")
+    }
     // union current batch data. we don't drop duplicates impression in current batch for better performance
     // use rdd instead of dataframe as in this scenario, rdd is easy to apply single record processing
     val snidRDD = dfJoin.union(dfRight).rdd
