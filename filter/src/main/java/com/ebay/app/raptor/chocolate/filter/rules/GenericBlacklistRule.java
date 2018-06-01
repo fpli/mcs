@@ -48,7 +48,7 @@ public abstract class GenericBlacklistRule extends HashSet<String> implements Fi
    * Call the child's method to get the feature, then test it against the blacklist
    *
    * @param request request-response event to test
-   * @return fail weight
+   * @return a bit, 0 for pass, 1 for fail
    */
   @Override
   public int test(FilterRequest request) {

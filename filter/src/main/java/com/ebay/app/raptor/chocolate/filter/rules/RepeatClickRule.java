@@ -72,7 +72,7 @@ public class RepeatClickRule extends BaseFilterRule {
    * Shared side effect.
    *
    * @param event event (impression/click) to test
-   * @return true if the event is not in the log
+   * @return a bit, 0 for pass, 1 for fail
    */
   @Override
   public int test(FilterRequest event) {

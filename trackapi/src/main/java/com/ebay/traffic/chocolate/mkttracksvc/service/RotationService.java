@@ -7,7 +7,9 @@ import com.ebay.traffic.chocolate.mkttracksvc.dao.imp.RotationCbDaoImp;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.ServiceResponse;
 import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
+import com.ebay.traffic.chocolate.mkttracksvc.util.DriverId;
 import com.ebay.traffic.chocolate.mkttracksvc.util.RotationId;
+import com.ebay.traffic.chocolate.mkttracksvc.util.RotationId18;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,6 +53,7 @@ public class RotationService {
     ServiceResponse response = new ServiceResponse();
 
     String rotationId = RotationId.getNext(rotationReq);
+    rotationReq.setRid(RotationId18.getNext(DriverId.getDriverIdFromIp()).getRepresentation());
     rotationReq.setRotation_id(rotationId);
     rotationReq.setLast_update_time(System.currentTimeMillis());
     try {
@@ -81,6 +84,9 @@ public class RotationService {
     try {
       rotationCbDao.connect(mktTrackSvcConfig);
       RotationInfo rInfo = rotationCbDao.updateRotationMap(rotationId, rotationInfo);
+      if(rInfo == null){
+        response.setMessage("No rotation_info updated! since there is no related rotation info in db.");
+      }
       response.setRotation_info(rInfo);
     } catch (CBException cbe) {
       response.setMessage(ErrorMsgConstant.CB_CONNECTION_ISSUE);
@@ -104,7 +110,11 @@ public class RotationService {
     try {
       rotationCbDao.connect(mktTrackSvcConfig);
       rInfo = rotationCbDao.setStatus(rotationId, status);
-      response.setRotation_info(rInfo);
+      if (rInfo == null) {
+        response.setMessage(ErrorMsgConstant.CB_ACTIVATE_ROTATION_ISSUE + rotationId);
+      } else {
+        response.setRotation_info(rInfo);
+      }
     } catch (CBException cbe) {
       response.setMessage(ErrorMsgConstant.CB_CONNECTION_ISSUE);
       throw cbe;

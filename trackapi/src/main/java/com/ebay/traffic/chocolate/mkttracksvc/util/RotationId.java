@@ -1,19 +1,27 @@
 package com.ebay.traffic.chocolate.mkttracksvc.util;
 
+import com.ebay.traffic.chocolate.mkttracksvc.constant.MPLXClientEnum;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- *
+ * Generate rotation id which keeps legacy format and split by hyphen <br/>
+ * ex: ClientId-CampaignId-CustomizedId1-CustomizedId2
+ *     707-500000025-3000002-60304335
+ * <br/>
+ * only ClientId and CampaignId are required. other 2 ids could be automatically generated
  */
 public class RotationId {
+  private static final Logger logger = Logger.getLogger(RotationId.class);
 
   // Counter to track all incoming rotation Ids.
   private static final AtomicInteger ridCounter = new AtomicInteger(0);
 
-  private static final String HYPHEN = "-";
+  public static final String HYPHEN = "-";
 
   /**
    * Generate RotationId which contains 4 parts with hyphen like 477-1234-2345-12
@@ -23,16 +31,27 @@ public class RotationId {
    */
   public synchronized static String getNext(RotationInfo rotationReq) {
     long squence = ridCounter.incrementAndGet();
-    String identity = supplyDigit(rotationReq.getSite_id(), 4);
-    String randomId = String.valueOf(System.currentTimeMillis() + DriverId.getDriverIdFromIp() + squence);
-    String campaignId = StringUtils.isEmpty(rotationReq.getCampaign_id()) ? randomId : rotationReq.getCampaign_id();
-    String customizedId1 = StringUtils.isEmpty(rotationReq.getCustomized_id1()) ? String.valueOf(Long.valueOf(randomId) + squence + 1) : rotationReq.getCustomized_id1();
-    String customizedId2 = StringUtils.isEmpty(rotationReq.getCustomized_id2()) ? String.valueOf(Long.valueOf(randomId) + squence + 2) : rotationReq.getCustomized_id2();
+//    String identity = supplyDigit(rotationReq.getChannel_id(), 3) + supplyDigit(rotationReq.getSite_id(), 4);
+    //Get Mediaplex ClientId for legacy rotationId support as 1st part of rotationId
+    MPLXClientEnum mplxClientEnum = MPLXClientEnum.getBySiteId(rotationReq.getSite_id());
+    String identity = String.valueOf(mplxClientEnum == null ? rotationReq.getSite_id() : mplxClientEnum.getMplxClientId());
+    // new definition for rotation Id
+    Integer driverId = DriverId.getDriverIdFromIp();
+    Long campaignId = getUniqueId(rotationReq.getCampaign_id(), driverId);
+    Long customizedId1 = getUniqueId(rotationReq.getCustomized_id1(), driverId);
+    Long customizedId2 = getUniqueId(rotationReq.getCustomized_id2(), driverId);
 
     String rId = identity + HYPHEN + String.valueOf(campaignId) + HYPHEN + customizedId1 + HYPHEN + customizedId2;
 
     checkAndClearCounter();
     return rId;
+  }
+
+  private static Long getUniqueId(Long customizedId, Integer driverId){
+    if(customizedId == null) {
+      return RotationId18.getNext(driverId).getRepresentation();
+    }
+    return customizedId;
   }
 
   /**

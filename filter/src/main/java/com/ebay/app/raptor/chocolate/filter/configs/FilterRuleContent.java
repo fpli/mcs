@@ -8,8 +8,10 @@ package com.ebay.app.raptor.chocolate.filter.configs;
 public class FilterRuleContent {
   
   private String ruleName;
+  private String whitelistName;
+  private String blacklistName;
   private Float rateLimit = 0f;
-  private Long windowStart = 500l;
+  private Long windowStart;
   private Integer timeoutMS = 500;
   
   public FilterRuleContent() {}
@@ -22,10 +24,29 @@ public class FilterRuleContent {
    * Constructor for testing purpose
    *
    * @param ruleName
-   * @param rateLimit
+   * @param blacklistName
    */
-  public FilterRuleContent(String ruleName, Float rateLimit, Long windowStart, Integer timeoutMS) {
+  public FilterRuleContent(String ruleName, String blacklistName) {
     this.ruleName = ruleName;
+    this.blacklistName = blacklistName;
+  }
+
+  /**
+   * Constructor for IAB rule testing specifically
+   *
+   * @param ruleName
+   * @param whitelistName
+   * @param blacklistName
+   */
+  public FilterRuleContent(String ruleName, String whitelistName, String blacklistName) {
+    this.ruleName = ruleName;
+    this.whitelistName = whitelistName;
+    this.blacklistName = blacklistName;
+  }
+
+  public FilterRuleContent(String ruleName, String blacklistName, Float rateLimit, Long windowStart, Integer timeoutMS) {
+    this.ruleName = ruleName;
+    this.blacklistName = blacklistName;
     this.rateLimit = rateLimit;
     this.windowStart = windowStart;
     this.timeoutMS = timeoutMS;
@@ -61,5 +82,21 @@ public class FilterRuleContent {
   
   public void setRuleName(String ruleName) {
     this.ruleName = ruleName;
+  }
+
+  public String getWhitelistName() {
+    return whitelistName;
+  }
+
+  public void setWhitelistName(String whitelistName) {
+    this.whitelistName = whitelistName;
+  }
+
+  public String getBlacklistName() {
+    return blacklistName;
+  }
+
+  public void setBlacklistName(String blacklistName) {
+    this.blacklistName = blacklistName;
   }
 }

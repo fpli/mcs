@@ -14,6 +14,7 @@ import com.ebay.traffic.chocolate.mkttracksvc.MKTTrackSvcConfigBean;
 import com.ebay.traffic.chocolate.mkttracksvc.dao.RotationCbDao;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
+import com.ebay.traffic.chocolate.mkttracksvc.util.RotationId;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +24,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -162,6 +164,10 @@ public class RotationCbDaoImp implements RotationCbDao {
   public RotationInfo addRotationMap(String rotationId, RotationInfo rotationInfo) {
     if (!bucket.exists(rotationId)) {
       rotationInfo.setLast_update_time(System.currentTimeMillis());
+      String[] rotationIdMeta = rotationId.split(RotationId.HYPHEN);
+      rotationInfo.setCampaign_id(Long.valueOf(rotationIdMeta[1]));
+      rotationInfo.setCustomized_id1(Long.valueOf(rotationIdMeta[2]));
+      rotationInfo.setCustomized_id2(Long.valueOf(rotationIdMeta[3]));
       bucket.insert(StringDocument.create(rotationId, new Gson().toJson(rotationInfo)));
       logger.debug("Adding new RotationInfo. rotationId=" + rotationId + " rotationInfo=" + rotationInfo);
       return rotationInfo;
@@ -189,7 +195,10 @@ public class RotationCbDaoImp implements RotationCbDao {
     updateInfo.setLast_update_time(System.currentTimeMillis());
     Map updateMap = updateInfo.getRotation_tag();
     Map<String, Object> rotationTags = rotationInfo.getRotation_tag();
+
     if (rotationTags != null) {
+      if (updateMap == null)
+        updateMap = rotationTags;
       for (Map.Entry entry: rotationTags.entrySet()) {
         updateMap.put(entry.getKey(), entry.getValue());
       }

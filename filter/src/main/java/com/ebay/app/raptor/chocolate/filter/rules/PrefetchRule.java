@@ -22,7 +22,7 @@ public class PrefetchRule extends BaseFilterRule {
    * Test impressions/clicks for prefetch headers
    *
    * @param event event (impression/click) to test
-   * @return fail weight
+   * @return a bit, 0 for pass, 1 for fail
    */
   @Override
   public int test(FilterRequest event) {

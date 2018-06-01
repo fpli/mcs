@@ -1,6 +1,6 @@
 #
-#	IAB_ABC_International_List_of_Valid_Browsers_201804_20-133817
-#	April 20, 2018
+#	IAB_ABC_International_List_of_Valid_Browsers_201805_17-093758
+#	May 17, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
@@ -121,6 +121,7 @@ FBAN/|1|0
 FOXNews/|1|1
 FantasyUniversal|1|1
 FeedDemon|1|1
+FetchTV|1|0
 Fly|1|1
 France Explorer|1|1
 France+Explorer|1|1
@@ -547,3 +548,4 @@ xbox|1|1
 # February 2018 - added "Spotx Web Proxy", added "Spotx+Web+Proxy", removed "okhttp/"
 # March 2018 - added "Toshiba", added "Philco", added "Grundig", added "Semp" and updated the third flag for "Panasonic" from a 1 to 0
 # April 2018 - no changes
+# May 2018 - added "FetchTV"

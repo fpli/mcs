@@ -2,8 +2,7 @@ package com.ebay.traffic.chocolate.mkttracksvc.dao;
 
 import com.ebay.globalenv.SiteEnum;
 import com.ebay.traffic.chocolate.mkttracksvc.MKTTrackSvcConfigBean;
-import com.ebay.traffic.chocolate.mkttracksvc.constant.TrackingChannelEnum;
-import com.ebay.traffic.chocolate.mkttracksvc.dao.CouchbaseClientMock;
+import com.ebay.app.raptor.chocolate.constant.TrackingChannelEnum;
 import com.ebay.traffic.chocolate.mkttracksvc.dao.imp.RotationCbDaoImp;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
@@ -14,7 +13,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Mockito.mock;
@@ -41,26 +39,26 @@ public class RotationCbDaoTest {
     RotationInfo rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(TrackingChannelEnum.AFFILIATES.getId());
     rotationRequest.setSite_id(SiteEnum.EBAY_DE.getId());
-    rotationRequest.setCampaign_id("500000001");
-    rotationRequest.setCustomized_id1("c00000001");
-    rotationRequest.setCustomized_id2("c00000003");
+    rotationRequest.setCampaign_id(500000001L);
+    rotationRequest.setCustomized_id1(200000001L);
+    rotationRequest.setCustomized_id2(300000003L);
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-1", "RotationTag-1");
     rotationRequest.setRotation_tag(rotationTag);
     // Customized rotationId
     String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("0077-500000001-c00000001-c00000003", rotationId);
+    Assert.assertEquals("707-500000001-200000001-300000003", rotationId);
     rotationRequest.setRotation_id(rotationId);
 
     rotationCbDao.addRotationMap(rotationId, rotationRequest);
     RotationInfo addedInfo = rotationCbDao.getRotationById(rotationId);
-    Assert.assertEquals("0077-500000001-c00000001-c00000003", addedInfo.getRotation_id());
+    Assert.assertEquals("707-500000001-200000001-300000003", addedInfo.getRotation_id());
     Assert.assertEquals("1", String.valueOf(addedInfo.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(addedInfo.getSite_id()));
-    Assert.assertEquals("500000001", addedInfo.getCampaign_id());
-    Assert.assertEquals("c00000001", addedInfo.getCustomized_id1());
-    Assert.assertEquals("c00000003", addedInfo.getCustomized_id2());
+    Assert.assertEquals("500000001", String.valueOf(addedInfo.getCampaign_id()));
+    Assert.assertEquals("200000001", String.valueOf(addedInfo.getCustomized_id1()));
+    Assert.assertEquals("300000003", String.valueOf(addedInfo.getCustomized_id2()));
     Assert.assertEquals("CatherineTesting RotationName", addedInfo.getRotation_name());
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, addedInfo.getStatus());
     Assert.assertEquals("RotationTag-1", addedInfo.getRotation_tag().get("TestTag-1"));
@@ -71,7 +69,7 @@ public class RotationCbDaoTest {
     RotationInfo rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(TrackingChannelEnum.AFFILIATES.getId());
     rotationRequest.setSite_id(SiteEnum.EBAY_UK.getId());
-    rotationRequest.setCampaign_id("500000001");
+    rotationRequest.setCampaign_id(500000001L);
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-1", "RotationTag-1");
@@ -84,7 +82,7 @@ public class RotationCbDaoTest {
     RotationInfo addedInfo = rotationCbDao.getRotationById(rotationId);
     Assert.assertEquals("1", String.valueOf(addedInfo.getChannel_id()));
     Assert.assertEquals("3", String.valueOf(addedInfo.getSite_id()));
-    Assert.assertEquals("500000001", addedInfo.getCampaign_id());
+    Assert.assertEquals("500000001", String.valueOf(addedInfo.getCampaign_id()));
     Assert.assertEquals("CatherineTesting RotationName", addedInfo.getRotation_name());
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, addedInfo.getStatus());
     Assert.assertEquals("RotationTag-1", addedInfo.getRotation_tag().get("TestTag-1"));
@@ -95,23 +93,23 @@ public class RotationCbDaoTest {
     RotationInfo rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(TrackingChannelEnum.AFFILIATES.getId());
     rotationRequest.setSite_id(SiteEnum.EBAY_US.getId());
-    rotationRequest.setCampaign_id("500000001");
-    rotationRequest.setCustomized_id1("c00000001");
-    rotationRequest.setCustomized_id2("c00000004");
+    rotationRequest.setCampaign_id(500000001L);
+    rotationRequest.setCustomized_id1(200000001L);
+    rotationRequest.setCustomized_id2(400000001L);
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-1", "RotationTag-1");
     rotationRequest.setRotation_tag(rotationTag);
     String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("0001-500000001-c00000001-c00000004", rotationId);
+    Assert.assertEquals("711-500000001-200000001-400000001", rotationId);
     rotationRequest.setRotation_id(rotationId);
     rotationCbDao.addRotationMap(rotationId, rotationRequest);
 
 
     // Update
-    rotationRequest.setCampaign_id("5555");
-    rotationRequest.setCustomized_id1("6666");
-    rotationRequest.setCustomized_id2("7777");
+    rotationRequest.setCampaign_id(5555L);
+    rotationRequest.setCustomized_id1(6666L);
+    rotationRequest.setCustomized_id2(7777L);
     rotationRequest.setRotation_name("Updated RotationName");
     rotationTag.put("TestTag-1", "UpdatedTagName");
     RotationInfo updatedInfo = rotationCbDao.updateRotationMap(rotationId, rotationRequest);
@@ -120,9 +118,9 @@ public class RotationCbDaoTest {
     Assert.assertEquals(rotationId, updatedInfo.getRotation_id());
     Assert.assertEquals("1", String.valueOf(updatedInfo.getChannel_id()));
     Assert.assertEquals("1", String.valueOf(updatedInfo.getSite_id()));
-    Assert.assertEquals("500000001", updatedInfo.getCampaign_id());
-    Assert.assertEquals("c00000001", updatedInfo.getCustomized_id1());
-    Assert.assertEquals("c00000004", updatedInfo.getCustomized_id2());
+    Assert.assertEquals("500000001", String.valueOf(updatedInfo.getCampaign_id()));
+    Assert.assertEquals("200000001", String.valueOf(updatedInfo.getCustomized_id1()));
+    Assert.assertEquals("400000001", String.valueOf(updatedInfo.getCustomized_id2()));
     Assert.assertEquals("Updated RotationName", updatedInfo.getRotation_name());
     Assert.assertEquals("UpdatedTagName", updatedInfo.getRotation_tag().get("TestTag-1"));
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, updatedInfo.getStatus());
@@ -133,15 +131,15 @@ public class RotationCbDaoTest {
     RotationInfo rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(TrackingChannelEnum.AFFILIATES.getId());
     rotationRequest.setSite_id(SiteEnum.EBAY_DE.getId());
-    rotationRequest.setCampaign_id("500000001");
-    rotationRequest.setCustomized_id1("c00000001");
-    rotationRequest.setCustomized_id2("c00000005");
+    rotationRequest.setCampaign_id(500000001L);
+    rotationRequest.setCustomized_id1(200000001L);
+    rotationRequest.setCustomized_id2(500000005L);
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-1", "RotationTag-1");
     rotationRequest.setRotation_tag(rotationTag);
     String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("0077-500000001-c00000001-c00000005", rotationId);
+    Assert.assertEquals("707-500000001-200000001-500000005", rotationId);
     rotationRequest.setRotation_id(rotationId);
     rotationCbDao.addRotationMap(rotationId, rotationRequest);
 
@@ -159,15 +157,15 @@ public class RotationCbDaoTest {
     RotationInfo rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(TrackingChannelEnum.AFFILIATES.getId());
     rotationRequest.setSite_id(SiteEnum.EBAY_DE.getId());
-    rotationRequest.setCampaign_id("500000001");
-    rotationRequest.setCustomized_id1("c00000001");
-    rotationRequest.setCustomized_id2("c00000006");
+    rotationRequest.setCampaign_id(500000001L);
+    rotationRequest.setCustomized_id1(200000001L);
+    rotationRequest.setCustomized_id2(300000001L);
     rotationRequest.setRotation_name("rotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag", "RotationTag-1");
     rotationRequest.setRotation_tag(rotationTag);
     String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("0077-500000001-c00000001-c00000006", rotationId);
+    Assert.assertEquals("707-500000001-200000001-300000001", rotationId);
     rotationRequest.setRotation_id(rotationId);
     rotationCbDao.addRotationMap(rotationId, rotationRequest);
 

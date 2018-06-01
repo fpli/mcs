@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.constant;
+package com.ebay.app.raptor.chocolate.constant;
 
 public class RotationConstant {
 
@@ -34,19 +34,21 @@ public class RotationConstant {
   public static final byte ROTATION_SEPARATOR = '-';
 
   public static final String CHOCO_ROTATION_INFO = "rotation_info";
+  public static final String FIELD_ROTATION_ID = "rid";
   public static final String CHOCO_ROTATION_ID = "rotation_id";
   public static final String CHOCO_ROTATION_TAG = "rotation_tag";
 
+  public static final String CHOCO_SITE_ID = "site_id";
   public static final String FIELD_CHANNEL_ID = "channel_id";
   public static final String FIELD_ROTATION_NAME = "rotation_name";
-  public static final String FIELD_CAMPAIGN_ID = "campaign_Id";
+  public static final String FIELD_CAMPAIGN_ID = "campaign_id";
   public static final String FIELD_CAMPAIGN_NAME = "campaign_name";
   public static final String FIELD_ROTATION_CLICK_THRU_URL = "rotation_click_thru_url";
-  public static final String FIELD_ROTATION_STATUS = "rotation_status";
   public static final String FIELD_ROTATION_COUNT_TYPE = "rotation_count_type";
   public static final String FIELD_ROTATION_START_DATE = "rotation_start_date";
   public static final String FIELD_ROTATION_END_DATE = "rotation_end_date";
   public static final String FIELD_ROTATION_DESCRIPTION = "rotation_description";
+  public static final String FIELD_ROTATION_STATUS = "status";
   public static final String FIELD_VENDOR_ID = "vendor_id";
   public static final String FIELD_VENDOR_NAME = "vendor_name";
   public static final String FIELD_VENDOR_URL = "vendor_url";

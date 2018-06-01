@@ -41,7 +41,6 @@ public abstract class BaseFilterRule implements FilterRule {
     if (action == ChannelAction.APP_FIRST_START) {  // Most rules don't apply to AppDL events
       return false;
     }
-    
     return true;
   }
 }

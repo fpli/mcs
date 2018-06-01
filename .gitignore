@@ -8,6 +8,7 @@ derby.log
 metastore_db
 chocolate-*-bin*
 webapp
+*.DS_Store
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
