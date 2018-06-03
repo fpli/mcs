@@ -7,28 +7,35 @@ public class RotationInfo implements Serializable {
   public static final String STATUS_ACTIVE = "ACTIVE";
   public static final String STATUS_INACTIVE = "INACTIVE";
 
-  private Long rid;
-  private String rotation_id;
+  private Long rotation_id;
+  private String rotation_string;
   private Integer channel_id;
   private Integer site_id;
   private Long campaign_id;
-  private Long customized_id1;
-  private Long customized_id2;
+  private String campaign_name;
+  private Integer vendor_id;
+  private String vendor_name;
   private String rotation_name;
+  private String rotation_description;
   private Long last_update_time;
+  private String update_date;
   private Map rotation_tag;
   private String status = STATUS_ACTIVE;
 
-  public Long getRid() { return rid; }
-
-  public void setRid(Long rid) { this.rid = rid; }
-
-  public String getRotation_id() {
+  public Long getRotation_id() {
     return rotation_id;
   }
 
-  public void setRotation_id(String rotation_id) {
+  public void setRotation_id(Long rotation_id) {
     this.rotation_id = rotation_id;
+  }
+
+  public String getRotation_string() {
+    return rotation_string;
+  }
+
+  public void setRotation_string(String rotation_string) {
+    this.rotation_string = rotation_string;
   }
 
   public Integer getChannel_id() {
@@ -55,20 +62,28 @@ public class RotationInfo implements Serializable {
     this.campaign_id = campaign_id;
   }
 
-  public Long getCustomized_id1() {
-    return customized_id1;
+  public String getCampaign_name() {
+    return campaign_name;
   }
 
-  public void setCustomized_id1(Long customized_id1) {
-    this.customized_id1 = customized_id1;
+  public void setCampaign_name(String campaign_name) {
+    this.campaign_name = campaign_name;
   }
 
-  public Long getCustomized_id2() {
-    return customized_id2;
+  public Integer getVendor_id() {
+    return vendor_id;
   }
 
-  public void setCustomized_id2(Long customized_id2) {
-    this.customized_id2 = customized_id2;
+  public void setVendor_id(Integer vendor_id) {
+    this.vendor_id = vendor_id;
+  }
+
+  public String getVendor_name() {
+    return vendor_name;
+  }
+
+  public void setVendor_name(String vendor_name) {
+    this.vendor_name = vendor_name;
   }
 
   public String getRotation_name() {
@@ -79,12 +94,28 @@ public class RotationInfo implements Serializable {
     this.rotation_name = rotation_name;
   }
 
+  public String getRotation_description() {
+    return rotation_description;
+  }
+
+  public void setRotation_description(String rotation_description) {
+    this.rotation_description = rotation_description;
+  }
+
   public Long getLast_update_time() {
     return last_update_time;
   }
 
   public void setLast_update_time(Long last_update_time) {
     this.last_update_time = last_update_time;
+  }
+
+  public String getUpdate_date() {
+    return update_date;
+  }
+
+  public void setUpdate_date(String update_date) {
+    this.update_date = update_date;
   }
 
   public Map getRotation_tag() {

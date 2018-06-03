@@ -1,11 +1,13 @@
 package com.ebay.traffic.chocolate.mkttracksvc.dao;
 
+import com.ebay.app.raptor.chocolate.constant.MPLXChannelEnum;
+import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.globalenv.SiteEnum;
 import com.ebay.traffic.chocolate.mkttracksvc.MKTTrackSvcConfigBean;
-import com.ebay.app.raptor.chocolate.constant.TrackingChannelEnum;
 import com.ebay.traffic.chocolate.mkttracksvc.dao.imp.RotationCbDaoImp;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
+import com.ebay.traffic.chocolate.mkttracksvc.util.DriverId;
 import com.ebay.traffic.chocolate.mkttracksvc.util.RotationId;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -36,150 +38,133 @@ public class RotationCbDaoTest {
 
   @Test
   public void testInsertAndGetCouchBaseRecord() throws CBException {
-    RotationInfo rotationRequest = new RotationInfo();
-    rotationRequest.setChannel_id(TrackingChannelEnum.AFFILIATES.getId());
-    rotationRequest.setSite_id(SiteEnum.EBAY_DE.getId());
-    rotationRequest.setCampaign_id(500000001L);
-    rotationRequest.setCustomized_id1(200000001L);
-    rotationRequest.setCustomized_id2(300000003L);
-    rotationRequest.setRotation_name("CatherineTesting RotationName");
-    Map<String, String> rotationTag = new HashMap<String, String>();
-    rotationTag.put("TestTag-1", "RotationTag-1");
-    rotationRequest.setRotation_tag(rotationTag);
-    // Customized rotationId
-    String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("707-500000001-200000001-300000003", rotationId);
-    rotationRequest.setRotation_id(rotationId);
+    RotationInfo rotationRequest = getTestRotationInfo();
+    rotationCbDao.addRotationMap(rotationRequest.getRotation_string(), rotationRequest);
+    RotationInfo addedInfo = rotationCbDao.getRotationById(rotationRequest.getRotation_string());
 
-    rotationCbDao.addRotationMap(rotationId, rotationRequest);
-    RotationInfo addedInfo = rotationCbDao.getRotationById(rotationId);
-    Assert.assertEquals("707-500000001-200000001-300000003", addedInfo.getRotation_id());
-    Assert.assertEquals("1", String.valueOf(addedInfo.getChannel_id()));
+    RotationId rotationId = new RotationId(rotationRequest.getRotation_id());
+    String expectedRid = String.valueOf(rotationId.getTimeMillis());
+    expectedRid = "707-" + rotationRequest.getCampaign_id() + "-" + expectedRid.substring(0, 6) + "-" + expectedRid.substring(6);
+    Assert.assertEquals(String.valueOf(rotationId.getRepresentation()), String.valueOf(addedInfo.getRotation_id()));
+    Assert.assertEquals(expectedRid, addedInfo.getRotation_string());
+    Assert.assertEquals("6", String.valueOf(addedInfo.getChannel_id()));
+    Assert.assertEquals(MPLXChannelEnum.EPN.getMplxChannelName(), addedInfo.getRotation_tag().get(RotationConstant.FIELD_TAG_CHANNEL_NAME));
     Assert.assertEquals("77", String.valueOf(addedInfo.getSite_id()));
+    Assert.assertEquals("DE", addedInfo.getRotation_tag().get(RotationConstant.FIELD_TAG_SITE_NAME));
     Assert.assertEquals("500000001", String.valueOf(addedInfo.getCampaign_id()));
-    Assert.assertEquals("200000001", String.valueOf(addedInfo.getCustomized_id1()));
-    Assert.assertEquals("300000003", String.valueOf(addedInfo.getCustomized_id2()));
-    Assert.assertEquals("CatherineTesting RotationName", addedInfo.getRotation_name());
+    Assert.assertEquals("testing campaignName", String.valueOf(addedInfo.getCampaign_name()));
+    Assert.assertEquals(String.valueOf(2003), String.valueOf(addedInfo.getVendor_id()));
+    Assert.assertEquals("testing vendorName", String.valueOf(addedInfo.getVendor_name()));
+    Assert.assertEquals("testing RotationName", addedInfo.getRotation_name());
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, addedInfo.getStatus());
     Assert.assertEquals("RotationTag-1", addedInfo.getRotation_tag().get("TestTag-1"));
+    Assert.assertEquals("testing RotationDescription", addedInfo.getRotation_description());
+    Assert.assertNull(addedInfo.getRotation_tag().get(RotationConstant.FIELD_TAG_PERFORMACE_STRATEGIC));
+    Assert.assertNull(addedInfo.getRotation_tag().get(RotationConstant.FIELD_TAG_DEVICE));
+
+
   }
 
-  @Test
-  public void testInsertAndGetCouchBaseRecord2() throws CBException {
-    RotationInfo rotationRequest = new RotationInfo();
-    rotationRequest.setChannel_id(TrackingChannelEnum.AFFILIATES.getId());
-    rotationRequest.setSite_id(SiteEnum.EBAY_UK.getId());
-    rotationRequest.setCampaign_id(500000001L);
-    rotationRequest.setRotation_name("CatherineTesting RotationName");
-    Map<String, String> rotationTag = new HashMap<String, String>();
-    rotationTag.put("TestTag-1", "RotationTag-1");
-    rotationRequest.setRotation_tag(rotationTag);
-    // Customized rotationId
-    String rotationId = RotationId.getNext(rotationRequest);
-    rotationRequest.setRotation_id(rotationId);
-
-    rotationCbDao.addRotationMap(rotationId, rotationRequest);
-    RotationInfo addedInfo = rotationCbDao.getRotationById(rotationId);
-    Assert.assertEquals("1", String.valueOf(addedInfo.getChannel_id()));
-    Assert.assertEquals("3", String.valueOf(addedInfo.getSite_id()));
-    Assert.assertEquals("500000001", String.valueOf(addedInfo.getCampaign_id()));
-    Assert.assertEquals("CatherineTesting RotationName", addedInfo.getRotation_name());
-    Assert.assertEquals(RotationInfo.STATUS_ACTIVE, addedInfo.getStatus());
-    Assert.assertEquals("RotationTag-1", addedInfo.getRotation_tag().get("TestTag-1"));
-  }
 
   @Test
   public void testUpdate() throws CBException {
     RotationInfo rotationRequest = new RotationInfo();
-    rotationRequest.setChannel_id(TrackingChannelEnum.AFFILIATES.getId());
+    rotationRequest.setChannel_id(MPLXChannelEnum.DISPLAY.getMplxChannelId());
     rotationRequest.setSite_id(SiteEnum.EBAY_US.getId());
-    rotationRequest.setCampaign_id(500000001L);
-    rotationRequest.setCustomized_id1(200000001L);
-    rotationRequest.setCustomized_id2(400000001L);
+    rotationRequest.setCampaign_id(500000002L);
+
     rotationRequest.setRotation_name("CatherineTesting RotationName");
     Map<String, String> rotationTag = new HashMap<String, String>();
     rotationTag.put("TestTag-1", "RotationTag-1");
     rotationRequest.setRotation_tag(rotationTag);
-    String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("711-500000001-200000001-400000001", rotationId);
-    rotationRequest.setRotation_id(rotationId);
-    rotationCbDao.addRotationMap(rotationId, rotationRequest);
-
+    RotationId rotationId = RotationId.getNext(DriverId.getDriverIdFromIp());
+    String rotationStr = rotationId.getRotationStr(711, rotationRequest.getCampaign_id());
+    rotationRequest.setRotation_id(rotationId.getRepresentation());
+    rotationRequest.setRotation_string(rotationStr);
+    RotationInfo addedInfo = rotationCbDao.addRotationMap(rotationStr, rotationRequest);
+    Assert.assertEquals(String.valueOf(rotationId.getRepresentation()), String.valueOf(addedInfo.getRotation_id()));
 
     // Update
-    rotationRequest.setCampaign_id(5555L);
-    rotationRequest.setCustomized_id1(6666L);
-    rotationRequest.setCustomized_id2(7777L);
-    rotationRequest.setRotation_name("Updated RotationName");
-    rotationTag.put("TestTag-1", "UpdatedTagName");
-    RotationInfo updatedInfo = rotationCbDao.updateRotationMap(rotationId, rotationRequest);
+    RotationInfo updateRequest = new RotationInfo();
+    updateRequest.setCampaign_id(5555L);
+    updateRequest.setRotation_name("Updated RotationName");
+    updateRequest.setChannel_id(MPLXChannelEnum.PAID_SEARCH.getMplxChannelId());
+    updateRequest.setCampaign_id(4299L);
+    updateRequest.setCampaign_name("Updated CampaignName");
+    updateRequest.setVendor_id(123);
+    updateRequest.setVendor_name("Updated VendorName");
+    updateRequest.setSite_id(SiteEnum.EBAY_DE.getId());
+    updateRequest.setRotation_description("Test Strategy,Mobile,BR_XXX,Test_xxx");
+    Map<String, String> updateRotationTag = new HashMap<String, String>();
+    updateRotationTag.put(RotationConstant.FIELD_TAG_SITE_NAME, "DE");
+    updateRotationTag.put(RotationConstant.FIELD_TAG_CHANNEL_NAME, MPLXChannelEnum.PAID_SEARCH.getMplxChannelName());
+    updateRotationTag.put("TestTag-1", "UpdatedTagName");
+    updateRequest.setRotation_tag(updateRotationTag);
+
+    RotationInfo updatedInfo = rotationCbDao.updateRotationMap(rotationStr, updateRequest);
 
 
-    Assert.assertEquals(rotationId, updatedInfo.getRotation_id());
-    Assert.assertEquals("1", String.valueOf(updatedInfo.getChannel_id()));
-    Assert.assertEquals("1", String.valueOf(updatedInfo.getSite_id()));
-    Assert.assertEquals("500000001", String.valueOf(updatedInfo.getCampaign_id()));
-    Assert.assertEquals("200000001", String.valueOf(updatedInfo.getCustomized_id1()));
-    Assert.assertEquals("400000001", String.valueOf(updatedInfo.getCustomized_id2()));
+    Assert.assertEquals(String.valueOf(rotationId.getRepresentation()), String.valueOf(updatedInfo.getRotation_id()));
+    Assert.assertEquals(String.valueOf(MPLXChannelEnum.PAID_SEARCH.getMplxChannelId()), String.valueOf(updatedInfo.getChannel_id()));
+    Assert.assertEquals("77", String.valueOf(updatedInfo.getSite_id()));
+    Assert.assertEquals("4299", String.valueOf(updatedInfo.getCampaign_id()));
     Assert.assertEquals("Updated RotationName", updatedInfo.getRotation_name());
-    Assert.assertEquals("UpdatedTagName", updatedInfo.getRotation_tag().get("TestTag-1"));
+    Assert.assertEquals("Updated CampaignName", updatedInfo.getCampaign_name());
+    Assert.assertEquals("Updated VendorName", updatedInfo.getVendor_name());
+    Assert.assertEquals("Test Strategy,Mobile,BR_XXX,Test_xxx", updatedInfo.getRotation_description());
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, updatedInfo.getStatus());
   }
 
   @Test
   public void testChangeStatus() throws CBException {
-    RotationInfo rotationRequest = new RotationInfo();
-    rotationRequest.setChannel_id(TrackingChannelEnum.AFFILIATES.getId());
-    rotationRequest.setSite_id(SiteEnum.EBAY_DE.getId());
-    rotationRequest.setCampaign_id(500000001L);
-    rotationRequest.setCustomized_id1(200000001L);
-    rotationRequest.setCustomized_id2(500000005L);
-    rotationRequest.setRotation_name("CatherineTesting RotationName");
-    Map<String, String> rotationTag = new HashMap<String, String>();
-    rotationTag.put("TestTag-1", "RotationTag-1");
-    rotationRequest.setRotation_tag(rotationTag);
-    String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("707-500000001-200000001-500000005", rotationId);
-    rotationRequest.setRotation_id(rotationId);
-    rotationCbDao.addRotationMap(rotationId, rotationRequest);
+    RotationInfo rotationRequest = getTestRotationInfo();
+    RotationInfo addRotationInfo = rotationCbDao.addRotationMap(rotationRequest.getRotation_string(), rotationRequest);
 
     // Decctivate
-    RotationInfo updatedInfo = rotationCbDao.setStatus(rotationId, RotationInfo.STATUS_INACTIVE);
+    RotationInfo updatedInfo = rotationCbDao.setStatus(addRotationInfo.getRotation_string(), RotationInfo.STATUS_INACTIVE);
     Assert.assertEquals(RotationInfo.STATUS_INACTIVE, updatedInfo.getStatus());
 
     // Activate
-    updatedInfo = rotationCbDao.setStatus(rotationId, RotationInfo.STATUS_ACTIVE);
+    updatedInfo = rotationCbDao.setStatus(addRotationInfo.getRotation_string(), RotationInfo.STATUS_ACTIVE);
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, updatedInfo.getStatus());
   }
 
   @Test
   public void testGetRotationInfo() throws CBException {
-    RotationInfo rotationRequest = new RotationInfo();
-    rotationRequest.setChannel_id(TrackingChannelEnum.AFFILIATES.getId());
-    rotationRequest.setSite_id(SiteEnum.EBAY_DE.getId());
-    rotationRequest.setCampaign_id(500000001L);
-    rotationRequest.setCustomized_id1(200000001L);
-    rotationRequest.setCustomized_id2(300000001L);
-    rotationRequest.setRotation_name("rotationName");
-    Map<String, String> rotationTag = new HashMap<String, String>();
-    rotationTag.put("TestTag", "RotationTag-1");
-    rotationRequest.setRotation_tag(rotationTag);
-    String rotationId = RotationId.getNext(rotationRequest);
-    Assert.assertEquals("707-500000001-200000001-300000001", rotationId);
-    rotationRequest.setRotation_id(rotationId);
-    rotationCbDao.addRotationMap(rotationId, rotationRequest);
-
+    RotationInfo rotationRequest = getTestRotationInfo();
+    RotationInfo addRotationInfo = rotationCbDao.addRotationMap(rotationRequest.getRotation_string(), rotationRequest);
     // get by Id
-    RotationInfo rInfo = rotationCbDao.getRotationById(rotationId);
-    Assert.assertEquals("rotationName", rInfo.getRotation_name());
-    Assert.assertEquals("RotationTag-1", rInfo.getRotation_tag().get("TestTag"));
+    RotationInfo rInfo = rotationCbDao.getRotationById(addRotationInfo.getRotation_string());
+    Assert.assertEquals("testing RotationName", rInfo.getRotation_name());
+    Assert.assertEquals("RotationTag-1", rInfo.getRotation_tag().get("TestTag-1"));
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, rInfo.getStatus());
 
 //    // get by Name
-//    List<RotationInfo> rInfoList = rotationCbDao.getRotationByName("rotationName");
+//    List<RotationInfo> rInfoList = rotationCbDao.getRotationByName("CatherineRotationName");
 //    Assert.assertTrue(rInfoList != null && rInfoList.size() > 0);
-//    Assert.assertEquals("TestName", rInfoList.get(0).getRotation_name());
-//    Assert.assertEquals("CatherineTestingRotationName", rInfoList.get(0).getRotation_tag().get("TestTag"));
+//    Assert.assertEquals("CatherineRotationName201806", rInfoList.get(0).getRotation_name());
 //    Assert.assertEquals(RotationInfo.STATUS_ACTIVE, rInfoList.get(0).getStatus());
+  }
+
+  private RotationInfo getTestRotationInfo(){
+    RotationInfo rotationRequest = new RotationInfo();
+    rotationRequest.setChannel_id(MPLXChannelEnum.EPN.getMplxChannelId());
+    rotationRequest.setSite_id(SiteEnum.EBAY_DE.getId());
+    rotationRequest.setCampaign_id(500000001L);
+    rotationRequest.setVendor_id(2003);
+    rotationRequest.setCampaign_name("testing campaignName");
+    rotationRequest.setVendor_name("testing vendorName");
+    rotationRequest.setRotation_name("testing RotationName");
+    rotationRequest.setRotation_description("testing RotationDescription");
+    Map<String, String> rotationTag = new HashMap<String, String>();
+    rotationTag.put("TestTag-1", "RotationTag-1");
+    rotationTag.put(RotationConstant.FIELD_TAG_SITE_NAME, "DE");
+    rotationTag.put(RotationConstant.FIELD_TAG_CHANNEL_NAME, MPLXChannelEnum.EPN.getMplxChannelName());
+    rotationRequest.setRotation_tag(rotationTag);
+    RotationId rotationId = RotationId.getNext(DriverId.getDriverIdFromIp());
+    String rotationStr = rotationId.getRotationStr(707, rotationRequest.getCampaign_id());
+    rotationRequest.setRotation_id(rotationId.getRepresentation());
+    rotationRequest.setRotation_string(rotationStr);
+    return rotationRequest;
   }
 }

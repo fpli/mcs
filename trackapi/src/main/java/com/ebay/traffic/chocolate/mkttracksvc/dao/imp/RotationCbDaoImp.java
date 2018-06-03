@@ -14,17 +14,12 @@ import com.ebay.traffic.chocolate.mkttracksvc.MKTTrackSvcConfigBean;
 import com.ebay.traffic.chocolate.mkttracksvc.dao.RotationCbDao;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
-import com.ebay.traffic.chocolate.mkttracksvc.util.RotationId;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +35,7 @@ public class RotationCbDaoImp implements RotationCbDao {
 //  @Autowired
 //  MKTTrackSvcConfigBean mktTrackSvcConfig;
 
-  private static final String CB_QUERY_STATEMENT_BY_NAME = "SELECT * FROM `rotation_info` WHERE rotation_name like '%";
+  private static final String CB_QUERY_STATEMENT_BY_NAME = "SELECT * FROM `rotation_info` WHERE lower(rotation_name) like '%";
 
   /**
    * Global logging instance
@@ -85,7 +80,8 @@ public class RotationCbDaoImp implements RotationCbDao {
       throw new CBException("ConnectionError on CouchBase Bucket");
     }
   }
-//
+
+  //
 //
 //  /**
 //   * Singleton
@@ -163,11 +159,6 @@ public class RotationCbDaoImp implements RotationCbDao {
    */
   public RotationInfo addRotationMap(String rotationId, RotationInfo rotationInfo) {
     if (!bucket.exists(rotationId)) {
-      rotationInfo.setLast_update_time(System.currentTimeMillis());
-      String[] rotationIdMeta = rotationId.split(RotationId.HYPHEN);
-      rotationInfo.setCampaign_id(Long.valueOf(rotationIdMeta[1]));
-      rotationInfo.setCustomized_id1(Long.valueOf(rotationIdMeta[2]));
-      rotationInfo.setCustomized_id2(Long.valueOf(rotationIdMeta[3]));
       bucket.insert(StringDocument.create(rotationId, new Gson().toJson(rotationInfo)));
       logger.debug("Adding new RotationInfo. rotationId=" + rotationId + " rotationInfo=" + rotationInfo);
       return rotationInfo;
@@ -178,7 +169,7 @@ public class RotationCbDaoImp implements RotationCbDao {
   /**
    * Update RotationInfo by rotationId
    *
-   * @param rotationId rotation id
+   * @param rotationId   rotation id
    * @param rotationInfo only rotationTag could be modified
    */
   public RotationInfo updateRotationMap(String rotationId, RotationInfo rotationInfo) {
@@ -186,12 +177,31 @@ public class RotationCbDaoImp implements RotationCbDao {
     if (updateInfo == null) {
       return null;
     }
-    if(StringUtils.isNotEmpty(rotationInfo.getRotation_name())){
-      updateInfo.setRotation_name(rotationInfo.getRotation_name());
-    }
-    if(rotationInfo.getChannel_id() != null && rotationInfo.getChannel_id() >= 0 ) {
+    if (rotationInfo.getChannel_id() != null && rotationInfo.getChannel_id() >= 0) {
       updateInfo.setChannel_id(rotationInfo.getChannel_id());
     }
+    if (rotationInfo.getSite_id() != null && rotationInfo.getSite_id() >= 0) {
+      updateInfo.setSite_id(rotationInfo.getSite_id());
+    }
+    if (rotationInfo.getCampaign_id() != null && rotationInfo.getCampaign_id() >= 0) {
+      updateInfo.setCampaign_id(rotationInfo.getCampaign_id());
+    }
+    if (rotationInfo.getCampaign_name() != null) {
+      updateInfo.setCampaign_name(rotationInfo.getCampaign_name());
+    }
+    if (rotationInfo.getVendor_id() != null && rotationInfo.getVendor_id() >= 0) {
+      updateInfo.setVendor_id(rotationInfo.getVendor_id());
+    }
+    if (rotationInfo.getVendor_name() != null) {
+      updateInfo.setVendor_name(rotationInfo.getVendor_name());
+    }
+    if (StringUtils.isNotEmpty(rotationInfo.getRotation_name())) {
+      updateInfo.setRotation_name(rotationInfo.getRotation_name());
+    }
+    if (StringUtils.isNotEmpty(rotationInfo.getRotation_description())) {
+      updateInfo.setRotation_description(rotationInfo.getRotation_description());
+    }
+
     updateInfo.setLast_update_time(System.currentTimeMillis());
     Map updateMap = updateInfo.getRotation_tag();
     Map<String, Object> rotationTags = rotationInfo.getRotation_tag();
@@ -199,7 +209,7 @@ public class RotationCbDaoImp implements RotationCbDao {
     if (rotationTags != null) {
       if (updateMap == null)
         updateMap = rotationTags;
-      for (Map.Entry entry: rotationTags.entrySet()) {
+      for (Map.Entry entry : rotationTags.entrySet()) {
         updateMap.put(entry.getKey(), entry.getValue());
       }
       updateInfo.setRotation_tag(updateMap);
@@ -252,7 +262,7 @@ public class RotationCbDaoImp implements RotationCbDao {
   public List<RotationInfo> getRotationByName(String rotationName) {
     try {
 
-      N1qlQueryResult result = bucket.query(N1qlQuery.simple(CB_QUERY_STATEMENT_BY_NAME + rotationName + "%'"));
+      N1qlQueryResult result = bucket.query(N1qlQuery.simple(CB_QUERY_STATEMENT_BY_NAME + rotationName.trim().toLowerCase() + "%'"));
       if (result == null) {
         return null;
       }

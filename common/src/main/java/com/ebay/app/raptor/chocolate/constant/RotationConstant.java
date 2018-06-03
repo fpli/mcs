@@ -57,6 +57,14 @@ public class RotationConstant {
   public static final String FIELD_CLIENT_NAME = "client_name";
   public static final String FIELD_PLACEMENT_ID = "placement_id";
 
+  public static final String FIELD_TAG_SITE_NAME = "site_name";
+  public static final String FIELD_TAG_CHANNEL_NAME = "channel_id";
+  public static final String FIELD_TAG_PERFORMACE_STRATEGIC = "performance_strategic";
+  public static final String FIELD_TAG_DEVICE = "device";
+  public static final String FIELD_TAG_MEDIA_TYPE = "media_type";
+  public static final String FIELD_TAG_ACTIVITY_TYPE = "activity_type";
+
+
   public static final String FIELD_MPLX_ROTATION_ID = "mplx_rotation_id";
 
   public static final String FIELD_CREATIVE_SETS = "creative_sets";
@@ -78,10 +86,10 @@ public class RotationConstant {
   public static final String FIELD_IM_PLACEMENT_IP_COUNTRY = "im_placement_country";
   public static final String FIELD_RULE_ID = "rule_id";
   public static final String FIELD_RULE_NAME = "rule_name";
-  public static final String FIELD_LT_LATENCY_TIME= "lt_latency_time";
-  public static final String FIELD_ROI_PLACEMENT_ID= "roi_placement_id";
-  public static final String FIELD_ROI_EVENT_NAME= "roi_event_name";
-  public static final String FIELD_ROI_CATEGORY_ID= "roi_category_id";
+  public static final String FIELD_LT_LATENCY_TIME = "lt_latency_time";
+  public static final String FIELD_ROI_PLACEMENT_ID = "roi_placement_id";
+  public static final String FIELD_ROI_EVENT_NAME = "roi_event_name";
+  public static final String FIELD_ROI_CATEGORY_ID = "roi_category_id";
   public static final String FIELD_ROI_EVENT_COUNT = "roi_event_count";
   public static final String FIELD_COOKIE_ID = "cookie_id";
   public static final String FIELD_UNIQUE_ID = "unique_id";
