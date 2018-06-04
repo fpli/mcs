@@ -212,16 +212,18 @@ public class RotationService {
         rotationTag.put(RotationConstant.FIELD_TAG_SITE_NAME, null);
       }
     }
-    // Channel Name
+    // Channel Name(convert from mediaplex channelId) && Rover Channel Id
     if(rotationInfo.getChannel_id() != null && rotationInfo.getChannel_id() >= 0) {
       MPLXChannelEnum channelEnum = MPLXChannelEnum.getByMplxChannelId(rotationInfo.getChannel_id());
       if(channelEnum != null){
-        String channelName = channelEnum.getMplxChannelName();
-        rotationTag.put(RotationConstant.FIELD_TAG_CHANNEL_NAME, channelName);
+        rotationTag.put(RotationConstant.FIELD_TAG_CHANNEL_NAME, channelEnum.getMplxChannelName());
+        rotationTag.put(RotationConstant.FIELD_TAG_ROVER_CHANNEL_ID, String.valueOf(channelEnum.getRoverChannelId()));
       }else{
         rotationTag.put(RotationConstant.FIELD_TAG_CHANNEL_NAME, null);
+        rotationTag.put(RotationConstant.FIELD_TAG_ROVER_CHANNEL_ID, null);
       }
     }
+
     // Strategic and site device from rotation description
     String rotationDesc = rotationInfo.getRotation_description();
     if(StringUtils.isNotEmpty(rotationDesc) && rotationDesc.split(",").length >= 4){
