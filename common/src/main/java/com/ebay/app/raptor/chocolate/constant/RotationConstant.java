@@ -59,7 +59,8 @@ public class RotationConstant {
   public static final String FIELD_PLACEMENT_ID = "placement_id";
 
   public static final String FIELD_TAG_SITE_NAME = "site_name";
-  public static final String FIELD_TAG_CHANNEL_NAME = "channel_id";
+  public static final String FIELD_TAG_CHANNEL_NAME = "channel_name";
+  public static final String FIELD_TAG_ROVER_CHANNEL_ID = "rover_channel_id";
   public static final String FIELD_TAG_PERFORMACE_STRATEGIC = "performance_strategic";
   public static final String FIELD_TAG_DEVICE = "device";
   public static final String FIELD_TAG_MEDIA_TYPE = "media_type";
