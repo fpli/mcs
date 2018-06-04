@@ -245,7 +245,7 @@ public class RotationId implements Serializable, Comparable<RotationId> {
    */
   public Long getRotationId(Integer clientId){
     String rid = String.valueOf(clientId) + String.valueOf(this.getTimeMillis());
-    if(rid.length() > 18) rid = rid.substring(0, 18);
+    if(rid.length() > 18) rid = rid.substring(0, 17);
     return Long.valueOf(rid);
   }
 }
