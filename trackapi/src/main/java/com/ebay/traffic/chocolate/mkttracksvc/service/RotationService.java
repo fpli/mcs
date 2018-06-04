@@ -208,6 +208,8 @@ public class RotationService {
       SiteEnum siteEnum = SiteEnum.get(rotationInfo.getSite_id());
       if(siteEnum != null && siteEnum.getLocale() != null){
         rotationTag.put(RotationConstant.FIELD_TAG_SITE_NAME, siteEnum.getLocale().getCountry());
+      }else {
+        rotationTag.put(RotationConstant.FIELD_TAG_SITE_NAME, null);
       }
     }
     // Channel Name
@@ -216,6 +218,8 @@ public class RotationService {
       if(channelEnum != null){
         String channelName = channelEnum.getMplxChannelName();
         rotationTag.put(RotationConstant.FIELD_TAG_CHANNEL_NAME, channelName);
+      }else{
+        rotationTag.put(RotationConstant.FIELD_TAG_CHANNEL_NAME, null);
       }
     }
     // Strategic and site device from rotation description
@@ -224,6 +228,9 @@ public class RotationService {
       String[] rotationDescArr = rotationDesc.split(",");
       rotationTag.put(RotationConstant.FIELD_TAG_PERFORMACE_STRATEGIC, rotationDescArr[0]);
       rotationTag.put(RotationConstant.FIELD_TAG_DEVICE, rotationDescArr[1]);
+    }else{
+      rotationTag.put(RotationConstant.FIELD_TAG_PERFORMACE_STRATEGIC, null);
+      rotationTag.put(RotationConstant.FIELD_TAG_DEVICE, null);
     }
     rotationInfo.setRotation_tag(rotationTag);
   }
