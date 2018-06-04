@@ -204,11 +204,14 @@ public class RotationService {
     Map<String, String> rotationTag = rotationInfo.getRotation_tag();
     if(rotationTag == null) rotationTag = new HashMap<String, String>();
     // Site Name
-    if(rotationInfo.getSite_id() != null && rotationInfo.getSite_id() > 0){
-      rotationTag.put(RotationConstant.FIELD_TAG_SITE_NAME, SiteEnum.get(rotationInfo.getSite_id()).getLocale().getCountry());
+    if(rotationInfo.getSite_id() != null && rotationInfo.getSite_id() >= 0){
+      SiteEnum siteEnum = SiteEnum.get(rotationInfo.getSite_id());
+      if(siteEnum != null && siteEnum.getLocale() != null){
+        rotationTag.put(RotationConstant.FIELD_TAG_SITE_NAME, siteEnum.getLocale().getCountry());
+      }
     }
     // Channel Name
-    if(rotationInfo.getChannel_id() != null && rotationInfo.getChannel_id() > 0) {
+    if(rotationInfo.getChannel_id() != null && rotationInfo.getChannel_id() >= 0) {
       MPLXChannelEnum channelEnum = MPLXChannelEnum.getByMplxChannelId(rotationInfo.getChannel_id());
       if(channelEnum != null){
         String channelName = channelEnum.getMplxChannelName();
