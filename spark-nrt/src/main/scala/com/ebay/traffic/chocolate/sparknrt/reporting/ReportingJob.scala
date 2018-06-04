@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.reporting
 
 import java.text.SimpleDateFormat
-import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
@@ -36,7 +35,7 @@ class ReportingJob(params: Parameter)
   /**
     * Check whether current event is sent from mobile by check User-Agent.
     */
-  def checkMobileUserAgent(requestHeaders: String) : Boolean = {
+  def checkMobileUserAgent(requestHeaders: String): Boolean = {
     val parts = requestHeaders.split("\\|")
     for (i <- 0 until parts.length) {
       val part = parts(i)
@@ -66,27 +65,7 @@ class ReportingJob(params: Parameter)
       publisherId + "_" + date + "_" + action + "_DESKTOP_RAW"
   }
 
-  /**
-    * Create CouchbaseClient connected to Couchbase. This can be overrided in
-    * unit test wrapper class which can connects to a mock Couchbase.
-    */
-  def createCouchbaseClient(): CouchbaseClient = {
-    val properties = new Properties
-    properties.load(getClass.getClassLoader.getResourceAsStream("couchbase.properties"))
-
-    val couchbaseClient = new CouchbaseClient
-
-    couchbaseClient.init(
-      properties.getProperty("chocolate.report.couchbase.cluster"),
-      properties.getProperty("chocolate.report.couchbase.bucket"),
-      properties.getProperty("chocolate.report.couchbase.user"),
-      properties.getProperty("chocolate.report.couchbase.password"))
-    couchbaseClient
-  }
-
   def upsertCouchbase(date: String, iter: Iterator[Row]): Unit = {
-    val couchbaseClient = createCouchbaseClient()
-
     while (iter.hasNext) {
       val row = iter.next()
 
@@ -98,15 +77,13 @@ class ReportingJob(params: Parameter)
 
       val mapData = Map("timestamp" -> row.getAs("timestamp"), "count" -> row.getAs("count"))
 
-      couchbaseClient.upsert(key, mapData)
+      CouchbaseClient.upsert(key, mapData)
     }
-
-    couchbaseClient.close()
   }
 
   def getDate(date: String): String = {
     val splitted = date.split("=")
-    if (splitted != null && splitted.length > 0) splitted(1)
+    if (splitted != null && splitted.nonEmpty) splitted(1)
     else throw new Exception("Invalid date field in metafile.")
   }
 
@@ -159,9 +136,11 @@ class ReportingJob(params: Parameter)
           .withColumn("is_filtered", lit(true))
 
         val resultDF = df1 union df2 union df3 union df4
-        
+
         // 4. persist the result into Couchbase
-        resultDF.foreachPartition(iter => { upsertCouchbase(date, iter) })
+        resultDF.foreachPartition(iter => {
+          upsertCouchbase(date, iter)
+        })
       })
 
       // 5. delete metafile that is processed

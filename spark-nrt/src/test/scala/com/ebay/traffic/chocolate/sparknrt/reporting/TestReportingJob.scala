@@ -15,15 +15,6 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 /**
   * Created by weibdai on 5/19/18.
   */
-class ReportingJobWrapper(params: Parameter) extends ReportingJob(params) {
-  override def createCouchbaseClient(): CouchbaseClient = {
-    val couchbaseClient = new CouchbaseClient
-    val handle = CouchbaseClientMock.connect()
-    couchbaseClient.init(handle._1, handle._2)
-    couchbaseClient
-  }
-}
-
 class TestReportingJob extends BaseFunSuite {
 
   val tmpPath = createTempPath()
@@ -49,15 +40,15 @@ class TestReportingJob extends BaseFunSuite {
   }
 
   val params = Parameter(args)
-  var job: ReportingJobWrapper = _
+  val job = new ReportingJob(params)
 
-  override def beforeAll() = {
+  override def beforeAll(): Unit = {
     CouchbaseClientMock.startCouchbaseMock()
-    job = new ReportingJobWrapper(params)
+    CouchbaseClient.createClusterFunc = () => CouchbaseClientMock.connect()
     createTestDataForDedupe()
   }
 
-  override def afterAll() = {
+  override def afterAll(): Unit = {
     CouchbaseClientMock.closeCouchbaseMock()
   }
 
@@ -74,9 +65,7 @@ class TestReportingJob extends BaseFunSuite {
     assert (!fs.exists(new Path(dedupeMeta(0)._1)))
 
     // check against mock Couchbase...
-    val handle = CouchbaseClientMock.connect()
-    val cluster = handle._1
-    val bucket = handle._2
+    val bucket = CouchbaseClient.bucket
 
     val keyArray = Array(
       "11_2018-05-01_CLICK_MOBILE_FILTERED",
@@ -105,11 +94,11 @@ class TestReportingJob extends BaseFunSuite {
       "22_2018-05-01_VIEWABLE_DESKTOP_FILTERED")
     for (i <- keyArray.indices) {
       assert(bucket.exists(keyArray(i)))
-      System.out.println("key: " + keyArray(i) + " value: " + bucket.get(keyArray(i)).content().toString)
+      println("key: " + keyArray(i) + " value: " + bucket.get(keyArray(i)).content().toString)
     }
 
-    bucket.close
-    cluster.disconnect
+    // Call this before close mock...
+    CouchbaseClient.close()
   }
 
   def getTimestamp(date: String): Long = {
@@ -139,7 +128,7 @@ class TestReportingJob extends BaseFunSuite {
     message
   }
 
-  def createTestDataForDedupe() = {
+  def createTestDataForDedupe(): Unit = {
     // prepare metadata file
     val metadata = Metadata(workDir, channel, MetadataEnum.capping)
 
@@ -151,7 +140,7 @@ class TestReportingJob extends BaseFunSuite {
     // prepare data file
     val writer = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-05-01/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
+      .withSchema(FilterMessageV1.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
