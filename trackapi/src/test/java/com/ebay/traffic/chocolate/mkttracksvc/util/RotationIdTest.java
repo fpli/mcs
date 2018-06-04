@@ -92,24 +92,24 @@ public class RotationIdTest {
 
     @Test
     public void testZeroDriver() throws InterruptedException {
-        final long time = System.currentTimeMillis();
+        final long time = System.currentTimeMillis()+1;
         final int driver = 0;
 
         RotationId rid1 = RotationId.getNext(driver, time);
         assertTrue(rid1.getTimeMillis() - time <= 1000l);
         assertEquals(driver, rid1.getDriverId());
-        assertEquals(0, rid1.getSequenceId());;
+//        assertEquals(0, rid1.getSequenceId());
 
         // Increment
         RotationId rid2 = RotationId.getNext(driver, time);
         assertEquals(rid1.getTimeMillis(), rid2.getTimeMillis());
         assertEquals(driver, rid2.getDriverId());
-        assertEquals(1, rid2.getSequenceId());
+//        assertEquals(1, rid2.getSequenceId());
         Thread.sleep(1000);
 
         RotationId rid3 = new RotationId(rid2, driver);
         assertEquals(driver, rid3.getDriverId());
-        assertEquals(0, rid3.getSequenceId());
+//        assertEquals(0, rid3.getSequenceId());
         assertNotEquals(rid1.getTimeMillis(), rid3.getTimeMillis());
         System.out.println(rid1.toDebugString());
         System.out.println(rid2.toDebugString());
@@ -322,6 +322,29 @@ public class RotationIdTest {
         System.out.println(rid2Str);
         assertEquals(expectedRid1, rid1Str);
         assertEquals(expectedRid2, rid2Str);
+        assertNotEquals(rid1Str, rid2Str);
+    }
+
+    @Test
+    public void testRotationStr(){
+        Integer clientId = 707;
+        final long time = System.currentTimeMillis();
+        RotationId rid1 = RotationId.getNext(1, time);
+        String rid1Str = rid1.getRotationStr(clientId);
+        RotationId rid2 = RotationId.getNext(1, time+1);
+        String rid2Str = rid2.getRotationStr(clientId);
+
+        String expectedRid1 = String.valueOf(rid1.getTimeMillis());
+        expectedRid1 = "707-" + expectedRid1.substring(0,6) + "-" + expectedRid1.substring(6,12) + "-" + expectedRid1.substring(12);
+        String expectedRid2 = expectedRid1.substring(0, expectedRid1.length() -1);
+        expectedRid2 = expectedRid2 + (Integer.valueOf(expectedRid1.substring(expectedRid1.length()-1)) + 1);
+
+        System.out.println(rid1Str);
+        System.out.println(rid2Str);
+        assertEquals(expectedRid1, rid1Str);
+        assertEquals(expectedRid1.replaceAll("-", ""), String.valueOf(rid1.getRotationId(clientId)));
+        assertEquals(expectedRid2, rid2Str);
+        assertEquals(expectedRid2.replaceAll("-", ""), String.valueOf(rid2.getRotationId(clientId)));
         assertNotEquals(rid1Str, rid2Str);
 
     }

@@ -226,4 +226,26 @@ public class RotationId implements Serializable, Comparable<RotationId> {
 
     return ridStr;
   }
+
+  /**
+   * Get Rotation String for legacy system with 4 split format like : 707-xxx-xxx-xxx
+   * @param clientId MPLX ClientId or eBay SiteId
+   * @return rotation string
+   */
+  public String getRotationStr(Integer clientId){
+    String ridStr = String.valueOf(this.getTimeMillis());
+    ridStr = clientId + HYPHEN + ridStr.substring(0, 6)  + HYPHEN + ridStr.substring(6, 12) + HYPHEN + ridStr.substring(12);
+    return ridStr;
+  }
+
+  /**
+   * Replace all hyphen in rotation string
+   * @param clientId MPLX ClientId or eBay SiteId
+   * @return rotation id
+   */
+  public Long getRotationId(Integer clientId){
+    String rid = String.valueOf(clientId) + String.valueOf(this.getTimeMillis());
+    if(rid.length() > 18) rid = rid.substring(0, 18);
+    return Long.valueOf(rid);
+  }
 }

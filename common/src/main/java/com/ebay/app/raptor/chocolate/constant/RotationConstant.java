@@ -34,8 +34,9 @@ public class RotationConstant {
   public static final byte ROTATION_SEPARATOR = '-';
 
   public static final String CHOCO_ROTATION_INFO = "rotation_info";
-  public static final String FIELD_ROTATION_ID = "rid";
-  public static final String CHOCO_ROTATION_ID = "rotation_id";
+//  public static final String FIELD_ROTATION_ID = "rid";
+  public static final String FIELD_ROTATION_ID = "rotation_id";
+  public static final String FIELD_ROTATION_STRING = "rotation_string";
   public static final String CHOCO_ROTATION_TAG = "rotation_tag";
 
   public static final String CHOCO_SITE_ID = "site_id";

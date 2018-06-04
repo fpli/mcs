@@ -63,8 +63,8 @@ public class RotationService {
     Integer clientId = mplxClientEnum == null ? site_id : mplxClientEnum.getMplxClientId();
 
     RotationId rotationId = RotationId.getNext(DriverId.getDriverIdFromIp());
-    String rotationStr = rotationId.getRotationStr(clientId, rotationReq.getCampaign_id());
-    rotationReq.setRotation_id(rotationId.getRepresentation());
+    String rotationStr = rotationId.getRotationStr(clientId);
+    rotationReq.setRotation_id(rotationId.getRotationId(clientId));
     rotationReq.setRotation_string(rotationStr);
     rotationReq.setLast_update_time(System.currentTimeMillis());
     Date d = new Date(rotationReq.getLast_update_time());
@@ -209,8 +209,11 @@ public class RotationService {
     }
     // Channel Name
     if(rotationInfo.getChannel_id() != null && rotationInfo.getChannel_id() > 0) {
-      String channelName = MPLXChannelEnum.getByMplxChannelId(rotationInfo.getChannel_id()).getMplxChannelName();
-      rotationTag.put(RotationConstant.FIELD_TAG_CHANNEL_NAME, channelName);
+      MPLXChannelEnum channelEnum = MPLXChannelEnum.getByMplxChannelId(rotationInfo.getChannel_id());
+      if(channelEnum != null){
+        String channelName = channelEnum.getMplxChannelName();
+        rotationTag.put(RotationConstant.FIELD_TAG_CHANNEL_NAME, channelName);
+      }
     }
     // Strategic and site device from rotation description
     String rotationDesc = rotationInfo.getRotation_description();

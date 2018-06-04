@@ -42,11 +42,9 @@ public class RotationCbDaoTest {
     rotationCbDao.addRotationMap(rotationRequest.getRotation_string(), rotationRequest);
     RotationInfo addedInfo = rotationCbDao.getRotationById(rotationRequest.getRotation_string());
 
-    RotationId rotationId = new RotationId(rotationRequest.getRotation_id());
-    String expectedRid = String.valueOf(rotationId.getTimeMillis());
-    expectedRid = "707-" + rotationRequest.getCampaign_id() + "-" + expectedRid.substring(0, 6) + "-" + expectedRid.substring(6);
-    Assert.assertEquals(String.valueOf(rotationId.getRepresentation()), String.valueOf(addedInfo.getRotation_id()));
-    Assert.assertEquals(expectedRid, addedInfo.getRotation_string());
+//    RotationId rotationId = new RotationId(rotationRequest.getRotation_id());
+//    Assert.assertEquals(String.valueOf(rotationId.getRepresentation()), String.valueOf(addedInfo.getRotation_id()));
+//    Assert.assertEquals(rotationId.getRotationStr(707), addedInfo.getRotation_string());
     Assert.assertEquals("6", String.valueOf(addedInfo.getChannel_id()));
     Assert.assertEquals(MPLXChannelEnum.EPN.getMplxChannelName(), addedInfo.getRotation_tag().get(RotationConstant.FIELD_TAG_CHANNEL_NAME));
     Assert.assertEquals("77", String.valueOf(addedInfo.getSite_id()));
@@ -78,11 +76,11 @@ public class RotationCbDaoTest {
     rotationTag.put("TestTag-1", "RotationTag-1");
     rotationRequest.setRotation_tag(rotationTag);
     RotationId rotationId = RotationId.getNext(DriverId.getDriverIdFromIp());
-    String rotationStr = rotationId.getRotationStr(711, rotationRequest.getCampaign_id());
-    rotationRequest.setRotation_id(rotationId.getRepresentation());
+    String rotationStr = rotationId.getRotationStr(711);
+    rotationRequest.setRotation_id(rotationId.getRotationId(711));
     rotationRequest.setRotation_string(rotationStr);
     RotationInfo addedInfo = rotationCbDao.addRotationMap(rotationStr, rotationRequest);
-    Assert.assertEquals(String.valueOf(rotationId.getRepresentation()), String.valueOf(addedInfo.getRotation_id()));
+    Assert.assertEquals(String.valueOf(rotationId.getRotationId(711)), String.valueOf(addedInfo.getRotation_id()));
 
     // Update
     RotationInfo updateRequest = new RotationInfo();
@@ -104,7 +102,7 @@ public class RotationCbDaoTest {
     RotationInfo updatedInfo = rotationCbDao.updateRotationMap(rotationStr, updateRequest);
 
 
-    Assert.assertEquals(String.valueOf(rotationId.getRepresentation()), String.valueOf(updatedInfo.getRotation_id()));
+//    Assert.assertEquals(String.valueOf(rotationId.getRepresentation()), String.valueOf(updatedInfo.getRotation_id()));
     Assert.assertEquals(String.valueOf(MPLXChannelEnum.PAID_SEARCH.getMplxChannelId()), String.valueOf(updatedInfo.getChannel_id()));
     Assert.assertEquals("77", String.valueOf(updatedInfo.getSite_id()));
     Assert.assertEquals("4299", String.valueOf(updatedInfo.getCampaign_id()));
@@ -162,8 +160,8 @@ public class RotationCbDaoTest {
     rotationTag.put(RotationConstant.FIELD_TAG_CHANNEL_NAME, MPLXChannelEnum.EPN.getMplxChannelName());
     rotationRequest.setRotation_tag(rotationTag);
     RotationId rotationId = RotationId.getNext(DriverId.getDriverIdFromIp());
-    String rotationStr = rotationId.getRotationStr(707, rotationRequest.getCampaign_id());
-    rotationRequest.setRotation_id(rotationId.getRepresentation());
+    String rotationStr = rotationId.getRotationStr(707);
+    rotationRequest.setRotation_id(rotationId.getRotationId(707));
     rotationRequest.setRotation_string(rotationStr);
     return rotationRequest;
   }
