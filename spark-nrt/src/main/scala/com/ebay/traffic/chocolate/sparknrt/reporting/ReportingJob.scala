@@ -52,24 +52,32 @@ class ReportingJob(params: Parameter)
 
   /**
     * Generate unique key for a Couchbase record.
-    * Format - [publisher id]_[date]_[action]_[MOBILE or DESKTOP]_[RAW or FILTERED]
+    * Format - [prefix]_[publisher id or campaign id]_[date]_[action]_[MOBILE or DESKTOP]_[RAW or FILTERED]
     */
-  def getUniqueKey(publisherId: String, date: String, action: String, isMob: Boolean, isFiltered: Boolean): String = {
+  def getUniqueKey(prefix: String,
+                   id: String,
+                   date: String,
+                   action: String,
+                   isMob: Boolean,
+                   isFiltered: Boolean): String = {
+    val key = prefix + "_" + id + "_" + date + "_" + action
     if (isMob && isFiltered)
-      publisherId + "_" + date + "_" + action + "_MOBILE_FILTERED"
+      key + "_MOBILE_FILTERED"
     else if (isMob && !isFiltered)
-      publisherId + "_" + date + "_" + action + "_MOBILE_RAW"
+      key + "_MOBILE_RAW"
     else if (!isMob && isFiltered)
-      publisherId + "_" + date + "_" + action + "_DESKTOP_FILTERED"
+      key + "_DESKTOP_FILTERED"
     else
-      publisherId + "_" + date + "_" + action + "_DESKTOP_RAW"
+      key + "_DESKTOP_RAW"
   }
 
-  def upsertCouchbase(date: String, iter: Iterator[Row]): Unit = {
+  def upsertCouchbase(date: String, iter: Iterator[Row], isPublisherReport: Boolean): Unit = {
     while (iter.hasNext) {
       val row = iter.next()
 
-      val key = getUniqueKey(row.getAs("publisher_id").toString,
+      val key = getUniqueKey(
+        if (isPublisherReport) "publisher" else "campaign", // prefix
+        row.getAs(if (isPublisherReport) "publisher_id" else "campaign_id").toString,
         date,
         row.getAs("channel_action"),
         row.getAs("is_mob"),
@@ -105,6 +113,7 @@ class ReportingJob(params: Parameter)
 
         // 3. do aggregation (count) - click, impression, viewable for both desktop and mobile
 
+        // Publisher based report...
         // Raw + Desktop
         val df1 = df.filter(row => !checkMobileUserAgent(row.getAs("request_headers")))
           .groupBy("publisher_id", "channel_action")
@@ -135,11 +144,49 @@ class ReportingJob(params: Parameter)
           .withColumn("is_mob", lit(true))
           .withColumn("is_filtered", lit(true))
 
-        val resultDF = df1 union df2 union df3 union df4
+        val resultDF1 = df1 union df2 union df3 union df4
 
         // 4. persist the result into Couchbase
-        resultDF.foreachPartition(iter => {
-          upsertCouchbase(date, iter)
+        resultDF1.foreachPartition(iter => {
+          upsertCouchbase(date, iter, true)
+        })
+
+        // Campaign based report...
+        // Raw + Desktop
+        val df5 = df.filter(row => !checkMobileUserAgent(row.getAs("request_headers")))
+          .groupBy("campaign_id", "channel_action")
+          .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
+          .withColumn("is_mob", lit(false))
+          .withColumn("is_filtered", lit(false))
+
+        // Raw + Mobile
+        val df6 = df.filter(row => checkMobileUserAgent(row.getAs("request_headers")))
+          .groupBy("campaign_id", "channel_action")
+          .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
+          .withColumn("is_mob", lit(true))
+          .withColumn("is_filtered", lit(false))
+
+        // Filtered + Desktop
+        val df7 = df.filter(row => !checkMobileUserAgent(row.getAs("request_headers")))
+          .where("rt_rule_flags == 0 and nrt_rule_flags == 0")
+          .groupBy("campaign_id", "channel_action")
+          .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
+          .withColumn("is_mob", lit(false))
+          .withColumn("is_filtered", lit(true))
+
+        // Filtered + Mobile
+        val df8 = df.filter(row => checkMobileUserAgent(row.getAs("request_headers")))
+          .where("rt_rule_flags == 0 and nrt_rule_flags == 0")
+          .groupBy("campaign_id", "channel_action")
+          .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
+          .withColumn("is_mob", lit(true))
+          .withColumn("is_filtered", lit(true))
+
+        val resultDF2 = df5 union df6 union df7 union df8
+
+        // 4. persist the result into Couchbase
+        resultDF2.foreachPartition(iter => {
+          upsertCouchbase(date, iter, false)
         })
       })
 
