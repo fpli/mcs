@@ -100,6 +100,7 @@ class ReportingJob(params: Parameter)
   override def run(): Unit = {
 
     // 1. load metafiles
+    logger.info("load metadata...")
     val dedupeOutputMeta = metadata.readDedupeOutputMeta()
 
     dedupeOutputMeta.foreach(metaIter => {
@@ -110,10 +111,13 @@ class ReportingJob(params: Parameter)
         // 2. load DataFrame
         val date = getDate(datesFile._1)
         val df = readFilesAsDFEx(datesFile._2)
+        logger.info("load DataFrame, date=" + date +", with files=" + datesFile._2.mkString(","))
 
         // 3. do aggregation (count) - click, impression, viewable for both desktop and mobile
 
         // Publisher based report...
+        logger.info("generate publisher based report...")
+
         // Raw + Desktop
         val df1 = df.filter(row => !checkMobileUserAgent(row.getAs("request_headers")))
           .groupBy("publisher_id", "channel_action")
@@ -152,6 +156,8 @@ class ReportingJob(params: Parameter)
         })
 
         // Campaign based report...
+        logger.info("generate campaign based report...")
+
         // Raw + Desktop
         val df5 = df.filter(row => !checkMobileUserAgent(row.getAs("request_headers")))
           .groupBy("campaign_id", "channel_action")
@@ -185,12 +191,15 @@ class ReportingJob(params: Parameter)
         val resultDF2 = df5 union df6 union df7 union df8
 
         // 4. persist the result into Couchbase
+        logger.info("persist aggregation result into Couchbase...")
+
         resultDF2.foreachPartition(iter => {
           upsertCouchbase(date, iter, false)
         })
       })
 
       // 5. delete metafile that is processed
+      logger.info(s"delete metafile=$metaIter._1")
       metadata.deleteDedupeOutputMeta(metaIter._1)
     })
   }
