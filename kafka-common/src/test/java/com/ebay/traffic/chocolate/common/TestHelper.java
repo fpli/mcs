@@ -365,7 +365,33 @@ public class TestHelper {
     message.setSnid(snid);
     return message;
   }
-
+  
+  public static FilterMessage newFilterMessage(ChannelType channelType,
+                                               ChannelAction channelAction,
+                                               long snapshotId,
+                                               long publisherId,
+                                               long campaignId,
+                                               long timestamp,
+                                               long rtRuleFlags,
+                                               long nrtRuleFlags,
+                                               boolean isMobi) {
+    FilterMessage message = new FilterMessage();
+    message.setSnapshotId(snapshotId);
+    message.setTimestamp(timestamp);
+    message.setCampaignId(campaignId);
+    message.setPublisherId(publisherId);
+    message.setRequestHeaders(isMobi ? "Accept: application/json|User-Agent: Mobi" : "");
+    message.setUri("");
+    message.setResponseHeaders("");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setRtRuleFlags(rtRuleFlags);
+    message.setNrtRuleFlags(nrtRuleFlags);
+    message.setSnid("");
+    return message;
+  }
+  
   /**
    * Create listener message
    *
