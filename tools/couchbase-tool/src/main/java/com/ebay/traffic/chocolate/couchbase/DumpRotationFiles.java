@@ -67,9 +67,12 @@ public class DumpRotationFiles {
 
       N1qlQueryResult result = bucket.query(N1qlQuery.simple(CB_QUERY_STATEMENT_BY_TIME + lastUpdateTime));
       JsonObject rotationInfo = null;
+      JsonObject rotationTag = null;
       for (N1qlQueryRow row : result) {
         rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
         if(rotationInfo == null) continue;
+//        rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
+//        rotationInfo.put(RotationConstant.CHOCO_ROTATION_TAG, String.valueOf(rotationTag));
         out.write(String.valueOf(rotationInfo).getBytes());
         out.write(RotationConstant.RECORD_SEPARATOR);
         out.flush();
