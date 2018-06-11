@@ -6,7 +6,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.functions.{count, lit, min}
+import org.apache.spark.sql.functions._
 
 /**
   * Created by weibdai on 5/19/18.
@@ -95,7 +95,7 @@ class ReportingJob(params: Parameter)
     else throw new Exception("Invalid date field in metafile.")
   }
 
-  //import spark.implicits._
+  import spark.implicits._
 
   override def run(): Unit = {
 
@@ -114,93 +114,57 @@ class ReportingJob(params: Parameter)
         logger.info("load DataFrame, date=" + date +", with files=" + datesFile._2.mkString(","))
 
         // 3. do aggregation (count) - click, impression, viewable for both desktop and mobile
+        val isMobUdf = udf((requestHeaders: String) => checkMobileUserAgent(requestHeaders))
 
-        // Publisher based report...
+        val commonDf = df.withColumn("is_mob", isMobUdf(col("request_headers"))).cache()
+        val filteredDf = commonDf.where("rt_rule_flags == 0 and nrt_rule_flags == 0").cache()
+
+        // publisher based report...
         logger.info("generate publisher based report...")
 
-        // Raw + Desktop
-        val df1 = df.filter(row => !checkMobileUserAgent(row.getAs("request_headers")))
-          .groupBy("publisher_id", "channel_action")
+        // Raw + Desktop and Mobile
+        val publisherDf1 = commonDf
+          .groupBy("publisher_id", "channel_action", "is_mob")
           .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
-          .withColumn("is_mob", lit(false))
           .withColumn("is_filtered", lit(false))
 
-        // Raw + Mobile
-        val df2 = df.filter(row => checkMobileUserAgent(row.getAs("request_headers")))
-          .groupBy("publisher_id", "channel_action")
+        // Filtered + Desktop and Mobile
+        val publisherDf2 = filteredDf
+          .groupBy("publisher_id", "channel_action", "is_mob")
           .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
-          .withColumn("is_mob", lit(true))
-          .withColumn("is_filtered", lit(false))
-
-        // Filtered + Desktop
-        val df3 = df.filter(row => !checkMobileUserAgent(row.getAs("request_headers")))
-          .where("rt_rule_flags == 0 and nrt_rule_flags == 0")
-          .groupBy("publisher_id", "channel_action")
-          .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
-          .withColumn("is_mob", lit(false))
           .withColumn("is_filtered", lit(true))
 
-        // Filtered + Mobile
-        val df4 = df.filter(row => checkMobileUserAgent(row.getAs("request_headers")))
-          .where("rt_rule_flags == 0 and nrt_rule_flags == 0")
-          .groupBy("publisher_id", "channel_action")
-          .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
-          .withColumn("is_mob", lit(true))
-          .withColumn("is_filtered", lit(true))
-
-        val resultDF1 = df1 union df2 union df3 union df4
+        val publisherDf = publisherDf1 union publisherDf2
 
         // 4. persist the result into Couchbase
-        resultDF1.foreachPartition(iter => {
-          upsertCouchbase(date, iter, true)
-        })
+        logger.info("persist publisher report into Couchbase...")
+        publisherDf.foreachPartition(iter => upsertCouchbase(date, iter, true))
 
-        // Campaign based report...
+        // campaign based report...
         logger.info("generate campaign based report...")
 
-        // Raw + Desktop
-        val df5 = df.filter(row => !checkMobileUserAgent(row.getAs("request_headers")))
-          .groupBy("campaign_id", "channel_action")
+        // Raw + Desktop and Mobile
+        val campaignDf1 = commonDf
+          .groupBy("campaign_id", "channel_action", "is_mob")
           .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
-          .withColumn("is_mob", lit(false))
           .withColumn("is_filtered", lit(false))
 
-        // Raw + Mobile
-        val df6 = df.filter(row => checkMobileUserAgent(row.getAs("request_headers")))
-          .groupBy("campaign_id", "channel_action")
+        // Filtered + Desktop and Mobile
+        val campaignDf2 = filteredDf
+          .groupBy("campaign_id", "channel_action", "is_mob")
           .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
-          .withColumn("is_mob", lit(true))
-          .withColumn("is_filtered", lit(false))
-
-        // Filtered + Desktop
-        val df7 = df.filter(row => !checkMobileUserAgent(row.getAs("request_headers")))
-          .where("rt_rule_flags == 0 and nrt_rule_flags == 0")
-          .groupBy("campaign_id", "channel_action")
-          .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
-          .withColumn("is_mob", lit(false))
           .withColumn("is_filtered", lit(true))
 
-        // Filtered + Mobile
-        val df8 = df.filter(row => checkMobileUserAgent(row.getAs("request_headers")))
-          .where("rt_rule_flags == 0 and nrt_rule_flags == 0")
-          .groupBy("campaign_id", "channel_action")
-          .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
-          .withColumn("is_mob", lit(true))
-          .withColumn("is_filtered", lit(true))
-
-        val resultDF2 = df5 union df6 union df7 union df8
+        val campaignDf = campaignDf1 union campaignDf2
 
         // 4. persist the result into Couchbase
-        logger.info("persist aggregation result into Couchbase...")
-
-        resultDF2.foreachPartition(iter => {
-          upsertCouchbase(date, iter, false)
-        })
+        logger.info("persist campaign report into Couchbase...")
+        campaignDf.foreachPartition(iter => upsertCouchbase(date, iter, false))
       })
 
       // 5. delete metafile that is processed
-      logger.info(s"delete metafile=$metaIter._1")
-      metadata.deleteDedupeOutputMeta(metaIter._1)
+      logger.info(s"delete metafile=$file")
+      metadata.deleteDedupeOutputMeta(file)
     })
   }
 }
