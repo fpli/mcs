@@ -64,7 +64,7 @@ public class RotationService {
 
     RotationId rotationId = RotationId.getNext(DriverId.getDriverIdFromIp());
     String rotationStr = rotationId.getRotationStr(clientId);
-    rotationReq.setRotation_id(rotationId.getRotationId(clientId));
+    rotationReq.setRotation_id(rotationId.getRotationId(rotationStr));
     rotationReq.setRotation_string(rotationStr);
     rotationReq.setLast_update_time(System.currentTimeMillis());
     Date d = new Date(rotationReq.getLast_update_time());

@@ -77,7 +77,7 @@ public class RotationIdResourceTest {
     rotationRequest.setRotation_tag(rotationTag);
     RotationId rotationId = RotationId.getNext(DriverId.getDriverIdFromIp());
     String rotationStr = rotationId.getRotationStr(707);
-    rotationRequest.setRotation_id(rotationId.getRotationId(707));
+    rotationRequest.setRotation_id(rotationId.getRotationId(rotationStr));
     rotationRequest.setRotation_string(rotationStr);
     return rotationRequest;
   }

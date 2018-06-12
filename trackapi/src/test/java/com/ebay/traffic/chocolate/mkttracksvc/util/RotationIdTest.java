@@ -342,9 +342,9 @@ public class RotationIdTest {
         System.out.println(rid1Str);
         System.out.println(rid2Str);
         assertEquals(expectedRid1, rid1Str);
-        assertEquals(expectedRid1.replaceAll("-", ""), String.valueOf(rid1.getRotationId(clientId)));
+        assertEquals(expectedRid1.replaceAll("-", ""), String.valueOf(rid1.getRotationId(rid1Str)));
         assertEquals(expectedRid2, rid2Str);
-        assertEquals(expectedRid2.replaceAll("-", ""), String.valueOf(rid2.getRotationId(clientId)));
+        assertEquals(expectedRid2.replaceAll("-", ""), String.valueOf(rid2.getRotationId(rid2Str)));
         assertNotEquals(rid1Str, rid2Str);
 
     }

@@ -240,12 +240,14 @@ public class RotationId implements Serializable, Comparable<RotationId> {
 
   /**
    * Replace all hyphen in rotation string
-   * @param clientId MPLX ClientId or eBay SiteId
+   * @param rotationStr rotation String
    * @return rotation id
    */
-  public Long getRotationId(Integer clientId){
-    String rid = String.valueOf(clientId) + String.valueOf(this.getTimeMillis());
-    if(rid.length() > 18) rid = rid.substring(0, 17);
+  public Long getRotationId(String rotationStr){
+//    String rid = String.valueOf(clientId) + String.valueOf(this.getTimeMillis());
+    String rid = rotationStr.replaceAll(HYPHEN, "");
+    if(rid.length() > 18) rid = rid.substring(0, 18);
     return Long.valueOf(rid);
   }
+
 }

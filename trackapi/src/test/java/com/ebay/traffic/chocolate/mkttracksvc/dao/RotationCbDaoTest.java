@@ -77,10 +77,10 @@ public class RotationCbDaoTest {
     rotationRequest.setRotation_tag(rotationTag);
     RotationId rotationId = RotationId.getNext(DriverId.getDriverIdFromIp());
     String rotationStr = rotationId.getRotationStr(711);
-    rotationRequest.setRotation_id(rotationId.getRotationId(711));
+    rotationRequest.setRotation_id(rotationId.getRotationId(rotationStr));
     rotationRequest.setRotation_string(rotationStr);
     RotationInfo addedInfo = rotationCbDao.addRotationMap(rotationStr, rotationRequest);
-    Assert.assertEquals(String.valueOf(rotationId.getRotationId(711)), String.valueOf(addedInfo.getRotation_id()));
+    Assert.assertEquals(String.valueOf(rotationId.getRotationId(rotationStr)), String.valueOf(addedInfo.getRotation_id()));
 
     // Update
     RotationInfo updateRequest = new RotationInfo();
@@ -161,7 +161,7 @@ public class RotationCbDaoTest {
     rotationRequest.setRotation_tag(rotationTag);
     RotationId rotationId = RotationId.getNext(DriverId.getDriverIdFromIp());
     String rotationStr = rotationId.getRotationStr(707);
-    rotationRequest.setRotation_id(rotationId.getRotationId(707));
+    rotationRequest.setRotation_id(rotationId.getRotationId(rotationStr));
     rotationRequest.setRotation_string(rotationStr);
     return rotationRequest;
   }

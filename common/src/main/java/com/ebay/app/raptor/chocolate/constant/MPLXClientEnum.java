@@ -62,4 +62,13 @@ public enum MPLXClientEnum {
     }
     return null;
   }
+
+  public static MPLXClientEnum getByClientId(Integer mplxClientId) {
+    for (MPLXClientEnum mplxClientEnum : MPLXClientEnum.values()) {
+      if (mplxClientEnum.mplxClientId == mplxClientId) {
+        return mplxClientEnum;
+      }
+    }
+    return null;
+  }
 }
