@@ -76,7 +76,7 @@ class ReportingJob(params: Parameter)
       val row = iter.next()
 
       val key = getUniqueKey(
-        if (isPublisherReport) "publisher" else "campaign", // prefix
+        if (isPublisherReport) "PUBLISHER" else "CAMPAIGN", // prefix
         row.getAs(if (isPublisherReport) "publisher_id" else "campaign_id").toString,
         date,
         row.getAs("channel_action"),
