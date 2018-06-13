@@ -21,8 +21,8 @@
     <groupId>com.ebay.traffic</groupId>
     <artifactId>chocolate</artifactId>
     <version>3.0-RELEASE</version>
-    <relativePath>..</relativePath>
-    <!--<relativePath>../../pom.xml</relativePath>-->
+    <!--<relativePath>..</relativePath>-->
+    <relativePath>../../pom.xml</relativePath>
   </parent>
   <groupId>com.ebay.traffic</groupId>
   <artifactId>couchbase-tool</artifactId>
