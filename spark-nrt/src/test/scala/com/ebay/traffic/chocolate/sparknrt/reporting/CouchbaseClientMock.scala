@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.reporting
 
 import java.util
-import java.util.concurrent.TimeUnit
 
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment
 import com.couchbase.client.java.{Bucket, Cluster, CouchbaseCluster}
@@ -19,9 +18,6 @@ import org.apache.http.util.EntityUtils
 object CouchbaseClientMock {
 
   var couchbaseMock: CouchbaseMock = null
-
-  //var httpPort: Int = 0
-  //var carrierPort: Int = 0
 
   private def createCouchbaseMock(name: String, password: String): Unit = {
     val bucketConfiguration = new BucketConfiguration()
@@ -59,17 +55,14 @@ object CouchbaseClientMock {
 
   def startCouchbaseMock(): Unit = {
     createCouchbaseMock("default", "")
-
   }
 
-  def connect(): (Cluster, Bucket) = {
+  def connect(): Cluster = {
     val handle = initMock("default")
-    val cluster = CouchbaseCluster.create(DefaultCouchbaseEnvironment.builder
+    CouchbaseCluster.create(DefaultCouchbaseEnvironment.builder
       .bootstrapCarrierDirectPort(handle._1)
       .bootstrapHttpDirectPort(handle._2)
       .build(), "couchbase://127.0.0.1")
-    val bucket = cluster.openBucket("default", 1200, TimeUnit.SECONDS)
-    (cluster, bucket)
   }
 
   def closeCouchbaseMock(): Unit ={

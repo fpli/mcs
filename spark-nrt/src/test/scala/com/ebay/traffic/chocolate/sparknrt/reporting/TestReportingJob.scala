@@ -15,15 +15,6 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 /**
   * Created by weibdai on 5/19/18.
   */
-class ReportingJobWrapper(params: Parameter) extends ReportingJob(params) {
-  override def createCouchbaseClient(): CouchbaseClient = {
-    val couchbaseClient = new CouchbaseClient
-    val handle = CouchbaseClientMock.connect()
-    couchbaseClient.init(handle._1, handle._2)
-    couchbaseClient
-  }
-}
-
 class TestReportingJob extends BaseFunSuite {
 
   val tmpPath = createTempPath()
@@ -49,15 +40,17 @@ class TestReportingJob extends BaseFunSuite {
   }
 
   val params = Parameter(args)
-  var job: ReportingJobWrapper = _
+  val job = new ReportingJob(params)
 
-  override def beforeAll() = {
+  override def beforeAll(): Unit = {
     CouchbaseClientMock.startCouchbaseMock()
-    job = new ReportingJobWrapper(params)
+    CouchbaseClient.createClusterFunc = () => CouchbaseClientMock.connect()
     createTestDataForDedupe()
   }
 
-  override def afterAll() = {
+  override def afterAll(): Unit = {
+    // Call this before close mock...
+    CouchbaseClient.close()
     CouchbaseClientMock.closeCouchbaseMock()
   }
 
@@ -74,42 +67,65 @@ class TestReportingJob extends BaseFunSuite {
     assert (!fs.exists(new Path(dedupeMeta(0)._1)))
 
     // check against mock Couchbase...
-    val handle = CouchbaseClientMock.connect()
-    val cluster = handle._1
-    val bucket = handle._2
+    val bucket = CouchbaseClient.bucket
 
     val keyArray = Array(
-      "11_2018-05-01_CLICK_MOBILE_FILTERED",
-      "11_2018-05-01_CLICK_DESKTOP_FILTERED",
-      "11_2018-05-01_CLICK_MOBILE_RAW",
-      "11_2018-05-01_CLICK_DESKTOP_RAW",
-      "22_2018-05-01_CLICK_MOBILE_FILTERED",
-      "22_2018-05-01_CLICK_DESKTOP_RAW",
-      "22_2018-05-01_CLICK_DESKTOP_FILTERED",
-      "22_2018-05-01_CLICK_MOBILE_RAW",
-      "11_2018-05-01_IMPRESSION_DESKTOP_RAW",
-      "11_2018-05-01_IMPRESSION_MOBILE_FILTERED",
-      "11_2018-05-01_IMPRESSION_MOBILE_RAW",
-      "11_2018-05-01_IMPRESSION_DESKTOP_FILTERED",
-      "22_2018-05-01_IMPRESSION_MOBILE_RAW",
-      "22_2018-05-01_IMPRESSION_MOBILE_FILTERED",
-      "22_2018-05-01_IMPRESSION_DESKTOP_FILTERED",
-      "22_2018-05-01_IMPRESSION_DESKTOP_RAW",
-      "11_2018-05-01_VIEWABLE_MOBILE_RAW",
-      "11_2018-05-01_VIEWABLE_MOBILE_FILTERED",
-      "11_2018-05-01_VIEWABLE_DESKTOP_FILTERED",
-      "11_2018-05-01_VIEWABLE_DESKTOP_RAW",
-      "22_2018-05-01_VIEWABLE_MOBILE_RAW",
-      "22_2018-05-01_VIEWABLE_MOBILE_FILTERED",
-      "22_2018-05-01_VIEWABLE_DESKTOP_RAW",
-      "22_2018-05-01_VIEWABLE_DESKTOP_FILTERED")
+      // publisher based report result...
+      "PUBLISHER_11_2018-05-01_CLICK_MOBILE_FILTERED",
+      "PUBLISHER_11_2018-05-01_CLICK_DESKTOP_FILTERED",
+      "PUBLISHER_11_2018-05-01_CLICK_MOBILE_RAW",
+      "PUBLISHER_11_2018-05-01_CLICK_DESKTOP_RAW",
+      "PUBLISHER_22_2018-05-01_CLICK_MOBILE_FILTERED",
+      "PUBLISHER_22_2018-05-01_CLICK_DESKTOP_RAW",
+      "PUBLISHER_22_2018-05-01_CLICK_DESKTOP_FILTERED",
+      "PUBLISHER_22_2018-05-01_CLICK_MOBILE_RAW",
+      "PUBLISHER_11_2018-05-01_IMPRESSION_DESKTOP_RAW",
+      "PUBLISHER_11_2018-05-01_IMPRESSION_MOBILE_FILTERED",
+      "PUBLISHER_11_2018-05-01_IMPRESSION_MOBILE_RAW",
+      "PUBLISHER_11_2018-05-01_IMPRESSION_DESKTOP_FILTERED",
+      "PUBLISHER_22_2018-05-01_IMPRESSION_MOBILE_RAW",
+      "PUBLISHER_22_2018-05-01_IMPRESSION_MOBILE_FILTERED",
+      "PUBLISHER_22_2018-05-01_IMPRESSION_DESKTOP_FILTERED",
+      "PUBLISHER_22_2018-05-01_IMPRESSION_DESKTOP_RAW",
+      "PUBLISHER_11_2018-05-01_VIEWABLE_MOBILE_RAW",
+      "PUBLISHER_11_2018-05-01_VIEWABLE_MOBILE_FILTERED",
+      "PUBLISHER_11_2018-05-01_VIEWABLE_DESKTOP_FILTERED",
+      "PUBLISHER_11_2018-05-01_VIEWABLE_DESKTOP_RAW",
+      "PUBLISHER_22_2018-05-01_VIEWABLE_MOBILE_RAW",
+      "PUBLISHER_22_2018-05-01_VIEWABLE_MOBILE_FILTERED",
+      "PUBLISHER_22_2018-05-01_VIEWABLE_DESKTOP_RAW",
+      "PUBLISHER_22_2018-05-01_VIEWABLE_DESKTOP_FILTERED",
+      // campaign based report...
+      "CAMPAIGN_111_2018-05-01_CLICK_MOBILE_FILTERED",
+      "CAMPAIGN_111_2018-05-01_CLICK_DESKTOP_FILTERED",
+      "CAMPAIGN_111_2018-05-01_CLICK_MOBILE_RAW",
+      "CAMPAIGN_111_2018-05-01_CLICK_DESKTOP_RAW",
+      "CAMPAIGN_222_2018-05-01_CLICK_MOBILE_FILTERED",
+      "CAMPAIGN_222_2018-05-01_CLICK_DESKTOP_RAW",
+      "CAMPAIGN_222_2018-05-01_CLICK_DESKTOP_FILTERED",
+      "CAMPAIGN_222_2018-05-01_CLICK_MOBILE_RAW",
+      "CAMPAIGN_111_2018-05-01_IMPRESSION_DESKTOP_RAW",
+      "CAMPAIGN_111_2018-05-01_IMPRESSION_MOBILE_FILTERED",
+      "CAMPAIGN_111_2018-05-01_IMPRESSION_MOBILE_RAW",
+      "CAMPAIGN_111_2018-05-01_IMPRESSION_DESKTOP_FILTERED",
+      "CAMPAIGN_222_2018-05-01_IMPRESSION_MOBILE_RAW",
+      "CAMPAIGN_222_2018-05-01_IMPRESSION_MOBILE_FILTERED",
+      "CAMPAIGN_222_2018-05-01_IMPRESSION_DESKTOP_FILTERED",
+      "CAMPAIGN_222_2018-05-01_IMPRESSION_DESKTOP_RAW",
+      "CAMPAIGN_111_2018-05-01_VIEWABLE_MOBILE_RAW",
+      "CAMPAIGN_111_2018-05-01_VIEWABLE_MOBILE_FILTERED",
+      "CAMPAIGN_111_2018-05-01_VIEWABLE_DESKTOP_FILTERED",
+      "CAMPAIGN_111_2018-05-01_VIEWABLE_DESKTOP_RAW",
+      "CAMPAIGN_222_2018-05-01_VIEWABLE_MOBILE_RAW",
+      "CAMPAIGN_222_2018-05-01_VIEWABLE_MOBILE_FILTERED",
+      "CAMPAIGN_222_2018-05-01_VIEWABLE_DESKTOP_RAW",
+      "CAMPAIGN_222_2018-05-01_VIEWABLE_DESKTOP_FILTERED"
+    )
+
     for (i <- keyArray.indices) {
       assert(bucket.exists(keyArray(i)))
-      System.out.println("key: " + keyArray(i) + " value: " + bucket.get(keyArray(i)).content().toString)
+      println("key: " + keyArray(i) + " value: " + bucket.get(keyArray(i)).content().toString)
     }
-
-    bucket.close
-    cluster.disconnect
   }
 
   def getTimestamp(date: String): Long = {
@@ -139,7 +155,7 @@ class TestReportingJob extends BaseFunSuite {
     message
   }
 
-  def createTestDataForDedupe() = {
+  def createTestDataForDedupe(): Unit = {
     // prepare metadata file
     val metadata = Metadata(workDir, channel, MetadataEnum.capping)
 
@@ -151,7 +167,7 @@ class TestReportingJob extends BaseFunSuite {
     // prepare data file
     val writer = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-05-01/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
+      .withSchema(FilterMessageV1.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
@@ -161,34 +177,34 @@ class TestReportingJob extends BaseFunSuite {
     // Desktop
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 1L, 11L, 111L, timestamp - 12, 1, 0, false, writer)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 2L, 11L, 111L, timestamp - 11, 0, 0, false, writer)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 3L, 22L, 111L, timestamp - 10, 1, 0, false, writer)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 4L, 22L, 111L, timestamp - 9, 0, 0, false, writer)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 3L, 22L, 222L, timestamp - 10, 1, 0, false, writer)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 4L, 22L, 222L, timestamp - 9, 0, 0, false, writer)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 5L, 11L, 111L, timestamp - 8, 1, 0, false, writer)
     writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 6L, 11L, 111L, timestamp - 7, 0, 0, false, writer)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7L, 22L, 111L, timestamp - 6, 1, 0, false, writer)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 8L, 22L, 111L, timestamp - 5, 0, 0, false, writer)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7L, 22L, 222L, timestamp - 6, 1, 0, false, writer)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 8L, 22L, 222L, timestamp - 5, 0, 0, false, writer)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 9L, 11L, 111L, timestamp - 4, 1, 0, false, writer)
     writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 10L, 11L, 111L, timestamp - 3, 0, 0, false, writer)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 11L, 22L, 111L, timestamp - 2, 1, 0, false, writer)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 12L, 22L, 111L, timestamp - 1, 0, 0, false, writer)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 11L, 22L, 222L, timestamp - 2, 1, 0, false, writer)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 12L, 22L, 222L, timestamp - 1, 0, 0, false, writer)
 
     // Mobile
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 13L, 11L, 111L, timestamp - 12, 1, 0, true, writer)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 14L, 11L, 111L, timestamp - 11, 0, 0, true, writer)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 15L, 22L, 111L, timestamp - 10, 1, 0, true, writer)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 16L, 22L, 111L, timestamp - 9, 0, 0, true, writer)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 15L, 22L, 222L, timestamp - 10, 1, 0, true, writer)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 16L, 22L, 222L, timestamp - 9, 0, 0, true, writer)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 17L, 11L, 111L, timestamp - 8, 1, 0, true, writer)
     writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 18L, 11L, 111L, timestamp - 7, 0, 0, true, writer)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 19L, 22L, 111L, timestamp - 6, 1, 0, true, writer)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 20L, 22L, 111L, timestamp - 5, 0, 0, true, writer)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 19L, 22L, 222L, timestamp - 6, 1, 0, true, writer)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 20L, 22L, 222L, timestamp - 5, 0, 0, true, writer)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 21L, 11L, 111L, timestamp - 4, 1, 0, true, writer)
     writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 22L, 11L, 111L, timestamp - 3, 0, 0, true, writer)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 23L, 22L, 111L, timestamp - 2, 1, 0, true, writer)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 24L, 22L, 111L, timestamp - 1, 0, 0, true, writer)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 23L, 22L, 222L, timestamp - 2, 1, 0, true, writer)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 24L, 22L, 222L, timestamp - 1, 0, 0, true, writer)
 
     writer.close()
   }

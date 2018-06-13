@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.reporting
 
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 
 import com.couchbase.client.java.document.JsonDocument
@@ -11,48 +12,54 @@ import org.slf4j.LoggerFactory
 /**
   * Created by weibdai on 5/19/18.
   */
-class CouchbaseClient {
+object CouchbaseClient {
 
-  @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private lazy val logger = LoggerFactory.getLogger(this.getClass)
 
-  var cluster: Cluster = null
-  var bucket: Bucket = null
+  @transient private lazy val properties = {
+    val properties = new Properties
+    properties.load(getClass.getClassLoader.getResourceAsStream("couchbase.properties"))
+    properties
+  }
 
-  /**
-    * Open Couchbase bucket by specifying cluster nodes, bucket name, user, password.
-    * @param nodes Couchbase cluster nodes
-    * @param bucketName bucket name to open
-    * @param user user name
-    * @param password password
-    */
-  def init(nodes: String, bucketName: String, user: String, password: String): Unit = {
-    val env = DefaultCouchbaseEnvironment.builder()
-      .connectTimeout(10000).queryTimeout(5000).build()
+  // Open Couchbase bucket with settings in couchbase.properties.
+  @transient lazy val cluster: Cluster = createClusterFunc()
 
-    cluster = CouchbaseCluster.create(env, nodes)
+  // Use this delegate to override the way for cluster creation.
+  @transient var createClusterFunc: () => Cluster = createCluster
 
+  private def createCluster(): Cluster = {
     try {
+      val nodes = properties.getProperty("chocolate.report.couchbase.cluster")
+      val user = properties.getProperty("chocolate.report.couchbase.user")
+      val password = properties.getProperty("chocolate.report.couchbase.password")
+
+      val env = DefaultCouchbaseEnvironment.builder()
+        .connectTimeout(10000).queryTimeout(5000).build()
+      CouchbaseCluster.create(env, nodes)
       cluster.authenticate(user, password)
-      bucket = cluster.openBucket(bucketName, 1200, TimeUnit.SECONDS)
     } catch {
-      case e: Exception => {
-        logger.error("Couchbase init error.", e)
+      case e: Exception =>
+        logger.error("Couchbase create cluster error.", e)
         throw e
-      }
+    }
+  }
+
+  @transient lazy val bucket: Bucket = {
+    try {
+      val bucketName = properties.getProperty("chocolate.report.couchbase.bucket")
+      cluster.openBucket(bucketName, 1200, TimeUnit.SECONDS)
+    } catch {
+      case e: Exception =>
+        logger.error("Couchbase open bucket error.", e)
+        throw e
     }
   }
 
   /**
-    * For unit test purpose
-    */
-  def init(cluster: Cluster, bucket: Bucket): Unit = {
-    this.cluster = cluster
-    this.bucket = bucket
-  }
-
-  /**
     * Insert or append data into Couchbase.
-    * @param key key of data
+    *
+    * @param key     key of data
     * @param mapData value of data organized in Map[String, Any]
     */
   def upsert(key: String, mapData: Map[String, _]): Unit = {
@@ -78,7 +85,7 @@ class CouchbaseClient {
   }
 
   /**
-    * Close bucket connection
+    * Close bucket connection.
     */
   def close(): Unit = {
     bucket.close
