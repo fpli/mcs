@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.mkttracksvc.entity;
+package com.ebay.traffic.chocolate.couchbase;
 
 import java.io.Serializable;
 import java.util.Map;
