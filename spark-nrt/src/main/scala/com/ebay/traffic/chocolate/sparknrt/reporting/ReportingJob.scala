@@ -1,13 +1,12 @@
 package com.ebay.traffic.chocolate.sparknrt.reporting
 
 import java.text.SimpleDateFormat
-import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.functions.{count, lit, min}
+import org.apache.spark.sql.functions._
 
 /**
   * Created by weibdai on 5/19/18.
@@ -36,7 +35,7 @@ class ReportingJob(params: Parameter)
   /**
     * Check whether current event is sent from mobile by check User-Agent.
     */
-  def checkMobileUserAgent(requestHeaders: String) : Boolean = {
+  def checkMobileUserAgent(requestHeaders: String): Boolean = {
     val parts = requestHeaders.split("\\|")
     for (i <- 0 until parts.length) {
       val part = parts(i)
@@ -53,44 +52,32 @@ class ReportingJob(params: Parameter)
 
   /**
     * Generate unique key for a Couchbase record.
-    * Format - [publisher id]_[date]_[action]_[MOBILE or DESKTOP]_[RAW or FILTERED]
+    * Format - [prefix]_[publisher id or campaign id]_[date]_[action]_[MOBILE or DESKTOP]_[RAW or FILTERED]
     */
-  def getUniqueKey(publisherId: String, date: String, action: String, isMob: Boolean, isFiltered: Boolean): String = {
+  def getUniqueKey(prefix: String,
+                   id: String,
+                   date: String,
+                   action: String,
+                   isMob: Boolean,
+                   isFiltered: Boolean): String = {
+    val key = prefix + "_" + id + "_" + date + "_" + action
     if (isMob && isFiltered)
-      publisherId + "_" + date + "_" + action + "_MOBILE_FILTERED"
+      key + "_MOBILE_FILTERED"
     else if (isMob && !isFiltered)
-      publisherId + "_" + date + "_" + action + "_MOBILE_RAW"
+      key + "_MOBILE_RAW"
     else if (!isMob && isFiltered)
-      publisherId + "_" + date + "_" + action + "_DESKTOP_FILTERED"
+      key + "_DESKTOP_FILTERED"
     else
-      publisherId + "_" + date + "_" + action + "_DESKTOP_RAW"
+      key + "_DESKTOP_RAW"
   }
 
-  /**
-    * Create CouchbaseClient connected to Couchbase. This can be overrided in
-    * unit test wrapper class which can connects to a mock Couchbase.
-    */
-  def createCouchbaseClient(): CouchbaseClient = {
-    val properties = new Properties
-    properties.load(getClass.getClassLoader.getResourceAsStream("couchbase.properties"))
-
-    val couchbaseClient = new CouchbaseClient
-
-    couchbaseClient.init(
-      properties.getProperty("chocolate.report.couchbase.cluster"),
-      properties.getProperty("chocolate.report.couchbase.bucket"),
-      properties.getProperty("chocolate.report.couchbase.user"),
-      properties.getProperty("chocolate.report.couchbase.password"))
-    couchbaseClient
-  }
-
-  def upsertCouchbase(date: String, iter: Iterator[Row]): Unit = {
-    val couchbaseClient = createCouchbaseClient()
-
+  def upsertCouchbase(date: String, iter: Iterator[Row], isPublisherReport: Boolean): Unit = {
     while (iter.hasNext) {
       val row = iter.next()
 
-      val key = getUniqueKey(row.getAs("publisher_id").toString,
+      val key = getUniqueKey(
+        if (isPublisherReport) "PUBLISHER" else "CAMPAIGN", // prefix
+        row.getAs(if (isPublisherReport) "publisher_id" else "campaign_id").toString,
         date,
         row.getAs("channel_action"),
         row.getAs("is_mob"),
@@ -98,23 +85,22 @@ class ReportingJob(params: Parameter)
 
       val mapData = Map("timestamp" -> row.getAs("timestamp"), "count" -> row.getAs("count"))
 
-      couchbaseClient.upsert(key, mapData)
+      CouchbaseClient.upsert(key, mapData)
     }
-
-    couchbaseClient.close()
   }
 
   def getDate(date: String): String = {
     val splitted = date.split("=")
-    if (splitted != null && splitted.length > 0) splitted(1)
+    if (splitted != null && splitted.nonEmpty) splitted(1)
     else throw new Exception("Invalid date field in metafile.")
   }
 
-  //import spark.implicits._
+  import spark.implicits._
 
   override def run(): Unit = {
 
     // 1. load metafiles
+    logger.info("load metadata...")
     val dedupeOutputMeta = metadata.readDedupeOutputMeta()
 
     dedupeOutputMeta.foreach(metaIter => {
@@ -125,47 +111,60 @@ class ReportingJob(params: Parameter)
         // 2. load DataFrame
         val date = getDate(datesFile._1)
         val df = readFilesAsDFEx(datesFile._2)
+        logger.info("load DataFrame, date=" + date +", with files=" + datesFile._2.mkString(","))
 
         // 3. do aggregation (count) - click, impression, viewable for both desktop and mobile
+        val isMobUdf = udf((requestHeaders: String) => checkMobileUserAgent(requestHeaders))
 
-        // Raw + Desktop
-        val df1 = df.filter(row => !checkMobileUserAgent(row.getAs("request_headers")))
-          .groupBy("publisher_id", "channel_action")
+        val commonDf = df.withColumn("is_mob", isMobUdf(col("request_headers"))).cache()
+        val filteredDf = commonDf.where("rt_rule_flags == 0 and nrt_rule_flags == 0").cache()
+
+        // publisher based report...
+        logger.info("generate publisher based report...")
+
+        // Raw + Desktop and Mobile
+        val publisherDf1 = commonDf
+          .groupBy("publisher_id", "channel_action", "is_mob")
           .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
-          .withColumn("is_mob", lit(false))
           .withColumn("is_filtered", lit(false))
 
-        // Raw + Mobile
-        val df2 = df.filter(row => checkMobileUserAgent(row.getAs("request_headers")))
-          .groupBy("publisher_id", "channel_action")
+        // Filtered + Desktop and Mobile
+        val publisherDf2 = filteredDf
+          .groupBy("publisher_id", "channel_action", "is_mob")
           .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
-          .withColumn("is_mob", lit(true))
-          .withColumn("is_filtered", lit(false))
-
-        // Filtered + Desktop
-        val df3 = df.filter(row => !checkMobileUserAgent(row.getAs("request_headers")))
-          .where("rt_rule_flags == 0 and nrt_rule_flags == 0")
-          .groupBy("publisher_id", "channel_action")
-          .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
-          .withColumn("is_mob", lit(false))
           .withColumn("is_filtered", lit(true))
 
-        // Filtered + Mobile
-        val df4 = df.filter(row => checkMobileUserAgent(row.getAs("request_headers")))
-          .where("rt_rule_flags == 0 and nrt_rule_flags == 0")
-          .groupBy("publisher_id", "channel_action")
-          .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
-          .withColumn("is_mob", lit(true))
-          .withColumn("is_filtered", lit(true))
+        val publisherDf = publisherDf1 union publisherDf2
 
-        val resultDF = df1 union df2 union df3 union df4
-        
         // 4. persist the result into Couchbase
-        resultDF.foreachPartition(iter => { upsertCouchbase(date, iter) })
+        logger.info("persist publisher report into Couchbase...")
+        publisherDf.foreachPartition(iter => upsertCouchbase(date, iter, true))
+
+        // campaign based report...
+        logger.info("generate campaign based report...")
+
+        // Raw + Desktop and Mobile
+        val campaignDf1 = commonDf
+          .groupBy("campaign_id", "channel_action", "is_mob")
+          .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
+          .withColumn("is_filtered", lit(false))
+
+        // Filtered + Desktop and Mobile
+        val campaignDf2 = filteredDf
+          .groupBy("campaign_id", "channel_action", "is_mob")
+          .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
+          .withColumn("is_filtered", lit(true))
+
+        val campaignDf = campaignDf1 union campaignDf2
+
+        // 4. persist the result into Couchbase
+        logger.info("persist campaign report into Couchbase...")
+        campaignDf.foreachPartition(iter => upsertCouchbase(date, iter, false))
       })
 
       // 5. delete metafile that is processed
-      metadata.deleteDedupeOutputMeta(metaIter._1)
+      logger.info(s"delete metafile=$file")
+      metadata.deleteDedupeOutputMeta(file)
     })
   }
 }
