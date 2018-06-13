@@ -3,12 +3,14 @@ package com.ebay.traffic.chocolate.couchbase;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.CouchbaseCluster;
+import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.env.CouchbaseEnvironment;
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import com.couchbase.client.java.query.N1qlQuery;
 import com.couchbase.client.java.query.N1qlQueryResult;
 import com.couchbase.client.java.query.N1qlQueryRow;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
+import com.google.gson.Gson;
 
 
 import java.io.*;
@@ -64,8 +66,14 @@ public class DumpRotationFiles {
       }
 
       N1qlQueryResult result = bucket.query(N1qlQuery.simple(CB_QUERY_STATEMENT_BY_TIME + lastUpdateTime));
+      JsonObject rotationInfo = null;
+      JsonObject rotationTag = null;
       for (N1qlQueryRow row : result) {
-        out.write(row.byteValue());
+        rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
+        if(rotationInfo == null) continue;
+//        rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
+//        rotationInfo.put(RotationConstant.CHOCO_ROTATION_TAG, String.valueOf(rotationTag));
+        out.write(String.valueOf(rotationInfo).getBytes());
         out.write(RotationConstant.RECORD_SEPARATOR);
         out.flush();
         count++;

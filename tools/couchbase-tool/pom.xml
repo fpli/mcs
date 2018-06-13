@@ -21,6 +21,7 @@
     <groupId>com.ebay.traffic</groupId>
     <artifactId>chocolate</artifactId>
     <version>3.0-RELEASE</version>
+    <!--<relativePath>..</relativePath>-->
     <relativePath>../../pom.xml</relativePath>
   </parent>
   <groupId>com.ebay.traffic</groupId>
@@ -67,14 +68,17 @@
       <resource>
         <directory>src/main/resources</directory>
         <filtering>true</filtering>
+        <!--<includes><include>*</include></includes>-->
       </resource>
     </resources>
     <testResources>
       <testResource>
         <directory>src/test/resources</directory>
         <filtering>true</filtering>
+        <!--<includes><include>*</include></includes>-->
       </testResource>
     </testResources>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -84,7 +88,7 @@
           <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
           <argLine>-Xmx1024m</argLine>
           <includes>
-            <include>**/Test*.java</include>
+            <include>**/*.java</include>
           </includes>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemProperties>
@@ -123,23 +127,34 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>2.12.1</version>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.6.1</version>
         <configuration>
-          <enableRulesSummary>true</enableRulesSummary>
+          <compilerVersion>${java.version}</compilerVersion>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <encoding>${file.encoding}</encoding>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>com.ebay.traffic.chocolate.couchbase.LoadCampaignMappingToCouchbase</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
+      <!--<plugin>-->
+        <!--<groupId>org.apache.maven.plugins</groupId>-->
+        <!--<artifactId>maven-checkstyle-plugin</artifactId>-->
+        <!--<version>2.12.1</version>-->
+        <!--<configuration>-->
+          <!--<enableRulesSummary>true</enableRulesSummary>-->
+        <!--</configuration>-->
+      <!--</plugin>-->
+      <!--<plugin>-->
+        <!--<groupId>org.apache.maven.plugins</groupId>-->
+        <!--<artifactId>maven-jar-plugin</artifactId>-->
+        <!--<configuration>-->
+          <!--<archive>-->
+            <!--<manifest>-->
+              <!--<mainClass>com.ebay.traffic.chocolate.couchbase.LoadCampaignMappingToCouchbase</mainClass>-->
+            <!--</manifest>-->
+          <!--</archive>-->
+        <!--</configuration>-->
+      <!--</plugin>-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>

@@ -4,6 +4,7 @@ import com.couchbase.client.deps.io.netty.util.internal.StringUtil;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.cos.raptor.service.annotations.ApiMethod;
 import com.ebay.cos.raptor.service.annotations.ApiRef;
+import com.ebay.traffic.chocolate.mkttracksvc.constant.ErrorMsgConstant;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.ServiceResponse;
 import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
@@ -45,13 +46,13 @@ public class RotationIdResource {
   @Produces({MediaType.APPLICATION_JSON})
   @Consumes({MediaType.APPLICATION_JSON})
   public String createRotationId(@RequestBody RotationInfo rotationInfo) throws CBException {
-    String errors = validateInput(rotationInfo, true);
+    String errors = validateInput(rotationInfo, ErrorMsgConstant.CREATED);
     if(StringUtils.isNotEmpty(errors)){
       return errors;
     }
 
     ServiceResponse ret = rotationService.addRotationMap(rotationInfo);
-    return getResponse(ret, "updated.");
+    return getResponse(ret, ErrorMsgConstant.CREATED);
   }
 
   @PUT
@@ -63,16 +64,16 @@ public class RotationIdResource {
                                         @RequestBody RotationInfo rotationInfo) throws CBException {
 
     if (StringUtils.isEmpty(rid)) {
-      return getResponse(null, "modified. Please set correct rotationId.");
+      return getResponse(null, "updated. Please set correct rotationId.");
     }
 
-    String errors = validateInput(rotationInfo, false);
+    String errors = validateInput(rotationInfo, ErrorMsgConstant.UPDATED);
     if(StringUtils.isNotEmpty(errors)){
       return errors;
     }
 
     ServiceResponse ret = rotationService.updateRotationMap(rid, rotationInfo);
-    return getResponse(ret, "updated.");
+    return getResponse(ret, ErrorMsgConstant.UPDATED);
   }
 
   @PUT
@@ -87,7 +88,7 @@ public class RotationIdResource {
     }
 
     ServiceResponse ret = rotationService.setStatus(rid, RotationInfo.STATUS_ACTIVE);
-    return getResponse(ret, "activate.");
+    return getResponse(ret, ErrorMsgConstant.ACTIVATED);
   }
 
   @PUT
@@ -101,7 +102,7 @@ public class RotationIdResource {
     }
 
     ServiceResponse ret = rotationService.setStatus(rid, RotationInfo.STATUS_INACTIVE);
-    return getResponse(ret, "deactivate.");
+    return getResponse(ret, ErrorMsgConstant.DEACTIVATED);
   }
 
   @GET
@@ -136,55 +137,57 @@ public class RotationIdResource {
     return new Gson().toJson(response);
   }
 
-  private String validateInput(RotationInfo rotationInfo, boolean required){
+  private String validateInput(RotationInfo rotationInfo, String methodName){
     List<String> msgList = new ArrayList<String>();
     String msgStr = null;
 
     if (rotationInfo == null) {
-      msgStr = "No rotation info was created. Please set rotation_info with json format.";
+      msgStr = String.format(ErrorMsgConstant.ROTATION_INFO_JSON, methodName, RotationConstant.CHOCO_ROTATION_INFO);
       addValueToList(msgList, msgStr);
     }else{
-      if (rotationInfo.getChannel_id() == null && required) {
-        msgStr = getRequiredMsg(RotationConstant.FIELD_CHANNEL_ID);
+      // channel_id
+      if (rotationInfo.getChannel_id() == null && ErrorMsgConstant.CREATED.equals(methodName)) {
+        msgStr = String.format(ErrorMsgConstant.ROTATION_INFO_REQUIRED, RotationConstant.FIELD_CHANNEL_ID);
+        addValueToList(msgList, msgStr);
+      }
+      if (rotationInfo.getChannel_id() != null && (rotationInfo.getChannel_id() < 0 || rotationInfo.getChannel_id() > 999)) {
+        msgStr = String.format(ErrorMsgConstant.ROTATION_INFO_REQUIRED_NUMBER, methodName, RotationConstant.FIELD_CHANNEL_ID, "999");
         addValueToList(msgList, msgStr);
       }
 
-      if (rotationInfo.getChannel_id() != null && rotationInfo.getChannel_id() < 0) {
-        msgStr = "No rotation info was created. Please set correct channel, like: 500012";
+      // site_id
+      if (rotationInfo.getSite_id() == null && ErrorMsgConstant.CREATED.equals(methodName)) {
+        msgStr = String.format(ErrorMsgConstant.ROTATION_INFO_REQUIRED, RotationConstant.CHOCO_SITE_ID);
+        addValueToList(msgList, msgStr);
+      }
+      if (rotationInfo.getSite_id() != null && (rotationInfo.getSite_id() < 0 || rotationInfo.getSite_id() > 999)) {
+        msgStr = String.format(ErrorMsgConstant.ROTATION_INFO_REQUIRED_NUMBER, methodName, RotationConstant.CHOCO_SITE_ID, "999");
         addValueToList(msgList, msgStr);
       }
 
-
-      if (rotationInfo.getSite_id() == null && required) {
-        msgStr = getRequiredMsg(RotationConstant.CHOCO_SITE_ID);
+      // campaign_id
+      if (rotationInfo.getCampaign_id() == null && ErrorMsgConstant.CREATED.equals(methodName)) {
+        msgStr = String.format(ErrorMsgConstant.ROTATION_INFO_REQUIRED, RotationConstant.FIELD_CAMPAIGN_ID);
+        addValueToList(msgList, msgStr);
+      }
+      if (rotationInfo.getCampaign_id() != null && rotationInfo.getCampaign_id() < 0) {
+        msgStr = String.format(ErrorMsgConstant.ROTATION_INFO_REQUIRED_NUMBER, methodName, RotationConstant.FIELD_CAMPAIGN_ID, Long.MAX_VALUE);
         addValueToList(msgList, msgStr);
       }
 
-      if (rotationInfo.getSite_id() != null && rotationInfo.getSite_id() < 0) {
-        msgStr = "No rotation info was created. Please set correct ebay site_id, like: 1";
-        addValueToList(msgList, msgStr);
-      }
-
-      if (rotationInfo.getCampaign_id() == null && required) {
-        msgStr = getRequiredMsg(RotationConstant.FIELD_CAMPAIGN_ID);
-        addValueToList(msgList, msgStr);
-      }
-
-      if ((rotationInfo.getCampaign_id() != null && rotationInfo.getCampaign_id() < 0)
-          || (rotationInfo.getCustomized_id1() != null && rotationInfo.getCustomized_id1() < 0)
-          || (rotationInfo.getCustomized_id2() != null && rotationInfo.getCustomized_id2() < 0)){
-        msgStr = "No rotation info was created. campaign_id/customized_id1/customized_id2 can't be less than 0";
+      // vendor_id
+      if (rotationInfo.getVendor_id() != null && rotationInfo.getVendor_id() < 0) {
+        msgStr = String.format(ErrorMsgConstant.ROTATION_INFO_REQUIRED_NUMBER, methodName, RotationConstant.FIELD_VENDOR_ID, Integer.MAX_VALUE);
         addValueToList(msgList, msgStr);
       }
 
       Map<String, String> rotationTag = rotationInfo.getRotation_tag();
-
       if(rotationTag != null){
         //rotation_start_date
-        msgStr = getValidateMsgForDate(rotationTag, RotationConstant.FIELD_ROTATION_START_DATE);
+        msgStr = getValidateMsgForDate(rotationTag, methodName, RotationConstant.FIELD_ROTATION_START_DATE);
         addValueToList(msgList, msgStr);
         //rotation_end_date
-        msgStr = getValidateMsgForDate(rotationTag, RotationConstant.FIELD_ROTATION_END_DATE);
+        msgStr = getValidateMsgForDate(rotationTag, methodName, RotationConstant.FIELD_ROTATION_END_DATE);
         addValueToList(msgList, msgStr);
       }
     }
@@ -198,18 +201,13 @@ public class RotationIdResource {
     return responseStr;
   }
 
-  private String getRequiredMsg(String fieldName){
-    String msgStr = "No rotation info was created. \"" + fieldName + "\" is required field";
-    return msgStr;
-  }
-
   private static final String date_pattern = "^2\\d{7}$";
 
-  private String getValidateMsgForDate(Map<String, String> rotationTag, String key) {
+  private String getValidateMsgForDate(Map<String, String> rotationTag, String methodName, String key) {
     String msg = null;
     if (StringUtils.isNotEmpty(rotationTag.get(key))) {
       if(!Pattern.matches(date_pattern, rotationTag.get(key))){
-        msg = "No rotation info was created. Please set correct format for " + key + ". like '20180501'";
+        msg = String.format(ErrorMsgConstant.ROTATION_INFO_FIELD_SAMPLE, methodName, key, "20180501");
       }
     }
     return msg;

@@ -34,6 +34,15 @@ public enum MPLXChannelEnum {
     this.roverChannelId = roverChannelId;
   }
 
+  public static MPLXChannelEnum getByMplxChannelId(int mplxChannelId) {
+    for (MPLXChannelEnum mplxChannelEnum : MPLXChannelEnum.values()) {
+      if (mplxChannelEnum.mplxChannelId == mplxChannelId) {
+        return mplxChannelEnum;
+      }
+    }
+    return null;
+  }
+
   public static MPLXChannelEnum getByRoverChannelId(int roverChannelId) {
     for (MPLXChannelEnum mplxChannelEnum : MPLXChannelEnum.values()) {
       if (mplxChannelEnum.roverChannelId == roverChannelId) {
