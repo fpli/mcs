@@ -1,5 +1,8 @@
 package com.ebay.traffic.chocolate.sparknrt.capping.rules
 
+import java.time.temporal.ChronoUnit
+import java.util.Date
+
 import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import com.ebay.traffic.chocolate.sparknrt.capping.Parameter
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
@@ -88,6 +91,9 @@ class SNIDCappingRule(params: Parameter, bitLong: Long, bitShort: Long, dateFile
           if (clickTimestamp - impressionTimestamp < timeWindowShort) {
             cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), bitShort)
           }
+          else if (clickTimestamp - impressionTimestamp > timeWindow){
+            cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), bitLong)
+          }
           else {
             cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), 0l)
           }
@@ -101,8 +107,21 @@ class SNIDCappingRule(params: Parameter, bitLong: Long, bitShort: Long, dateFile
 
     // read impression data with snid
     var dfRight: DataFrame = null
-    if(cappingPath.length != 0 && fs.listStatus(new Path(cappingPath(0))).length != 0) {
-      dfRight = cappingRuleJobObj.readFilesAsDFEx(cappingPath.toArray)
+    var hasFile = false
+    var pathsHasFiles = new ListBuffer[String]()
+    if(cappingPath.length != 0) {
+      val pathIter = cappingPath.iterator
+      while(pathIter.hasNext) {
+        val pathName = pathIter.next()
+        val path = new Path(pathName)
+        if(fs.exists(path) && fs.listStatus(path).length != 0) {
+          hasFile = true
+          pathsHasFiles += pathName
+        }
+      }
+    }
+    if(hasFile) {
+      dfRight = cappingRuleJobObj.readFilesAsDFEx(pathsHasFiles.toArray).select("snapshot_id", "snid", "timestamp", "channel_action")
     }
     else {
       dfRight = Seq.empty[(Long, String, Long, String)].toDF("snapshot_id", "snid", "timestamp", "channel_action")
@@ -133,29 +152,25 @@ class SNIDCappingRule(params: Parameter, bitLong: Long, bitShort: Long, dateFile
     val headImpression = dfSnid.take(1)
     val headClick = dfClick.take(1)
 
-    // if this batch has impression, load capping data and save in hdfs
-    if (headImpression.length != 0) {
-      val firstRow = headImpression(0)
-      val timestamp = dfSnid.select($"timestamp").first().getLong(0)
-
-      // Step 2: Select all the impression snid, then integrate data to 1 file, and add timestamp to file name.
-      // get impression snids in the job
-      dfSnid = dfLoadCappingInJob(dfSnid, selectCondition())
-
-      //reduce the number of counting file to 1, and rename file name to include timestamp
-      saveCappingInJob(dfSnid, timestamp)
-    }
+    // snid rule is special, it does not need to save capping data,
+    // but directly apply cap on historical output data
+    // skip step 1: Prepare data
+    // skip step 2: save capping data
 
     // if this batch has click
     if (headClick.length != 0) {
-      val timestamp = dfClick.select($"timestamp").first.getLong(0)
+      //val timestamp = dfClick.select($"timestamp").first.getLong(0)
       // Step 3: Read a new df for join purpose, just select snid and snapshot_id
       // df for join
       val selectCols: Array[Column] = $"snapshot_id" +: cols
       var df = dfForJoin(null, null, cols)
 
       // read previous data and add to count path
-      val cappingPath = getCappingDataPath(timestamp)
+      val today = dateFiles.date.substring(DATE_COL_EQUALS.length)
+      val todayInstance = sdf.parse(today).toInstant
+      val yesterdayInstance = todayInstance.minus(1, ChronoUnit.DAYS)
+      val yestereday = sdf.format(Date.from(yesterdayInstance))
+      val cappingPath = Array(outputDir + DATE_COL_EQUALS + today, outputDir + DATE_COL_EQUALS + yestereday).toList
 
       // Step 4: Get all data, including previous data and data in this job, then join the result with the new df, return only snapshot_id and capping.
       // count through whole timeWindow and filter those over threshold

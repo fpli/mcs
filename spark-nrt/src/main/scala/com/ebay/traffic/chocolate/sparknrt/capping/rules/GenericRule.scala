@@ -55,6 +55,7 @@ abstract class GenericRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
   lazy val fileName = ""
   lazy val baseDir = params.workDir + "/capping/" + params.channel + fileName
   lazy val baseTempDir = baseDir + "/tmp/"
+  lazy val outputDir = params.outputDir + params.channel + "/capping/"
   logger.info("baseDir: " + baseDir)
 
   override def preTest() = {
@@ -64,6 +65,7 @@ abstract class GenericRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
 
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
   lazy val DATE_COL = "date"
+  lazy val DATE_COL_EQUALS = "date="
   lazy val cappingBit = bit
 
   // filter in job

@@ -7,7 +7,7 @@ import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMes
 import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.capping.rules.SNIDCappingRule
-import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
+import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -47,8 +47,11 @@ class TestSNIDCappingRule extends BaseFunSuite {
   }
 
   val params = Parameter(args)
+  val job = new CappingRuleJob(params)
   val sparkJob = new CappingRuleJob(params)
   val sdf = new SimpleDateFormat("yyyy-MM-dd")
+
+  val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
 
   def getTimestamp(date: String): Long = {
     sdf.parse(date).getTime
@@ -75,12 +78,13 @@ class TestSNIDCappingRule extends BaseFunSuite {
     writer0.close()
 
     val dateFiles_0 = new DateFiles("date=2018-01-01", Array(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
-    val job_0 = new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
-      CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles_0, sparkJob, "long")
-    val df_0 = job_0.test()
+    var meta: MetaFiles = new MetaFiles(Array(dateFiles_0))
+    fs.mkdirs(new Path("file://" + inputDir + "/date=2017-12-31/"))
+    metadata.writeDedupeOutputMeta(meta)
+    job.run()
+    val df_0 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-01/"))
     df_0.show()
-    assert(df_0.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L)).=!=(0)).count() == 0)
-    job_0.postTest()
+    assert(df_0.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L)).=!=(0)).count() == 0)
 
     // test only click
     val writer1 = AvroParquetWriter.
@@ -93,12 +97,12 @@ class TestSNIDCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 3L, 1L, getTimestamp("2018-01-02"), "snid0", writer1)
     writer1.close()
     val dateFiles_1 = new DateFiles("date=2018-01-02", Array(inputDir + "/date=2018-01-02/part-00000.snappy.parquet"))
-    val job_1 = new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
-      CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles_1, sparkJob, "long")
-    val df_1 = job_1.test()
+    meta = new MetaFiles(Array(dateFiles_1))
+    metadata.writeDedupeOutputMeta(meta)
+    job.run()
+    val df_1 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-02/"))
     df_1.show()
-    assert(df_1.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L)).=!=(0)).count() == 1)
-    job_1.postTest()
+    assert(df_1.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L)).=!=(0)).count() == 1)
 
     // test impression and click in today
     val writer2 = AvroParquetWriter.
@@ -113,12 +117,12 @@ class TestSNIDCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7L, 1L, getTimestamp("2018-01-03") + 1, "snid4", writer2)
     writer2.close()
     val dateFiles_2 = new DateFiles("date=2018-01-03", Array(inputDir + "/date=2018-01-03/part-00000.snappy.parquet"))
-    val job_2 = new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
-      CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles_2, sparkJob, "long")
-    val df_2 = job_2.test()
+    meta = new MetaFiles(Array(dateFiles_2))
+    metadata.writeDedupeOutputMeta(meta)
+    job.run()
+    val df_2 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-03/"))
     df_2.show()
-    assert(df_2.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L)).=!=(0)).count() == 1)
-    job_2.postTest()
+    assert(df_2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L)).=!=(0)).count() == 1)
 
     // test impression and click in cross day
     val writer3 = AvroParquetWriter.
@@ -134,12 +138,12 @@ class TestSNIDCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 12L, 1L, getTimestamp("2018-01-04"), "snid6", writer3)
     writer3.close()
     val dateFiles_3 = new DateFiles("date=2018-01-04", Array(inputDir + "/date=2018-01-04/part-00000.snappy.parquet"))
-    val job_3 = new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
-      CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles_3, sparkJob, "long")
-    val df_3 = job_3.test()
+    meta = new MetaFiles(Array(dateFiles_3))
+    metadata.writeDedupeOutputMeta(meta)
+    job.run()
+    val df_3 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-04/"))
     df_3.show()
-    assert(df_3.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L)).=!=(0)).count() == 2)
-    job_3.postTest()
+    assert(df_3.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L)).=!=(0)).count() == 2)
   }
 
   test("test snid capping rule short") {
@@ -154,12 +158,12 @@ class TestSNIDCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 13L, 1L, getTimestamp("2018-01-05") + 86400000 - 2000, "snid7", writer4)
     writer4.close()
     val dateFiles_4 = new DateFiles("date=2018-01-05", Array(inputDir + "/date=2018-01-05/part-00000.snappy.parquet"))
-    val job_4 = new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
-      CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles_4, sparkJob, "long")
-    val df_4 = job_4.test()
+    var meta: MetaFiles = new MetaFiles(Array(dateFiles_4))
+    metadata.writeDedupeOutputMeta(meta)
+    job.run()
+    val df_4 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-05/"))
     df_4.show()
-    assert(df_4.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S)).=!=(0)).count() == 0)
-    job_4.postTest()
+    assert(df_4.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S)).=!=(0)).count() == 0)
 
     // test only click
     val writer5 = AvroParquetWriter.
@@ -174,12 +178,12 @@ class TestSNIDCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 15L, 1L, getTimestamp("2018-01-06") + 2000, "snid7", writer5)
     writer5.close()
     val dateFiles_5 = new DateFiles("date=2018-01-06", Array(inputDir + "/date=2018-01-06/part-00000.snappy.parquet"))
-    val job_5 = new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
-      CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles_5, sparkJob, "long")
-    val df_5 = job_5.test()
+    meta = new MetaFiles(Array(dateFiles_5))
+    metadata.writeDedupeOutputMeta(meta)
+    job.run()
+    val df_5 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-06/"))
     df_5.show()
-    assert(df_5.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S)).=!=(0)).count() == 1)
-    job_5.postTest()
+    assert(df_5.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S)).=!=(0)).count() == 1)
 
     // test impression and click in today
     val writer6 = AvroParquetWriter.
@@ -197,12 +201,12 @@ class TestSNIDCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 19L, 1L, getTimestamp("2018-01-07") + 86400000 - 2000, "snid9", writer6)
     writer6.close()
     val dateFiles_6 = new DateFiles("date=2018-01-07", Array(inputDir + "/date=2018-01-07/part-00000.snappy.parquet"))
-    val job_6 = new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
-      CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles_6, sparkJob, "long")
-    val df_6 = job_6.test()
+    meta = new MetaFiles(Array(dateFiles_6))
+    metadata.writeDedupeOutputMeta(meta)
+    job.run()
+    val df_6 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-07/"))
     df_6.show()
-    assert(df_6.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S)).=!=(0)).count() == 1)
-    job_6.postTest()
+    assert(df_6.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S)).=!=(0)).count() == 1)
 
     // test impression and click in cross day
     val writer7 = AvroParquetWriter.
@@ -224,12 +228,11 @@ class TestSNIDCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 24L, 1L, getTimestamp("2018-01-08"), "snid10", writer7)
     writer7.close()
     val dateFiles_7 = new DateFiles("date=2018-01-08", Array(inputDir + "/date=2018-01-08/part-00000.snappy.parquet"))
-    val job_7 = new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
-      CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles_7, sparkJob, "long")
-    val df_7 = job_7.test()
+    meta = new MetaFiles(Array(dateFiles_7))
+    metadata.writeDedupeOutputMeta(meta)
+    job.run()
+    val df_7 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-08/"))
     df_7.show()
-    assert(df_7.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S)).=!=(0)).count() == 3)
-    job_7.postTest()
-
+    assert(df_7.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S)).=!=(0)).count() == 3)
   }
 }
