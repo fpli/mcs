@@ -1,6 +1,5 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
-import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import org.apache.spark.sql.DataFrame
 
 /**
@@ -37,6 +36,6 @@ object CappingRuleEnum extends Enumeration {
   val CGUIDPubCappingRule_L = Value(4)
   val CGUIDCappingRule_S = Value(5)
   val CGUIDCappingRule_L = Value(6)
-  val SnidCappingRule = Value(7)
-
+  val SnidCappingRule_S = Value(7)
+  val SnidCappingRule_L = Value(8)
 }
