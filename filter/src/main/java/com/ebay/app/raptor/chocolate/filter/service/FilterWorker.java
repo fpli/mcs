@@ -75,13 +75,13 @@ public class FilterWorker extends Thread {
     try {
       consumer.subscribe(Arrays.asList(inputTopic));
 
+      long flushThreshold = 0;
       while (!shutdownRequested.get()) {
         ConsumerRecords<Long, ListenerMessage> records = consumer.poll(POLL_STEP_MS);
         Iterator<ConsumerRecord<Long, ListenerMessage>> iterator = records.iterator();
         int count = 0;
         int passed = 0;
         long startTime = System.currentTimeMillis();
-        long flushThreshold = 0;
         while (iterator.hasNext()) {
           ++count;
           ConsumerRecord<Long, ListenerMessage> record = iterator.next();
@@ -105,6 +105,9 @@ public class FilterWorker extends Thread {
 
           // update consumer offset
           consumer.commitSync();
+
+          // reset threshold
+          flushThreshold = 0;
         }
 
         if (count == 0) {
