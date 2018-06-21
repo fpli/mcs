@@ -81,6 +81,7 @@ public class FilterWorker extends Thread {
         int count = 0;
         int passed = 0;
         long startTime = System.currentTimeMillis();
+        long flushThreshold = 0;
         while (iterator.hasNext()) {
           ++count;
           ConsumerRecord<Long, ListenerMessage> record = iterator.next();
@@ -96,7 +97,9 @@ public class FilterWorker extends Thread {
           producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
         }
 
-        if (count > 2000) {
+        flushThreshold += count;
+
+        if (flushThreshold > 2000) {
           // producer flush
           producer.flush();
 
