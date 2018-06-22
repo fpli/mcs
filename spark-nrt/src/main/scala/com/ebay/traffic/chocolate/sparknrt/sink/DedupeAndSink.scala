@@ -5,10 +5,13 @@ import java.text.SimpleDateFormat
 import java.util
 import java.util.{Date, Properties}
 
+import com.couchbase.client.java.document.JsonDocument
+import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.app.raptor.chocolate.avro.FilterMessage
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
 import com.ebay.traffic.chocolate.spark.kafka.KafkaRDD
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
+import com.ebay.traffic.chocolate.sparknrt.couchbase.CouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.fs.Path
@@ -55,6 +58,8 @@ class DedupeAndSink(params: Parameter)
   lazy val baseTempDir = baseDir + "/tmp/"
   lazy val sparkDir = baseDir + "/spark/"
   lazy val outputDir = params.outputDir + "/" + params.channel + "/dedupe/"
+  lazy val couchbaseDedupe = params.couchbaseDedupe.toBoolean
+  lazy val couchbaseTTL = params.couchbaseTTL
 
   @transient lazy val metadata = {
     Metadata(params.workDir, params.channel, MetadataEnum.dedupe)
@@ -77,7 +82,6 @@ class DedupeAndSink(params: Parameter)
 
     val kafkaRDD = new KafkaRDD[java.lang.Long, FilterMessage](
       sc, params.kafkaTopic, properties, params.maxConsumeSize)
-
     val dates =
     kafkaRDD.mapPartitions(iter => {
       val files = new util.HashMap[String, String]()
@@ -104,7 +108,15 @@ class DedupeAndSink(params: Parameter)
           writers.put(date, writer)
         }
         // write message
-        writer.write(message)
+        if(couchbaseDedupe) {
+          if(!CouchbaseClient.dedupeBucket.exists(message.getSnapshotId.toString)) {
+            CouchbaseClient.dedupeBucket.upsert(JsonDocument.create(message.getSnapshotId.toString, couchbaseTTL, JsonObject.empty()))
+            writer.write(message)
+          }
+        }
+        else {
+          writer.write(message)
+        }
       }
 
       // 1. close the parquet writers
@@ -153,17 +165,21 @@ class DedupeAndSink(params: Parameter)
     */
   def dedupe(date: String): DateFiles = {
     // dedupe current df
-    var df = readFilesAsDF(baseDir + "/" + date).dropDuplicates(SNAPSHOT_ID_COL)
-    val dedupeCompMeta = metadata.readDedupeCompMeta
-    if (dedupeCompMeta != null && dedupeCompMeta.contains(date)) {
-      val input = dedupeCompMeta.get(date).get
-      val dfDedupe = readFilesAsDFEx(input)
-        .select($"snapshot_id")
-        .withColumnRenamed(SNAPSHOT_ID_COL, "snapshot_id_1")
+    var df = readFilesAsDF(baseDir + "/" + date)
 
-      df = df.join(dfDedupe, $"snapshot_id" === $"snapshot_id_1", "left_outer")
-        .filter($"snapshot_id_1".isNull)
-        .drop("snapshot_id_1")
+    if (!couchbaseDedupe) {
+      df = df.dropDuplicates(SNAPSHOT_ID_COL)
+      val dedupeCompMeta = metadata.readDedupeCompMeta
+      if (dedupeCompMeta != null && dedupeCompMeta.contains(date)) {
+        val input = dedupeCompMeta.get(date).get
+        val dfDedupe = readFilesAsDFEx(input)
+          .select($"snapshot_id")
+          .withColumnRenamed(SNAPSHOT_ID_COL, "snapshot_id_1")
+
+        df = df.join(dfDedupe, $"snapshot_id" === $"snapshot_id_1", "left_outer")
+          .filter($"snapshot_id_1".isNull)
+          .drop("snapshot_id_1")
+      }
     }
 
     // reduce the number of file
