@@ -9,7 +9,11 @@
         "whitelistName": "IAB_ABC_International_List_of_Valid_Browsers.txt",
         "blacklistName": "IAB_ABC_International_Spiders_and_Robots.txt"},
       {
-        "ruleName": "InternalTrafficRule"}
+        "ruleName": "InternalTrafficRule"},
+      {
+        "ruleName": "MissingRefererRule"},
+      {
+        "ruleName": "ProtocolRule"}
     ]
   },
   {
@@ -18,11 +22,17 @@
       {
         "ruleName": "PublisherValidRule"},
       {
+        "ruleName": "CGUIDStalenessWindowRule",
+        "windowStart": 500},
+      {
         "ruleName": "EPNDomainBlacklistRule",
         "blacklistName": "EPN_domains_Blacklist.txt"},
       {
         "ruleName": "IPBlacklistRule",
-        "blacklistName": "IP_Blacklist_EPN.txt"}
+        "blacklistName": "IP_Blacklist_EPN.txt"},
+      {
+        "ruleName": "EBayRobotRule",
+        "blacklistName": "eBay_Spiders_and_Robots_EPN.txt"}
     ]
   },
   {
