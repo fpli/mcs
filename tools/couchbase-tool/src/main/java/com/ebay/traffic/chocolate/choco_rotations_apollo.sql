@@ -17,11 +17,12 @@ SET hive.exec.max.dynamic.partitions.pernode=100000;
 
 set hive.merge.smallfiles.avgsize=128000000;
 set hive.merge.size.per.task=128000000;
+add jar hdfs://apollo-phx-nn-ha/user/b_marketing_tracking/chocolate/hive-hcatalog-core-0.13.0.jar;
 add jar /home/yimeng/hive-hcatalog-core-0.13.0.jar;
 
-DROP TABLE IF EXISTS MRKT_DATA.choco_rotations;
+DROP TABLE IF EXISTS CHOCO_DATA.choco_rotations;
 
-create external table MRKT_DATA.choco_rotations (
+create table CHOCO_DATA.choco_rotations (
   rotation_id STRING,
   rotation_string STRING,
   channel_id INT,
@@ -41,7 +42,4 @@ ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
 STORED AS TEXTFILE
 LOCATION 'hdfs://apollo-phx-nn-ha/user/b_marketing_tracking/chocolate/rotation';
 
-msck repair table MRKT_DATA.choco_rotations;
-
-
-
+msck repair table CHOCO_DATA.choco_rotations;
