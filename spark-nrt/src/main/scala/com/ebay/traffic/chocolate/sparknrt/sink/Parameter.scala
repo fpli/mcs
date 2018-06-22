@@ -12,7 +12,9 @@ case class Parameter(appName: String = "DedupeAndSink",
                      workDir: String = "",
                      outputDir: String = "",
                      partitions: Int = 3,
-                     maxConsumeSize: Long = 100000000l)
+                     maxConsumeSize: Long = 1000000l,
+                     couchbaseDedupe: String = "false",
+                     couchbaseTTL: Int = 3 * 24 * 60 * 60)
 
 object Parameter {
 
@@ -58,6 +60,16 @@ object Parameter {
       .optional
       .valueName("maxConsumeSize")
       .action((cont, param) => param.copy(maxConsumeSize = cont))
+
+    opt[String]("couchbaseDedupe")
+      .optional()
+      .valueName("couchbaseDedupe")
+      .action((cont, param) => param.copy(couchbaseDedupe = cont))
+
+    opt[Int]("couchbaseTTL")
+      .optional()
+      .valueName("couchbaseTTL")
+      .action((cont, param) => param.copy(couchbaseTTL = cont))
   }
 
   def apply(args: Array[String]): Parameter = parser.parse(args, Parameter()) match {

@@ -1,9 +1,9 @@
-package com.ebay.traffic.chocolate.sparknrt.reporting
+package com.ebay.traffic.chocolate.sparknrt.couchbase
 
 import java.util
 
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment
-import com.couchbase.client.java.{Bucket, Cluster, CouchbaseCluster}
+import com.couchbase.client.java.{Cluster, CouchbaseCluster}
 import com.couchbase.mock.{BucketConfiguration, CouchbaseMock, JsonUtils}
 import com.google.gson.JsonObject
 import org.apache.http.client.ClientProtocolException
@@ -18,29 +18,34 @@ import org.apache.http.util.EntityUtils
 object CouchbaseClientMock {
 
   var couchbaseMock: CouchbaseMock = null
+  val testBucketName = "default"
+  var cluster = null
 
-  private def createCouchbaseMock(name: String, password: String): Unit = {
-    val bucketConfiguration = new BucketConfiguration()
-    bucketConfiguration.numNodes = 1
-    bucketConfiguration.numReplicas = 1
-    bucketConfiguration.numVBuckets = 1024
-    bucketConfiguration.name = name
-    bucketConfiguration.`type` = com.couchbase.mock.Bucket.BucketType.COUCHBASE
-    bucketConfiguration.password = password
+  private def createCouchbaseMock(password: String): Unit = {
+    if(couchbaseMock == null) {
+      val bucketConfiguration = new BucketConfiguration()
+      bucketConfiguration.numNodes = 1
+      bucketConfiguration.numReplicas = 1
+      bucketConfiguration.numVBuckets = 1024
+      bucketConfiguration.name = testBucketName
+      bucketConfiguration.`type` = com.couchbase.mock.Bucket.BucketType.COUCHBASE
+      bucketConfiguration.password = password
 
-    val configList = new util.ArrayList[BucketConfiguration]
-    configList.add(bucketConfiguration)
 
-    couchbaseMock = new CouchbaseMock(0, configList)
-    couchbaseMock.start()
-    couchbaseMock.waitForStartup()
+      val configList = new util.ArrayList[BucketConfiguration]
+      configList.add(bucketConfiguration)
+
+      couchbaseMock = new CouchbaseMock(0, configList)
+      couchbaseMock.start()
+      couchbaseMock.waitForStartup()
+    }
   }
 
-  private def initMock(bucket: String): (Int, Int) = {
+  private def initMock(): (Int, Int) = {
     val httpPort = couchbaseMock.getHttpPort
     val builder = new URIBuilder
     builder.setScheme("http").setHost("localhost").setPort(httpPort).setPath("mock/get_mcports")
-      .setParameter("bucket", bucket)
+      .setParameter("bucket", testBucketName)
     val request = new HttpGet(builder.build)
     val client = HttpClientBuilder.create.build
     val response = client.execute(request)
@@ -54,18 +59,23 @@ object CouchbaseClientMock {
   }
 
   def startCouchbaseMock(): Unit = {
-    createCouchbaseMock("default", "")
+    createCouchbaseMock("")
   }
 
   def connect(): Cluster = {
-    val handle = initMock("default")
-    CouchbaseCluster.create(DefaultCouchbaseEnvironment.builder
-      .bootstrapCarrierDirectPort(handle._1)
-      .bootstrapHttpDirectPort(handle._2)
-      .build(), "couchbase://127.0.0.1")
+    if(cluster == null) {
+      val handle = initMock()
+      CouchbaseCluster.create(DefaultCouchbaseEnvironment.builder
+        .bootstrapCarrierDirectPort(handle._1)
+        .bootstrapHttpDirectPort(handle._2)
+        .build(), "couchbase://127.0.0.1")
+    }
+    else {
+      cluster
+    }
   }
 
-  def closeCouchbaseMock(): Unit ={
+  def closeCouchbaseMock(): Unit = {
     if (couchbaseMock != null) couchbaseMock.stop
   }
 }

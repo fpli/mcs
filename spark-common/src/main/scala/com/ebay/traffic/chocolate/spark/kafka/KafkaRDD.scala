@@ -19,7 +19,7 @@ class KafkaRDD[K, V](
                       @transient val sc: SparkContext,
                       val topic: String,
                       val kafkaProperties: util.Properties,
-                      val maxConsumeSize: Long = 100000000l // maximum number of events can be consumed in one task: 100M
+                      val maxConsumeSize: Long = 1000000l // maximum number of events can be consumed in one task: 1M
                     ) extends RDD[ConsumerRecord[K, V]](sc, Nil) {
   val POLL_STEP_MS = 30000
 
