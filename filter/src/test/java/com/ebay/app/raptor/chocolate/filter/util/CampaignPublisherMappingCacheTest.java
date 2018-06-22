@@ -2,12 +2,16 @@ package com.ebay.app.raptor.chocolate.filter.util;
 
 import com.ebay.app.raptor.chocolate.avro.PublisherCacheEntry;
 import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
+import com.ebay.dukes.CacheFactory;
 import com.ebay.traffic.chocolate.common.MiniZookeeperCluster;
 import org.junit.*;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 public class CampaignPublisherMappingCacheTest {
@@ -25,8 +29,9 @@ public class CampaignPublisherMappingCacheTest {
         zookeeperClient = new FilterZookeeperClient(zookeeperCluster.getConnectionString(),
             zkRootDir, zkDriverIdPath);
       CouchbaseClientMock.createClient();
-      couchbaseClient = new CouchbaseClient(CouchbaseClientMock.getCluster(), CouchbaseClientMock.getBucket());
-      CouchbaseClient.init(couchbaseClient);
+      CacheFactory cacheFactory = Mockito.mock(CacheFactory.class);
+      couchbaseClient = Mockito.spy(new CouchbaseClient(cacheFactory));
+      doReturn(CouchbaseClientMock.getBucket()).when(couchbaseClient).getBucket(any());      CouchbaseClient.init(couchbaseClient);
         zookeeperClient.start(t -> {
         CampaignPublisherMappingCache.getInstance().addMapping(t.getCampaignId(), t.getPublisherId());
         couchbaseClient.addMappingRecord(t.getCampaignId(), t.getPublisherId());
