@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.spark.kafka
 import java.util
 import java.util.concurrent.TimeoutException
 
+import com.ebay.traffic.chocolate.monitoring.ESMetrics
 import org.apache.kafka.clients.consumer._
 import org.apache.kafka.common.TopicPartition
 import org.apache.spark.rdd.RDD
@@ -19,6 +20,9 @@ class KafkaRDD[K, V](
                       @transient val sc: SparkContext,
                       val topic: String,
                       val kafkaProperties: util.Properties,
+                      val esHostName: String = "",
+                      val esPort: Int = 9200,
+                      val esScheme: String = "http",
                       val maxConsumeSize: Long = 100000000l // maximum number of events can be consumed in one task: 100M
                     ) extends RDD[ConsumerRecord[K, V]](sc, Nil) {
   val POLL_STEP_MS = 30000
@@ -26,6 +30,13 @@ class KafkaRDD[K, V](
   @transient lazy val consumer = {
     kafkaProperties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
     new KafkaConsumer[K, V](kafkaProperties)
+  }
+
+  @transient lazy val metrics: ESMetrics = {
+    if (esHostName != null && !esHostName.isEmpty) {
+      ESMetrics.init(esHostName, esPort, esScheme)
+      ESMetrics.getInstance()
+    } else null
   }
 
   @transient lazy val untilOffsets = {
@@ -96,6 +107,9 @@ class KafkaRDD[K, V](
     consumer.assign(util.Arrays.asList(part.tp))
     context.addTaskCompletionListener(context => {
       consumer.close()
+      if (metrics != null) {
+        metrics.close()
+      }
     })
 
     new KafkaRDDIterator(part, consumer, context)
@@ -113,6 +127,9 @@ class KafkaRDD[K, V](
     */
   def close() = {
     consumer.close()
+    if (metrics != null) {
+      metrics.close()
+    }
   }
 
   /**
@@ -128,6 +145,13 @@ class KafkaRDD[K, V](
     var offset = consumer.position(topicPartition)
     log.info(s"KafkaRDDIterator: ${topicPartition}, " +
       s"position: ${offset}, untilOffset: ${part.untilOffset}, index: ${part.index}")
+
+    // metrics
+    if (metrics != null) {
+      metrics.trace("Consumer" + topicPartition.partition() + "-offset", offset);
+      metrics.trace("Consumer" + topicPartition.partition() + "-until", part.untilOffset);
+    }
+
     var reset = false
 
     var buffer: util.Iterator[ConsumerRecord[K, V]] = null
@@ -141,6 +165,10 @@ class KafkaRDD[K, V](
         buffer.next
       } else {
         poll(POLL_STEP_MS)
+      }
+
+      if (metrics != null) {
+        metrics.meter("Dedupe-Input");
       }
 
       offset = offset + 1

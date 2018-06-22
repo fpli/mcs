@@ -32,6 +32,7 @@
     <curator.version>4.0.1</curator.version>
     <couchbase.client.version>2.5.3</couchbase.client.version>
     <rheos.version>0.0.7-SNAPSHOT</rheos.version>
+    <elasticsearch.version>6.3.0</elasticsearch.version>
     <jackson.version>2.9.5</jackson.version>
     <jacoco.dump.skip>true</jacoco.dump.skip>
     <chocolate.common.version>2.4.2-RELEASE</chocolate.common.version>
@@ -146,6 +147,24 @@
         <groupId>com.typesafe</groupId>
         <artifactId>config</artifactId>
         <version>1.2.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.elasticsearch.client</groupId>
+        <artifactId>elasticsearch-rest-client</artifactId>
+        <version>${elasticsearch.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.elasticsearch.client</groupId>
+        <artifactId>elasticsearch-rest-high-level-client</artifactId>
+        <version>${elasticsearch.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.elasticsearch.client</groupId>
+        <artifactId>elasticsearch-rest-client-sniffer</artifactId>
+        <version>${elasticsearch.version}</version>
       </dependency>
 
 <!--

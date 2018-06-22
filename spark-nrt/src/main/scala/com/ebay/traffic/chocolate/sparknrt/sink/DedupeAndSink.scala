@@ -76,7 +76,7 @@ class DedupeAndSink(params: Parameter)
     fs.mkdirs(new Path(sparkDir))
 
     val kafkaRDD = new KafkaRDD[java.lang.Long, FilterMessage](
-      sc, params.kafkaTopic, properties, params.maxConsumeSize)
+      sc, params.kafkaTopic, properties, params.esHost, params.esPort, params.esScheme, params.maxConsumeSize)
 
     val dates =
     kafkaRDD.mapPartitions(iter => {
