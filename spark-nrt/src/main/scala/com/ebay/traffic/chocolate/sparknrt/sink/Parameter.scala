@@ -15,7 +15,7 @@ case class Parameter(appName: String = "DedupeAndSink",
                      esHost: String = "",
                      esPort: Int = 9200,
                      esScheme: String = "http",
-                     maxConsumeSize: Long = 100000000l,
+                     maxConsumeSize: Long = 1000000l,
                      couchbaseDedupe: String = "false",
                      couchbaseTTL: Int = 3 * 24 * 60 * 60)
 

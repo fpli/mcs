@@ -23,7 +23,7 @@ class KafkaRDD[K, V](
                       val esHostName: String = "",
                       val esPort: Int = 9200,
                       val esScheme: String = "http",
-                      val maxConsumeSize: Long = 100000000l // maximum number of events can be consumed in one task: 100M
+                      val maxConsumeSize: Long = 1000000l // maximum number of events can be consumed in one task: 100M
                     ) extends RDD[ConsumerRecord[K, V]](sc, Nil) {
   val POLL_STEP_MS = 30000
 
