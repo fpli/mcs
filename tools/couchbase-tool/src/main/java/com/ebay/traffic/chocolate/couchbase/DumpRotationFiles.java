@@ -11,6 +11,9 @@ import com.couchbase.client.java.query.N1qlQueryResult;
 import com.couchbase.client.java.query.N1qlQueryRow;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.google.gson.Gson;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.io.*;
@@ -22,57 +25,71 @@ import java.util.zip.GZIPOutputStream;
 
 
 public class DumpRotationFiles {
-  private static final String CB_QUERY_STATEMENT_BY_TIME = "SELECT * FROM `rotation_info` WHERE last_update_time >= ";
   private static Cluster cluster;
   private static Bucket bucket;
   private static Properties couchbasePros;
+  static Logger logger = LoggerFactory.getLogger(DumpLegacyRotationFiles.class);
 
   public static void main(String args[]) throws IOException {
-    String env = args[0].toLowerCase(), output = args[1], lastUpdateTime = args[2], compress = args[3];
-    init(env);
+    String configFilePath = (args != null && args.length > 0) ? args[0] : null;
+    if(StringUtils.isEmpty(configFilePath)) logger.error("No configFilePath was defined. please set configFilePath for rotation jobs");
+
+    String lastUpdateTime = (args != null && args.length > 1) ? args[1] : null;
+    if(StringUtils.isEmpty(lastUpdateTime)) logger.error("No lastUpdateTime was defined. please set lastUpdateTime for rotation jobs");
+
+    String outputFilePath = (args != null && args.length > 2) ? args[2] : null;
+
+    init(configFilePath);
+
     try {
       connect();
-      SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-      String fileName = output + "roatation-" + sdf.format(new Date()) + ".txt";
-      dumpFileFromCouchbase(fileName, Long.valueOf(lastUpdateTime), Boolean.valueOf(compress));
+      dumpFileFromCouchbase(lastUpdateTime, outputFilePath);
     } finally {
       close();
     }
   }
 
-  private static void init(String env) throws IOException {
+  private static void init(String configFilePath) throws IOException {
     couchbasePros = new Properties();
-    InputStream in = Object.class.getResourceAsStream("/" + env + "/couchbase.properties");
+    InputStream in = new FileInputStream(configFilePath);
     couchbasePros.load(in);
   }
 
   private static void connect() {
     CouchbaseEnvironment env = DefaultCouchbaseEnvironment.builder()
-        .connectTimeout(10000).queryTimeout(5000).build();
+        .connectTimeout(Long.valueOf(couchbasePros.getProperty("couchbase.timeout")))
+        .queryTimeout(Long.valueOf(couchbasePros.getProperty("couchbase.timeout"))).build();
     cluster = CouchbaseCluster.create(env, couchbasePros.getProperty("couchbase.cluster.rotation"));
+
     cluster.authenticate(couchbasePros.getProperty("couchbase.user.rotation"), couchbasePros.getProperty("couchbase.password.rotation"));
-    bucket = cluster.openBucket(couchbasePros.getProperty("couchbase.bucket.rotation"), 300, TimeUnit.SECONDS);
+    bucket = cluster.openBucket(couchbasePros.getProperty("couchbase.bucket.rotation"), Long.valueOf(couchbasePros.getProperty("couchbase.timeout")), TimeUnit.SECONDS);
   }
 
-  private static void dumpFileFromCouchbase(String output, Long lastUpdateTime, boolean compress) throws IOException {
+  private static void dumpFileFromCouchbase(String lastUpdateTime, String outputFilePath) throws IOException {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+    if(outputFilePath == null){
+      outputFilePath = couchbasePros.getProperty("job.dumpRotationFiles.outputFilePath");
+    }
+    outputFilePath = outputFilePath + "rotation-" + sdf.format(new Date()) + ".txt";
+    Boolean compress = (couchbasePros.getProperty("job.dumpRotationFiles.compressed") == null) ?  Boolean.valueOf(couchbasePros.getProperty("job.dumpRotationFiles.compressed")) : Boolean.FALSE;
 
     OutputStream out = null;
     Integer count = 0 ;
     try {
       if (compress) {
-        out = new GZIPOutputStream(new FileOutputStream(output +  ".gz"), 8192);
+        out = new GZIPOutputStream(new FileOutputStream(outputFilePath +  ".gz"), 8192);
       } else {
-        out = new BufferedOutputStream(new FileOutputStream(output));
+        out = new BufferedOutputStream(new FileOutputStream(outputFilePath));
       }
 
-      N1qlQueryResult result = bucket.query(N1qlQuery.simple(CB_QUERY_STATEMENT_BY_TIME + lastUpdateTime));
-      JsonObject rotationInfo = null;
-      JsonObject rotationTag = null;
+      String queryStr = couchbasePros.getProperty("job.dumpRotationFiles.n1ql");
+      queryStr = String.format(queryStr, lastUpdateTime);
+
+      N1qlQueryResult result = bucket.query(N1qlQuery.simple(queryStr));
+      JsonObject rotationInfo;
       for (N1qlQueryRow row : result) {
         rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
         if(rotationInfo == null) continue;
-//        rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
-//        rotationInfo.put(RotationConstant.CHOCO_ROTATION_TAG, String.valueOf(rotationTag));
         out.write(String.valueOf(rotationInfo).getBytes());
         out.write(RotationConstant.RECORD_SEPARATOR);
         out.flush();
