@@ -75,6 +75,7 @@ public class FilterWorker extends Thread {
     try {
       consumer.subscribe(Arrays.asList(inputTopic));
 
+      long flushThreshold = 0;
       while (!shutdownRequested.get()) {
         ConsumerRecords<Long, ListenerMessage> records = consumer.poll(POLL_STEP_MS);
         Iterator<ConsumerRecord<Long, ListenerMessage>> iterator = records.iterator();
@@ -96,12 +97,17 @@ public class FilterWorker extends Thread {
           producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
         }
 
-        if (count > 2000) {
+        flushThreshold += count;
+
+        if (flushThreshold > 2000) {
           // producer flush
           producer.flush();
 
           // update consumer offset
           consumer.commitSync();
+
+          // reset threshold
+          flushThreshold = 0;
         }
 
         if (count == 0) {
