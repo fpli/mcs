@@ -30,37 +30,32 @@ public class LoadRotationInfoIntoCB {
   static Logger logger = LoggerFactory.getLogger(LoadRotationInfoIntoCB.class);
 
   public static void main(String args[]) throws IOException{
-    String env = (args != null && args.length >= 1) ?  args[0].toLowerCase() : null;
-    if(StringUtils.isEmpty(env)) logger.error("No environment was defined. please set qa or prod");
+    String configFilePath = (args != null && args.length > 0) ?  args[0] : null;
+    if(StringUtils.isEmpty(configFilePath)) logger.error("No configFilePath was defined. please set configFilePath for rotation jobs");
 
-    String outputFilePath = (args != null && args.length > 1) ?  args[1] : null;
-    if(StringUtils.isEmpty(outputFilePath)) logger.error("No outputFilePath was defined. please set outputFilePath for duplicate rotationIds");
-
-    String inputFilePath = (args != null && args.length > 2) ?  args[2] : null;
-    if(StringUtils.isEmpty(inputFilePath)) logger.error("No outputFilePath was defined. please set inputFilePath for upload rotationInfo");
-
-    init(env);
+    init(configFilePath);
     connect();
-    loadFileToCouchbase(outputFilePath, inputFilePath);
+    loadFileToCouchbase();
     close();
   }
 
-  private static void init(String env) throws IOException {
+  private static void init(String configFilePath) throws IOException {
     couchbasePros = new Properties();
-    InputStream in = Object.class.getResourceAsStream("/" + env + "/couchbase.properties");
+    InputStream in = new FileInputStream(configFilePath);
     couchbasePros.load(in);
   }
 
   private static void connect() {
-    CouchbaseEnvironment env = DefaultCouchbaseEnvironment.builder().connectTimeout(100000000L).queryTimeout(5000000000L).build();
+    CouchbaseEnvironment env = DefaultCouchbaseEnvironment.builder()
+        .connectTimeout(Long.valueOf(couchbasePros.getProperty("couchbase.timeout")))
+        .queryTimeout(Long.valueOf(couchbasePros.getProperty("couchbase.timeout"))).build();
     cluster = CouchbaseCluster.create(env, couchbasePros.getProperty("couchbase.cluster.rotation"));
     cluster.authenticate(couchbasePros.getProperty("couchbase.user.rotation"), couchbasePros.getProperty("couchbase.password.rotation"));
-    bucket = cluster.openBucket(couchbasePros.getProperty("couchbase.bucket.rotation"), 3000000000000L, TimeUnit.SECONDS);
+    bucket = cluster.openBucket(couchbasePros.getProperty("couchbase.bucket.rotation"), 300000000L, TimeUnit.SECONDS);
   }
 
-  private static void loadFileToCouchbase(String outputFilePath, String inputFilePath) throws FileNotFoundException {
-    OutputStream out = new BufferedOutputStream(new FileOutputStream(outputFilePath));
-//    InputStream in = Object.class.getResourceAsStream("/rotation_info.csv");
+  private static void loadFileToCouchbase() throws FileNotFoundException {
+    String inputFilePath = couchbasePros.getProperty("job.loadRotationInfoIntoCB.inputFilePath");
     InputStream in = new FileInputStream(inputFilePath);
     int count = 0;
     try {
@@ -71,22 +66,11 @@ public class LoadRotationInfoIntoCB {
         Gson gson = new Gson();
         while((line = br.readLine()) != null) {
           rotationInfo = getRotationInfo(line);
-//          if (!bucket.exists(rotationInfo.getRotation_string())) {
             bucket.upsert(StringDocument.create(rotationInfo.getRotation_string(), gson.toJson(rotationInfo)));
             count++;
-//          }else{
-//            try {
-//              out.write(rotationInfo.getRotation_string().getBytes());
-//              out.write(RotationConstant.RECORD_SEPARATOR);
-//              out.flush();
-//            }catch (IOException e){
-//                System.out.println("duplicate rotation_string");
-//            }
-//          }
         }
         br.close();
         isr.close();
-        out.close();
     } catch (IOException e) {
       System.out.println("Error reading campaign publisher mapping file found");
     }
