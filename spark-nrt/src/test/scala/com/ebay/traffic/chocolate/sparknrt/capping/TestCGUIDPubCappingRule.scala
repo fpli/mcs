@@ -63,7 +63,7 @@ class TestCGUIDPubCappingRule extends BaseFunSuite {
 
   import sparkJob.spark.implicits._
 
-  test("test cguid-pub capping rule") {
+  ignore("test cguid-pub capping rule") {
     val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
 
     val dateFiles0 = new DateFiles("date=2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
