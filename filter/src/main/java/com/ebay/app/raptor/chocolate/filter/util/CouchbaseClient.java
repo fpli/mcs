@@ -143,7 +143,7 @@ public class CouchbaseClient {
         }
         return Long.parseLong(document.content().toString());
       } catch (NumberFormatException ne) {
-        logger.warn("Error in converting publishID " + getBucket(cacheClient).get(String.valueOf(campaignId),
+        logger.warn("Error in converting publishID " + getBucket(factory.getClient(datasourceName)).get(String.valueOf(campaignId),
             StringDocument.class).toString() + " to Long", ne);
         metrics.meter("ErrorPublishID");
         return DEFAULT_PUBLISHER_ID;
@@ -159,7 +159,7 @@ public class CouchbaseClient {
   /**
    * Trick function, get Bucket from cacheClient
    */
-  Bucket getBucket(CacheClient cacheClient) {
+  private Bucket getBucket(CacheClient cacheClient) {
     BaseDelegatingCacheClient baseDelegatingCacheClient = (BaseDelegatingCacheClient) cacheClient;
     Couchbase2CacheClient couchbase2CacheClient = (Couchbase2CacheClient) baseDelegatingCacheClient.getCacheClient();
     return couchbase2CacheClient.getCouchbaseClient();

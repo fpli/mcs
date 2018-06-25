@@ -2,7 +2,10 @@ package com.ebay.app.raptor.chocolate.filter.util;
 
 import com.ebay.app.raptor.chocolate.avro.PublisherCacheEntry;
 import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
+import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
+import com.ebay.dukes.base.BaseDelegatingCacheClient;
+import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.traffic.chocolate.common.MiniZookeeperCluster;
 import org.junit.*;
 import org.mockito.Mockito;
@@ -13,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class CampaignPublisherMappingCacheTest {
     private static ApplicationOptions options = mock(ApplicationOptions.class);
@@ -29,9 +33,16 @@ public class CampaignPublisherMappingCacheTest {
         zookeeperClient = new FilterZookeeperClient(zookeeperCluster.getConnectionString(),
             zkRootDir, zkDriverIdPath);
       CouchbaseClientMock.createClient();
+
       CacheFactory cacheFactory = Mockito.mock(CacheFactory.class);
-      couchbaseClient = Mockito.spy(new CouchbaseClient(cacheFactory));
-      doReturn(CouchbaseClientMock.getBucket()).when(couchbaseClient).getBucket(any());      CouchbaseClient.init(couchbaseClient);
+      BaseDelegatingCacheClient baseDelegatingCacheClient = Mockito.mock(BaseDelegatingCacheClient.class);
+      Couchbase2CacheClient couchbase2CacheClient = Mockito.mock(Couchbase2CacheClient.class);
+      when(couchbase2CacheClient.getCouchbaseClient()).thenReturn(CouchbaseClientMock.getBucket());
+      when(baseDelegatingCacheClient.getCacheClient()).thenReturn(couchbase2CacheClient);
+      when(cacheFactory.getClient(any())).thenReturn(baseDelegatingCacheClient);
+
+      couchbaseClient = new CouchbaseClient(cacheFactory);
+      CouchbaseClient.init(couchbaseClient);
         zookeeperClient.start(t -> {
         CampaignPublisherMappingCache.getInstance().addMapping(t.getCampaignId(), t.getPublisherId());
         couchbaseClient.addMappingRecord(t.getCampaignId(), t.getPublisherId());
