@@ -146,7 +146,7 @@ class TestSNIDCappingRule extends BaseFunSuite {
     assert(df_3.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L)).=!=(0)).count() == 2)
   }
 
-  ignore("test snid capping rule short") {
+  test("test snid capping rule short") {
 
     // test only impression
     val writer4 = AvroParquetWriter.
