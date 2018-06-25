@@ -19,6 +19,7 @@ import java.util.*;
  *
  * ElasticSearch metrics, and ES "index" with template mapping should be created so that it can be displayed on Grafana
  *
+ * The metrics is aggregated locally and flushed to ES through background thread.
  */
 public class ESMetrics {
   private static final Logger logger = Logger.getLogger(ESMetrics.class);
@@ -32,9 +33,25 @@ public class ESMetrics {
 
   private final static String INDEX_PREFIX = "chocolate-metrics-";
 
+  /**
+   * The timer
+   */
+  private final Timer timer;
+
+  /**
+   * Hashmap to aggregate metrics locally
+   */
+  private final Map<String, Long> metrics = new HashMap<>();
+
+  /**
+   * Hashmap for flush purpose
+   */
+  private final Map<String, Long> toFlush = new HashMap<>();
+
   private String hostname;
 
   ESMetrics() {
+    timer = new Timer();
     try {
       hostname = InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
@@ -57,6 +74,14 @@ public class ESMetrics {
 
     RestClientBuilder builder = RestClient.builder(new HttpHost(esHostname, esPort, scheme));
     INSTANCE.restClient = builder.build();
+
+    // Start the timer.
+    INSTANCE.timer.scheduleAtFixedRate(new TimerTask() {
+      @Override
+      public void run() {
+        INSTANCE.flushMetrics();
+      }
+    }, 10000, 10000);
   }
 
   /**
@@ -70,6 +95,9 @@ public class ESMetrics {
    * Close the ES client
    */
   public void close() {
+    if (timer != null) {
+      timer.cancel();
+    }
     try {
       restClient.close();
     } catch (IOException e) {
@@ -97,7 +125,12 @@ public class ESMetrics {
    * @param value the metric value
    */
   public synchronized void meter(String name, long value) {
-    sendMeter(name, value);
+    if (!metrics.containsKey(name)) {
+      metrics.put(name, 0L);
+    }
+    long meter = metrics.get(name);
+    meter += value; // aggregate locally
+    metrics.put(name, meter);
   }
 
   /**
@@ -107,16 +140,38 @@ public class ESMetrics {
    * @param value the metric value
    */
   public void trace(String name, long value) {
-    sendMeter(name, value);
+    final String index = createIndexIfNecessary();
+    sendMeter(index, name, value);
   }
 
-  private void sendMeter(String name, long value) {
+  /**
+   * Only call from the timer
+   */
+  private void flushMetrics() {
+    final String index = createIndexIfNecessary();
+
+    toFlush.clear();
+    synchronized (this) {
+      Iterator<Map.Entry<String, Long>> iter = metrics.entrySet().iterator();
+      while (iter.hasNext()) {
+        Map.Entry<String, Long> entry = iter.next();
+        toFlush.put(entry.getKey(), entry.getValue());
+      }
+      metrics.clear();
+    }
+
+    Iterator<Map.Entry<String, Long>> iter = toFlush.entrySet().iterator();
+    while (iter.hasNext()) {
+      Map.Entry<String, Long> entry = iter.next();
+      sendMeter(index, entry.getKey(), entry.getValue());
+    }
+  }
+
+  private void sendMeter(String index, String name, long value) {
     final Date date = new Date();
-    final String index = INDEX_PREFIX + sdf0.format(date);
     final String type = "_doc";
     final String id = String.valueOf(System.currentTimeMillis()) + String.format("%04d", random.nextInt(10000));
-
-
+    System.out.println(id);
     KVMetric m = new KVMetric(sdf.format(date), name , value, hostname);
     Gson gson = new Gson();
     try {
@@ -172,9 +227,8 @@ public class ESMetrics {
   public static void main(String[] args) throws Exception {
     ESMetrics.init("10.148.185.16", 9200, "http");
     ESMetrics metrics = ESMetrics.getInstance();
-    metrics.createIndexIfNecessary();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 1000; i++) {
       metrics.meter("test1");
       Thread.sleep(10);
     }
