@@ -30,7 +30,9 @@
     <parquet.version>1.8.2</parquet.version>
     <zookeeper.version>3.4.6</zookeeper.version>
     <curator.version>4.0.1</curator.version>
-    <couchbase.client.version>2.5.3</couchbase.client.version>
+    <couchbase.client.version>2.5.5</couchbase.client.version>
+    <dukes.version>1.4.13.raptor2</dukes.version>
+    <raptor.dal.verion>2.1.20-RELEASE</raptor.dal.verion>
     <rheos.version>0.0.7-SNAPSHOT</rheos.version>
     <jackson.version>2.9.5</jackson.version>
     <jacoco.dump.skip>true</jacoco.dump.skip>

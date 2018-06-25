@@ -81,22 +81,17 @@
         <dependency>
             <groupId>com.couchbase.client</groupId>
             <artifactId>java-client</artifactId>
-            <version>2.5.5</version>
+            <version>${couchbase.client.version}</version>
         </dependency>
         <dependency>
             <groupId>com.ebay.dukes</groupId>
             <artifactId>dukes</artifactId>
-            <version>1.4.13.raptor2</version>
+            <version>${dukes.version}</version>
         </dependency>
         <dependency>
             <groupId>com.ebay.raptorio.component</groupId>
             <artifactId>raptor-dal-starter</artifactId>
-            <version>2.1.20-RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>com.couchbase.client</groupId>
-            <artifactId>couchbase-client</artifactId>
-            <version>1.4.13</version>
+            <version>${raptor.dal.verion}</version>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
