@@ -18,7 +18,6 @@ SET hive.exec.max.dynamic.partitions.pernode=100000;
 set hive.merge.smallfiles.avgsize=128000000;
 set hive.merge.size.per.task=128000000;
 add jar hdfs://apollo-phx-nn-ha/user/b_marketing_tracking/chocolate/hive-hcatalog-core-0.13.0.jar;
-add jar /home/yimeng/hive-hcatalog-core-0.13.0.jar;
 
 DROP TABLE IF EXISTS CHOCO_DATA.choco_rotations;
 
