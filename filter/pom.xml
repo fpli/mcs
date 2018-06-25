@@ -81,7 +81,6 @@
         <dependency>
             <groupId>com.couchbase.client</groupId>
             <artifactId>java-client</artifactId>
-            <version>${couchbase.client.version}</version>
         </dependency>
         <dependency>
             <groupId>com.ebay.dukes</groupId>
