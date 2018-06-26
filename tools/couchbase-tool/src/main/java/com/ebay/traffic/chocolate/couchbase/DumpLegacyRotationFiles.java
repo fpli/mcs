@@ -14,75 +14,97 @@ import com.couchbase.client.java.query.N1qlQueryRow;
 import com.ebay.app.raptor.chocolate.constant.MPLXChannelEnum;
 import com.ebay.app.raptor.chocolate.constant.MPLXClientEnum;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPOutputStream;
 
 
 public class DumpLegacyRotationFiles {
-  private static final String CB_QUERY_STATEMENT_BY_TIME = "SELECT * FROM `rotation_info` WHERE last_update_time >= ";
-
+  static Logger logger = LoggerFactory.getLogger(DumpLegacyRotationFiles.class);
   private static Cluster cluster;
   private static Bucket bucket;
   private static Properties couchbasePros;
 
-
   public static void main(String args[]) throws IOException {
-    String env = args[0].toLowerCase(), output = args[1], lastUpdateTime = args[2], compress = args[3];
-    init(env);
+    String configFilePath = (args != null && args.length > 0) ? args[0] : null;
+    if (StringUtils.isEmpty(configFilePath))
+      logger.error("No configFilePath was defined. please set configFilePath for rotation jobs");
+
+    String lastUpdateTime = (args != null && args.length > 1) ? args[1] : null;
+    if (StringUtils.isEmpty(lastUpdateTime))
+      logger.error("No lastUpdateTime was defined. please set lastUpdateTime for rotation jobs");
+
+    String outputFilePath = (args != null && args.length > 2) ? args[2] : null;
+
+    init(configFilePath);
+
     try {
       connect();
-      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH_");
-      output = output + sdf.format(new Date());
-      dumpFileFromCouchbase(output, Long.valueOf(lastUpdateTime), Boolean.valueOf(compress));
+      dumpFileFromCouchbase(lastUpdateTime, outputFilePath);
     } finally {
       close();
     }
   }
 
-  private static void init(String env) throws IOException {
+  private static void init(String configFilePath) throws IOException {
     couchbasePros = new Properties();
-    InputStream in = Object.class.getResourceAsStream("/" + env + "/couchbase.properties");
+    InputStream in = new FileInputStream(configFilePath);
+    ;
     couchbasePros.load(in);
   }
 
   private static void connect() {
-    CouchbaseEnvironment env = DefaultCouchbaseEnvironment.builder().connectTimeout(10000).queryTimeout(5000).build();
+    CouchbaseEnvironment env = DefaultCouchbaseEnvironment.builder().connectTimeout(100000).queryTimeout(500000).build();
     cluster = CouchbaseCluster.create(env, couchbasePros.getProperty("couchbase.cluster.rotation"));
     cluster.authenticate(couchbasePros.getProperty("couchbase.user.rotation"), couchbasePros.getProperty("couchbase.password.rotation"));
-    bucket = cluster.openBucket(couchbasePros.getProperty("couchbase.bucket.rotation"), 300, TimeUnit.SECONDS);
+    bucket = cluster.openBucket(couchbasePros.getProperty("couchbase.bucket.rotation"), 300000, TimeUnit.SECONDS);
   }
 
-  private static void dumpFileFromCouchbase(String output, Long lastUpdateTime, boolean compress) throws IOException {
-    N1qlQueryResult result = bucket.query(N1qlQuery.simple(CB_QUERY_STATEMENT_BY_TIME + lastUpdateTime));
+  private static void dumpFileFromCouchbase(String lastUpdateTime, String outputFilePath) throws IOException {
+    // File Path
+    if (outputFilePath == null) {
+      outputFilePath = couchbasePros.getProperty("job.dumpLegacyRotationFiles.outputFilePath");
+    }
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH_");
+    outputFilePath = outputFilePath + sdf.format(System.currentTimeMillis());
+    // If the file need to be compressed, set "true".  default is "false"
+    Boolean compress = (couchbasePros.getProperty("job.dumpLegacyRotationFiles.compressed") == null) ? Boolean.valueOf(couchbasePros.getProperty("job.dumpLegacyRotationFiles.compressed")) : Boolean.FALSE;
+    // n1qlQueryString
+    String n1qlQueryString = couchbasePros.getProperty("job.dumpRotationFiles.n1ql");
+    n1qlQueryString = String.format(n1qlQueryString, lastUpdateTime);
+
+
+    N1qlQueryResult result = bucket.query(N1qlQuery.simple(n1qlQueryString));
     // sample: 2018-02-22_01_rotations.txt
-    genFileForRotation(output, compress, result);
+    genFileForRotation(outputFilePath, compress, result);
     // sample: 2018-02-22_01_campaigns.txt
-    genFileForCampaign(output, compress, result);
+    genFileForCampaign(outputFilePath, compress, result);
     // sample: 2018-02-22_01_creatives.txt
-    genFileForCreatives(output, compress, result);
+    genFileForCreatives(outputFilePath, compress, result);
     // sample: 2018-02-22_01_rotation-creative.txt
-    genFileForRotationCreatives(output, compress, result);
+    genFileForRotationCreatives(outputFilePath, compress, result);
     // sample: 2018-02-22_01_df.status
-    genFileForDFStatus(output, compress, result);
+    genFileForDFStatus(outputFilePath, compress, result);
     // sample: 2018-02-22_01_lt_roi.txt
-    genFileForLtRoi(output, compress, result);
+    genFileForLtRoi(outputFilePath, compress, result);
     // sample: 2018-02-22_01_position_rotations.txt
-    genFileForPositionRotation(output, compress, result);
+    genFileForPositionRotation(outputFilePath, compress, result);
     // sample: 2018-02-22_01_position_rules.txt
-    genFileForPositionRule(output, compress, result);
+    genFileForPositionRule(outputFilePath, compress, result);
     // sample: 2018-02-22_01_positions.txt
-    genFileForPosition(output, compress, result);
+    genFileForPosition(outputFilePath, compress, result);
     // sample: 2018-02-22_01_roi_credit_v2.txt
-    genFileForRoiCredit(output, compress, result);
+    genFileForRoiCredit(outputFilePath, compress, result);
     // sample: 2018-02-22_01_roi_v2.txt
-    genFileForRoiV2(output, compress, result);
+    genFileForRoiV2(outputFilePath, compress, result);
     // sample: 2018-02-22_03_rules.txt
-    genFileForRules(output, compress, result);
+    genFileForRules(outputFilePath, compress, result);
   }
 
   private static void close() {
