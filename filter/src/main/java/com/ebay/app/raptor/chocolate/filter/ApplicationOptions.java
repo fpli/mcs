@@ -84,16 +84,8 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     /** Static driver ID */
     static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
 
-    /** Couchbase cluster list*/
-    private static final String COUCHBASE_CLUSTER = "chocolate.filter.couchbase.cluster";
-    /**Couchbase bucket for campaign publisher mapping*/
-    private static final String COUCHBASE_BUCKET = "chocolate.filter.couchbase.bucket";
-    /**Couchbase user*/
-    private static final String COUCHBASE_USER = "chocolate.filter.couchbase.user";
-    /**Couchbase password*/
-    private static final String COUCHBASE_PASSWORD = "chocolate.filter.couchbase.password";
-    /** Couchbase connection timeout*/
-    private static final String COUCHBASE_TIMEOUT = "chocolate.filter.couchbase.timeout";
+    /** Couchbase datasource */
+    private static final String COUCHBASE_DATASOURCE = "chocolate.filter.couchbase.datasource";
 
     /** zk connection string **/
     private String zkConnectionString;
@@ -207,48 +199,12 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
 
     /**Get Couchbase cluster string list*/
-    public String getCouchBaseCluster() {
-        if (!properties.containsKey(COUCHBASE_CLUSTER)) {
-            logger.fatal(COUCHBASE_CLUSTER + " not found in properties file!");
-            throw new UnsupportedOperationException(COUCHBASE_CLUSTER + " not found in properties file!");
+    public String getCouchbaseDatasource() {
+        if (!properties.containsKey(COUCHBASE_DATASOURCE)) {
+            logger.fatal(COUCHBASE_DATASOURCE + " not found in properties file!");
+            throw new UnsupportedOperationException(COUCHBASE_DATASOURCE + " not found in properties file!");
         }
-        return properties.getProperty(COUCHBASE_CLUSTER);
-    }
-
-    /**Get Couchbase bucket*/
-    public String getCouchBaseBucket() {
-        if (!properties.containsKey(COUCHBASE_BUCKET)) {
-            logger.fatal(COUCHBASE_BUCKET + " not found in properties file!");
-            throw new UnsupportedOperationException(COUCHBASE_BUCKET + " not found in properties file!");
-        }
-        return properties.getProperty(COUCHBASE_BUCKET);
-    }
-
-    /**Get Couchbase user*/
-    public String getCouchBaseUser() {
-        if (!properties.containsKey(COUCHBASE_USER)) {
-            logger.fatal(COUCHBASE_USER + " not found in properties file!");
-            throw new UnsupportedOperationException(COUCHBASE_USER + " not found in properties file!");
-        }
-        return properties.getProperty(COUCHBASE_USER);
-    }
-
-    /**Get Couchbase password*/
-    public String getCouchbasePassword() {
-        if (!properties.containsKey(COUCHBASE_PASSWORD)) {
-            logger.fatal(COUCHBASE_PASSWORD + " not found in properties file!");
-            throw new UnsupportedOperationException(COUCHBASE_PASSWORD + " not found in properties file!");
-        }
-        return properties.getProperty(COUCHBASE_PASSWORD);
-    }
-
-    /**Get Couchbase timeout*/
-    public long getCouchbaseTimeout() {
-      if (!properties.containsKey(COUCHBASE_TIMEOUT)) {
-        logger.fatal(COUCHBASE_TIMEOUT + " not found in properties file!");
-        throw new UnsupportedOperationException(COUCHBASE_TIMEOUT + " not found in properties file!");
-      }
-      return Long.parseLong(properties.getProperty(COUCHBASE_TIMEOUT));
+        return properties.getProperty(COUCHBASE_DATASOURCE);
     }
 
     /**
