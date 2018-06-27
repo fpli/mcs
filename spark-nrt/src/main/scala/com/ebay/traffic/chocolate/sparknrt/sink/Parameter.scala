@@ -16,7 +16,7 @@ case class Parameter(appName: String = "DedupeAndSink",
                      esPort: Int = 9200,
                      esScheme: String = "http",
                      maxConsumeSize: Long = 1000000l,
-                     couchbaseDedupe: String = "false",
+                     couchbaseDedupe: Boolean = false,
                      couchbaseTTL: Int = 3 * 24 * 60 * 60)
 
 object Parameter {
@@ -79,7 +79,7 @@ object Parameter {
       .valueName("maxConsumeSize")
       .action((cont, param) => param.copy(maxConsumeSize = cont))
 
-    opt[String]("couchbaseDedupe")
+    opt[Boolean]("couchbaseDedupe")
       .optional()
       .valueName("couchbaseDedupe")
       .action((cont, param) => param.copy(couchbaseDedupe = cont))

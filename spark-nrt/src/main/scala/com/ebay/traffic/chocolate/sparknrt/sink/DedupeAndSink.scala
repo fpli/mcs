@@ -58,7 +58,7 @@ class DedupeAndSink(params: Parameter)
   lazy val baseTempDir = baseDir + "/tmp/"
   lazy val sparkDir = baseDir + "/spark/"
   lazy val outputDir = params.outputDir + "/" + params.channel + "/dedupe/"
-  lazy val couchbaseDedupe = params.couchbaseDedupe.toBoolean
+  lazy val couchbaseDedupe = params.couchbaseDedupe
   lazy val couchbaseTTL = params.couchbaseTTL
 
   @transient lazy val metadata = {
