@@ -9,7 +9,7 @@ metastore_db
 chocolate-*-bin*
 webapp
 *.DS_Store
-
+*.versionsBackup
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
