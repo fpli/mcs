@@ -208,8 +208,8 @@ class TestCappingRuleJob extends BaseFunSuite {
     assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L)).=!=(0)).count() == 3)
     assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDPubCappingRule_S)).=!=(0)).count() == 4)
     assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDPubCappingRule_L)).=!=(0)).count() == 3)
-    assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_S)).=!=(0)).count() == 4)
-    assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_L)).=!=(0)).count() == 3)
+    assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_S)).=!=(0)).count() == 5)
+    assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_L)).=!=(0)).count() == 8)
 
     val df3 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-03/"))
     df3.show()

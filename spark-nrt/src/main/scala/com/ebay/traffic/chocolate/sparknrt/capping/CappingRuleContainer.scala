@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
-import com.ebay.traffic.chocolate.sparknrt.capping.rules.{IPCappingRule, IPPubCappingRule, SNIDCappingRule}
+import com.ebay.traffic.chocolate.sparknrt.capping.rules._
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.spark.sql.functions.coalesce
 import org.apache.spark.sql.functions.lit
@@ -25,13 +25,13 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
       CappingRuleEnum.IPPubCappingRule_L ->
           new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L), dateFiles, sparkJobObj, windowLong),
       CappingRuleEnum.CGUIDPubCappingRule_S ->
-          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDPubCappingRule_S), dateFiles, sparkJobObj, windowShort),
+          new CGUIDPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDPubCappingRule_S), dateFiles, sparkJobObj, windowShort),
       CappingRuleEnum.CGUIDPubCappingRule_L ->
-          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDPubCappingRule_L), dateFiles, sparkJobObj, windowLong),
+          new CGUIDPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDPubCappingRule_L), dateFiles, sparkJobObj, windowLong),
       CappingRuleEnum.CGUIDCappingRule_S ->
-          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_S), dateFiles, sparkJobObj, windowShort),
+          new CGUIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_S), dateFiles, sparkJobObj, windowShort),
       CappingRuleEnum.CGUIDCappingRule_L ->
-          new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_L), dateFiles, sparkJobObj, windowLong),
+          new CGUIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_L), dateFiles, sparkJobObj, windowLong),
       // Snid capping rule is special. 2 rules are implemented in 1 single rule for better performance
       // Use SnidCappingRule_L as hashmap key. Actually it doesn't affect what it is
       CappingRuleEnum.SnidCappingRule_L ->

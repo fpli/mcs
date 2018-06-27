@@ -19,6 +19,11 @@ class CGUIDCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
   //specific columns for CGUID Capping Rule
   override val cols = Array(col("CGUID"))
 
+  //filter condition for counting df
+  def filterCondition(): Column = {
+    $"channel_action" === "CLICK"
+  }
+
   //parse CGUID from request_headers
   def parseCGUID(): Column = {
     split($"response_headers", "cguid/")(1).substr(0, 32).alias("CGUID")
@@ -43,7 +48,9 @@ class CGUIDCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
 
     //Step 1: Prepare counting data. If this job has no events, return snapshot_id and capping = 0.
     //filter click only
-    var dfCGUID = dfFilterInJob(null)
+    var dfCGUID = dfFilterInJob(filterCondition())
+    logger.info("show dfCGUID")
+    dfCGUID.show()
 
     //if job has no events, then return df with capping column directly
     val head = dfCGUID.take(1)
@@ -57,6 +64,8 @@ class CGUIDCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
       //Step 2: Count by CGUID in this job, then integrate data to 1 file, and add timestamp to file name.
       //count by CGUID and in the job
       dfCGUID = dfLoadCappingInJob(dfCGUID, selectCondition())
+      logger.info("show dfCGUID")
+      dfCGUID.show()
 
       //reduce the number of counting file to 1, and rename file name to include timestamp
       saveCappingInJob(dfCGUID, timestamp)
@@ -65,6 +74,8 @@ class CGUIDCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
       //df for join
       val selectCols: Array[Column] = $"snapshot_id" +: cols
       var df = dfForJoin(cols(0), withColumnCondition(), selectCols)
+      logger.info("show df")
+      df.show()
 
       //read previous data and add to count path
       val cguidCountPath = getCappingDataPath(timestamp)
@@ -72,9 +83,13 @@ class CGUIDCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
       //Step 4: Count all data, including previous data and data in this job, then join the result with the new df, return only snapshot_id and capping.
       //count through whole timeWindow and filter those over threshold
       dfCGUID = dfCappingInJob(null, cguidCountPath)
+      logger.info("show dfCGUID")
+      dfCGUID.show()
 
       //join origin df and counting df
       df = dfJoin(df, dfCGUID, joinCondition(df, dfCGUID))
+      logger.info("show df")
+      df.show()
       df
     }
   }
