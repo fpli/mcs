@@ -37,15 +37,15 @@ public class DumpLegacyRotationFiles {
       logger.error("No configFilePath was defined. please set configFilePath for rotation jobs");
 
     String lastUpdateTime = (args != null && args.length > 1) ? args[1] : null;
-    if (StringUtils.isEmpty(lastUpdateTime))
-      logger.error("No lastUpdateTime was defined. please set lastUpdateTime for rotation jobs");
 
     String outputFilePath = (args != null && args.length > 2) ? args[2] : null;
 
     init(configFilePath);
 
     try {
-      connect();
+      if(StringUtils.isNotEmpty(lastUpdateTime) && Long.valueOf(lastUpdateTime) > 0){
+        connect();
+      }
       dumpFileFromCouchbase(lastUpdateTime, outputFilePath);
     } finally {
       close();
@@ -55,7 +55,6 @@ public class DumpLegacyRotationFiles {
   private static void init(String configFilePath) throws IOException {
     couchbasePros = new Properties();
     InputStream in = new FileInputStream(configFilePath);
-    ;
     couchbasePros.load(in);
   }
 
@@ -75,12 +74,16 @@ public class DumpLegacyRotationFiles {
     outputFilePath = outputFilePath + sdf.format(System.currentTimeMillis());
     // If the file need to be compressed, set "true".  default is "false"
     Boolean compress = (couchbasePros.getProperty("job.dumpLegacyRotationFiles.compressed") == null) ? Boolean.valueOf(couchbasePros.getProperty("job.dumpLegacyRotationFiles.compressed")) : Boolean.FALSE;
-    // n1qlQueryString
-    String n1qlQueryString = couchbasePros.getProperty("job.dumpRotationFiles.n1ql");
-    n1qlQueryString = String.format(n1qlQueryString, lastUpdateTime);
 
+    N1qlQueryResult result = null;
+    if(StringUtils.isNotEmpty(lastUpdateTime) && Long.valueOf(lastUpdateTime) > -1){
+      // n1qlQueryString
+      String n1qlQueryString = couchbasePros.getProperty("job.dumpRotationFiles.n1ql");
+      n1qlQueryString = String.format(n1qlQueryString, lastUpdateTime);
+      logger.info("couchbase n1qlQueryString = " + n1qlQueryString);
+      result = bucket.query(N1qlQuery.simple(n1qlQueryString));
+    }
 
-    N1qlQueryResult result = bucket.query(N1qlQuery.simple(n1qlQueryString));
     // sample: 2018-02-22_01_rotations.txt
     genFileForRotation(outputFilePath, compress, result);
     // sample: 2018-02-22_01_campaigns.txt
@@ -91,25 +94,25 @@ public class DumpLegacyRotationFiles {
     genFileForRotationCreatives(outputFilePath, compress, result);
     // sample: 2018-02-22_01_df.status
     genFileForDFStatus(outputFilePath, compress, result);
-    // sample: 2018-02-22_01_lt_roi.txt
-    genFileForLtRoi(outputFilePath, compress, result);
     // sample: 2018-02-22_01_position_rotations.txt
     genFileForPositionRotation(outputFilePath, compress, result);
     // sample: 2018-02-22_01_position_rules.txt
     genFileForPositionRule(outputFilePath, compress, result);
     // sample: 2018-02-22_01_positions.txt
     genFileForPosition(outputFilePath, compress, result);
-    // sample: 2018-02-22_01_roi_credit_v2.txt
-    genFileForRoiCredit(outputFilePath, compress, result);
-    // sample: 2018-02-22_01_roi_v2.txt
-    genFileForRoiV2(outputFilePath, compress, result);
     // sample: 2018-02-22_03_rules.txt
     genFileForRules(outputFilePath, compress, result);
+//    // sample: 2018-02-22_01_lt_roi.txt
+//    genFileForLtRoi(outputFilePath, compress, result);
+//    // sample: 2018-02-22_01_roi_credit_v2.txt
+//    genFileForRoiCredit(outputFilePath, compress, result);
+//    // sample: 2018-02-22_01_roi_v2.txt
+//    genFileForRoiV2(outputFilePath, compress, result);
   }
 
   private static void close() {
-    bucket.close();
-    cluster.disconnect();
+    if(bucket != null) bucket.close();
+    if(cluster != null) cluster.disconnect();
   }
 
   private static void genFileForRotation(String output, boolean compress, N1qlQueryResult result) throws IOException {
@@ -125,6 +128,12 @@ public class DumpLegacyRotationFiles {
       out.write(RotationConstant.FILE_HEADER_ROTATIONS.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
 
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
 
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
@@ -254,12 +263,12 @@ public class DumpLegacyRotationFiles {
         count++;
       }
     } catch (IOException e) {
-      System.out.println("Error happened when write couchbase data to legacy rotation file");
+      logger.error("Error happened when write couchbase data to legacy rotation file");
       throw e;
     } finally {
-      out.close();
+      if(out != null) out.close();
     }
-    System.out.println("Successfully dump " + count + " records into " + filePath);
+    logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
   private static void genFileForCampaign(String output, boolean compress, N1qlQueryResult result) throws IOException {
@@ -274,6 +283,13 @@ public class DumpLegacyRotationFiles {
       }
       out.write(RotationConstant.FILE_HEADER_CAMPAIGN.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
+
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
 
       JsonObject rotationInfo = null;
       for (N1qlQueryRow row : result) {
@@ -309,12 +325,12 @@ public class DumpLegacyRotationFiles {
         count++;
       }
     } catch (IOException e) {
-      System.out.println("Error happened when write couchbase data to legacy rotation file");
+      logger.error("Error happened when write couchbase data to legacy rotation file");
       throw e;
     } finally {
-      out.close();
+      if(out != null) out.close();
     }
-    System.out.println("Successfully dump " + count + " records into " + filePath);
+    logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
   private static void genFileForRotationCreatives(String output, boolean compress, N1qlQueryResult result) throws IOException {
@@ -329,6 +345,13 @@ public class DumpLegacyRotationFiles {
       }
       out.write(RotationConstant.FILE_HEADER_ROTATION_CREATIVE.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
+
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
 
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
@@ -357,12 +380,12 @@ public class DumpLegacyRotationFiles {
         }
       }
     } catch (IOException e) {
-      System.out.println("Error happened when write couchbase data to legacy rotation file");
+      logger.error("Error happened when write couchbase data to legacy rotation file");
       throw e;
     } finally {
-      out.close();
+      if(out != null) out.close();
     }
-    System.out.println("Successfully dump " + count + " records into " + filePath);
+    logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
   private static void setPositionCreatives(OutputStream out, JsonObject creativeSets, String rotationId18) throws IOException {
@@ -425,6 +448,13 @@ public class DumpLegacyRotationFiles {
       out.write(RotationConstant.FILE_HEADER_CREATIVES.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
 
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
+
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
       for (N1qlQueryRow row : result) {
@@ -450,12 +480,12 @@ public class DumpLegacyRotationFiles {
         }
       }
     } catch (IOException e) {
-      System.out.println("Error happened when write couchbase data to legacy rotation file");
+      logger.error("Error happened when write couchbase data to legacy rotation file");
       throw e;
     } finally {
-      out.close();
+      if(out != null) out.close();
     }
-    System.out.println("Successfully dump " + count + " records into " + filePath);
+    logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
   private static void setCreativeSets(OutputStream out, JsonObject creativeSets, JsonObject rotationInfo) throws IOException {
@@ -531,6 +561,13 @@ public class DumpLegacyRotationFiles {
       out.write(RotationConstant.FILE_HEADER_POSITION.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
 
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
+
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
       for (N1qlQueryRow row : result) {
@@ -577,12 +614,12 @@ public class DumpLegacyRotationFiles {
         }
       }
     } catch (IOException e) {
-      System.out.println("Error happened when write couchbase data to legacy rotation file");
+      logger.error("Error happened when write couchbase data to legacy rotation file");
       throw e;
     } finally {
-      out.close();
+      if(out != null) out.close();
     }
-    System.out.println("Successfully dump " + count + " records into " + filePath);
+    logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
   private static void genFileForPositionRotation(String output, boolean compress, N1qlQueryResult result) throws IOException {
@@ -597,6 +634,13 @@ public class DumpLegacyRotationFiles {
       }
       out.write(RotationConstant.FILE_HEADER_POSITION_ROTATION.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
+
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
 
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
@@ -651,12 +695,12 @@ public class DumpLegacyRotationFiles {
         }
       }
     } catch (IOException e) {
-      System.out.println("Error happened when write couchbase data to legacy rotation file");
+      logger.error("Error happened when write couchbase data to legacy rotation file");
       throw e;
     } finally {
-      out.close();
+      if(out != null) out.close();
     }
-    System.out.println("Successfully dump " + count + " records into " + filePath);
+    logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
   private static void genFileForPositionRule(String output, boolean compress, N1qlQueryResult result) throws IOException {
@@ -671,6 +715,13 @@ public class DumpLegacyRotationFiles {
       }
       out.write(RotationConstant.FILE_HEADER_POSITION_RULES.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
+
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
 
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
@@ -727,12 +778,12 @@ public class DumpLegacyRotationFiles {
         }
       }
     } catch (IOException e) {
-      System.out.println("Error happened when write couchbase data to legacy rotation file");
+      logger.error("Error happened when write couchbase data to legacy rotation file");
       throw e;
     } finally {
-      out.close();
+      if(out != null) out.close();
     }
-    System.out.println("Successfully dump " + count + " records into " + filePath);
+    logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
   private static void genFileForDFStatus(String output, boolean compress, N1qlQueryResult result) throws IOException {
@@ -746,12 +797,12 @@ public class DumpLegacyRotationFiles {
         out = new BufferedOutputStream(new FileOutputStream(filePath));
       }
     } catch (IOException e) {
-      System.out.println("Error happened when write couchbase data to legacy rotation file");
+      logger.error("Error happened when write couchbase data to legacy rotation file");
       throw e;
     } finally {
-      out.close();
+      if(out != null) out.close();
     }
-    System.out.println("Successfully dump " + count + " records into " + filePath);
+    logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
   private static void genFileForLtRoi(String output, boolean compress, N1qlQueryResult result) throws IOException {
@@ -934,12 +985,12 @@ public class DumpLegacyRotationFiles {
         }
       }
     } catch (IOException e) {
-      System.out.println("Error happened when write couchbase data to legacy rotation file");
+      logger.error("Error happened when write couchbase data to legacy rotation file");
       throw e;
     } finally {
-      out.close();
+      if(out != null) out.close();
     }
-    System.out.println("Successfully dump " + count + " records into " + filePath);
+    logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
   private static void genFileForRoiCredit(String output, boolean compress, N1qlQueryResult result) throws IOException {
@@ -1107,12 +1158,12 @@ public class DumpLegacyRotationFiles {
         }
       }
     } catch (IOException e) {
-      System.out.println("Error happened when write couchbase data to legacy rotation file");
+      logger.error("Error happened when write couchbase data to legacy rotation file");
       throw e;
     } finally {
       out.close();
     }
-    System.out.println("Successfully dump " + count + " records into " + filePath);
+    logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
   private static void genFileForRoiV2(String output, boolean compress, N1qlQueryResult result) throws IOException {
@@ -1233,12 +1284,12 @@ public class DumpLegacyRotationFiles {
         }
       }
     } catch (IOException e) {
-      System.out.println("Error happened when write couchbase data to legacy rotation file");
+      logger.error("Error happened when write couchbase data to legacy rotation file");
       throw e;
     } finally {
-      out.close();
+      if(out != null) out.close();
     }
-    System.out.println("Successfully dump " + count + " records into " + filePath);
+    logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
   private static void genFileForRules(String output, boolean compress, N1qlQueryResult result) throws IOException {
@@ -1253,6 +1304,13 @@ public class DumpLegacyRotationFiles {
       }
       out.write(RotationConstant.FILE_HEADER_RULES.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
+
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
 
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
@@ -1340,11 +1398,11 @@ public class DumpLegacyRotationFiles {
         }
       }
     } catch (IOException e) {
-      System.out.println("Error happened when write couchbase data to legacy rotation file");
+      logger.error("Error happened when write couchbase data to legacy rotation file");
       throw e;
     } finally {
-      out.close();
+      if(out != null) out.close();
     }
-    System.out.println("Successfully dump " + count + " records into " + filePath);
+    logger.info("Successfully dump " + count + " records into " + filePath);
   }
 }
