@@ -80,6 +80,8 @@ public class BasicRulesTest {
     assertEquals(0, rule.test(req));
     req.setProtocol(HttpMethod.POST);
     assertEquals(0, rule.test(req));
+    req.setProtocol(HttpMethod.HEAD);
+    assertEquals(0, rule.test(req));
     req.setProtocol(HttpMethod.PUT);
     assertEquals(1, rule.test(req));
 
@@ -90,6 +92,8 @@ public class BasicRulesTest {
     req.setProtocol(HttpMethod.GET);
     assertEquals(0, rule.test(req));
     req.setProtocol(HttpMethod.POST);
+    assertEquals(0, rule.test(req));
+    req.setProtocol(HttpMethod.HEAD);
     assertEquals(0, rule.test(req));
     req.setProtocol(HttpMethod.PUT);
     assertEquals(1, rule.test(req));
