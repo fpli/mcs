@@ -19,6 +19,11 @@ class CGUIDCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
   //specific columns for CGUID Capping Rule
   override val cols = Array(col("CGUID"))
 
+  //filter condition for counting df
+  def filterCondition(): Column = {
+    $"channel_action" === "CLICK"
+  }
+
   //parse CGUID from request_headers
   def parseCGUID(): Column = {
     split($"response_headers", "cguid/")(1).substr(0, 32).alias("CGUID")
@@ -43,7 +48,7 @@ class CGUIDCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
 
     //Step 1: Prepare counting data. If this job has no events, return snapshot_id and capping = 0.
     //filter click only
-    var dfCGUID = dfFilterInJob(null)
+    var dfCGUID = dfFilterInJob(filterCondition())
 
     //if job has no events, then return df with capping column directly
     val head = dfCGUID.take(1)
