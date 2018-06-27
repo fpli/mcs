@@ -51,4 +51,4 @@ ${SPARK_HOME}/bin/spark-submit \
       --workDir "${WORK_DIR}" \
       --outputDir ${OUTPUT_DIR} \
       --partitions 3 \
-      --maxConsumeSize 3000
+      --maxConsumeSize 10000
