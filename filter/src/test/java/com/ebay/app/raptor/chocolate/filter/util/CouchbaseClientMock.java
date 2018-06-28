@@ -31,6 +31,9 @@ public class CouchbaseClientMock {
     private static int httpPort;
 
     public static void tearDown() {
+        if (bucket != null) {
+            bucket.close();
+        }
         if (cluster != null) {
             cluster.disconnect();
         }

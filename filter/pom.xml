@@ -83,6 +83,16 @@
             <artifactId>java-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes</artifactId>
+            <version>${dukes.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-dal-starter</artifactId>
+            <version>${raptor.dal.verion}</version>
+        </dependency>
+        <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4</artifactId>
             <version>1.6.3</version>
