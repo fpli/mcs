@@ -9,6 +9,7 @@ import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.app.raptor.chocolate.avro.FilterMessage
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
+import com.ebay.traffic.chocolate.monitoring.ESMetrics
 import com.ebay.traffic.chocolate.spark.kafka.KafkaRDD
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CouchbaseClient
@@ -67,6 +68,13 @@ class DedupeAndSink(params: Parameter)
 
   val SNAPSHOT_ID_COL = "snapshot_id"
 
+  @transient lazy val metrics: ESMetrics = {
+    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
+      ESMetrics.init(params.elasticsearchUrl)
+      ESMetrics.getInstance()
+    } else null
+  }
+
   import spark.implicits._
 
   override def run() = {
@@ -81,7 +89,7 @@ class DedupeAndSink(params: Parameter)
     fs.mkdirs(new Path(sparkDir))
 
     val kafkaRDD = new KafkaRDD[java.lang.Long, FilterMessage](
-      sc, params.kafkaTopic, properties, params.esHost, params.esPort, params.esScheme, params.maxConsumeSize)
+      sc, params.kafkaTopic, properties, params.elasticsearchUrl, params.maxConsumeSize)
 
     val dates =
     kafkaRDD.mapPartitions(iter => {
@@ -113,10 +121,16 @@ class DedupeAndSink(params: Parameter)
           if(!CouchbaseClient.dedupeBucket.exists(message.getSnapshotId.toString)) {
             CouchbaseClient.dedupeBucket.upsert(JsonDocument.create(message.getSnapshotId.toString, couchbaseTTL, JsonObject.empty()))
             writer.write(message)
+            if (metrics != null) {
+              metrics.meter("Dedupe-Temp-Output")
+            }
           }
         }
         else {
           writer.write(message)
+          if (metrics != null) {
+            metrics.meter("Dedupe-Temp-Output")
+          }
         }
       }
 

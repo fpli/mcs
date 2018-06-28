@@ -1,9 +1,9 @@
 package com.ebay.traffic.chocolate.listener;
 
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.listener.channel.Channel;
 import com.ebay.traffic.chocolate.listener.channel.ChannelFactory;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.client.api.Request;
@@ -44,7 +44,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
   private static String outputHttpsPort;
   private static int inputHttpPort;
   private static int inputHttpsPort;
-  private MetricsClient metrics;
+  private ESMetrics metrics;
   private Channel channel;
 
   @Override
@@ -55,7 +55,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
     outputHttpsPort = config.getInitParameter(ListenerOptions.OUTPUT_HTTPS_PORT);
     inputHttpPort = Integer.parseInt(config.getInitParameter(ListenerOptions.INPUT_HTTP_PORT));
     inputHttpsPort = Integer.parseInt(config.getInitParameter(ListenerOptions.INPUT_HTTPS_PORT));
-    metrics = MetricsClient.getInstance();
+    metrics = ESMetrics.getInstance();
     metrics.meter(PROXY_FAILURE, 0);
     metrics.meter(CLIENT_FAILURE, 0);
     metrics.meter(MALFORMED_URL, 0);

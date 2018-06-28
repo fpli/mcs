@@ -20,9 +20,7 @@ class KafkaRDD[K, V](
                       @transient val sc: SparkContext,
                       val topic: String,
                       val kafkaProperties: util.Properties,
-                      val esHostName: String = "",
-                      val esPort: Int = 9200,
-                      val esScheme: String = "http",
+                      val elasticsearchUrl: String = "",
                       val maxConsumeSize: Long = 1000000l // maximum number of events can be consumed in one task: 100M
                     ) extends RDD[ConsumerRecord[K, V]](sc, Nil) {
   val POLL_STEP_MS = 30000
@@ -33,8 +31,8 @@ class KafkaRDD[K, V](
   }
 
   @transient lazy val metrics: ESMetrics = {
-    if (esHostName != null && !esHostName.isEmpty) {
-      ESMetrics.init(esHostName, esPort, esScheme)
+    if (elasticsearchUrl != null && !elasticsearchUrl.isEmpty) {
+      ESMetrics.init(elasticsearchUrl)
       ESMetrics.getInstance()
     } else null
   }
@@ -168,7 +166,7 @@ class KafkaRDD[K, V](
       }
 
       if (metrics != null) {
-        metrics.meter("Dedupe-Input");
+        metrics.meter("KafkaRDD-Input");
       }
 
       offset = offset + 1

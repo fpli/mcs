@@ -1,27 +1,21 @@
 package com.ebay.app.raptor.chocolate.filter.util;
 
 import com.couchbase.client.java.Bucket;
-import com.couchbase.client.java.Cluster;
-import com.couchbase.client.java.CouchbaseCluster;
 import com.couchbase.client.java.document.Document;
 import com.couchbase.client.java.document.StringDocument;
-import com.couchbase.client.java.env.CouchbaseEnvironment;
-import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.builder.Raptor2CacheFactoryBuilder;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
-import com.google.common.annotations.VisibleForTesting;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import javafx.util.Pair;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Couchbase client wrapper. Couchbase client is thread-safe
@@ -41,7 +35,7 @@ public class CouchbaseClient {
   private Queue<Pair<Long,Long>> buffer;
   private String datasourceName;
 
-  private final MetricsClient metrics = MetricsClient.getInstance();;
+  private final ESMetrics metrics = ESMetrics.getInstance();
 
     /**Singleton */
     private CouchbaseClient() {

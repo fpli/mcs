@@ -12,9 +12,7 @@ case class Parameter(appName: String = "DedupeAndSink",
                      workDir: String = "",
                      outputDir: String = "",
                      partitions: Int = 3,
-                     esHost: String = "",
-                     esPort: Int = 9200,
-                     esScheme: String = "http",
+                     elasticsearchUrl: String = "",
                      maxConsumeSize: Long = 1000000l,
                      couchbaseDedupe: Boolean = false,
                      couchbaseTTL: Int = 3 * 24 * 60 * 60)
@@ -59,20 +57,10 @@ object Parameter {
       .valueName("partitions")
       .action((cont, param) => param.copy(partitions = cont))
 
-    opt[String]("esHost")
+    opt[String]("elasticsearchUrl")
       .optional
-      .valueName("esHost")
-      .action((cont, param) => param.copy(esHost = cont))
-
-    opt[Int]("esPort")
-      .optional
-      .valueName("esPort")
-      .action((cont, param) => param.copy(esPort = cont))
-
-    opt[String]("esScheme")
-      .optional
-      .valueName("esScheme")
-      .action((cont, param) => param.copy(esScheme = cont))
+      .valueName("elasticsearchUrl")
+      .action((cont, param) => param.copy(elasticsearchUrl = cont))
 
     opt[Long]("maxConsumeSize")
       .optional

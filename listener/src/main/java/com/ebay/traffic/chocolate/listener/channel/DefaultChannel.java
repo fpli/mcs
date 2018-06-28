@@ -1,12 +1,12 @@
 package com.ebay.traffic.chocolate.listener.channel;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
@@ -21,13 +21,13 @@ import java.util.HashMap;
 
 public class DefaultChannel implements Channel {
     private static final Logger logger = Logger.getLogger(DefaultChannel.class);
-    private final MetricsClient metrics;
+  private final ESMetrics metrics;
   private MessageObjectParser parser;
   private static final String CAMPAIGN_PATTERN = "campid";
   private static final String SNID_PATTERN = "snid";
 
   DefaultChannel() {
-    this.metrics = MetricsClient.getInstance();
+    this.metrics = ESMetrics.getInstance();
     this.parser = MessageObjectParser.getInstance();
   }
 
@@ -86,9 +86,9 @@ public class DefaultChannel implements Channel {
       ListenerMessage message = parser.parseHeader(request, response,
           startTime, campaignId, channel.getLogicalChannel().getAvro(), channelAction, snid);
 
-      if (message != null)
-        producer.send(new ProducerRecord<>(kafkaTopic,
-            message.getSnapshotId(), message), KafkaSink.callback);
+      if (message != null) {
+        producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
+      }
       stopTimerAndLogData(startTime, message.toString());
     }
 
@@ -130,8 +130,8 @@ public class DefaultChannel implements Channel {
   private void stopTimerAndLogData(long startTime, String kafkaMessage) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("SuccessCount");
-    metrics.mean("AverageLatency", endTime - startTime);
+    metrics.meter("ListenerOutputCount");
+    metrics.mean("ListenerLatency", endTime - startTime);
   }
 
   /** @return a query message derived from the given string. */
@@ -160,7 +160,7 @@ public class DefaultChannel implements Channel {
       logger.warn("Cannot get request start time, use system time instead. ", e);
     }
     logger.debug(String.format("StartTime: %d", startTime));
-    metrics.meter("IncomingCount");
+    metrics.meter("ListenerInputCount");
     return startTime;
   }
 

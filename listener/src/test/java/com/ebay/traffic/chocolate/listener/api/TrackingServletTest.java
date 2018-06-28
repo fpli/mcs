@@ -2,12 +2,12 @@ package com.ebay.traffic.chocolate.listener.api;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.LogicalChannelEnum;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.Before;
@@ -30,14 +30,14 @@ import static org.mockito.Mockito.*;
 @PrepareForTest({ListenerOptions.class, KafkaSink.class})
 public class TrackingServletTest {
 
-  private MetricsClient mockMetrics;
+  private ESMetrics mockMetrics;
   private Producer mockProducer;
   private TrackingServlet servlet;
   private MessageObjectParser mockParser;
 
   @Before
   public void setUp() {
-    mockMetrics = mock(MetricsClient.class);
+    mockMetrics = mock(ESMetrics.class);
     mockParser = mock(MessageObjectParser.class);
 
     ListenerOptions mockOptions = mock(ListenerOptions.class);

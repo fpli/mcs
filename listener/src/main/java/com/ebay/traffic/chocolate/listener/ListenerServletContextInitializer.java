@@ -1,11 +1,11 @@
 package com.ebay.traffic.chocolate.listener;
 
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.cratchit.server.AcknowledgerServlet;
 import com.ebay.cratchit.server.Clerk;
 import com.ebay.traffic.chocolate.listener.api.TrackingServlet;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.log4j.Logger;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Configuration;
@@ -39,7 +39,7 @@ public class ListenerServletContextInitializer implements ServletContextInitiali
         // Add tracking servlet 
         logger.info("start trackingServlet");
         ServletRegistration.Dynamic trackingServlet = servletContext.addServlet("ListenerTrackingServlet",
-                new TrackingServlet(MetricsClient.getInstance(), MessageObjectParser.getInstance()));
+                new TrackingServlet(ESMetrics.getInstance(), MessageObjectParser.getInstance()));
         trackingServlet.addMapping("/1v/*", "/1c/*", "/1i/*");
         trackingServlet.setLoadOnStartup(2);
 

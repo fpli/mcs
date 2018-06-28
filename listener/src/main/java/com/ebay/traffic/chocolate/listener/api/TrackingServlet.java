@@ -1,10 +1,10 @@
 package com.ebay.traffic.chocolate.listener.api;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
@@ -25,14 +25,14 @@ public class TrackingServlet extends HttpServlet {
   /**
    * Metrics client instance
    */
-  private MetricsClient metrics;
+  private ESMetrics metrics;
 
   /**
    * Message object parser instance
    */
   private MessageObjectParser parser;
 
-  public TrackingServlet(final MetricsClient metrics, final MessageObjectParser parser) {
+  public TrackingServlet(final ESMetrics metrics, final MessageObjectParser parser) {
     this.metrics = metrics;
     this.parser = parser;
   }
@@ -44,7 +44,7 @@ public class TrackingServlet extends HttpServlet {
     if (parser == null)
       parser = MessageObjectParser.getInstance();
     if (metrics == null)
-      metrics = MetricsClient.getInstance();
+      metrics = ESMetrics.getInstance();
   }
 
   /**

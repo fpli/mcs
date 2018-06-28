@@ -3,11 +3,11 @@ package com.ebay.app.raptor.chocolate.filter.service;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
 import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
 import com.ebay.traffic.chocolate.kafka.KafkaConsumerFactory;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -29,7 +29,7 @@ public class FilterWorker extends Thread {
   private static final long POLL_STEP_MS = 100;
   private static final long DEFAULT_PUBLISHER_ID = -1L;
 
-  private final MetricsClient metrics;
+  private final ESMetrics metrics;
   private final FilterContainer filters;
   private final ChannelType channelType;
   private final String inputTopic;
@@ -44,7 +44,7 @@ public class FilterWorker extends Thread {
   public FilterWorker(ChannelType channelType, String inputTopic,
                       Properties properties, String outputTopic,
                       FilterContainer filters) {
-    this.metrics = MetricsClient.getInstance();
+    this.metrics = ESMetrics.getInstance();
     this.filters = filters;
     this.channelType = channelType;
     this.inputTopic = inputTopic;
@@ -84,9 +84,11 @@ public class FilterWorker extends Thread {
         long startTime = System.currentTimeMillis();
         while (iterator.hasNext()) {
           ++count;
+          metrics.meter("FilterInputCount");
           ConsumerRecord<Long, ListenerMessage> record = iterator.next();
           ListenerMessage message = record.value();
-          metrics.mean("FilterLatency", System.currentTimeMillis() - message.getTimestamp());
+          long latency = System.currentTimeMillis() - message.getTimestamp();
+          metrics.mean("FilterLatency", latency);
 
           FilterMessage outMessage = processMessage(message);
 
@@ -111,10 +113,10 @@ public class FilterWorker extends Thread {
         }
 
         if (count == 0) {
-          metrics.mean("FilterIdle", 1);
+          metrics.mean("FilterIdle");
           Thread.sleep(POLL_STEP_MS);
         } else {
-          metrics.meter("FilterThroughput", count);
+          metrics.meter("FilterOutputCount", count);
           metrics.mean("FilterPassedPPM", 1000000L * passed / count);
           long timeSpent = System.currentTimeMillis() - startTime;
           metrics.mean("FilterProcessingTime", timeSpent);
@@ -122,7 +124,7 @@ public class FilterWorker extends Thread {
           if (timeSpent >= POLL_STEP_MS) {
             this.metrics.mean("FilterIdle", 0);
           } else {
-            this.metrics.mean("FilterIdle", 1);
+            this.metrics.mean("FilterIdle");
             Thread.sleep(POLL_STEP_MS);
           }
         }
