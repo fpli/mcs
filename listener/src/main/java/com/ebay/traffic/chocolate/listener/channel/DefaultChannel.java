@@ -54,9 +54,6 @@ public class DefaultChannel implements Channel {
         }
       }
 
-
-
-      startTimerAndLogData(request, "ProxyIncomingClickCount");
       try {
         if (parser.responseShouldBeFiltered(request, response))
           return;
