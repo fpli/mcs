@@ -40,6 +40,23 @@ public class DefaultChannel implements Channel {
       Producer<Long, ListenerMessage> producer;
       ChannelActionEnum channelAction;
       ChannelIdEnum channel;
+
+      long startTime = startTimerAndLogData(request, "ProxyIncomingCount");
+
+      String[] result = request.getRequestURI().split("/");
+      if (result.length >= 2) {
+        channelAction = ChannelActionEnum.parse(null, result[1]);
+        if(ChannelActionEnum.CLICK.equals(channelAction)) {
+          startTimerAndLogData(request, "ProxyIncomingClickCount");
+        }
+        if(ChannelActionEnum.IMPRESSION.equals(channelAction)) {
+          startTimerAndLogData(request, "ProxyIncomingImpressionCount");
+        }
+      }
+
+
+
+      startTimerAndLogData(request, "ProxyIncomingClickCount");
       try {
         if (parser.responseShouldBeFiltered(request, response))
           return;
@@ -49,11 +66,11 @@ public class DefaultChannel implements Channel {
 
       long campaignId = getCampaignID(request);
 
-      long startTime = startTimerAndLogData(request);
+      startTimerAndLogData(request, "IncomingCount");
 
       String snid = request.getParameter(SNID_PATTERN);
 
-      String[] result = request.getRequestURI().split("/");
+//      String[] result = request.getRequestURI().split("/");
 
       if (result.length == 5) {
         channel = ChannelIdEnum.parse(result[4]);
@@ -76,6 +93,13 @@ public class DefaultChannel implements Channel {
 
         kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(channel.getLogicalChannel().getAvro());
         producer = KafkaSink.get();
+
+        if(ChannelActionEnum.CLICK.equals(channelAction)) {
+          startTimerAndLogData(request, "SendKafkaClickCount");
+        }
+        if(ChannelActionEnum.IMPRESSION.equals(channelAction)) {
+          startTimerAndLogData(request, "SendKafkaImpressionCount");
+        }
       } else {
         logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
         metrics.meter("un-managed");
@@ -148,7 +172,7 @@ public class DefaultChannel implements Channel {
    * @param request Incoming Http request
    * @return the start time in milliseconds
    */
-  private long startTimerAndLogData(HttpServletRequest request) {
+  private long startTimerAndLogData(HttpServletRequest request, String metricsName) {
     // the main rover process is already finished at this moment
     // use the timestamp from request as the start time
     long startTime = System.currentTimeMillis();
@@ -160,7 +184,7 @@ public class DefaultChannel implements Channel {
       logger.warn("Cannot get request start time, use system time instead. ", e);
     }
     logger.debug(String.format("StartTime: %d", startTime));
-    metrics.meter("IncomingCount");
+    metrics.meter(metricsName);
     return startTime;
   }
 
