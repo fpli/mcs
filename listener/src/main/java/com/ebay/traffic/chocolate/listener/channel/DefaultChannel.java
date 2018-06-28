@@ -41,7 +41,7 @@ public class DefaultChannel implements Channel {
       ChannelActionEnum channelAction;
       ChannelIdEnum channel;
 
-      long startTime = startTimerAndLogData(request, "ProxyIncomingCount");
+      long startTime = startTimerAndLogData(request) ;
 
       String[] result = request.getRequestURI().split("/");
       if (result.length >= 2) {
@@ -92,10 +92,10 @@ public class DefaultChannel implements Channel {
         producer = KafkaSink.get();
 
         if(ChannelActionEnum.CLICK.equals(channelAction)) {
-          startTimerAndLogData(request, "SendKafkaClickCount");
+          metrics.meter("SendKafkaClickCount");
         }
         if(ChannelActionEnum.IMPRESSION.equals(channelAction)) {
-          startTimerAndLogData(request, "SendKafkaImpressionCount");
+          metrics.meter("SendKafkaImpressionCount");
         }
       } else {
         logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
@@ -169,7 +169,7 @@ public class DefaultChannel implements Channel {
    * @param request Incoming Http request
    * @return the start time in milliseconds
    */
-  private long startTimerAndLogData(HttpServletRequest request, String metricsName) {
+  private long startTimerAndLogData(HttpServletRequest request) {
     // the main rover process is already finished at this moment
     // use the timestamp from request as the start time
     long startTime = System.currentTimeMillis();
@@ -181,7 +181,7 @@ public class DefaultChannel implements Channel {
       logger.warn("Cannot get request start time, use system time instead. ", e);
     }
     logger.debug(String.format("StartTime: %d", startTime));
-    metrics.meter(metricsName);
+    metrics.meter("ProxyIncomingCount");
     return startTime;
   }
 
