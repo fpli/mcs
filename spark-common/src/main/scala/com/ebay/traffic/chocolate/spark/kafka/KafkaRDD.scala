@@ -154,24 +154,33 @@ class KafkaRDD[K, V](
 
     var reset = false
 
+    var nextRecord: ConsumerRecord[K, V] = null // cache the next record
+
     var buffer: util.Iterator[ConsumerRecord[K, V]] = null
 
-    override def hasNext: Boolean = offset < part.untilOffset
+    override def hasNext: Boolean = offset < part.untilOffset && getNext
 
-    override def next(): ConsumerRecord[K, V] = {
-      assert (hasNext, "Can't call next() once there is no more records")
-
-      val record = if (buffer != null && buffer.hasNext) {
-        buffer.next
-      } else {
-        poll(POLL_STEP_MS)
+    def getNext(): Boolean = {
+      if (nextRecord == null) {
+        nextRecord = if (buffer != null && buffer.hasNext) {
+          buffer.next
+        } else {
+          poll(POLL_STEP_MS)
+        }
       }
 
+      nextRecord != null
+    }
+
+    override def next(): ConsumerRecord[K, V] = {
+      assert (nextRecord != null, "Can't call next() once there is no more records")
+      val record = nextRecord
+      offset = record.offset() + 1 // update offset
       if (metrics != null) {
         metrics.meter("Dedupe-Input");
       }
 
-      offset = offset + 1
+      nextRecord = null
       record
     }
 
@@ -180,7 +189,8 @@ class KafkaRDD[K, V](
       var result : ConsumerRecord[K, V] = null
 
       buffer = null
-      while (buffer == null) {
+      var finish = false
+      while (!finish) {
         if (reset) { // if reset flag is true, we need to do seek
           consumer.seek(topicPartition, offset)
           reset = false
@@ -197,35 +207,41 @@ class KafkaRDD[K, V](
                   s"which exceeded untilOffset ${part.untilOffset}")
             } else {
               log.warn(s"Skip missing records in [$offset, ${result.offset})")
-              offset = result.offset()
-              reset = true
             }
           } else if (result.offset() < offset) {
             throw new IllegalStateException(
               s"Tried to fetch ${offset} but the returned record offset was ${result.offset}")
           }
           buffer = iter
+          finish = true
         } else {
           // We cannot fetch anything after `poll`. Two possible cases:
           // - `offset` is out of range so that Kafka returns nothing.
           // - Cannot fetch any data before timeout. TimeoutException will be thrown.
           val range = getAvailableOffsetRange()
           log.info(s"KafkaRDDIterator iterating: ${topicPartition}, " +
-            s"offset: ${offset}, available offset range: [${range.earliest}, ${range.latest}]")
-          if (offset < range.earliest || offset > range.latest) {
-            if (offset < range.earliest && range.earliest < part.untilOffset) {
-              log.warn(s"Skip missing records in [$offset, ${range.earliest})")
-              offset = range.earliest
-              reset = true
-            } else {
-              throw new IllegalStateException(
-                s"Tried to fetch ${offset} but the latest offset was ${range.latest}")
-            }
-//            throw new OffsetOutOfRangeException(
-//              Map(topicPartition -> java.lang.Long.valueOf(offset)).asJava)
+            s"offset: ${offset}, available offset range: [${range.earliest}, ${range.latest})")
+          if (range.earliest == range.latest) {
+            log.warn(s"No more records, available offset range: [${range.earliest}, ${range.latest})")
+            offset = range.latest
+            finish = true
           } else {
-            throw new TimeoutException(
-              s"Cannot fetch record for offset ${offset} in ${timeout} milliseconds")
+            if (offset < range.earliest) {
+              if (range.earliest < part.untilOffset) {
+                log.warn(s"Skip missing records in [$offset, ${range.earliest})")
+                offset = range.earliest
+                reset = true
+              } else { // range.earliest >= part.untilOffset
+                throw new IllegalStateException(
+                  s"Tried to fetch [${offset}, ${part.untilOffset}) but the range earliest is ${range.earliest}")
+              }
+            } else if (offset >= range.latest) {
+              throw new IllegalStateException(
+                s"Tried to fetch ${offset} which exceeds the latest offset ${range.latest}.")
+            } else { // range.earliest <= offset < range.latest
+              throw new TimeoutException(
+                s"Cannot fetch record for offset ${offset} in ${timeout} milliseconds")
+            }
           }
         }
       }
