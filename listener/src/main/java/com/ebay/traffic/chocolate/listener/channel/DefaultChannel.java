@@ -47,10 +47,10 @@ public class DefaultChannel implements Channel {
       if (result.length >= 2) {
         channelAction = ChannelActionEnum.parse(null, result[1]);
         if(ChannelActionEnum.CLICK.equals(channelAction)) {
-          startTimerAndLogData(request, "ProxyIncomingClickCount");
+          metrics.meter("ProxyIncomingClickCount");
         }
         if(ChannelActionEnum.IMPRESSION.equals(channelAction)) {
-          startTimerAndLogData(request, "ProxyIncomingImpressionCount");
+          metrics.meter("ProxyIncomingImpressionCount");
         }
       }
 
@@ -63,7 +63,7 @@ public class DefaultChannel implements Channel {
 
       long campaignId = getCampaignID(request);
 
-      startTimerAndLogData(request, "IncomingCount");
+      metrics.meter("IncomingCount");
 
       String snid = request.getParameter(SNID_PATTERN);
 
