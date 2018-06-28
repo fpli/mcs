@@ -1,6 +1,6 @@
 #
-#	IAB_ABC_International_List_of_Valid_Browsers_201805_17-093758
-#	May 17, 2018
+#	IAB_ABC_International_List_of_Valid_Browsers_201806_22-093249
+#	June 22, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
@@ -353,6 +353,7 @@ dorado wap-browser|1|0
 dorado+wap-browser|1|0
 flixster|1|1
 gbplugin|1|1
+googletv|1|0
 i-mobile|1|1
 iBrowser|1|1
 iCab|1|0
@@ -549,3 +550,4 @@ xbox|1|1
 # March 2018 - added "Toshiba", added "Philco", added "Grundig", added "Semp" and updated the third flag for "Panasonic" from a 1 to 0
 # April 2018 - no changes
 # May 2018 - added "FetchTV"
+# June 2018 - added "googletv"
