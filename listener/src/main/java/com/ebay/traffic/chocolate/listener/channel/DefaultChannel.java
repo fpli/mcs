@@ -55,8 +55,10 @@ public class DefaultChannel implements Channel {
       }
 
       try {
-        if (parser.responseShouldBeFiltered(request, response))
+        if (parser.responseShouldBeFiltered(request, response)) {
+          metrics.meter("ResponseFilteredCount");
           return;
+        }
       } catch (MalformedURLException | UnsupportedEncodingException e) {
         logger.error("Wrong with URL format/encoding", e);
       }
