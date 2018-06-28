@@ -40,6 +40,20 @@ public class DefaultChannel implements Channel {
       Producer<Long, ListenerMessage> producer;
       ChannelActionEnum channelAction;
       ChannelIdEnum channel;
+
+      long startTime = startTimerAndLogData(request) ;
+
+      String[] result = request.getRequestURI().split("/");
+      if (result.length >= 2) {
+        channelAction = ChannelActionEnum.parse(null, result[1]);
+        if(ChannelActionEnum.CLICK.equals(channelAction)) {
+          metrics.meter("ListenerInputClickCount");
+        }
+        if(ChannelActionEnum.IMPRESSION.equals(channelAction)) {
+          metrics.meter("ListenerInputImpressionCount");
+        }
+      }
+
       try {
         if (parser.responseShouldBeFiltered(request, response))
           return;
@@ -49,11 +63,9 @@ public class DefaultChannel implements Channel {
 
       long campaignId = getCampaignID(request);
 
-      long startTime = startTimerAndLogData(request);
+      metrics.meter("ListenerAfterFilterInputCount");
 
       String snid = request.getParameter(SNID_PATTERN);
-
-      String[] result = request.getRequestURI().split("/");
 
       if (result.length == 5) {
         channel = ChannelIdEnum.parse(result[4]);
@@ -76,6 +88,13 @@ public class DefaultChannel implements Channel {
 
         kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(channel.getLogicalChannel().getAvro());
         producer = KafkaSink.get();
+
+        if(ChannelActionEnum.CLICK.equals(channelAction)) {
+          metrics.meter("SendKafkaClickCount");
+        }
+        if(ChannelActionEnum.IMPRESSION.equals(channelAction)) {
+          metrics.meter("SendKafkaImpressionCount");
+        }
       } else {
         logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
         metrics.meter("un-managed");
