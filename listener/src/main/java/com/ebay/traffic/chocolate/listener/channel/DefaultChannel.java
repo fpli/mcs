@@ -20,7 +20,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 
 public class DefaultChannel implements Channel {
-    private static final Logger logger = Logger.getLogger(DefaultChannel.class);
+  private static final Logger logger = Logger.getLogger(DefaultChannel.class);
   private final ESMetrics metrics;
   private MessageObjectParser parser;
   private static final String CAMPAIGN_PATTERN = "campid";

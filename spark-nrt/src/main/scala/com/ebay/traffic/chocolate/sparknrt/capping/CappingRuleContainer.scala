@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
+import com.ebay.traffic.chocolate.monitoring.ESMetrics
 import com.ebay.traffic.chocolate.sparknrt.capping.rules._
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.spark.sql.functions.coalesce
@@ -41,6 +42,13 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
     ChannelType.DISPLAY -> mutable.HashMap(
     )
   )
+
+  @transient lazy val metrics: ESMetrics = {
+    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
+      ESMetrics.init(params.elasticsearchUrl)
+      ESMetrics.getInstance()
+    } else null
+  }
 
   def preTest() = {
     val channelRules = channelsRules.get(ChannelType.valueOf(params.channel)).iterator
@@ -96,6 +104,11 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
             .withColumn("nrt_rule_flags", $"nrt_rule_flags_tmp")
             .drop("snapshot_id_tmp")
             .drop("nrt_rule_flags_tmp")
+
+    val passed = dfResult.filter($"nrt_rule_flags" === 0).count()
+    if (metrics != null)
+      metrics.meter("CappingPassedCount", passed)
+
     dfResult
   }
 

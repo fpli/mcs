@@ -116,6 +116,7 @@ public class FilterWorker extends Thread {
           metrics.mean("FilterIdle");
           Thread.sleep(POLL_STEP_MS);
         } else {
+          metrics.meter("FilterPassedCount", passed);
           metrics.meter("FilterOutputCount", count);
           metrics.mean("FilterPassedPPM", 1000000L * passed / count);
           long timeSpent = System.currentTimeMillis() - startTime;
