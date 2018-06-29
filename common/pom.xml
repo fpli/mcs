@@ -65,16 +65,16 @@
       <version>${curator.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.elasticsearch</groupId>
-      <artifactId>elasticsearch</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.elasticsearch</groupId>-->
+      <!--<artifactId>elasticsearch</artifactId>-->
+    <!--</dependency>-->
 
 
-    <dependency>
-      <groupId>org.elasticsearch.client</groupId>
-      <artifactId>elasticsearch-rest-client</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.elasticsearch.client</groupId>-->
+      <!--<artifactId>elasticsearch-rest-client</artifactId>-->
+    <!--</dependency>-->
 
     <!--
     <dependency>
@@ -90,11 +90,11 @@
     </dependency>
     -->
 
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>${gson.version}</version>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>com.google.code.gson</groupId>-->
+      <!--<artifactId>gson</artifactId>-->
+      <!--<version>${gson.version}</version>-->
+    <!--</dependency>-->
 
     <!-- test -->
     <dependency>
