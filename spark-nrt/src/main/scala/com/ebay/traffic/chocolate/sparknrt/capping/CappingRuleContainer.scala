@@ -101,9 +101,9 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
 
     var dfResult = sparkJobObj.readFilesAsDFEx(dateFiles.files)
     dfResult = dfResult.join(df, $"snapshot_id" === $"snapshot_id_tmp")
-            .withColumn("nrt_rule_flags", $"nrt_rule_flags_tmp")
-            .drop("snapshot_id_tmp")
-            .drop("nrt_rule_flags_tmp")
+        .withColumn("nrt_rule_flags", $"nrt_rule_flags_tmp")
+        .drop("snapshot_id_tmp")
+        .drop("nrt_rule_flags_tmp")
 
     val passed = dfResult.filter($"nrt_rule_flags" === 0).count()
     if (metrics != null)
