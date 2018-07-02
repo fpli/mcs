@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.listener.channel;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -54,8 +55,16 @@ public class DefaultChannel implements Channel {
         }
       }
 
+      producer = KafkaSink.get();
+      String filteredTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get("filtered");
+
       try {
         if (parser.responseShouldBeFiltered(request, response)) {
+          long campaignId = getCampaignID(request);
+          String snid = request.getParameter(SNID_PATTERN);
+          ListenerMessage filteredMessage = parser.parseHeader(request, response,
+            startTime, campaignId, ChannelType.EPN, ChannelActionEnum.CLICK, snid);
+          producer.send(new ProducerRecord<>(filteredTopic, filteredMessage), KafkaSink.callback);
           metrics.meter("ResponseFilteredCount");
           return;
         }
@@ -91,7 +100,8 @@ public class DefaultChannel implements Channel {
           return;
 
         kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(channel.getLogicalChannel().getAvro());
-        producer = KafkaSink.get();
+
+//        producer = KafkaSink.get();
 
         if(ChannelActionEnum.CLICK.equals(channelAction)) {
           metrics.meter("SendKafkaClickCount");

@@ -9,6 +9,11 @@
     <description>The kafka cluster, can be "rheos", "kafka", "rheos,kafka", "kafka,rheos".</description>
   </property>
   <property>
+    <name>chocolate.listener.kafka.topic.filtered</name>
+    <value>dev_listener_filtered</value>
+    <description>Kafka topic for messages filtered in listener.</description>
+  </property>
+  <property>
     <name>chocolate.listener.kafka.topic.EPN</name>
     <value>dev_listener</value>
     <description>Kafka topic for epn channel to publish to.</description>
