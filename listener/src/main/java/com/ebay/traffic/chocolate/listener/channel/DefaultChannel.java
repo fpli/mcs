@@ -56,16 +56,16 @@ public class DefaultChannel implements Channel {
       }
 
       producer = KafkaSink.get();
-      String filteredTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get("filtered");
+      String filteredTopic = ListenerOptions.getInstance().getErrorTopic();
 
       try {
         if (parser.responseShouldBeFiltered(request, response)) {
+          metrics.meter("ResponseFilteredCount");
           long campaignId = getCampaignID(request);
           String snid = request.getParameter(SNID_PATTERN);
           ListenerMessage filteredMessage = parser.parseHeader(request, response,
             startTime, campaignId, ChannelType.EPN, ChannelActionEnum.CLICK, snid);
           producer.send(new ProducerRecord<>(filteredTopic, filteredMessage), KafkaSink.callback);
-          metrics.meter("ResponseFilteredCount");
           return;
         }
       } catch (MalformedURLException | UnsupportedEncodingException e) {
