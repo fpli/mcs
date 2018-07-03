@@ -5,8 +5,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.nio.entity.NStringEntity;
-import org.apache.log4j.Logger;
 import org.elasticsearch.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -23,7 +24,7 @@ import java.util.*;
  * The metrics is aggregated locally and flushed to ES through background thread.
  */
 public class ESMetrics {
-  private static final Logger logger = Logger.getLogger(ESMetrics.class);
+  private static final Logger logger = LoggerFactory.getLogger(ESMetrics.class);
 
   private RestClient restClient;
 
@@ -66,7 +67,7 @@ public class ESMetrics {
     try {
       hostname = InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
-      logger.warn(e);
+      logger.warn(e.toString());
     }
   }
 
@@ -260,7 +261,7 @@ public class ESMetrics {
       restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
               new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
     } catch (IOException e) {
-      logger.warn(e);
+      logger.warn(e.toString());
     }
     logger.info("meter: " + name + "=" + value);
   }
@@ -275,10 +276,10 @@ public class ESMetrics {
       try {
         createIndex(index);
       } catch (IOException e1) {
-        logger.error(e1);
+        logger.error(e1.toString());
       }
     } catch (IOException e) {
-      logger.warn(e);
+      logger.warn(e.toString());
     }
 
     return index;

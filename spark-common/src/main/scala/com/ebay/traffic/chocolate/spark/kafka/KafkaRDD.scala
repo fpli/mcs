@@ -150,8 +150,6 @@ class KafkaRDD[K, V](
       metrics.trace("Consumer" + topicPartition.partition() + "-until", part.untilOffset);
     }
 
-    var reset = false
-
     var nextRecord: ConsumerRecord[K, V] = null // cache the next record
 
     var buffer: util.Iterator[ConsumerRecord[K, V]] = null
@@ -171,7 +169,9 @@ class KafkaRDD[K, V](
     }
 
     override def next(): ConsumerRecord[K, V] = {
-      assert (nextRecord != null, "Can't call next() once there is no more records")
+      if (!hasNext) {
+        throw new IllegalStateException("Can't call next() once there is no more records");
+      }
       val record = nextRecord
       offset = record.offset() + 1 // update offset
       if (metrics != null) {
@@ -188,6 +188,7 @@ class KafkaRDD[K, V](
 
       buffer = null
       var finish = false
+      var reset = false // reset flag
       while (!finish) {
         if (reset) { // if reset flag is true, we need to do seek
           consumer.seek(topicPartition, offset)

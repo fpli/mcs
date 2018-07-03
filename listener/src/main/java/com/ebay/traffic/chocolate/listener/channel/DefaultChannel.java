@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.listener.channel;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -59,10 +60,18 @@ public class DefaultChannel implements Channel {
         }
       }
 
+      producer = KafkaSink.get();
+      String filteredTopic = ListenerOptions.getInstance().getErrorTopic();
+
       try {
         if (parser.responseShouldBeFiltered(request, response)) {
           metrics.meter("ResponseFilteredCount");
           esMetrics.meter("ResponseFilteredCount");
+          long campaignId = getCampaignID(request);
+          String snid = request.getParameter(SNID_PATTERN);
+          ListenerMessage filteredMessage = parser.parseHeader(request, response,
+            startTime, campaignId, ChannelType.EPN, ChannelActionEnum.CLICK, snid);
+          producer.send(new ProducerRecord<>(filteredTopic, filteredMessage), KafkaSink.callback);
           return;
         }
       } catch (MalformedURLException | UnsupportedEncodingException e) {
@@ -75,6 +84,8 @@ public class DefaultChannel implements Channel {
       esMetrics.meter("ListenerInputCount");
 
       String snid = request.getParameter(SNID_PATTERN);
+
+//      String[] result = request.getRequestURI().split("/");
 
       if (result.length == 5) {
         channel = ChannelIdEnum.parse(result[4]);
@@ -96,7 +107,8 @@ public class DefaultChannel implements Channel {
           return;
 
         kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(channel.getLogicalChannel().getAvro());
-        producer = KafkaSink.get();
+
+//        producer = KafkaSink.get();
 
         if(ChannelActionEnum.CLICK.equals(channelAction)) {
           metrics.meter("SendKafkaClickCount");
@@ -117,9 +129,9 @@ public class DefaultChannel implements Channel {
       ListenerMessage message = parser.parseHeader(request, response,
           startTime, campaignId, channel.getLogicalChannel().getAvro(), channelAction, snid);
 
-      if (message != null) {
-        producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
-      }
+      if (message != null)
+        producer.send(new ProducerRecord<>(kafkaTopic,
+            message.getSnapshotId(), message), KafkaSink.callback);
       stopTimerAndLogData(startTime, message.toString());
     }
 
