@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.init;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.cratchit.server.Clerk;
 import com.ebay.cratchit.server.Replayable;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -25,6 +26,7 @@ public class ListenerInitializer {
      */
     public static void init(ListenerOptions options) {
         KafkaSink.initialize(options);
+        initFrontier(options.getFrontierUrl(), options.getFrontierAppSvcName());
         initElasticsearch(options.getElasticsearchUrl());
         // We will erase Journal feature soon, currently options.isJournalEnabled() is set as false.
         /*if (options.isJournalEnabled())
@@ -43,6 +45,18 @@ public class ListenerInitializer {
                 options.getJournalAlignmentSize(), options.getDriverId());
     }
 
+    /**
+     * Initialize Frontier
+     */
+    static void initFrontier(String url, String appSvcName) {
+        MetricsClient.init(url, appSvcName);
+        logger.info("Frontier Client initialized");
+    }
+
+    /**
+     * Initialize ElasticSearch
+     * @param url
+     */
     static void initElasticsearch(String url) {
         ESMetrics.init(url);
         logger.info("ElasticSearch Metrics initialized");
@@ -57,6 +71,7 @@ public class ListenerInitializer {
         producer.close();
 
         logger.info("stop Frontier client");
+        MetricsClient.getInstance().terminate();
         ESMetrics.getInstance().close();
     }
 

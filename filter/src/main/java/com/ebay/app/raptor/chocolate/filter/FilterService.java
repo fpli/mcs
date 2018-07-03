@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.filter;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.app.raptor.chocolate.filter.service.FilterContainer;
 import com.ebay.app.raptor.chocolate.filter.service.FilterWorker;
 import com.ebay.app.raptor.chocolate.filter.util.CouchbaseClient;
@@ -30,6 +31,8 @@ import java.util.Properties;
 public class FilterService {
   private static final Logger logger = Logger.getLogger(FilterService.class);
 
+  private static final String FRONTIER_URL = "chocolate.filter.monitoring.url";
+  private static final String FRONTIER_APPSVC = "chocolate.filter.monitoring.appSvc";
   private static final String ELASTICSEARCH_URL = "chocolate.filter.elasticsearch.url";
   private static final String TOPIC_THREAD_COUNT = "chocolate.filter.topic.threads";
   private static final String RULE_CONFIG_FILENAME = "filter_rule_config.json";
@@ -56,6 +59,8 @@ public class FilterService {
     logger.info("Initializer called.");
 
     ApplicationOptions.init();
+    MetricsClient.init(ApplicationOptions.getInstance().getByNameString(FRONTIER_URL),
+        ApplicationOptions.getInstance().getByNameString(FRONTIER_APPSVC));
     ESMetrics.init(ApplicationOptions.getInstance().getByNameString(ELASTICSEARCH_URL));
     ApplicationOptions options = ApplicationOptions.getInstance();
     FilterZookeeperClient.init(options);

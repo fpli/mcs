@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.listener.api;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
@@ -30,14 +31,16 @@ import static org.mockito.Mockito.*;
 @PrepareForTest({ListenerOptions.class, KafkaSink.class})
 public class TrackingServletTest {
 
-  private ESMetrics mockMetrics;
+  private MetricsClient mockMetrics;
+  private ESMetrics mockESMetrics;
   private Producer mockProducer;
   private TrackingServlet servlet;
   private MessageObjectParser mockParser;
 
   @Before
   public void setUp() {
-    mockMetrics = mock(ESMetrics.class);
+    mockMetrics = mock(MetricsClient.class);
+    mockESMetrics = mock(ESMetrics.class);
     mockParser = mock(MessageObjectParser.class);
 
     ListenerOptions mockOptions = mock(ListenerOptions.class);
@@ -53,7 +56,7 @@ public class TrackingServletTest {
     PowerMockito.mockStatic(KafkaSink.class);
     PowerMockito.when(KafkaSink.get()).thenReturn(mockProducer);
 
-    servlet = new TrackingServlet(mockMetrics, mockParser);
+    servlet = new TrackingServlet(mockMetrics, mockESMetrics, mockParser);
     servlet.init();
   }
 
@@ -78,6 +81,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", 111L, mockObject), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, atLeastOnce()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess");
   }
 
   @Test
@@ -99,6 +104,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", 111L, mockObject), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
+    verify(mockESMetrics, never()).meter("TrackingSuccess");
   }
 
   @Test
@@ -120,6 +127,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", 111L, mockObject), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
+    verify(mockESMetrics, never()).meter("TrackingSuccess");
   }
 
   @Test
@@ -137,6 +146,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
+    verify(mockESMetrics, never()).meter("TrackingSuccess");
   }
 
   @Test
@@ -155,6 +166,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
+    verify(mockESMetrics, never()).meter("TrackingSuccess");
   }
 
   @Test
@@ -176,6 +189,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
+    verify(mockESMetrics, never()).meter("TrackingSuccess");
   }
 
   @Test
@@ -201,6 +216,8 @@ public class TrackingServletTest {
 
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, atLeastOnce()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess");
   }
 
   @Test
@@ -229,6 +246,8 @@ public class TrackingServletTest {
 
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, atLeastOnce()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess");
   }
 
 }

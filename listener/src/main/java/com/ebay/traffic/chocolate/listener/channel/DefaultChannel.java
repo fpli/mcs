@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.listener.channel;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
@@ -21,13 +22,15 @@ import java.util.HashMap;
 
 public class DefaultChannel implements Channel {
   private static final Logger logger = Logger.getLogger(DefaultChannel.class);
-  private final ESMetrics metrics;
+  private final MetricsClient metrics;
+  private final ESMetrics esMetrics;
   private MessageObjectParser parser;
   private static final String CAMPAIGN_PATTERN = "campid";
   private static final String SNID_PATTERN = "snid";
 
   DefaultChannel() {
-    this.metrics = ESMetrics.getInstance();
+    this.metrics = MetricsClient.getInstance();
+    this.esMetrics = ESMetrics.getInstance();
     this.parser = MessageObjectParser.getInstance();
   }
 
@@ -47,16 +50,19 @@ public class DefaultChannel implements Channel {
       if (result.length >= 2) {
         channelAction = ChannelActionEnum.parse(null, result[1]);
         if(ChannelActionEnum.CLICK.equals(channelAction)) {
-          metrics.meter("ListenerInputClickCount");
+          metrics.meter("ProxyInputClickCount");
+          esMetrics.meter("ProxyInputClickCount");
         }
         if(ChannelActionEnum.IMPRESSION.equals(channelAction)) {
-          metrics.meter("ListenerInputImpressionCount");
+          metrics.meter("ProxyInputImpressionCount");
+          esMetrics.meter("ProxyInputImpressionCount");
         }
       }
 
       try {
         if (parser.responseShouldBeFiltered(request, response)) {
           metrics.meter("ResponseFilteredCount");
+          esMetrics.meter("ResponseFilteredCount");
           return;
         }
       } catch (MalformedURLException | UnsupportedEncodingException e) {
@@ -65,7 +71,8 @@ public class DefaultChannel implements Channel {
 
       long campaignId = getCampaignID(request);
 
-      metrics.meter("ListenerAfterFilterInputCount");
+      metrics.meter("ListenerInputCount");
+      esMetrics.meter("ListenerInputCount");
 
       String snid = request.getParameter(SNID_PATTERN);
 
@@ -93,13 +100,16 @@ public class DefaultChannel implements Channel {
 
         if(ChannelActionEnum.CLICK.equals(channelAction)) {
           metrics.meter("SendKafkaClickCount");
+          esMetrics.meter("SendKafkaClickCount");
         }
         if(ChannelActionEnum.IMPRESSION.equals(channelAction)) {
           metrics.meter("SendKafkaImpressionCount");
+          esMetrics.meter("SendKafkaImpressionCount");
         }
       } else {
         logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
         metrics.meter("un-managed");
+        esMetrics.meter("un-managed");
         return;
       }
 
@@ -153,6 +163,8 @@ public class DefaultChannel implements Channel {
     logger.debug(String.format("EndTime: %d", endTime));
     metrics.meter("ListenerOutputCount");
     metrics.mean("ListenerLatency", endTime - startTime);
+    esMetrics.meter("ListenerOutputCount");
+    esMetrics.mean("ListenerLatency", endTime - startTime);
   }
 
   /** @return a query message derived from the given string. */
@@ -182,6 +194,7 @@ public class DefaultChannel implements Channel {
     }
     logger.debug(String.format("StartTime: %d", startTime));
     metrics.meter("ListenerInputCount");
+    esMetrics.meter("ListenerInputCount");
     return startTime;
   }
 
@@ -192,6 +205,7 @@ public class DefaultChannel implements Channel {
     logger.warn(sb.toString());
     logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
     metrics.meter("un-managed");
+    esMetrics.meter("un-managed");
   }
 
 }

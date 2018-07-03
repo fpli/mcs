@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.kafka;
 
+import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.producer.Callback;
@@ -126,6 +127,7 @@ public class KafkaSink {
      */
     public void onCompletion(RecordMetadata metadata, Exception exception) {
       if (metadata == null) {
+        MetricsClient.getInstance().meter("KafkaFailure");
         ESMetrics.getInstance().meter("KafkaFailure");
         LOG.error(exception);
       } else {

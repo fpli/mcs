@@ -48,6 +48,8 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
     /** Whether or not we'll be using a dummy (test context only) */
     static final String KAFKA_USE_DUMMY = "chocolate.listener.kafka.usedummy";
 
+    public static final String FRONTIER_URL = "frontier.url";
+    public static final String FRONTIER_APP_SVC_NAME = "frontier.app.svc.name";
     public static final String ELASTICSEARCH_URL = "elasticsearch.url";
 
     public static final String JOURNAL_ENABLED = "chocolate.listener.journal.enabled";
@@ -207,6 +209,16 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
     boolean useDummyKafka() {
         return ApplicationOptionsParser.getBooleanProperty(properties,
                 KAFKA_USE_DUMMY, false);
+    }
+
+    public String getFrontierUrl() {
+        return ApplicationOptionsParser.getStringProperty(properties,
+            FRONTIER_URL);
+    }
+
+    public String getFrontierAppSvcName() {
+        return ApplicationOptionsParser.getStringProperty(properties,
+            FRONTIER_APP_SVC_NAME);
     }
 
     public String getElasticsearchUrl() {

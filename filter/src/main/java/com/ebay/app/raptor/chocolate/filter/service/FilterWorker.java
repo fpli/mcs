@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate.filter.service;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
 import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
 import com.ebay.traffic.chocolate.kafka.KafkaConsumerFactory;
@@ -29,7 +30,8 @@ public class FilterWorker extends Thread {
   private static final long POLL_STEP_MS = 100;
   private static final long DEFAULT_PUBLISHER_ID = -1L;
 
-  private final ESMetrics metrics;
+  private final MetricsClient metrics;
+  private final ESMetrics esMetrics;
   private final FilterContainer filters;
   private final ChannelType channelType;
   private final String inputTopic;
@@ -44,7 +46,8 @@ public class FilterWorker extends Thread {
   public FilterWorker(ChannelType channelType, String inputTopic,
                       Properties properties, String outputTopic,
                       FilterContainer filters) {
-    this.metrics = ESMetrics.getInstance();
+    this.metrics = MetricsClient.getInstance();
+    this.esMetrics = ESMetrics.getInstance();
     this.filters = filters;
     this.channelType = channelType;
     this.inputTopic = inputTopic;
@@ -71,6 +74,9 @@ public class FilterWorker extends Thread {
     this.metrics.meter("FilterError", 0);
     this.metrics.meter("messageParseFailure", 0);
     this.metrics.mean("FilterPassedPPM", 0L);
+    this.esMetrics.meter("FilterError", 0);
+    this.esMetrics.meter("messageParseFailure", 0);
+    this.esMetrics.mean("FilterPassedPPM", 0L);
 
     try {
       consumer.subscribe(Arrays.asList(inputTopic));
@@ -85,10 +91,12 @@ public class FilterWorker extends Thread {
         while (iterator.hasNext()) {
           ++count;
           metrics.meter("FilterInputCount");
+          esMetrics.meter("FilterInputCount");
           ConsumerRecord<Long, ListenerMessage> record = iterator.next();
           ListenerMessage message = record.value();
           long latency = System.currentTimeMillis() - message.getTimestamp();
           metrics.mean("FilterLatency", latency);
+          esMetrics.mean("FilterLatency", latency);
 
           FilterMessage outMessage = processMessage(message);
 
@@ -113,19 +121,26 @@ public class FilterWorker extends Thread {
         }
 
         if (count == 0) {
-          metrics.mean("FilterIdle");
+          metrics.mean("FilterIdle", 1);
+          esMetrics.mean("FilterIdle");
           Thread.sleep(POLL_STEP_MS);
         } else {
           metrics.meter("FilterPassedCount", passed);
           metrics.meter("FilterOutputCount", count);
           metrics.mean("FilterPassedPPM", 1000000L * passed / count);
+          esMetrics.meter("FilterPassedCount", passed);
+          esMetrics.meter("FilterOutputCount", count);
+          esMetrics.mean("FilterPassedPPM", 1000000L * passed / count);
           long timeSpent = System.currentTimeMillis() - startTime;
           metrics.mean("FilterProcessingTime", timeSpent);
+          esMetrics.mean("FilterProcessingTime", timeSpent);
 
           if (timeSpent >= POLL_STEP_MS) {
             this.metrics.mean("FilterIdle", 0);
+            this.esMetrics.mean("FilterIdle", 0);
           } else {
-            this.metrics.mean("FilterIdle");
+            this.metrics.mean("FilterIdle", 1);
+            this.esMetrics.mean("FilterIdle");
             Thread.sleep(POLL_STEP_MS);
           }
         }
@@ -133,6 +148,7 @@ public class FilterWorker extends Thread {
     } catch (Exception e) {
       LOG.warn("Exception in worker thread: ", e);
       this.metrics.meter("FilterError");
+      this.esMetrics.meter("FilterError");
     } finally {
       consumer.close();
     }

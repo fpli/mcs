@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.listener;
 
+import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.cratchit.server.AcknowledgerServlet;
 import com.ebay.cratchit.server.Clerk;
 import com.ebay.traffic.chocolate.listener.api.TrackingServlet;
@@ -39,7 +40,7 @@ public class ListenerServletContextInitializer implements ServletContextInitiali
         // Add tracking servlet 
         logger.info("start trackingServlet");
         ServletRegistration.Dynamic trackingServlet = servletContext.addServlet("ListenerTrackingServlet",
-                new TrackingServlet(ESMetrics.getInstance(), MessageObjectParser.getInstance()));
+                new TrackingServlet(MetricsClient.getInstance(), ESMetrics.getInstance(), MessageObjectParser.getInstance()));
         trackingServlet.addMapping("/1v/*", "/1c/*", "/1i/*");
         trackingServlet.setLoadOnStartup(2);
 

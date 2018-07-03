@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate.filter.util;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.document.Document;
 import com.couchbase.client.java.document.StringDocument;
+import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
@@ -35,7 +36,8 @@ public class CouchbaseClient {
   private Queue<Pair<Long,Long>> buffer;
   private String datasourceName;
 
-  private final ESMetrics metrics = ESMetrics.getInstance();
+  private final MetricsClient metrics = MetricsClient.getInstance();
+  private final ESMetrics esMetrics = ESMetrics.getInstance();
 
     /**Singleton */
     private CouchbaseClient() {
@@ -133,6 +135,7 @@ public class CouchbaseClient {
         if (document == null) {
           logger.warn("No publisherID found for campaign " + campaignId + " in couchbase");
           metrics.meter("ErrorPublishID");
+          esMetrics.meter("ErrorPublishID");
           return DEFAULT_PUBLISHER_ID;
         }
         return Long.parseLong(document.content().toString());
@@ -140,6 +143,7 @@ public class CouchbaseClient {
         logger.warn("Error in converting publishID " + getBucket(factory.getClient(datasourceName)).get(String.valueOf(campaignId),
             StringDocument.class).toString() + " to Long", ne);
         metrics.meter("ErrorPublishID");
+        esMetrics.meter("ErrorPublishID");
         return DEFAULT_PUBLISHER_ID;
       } catch (Exception e) {
         logger.warn("Couchbase query operation timeout, will sleep for 30s to retry", e);

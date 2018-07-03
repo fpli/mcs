@@ -19,6 +19,14 @@
   </property>
   <!-- Kafka producer end -->
 
+  <!-- Frontier begin -->
+  <property>
+    <name>frontier.url</name>
+    <value>frontier://tenant=mp;env=prod;app_svc=%s@sherlock-ftr-mp.vip.ebay.com</value>
+    <description>Frontier URL</description>
+  </property>
+  <!-- Frontier end -->
+
   <!-- ElasticSearch begin -->
   <property>
     <name>elasticsearch.url</name>
