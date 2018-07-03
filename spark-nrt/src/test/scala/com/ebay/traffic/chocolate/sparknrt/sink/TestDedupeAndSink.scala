@@ -27,7 +27,10 @@ class TestDedupeAndSink extends BaseFunSuite {
     "--channel", channel,
     "--kafkaTopic", topic,
     "--workDir", workDir,
-    "--outputDir", outputDir
+    "--outputDir", outputDir,
+    "--esHost", "10.148.185.16",
+    "--esPort", "9200",
+    "--esScheme", "http"
   )
 
   val params = Parameter(args)

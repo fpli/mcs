@@ -92,7 +92,7 @@ public class ESMetrics {
     init(prefix, HttpHost.create(url));
   }
 
-  private static synchronized  void init(String prefix, HttpHost httpHost) {
+  private static synchronized void init(String prefix, HttpHost httpHost) {
     if (INSTANCE != null) {
       return;
     }
@@ -133,6 +133,11 @@ public class ESMetrics {
         // ignore
       }
     }
+  }
+
+  @Override
+  protected void finalize() {
+    close();
   }
 
   private final SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy.MM.dd");
@@ -244,7 +249,7 @@ public class ESMetrics {
       long count = entry.getValue().getRight();
 
       long mean = 0l;
-      if(count > 0) {
+      if (count > 0) {
         mean = accumulator / count;
       }
       sendMeter(index, entry.getKey(), mean);
@@ -255,12 +260,12 @@ public class ESMetrics {
     final Date date = new Date();
     final String type = "_doc";
     final String id = String.valueOf(System.currentTimeMillis()) + String.format("%04d", random.nextInt(10000));
-    System.out.println(id);
+
     KVMetric m = new KVMetric(sdf.format(date), name , value, hostname);
     Gson gson = new Gson();
     try {
       restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
-              new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
+          new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
     } catch (IOException e) {
       logger.warn(e.toString());
     }
@@ -288,7 +293,7 @@ public class ESMetrics {
 
   private void createIndex(String index) throws IOException {
     restClient.performRequest("PUT", "/" + index, new HashMap<>(),
-            new NStringEntity("{\"mappings\":{\"_doc\":{\"properties\":{\"date\":{\"type\":\"date\",\"format\":\"yyyy-MM-dd HH:mm:ss\"},\"key\":{\"type\":\"text\"},\"value\":{\"type\":\"long\"},\"host\":{\"type\":\"text\"}}}}}", ContentType.APPLICATION_JSON));
+        new NStringEntity("{\"mappings\":{\"_doc\":{\"properties\":{\"date\":{\"type\":\"date\",\"format\":\"yyyy-MM-dd HH:mm:ss\"},\"key\":{\"type\":\"text\"},\"value\":{\"type\":\"long\"},\"host\":{\"type\":\"text\"}}}}}", ContentType.APPLICATION_JSON));
   }
 
   private static class KVMetric {

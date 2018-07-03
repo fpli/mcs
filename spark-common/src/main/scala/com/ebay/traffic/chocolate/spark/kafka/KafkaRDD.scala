@@ -105,9 +105,6 @@ class KafkaRDD[K, V](
     consumer.assign(util.Arrays.asList(part.tp))
     context.addTaskCompletionListener(context => {
       consumer.close()
-      if (metrics != null) {
-        metrics.close()
-      }
     })
 
     new KafkaRDDIterator(part, consumer, context)
@@ -125,9 +122,6 @@ class KafkaRDD[K, V](
     */
   def close() = {
     consumer.close()
-    if (metrics != null) {
-      metrics.close()
-    }
   }
 
   /**
