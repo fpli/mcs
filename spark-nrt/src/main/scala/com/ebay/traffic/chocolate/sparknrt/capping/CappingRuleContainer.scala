@@ -45,7 +45,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
 
   @transient lazy val metrics: ESMetrics = {
     if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
-      ESMetrics.init(params.elasticsearchUrl)
+      ESMetrics.init("chocolate-metrics-", params.elasticsearchUrl)
       ESMetrics.getInstance()
     } else null
   }

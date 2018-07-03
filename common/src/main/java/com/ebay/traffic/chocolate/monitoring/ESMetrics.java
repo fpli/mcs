@@ -33,7 +33,7 @@ public class ESMetrics {
    */
   private static ESMetrics INSTANCE = null;
 
-  private final static String INDEX_PREFIX = "chocolate-metrics-";
+  private static String INDEX_PREFIX;
 
   /**
    * The timer
@@ -62,7 +62,8 @@ public class ESMetrics {
 
   private String hostname;
 
-  ESMetrics() {
+  ESMetrics(String prefix) {
+    this.INDEX_PREFIX = prefix;
     timer = new Timer();
     try {
       hostname = InetAddress.getLocalHost().getHostName();
@@ -78,8 +79,8 @@ public class ESMetrics {
    * @param esPort the port of ES cluster
    * @param scheme http scheme
    */
-  public static synchronized void init(String esHostname, int esPort, String scheme) {
-    init(new HttpHost(esHostname, esPort, scheme));
+  public static synchronized void init(String prefix, String esHostname, int esPort, String scheme) {
+    init(prefix, new HttpHost(esHostname, esPort, scheme));
   }
 
   /**
@@ -87,15 +88,15 @@ public class ESMetrics {
    *
    * @param url
    */
-  public static synchronized void init(String url) {
-    init(HttpHost.create(url));
+  public static synchronized void init(String prefix, String url) {
+    init(prefix, HttpHost.create(url));
   }
 
-  private static synchronized  void init(HttpHost httpHost) {
+  private static synchronized  void init(String prefix, HttpHost httpHost) {
     if (INSTANCE != null) {
       return;
     }
-    INSTANCE = new ESMetrics();
+    INSTANCE = new ESMetrics(prefix);
 
     RestClientBuilder builder = RestClient.builder(httpHost);
     INSTANCE.restClient = builder.build();
@@ -308,7 +309,7 @@ public class ESMetrics {
    * test
    */
   public static void main(String[] args) throws Exception {
-    ESMetrics.init("10.148.185.16", 9200, "http");
+    ESMetrics.init("chocolate-metrics-", "10.148.185.16", 9200, "http");
     ESMetrics metrics = ESMetrics.getInstance();
 
     for (int i = 0; i < 1000; i++) {

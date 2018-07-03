@@ -58,7 +58,7 @@ public class ListenerInitializer {
      * @param url
      */
     static void initElasticsearch(String url) {
-        ESMetrics.init(url);
+        ESMetrics.init("chocolate-metrics-", url);
         logger.info("ElasticSearch Metrics initialized");
     }
 

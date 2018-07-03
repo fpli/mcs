@@ -32,7 +32,7 @@ class KafkaRDD[K, V](
 
   @transient lazy val metrics: ESMetrics = {
     if (elasticsearchUrl != null && !elasticsearchUrl.isEmpty) {
-      ESMetrics.init(elasticsearchUrl)
+      ESMetrics.init("chocolate-metrics-", elasticsearchUrl)
       ESMetrics.getInstance()
     } else null
   }

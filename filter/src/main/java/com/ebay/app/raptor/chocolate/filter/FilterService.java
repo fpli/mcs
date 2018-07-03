@@ -61,7 +61,7 @@ public class FilterService {
     ApplicationOptions.init();
     MetricsClient.init(ApplicationOptions.getInstance().getByNameString(FRONTIER_URL),
         ApplicationOptions.getInstance().getByNameString(FRONTIER_APPSVC));
-    ESMetrics.init(ApplicationOptions.getInstance().getByNameString(ELASTICSEARCH_URL));
+    ESMetrics.init("chocolate-metrics-", ApplicationOptions.getInstance().getByNameString(ELASTICSEARCH_URL));
     ApplicationOptions options = ApplicationOptions.getInstance();
     FilterZookeeperClient.init(options);
 

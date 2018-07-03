@@ -31,6 +31,11 @@
     <value>frontier://tenant=mp;env=qa;app_svc=%s@sherlock-ftr-qa.stratus.phx.qa.ebay.com</value>
     <description>Frontier URL</description>
   </property>
+  <property>
+    <name>frontier.app.svc.name</name>
+    <value>Listener</value>
+    <description>Frontier App SVC name</description>
+  </property>
   <!-- Frontier end -->
 
   <!-- ElasticSearch begin -->
