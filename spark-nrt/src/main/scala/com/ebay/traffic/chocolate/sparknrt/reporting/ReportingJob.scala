@@ -53,15 +53,19 @@ class ReportingJob(params: Parameter)
 
   /**
     * Generate unique key for a Couchbase record.
-    * Format - [prefix]_[publisher id or campaign id]_[date]_[action]_[MOBILE or DESKTOP]_[RAW or FILTERED]
+    *
+    * 1. Format for publisher based report:
+    * [PUBLISHER]_[publisher id]_[date]_[action]_[MOBILE or DESKTOP]_[RAW or FILTERED]
+    *
+    * 2. Format for campaign based report:
+    * [PUBLISHER]_[publisher id]_CAMPAIGN_[campaign id]_[date]_[action]_[MOBILE or DESKTOP]_[RAW or FILTERED]
     */
   def getUniqueKey(prefix: String,
-                   id: String,
                    date: String,
                    action: String,
                    isMob: Boolean,
                    isFiltered: Boolean): String = {
-    val key = prefix + "_" + id + "_" + date + "_" + action
+    val key = prefix + "_" + date + "_" + action
     if (isMob && isFiltered)
       key + "_MOBILE_FILTERED"
     else if (isMob && !isFiltered)
@@ -72,13 +76,17 @@ class ReportingJob(params: Parameter)
       key + "_DESKTOP_RAW"
   }
 
-  def upsertCouchbase(date: String, iter: Iterator[Row], isPublisherReport: Boolean): Unit = {
+  def upsertCouchbase(date: String, iter: Iterator[Row], isCampaignReport: Boolean): Unit = {
     while (iter.hasNext) {
       val row = iter.next()
 
+      var prefix = "PUBLISHER_" + row.getAs("publisher_id").toString
+      if (isCampaignReport) {
+        prefix += "_CAMPAIGN_" + row.getAs("campaign_id").toString
+      }
+
       val key = getUniqueKey(
-        if (isPublisherReport) "PUBLISHER" else "CAMPAIGN", // prefix
-        row.getAs(if (isPublisherReport) "publisher_id" else "campaign_id").toString,
+        prefix,
         date,
         row.getAs("channel_action"),
         row.getAs("is_mob"),
@@ -139,20 +147,20 @@ class ReportingJob(params: Parameter)
 
         // 4. persist the result into Couchbase
         logger.info("persist publisher report into Couchbase...")
-        publisherDf.foreachPartition(iter => upsertCouchbase(date, iter, true))
+        publisherDf.foreachPartition(iter => upsertCouchbase(date, iter, false))
 
         // campaign based report...
         logger.info("generate campaign based report...")
 
         // Raw + Desktop and Mobile
         val campaignDf1 = commonDf
-          .groupBy("campaign_id", "channel_action", "is_mob")
+          .groupBy("publisher_id", "campaign_id", "channel_action", "is_mob")
           .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
           .withColumn("is_filtered", lit(false))
 
         // Filtered + Desktop and Mobile
         val campaignDf2 = filteredDf
-          .groupBy("campaign_id", "channel_action", "is_mob")
+          .groupBy("publisher_id", "campaign_id", "channel_action", "is_mob")
           .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
           .withColumn("is_filtered", lit(true))
 
@@ -160,7 +168,7 @@ class ReportingJob(params: Parameter)
 
         // 4. persist the result into Couchbase
         logger.info("persist campaign report into Couchbase...")
-        campaignDf.foreachPartition(iter => upsertCouchbase(date, iter, false))
+        campaignDf.foreachPartition(iter => upsertCouchbase(date, iter, true))
       })
 
       // 5. delete metafile that is processed
