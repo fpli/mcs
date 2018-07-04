@@ -61,6 +61,7 @@ class DedupeAndSink(params: Parameter)
   lazy val outputDir = params.outputDir + "/" + params.channel + "/dedupe/"
   lazy val couchbaseDedupe = params.couchbaseDedupe
   lazy val couchbaseTTL = params.couchbaseTTL
+  lazy val metricsIndexPrefix = "chocolate-metrics-";
 
   @transient lazy val metadata = {
     Metadata(params.workDir, params.channel, MetadataEnum.dedupe)
@@ -70,7 +71,7 @@ class DedupeAndSink(params: Parameter)
 
   @transient lazy val metrics: ESMetrics = {
     if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
-      ESMetrics.init("chocolate-metrics-", params.elasticsearchUrl)
+      ESMetrics.init(metricsIndexPrefix, params.elasticsearchUrl)
       ESMetrics.getInstance()
     } else null
   }

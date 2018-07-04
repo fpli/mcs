@@ -16,6 +16,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
 
   lazy val windowLong = "long"
   lazy val windowShort = "short"
+  lazy val metricsIndexPrefix = "chocolate-metrics-";
 
   @transient lazy val channelsRules = mutable.HashMap(
     ChannelType.EPN -> mutable.HashMap(
@@ -45,7 +46,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
 
   @transient lazy val metrics: ESMetrics = {
     if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
-      ESMetrics.init("chocolate-metrics-", params.elasticsearchUrl)
+      ESMetrics.init(metricsIndexPrefix, params.elasticsearchUrl)
       ESMetrics.getInstance()
     } else null
   }

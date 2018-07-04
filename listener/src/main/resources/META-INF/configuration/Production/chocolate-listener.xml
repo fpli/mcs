@@ -40,7 +40,7 @@
   <!-- ElasticSearch begin -->
   <property>
     <name>elasticsearch.url</name>
-    <value>http://lvschocolatepits-1448900.stratus.lvs.ebay.com:9200</value>
+    <value>http://choco-es1:9200</value>
     <description>Elastic Search Url</description>
   </property>
   <!-- ElasticSearch end -->
