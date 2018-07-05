@@ -17,7 +17,7 @@ import java.io.IOException;
 
 public class ListenerInitializer {
     private static final Logger logger = Logger.getLogger(ListenerInitializer.class);
-    private static final String metricsIndexPrefix = "chocolate-metrics-";
+    private static final String METRICS_INDEX_PREFIX = "chocolate-metrics-";
 
     /**
      * The initialize method
@@ -59,7 +59,7 @@ public class ListenerInitializer {
      * @param url
      */
     static void initElasticsearch(String url) {
-        ESMetrics.init(metricsIndexPrefix, url);
+        ESMetrics.init(METRICS_INDEX_PREFIX, url);
         logger.info("ElasticSearch Metrics initialized");
     }
 

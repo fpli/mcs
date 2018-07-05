@@ -36,7 +36,7 @@ public class FilterService {
   private static final String ELASTICSEARCH_URL = "chocolate.filter.elasticsearch.url";
   private static final String TOPIC_THREAD_COUNT = "chocolate.filter.topic.threads";
   private static final String RULE_CONFIG_FILENAME = "filter_rule_config.json";
-  private static final String metricsIndexPrefix = "chocolate-metrics-";
+  private static final String METRICS_INDEX_PREFIX = "chocolate-metrics-";
   private List<FilterWorker> workers = new ArrayList<>();
 
   FilterService() {
@@ -62,7 +62,7 @@ public class FilterService {
     ApplicationOptions.init();
     MetricsClient.init(ApplicationOptions.getInstance().getByNameString(FRONTIER_URL),
         ApplicationOptions.getInstance().getByNameString(FRONTIER_APPSVC));
-    ESMetrics.init(metricsIndexPrefix, ApplicationOptions.getInstance().getByNameString(ELASTICSEARCH_URL));
+    ESMetrics.init(METRICS_INDEX_PREFIX, ApplicationOptions.getInstance().getByNameString(ELASTICSEARCH_URL));
     ApplicationOptions options = ApplicationOptions.getInstance();
     FilterZookeeperClient.init(options);
 
