@@ -8,6 +8,7 @@ import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
@@ -21,14 +22,16 @@ import java.util.Enumeration;
 import java.util.HashMap;
 
 public class DefaultChannel implements Channel {
-    private static final Logger logger = Logger.getLogger(DefaultChannel.class);
-    private final MetricsClient metrics;
+  private static final Logger logger = Logger.getLogger(DefaultChannel.class);
+  private final MetricsClient metrics;
+  private final ESMetrics esMetrics;
   private MessageObjectParser parser;
   private static final String CAMPAIGN_PATTERN = "campid";
   private static final String SNID_PATTERN = "snid";
 
   DefaultChannel() {
     this.metrics = MetricsClient.getInstance();
+    this.esMetrics = ESMetrics.getInstance();
     this.parser = MessageObjectParser.getInstance();
   }
 
@@ -48,10 +51,12 @@ public class DefaultChannel implements Channel {
       if (result.length >= 2) {
         channelAction = ChannelActionEnum.parse(null, result[1]);
         if(ChannelActionEnum.CLICK.equals(channelAction)) {
-          metrics.meter("ProxyIncomingClickCount");
+          metrics.meter("ProxyInputClickCount");
+          esMetrics.meter("ProxyInputClickCount");
         }
         if(ChannelActionEnum.IMPRESSION.equals(channelAction)) {
-          metrics.meter("ProxyIncomingImpressionCount");
+          metrics.meter("ProxyInputImpressionCount");
+          esMetrics.meter("ProxyInputImpressionCount");
         }
       }
 
@@ -61,6 +66,7 @@ public class DefaultChannel implements Channel {
       try {
         if (parser.responseShouldBeFiltered(request, response)) {
           metrics.meter("ResponseFilteredCount");
+          esMetrics.meter("ResponseFilteredCount");
           long campaignId = getCampaignID(request);
           String snid = request.getParameter(SNID_PATTERN);
           ListenerMessage filteredMessage = parser.parseHeader(request, response,
@@ -74,7 +80,8 @@ public class DefaultChannel implements Channel {
 
       long campaignId = getCampaignID(request);
 
-      metrics.meter("IncomingCount");
+      metrics.meter("ListenerInputCount");
+      esMetrics.meter("ListenerInputCount");
 
       String snid = request.getParameter(SNID_PATTERN);
 
@@ -105,13 +112,16 @@ public class DefaultChannel implements Channel {
 
         if(ChannelActionEnum.CLICK.equals(channelAction)) {
           metrics.meter("SendKafkaClickCount");
+          esMetrics.meter("SendKafkaClickCount");
         }
         if(ChannelActionEnum.IMPRESSION.equals(channelAction)) {
           metrics.meter("SendKafkaImpressionCount");
+          esMetrics.meter("SendKafkaImpressionCount");
         }
       } else {
         logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
         metrics.meter("un-managed");
+        esMetrics.meter("un-managed");
         return;
       }
 
@@ -163,8 +173,10 @@ public class DefaultChannel implements Channel {
   private void stopTimerAndLogData(long startTime, String kafkaMessage) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("SuccessCount");
-    metrics.mean("AverageLatency", endTime - startTime);
+    metrics.meter("ListenerOutputCount");
+    metrics.mean("ListenerLatency", endTime - startTime);
+    esMetrics.meter("ListenerOutputCount");
+    esMetrics.mean("ListenerLatency", endTime - startTime);
   }
 
   /** @return a query message derived from the given string. */
@@ -193,7 +205,8 @@ public class DefaultChannel implements Channel {
       logger.warn("Cannot get request start time, use system time instead. ", e);
     }
     logger.debug(String.format("StartTime: %d", startTime));
-    metrics.meter("ProxyIncomingCount");
+    metrics.meter("ListenerInputCount");
+    esMetrics.meter("ListenerInputCount");
     return startTime;
   }
 
@@ -204,6 +217,7 @@ public class DefaultChannel implements Channel {
     logger.warn(sb.toString());
     logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
     metrics.meter("un-managed");
+    esMetrics.meter("un-managed");
   }
 
 }

@@ -33,6 +33,14 @@
   </property>
   <!-- Frontier end -->
 
+  <!-- ElasticSearch begin -->
+  <property>
+    <name>elasticsearch.url</name>
+    <value>http://10.148.181.34:9200</value>
+    <description>Elastic Search Url</description>
+  </property>
+  <!-- ElasticSearch end -->
+
   <!-- journal begin -->
   <property>
     <name>chocolate.listener.journal.enabled</name>

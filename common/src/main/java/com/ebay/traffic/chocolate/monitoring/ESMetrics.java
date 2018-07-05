@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.monitoring;
 
 import com.google.gson.Gson;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.nio.entity.NStringEntity;
@@ -32,26 +33,37 @@ public class ESMetrics {
    */
   private static ESMetrics INSTANCE = null;
 
-  private final static String INDEX_PREFIX = "chocolate-metrics-";
+  private static String INDEX_PREFIX;
 
   /**
    * The timer
    */
-  private final Timer timer;
+  private Timer timer;
 
   /**
    * Hashmap to aggregate metrics locally
    */
-  private final Map<String, Long> metrics = new HashMap<>();
+  private final Map<String, Long> meterMetrics = new HashMap<>();
+
+  /**
+   * Mean metrics
+   */
+  private final Map<String, Pair<Long, Long>> meanMetrics = new HashMap<>();
 
   /**
    * Hashmap for flush purpose
    */
-  private final Map<String, Long> toFlush = new HashMap<>();
+  private final Map<String, Long> toFlushMeter = new HashMap<>();
+
+  /**
+   * Hashmap for flush mean purpose
+   */
+  private final Map<String, Pair<Long, Long>> toFlushMean = new HashMap<>();
 
   private String hostname;
 
-  ESMetrics() {
+  ESMetrics(String prefix) {
+    this.INDEX_PREFIX = prefix;
     timer = new Timer();
     try {
       hostname = InetAddress.getLocalHost().getHostName();
@@ -67,13 +79,26 @@ public class ESMetrics {
    * @param esPort the port of ES cluster
    * @param scheme http scheme
    */
-  public static synchronized void init(String esHostname, int esPort, String scheme) {
+  public static synchronized void init(String prefix, String esHostname, int esPort, String scheme) {
+    init(prefix, new HttpHost(esHostname, esPort, scheme));
+  }
+
+  /**
+   * Init the ElasticSearch client
+   *
+   * @param url
+   */
+  public static synchronized void init(String prefix, String url) {
+    init(prefix, HttpHost.create(url));
+  }
+
+  private static synchronized void init(String prefix, HttpHost httpHost) {
     if (INSTANCE != null) {
       return;
     }
-    INSTANCE = new ESMetrics();
+    INSTANCE = new ESMetrics(prefix);
 
-    RestClientBuilder builder = RestClient.builder(new HttpHost(esHostname, esPort, scheme));
+    RestClientBuilder builder = RestClient.builder(httpHost);
     INSTANCE.restClient = builder.build();
 
     // Start the timer.
@@ -82,7 +107,7 @@ public class ESMetrics {
       public void run() {
         INSTANCE.flushMetrics();
       }
-    }, 10000, 10000);
+    }, 10000, 10000); // flush every 10s
   }
 
   /**
@@ -98,12 +123,21 @@ public class ESMetrics {
   public void close() {
     if (timer != null) {
       timer.cancel();
+      timer = null;
     }
-    try {
-      restClient.close();
-    } catch (IOException e) {
-      // ignore
+    if (restClient != null) {
+      try {
+        restClient.close();
+        restClient = null;
+      } catch (IOException e) {
+        // ignore
+      }
     }
+  }
+
+  @Override
+  protected void finalize() {
+    close();
   }
 
   private final SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy.MM.dd");
@@ -126,12 +160,41 @@ public class ESMetrics {
    * @param value the metric value
    */
   public synchronized void meter(String name, long value) {
-    if (!metrics.containsKey(name)) {
-      metrics.put(name, 0L);
+    if (!meterMetrics.containsKey(name)) {
+      meterMetrics.put(name, 0L);
     }
-    long meter = metrics.get(name);
+    long meter = meterMetrics.get(name);
     meter += value; // aggregate locally
-    metrics.put(name, meter);
+    meterMetrics.put(name, meter);
+  }
+
+  /**
+   * mean
+   *
+   * @param name the metric name
+   */
+  public void mean(String name) {
+    mean(name, 1L);
+  }
+
+  /**
+   * mean
+   *
+   * @param name the metric name
+   * @param value the metric value
+   */
+  public synchronized  void mean(String name, long value) {
+    if (!meanMetrics.containsKey(name)) {
+      meanMetrics.put(name, Pair.of(0L, 0L));
+    }
+
+    Pair<Long, Long> pair = meanMetrics.get(name);
+
+    // Left is accumulator, right is count
+    long accumulator = pair.getLeft() + value;
+    long count = pair.getRight() + 1;
+
+    meanMetrics.put(name, Pair.of(accumulator, count));
   }
 
   /**
@@ -151,20 +214,45 @@ public class ESMetrics {
   private void flushMetrics() {
     final String index = createIndexIfNecessary();
 
-    toFlush.clear();
+    // flush meter
+    toFlushMeter.clear();
     synchronized (this) {
-      Iterator<Map.Entry<String, Long>> iter = metrics.entrySet().iterator();
+      Iterator<Map.Entry<String, Long>> iter = meterMetrics.entrySet().iterator();
       while (iter.hasNext()) {
         Map.Entry<String, Long> entry = iter.next();
-        toFlush.put(entry.getKey(), entry.getValue());
+        toFlushMeter.put(entry.getKey(), entry.getValue());
       }
-      metrics.clear();
+      meterMetrics.clear();
     }
 
-    Iterator<Map.Entry<String, Long>> iter = toFlush.entrySet().iterator();
+    Iterator<Map.Entry<String, Long>> iter = toFlushMeter.entrySet().iterator();
     while (iter.hasNext()) {
       Map.Entry<String, Long> entry = iter.next();
       sendMeter(index, entry.getKey(), entry.getValue());
+    }
+
+    // flush mean
+    toFlushMean.clear();
+    synchronized (this) {
+      Iterator<Map.Entry<String, Pair<Long, Long>>> mIter = meanMetrics.entrySet().iterator();
+      while (mIter.hasNext()) {
+        Map.Entry<String, Pair<Long, Long>> entry = mIter.next();
+        toFlushMean.put(entry.getKey(), entry.getValue());
+      }
+      meanMetrics.clear();
+    }
+
+    Iterator<Map.Entry<String, Pair<Long, Long>>> mIter = toFlushMean.entrySet().iterator();
+    while (mIter.hasNext()) {
+      Map.Entry<String, Pair<Long, Long>> entry = mIter.next();
+      long accumulator = entry.getValue().getLeft();
+      long count = entry.getValue().getRight();
+
+      long mean = 0l;
+      if (count > 0) {
+        mean = accumulator / count;
+      }
+      sendMeter(index, entry.getKey(), mean);
     }
   }
 
@@ -172,12 +260,12 @@ public class ESMetrics {
     final Date date = new Date();
     final String type = "_doc";
     final String id = String.valueOf(System.currentTimeMillis()) + String.format("%04d", random.nextInt(10000));
-    System.out.println(id);
+
     KVMetric m = new KVMetric(sdf.format(date), name , value, hostname);
     Gson gson = new Gson();
     try {
       restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
-              new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
+          new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
     } catch (IOException e) {
       logger.warn(e.toString());
     }
@@ -205,7 +293,7 @@ public class ESMetrics {
 
   private void createIndex(String index) throws IOException {
     restClient.performRequest("PUT", "/" + index, new HashMap<>(),
-            new NStringEntity("{\"mappings\":{\"_doc\":{\"properties\":{\"date\":{\"type\":\"date\",\"format\":\"yyyy-MM-dd HH:mm:ss\"},\"key\":{\"type\":\"text\"},\"value\":{\"type\":\"long\"},\"host\":{\"type\":\"text\"}}}}}", ContentType.APPLICATION_JSON));
+        new NStringEntity("{\"mappings\":{\"_doc\":{\"properties\":{\"date\":{\"type\":\"date\",\"format\":\"yyyy-MM-dd HH:mm:ss\"},\"key\":{\"type\":\"text\"},\"value\":{\"type\":\"long\"},\"host\":{\"type\":\"text\"}}}}}", ContentType.APPLICATION_JSON));
   }
 
   private static class KVMetric {
@@ -226,7 +314,7 @@ public class ESMetrics {
    * test
    */
   public static void main(String[] args) throws Exception {
-    ESMetrics.init("10.148.185.16", 9200, "http");
+    ESMetrics.init("chocolate-metrics-", "10.148.185.16", 9200, "http");
     ESMetrics metrics = ESMetrics.getInstance();
 
     for (int i = 0; i < 1000; i++) {

@@ -20,12 +20,11 @@ class KafkaRDD[K, V](
                       @transient val sc: SparkContext,
                       val topic: String,
                       val kafkaProperties: util.Properties,
-                      val esHostName: String = "",
-                      val esPort: Int = 9200,
-                      val esScheme: String = "http",
+                      val elasticsearchUrl: String = "",
                       val maxConsumeSize: Long = 1000000l // maximum number of events can be consumed in one task: 100M
                     ) extends RDD[ConsumerRecord[K, V]](sc, Nil) {
   val POLL_STEP_MS = 30000
+  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-";
 
   @transient lazy val consumer = {
     kafkaProperties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
@@ -33,8 +32,8 @@ class KafkaRDD[K, V](
   }
 
   @transient lazy val metrics: ESMetrics = {
-    if (esHostName != null && !esHostName.isEmpty) {
-      ESMetrics.init(esHostName, esPort, esScheme)
+    if (elasticsearchUrl != null && !elasticsearchUrl.isEmpty) {
+      ESMetrics.init(METRICS_INDEX_PREFIX, elasticsearchUrl)
       ESMetrics.getInstance()
     } else null
   }
@@ -107,9 +106,6 @@ class KafkaRDD[K, V](
     consumer.assign(util.Arrays.asList(part.tp))
     context.addTaskCompletionListener(context => {
       consumer.close()
-      if (metrics != null) {
-        metrics.close()
-      }
     })
 
     new KafkaRDDIterator(part, consumer, context)
@@ -127,9 +123,6 @@ class KafkaRDD[K, V](
     */
   def close() = {
     consumer.close()
-    if (metrics != null) {
-      metrics.close()
-    }
   }
 
   /**
@@ -177,7 +170,7 @@ class KafkaRDD[K, V](
       val record = nextRecord
       offset = record.offset() + 1 // update offset
       if (metrics != null) {
-        metrics.meter("Dedupe-Input");
+        metrics.meter("KafkaRDD-Input");
       }
 
       nextRecord = null
