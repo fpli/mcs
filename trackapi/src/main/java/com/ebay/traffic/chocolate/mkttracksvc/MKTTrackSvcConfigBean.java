@@ -19,6 +19,7 @@ public class MKTTrackSvcConfigBean extends BaseConfigBean {
   private static BeanPropertyInfo CouchBase_Query_Timeout = createBeanPropertyInfo("cbQueryTimeout", "couchbase_query_timeout", true);
   private static BeanPropertyInfo CouchBase_Buket_Timeout = createBeanPropertyInfo("cbBucketTimeout", "couchbase_bucket_timeout", true);
   private static BeanPropertyInfo CouchBase_Bucket_Rotation = createBeanPropertyInfo("cbBucketRotation", "couchBase_bucket_rotation", true);
+  private static BeanPropertyInfo CouchBase_Bucket_Report = createBeanPropertyInfo("cbBucketReport", "couchBase_bucket_report", true);
 
 
   public MKTTrackSvcConfigBean() throws ConfigCategoryCreateException {
@@ -38,6 +39,7 @@ public class MKTTrackSvcConfigBean extends BaseConfigBean {
   private Integer cbQueryTimeout;
   private Integer cbBucketTimeout;
   private String cbBucketRotation;
+  private String cbBucketReport;
   private String cbRotationUser;
   private String cbRotationPwd;
 
@@ -87,6 +89,14 @@ public class MKTTrackSvcConfigBean extends BaseConfigBean {
 
   public void setCbBucketRotation(String cbBucketRotation) {
     changeProperty(CouchBase_Bucket_Rotation, this.cbBucketRotation, cbBucketRotation);
+  }
+
+  public String getCbBucketReport() {
+    return cbBucketReport;
+  }
+
+  public void setCbBucketReport(String cbBucketReport) {
+    changeProperty(CouchBase_Bucket_Report, this.cbBucketReport, cbBucketReport);
   }
 
   public String getCbRotationUser() {
