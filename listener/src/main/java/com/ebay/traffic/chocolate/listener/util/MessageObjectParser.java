@@ -98,18 +98,18 @@ public class MessageObjectParser {
     protected String getRequestURL(HttpServletRequest clientRequest) {
         String query = clientRequest.getQueryString();
         String url = new ServletServerHttpRequest(clientRequest).getURI().toString();
-        if(query != null && ! query.isEmpty()) {
-            for (String k : Arrays.asList(query.split("&"))) {
-                if (k.startsWith(REDIRECT_SPECIAL_TAG)) {
-                    try {
-                        url = URLDecoder.decode(k.split("=",2)[1],StandardCharsets.UTF_8.toString());
-                        break;
-                    } catch(UnsupportedEncodingException e){
-                        logger.warn("Wrong encoding for request", e);
-                    }
-                }
-            }
-        }
+//        if(query != null && ! query.isEmpty()) {
+//            for (String k : Arrays.asList(query.split("&"))) {
+//                if (k.startsWith(REDIRECT_SPECIAL_TAG)) {
+//                    try {
+//                        url = URLDecoder.decode(k.split("=",2)[1],StandardCharsets.UTF_8.toString());
+//                        break;
+//                    } catch(UnsupportedEncodingException e){
+//                        logger.warn("Wrong encoding for request", e);
+//                    }
+//                }
+//            }
+//        }
 
         return url;
     }
