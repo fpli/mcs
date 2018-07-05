@@ -109,7 +109,7 @@ public class FilterWorker extends Thread {
 
         flushThreshold += count;
 
-        if (flushThreshold > 2000) {
+        if (flushThreshold > 1000) {
           // producer flush
           producer.flush();
 
