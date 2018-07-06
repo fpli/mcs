@@ -85,8 +85,6 @@ public class DefaultChannel implements Channel {
 
       String snid = request.getParameter(SNID_PATTERN);
 
-//      String[] result = request.getRequestURI().split("/");
-
       if (result.length == 5) {
         channel = ChannelIdEnum.parse(result[4]);
         if (channel == null) {
@@ -99,16 +97,16 @@ public class DefaultChannel implements Channel {
           return;
         }
         if (channel.isTestChannel()) {
-          logger.info("Received test URL; URL = " + request.getRequestURI());
+          invalidRequestParam(request, "Test channel;");
           return;
         }
 
-        if (campaignId < 0 && channel.equals(ChannelIdEnum.EPN))
+        if (campaignId < 0 && channel.equals(ChannelIdEnum.EPN)) {
+          invalidRequestParam(request, "Invalid campaign id;");
           return;
+        }
 
         kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(channel.getLogicalChannel().getAvro());
-
-//        producer = KafkaSink.get();
 
         if(ChannelActionEnum.CLICK.equals(channelAction)) {
           metrics.meter("SendKafkaClickCount");
@@ -119,9 +117,7 @@ public class DefaultChannel implements Channel {
           esMetrics.meter("SendKafkaImpressionCount");
         }
       } else {
-        logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
-        metrics.meter("un-managed");
-        esMetrics.meter("un-managed");
+        invalidRequestParam(request, "Request params count != 5");
         return;
       }
 
@@ -129,9 +125,12 @@ public class DefaultChannel implements Channel {
       ListenerMessage message = parser.parseHeader(request, response,
           startTime, campaignId, channel.getLogicalChannel().getAvro(), channelAction, snid);
 
-      if (message != null)
+      if (message != null) {
         producer.send(new ProducerRecord<>(kafkaTopic,
-            message.getSnapshotId(), message), KafkaSink.callback);
+          message.getSnapshotId(), message), KafkaSink.callback);
+      } else {
+        invalidRequestParam(request, "Parse message error;");
+      }
       stopTimerAndLogData(startTime, message.toString());
     }
 
@@ -142,7 +141,7 @@ public class DefaultChannel implements Channel {
    * @param request incoming HttpServletRequest
    * @return campaignID, default -1L if no pattern match in the query of HttpServletRequest
    */
-    public long getCampaignID(final HttpServletRequest request) {
+  long getCampaignID(final HttpServletRequest request) {
       HashMap<String, String> lowerCaseParams = new HashMap<>();
       Enumeration params = request.getParameterNames();
       while (params.hasMoreElements()) {
