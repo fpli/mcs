@@ -51,12 +51,12 @@ public class DefaultChannel implements Channel {
       if (result.length >= 2) {
         channelAction = ChannelActionEnum.parse(null, result[1]);
         if(ChannelActionEnum.CLICK.equals(channelAction)) {
-          metrics.meter("ProxyInputClickCount");
-          esMetrics.meter("ProxyInputClickCount");
+          metrics.meter("ProxyIncomingClickCount");
+          esMetrics.meter("ProxyIncomingClickCount");
         }
         if(ChannelActionEnum.IMPRESSION.equals(channelAction)) {
-          metrics.meter("ProxyInputImpressionCount");
-          esMetrics.meter("ProxyInputImpressionCount");
+          metrics.meter("ProxyIncomingImpressionCount");
+          esMetrics.meter("ProxyIncomingImpressionCount");
         }
       }
 
@@ -80,8 +80,8 @@ public class DefaultChannel implements Channel {
 
       long campaignId = getCampaignID(request);
 
-      metrics.meter("ListenerInputCount");
-      esMetrics.meter("ListenerInputCount");
+      metrics.meter("ProxyIncomingCount");
+      esMetrics.meter("ProxyIncomingCount");
 
       String snid = request.getParameter(SNID_PATTERN);
 
@@ -172,10 +172,10 @@ public class DefaultChannel implements Channel {
   private void stopTimerAndLogData(long startTime, String kafkaMessage) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("ListenerOutputCount");
-    metrics.mean("ListenerLatency", endTime - startTime);
-    esMetrics.meter("ListenerOutputCount");
-    esMetrics.mean("ListenerLatency", endTime - startTime);
+    metrics.meter("SuccessCount");
+    metrics.mean("AverageLatency", endTime - startTime);
+    esMetrics.meter("SuccessCount");
+    esMetrics.mean("AverageLatency", endTime - startTime);
   }
 
   /** @return a query message derived from the given string. */
@@ -204,8 +204,8 @@ public class DefaultChannel implements Channel {
       logger.warn("Cannot get request start time, use system time instead. ", e);
     }
     logger.debug(String.format("StartTime: %d", startTime));
-    metrics.meter("ListenerInputCount");
-    esMetrics.meter("ListenerInputCount");
+    metrics.meter("IncomingCount");
+    esMetrics.meter("IncomingCount");
     return startTime;
   }
 

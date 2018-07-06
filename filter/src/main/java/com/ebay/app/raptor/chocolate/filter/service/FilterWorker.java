@@ -125,11 +125,11 @@ public class FilterWorker extends Thread {
           esMetrics.mean("FilterIdle");
           Thread.sleep(POLL_STEP_MS);
         } else {
+          metrics.meter("FilterThroughput", count);
           metrics.meter("FilterPassedCount", passed);
-          metrics.meter("FilterOutputCount", count);
           metrics.mean("FilterPassedPPM", 1000000L * passed / count);
+          esMetrics.meter("FilterThroughput", count);
           esMetrics.meter("FilterPassedCount", passed);
-          esMetrics.meter("FilterOutputCount", count);
           esMetrics.mean("FilterPassedPPM", 1000000L * passed / count);
           long timeSpent = System.currentTimeMillis() - startTime;
           metrics.mean("FilterProcessingTime", timeSpent);
