@@ -145,21 +145,36 @@ public class ESMetrics {
   private final Random random = new SecureRandom();
 
   /**
-   * meter
+   * meter without channelAction and channelType
    *
    * @param name the metric name
    */
   public void meter(String name) {
-    meter(name, 1L);
+    meter(name, null, null);
   }
 
   /**
-   * meter
+   * meter without channelAction and channelType
    *
    * @param name the metric name
    * @param value the metric value
    */
-  public synchronized void meter(String name, long value) {
+  public void meter(String name, long value) {
+    meter(name, value, null, null);
+  }
+
+  /**
+   * meter with channelAction and channelType
+   */
+  public void meter(String name, String channelAction, String channelType) {
+    meter(name, 1L, channelAction, channelType);
+  }
+
+  /**
+   * meter with channelAction and channelType
+   */
+  public synchronized void meter(String name, long value, String channelAction, String channelType) {
+    name = metricsNameByActionAndType(name, channelAction, channelType);
     if (!meterMetrics.containsKey(name)) {
       meterMetrics.put(name, 0L);
     }
@@ -169,21 +184,36 @@ public class ESMetrics {
   }
 
   /**
-   * mean
+   * mean without channelAction and channelType
    *
    * @param name the metric name
    */
   public void mean(String name) {
-    mean(name, 1L);
+    mean(name, null, null);
   }
 
   /**
-   * mean
+   * mean without channelAction and channelType
    *
    * @param name the metric name
    * @param value the metric value
    */
-  public synchronized  void mean(String name, long value) {
+  public void mean(String name, long value) {
+    mean(name, value, null, null);
+  }
+
+  /**
+   * mean with channelAction and channelType
+   */
+  public void mean(String name, String channelAction, String channelType) {
+    mean(name, 1L, channelAction, channelType);
+  }
+
+  /**
+   * mean with channelAction and channelType
+   */
+  public synchronized void mean(String name, long value, String channelAction, String channelType) {
+    name = metricsNameByActionAndType(name, channelAction, channelType);
     if (!meanMetrics.containsKey(name)) {
       meanMetrics.put(name, Pair.of(0L, 0L));
     }
@@ -204,6 +234,7 @@ public class ESMetrics {
    * @param value the metric value
    */
   public void trace(String name, long value) {
+    name = metricsNameByActionAndType(name, null, null);
     final String index = createIndexIfNecessary();
     sendMeter(index, name, value);
   }
@@ -260,8 +291,10 @@ public class ESMetrics {
     final Date date = new Date();
     final String type = "_doc";
     final String id = String.valueOf(System.currentTimeMillis()) + String.format("%04d", random.nextInt(10000));
+    System.out.println(id);
+    String[] nameFields = name.split("_");
 
-    KVMetric m = new KVMetric(sdf.format(date), name , value, hostname);
+    KVMetric m = new KVMetric(sdf.format(date), name, value, hostname, nameFields[1], nameFields[2]);
     Gson gson = new Gson();
     try {
       restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
@@ -293,7 +326,20 @@ public class ESMetrics {
 
   private void createIndex(String index) throws IOException {
     restClient.performRequest("PUT", "/" + index, new HashMap<>(),
-        new NStringEntity("{\"mappings\":{\"_doc\":{\"properties\":{\"date\":{\"type\":\"date\",\"format\":\"yyyy-MM-dd HH:mm:ss\"},\"key\":{\"type\":\"text\"},\"value\":{\"type\":\"long\"},\"host\":{\"type\":\"text\"}}}}}", ContentType.APPLICATION_JSON));
+        new NStringEntity("{\"mappings\":{\"_doc\":{\"properties\":{\"date\":{\"type\":\"date\",\"format\":\"yyyy-MM-dd HH:mm:ss\"},\"key\":{\"type\":\"text\"},\"value\":{\"type\":\"long\"},\"host\":{\"type\":\"text\"},\"channelAction\":{\"type\":\"text\"},\"channelType\":{\"type\":\"text\"}}}}}", ContentType.APPLICATION_JSON));
+  }
+
+  private String metricsNameByActionAndType(String name, String channelAction, String channelType) {
+    if (channelAction != null) {
+      name += "_" + channelAction.toLowerCase();
+    } else
+      name += "_noAction";
+    if (channelType != null)
+      name += "_" + channelType.toLowerCase();
+    else
+      name += "_noType";
+
+    return name;
   }
 
   private static class KVMetric {
@@ -301,12 +347,16 @@ public class ESMetrics {
     private String key;
     private long value;
     private String host;
+    private String channelAction;
+    private String channelType;
 
-    KVMetric(String date, String key, long value, String host) {
+    KVMetric(String date, String key, long value, String host, String channelAction, String channelType) {
       this.date = date;
       this.key = key;
       this.value = value;
       this.host = host;
+      this.channelAction = channelAction;
+      this.channelType = channelType;
     }
   }
 
@@ -314,13 +364,15 @@ public class ESMetrics {
    * test
    */
   public static void main(String[] args) throws Exception {
-    ESMetrics.init("chocolate-metrics-", "10.148.185.16", 9200, "http");
+    ESMetrics.init("chocolate-metrics-", "localhost", 9200, "http");
     ESMetrics metrics = ESMetrics.getInstance();
 
     for (int i = 0; i < 1000; i++) {
-      metrics.meter("test1");
+      metrics.meter("test", "CLICK", "EPN");
+      metrics.meter("test", null, null);
       Thread.sleep(10);
     }
+
     Thread.sleep(2000);
     System.out.println("finished");
   }

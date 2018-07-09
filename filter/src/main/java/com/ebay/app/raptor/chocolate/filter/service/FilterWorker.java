@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.filter.service;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
@@ -86,22 +87,47 @@ public class FilterWorker extends Thread {
         ConsumerRecords<Long, ListenerMessage> records = consumer.poll(POLL_STEP_MS);
         Iterator<ConsumerRecord<Long, ListenerMessage>> iterator = records.iterator();
         int count = 0;
+        int[] countByActionAndType = new int[4];
+        int[] passedByActionAndType = new int[4];
         int passed = 0;
         long startTime = System.currentTimeMillis();
         while (iterator.hasNext()) {
-          ++count;
-          metrics.meter("FilterInputCount");
-          esMetrics.meter("FilterInputCount");
           ConsumerRecord<Long, ListenerMessage> record = iterator.next();
           ListenerMessage message = record.value();
+          metrics.meter("FilterInputCount");
+          esMetrics.meter("FilterInputCount", message.getChannelAction().toString(), message.getChannelType().toString());
           long latency = System.currentTimeMillis() - message.getTimestamp();
           metrics.mean("FilterLatency", latency);
           esMetrics.mean("FilterLatency", latency);
+
+          ++count;
+          if (message.getChannelAction().equals(ChannelAction.CLICK)) {
+            if (message.getChannelType().equals(ChannelType.EPN))
+              ++countByActionAndType[0];
+            else if (message.getChannelType().equals(ChannelType.DISPLAY))
+              ++countByActionAndType[1];
+          }
+          else if (message.getChannelAction().equals(ChannelAction.IMPRESSION))
+            if (message.getChannelType().equals(ChannelType.EPN))
+              ++countByActionAndType[2];
+            else if (message.getChannelType().equals(ChannelType.DISPLAY))
+              ++countByActionAndType[3];
 
           FilterMessage outMessage = processMessage(message);
 
           if (outMessage.getRtRuleFlags() == 0) {
             ++passed;
+            if (outMessage.getChannelAction().equals(ChannelAction.CLICK)) {
+              if (outMessage.getChannelType().equals(ChannelType.EPN))
+                ++passedByActionAndType[0];
+              else if (outMessage.getChannelType().equals(ChannelType.DISPLAY))
+                ++passedByActionAndType[1];
+            }
+            else if (outMessage.getChannelAction().equals(ChannelAction.IMPRESSION))
+              if (outMessage.getChannelType().equals(ChannelType.EPN))
+                ++passedByActionAndType[2];
+              else if (outMessage.getChannelType().equals(ChannelType.DISPLAY))
+                ++passedByActionAndType[3];
           }
 
           producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
@@ -129,7 +155,15 @@ public class FilterWorker extends Thread {
           metrics.meter("FilterPassedCount", passed);
           metrics.mean("FilterPassedPPM", 1000000L * passed / count);
           esMetrics.meter("FilterThroughput", count);
-          esMetrics.meter("FilterPassedCount", passed);
+          esMetrics.meter("FilterPassedCountAll", passed);
+          esMetrics.meter("FilterPassedCount", passedByActionAndType[0], "CLICK", "EPN");
+          esMetrics.meter("FilterPassedCount", passedByActionAndType[1], "CLICK", "DISPLAY");
+          esMetrics.meter("FilterPassedCount", passedByActionAndType[2], "IMPRESSION", "EPN");
+          esMetrics.meter("FilterPassedCount", passedByActionAndType[3], "IMPRESSION", "DISPLAY");
+          esMetrics.meter("FilterThroughput", countByActionAndType[0], "CLICK", "EPN");
+          esMetrics.meter("FilterThroughput", countByActionAndType[1], "CLICK", "DISPLAY");
+          esMetrics.meter("FilterThroughput", countByActionAndType[2], "IMPRESSION", "EPN");
+          esMetrics.meter("FilterThroughput", countByActionAndType[3], "IMPRESSION", "DISPLAY");
           esMetrics.mean("FilterPassedPPM", 1000000L * passed / count);
           long timeSpent = System.currentTimeMillis() - startTime;
           metrics.mean("FilterProcessingTime", timeSpent);
