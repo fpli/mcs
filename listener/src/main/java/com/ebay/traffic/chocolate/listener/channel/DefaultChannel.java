@@ -80,8 +80,8 @@ public class DefaultChannel implements Channel {
 
       long campaignId = getCampaignID(request);
 
-      metrics.meter("ProxyIncomingCount");
-      esMetrics.meter("ProxyIncomingCount");
+      metrics.meter("IncomingCount");
+      esMetrics.meter("IncomingCount");
 
       String snid = request.getParameter(SNID_PATTERN);
 
@@ -204,8 +204,8 @@ public class DefaultChannel implements Channel {
       logger.warn("Cannot get request start time, use system time instead. ", e);
     }
     logger.debug(String.format("StartTime: %d", startTime));
-    metrics.meter("IncomingCount");
-    esMetrics.meter("IncomingCount");
+    metrics.meter("ProxyIncomingCount");
+    esMetrics.meter("ProxyIncomingCount");
     return startTime;
   }
 
