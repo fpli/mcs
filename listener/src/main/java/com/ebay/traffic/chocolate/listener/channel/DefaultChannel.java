@@ -88,8 +88,8 @@ public class DefaultChannel implements Channel {
 
     long campaignId = getCampaignID(request);
 
-      metrics.meter("ProxyIncomingCount");
-      esMetrics.meter("ProxyIncomingCount", action, type);
+      metrics.meter("IncomingCount");
+      esMetrics.meter("IncomingCount", action, type);
 
     String snid = request.getParameter(SNID_PATTERN);
 
@@ -122,7 +122,7 @@ public class DefaultChannel implements Channel {
         if(ChannelActionEnum.IMPRESSION.equals(channelAction)) {
           metrics.meter("SendKafkaImpressionCount");
         }
-        esMetrics.meter("SendKafkaImpressionCount", action, type);
+        esMetrics.meter("SendKafkaCount", action, type);
       } else {
         invalidRequestParam(request, "Request params count != 5", action, type);
         return;
@@ -211,8 +211,8 @@ public class DefaultChannel implements Channel {
       logger.warn("Cannot get request start time, use system time instead. ", e);
     }
     logger.debug(String.format("StartTime: %d", startTime));
-    metrics.meter("IncomingCount");
-    esMetrics.meter("IncomingCount", channelAction, channelType);
+    metrics.meter("ProxyIncomingCount");
+    esMetrics.meter("ProxyIncomingCount", channelAction, channelType);
     return startTime;
   }
 
