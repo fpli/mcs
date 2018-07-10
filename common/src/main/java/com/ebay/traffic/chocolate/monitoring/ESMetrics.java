@@ -326,18 +326,18 @@ public class ESMetrics {
 
   private void createIndex(String index) throws IOException {
     restClient.performRequest("PUT", "/" + index, new HashMap<>(),
-        new NStringEntity("{\"mappings\":{\"_doc\":{\"properties\":{\"date\":{\"type\":\"date\",\"format\":\"yyyy-MM-dd HH:mm:ss\"},\"key\":{\"type\":\"text\"},\"value\":{\"type\":\"long\"},\"host\":{\"type\":\"text\"},\"channelAction\":{\"type\":\"text\"},\"channelType\":{\"type\":\"text\"}}}}}", ContentType.APPLICATION_JSON));
+        new NStringEntity("{\"mappings\":{\"_doc\":{\"properties\":{\"date\":{\"type\":\"date\",\"format\":\"yyyy-MM-dd HH:mm:ss\"},\"key\":{\"type\":\"keyword\"},\"value\":{\"type\":\"long\"},\"host\":{\"type\":\"keyword\"},\"channelAction\":{\"type\":\"keyword\"},\"channelType\":{\"type\":\"keyword\"}}}}}", ContentType.APPLICATION_JSON));
   }
 
   private String metricsNameByActionAndType(String name, String channelAction, String channelType) {
     if (channelAction != null) {
       name += "_" + channelAction.toLowerCase();
     } else
-      name += "_noAction";
+      name += "_null";
     if (channelType != null)
       name += "_" + channelType.toLowerCase();
     else
-      name += "_noType";
+      name += "_null";
 
     return name;
   }
@@ -364,12 +364,12 @@ public class ESMetrics {
    * test
    */
   public static void main(String[] args) throws Exception {
-    ESMetrics.init("chocolate-metrics-", "localhost", 9200, "http");
+    ESMetrics.init("chocolate-metrics-1-", "http://10.148.181.34:9200");
     ESMetrics metrics = ESMetrics.getInstance();
 
     for (int i = 0; i < 1000; i++) {
-      metrics.meter("test", "CLICK", "EPN");
-      metrics.meter("test", null, null);
+      metrics.meter("test1", "CLICK", "EPN");
+      metrics.meter("test1", null, null);
       Thread.sleep(10);
     }
 
