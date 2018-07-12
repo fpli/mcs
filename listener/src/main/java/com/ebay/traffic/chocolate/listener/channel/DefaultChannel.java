@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.listener.channel;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
+import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
@@ -13,6 +14,7 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Request;
+import org.springframework.http.server.ServletServerHttpRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,8 +47,8 @@ public class DefaultChannel implements Channel {
       ChannelActionEnum channelAction;
       ChannelIdEnum channel;
 
-      long startTime = startTimerAndLogData(request) ;
-
+      long startTime = startTimerAndLogData(request);
+      String requestUrl = parser.appendURLWithChocolateTag(new ServletServerHttpRequest(request).getURI().toString());
       String[] result = request.getRequestURI().split("/");
       if (result.length >= 2) {
         channelAction = ChannelActionEnum.parse(null, result[1]);
@@ -64,13 +66,13 @@ public class DefaultChannel implements Channel {
       String filteredTopic = ListenerOptions.getInstance().getErrorTopic();
 
       try {
-        if (parser.responseShouldBeFiltered(request, response)) {
+        if (parser.responseShouldBeFiltered(request, response, requestUrl)) {
           metrics.meter("ResponseFilteredCount");
           esMetrics.meter("ResponseFilteredCount");
           long campaignId = getCampaignID(request);
           String snid = request.getParameter(SNID_PATTERN);
           ListenerMessage filteredMessage = parser.parseHeader(request, response,
-            startTime, campaignId, ChannelType.EPN, ChannelActionEnum.CLICK, snid);
+            startTime, campaignId, ChannelType.EPN, ChannelActionEnum.CLICK, snid, requestUrl);
           producer.send(new ProducerRecord<>(filteredTopic, filteredMessage), KafkaSink.callback);
           return;
         }
@@ -123,7 +125,7 @@ public class DefaultChannel implements Channel {
 
       // Parse the response
       ListenerMessage message = parser.parseHeader(request, response,
-          startTime, campaignId, channel.getLogicalChannel().getAvro(), channelAction, snid);
+          startTime, campaignId, channel.getLogicalChannel().getAvro(), channelAction, snid, requestUrl);
 
       if (message != null) {
         producer.send(new ProducerRecord<>(kafkaTopic,

@@ -142,9 +142,9 @@ public class DefaultChannelTest {
     DefaultChannel spy = spy(channel);
     ListenerMessage mockMessage = mock(ListenerMessage.class);
 
-    when(mockMessageParser.responseShouldBeFiltered(mockClientRequest,mockProxyResponse)).thenReturn(false);
+    when(mockMessageParser.responseShouldBeFiltered(mockClientRequest,mockProxyResponse, mockClientRequest.getRequestURI())).thenReturn(false);
     when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), eq(campaignId),
-        eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), anyString())).thenReturn(mockMessage);
+        eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), anyString(), eq(null))).thenReturn(mockMessage);
     when(mockMessage.getSnapshotId()).thenReturn(snapshotId);
     when(mockMessage.toString()).thenReturn(kafkaMessage);
 
@@ -167,9 +167,9 @@ public class DefaultChannelTest {
     DefaultChannel spy = spy(channel);
     ListenerMessage mockMessage = mock(ListenerMessage.class);
 
-    when(mockMessageParser.responseShouldBeFiltered(mockClientRequest,mockProxyResponse)).thenReturn(false);
+    when(mockMessageParser.responseShouldBeFiltered(mockClientRequest,mockProxyResponse, mockClientRequest.getRequestURI())).thenReturn(false);
     when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), eq(campaignId),
-        eq(ChannelType.DISPLAY), eq(ChannelActionEnum.CLICK), anyString())).thenReturn(mockMessage);
+        eq(ChannelType.DISPLAY), eq(ChannelActionEnum.CLICK), anyString(), eq(null))).thenReturn(mockMessage);
     when(mockMessage.getSnapshotId()).thenReturn(snapshotId);
     when(mockMessage.toString()).thenReturn(kafkaMessage);
 
@@ -181,7 +181,7 @@ public class DefaultChannelTest {
   public void processShouldNotSendMessageToKafkaOrJournalIfItCouldNotBeParsed() {
     ListenerMessage mockMessage = mock(ListenerMessage.class);
     when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), anyLong(),
-        eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), eq("")))
+        eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), eq(""), eq(null)))
         .thenReturn(mockMessage);
     channel.process(mockClientRequest, mockProxyResponse);
     verify(mockProducer, never()).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);

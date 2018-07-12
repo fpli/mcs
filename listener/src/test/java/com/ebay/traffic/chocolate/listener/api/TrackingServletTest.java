@@ -68,7 +68,7 @@ public class TrackingServletTest {
     ListenerMessage mockObject = mock(ListenerMessage.class);
 
     when(request.getRequestURL()).thenReturn(clickURL);
-    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.CLICK), eq(null))).thenReturn(mockObject);
+    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.CLICK), eq(null), eq(null))).thenReturn(mockObject);
     when(mockObject.getSnapshotId()).thenReturn(111L);
     when(mockObject.writeToJSON()).thenReturn("hello");
     Map<String, String[]> params = new HashMap<>();
@@ -93,7 +93,7 @@ public class TrackingServletTest {
     ListenerMessage mockObject = mock(ListenerMessage.class);
 
     when(request.getRequestURL()).thenReturn(clickURL);
-    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.CLICK), eq("foo"))).thenReturn(mockObject);
+    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.CLICK), eq("foo"), eq(null))).thenReturn(mockObject);
     when(mockObject.writeToJSON()).thenReturn("hello");
     when(mockObject.getSnapshotId()).thenReturn(111L);
     servlet.doGet(request, response);
@@ -116,7 +116,7 @@ public class TrackingServletTest {
     ListenerMessage mockObject = mock(ListenerMessage.class);
 
     when(request.getRequestURL()).thenReturn(clickURL);
-    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.CLICK), eq("bar"))).thenReturn(mockObject);
+    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.CLICK), eq("bar"), eq(null))).thenReturn(mockObject);
     when(mockObject.writeToJSON()).thenReturn("hello");
     when(mockObject.getSnapshotId()).thenReturn(111L);
     servlet.doGet(request, response);
@@ -138,7 +138,7 @@ public class TrackingServletTest {
     HttpServletResponse response = mock(HttpServletResponse.class);
 
     when(request.getRequestURL()).thenReturn(clickURL);
-    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.CLICK), eq(""))).thenReturn(null);
+    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.CLICK), eq(""), eq(null))).thenReturn(null);
     servlet.doGet(request, response);
 
     verify(request, atLeastOnce()).getRequestURL();
@@ -158,7 +158,7 @@ public class TrackingServletTest {
     ListenerMessage mockObject = mock(ListenerMessage.class);
 
     when(request.getRequestURL()).thenReturn(clickURL);
-    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.CLICK), eq(null))).thenReturn(null);
+    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.CLICK), eq(null), eq(null))).thenReturn(null);
     servlet.doGet(request, response);
 
     verify(request, atLeastOnce()).getRequestURL();
@@ -180,7 +180,7 @@ public class TrackingServletTest {
     ListenerMessage mockObject = mock(ListenerMessage.class);
 
     when(request.getRequestURL()).thenReturn(clickURL);
-    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(7876756567L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.IMPRESSION), eq(null))).thenReturn(null);
+    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(7876756567L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.IMPRESSION), eq(null), eq(null))).thenReturn(null);
     when(response.getOutputStream()).thenReturn(mockOut);
     servlet.doGet(request, response);
 
@@ -206,7 +206,7 @@ public class TrackingServletTest {
     map.put("item", new String[]{"111111111"});
     when(request.getParameterMap()).thenReturn(map);
     ServletOutputStream mockOut = mock(ServletOutputStream.class);
-    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(7876756567L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.IMPRESSION), eq(null))).thenReturn(mockObject);
+    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(7876756567L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.IMPRESSION), eq(null), eq(null))).thenReturn(mockObject);
     when(response.getOutputStream()).thenReturn(mockOut);
 
     servlet.doPost(request, response);
@@ -236,7 +236,7 @@ public class TrackingServletTest {
     map.put("page", new String[]{"http://www.ebay.com/The-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book"});
     when(request.getParameterMap()).thenReturn(map);
     ServletOutputStream mockOut = mock(ServletOutputStream.class);
-    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(7876756567L), eq(LogicalChannelEnum.DISPLAY.getAvro()), eq(ChannelActionEnum.CLICK), eq(null))).thenReturn(mockObject);
+    when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(7876756567L), eq(LogicalChannelEnum.DISPLAY.getAvro()), eq(ChannelActionEnum.CLICK), eq(null), eq(null))).thenReturn(mockObject);
     when(response.getOutputStream()).thenReturn(mockOut);
 
     servlet.doPost(request, response);
