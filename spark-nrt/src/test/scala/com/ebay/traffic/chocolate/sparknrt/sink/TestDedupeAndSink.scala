@@ -27,7 +27,8 @@ class TestDedupeAndSink extends BaseFunSuite {
     "--channel", channel,
     "--kafkaTopic", topic,
     "--workDir", workDir,
-    "--outputDir", outputDir
+    "--outputDir", outputDir,
+    "--elasticsearchUrl", "http://10.148.185.16:9200"
   )
 
   val params = Parameter(args)

@@ -45,17 +45,14 @@ public class ListenerOptionsTest {
     }
 
     @Test
-    public void testGetFrontierData() {
+    public void testGetElasticsearchData() {
         Properties prop = new Properties();
-        prop.put(ListenerOptions.FRONTIER_APP_SVC_NAME, "A");
-        prop.put(ListenerOptions.FRONTIER_URL, "test.abc");
+        prop.put(ListenerOptions.ELASTICSEARCH_URL, "A");
 
         ListenerOptions.init(prop);
         ListenerOptions options = ListenerOptions.getInstance();
 
-        assertEquals("A", options.getFrontierAppSvcName());
-        assertEquals("test.abc", options.getFrontierUrl());
-
+        assertEquals("A", options.getElasticsearchUrl());
     }
 
     @Test
