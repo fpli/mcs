@@ -115,7 +115,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
       val dfMetrics = dfResult.filter($"nrt_rule_flags" =!= 0)
       val capping = dfMetrics.count()
       if (metrics != null) {
-        metrics.meter("CappingCountAll", capping)
+        metrics.meter("CappingCount", capping)
         metrics.meter("IPPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_S, "CLICK", "EPN"), "CLICK", "EPN")
         metrics.meter("IPPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_S, "CLICK", "DISPLAY"), "CLICK", "DISPLAY")
         metrics.meter("IPPubLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_L, "CLICK", "EPN"), "CLICK", "EPN")
