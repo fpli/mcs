@@ -3,8 +3,8 @@ package com.ebay.traffic.chocolate.sparknrt.couchbase
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 
-import com.couchbase.client.java.document.JsonArrayDocument
-import com.couchbase.client.java.document.json.{JsonArray, JsonObject}
+import com.couchbase.client.java.datastructures.MutationOptionBuilder
+import com.couchbase.client.java.document.json.JsonObject
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment
 import com.couchbase.client.java.{Bucket, Cluster, CouchbaseCluster}
 import org.slf4j.LoggerFactory
@@ -65,31 +65,26 @@ object CouchbaseClient {
     }
   }
 
-/**
-  * Insert or append data into Couchbase.
-  *
-  * @param key     key of data
-  * @param mapData value of data organized in Map[String, Any]
-  */
-def upsertMap(key: String, mapData: Map[String, _]): Unit = {
-  try {
-    val jsonObject = JsonObject.empty()
-    mapData.foreach(data => jsonObject.put(data._1, data._2))
+  /**
+    * Insert or append data into Couchbase.
+    *
+    * @param key     key of data
+    * @param mapData value of data organized in Map[String, Any]
+    */
+  def upsertMap(key: String, mapData: Map[String, _]): Unit = {
+    try {
+      val jsonObject = JsonObject.empty()
+      mapData.foreach(data => jsonObject.put(data._1, data._2))
 
-    logger.debug("Couchbase upsert: " + key + " -> " + jsonObject)
+      logger.debug("Couchbase upsert: " + key + " -> " + jsonObject)
 
-    if (!reportBucket.exists(key)) {
-      val jsonArray = JsonArray.from(jsonObject)
-      reportBucket.upsert(JsonArrayDocument.create(key, jsonArray))
-    } else {
-      val jsonArray = reportBucket.get(key, classOf[JsonArrayDocument]).content()
-      jsonArray.add(jsonObject)
-      reportBucket.replace(JsonArrayDocument.create(key, jsonArray))
+      reportBucket.listAppend(key, jsonObject, MutationOptionBuilder.builder().createDocument(true))
+    } catch {
+      case e: Exception => {
+        logger.error("Couchbase upsert error.", e)
+      }
     }
-  } catch {
-    case e: Exception => { logger.error("Couchbase upsert error.", e) }
   }
-}
 
   /**
     * Close bucket connection.
