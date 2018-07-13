@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.reporting
 
+import com.couchbase.client.java.document.JsonArrayDocument
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
 import com.ebay.traffic.chocolate.common.TestHelper
@@ -126,7 +127,7 @@ class TestReportingJob extends BaseFunSuite {
 
     for (i <- keyArray.indices) {
       assert(bucket.exists(keyArray(i)))
-      println("key: " + keyArray(i) + " value: " + bucket.get(keyArray(i)).content().toString)
+      println("key: " + keyArray(i) + " value: " + bucket.get(keyArray(i), classOf[JsonArrayDocument]).content().toString)
     }
   }
 

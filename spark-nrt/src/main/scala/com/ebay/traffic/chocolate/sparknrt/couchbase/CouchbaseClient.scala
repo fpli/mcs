@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.couchbase
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 
-import com.couchbase.client.java.document.JsonDocument
+import com.couchbase.client.java.document.JsonArrayDocument
 import com.couchbase.client.java.document.json.{JsonArray, JsonObject}
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment
 import com.couchbase.client.java.{Bucket, Cluster, CouchbaseCluster}
@@ -79,14 +79,12 @@ def upsertMap(key: String, mapData: Map[String, _]): Unit = {
     logger.debug("Couchbase upsert: " + key + " -> " + jsonObject)
 
     if (!reportBucket.exists(key)) {
-      val jsonArray = JsonArray.create().add(jsonObject)
-      val root = JsonObject.empty().put("data", jsonArray)
-      reportBucket.upsert(JsonDocument.create(key, root))
+      val jsonArray = JsonArray.from(jsonObject)
+      reportBucket.upsert(JsonArrayDocument.create(key, jsonArray))
     } else {
-      val jsonArray = reportBucket.get(key).content().getArray("data")
+      val jsonArray = reportBucket.get(key, classOf[JsonArrayDocument]).content()
       jsonArray.add(jsonObject)
-      val root = JsonObject.empty().put("data", jsonArray)
-      reportBucket.replace(JsonDocument.create(key, root))
+      reportBucket.replace(JsonArrayDocument.create(key, jsonArray))
     }
   } catch {
     case e: Exception => { logger.error("Couchbase upsert error.", e) }
