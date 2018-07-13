@@ -58,10 +58,9 @@ public class MessageObjectParser {
         ListenerMessage record = new ListenerMessage();
         // Set URI first as multipleRedirectHandler may overwrite URI
         if(StringUtils.isEmpty(requestUrl)){
-          record.setUri(this.getRequestURL(clientRequest));
-        }else{
-          record.setUri(requestUrl);
+           requestUrl = new ServletServerHttpRequest(clientRequest).getURI().toString();
         }
+        record.setUri(requestUrl);
 
         // Handle multiple redirect logic, rover use 301 for redirect
         // Set the channel type + HTTP headers + channel action
@@ -134,7 +133,7 @@ public class MessageObjectParser {
     return urlStr;
   }
 
-  private String getRedirectionCount(String requestUrl){
+  public String getRedirectionCount(String requestUrl){
     // append redirection count into URL
     String urlWithCnt = null;
     if(requestUrl.contains(REDIRECTION_CNT_TAG)){
@@ -149,7 +148,7 @@ public class MessageObjectParser {
     return urlWithCnt;
   }
 
-  private String getChocoTag(String requestUrl){
+  public String getChocoTag(String requestUrl){
     String chocoTag = null;
     // append snapshotId into URL
     if(requestUrl.contains(CHOCO_TAG)){
@@ -164,32 +163,6 @@ public class MessageObjectParser {
     }
     return chocoTag;
   }
-
-    /**
-     * Get Request URL based on different cases
-     * If Request URL contains REDIRECT_SPECIAL_TAG, use the tag value as request URL
-     * else use the request URL from clientRequest
-     * @param clientRequest Request
-     * @return URL in String
-     */
-    protected String getRequestURL(HttpServletRequest clientRequest) {
-        String query = clientRequest.getQueryString();
-        String url = new ServletServerHttpRequest(clientRequest).getURI().toString();
-        if(query != null && ! query.isEmpty()) {
-            for (String k : Arrays.asList(query.split("&"))) {
-                if (k.startsWith(REDIRECT_SPECIAL_TAG)) {
-                    try {
-                        url = URLDecoder.decode(k.split("=",2)[1],StandardCharsets.UTF_8.toString());
-                        break;
-                    } catch(UnsupportedEncodingException e){
-                        logger.warn("Wrong encoding for request", e);
-                    }
-                }
-            }
-        }
-
-        return url;
-    }
 
     /**
      * Filter on Response Location header
