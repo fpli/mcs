@@ -200,30 +200,37 @@ public class MessageObjectParser {
      */
     public boolean responseShouldBeFiltered(HttpServletRequest clientRequest, HttpServletResponse proxyResponse, String requestUrl)
             throws MalformedURLException, UnsupportedEncodingException {
-        // no action if no redirect
-        if( proxyResponse.getStatus() != 301 || proxyResponse.getHeader(REDIRECT_HEADER) == null )
-        {
-            return false;
-        }
+      // no action if no redirect
+      if (proxyResponse.getStatus() != 301 || proxyResponse.getHeader(REDIRECT_HEADER) == null) {
+        return false;
+      }
 
-        // assume Rover always return valid URL
-        URL redirectUrl = new URL(proxyResponse.getHeader(REDIRECT_HEADER));
+      // assume Rover always return valid URL
+      URL redirectUrl = new URL(proxyResponse.getHeader(REDIRECT_HEADER));
 
-        // redirect to other domain
-        if(!redirectUrl.getHost().startsWith("rover")) {
-            return false;
-        }
-        boolean withQuery = (redirectUrl.getQuery() != null);
-        //SET chocolate tags in location
-        String chocoTag = getChocoTag(requestUrl);
-        String redirectCnt = getRedirectionCount(requestUrl);
-        String location = proxyResponse.getHeader(REDIRECT_HEADER);
-        if (withQuery) {
-          location += "&" + chocoTag + "&" + redirectCnt;
-        } else {
-          location += "?" + chocoTag + "&" + redirectCnt;
-        }
-        proxyResponse.setHeader(REDIRECT_HEADER, location);
+      // redirect to other domain
+      if (!redirectUrl.getHost().startsWith("rover")) {
+        return false;
+      }
+
+      boolean withQuery = (redirectUrl.getQuery() != null);
+      //SET chocolate tags in location
+      String chocoTag = getChocoTag(requestUrl);
+      String redirectCnt = getRedirectionCount(requestUrl);
+      String location = proxyResponse.getHeader(REDIRECT_HEADER);
+      // append snapshotId into URL if not exist
+      if (!location.contains(CHOCO_TAG)) {
+        location = withQuery ? location + "&" : location + "?";
+        location += chocoTag;
+      }
+      // append redirection count into URL if not exist
+      if (location.contains(REDIRECTION_CNT_TAG)) {
+        Pattern p = Pattern.compile(REDIRECTION_CNT_TAG + "(=|%3D)[0-9]");
+        location = location.replaceAll(p.pattern(), redirectCnt);
+      } else {
+        location += "&" + redirectCnt;
+      }
+      proxyResponse.setHeader(REDIRECT_HEADER, location);
 
       // redirect to Rover case
       // no need to send message to Kafka
