@@ -14,8 +14,8 @@ import java.util.Map;
 
 public class ReportRequest {
 
-  // Unique Id representing either partnerId or campaignId, depending on report type.
-  private long id;
+  // Key prefix, depending on report type.
+  private String keyPrefix;
 
   // Report type can be By Campaign or By Partner.
   private ReportType reportType;
@@ -40,18 +40,21 @@ public class ReportRequest {
   }
 
   public ReportRequest(Map<String, String> incomingRequest) throws Exception {
-    validateRequest(incomingRequest.get("partnerId"), incomingRequest.get("campaignId"));
+    if (StringUtils.isEmpty(incomingRequest.get("partnerId"))) {
+      throw new Exception(ErrorType.BAD_PARTNER_INFO.getErrorKey());
+    }
+
     setIdAndReportType(incomingRequest.get("partnerId"), incomingRequest.get("campaignId"));
     setDateRangeAndStartDateAndEndDate(incomingRequest.get("dateRange"), incomingRequest.get("startDate"), incomingRequest.get("endDate"));
     calculateAndSetMonths(String.valueOf(this.startDate), String.valueOf(this.endDate));
   }
 
-  public long getId() {
-    return id;
+  public String getKeyPrefix() {
+    return keyPrefix;
   }
 
-  public void setId(long id) {
-    this.id = id;
+  public void setId(String keyPrefix) {
+    this.keyPrefix = keyPrefix;
   }
 
   public ReportType getReportType() {
@@ -94,25 +97,18 @@ public class ReportRequest {
     this.endDate = endDate;
   }
 
-  // Determine the type of report to be generated and the id for which to query data.
-  private void setIdAndReportType(String partnerId, String campaignId) throws Exception {
-    if (StringUtils.isNotEmpty(campaignId)) {
-      this.id = Long.valueOf(campaignId);
-      this.reportType = ReportType.CAMPAIGN;
-    } else {
-      if (StringUtils.isNotEmpty(partnerId)) {
-        this.id = Long.valueOf(partnerId);
-        this.reportType = ReportType.PARTNER;
-      } else {
-        throw new Exception(ErrorType.BAD_PARTNER_INFO.getErrorKey());
-      }
-    }
+  public List<Integer> getMonths() {
+    return months;
   }
 
-  // Verify that the incoming request is in fact valid.
-  private void validateRequest(String partnerId, String campaignId) throws Exception {
-    if (StringUtils.isEmpty(campaignId) && StringUtils.isEmpty(partnerId)) {
-      throw new Exception(ErrorType.BAD_PARTNER_INFO.getErrorKey());
+  // Determine the type of report to be generated and the key prefix for which to query data.
+  private void setIdAndReportType(String partnerId, String campaignId) {
+    this.keyPrefix = "PUBLISHER_" + partnerId;
+    this.reportType = ReportType.PARTNER;
+
+    if (StringUtils.isNotEmpty(campaignId)) {
+      this.keyPrefix = this.keyPrefix + "_CAMPAIGN_" + campaignId;
+      this.reportType = ReportType.CAMPAIGN;
     }
   }
 
@@ -171,9 +167,9 @@ public class ReportRequest {
   @Override
   public String toString() {
     return String.format(
-            "Request [id: %d, reportType: %s, dateRange: %s, granularity: %s, startDate: %d, "
+            "Request [keyPrefix: %s, reportType: %s, dateRange: %s, granularity: %s, startDate: %d, "
                     + "endDate: %d]",
-            this.id,
+            this.keyPrefix,
             (this.reportType == null ? ReportType.NONE.name() : this.reportType.name()),
             (this.dateRange == null ? DateRange.MONTH_TO_DATE.name() : this.dateRange.name()),
             (this.granularity == null ? DateRange.MONTH_TO_DATE.getGranularity().name() : this.granularity.name()),
@@ -189,7 +185,7 @@ public class ReportRequest {
 
     ReportRequest request = (ReportRequest) obj;
 
-    if (this.id == request.getId() &&
+    if (this.keyPrefix.equalsIgnoreCase(request.getKeyPrefix()) &&
             this.reportType == request.getReportType() &&
             this.dateRange == request.getDateRange() &&
             this.startDate == request.getStartDate() &&
