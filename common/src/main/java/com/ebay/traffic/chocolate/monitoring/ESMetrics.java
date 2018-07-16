@@ -371,7 +371,7 @@ public class ESMetrics {
         value = ((String) value).toLowerCase();
       }
 
-      name = name + ";" + key.toLowerCase() + "=" + value;
+      name = name + ";" + key + "=" + value;
     }
 
     return name;
