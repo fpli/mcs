@@ -213,35 +213,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.scoverage</groupId>
-                <artifactId>scoverage-maven-plugin</artifactId>
-                <version>${scoverage.plugin.version}</version>
-                <configuration>
-                    <scalaVersion>${scala.version}</scalaVersion>
-                    <aggregate>true</aggregate>
-                    <highlighting>true</highlighting>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>instrument</id>
-                        <goals>
-                            <!-- used to add instrumentation -->
-                            <goal>pre-compile</goal>
-                            <!-- used to remove instrumentation for testCompile -->
-                            <goal>post-compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>scoverage-report</id>
-                        <goals>
-                            <!-- Needed for Sonar -->
-                            <goal>report-only</goal>
-                        </goals>
-                        <phase>prepare-package</phase>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--scoverage-placehoder-dont-remove-->
         </plugins>
     </build>
 </project>
