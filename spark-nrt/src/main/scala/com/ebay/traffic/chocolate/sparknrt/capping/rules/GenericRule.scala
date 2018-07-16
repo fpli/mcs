@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.capping.rules
 import java.text.SimpleDateFormat
 import java.util.{Calendar, Properties}
 
+import com.ebay.traffic.chocolate.monitoring.ESMetrics
 import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import com.ebay.traffic.chocolate.sparknrt.capping.{CappingRule, Parameter}
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
@@ -26,6 +27,14 @@ import org.slf4j.LoggerFactory
 abstract class GenericRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingRuleJobObj: BaseSparkJob, window: String)
   extends CappingRule with Serializable {
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
+
+  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-";
+  @transient lazy val metrics: ESMetrics = {
+    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
+      ESMetrics.init(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
+      ESMetrics.getInstance()
+    } else null
+  }
 
   @transient lazy val hadoopConf = {
     new Configuration()

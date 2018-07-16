@@ -33,7 +33,7 @@ class SNIDCappingRule(params: Parameter, bitLong: Long, bitShort: Long, dateFile
   lazy val timeWindowShort = properties.getProperty(ruleTypeShort).toLong
 
   @transient override val cols: Array[Column] = Array(col("snapshot_id"), col("snid"),
-    col("timestamp"), col("channel_action"))
+    col("timestamp"), col("channel_action"), col("channel_type"))
 
   // filter condition for counting df
   def filterImpressionCondition(): Column = {
@@ -83,16 +83,24 @@ class SNIDCappingRule(params: Parameter, bitLong: Long, bitShort: Long, dateFile
     while (eventsIter.hasNext) {
       val event = eventsIter.next()
       if (event.getString(event.fieldIndex("channel_action")).equals("CLICK")) {
+        val channelAction = "CLICK"
+        val channelType = event.getString(event.fieldIndex("channel_type"))
         if (!existImpression) {
           cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), bitLong)
+          if (metrics != null)
+            metrics.meter("SnidLongCappingCount", channelAction, channelType)
         }
         else {
           val clickTimestamp = event.getLong(event.fieldIndex("timestamp"))
           if (clickTimestamp - impressionTimestamp < timeWindowShort) {
             cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), bitShort)
+            if (metrics != null)
+              metrics.meter("SnidShortCappingCount", channelAction, channelType)
           }
           else if (clickTimestamp - impressionTimestamp > timeWindow){
             cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), bitLong)
+            if (metrics != null)
+              metrics.meter("SnidLongCappingCount", channelAction, channelType)
           }
           else {
             cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), 0l)
@@ -121,10 +129,10 @@ class SNIDCappingRule(params: Parameter, bitLong: Long, bitShort: Long, dateFile
       }
     }
     if(hasFile) {
-      dfRight = cappingRuleJobObj.readFilesAsDFEx(pathsHasFiles.toArray).select("snapshot_id", "snid", "timestamp", "channel_action")
+      dfRight = cappingRuleJobObj.readFilesAsDFEx(pathsHasFiles.toArray).select(cols: _*)
     }
     else {
-      dfRight = Seq.empty[(Long, String, Long, String)].toDF("snapshot_id", "snid", "timestamp", "channel_action")
+      dfRight = Seq.empty[(Long, String, Long, String, String)].toDF("snapshot_id", "snid", "timestamp", "channel_action", "channel_type")
     }
     // union current batch data. we don't drop duplicates impression in current batch for better performance
     // use rdd instead of dataframe as in this scenario, rdd is easy to apply single record processing
@@ -162,7 +170,6 @@ class SNIDCappingRule(params: Parameter, bitLong: Long, bitShort: Long, dateFile
       //val timestamp = dfClick.select($"timestamp").first.getLong(0)
       // Step 3: Read a new df for join purpose, just select snid and snapshot_id
       // df for join
-      val selectCols: Array[Column] = $"snapshot_id" +: cols
       var df = dfForJoin(null, null, cols)
 
       // read previous data and add to count path

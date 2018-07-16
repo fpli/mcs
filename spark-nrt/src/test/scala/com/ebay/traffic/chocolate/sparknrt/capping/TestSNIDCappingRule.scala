@@ -65,7 +65,7 @@ class TestSNIDCappingRule extends BaseFunSuite {
 
   import sparkJob.spark.implicits._
 
-  ignore("test snid capping rule long") {
+  test("test snid capping rule long") {
 
     // test only impression
     val writer0 = AvroParquetWriter.
@@ -146,7 +146,7 @@ class TestSNIDCappingRule extends BaseFunSuite {
     assert(df_3.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L)).=!=(0)).count() == 2)
   }
 
-  ignore("test snid capping rule short") {
+  test("test snid capping rule short") {
 
     // test only impression
     val writer4 = AvroParquetWriter.

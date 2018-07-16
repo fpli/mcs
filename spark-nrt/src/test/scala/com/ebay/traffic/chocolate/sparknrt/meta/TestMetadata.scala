@@ -1,6 +1,8 @@
 package com.ebay.traffic.chocolate.sparknrt.meta
 
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
+import org.apache.spark.sql.Column
+import org.apache.spark.sql.functions.col
 
 /**
   * Created by yliu29 on 3/23/18.

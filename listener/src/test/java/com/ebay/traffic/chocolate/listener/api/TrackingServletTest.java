@@ -22,6 +22,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,14 +76,15 @@ public class TrackingServletTest {
     params.put("page", new String[]{"http://www.ebay.com"});
     when(request.getParameterMap()).thenReturn(params);
     servlet.doGet(request, response);
+    TrackingEvent event = new TrackingEvent(new URL(request.getRequestURL().toString()), request.getParameterMap());
 
     verify(request, atLeastOnce()).getRequestURL();
     verify(mockProducer, atLeastOnce()).send(
         new ProducerRecord<>("epn", 111L, mockObject), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, atLeastOnce()).meter("TrackingSuccess");
-    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
-    verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
   }
 
   @Test
@@ -104,8 +106,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", 111L, mockObject), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
-    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
-    verify(mockESMetrics, never()).meter("TrackingSuccess");
+    verify(mockESMetrics, never()).meter("TrackingCount", "CLICK", "EPN");
+    verify(mockESMetrics, never()).meter("TrackingSuccess", "CLICK", "EPN");
   }
 
   @Test
@@ -127,8 +129,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", 111L, mockObject), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
-    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
-    verify(mockESMetrics, never()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", "CLICK", "EPN");
+    verify(mockESMetrics, never()).meter("TrackingSuccess", "CLICK", "EPN");
   }
 
   @Test
@@ -136,18 +138,20 @@ public class TrackingServletTest {
     StringBuffer clickURL = new StringBuffer("https://c.ebay.com/1c/1-12345?page=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068");
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
+    ListenerMessage mockObject = mock(ListenerMessage.class);
 
     when(request.getRequestURL()).thenReturn(clickURL);
     when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.CLICK), eq(""), eq(null))).thenReturn(null);
     servlet.doGet(request, response);
+    TrackingEvent event = new TrackingEvent(new URL(request.getRequestURL().toString()), request.getParameterMap());
 
     verify(request, atLeastOnce()).getRequestURL();
     verify(mockProducer, never()).send(
         new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
-    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
-    verify(mockESMetrics, never()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, never()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
   }
 
   @Test
@@ -160,14 +164,15 @@ public class TrackingServletTest {
     when(request.getRequestURL()).thenReturn(clickURL);
     when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(12345L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.CLICK), eq(null), eq(null))).thenReturn(null);
     servlet.doGet(request, response);
+    TrackingEvent event = new TrackingEvent(new URL(request.getRequestURL().toString()), request.getParameterMap());
 
     verify(request, atLeastOnce()).getRequestURL();
     verify(mockProducer, never()).send(
         new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
-    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
-    verify(mockESMetrics, never()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, never()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
   }
 
   @Test
@@ -176,21 +181,21 @@ public class TrackingServletTest {
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
     ServletOutputStream mockOut = mock(ServletOutputStream.class);
-
     ListenerMessage mockObject = mock(ListenerMessage.class);
 
     when(request.getRequestURL()).thenReturn(clickURL);
     when(mockParser.parseHeader(eq(request), eq(response), anyObject(), eq(7876756567L), eq(LogicalChannelEnum.EPN.getAvro()), eq(ChannelActionEnum.IMPRESSION), eq(null), eq(null))).thenReturn(null);
     when(response.getOutputStream()).thenReturn(mockOut);
     servlet.doGet(request, response);
+    TrackingEvent event = new TrackingEvent(new URL(request.getRequestURL().toString()), request.getParameterMap());
 
     verify(request, atLeastOnce()).getRequestURL();
     verify(mockProducer, never()).send(
         new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
-    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
-    verify(mockESMetrics, never()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, never()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
   }
 
   @Test
@@ -210,14 +215,14 @@ public class TrackingServletTest {
     when(response.getOutputStream()).thenReturn(mockOut);
 
     servlet.doPost(request, response);
+    TrackingEvent event = new TrackingEvent(new URL(request.getRequestURL().toString()), request.getParameterMap());
 
     verify(mockProducer, atLeastOnce()).send(
         new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
-
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, atLeastOnce()).meter("TrackingSuccess");
-    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
-    verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
   }
 
   @Test
@@ -240,14 +245,15 @@ public class TrackingServletTest {
     when(response.getOutputStream()).thenReturn(mockOut);
 
     servlet.doPost(request, response);
+    TrackingEvent event = new TrackingEvent(new URL(request.getRequestURL().toString()), request.getParameterMap());
 
     verify(mockProducer, atLeastOnce()).send(
         new ProducerRecord<>("display", anyLong(), anyObject()), KafkaSink.callback);
 
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, atLeastOnce()).meter("TrackingSuccess");
-    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount");
-    verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
   }
 
 }
