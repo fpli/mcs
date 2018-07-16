@@ -241,11 +241,11 @@ public enum DateRange {
   }
 
   public static String convertDateToRequestFormat(String date) throws ParseException {
-    return (date == null) ? "" : REQUEST_DATE_FORMAT.format(DATE_FORMAT.parse(String.valueOf(date)));
+    return (date == null) ? "" : REQUEST_DATE_FORMAT.format(DATE_FORMAT.parse(date));
   }
 
   public static String convertMonthToRequestFormat(String month) throws ParseException {
-    return (month == null) ? "" : REQUEST_DATE_FORMAT.format(MONTH_FORMAT.parse(String.valueOf(month)));
+    return (month == null) ? "" : REQUEST_DATE_FORMAT.format(MONTH_FORMAT.parse(month));
   }
 
   public static String[] getWeeksForMonth(int month) throws ParseException {

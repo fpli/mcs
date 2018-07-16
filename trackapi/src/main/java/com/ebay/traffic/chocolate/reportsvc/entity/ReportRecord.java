@@ -98,6 +98,30 @@ public class ReportRecord {
     this.mobileImpressionCount = mobileImpressionCount;
   }
 
+  public void incrementClickCount(int count) {
+    this.clickCount += count;
+  }
+
+  public void incrementImpressionCount(int count) {
+    this.impressionCount += count;
+  }
+
+  public void incrementGrossImpressionCount(int count) {
+    this.grossImpressionCount += count;
+  }
+
+  public void incrementViewableImpressionCount(int count) {
+    this.viewableImpressionCount += count;
+  }
+
+  public void incrementMobileClickCount(int count) {
+    this.mobileClickCount += count;
+  }
+
+  public void incrementMobileImpressionCount(int count) {
+    this.mobileImpressionCount += count;
+  }
+
   @Override
   public String toString() {
     return String.format(

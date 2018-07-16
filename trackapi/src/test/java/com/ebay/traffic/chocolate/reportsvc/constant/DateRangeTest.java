@@ -474,7 +474,7 @@ public class DateRangeTest {
     Assert.assertEquals(Calendar.DECEMBER, DateRange.getLastMonthOfQuarter(test));
   }
 
-  @Ignore("sanity")
+  //@Ignore("sanity")
   @Test
   public void printAllDateRanges() {
     DateRange.calendar = null;
