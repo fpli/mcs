@@ -218,10 +218,10 @@ public class ReportServiceImpl implements ReportService {
 
   // Determine index of ReportRecord inside ReportRecordsPerDay against timestamp.
   private static int determineIndexForTimestamp(long timestamp) {
-    Calendar givenTime = Calendar.getInstance(DateRange.TIMEZONE);
+    Calendar givenTime = Calendar.getInstance();
     givenTime.setTimeInMillis(timestamp);
     int timeInMins = givenTime.get(Calendar.MINUTE) + (givenTime.get(Calendar.HOUR_OF_DAY) * 60);
-    return (timeInMins % 96);
+    return (timeInMins / 15);
   }
 
 }

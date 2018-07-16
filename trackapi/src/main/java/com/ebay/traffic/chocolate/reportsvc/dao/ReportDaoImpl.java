@@ -284,7 +284,7 @@ public class ReportDaoImpl implements ReportDao {
       key += "_MOBILE_FILTERED";
     } else if (isMobile && !isFiltered) {
       key += "_MOBILE_RAW";
-    } else if (!isMobile && !isFiltered) {
+    } else if (!isMobile && isFiltered) {
       key += "_DESKTOP_FILTERED";
     } else {
       key += "_DESKTOP_RAW";
