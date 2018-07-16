@@ -300,7 +300,7 @@ public class ESMetrics {
     final Date date = new Date();
     final String type = "_doc";
     final String id = String.valueOf(System.currentTimeMillis()) + String.format("%04d", random.nextInt(10000));
-    System.out.println(id);
+
     String[] additionalFields = name.split(";");
     Map<String, Object> m = new HashMap<>();
     m.put("date", sdf.format(date));
