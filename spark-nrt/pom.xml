@@ -213,6 +213,7 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--scoverage-placehoder-dont-remove-->
         </plugins>
     </build>
 </project>

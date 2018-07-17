@@ -24,7 +24,7 @@ class KafkaRDD[K, V](
                       val maxConsumeSize: Long = 1000000l // maximum number of events can be consumed in one task: 100M
                     ) extends RDD[ConsumerRecord[K, V]](sc, Nil) {
   val POLL_STEP_MS = 30000
-  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-";
+  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
 
   @transient lazy val consumer = {
     kafkaProperties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
@@ -141,8 +141,8 @@ class KafkaRDD[K, V](
 
     // metrics
     if (metrics != null) {
-      metrics.trace("Consumer" + topicPartition.partition() + "-offset", offset);
-      metrics.trace("Consumer" + topicPartition.partition() + "-until", part.untilOffset);
+      metrics.trace("Consumer" + topicPartition.partition() + "-offset", offset)
+      metrics.trace("Consumer" + topicPartition.partition() + "-until", part.untilOffset)
     }
 
     var nextRecord: ConsumerRecord[K, V] = null // cache the next record
@@ -165,12 +165,12 @@ class KafkaRDD[K, V](
 
     override def next(): ConsumerRecord[K, V] = {
       if (!hasNext) {
-        throw new IllegalStateException("Can't call next() once there is no more records");
+        throw new IllegalStateException("Can't call next() once there is no more records")
       }
       val record = nextRecord
       offset = record.offset() + 1 // update offset
       if (metrics != null) {
-        metrics.meter("KafkaRDD-Input");
+        metrics.meter("KafkaRDD-Input")
       }
 
       nextRecord = null

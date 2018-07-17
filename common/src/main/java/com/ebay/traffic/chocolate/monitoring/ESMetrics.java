@@ -5,7 +5,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.nio.entity.NStringEntity;
-import org.elasticsearch.client.*;
+import org.elasticsearch.client.ResponseException;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,18 +77,7 @@ public class ESMetrics {
   /**
    * Init the ElasticSearch client
    *
-   * @param esHostname the hostname of ES cluster
-   * @param esPort the port of ES cluster
-   * @param scheme http scheme
-   */
-  public static synchronized void init(String prefix, String esHostname, int esPort, String scheme) {
-    init(prefix, new HttpHost(esHostname, esPort, scheme));
-  }
-
-  /**
-   * Init the ElasticSearch client
-   *
-   * @param url
+   * @param url the url contains hostname, port and http scheme
    */
   public static synchronized void init(String prefix, String url) {
     init(prefix, HttpHost.create(url));
@@ -107,7 +98,7 @@ public class ESMetrics {
       public void run() {
         INSTANCE.flushMetrics();
       }
-    }, 10000, 10000); // flush every 10s
+    }, 30000, 30000); // flush every 30s
   }
 
   /**
@@ -141,25 +132,61 @@ public class ESMetrics {
   }
 
   private final SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy.MM.dd");
+  //ElasticSearch default date format
   private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   private final Random random = new SecureRandom();
 
   /**
-   * meter
-   *
-   * @param name the metric name
+   * meter only with name
    */
   public void meter(String name) {
     meter(name, 1L);
   }
 
   /**
-   * meter
+   * meter without additional fields
    *
    * @param name the metric name
    * @param value the metric value
    */
-  public synchronized void meter(String name, long value) {
+  public void meter(String name, long value) {
+    meter(name, value, null);
+  }
+
+  /**
+   * meter with channelAction and channelType
+   */
+  public void meter(String name, String channelAction, String channelType) {
+    meter(name, 1L, channelAction, channelType);
+  }
+
+  /**
+   * meter with channelAction and channelType
+   *
+   * @param channelAction the channel action
+   * @param channelType the channel type
+   */
+  public void meter(String name, long value, String channelAction, String channelType) {
+    Map<String, Object> additionalFields = new HashMap<>();
+    if (channelAction != null)
+      additionalFields.put("channelAction", channelAction);
+    if (channelType != null)
+      additionalFields.put("channelType", channelType);
+    meter(name, value, additionalFields);
+  }
+
+  /**
+   * meter with additional fields
+   *
+   * @param additionalFields fields names except name and value
+   */
+  public synchronized void meter(String name, long value, Map<String, Object> additionalFields){
+    try {
+      if (additionalFields != null)
+        name = metricsNameByFields(name, additionalFields);
+    } catch (Exception e){
+      logger.warn(e.toString());
+    }
     if (!meterMetrics.containsKey(name)) {
       meterMetrics.put(name, 0L);
     }
@@ -169,21 +196,34 @@ public class ESMetrics {
   }
 
   /**
-   * mean
-   *
-   * @param name the metric name
+   * mean only with name
    */
   public void mean(String name) {
     mean(name, 1L);
   }
 
   /**
-   * mean
+   * mean without additional fields
    *
    * @param name the metric name
    * @param value the metric value
    */
-  public synchronized  void mean(String name, long value) {
+  public void mean(String name, long value) {
+    mean(name, value, null);
+  }
+
+  /**
+   * mean with channelAction and channelType
+   *
+   * @param additionalFields fields names except name and value
+   */
+  public synchronized void mean(String name, long value, Map<String, Object> additionalFields) {
+    try {
+      if (additionalFields != null)
+        name = metricsNameByFields(name, additionalFields);
+    } catch (Exception e) {
+      logger.warn(e.toString());
+    }
     if (!meanMetrics.containsKey(name)) {
       meanMetrics.put(name, Pair.of(0L, 0L));
     }
@@ -261,7 +301,19 @@ public class ESMetrics {
     final String type = "_doc";
     final String id = String.valueOf(System.currentTimeMillis()) + String.format("%04d", random.nextInt(10000));
 
-    KVMetric m = new KVMetric(sdf.format(date), name , value, hostname);
+    String[] additionalFields = name.split(";");
+    Map<String, Object> m = new HashMap<>();
+    m.put("date", sdf.format(date));
+    m.put("key", name);
+    m.put("value", value);
+    m.put("host", hostname);
+    int n = additionalFields.length;
+    if (n > 1) {
+      for (int i = 1; i < n; ++i) {
+        String[] fields = additionalFields[i].split("=");
+        m.put(fields[0], fields[1]);
+      }
+    }
     Gson gson = new Gson();
     try {
       restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
@@ -291,36 +343,75 @@ public class ESMetrics {
     return index;
   }
 
+  /**
+   * Create index with dynamic template, map string to keyword for aggregation
+   *
+   * @param index
+   * @throws IOException
+   */
   private void createIndex(String index) throws IOException {
     restClient.performRequest("PUT", "/" + index, new HashMap<>(),
-        new NStringEntity("{\"mappings\":{\"_doc\":{\"properties\":{\"date\":{\"type\":\"date\",\"format\":\"yyyy-MM-dd HH:mm:ss\"},\"key\":{\"type\":\"text\"},\"value\":{\"type\":\"long\"},\"host\":{\"type\":\"text\"}}}}}", ContentType.APPLICATION_JSON));
+        new NStringEntity("{\n" +
+            "  \"mappings\": {\n" +
+            "    \"_doc\": {\n" +
+            "      \"dynamic_templates\": [\n" +
+            "        {\n" +
+            "          \"strings_as_keywords\": {\n" +
+            "            \"match_mapping_type\": \"string\",\n" +
+            "            \"mapping\": {\n" +
+            "              \"type\": \"keyword\"\n" +
+            "            }\n" +
+            "          }\n" +
+            "        }\n" +
+            "      ],\n" +
+            "      \"properties\": {\n" +
+            "        \"date\":   { \"type\": \"date\", \"format\": \"yyyy-MM-dd HH:mm:ss\" },\n" +
+            "        \"key\":    { \"type\": \"keyword\" },\n" +
+            "        \"value\":  { \"type\": \"long\" },\n" +
+            "        \"host\":   { \"type\": \"keyword\" }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}", ContentType.APPLICATION_JSON));
   }
 
-  private static class KVMetric {
-    private String date;
-    private String key;
-    private long value;
-    private String host;
+  private static String metricsNameByFields(String name, Map<String, Object> additionalFields) throws Exception{
+    if (name.contains(";") || name.contains("="))
+      throw new Exception("Metrics name contains ';' or '='");
 
-    KVMetric(String date, String key, long value, String host) {
-      this.date = date;
-      this.key = key;
-      this.value = value;
-      this.host = host;
+    Iterator<Map.Entry<String, Object>> iter = additionalFields.entrySet().iterator();
+    while (iter.hasNext()) {
+      Map.Entry<String, Object> entry = iter.next();
+      String key = entry.getKey();
+      if (key.contains(";") || key.contains("="))
+        throw new Exception("Additional field name contains ';' or '='");
+      Object value = entry.getValue();
+      if (value instanceof String) {
+        if (((String) value).contains(";") || ((String) value).contains("="))
+          throw new Exception("Additional field value contains ';' or '='");
+        value = ((String) value).toLowerCase();
+      }
+
+      name = name + ";" + key + "=" + value;
     }
+
+    return name;
   }
 
   /**
    * test
    */
   public static void main(String[] args) throws Exception {
-    ESMetrics.init("chocolate-metrics-", "10.148.185.16", 9200, "http");
+    ESMetrics.init("chocolate-metrics-", "http://10.148.181.34:9200");
     ESMetrics metrics = ESMetrics.getInstance();
 
     for (int i = 0; i < 1000; i++) {
-      metrics.meter("test1");
+      metrics.meter("test");
+      metrics.meter("test", "CLICK", null);
+      metrics.meter("test", "CLICK", "EPN");
       Thread.sleep(10);
     }
+
     Thread.sleep(2000);
     System.out.println("finished");
   }

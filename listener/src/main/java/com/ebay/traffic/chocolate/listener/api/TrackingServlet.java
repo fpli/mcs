@@ -9,6 +9,7 @@ import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
+import org.springframework.http.server.ServletServerHttpRequest;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -75,8 +76,8 @@ public class TrackingServlet extends HttpServlet {
   private void doRequest(HttpServletRequest request, HttpServletResponse response) {
     try {
       metrics.meter("TrackingCount");
-      esMetrics.meter("TrackingCount");
       TrackingEvent event = new TrackingEvent(new URL(request.getRequestURL().toString()), request.getParameterMap());
+      esMetrics.meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
       process(request, response, event);
     } catch (Exception e) {
       logger.error("Couldn't respond to tracking event for " + request.getRequestURL(), e);
@@ -106,8 +107,9 @@ public class TrackingServlet extends HttpServlet {
       if (event.getPayload() != null && event.getPayload().containsKey(SNID_PATTERN)) {
         snid = event.getPayload().get(SNID_PATTERN).toString();
       }
+      String requestUrl = parser.appendURLWithChocolateTag(new ServletServerHttpRequest(request).getURI().toString());
       message = parser.parseHeader(request, response, System.currentTimeMillis(), campaignId,
-          event.getChannel(), event.getAction(), snid);
+          event.getChannel(), event.getAction(), snid, requestUrl);
       if (message == null) {
         logger.error("Could not create Avro message for url=" + request.getRequestURL());
         return;
@@ -116,7 +118,7 @@ public class TrackingServlet extends HttpServlet {
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
 
       metrics.meter("TrackingSuccess");
-      esMetrics.meter("TrackingSuccess");
+      esMetrics.meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
 
     } catch (Exception e) {
       logger.error("Couldn't respond to tracking event for " + request.getRequestURL(), e);

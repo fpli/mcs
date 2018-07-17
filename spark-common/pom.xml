@@ -82,5 +82,8 @@
         <directory>${project.basedir}/src/main/resources</directory>
       </resource>
     </resources>
+    <plugins>
+      <!--scoverage-placehoder-dont-remove-->
+    </plugins>
   </build>
 </project>

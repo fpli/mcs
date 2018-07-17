@@ -89,19 +89,22 @@ public class FilterWorker extends Thread {
         int passed = 0;
         long startTime = System.currentTimeMillis();
         while (iterator.hasNext()) {
-          ++count;
-          metrics.meter("FilterInputCount");
-          esMetrics.meter("FilterInputCount");
           ConsumerRecord<Long, ListenerMessage> record = iterator.next();
           ListenerMessage message = record.value();
+          metrics.meter("FilterInputCount");
+          esMetrics.meter("FilterInputCount", message.getChannelAction().toString(), message.getChannelType().toString());
           long latency = System.currentTimeMillis() - message.getTimestamp();
           metrics.mean("FilterLatency", latency);
           esMetrics.mean("FilterLatency", latency);
+
+          ++count;
+          esMetrics.meter("FilterThroughput", message.getChannelAction().toString(), message.getChannelType().toString());
 
           FilterMessage outMessage = processMessage(message);
 
           if (outMessage.getRtRuleFlags() == 0) {
             ++passed;
+            esMetrics.meter("FilterPassedCount", outMessage.getChannelAction().toString(), outMessage.getChannelType().toString());
           }
 
           producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
@@ -125,11 +128,11 @@ public class FilterWorker extends Thread {
           esMetrics.mean("FilterIdle");
           Thread.sleep(POLL_STEP_MS);
         } else {
+          metrics.meter("FilterThroughput", count);
           metrics.meter("FilterPassedCount", passed);
-          metrics.meter("FilterOutputCount", count);
           metrics.mean("FilterPassedPPM", 1000000L * passed / count);
+          esMetrics.meter("FilterThroughput", count);
           esMetrics.meter("FilterPassedCount", passed);
-          esMetrics.meter("FilterOutputCount", count);
           esMetrics.mean("FilterPassedPPM", 1000000L * passed / count);
           long timeSpent = System.currentTimeMillis() - startTime;
           metrics.mean("FilterProcessingTime", timeSpent);
