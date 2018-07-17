@@ -98,7 +98,7 @@ public class ESMetrics {
       public void run() {
         INSTANCE.flushMetrics();
       }
-    }, 10000, 10000); // flush every 10s
+    }, 30000, 30000); // flush every 30s
   }
 
   /**
@@ -133,7 +133,7 @@ public class ESMetrics {
 
   private final SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy.MM.dd");
   //ElasticSearch default date format
-  private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+  private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   private final Random random = new SecureRandom();
 
   /**
@@ -351,7 +351,28 @@ public class ESMetrics {
    */
   private void createIndex(String index) throws IOException {
     restClient.performRequest("PUT", "/" + index, new HashMap<>(),
-        new NStringEntity("{\"mappings\":{\"_doc\":{\"numeric_detection\":true,\"dynamic_templates\":[{\"strings_as_keywords\":{\"match_mapping_type\":\"string\",\"mapping\":{\"type\":\"keyword\"}}}]}}}", ContentType.APPLICATION_JSON));
+        new NStringEntity("{\n" +
+            "  \"mappings\": {\n" +
+            "    \"_doc\": {\n" +
+            "      \"dynamic_templates\": [\n" +
+            "        {\n" +
+            "          \"strings_as_keywords\": {\n" +
+            "            \"match_mapping_type\": \"string\",\n" +
+            "            \"mapping\": {\n" +
+            "              \"type\": \"keyword\"\n" +
+            "            }\n" +
+            "          }\n" +
+            "        }\n" +
+            "      ],\n" +
+            "      \"properties\": {\n" +
+            "        \"date\":   { \"type\": \"date\", \"format\": \"yyyy-MM-dd HH:mm:ss\" },\n" +
+            "        \"key\":    { \"type\": \"keyword\" },\n" +
+            "        \"value\":  { \"type\": \"long\" },\n" +
+            "        \"host\":   { \"type\": \"keyword\" }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}", ContentType.APPLICATION_JSON));
   }
 
   private static String metricsNameByFields(String name, Map<String, Object> additionalFields) throws Exception{
@@ -385,9 +406,9 @@ public class ESMetrics {
     ESMetrics metrics = ESMetrics.getInstance();
 
     for (int i = 0; i < 1000; i++) {
-      metrics.meter("test", "CLICK", "EPN");
-      metrics.meter("test", "CLICK", null);
       metrics.meter("test");
+      metrics.meter("test", "CLICK", null);
+      metrics.meter("test", "CLICK", "EPN");
       Thread.sleep(10);
     }
 
