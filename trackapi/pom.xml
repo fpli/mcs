@@ -113,6 +113,10 @@
             <groupId>com.ebay.raptorio.component</groupId>
             <artifactId>raptor-validateinternals-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-content-starter</artifactId>
+        </dependency>
         <!--COS Spec implementation Components-->
         <!--<dependency>-->
         <!--<groupId>com.ebay.raptorio.component</groupId>-->
@@ -130,10 +134,10 @@
         <!--<groupId>com.ebay.standards</groupId>-->
         <!--<artifactId>standards-annotation-starter</artifactId>-->
         <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>com.ebay.standards</groupId>-->
-        <!--<artifactId>standards-error-starter</artifactId>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>com.ebay.standards</groupId>
+            <artifactId>standards-error-starter</artifactId>
+        </dependency>
         <!--<dependency>-->
         <!--<groupId>com.ebay.standards</groupId>-->
         <!--<artifactId>standards-exception-starter</artifactId>-->
@@ -148,6 +152,10 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.springframework.security</groupId>-->
+            <!--<artifactId>spring-security-core</artifactId>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

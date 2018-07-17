@@ -25,6 +25,10 @@ public class ReportDaoImpl implements ReportDao {
     this.bucket = client.getReportBucket();
   }
 
+  public ReportDaoImpl(Bucket bucket) {
+    this.bucket = bucket;
+  }
+
   public List<ReportDo> getAllDataForMonth(String prefix, String month) throws ParseException {
     List<ReportDo> resultList = new ArrayList<>();
     for (DataType dataType : DataType.values()) {
@@ -76,7 +80,7 @@ public class ReportDaoImpl implements ReportDao {
 
     for (int i = 1; i <= maxDayOfMonth; i++) {
       calendar.set(Calendar.DAY_OF_MONTH, i);
-      String currentDate = DateRange.REQUEST_DATE_FORMAT.format(date);
+      String currentDate = DateRange.REQUEST_DATE_FORMAT.format(calendar.getTime());
 
       String key = getKey(prefix, currentDate, dataType);
       if (bucket.exists(key)) {
