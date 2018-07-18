@@ -62,6 +62,13 @@ class KafkaRDD[K, V](
       val position = consumer.position(tp)
       val until = Math.min(endOffset.getValue, position + maxConsumeSize)
       log.info(s"###topic-partition: ${tp}, position: ${position}, until: ${until}")
+      if (metrics != null) {
+        // lag metric
+        val additionalFields: util.Map[String, AnyRef] = new util.HashMap[String, AnyRef]
+        additionalFields.put("consumer", Integer.valueOf(tp.partition))
+        metrics.mean("SparkKafkaConsumerLag", endOffset.getValue - position, additionalFields)
+      }
+
       if (until > position) {
         untilOffsets.put(endOffset.getKey, new OffsetAndMetadata(until))
       }
