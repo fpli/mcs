@@ -6,12 +6,15 @@ import com.ebay.traffic.chocolate.reportsvc.constant.Granularity;
 import com.ebay.traffic.chocolate.reportsvc.constant.ReportType;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+@XmlAccessorType(XmlAccessType.PROPERTY)
 public class ReportRequest {
 
   // Key prefix, depending on report type.
