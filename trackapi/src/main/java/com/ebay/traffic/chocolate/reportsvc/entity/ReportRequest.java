@@ -74,6 +74,7 @@ public class ReportRequest {
 
   public void setDateRange(DateRange dateRange) {
     this.dateRange = dateRange;
+    this.granularity = (dateRange == null) ? null : dateRange.getGranularity();
   }
 
   public Granularity getGranularity() {
@@ -128,8 +129,7 @@ public class ReportRequest {
       return;
     }
 
-    this.dateRange = dateRangeEnum;
-    this.granularity = this.dateRange.getGranularity();
+    this.setDateRange(dateRangeEnum);
     String[] dates = DateRange.getDates(dateRangeEnum);
     this.startDate = Integer.valueOf(dates[0]);
     this.endDate = Integer.valueOf(dates[1]);
