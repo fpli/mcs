@@ -14,11 +14,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.log4j.Logger;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -82,6 +81,10 @@ public class FilterWorker extends Thread {
       consumer.subscribe(Arrays.asList(inputTopic));
 
       long flushThreshold = 0;
+
+      final long kafkaLagMetricInterval = 30000; // 30s
+      Map<Integer, Long> offsets = new HashMap<>();
+      long kafkaLagMetricStart = System.currentTimeMillis();
       while (!shutdownRequested.get()) {
         ConsumerRecords<Long, ListenerMessage> records = consumer.poll(POLL_STEP_MS);
         Iterator<ConsumerRecord<Long, ListenerMessage>> iterator = records.iterator();
@@ -107,9 +110,13 @@ public class FilterWorker extends Thread {
             esMetrics.meter("FilterPassedCount", outMessage.getChannelAction().toString(), outMessage.getChannelType().toString());
           }
 
+          // cache current offset for partition*
+          offsets.put(record.partition(), record.offset());
+
           producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
         }
 
+        // flush logic
         flushThreshold += count;
 
         if (flushThreshold > 1000) {
@@ -121,6 +128,26 @@ public class FilterWorker extends Thread {
 
           // reset threshold
           flushThreshold = 0;
+        }
+
+        // kafka lag metrics logic
+        long now = System.currentTimeMillis();
+        if (now - kafkaLagMetricStart > kafkaLagMetricInterval) {
+          Map<TopicPartition, Long> endOffsets = consumer.endOffsets(records.partitions());
+          Iterator<Map.Entry<TopicPartition, Long>> iter = endOffsets.entrySet().iterator();
+          while (iter.hasNext()) {
+            Map.Entry<TopicPartition, Long> entry = iter.next();
+            TopicPartition tp = entry.getKey();
+            long endOffset = entry.getValue();
+            if (offsets.containsKey(tp.partition())) {
+              long offset = offsets.get(tp.partition());
+              Map<String, Object> additionalFields = new HashMap<>();
+              additionalFields.put("consumer", tp.partition());
+              esMetrics.mean("FilterKafkaConsumerLag", endOffset - offset, additionalFields);
+            }
+          }
+
+          kafkaLagMetricStart = now;
         }
 
         if (count == 0) {
