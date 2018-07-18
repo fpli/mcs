@@ -101,6 +101,10 @@ public class ReportRequest {
     return months;
   }
 
+  public void setMonths(List<Integer> months) {
+    this.months = months;
+  }
+
   // Determine the type of report to be generated and the key prefix for which to query data.
   private void setIdAndReportType(String partnerId, String campaignId) {
     this.keyPrefix = "PUBLISHER_" + partnerId;

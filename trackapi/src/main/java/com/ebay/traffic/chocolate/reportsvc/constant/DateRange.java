@@ -416,4 +416,11 @@ public enum DateRange {
     cal.setFirstDayOfWeek(Calendar.MONDAY);
     return cal;
   }
+
+  /* for testing purposes only */
+  public static void updateTimezone(TimeZone timezone) {
+    DATE_FORMAT.setTimeZone(timezone);
+    MONTH_FORMAT.setTimeZone(timezone);
+    REQUEST_DATE_FORMAT.setTimeZone(timezone);
+  }
 }
