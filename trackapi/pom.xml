@@ -42,10 +42,6 @@
         </dependency>
         <dependency>
             <groupId>com.ebay.raptorio.component</groupId>
-            <artifactId>raptor-domain-request-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.ebay.raptorio.component</groupId>
             <artifactId>raptor-domain-request-api</artifactId>
         </dependency>
         <dependency>
@@ -124,10 +120,6 @@
         <dependency>
             <groupId>com.ebay.raptorio.component</groupId>
             <artifactId>raptor-validateinternals-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.ebay.raptorio.component</groupId>
-            <artifactId>raptor-content-starter</artifactId>
         </dependency>
         <!--COS Spec implementation Components-->
         <!--<dependency>-->

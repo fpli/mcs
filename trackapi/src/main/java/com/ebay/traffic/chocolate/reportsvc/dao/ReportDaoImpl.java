@@ -8,12 +8,11 @@ import com.ebay.traffic.chocolate.mkttracksvc.dao.CouchbaseClient;
 import com.ebay.traffic.chocolate.reportsvc.constant.DateRange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import rx.Observable;
+import rx.functions.Func1;
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class ReportDaoImpl implements ReportDao {
@@ -78,27 +77,15 @@ public class ReportDaoImpl implements ReportDao {
 
     int maxDayOfMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 
+    Map<String, String> keys = new HashMap<>();
+
     for (int i = 1; i <= maxDayOfMonth; i++) {
       calendar.set(Calendar.DAY_OF_MONTH, i);
       String currentDate = DateRange.REQUEST_DATE_FORMAT.format(calendar.getTime());
-
-      String key = getKey(prefix, currentDate, dataType);
-      if (bucket.exists(key)) {
-        List<Tuple<Long, Long>> document = new ArrayList<>();
-
-        JsonArray jsonArray = bucket.get(key, JsonArrayDocument.class).content();
-        for (Object obj : jsonArray) {
-          JsonObject jsonObject = (JsonObject) obj;
-          Long count = jsonObject.getLong("count");
-          Long timestamp = jsonObject.getLong("timestamp");
-          document.add(new Tuple<>(count, timestamp));
-        }
-
-        ReportDo reportDo = new ReportDo(key, document, dataType,
-                Integer.valueOf(DateRange.formatRequestDate(currentDate)));
-        resultList.add(reportDo);
-      }
+      keys.put(getKey(prefix, currentDate, dataType), currentDate);
     }
+
+    batchGet(keys, resultList, dataType);
 
     return resultList;
   }
@@ -138,28 +125,17 @@ public class ReportDaoImpl implements ReportDao {
     Calendar calendar = Calendar.getInstance();
     calendar.setTime(dt1);
 
+    Map<String, String> keys = new HashMap<>();
+
     while (dt1.getTime() <= dt2.getTime()) {
       String currentDate = DateRange.REQUEST_DATE_FORMAT.format(dt1);
-      String key = getKey(prefix, currentDate, dataType);
-      if (bucket.exists(key)) {
-        List<Tuple<Long, Long>> document = new ArrayList<>();
-
-        JsonArray jsonArray = bucket.get(key, JsonArrayDocument.class).content();
-        for (Object obj : jsonArray) {
-          JsonObject jsonObject = (JsonObject) obj;
-          Long count = jsonObject.getLong("count");
-          Long timestamp = jsonObject.getLong("timestamp");
-          document.add(new Tuple<>(count, timestamp));
-        }
-
-        ReportDo reportDo = new ReportDo(key, document, dataType,
-                Integer.valueOf(DateRange.formatRequestDate(currentDate)));
-        resultList.add(reportDo);
-      }
+      keys.put(getKey(prefix, currentDate, dataType), currentDate);
 
       calendar.add(Calendar.DATE, 1);
       dt1 = calendar.getTime();
     }
+
+    batchGet(keys, resultList, dataType);
 
     return resultList;
   }
@@ -178,28 +154,17 @@ public class ReportDaoImpl implements ReportDao {
     calendar.add(Calendar.DAY_OF_MONTH, 1);
     dt1 = calendar.getTime();
 
+    Map<String, String> keys = new HashMap<>();
+
     while (dt1.getTime() <= dt2.getTime()) {
       String currentDate = DateRange.REQUEST_DATE_FORMAT.format(dt1);
-      String key = getKey(prefix, currentDate, dataType);
-      if (bucket.exists(key)) {
-        List<Tuple<Long, Long>> document = new ArrayList<>();
-
-        JsonArray jsonArray = bucket.get(key, JsonArrayDocument.class).content();
-        for (Object obj : jsonArray) {
-          JsonObject jsonObject = (JsonObject) obj;
-          Long count = jsonObject.getLong("count");
-          Long timestamp = jsonObject.getLong("timestamp");
-          document.add(new Tuple<>(count, timestamp));
-        }
-
-        ReportDo reportDo = new ReportDo(key, document, dataType,
-                Integer.valueOf(DateRange.formatRequestDate(currentDate)));
-        resultList.add(reportDo);
-      }
+      keys.put(getKey(prefix, currentDate, dataType), currentDate);
 
       calendar.add(Calendar.DAY_OF_MONTH, 1);
       dt1 = calendar.getTime();
     }
+
+    batchGet(keys, resultList, dataType);
 
     return resultList;
   }
@@ -214,30 +179,45 @@ public class ReportDaoImpl implements ReportDao {
     calendar.set(Calendar.DAY_OF_MONTH, 1);
     Date dt1 = calendar.getTime();
 
+    Map<String, String> keys = new HashMap<>();
+
     while (dt1.getTime() < dt2.getTime()) {
       String currentDate = DateRange.REQUEST_DATE_FORMAT.format(dt1);
-      String key = getKey(prefix, currentDate, dataType);
-      if (bucket.exists(key)) {
-        List<Tuple<Long, Long>> document = new ArrayList<>();
-
-        JsonArray jsonArray = bucket.get(key, JsonArrayDocument.class).content();
-        for (Object obj : jsonArray) {
-          JsonObject jsonObject = (JsonObject) obj;
-          Long count = jsonObject.getLong("count");
-          Long timestamp = jsonObject.getLong("timestamp");
-          document.add(new Tuple<>(count, timestamp));
-        }
-
-        ReportDo reportDo = new ReportDo(key, document, dataType,
-                Integer.valueOf(DateRange.formatRequestDate(currentDate)));
-        resultList.add(reportDo);
-      }
+      keys.put(getKey(prefix, currentDate, dataType), currentDate);
 
       calendar.add(Calendar.DAY_OF_MONTH, 1);
       dt1 = calendar.getTime();
     }
 
+    batchGet(keys, resultList, dataType);
+
     return resultList;
+  }
+
+  private void batchGet(Map<String, String> keys, List<ReportDo> resultList, DataType dataType) throws ParseException {
+    List<JsonArrayDocument> jsonArrayDocuments = Observable
+            .from(keys.keySet())
+            .flatMap((Func1<String, Observable<JsonArrayDocument>>) k -> bucket.async().get(k, JsonArrayDocument.class))
+            .toList()
+            .toBlocking()
+            .single();
+
+    for (JsonArrayDocument jsonArrayDocument : jsonArrayDocuments) {
+      List<Tuple<Long, Long>> document = new ArrayList<>();
+
+      JsonArray jsonArray = jsonArrayDocument.content();
+      for (Object obj : jsonArray) {
+        JsonObject jsonObject = (JsonObject) obj;
+        Long count = jsonObject.getLong("count");
+        Long timestamp = jsonObject.getLong("timestamp");
+        document.add(new Tuple<>(count, timestamp));
+      }
+
+      String key = jsonArrayDocument.id();
+      ReportDo reportDo = new ReportDo(key, document, dataType,
+              Integer.valueOf(DateRange.formatRequestDate(keys.get(key))));
+      resultList.add(reportDo);
+    }
   }
 
   private static String getKey(String prefix, String date, DataType dataType) {

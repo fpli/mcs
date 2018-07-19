@@ -4,10 +4,11 @@ import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.document.JsonArrayDocument;
 import com.couchbase.client.java.document.json.JsonArray;
 import com.couchbase.client.java.document.json.JsonObject;
+import rx.Observable;
+import rx.functions.Func1;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
 
 public class TestHelper {
 
@@ -28,6 +29,8 @@ public class TestHelper {
     final String[] actions = {"CLICK", "IMPRESSION", "VIEWABLE"};
 
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+    List<JsonArrayDocument> jsonArrayDocuments = new ArrayList<>();
 
     while (dt1.getTime() <= dt2.getTime()) {
       String currentDate = simpleDateFormat.format(dt1);
@@ -55,24 +58,23 @@ public class TestHelper {
             deltaTime = delta.getTime();
           }
 
-          if (!bucket.exists(key1)) {
-            bucket.upsert(JsonArrayDocument.create(key1, jsonArray));
-          }
-          if (!bucket.exists(key2)) {
-            bucket.upsert(JsonArrayDocument.create(key2, jsonArray));
-          }
-          if (!bucket.exists(key3)) {
-            bucket.upsert(JsonArrayDocument.create(key3, jsonArray));
-          }
-          if (!bucket.exists(key4)) {
-            bucket.upsert(JsonArrayDocument.create(key4, jsonArray));
-          }
+          jsonArrayDocuments.add(JsonArrayDocument.create(key1, jsonArray));
+          jsonArrayDocuments.add(JsonArrayDocument.create(key2, jsonArray));
+          jsonArrayDocuments.add(JsonArrayDocument.create(key3, jsonArray));
+          jsonArrayDocuments.add(JsonArrayDocument.create(key4, jsonArray));
         }
       }
 
       calendar.add(Calendar.DAY_OF_MONTH, 1);
       dt1 = calendar.getTime();
     }
+
+    Observable
+            .from(jsonArrayDocuments)
+            .flatMap((Func1<JsonArrayDocument, Observable<JsonArrayDocument>>) f -> bucket.async().upsert(f))
+            .toList()
+            .toBlocking()
+            .single();
   }
 
   private static String generateKey(String prefix, String date, String action, boolean isMobile, boolean isFiltered) {
