@@ -30,6 +30,11 @@ public class LocalizedErrorFactoryV3 {
     factory = builder.makeErrorFactoryV3(configuration);
   }
 
+  /**
+   * Create a COS exception with custom message.
+   * @param errorName
+   * @return
+   */
   public ErrorResponseException makeException(String errorName) {
     Response response = factory.makeResponse(errorName);
     return factory.makeException(response);

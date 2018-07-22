@@ -62,6 +62,10 @@ public enum DateRange {
     return granularity;
   }
 
+  /**
+   * Helper methods
+   */
+
   public static DateRange getDateRangeForParamName(String paramName) {
     switch (paramName) {
       case ("lastyear"):
@@ -90,6 +94,13 @@ public enum DateRange {
     }
   }
 
+  /**
+   * Given start and end dates, return a list of all the months in between.
+   *
+   * @param startDate
+   * @param endDate
+   * @throws ParseException
+   */
   public static List<Integer> getMonthsForDateRange(String startDate, String endDate) throws ParseException {
     List<Integer> months = new ArrayList<>();
 
@@ -124,6 +135,12 @@ public enum DateRange {
     return months;
   }
 
+  /**
+   * Calculate the start date and end dates for the given date range.
+   *
+   * @param dateRange
+   * @return String[]; 0 - start date, 1 - end date.
+   */
   public static String[] getDates(DateRange dateRange) {
     switch (dateRange) {
       case LAST_YEAR:
@@ -152,6 +169,13 @@ public enum DateRange {
     }
   }
 
+  /**
+   * Return calendar instance set at midnight of given date.
+   *
+   * @param date
+   * @return Calendar
+   * @throws ParseException
+   */
   public static Calendar getMidnightForDay(String date) throws ParseException {
     Calendar thisDay = Calendar.getInstance(TIMEZONE);
     thisDay.setTime(REQUEST_DATE_FORMAT.parse(date));
@@ -161,17 +185,34 @@ public enum DateRange {
     return thisDay;
   }
 
+  /** Date range utility methods */
+
+  /**
+   * Get today's date in yyyyMMdd format.
+   *
+   * @return String today's date.
+   */
   public static String todaysDate() {
     Calendar today = getCalendarInstance();
     return formattedDate(today.getTime());
   }
 
+  /**
+   * Get yesterday's date in yyyyMMdd format.
+   *
+   * @return String yesterday's date.
+   */
   public static String yesterdaysDate() {
     Calendar yesterday = getCalendarInstance();
     yesterday.add(Calendar.DAY_OF_MONTH, -1);
     return formattedDate(yesterday.getTime());
   }
 
+  /**
+   * Get the first and last day of this week, in yyyyMMdd format.
+   *
+   * @return String[]; 0 - first day of this week, 1 - today.
+   */
   public static String[] rangeThisWeek() {
     String[] firstAndLast = new String[2];
     firstAndLast[0] = firstDayOfThisWeek();
@@ -179,6 +220,11 @@ public enum DateRange {
     return firstAndLast;
   }
 
+  /**
+   * Get the first and last day of last week, in yyyyMMdd format.
+   *
+   * @return String[]; 0 - first day of last week, 1 - last day of last week.
+   */
   public static String[] rangeLastWeek() {
     String[] firstAndLast = new String[2];
     firstAndLast[0] = firstDayOfLastWeek();
@@ -186,6 +232,11 @@ public enum DateRange {
     return firstAndLast;
   }
 
+  /**
+   * Get the first and last day of this month, in yyyyMMdd format.
+   *
+   * @return String[]; 0 - first day of this month, 1 - today.
+   */
   public static String[] rangeMonthToDate() {
     String[] firstAndLast = new String[2];
     firstAndLast[0] = firstDayOfThisMonth();
@@ -193,6 +244,11 @@ public enum DateRange {
     return firstAndLast;
   }
 
+  /**
+   * Get the first and last day of last month, in yyyyMMdd format.
+   *
+   * @return String[]; 0 - first day of last month, 1 - last day of last month.
+   */
   public static String[] rangeLastMonth() {
     String[] firstAndLast = new String[2];
     firstAndLast[0] = firstDayOfLastMonth();
@@ -200,6 +256,11 @@ public enum DateRange {
     return firstAndLast;
   }
 
+  /**
+   * Get the first and last day of this quarter, in yyyyMMdd format.
+   *
+   * @return String[]; 0 - first day of this quarter, 1 - today.
+   */
   public static String[] rangeQuarterToDate() {
     String[] firstAndLast = new String[2];
     firstAndLast[0] = firstDayOfThisQuarter();
@@ -207,6 +268,11 @@ public enum DateRange {
     return firstAndLast;
   }
 
+  /**
+   * Get the first and last day of last quarter, in yyyyMMdd format.
+   *
+   * @return String[]; 0 - first day of last quarter, 1 - last day of last quarter.
+   */
   public static String[] rangeLastQuarter() {
     String[] firstAndLast = new String[2];
     firstAndLast[0] = firstDayOfLastQuarter();
@@ -214,6 +280,11 @@ public enum DateRange {
     return firstAndLast;
   }
 
+  /**
+   * Get the first and last day of this year, in yyyyMMdd format.
+   *
+   * @return String[]; 0 - first day of this year, 1 - today.
+   */
   public static String[] rangeYearToDate() {
     String[] firstAndLast = new String[2];
     firstAndLast[0] = firstDayOfThisYear();
@@ -221,6 +292,11 @@ public enum DateRange {
     return firstAndLast;
   }
 
+  /**
+   * Get the first and last day of last year, in yyyyMMdd format.
+   *
+   * @return String[]; 0 - first day of last year, 1 - last day of last year.
+   */
   public static String[] rangeLastYear() {
     String[] firstAndLast = new String[2];
     firstAndLast[0] = firstDayOfLastYear();
@@ -248,6 +324,13 @@ public enum DateRange {
     return (month == null) ? "" : REQUEST_DATE_FORMAT.format(MONTH_FORMAT.parse(month));
   }
 
+  /**
+   * Given a month, return the list of first days of the week, for all weeks in the month.
+   *
+   * @param month
+   * @return String[] - list of first days of each week in month
+   * @throws ParseException
+   */
   public static String[] getWeeksForMonth(int month) throws ParseException {
     Date time = DateRange.MONTH_FORMAT.parse(String.valueOf(month));
     Date today = new Date();
@@ -268,6 +351,13 @@ public enum DateRange {
     return weeks.toArray(new String[weeks.size()]);
   }
 
+  /**
+   * Given a day, determine the first day of its week.
+   *
+   * @param day
+   * @return
+   * @throws ParseException
+   */
   public static int determineWeekForDay(int day) throws ParseException {
     Calendar thisDay = Calendar.getInstance();
     thisDay.setFirstDayOfWeek(Calendar.MONDAY);

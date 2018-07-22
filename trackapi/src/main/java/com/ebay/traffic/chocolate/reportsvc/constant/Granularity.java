@@ -13,6 +13,8 @@ public enum Granularity {
   FINE,
   CUSTOM;
 
+  /** Helper methods */
+
   public static Granularity getGranularityByName(String name) {
     for (Granularity granularity : Granularity.values()) {
       if (name.equalsIgnoreCase(granularity.name())) {
@@ -40,6 +42,13 @@ public enum Granularity {
     }
   }
 
+  /**
+   * Calculate the Granularity at which to group data, based on a date range.
+   * @param startDate Start date for range
+   * @param endDate End date for range
+   * @return Granularity
+   * @throws ParseException
+   */
   public static Granularity getGranularityForCustomDateRange(String startDate, String endDate) throws ParseException {
     if (startDate.equals(endDate)) {
       return Granularity.FINE;

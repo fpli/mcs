@@ -26,6 +26,7 @@ public class ReportServiceImpl implements ReportService {
     return response;
   }
 
+  // Fetches data for reporting based on the request.
   private List<ReportRecordsPerMonth> fetchDataForRequest(ReportRequest request) throws ParseException {
     String prefix = request.getKeyPrefix();
     Map<Integer, ReportRecordsPerMonth> mappedReportRecords = new TreeMap<>();
@@ -74,25 +75,30 @@ public class ReportServiceImpl implements ReportService {
     return new ArrayList<>(mappedReportRecords.values());
   }
 
+  // Fetch data for given month and map it to report conducive format.
   private ReportRecordsPerMonth fetchAndMapDataForMonth(String prefix, int month,
                                                         Granularity granularity) throws ParseException {
     List<ReportDo> resultList = reportDAO.getAllDataForMonth(prefix, String.valueOf(month));
     return mapRecordsForMonth(month, resultList, granularity);
   }
 
+  // Fetch data for the first month in the date range if # of months > 1 and map to report conducive format.
   private ReportRecordsPerMonth fetchAndMapFirstMonthData(String prefix, int firstMonth, int startDate,
                                                           Granularity granularity) throws ParseException {
+    // First month's data will be all data for month >= startDate.
     List<ReportDo> resultList = reportDAO.getAllDataGreaterThanDate(prefix, String.valueOf(startDate));
     return mapRecordsForMonth(firstMonth, resultList, granularity);
   }
 
+  // Fetch data for the last month in the date range if # of months > 1 and map to report conducive format.
   private ReportRecordsPerMonth fetchAndMapLastMonthData(String prefix, int lastMonth, int endDate,
                                                          Granularity granularity) throws ParseException {
+    // Last month's data will be all data for month <= endDate.
     List<ReportDo> resultList = reportDAO.getAllDataLessThanDate(prefix, String.valueOf(endDate));
     return mapRecordsForMonth(lastMonth, resultList, granularity);
   }
 
-  // Aggregate by month.
+  // Map data retrieved for a month and calculate monthly aggregates.
   private ReportRecordsPerMonth mapRecordsForMonth(int month, List<ReportDo> resultList,
                                                    Granularity granularity) throws ParseException {
     ReportRecordsPerMonth recordsForMonth = new ReportRecordsPerMonth(

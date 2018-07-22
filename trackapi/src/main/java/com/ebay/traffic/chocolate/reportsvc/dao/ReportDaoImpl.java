@@ -194,6 +194,7 @@ public class ReportDaoImpl implements ReportDao {
     return resultList;
   }
 
+  // Fetch data from Couchbase according to a collection of keys in batch mode.
   private void batchGet(Map<String, String> keys, List<ReportDo> resultList, DataType dataType) throws ParseException {
     List<JsonArrayDocument> jsonArrayDocuments = Observable
             .from(keys.keySet())
@@ -219,6 +220,8 @@ public class ReportDaoImpl implements ReportDao {
       resultList.add(reportDo);
     }
   }
+
+  /** Helper methods to ease key generation */
 
   private static String getKey(String prefix, String date, DataType dataType) {
     switch (dataType) {
@@ -262,6 +265,15 @@ public class ReportDaoImpl implements ReportDao {
     return generateKey(prefix, date, "IMPRESSION", true, true);
   }
 
+  /**
+   * Generate unique key for a Couchbase record.
+   *
+   * 1. Format for publisher based report:
+   * [PUBLISHER]_[publisher id]_[date]_[action]_[MOBILE or DESKTOP]_[RAW or FILTERED]
+   *
+   * 2. Format for campaign based report:
+   * [PUBLISHER]_[publisher id]_CAMPAIGN_[campaign id]_[date]_[action]_[MOBILE or DESKTOP]_[RAW or FILTERED]
+   */
   private static String generateKey(String prefix, String date, String action, boolean isMobile, boolean isFiltered) {
     String key = prefix + "_" + date + "_" + action;
     if (isMobile && isFiltered) {
