@@ -4,7 +4,7 @@ import com.ebay.app.raptor.chocolate.constant.MPLXChannelEnum;
 import com.ebay.app.raptor.chocolate.constant.MPLXClientEnum;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.globalenv.SiteEnum;
-import com.ebay.traffic.chocolate.mkttracksvc.MKTTrackSvcConfigBean;
+import com.ebay.traffic.chocolate.mkttracksvc.dao.CouchbaseClient;
 import com.ebay.traffic.chocolate.mkttracksvc.constant.ErrorMsgConstant;
 import com.ebay.traffic.chocolate.mkttracksvc.dao.RotationCbDao;
 import com.ebay.traffic.chocolate.mkttracksvc.dao.imp.RotationCbDaoImp;
@@ -30,17 +30,13 @@ import java.util.Map;
 public class RotationService {
 
   @Autowired
-  MKTTrackSvcConfigBean mktTrackSvcConfig;
-//
-//  @Autowired
-//  CacheFactory factory;
-
+  CouchbaseClient couchbaseClient;
 
   RotationCbDao rotationCbDao;
 
   @PostConstruct
   public void init() {
-    rotationCbDao = new RotationCbDaoImp(mktTrackSvcConfig);
+    rotationCbDao = new RotationCbDaoImp(couchbaseClient.getRotationBucket());
   }
 
   // for test
@@ -71,19 +67,11 @@ public class RotationService {
     rotationReq.setUpdate_date(DateUtil.formatDate(d, DATE_FORMAT));
     this.setRotationTag(rotationReq);
 
-    try {
-      rotationCbDao.connect(mktTrackSvcConfig);
-      RotationInfo rInfo = rotationCbDao.addRotationMap(rotationStr, rotationReq);
-      if (rInfo == null) {
-        response.setMessage(ErrorMsgConstant.CB_INSERT_ROTATION_ISSUE + rotationId);
-      } else {
-        response.setRotation_info(rInfo);
-      }
-    } catch (CBException cbe) {
-      response.setMessage(ErrorMsgConstant.CB_CONNECTION_ISSUE);
-      throw cbe;
-    } finally {
-      rotationCbDao.close();
+    RotationInfo rInfo = rotationCbDao.addRotationMap(rotationStr, rotationReq);
+    if (rInfo == null) {
+      response.setMessage(ErrorMsgConstant.CB_INSERT_ROTATION_ISSUE + rotationId);
+    } else {
+      response.setRotation_info(rInfo);
     }
     return response;
   }
@@ -96,24 +84,16 @@ public class RotationService {
    */
   public ServiceResponse updateRotationMap(String rotationStr, RotationInfo rotationReq) throws CBException {
     ServiceResponse response = new ServiceResponse();
-    try {
-      rotationCbDao.connect(mktTrackSvcConfig);
-      rotationReq.setLast_update_time(System.currentTimeMillis());
-      Date d = new Date(rotationReq.getLast_update_time());
-      rotationReq.setUpdate_date(DateUtil.formatDate(d, DATE_FORMAT));
-      this.setRotationTag(rotationReq);
+    rotationReq.setLast_update_time(System.currentTimeMillis());
+    Date d = new Date(rotationReq.getLast_update_time());
+    rotationReq.setUpdate_date(DateUtil.formatDate(d, DATE_FORMAT));
+    this.setRotationTag(rotationReq);
 
-      RotationInfo rInfo = rotationCbDao.updateRotationMap(rotationStr, rotationReq);
-      if(rInfo == null){
-        response.setMessage("No rotation_info updated! since there is no related rotation info in db.");
-      }
-      response.setRotation_info(rInfo);
-    } catch (CBException cbe) {
-      response.setMessage(ErrorMsgConstant.CB_CONNECTION_ISSUE);
-      throw cbe;
-    } finally {
-      rotationCbDao.close();
+    RotationInfo rInfo = rotationCbDao.updateRotationMap(rotationStr, rotationReq);
+    if (rInfo == null) {
+      response.setMessage("No rotation_info updated! since there is no related rotation info in db.");
     }
+    response.setRotation_info(rInfo);
     return response;
   }
 
@@ -121,30 +101,19 @@ public class RotationService {
    * Set rotationInfo status
    *
    * @param rotationStr rotation String
-   * @param status     ACTIVE/INACTIVE
+   * @param status      ACTIVE/INACTIVE
    * @return ServiceResponse
    */
   public ServiceResponse setStatus(String rotationStr, String status) throws CBException {
     ServiceResponse response = new ServiceResponse();
-    RotationInfo rInfo = null;
-    try {
-      rotationCbDao.connect(mktTrackSvcConfig);
-      rInfo = rotationCbDao.setStatus(rotationStr, status);
-      if (rInfo == null) {
-        response.setMessage(ErrorMsgConstant.CB_ACTIVATE_ROTATION_ISSUE + rotationStr);
-      } else {
-        response.setRotation_info(rInfo);
-      }
-    } catch (CBException cbe) {
-      response.setMessage(ErrorMsgConstant.CB_CONNECTION_ISSUE);
-      throw cbe;
-    } finally {
-      rotationCbDao.close();
+    RotationInfo rInfo = rotationCbDao.setStatus(rotationStr, status);
+    if (rInfo == null) {
+      response.setMessage(ErrorMsgConstant.CB_ACTIVATE_ROTATION_ISSUE + rotationStr);
+    } else {
+      response.setRotation_info(rInfo);
     }
-
     return response;
   }
-
 
   /**
    * Get rotationInfo by rotationId
@@ -155,19 +124,11 @@ public class RotationService {
    */
   public ServiceResponse getRotationById(String rotationStr) throws CBException {
     ServiceResponse response = new ServiceResponse();
-    try {
-      rotationCbDao.connect(mktTrackSvcConfig);
-      RotationInfo rotationInfo = rotationCbDao.getRotationById(rotationStr);
-      if (rotationInfo == null) {
-        response.setMessage(ErrorMsgConstant.CB_GET_ROTATION_ISSUE + rotationStr);
-      } else {
-        response.setRotation_info(rotationInfo);
-      }
-    } catch (CBException cbe) {
-      response.setMessage(ErrorMsgConstant.CB_CONNECTION_ISSUE);
-      throw cbe;
-    } finally {
-      rotationCbDao.close();
+    RotationInfo rotationInfo = rotationCbDao.getRotationById(rotationStr);
+    if (rotationInfo == null) {
+      response.setMessage(ErrorMsgConstant.CB_GET_ROTATION_ISSUE + rotationStr);
+    } else {
+      response.setRotation_info(rotationInfo);
     }
     return response;
   }
@@ -181,44 +142,36 @@ public class RotationService {
    */
   public ServiceResponse getRotationByName(String rotationName) throws CBException {
     ServiceResponse response = new ServiceResponse();
-    try {
-      rotationCbDao.connect(mktTrackSvcConfig);
-      List<RotationInfo> rotationInfoList = rotationCbDao.getRotationByName(rotationName);
-      if (rotationInfoList == null || rotationInfoList.isEmpty()) {
-        response.setMessage(ErrorMsgConstant.CB_GET_ROTATION_ISSUE2 + rotationName);
-      } else {
-        response.setRotation_info_list(rotationInfoList);
-      }
-    } catch (CBException cbe) {
-      response.setMessage(ErrorMsgConstant.CB_CONNECTION_ISSUE);
-      throw cbe;
-    } finally {
-      rotationCbDao.close();
+    List<RotationInfo> rotationInfoList = rotationCbDao.getRotationByName(rotationName);
+    if (rotationInfoList == null || rotationInfoList.isEmpty()) {
+      response.setMessage(ErrorMsgConstant.CB_GET_ROTATION_ISSUE2 + rotationName);
+    } else {
+      response.setRotation_info_list(rotationInfoList);
     }
     return response;
   }
 
-  private void setRotationTag(RotationInfo rotationInfo){
+  private void setRotationTag(RotationInfo rotationInfo) {
 
     // Set rotation tags for analytics usage
     Map<String, String> rotationTag = rotationInfo.getRotation_tag();
-    if(rotationTag == null) rotationTag = new HashMap<String, String>();
+    if (rotationTag == null) rotationTag = new HashMap<String, String>();
     // Site Name
-    if(rotationInfo.getSite_id() != null && rotationInfo.getSite_id() >= 0){
+    if (rotationInfo.getSite_id() != null && rotationInfo.getSite_id() >= 0) {
       SiteEnum siteEnum = SiteEnum.get(rotationInfo.getSite_id());
-      if(siteEnum != null && siteEnum.getLocale() != null){
+      if (siteEnum != null && siteEnum.getLocale() != null) {
         rotationTag.put(RotationConstant.FIELD_TAG_SITE_NAME, siteEnum.getLocale().getCountry());
-      }else {
+      } else {
         rotationTag.put(RotationConstant.FIELD_TAG_SITE_NAME, null);
       }
     }
     // Channel Name(convert from mediaplex channelId) && Rover Channel Id
-    if(rotationInfo.getChannel_id() != null && rotationInfo.getChannel_id() >= 0) {
+    if (rotationInfo.getChannel_id() != null && rotationInfo.getChannel_id() >= 0) {
       MPLXChannelEnum channelEnum = MPLXChannelEnum.getByMplxChannelId(rotationInfo.getChannel_id());
-      if(channelEnum != null){
+      if (channelEnum != null) {
         rotationTag.put(RotationConstant.FIELD_TAG_CHANNEL_NAME, channelEnum.getMplxChannelName());
         rotationTag.put(RotationConstant.FIELD_TAG_ROVER_CHANNEL_ID, String.valueOf(channelEnum.getRoverChannelId()));
-      }else{
+      } else {
         rotationTag.put(RotationConstant.FIELD_TAG_CHANNEL_NAME, null);
         rotationTag.put(RotationConstant.FIELD_TAG_ROVER_CHANNEL_ID, null);
       }
@@ -226,11 +179,11 @@ public class RotationService {
 
     // Strategic and site device from rotation description
     String rotationDesc = rotationInfo.getRotation_description();
-    if(StringUtils.isNotEmpty(rotationDesc) && rotationDesc.split(",").length >= 4){
+    if (StringUtils.isNotEmpty(rotationDesc) && rotationDesc.split(",").length >= 4) {
       String[] rotationDescArr = rotationDesc.split(",");
       rotationTag.put(RotationConstant.FIELD_TAG_PERFORMACE_STRATEGIC, rotationDescArr[0]);
       rotationTag.put(RotationConstant.FIELD_TAG_DEVICE, rotationDescArr[1]);
-    }else{
+    } else {
       rotationTag.put(RotationConstant.FIELD_TAG_PERFORMACE_STRATEGIC, null);
       rotationTag.put(RotationConstant.FIELD_TAG_DEVICE, null);
     }
