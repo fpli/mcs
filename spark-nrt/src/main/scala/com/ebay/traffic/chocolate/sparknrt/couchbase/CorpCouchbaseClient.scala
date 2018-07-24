@@ -10,7 +10,7 @@ import com.ebay.dukes.base.BaseDelegatingCacheClient
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient
 import org.slf4j.LoggerFactory
 
-object CorpCouchbaseClient {
+object CorpCouchbaseClient extends App {
 
   @transient private lazy val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -25,7 +25,7 @@ object CorpCouchbaseClient {
   @transient private lazy val factory =
     com.ebay.dukes.builder.GenericCacheFactoryBuilder.newBuilder()
       .cache(dataSource)
-      .identityFileDirectoryLocation(properties.getProperty("chocolate.corp.couchbase.identitiesFileLocation"))
+      .identityFileDirectoryLocation(getClass.getResource("/identities/").getPath)
       .dbEnv(properties.getProperty("chocolate.corp.couchbase.dbEnv"))
       .deploymentSlot(properties.getProperty("chocolate.corp.couchbase.deploymentSlot"))
       .dnsRegion(properties.getProperty("chocolate.corp.couchbase.dnsRegion"))
