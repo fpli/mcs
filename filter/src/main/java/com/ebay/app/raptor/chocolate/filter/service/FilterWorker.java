@@ -160,7 +160,6 @@ public class FilterWorker extends Thread {
           metrics.meter("FilterPassedCount", passed);
           metrics.mean("FilterPassedPPM", 1000000L * passed / count);
           esMetrics.meter("FilterThroughput", count);
-          esMetrics.meter("FilterPassedCount", passed);
           esMetrics.mean("FilterPassedPPM", 1000000L * passed / count);
           long timeSpent = System.currentTimeMillis() - startTime;
           metrics.mean("FilterProcessingTime", timeSpent);
