@@ -81,11 +81,11 @@ public class DefaultChannel implements Channel {
     producer = KafkaSink.get();
     String filteredTopic = ListenerOptions.getInstance().getErrorTopic();
 
+    long campaignId = getCampaignID(request);
     try {
       if (parser.responseShouldBeFiltered(request, response, requestUrl)) {
         metrics.meter("ResponseFilteredCount");
         esMetrics.meter("ResponseFilteredCount", action, type);
-        long campaignId = getCampaignID(request);
         String snid = request.getParameter(SNID_PATTERN);
         ListenerMessage filteredMessage = parser.parseHeader(request, response,
             startTime, campaignId, ChannelType.EPN, ChannelActionEnum.CLICK, snid, requestUrl);
@@ -96,8 +96,6 @@ public class DefaultChannel implements Channel {
       logger.error("Wrong with URL format/encoding", e);
     }
 
-    long campaignId = getCampaignID(request);
-
     metrics.meter("IncomingCount");
     esMetrics.meter("IncomingCount", action, type);
 
@@ -107,20 +105,24 @@ public class DefaultChannel implements Channel {
       channelType = ChannelIdEnum.parse(result[4]);
       if (channelType == null) {
         invalidRequestParam(request, "No pattern matched;", action, type);
+        esMetrics.meter("NoPatternMatched", action, type);
         return;
       }
       channelAction = ChannelActionEnum.parse(channelType, result[1]);
       if (!channelType.getLogicalChannel().isValidRoverAction(channelAction)) {
         invalidRequestParam(request, "Invalid tracking action given a channel;", action, type);
+        esMetrics.meter("InvalidAction", action, type);
         return;
       }
       if (channelType.isTestChannel()) {
         invalidRequestParam(request, "Test channel;", action, type);
+        esMetrics.meter("TestChannel", action, type);
         return;
       }
 
       if (campaignId < 0 && channelType.equals(ChannelIdEnum.EPN)) {
         invalidRequestParam(request, "Invalid campaign id;", action, type);
+        esMetrics.meter("InvalidCampaign", action, type);
         return;
       }
 
@@ -173,6 +175,7 @@ public class DefaultChannel implements Channel {
         campaignId = Long.parseLong(request.getParameter(campaign));
       } catch (NumberFormatException e) {
         logger.warn("Invalid campaign: " + request.getParameter(campaign));
+        esMetrics.meter("InvalidCampaign");
       }
     }
 
