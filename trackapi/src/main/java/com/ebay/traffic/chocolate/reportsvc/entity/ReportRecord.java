@@ -10,20 +10,32 @@ public class ReportRecord {
   // Click count - filtered
   private int clickCount;
 
+  // Click count - raw
+  private int grossClickCount;
+
   // Impression count - filterd
   private int impressionCount;
+
+  // Impression count - raw
+  private int grossImpressionCount;
 
   // Viewable impression count - filterd
   private int viewableImpressionCount;
 
-  // Impression count before filtering - raw
-  private int grossImpressionCount;
+  // Viewable impression count - raw
+  private int grossViewableImpressionCount;
 
   // Click count for mobile - filtered
   private int mobileClickCount;
 
+  // Click count for mobile - raw
+  private int grossMobileClickCount;
+
   // Impression count for mobile - filtered
   private int mobileImpressionCount;
+
+  // Impression count for mobile - raw
+  private int grossMobileImpressionCount;
 
   public ReportRecord() {
   }
@@ -32,15 +44,31 @@ public class ReportRecord {
     this.timestamp = timestamp;
   }
 
-  public ReportRecord(long timestamp, int clickCount, int impressionCount, int viewableImpressionCount, int grossImpressionCount, int mobileClickCount, int mobileImpressionCount) {
+  public ReportRecord(long timestamp,
+                      int clickCount,
+                      int grossClickCount,
+                      int impressionCount,
+                      int grossImpressionCount,
+                      int viewableImpressionCount,
+                      int grossViewableImpressionCount,
+                      int mobileClickCount,
+                      int grossMobileClickCount,
+                      int mobileImpressionCount,
+                      int grossMobileImpressionCount) {
     this.timestamp = timestamp;
     this.clickCount = clickCount;
+    this.grossClickCount = grossClickCount;
     this.impressionCount = impressionCount;
-    this.viewableImpressionCount = viewableImpressionCount;
     this.grossImpressionCount = grossImpressionCount;
+    this.viewableImpressionCount = viewableImpressionCount;
+    this.grossViewableImpressionCount = grossViewableImpressionCount;
     this.mobileClickCount = mobileClickCount;
+    this.grossMobileClickCount = grossMobileClickCount;
     this.mobileImpressionCount = mobileImpressionCount;
+    this.grossMobileImpressionCount = grossMobileImpressionCount;
   }
+
+  // Getter and setter
 
   public long getTimestamp() {
     return timestamp;
@@ -58,20 +86,20 @@ public class ReportRecord {
     this.clickCount = clickCount;
   }
 
+  public int getGrossClickCount() {
+    return grossClickCount;
+  }
+
+  public void setGrossClickCount(int grossClickCount) {
+    this.grossClickCount = grossClickCount;
+  }
+
   public int getImpressionCount() {
     return impressionCount;
   }
 
   public void setImpressionCount(int impressionCount) {
     this.impressionCount = impressionCount;
-  }
-
-  public int getViewableImpressionCount() {
-    return viewableImpressionCount;
-  }
-
-  public void setViewableImpressionCount(int viewableImpressionCount) {
-    this.viewableImpressionCount = viewableImpressionCount;
   }
 
   public int getGrossImpressionCount() {
@@ -82,12 +110,36 @@ public class ReportRecord {
     this.grossImpressionCount = grossImpressionCount;
   }
 
+  public int getViewableImpressionCount() {
+    return viewableImpressionCount;
+  }
+
+  public void setViewableImpressionCount(int viewableImpressionCount) {
+    this.viewableImpressionCount = viewableImpressionCount;
+  }
+
+  public int getGrossViewableImpressionCount() {
+    return grossViewableImpressionCount;
+  }
+
+  public void setGrossViewableImpressionCount(int grossViewableImpressionCount) {
+    this.grossViewableImpressionCount = grossViewableImpressionCount;
+  }
+
   public int getMobileClickCount() {
     return mobileClickCount;
   }
 
   public void setMobileClickCount(int mobileClickCount) {
     this.mobileClickCount = mobileClickCount;
+  }
+
+  public int getGrossMobileClickCount() {
+    return grossMobileClickCount;
+  }
+
+  public void setGrossMobileClickCount(int grossMobileClickCount) {
+    this.grossMobileClickCount = grossMobileClickCount;
   }
 
   public int getMobileImpressionCount() {
@@ -98,8 +150,22 @@ public class ReportRecord {
     this.mobileImpressionCount = mobileImpressionCount;
   }
 
+  public int getGrossMobileImpressionCount() {
+    return grossMobileImpressionCount;
+  }
+
+  public void setGrossMobileImpressionCount(int grossMobileImpressionCount) {
+    this.grossMobileImpressionCount = grossMobileImpressionCount;
+  }
+
+  // Aggregation
+
   public void incrementClickCount(int count) {
     this.clickCount += count;
+  }
+
+  public void incrementGrossClickCount(int count) {
+    this.grossClickCount += count;
   }
 
   public void incrementImpressionCount(int count) {
@@ -114,26 +180,47 @@ public class ReportRecord {
     this.viewableImpressionCount += count;
   }
 
+  public void incrementGrossViewableImpressionCount(int count) {
+    this.grossViewableImpressionCount += count;
+  }
+
   public void incrementMobileClickCount(int count) {
     this.mobileClickCount += count;
+  }
+
+  public void incrementGrossMobileClickCount(int count) {
+    this.grossMobileClickCount += count;
   }
 
   public void incrementMobileImpressionCount(int count) {
     this.mobileImpressionCount += count;
   }
 
+  public void incrementGrossMobileImpressionCount(int count) {
+    this.grossMobileImpressionCount += count;
+  }
+
   @Override
   public String toString() {
     return String.format(
-            "ReportRecord [timestamp: %d, clicks: %d, impressions: %d, gross impressions: %d, "
-                    + "mobile clicks: %d, mobile impressions: %d, viewable impressions: %d]",
+            "ReportRecord [timestamp: %d, " +
+                    "clicks: %d, gross clicks: %d, " +
+                    "impressions: %d, gross impressions: %d, " +
+                    "viewable impressions: %d, gross viewable impressions: %d, " +
+                    "mobile clicks: %d, gross mobile clicks: %d, " +
+                    "mobile impressions: %d, gross mobile impressions: %d]",
             timestamp,
             clickCount,
+            grossClickCount,
             impressionCount,
             grossImpressionCount,
+            viewableImpressionCount,
+            grossViewableImpressionCount,
             mobileClickCount,
+            grossMobileClickCount,
             mobileImpressionCount,
-            viewableImpressionCount);
+            grossMobileImpressionCount
+    );
   }
 
   @Override
@@ -142,15 +229,16 @@ public class ReportRecord {
       return false;
     }
     ReportRecord record = (ReportRecord) obj;
-    if (this.timestamp == record.timestamp &&
+    return (this.timestamp == record.timestamp &&
             this.clickCount == record.clickCount &&
+            this.grossClickCount == record.grossClickCount &&
             this.impressionCount == record.impressionCount &&
             this.grossImpressionCount == record.grossImpressionCount &&
             this.viewableImpressionCount == record.viewableImpressionCount &&
+            this.grossViewableImpressionCount == record.grossViewableImpressionCount &&
             this.mobileClickCount == record.mobileClickCount &&
-            this.mobileImpressionCount == record.mobileImpressionCount) {
-      return true;
-    }
-    return false;
+            this.grossMobileClickCount == record.grossMobileClickCount &&
+            this.mobileImpressionCount == record.mobileImpressionCount &&
+            this.grossMobileImpressionCount == record.grossMobileImpressionCount);
   }
 }
