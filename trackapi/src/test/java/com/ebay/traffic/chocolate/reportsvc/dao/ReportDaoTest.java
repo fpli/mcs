@@ -34,7 +34,7 @@ public class ReportDaoTest {
       Assert.fail();
     }
 
-    Assert.assertEquals(12, list.size());
+    Assert.assertEquals(20, list.size());
 
     Set<String> keySet = new HashSet<>();
     for (ReportDo reportDo : list) {
@@ -43,18 +43,26 @@ public class ReportDaoTest {
     }
 
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_DESKTOP_FILTERED"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_VIEWABLE_DESKTOP_FILTERED"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_DESKTOP_RAW"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_VIEWABLE_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_VIEWABLE_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_MOBILE_RAW"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_MOBILE_RAW"));
 
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_CLICK_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_CLICK_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_DESKTOP_FILTERED"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_VIEWABLE_DESKTOP_FILTERED"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_DESKTOP_RAW"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_VIEWABLE_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_VIEWABLE_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_CLICK_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_CLICK_MOBILE_RAW"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_MOBILE_RAW"));
   }
 
   @Test
@@ -80,7 +88,7 @@ public class ReportDaoTest {
       Assert.fail();
     }
 
-    Assert.assertEquals(6, list.size());
+    Assert.assertEquals(10, list.size());
 
     Set<String> keySet = new HashSet<>();
     for (ReportDo reportDo : list) {
@@ -89,11 +97,15 @@ public class ReportDaoTest {
     }
 
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_DESKTOP_FILTERED"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_VIEWABLE_DESKTOP_FILTERED"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_DESKTOP_RAW"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_VIEWABLE_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_VIEWABLE_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_MOBILE_RAW"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_MOBILE_RAW"));
   }
 
   @Test
@@ -119,7 +131,7 @@ public class ReportDaoTest {
       Assert.fail();
     }
 
-    Assert.assertEquals(12, list.size());
+    Assert.assertEquals(20, list.size());
 
     Set<String> keySet = new HashSet<>();
     for (ReportDo reportDo : list) {
@@ -128,18 +140,26 @@ public class ReportDaoTest {
     }
 
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_DESKTOP_FILTERED"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_VIEWABLE_DESKTOP_FILTERED"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_DESKTOP_RAW"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_VIEWABLE_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_VIEWABLE_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_MOBILE_RAW"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_MOBILE_RAW"));
 
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_CLICK_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_CLICK_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_DESKTOP_FILTERED"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_VIEWABLE_DESKTOP_FILTERED"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_DESKTOP_RAW"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_VIEWABLE_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_VIEWABLE_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_CLICK_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_CLICK_MOBILE_RAW"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_MOBILE_RAW"));
   }
 
   @Test
@@ -165,7 +185,7 @@ public class ReportDaoTest {
       Assert.fail();
     }
 
-    Assert.assertEquals(6, list.size());
+    Assert.assertEquals(10, list.size());
 
     Set<String> keySet = new HashSet<>();
     for (ReportDo reportDo : list) {
@@ -174,11 +194,15 @@ public class ReportDaoTest {
     }
 
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_CLICK_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_CLICK_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_DESKTOP_FILTERED"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_VIEWABLE_DESKTOP_FILTERED"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_DESKTOP_RAW"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_VIEWABLE_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_VIEWABLE_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_CLICK_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_CLICK_MOBILE_RAW"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-02_IMPRESSION_MOBILE_RAW"));
   }
 
   @Test
@@ -191,9 +215,7 @@ public class ReportDaoTest {
       Assert.fail();
     }
 
-    Assert.assertEquals(6, list.size());
-
-    Assert.assertEquals(6, list.size());
+    Assert.assertEquals(10, list.size());
 
     Set<String> keySet = new HashSet<>();
     for (ReportDo reportDo : list) {
@@ -202,10 +224,14 @@ public class ReportDaoTest {
     }
 
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_DESKTOP_FILTERED"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_VIEWABLE_DESKTOP_FILTERED"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_DESKTOP_RAW"));
-    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_VIEWABLE_DESKTOP_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_VIEWABLE_DESKTOP_RAW"));
     Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_CLICK_MOBILE_RAW"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_MOBILE_FILTERED"));
+    Assert.assertTrue(keySet.contains("PUBLISHER_11_2000-01-01_IMPRESSION_MOBILE_RAW"));
   }
 }
