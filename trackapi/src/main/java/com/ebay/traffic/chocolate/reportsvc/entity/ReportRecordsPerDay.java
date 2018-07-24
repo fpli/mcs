@@ -17,6 +17,9 @@ public class ReportRecordsPerDay {
   // Aggregated click count for this date.
   private int aggregatedClickCount;
 
+  // Aggregated gross click count for this date.
+  private int aggregatedGrossClickCount;
+
   // Aggregated impression count for this date.
   private int aggregatedImpressionCount;
 
@@ -26,14 +29,25 @@ public class ReportRecordsPerDay {
   // Aggregated viewable impression count for this date.
   private int aggregatedViewableImpressionCount;
 
+  // Aggregated gross viewable impression count for this date.
+  private int aggregatedGrossViewableImpressionCount;
+
   // Aggregated mobile click count for this date.
   private int aggregatedMobileClickCount;
+
+  // Aggregated gross mobile click count for this date.
+  private int aggregatedGrossMobileClickCount;
 
   // Aggregated mobile impression count for this date.
   private int aggregatedMobileImpressionCount;
 
+  // Aggregated gross mobile impression count for this date.
+  private int aggregatedGrossMobileImpressionCount;
+
   // All report records for the given date.
   private List<ReportRecord> recordsForDay;
+
+  // .ctor
 
   public ReportRecordsPerDay() {
   }
@@ -52,6 +66,8 @@ public class ReportRecordsPerDay {
     this.recordsForDay = records;
   }
 
+  // Getter and setter
+
   public String getDate() {
     return date;
   }
@@ -66,6 +82,14 @@ public class ReportRecordsPerDay {
 
   public void setAggregatedClickCount(int aggregatedClickCount) {
     this.aggregatedClickCount = aggregatedClickCount;
+  }
+
+  public int getAggregatedGrossClickCount() {
+    return aggregatedGrossClickCount;
+  }
+
+  public void setAggregatedGrossClickCount(int aggregatedGrossClickCount) {
+    this.aggregatedGrossClickCount = aggregatedGrossClickCount;
   }
 
   public int getAggregatedImpressionCount() {
@@ -92,12 +116,28 @@ public class ReportRecordsPerDay {
     this.aggregatedViewableImpressionCount = aggregatedViewableImpressionCount;
   }
 
+  public int getAggregatedGrossViewableImpressionCount() {
+    return aggregatedGrossViewableImpressionCount;
+  }
+
+  public void setAggregatedGrossViewableImpressionCount(int aggregatedGrossViewableImpressionCount) {
+    this.aggregatedGrossViewableImpressionCount = aggregatedGrossViewableImpressionCount;
+  }
+
   public int getAggregatedMobileClickCount() {
     return aggregatedMobileClickCount;
   }
 
   public void setAggregatedMobileClickCount(int aggregatedMobileClickCount) {
     this.aggregatedMobileClickCount = aggregatedMobileClickCount;
+  }
+
+  public int getAggregatedGrossMobileClickCount() {
+    return aggregatedGrossMobileClickCount;
+  }
+
+  public void setAggregatedGrossMobileClickCount(int aggregatedGrossMobileClickCount) {
+    this.aggregatedGrossMobileClickCount = aggregatedGrossMobileClickCount;
   }
 
   public int getAggregatedMobileImpressionCount() {
@@ -108,6 +148,14 @@ public class ReportRecordsPerDay {
     this.aggregatedMobileImpressionCount = aggregatedMobileImpressionCount;
   }
 
+  public int getAggregatedGrossMobileImpressionCount() {
+    return aggregatedGrossMobileImpressionCount;
+  }
+
+  public void setAggregatedGrossMobileImpressionCount(int aggregatedGrossMobileImpressionCount) {
+    this.aggregatedGrossMobileImpressionCount = aggregatedGrossMobileImpressionCount;
+  }
+
   public List<ReportRecord> getRecordsForDay() {
     return recordsForDay;
   }
@@ -116,8 +164,14 @@ public class ReportRecordsPerDay {
     this.recordsForDay = recordsForDay;
   }
 
+  // Aggregation
+
   public void incrementClickCount(int count) {
     this.aggregatedClickCount += count;
+  }
+
+  public void incrementGrossClickCount(int count) {
+    this.aggregatedGrossClickCount += count;
   }
 
   public void incrementImpressionCount(int count) {
@@ -132,12 +186,24 @@ public class ReportRecordsPerDay {
     this.aggregatedViewableImpressionCount += count;
   }
 
+  public void incrementGrossViewableImpressionCount(int count) {
+    this.aggregatedGrossViewableImpressionCount += count;
+  }
+
   public void incrementMobileClickCount(int count) {
     this.aggregatedMobileClickCount += count;
   }
 
+  public void incrementGrossMobileClickCount(int count) {
+    this.aggregatedGrossMobileClickCount += count;
+  }
+
   public void incrementMobileImpressionCount(int count) {
     this.aggregatedMobileImpressionCount += count;
+  }
+
+  public void incrementGrossMobileImpressionCount(int count) {
+    this.aggregatedGrossMobileImpressionCount += count;
   }
 
   private void setupFifteenMinuteIntervalsForDay() throws ParseException {
@@ -153,15 +219,23 @@ public class ReportRecordsPerDay {
   @Override
   public String toString() {
     return String.format(
-            "RecordsPerDay [day: %s, aggrClicks: %d, aggrImpressions: %d, aggrGrossImpressions: %d, "
-                    + "aggreMobileClicks: %d, aggrMobileImpressions: %d, aggrViewableImpressions: %d]",
+            "ReportRecordsPerDay [day: %s, " +
+                    "aggrClicks: %d, aggrGrossClicks: %d, " +
+                    "aggrImpressions: %d, aggrGrossImpressions: %d, " +
+                    "aggrViewableImpressions: %d, aggrGrossViewableImpressions: %d, " +
+                    "aggrMobileClicks: %d, aggrGrossMobileClicks: %d, " +
+                    "aggrMobileImpressions: %d, aggrGrossMobileImpressions: %d]",
             this.date,
             this.aggregatedClickCount,
+            this.aggregatedGrossClickCount,
             this.aggregatedImpressionCount,
             this.aggregatedGrossImpressionCount,
+            this.aggregatedViewableImpressionCount,
+            this.aggregatedGrossViewableImpressionCount,
             this.aggregatedMobileClickCount,
+            this.aggregatedGrossMobileClickCount,
             this.aggregatedMobileImpressionCount,
-            this.aggregatedViewableImpressionCount);
+            this.aggregatedGrossMobileImpressionCount);
   }
 
   @Override
@@ -170,15 +244,16 @@ public class ReportRecordsPerDay {
       return false;
     }
     ReportRecordsPerDay records = (ReportRecordsPerDay) obj;
-    if (this.date.equals(records.getDate()) &&
+    return (this.date.equals(records.getDate()) &&
             this.aggregatedClickCount == records.getAggregatedClickCount() &&
-            this.aggregatedGrossImpressionCount == records.getAggregatedGrossImpressionCount() &&
+            this.aggregatedGrossClickCount == records.getAggregatedGrossClickCount() &&
             this.aggregatedImpressionCount == records.getAggregatedImpressionCount() &&
+            this.aggregatedGrossImpressionCount == records.getAggregatedGrossImpressionCount() &&
             this.aggregatedViewableImpressionCount == records.getAggregatedViewableImpressionCount() &&
+            this.aggregatedGrossViewableImpressionCount == records.getAggregatedGrossViewableImpressionCount() &&
             this.aggregatedMobileClickCount == records.getAggregatedMobileClickCount() &&
-            this.aggregatedMobileImpressionCount == records.getAggregatedMobileImpressionCount()) {
-      return true;
-    }
-    return false;
+            this.aggregatedGrossMobileClickCount == records.getAggregatedGrossMobileClickCount() &&
+            this.aggregatedMobileImpressionCount == records.getAggregatedMobileImpressionCount() &&
+            this.aggregatedGrossMobileImpressionCount == records.getAggregatedGrossMobileImpressionCount());
   }
 }

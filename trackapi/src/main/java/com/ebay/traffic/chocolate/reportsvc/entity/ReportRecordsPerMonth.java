@@ -11,23 +11,37 @@ public class ReportRecordsPerMonth {
   // Aggregated click count for this month.
   private int aggregatedClickCount;
 
-  // Aggregated impression count for this month."
+  // Aggregated gross click count for this month.
+  private int aggregatedGrossClickCount;
+
+  // Aggregated impression count for this month.
   private int aggregatedImpressionCount;
 
   // Aggregated gross impression count for this month.
   private int aggregatedGrossImpressionCount;
 
-  // Aggregated viewable impression count for this date.
+  // Aggregated viewable impression count for this month.
   private int aggregatedViewableImpressionCount;
 
-  // Aggregated mobile click count for this date.
+  // Aggregated gross viewable impression count for this month.
+  private int aggregatedGrossViewableImpressionCount;
+
+  // Aggregated mobile click count for this month.
   private int aggregatedMobileClickCount;
 
-  // Aggregated mobile impression count for this date.
+  // Aggregated gross mobile click count for this month.
+  private int aggregatedGrossMobileClickCount;
+
+  // Aggregated mobile impression count for this month.
   private int aggregatedMobileImpressionCount;
 
+  // Aggregated gross mobile impression count for this month.
+  private int aggregatedGrossMobileImpressionCount;
+
   // All report records for the given month.
-  List<ReportRecordsPerDay> recordsForMonth;
+  private List<ReportRecordsPerDay> recordsForMonth;
+
+  // .ctor
 
   public ReportRecordsPerMonth() {
   }
@@ -41,6 +55,8 @@ public class ReportRecordsPerMonth {
     this.month = month;
     this.recordsForMonth = records;
   }
+
+  // Getter and setter
 
   public String getMonth() {
     return month;
@@ -56,6 +72,14 @@ public class ReportRecordsPerMonth {
 
   public void setAggregatedClickCount(int aggregatedClickCount) {
     this.aggregatedClickCount = aggregatedClickCount;
+  }
+
+  public int getAggregatedGrossClickCount() {
+    return aggregatedGrossClickCount;
+  }
+
+  public void setAggregatedGrossClickCount(int aggregatedGrossClickCount) {
+    this.aggregatedGrossClickCount = aggregatedGrossClickCount;
   }
 
   public int getAggregatedImpressionCount() {
@@ -82,12 +106,28 @@ public class ReportRecordsPerMonth {
     this.aggregatedViewableImpressionCount = aggregatedViewableImpressionCount;
   }
 
+  public int getAggregatedGrossViewableImpressionCount() {
+    return aggregatedGrossViewableImpressionCount;
+  }
+
+  public void setAggregatedGrossViewableImpressionCount(int aggregatedGrossViewableImpressionCount) {
+    this.aggregatedGrossViewableImpressionCount = aggregatedGrossViewableImpressionCount;
+  }
+
   public int getAggregatedMobileClickCount() {
     return aggregatedMobileClickCount;
   }
 
   public void setAggregatedMobileClickCount(int aggregatedMobileClickCount) {
     this.aggregatedMobileClickCount = aggregatedMobileClickCount;
+  }
+
+  public int getAggregatedGrossMobileClickCount() {
+    return aggregatedGrossMobileClickCount;
+  }
+
+  public void setAggregatedGrossMobileClickCount(int aggregatedGrossMobileClickCount) {
+    this.aggregatedGrossMobileClickCount = aggregatedGrossMobileClickCount;
   }
 
   public int getAggregatedMobileImpressionCount() {
@@ -98,6 +138,14 @@ public class ReportRecordsPerMonth {
     this.aggregatedMobileImpressionCount = aggregatedMobileImpressionCount;
   }
 
+  public int getAggregatedGrossMobileImpressionCount() {
+    return aggregatedGrossMobileImpressionCount;
+  }
+
+  public void setAggregatedGrossMobileImpressionCount(int aggregatedGrossMobileImpressionCount) {
+    this.aggregatedGrossMobileImpressionCount = aggregatedGrossMobileImpressionCount;
+  }
+
   public List<ReportRecordsPerDay> getRecordsForMonth() {
     return recordsForMonth;
   }
@@ -106,8 +154,14 @@ public class ReportRecordsPerMonth {
     this.recordsForMonth = recordsForMonth;
   }
 
+  // Aggregation
+
   public void incrementClickCount(int count) {
     this.aggregatedClickCount += count;
+  }
+
+  public void incrementGrossClickCount(int count) {
+    this.aggregatedGrossClickCount += count;
   }
 
   public void incrementImpressionCount(int count) {
@@ -122,26 +176,46 @@ public class ReportRecordsPerMonth {
     this.aggregatedViewableImpressionCount += count;
   }
 
+  public void incrementGrossViewableImpressionCount(int count) {
+    this.aggregatedGrossViewableImpressionCount += count;
+  }
+
   public void incrementMobileClickCount(int count) {
     this.aggregatedMobileClickCount += count;
+  }
+
+  public void incrementGrossMobileClickCount(int count) {
+    this.aggregatedGrossMobileClickCount += count;
   }
 
   public void incrementMobileImpressionCount(int count) {
     this.aggregatedMobileImpressionCount += count;
   }
 
+  public void incrementGrossMobileImpressionCount(int count) {
+    this.aggregatedGrossMobileImpressionCount += count;
+  }
+
   @Override
   public String toString() {
     return String.format(
-            "RecordsPerMonth [month: %s, aggrClicks: %d, aggrImpressions: %d, aggrGrossImpressions: %d, "
-                    + "aggreMobileClicks: %d, aggrMobileImpressions: %d, aggrViewableImpressions: %d]",
+            "ReportRecordsPerMonth [month: %s, " +
+                    "aggrClicks: %d, aggrGrossClicks: %d, " +
+                    "aggrImpressions: %d, aggrGrossImpressions: %d, " +
+                    "aggrViewableImpressions: %d, aggrGrossViewableImpressions: %d, " +
+                    "aggrMobileClicks: %d, aggrGrossMobileClicks: %d, " +
+                    "aggrMobileImpressions: %d, aggrGrossMobileImpressions: %d]",
             this.month,
             this.aggregatedClickCount,
+            this.aggregatedGrossClickCount,
             this.aggregatedImpressionCount,
             this.aggregatedGrossImpressionCount,
+            this.aggregatedViewableImpressionCount,
+            this.aggregatedGrossViewableImpressionCount,
             this.aggregatedMobileClickCount,
+            this.aggregatedGrossMobileClickCount,
             this.aggregatedMobileImpressionCount,
-            this.aggregatedViewableImpressionCount);
+            this.aggregatedGrossMobileImpressionCount);
   }
 
   @Override
@@ -150,16 +224,17 @@ public class ReportRecordsPerMonth {
       return false;
     }
     ReportRecordsPerMonth records = (ReportRecordsPerMonth) obj;
-    if (this.month.equals(records.getMonth()) &&
+    return (this.month.equals(records.getMonth()) &&
             this.aggregatedClickCount == records.getAggregatedClickCount() &&
-            this.aggregatedGrossImpressionCount == records.getAggregatedGrossImpressionCount() &&
+            this.aggregatedGrossClickCount == records.getAggregatedGrossClickCount() &&
             this.aggregatedImpressionCount == records.getAggregatedImpressionCount() &&
+            this.aggregatedGrossImpressionCount == records.getAggregatedGrossImpressionCount() &&
             this.aggregatedViewableImpressionCount == records.getAggregatedViewableImpressionCount() &&
+            this.aggregatedGrossViewableImpressionCount == records.getAggregatedGrossViewableImpressionCount() &&
             this.aggregatedMobileClickCount == records.getAggregatedMobileClickCount() &&
-            this.aggregatedMobileImpressionCount == records.getAggregatedMobileImpressionCount()) {
-      return true;
-    }
-    return false;
+            this.aggregatedGrossMobileClickCount == records.getAggregatedGrossMobileClickCount() &&
+            this.aggregatedMobileImpressionCount == records.getAggregatedMobileImpressionCount() &&
+            this.aggregatedGrossMobileImpressionCount == records.getAggregatedGrossMobileImpressionCount());
   }
 
 }
