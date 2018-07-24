@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import com.ebay.traffic.chocolate.sparknrt.couchbase.CouchbaseClient
+import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
@@ -94,7 +94,7 @@ class ReportingJob(params: Parameter)
 
       val mapData = Map("timestamp" -> row.getAs("timestamp"), "count" -> row.getAs("count"))
 
-      CouchbaseClient.upsertMap(key, mapData)
+      CorpCouchbaseClient.upsertMap(key, mapData)
     }
   }
 

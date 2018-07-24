@@ -163,6 +163,13 @@
             <version>1.5.12</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes</artifactId>
+            <version>develop_2.0.10-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
     <build>

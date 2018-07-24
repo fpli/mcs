@@ -5,7 +5,7 @@ import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
 import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
-import com.ebay.traffic.chocolate.sparknrt.couchbase.{CouchbaseClient, CouchbaseClientMock}
+import com.ebay.traffic.chocolate.sparknrt.couchbase.{CorpCouchbaseClient, CouchbaseClient, CouchbaseClientMock}
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.conf.Configuration
@@ -46,7 +46,10 @@ class TestReportingJob extends BaseFunSuite {
 
   override def beforeAll(): Unit = {
     CouchbaseClientMock.startCouchbaseMock()
-    CouchbaseClient.createClusterFunc = () => CouchbaseClientMock.connect()
+    CorpCouchbaseClient.getBucketFunc = () => {
+      (None, CouchbaseClientMock.connect().openBucket("default"))
+    }
+
     createTestDataForDedupe()
   }
 
@@ -69,7 +72,7 @@ class TestReportingJob extends BaseFunSuite {
     assert (!fs.exists(new Path(dedupeMeta(0)._1)))
 
     // check against mock Couchbase...
-    val bucket = CouchbaseClient.reportBucket
+    val bucket = CorpCouchbaseClient.getBucketFunc.apply()._2
 
     val keyArray = Array(
       // publisher based report result...
