@@ -22,18 +22,19 @@ import static org.mockito.Mockito.mock;
 
 public class RotationCbDaoTest {
   private static MKTTrackSvcConfigBean mktTrackSvcConfigProperties = mock(MKTTrackSvcConfigBean.class);
-  private static RotationCbDaoImp rotationCbDao = new RotationCbDaoImp(mktTrackSvcConfigProperties);
+  private static RotationCbDaoImp rotationCbDao;
 
 
   @AfterClass
   public static void tearDown() {
-    rotationCbDao.close();
+    CouchbaseClientMock.getBucket().close();
+    CouchbaseClientMock.tearDown();
   }
 
   @BeforeClass
   public static void construct() throws Exception {
     CouchbaseClientMock.createClient();
-    rotationCbDao.init(CouchbaseClientMock.getCluster(), CouchbaseClientMock.getBucket());
+    rotationCbDao = new RotationCbDaoImp(CouchbaseClientMock.getBucket());
   }
 
   @Test

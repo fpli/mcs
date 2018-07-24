@@ -1,8 +1,6 @@
 package com.ebay.traffic.chocolate.mkttracksvc.dao;
 
-import com.ebay.traffic.chocolate.mkttracksvc.MKTTrackSvcConfigBean;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
-import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
 
 import java.util.List;
 
@@ -12,10 +10,6 @@ import java.util.List;
  * @author yimeng
  */
 public interface RotationCbDao {
-  void connect(MKTTrackSvcConfigBean mktTrackSvcConfig) throws CBException;
-
-  void close();
-
   /**
    * Add RotationInfo into CouchBase
    *
@@ -45,7 +39,6 @@ public interface RotationCbDao {
    * Get rotationInfo by rotationId
    */
   RotationInfo getRotationById(String rotationId);
-
 
   /**
    * Get rotationInfo by rotationId
