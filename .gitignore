@@ -22,3 +22,5 @@ webapp
 hs_err_pid*
 temp_persist_config_*.xml
 XslTransformObjectCacheConfig64.xml
+TomcatThreadPoolSizeBean
+SensitiveParameters.xml

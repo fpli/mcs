@@ -227,22 +227,34 @@ public class ReportDaoImpl implements ReportDao {
     switch (dataType) {
       case CLICK:
         return getKeyForClick(prefix, date);
+      case GROSS_CLICK:
+        return getKeyForGrossClick(prefix, date);
       case IMPRESSION:
         return getKeyForImpression(prefix, date);
       case GROSS_IMPRESSION:
         return getKeyForGrossImpression(prefix, date);
       case VIEWABLE:
         return getKeyForViewable(prefix, date);
+      case GROSS_VIEWABLE:
+        return getKeyForGrossViewable(prefix, date);
       case MOBILE_CLICK:
         return getKeyForMobileClick(prefix, date);
+      case GROSS_MOBILE_CLICK:
+        return getKeyForGrossMobileClick(prefix, date);
       case MOBILE_IMPRESSION:
-      default:
         return getKeyForMobileImpression(prefix, date);
+      case GROSS_MOBILE_IMPRESSION:
+      default:
+        return getKeyForGrossMobileImpression(prefix, date);
     }
   }
 
   private static String getKeyForClick(String prefix, String date) {
     return generateKey(prefix, date, "CLICK", false, true);
+  }
+
+  private static String getKeyForGrossClick(String prefix, String date) {
+    return generateKey(prefix, date, "CLICK", false, false);
   }
 
   private static String getKeyForImpression(String prefix, String date) {
@@ -257,12 +269,24 @@ public class ReportDaoImpl implements ReportDao {
     return generateKey(prefix, date, "VIEWABLE", false, true);
   }
 
+  private static String getKeyForGrossViewable(String prefix, String date) {
+    return generateKey(prefix, date, "VIEWABLE", false, false);
+  }
+
   private static String getKeyForMobileClick(String prefix, String date) {
     return generateKey(prefix, date, "CLICK", true, true);
   }
 
+  private static String getKeyForGrossMobileClick(String prefix, String date) {
+    return generateKey(prefix, date, "CLICK", true, false);
+  }
+
   private static String getKeyForMobileImpression(String prefix, String date) {
     return generateKey(prefix, date, "IMPRESSION", true, true);
+  }
+
+  private static String getKeyForGrossMobileImpression(String prefix, String date) {
+    return generateKey(prefix, date, "IMPRESSION", true, false);
   }
 
   /**
