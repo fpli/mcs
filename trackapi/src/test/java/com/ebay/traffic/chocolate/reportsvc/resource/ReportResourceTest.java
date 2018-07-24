@@ -99,11 +99,15 @@ public class ReportResourceTest {
     ReportRecordsPerMonth recordsPerMonth = records.get(0);
     Assert.assertEquals("2000-01-01", recordsPerMonth.getMonth());
     Assert.assertEquals(10, recordsPerMonth.getAggregatedClickCount());
+    Assert.assertEquals(10, recordsPerMonth.getAggregatedGrossClickCount());
     Assert.assertEquals(10, recordsPerMonth.getAggregatedImpressionCount());
     Assert.assertEquals(10, recordsPerMonth.getAggregatedGrossImpressionCount());
     Assert.assertEquals(10, recordsPerMonth.getAggregatedViewableImpressionCount());
+    Assert.assertEquals(10, recordsPerMonth.getAggregatedGrossViewableImpressionCount());
     Assert.assertEquals(10, recordsPerMonth.getAggregatedMobileClickCount());
+    Assert.assertEquals(10, recordsPerMonth.getAggregatedGrossMobileClickCount());
     Assert.assertEquals(10, recordsPerMonth.getAggregatedMobileImpressionCount());
+    Assert.assertEquals(10, recordsPerMonth.getAggregatedGrossMobileImpressionCount());
     Assert.assertEquals(2, recordsPerMonth.getRecordsForMonth().size());
   }
 
@@ -137,11 +141,15 @@ public class ReportResourceTest {
     ReportRecordsPerMonth recordsPerMonth = records.get(0);
     Assert.assertEquals("2000-01-01", recordsPerMonth.getMonth());
     Assert.assertEquals(10, recordsPerMonth.getAggregatedClickCount());
+    Assert.assertEquals(10, recordsPerMonth.getAggregatedGrossClickCount());
     Assert.assertEquals(10, recordsPerMonth.getAggregatedImpressionCount());
     Assert.assertEquals(10, recordsPerMonth.getAggregatedGrossImpressionCount());
     Assert.assertEquals(10, recordsPerMonth.getAggregatedViewableImpressionCount());
+    Assert.assertEquals(10, recordsPerMonth.getAggregatedGrossViewableImpressionCount());
     Assert.assertEquals(10, recordsPerMonth.getAggregatedMobileClickCount());
+    Assert.assertEquals(10, recordsPerMonth.getAggregatedGrossMobileClickCount());
     Assert.assertEquals(10, recordsPerMonth.getAggregatedMobileImpressionCount());
+    Assert.assertEquals(10, recordsPerMonth.getAggregatedGrossMobileImpressionCount());
     Assert.assertEquals(2, recordsPerMonth.getRecordsForMonth().size());
   }
 

@@ -28,7 +28,6 @@ public class ReportServiceImpl implements ReportService {
 
   // Fetches data for reporting based on the request.
   private List<ReportRecordsPerMonth> fetchDataForRequest(ReportRequest request) throws ParseException {
-    String prefix = request.getKeyPrefix();
     Map<Integer, ReportRecordsPerMonth> mappedReportRecords = new TreeMap<>();
 
     List<Integer> monthsToQuery = new ArrayList<>(request.getMonths());
@@ -141,16 +140,24 @@ public class ReportServiceImpl implements ReportService {
 
     if (dataType == DataType.CLICK) {
       recordForMonth.incrementClickCount(total);
+    } else if (dataType == DataType.GROSS_CLICK) {
+      recordForMonth.incrementGrossClickCount(total);
     } else if (dataType == DataType.IMPRESSION) {
       recordForMonth.incrementImpressionCount(total);
     } else if (dataType == DataType.GROSS_IMPRESSION) {
       recordForMonth.incrementGrossImpressionCount(total);
     } else if (dataType == DataType.VIEWABLE) {
       recordForMonth.incrementViewableImpressionCount(total);
+    } else if (dataType == DataType.GROSS_VIEWABLE) {
+      recordForMonth.incrementGrossViewableImpressionCount(total);
     } else if (dataType == DataType.MOBILE_CLICK) {
       recordForMonth.incrementMobileClickCount(total);
-    } else { // DataType.MOBILE_IMPRESSION
+    } else if (dataType == DataType.GROSS_MOBILE_CLICK) {
+      recordForMonth.incrementGrossMobileClickCount(total);
+    } else if (dataType == DataType.MOBILE_IMPRESSION) {
       recordForMonth.incrementMobileImpressionCount(total);
+    } else { // DataType.GROSS_MOBILE_IMPRESSION
+      recordForMonth.incrementGrossMobileImpressionCount(total);
     }
   }
 
@@ -182,16 +189,24 @@ public class ReportServiceImpl implements ReportService {
 
     if (dataType == DataType.CLICK) {
       recordForDay.incrementClickCount(total);
+    } else if (dataType == DataType.GROSS_CLICK) {
+      recordForDay.incrementGrossClickCount(total);
     } else if (dataType == DataType.IMPRESSION) {
       recordForDay.incrementImpressionCount(total);
     } else if (dataType == DataType.GROSS_IMPRESSION) {
       recordForDay.incrementGrossImpressionCount(total);
     } else if (dataType == DataType.VIEWABLE) {
       recordForDay.incrementViewableImpressionCount(total);
+    } else if (dataType == DataType.GROSS_VIEWABLE) {
+      recordForDay.incrementViewableImpressionCount(total);
     } else if (dataType == DataType.MOBILE_CLICK) {
       recordForDay.incrementMobileClickCount(total);
-    } else { // DataType.MOBILE_IMPRESSION
+    } else if (dataType == DataType.GROSS_MOBILE_CLICK) {
+      recordForDay.incrementGrossMobileClickCount(total);
+    } else if (dataType == DataType.MOBILE_IMPRESSION) {
       recordForDay.incrementMobileImpressionCount(total);
+    } else { // DataType.GROSS_MOBILE_IMPRESSION
+      recordForDay.incrementGrossMobileImpressionCount(total);
     }
   }
 
@@ -208,16 +223,24 @@ public class ReportServiceImpl implements ReportService {
 
       if (dataType == DataType.CLICK) {
         reportRecord.incrementClickCount(count);
+      } else if (dataType == DataType.GROSS_CLICK) {
+        reportRecord.incrementGrossClickCount(count);
       } else if (dataType == DataType.IMPRESSION) {
         reportRecord.incrementImpressionCount(count);
       } else if (dataType == DataType.GROSS_IMPRESSION) {
         reportRecord.incrementGrossImpressionCount(count);
       } else if (dataType == DataType.VIEWABLE) {
         reportRecord.incrementViewableImpressionCount(count);
+      } else if (dataType == DataType.GROSS_VIEWABLE) {
+        reportRecord.incrementGrossViewableImpressionCount(count);
       } else if (dataType == DataType.MOBILE_CLICK) {
         reportRecord.incrementMobileClickCount(count);
-      } else { // DataType.MOBILE_IMPRESSION
+      } else if (dataType == DataType.GROSS_MOBILE_CLICK) {
+        reportRecord.incrementGrossMobileClickCount(count);
+      } else if (dataType == DataType.MOBILE_IMPRESSION) {
         reportRecord.incrementMobileImpressionCount(count);
+      } else { // DataType.GROSS_MOBILE_IMPRESSION
+        reportRecord.incrementGrossMobileImpressionCount(count);
       }
     }
   }

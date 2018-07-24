@@ -63,15 +63,19 @@ public class CommonTest {
 
   @Test
   public void testEqualsForEqualObjectsReturnsTrue() throws Exception {
-    ReportRecord reportRecord = new ReportRecord(123456L, 50, 100, 150, 50, 10, 20);
+    ReportRecord reportRecord = new ReportRecord(123456L, 50, 51, 100, 50, 150, 151, 10, 11, 20, 21);
     ReportRecord anotherRecord = new ReportRecord();
     anotherRecord.setTimestamp(123456L);
     anotherRecord.setClickCount(50);
+    anotherRecord.setGrossClickCount(51);
     anotherRecord.setImpressionCount(100);
     anotherRecord.setGrossImpressionCount(50);
     anotherRecord.setViewableImpressionCount(150);
+    anotherRecord.setGrossViewableImpressionCount(151);
     anotherRecord.setMobileClickCount(10);
+    anotherRecord.setGrossMobileClickCount(11);
     anotherRecord.setMobileImpressionCount(20);
+    anotherRecord.setGrossMobileImpressionCount(21);
 
     assertTrue(reportRecord.equals(anotherRecord));
 
@@ -148,20 +152,20 @@ public class CommonTest {
 
   @Test
   public void testEqualsForUnequalReportRecordsReturnsFalse() throws ParseException {
-    ReportRecord reportRecord = new ReportRecord(123456L, 50, 100, 150, 50, 20, 40);
-    ReportRecord unequalRecord = new ReportRecord(123457L, 50, 100, 150, 50, 20, 40);
+    ReportRecord reportRecord = new ReportRecord(123456L, 50, 51, 100, 101, 150, 151, 20, 21, 40, 41);
+    ReportRecord unequalRecord = new ReportRecord(123457L, 50, 51, 100, 101, 150, 151, 20, 21, 40, 41);
     assertFalse(reportRecord.equals(unequalRecord));
 
-    unequalRecord = new ReportRecord(123456L, 100, 100, 150, 50, 20, 40);
+    unequalRecord = new ReportRecord(123456L, 100, 101, 100, 101, 150, 151, 20, 21, 40, 41);
     assertFalse(reportRecord.equals(unequalRecord));
 
-    unequalRecord = new ReportRecord(123456L, 50, 150, 150, 50, 20, 40);
+    unequalRecord = new ReportRecord(123456L, 50, 51, 150, 151, 150, 151, 20, 21, 40, 41);
     assertFalse(reportRecord.equals(unequalRecord));
 
-    unequalRecord = new ReportRecord(123456L, 50, 100, 50, 50, 20, 40);
+    unequalRecord = new ReportRecord(123456L, 50, 51, 100, 101, 50, 51, 20, 21, 40, 41);
     assertFalse(reportRecord.equals(unequalRecord));
 
-    unequalRecord = new ReportRecord(123456L, 50, 100, 150, 150, 20, 40);
+    unequalRecord = new ReportRecord(123456L, 50, 51, 100, 101, 150, 151, 150, 151, 40, 41);
     assertFalse(reportRecord.equals(unequalRecord));
   }
 
@@ -233,27 +237,40 @@ public class CommonTest {
             + "startDate: 20170801, endDate: 20170801]";
     assertEquals(expectedString, request.toString());
 
-    ReportRecord record = new ReportRecord(1234L, 1, 2, 3, 1, 1, 1);
-    expectedString = "ReportRecord [timestamp: 1234, clicks: 1, impressions: 2, gross impressions: 1, "
-            + "mobile clicks: 1, mobile impressions: 1, viewable impressions: 3]";
+    ReportRecord record = new ReportRecord(1234L, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    expectedString = "ReportRecord [timestamp: 1234, clicks: 1, gross clicks: 2, "
+            + "impressions: 3, gross impressions: 4, "
+            + "viewable impressions: 5, gross viewable impressions: 6, "
+            + "mobile clicks: 7, gross mobile clicks: 8, "
+            + "mobile impressions: 9, gross mobile impressions: 10]";
     assertEquals(expectedString, record.toString());
 
     ReportRecordsPerDay recordPerDay = new ReportRecordsPerDay("1990-07-04", Granularity.WEEK);
     recordPerDay.setAggregatedClickCount(10);
+    recordPerDay.setAggregatedGrossClickCount(11);
     recordPerDay.setAggregatedImpressionCount(20);
     recordPerDay.setAggregatedGrossImpressionCount(30);
     recordPerDay.setAggregatedViewableImpressionCount(10);
-    expectedString = "RecordsPerDay [day: 1990-07-04, aggrClicks: 10, aggrImpressions: 20, aggrGrossImpressions: 30, "
-            + "aggreMobileClicks: 0, aggrMobileImpressions: 0, aggrViewableImpressions: 10]";
+    recordPerDay.setAggregatedGrossViewableImpressionCount(11);
+    expectedString = "ReportRecordsPerDay [day: 1990-07-04, aggrClicks: 10, aggrGrossClicks: 11, "
+            + "aggrImpressions: 20, aggrGrossImpressions: 30, "
+            + "aggrViewableImpressions: 10, aggrGrossViewableImpressions: 11, "
+            + "aggrMobileClicks: 0, aggrGrossMobileClicks: 0, "
+            + "aggrMobileImpressions: 0, aggrGrossMobileImpressions: 0]";
     assertEquals(expectedString, recordPerDay.toString());
 
     ReportRecordsPerMonth recordPerMonth = new ReportRecordsPerMonth("19900701");
     recordPerMonth.setAggregatedClickCount(10);
+    recordPerMonth.setAggregatedGrossClickCount(11);
     recordPerMonth.setAggregatedImpressionCount(20);
     recordPerMonth.setAggregatedGrossImpressionCount(30);
     recordPerMonth.setAggregatedViewableImpressionCount(10);
-    expectedString = "RecordsPerMonth [month: 19900701, aggrClicks: 10, aggrImpressions: 20, aggrGrossImpressions: 30, "
-            + "aggreMobileClicks: 0, aggrMobileImpressions: 0, aggrViewableImpressions: 10]";
+    recordPerMonth.setAggregatedGrossViewableImpressionCount(11);
+    expectedString = "ReportRecordsPerMonth [month: 19900701, aggrClicks: 10, aggrGrossClicks: 11, "
+            + "aggrImpressions: 20, aggrGrossImpressions: 30, "
+            + "aggrViewableImpressions: 10, aggrGrossViewableImpressions: 11, "
+            + "aggrMobileClicks: 0, aggrGrossMobileClicks: 0, "
+            + "aggrMobileImpressions: 0, aggrGrossMobileImpressions: 0]";
     assertEquals(expectedString, recordPerMonth.toString());
   }
 }

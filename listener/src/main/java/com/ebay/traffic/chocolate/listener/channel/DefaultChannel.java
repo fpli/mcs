@@ -3,7 +3,6 @@ package com.ebay.traffic.chocolate.listener.channel;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
-import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
@@ -78,7 +77,6 @@ public class DefaultChannel implements Channel {
         metrics.meter("ProxyIncomingImpressionCount");
       }
     }
-    esMetrics.meter("ProxyIncomingCount", action, type);
 
     producer = KafkaSink.get();
     String filteredTopic = ListenerOptions.getInstance().getErrorTopic();
