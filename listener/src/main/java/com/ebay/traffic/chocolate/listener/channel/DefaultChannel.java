@@ -83,11 +83,12 @@ public class DefaultChannel implements Channel {
     producer = KafkaSink.get();
     String filteredTopic = ListenerOptions.getInstance().getErrorTopic();
 
+    long campaignId = getCampaignID(request, action, type);
+
     try {
       if (parser.responseShouldBeFiltered(request, response, requestUrl)) {
         metrics.meter("ResponseFilteredCount");
         esMetrics.meter("ResponseFilteredCount", action, type);
-        long campaignId = getCampaignID(request);
         String snid = request.getParameter(SNID_PATTERN);
         ListenerMessage filteredMessage = parser.parseHeader(request, response,
             startTime, campaignId, ChannelType.EPN, ChannelActionEnum.CLICK, snid, requestUrl);
@@ -97,8 +98,6 @@ public class DefaultChannel implements Channel {
     } catch (MalformedURLException | UnsupportedEncodingException e) {
       logger.error("Wrong with URL format/encoding", e);
     }
-
-    long campaignId = getCampaignID(request);
 
     metrics.meter("IncomingCount");
     esMetrics.meter("IncomingCount", action, type);
@@ -160,7 +159,7 @@ public class DefaultChannel implements Channel {
    * @param request incoming HttpServletRequest
    * @return campaignID, default -1L if no pattern match in the query of HttpServletRequest
    */
-  public long getCampaignID(final HttpServletRequest request) {
+  public long getCampaignID(final HttpServletRequest request, String action, String type) {
     HashMap<String, String> lowerCaseParams = new HashMap<>();
     Enumeration params = request.getParameterNames();
     while (params.hasMoreElements()) {
@@ -175,6 +174,7 @@ public class DefaultChannel implements Channel {
         campaignId = Long.parseLong(request.getParameter(campaign));
       } catch (NumberFormatException e) {
         logger.warn("Invalid campaign: " + request.getParameter(campaign));
+        esMetrics.meter("Invalid campaign", action, type);
       }
     }
 
