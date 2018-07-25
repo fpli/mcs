@@ -301,17 +301,17 @@ public class ESMetrics {
     final String type = "_doc";
     final String id = String.valueOf(System.currentTimeMillis()) + String.format("%04d", random.nextInt(10000));
 
-    String[] additionalFields = name.split(";");
+    String[] fields = name.split(";");
     Map<String, Object> m = new HashMap<>();
     m.put("date", sdf.format(date));
-    m.put("key", name);
+    m.put("key", fields[0]);
     m.put("value", value);
     m.put("host", hostname);
-    int n = additionalFields.length;
+    int n = fields.length;
     if (n > 1) {
       for (int i = 1; i < n; ++i) {
-        String[] fields = additionalFields[i].split("=");
-        m.put(fields[0], fields[1]);
+        String[] additionalField = fields[i].split("=");
+        m.put(additionalField[0], additionalField[1]);
       }
     }
     Gson gson = new Gson();

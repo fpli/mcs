@@ -53,4 +53,5 @@ ${SPARK_HOME}/bin/spark-submit \
       --workDir "${WORK_DIR}" \
       --outputDir ${OUTPUT_DIR} \
       --ipThreshold ${IP_THRESHOLD} \
-      --elasticsearchUrl ${ES_URL}
+      --elasticsearchUrl ${ES_URL} \
+      --cappingMetrics ${CAPPING_METRICS}
