@@ -32,7 +32,7 @@ public class FilterWorker extends Thread {
   private final MetricsClient metrics;
   private final ESMetrics esMetrics;
   private final FilterContainer filters;
-  private final String channelTypeString;
+  private final ChannelType channelType;
   private final String inputTopic;
   private final String outputTopic;
 
@@ -48,7 +48,7 @@ public class FilterWorker extends Thread {
     this.metrics = MetricsClient.getInstance();
     this.esMetrics = ESMetrics.getInstance();
     this.filters = filters;
-    this.channelTypeString = channelType.toString().toLowerCase();
+    this.channelType = channelType;
     this.inputTopic = inputTopic;
     this.outputTopic = outputTopic;
 
@@ -66,7 +66,7 @@ public class FilterWorker extends Thread {
 
   @Override
   public void run() {
-    LOG.info("Start filter worker, channel " + channelTypeString +
+    LOG.info("Start filter worker, channel " + channelType +
             ", input topic " + inputTopic + ", output topic " + outputTopic);
 
     // Init the metrics that we don't use often
@@ -95,21 +95,21 @@ public class FilterWorker extends Thread {
           ConsumerRecord<Long, ListenerMessage> record = iterator.next();
           ListenerMessage message = record.value();
           metrics.meter("FilterInputCount");
-          esMetrics.meter("FilterInputCount", message.getChannelAction().toString(), channelTypeString);
+          esMetrics.meter("FilterInputCount", message.getChannelAction().toString(), message.getChannelType().toString());
           long latency = System.currentTimeMillis() - message.getTimestamp();
           metrics.mean("FilterLatency", latency);
           esMetrics.mean("FilterLatency", latency);
 
           ++count;
           metrics.meter("FilterThroughput");
-          esMetrics.meter("FilterThroughput", message.getChannelAction().toString(), channelTypeString);
+          esMetrics.meter("FilterThroughput", message.getChannelAction().toString(), message.getChannelType().toString());
 
           FilterMessage outMessage = processMessage(message);
 
           if (outMessage.getRtRuleFlags() == 0) {
             ++passed;
             metrics.meter("FilterPassedCount");
-            esMetrics.meter("FilterPassedCount", outMessage.getChannelAction().toString(), channelTypeString);
+            esMetrics.meter("FilterPassedCount", outMessage.getChannelAction().toString(), outMessage.getChannelType().toString());
           }
 
           // cache current offset for partition*
@@ -144,7 +144,7 @@ public class FilterWorker extends Thread {
             if (offsets.containsKey(tp.partition())) {
               long offset = offsets.get(tp.partition());
               Map<String, Object> additionalFields = new HashMap<>();
-              additionalFields.put("channelType", channelTypeString);
+              additionalFields.put("channelType", channelType);
               additionalFields.put("consumer", tp.partition());
               esMetrics.mean("FilterKafkaConsumerLag", endOffset - offset, additionalFields);
             }
