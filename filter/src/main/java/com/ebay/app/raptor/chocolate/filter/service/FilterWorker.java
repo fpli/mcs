@@ -101,12 +101,14 @@ public class FilterWorker extends Thread {
           esMetrics.mean("FilterLatency", latency);
 
           ++count;
+          metrics.meter("FilterThroughput");
           esMetrics.meter("FilterThroughput", message.getChannelAction().toString(), message.getChannelType().toString());
 
           FilterMessage outMessage = processMessage(message);
 
           if (outMessage.getRtRuleFlags() == 0) {
             ++passed;
+            metrics.meter("FilterPassedCount");
             esMetrics.meter("FilterPassedCount", outMessage.getChannelAction().toString(), outMessage.getChannelType().toString());
           }
 
@@ -156,8 +158,6 @@ public class FilterWorker extends Thread {
           esMetrics.mean("FilterIdle");
           Thread.sleep(POLL_STEP_MS);
         } else {
-          metrics.meter("FilterThroughput", count);
-          metrics.meter("FilterPassedCount", passed);
           metrics.mean("FilterPassedPPM", 1000000L * passed / count);
           esMetrics.mean("FilterPassedPPM", 1000000L * passed / count);
           long timeSpent = System.currentTimeMillis() - startTime;
