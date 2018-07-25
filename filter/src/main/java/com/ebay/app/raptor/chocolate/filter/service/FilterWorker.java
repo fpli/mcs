@@ -144,7 +144,7 @@ public class FilterWorker extends Thread {
             if (offsets.containsKey(tp.partition())) {
               long offset = offsets.get(tp.partition());
               Map<String, Object> additionalFields = new HashMap<>();
-              additionalFields.put("channelType", channelType);
+              additionalFields.put("channelType", channelType.toString());
               additionalFields.put("consumer", tp.partition());
               esMetrics.mean("FilterKafkaConsumerLag", endOffset - offset, additionalFields);
             }
