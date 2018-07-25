@@ -10,7 +10,7 @@ import com.ebay.dukes.base.BaseDelegatingCacheClient
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient
 import org.slf4j.LoggerFactory
 
-object CorpCouchbaseClient extends App {
+object CorpCouchbaseClient {
 
   @transient private lazy val logger = LoggerFactory.getLogger(this.getClass)
 
