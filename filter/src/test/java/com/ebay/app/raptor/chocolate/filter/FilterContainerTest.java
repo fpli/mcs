@@ -5,6 +5,8 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
 import com.ebay.app.raptor.chocolate.filter.service.*;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -18,6 +20,12 @@ import static org.junit.Assert.*;
  */
 public class FilterContainerTest {
 
+  @BeforeClass
+  public static void setUp() {
+    ESMetrics.init("FilterTest","http://10.148.181.34:9200");
+    ESMetrics es = ESMetrics.getInstance();
+  }
+
   @Test
   public void testBasicRuleList() {
     FilterContainer filter = new FilterContainer();
@@ -25,6 +33,7 @@ public class FilterContainerTest {
     ListenerMessage lm = new ListenerMessage();
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     lm.setChannelType(ChannelType.DEFAULT);
+    lm.setChannelAction(ChannelAction.CLICK);
     HashMap<FilterRuleType, FilterRule> ruleMap = new HashMap<FilterRuleType, FilterRule>();
     ruleMap.put(FilterRuleType.PREFETCH, new BaseRuleMock(1));
     filter.put(ChannelType.DEFAULT, ruleMap);
@@ -39,6 +48,7 @@ public class FilterContainerTest {
     ListenerMessage lm = new ListenerMessage();
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     lm.setChannelType(ChannelType.DEFAULT);
+    lm.setChannelAction(ChannelAction.CLICK);
     HashMap<FilterRuleType, FilterRule> ruleMap = new HashMap<FilterRuleType, FilterRule>();
     ruleMap.put(FilterRuleType.PREFETCH, new BaseRuleMock(0));
     filter.put(ChannelType.DEFAULT, ruleMap);
@@ -53,6 +63,7 @@ public class FilterContainerTest {
     ListenerMessage lm = new ListenerMessage();
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     lm.setChannelType(ChannelType.EPN);
+    lm.setChannelAction(ChannelAction.CLICK);
     HashMap<FilterRuleType, FilterRule> ruleMap = new HashMap<FilterRuleType, FilterRule>();
     ruleMap.put(FilterRuleType.PREFETCH, new BaseRuleMock(0));
     ruleMap.put(FilterRuleType.IAB_BOT_LIST, new BaseRuleMock(1));
@@ -68,6 +79,7 @@ public class FilterContainerTest {
     ListenerMessage lm = new ListenerMessage();
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     lm.setChannelType(ChannelType.EPN);
+    lm.setChannelAction(ChannelAction.CLICK);
     HashMap<FilterRuleType, FilterRule> ruleMap = new HashMap<FilterRuleType, FilterRule>();
     BaseRuleMock rule1 = new BaseRuleMock(1);
     BaseRuleMock rule2 = new BaseRuleMock(1);
@@ -87,6 +99,7 @@ public class FilterContainerTest {
     ListenerMessage lm = new ListenerMessage();
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     lm.setChannelType(ChannelType.EPN);
+    lm.setChannelAction(ChannelAction.CLICK);
     HashMap<FilterRuleType, FilterRule> ruleMap = new HashMap<FilterRuleType, FilterRule>();
     ruleMap.put(FilterRuleType.PREFETCH, new BaseRuleMock(1));
     ruleMap.put(FilterRuleType.IAB_BOT_LIST, new BaseRuleMock(1));
@@ -103,6 +116,7 @@ public class FilterContainerTest {
     ListenerMessage lm = new ListenerMessage();
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     lm.setChannelType(ChannelType.EPN);
+    lm.setChannelAction(ChannelAction.CLICK);
     HashMap<FilterRuleType, FilterRule> ruleMap = new HashMap<FilterRuleType, FilterRule>();
     ruleMap.put(FilterRuleType.PREFETCH, new BaseRuleMock(1));
     ruleMap.put(FilterRuleType.IAB_BOT_LIST, new BaseRuleMock(1));
