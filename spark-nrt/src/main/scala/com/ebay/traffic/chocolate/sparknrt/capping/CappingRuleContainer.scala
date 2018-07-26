@@ -128,6 +128,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
         metrics.meter("CGUIDPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDPubCappingRule_S, "CLICK", "DISPLAY"), "CLICK", "DISPLAY")
         metrics.meter("CGUIDPubLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDPubCappingRule_L, "CLICK", "EPN"), "CLICK", "EPN")
         metrics.meter("CGUIDPubLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDPubCappingRule_L, "CLICK", "DISPLAY"), "CLICK", "DISPLAY")
+        metrics.flushMetrics()
       }
     }
 
