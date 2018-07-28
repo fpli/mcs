@@ -14,7 +14,7 @@ public class ReportDaoTest {
 
   @BeforeClass
   public static void construct() throws Exception {
-    CouchbaseClientMock.createClient();
+    CouchbaseClientMock.createClient("report");
     TestHelper.prepareTestData(CouchbaseClientMock.getBucket(), new String[]{"PUBLISHER_11"});
   }
 

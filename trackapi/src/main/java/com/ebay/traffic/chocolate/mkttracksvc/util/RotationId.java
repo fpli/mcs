@@ -40,6 +40,8 @@ public class RotationId implements Serializable, Comparable<RotationId> {
   private final long representation;
   // The separator of rotation string
   public static final String HYPHEN = "-";
+  // The default driverID
+  public static final int DEFAULT_DRIVER_ID = DriverId.getDriverIdFromIp();
 
 
   /**
@@ -70,9 +72,7 @@ public class RotationId implements Serializable, Comparable<RotationId> {
    * @param driverId to use in generating
    * @pre driver ID must be 255 or less
    */
-  public RotationId(final int driverId) {
-    this(driverId, System.currentTimeMillis());
-  }
+  public RotationId(final int driverId) { this(driverId, System.currentTimeMillis()); }
 
   /**
    * Increments the next session ID from the previous one.
@@ -105,6 +105,16 @@ public class RotationId implements Serializable, Comparable<RotationId> {
    */
   public synchronized static RotationId getNext(final int driverId, final long time) {
     current = current == null ? new RotationId(driverId, time) : new RotationId(current, driverId, time);
+    counter.incrementAndGet();
+    return current;
+  }
+
+  /**
+   * Factory method to generate the next session ID.
+   */
+  public synchronized static RotationId getNext() {
+    long time = System.currentTimeMillis();
+    current = current == null ? new RotationId(DEFAULT_DRIVER_ID) : getNext(DEFAULT_DRIVER_ID, time);
     counter.incrementAndGet();
     return current;
   }
@@ -249,5 +259,4 @@ public class RotationId implements Serializable, Comparable<RotationId> {
     if(rid.length() > 18) rid = rid.substring(0, 18);
     return Long.valueOf(rid);
   }
-
 }

@@ -1,16 +1,18 @@
 package com.ebay.traffic.chocolate.mkttracksvc.resource;
 
-import com.couchbase.client.deps.io.netty.util.internal.StringUtil;
+import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.cos.raptor.service.annotations.ApiMethod;
 import com.ebay.cos.raptor.service.annotations.ApiRef;
+import com.ebay.traffic.chocolate.mkttracksvc.ESMetricsClient;
 import com.ebay.traffic.chocolate.mkttracksvc.constant.ErrorMsgConstant;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.ServiceResponse;
 import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
 import com.ebay.traffic.chocolate.mkttracksvc.service.RotationService;
+import com.ebay.traffic.chocolate.mkttracksvc.service.RotationServiceImpl;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import com.google.gson.Gson;
-import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,12 +20,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
@@ -38,6 +37,9 @@ import java.util.regex.Pattern;
 public class RotationIdResource {
 
   @Autowired
+  ESMetricsClient esMetricsClient;
+
+  @Autowired
   RotationService rotationService;
 
   @POST
@@ -45,7 +47,8 @@ public class RotationIdResource {
   @ApiMethod(resource = "rid")
   @Produces({MediaType.APPLICATION_JSON})
   @Consumes({MediaType.APPLICATION_JSON})
-  public String createRotationId(@RequestBody RotationInfo rotationInfo) throws CBException {
+  public String createRotationInfo(@RequestBody RotationInfo rotationInfo) {
+    esMetricsClient.getEsMetrics().meter("Call-createRotationId");
     String errors = validateInput(rotationInfo, ErrorMsgConstant.CREATED);
     if(StringUtils.isNotEmpty(errors)){
       return errors;
@@ -60,9 +63,9 @@ public class RotationIdResource {
   @ApiMethod(resource = "rid")
   @Produces({MediaType.APPLICATION_JSON})
   @Consumes({MediaType.APPLICATION_JSON})
-  public String updateRotationTagOrName(@QueryParam("rid") final String rid,
-                                        @RequestBody RotationInfo rotationInfo) throws CBException {
-
+  public String updateRotationInfo(@QueryParam("rid") final String rid,
+                                        @RequestBody RotationInfo rotationInfo) {
+    esMetricsClient.getEsMetrics().meter("Call-updateRotationInfo");
     if (StringUtils.isEmpty(rid)) {
       return getResponse(null, "updated. Please set correct rotationId.");
     }
@@ -81,8 +84,8 @@ public class RotationIdResource {
   @ApiMethod(resource = "rid")
   @Produces({MediaType.APPLICATION_JSON})
   @Consumes({MediaType.APPLICATION_JSON})
-  public String activateRotation(@QueryParam("rid") final String rid) throws CBException {
-
+  public String activateRotation(@QueryParam("rid") final String rid) {
+    esMetricsClient.getEsMetrics().meter("Call-activateRotation");
     if (StringUtils.isEmpty(rid)) {
       return getResponse(null, "activated. Please set rotationId.");
     }
@@ -96,7 +99,8 @@ public class RotationIdResource {
   @ApiMethod(resource = "rid")
   @Produces({MediaType.APPLICATION_JSON})
   @Consumes({MediaType.APPLICATION_JSON})
-  public String deactivateRotation(@QueryParam("rid") final String rid) throws CBException {
+  public String deactivateRotation(@QueryParam("rid") final String rid) {
+    esMetricsClient.getEsMetrics().meter("Call-deactivateRotation");
     if (StringUtils.isEmpty(rid)) {
       return getResponse(null, "deactivated. Please set rotationId.");
     }
@@ -110,8 +114,10 @@ public class RotationIdResource {
   @ApiMethod(resource = "rid")
   @Produces({MediaType.APPLICATION_JSON})
   @Consumes({MediaType.APPLICATION_JSON})
-  public String getRotationById(@QueryParam("rid") final String rid,
-                                @QueryParam("rname") final String rname) throws CBException {
+  public String getRotationInfo(@QueryParam("rid") final String rid,
+                                @QueryParam("rname") final String rname) {
+    esMetricsClient.getEsMetrics().meter("Call-getRotationInfo");
+
     if (StringUtils.isEmpty(rid) && StringUtils.isEmpty(rname)) {
       return getResponse(null, "found. Please set correct rotationId or rotationName.");
     }
@@ -122,6 +128,16 @@ public class RotationIdResource {
     } else {
       response = rotationService.getRotationByName(rname);
     }
+    return new Gson().toJson(response);
+  }
+
+  @GET
+  @Path("/getcamp")
+  @ApiMethod(resource = "rid")
+  @Produces({MediaType.APPLICATION_JSON})
+  public String getCampaignById(@QueryParam("cid") final Long cid) {
+    esMetricsClient.getEsMetrics().meter("Call-getCampaignById");
+    ServiceResponse response = rotationService.getCampaignInfo(cid);
     return new Gson().toJson(response);
   }
 
@@ -166,10 +182,10 @@ public class RotationIdResource {
       }
 
       // campaign_id
-      if (rotationInfo.getCampaign_id() == null && ErrorMsgConstant.CREATED.equals(methodName)) {
-        msgStr = String.format(ErrorMsgConstant.ROTATION_INFO_REQUIRED, RotationConstant.FIELD_CAMPAIGN_ID);
-        addValueToList(msgList, msgStr);
-      }
+//      if (rotationInfo.getCampaign_id() == null && ErrorMsgConstant.CREATED.equals(methodName)) {
+//        msgStr = String.format(ErrorMsgConstant.ROTATION_INFO_REQUIRED, RotationConstant.FIELD_CAMPAIGN_ID);
+//        addValueToList(msgList, msgStr);
+//      }
       if (rotationInfo.getCampaign_id() != null && rotationInfo.getCampaign_id() < 0) {
         msgStr = String.format(ErrorMsgConstant.ROTATION_INFO_REQUIRED_NUMBER, methodName, RotationConstant.FIELD_CAMPAIGN_ID, Long.MAX_VALUE);
         addValueToList(msgList, msgStr);

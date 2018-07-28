@@ -5,6 +5,8 @@ import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.globalenv.SiteEnum;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
+import com.ebay.traffic.chocolate.mkttracksvc.constant.ErrorMsgConstant;
+import com.ebay.traffic.chocolate.mkttracksvc.dao.CouchbaseClient;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.ServiceResponse;
 import com.ebay.traffic.chocolate.mkttracksvc.util.DriverId;
@@ -13,6 +15,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -35,6 +38,9 @@ import java.util.Map;
 public class RotationIdResourceTest {
   @LocalServerPort
   int port;
+
+  @Autowired
+  private CouchbaseClient couchbaseClient;
 
   Configuration configuration;
   Client client;
@@ -254,6 +260,7 @@ public class RotationIdResourceTest {
   public void testGetByName() {
     //Create
     RotationInfo rotationRequest = getTestRotationInfo();
+    rotationRequest.setRotation_name("testGetRotationName");
     Response createResult = client.target(svcEndPoint).path(CREATE_PATH)
         .request().accept(MediaType.APPLICATION_JSON_TYPE)
         .post(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
@@ -264,14 +271,14 @@ public class RotationIdResourceTest {
     //Get RotationInfo by rotation id
     Response getResult = client.target(svcEndPoint)
         .path("/tracksvc/v1/rid/get")
-        .queryParam("rname", "catherinetesting2018")
+        .queryParam("rname", "testGetRotationName")
         .request()
         .accept(MediaType.APPLICATION_JSON_TYPE)
         .get();
     Assert.assertEquals(200, createResult.getStatus());
     List<RotationInfo> rInfoList = getResult.readEntity(ServiceResponse.class).getRotation_info_list();
     Assert.assertTrue(rInfoList != null && rInfoList.size() > 0);
-    Assert.assertEquals("CatherineTesting2018 RotationName", rInfoList.get(0).getRotation_name());
+    Assert.assertEquals("testGetRotationName", rInfoList.get(0).getRotation_name());
   }
 
   @Test
@@ -406,5 +413,46 @@ public class RotationIdResourceTest {
     Assert.assertNotNull(errorList);
     Assert.assertEquals("No rotation info was created. Please set correct [rotation_start_date]. Like: 20180501", errorList.get(0));
     Assert.assertEquals("No rotation info was created. Please set correct [rotation_end_date]. Like: 20180501", errorList.get(1));
+  }
+
+  @Test
+  public void testGetCampaignById(){
+    //Create RotationInfo
+    RotationInfo rotationRequest = getTestRotationInfo();
+    rotationRequest.setCampaign_id(RotationId.getNext().getRepresentation());
+    rotationRequest.setCampaign_name("existedCampaign");
+    Response result = client.target(svcEndPoint).path(CREATE_PATH)
+        .request().accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.entity(rotationRequest, MediaType.APPLICATION_JSON_TYPE));
+    Assert.assertEquals(200, result.getStatus());
+    ServiceResponse createResponse = result.readEntity(ServiceResponse.class);
+    Assert.assertNotNull(createResponse);
+
+    //Get Existed Campaign ID
+    Response getResult = client.target(svcEndPoint)
+        .path("/tracksvc/v1/rid/getcamp")
+        .queryParam("cid", rotationRequest.getCampaign_id())
+        .request()
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .get();
+    Assert.assertEquals(200, getResult.getStatus());
+    ServiceResponse svcResponse = getResult.readEntity(ServiceResponse.class);
+    Assert.assertEquals(String.format(ErrorMsgConstant.CB_INSERT_CAMPAIGN_ISSUE,rotationRequest.getCampaign_id(),rotationRequest.getCampaign_name()),
+        svcResponse.getMessage());
+    Assert.assertEquals(svcResponse.getCampaign_info().getCampaign_id(), rotationRequest.getCampaign_id());
+    Assert.assertEquals(svcResponse.getCampaign_info().getCampaign_name(), rotationRequest.getCampaign_name());
+
+    //Get NOT Existed Campaign ID
+    getResult = client.target(svcEndPoint)
+        .path("/tracksvc/v1/rid/getcamp")
+        .queryParam("cid", 99699979999L)
+        .request()
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .get();
+    Assert.assertEquals(200, getResult.getStatus());
+    svcResponse = getResult.readEntity(ServiceResponse.class);
+    Assert.assertEquals(ErrorMsgConstant.CB_INSERT_CAMPAIGN_INFO, svcResponse.getMessage());
+    Assert.assertNotNull(svcResponse.getCampaign_info());
+    Assert.assertFalse(svcResponse.getCampaign_info().getIsExisted());
   }
 }

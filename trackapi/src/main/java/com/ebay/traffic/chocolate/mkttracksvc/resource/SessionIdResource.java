@@ -1,9 +1,11 @@
 package com.ebay.traffic.chocolate.mkttracksvc.resource;
 
+import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.cos.raptor.service.annotations.ApiMethod;
 import com.ebay.cos.raptor.service.annotations.ApiRef;
 import com.ebay.traffic.chocolate.mkttracksvc.util.DriverId;
 import com.ebay.traffic.chocolate.mkttracksvc.util.SessionId;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -17,6 +19,7 @@ import javax.ws.rs.client.WebTarget;
 @Component
 @Path("/snid")
 public class SessionIdResource {
+  private final ESMetrics esMetrics = ESMetrics.getInstance();
 
   @Inject
   @Named("myService.myClient")
@@ -26,9 +29,15 @@ public class SessionIdResource {
 //  @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public')")
   @Path("/getSnid")
   @ApiMethod(resource = "snid")
-  public long getSnid() {
-    int driverId = DriverId.getDriverIdFromIp();
-    SessionId snid = SessionId.getNext(driverId);
+  public Long getSnid() throws Exception{
+    SessionId snid = null;
+    try {
+      int driverId = DriverId.getDriverIdFromIp();
+      snid = SessionId.getNext(driverId);
+      esMetrics.meter("SnidCreateSuccess");
+    }catch (Exception e){
+      esMetrics.meter("SnidCreateException");
+    }
     return snid.getRepresentation();
   }
 

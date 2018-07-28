@@ -346,7 +346,17 @@ public class RotationIdTest {
         assertEquals(expectedRid2, rid2Str);
         assertEquals(expectedRid2.replaceAll("-", ""), String.valueOf(rid2.getRotationId(rid2Str)));
         assertNotEquals(rid1Str, rid2Str);
+    }
 
+    @Test
+    public void testCampaignId() throws InterruptedException {
+        RotationId cid1 = RotationId.getNext();
+        RotationId cid2 = RotationId.getNext();
+
+        System.out.println(cid1);
+        System.out.println(cid2);
+        assertEquals(cid1.getDriverId(), cid2.getDriverId());
+        assertTrue(cid2.getRepresentation() > cid1.getRepresentation());
     }
 }
 
