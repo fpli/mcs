@@ -336,8 +336,8 @@ public class RotationIdTest {
 
         String expectedRid1 = String.valueOf(rid1.getTimeMillis());
         expectedRid1 = "707-" + expectedRid1.substring(0,6) + "-" + expectedRid1.substring(6,12) + "-" + expectedRid1.substring(12);
-        String expectedRid2 = expectedRid1.substring(0, expectedRid1.length() -1);
-        expectedRid2 = expectedRid2 + (Integer.valueOf(expectedRid1.substring(expectedRid1.length()-1)) + 1);
+        String expectedRid2 =  String.valueOf(rid2.getTimeMillis());
+        expectedRid2 = "707-" + expectedRid2.substring(0,6) + "-" + expectedRid2.substring(6,12) + "-" + expectedRid2.substring(12);
 
         System.out.println(rid1Str);
         System.out.println(rid2Str);
