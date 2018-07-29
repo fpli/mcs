@@ -4,7 +4,6 @@ import com.ebay.app.raptor.chocolate.constant.MPLXChannelEnum;
 import com.ebay.app.raptor.chocolate.constant.MPLXClientEnum;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.globalenv.SiteEnum;
-import com.ebay.traffic.chocolate.mkttracksvc.ESMetricsClient;
 import com.ebay.traffic.chocolate.mkttracksvc.constant.ErrorMsgConstant;
 import com.ebay.traffic.chocolate.mkttracksvc.dao.RotationCbDao;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.CampaignInfo;
@@ -13,6 +12,7 @@ import com.ebay.traffic.chocolate.mkttracksvc.entity.ServiceResponse;
 import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
 import com.ebay.traffic.chocolate.mkttracksvc.util.DriverId;
 import com.ebay.traffic.chocolate.mkttracksvc.util.RotationId;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.ahc.util.DateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +28,7 @@ public class RotationServiceImpl implements RotationService{
   @Autowired
   RotationCbDao rotationCbDao;
 
-  @Autowired
-  ESMetricsClient esMetricsClient;
+  private final ESMetrics esMetrics = ESMetrics.getInstance();
 
   private final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
@@ -51,7 +50,7 @@ public class RotationServiceImpl implements RotationService{
         if(rotationReq.getCampaign_name() != null && !rotationReq.getCampaign_name().trim().equals(cInfo.getCampaign_name())){
           response.setMessage(String.format(ErrorMsgConstant.CB_INSERT_CAMPAIGN_ISSUE, campaignId, cInfo.getCampaign_name()));
           response.setCampaign_info(cInfo);
-          esMetricsClient.getEsMetrics().meter("CampaignNameChanged");
+          esMetrics.meter("CampaignNameChanged");
         }
       }
     }
@@ -72,10 +71,10 @@ public class RotationServiceImpl implements RotationService{
     RotationInfo rInfo = rotationCbDao.addRotationMap(rotationStr, rotationReq);
     if (rInfo == null) {
       response.setMessage(ErrorMsgConstant.CB_INSERT_ROTATION_ISSUE + rotationId);
-      esMetricsClient.getEsMetrics().meter("RotationCreateFail");
+      esMetrics.meter("RotationCreateFail");
     } else {
       response.setRotation_info(rInfo);
-      esMetricsClient.getEsMetrics().meter("RotationCreateSuccess");
+      esMetrics.meter("RotationCreateSuccess");
     }
     return response;
   }
@@ -125,7 +124,7 @@ public class RotationServiceImpl implements RotationService{
       response.setMessage("No rotation_info updated! since there is no related rotation info in db.");
     }
     response.setRotation_info(rInfo);
-    esMetricsClient.getEsMetrics().meter("RotationUpdateSuccess");
+    esMetrics.meter("RotationUpdateSuccess");
     return response;
   }
 
@@ -143,7 +142,7 @@ public class RotationServiceImpl implements RotationService{
       response.setMessage(String.format(ErrorMsgConstant.CB_ACTIVATE_ROTATION_ISSUE, rotationStr));
     } else {
       response.setRotation_info(rInfo);
-      esMetricsClient.getEsMetrics().meter("RotationStatusChanged");
+      esMetrics.meter("RotationStatusChanged");
     }
     return response;
   }

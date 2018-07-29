@@ -1,9 +1,7 @@
 package com.ebay.traffic.chocolate.mkttracksvc.resource;
 
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.cos.raptor.service.annotations.ApiMethod;
 import com.ebay.cos.raptor.service.annotations.ApiRef;
-import com.ebay.traffic.chocolate.mkttracksvc.util.DriverId;
 import com.ebay.traffic.chocolate.mkttracksvc.util.SessionId;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.springframework.stereotype.Component;
@@ -32,8 +30,7 @@ public class SessionIdResource {
   public Long getSnid() throws Exception{
     SessionId snid = null;
     try {
-      int driverId = DriverId.getDriverIdFromIp();
-      snid = SessionId.getNext(driverId);
+      snid = SessionId.getNext();
       esMetrics.meter("SnidCreateSuccess");
     }catch (Exception e){
       esMetrics.meter("SnidCreateException");

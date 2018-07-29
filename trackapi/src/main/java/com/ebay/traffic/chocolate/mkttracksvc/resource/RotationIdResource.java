@@ -1,16 +1,12 @@
 package com.ebay.traffic.chocolate.mkttracksvc.resource;
 
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.cos.raptor.service.annotations.ApiMethod;
 import com.ebay.cos.raptor.service.annotations.ApiRef;
-import com.ebay.traffic.chocolate.mkttracksvc.ESMetricsClient;
 import com.ebay.traffic.chocolate.mkttracksvc.constant.ErrorMsgConstant;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.ServiceResponse;
-import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
 import com.ebay.traffic.chocolate.mkttracksvc.service.RotationService;
-import com.ebay.traffic.chocolate.mkttracksvc.service.RotationServiceImpl;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
@@ -35,9 +31,7 @@ import java.util.regex.Pattern;
 @Component
 @Path("/rid")
 public class RotationIdResource {
-
-  @Autowired
-  ESMetricsClient esMetricsClient;
+  private final ESMetrics esMetrics = ESMetrics.getInstance();
 
   @Autowired
   RotationService rotationService;
@@ -48,7 +42,7 @@ public class RotationIdResource {
   @Produces({MediaType.APPLICATION_JSON})
   @Consumes({MediaType.APPLICATION_JSON})
   public String createRotationInfo(@RequestBody RotationInfo rotationInfo) {
-    esMetricsClient.getEsMetrics().meter("Call-createRotationId");
+    esMetrics.meter("Call-createRotationId");
     String errors = validateInput(rotationInfo, ErrorMsgConstant.CREATED);
     if(StringUtils.isNotEmpty(errors)){
       return errors;
@@ -65,7 +59,7 @@ public class RotationIdResource {
   @Consumes({MediaType.APPLICATION_JSON})
   public String updateRotationInfo(@QueryParam("rid") final String rid,
                                         @RequestBody RotationInfo rotationInfo) {
-    esMetricsClient.getEsMetrics().meter("Call-updateRotationInfo");
+    esMetrics.meter("Call-updateRotationInfo");
     if (StringUtils.isEmpty(rid)) {
       return getResponse(null, "updated. Please set correct rotationId.");
     }
@@ -85,7 +79,7 @@ public class RotationIdResource {
   @Produces({MediaType.APPLICATION_JSON})
   @Consumes({MediaType.APPLICATION_JSON})
   public String activateRotation(@QueryParam("rid") final String rid) {
-    esMetricsClient.getEsMetrics().meter("Call-activateRotation");
+    esMetrics.meter("Call-activateRotation");
     if (StringUtils.isEmpty(rid)) {
       return getResponse(null, "activated. Please set rotationId.");
     }
@@ -100,7 +94,7 @@ public class RotationIdResource {
   @Produces({MediaType.APPLICATION_JSON})
   @Consumes({MediaType.APPLICATION_JSON})
   public String deactivateRotation(@QueryParam("rid") final String rid) {
-    esMetricsClient.getEsMetrics().meter("Call-deactivateRotation");
+    esMetrics.meter("Call-deactivateRotation");
     if (StringUtils.isEmpty(rid)) {
       return getResponse(null, "deactivated. Please set rotationId.");
     }
@@ -116,7 +110,7 @@ public class RotationIdResource {
   @Consumes({MediaType.APPLICATION_JSON})
   public String getRotationInfo(@QueryParam("rid") final String rid,
                                 @QueryParam("rname") final String rname) {
-    esMetricsClient.getEsMetrics().meter("Call-getRotationInfo");
+    esMetrics.meter("Call-getRotationInfo");
 
     if (StringUtils.isEmpty(rid) && StringUtils.isEmpty(rname)) {
       return getResponse(null, "found. Please set correct rotationId or rotationName.");
@@ -136,7 +130,7 @@ public class RotationIdResource {
   @ApiMethod(resource = "rid")
   @Produces({MediaType.APPLICATION_JSON})
   public String getCampaignById(@QueryParam("cid") final Long cid) {
-    esMetricsClient.getEsMetrics().meter("Call-getCampaignById");
+    esMetrics.meter("Call-getCampaignById");
     ServiceResponse response = rotationService.getCampaignInfo(cid);
     return new Gson().toJson(response);
   }

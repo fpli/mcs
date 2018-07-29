@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.reportsvc.resource;
 
 import com.ebay.cos.raptor.service.annotations.*;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import com.ebay.traffic.chocolate.reportsvc.constant.ErrorType;
 import com.ebay.traffic.chocolate.reportsvc.entity.ReportRequest;
 import com.ebay.traffic.chocolate.reportsvc.entity.ReportResponse;
@@ -28,6 +29,8 @@ public class ReportResource {
   @Autowired
   private ReportService reportService;
 
+  private final ESMetrics esMetrics = ESMetrics.getInstance();
+
   @GET
   @Path("/report")
   @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
@@ -53,7 +56,7 @@ public class ReportResource {
                   @ApiError(errorId = 401005, description = BAD_CAMPAIGN_MSG, domain = ERROR_DOMAIN, category = "REQUEST",
                           inputRefIdsSupported = false, outputRefIdsSupported = false),
                   @ApiError(errorId = 401006, description = BAD_DATES_MSG, domain = ERROR_DOMAIN, category = "REQUEST",
-                          inputRefIdsSupported = false, outputRefIdsSupported = false),
+                            inputRefIdsSupported = false, outputRefIdsSupported = false),
                   @ApiError(errorId = 401007, description = EXPIRED_MSG, domain = ERROR_DOMAIN, category = "REQUEST",
                           inputRefIdsSupported = false, outputRefIdsSupported = false),
                   @ApiError(errorId = 401008, description = UNAUTHORIZED_MSG, domain = ERROR_DOMAIN, category = "REQUEST",
@@ -97,6 +100,8 @@ public class ReportResource {
       }
     };
 
+
+    esMetrics.meter("ReportIncomingRequest");
     ReportRequest request = null;
     try {
       request = new ReportRequest(incomingRequest);
@@ -105,8 +110,11 @@ public class ReportResource {
     }
 
     try {
-      return reportService.generateReportForRequest(request);
+      ReportResponse reportResponse = reportService.generateReportForRequest(request);
+      esMetrics.meter("ReportSuccessRequest");
+      return  reportResponse;
     } catch (Throwable t) {
+      esMetrics.meter("ReportExceptions");
       throw errorFactoryV3.makeException(ErrorType.INTERNAL_SERVICE_ERROR.getErrorKey());
     }
   }
