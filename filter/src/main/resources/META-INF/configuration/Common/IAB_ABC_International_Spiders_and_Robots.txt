@@ -1,6 +1,6 @@
 #
-#	IAB_ABC_International_Spiders_and_Robots_201806_22-093249
-#	June 22, 2018
+#	IAB_ABC_International_Spiders_and_Robots_201807_18-125935
+#	July 18, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
@@ -506,6 +506,9 @@ The Knowledge AI|1||1|2|0
 The+Knowledge+AI|1||1|2|0
 OPBot|1||0|2|0
 DuckDuckBot|1||0|2|0
+APIs-Google|1||1|2|0
+FlippBot|1||0|2|0
+HisBot|1||0|2|0
 aport|1|netaporter, OperaPortable|0|2|0
 b2w|1|B2WTenisnew|0|0|0
 combine|1|Combined|0|0|0
@@ -975,3 +978,4 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 # April 2018 - (1) quantcastbtot (2) JobboerseBot (3) zgrab/ (4) demandbase
 # May 2018 - (1) Dataprovider.com, (2) OpenVAS, (3) Plukkie/, (4) ips-agent, (5) Yeti/, (6) evc-batch/, (7) CrsspxlBot
 # June 2018 - (1) "The Knowledge AI" & "The+Knowledge+AI", (2) OPBot, (3) DuckDuckBot
+# July 2018 - (1) APIs-Google, (2) FlippBot, (3) HisBot

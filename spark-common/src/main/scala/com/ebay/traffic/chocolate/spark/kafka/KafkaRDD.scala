@@ -74,6 +74,8 @@ class KafkaRDD[K, V](
       }
     }
     consumer.unsubscribe()
+    if (metrics != null)
+      metrics.flushMetrics()
 
     untilOffsets
   }
@@ -113,6 +115,8 @@ class KafkaRDD[K, V](
     consumer.assign(util.Arrays.asList(part.tp))
     context.addTaskCompletionListener(context => {
       consumer.close()
+      if (metrics != null)
+        metrics.flushMetrics()
     })
 
     new KafkaRDDIterator(part, consumer, context)

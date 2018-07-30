@@ -1,6 +1,6 @@
 #
-#	IAB_ABC_International_List_of_Valid_Browsers_201806_22-093249
-#	June 22, 2018
+#	IAB_ABC_International_List_of_Valid_Browsers_201807_18-125935
+#	July 18, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
@@ -87,6 +87,7 @@ BlackBerry|1|1
 Bleach/|1|1
 Blitzlicht/com|1|0
 Boggle|1|1
+Bose/|1|1
 Break|1|1
 CDM|1|1
 CFNetwork|1|0
@@ -111,6 +112,7 @@ ERICY-|1|1
 ESPNApp_ExoPlayer|1|0
 EbGamingClient|1|1
 EbPcExtMng|1|1
+Echo/|1|1
 Elinks|1|1
 Emacs-W3|1|1
 Ericsson|1|1
@@ -164,6 +166,7 @@ LG+Browser|1|1
 LG-|1|1
 LG/|1|1
 LGE-|1|1
+Lavf|1|1
 LinkBoks|1|1
 Lotus SmartCenter|1|1
 Lotus+SmartCenter|1|1
@@ -263,6 +266,7 @@ SmartDownload|1|1
 SmartTV|1|0
 SoftBank|1|1
 Solitaire|1|1
+Sonos|1|1
 Sony|1|1
 SonyEricsson|1|0
 Spice|1|1
@@ -311,6 +315,7 @@ WFB+user+agent|1|1
 WapTV/|1|0
 WebtrendsClientLibrary|1|1
 WinWAP|1|1
+Winamp3|1|0
 Windows Ad Client|1|0
 Windows Phone|1|0
 Windows+Ad+Client|1|0
@@ -320,6 +325,7 @@ WindowsAdClient|1|0
 Wise|1|1
 WordsWithFriendsFree|1|1
 X%20Factor|1|1
+XBOX360|1|0
 XV6975|1|1
 Xbox Live Client|1|0
 Xbox+Live+Client|1|0
@@ -551,3 +557,4 @@ xbox|1|1
 # April 2018 - no changes
 # May 2018 - added "FetchTV"
 # June 2018 - added "googletv"
+# July 2018 - added "Bose/", added "Echo/", added "Lavf", added "Sonos", added "Winamp3", added "XBOX360"

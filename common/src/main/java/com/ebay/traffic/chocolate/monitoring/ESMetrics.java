@@ -62,6 +62,8 @@ public class ESMetrics {
    */
   private final Map<String, Pair<Long, Long>> toFlushMean = new HashMap<>();
 
+  private final Object flushLock = new Object();
+
   private String hostname;
 
   ESMetrics(String prefix) {
@@ -251,48 +253,50 @@ public class ESMetrics {
   /**
    * Only call from the timer
    */
-  private void flushMetrics() {
-    final String index = createIndexIfNecessary();
+  public void flushMetrics() {
+    synchronized (flushLock) {
+      final String index = createIndexIfNecessary();
 
-    // flush meter
-    toFlushMeter.clear();
-    synchronized (this) {
-      Iterator<Map.Entry<String, Long>> iter = meterMetrics.entrySet().iterator();
+      // flush meter
+      toFlushMeter.clear();
+      synchronized (this) {
+        Iterator<Map.Entry<String, Long>> iter = meterMetrics.entrySet().iterator();
+        while (iter.hasNext()) {
+          Map.Entry<String, Long> entry = iter.next();
+          toFlushMeter.put(entry.getKey(), entry.getValue());
+        }
+        meterMetrics.clear();
+      }
+
+      Iterator<Map.Entry<String, Long>> iter = toFlushMeter.entrySet().iterator();
       while (iter.hasNext()) {
         Map.Entry<String, Long> entry = iter.next();
-        toFlushMeter.put(entry.getKey(), entry.getValue());
+        sendMeter(index, entry.getKey(), entry.getValue());
       }
-      meterMetrics.clear();
-    }
 
-    Iterator<Map.Entry<String, Long>> iter = toFlushMeter.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry<String, Long> entry = iter.next();
-      sendMeter(index, entry.getKey(), entry.getValue());
-    }
+      // flush mean
+      toFlushMean.clear();
+      synchronized (this) {
+        Iterator<Map.Entry<String, Pair<Long, Long>>> mIter = meanMetrics.entrySet().iterator();
+        while (mIter.hasNext()) {
+          Map.Entry<String, Pair<Long, Long>> entry = mIter.next();
+          toFlushMean.put(entry.getKey(), entry.getValue());
+        }
+        meanMetrics.clear();
+      }
 
-    // flush mean
-    toFlushMean.clear();
-    synchronized (this) {
-      Iterator<Map.Entry<String, Pair<Long, Long>>> mIter = meanMetrics.entrySet().iterator();
+      Iterator<Map.Entry<String, Pair<Long, Long>>> mIter = toFlushMean.entrySet().iterator();
       while (mIter.hasNext()) {
         Map.Entry<String, Pair<Long, Long>> entry = mIter.next();
-        toFlushMean.put(entry.getKey(), entry.getValue());
-      }
-      meanMetrics.clear();
-    }
+        long accumulator = entry.getValue().getLeft();
+        long count = entry.getValue().getRight();
 
-    Iterator<Map.Entry<String, Pair<Long, Long>>> mIter = toFlushMean.entrySet().iterator();
-    while (mIter.hasNext()) {
-      Map.Entry<String, Pair<Long, Long>> entry = mIter.next();
-      long accumulator = entry.getValue().getLeft();
-      long count = entry.getValue().getRight();
-
-      long mean = 0l;
-      if (count > 0) {
-        mean = accumulator / count;
+        long mean = 0l;
+        if (count > 0) {
+          mean = accumulator / count;
+        }
+        sendMeter(index, entry.getKey(), mean);
       }
-      sendMeter(index, entry.getKey(), mean);
     }
   }
 

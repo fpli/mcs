@@ -1433,26 +1433,3 @@ Zend_Http_Client|1|1
 FDM 3.x|1|1
 FDM+3.x|1|1
 WebGrab|1|1
-
-# ***********************************BEGIN MOBILE USER AGENT LIST**************************************
-Android|1|0
-BlackBerry|1|0
-iPad|1|0
-IPhone|1|0
-IPod|1|0
-Opera Mini|1|0
-PalmOS|1|0
-SymbianOS|1|0
-WebOS|1|0
-Windows CE|1|0
-Windows Phone|1|0
-Motorola|1|0
-HTC|1|0
-LG|1|0
-Nokia|1|0
-Samsung|1|0
-Sanyo|1|0
-Sharp|1|0
-SonyEricsson|1|0
-darwin|1|0
-Puffin|1|0

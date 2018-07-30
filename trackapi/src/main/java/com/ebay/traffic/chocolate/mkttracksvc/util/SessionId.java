@@ -33,6 +33,8 @@ public class SessionId implements Serializable, Comparable<SessionId> {
   static SessionId current = null;
   // The representation for this session ID.
   private final long representation;
+  // The default driverID
+  public static final int DEFAULT_DRIVER_ID = DriverId.getDriverIdFromIp();
 
   /**
    * Generate a session ID from representation.
@@ -109,6 +111,15 @@ public class SessionId implements Serializable, Comparable<SessionId> {
   public synchronized static SessionId getNext(final int driverId) {
     long time = System.currentTimeMillis();
     return getNext(driverId, time);
+  }
+
+  /**
+   * Factory method to generate the next session ID.
+   *
+   */
+  public synchronized static SessionId getNext() {
+    long time = System.currentTimeMillis();
+    return getNext(DEFAULT_DRIVER_ID, time);
   }
 
   /**

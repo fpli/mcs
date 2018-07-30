@@ -108,6 +108,8 @@ class SNIDCappingRule(params: Parameter, bitLong: Long, bitShort: Long, dateFile
         }
       }
     }
+    if (metrics != null)
+      metrics.flushMetrics()
     cappingEvents.iterator
   }
 
