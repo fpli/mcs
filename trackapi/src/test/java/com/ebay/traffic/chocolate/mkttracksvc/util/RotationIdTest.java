@@ -336,8 +336,8 @@ public class RotationIdTest {
 
         String expectedRid1 = String.valueOf(rid1.getTimeMillis());
         expectedRid1 = "707-" + expectedRid1.substring(0,6) + "-" + expectedRid1.substring(6,12) + "-" + expectedRid1.substring(12);
-        String expectedRid2 = expectedRid1.substring(0, expectedRid1.length() -1);
-        expectedRid2 = expectedRid2 + (Integer.valueOf(expectedRid1.substring(expectedRid1.length()-1)) + 1);
+        String expectedRid2 =  String.valueOf(rid2.getTimeMillis());
+        expectedRid2 = "707-" + expectedRid2.substring(0,6) + "-" + expectedRid2.substring(6,12) + "-" + expectedRid2.substring(12);
 
         System.out.println(rid1Str);
         System.out.println(rid2Str);
@@ -346,7 +346,17 @@ public class RotationIdTest {
         assertEquals(expectedRid2, rid2Str);
         assertEquals(expectedRid2.replaceAll("-", ""), String.valueOf(rid2.getRotationId(rid2Str)));
         assertNotEquals(rid1Str, rid2Str);
+    }
 
+    @Test
+    public void testCampaignId() throws InterruptedException {
+        RotationId cid1 = RotationId.getNext();
+        RotationId cid2 = RotationId.getNext();
+
+        System.out.println(cid1);
+        System.out.println(cid2);
+        assertEquals(cid1.getDriverId(), cid2.getDriverId());
+        assertTrue(cid2.getRepresentation() > cid1.getRepresentation());
     }
 }
 

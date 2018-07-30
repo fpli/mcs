@@ -39,11 +39,11 @@ public class CouchbaseClientMock {
         }
     }
 
-    private static void createMock(@NotNull String name, @NotNull String password) throws Exception {
+    private static void createMock(@NotNull String bucketName, @NotNull String password) throws Exception {
         bucketConfiguration.numNodes = 1;
         bucketConfiguration.numReplicas = 1;
         bucketConfiguration.numVBuckets = 1024;
-        bucketConfiguration.name = name;
+        bucketConfiguration.name = bucketName;
         bucketConfiguration.type = com.couchbase.mock.Bucket.BucketType.COUCHBASE;
         bucketConfiguration.password = password;
         ArrayList<BucketConfiguration> configList = new ArrayList<BucketConfiguration>();
@@ -71,14 +71,14 @@ public class CouchbaseClientMock {
         carrierPort = portsArray.get(0).getAsInt();
     }
 
-    public static void createClient() throws Exception{
-        createMock("default", "");
-        getPortInfo("default");
+    public static void createClient(String bucketName) throws Exception{
+        createMock(bucketName, "");
+        getPortInfo(bucketName);
         cluster = CouchbaseCluster.create(DefaultCouchbaseEnvironment.builder()
                 .bootstrapCarrierDirectPort(carrierPort)
                 .bootstrapHttpDirectPort(httpPort)
                 .build() ,"couchbase://127.0.0.1");
-        bucket = cluster.openBucket("default", 1200, TimeUnit.SECONDS);
+        bucket = cluster.openBucket(bucketName, 1200, TimeUnit.SECONDS);
     }
 
     public static Cluster getCluster() {

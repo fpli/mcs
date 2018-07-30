@@ -8,6 +8,7 @@ public class ServiceResponse implements Serializable {
   private String message;
   private List<String> errors;
   private RotationInfo rotation_info;
+  private CampaignInfo campaign_info;
   private List<RotationInfo> rotation_info_list;
 
   public String getMessage() {
@@ -40,5 +41,13 @@ public class ServiceResponse implements Serializable {
 
   public void setErrors(List<String> errors) {
     this.errors = errors;
+  }
+
+  public CampaignInfo getCampaign_info() {
+    return campaign_info;
+  }
+
+  public void setCampaign_info(CampaignInfo campaign_info) {
+    this.campaign_info = campaign_info;
   }
 }
