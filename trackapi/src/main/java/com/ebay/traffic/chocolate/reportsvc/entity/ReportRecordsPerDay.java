@@ -210,7 +210,7 @@ public class ReportRecordsPerDay {
     this.recordsForDay = new ArrayList<>();
     Calendar thisDay = DateRange.getMidnightForDay(this.date);
     // 96 = 24 * 60 / 15; we do spark job reporting aggregation every 15 minutes.
-    for (int index = 0; index < 96 && thisDay.before(Calendar.getInstance(DateRange.TIMEZONE)); index++) {
+    for (int index = 0; index < 96 && thisDay.before(Calendar.getInstance()); index++) {
       this.recordsForDay.add(index, new ReportRecord(thisDay.getTimeInMillis()));
       thisDay.add(Calendar.MINUTE, 15);
     }
