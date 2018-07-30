@@ -54,10 +54,10 @@ public enum Granularity {
       return Granularity.FINE;
     }
 
-    Calendar calStart = Calendar.getInstance(DateRange.TIMEZONE);
+    Calendar calStart = Calendar.getInstance();
     calStart.setTime(DateRange.DATE_FORMAT.parse(startDate));
 
-    Calendar calEnd = Calendar.getInstance(DateRange.TIMEZONE);
+    Calendar calEnd = Calendar.getInstance();
     calEnd.setTime(DateRange.DATE_FORMAT.parse(endDate));
 
     // Swap dates if start date is after end date, instead of wasting a request.

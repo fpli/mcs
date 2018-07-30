@@ -70,7 +70,6 @@ public class ReportServiceTest {
 
   @Test
   public void testGenerateReportForOneMonthAndWeeKGranularityReturnsListWithOneElement() throws ParseException {
-    DateRange.updateTimezone(TimeZone.getDefault());
     ReportRequest request = createTestRequest(1);
     request.setEndDate(19900730);
     request.setGranularity(Granularity.WEEK);
@@ -89,7 +88,6 @@ public class ReportServiceTest {
 
   @Test
   public void testGenerateReportForOneMonthAndMonthGranularityReturnsListWithOneElementAndEmptySublist() throws ParseException {
-    DateRange.updateTimezone(TimeZone.getDefault());
     ReportRequest request = createTestRequest(1);
     request.setEndDate(19900730);
     request.setGranularity(Granularity.MONTH);
