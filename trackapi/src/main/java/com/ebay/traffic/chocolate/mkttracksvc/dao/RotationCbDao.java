@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.mkttracksvc.dao;
 
+import com.ebay.traffic.chocolate.mkttracksvc.entity.CampaignInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 
 import java.util.List;
@@ -37,11 +38,23 @@ public interface RotationCbDao {
 
   /**
    * Get rotationInfo by rotationId
+   * @param rotationId rotationId
+   * @return rotationInfo
    */
   RotationInfo getRotationById(String rotationId);
 
+
   /**
-   * Get rotationInfo by rotationId
+   * Get rotationInfo by rotationName
+   * @param rotationName rotationName
+   * @return rotationInfo
    */
   List<RotationInfo> getRotationByName(String rotationName);
+
+  /**
+   * Get existed campaign Name
+   * @param campaignId campaign id
+   * @return CampaignInfo
+   */
+  public CampaignInfo getExistedCampaignName(Long campaignId);
 }

@@ -3,14 +3,19 @@ package com.ebay.traffic.chocolate.mkttracksvc.dao.imp;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.document.Document;
 import com.couchbase.client.java.document.StringDocument;
+import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.query.N1qlQuery;
 import com.couchbase.client.java.query.N1qlQueryResult;
 import com.couchbase.client.java.query.N1qlQueryRow;
+import com.ebay.traffic.chocolate.mkttracksvc.dao.CouchbaseClient;
 import com.ebay.traffic.chocolate.mkttracksvc.dao.RotationCbDao;
+import com.ebay.traffic.chocolate.mkttracksvc.entity.CampaignInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +26,11 @@ import java.util.Map;
  *
  * @author yimeng
  */
+@Component
 public class RotationCbDaoImp implements RotationCbDao {
 
   private static final String CB_QUERY_STATEMENT_BY_NAME = "SELECT * FROM `rotation_info` WHERE lower(rotation_name) like '%";
+  private static final String CB_QUERY_STATEMENT_BY_CAMPAIGNID = "SELECT * FROM `rotation_info` WHERE campaign_id=%s";
 
   /**
    * Global logging instance
@@ -37,6 +44,11 @@ public class RotationCbDaoImp implements RotationCbDao {
 
   public RotationCbDaoImp(Bucket bucket) {
     this.bucket = bucket;
+  }
+
+  @Autowired
+  public RotationCbDaoImp(CouchbaseClient client) {
+    this.bucket = client.getRotationBucket();
   }
 
   /**
@@ -148,24 +160,43 @@ public class RotationCbDaoImp implements RotationCbDao {
    * Get rotationInfo by rotationId
    */
   public List<RotationInfo> getRotationByName(String rotationName) {
-    try {
-
-      N1qlQueryResult result = bucket.query(N1qlQuery.simple(CB_QUERY_STATEMENT_BY_NAME + rotationName.trim().toLowerCase() + "%'"));
-      if (result == null) {
-        return null;
-      }
-      List<N1qlQueryRow> rows = result.allRows();
-      List<RotationInfo> rotationList = new ArrayList<RotationInfo>();
-      Gson gson = new Gson();
-      RotationInfo rotationInfo;
-      for (N1qlQueryRow row : rows) {
-        rotationInfo = gson.fromJson(row.value().get("rotation_info").toString(), RotationInfo.class);
-        rotationList.add(rotationInfo);
-      }
-      return rotationList;
-    } catch (Exception e) {
-      logger.warn("Exception in Couchbase operation " + e);
+    N1qlQueryResult result = bucket.query(N1qlQuery.simple(CB_QUERY_STATEMENT_BY_NAME + rotationName.toLowerCase() + "%'"));
+    if (result == null || result.allRows().size() == 0) {
       return null;
     }
+    List<N1qlQueryRow> rows = result.allRows();
+    List<RotationInfo> rotationList = new ArrayList<RotationInfo>();
+    Gson gson = new Gson();
+    RotationInfo rotationInfo;
+    for (N1qlQueryRow row : rows) {
+      rotationInfo = gson.fromJson(row.value().get("rotation_info").toString(), RotationInfo.class);
+      rotationList.add(rotationInfo);
+    }
+    return rotationList;
+  }
+
+  /**
+   * Get existed campaign Name
+   * @param campaignId campaign id
+   * @return CampaignInfo
+   */
+  public CampaignInfo getExistedCampaignName(Long campaignId){
+    String sql = String.format(CB_QUERY_STATEMENT_BY_CAMPAIGNID, campaignId);
+    N1qlQueryResult result = bucket.query(N1qlQuery.simple(sql));
+    if (result == null || result.allRows().size() == 0) {
+      return null;
+    }
+    List<N1qlQueryRow> rows = result.allRows();
+    Gson gson = new Gson();
+    RotationInfo rotationInfo = null;
+    for (N1qlQueryRow row : rows) {
+      rotationInfo = gson.fromJson(row.value().get("rotation_info").toString(), RotationInfo.class);
+      break;
+    }
+    CampaignInfo campaignInfo = new CampaignInfo();
+    campaignInfo.setExisted(true);
+    campaignInfo.setCampaign_id(rotationInfo.getCampaign_id());
+    campaignInfo.setCampaign_name(rotationInfo.getCampaign_name());
+    return campaignInfo;
   }
 }

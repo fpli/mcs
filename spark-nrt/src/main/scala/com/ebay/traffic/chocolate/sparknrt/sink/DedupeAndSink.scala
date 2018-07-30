@@ -136,6 +136,8 @@ class DedupeAndSink(params: Parameter)
           }
         }
       }
+      if (metrics != null)
+        metrics.flushMetrics()
 
       // 1. close the parquet writers
       // 2. rename tmp files to final files
