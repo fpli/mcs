@@ -28,7 +28,7 @@ public class RotationServiceImpl implements RotationService{
   @Autowired
   RotationCbDao rotationCbDao;
 
-  private final ESMetrics esMetrics = ESMetrics.getInstance();
+  private ESMetrics esMetrics = ESMetrics.getInstance();
 
   private final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
@@ -220,5 +220,13 @@ public class RotationServiceImpl implements RotationService{
       rotationTag.put(RotationConstant.FIELD_TAG_DEVICE, null);
     }
     rotationInfo.setRotation_tag(rotationTag);
+  }
+
+  /**
+   * For JUnit Testing
+   * @param esMetrics
+   */
+  public void setEsMetrics(ESMetrics esMetrics){
+    this.esMetrics = esMetrics;
   }
 }
