@@ -13,7 +13,6 @@ import com.ebay.traffic.chocolate.mkttracksvc.util.DriverId;
 import com.ebay.traffic.chocolate.mkttracksvc.util.RotationId;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,6 @@ import java.util.Map;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
     properties = {"GingerClient.testService.testClient.endpointUri=http://localhost",
         "GingerClient.testService.testClient.readTimeout=10000"})
-@Ignore
 public class RotationIdResourceTest {
   @LocalServerPort
   int port;

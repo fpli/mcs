@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.mkttracksvc.service;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.ServiceResponse;
 import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 
 public interface RotationService {
   /**
@@ -54,4 +55,10 @@ public interface RotationService {
    * @throws CBException Couchbase exceptions
    */
   ServiceResponse getRotationByName(String rotationName);
+
+  /**
+   * For JUnit Testing
+   * @param esMetrics
+   */
+  void setEsMetrics(ESMetrics esMetrics);
 }

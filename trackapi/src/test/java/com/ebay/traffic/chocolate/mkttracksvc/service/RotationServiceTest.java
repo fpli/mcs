@@ -3,8 +3,6 @@ package com.ebay.traffic.chocolate.mkttracksvc.service;
 import com.ebay.app.raptor.chocolate.constant.MPLXChannelEnum;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.globalenv.SiteEnum;
-import com.ebay.traffic.chocolate.mkttracksvc.ESMetricsClient;
-import com.ebay.traffic.chocolate.mkttracksvc.MKTTrackSvcConfigBean;
 import com.ebay.traffic.chocolate.mkttracksvc.constant.ErrorMsgConstant;
 import com.ebay.traffic.chocolate.mkttracksvc.dao.RotationCbDao;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.CampaignInfo;
@@ -13,12 +11,8 @@ import com.ebay.traffic.chocolate.mkttracksvc.entity.ServiceResponse;
 import com.ebay.traffic.chocolate.mkttracksvc.util.DriverId;
 import com.ebay.traffic.chocolate.mkttracksvc.util.RotationId;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
-import org.apache.ahc.util.DateParseException;
-import org.apache.ahc.util.DateUtil;
-import org.joda.time.format.DateTimeFormatterBuilder;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -27,7 +21,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.ZoneId;
 import java.util.*;
 
 public class RotationServiceTest {
@@ -39,15 +32,12 @@ public class RotationServiceTest {
   private RotationCbDao rotationCbDao;
 
   @Mock
-  private ESMetricsClient esMetricsClient;
-
-  @Mock
   private ESMetrics esMetrics;
 
   @Before
   public void init() {
     MockitoAnnotations.initMocks(this);
-    Mockito.when(esMetricsClient.getEsMetrics()).thenReturn(esMetrics);
+    rotationService.setEsMetrics(esMetrics);
     Mockito.doNothing().when(esMetrics).meter(Mockito.anyString());
   }
 
@@ -160,6 +150,7 @@ public class RotationServiceTest {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     sdf.setTimeZone(TimeZone.getTimeZone("MST"));
     SimpleDateFormat sdfOld = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    sdfOld.setTimeZone(TimeZone.getTimeZone("MST"));
     Assert.assertEquals(sdf.format(new Date()), sdf.format(sdfOld.parse(rInfo.getUpdate_date())));
     Assert.assertEquals("Updated Rotation Name", rInfo.getRotation_name());
     Assert.assertEquals("Updated Rotation Desc Txt", rInfo.getRotation_description());
