@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -70,7 +71,9 @@ public class DumpRotationFiles {
     if(outputFilePath == null){
       outputFilePath = couchbasePros.getProperty("job.dumpRotationFiles.outputFilePath");
     }
-    outputFilePath = outputFilePath + "rotation-" + sdf.format(new Date()) + ".txt";
+    Calendar c = Calendar.getInstance();
+    c.setTimeInMillis(Long.valueOf(lastUpdateTime));
+    outputFilePath = outputFilePath + "rotation-" + sdf.format(c.getTime()) + ".txt";
     Boolean compress = (couchbasePros.getProperty("job.dumpRotationFiles.compressed") == null) ?  Boolean.valueOf(couchbasePros.getProperty("job.dumpRotationFiles.compressed")) : Boolean.FALSE;
 
     OutputStream out = null;
@@ -99,9 +102,11 @@ public class DumpRotationFiles {
       System.out.println("Error happened when write couchbase data to chocolate file");
       throw e;
     } finally {
-      out.close();
+      if(out != null){
+        out.close();
+      }
     }
-    System.out.println("Successfully dump " + count + " records into chocolate file!");
+    System.out.println("Successfully dump " + count + " records into chocolate file: " + outputFilePath);
   }
 
   private static void close() {

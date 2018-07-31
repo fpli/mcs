@@ -70,8 +70,8 @@ public class DumpLegacyRotationFiles {
     if (outputFilePath == null) {
       outputFilePath = couchbasePros.getProperty("job.dumpLegacyRotationFiles.outputFilePath");
     }
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH_");
-    outputFilePath = outputFilePath + sdf.format(System.currentTimeMillis());
+//    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH_");
+//    outputFilePath = outputFilePath + sdf.format(System.currentTimeMillis());
     // If the file need to be compressed, set "true".  default is "false"
     Boolean compress = (couchbasePros.getProperty("job.dumpLegacyRotationFiles.compressed") == null) ? Boolean.valueOf(couchbasePros.getProperty("job.dumpLegacyRotationFiles.compressed")) : Boolean.FALSE;
 
@@ -102,12 +102,12 @@ public class DumpLegacyRotationFiles {
     genFileForPosition(outputFilePath, compress, result);
     // sample: 2018-02-22_03_rules.txt
     genFileForRules(outputFilePath, compress, result);
-//    // sample: 2018-02-22_01_lt_roi.txt
-//    genFileForLtRoi(outputFilePath, compress, result);
-//    // sample: 2018-02-22_01_roi_credit_v2.txt
-//    genFileForRoiCredit(outputFilePath, compress, result);
-//    // sample: 2018-02-22_01_roi_v2.txt
-//    genFileForRoiV2(outputFilePath, compress, result);
+    // sample: 2018-02-22_01_lt_roi.txt
+    genFileForLtRoi(outputFilePath, compress, result);
+    // sample: 2018-02-22_01_roi_credit_v2.txt
+    genFileForRoiCredit(outputFilePath, compress, result);
+    // sample: 2018-02-22_01_roi_v2.txt
+    genFileForRoiV2(outputFilePath, compress, result);
   }
 
   private static void close() {
@@ -253,7 +253,11 @@ public class DumpLegacyRotationFiles {
         // |Placement ID
         out.write(RotationConstant.FIELD_SEPARATOR);
         if (rotationTag.containsKey(RotationConstant.FIELD_PLACEMENT_ID)) {
-          out.write(String.valueOf(rotationTag.getLong(RotationConstant.FIELD_PLACEMENT_ID)).getBytes());
+          try {
+            out.write(String.valueOf(rotationTag.getLong(RotationConstant.FIELD_PLACEMENT_ID)).getBytes());
+          }catch(ClassCastException e){
+            out.write(rotationTag.getString(RotationConstant.FIELD_PLACEMENT_ID).getBytes());
+          }
         }
 
         // |Perf track 1|Perf track 2|Perf track 3|Perf track 4|Perf track 5|Perf track 6|Perf track 7|Perf track 8|Perf track 9|Perf track 10
@@ -807,16 +811,23 @@ public class DumpLegacyRotationFiles {
 
   private static void genFileForLtRoi(String output, boolean compress, N1qlQueryResult result) throws IOException {
     OutputStream out = null;
-    String filePath = output + RotationConstant.FILE_NAME_LT;
+    String filePath = output + RotationConstant.FILE_NAME_LT + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;
     try {
       if (compress) {
         out = new GZIPOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_ZIP), 8192);
       } else {
-        out = new BufferedOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_TXT));
+        out = new BufferedOutputStream(new FileOutputStream(filePath));
       }
       out.write(RotationConstant.FILE_HEADER_LT.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
+
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
 
       JsonObject rotationTag = null;
       for (N1qlQueryRow row : result) {
@@ -995,16 +1006,23 @@ public class DumpLegacyRotationFiles {
 
   private static void genFileForRoiCredit(String output, boolean compress, N1qlQueryResult result) throws IOException {
     OutputStream out = null;
-    String filePath = output + RotationConstant.FILE_NAME_ROI_CREDIT;
+    String filePath = output + RotationConstant.FILE_NAME_ROI_CREDIT + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;
     try {
       if (compress) {
         out = new GZIPOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_ZIP), 8192);
       } else {
-        out = new BufferedOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_TXT));
+        out = new BufferedOutputStream(new FileOutputStream(filePath));
       }
       out.write(RotationConstant.FILE_HEADER_ROI_CREDIT.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
+
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
 
       JsonObject rotationTag = null;
       for (N1qlQueryRow row : result) {
@@ -1168,16 +1186,23 @@ public class DumpLegacyRotationFiles {
 
   private static void genFileForRoiV2(String output, boolean compress, N1qlQueryResult result) throws IOException {
     OutputStream out = null;
-    String filePath = output + RotationConstant.FILE_NAME_ROI;
+    String filePath = output + RotationConstant.FILE_NAME_ROI + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;
     try {
       if (compress) {
         out = new GZIPOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_ZIP), 8192);
       } else {
-        out = new BufferedOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_TXT));
+        out = new BufferedOutputStream(new FileOutputStream(filePath));
       }
       out.write(RotationConstant.FILE_HEADER_ROI.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
+
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
 
       JsonObject rotationTag = null;
       for (N1qlQueryRow row : result) {
@@ -1293,6 +1318,7 @@ public class DumpLegacyRotationFiles {
   }
 
   private static void genFileForRules(String output, boolean compress, N1qlQueryResult result) throws IOException {
+
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_RULES;
     Integer count = 0;
