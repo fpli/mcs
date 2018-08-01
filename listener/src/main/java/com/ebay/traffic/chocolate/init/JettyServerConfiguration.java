@@ -17,7 +17,6 @@ import java.net.URL;
 
 
 @Configuration
-@AutoConfigureAfter(ListenerAutoConfigure.class)
 public class JettyServerConfiguration {
 
     private static final String LISTENER_OPTIONS = "chocolate-listener.xml";
@@ -28,8 +27,8 @@ public class JettyServerConfiguration {
     @Bean
     public JettyEmbeddedServletContainerFactory jettyEmbeddedServletContainerFactory() throws IOException {
         ListenerOptions.init(env.getProperty(LISTENER_OPTIONS, URL.class).openStream());
-
         ListenerOptions options = ListenerOptions.getInstance();
+        ListenerInitializer.init(ListenerOptions.getInstance());
 
         JettyEmbeddedServletContainerFactory factory = new JettyEmbeddedServletContainerFactory(options.getInputHttpPort());
 

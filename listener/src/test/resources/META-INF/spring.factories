@@ -1,3 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.ebay.traffic.chocolate.init.ListenerAutoConfigure,\
 com.ebay.traffic.chocolate.init.JettyServerConfiguration
