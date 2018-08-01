@@ -1,0 +1,17 @@
+{
+	"namespace": "com.ebay.app.raptor.chocolate.avro",
+	"type": "record",
+	"name": "PublisherCacheEntry",
+	"pk": ["snapshot_id"],
+	"fields": [{
+		"name": "timestamp",
+		"type": "long"
+	},{
+		"name": "publisher_id",
+		"type": "long"
+	},{
+		"name": "campaign_id",
+		"type": "long"
+	}
+    ]
+}
