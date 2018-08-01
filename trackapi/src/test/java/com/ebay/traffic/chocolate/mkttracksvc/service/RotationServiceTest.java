@@ -148,9 +148,7 @@ public class RotationServiceTest {
     RotationInfo rInfo = response.getRotation_info();
     Assert.assertNotNull(rInfo);
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-    sdf.setTimeZone(TimeZone.getTimeZone("MST"));
     SimpleDateFormat sdfOld = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    sdfOld.setTimeZone(TimeZone.getTimeZone("MST"));
     Assert.assertEquals(sdf.format(new Date()), sdf.format(sdfOld.parse(rInfo.getUpdate_date())));
     Assert.assertEquals("Updated Rotation Name", rInfo.getRotation_name());
     Assert.assertEquals("Updated Rotation Desc Txt", rInfo.getRotation_description());

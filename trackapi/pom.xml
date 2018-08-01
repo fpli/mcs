@@ -200,7 +200,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>1.4.1.ebay-SNAPSHOT</version>
             </plugin>
             <!-- raptor.io plugin -->
             <plugin>
