@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPOutputStream;
@@ -147,12 +146,11 @@ public class DumpLegacyRotationFiles {
         // Rotation ID|Rotation String
         out.write(String.valueOf(rotationInfo.getLong(RotationConstant.FIELD_ROTATION_ID)).getBytes());
         out.write(RotationConstant.FIELD_SEPARATOR);
-        out.write(rotationInfo.getString(RotationConstant.FIELD_ROTATION_STRING).getBytes());
+        String rotationStr = rotationInfo.getString(RotationConstant.FIELD_ROTATION_STRING);
+        out.write(rotationStr.getBytes());
 
-        MPLXClientEnum clientEnum = null;
-        if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
-          clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
-        }
+        Integer clientId = Integer.valueOf(rotationStr.split("-")[0]);
+        MPLXClientEnum clientEnum = MPLXClientEnum.getByClientId(clientId);
         // |Rotation Name
         out.write(RotationConstant.FIELD_SEPARATOR);
         if (rotationInfo.containsKey(RotationConstant.FIELD_ROTATION_NAME)) {
@@ -304,9 +302,11 @@ public class DumpLegacyRotationFiles {
           continue;
         }
         // CLIENT ID|CAMPAIGN ID|
-        MPLXClientEnum clientEnum = null;
-        if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
-          clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
+        String rotationStr = rotationInfo.getString(RotationConstant.FIELD_ROTATION_STRING);
+        Integer clientId = Integer.valueOf(rotationStr.split("-")[0]);
+        MPLXClientEnum clientEnum = MPLXClientEnum.getByClientId(clientId);
+
+        if(clientEnum != null){
           out.write(String.valueOf(clientEnum.getMplxClientId()).getBytes());
         }
         out.write(RotationConstant.FIELD_SEPARATOR);
@@ -319,7 +319,6 @@ public class DumpLegacyRotationFiles {
           out.write(clientEnum.getMplxClientName().getBytes());
         }
         out.write(RotationConstant.FIELD_SEPARATOR);
-        // CAMPAIGN NAME
         if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_NAME)) {
           out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_NAME).getBytes());
         }
@@ -536,10 +535,12 @@ public class DumpLegacyRotationFiles {
       out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_NAME).getBytes());
     }
     //|Client ID|Client Name
-    MPLXClientEnum clientEnum = null;
-    if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
-      clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
-    }
+    String rotationStr = rotationInfo.getString(RotationConstant.FIELD_ROTATION_STRING);
+    Integer clientId = Integer.valueOf(rotationStr.split("-")[0]);
+    MPLXClientEnum clientEnum = MPLXClientEnum.getByClientId(clientId);
+//    if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
+//      clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
+//    }
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (clientEnum != null) {
       out.write(String.valueOf(clientEnum.getMplxClientId()).getBytes());
@@ -1352,10 +1353,12 @@ public class DumpLegacyRotationFiles {
         if (rotationTag == null) continue;
         if (!rotationTag.containsKey(RotationConstant.FIELD_RULES)) continue;
 
-        MPLXClientEnum clientEnum = null;
-        if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
-          clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
-        }
+        String rotationStr = rotationInfo.getString(RotationConstant.FIELD_ROTATION_STRING);
+        Integer clientId = Integer.valueOf(rotationStr.split("-")[0]);
+        MPLXClientEnum clientEnum = MPLXClientEnum.getByClientId(clientId);
+//        if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
+//          clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
+//        }
 
         JsonArray ruleArray = rotationTag.getArray(RotationConstant.FIELD_RULES);
         if (ruleArray != null && ruleArray.size() > 0) {

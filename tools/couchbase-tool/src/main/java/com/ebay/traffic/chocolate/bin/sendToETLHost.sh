@@ -2,14 +2,14 @@
 
 usage="Usage: sendToETLHost.sh"
 
-DT=$(date +%Y-%m-%d -d "`date`")
+DT=$(date +%Y-%m-%d -d "`date` - 2 hour")
 if [ $# -eq 1 ]; then
-  DT_HOUR=$(date +%Y-%m-%d_$1 -d "`date`")
+  DT_HOUR=$(date +%Y-%m-%d_$1 -d "`date` - 2 hour")
 else
-  DT_HOUR=$(date +%Y-%m-%d_%H -d "`date`")
+  DT_HOUR=$(date +%Y-%m-%d_%H -d "`date` - 2 hour")
 fi
 INPUT_PATH=/mnt/chocolate/rotation/teradata/dt=${DT}
-log_file="/mnt/chocolate/rotation/logs/toTD_$DT_HOUR_$START_TIME.log"
+log_file="/mnt/chocolate/rotation/logs/toTD_$DT_HOUR.log"
 
 echo "DT_HOUR=$DT_HOUR"
 echo "INPUT_PATH=$INPUT_PATH"

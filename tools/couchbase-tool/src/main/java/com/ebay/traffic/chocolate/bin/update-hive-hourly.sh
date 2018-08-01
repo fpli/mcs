@@ -13,18 +13,18 @@ bin=`cd "$bin">/dev/null; pwd`
 
 echo `date`
 
-DT=$(date +%Y-%m-%d -d "`date`")
+DT=$(date +%Y-%m-%d -d "`date` -2 hour")
 if [ $# -eq 1 ]; then
-  DT_HOUR=$(date +%Y-%m-%d' '$1:00:00 -d "`date` - 3 hour")
+  DT_HOUR=$(date +%Y-%m-%d' '$1:00:00 -d "`date` - 2 hour")
 else
-  DT_HOUR=$(date +%Y-%m-%d' '%H:00:00 -d "`date` - 3 hour")
+  DT_HOUR=$(date +%Y-%m-%d' '%H:00:00 -d "`date` - 2 hour")
 fi
 JOB_TIME=$(date +%Y%m%d%H%M%S -d "`date`")
 HOUR=$(date +%H -d "$DT_HOUR")
 
 SQL_FILE=/home/yimeng/rotation/sql/choco_rotation_update.sql
-HDP=hdfs://apollo-phx-nn-ha/user/b_marketing_tracking/chocolate/rotation/dt=${DT}/dh=${HOUR}
-#HDP=hdfs://ares-lvs-nn-ha/user/b_marketing_tracking/chocolate/rotation/dt=${DT}/dh=${HOUR}
+#HDP=hdfs://apollo-phx-nn-ha/user/b_marketing_tracking/chocolate/rotation/dt=${DT}/dh=${HOUR}
+HDP=hdfs://ares-lvs-nn-ha/user/b_marketing_tracking/chocolate/rotation/dt=${DT}/dh=${HOUR}
 
 log_file="/home/yimeng/rotation/logs/dt=${DT}/"
 if [ ! -d ${log_file} ]; then
