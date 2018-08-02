@@ -472,7 +472,7 @@
 
           <!-- Set reporting for Jacoco integrity tests. -->
           <execution>
-            <id>post-integration-test</id>
+            <id>it-report</id>
             <phase>post-integration-test</phase>
             <goals>
               <goal>report</goal>
