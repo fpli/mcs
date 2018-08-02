@@ -59,7 +59,14 @@ public class DefaultChannel implements Channel {
 
     long startTime = startTimerAndLogData(request, action, type);
 
-    String requestUrl = parser.appendURLWithChocolateTag(new ServletServerHttpRequest(request).getURI().toString());
+    String requestUrl = null;
+    try {
+      requestUrl = parser.appendURLWithChocolateTag(new ServletServerHttpRequest(request).getURI().toString());
+    } catch (Exception e) {
+      metrics.meter("AppendNewTagError");
+      esMetrics.meter("AppendNewTagError");
+      logger.error("Append url with new tag error");
+    }
 
     if (result.length >= 2) {
       if (ChannelActionEnum.CLICK.equals(channelAction)) {
