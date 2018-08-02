@@ -457,6 +457,19 @@
             </configuration>
           </execution>
 
+          <execution>
+            <id>dump</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>dump</goal>
+            </goals>
+            <configuration>
+              <append>true</append>
+              <destFile>${project.build.directory}/coverage-reports/jacoco-it.exec</destFile>
+              <skip>${jacoco.dump.skip}</skip>
+            </configuration>
+          </execution>
+
           <!-- Set reporting for Jacoco integrity tests. -->
           <execution>
             <id>post-integration-test</id>
@@ -468,19 +481,6 @@
               <append>true</append>
               <dataFile>${project.build.directory}/coverage-reports/jacoco-it.exec</dataFile>
               <outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>dump</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>dump</goal>
-            </goals>
-            <configuration>
-              <append>true</append>
-              <destFile>${project.build.directory}/icoco-it.exec</destFile>
-              <skip>${jacoco.dump.skip}</skip>
             </configuration>
           </execution>
 
