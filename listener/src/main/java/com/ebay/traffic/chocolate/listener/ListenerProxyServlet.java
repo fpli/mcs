@@ -29,7 +29,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
   private static final long serialVersionUID = 8041506560324325858L;
   private static final String PROXY_FAILURE = "proxyFailure";
   private static final String CLIENT_FAILURE = "clientFailure";
-  public static final String MALFORMED_URL = "malformedURL";
+  private static final String MALFORMED_URL = "malformedURL";
 
   private static final int REQUEST_BUFFER_SIZE = 1024 * 12;
   private static final Logger logger = Logger.getLogger(ListenerProxyServlet.class);
