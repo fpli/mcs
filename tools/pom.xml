@@ -4,13 +4,13 @@
   <parent>
     <groupId>com.ebay.traffic</groupId>
     <artifactId>chocolate</artifactId>
-    <version>3.1-RELEASE</version>
+    <version>3.2-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>com.ebay.traffic</groupId>
   <artifactId>tools</artifactId>
-  <version>3.1-RELEASE</version>
+  <version>3.2-SNAPSHOT</version>
   <name>chocolate tools</name>
   <packaging>pom</packaging>
 
