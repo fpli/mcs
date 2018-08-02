@@ -131,7 +131,7 @@ public class DefaultChannel implements Channel {
 
     if (message != null) {
       // Only save core site url
-      if(message.getUri().startsWith("http://rover.ebay.com/") || message.getUri().startsWith("https://rover.ebay.com/")) {
+      if(parser.isCoreSite(message.getUri())) {
         producer.send(new ProducerRecord<>(kafkaTopic,
           message.getSnapshotId(), message), KafkaSink.callback);
       }
@@ -143,8 +143,10 @@ public class DefaultChannel implements Channel {
     } else {
       invalidRequestParam(request, "Parse message error;", action, type);
     }
-    stopTimerAndLogData(startTime, message.toString(), action, type);
+    stopTimerAndLogData(startTime, action, type);
   }
+
+
 
   /**
    * getCampaignId based on query pattern match
@@ -180,9 +182,10 @@ public class DefaultChannel implements Channel {
    * Stops the timer and logs relevant debugging messages
    *
    * @param startTime    the start time, so that latency can be calculated
-   * @param kafkaMessage logged to CAL for debug purposes
+   * @param channelAction click, impression...
+   * @param channelType epn, dap...
    */
-  private void stopTimerAndLogData(long startTime, String kafkaMessage, String channelAction, String channelType) {
+  private void stopTimerAndLogData(long startTime, String channelAction, String channelType) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
     metrics.meter("SuccessCount");

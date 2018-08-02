@@ -140,6 +140,18 @@ public class MessageObjectParser {
         return chocoTag;
     }
 
+    /**
+     * Return if it is core site url
+     * @param uri input url
+     * @return is core site
+     */
+    public boolean isCoreSite(String uri) {
+        if(uri.startsWith("http://rover.ebay.com/") || uri.startsWith("https://rover.ebay.com/") || uri.startsWith("http://r.ebay.com/") || uri.startsWith("https://r.ebay.com/")) {
+            return true;
+        }
+        return false;
+    }
+
     private String serializeRequestHeaders(HttpServletRequest clientRequest) {
         StringBuilder requestHeaders = new StringBuilder();
         for (Enumeration<String> e = clientRequest.getHeaderNames(); e.hasMoreElements();) {
