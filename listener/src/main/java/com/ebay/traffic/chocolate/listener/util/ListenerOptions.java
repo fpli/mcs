@@ -209,7 +209,7 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
     /**
      * @return Return listener filtered topic
      */
-    public String getErrorTopic() {
+    public String getListenerFilteredTopic() {
         return ApplicationOptionsParser.getStringProperty(properties, KAFKA_TOPIC_FILTERED);
     }
 

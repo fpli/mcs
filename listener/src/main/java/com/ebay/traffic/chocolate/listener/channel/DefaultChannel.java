@@ -1,6 +1,5 @@
 package com.ebay.traffic.chocolate.listener.channel;
 
-import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -17,8 +16,6 @@ import org.springframework.http.server.ServletServerHttpRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.HashMap;
 
@@ -42,6 +39,7 @@ public class DefaultChannel implements Channel {
   @Override
   public void process(HttpServletRequest request, HttpServletResponse response) {
     String kafkaTopic;
+    String listenerFilteredKafkaTopic;
     Producer<Long, ListenerMessage> producer;
     ChannelActionEnum channelAction = null;
     ChannelIdEnum channelType = null;
@@ -60,6 +58,7 @@ public class DefaultChannel implements Channel {
       type = channelType.getLogicalChannel().getAvro().toString();
 
     long startTime = startTimerAndLogData(request, action, type);
+
     String requestUrl = null;
     try {
       requestUrl = parser.appendURLWithChocolateTag(new ServletServerHttpRequest(request).getURI().toString());
@@ -79,22 +78,8 @@ public class DefaultChannel implements Channel {
     }
 
     producer = KafkaSink.get();
-    String filteredTopic = ListenerOptions.getInstance().getErrorTopic();
 
     long campaignId = getCampaignID(request);
-    try {
-      if (parser.responseShouldBeFiltered(request, response, requestUrl)) {
-        metrics.meter("ResponseFilteredCount");
-        esMetrics.meter("ResponseFilteredCount", action, type);
-        String snid = request.getParameter(SNID_PATTERN);
-        ListenerMessage filteredMessage = parser.parseHeader(request, response,
-            startTime, campaignId, ChannelType.EPN, ChannelActionEnum.CLICK, snid, requestUrl);
-        producer.send(new ProducerRecord<>(filteredTopic, filteredMessage), KafkaSink.callback);
-        return;
-      }
-    } catch (MalformedURLException | UnsupportedEncodingException e) {
-      logger.error("Wrong with URL format/encoding", e);
-    }
 
     metrics.meter("IncomingCount");
     esMetrics.meter("IncomingCount", action, type);
@@ -127,7 +112,7 @@ public class DefaultChannel implements Channel {
       }
 
       kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
-
+      listenerFilteredKafkaTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
       if (ChannelActionEnum.CLICK.equals(channelAction)) {
         metrics.meter("SendKafkaClickCount");
       }
@@ -145,13 +130,23 @@ public class DefaultChannel implements Channel {
         startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, snid, requestUrl);
 
     if (message != null) {
-      producer.send(new ProducerRecord<>(kafkaTopic,
+      // Only save core site url
+      if(parser.isCoreSite(message.getUri())) {
+        producer.send(new ProducerRecord<>(kafkaTopic,
           message.getSnapshotId(), message), KafkaSink.callback);
+      }
+      // Other site url are sent to another kafka topic
+      else {
+        producer.send(new ProducerRecord<>(listenerFilteredKafkaTopic,
+          message.getSnapshotId(), message), KafkaSink.callback);
+      }
     } else {
       invalidRequestParam(request, "Parse message error;", action, type);
     }
-    stopTimerAndLogData(startTime, message.toString(), action, type);
+    stopTimerAndLogData(startTime, action, type);
   }
+
+
 
   /**
    * getCampaignId based on query pattern match
@@ -187,9 +182,10 @@ public class DefaultChannel implements Channel {
    * Stops the timer and logs relevant debugging messages
    *
    * @param startTime    the start time, so that latency can be calculated
-   * @param kafkaMessage logged to CAL for debug purposes
+   * @param channelAction click, impression...
+   * @param channelType epn, dap...
    */
-  private void stopTimerAndLogData(long startTime, String kafkaMessage, String channelAction, String channelType) {
+  private void stopTimerAndLogData(long startTime, String channelAction, String channelType) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
     metrics.meter("SuccessCount");
