@@ -107,8 +107,9 @@ public class TrackingServlet extends HttpServlet {
       if (event.getPayload() != null && event.getPayload().containsKey(SNID_PATTERN)) {
         snid = event.getPayload().get(SNID_PATTERN).toString();
       }
+      String requestUrl = parser.appendURLWithChocolateTag(new ServletServerHttpRequest(request).getURI().toString());
       message = parser.parseHeader(request, response, System.currentTimeMillis(), campaignId,
-          event.getChannel(), event.getAction(), snid);
+          event.getChannel(), event.getAction(), snid, requestUrl);
       if (message == null) {
         logger.error("Could not create Avro message for url=" + request.getRequestURL());
         return;

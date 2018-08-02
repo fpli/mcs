@@ -12,12 +12,8 @@ import org.springframework.http.server.ServletServerHttpRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,8 +25,11 @@ import java.util.regex.Pattern;
  */
 public class MessageObjectParser {
 
+    /** Logging instance */
+    private static final Logger logger = Logger.getLogger(MessageObjectParser.class);
     private static MessageObjectParser INSTANCE;
     private static final long DEFAULT_PUBLISHER_ID = -1L;
+    private static final String REDIRECT_SPECIAL_TAG = "chocolateSauce=";
     /* singleton class */
     private MessageObjectParser() {
     }
@@ -49,10 +48,13 @@ public class MessageObjectParser {
     public ListenerMessage parseHeader(
         final HttpServletRequest clientRequest,
         final HttpServletResponse proxyResponse, Long startTime, Long campaignId,
-        final ChannelType channelType, final ChannelActionEnum action, String snid) {
+        final ChannelType channelType, final ChannelActionEnum action, String snid, String requestUrl) {
 
         ListenerMessage record = new ListenerMessage();
-        record.setUri(new ServletServerHttpRequest(clientRequest).getURI().toString());
+        if (StringUtils.isEmpty(requestUrl)) {
+            requestUrl = new ServletServerHttpRequest(clientRequest).getURI().toString();
+        }
+        record.setUri(requestUrl);
 
         // Set the channel type + HTTP headers + channel action
         record.setChannelType(channelType);
@@ -84,6 +86,58 @@ public class MessageObjectParser {
         HttpMethodEnum httpMethod = HttpMethodEnum.parse(clientRequest.getMethod());
         Validate.notNull(httpMethod, "Could not parse HTTP method from HTTP request=" + clientRequest.getMethod());
         return httpMethod;
+    }
+
+    private static final String CHOCO_TAG = "dashenId";
+    private static final String REDIRECTION_CNT_TAG = "dashenCnt";
+    private static MetricsClient metrics = MetricsClient.getInstance();
+    public String appendURLWithChocolateTag(String urlStr) {
+        URL url = null;
+        try {
+            url = new URL(urlStr);
+        } catch (MalformedURLException e) {
+            metrics.meter(ListenerProxyServlet.MALFORMED_URL);
+        }
+        String query = url.getQuery();
+        // append snapshotId into URL
+        if(!urlStr.contains(CHOCO_TAG)){
+            if(query != null && ! query.isEmpty()) {
+                urlStr += "&";
+            }else{
+                urlStr += "?";
+            }
+            urlStr += getChocoTag(urlStr);
+        }
+        // append redirection count into URL
+        if(urlStr.contains(REDIRECTION_CNT_TAG)){
+            Pattern p = Pattern.compile(REDIRECTION_CNT_TAG + "(=|%3D)[0-9]");
+            Matcher m = p.matcher(urlStr);
+            if (m.find()) {
+                String urlWithCnt = m.group();
+                int cnt = Integer.valueOf(urlWithCnt.substring(urlWithCnt.length()-1)) + 1;
+                urlWithCnt = REDIRECTION_CNT_TAG + "=" + cnt;
+                urlStr = urlStr.replaceAll(p.pattern(), urlWithCnt);
+            }
+        }else{
+            urlStr += "&" + REDIRECTION_CNT_TAG + "=" + 0;
+        }
+        return urlStr;
+    }
+
+    public String getChocoTag(String requestUrl){
+        String chocoTag = null;
+        // append snapshotId into URL
+        if(requestUrl.contains(CHOCO_TAG)){
+            Pattern p = Pattern.compile(CHOCO_TAG + "(=|%3D)\\d+");
+            Matcher m = p.matcher(requestUrl);
+            if (m.find()) {
+                chocoTag = m.group();
+            }
+        }else{
+            Long snapshotId = SnapshotId.getNext(ListenerOptions.getInstance().getDriverId(), System.currentTimeMillis()).getRepresentation();
+            chocoTag = CHOCO_TAG + "=" + snapshotId;
+        }
+        return chocoTag;
     }
 
     private String serializeRequestHeaders(HttpServletRequest clientRequest) {

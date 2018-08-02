@@ -59,7 +59,7 @@ public class MessageObjectParserTest {
         mockClientRequest.setServerPort(80);
 
 
-        ListenerMessage record = parser.parseHeader(mockClientRequest, mockProxyResponse, startTime, campaignId, logicalChannel.getAvro(), action, "foo");
+        ListenerMessage record = parser.parseHeader(mockClientRequest, mockProxyResponse, startTime, campaignId, logicalChannel.getAvro(), action, "foo", null);
 
         assertEquals("Some: Header", record.getRequestHeaders());
         assertEquals("SomeMore: Headers", record.getResponseHeaders());
@@ -77,7 +77,7 @@ public class MessageObjectParserTest {
         mockClientRequest.addHeader("a", "b");
         mockProxyResponse.setStatus(301);
         mockProxyResponse.setHeader("Location", "https://www.ebay.co.uk/1/2/9?a=b&chocolateSauce=http%3A%2F%2Frover.ebay.com%2Fa%2Fb%2Fc");
-        record = parser.parseHeader(mockClientRequest, mockProxyResponse, startTime, wrongCampaingId, logicalChannel.getAvro(), action, null);
+        record = parser.parseHeader(mockClientRequest, mockProxyResponse, startTime, wrongCampaingId, logicalChannel.getAvro(), action, null, null);
 
         assertEquals(wrongCampaingId, record.getCampaignId());
         assertEquals("http://rover.ebay.com/a/b/c", record.getUri());
@@ -89,6 +89,42 @@ public class MessageObjectParserTest {
         assertFalse(result.isEmpty());
         assertTrue(result.startsWith("{"));
         assertTrue(result.endsWith("}"));
+    }
+
+    @Test
+    public void testAppendURLWithChocolateTag() throws UnsupportedEncodingException {
+
+        String testDomain = "https://rover.ebay.com/1/707-53477-19255-0/1?";
+        String testParams = "item=123456&pub=5575154502&toolid=10001&campid=5338045191";
+        String testUrl = testDomain + testParams;
+        testUrl = parser.appendURLWithChocolateTag(testUrl);
+        String chocoTag = parser.getChocoTag(testUrl);
+        assertTrue(testUrl.contains("dashenId="));
+        assertTrue(testUrl.contains("dashenCnt=0"));
+
+        testUrl = parser.appendURLWithChocolateTag(testUrl);
+        assertEquals(parser.getChocoTag(testUrl), chocoTag);
+        assertTrue(testUrl.contains("dashenCnt=1"));
+        assertTrue(testUrl.indexOf("dashenId=") == testUrl.lastIndexOf("dashenId="));
+        assertTrue(testUrl.indexOf("dashenCnt=") == testUrl.lastIndexOf("dashenCnt="));
+
+        testUrl = parser.appendURLWithChocolateTag(testUrl);
+        assertEquals(parser.getChocoTag(testUrl), chocoTag);
+        assertTrue(testUrl.contains("dashenCnt=2"));
+        assertTrue(testUrl.indexOf("dashenId=") == testUrl.lastIndexOf("dashenId="));
+        assertTrue(testUrl.indexOf("dashenCnt=") == testUrl.lastIndexOf("dashenCnt="));
+
+        testUrl = testDomain + URLEncoder.encode(testUrl.replace(testDomain, ""), StandardCharsets.UTF_8.toString());
+        assertTrue(testUrl.contains("dashenCnt"));
+        assertTrue(testUrl.indexOf("dashenId") == testUrl.lastIndexOf("dashenId"));
+        assertTrue(testUrl.indexOf("dashenCnt") == testUrl.lastIndexOf("dashenCnt"));
+
+        testUrl = testDomain + URLEncoder.encode(testUrl.replace(testDomain, ""), StandardCharsets.UTF_8.toString());
+        testUrl = parser.appendURLWithChocolateTag(testUrl);
+        testUrl = URLEncoder.encode(testUrl, StandardCharsets.UTF_8.toString());
+        assertTrue(testUrl.contains("dashenCnt"));
+        assertTrue(testUrl.indexOf("dashenId") == testUrl.lastIndexOf("dashenId"));
+        assertTrue(testUrl.indexOf("dashenCnt") == testUrl.lastIndexOf("dashenCnt"));
     }
 }
 

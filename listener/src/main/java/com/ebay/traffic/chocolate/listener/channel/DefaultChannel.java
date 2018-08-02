@@ -12,6 +12,8 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Request;
+import org.springframework.http.server.ServletServerHttpRequest;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Enumeration;
@@ -56,6 +58,8 @@ public class DefaultChannel implements Channel {
       type = channelType.getLogicalChannel().getAvro().toString();
 
     long startTime = startTimerAndLogData(request, action, type);
+
+    String requestUrl = parser.appendURLWithChocolateTag(new ServletServerHttpRequest(request).getURI().toString());
 
     if (result.length >= 2) {
       if (ChannelActionEnum.CLICK.equals(channelAction)) {
@@ -116,7 +120,7 @@ public class DefaultChannel implements Channel {
 
     // Parse the response
     ListenerMessage message = parser.parseHeader(request, response,
-        startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, snid);
+        startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, snid, requestUrl);
 
     if (message != null) {
       // Only save core site url
