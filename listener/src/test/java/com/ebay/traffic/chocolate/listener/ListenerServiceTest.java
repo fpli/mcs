@@ -83,7 +83,7 @@ public class ListenerServiceTest {
    * in kafka cluster after listener processes them.
    */
   @Test
-  public void testFilterService() throws Exception {
+  public void testListenerService() throws Exception {
     String page = "http://www.ebay.com/itm/The-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-/380963112068";
     String clickURL = "/1c/1-12345?page=" + page + "&item=380963112068";
     String vimpURL = "/1v/1-12345?page=" + page + "&item=380963112068";
