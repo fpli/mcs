@@ -13,9 +13,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static com.ebay.traffic.chocolate.kafka.KafkaCluster.DELIMITER;
 
@@ -52,6 +50,7 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
     public static final String FRONTIER_URL = "frontier.url";
     public static final String FRONTIER_APP_SVC_NAME = "frontier.app.svc.name";
     public static final String ELASTICSEARCH_URL = "elasticsearch.url";
+    public static final String ROVER_CORE_SITES = "rover.core.sites";
 
     public static final String JOURNAL_ENABLED = "chocolate.listener.journal.enabled";
     public static final String JOURNAL_PAGE_SIZE = "chocolate.listener.journal.page.size";
@@ -75,6 +74,7 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
 
     private String sinkKafkaCluster;
     private Map<ChannelType, String> sinkKafkaConfigMap = new HashMap<>();
+    private Set<String> roverCoreSites;
 
     /** Static driver ID */
     static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
@@ -138,6 +138,7 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
         }
         rheosKafkaProperties = loadProperties(RHEOS_KAFKA_PROPERTIES_FILE);
         instance.initKafkaConfigs();
+        instance.initRoverCoreSites();
     }
 
     /**
@@ -211,6 +212,22 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
      */
     public String getListenerFilteredTopic() {
         return ApplicationOptionsParser.getStringProperty(properties, KAFKA_TOPIC_FILTERED);
+    }
+
+    /**
+     * Set rover core site HashSet
+     */
+    public void initRoverCoreSites() {
+        String[] coreSites = ApplicationOptionsParser.getStringArrayProperty(properties, ROVER_CORE_SITES);
+        roverCoreSites = new HashSet<>(Arrays.asList(coreSites));
+    }
+
+    /**
+     * Get rover core sites
+     * @return list of core sites
+     */
+    public Set<String> getRoverCoreSites() {
+        return roverCoreSites;
     }
 
     /** @return true iff using a dummy (non-existent) kafka. false otherwise. */

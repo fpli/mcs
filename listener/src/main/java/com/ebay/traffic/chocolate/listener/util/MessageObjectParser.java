@@ -142,11 +142,12 @@ public class MessageObjectParser {
 
     /**
      * Return if it is core site url
-     * @param uri input url
+     * @param clientRequest http servlet request
      * @return is core site
      */
-    public boolean isCoreSite(String uri) {
-        if(uri.startsWith("http://rover.ebay.com/") || uri.startsWith("https://rover.ebay.com/") || uri.startsWith("http://r.ebay.com/") || uri.startsWith("https://r.ebay.com/")) {
+    public boolean isCoreSite(HttpServletRequest clientRequest) {
+        String serverName = clientRequest.getServerName();
+        if(ListenerOptions.getInstance().getRoverCoreSites().contains(serverName)) {
             return true;
         }
         return false;

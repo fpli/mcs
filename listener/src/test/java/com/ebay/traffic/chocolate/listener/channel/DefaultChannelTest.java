@@ -146,7 +146,7 @@ public class DefaultChannelTest {
 
     when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), eq(campaignId),
         eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), anyString(), anyString())).thenReturn(mockMessage);
-    when(mockMessageParser.isCoreSite(anyString())).thenReturn(true);
+    when(mockMessageParser.isCoreSite(any())).thenReturn(true);
     when(mockMessage.getSnapshotId()).thenReturn(snapshotId);
     when(mockMessage.toString()).thenReturn(kafkaMessage);
     when(mockMessage.getUri()).thenReturn("http://rover.ebay.com/roverimp/1/xyz/1");
@@ -154,7 +154,8 @@ public class DefaultChannelTest {
     spy.process(mockClientRequest, mockProxyResponse);
     verify(mockProducer, times(1)).send(new ProducerRecord<>("epn", snapshotId, mockMessage), KafkaSink.callback);
 
-    when(mockMessageParser.isCoreSite(anyString())).thenReturn(false);
+    mockClientRequest.setServerName("rover.ebay.co.uk");
+    when(mockMessageParser.isCoreSite(any())).thenReturn(false);
     spy.process(mockClientRequest, mockProxyResponse);
     verify(mockProducer, times(1)).send(new ProducerRecord<>("listened-filtered", snapshotId, mockMessage), KafkaSink.callback);
   }
@@ -177,7 +178,7 @@ public class DefaultChannelTest {
 
     when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), eq(campaignId),
         eq(ChannelType.DISPLAY), eq(ChannelActionEnum.CLICK), anyString(), anyString())).thenReturn(mockMessage);
-    when(mockMessageParser.isCoreSite(anyString())).thenReturn(true);
+    when(mockMessageParser.isCoreSite(any())).thenReturn(true);
     when(mockMessage.getSnapshotId()).thenReturn(snapshotId);
     when(mockMessage.toString()).thenReturn(kafkaMessage);
     when(mockMessage.getUri()).thenReturn("http://rover.ebay.com/rover/1/xyz/4");

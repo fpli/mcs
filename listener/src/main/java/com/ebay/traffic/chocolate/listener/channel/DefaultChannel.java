@@ -131,7 +131,7 @@ public class DefaultChannel implements Channel {
 
     if (message != null) {
       // Only save core site url
-      if(parser.isCoreSite(message.getUri())) {
+      if(parser.isCoreSite(request)) {
         producer.send(new ProducerRecord<>(kafkaTopic,
           message.getSnapshotId(), message), KafkaSink.callback);
       }
