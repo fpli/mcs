@@ -16,6 +16,8 @@ import org.springframework.http.server.ServletServerHttpRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.HashMap;
 
@@ -80,6 +82,13 @@ public class DefaultChannel implements Channel {
     producer = KafkaSink.get();
 
     long campaignId = getCampaignID(request);
+
+    //TODO: remove the logic when we stable
+    try {
+      parser.appendTagWhenRedirect(request, response, requestUrl);
+    } catch (MalformedURLException | UnsupportedEncodingException e) {
+      logger.error("Wrong with URL format/encoding", e);
+    }
 
     metrics.meter("IncomingCount");
     esMetrics.meter("IncomingCount", action, type);
