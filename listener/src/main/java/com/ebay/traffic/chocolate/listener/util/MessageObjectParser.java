@@ -12,6 +12,7 @@ import org.springframework.http.server.ServletServerHttpRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -29,7 +30,7 @@ public class MessageObjectParser {
     private static final Logger logger = Logger.getLogger(MessageObjectParser.class);
     private static MessageObjectParser INSTANCE;
     private static final long DEFAULT_PUBLISHER_ID = -1L;
-    private static final String REDIRECT_SPECIAL_TAG = "chocolateSauce=";
+    public static final String REDIRECT_HEADER = "Location";
     /* singleton class */
     private MessageObjectParser() {
     }
@@ -91,6 +92,7 @@ public class MessageObjectParser {
     private static final String CHOCO_TAG = "dashenId";
     private static final String REDIRECTION_CNT_TAG = "dashenCnt";
     private static MetricsClient metrics = MetricsClient.getInstance();
+
     public String appendURLWithChocolateTag(String urlStr) {
         URL url = null;
         try {
@@ -140,6 +142,21 @@ public class MessageObjectParser {
         return chocoTag;
     }
 
+    public String getRedirectionCount(String requestUrl){
+        // append redirection count into URL
+        String urlWithCnt = null;
+        if(requestUrl.contains(REDIRECTION_CNT_TAG)){
+            Pattern p = Pattern.compile(REDIRECTION_CNT_TAG + "(=|%3D)[0-9]");
+            Matcher m = p.matcher(requestUrl);
+            if (m.find()) {
+                urlWithCnt = m.group();
+            }
+        }else{
+            urlWithCnt = REDIRECTION_CNT_TAG + "=" + 0;
+        }
+        return urlWithCnt;
+    }
+
     /**
      * Return if it is core site url
      * @param clientRequest http servlet request
@@ -151,6 +168,48 @@ public class MessageObjectParser {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Append dashen tags on Response Location header if it is necessary
+     * @param clientRequest Request
+     * @param proxyResponse Response, for first redirect to Rover, original request will
+     *                      be attached to Location header as part of the URL query
+     */
+    public boolean appendTagWhenRedirect(HttpServletRequest clientRequest, HttpServletResponse proxyResponse, String requestUrl)
+      throws MalformedURLException, UnsupportedEncodingException {
+        // no action if no redirect
+        if (proxyResponse.getStatus() != 301 || proxyResponse.getHeader(REDIRECT_HEADER) == null) {
+            return false;
+        }
+
+        // assume Rover always return valid URL
+        URL redirectUrl = new URL(proxyResponse.getHeader(REDIRECT_HEADER));
+
+        // redirect to other domain
+        if (!redirectUrl.getHost().startsWith("rover")) {
+            return false;
+        }
+
+        boolean withQuery = (redirectUrl.getQuery() != null);
+        //SET chocolate tags in location
+        String chocoTag = getChocoTag(requestUrl);
+        String redirectCnt = getRedirectionCount(requestUrl);
+        String location = proxyResponse.getHeader(REDIRECT_HEADER);
+        // append snapshotId into URL if not exist
+        if (!location.contains(CHOCO_TAG)) {
+            location = withQuery ? location + "&" : location + "?";
+            location += chocoTag;
+        }
+        // append redirection count into URL if not exist
+        if (location.contains(REDIRECTION_CNT_TAG)) {
+            Pattern p = Pattern.compile(REDIRECTION_CNT_TAG + "(=|%3D)[0-9]");
+            location = location.replaceAll(p.pattern(), redirectCnt);
+        } else {
+            location += "&" + redirectCnt;
+        }
+        proxyResponse.setHeader(REDIRECT_HEADER, location);
+        return true;
     }
 
     private String serializeRequestHeaders(HttpServletRequest clientRequest) {
