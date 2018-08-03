@@ -96,6 +96,8 @@ public class LoadRotationInfoIntoCB {
     }
     if(StringUtils.isNotEmpty(fields[1])){
       rotationInfo.setRotation_string(strSpaceStrip(fields[1]));
+      String clientId = rotationInfo.getRotation_string().split("-")[0];
+      rotationInfo.setSite_id(MPLXClientEnum.getByClientId(Integer.valueOf(clientId)).getEbaySiteId());
     }
     if(StringUtils.isNotEmpty(fields[2])){
       rotationInfo.setRotation_name(strSpaceStrip(fields[2]));

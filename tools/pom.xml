@@ -10,7 +10,6 @@
 
   <groupId>com.ebay.traffic</groupId>
   <artifactId>tools</artifactId>
-  <version>3.2.0-RELEASE</version>
   <name>chocolate tools</name>
   <packaging>pom</packaging>
 
