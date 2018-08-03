@@ -20,11 +20,7 @@
     <parent>
         <groupId>com.ebay.traffic</groupId>
         <artifactId>chocolate</artifactId>
-<<<<<<< HEAD
         <version>3.2.0-RELEASE</version>
-=======
-        <version>3.2-SNAPSHOT</version>
->>>>>>> upstream/master
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <groupId>com.ebay.traffic</groupId>
