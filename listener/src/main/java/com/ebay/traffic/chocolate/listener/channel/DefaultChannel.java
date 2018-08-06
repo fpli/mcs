@@ -122,13 +122,6 @@ public class DefaultChannel implements Channel {
 
       kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
       listenerFilteredKafkaTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
-      if (ChannelActionEnum.CLICK.equals(channelAction)) {
-        metrics.meter("SendKafkaClickCount");
-      }
-      if (ChannelActionEnum.IMPRESSION.equals(channelAction)) {
-        metrics.meter("SendKafkaImpressionCount");
-      }
-      esMetrics.meter("SendKafkaCount", action, type);
     } else {
       invalidRequestParam(request, "Request params count != 5", action, type);
       return;
@@ -143,16 +136,17 @@ public class DefaultChannel implements Channel {
       if(parser.isCoreSite(request)) {
         producer.send(new ProducerRecord<>(kafkaTopic,
           message.getSnapshotId(), message), KafkaSink.callback);
+        stopTimerAndLogData(startTime, action, type);
       }
       // Other site url are sent to another kafka topic
       else {
         producer.send(new ProducerRecord<>(listenerFilteredKafkaTopic,
           message.getSnapshotId(), message), KafkaSink.callback);
+        esMetrics.meter("SendIntlKafkaCount");
       }
     } else {
       invalidRequestParam(request, "Parse message error;", action, type);
     }
-    stopTimerAndLogData(startTime, action, type);
   }
 
 
