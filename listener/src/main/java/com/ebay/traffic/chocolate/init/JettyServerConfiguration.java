@@ -5,19 +5,18 @@ import org.eclipse.jetty.server.NetworkTrafficServerConnector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
+import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.net.URL;
 
 
 @Configuration
-@AutoConfigureAfter(ListenerAutoConfigure.class)
 public class JettyServerConfiguration {
 
     private static final String LISTENER_OPTIONS = "chocolate-listener.xml";
@@ -30,6 +29,8 @@ public class JettyServerConfiguration {
         ListenerOptions.init(env.getProperty(LISTENER_OPTIONS, URL.class).openStream());
 
         ListenerOptions options = ListenerOptions.getInstance();
+
+        ListenerInitializer.init(ListenerOptions.getInstance());
 
         JettyEmbeddedServletContainerFactory factory = new JettyEmbeddedServletContainerFactory(options.getInputHttpPort());
 
@@ -45,5 +46,10 @@ public class JettyServerConfiguration {
         });
 
         return factory;
+    }
+
+    @PreDestroy
+    public void destory() {
+        ListenerInitializer.terminate();
     }
 }

@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.ebay.traffic</groupId>
         <artifactId>chocolate</artifactId>
-        <version>3.2-SNAPSHOT</version>
+        <version>3.2.0-RELEASE</version>
         <relativePath>..</relativePath>
     </parent>
     <groupId>com.ebay.traffic</groupId>
@@ -176,6 +176,24 @@
             </resource>
         </resources>
         <plugins>
+            <plugin>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest-maven-plugin</artifactId>
+                <version>1.0</version>
+                <configuration>
+                    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                    <junitxml>.</junitxml>
+                    <filereports>WDF TestSuite.txt</filereports>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>

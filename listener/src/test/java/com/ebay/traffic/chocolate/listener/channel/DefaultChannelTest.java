@@ -48,11 +48,12 @@ public class DefaultChannelTest {
    ListenerOptions mockOptions = mock(ListenerOptions.class);
    PowerMockito.mockStatic(ListenerOptions.class);
    PowerMockito.when(ListenerOptions.getInstance()).thenReturn(mockOptions);
+
    Map<ChannelType, String> channelTopics = new HashMap<>();
    channelTopics.put(ChannelType.EPN, "epn");
    channelTopics.put(ChannelType.DISPLAY, "display");
    PowerMockito.when(mockOptions.getSinkKafkaConfigs()).thenReturn(channelTopics);
-
+   when(mockOptions.getListenerFilteredTopic()).thenReturn("listened-filtered");
    mockProducer = mock(KafkaProducer.class);
    PowerMockito.mockStatic(KafkaSink.class);
    PowerMockito.when(KafkaSink.get()).thenReturn(mockProducer);
@@ -136,20 +137,27 @@ public class DefaultChannelTest {
     params.put("a", new String[] {"b"});
     mockClientRequest.setParameters(params);
     mockClientRequest.setMethod("get");
+    mockClientRequest.setServerName("rover.ebay.com");
     mockClientRequest.setRequestURI("/roverimp/1/xyz/1");
     String kafkaMessage = "fake kafka message (EpnChannelTest)";
 
     DefaultChannel spy = spy(channel);
     ListenerMessage mockMessage = mock(ListenerMessage.class);
 
-    when(mockMessageParser.responseShouldBeFiltered(mockClientRequest,mockProxyResponse, mockClientRequest.getRequestURI())).thenReturn(false);
     when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), eq(campaignId),
-        eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), anyString(), eq(null))).thenReturn(mockMessage);
+        eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), anyString(), anyString())).thenReturn(mockMessage);
+    when(mockMessageParser.isCoreSite(any())).thenReturn(true);
     when(mockMessage.getSnapshotId()).thenReturn(snapshotId);
     when(mockMessage.toString()).thenReturn(kafkaMessage);
+    when(mockMessage.getUri()).thenReturn("http://rover.ebay.com/roverimp/1/xyz/1");
 
     spy.process(mockClientRequest, mockProxyResponse);
     verify(mockProducer, times(1)).send(new ProducerRecord<>("epn", snapshotId, mockMessage), KafkaSink.callback);
+
+    mockClientRequest.setServerName("rover.ebay.co.uk");
+    when(mockMessageParser.isCoreSite(any())).thenReturn(false);
+    spy.process(mockClientRequest, mockProxyResponse);
+    verify(mockProducer, times(1)).send(new ProducerRecord<>("listened-filtered", snapshotId, mockMessage), KafkaSink.callback);
   }
 
   @SuppressWarnings("unchecked")
@@ -161,17 +169,19 @@ public class DefaultChannelTest {
     params.put("a", new String[] {"b"});
     mockClientRequest.setParameters(params);
     mockClientRequest.setMethod("get");
+    mockClientRequest.setRemoteHost("rover.ebay.com");
     mockClientRequest.setRequestURI("/rover/1/xyz/4");
     String kafkaMessage = "fake kafka message (DAPChannelTest)";
 
     DefaultChannel spy = spy(channel);
     ListenerMessage mockMessage = mock(ListenerMessage.class);
 
-    when(mockMessageParser.responseShouldBeFiltered(mockClientRequest,mockProxyResponse, mockClientRequest.getRequestURI())).thenReturn(false);
     when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), eq(campaignId),
-        eq(ChannelType.DISPLAY), eq(ChannelActionEnum.CLICK), anyString(), eq(null))).thenReturn(mockMessage);
+        eq(ChannelType.DISPLAY), eq(ChannelActionEnum.CLICK), anyString(), anyString())).thenReturn(mockMessage);
+    when(mockMessageParser.isCoreSite(any())).thenReturn(true);
     when(mockMessage.getSnapshotId()).thenReturn(snapshotId);
     when(mockMessage.toString()).thenReturn(kafkaMessage);
+    when(mockMessage.getUri()).thenReturn("http://rover.ebay.com/rover/1/xyz/4");
 
     spy.process(mockClientRequest, mockProxyResponse);
     verify(mockProducer, times(1)).send(new ProducerRecord<>("display", snapshotId, mockMessage), KafkaSink.callback);

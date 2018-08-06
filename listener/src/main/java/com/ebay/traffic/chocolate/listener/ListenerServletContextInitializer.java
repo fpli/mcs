@@ -3,11 +3,13 @@ package com.ebay.traffic.chocolate.listener;
 import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.cratchit.server.AcknowledgerServlet;
 import com.ebay.cratchit.server.Clerk;
+import com.ebay.traffic.chocolate.init.JettyServerConfiguration;
 import com.ebay.traffic.chocolate.listener.api.TrackingServlet;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.log4j.Logger;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,6 +19,7 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.ServletRegistration.Dynamic;
 
 @Configuration
+@AutoConfigureAfter(JettyServerConfiguration.class)
 public class ListenerServletContextInitializer implements ServletContextInitializer {
 
     private static final Logger logger = Logger.getLogger(ListenerServletContextInitializer.class);
