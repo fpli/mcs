@@ -1,0 +1,560 @@
+#
+#	IAB_ABC_International_List_of_Valid_Browsers_201807_18-125935
+#	July 18, 2018
+#
+# **********COMMENTS SECTION***************************************************
+#
+# This list has been reviewed by the IAB MTF Spider & Robot Policy Board.
+# The file contains a list of patterns that may be matched against HTTP User 
+# Agent (UA) strings to determine whether that UA matches a known browser. This
+# is one step of several required for compliance to IAB Advertising Measurement
+# Guidelines. 
+# 
+# The list is only valid for use with Client Side Counting (CSC) transactions.
+# See http://www.iab.com/guidelines/iab-measurement-guidelines/
+#
+# A User Agent must contain one of these patterns in order to be included
+# in impression counts.
+#
+# It is strongly suggested that users analyze their own log data and then sort 
+# this list in order of frequency to allow the filter program to work 
+# efficiently. The order presented below is based on an analysis performed by 
+# ImServices but may not be representative of all traffic.
+#
+# This list is provided in good faith but must be used at the user's own risk.  
+# The IAB, ABC and AAM accept no responsibility for any 
+# legal, technical or commercial consequences arising from the use of this 
+# list. 
+#
+# Special characters in this file:
+#	# - (only at the start of a line) this line is a comment 
+#	| - field separator 
+# blank lines may be present. ignore them.
+#
+# The fields are delimited by a pipe symbol [|]:
+#
+# 1) pattern - case insensitive string to match
+# 2) active flag
+# 	1=pattern is active and should be matched
+# 	0=pattern is inactive, and should ignored
+# 3) start-of-string flag
+# 	1=pattern must occur at the start of the UA string
+# 	0=pattern may appear anywhere within the UA string
+# 4) **Inactive Date. Inactive User Agent List Only.
+# 	mm/dd/yyyy format
+#
+# UA strings are potentially valid if they contain one of the following 
+# patterns (note: patterns are case insensitive, but shown in this file in 
+# mixed case for human legibility)
+#
+# Contact AAM in the U.S. (spiders.bots@auditedmedia.com) or 
+# ABC in the UK (spiders.bots@abc.org.uk) with any feedback 
+# regarding this file.
+#
+#******************* END OF COMMENTS ******************************************
+(Apple; CPU)|1|0
+(Apple;+CPU)|1|0
+ABCNews|1|1
+AHONG|1|1
+AIM|1|1
+ANVSDK|1|1
+AOL/AIM/|1|1
+AOLadServerGifbank|1|1
+AU-MIC|1|1
+AUDIOVOX-|1|1
+AdXChange|1|1
+AdobeAIR|1|0
+AerServ|1|0
+Alcatel|1|1
+Amiga|1|1
+Amoi|1|1
+Android|1|0
+Apache-HttpClient/UNAVAILABLE|1|1
+Apple Mac|1|1
+Apple Safari|1|1
+Apple TV|1|0
+Apple+Mac|1|1
+Apple+Safari|1|1
+Apple+TV|1|0
+AppleCoreMedia|1|1
+AppleTV|1|0
+Asus|1|1
+BIRD|1|1
+BREW|1|0
+BUNTE.de/de.burda.buntede|1|0
+BenQ|1|1
+BlackBerry|1|1
+Bleach/|1|1
+Blitzlicht/com|1|0
+Boggle|1|1
+Bose/|1|1
+Break|1|1
+CDM|1|1
+CFNetwork|1|0
+Chocolate-VMP/|1|0
+Configuration/CLDC|1|0
+Crazy Browser|1|0
+Crazy+Browser|1|0
+Crunchyroll/|1|1
+DBTEL|1|1
+DMTT|1|1
+Dalvik|1|1
+Dancing%20On%20Ice|1|1
+DancingOnIce|1|1
+Darwin|1|0
+DoCoMo|1|1
+DoubleClick RProxy|1|0
+DoubleClick SmartCount|1|0
+DoubleClick+RProxy|1|0
+DoubleClick+SmartCount|1|0
+Draw%20Free|1|1
+ERICY-|1|1
+ESPNApp_ExoPlayer|1|0
+EbGamingClient|1|1
+EbPcExtMng|1|1
+Echo/|1|1
+Elinks|1|1
+Emacs-W3|1|1
+Ericsson|1|1
+Eudora|1|0
+Eurogamer|1|1
+Explorer-VeohWebPlayer|1|1
+FBAN/|1|0
+FOXNews/|1|1
+FantasyUniversal|1|1
+FeedDemon|1|1
+FetchTV|1|0
+Fly|1|1
+France Explorer|1|1
+France+Explorer|1|1
+GIONEE|1|1
+Go.Web/|1|1
+Gradiente|1|1
+Grundig|1|0
+HD-MMD1010/|1|1
+HD2_|1|1
+HP iPAQ|1|1
+HP+iPAQ|1|1
+HPiPAQ|1|0
+HS-|1|1
+HTC|1|1
+Haier|1|1
+HangingWithFriendsFree|1|1
+HasOffers|1|0
+HbbTV|1|0
+Horoscopes|1|1
+HotJava|1|1
+Huawei|1|1
+Hulu|1|1
+IBM WebExplorer|1|1
+IBM+WebExplorer|1|1
+ICE Browser|1|1
+ICE+Browser|1|1
+ICQ|1|1
+IMAtvOS|1|1
+ITV_Player|1|1
+Internet Explorer|1|1
+Internet+Explorer|1|1
+J-PHONE/|1|1
+KDDI-|1|1
+Klondike|1|0
+Konqueror|1|1
+L-mode/|1|1
+LENOVO|1|1
+LG Browser|1|1
+LG+Browser|1|1
+LG-|1|1
+LG/|1|1
+LGE-|1|1
+Lavf|1|1
+LinkBoks|1|1
+Lotus SmartCenter|1|1
+Lotus+SmartCenter|1|1
+Lotus-Notes|1|1
+Louisville/Zune/Xbox360|1|1
+Lynx|1|1
+MALNJS|1|0
+MAUI|1|0
+MOT-|1|1
+MOTO-|1|1
+MOTORAZR|1|1
+MOTORIZR|1|1
+MOTOROKR|1|1
+MQQBrowser|1|0
+MSN Mobile|1|0
+MSN+Mobile|1|0
+MailOnline|1|1
+MapQuest Mobile|1|0
+MapQuest+Mobile|1|0
+MapQuest-Mobile|1|0
+MapQuest/|1|1
+MassiveAdClient|1|1
+Meebo/|1|1
+Micromax|1|1
+Microsoft Internet Explorer|1|1
+Microsoft+Internet+Explorer|1|1
+Microsoft/|1|1
+Mitsu-|1|1
+Mitsu/|1|1
+MobileSafari|1|1
+Moozilla|1|1
+Mosaic|1|1
+Motorola|1|1
+MoveIt|1|1
+Mozilla Compatible|1|1
+Mozilla+Compatible|1|1
+Mozilla/|1|1
+MyYearbook|1|1
+NEC-|1|1
+NETCOMplete|1|1
+NSPlayer|1|1
+NYTimes/|1|1
+Naruto/|1|1
+NetFront|1|0
+Nokia|1|1
+OneBrowser|1|0
+Opera|1|1
+Opera Mini|1|0
+Opera+Mini|1|0
+OperaMini|1|0
+PG-|1|1
+PHILIPS|1|0
+PS3Application|1|0
+PS4Application|1|0
+PT-|1|1
+PalmCentro|1|1
+Palmscape/|1|1
+Panasonic|1|0
+Pandora|1|1
+Pantech|1|1
+Philco|1|0
+Playstation|1|0
+Profile/MIDP|1|0
+QC-/|1|1
+QC6035/|1|1
+QtWebKit|1|1
+Qtek|1|1
+RMA/|1|1
+Radio@Netscape|1|1
+ResponseTap|1|0
+Rhythm|1|1
+Roku|1|0
+Rover|1|1
+Ruckus|1|0
+SAGEM|1|1
+SCH-|1|1
+SEC-|1|1
+SEC03|1|1
+SFRWebkitLauncher|1|1
+SGH-|1|1
+SHARP|1|1
+SKT11SK|1|1
+SMFC/|1|1
+SMTP|1|1
+SOLEO|1|1
+Safari|1|1
+Samsung|1|0
+Samsung-SGH|1|1
+Sanyo-|1|1
+ScoreMobile/|1|1
+ScrambleWithFriends|1|1
+Semp|1|0
+Series60|1|0
+Silk-Accelerated|1|0
+SiteKiosk|1|0
+SmartDownload|1|1
+SmartTV|1|0
+SoftBank|1|1
+Solitaire|1|1
+Sonos|1|1
+Sony|1|1
+SonyEricsson|1|0
+Spice|1|1
+Spinner|1|1
+Sportacular/|1|1
+SpotXchange|1|0
+Spotify|1|0
+Spotx Web Proxy|1|0
+Spotx+Web+Proxy|1|0
+Sunrise|1|0
+Surviving_HS|1|1
+Syabas|1|0
+T-Mobile Dash|1|1
+T-Mobile+Dash|1|1
+TBD|1|1
+TFFTWrapper|1|0
+TIANYU-KTOUCH|1|0
+TMZ|1|1
+TPSystem|1|1
+TWC|1|1
+Tapjoy Downloader|1|1
+Tapjoy+Downloader|1|1
+TeleNav|1|0
+Textfree|1|1
+TiVo|1|1
+Toshiba|1|0
+TransperaSDK|1|1
+TremorVideo/SSP-AdServer|1|0
+TritonDigitalTracker|1|0
+U2FsdGVkX1|1|1
+UCBrowser|1|0
+UCWEB|1|0
+UK-MHEG|1|1
+UP.Browser|1|0
+UP.Link|1|0
+UP/|1|0
+UnlimitedSMS|1|1
+Uzbl|1|1
+Videofy.me|1|1
+Vodafone|1|1
+Vungle|1|0
+W3M|1|0
+WELLCOM|1|1
+WFB user agent|1|1
+WFB+user+agent|1|1
+WapTV/|1|0
+WebtrendsClientLibrary|1|1
+WinWAP|1|1
+Winamp3|1|0
+Windows Ad Client|1|0
+Windows Phone|1|0
+Windows+Ad+Client|1|0
+Windows+Phone|1|0
+Windows-Media-Player/|1|1
+WindowsAdClient|1|0
+Wise|1|1
+WordsWithFriendsFree|1|1
+X%20Factor|1|1
+XBOX360|1|0
+XV6975|1|1
+Xbox Live Client|1|0
+Xbox+Live+Client|1|0
+XboxOne|1|0
+Xda|1|1
+Y!J2ME|1|1
+Y!MSGR|1|1
+Y!Oasis|1|1
+Y!PHOTOS|1|1
+YInstHelper|1|1
+YJInstHelper|1|1
+YPC|1|1
+YPHOTOS|1|1
+YUMSURL|1|1
+Yahoo!_for_SMS|1|1
+YahooMobile|1|1
+YouViewHTML|1|0
+ZTE-|1|1
+abcplayer|1|0
+adjust.com|1|0
+anonymized by abelssoft|1|0
+anonymized+by+abelssoft|1|0
+aolbrowser|1|1
+burnbubb|1|1
+checkpoints_|1|1
+clipfish|1|1
+com.facebook.katana|1|0
+com.skype.skype|1|0
+dopod|1|1
+dorado wap-browser|1|0
+dorado+wap-browser|1|0
+flixster|1|1
+gbplugin|1|1
+googletv|1|0
+i-mobile|1|1
+iBrowser|1|1
+iCab|1|0
+iLiga|1|0
+iPhone|1|0
+iPod|1|0
+iTunes|1|0
+ios_ampya|1|0
+ipad|1|0
+ipla/|1|1
+ipla_MOBILE|1|1
+kochava|1|0
+liquid air lab|1|1
+liquid+air+lab|1|1
+mheg-uk|1|1
+mipla_a|1|1
+mipla_w8rt|1|1
+nook browser|1|1
+nook+browser|1|1
+partner frontier|1|0
+partner+frontier|1|0
+pb0.6b|1|1
+scorecenter|1|1
+scrabblefree|1|1
+smartclip-atv|1|0
+treo|1|1
+twitter|1|0
+wap browser-karbonn|1|0
+wap+browser-karbonn|1|0
+webUserAgent|1|1
+windows mobile application search|1|0
+windows+mobile+application+search|1|0
+windowsphoneadclient|1|0
+wininethttploader|1|0
+xbox|1|1
+#************************************BEGIN DEACTIVATED USER AGENTS HERE*******************************
+#DEACTIVATED USER AGENT|0|0|12/25/2005
+#
+# ***********************************BEGIN MODIFICATION TRACKING**************************************
+# January 2006 - removed QC07 UP.Browser and SEC02 UP.Browser as redundant with UP.Browser
+# February 2006 - Opera moved from the 44th spot to the 2nd spot and Amiga moved from the 3rd spot to the 6th spot 
+# March 2006 - added BREW, iCab 
+# April 2006 - removed Mazingo and DoCoMo, added AOLadServerGifbank, changed SonyEricsson from a start-of-string match to a sub-string match
+# May 2006 - added Sunrise, Eudora, Klondike, placed a "+" sign for all entries where there was a space to account for IIS user-agent strings
+# June 2006 - added gbplugin
+# July 2006 - no changes
+# August 2006 - no changes
+# September 2006 - added DoCoMo
+# October 2006 - no changes
+# November 2006 - no changes
+# December 2006 - no changes
+# January 2007 - no changes
+# February 2007 - no changes
+# March 2007 - added TPSystem
+# April 2007 - no changes
+# May 2007 - no changes
+# June 2007 - no changes
+# July 2007 - no changes
+# August 2007 - no changes
+# September 2007 - no changes
+# October 2007 - no changes
+# November 2007 - no changes
+# December 2007- added Ruckus
+# January 2008 - added DoubleClick SmartCount and DoubleClick+SmartCount
+# February 2008 - added HPiPAQ
+# March 2008 - no changes
+# April 2008 - added W3M
+# May 2008 - no changes
+# June 2008 - no changes
+# July 2008 - added Xbox Live Client and Xbox+Live+Client, MSN Mobile and MSN+Mobile, SiteKiosk, Crazy Browser and Crazy+Browser
+# August 2008 - no changes
+# September 2008 - no changes
+# October 2008 - added NetFront, Profile/MIDP, Configuration/CLDC
+# November 2008 - added FeedDemon
+# December 2008 - added Samsung-SGH
+# January 2009 - added iTunes
+# February 2009 - no changes
+# March 2009 - no changes
+# April 2009 - no changes
+# May 2009 - no changes
+# June 2009 - no changes
+# July 2009 - added Elinks
+# August 2009 - added HTC- & HTC_
+# September 2009 - added ZTE-, EbPcExtMng, EbGamingClient
+# October 2009 - added Apple iPhone and Apple+iPhone
+# November 2009 - no changes
+# December 2009 - added iPhone, iPod Touch and iPod+touch
+# January 2010 - added Explorer-VeohWebPlayer, Safari, Apple Mac, Apple+Mac, Apple Safari, Apple+Safari, Playstation 3, Playstation+3, HuluDesktop
+# February 2010 - added TWC/, Pandora/
+# March 2010 - added T-Mobile Dash, T-Mobile+Dash, PalmCentro, Apache-HttpClient/UNAVAILABLE
+# April 2010 - no changes
+# May 2010 - added FOXNews/
+# June 2010 - no changes
+# July 2010 - added abcplayer, ipad, scorecenter, Alcatel, LG-, LG/, PG-, PT-, Pantech, SAGEM, SCH-, SGH-, Samsung, SHARP, SoftBank, BenQ, Mitsu-, Mitsu/, NEC- Vodafone, 
+# July 2010 - added Lenovo, MOTO, MOTORAZR, MOTORIZR, MOTOROKR, i-mobile, YahooMobile, MAUI, TWCiPadMax, Dalvik, updated PHILIPS- to PHILIPS, updated SEC-/ to SEC
+# August 2010 - added nook browser, nook+browser, FLY, HD2_, Micromax, Huawei, WellcoM, HS-, AHONG, Amoi, Asus ,BIRD, CDM, DBTEL, dopod, Haier, WinWAP, Solitaire, 
+# August 2010 - added GIONEE, Gradiente, Qtek, Spice, XDA, HP iPAQ, HP+iPAQ, Motorola, updated HTC- & HTC_ to HTC
+# September 2010 - added NYTimes/, Sportacular/
+# October 2010 - added WordsWithFriendsFree
+# November 2010 - no changes
+# December 2010 - added UK-MHEG, TransperaSDK, Uzbl, xbox, LinkBoks, SafariMobile
+# January 2011 - added Louisville/Zune/Xbox360, Roku/
+# February 2011 - added Eurogamer
+# March 2011 - added Bleach/, Naruto/, Crunchyroll/, Hulu, Sony, Removed HuluDesktop
+# April 2011 - no changes
+# May 2011 - added Android, ipla/
+# June 2011 - added flixster
+# July 2011 - no changes
+# August 2011 - no changes
+# September 2011 - added Break/, U2FsdGVkX1, updated "TWC/" to "TWC"
+# October 2011 - added UnlimitedSMS, FantasyUniversal, CnnApp4iPad, HangingWithFriendsFree
+# November 2011 - added TextFree, AppleCoreMedia, Rhythm, ABCNews, MoveIt, TMZ, treo, XV6975
+# December 2011 - added scrabblefree, MyYearbook, MassiveAdClient
+# January 2012 - added MapQuest/, Meebo/
+# February 2012 - added ScrambleWithFriends, DMTT, MailOnline, Boggle, Surviving_HS, Horoscopes, ScoreMobile/, SMFC/
+# March 2012 - added Dancing%20On%20Ice, DancingOnIce, ITV_Player, X%20Factor, mheg-uk, Draw%20Free
+# April 2012 - added CFNetwork/. Darwin/, WebtrendsClientLibrary
+# May 2012 - added WFB user agent & WFB+user+agent, AdobeAIR, SmartTV, updated the 3rd field for "iphone" and "ipad" from a "1" to "0", 
+# May 2012 - removed the following as a result of the field updates to "iphone" and "ipad": Apple iPhone, Apple+iPhone, TWCiPadMax & CnnApp4iPad
+# June 2012 - added DoubleClick RProxy & DoubleClick+RProxy
+# July 2012 - no changes
+# August 2012 - added Windows Ad Client, Windows+Ad+Client
+# September 2012 - added WindowsAdClient, Tivo
+# October 2012 - no changes
+# November 2012 - no changes
+# December 2012 - updated the 3rd flag for "Android" from "1" to "0"
+# January 2013 - no changes
+# February 2013 - added MapQuest-Mobile, Windows Phone, Windows+Phone
+# March 2013 - added UCBrowser, UCWEB, Series60, com.skype.skype, OneBrowser, MQQBrowser, iBrowser, TIANYU-KTOUCH, OperaMini, Opera Mini, Opera+Mini, MapQuest Mobile ,MapQuest+Mobile
+# April 2013 - no changes
+# May 2013 - no changes
+# June 2013 - removed "Java"
+# July 2013 - no changes
+# August 2013 - added TeleNav
+# September 2013 - no changes
+# October 2013 - no changes
+# November 2013 - added Spotify
+# December 2013 - added TFFTWrapper, updated "Pandora/" to "Pandora"
+# January 2014 - added TBD
+# February 2014 - added Silk-Accelerated
+# March 2014 - added burnbubb, clipfish, HbbTV, iLiga, liquid air lab, liquid+air+lab, Videofy.me, webUserAgent, Tapjoy Downloader and Tapjoy+Downloader
+# March 2014 - updated the third flag for "ipod touch", "ipod+touch" & "PHILIPS" from a 1 to 0 and updated the "Playstation" entry (removed the "3")
+# April 2014 - added "com.facebook.katana" (emergency updated released on 4/30/2014)
+# May 2014 - no changes
+# June 2014 - no changes
+# July 2014 - no changes
+# August 2014 - added AppleTV, HasOffers, kochava, updated the 3rd flag for "Roku/" from a 1 to a 0
+# September 2014 - added Vungle
+# October 2014 - added MALNJS
+# November 2014 - added SOLEO, AdXChange, checkpoints_, wininethttploader
+# November 2014 - "CFNetwork/" updated to "CFNetwork" & "Darwin/" updated to "Darwin"
+# December 2014 - no changes
+# January 2015 - updated the third flag for "MAUI" from a 1 to 0
+# February 2015 - added "windows mobile application search" & "windows+mobile+application+search", "dorado wap-browser" & "dorado+wap-browser", "wap browser-karbonn" & "wap+browser-karbonn" and "windowsphoneadclient"
+# March 2015 - added "pb0.6b", "anonymized by abelssoft" & "anonymized+by+abelssoft"
+# April 2015 - added "TritonDigitalTracker"
+# May 2015 - no changes
+# June 2015 - added TremorVideo/SSP-AdServer
+# July 2015 - updated "Roku/" to "Roku"
+# August 2015 - added "FBAN/"
+# September 2015 - no changes
+# October 2015 - no changes
+# November 2015 - no changes
+# December 2015 - added "(Apple; CPU)" & "(Apple;+CPU)"
+# January 2016 - no changes
+# February 2016 - no changes
+# March 2016 - no changes
+# April 2016 - no changes
+# May 2016 - no changes
+# June 2016 - added "SFRWebkitLauncher", added "Chocolate-VMP/"
+# June 2016 - (emergency update) added "Syabas"
+# July 2016 - added "AerServSDK/"
+# August 2016 - no changes
+# September 2016 - added "SpotXchange", added "okhttp/", added "Blitzlicht/com", added "BUNTE.de/de.burda.buntede" 
+# September 2016 - added "ios_ampya", added "TwitterProxy/", updated the 3rd flag for "HbbTv" from a 1 to a 0
+# September 2016 - (emergency update 9/30/2016) added "YouViewHTML". Minor edits in the Comment Section were also made. 
+# October 2016 - updated "AerServSDK/" to "AerServ"
+# November 2016 - no changes
+# December 2016 - added "smartclip-atv", updated "TwitterProxy/" to "twitter"
+# January 2017 - no changes
+# February 2017 - no changes
+# March 2017 - added "ESPNApp_ExoPlayer"
+# April 2017 - no changes
+# May 2017 - added "partner frontier" & "partner+frontier", updated "iPod Touch" & "iPod+Touch" to "iPod"
+# June 2017 - added "PS3Application" & "PS4Application"
+# July 2017 - no changes
+# August 2017 - no changes
+# September 2017 - added "ResponseTap", added "adjust.com"
+# October 2017 - added "ipla_MOBILE", added "mipla_a", added "mipla_w8rt" and updated the third flag for "Samsung" from a 1 to 0
+# November 2017 - no changes
+# December 2017 - added "ANVSDK", added "LG Browser", added "LG+Browser", added "NBC", added "QtWebKit"
+# January 2018 - added "IMAtvOS", added "Apple TV", added "Apple+TV", added "XboxOne", removed "NBC"
+# February 2018 - added "Spotx Web Proxy", added "Spotx+Web+Proxy", removed "okhttp/"
+# March 2018 - added "Toshiba", added "Philco", added "Grundig", added "Semp" and updated the third flag for "Panasonic" from a 1 to 0
+# April 2018 - no changes
+# May 2018 - added "FetchTV"
+# June 2018 - added "googletv"
+# July 2018 - added "Bose/", added "Echo/", added "Lavf", added "Sonos", added "Winamp3", added "XBOX360"

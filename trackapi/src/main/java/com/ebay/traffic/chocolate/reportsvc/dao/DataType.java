@@ -1,0 +1,14 @@
+package com.ebay.traffic.chocolate.reportsvc.dao;
+
+public enum DataType {
+  CLICK,
+  GROSS_CLICK,
+  IMPRESSION,
+  GROSS_IMPRESSION,
+  VIEWABLE,
+  GROSS_VIEWABLE,
+  MOBILE_CLICK,
+  GROSS_MOBILE_CLICK,
+  MOBILE_IMPRESSION,
+  GROSS_MOBILE_IMPRESSION;
+}
