@@ -88,19 +88,19 @@ class SNIDCappingRule(params: Parameter, bitLong: Long, bitShort: Long, dateFile
         if (!existImpression) {
           cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), bitLong)
           if (metrics != null)
-            metrics.meter("SnidLongCappingCount", channelAction, channelType)
+            metrics.meter("SnidLongCappingCountInJob", channelAction, channelType)
         }
         else {
           val clickTimestamp = event.getLong(event.fieldIndex("timestamp"))
           if (clickTimestamp - impressionTimestamp < timeWindowShort) {
             cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), bitShort)
             if (metrics != null)
-              metrics.meter("SnidShortCappingCount", channelAction, channelType)
+              metrics.meter("SnidShortCappingCountInJob", channelAction, channelType)
           }
           else if (clickTimestamp - impressionTimestamp > timeWindow){
             cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), bitLong)
             if (metrics != null)
-              metrics.meter("SnidLongCappingCount", channelAction, channelType)
+              metrics.meter("SnidLongCappingCountInJob", channelAction, channelType)
           }
           else {
             cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), 0l)
