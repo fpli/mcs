@@ -5,6 +5,7 @@ import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.globalenv.SiteEnum;
 import com.ebay.traffic.chocolate.mkttracksvc.MKTTrackSvcConfigBean;
 import com.ebay.traffic.chocolate.mkttracksvc.dao.imp.RotationCbDaoImp;
+import com.ebay.traffic.chocolate.mkttracksvc.entity.CampaignInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.entity.RotationInfo;
 import com.ebay.traffic.chocolate.mkttracksvc.exceptions.CBException;
 import com.ebay.traffic.chocolate.mkttracksvc.util.DriverId;
@@ -15,8 +16,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static org.mockito.Matchers.booleanThat;
 import static org.mockito.Mockito.mock;
 
 
@@ -33,12 +36,12 @@ public class RotationCbDaoTest {
 
   @BeforeClass
   public static void construct() throws Exception {
-    CouchbaseClientMock.createClient();
+    CouchbaseClientMock.createClient("rotation_info");
     rotationCbDao = new RotationCbDaoImp(CouchbaseClientMock.getBucket());
   }
 
   @Test
-  public void testInsertAndGetCouchBaseRecord() throws CBException {
+  public void testInsertAndGetCouchBaseRecord(){
     RotationInfo rotationRequest = getTestRotationInfo();
     rotationCbDao.addRotationMap(rotationRequest.getRotation_string(), rotationRequest);
     RotationInfo addedInfo = rotationCbDao.getRotationById(rotationRequest.getRotation_string());
@@ -60,13 +63,11 @@ public class RotationCbDaoTest {
     Assert.assertEquals("testing RotationDescription", addedInfo.getRotation_description());
     Assert.assertNull(addedInfo.getRotation_tag().get(RotationConstant.FIELD_TAG_PERFORMACE_STRATEGIC));
     Assert.assertNull(addedInfo.getRotation_tag().get(RotationConstant.FIELD_TAG_DEVICE));
-
-
   }
 
 
   @Test
-  public void testUpdate() throws CBException {
+  public void testUpdate() {
     RotationInfo rotationRequest = new RotationInfo();
     rotationRequest.setChannel_id(MPLXChannelEnum.DISPLAY.getMplxChannelId());
     rotationRequest.setSite_id(SiteEnum.EBAY_US.getId());
@@ -129,17 +130,18 @@ public class RotationCbDaoTest {
   }
 
   @Test
-  public void testGetRotationInfo() throws CBException {
+  public void testGetRotationInfo() {
     RotationInfo rotationRequest = getTestRotationInfo();
+    rotationRequest.setRotation_name("addedRotationName");
     RotationInfo addRotationInfo = rotationCbDao.addRotationMap(rotationRequest.getRotation_string(), rotationRequest);
     // get by Id
     RotationInfo rInfo = rotationCbDao.getRotationById(addRotationInfo.getRotation_string());
-    Assert.assertEquals("testing RotationName", rInfo.getRotation_name());
+    Assert.assertEquals("addedRotationName", rInfo.getRotation_name());
     Assert.assertEquals("RotationTag-1", rInfo.getRotation_tag().get("TestTag-1"));
     Assert.assertEquals(RotationInfo.STATUS_ACTIVE, rInfo.getStatus());
 
 //    // get by Name
-//    List<RotationInfo> rInfoList = rotationCbDao.getRotationByName("CatherineRotationName");
+//    List<RotationInfo> rInfoList = rotationCbDao.getRotationByName("addedRotationName");
 //    Assert.assertTrue(rInfoList != null && rInfoList.size() > 0);
 //    Assert.assertEquals("CatherineRotationName201806", rInfoList.get(0).getRotation_name());
 //    Assert.assertEquals(RotationInfo.STATUS_ACTIVE, rInfoList.get(0).getStatus());
@@ -166,4 +168,19 @@ public class RotationCbDaoTest {
     rotationRequest.setRotation_string(rotationStr);
     return rotationRequest;
   }
+
+//  @Test
+//  public void testIsExistedCampaign(){
+//    RotationInfo rotationRequest = getTestRotationInfo();
+//    rotationRequest.setCampaign_id(1234567890L);
+//    rotationCbDao.addRotationMap(rotationRequest.getRotation_string(), rotationRequest);
+//    RotationInfo rInfo = rotationCbDao.getRotationById(rotationRequest.getRotation_string());
+//    Assert.assertNotNull(rInfo);
+//
+//    CampaignInfo campInfo = rotationCbDao.getExistedCampaignName(1234567890L);
+////    Assert.assertTrue("campaignId not existed in CB.", isExisted);
+////
+////    isExisted = rotationCbDao.isExistedCampaign(9999999999L);
+////    Assert.assertFalse("campaignId already existed in CB.", isExisted);
+//  }
 }

@@ -20,7 +20,7 @@ public class MKTTrackSvcConfigBean extends BaseConfigBean {
   private static BeanPropertyInfo CouchBase_Buket_Timeout = createBeanPropertyInfo("cbBucketTimeout", "couchbase_bucket_timeout", true);
   private static BeanPropertyInfo CouchBase_Bucket_Rotation = createBeanPropertyInfo("cbBucketRotation", "couchBase_bucket_rotation", true);
   private static BeanPropertyInfo CouchBase_Bucket_Report = createBeanPropertyInfo("cbBucketReport", "couchBase_bucket_report", true);
-
+  private static BeanPropertyInfo ES_URL = createBeanPropertyInfo("esEndpoint", "elasticsearch_endpoint", true);
 
   public MKTTrackSvcConfigBean() throws ConfigCategoryCreateException {
     BeanConfigCategoryInfo categoryInfo = new BeanConfigCategoryInfoBuilder()
@@ -42,6 +42,7 @@ public class MKTTrackSvcConfigBean extends BaseConfigBean {
   private String cbBucketReport;
   private String cbRotationUser;
   private String cbRotationPwd;
+  private String esEndpoint;
 
   public Integer getCbPoolSize() {
     return cbPoolSize;
@@ -113,5 +114,13 @@ public class MKTTrackSvcConfigBean extends BaseConfigBean {
 
   public void setCbRotationPwd(String cbRotationPwd) {
     this.cbRotationPwd = cbRotationPwd;
+  }
+
+  public String getEsEndpoint() {
+    return esEndpoint;
+  }
+
+  public void setEsEndpoint(String esEndpoint) {
+    changeProperty(ES_URL, this.esEndpoint, esEndpoint);
   }
 }

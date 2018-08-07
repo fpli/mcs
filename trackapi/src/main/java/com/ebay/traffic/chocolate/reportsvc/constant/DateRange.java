@@ -31,8 +31,6 @@ public enum DateRange {
   private String paramName;
   private Granularity granularity;
 
-  public static final TimeZone TIMEZONE = TimeZone.getTimeZone("UTC");
-
   public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
   public static final SimpleDateFormat MONTH_FORMAT = new SimpleDateFormat("yyyyMM");
   public static final SimpleDateFormat REQUEST_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
@@ -41,11 +39,8 @@ public enum DateRange {
 
   static {
     DATE_FORMAT.setLenient(false);
-    DATE_FORMAT.setTimeZone(TIMEZONE);
     MONTH_FORMAT.setLenient(false);
-    MONTH_FORMAT.setTimeZone(TIMEZONE);
     REQUEST_DATE_FORMAT.setLenient(false);
-    REQUEST_DATE_FORMAT.setTimeZone(TIMEZONE);
     calendar = null;
   }
 
@@ -104,7 +99,7 @@ public enum DateRange {
   public static List<Integer> getMonthsForDateRange(String startDate, String endDate) throws ParseException {
     List<Integer> months = new ArrayList<>();
 
-    Calendar calStart = Calendar.getInstance(TIMEZONE);
+    Calendar calStart = Calendar.getInstance();
     calStart.setTime(DATE_FORMAT.parse(startDate));
 
     if (startDate.equals(endDate)) {
@@ -112,7 +107,7 @@ public enum DateRange {
       return months;
     }
 
-    Calendar calEnd = Calendar.getInstance(TIMEZONE);
+    Calendar calEnd = Calendar.getInstance();
     calEnd.setTime(DATE_FORMAT.parse(endDate));
 
     // Swap dates if start date is after end date, instead of wasting a request.
@@ -177,7 +172,7 @@ public enum DateRange {
    * @throws ParseException
    */
   public static Calendar getMidnightForDay(String date) throws ParseException {
-    Calendar thisDay = Calendar.getInstance(TIMEZONE);
+    Calendar thisDay = Calendar.getInstance();
     thisDay.setTime(REQUEST_DATE_FORMAT.parse(date));
     thisDay.set(Calendar.HOUR, 0);
     thisDay.set(Calendar.MINUTE, 0);
@@ -501,16 +496,9 @@ public enum DateRange {
     if (DateRange.calendar != null) {
       cal = (Calendar) DateRange.calendar.clone();
     } else {
-      cal = Calendar.getInstance(TIMEZONE);
+      cal = Calendar.getInstance();
     }
     cal.setFirstDayOfWeek(Calendar.MONDAY);
     return cal;
-  }
-
-  /* for testing purposes only */
-  public static void updateTimezone(TimeZone timezone) {
-    DATE_FORMAT.setTimeZone(timezone);
-    MONTH_FORMAT.setTimeZone(timezone);
-    REQUEST_DATE_FORMAT.setTimeZone(timezone);
   }
 }
