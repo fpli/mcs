@@ -68,7 +68,7 @@ public class ESMetrics {
 
   ESMetrics(String prefix) {
     this.INDEX_PREFIX = prefix;
-    timer = new Timer();
+    timer = new Timer(true);
     try {
       hostname = InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
@@ -134,7 +134,6 @@ public class ESMetrics {
   }
 
   private final SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy.MM.dd");
-  //ElasticSearch default date format
   private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   private final Random random = new SecureRandom();
 
