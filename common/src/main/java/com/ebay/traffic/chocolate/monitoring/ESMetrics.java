@@ -68,7 +68,7 @@ public class ESMetrics {
 
   ESMetrics(String prefix) {
     this.INDEX_PREFIX = prefix;
-    timer = new Timer();
+    timer = new Timer(true);
     try {
       hostname = InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
