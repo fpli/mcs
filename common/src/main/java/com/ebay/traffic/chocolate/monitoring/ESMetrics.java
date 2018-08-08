@@ -186,7 +186,7 @@ public class ESMetrics {
     } catch (Exception e) {
       logger.warn(e.toString());
     }
-    meter(name, value);
+    meter(name, value, null);
   }
 
   /**
@@ -236,6 +236,31 @@ public class ESMetrics {
    */
   public void mean(String name, long value) {
     mean(name, value, null);
+  }
+
+  /**
+   * mean with data timestamp
+   * @param currentTime data timestamp
+   */
+  public void mean(String name, long value, long currentTime) {
+    try {
+      name = mergeDateToName(name, currentTime);
+    } catch (Exception e) {
+      logger.warn(e.toString());
+    }
+    mean(name, value, null);
+  }
+
+  /**
+   * mean with data timestamp and additional fields
+   */
+  public void mean(String name, long value, long currentTime, Map<String, Object> additionalFields) {
+    try {
+      name = mergeDateToName(name, currentTime);
+    } catch (Exception e) {
+      logger.warn(e.toString());
+    }
+    mean(name, value, additionalFields);
   }
 
   /**
@@ -470,7 +495,7 @@ public class ESMetrics {
    * test
    */
   public static void main(String[] args) throws Exception {
-    ESMetrics.init("chocolate-metrics-", "http://10.148.181.34:9200");
+    ESMetrics.init("chocolate-metrics-date-", "http://10.148.181.34:9200");
     ESMetrics metrics = ESMetrics.getInstance();
 
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
