@@ -495,7 +495,7 @@ public class ESMetrics {
    * test
    */
   public static void main(String[] args) throws Exception {
-    ESMetrics.init("chocolate-metrics-date-", "http://10.148.181.34:9200");
+    ESMetrics.init("chocolate-metrics-", "http://10.148.181.34:9200");
     ESMetrics metrics = ESMetrics.getInstance();
 
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
