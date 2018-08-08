@@ -70,15 +70,6 @@ public class DefaultChannel implements Channel {
       logger.error("Append url with new tag error");
     }
 
-    if (result.length >= 2) {
-      if (ChannelActionEnum.CLICK.equals(channelAction)) {
-        metrics.meter("ProxyIncomingClickCount");
-      }
-      if (ChannelActionEnum.IMPRESSION.equals(channelAction)) {
-        metrics.meter("ProxyIncomingImpressionCount");
-      }
-    }
-
     producer = KafkaSink.get();
 
     long campaignId = getCampaignID(request);
@@ -89,9 +80,6 @@ public class DefaultChannel implements Channel {
     } catch (MalformedURLException | UnsupportedEncodingException e) {
       logger.error("Wrong with URL format/encoding", e);
     }
-
-    metrics.meter("IncomingCount");
-    esMetrics.meter("IncomingCount", action, type);
 
     String snid = request.getParameter(SNID_PATTERN);
 
