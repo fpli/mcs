@@ -164,9 +164,7 @@ public class DumpLegacyRotationFiles {
         // |Channel ID
         out.write(RotationConstant.FIELD_SEPARATOR);
         if (rotationInfo.containsKey(RotationConstant.FIELD_CHANNEL_ID)) {
-          MPLXChannelEnum mplxChannelEnum = MPLXChannelEnum.getByRoverChannelId(rotationInfo.getInt(RotationConstant.FIELD_CHANNEL_ID));
-          Integer channelId = mplxChannelEnum == null ? rotationInfo.getInt(RotationConstant.FIELD_CHANNEL_ID) : mplxChannelEnum.getMplxChannelId();
-          out.write(String.valueOf(channelId).getBytes());
+          out.write(String.valueOf(rotationInfo.getInt(RotationConstant.FIELD_CHANNEL_ID)).getBytes());
         }
         // |Rotation Click Thru URL
         out.write(RotationConstant.FIELD_SEPARATOR);
