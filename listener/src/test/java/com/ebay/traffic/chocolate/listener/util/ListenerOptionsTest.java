@@ -56,66 +56,6 @@ public class ListenerOptionsTest {
     }
 
     @Test
-    public void testListenerOptionsShouldSetJournalProperties() {
-        Properties prop = new Properties();
-        prop.put(ListenerOptions.JOURNAL_ENABLED, "true");
-        prop.put(ListenerOptions.JOURNAL_NUMBER_OF_PAGES, "4096");
-        prop.put(ListenerOptions.JOURNAL_PAGE_SIZE, "32768");
-        prop.put(ListenerOptions.JOURNAL_ALIGNMENT_SIZE, "128");
-        prop.put(ListenerOptions.JOURNAL_PATH, "/tmp");
-
-        ListenerOptions.init(prop);
-        ListenerOptions options = ListenerOptions.getInstance();
-
-        assertTrue(options.isJournalEnabled());
-        assertEquals(4096, options.getJournalNumberOfPages());
-        assertEquals(32768, options.getJournalPageSize());
-        assertEquals(128, options.getJournalAlignmentSize());
-        assertEquals("/tmp", options.getJournalPath());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testJournalNumberOfPagesMustBePowerOf2() {
-        Properties prop = new Properties();
-        prop.put(ListenerOptions.JOURNAL_NUMBER_OF_PAGES, "7777");
-
-        ListenerOptions.init(prop);
-        ListenerOptions options = ListenerOptions.getInstance();
-
-        options.getJournalNumberOfPages();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testJournalPageSizeMustBePowerOf2() {
-        Properties prop = new Properties();
-        prop.put(ListenerOptions.JOURNAL_PAGE_SIZE, "11111");
-
-        ListenerOptions.init(prop);
-        ListenerOptions options = ListenerOptions.getInstance();
-
-        options.getJournalPageSize();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testJournalAlignmentSizeMustBePowerOf2() {
-        Properties prop = new Properties();
-        prop.put(ListenerOptions.JOURNAL_ALIGNMENT_SIZE, "199");
-
-        ListenerOptions.init(prop);
-        ListenerOptions options = ListenerOptions.getInstance();
-
-        options.getJournalAlignmentSize();
-    }
-
-    @Test
-    public void testJournalFeatureSwitchShouldReturnFalseIfItIsNotSet() {
-        Properties prop = new Properties();
-
-        ListenerOptions.init(prop);
-        assertFalse(ListenerOptions.getInstance().isJournalEnabled());
-    }
-
-    @Test
     public void shouldReturnCorrectValuesForHttpPortAndMaxThreads() {
         Properties prop = new Properties();
         prop.put(ListenerOptions.INPUT_HTTP_PORT, "8080");
