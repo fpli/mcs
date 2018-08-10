@@ -51,7 +51,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     val files1 = fs.listStatus(new Path(params.inputPath1)).map(status => status.getPath.toString)
     val df1 = readFilesAsDFEx(files1)
       .where($"channel_action" === "CLICK" and $"channel_type" === "EPN")
-      .distinct()
+      .dropDuplicates("uri")
       .select($"uri", $"rt_rule_flags", $"nrt_rule_flags")
 
     println("number of records in df1: " + df1.count())
@@ -65,9 +65,9 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       .filter(f => !f.contains("_SUCCESS"))
     // assume df2 only has columns that we want!
     val df2 = readFilesAsDFEx(files2, inputFormat = "csv", schema = amsClickSchema, delimiter = "comma")
-      .distinct()
       .withColumn("rover_url", normalizeUrlUdf(col("rover_url_txt")))
       .drop("rover_url_txt")
+      .dropDuplicates("rover_url")
 
     println("number of records in df2: " + df2.count())
 
@@ -126,24 +126,24 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     // Stdout
     println("Total: " + total)
 
-    println("IPPubS inconsistent: " + ipPubS)
-    println("IPPubL inconsistent: " + ipPubL)
-    println("CGuidS inconsistent: " + cGuidS)
-    println("CGuidL inconsistent: " + cGuidL)
-    println("CGuidPubS inconsistent: " + cGuidPubS)
-    println("CGuidPubL inconsistent: " + cGuidPubL)
-    println("SnidS inconsistent: " + snidS)
-    println("SnidL inconsistent: " + snidL)
+    println("IPPubS inconsistent: " + ipPubS.toFloat/total)
+    println("IPPubL inconsistent: " + ipPubL.toFloat/total)
+    println("CGuidS inconsistent: " + cGuidS.toFloat/total)
+    println("CGuidL inconsistent: " + cGuidL.toFloat/total)
+    println("CGuidPubS inconsistent: " + cGuidPubS.toFloat/total)
+    println("CGuidPubL inconsistent: " + cGuidPubL.toFloat/total)
+    println("SnidS inconsistent: " + snidS.toFloat/total)
+    println("SnidL inconsistent: " + snidL.toFloat/total)
 
-    println("Prefetch inconsistent: " + prefetch)
-    println("IABBot inconsistent: " + iabBot)
-    println("Internal inconsistent: " + internal)
-    println("MissingReferrer inconsistent: " + missingReferrer)
-    println("Protocol inconsistent: " + protocol)
-    println("CGuidStaleness inconsistent: " + cguidStaleness)
-    println("EpnDomainBlacklist inconsistent: " + epnDomainBlacklist)
-    println("IPBlacklist inconsistent: " + ipBlacklist)
-    println("EbayBot inconsistent: " + ebayBot)
+    println("Prefetch inconsistent: " + prefetch.toFloat/total)
+    println("IABBot inconsistent: " + iabBot.toFloat/total)
+    println("Internal inconsistent: " + internal.toFloat/total)
+    println("MissingReferrer inconsistent: " + missingReferrer.toFloat/total)
+    println("Protocol inconsistent: " + protocol.toFloat/total)
+    println("CGuidStaleness inconsistent: " + cguidStaleness.toFloat/total)
+    println("EpnDomainBlacklist inconsistent: " + epnDomainBlacklist.toFloat/total)
+    println("IPBlacklist inconsistent: " + ipBlacklist.toFloat/total)
+    println("EbayBot inconsistent: " + ebayBot.toFloat/total)
   }
 
   // should remove raptor=1 from rover URL
