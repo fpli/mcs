@@ -48,11 +48,14 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     // 1. Load chocolate data
     logger.info("load data for inputpath1...")
 
+    val removeParamsUdf = udf(removeParams(_: String))
     val files1 = fs.listStatus(new Path(params.inputPath1)).map(status => status.getPath.toString)
     val df1 = readFilesAsDFEx(files1)
       .where($"channel_action" === "CLICK" and $"channel_type" === "EPN")
-      .dropDuplicates("uri")
-      .select($"uri", $"rt_rule_flags", $"nrt_rule_flags")
+      .withColumn("new_uri", removeParamsUdf($"uri"))
+      .drop("uri")
+      .dropDuplicates("new_uri")
+      .select($"new_uri", $"rt_rule_flags", $"nrt_rule_flags")
 
     println("number of records in df1: " + df1.count())
 
@@ -78,7 +81,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     val verifyByBitUdf1 = udf(verifyByBit(_: Int, _: Long, _: String))
     val verifyByBitUdf2 = udf(verifyByBit(_: Int, _: Long, _: String, _: String))
 
-    val df = df1.join(df2, $"uri" === $"rover_url", "inner")
+    val df = df1.join(df2, $"new_uri" === $"rover_url", "inner")
       .withColumn("IPPubS", verifyByBitUdf1(lit(1), $"nrt_rule_flags", $"nrt_rule_flag39"))
       .withColumn("IPPubL", verifyByBitUdf1(lit(2), $"nrt_rule_flags", $"nrt_rule_flag43"))
       .withColumn("CGuidS", verifyByBitUdf1(lit(5), $"nrt_rule_flags", $"nrt_rule_flag51"))
@@ -96,7 +99,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       .withColumn("EpnDomainBlacklist", verifyByBitUdf1(lit(4), $"rt_rule_flags", $"rt_rule_flag15"))
       .withColumn("IPBlacklist", verifyByBitUdf1(lit(5), $"rt_rule_flags", $"rt_rule_flag6"))
       .withColumn("EbayBot", verifyByBitUdf1(lit(10), $"rt_rule_flags", $"rt_rule_flag5"))
-      .drop("uri")
+      .drop("new_uri")
       .cache()
 
     println("sampling 10 records:")
@@ -144,6 +147,11 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     println("EpnDomainBlacklist inconsistent: " + epnDomainBlacklist.toFloat/total)
     println("IPBlacklist inconsistent: " + ipBlacklist.toFloat/total)
     println("EbayBot inconsistent: " + ebayBot.toFloat/total)
+  }
+
+  def removeParams(url: String): String = {
+    val splitter = url.split("&").filter(item => !item.startsWith("dashenId") && !item.startsWith("dashenCnt"))
+    splitter.mkString("&")
   }
 
   // should remove raptor=1 from rover URL
