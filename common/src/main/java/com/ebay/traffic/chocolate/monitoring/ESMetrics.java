@@ -374,7 +374,7 @@ public class ESMetrics {
     if (fields[0].contains("#")) {
       String[] getCurrentTime = fields[0].split("#");
       key = getCurrentTime[0];
-      date = getCurrentTime[1];
+      date = sdf.format(Long.parseLong(getCurrentTime[1]) * 1000);
     }
     else {
       key = fields[0];
@@ -483,12 +483,10 @@ public class ESMetrics {
       throw new Exception("Metrics name contains '#'");
     long second = currentTime / 1000 % 60;
     if (second > 30)
-      currentTime = (currentTime/1000 - second + 30) * 1000;
+      currentTime = currentTime/1000 - second + 30;
     else
-      currentTime = (currentTime/1000 - second) * 1000;
-    Date date = new Date(currentTime);
-    String sdfDate = sdf.format(date);
-    return name + "#" + sdfDate;
+      currentTime = currentTime/1000 - second;
+    return name + "#" + currentTime;
   }
 
   /**
