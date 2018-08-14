@@ -68,7 +68,7 @@ public class ESMetrics {
 
   ESMetrics(String prefix) {
     this.INDEX_PREFIX = prefix;
-    timer = new Timer();
+    timer = new Timer(true);
     try {
       hostname = InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
@@ -134,7 +134,6 @@ public class ESMetrics {
   }
 
   private final SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy.MM.dd");
-  //ElasticSearch default date format
   private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   private final Random random = new SecureRandom();
 
@@ -178,6 +177,31 @@ public class ESMetrics {
   }
 
   /**
+   * meter with data timestamp
+   * @param currentTime data timestamp
+   */
+  public void meter(String name, long value, long currentTime) {
+    try {
+      name = mergeDateToName(name, currentTime);
+    } catch (Exception e) {
+      logger.warn(e.toString());
+    }
+    meter(name, value, null);
+  }
+
+  /**
+   * meter with data timestamp and additional fields
+   */
+  public void meter(String name, long value, long currentTime, Map<String, Object> additionalFields) {
+    try {
+      name = mergeDateToName(name, currentTime);
+    } catch (Exception e) {
+      logger.warn(e.toString());
+    }
+    meter(name, value, additionalFields);
+  }
+
+  /**
    * meter with additional fields
    *
    * @param additionalFields fields names except name and value
@@ -215,6 +239,31 @@ public class ESMetrics {
   }
 
   /**
+   * mean with data timestamp
+   * @param currentTime data timestamp
+   */
+  public void mean(String name, long value, long currentTime) {
+    try {
+      name = mergeDateToName(name, currentTime);
+    } catch (Exception e) {
+      logger.warn(e.toString());
+    }
+    mean(name, value, null);
+  }
+
+  /**
+   * mean with data timestamp and additional fields
+   */
+  public void mean(String name, long value, long currentTime, Map<String, Object> additionalFields) {
+    try {
+      name = mergeDateToName(name, currentTime);
+    } catch (Exception e) {
+      logger.warn(e.toString());
+    }
+    mean(name, value, additionalFields);
+  }
+
+  /**
    * mean with channelAction and channelType
    *
    * @param additionalFields fields names except name and value
@@ -247,6 +296,21 @@ public class ESMetrics {
    */
   public void trace(String name, long value) {
     final String index = createIndexIfNecessary();
+    sendMeter(index, name, value);
+  }
+
+  /**
+   * trace with data timestamp
+   *
+   * @param currentTime data timestamp
+   */
+  public void trace(String name, long value, long currentTime) {
+    final String index = createIndexIfNecessary();
+    try {
+      name = mergeDateToName(name, currentTime);
+    } catch (Exception e) {
+      logger.warn(e.toString());
+    }
     sendMeter(index, name, value);
   }
 
@@ -301,14 +365,25 @@ public class ESMetrics {
   }
 
   private void sendMeter(String index, String name, long value) {
-    final Date date = new Date();
     final String type = "_doc";
     final String id = String.valueOf(System.currentTimeMillis()) + String.format("%04d", random.nextInt(10000));
+    final String date;
+    final String key;
 
     String[] fields = name.split(";");
+    if (fields[0].contains("#")) {
+      String[] getCurrentTime = fields[0].split("#");
+      key = getCurrentTime[0];
+      date = sdf.format(Long.parseLong(getCurrentTime[1]) * 1000);
+    }
+    else {
+      key = fields[0];
+      date = sdf.format(new Date());
+    }
+
     Map<String, Object> m = new HashMap<>();
-    m.put("date", sdf.format(date));
-    m.put("key", fields[0]);
+    m.put("date", date);
+    m.put("key", key);
     m.put("value", value);
     m.put("host", hostname);
     int n = fields.length;
@@ -318,6 +393,7 @@ public class ESMetrics {
         m.put(additionalField[0], additionalField[1]);
       }
     }
+
     Gson gson = new Gson();
     try {
       restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
@@ -402,6 +478,17 @@ public class ESMetrics {
     return name;
   }
 
+  private String mergeDateToName(String name, long currentTime) throws Exception {
+    if (name.contains("#"))
+      throw new Exception("Metrics name contains '#'");
+    long second = currentTime / 1000 % 60;
+    if (second > 30)
+      currentTime = currentTime/1000 - second + 30;
+    else
+      currentTime = currentTime/1000 - second;
+    return name + "#" + currentTime;
+  }
+
   /**
    * test
    */
@@ -409,10 +496,19 @@ public class ESMetrics {
     ESMetrics.init("chocolate-metrics-", "http://10.148.181.34:9200");
     ESMetrics metrics = ESMetrics.getInstance();
 
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    long t = System.currentTimeMillis() - 200000000;
+    System.out.println(sdf.format(t));
+
+    Map<String, Object> additionalFields = new HashMap<>();
+    additionalFields.put("channelType", "EPN");
+    additionalFields.put("channelAction", "CLICK");
+
     for (int i = 0; i < 1000; i++) {
       metrics.meter("test");
-      metrics.meter("test", "CLICK", null);
-      metrics.meter("test", "CLICK", "EPN");
+      metrics.meter("test", 1, additionalFields);
+      metrics.meter("test", 1, t);
+      metrics.meter("test", 1, t, additionalFields);
       Thread.sleep(10);
     }
 
