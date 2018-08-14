@@ -49,7 +49,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     logger.info("load data for inputpath1...")
 
     val removeParamsUdf = udf(removeParams(_: String))
-    val files1 = fs.listStatus(new Path(params.inputPath1)).map(status => status.getPath.toString)
+    val files1 = fs.listStatus(new Path(params.srcPath)).map(status => status.getPath.toString)
     val df1 = readFilesAsDFEx(files1)
       .where($"channel_action" === "CLICK" and $"channel_type" === "EPN")
       .withColumn("new_uri", removeParamsUdf($"uri"))
@@ -63,7 +63,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     logger.info("load data for inputpath2...")
 
     val normalizeUrlUdf = udf((roverUrl: String) => normalizeUrl(roverUrl))
-    val files2 = fs.listStatus(new Path(params.inputPath2))
+    val files2 = fs.listStatus(new Path(params.targetPath))
       .map(status => status.getPath.toString)
       .filter(f => !f.contains("_SUCCESS"))
     // assume df2 only has columns that we want!

@@ -8,13 +8,13 @@ import org.apache.spark.sql.types._
 class TestRuleVerifier extends BaseFunSuite {
 
   private val tmpPath = createTempPath()
-  private val inputPath1 = tmpPath + "/inputDir1/"
-  private val inputPath2 = tmpPath + "/inputDir2/"
+  private val srcPath = tmpPath + "/inputDir1/"
+  private val targetPath = tmpPath + "/inputDir2/"
 
   private val args = Array(
     "--mode", "local[8]",
-    "--inputPath1", inputPath1,
-    "--inputPath2", inputPath2
+    "--srcPath", srcPath,
+    "--targetPath", targetPath
   )
 
   private val params = Parameter(args)
@@ -27,8 +27,8 @@ class TestRuleVerifier extends BaseFunSuite {
     df1.show(false)
     df2.show(false)
 
-    job.saveDFToFiles(df1, inputPath1)
-    job.saveDFToFiles(df2, inputPath2, outputFormat = "csv", delimiter = "comma", compressFormat = "uncompressed")
+    job.saveDFToFiles(df1, srcPath)
+    job.saveDFToFiles(df2, targetPath, outputFormat = "csv", delimiter = "comma", compressFormat = "uncompressed")
   }
 
   test("Test RuleVerifier") {

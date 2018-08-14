@@ -4,8 +4,8 @@ import scopt.OptionParser
 
 case class Parameter(appName: String = "RuleVerifier",
                      mode: String = "yarn",
-                     inputPath1: String = "",
-                     inputPath2: String = "")
+                     srcPath: String = "",
+                     targetPath: String = "")
 
 object Parameter {
 
@@ -24,17 +24,17 @@ object Parameter {
       .text("spark job running on yarn or local")
       .action((x, c) => c.copy(mode = x))
 
-    opt[String]("inputPath1")
+    opt[String]("srcPath")
       .required()
       .valueName("<path>")
       .text("source data to be verified")
-      .action((x, c) => c.copy(inputPath1 = x))
+      .action((x, c) => c.copy(srcPath = x))
 
-    opt[String]("inputPath2")
+    opt[String]("targetPath")
       .required()
       .valueName("<path>")
       .text("target data that source data to be verified against")
-      .action((x, c) => c.copy(inputPath2 = x))
+      .action((x, c) => c.copy(targetPath = x))
   }
 
   def apply(args: Array[String]): Parameter = {
