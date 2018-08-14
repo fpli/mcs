@@ -128,7 +128,7 @@ public class KafkaSink {
     public void onCompletion(RecordMetadata metadata, Exception exception) {
       if (metadata == null) {
         MetricsClient.getInstance().meter("KafkaFailure");
-        ESMetrics.getInstance().meter("KafkaFailure");
+        ESMetrics.getInstance().meter("KafkaFailure", 1, System.currentTimeMillis());
         LOG.error(exception);
       } else {
         LOG.debug("Succeeded in sending kafka record=" + metadata);

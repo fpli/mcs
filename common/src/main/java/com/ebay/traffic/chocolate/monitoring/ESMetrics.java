@@ -190,6 +190,18 @@ public class ESMetrics {
   }
 
   /**
+   * meter with data timestamp, channelAction and channelType
+   */
+  public void meter(String name, long value, long currentTime, String channelAction, String channelType) {
+    try {
+      name = mergeDateToName(name, currentTime);
+    } catch (Exception e) {
+      logger.warn(e.toString());
+    }
+    meter(name, value, channelAction, channelType);
+  }
+
+  /**
    * meter with data timestamp and additional fields
    */
   public void meter(String name, long value, long currentTime, Map<String, Object> additionalFields) {

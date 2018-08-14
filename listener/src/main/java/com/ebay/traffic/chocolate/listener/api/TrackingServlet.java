@@ -77,7 +77,7 @@ public class TrackingServlet extends HttpServlet {
     try {
       metrics.meter("TrackingCount");
       TrackingEvent event = new TrackingEvent(new URL(request.getRequestURL().toString()), request.getParameterMap());
-      esMetrics.meter("TrackingCount", event.getAction().getAvro().toString(), event.getChannel().toString());
+      esMetrics.meter("TrackingCount", 1, System.currentTimeMillis(), event.getAction().getAvro().toString(), event.getChannel().toString());
       process(request, response, event);
     } catch (Exception e) {
       logger.error("Couldn't respond to tracking event for " + request.getRequestURL(), e);
@@ -118,7 +118,7 @@ public class TrackingServlet extends HttpServlet {
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
 
       metrics.meter("TrackingSuccess");
-      esMetrics.meter("TrackingSuccess", event.getAction().getAvro().toString(), event.getChannel().toString());
+      esMetrics.meter("TrackingSuccess", 1, System.currentTimeMillis(), event.getAction().getAvro().toString(), event.getChannel().toString());
 
     } catch (Exception e) {
       logger.error("Couldn't respond to tracking event for " + request.getRequestURL(), e);

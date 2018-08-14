@@ -62,9 +62,10 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
     metrics.meter(CLIENT_FAILURE, 0);
     metrics.meter(MALFORMED_URL, 0);
     esMetrics = ESMetrics.getInstance();
-    esMetrics.meter(PROXY_FAILURE, 0);
-    esMetrics.meter(CLIENT_FAILURE, 0);
-    esMetrics.meter(MALFORMED_URL, 0);
+    long currentTime = System.currentTimeMillis();
+    esMetrics.meter(PROXY_FAILURE, 0, currentTime);
+    esMetrics.meter(CLIENT_FAILURE, 0, currentTime);
+    esMetrics.meter(MALFORMED_URL, 0, currentTime);
     channel = ChannelFactory.createChannel();
     super.init();
 
@@ -108,7 +109,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
   @Override
   protected void onProxyResponseFailure(HttpServletRequest clientRequest, HttpServletResponse proxyResponse, Response serverResponse, Throwable failure) {
     metrics.meter(PROXY_FAILURE);
-    esMetrics.meter(PROXY_FAILURE);
+    esMetrics.meter(PROXY_FAILURE, 1, System.currentTimeMillis());
     logger.warn(failure);
     super.onProxyResponseFailure(clientRequest, proxyResponse, serverResponse, failure);
   }
@@ -120,7 +121,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
   @Override
   protected void onClientRequestFailure(HttpServletRequest clientRequest, org.eclipse.jetty.client.api.Request proxyRequest, HttpServletResponse proxyResponse, Throwable failure) {
     metrics.meter(CLIENT_FAILURE);
-    esMetrics.meter(CLIENT_FAILURE);
+    esMetrics.meter(CLIENT_FAILURE,1, System.currentTimeMillis());
     logger.warn(failure);
     super.onClientRequestFailure(clientRequest, proxyRequest, proxyResponse, failure);
   }
@@ -138,7 +139,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
       return setPort(rewrittenURI, portMapping(clientRequest.getLocalPort()));
     } catch (IllegalArgumentException e) {
       metrics.meter(MALFORMED_URL);
-      esMetrics.meter(MALFORMED_URL);
+      esMetrics.meter(MALFORMED_URL, 1, System.currentTimeMillis());
       reencodeQuery(clientRequest);
       URI rewrittenURI = URI.create(super.rewriteTarget(clientRequest));
       return setPort(rewrittenURI, portMapping(clientRequest.getLocalPort()));
