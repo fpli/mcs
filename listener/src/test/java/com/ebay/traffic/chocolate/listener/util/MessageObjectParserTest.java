@@ -1,12 +1,9 @@
 package com.ebay.traffic.chocolate.listener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -24,8 +21,6 @@ import static org.junit.Assert.assertEquals;
 /**
  * Created by kanliu on 7/13/2017.
  */
-@RunWith(RaptorIOSpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class MessageObjectParserTest {
     private static MessageObjectParser parser;
     private MockHttpServletRequest mockClientRequest;
@@ -153,21 +148,6 @@ public class MessageObjectParserTest {
         assertTrue(testUrl.contains("dashenCnt"));
         assertTrue(testUrl.indexOf("dashenId") == testUrl.lastIndexOf("dashenId"));
         assertTrue(testUrl.indexOf("dashenCnt") == testUrl.lastIndexOf("dashenCnt"));
-    }
-
-    @Test
-    public void testIsCoreSite() {
-        mockClientRequest.setScheme("http");
-        mockClientRequest.setServerName("rover.ebay.com");
-        mockClientRequest.setRequestURI("/a/b/c");
-        mockClientRequest.setServerPort(80);
-        mockClientRequest.addHeader("a", "b");
-        mockProxyResponse.setStatus(301);
-        mockProxyResponse.setHeader("Location", "https://www.ebay.co.uk/1/2/9?a=b&chocolateSauce=http%3A%2F%2Frover.ebay.com%2Fa%2Fb%2Fc");
-        assertTrue(parser.isCoreSite(mockClientRequest));
-
-        mockClientRequest.setServerName("rover.ebay.co.uk");
-        assertFalse(parser.isCoreSite(mockClientRequest));
     }
 }
 
