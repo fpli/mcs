@@ -135,7 +135,7 @@ public class CouchbaseClient {
         if (document == null) {
           logger.warn("No publisherID found for campaign " + campaignId + " in couchbase");
           metrics.meter("ErrorPublishID");
-          esMetrics.meter("ErrorPublishID", 1, System.currentTimeMillis());
+          esMetrics.meter("ErrorPublishID");
           return DEFAULT_PUBLISHER_ID;
         }
         return Long.parseLong(document.content().toString());
@@ -143,7 +143,7 @@ public class CouchbaseClient {
         logger.warn("Error in converting publishID " + getBucket(factory.getClient(datasourceName)).get(String.valueOf(campaignId),
             StringDocument.class).toString() + " to Long", ne);
         metrics.meter("ErrorPublishID");
-        esMetrics.meter("ErrorPublishID", 1, System.currentTimeMillis());
+        esMetrics.meter("ErrorPublishID");
         return DEFAULT_PUBLISHER_ID;
       } catch (Exception e) {
         logger.warn("Couchbase query operation timeout, will sleep for 30s to retry", e);

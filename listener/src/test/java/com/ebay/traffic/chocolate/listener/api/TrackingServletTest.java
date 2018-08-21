@@ -83,8 +83,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", 111L, mockObject), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, atLeastOnce()).meter("TrackingSuccess");
-    //verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
-    //verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
   }
 
   @Test
@@ -106,8 +106,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", 111L, mockObject), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
-    //verify(mockESMetrics, never()).meter("TrackingCount", "CLICK", "EPN");
-    //verify(mockESMetrics, never()).meter("TrackingSuccess", "CLICK", "EPN");
+    verify(mockESMetrics, never()).meter("TrackingCount", "CLICK", "EPN");
+    verify(mockESMetrics, never()).meter("TrackingSuccess", "CLICK", "EPN");
   }
 
   @Test
@@ -129,8 +129,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", 111L, mockObject), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
-    //verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", "CLICK", "EPN");
-    //verify(mockESMetrics, never()).meter("TrackingSuccess", "CLICK", "EPN");
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", "CLICK", "EPN");
+    verify(mockESMetrics, never()).meter("TrackingSuccess", "CLICK", "EPN");
   }
 
   @Test
@@ -150,8 +150,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
-    //verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
-    //verify(mockESMetrics, never()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, never()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
   }
 
   @Test
@@ -171,8 +171,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
-    //verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
-    //verify(mockESMetrics, never()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, never()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
   }
 
   @Test
@@ -194,8 +194,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, never()).meter("TrackingSuccess");
-    //verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
-    //verify(mockESMetrics, never()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, never()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
   }
 
   @Test
@@ -221,8 +221,8 @@ public class TrackingServletTest {
         new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, atLeastOnce()).meter("TrackingSuccess");
-    //verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
-    //verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
   }
 
   @Test
@@ -252,8 +252,8 @@ public class TrackingServletTest {
 
     verify(mockMetrics, atLeastOnce()).meter("TrackingCount");
     verify(mockMetrics, atLeastOnce()).meter("TrackingSuccess");
-    //verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
-    //verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
+    verify(mockESMetrics, atLeastOnce()).meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
   }
 
 }

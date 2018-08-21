@@ -66,7 +66,7 @@ class KafkaRDD[K, V](
         // lag metric
         val additionalFields: util.Map[String, AnyRef] = new util.HashMap[String, AnyRef]
         additionalFields.put("consumer", Integer.valueOf(tp.partition))
-        metrics.mean("SparkKafkaConsumerLag", endOffset.getValue - position, System.currentTimeMillis(), additionalFields)
+        metrics.mean("SparkKafkaConsumerLag", endOffset.getValue - position, additionalFields)
       }
 
       if (until > position) {
@@ -152,9 +152,8 @@ class KafkaRDD[K, V](
 
     // metrics
     if (metrics != null) {
-      val currentTime = System.currentTimeMillis()
-      metrics.trace("Consumer" + topicPartition.partition() + "-offset", offset, currentTime)
-      metrics.trace("Consumer" + topicPartition.partition() + "-until", part.untilOffset, currentTime)
+      metrics.trace("Consumer" + topicPartition.partition() + "-offset", offset)
+      metrics.trace("Consumer" + topicPartition.partition() + "-until", part.untilOffset)
     }
 
     var nextRecord: ConsumerRecord[K, V] = null // cache the next record
@@ -182,7 +181,7 @@ class KafkaRDD[K, V](
       val record = nextRecord
       offset = record.offset() + 1 // update offset
       if (metrics != null) {
-        metrics.meter("KafkaRDD-Input", 1, System.currentTimeMillis())
+        metrics.meter("KafkaRDD-Input", 1, record.timestamp())
       }
 
       nextRecord = null

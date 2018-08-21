@@ -73,9 +73,9 @@ public class FilterWorker extends Thread {
     this.metrics.meter("FilterError", 0);
     this.metrics.meter("messageParseFailure", 0);
     this.metrics.mean("FilterPassedPPM", 0L);
-    this.esMetrics.meter("FilterError", 0, System.currentTimeMillis());
-    this.esMetrics.meter("messageParseFailure", 0, System.currentTimeMillis());
-    this.esMetrics.mean("FilterPassedPPM", 0, System.currentTimeMillis());
+    this.esMetrics.meter("FilterError", 0);
+    this.esMetrics.meter("messageParseFailure", 0);
+    this.esMetrics.mean("FilterPassedPPM", 0);
 
     try {
       consumer.subscribe(Arrays.asList(inputTopic));
@@ -95,21 +95,21 @@ public class FilterWorker extends Thread {
           ConsumerRecord<Long, ListenerMessage> record = iterator.next();
           ListenerMessage message = record.value();
           metrics.meter("FilterInputCount");
-          esMetrics.meter("FilterInputCount", 1, System.currentTimeMillis(), message.getChannelAction().toString(), message.getChannelType().toString());
+          esMetrics.meter("FilterInputCount", 1, message.getTimestamp(), message.getChannelAction().toString(), message.getChannelType().toString());
           long latency = System.currentTimeMillis() - message.getTimestamp();
           metrics.mean("FilterLatency", latency);
-          esMetrics.mean("FilterLatency", latency, System.currentTimeMillis());
+          esMetrics.mean("FilterLatency", latency, message.getTimestamp());
 
           ++count;
           metrics.meter("FilterThroughput");
-          esMetrics.meter("FilterThroughput", 1, System.currentTimeMillis(), message.getChannelAction().toString(), message.getChannelType().toString());
+          esMetrics.meter("FilterThroughput", 1, message.getTimestamp(), message.getChannelAction().toString(), message.getChannelType().toString());
 
           FilterMessage outMessage = processMessage(message);
 
           if (outMessage.getRtRuleFlags() == 0) {
             ++passed;
             metrics.meter("FilterPassedCount");
-            esMetrics.meter("FilterPassedCount", 1, System.currentTimeMillis(), outMessage.getChannelAction().toString(), outMessage.getChannelType().toString());
+            esMetrics.meter("FilterPassedCount", 1, outMessage.getTimestamp(), outMessage.getChannelAction().toString(), outMessage.getChannelType().toString());
           }
 
           // cache current offset for partition*
@@ -146,7 +146,7 @@ public class FilterWorker extends Thread {
               Map<String, Object> additionalFields = new HashMap<>();
               additionalFields.put("channelType", channelType.toString());
               additionalFields.put("consumer", tp.partition());
-              esMetrics.mean("FilterKafkaConsumerLag", endOffset - offset, now, additionalFields);
+              esMetrics.mean("FilterKafkaConsumerLag", endOffset - offset, additionalFields);
             }
           }
 
@@ -155,22 +155,21 @@ public class FilterWorker extends Thread {
 
         if (count == 0) {
           metrics.mean("FilterIdle", 1);
-          esMetrics.mean("FilterIdle", 1, System.currentTimeMillis());
+          esMetrics.mean("FilterIdle");
           Thread.sleep(POLL_STEP_MS);
         } else {
           metrics.mean("FilterPassedPPM", 1000000L * passed / count);
-          esMetrics.mean("FilterPassedPPM", 1000000L * passed / count, System.currentTimeMillis());
-          long currentTime = System.currentTimeMillis();
-          long timeSpent = currentTime - startTime;
+          esMetrics.mean("FilterPassedPPM", 1000000L * passed / count);
+          long timeSpent = System.currentTimeMillis() - startTime;
           metrics.mean("FilterProcessingTime", timeSpent);
-          esMetrics.mean("FilterProcessingTime", timeSpent, currentTime);
+          esMetrics.mean("FilterProcessingTime", timeSpent);
 
           if (timeSpent >= POLL_STEP_MS) {
             this.metrics.mean("FilterIdle", 0);
-            this.esMetrics.mean("FilterIdle", 0, System.currentTimeMillis());
+            this.esMetrics.mean("FilterIdle", 0);
           } else {
             this.metrics.mean("FilterIdle", 1);
-            this.esMetrics.mean("FilterIdle", System.currentTimeMillis());
+            this.esMetrics.mean("FilterIdle");
             Thread.sleep(POLL_STEP_MS);
           }
         }
@@ -178,7 +177,7 @@ public class FilterWorker extends Thread {
     } catch (Exception e) {
       LOG.warn("Exception in worker thread: ", e);
       this.metrics.meter("FilterError");
-      this.esMetrics.meter("FilterError", System.currentTimeMillis());
+      this.esMetrics.meter("FilterError");
     } finally {
       consumer.close();
     }
