@@ -2,7 +2,7 @@ package com.ebay.traffic.chocolate.sparknrt.verifier
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import org.apache.commons.lang3.StringUtils
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FSDataOutputStream, Path}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
@@ -121,32 +121,42 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     val internal = df.where($"Internal" === false).count()
     val missingReferrer = df.where($"MissingReferrer" === false).count()
     val protocol = df.where($"Protocol" === false).count()
-    val cguidStaleness = df.where($"CGuidStaleness" === false).count()
+    val cGuidStaleness = df.where($"CGuidStaleness" === false).count()
     val epnDomainBlacklist = df.where($"EpnDomainBlacklist" === false).count()
     val ipBlacklist = df.where($"IPBlacklist" === false).count()
     val ebayBot = df.where($"EbayBot" === false).count()
 
-    // Stdout
-    println("Total: " + total)
+    // 4. Write out result to file on hdfs
+    var outputStream: FSDataOutputStream = null
+    try {
+      outputStream = fs.create(new Path(params.outputPath))
+      outputStream.writeChars("Total: " + total + "\n")
 
-    println("IPPubS inconsistent: " + ipPubS.toFloat/total)
-    println("IPPubL inconsistent: " + ipPubL.toFloat/total)
-    println("CGuidS inconsistent: " + cGuidS.toFloat/total)
-    println("CGuidL inconsistent: " + cGuidL.toFloat/total)
-    println("CGuidPubS inconsistent: " + cGuidPubS.toFloat/total)
-    println("CGuidPubL inconsistent: " + cGuidPubL.toFloat/total)
-    println("SnidS inconsistent: " + snidS.toFloat/total)
-    println("SnidL inconsistent: " + snidL.toFloat/total)
+      outputStream.writeChars("IPPubS inconsistent: " + ipPubS.toFloat/total + "\n")
+      outputStream.writeChars("IPPubL inconsistent: " + ipPubL.toFloat/total + "\n")
+      outputStream.writeChars("CGuidS inconsistent: " + cGuidS.toFloat/total + "\n")
+      outputStream.writeChars("CGuidL inconsistent: " + cGuidL.toFloat/total + "\n")
+      outputStream.writeChars("CGuidPubS inconsistent: " + cGuidPubS.toFloat/total + "\n")
+      outputStream.writeChars("CGuidPubL inconsistent: " + cGuidPubL.toFloat/total + "\n")
+      outputStream.writeChars("SnidS inconsistent: " + snidS.toFloat/total + "\n")
+      outputStream.writeChars("SnidL inconsistent: " + snidL.toFloat/total + "\n")
 
-    println("Prefetch inconsistent: " + prefetch.toFloat/total)
-    println("IABBot inconsistent: " + iabBot.toFloat/total)
-    println("Internal inconsistent: " + internal.toFloat/total)
-    println("MissingReferrer inconsistent: " + missingReferrer.toFloat/total)
-    println("Protocol inconsistent: " + protocol.toFloat/total)
-    println("CGuidStaleness inconsistent: " + cguidStaleness.toFloat/total)
-    println("EpnDomainBlacklist inconsistent: " + epnDomainBlacklist.toFloat/total)
-    println("IPBlacklist inconsistent: " + ipBlacklist.toFloat/total)
-    println("EbayBot inconsistent: " + ebayBot.toFloat/total)
+      outputStream.writeChars("Prefetch inconsistent: " + prefetch.toFloat/total + "\n")
+      outputStream.writeChars("IABBot inconsistent: " + iabBot.toFloat/total + "\n")
+      outputStream.writeChars("Internal inconsistent: " + internal.toFloat/total + "\n")
+      outputStream.writeChars("MissingReferrer inconsistent: " + missingReferrer.toFloat/total + "\n")
+      outputStream.writeChars("Protocol inconsistent: " + protocol.toFloat/total + "\n")
+      outputStream.writeChars("CGuidStaleness inconsistent: " + cGuidStaleness.toFloat/total + "\n")
+      outputStream.writeChars("EpnDomainBlacklist inconsistent: " + epnDomainBlacklist.toFloat/total + "\n")
+      outputStream.writeChars("IPBlacklist inconsistent: " + ipBlacklist.toFloat/total + "\n")
+      outputStream.writeChars("EbayBot inconsistent: " + ebayBot.toFloat/total + "\n")
+
+      outputStream.flush()
+    } finally {
+      if (outputStream != null) {
+        outputStream.close()
+      }
+    }
   }
 
   def removeParams(url: String): String = {
