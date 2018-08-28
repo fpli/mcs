@@ -1,0 +1,68 @@
+CREATE EXTERNAL TABLE `imk_rvr_trckng_event`(
+  `batch_id` int,
+  `file_id` int,
+  `file_schm_vrsn` tinyint,
+  `rvr_id` bigint,
+  `event_dt` string,
+  `srvd_pstn` tinyint,
+  `rvr_cmnd_type_cd` tinyint,
+  `rvr_chnl_type_cd` tinyint,
+  `cntry_cd` string,
+  `lang_cd` string,
+  `trckng_prtnr_id` tinyint,
+  `cguid` string,
+  `guid` string,
+  `user_id` bigint,
+  `clnt_remote_ip` string,
+  `brwsr_type_id` tinyint,
+  `brwsr_name` string,
+  `rfrr_dmn_name` string,
+  `rfrr_url` string,
+  `url_encrptd_yn_ind` tinyint,
+  `pblshr_id` bigint,
+  `lndng_page_dmn_name` string,
+  `lndng_page_url` string,
+  `user_query` string,
+  `rule_bit_flag_strng` string,
+  `event_ts` string,
+  `dflt_bhrv_id` tinyint,
+  `src_rotation_id` bigint,
+  `dst_rotation_id` bigint,
+  `user_map_ind` tinyint,
+  `dst_client_id` int,
+  `creative_id` bigint,
+  `test_ctrl_flag` tinyint,
+  `mfe_id` int,
+  `kw_id` bigint,
+  `keyword` string,
+  `mt_id` bigint,
+  `crlp` string,
+  `geo_id` bigint,
+  `item_id` bigint,
+  `transaction_type` string,
+  `transaction_id` bigint,
+  `cart_id` bigint,
+  `extrnl_cookie` string,
+  `ebay_site_id` bigint,
+  `rvr_url` string,
+  `cre_date` string,
+  `cre_user` string,
+  `upd_date` string,
+  `upd_user` string)
+PARTITIONED BY (
+  `dt` string)
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY '
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.mapred.SequenceFileInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'
+LOCATION
+  'hdfs://apollo-phx-nn-ha/sys/edw/imk_rvr_trckng_event/sequence'
+TBLPROPERTIES (
+  'COLUMN_STATS_ACCURATE'='false',
+  'numFiles'='0',
+  'numRows'='-1',
+  'rawDataSize'='-1',
+  'totalSize'='0',
+  'transient_lastDdlTime'='1470980772')

@@ -1,2 +1,0 @@
-type=command
-command=bash -c "date --date='-5 minute' +%Y%m%d%H%M%S > rundate.text"

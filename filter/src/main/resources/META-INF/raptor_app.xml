@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+    <type>Service</type>
+    <public>false</public>
+    <!-- Mandatory field -->
+    <description>Chocolate Filtering service</description>
+    <name>chocofil</name>
+    <lifecycleState>Deployed</lifecycleState>
+    <!-- Optional field: true if your application invokes services that require an IAFToken -->
+    <!--<secureService>true</secureService>-->
+</application>

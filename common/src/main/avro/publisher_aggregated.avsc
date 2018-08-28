@@ -1,0 +1,30 @@
+{
+	"namespace": "com.ebay.app.raptor.chocolate.avro",
+	"type": "record",
+	"name": "AggregatedPublisher",
+	"pk": ["snapshot_id"],
+	"fields": [{
+		"name": "click_count",
+		"type": "long"
+	},{
+		"name": "impression_count",
+		"type": "long"
+	},{
+		"name": "snapshot_id",
+		"type": "long"
+	},{
+		"name": "publisher_id",
+		"type": "long"
+	},{
+		"name": "campaign_id",
+		"type": "long"
+	},{
+		"name": "epoch_window_start",
+		"type": "long"
+	},{
+		"name": "epoch_window_end",
+		"type": "long"
+	}
+
+    ]
+}
