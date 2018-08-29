@@ -1,34 +1,34 @@
 #
-#	IAB_ABC_International_Spiders_and_Robots_201807_18-125935
-#	July 18, 2018
+#	IAB_ABC_International_Spiders_and_Robots_201808_21-090358
+#	August 21, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
 # This list has been reviewed by the IAB MTF Spider & Robot Policy Board.
-# This file contains a list of patterns that may be matched against HTTP User 
-# Agent (UA) strings to determine whether that UA matches a known spider or 
+# This file contains a list of patterns that may be matched against HTTP User
+# Agent (UA) strings to determine whether that UA matches a known spider or
 # robot. This is one step of several required for compliance to IAB Advertising
 # Measurement Guidelines.
 #
-# The list is valid for use when counting Client Side Counting (CSC) 
+# The list is valid for use when counting Client Side Counting (CSC)
 # transactions. See http://www.iab.com/guidelines/iab-measurement-guidelines/
 # for more info.
 #
-# Rule: If any of these patterns are found to match any string within the HTTP 
-# User-Agent, case insensitively, it is identified as a non-human interaction 
+# Rule: If any of these patterns are found to match any string within the HTTP
+# User-Agent, case insensitively, it is identified as a non-human interaction
 # and so should be filtered from counts.
 #
-# It is strongly suggested that users analyze their own log data and sort this 
-# list in order of frequency to allow their filter program to work as 
-# efficiently as possible. 
+# It is strongly suggested that users analyze their own log data and sort this
+# list in order of frequency to allow their filter program to work as
+# efficiently as possible.
 #
-# This list is provided in good faith but must be used at the user's own risk.  
-# The IAB, ABC and AAM accept no responsibility for any 
+# This list is provided in good faith but must be used at the user's own risk.
+# The IAB, ABC and AAM accept no responsibility for any
 # legal, technical or commercial consequences arising from the use of this list.
 #
 # Special characters in this file:
-#	# - (only at the start of a line) this line is a comment 
-#	| - field separator 
+#	# - (only at the start of a line) this line is a comment
+#	| - field separator
 #	, - field separator (Used when multiple exceptions)
 #	blank lines may be present. ignore them.
 #
@@ -39,15 +39,15 @@
 # 1=pattern is active and should be matched
 # 0=pattern is inactive, and should ignored
 # 3) comma-separated list of exception patterns
-# 4) an additional flag was added to this list in November 2005 to identify 
+# 4) an additional flag was added to this list in November 2005 to identify
 #    those user-agent strings on this list that would not pass the valid user-
 #    agent test and therefore, are redundant if both lists are used.
 #          1=this entry is not needed for those who use a two-pass approach
-#          0=this entry is always needed for both one-pass and two-pass 
+#          0=this entry is always needed for both one-pass and two-pass
 #            approaches
 # 5) Another flag was added to this list when the IAB and ABC merged their two
 #    lists (01/06) to identify those strings that primarily impact page
-#    impression measurement vs. those strings that primarily impact ad  
+#    impression measurement vs. those strings that primarily impact ad
 #    impression measurement (or both). The flags are as follows:
 #          0=this entry primarily impacts page impression measurement
 #          1=this entry primarily impacts ad impression measurement
@@ -59,11 +59,11 @@
 # 	mm/dd/yyyy format
 #
 # NOTES:
-# The 3rd column supports an 'exception' feature, which lets the file specify 
+# The 3rd column supports an 'exception' feature, which lets the file specify
 # broadly matching patterns and then allow special cases. For instance, if a UA
-# advertises itself as a 'robot', it should be ignored for counting purposes 
-# unless the string 'robotics' is present, which allows for the counting of US 
-# Robotics cobranded browsers. There may be more than one exception for each 
+# advertises itself as a 'robot', it should be ignored for counting purposes
+# unless the string 'robotics' is present, which allows for the counting of US
+# Robotics cobranded browsers. There may be more than one exception for each
 # pattern separated by a comma. The use of exception strings are required by
 # MRC's Invalid Traffic Detection and Filtration Guidelines Addendum.
 #
@@ -71,12 +71,12 @@
 # impressions (or both) but should be used only as a guide. Application of this
 # list should be based on an analysis of the activity itself before excluding
 # any entries.
-#  
-# UA strings are considered uncountable (per IAB Guidelines) if they contain 
-# any of the following patterns (note: patterns are case insensitive, but left 
+#
+# UA strings are considered uncountable (per IAB Guidelines) if they contain
+# any of the following patterns (note: patterns are case insensitive, but left
 # in this file in mixed case for human legibility)
 #
-# Contact AAM in the U.S. (spiders.bots@auditedmedia.com) or 
+# Contact AAM in the U.S. (spiders.bots@auditedmedia.com) or
 # ABC in the UK (spiders.bots@abc.org.uk) with any feedback regarding this
 # file.
 #
@@ -509,6 +509,18 @@ DuckDuckBot|1||0|2|0
 APIs-Google|1||1|2|0
 FlippBot|1||0|2|0
 HisBot|1||0|2|0
+Tesseract/|1||0|2|0
+Qwantify/|1||0|2|0
+archivethe.net|1||0|2|0
+G-i-g-a-b-o-t|1||1|2|1
+HubSpot; combined-css|1||0|2|0
+HubSpot;+combined-css|1||0|2|0
+WhatsApp/|1||0|2|1
+ExtLinksBot/|1||0|2|0
+Laserlikebot/|1||0|2|0
+expo9|1||1|2|1
+ScooperBot/|1||0|2|0
+YaK/|1||0|2|0
 aport|1|netaporter, OperaPortable|0|2|0
 b2w|1|B2WTenisnew|0|0|0
 combine|1|Combined|0|0|0
@@ -800,12 +812,12 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 #
 # **************BEGIN MODIFICATION TRACKING*********************
 # January 2006 - removed the following: abachobot, e-societyrobot, exabot, gais robot, gais+robot, gigabot, girafabot, linbot, lycos monitoring robot, lycos+monitoring+robot, msnbot, nabot, rabot, rpt-httpclient, synobot, turnitinbot, voilabot, and www.server-monitoring.co.uk
-# January 2006 - added the following: ez publish link validator, ez+publish+link+validator, whistleblower, terrawizbot, and topix.net 
+# January 2006 - added the following: ez publish link validator, ez+publish+link+validator, whistleblower, terrawizbot, and topix.net
 # January 2006 - If a sub-string match of "obot" is found, it is valid if the full term is "robotics".  If a sub-string match of "spinne" is found, it is valid if the full term is "spinner"
 # February 2006 - (1) Goldfire (2) Site Vigil (3) EmailSmartz (4) iOpus-I-M (5) BITS
-# March 2006 - (1) heritrix (2) removed topix.net 
+# March 2006 - (1) heritrix (2) removed topix.net
 # April 2006 - (1) c r a w l e r (2) c+r+a+w+l+e+r (3) Freedom (4) internal zero-knowledge agent (5) internal+zero-knowledge+agent (6) yahoofeedseeker (7) removed Yahoo (8) removed newwave-lisa (9) ipswitch_whatsup
-# May 2006 - (1) NaverBot (2) SurveyBot/ (3) Liferea (4) NetNewsWire 
+# May 2006 - (1) NaverBot (2) SurveyBot/ (3) Liferea (4) NetNewsWire
 # May 2006 - If a sub-string match of "fast" is found, it is valid if the full term is "fastbar".  If a sub-string match of "motor" is found, it is valid if the full term is "motorola"
 # June 2006 - (1) TPSystem
 # July 2006 - (1) YahooSeeker (2) FindLinks (3) psycheclone
@@ -857,14 +869,14 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 # March 2010 - (1) (simulated_by_Webserver_Stress_Tool) (2) SWSBot (3) NoteworthyBot (4) Linguee Bot  (5) Linguee+Bot (6) WAPT (7) UPDATED "Apache-HttpClient" TO "Apache-HttpClient/4.0 (java 1.5) & "Apache-HttpClient/4.0+(java+1.5)  (8) hobbit (9) changedetection (10) updatepatrol (11) FeedForAll
 # April 2010 - (1) AMZNKAssocBot (2) SiteCon
 # May 2010 - no changes
-# June 2010 - (1) Sosospider (2) twitterbot (3) added Yandex Browser and Yandex+Browser as exceptions to Yandex (4) added fastbrowsersearch as an exception to fast (5) updated the exception for pita from hospital to spital (6) updated baudi to baudispider (7) Flag 6 updated for WAPT from 1 to 0.  Additionally, 47 bots have been moved to the inactive list. 
+# June 2010 - (1) Sosospider (2) twitterbot (3) added Yandex Browser and Yandex+Browser as exceptions to Yandex (4) added fastbrowsersearch as an exception to fast (5) updated the exception for pita from hospital to spital (6) updated baudi to baudispider (7) Flag 6 updated for WAPT from 1 to 0.  Additionally, 47 bots have been moved to the inactive list.
 # July 2010 - no changes
 # August 2010 - (1) richmetrics.com/bot (2) bingbot (3) WWW-Mechanize (4) Purebot (5) moved motor to the inactive list
 # September 2010 - no changes
 # October 2010 - no changes
 # November 2010 - (1) Google Web Preview (2) Google+Web+Preview
-# December 2010 - (1) updated iOpus-I-M to iOpus (2) ADGBOT (3) httpunit (4) iisbot (5) Curious George (6) Curious+George (7) PostRank (8) HttpComponents (9) Tasapspider (10) Truveo (11) Twisted PageGetter 
-# December 2010 - (12) Twisted+PageGetter (13) Woodstone Servers Alive URL check (14) Woodstone+Servers+Alive+URL+check (15) Servers Alive URL check (16) Servers+Alive+URL+check (17) AppEngine-Google.  
+# December 2010 - (1) updated iOpus-I-M to iOpus (2) ADGBOT (3) httpunit (4) iisbot (5) Curious George (6) Curious+George (7) PostRank (8) HttpComponents (9) Tasapspider (10) Truveo (11) Twisted PageGetter
+# December 2010 - (12) Twisted+PageGetter (13) Woodstone Servers Alive URL check (14) Woodstone+Servers+Alive+URL+check (15) Servers Alive URL check (16) Servers+Alive+URL+check (17) AppEngine-Google.
 # December 2010 - Additionally, 45 bots that were determined to be inactive were removed and 13 inactive bots have been reactivated. A duplicate entry with a spelling error also removed (changedection) which is now inactivate and a space after "Linguee Bot" and "Linguee+Bot" was removed.
 # January 2011 - (1) YioopBot
 # February 2011 - (1) Flamingo_SearchEngine, (2) NTTE+Poller, updated the 4th flag for "siteimprove" to a 0, updated the 6th flag for "lwp" to a 1, reactivated "wepbot"
@@ -872,7 +884,7 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 # April 2011 - (1) Atomic_Email_Hunter (2) AlbertBot (3) FeedBurner (4) facebookexternalhit (5) talktalk (6) ScraperWiki
 # May 2011 - (1) adbeat (2) SightupBot
 # June 2011 - (1) lightspeed systems (2) lightspeed+systems (3) SJN (4) Updated BITS to "Microsoft BITS" and "Microsoft+BITS" (5) 37 bots were made inactive (6) 16 bots were reactivated
-# June 2011 - Emergency update to remove "motor" made on July 14, 2011 (motor reactivated on June 24, 2011 in error) 
+# June 2011 - Emergency update to remove "motor" made on July 14, 2011 (motor reactivated on June 24, 2011 in error)
 # July 2011 - (1) outbrain
 # August 2011 - (1) TweetmemeBot (2) WASALive (3) wikiwix-bot (4) Ezooms (5) HiScan
 # September 2011 - (1) d24y-aegis (2) RankurBot (3) Updated "isense" to "isense bot" & "isense+bot" (4) Updated "crawler" to "crawl" (5) Removed "fast" (6) added the following 27 exceptions to current bots on the lists:
@@ -894,8 +906,8 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 # August 2012 - (1) MNA Digital Circonus Check (2) MNA+Digital+Circonus+Check (3) Aware (4) AppNeta Sequencer (5) AppNeta+Sequencer (6) scanalert (7) catchpoint
 # September 2012 - no changes
 # October 2012 - added the following (1) discoverybot (2) Jooblebot (3) bitlybot (4) ADR) and Reactivated the following (1) ClickAJob (2) JobRapido (3) Nielsen ADR (4) Nielsen+ADR
-# November 2012 - (1) AdometryBot (2) TSMbot  (3) OrangeBot-Mobile (4) Apache-HttpClient/4.1.1 (java 1.5) (5) Apache-HttpClient/4.1.1+(java+1.5) (6) PhantomJS (7) SCC Internet Services - URL Check (8) SCC+Internet+Services+-+URL+Check. 
-# November 2012 - Reactivated "/teoma", removed "yotta" (from the inactive list) and added "YottaaMonitor" to the Exclude List. 
+# November 2012 - (1) AdometryBot (2) TSMbot  (3) OrangeBot-Mobile (4) Apache-HttpClient/4.1.1 (java 1.5) (5) Apache-HttpClient/4.1.1+(java+1.5) (6) PhantomJS (7) SCC Internet Services - URL Check (8) SCC+Internet+Services+-+URL+Check.
+# November 2012 - Reactivated "/teoma", removed "yotta" (from the inactive list) and added "YottaaMonitor" to the Exclude List.
 # December 2012 - Deactivated the following bots: CE-Preload, sitescooper, NaverBot, N-central, Swish-e, Twingly, Purebot, AlbertBot, ScraperWiki, RankurBot
 # January 2013 - (1) tagscanner
 # February 2013 - (1) LoadImpactPageAnalyzer, (2) CFSCHEDULE
@@ -905,7 +917,7 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 # June 2013 - (1) ColdFusion (2) Open Web Analytics Bot (3) Open+Web+Analytics+Bot
 # June 2013 - Deactivated the following: EC2LinkFinder, Hitlist, JobbleBot, Kinja, MLBot, npbot, Omniexplorer, Search-Engine-Studio, SmokePing, Wfarc, Wusage/
 # June 2013 - Reactivated the following: Linguee Bot, Linguee+Bot, Ocelli, richmetrics.com/bot, Dotbot
-# July 2013 - (1) YahooExternalCache (2) HP SiteScope (3) HP+SiteScope (4) Feedzilla (5) Superfeedr (6) ActiveXperts 
+# July 2013 - (1) YahooExternalCache (2) HP SiteScope (3) HP+SiteScope (4) Feedzilla (5) Superfeedr (6) ActiveXperts
 # July 2013 - Updated "Nielsen ADR" to "Nielsen"
 # August 2013 - (1) F5Agent. Added "netaporter" & "OperaPortable" as exceptions to "aport"
 # September 2013 - (1) Java/ (2) MixrankBot (3) Squider (4) kulturarw
@@ -954,12 +966,12 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 # August 2016 - (1) updated the case of "Proximic" to be lowercase (requested), (2) added ECHO Build & ECHO+Build as exceptions to echo
 # September 2016 - (1) GCE x86 & "GCE+x86", updated Comments Section
 # October 2016 - No changes
-# November 2016 - (1) "Sgalerts" (2) "HubSpot Marketing Grader" & "HubSpot+Marketing+Grader" 
+# November 2016 - (1) "Sgalerts" (2) "HubSpot Marketing Grader" & "HubSpot+Marketing+Grader"
 # November 2016 - (3) updated "DAUMOA" to "Daum"  (4) removed "stuff"
 # December 2016 - (1) Facebot (2) NeumobBot
 # January 2017 - (1) Macros-Web-Automation (2) Go-http-client (3) AppInsights
-# January 2017 - (4) added "yandexsearch" as an exception to "yandex"  (5) added "sohutobankumobairu" as an exception to "sohu" 
-# February 2017 - (1) SpringBot (2) "Clickagy Intelligence Bot" & "Clickagy+Intelligence+Bot" (3) BoogleBot (4) webScrapy 
+# January 2017 - (4) added "yandexsearch" as an exception to "yandex"  (5) added "sohutobankumobairu" as an exception to "sohu"
+# February 2017 - (1) SpringBot (2) "Clickagy Intelligence Bot" & "Clickagy+Intelligence+Bot" (3) BoogleBot (4) webScrapy
 # February 2017 - (5) searchbutton.org (6) naver.me/bot (7) "DaumApps" & "DaumDevice" added as exceptions to "Daum"
 # March 2017 - (1) removed "cosmos", (2) removed "Freedom", (3) removed "echo"
 # March 2017 - (4) added "Spider Build" & "Spider+Build" as exceptions to "spider"
@@ -979,3 +991,5 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 # May 2018 - (1) Dataprovider.com, (2) OpenVAS, (3) Plukkie/, (4) ips-agent, (5) Yeti/, (6) evc-batch/, (7) CrsspxlBot
 # June 2018 - (1) "The Knowledge AI" & "The+Knowledge+AI", (2) OPBot, (3) DuckDuckBot
 # July 2018 - (1) APIs-Google, (2) FlippBot, (3) HisBot
+# August 2018 - (1) Tesseract/, (2) Qwantify/, (3) archivethe.net, (4) G-i-g-a-b-o-t, (5) "HubSpot; combined-css" & "HubSpot;+combined-css",
+# August 2018 - (6) WhatsApp/, (7) ExtLinksBot/, (8) Laserlikebot/, (9) expo9, (10) ScooperBot/, (11) YaK/
