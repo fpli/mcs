@@ -98,11 +98,7 @@ public class ESMetrics {
     INSTANCE.timer.scheduleAtFixedRate(new TimerTask() {
       @Override
       public void run() {
-        try {
-          INSTANCE.flushMetrics();
-        } catch (Exception e) {
-          logger.warn(e.toString());
-        }
+        INSTANCE.flushMetrics();
       }
     }, 30000, 30000); // flush every 30s
   }
@@ -333,7 +329,7 @@ public class ESMetrics {
   /**
    * Only call from the timer
    */
-  public void flushMetrics() throws Exception{
+  public void flushMetrics() {
     synchronized (flushLock) {
       final String index = createIndexIfNecessary();
 
@@ -341,7 +337,7 @@ public class ESMetrics {
       toFlushMeter.clear();
       synchronized (this) {
         if (meterMetrics.size() > 100000)
-          throw new Exception("Size of meterMetrics is too large!");
+          logger.warn("Too many meter metrics in the map, size is: " + meterMetrics.size());
         Iterator<Map.Entry<String, Long>> iter = meterMetrics.entrySet().iterator();
         while (iter.hasNext()) {
           Map.Entry<String, Long> entry = iter.next();
@@ -360,7 +356,7 @@ public class ESMetrics {
       toFlushMean.clear();
       synchronized (this) {
         if (meanMetrics.size() > 100000)
-          throw new Exception("Size of meanMetrics is too large!");
+          logger.warn("Too many mean metrics in the map, size is: " + meanMetrics.size());
         Iterator<Map.Entry<String, Pair<Long, Long>>> mIter = meanMetrics.entrySet().iterator();
         while (mIter.hasNext()) {
           Map.Entry<String, Pair<Long, Long>> entry = mIter.next();
