@@ -10,11 +10,13 @@ class TestRuleVerifier extends BaseFunSuite {
   private val tmpPath = createTempPath()
   private val srcPath = tmpPath + "/inputDir1/"
   private val targetPath = tmpPath + "/inputDir2/"
+  private val outputPath = tmpPath + "/outputDir/result.txt"
 
   private val args = Array(
     "--mode", "local[8]",
     "--srcPath", srcPath,
-    "--targetPath", targetPath
+    "--targetPath", targetPath,
+    "--outputPath", outputPath
   )
 
   private val params = Parameter(args)

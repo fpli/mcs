@@ -21,6 +21,10 @@ public class RotationInfo implements Serializable {
   private String update_date;
   private Map rotation_tag;
   private String status = STATUS_ACTIVE;
+  private String create_user;
+  private String create_date;
+  private String update_user;
+
 
   public Long getRotation_id() {
     return rotation_id;
@@ -132,5 +136,29 @@ public class RotationInfo implements Serializable {
 
   public void setStatus(String status) {
     this.status = status;
+  }
+
+  public String getCreate_user() {
+    return create_user;
+  }
+
+  public void setCreate_user(String create_user) {
+    this.create_user = create_user;
+  }
+
+  public String getCreate_date() {
+    return create_date;
+  }
+
+  public void setCreate_date(String create_date) {
+    this.create_date = create_date;
+  }
+
+  public String getUpdate_user() {
+    return update_user;
+  }
+
+  public void setUpdate_user(String update_user) {
+    this.update_user = update_user;
   }
 }
