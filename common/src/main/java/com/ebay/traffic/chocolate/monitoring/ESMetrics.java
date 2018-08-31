@@ -98,7 +98,11 @@ public class ESMetrics {
     INSTANCE.timer.scheduleAtFixedRate(new TimerTask() {
       @Override
       public void run() {
-        INSTANCE.flushMetrics();
+        try {
+          INSTANCE.flushMetrics();
+        } catch (Exception e) {
+          logger.warn(e.toString());
+        }
       }
     }, 30000, 30000); // flush every 30s
   }
@@ -329,13 +333,15 @@ public class ESMetrics {
   /**
    * Only call from the timer
    */
-  public void flushMetrics() {
+  public void flushMetrics() throws Exception{
     synchronized (flushLock) {
       final String index = createIndexIfNecessary();
 
       // flush meter
       toFlushMeter.clear();
       synchronized (this) {
+        if (meterMetrics.size() > 100000)
+          throw new Exception("Size of meterMetrics is too large!");
         Iterator<Map.Entry<String, Long>> iter = meterMetrics.entrySet().iterator();
         while (iter.hasNext()) {
           Map.Entry<String, Long> entry = iter.next();
@@ -353,6 +359,8 @@ public class ESMetrics {
       // flush mean
       toFlushMean.clear();
       synchronized (this) {
+        if (meanMetrics.size() > 100000)
+          throw new Exception("Size of meanMetrics is too large!");
         Iterator<Map.Entry<String, Pair<Long, Long>>> mIter = meanMetrics.entrySet().iterator();
         while (mIter.hasNext()) {
           Map.Entry<String, Pair<Long, Long>> entry = mIter.next();
