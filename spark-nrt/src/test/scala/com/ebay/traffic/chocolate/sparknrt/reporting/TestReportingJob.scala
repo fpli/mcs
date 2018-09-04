@@ -22,13 +22,15 @@ class TestReportingJob extends BaseFunSuite {
   val tmpPath = createTempPath()
   val inputDir = tmpPath + "/inputDir/"
   val workDir = tmpPath + "/workDir/"
+  val outputDir = tmpPath + "/outputDir/"
 
   val channel = "EPN"
 
   val args = Array(
     "--mode", "local[8]",
     "--channel", channel,
-    "--workDir", workDir
+    "--workDir", workDir,
+    "--outputDir", outputDir
   )
 
   @transient lazy val hadoopConf = {
@@ -63,13 +65,15 @@ class TestReportingJob extends BaseFunSuite {
 
     val metadata1 = Metadata(workDir, channel, MetadataEnum.capping)
     val dedupeMeta = metadata1.readDedupeOutputMeta()
+    val dedupeMetaPath = new Path(dedupeMeta(0)._1)
 
-    assert (fs.exists(new Path(dedupeMeta(0)._1)))
+    assert (fs.exists(dedupeMetaPath))
 
     job.run()
     job.stop()
 
-    assert (!fs.exists(new Path(dedupeMeta(0)._1)))
+    assert (!fs.exists(dedupeMetaPath)) // moved
+    assert (fs.exists(new Path(job.outputDir, dedupeMetaPath.getName))) // archived
 
     // check against mock Couchbase...
     val bucket = CorpCouchbaseClient.getBucketFunc.apply()._2

@@ -8,6 +8,7 @@ import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
+import org.apache.hadoop.fs.Path
 
 /**
   * Created by weibdai on 5/19/18.
@@ -32,6 +33,8 @@ class ReportingJob(params: Parameter)
   }
 
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
+
+  lazy val outputDir = params.outputDir + "/" + params.channel + "/reporting/"
 
   /**
     * Check whether current event is sent from mobile by check User-Agent.
@@ -104,6 +107,17 @@ class ReportingJob(params: Parameter)
     else throw new Exception("Invalid date field in metafile.")
   }
 
+  def archiveMetafile(metafile: String): Unit = {
+    val outputPath = new Path(outputDir)
+    if (!fs.exists(outputPath)) {
+      fs.mkdirs(outputPath)
+    }
+
+    val src = new Path(metafile)
+    val target = new Path(outputDir, src.getName)
+    fs.rename(src, target)
+  }
+
   import spark.implicits._
 
   override def run(): Unit = {
@@ -171,9 +185,9 @@ class ReportingJob(params: Parameter)
         campaignDf.foreachPartition(iter => upsertCouchbase(date, iter, true))
       })
 
-      // 5. delete metafile that is processed
-      logger.info(s"delete metafile=$file")
-      metadata.deleteDedupeOutputMeta(file)
+      // 5. archive metafile that is processed for replay
+      logger.info(s"archive metafile=$file")
+      archiveMetafile(file)
     })
   }
 }

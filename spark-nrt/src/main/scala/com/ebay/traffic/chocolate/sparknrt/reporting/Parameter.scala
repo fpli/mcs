@@ -9,7 +9,7 @@ case class Parameter(appName: String = "Reporting",
                      mode: String = "yarn",
                      channel: String = "",
                      workDir: String = "",
-                     partitions: Int = 3)
+                     outputDir: String = "")
 
 object Parameter {
 
@@ -35,6 +35,11 @@ object Parameter {
       .required
       .valueName("workDir")
       .action((cont, param) => param.copy(workDir = cont))
+
+    opt[String]("outputDir")
+      .required
+      .valueName("outputDir")
+      .action((cont, param) => param.copy(outputDir = cont))
   }
 
   def apply(args: Array[String]): Parameter = parser.parse(args, Parameter()) match {
