@@ -195,12 +195,6 @@
       </dependency>
 
       <dependency>
-        <groupId>com.ebay.app.raptor.chocolate</groupId>
-        <artifactId>common</artifactId>
-        <version>${chocolate.common.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.apache.flume</groupId>
         <artifactId>flume-ng-sdk</artifactId>
         <version>1.8.0</version>
