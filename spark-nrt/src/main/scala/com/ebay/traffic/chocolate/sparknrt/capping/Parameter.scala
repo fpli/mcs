@@ -10,6 +10,7 @@ case class Parameter(appName: String = "CappingRule",
                      channel: String = "",
                      workDir: String = "",
                      outputDir: String = "",
+                     archiveDir: String = "",
                      partitions: Int = 3,
                      ipThreshold: Int = 1000,
                      elasticsearchUrl: String = "",
@@ -44,6 +45,11 @@ object Parameter {
       .required
       .valueName("outputDir")
       .action((cont, param) => param.copy(outputDir = cont))
+
+    opt[String]("archiveDir")
+      .required
+      .valueName("archiveDir")
+      .action((cont, param) => param.copy(archiveDir = cont))
 
     opt[Int]("partitions")
       .optional
