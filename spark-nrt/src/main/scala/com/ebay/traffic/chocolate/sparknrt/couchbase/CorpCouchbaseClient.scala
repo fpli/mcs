@@ -25,7 +25,6 @@ object CorpCouchbaseClient {
   @transient private lazy val factory =
     com.ebay.dukes.builder.GenericCacheFactoryBuilder.newBuilder()
       .cache(dataSource)
-      .identityFileDirectoryLocation(getClass.getResource("/identities/").getPath)
       .dbEnv(properties.getProperty("chocolate.corp.couchbase.dbEnv"))
       .deploymentSlot(properties.getProperty("chocolate.corp.couchbase.deploymentSlot"))
       .dnsRegion(properties.getProperty("chocolate.corp.couchbase.dnsRegion"))

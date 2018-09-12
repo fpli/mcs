@@ -22,7 +22,7 @@ class TestReportingJob extends BaseFunSuite {
   val tmpPath = createTempPath()
   val inputDir = tmpPath + "/inputDir/"
   val workDir = tmpPath + "/workDir/"
-  val outputDir = tmpPath + "/outputDir/"
+  val archiveDir = tmpPath + "/archiveDir/"
 
   val channel = "EPN"
 
@@ -30,7 +30,7 @@ class TestReportingJob extends BaseFunSuite {
     "--mode", "local[8]",
     "--channel", channel,
     "--workDir", workDir,
-    "--outputDir", outputDir
+    "--archiveDir", archiveDir
   )
 
   @transient lazy val hadoopConf = {
@@ -73,7 +73,7 @@ class TestReportingJob extends BaseFunSuite {
     job.stop()
 
     assert (!fs.exists(dedupeMetaPath)) // moved
-    assert (fs.exists(new Path(job.outputDir, dedupeMetaPath.getName))) // archived
+    assert (fs.exists(new Path(job.archiveDir, dedupeMetaPath.getName))) // archived
 
     // check against mock Couchbase...
     val bucket = CorpCouchbaseClient.getBucketFunc.apply()._2
