@@ -120,9 +120,19 @@ object Metadata {
 // Enum of Metadata usages
 object MetadataEnum extends Enumeration {
 
+  val unknown = Value(-1)
   val dedupe = Value(0)
   val capping = Value(1)
 
+  def convertToMetadataEnum(value: String): MetadataEnum.Value = {
+    if (value == dedupe.toString) {
+      dedupe
+    } else if (value == capping.toString) {
+      capping
+    } else {
+      unknown
+    }
+  }
 }
 
 case class MetaFiles(val metaFiles: Array[DateFiles])
