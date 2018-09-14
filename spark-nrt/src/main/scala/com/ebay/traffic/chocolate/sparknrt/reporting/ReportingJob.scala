@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.reporting
 
 import java.text.SimpleDateFormat
+import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
@@ -26,9 +27,20 @@ object ReportingJob extends App {
 class ReportingJob(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
-  // Get capping metadata for EPN, while getting dedupe metadata for Display.
+  @transient var properties: Properties = {
+    val properties = new Properties()
+    properties.load(getClass.getClassLoader.getResourceAsStream("reporting.properties"))
+    properties
+  }
+
   @transient lazy val metadata = {
-    Metadata(params.workDir, params.channel, if (params.channel == ChannelType.EPN.toString) MetadataEnum.capping else MetadataEnum.dedupe)
+    var usage = MetadataEnum.dedupe
+    if (params.channel == ChannelType.EPN.toString) {
+      usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("reporting.upstream.epn"))
+    } else if (params.channel == ChannelType.DISPLAY.toString) {
+      usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("reporting.upstream.display"))
+    }
+    Metadata(params.workDir, params.channel, usage)
   }
 
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
