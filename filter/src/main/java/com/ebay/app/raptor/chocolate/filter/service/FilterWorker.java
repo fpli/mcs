@@ -75,7 +75,7 @@ public class FilterWorker extends Thread {
     this.metrics.mean("FilterPassedPPM", 0L);
     this.esMetrics.meter("FilterError", 0);
     this.esMetrics.meter("messageParseFailure", 0);
-    this.esMetrics.mean("FilterPassedPPM", 0L);
+    this.esMetrics.mean("FilterPassedPPM", 0);
 
     try {
       consumer.subscribe(Arrays.asList(inputTopic));
@@ -95,21 +95,21 @@ public class FilterWorker extends Thread {
           ConsumerRecord<Long, ListenerMessage> record = iterator.next();
           ListenerMessage message = record.value();
           metrics.meter("FilterInputCount");
-          esMetrics.meter("FilterInputCount", message.getChannelAction().toString(), message.getChannelType().toString());
+          esMetrics.meter("FilterInputCount", 1, message.getTimestamp(), message.getChannelAction().toString(), message.getChannelType().toString());
           long latency = System.currentTimeMillis() - message.getTimestamp();
           metrics.mean("FilterLatency", latency);
-          esMetrics.mean("FilterLatency", latency);
+          esMetrics.mean("FilterLatency", latency, message.getTimestamp());
 
           ++count;
           metrics.meter("FilterThroughput");
-          esMetrics.meter("FilterThroughput", message.getChannelAction().toString(), message.getChannelType().toString());
+          esMetrics.meter("FilterThroughput", 1, message.getTimestamp(), message.getChannelAction().toString(), message.getChannelType().toString());
 
           FilterMessage outMessage = processMessage(message);
 
           if (outMessage.getRtRuleFlags() == 0) {
             ++passed;
             metrics.meter("FilterPassedCount");
-            esMetrics.meter("FilterPassedCount", outMessage.getChannelAction().toString(), outMessage.getChannelType().toString());
+            esMetrics.meter("FilterPassedCount", 1, outMessage.getTimestamp(), outMessage.getChannelAction().toString(), outMessage.getChannelType().toString());
           }
 
           // cache current offset for partition*

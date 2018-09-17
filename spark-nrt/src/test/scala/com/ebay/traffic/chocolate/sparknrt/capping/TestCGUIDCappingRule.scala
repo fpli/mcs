@@ -28,12 +28,14 @@ class TestCGUIDCappingRule extends BaseFunSuite {
   val inputDir = tmpPath + "/workDir/dedupe"
   val workDir = tmpPath + "/workDir/capping"
   val outputDir = tmpPath + "/outputDir/"
+  val archiveDir = tmpPath + "/archiveDir/"
   val channel = "EPN"
 
   val args = Array(
     "--mode", "local[8]",
     "--channel", channel,
     "--workDir", workDir,
+    "--archiveDir", archiveDir,
     "--outputDir", outputDir
   )
 

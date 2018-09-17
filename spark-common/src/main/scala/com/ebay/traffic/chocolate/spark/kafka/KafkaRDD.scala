@@ -181,7 +181,7 @@ class KafkaRDD[K, V](
       val record = nextRecord
       offset = record.offset() + 1 // update offset
       if (metrics != null) {
-        metrics.meter("KafkaRDD-Input")
+        metrics.meter("KafkaRDD-Input", 1, record.timestamp())
       }
 
       nextRecord = null

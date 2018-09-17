@@ -79,7 +79,7 @@ public class DefaultChannelTest {
     params.put("campid", new String[] {"5337991765"});
     params.put("a", new String[] {"b"});
     mockClientRequest.setParameters(params);
-    long actual = channel.getCampaignID(mockClientRequest);
+    long actual = channel.getCampaignID(mockClientRequest, System.currentTimeMillis(), "click", "epn");
     assertEquals(expected, actual);
   }
 
@@ -90,7 +90,7 @@ public class DefaultChannelTest {
     params.put("campid", new String[] {"5331AQWAA765"});
     params.put("a", new String[] {"b"});
     mockClientRequest.setParameters(params);
-    long actual = channel.getCampaignID(mockClientRequest);
+    long actual = channel.getCampaignID(mockClientRequest, System.currentTimeMillis(), "click", "epn");
     assertEquals(expected, actual);
   }
 
@@ -101,7 +101,7 @@ public class DefaultChannelTest {
     params.put("CAmpID", new String[] {"5337991765"});
     params.put("a", new String[] {"b"});
     mockClientRequest.setParameters(params);
-    long actual = channel.getCampaignID(mockClientRequest);
+    long actual = channel.getCampaignID(mockClientRequest, System.currentTimeMillis(), "click", "epn");
     assertEquals(expected, actual);
   }
 
@@ -112,7 +112,7 @@ public class DefaultChannelTest {
     params.put("campidxyz", new String[] {"5337991765"});
     params.put("a", new String[] {"b"});
     mockClientRequest.setParameters(params);
-    long actual = channel.getCampaignID(mockClientRequest);
+    long actual = channel.getCampaignID(mockClientRequest, System.currentTimeMillis(), "click", "epn");
     assertEquals(expected, actual);
   }
 
@@ -123,7 +123,7 @@ public class DefaultChannelTest {
     params.put("caMpid", new String[] {""});
     params.put("a", new String[] {"b"});
     mockClientRequest.setParameters(params);
-    long actual = channel.getCampaignID(mockClientRequest);
+    long actual = channel.getCampaignID(mockClientRequest, System.currentTimeMillis(), "click", "epn");
     assertEquals(expected, actual);
   }
 
