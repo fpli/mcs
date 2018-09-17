@@ -113,7 +113,7 @@
   </property>
   <property>
     <name>lb.http.port</name>
-    <value>80</value>
+    <value>8080</value>
     <description>LB HTTP port for listener, should be 80.</description>
     <value-attributes>
       <type>int</type>
@@ -121,7 +121,7 @@
   </property>
   <property>
     <name>lb.https.port</name>
-    <value>443</value>
+    <value>8082</value>
     <description>LB HTTPS port for listener, should be 443.</description>
     <value-attributes>
       <type>int</type>
@@ -129,7 +129,7 @@
   </property>
   <property>
     <name>proxyTo</name>
-    <value>http://rover.de.qa.ebay.com</value>
+    <value>http://rover-app-1-envf7jokk59vh.stratus.phx.qa.ebay.com</value>
     <description>Proxy between listener and rover clusters</description>
   </property>
   <property>
