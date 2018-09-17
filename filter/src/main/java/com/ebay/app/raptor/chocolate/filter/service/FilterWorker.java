@@ -173,7 +173,8 @@ public class FilterWorker extends Thread {
     FilterMessage outMessage = new FilterMessage();
     outMessage.setSnapshotId(message.getSnapshotId());
     outMessage.setTimestamp(message.getTimestamp());
-    if (message.getPublisherId() == DEFAULT_PUBLISHER_ID) {
+    // only EPN needs to get publisher id
+    if (message.getPublisherId() == DEFAULT_PUBLISHER_ID && message.getChannelType() == ChannelType.EPN) {
       long publisherId = getPublisherId(message.getCampaignId());
       outMessage.setPublisherId(publisherId);
       message.setPublisherId(publisherId);
