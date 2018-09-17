@@ -1,15 +1,11 @@
 package com.ebay.traffic.chocolate.couchbase;
 
 import com.couchbase.client.java.Bucket;
-import com.couchbase.client.java.Cluster;
-import com.couchbase.client.java.CouchbaseCluster;
-import com.couchbase.client.java.document.json.JsonObject;
-import com.couchbase.client.java.env.CouchbaseEnvironment;
-import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
-import com.couchbase.client.java.query.N1qlQuery;
-import com.couchbase.client.java.query.N1qlQueryResult;
-import com.couchbase.client.java.query.N1qlQueryRow;
+import com.couchbase.client.java.view.ViewQuery;
+import com.couchbase.client.java.view.ViewResult;
+import com.couchbase.client.java.view.ViewRow;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
+import com.ebay.dukes.CacheClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,30 +14,35 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPOutputStream;
 
 
 public class DumpRotationFiles {
-  private static Cluster cluster;
+  private static CorpRotationCouchbaseClient client;
   private static Bucket bucket;
   private static Properties couchbasePros;
-  static Logger logger = LoggerFactory.getLogger(DumpLegacyRotationFiles.class);
+  private static Logger logger = LoggerFactory.getLogger(DumpLegacyRotationFiles.class);
 
   public static void main(String args[]) throws IOException {
     String configFilePath = (args != null && args.length > 0) ? args[0] : null;
     if(StringUtils.isEmpty(configFilePath)) logger.error("No configFilePath was defined. please set configFilePath for rotation jobs");
 
-    String lastUpdateTime = (args != null && args.length > 1) ? args[1] : null;
-    if(StringUtils.isEmpty(lastUpdateTime)) logger.error("No lastUpdateTime was defined. please set lastUpdateTime for rotation jobs");
+    String updateTimeStartKey = (args != null && args.length > 1) ? args[1] : null;
+    if(StringUtils.isEmpty(updateTimeStartKey)) logger.error("No updateTimeStartKey was defined. please set updateTimeStartKey for rotation jobs");
 
-    String outputFilePath = (args != null && args.length > 2) ? args[2] : null;
+    String updateTimeEndKey = (args != null && args.length > 2) ? args[2] : null;
+    if(StringUtils.isEmpty(updateTimeEndKey)) logger.error("No updateTimeEndKey was defined. please set updateTimeEndKey for rotation jobs");
+
+    String outputFilePath = (args != null && args.length > 3) ? args[3] : null;
 
     init(configFilePath);
 
     try {
-      connect();
-      dumpFileFromCouchbase(lastUpdateTime, outputFilePath);
+      client = new CorpRotationCouchbaseClient(couchbasePros);
+      CacheClient cacheClient = client.getCacheClient();
+      bucket = client.getBuctet(cacheClient);
+      dumpFileFromCouchbase(updateTimeStartKey, updateTimeEndKey, outputFilePath);
+      client.returnClient(cacheClient);
     } finally {
       close();
     }
@@ -53,23 +54,13 @@ public class DumpRotationFiles {
     couchbasePros.load(in);
   }
 
-  private static void connect() {
-    CouchbaseEnvironment env = DefaultCouchbaseEnvironment.builder()
-        .connectTimeout(Long.valueOf(couchbasePros.getProperty("couchbase.timeout")))
-        .queryTimeout(Long.valueOf(couchbasePros.getProperty("couchbase.timeout"))).build();
-    cluster = CouchbaseCluster.create(env, couchbasePros.getProperty("couchbase.cluster.rotation"));
-
-    cluster.authenticate(couchbasePros.getProperty("couchbase.user.rotation"), couchbasePros.getProperty("couchbase.password.rotation"));
-    bucket = cluster.openBucket(couchbasePros.getProperty("couchbase.bucket.rotation"), Long.valueOf(couchbasePros.getProperty("couchbase.timeout")), TimeUnit.SECONDS);
-  }
-
-  private static void dumpFileFromCouchbase(String lastUpdateTime, String outputFilePath) throws IOException {
+  private static void dumpFileFromCouchbase(String startKey, String endKey, String outputFilePath) throws IOException {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
     if(outputFilePath == null){
       outputFilePath = couchbasePros.getProperty("job.dumpRotationFiles.outputFilePath");
     }
     Calendar c = Calendar.getInstance();
-    c.setTimeInMillis(Long.valueOf(lastUpdateTime));
+    c.setTimeInMillis(Long.valueOf(startKey));
     outputFilePath = outputFilePath + "rotation-" + sdf.format(c.getTime()) + ".txt";
     Boolean compress = (couchbasePros.getProperty("job.dumpRotationFiles.compressed") == null) ?  Boolean.valueOf(couchbasePros.getProperty("job.dumpRotationFiles.compressed")) : Boolean.FALSE;
 
@@ -81,14 +72,15 @@ public class DumpRotationFiles {
       } else {
         out = new BufferedOutputStream(new FileOutputStream(outputFilePath));
       }
+      ViewQuery query = ViewQuery.from(couchbasePros.getProperty("couchbase.corp.rotation.designName"),
+        couchbasePros.getProperty("couchbase.corp.rotation.viewName"));
+      query.startKey(Long.valueOf(startKey));
+      query.endKey(Long.valueOf(endKey));
 
-      String queryStr = couchbasePros.getProperty("job.dumpRotationFiles.n1ql");
-      queryStr = String.format(queryStr, lastUpdateTime);
-
-      N1qlQueryResult result = bucket.query(N1qlQuery.simple(queryStr));
-      JsonObject rotationInfo;
-      for (N1qlQueryRow row : result) {
-        rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
+      ViewResult result = bucket.query(query);
+      String rotationInfo;
+      for (ViewRow row : result) {
+        rotationInfo = row.value().toString();
         if(rotationInfo == null) continue;
         out.write(String.valueOf(rotationInfo).getBytes());
         out.write(RotationConstant.RECORD_SEPARATOR);
@@ -107,11 +99,9 @@ public class DumpRotationFiles {
   }
 
   private static void close() {
-    if(bucket != null){
-      bucket.close();
+    if(client != null){
+      client.shutdown();
     }
-    if(cluster != null){
-      cluster.disconnect();
-    }
+    System.exit(0);
   }
 }
