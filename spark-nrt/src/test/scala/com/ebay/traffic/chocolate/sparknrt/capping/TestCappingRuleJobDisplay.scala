@@ -58,7 +58,7 @@ class TestCappingRuleJobDisplay extends BaseFunSuite {
 
   import job.spark.implicits._
 
-  test("test epn capping rules") {
+  test("test display capping rules") {
     val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
 
     val dateFiles0 = new DateFiles("date=2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
