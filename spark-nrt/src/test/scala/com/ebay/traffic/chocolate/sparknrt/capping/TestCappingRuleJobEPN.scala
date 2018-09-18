@@ -22,6 +22,7 @@ class TestCappingRuleJobEPN extends BaseFunSuite {
   val inputDir = tmpPath + "/inputDir/"
   val workDir = tmpPath + "/workDir/"
   val outputDir = tmpPath + "/outputDir/"
+  val archiveDir = tmpPath + "/archiveDir/"
   val ipThreshold = "6"
   val channel = "EPN"
 
@@ -30,6 +31,7 @@ class TestCappingRuleJobEPN extends BaseFunSuite {
     "--channel", channel,
     "--workDir", workDir,
     "--outputDir", outputDir,
+    "--archiveDir", archiveDir,
     "--ipThreshold", ipThreshold
   )
 
