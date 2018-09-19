@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.listener.channel;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
@@ -23,14 +22,12 @@ import java.util.HashMap;
 
 public class DefaultChannel implements Channel {
   private static final Logger logger = Logger.getLogger(DefaultChannel.class);
-  private final MetricsClient metrics;
   private final ESMetrics esMetrics;
   private MessageObjectParser parser;
   private static final String CAMPAIGN_PATTERN = "campid";
   private static final String SNID_PATTERN = "snid";
 
   DefaultChannel() {
-    this.metrics = MetricsClient.getInstance();
     this.esMetrics = ESMetrics.getInstance();
     this.parser = MessageObjectParser.getInstance();
   }
@@ -65,7 +62,6 @@ public class DefaultChannel implements Channel {
     try {
       requestUrl = parser.appendURLWithChocolateTag(new ServletServerHttpRequest(request).getURI().toString());
     } catch (Exception e) {
-      metrics.meter("AppendNewTagError");
       esMetrics.meter("AppendNewTagError", 1, startTime, action, type);
       logger.error("Append url with new tag error");
     }
@@ -180,8 +176,6 @@ public class DefaultChannel implements Channel {
   private void stopTimerAndLogData(long startTime, long eventTime, String channelAction, String channelType) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("SuccessCount");
-    metrics.mean("AverageLatency", endTime - startTime);
     esMetrics.meter("SuccessCount", 1, eventTime, channelAction, channelType);
     esMetrics.mean("AverageLatency", endTime - startTime, eventTime);
   }
@@ -214,7 +208,6 @@ public class DefaultChannel implements Channel {
       logger.warn("Cannot get request start time, use system time instead. ", e);
     }
     logger.debug(String.format("StartTime: %d", startTime));
-    metrics.meter("ProxyIncomingCount");
     esMetrics.meter("ProxyIncomingCount", 1, startTime, channelAction, channelType);
     return startTime;
   }
@@ -225,7 +218,6 @@ public class DefaultChannel implements Channel {
     sb = deriveWarningMessage(sb, request);
     logger.warn(sb.toString());
     logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
-    metrics.meter("un-managed");
     esMetrics.meter("un-managed", 1, eventTime, channelAction, channelType);
   }
 

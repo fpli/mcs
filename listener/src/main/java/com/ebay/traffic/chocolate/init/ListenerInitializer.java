@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.init;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
@@ -23,17 +22,8 @@ public class ListenerInitializer {
      */
     public static void init(ListenerOptions options) {
         KafkaSink.initialize(options);
-        initFrontier(options.getFrontierUrl(), options.getFrontierAppSvcName());
         initElasticsearch(options.getElasticsearchUrl());
         initMessageObjectParser();
-    }
-
-    /**
-     * Initialize Frontier
-     */
-    static void initFrontier(String url, String appSvcName) {
-        MetricsClient.init(url, appSvcName);
-        logger.info("Frontier Client initialized");
     }
 
     /**
@@ -54,7 +44,6 @@ public class ListenerInitializer {
         producer.close();
 
         logger.info("stop Frontier client");
-        MetricsClient.getInstance().terminate();
         ESMetrics.getInstance().close();
     }
 

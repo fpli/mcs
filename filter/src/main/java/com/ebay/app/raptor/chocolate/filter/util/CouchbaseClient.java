@@ -3,7 +3,6 @@ package com.ebay.app.raptor.chocolate.filter.util;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.document.Document;
 import com.couchbase.client.java.document.StringDocument;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
@@ -36,7 +35,6 @@ public class CouchbaseClient {
   private Queue<Pair<Long,Long>> buffer;
   private String datasourceName;
 
-  private final MetricsClient metrics = MetricsClient.getInstance();
   private final ESMetrics esMetrics = ESMetrics.getInstance();
 
     /**Singleton */
@@ -134,7 +132,6 @@ public class CouchbaseClient {
         Document document = getBucket(cacheClient).get(String.valueOf(campaignId), StringDocument.class);
         if (document == null) {
           logger.warn("No publisherID found for campaign " + campaignId + " in couchbase");
-          metrics.meter("ErrorPublishID");
           esMetrics.meter("ErrorPublishID");
           return DEFAULT_PUBLISHER_ID;
         }
@@ -142,7 +139,6 @@ public class CouchbaseClient {
       } catch (NumberFormatException ne) {
         logger.warn("Error in converting publishID " + getBucket(factory.getClient(datasourceName)).get(String.valueOf(campaignId),
             StringDocument.class).toString() + " to Long", ne);
-        metrics.meter("ErrorPublishID");
         esMetrics.meter("ErrorPublishID");
         return DEFAULT_PUBLISHER_ID;
       } catch (Exception e) {
