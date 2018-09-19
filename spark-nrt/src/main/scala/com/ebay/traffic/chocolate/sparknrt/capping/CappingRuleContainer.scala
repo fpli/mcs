@@ -45,6 +45,11 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
             CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles, sparkJobObj, windowLong)
     ),
     ChannelType.DISPLAY -> mutable.HashMap(
+      CappingRuleEnum.IPCappingRule ->
+        new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj),
+      CappingRuleEnum.SnidCappingRule_L ->
+        new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
+          CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles, sparkJobObj, windowLong)
     )
   )
 

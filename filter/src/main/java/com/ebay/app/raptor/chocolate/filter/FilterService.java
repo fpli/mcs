@@ -1,7 +1,6 @@
 package com.ebay.app.raptor.chocolate.filter;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.app.raptor.chocolate.filter.service.FilterContainer;
 import com.ebay.app.raptor.chocolate.filter.service.FilterWorker;
 import com.ebay.app.raptor.chocolate.filter.util.CouchbaseClient;
@@ -60,8 +59,6 @@ public class FilterService {
     logger.info("Initializer called.");
 
     ApplicationOptions.init();
-    MetricsClient.init(ApplicationOptions.getInstance().getByNameString(FRONTIER_URL),
-        ApplicationOptions.getInstance().getByNameString(FRONTIER_APPSVC));
     ESMetrics.init(METRICS_INDEX_PREFIX, ApplicationOptions.getInstance().getByNameString(ELASTICSEARCH_URL));
     ApplicationOptions options = ApplicationOptions.getInstance();
     FilterZookeeperClient.init(options);
