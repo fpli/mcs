@@ -44,8 +44,11 @@
         <topic>logstash-test</topic>
         <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy" />
         <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
-        <producerConfig>bootstrap.servers=choco-2217601.lvs02.dev.ebayc3.com:6667,choco-cent-1659401.slc07.dev.ebayc3.com:6667,
-            choco-cent-2218337.lvs02.dev.ebayc3.com:6667</producerConfig>
+        <producerConfig>bootstrap.servers=lvschocolatepits-1448900.stratus.lvs.ebay.com:6667,lvschocolatepits-1583716.stratus.lvs.ebay.com:6667,
+            lvschocolatepits-1583717.stratus.lvs.ebay.com:6667,lvschocolatepits-1583719.stratus.lvs.ebay.com:6667,
+            lvschocolatepits-1583720.stratus.lvs.ebay.com:6667,lvschocolatepits-1583721.stratus.lvs.ebay.com:6667,
+            lvschocolatepits-1585072.stratus.lvs.ebay.com:6667,lvschocolatepits-1585073.stratus.lvs.ebay.com:6667,
+            lvschocolatequeue-1448908.stratus.lvs.ebay.com:6667,lvschocolatequeue-1448910.stratus.lvs.ebay.com:6667</producerConfig>
     </appender>
 
     <root level="info">
