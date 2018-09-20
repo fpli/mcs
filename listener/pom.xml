@@ -55,6 +55,10 @@
       </dependency>
       <dependency>
         <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-cal-client-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
         <artifactId>raptor-configresource-starter</artifactId>
       </dependency>
       <dependency>
