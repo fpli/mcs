@@ -35,7 +35,7 @@ public class FilterService {
   private static final String ELASTICSEARCH_URL = "chocolate.filter.elasticsearch.url";
   private static final String TOPIC_THREAD_COUNT = "chocolate.filter.topic.threads";
   private static final String RULE_CONFIG_FILENAME = "filter_rule_config.json";
-  private static final String METRICS_INDEX_PREFIX = "chocolate-metrics-";
+  private static final String METRICS_INDEX_PREFIX = "chocolate-metrics-preprod-";
   private List<FilterWorker> workers = new ArrayList<>();
 
   FilterService() {

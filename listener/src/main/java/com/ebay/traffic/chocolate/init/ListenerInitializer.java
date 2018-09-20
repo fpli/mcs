@@ -12,7 +12,7 @@ import java.io.IOException;
 
 public class ListenerInitializer {
     private static final Logger logger = Logger.getLogger(ListenerInitializer.class);
-    private static final String METRICS_INDEX_PREFIX = "chocolate-metrics-";
+    private static final String METRICS_INDEX_PREFIX = "chocolate-metrics-preprod-";
 
     /**
      * The initialize method

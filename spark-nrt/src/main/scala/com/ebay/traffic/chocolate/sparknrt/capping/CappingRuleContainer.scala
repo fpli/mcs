@@ -18,7 +18,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
 
   lazy val windowLong = "long"
   lazy val windowShort = "short"
-  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-";
+  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-preprod-";
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 

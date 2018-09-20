@@ -24,7 +24,7 @@ class KafkaRDD[K, V](
                       val maxConsumeSize: Long = 1000000l // maximum number of events can be consumed in one task: 100M
                     ) extends RDD[ConsumerRecord[K, V]](sc, Nil) {
   val POLL_STEP_MS = 30000
-  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
+  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-preprod-"
 
   @transient lazy val consumer = {
     kafkaProperties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
