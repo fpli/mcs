@@ -31,6 +31,11 @@
     <value>http://10.148.181.34:9200</value>
     <description>Elastic Search Url</description>
   </property>
+  <property>
+    <name>elasticsearch.index.prefix</name>
+    <value>chocolate-metrics-</value>
+    <description>ElasticSearch index prefix</description>
+  </property>
   <!-- ElasticSearch end -->
 
   <!-- journal begin -->
