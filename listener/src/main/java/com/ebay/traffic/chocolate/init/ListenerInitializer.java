@@ -12,7 +12,7 @@ import java.io.IOException;
 
 public class ListenerInitializer {
     private static final Logger logger = Logger.getLogger(ListenerInitializer.class);
-    private static final String METRICS_INDEX_PREFIX = "chocolate-metrics-preprod-";
+    private static String METRICS_INDEX_PREFIX;
 
     /**
      * The initialize method
@@ -22,6 +22,7 @@ public class ListenerInitializer {
      */
     public static void init(ListenerOptions options) {
         KafkaSink.initialize(options);
+        METRICS_INDEX_PREFIX = options.getElasticsearchIndexPrefix();
         initElasticsearch(options.getElasticsearchUrl());
         initMessageObjectParser();
     }
