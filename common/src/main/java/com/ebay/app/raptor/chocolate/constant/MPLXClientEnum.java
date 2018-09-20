@@ -25,7 +25,7 @@ public enum MPLXClientEnum {
   ES(1185, "Spain", 186),
   IN(4686, "India", 203),
   US(711, "US", 1),
-  MAIN(711, "US Main", 0),
+  MAIN(711, "US", 0),
   PL(4908, "Poland", 212),
   HK(3422, "Hong Kong", 201),
   UK(710, "UK", 3),
@@ -65,7 +65,7 @@ public enum MPLXClientEnum {
 
   public static MPLXClientEnum getByClientId(Integer mplxClientId) {
     for (MPLXClientEnum mplxClientEnum : MPLXClientEnum.values()) {
-      if (mplxClientEnum.mplxClientId == mplxClientId) {
+      if (mplxClientEnum.mplxClientId.equals(mplxClientId)) {
         return mplxClientEnum;
       }
     }

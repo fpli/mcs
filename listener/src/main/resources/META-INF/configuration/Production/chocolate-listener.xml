@@ -24,24 +24,16 @@
   </property>
   <!-- Kafka producer end -->
 
-  <!-- Frontier begin -->
-  <property>
-    <name>frontier.url</name>
-    <value>frontier://tenant=mp;env=prod;app_svc=%s@sherlock-ftr-mp.vip.ebay.com</value>
-    <description>Frontier URL</description>
-  </property>
-  <property>
-    <name>frontier.app.svc.name</name>
-    <value>Listener</value>
-    <description>Frontier App SVC name</description>
-  </property>
-  <!-- Frontier end -->
-
   <!-- ElasticSearch begin -->
   <property>
     <name>elasticsearch.url</name>
     <value>http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200</value>
     <description>Elastic Search Url</description>
+  </property>
+  <property>
+    <name>elasticsearch.index.prefix</name>
+    <value>chocolate-metrics-</value>
+    <description>ElasticSearch index prefix</description>
   </property>
   <!-- ElasticSearch end -->
 
@@ -126,7 +118,11 @@
     </value-attributes>
   </property>
   <!-- jetty config end -->
-
+  <property>
+    <name>rover.core.sites</name>
+    <value>rover.ebay.com,r.ebay.com</value>
+    <description>rover core site hosts</description>
+  </property>
   <property>
     <name>chocolate.listener.pidfile</name>
     <value>/tmp/chocolate-listener.pid</value>

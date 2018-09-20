@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.listener.api;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
@@ -27,7 +26,6 @@ public class TrackingServlet extends HttpServlet {
   /**
    * Metrics client instance
    */
-  private MetricsClient metrics;
   private ESMetrics esMetrics;
 
   /**
@@ -35,8 +33,7 @@ public class TrackingServlet extends HttpServlet {
    */
   private MessageObjectParser parser;
 
-  public TrackingServlet(final MetricsClient metrics, final ESMetrics esMetrics, final MessageObjectParser parser) {
-    this.metrics = metrics;
+  public TrackingServlet(final ESMetrics esMetrics, final MessageObjectParser parser) {
     this.esMetrics = esMetrics;
     this.parser = parser;
   }
@@ -47,8 +44,6 @@ public class TrackingServlet extends HttpServlet {
 
     if (parser == null)
       parser = MessageObjectParser.getInstance();
-    if (metrics == null)
-      metrics = MetricsClient.getInstance();
     if (esMetrics == null)
       esMetrics = ESMetrics.getInstance();
   }
@@ -75,9 +70,8 @@ public class TrackingServlet extends HttpServlet {
    */
   private void doRequest(HttpServletRequest request, HttpServletResponse response) {
     try {
-      metrics.meter("TrackingCount");
       TrackingEvent event = new TrackingEvent(new URL(request.getRequestURL().toString()), request.getParameterMap());
-      esMetrics.meter("TrackingCount", event.getAction().toString(), event.getChannel().toString());
+      esMetrics.meter("TrackingCount", event.getAction().getAvro().toString(), event.getChannel().toString());
       process(request, response, event);
     } catch (Exception e) {
       logger.error("Couldn't respond to tracking event for " + request.getRequestURL(), e);
@@ -117,8 +111,7 @@ public class TrackingServlet extends HttpServlet {
 
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
 
-      metrics.meter("TrackingSuccess");
-      esMetrics.meter("TrackingSuccess", event.getAction().toString(), event.getChannel().toString());
+      esMetrics.meter("TrackingSuccess", event.getAction().getAvro().toString(), event.getChannel().toString());
 
     } catch (Exception e) {
       logger.error("Couldn't respond to tracking event for " + request.getRequestURL(), e);

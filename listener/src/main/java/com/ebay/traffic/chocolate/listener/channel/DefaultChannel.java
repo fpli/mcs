@@ -1,8 +1,6 @@
 package com.ebay.traffic.chocolate.listener.channel;
 
-import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
@@ -24,14 +22,12 @@ import java.util.HashMap;
 
 public class DefaultChannel implements Channel {
   private static final Logger logger = Logger.getLogger(DefaultChannel.class);
-  private final MetricsClient metrics;
   private final ESMetrics esMetrics;
   private MessageObjectParser parser;
   private static final String CAMPAIGN_PATTERN = "campid";
   private static final String SNID_PATTERN = "snid";
 
   DefaultChannel() {
-    this.metrics = MetricsClient.getInstance();
     this.esMetrics = ESMetrics.getInstance();
     this.parser = MessageObjectParser.getInstance();
   }
@@ -42,6 +38,7 @@ public class DefaultChannel implements Channel {
   @Override
   public void process(HttpServletRequest request, HttpServletResponse response) {
     String kafkaTopic;
+    String listenerFilteredKafkaTopic;
     Producer<Long, ListenerMessage> producer;
     ChannelActionEnum channelAction = null;
     ChannelIdEnum channelType = null;
@@ -60,83 +57,57 @@ public class DefaultChannel implements Channel {
       type = channelType.getLogicalChannel().getAvro().toString();
 
     long startTime = startTimerAndLogData(request, action, type);
+
     String requestUrl = null;
     try {
       requestUrl = parser.appendURLWithChocolateTag(new ServletServerHttpRequest(request).getURI().toString());
     } catch (Exception e) {
-      metrics.meter("AppendNewTagError");
-      esMetrics.meter("AppendNewTagError");
+      esMetrics.meter("AppendNewTagError", 1, startTime, action, type);
       logger.error("Append url with new tag error");
     }
 
-    if (result.length >= 2) {
-      if (ChannelActionEnum.CLICK.equals(channelAction)) {
-        metrics.meter("ProxyIncomingClickCount");
-      }
-      if (ChannelActionEnum.IMPRESSION.equals(channelAction)) {
-        metrics.meter("ProxyIncomingImpressionCount");
-      }
-    }
-
     producer = KafkaSink.get();
-    String filteredTopic = ListenerOptions.getInstance().getErrorTopic();
 
-    long campaignId = getCampaignID(request);
+    long campaignId = getCampaignID(request, startTime, action, type);
+
+    //TODO: remove the logic when we stable
     try {
-      if (parser.responseShouldBeFiltered(request, response, requestUrl)) {
-        metrics.meter("ResponseFilteredCount");
-        esMetrics.meter("ResponseFilteredCount", action, type);
-        String snid = request.getParameter(SNID_PATTERN);
-        ListenerMessage filteredMessage = parser.parseHeader(request, response,
-            startTime, campaignId, ChannelType.EPN, ChannelActionEnum.CLICK, snid, requestUrl);
-        producer.send(new ProducerRecord<>(filteredTopic, filteredMessage), KafkaSink.callback);
-        return;
-      }
+      parser.appendTagWhenRedirect(request, response, requestUrl);
     } catch (MalformedURLException | UnsupportedEncodingException e) {
       logger.error("Wrong with URL format/encoding", e);
     }
-
-    metrics.meter("IncomingCount");
-    esMetrics.meter("IncomingCount", action, type);
 
     String snid = request.getParameter(SNID_PATTERN);
 
     if (result.length == 5) {
       channelType = ChannelIdEnum.parse(result[4]);
       if (channelType == null) {
-        invalidRequestParam(request, "No pattern matched;", action, type);
-        esMetrics.meter("NoPatternMatched", action, type);
+        invalidRequestParam(request, "No pattern matched;", startTime, action, type);
+        esMetrics.meter("NoPatternMatched", 1, startTime, action, type);
         return;
       }
       channelAction = ChannelActionEnum.parse(channelType, result[1]);
       if (!channelType.getLogicalChannel().isValidRoverAction(channelAction)) {
-        invalidRequestParam(request, "Invalid tracking action given a channel;", action, type);
-        esMetrics.meter("InvalidAction", action, type);
+        invalidRequestParam(request, "Invalid tracking action given a channel;", startTime, action, type);
+        esMetrics.meter("InvalidAction", 1, startTime, action, type);
         return;
       }
       if (channelType.isTestChannel()) {
-        invalidRequestParam(request, "Test channel;", action, type);
-        esMetrics.meter("TestChannel", action, type);
+        invalidRequestParam(request, "Test channel;", startTime, action, type);
+        esMetrics.meter("TestChannel", 1, startTime, action, type);
         return;
       }
 
       if (campaignId < 0 && channelType.equals(ChannelIdEnum.EPN)) {
-        invalidRequestParam(request, "Invalid campaign id;", action, type);
-        esMetrics.meter("InvalidCampaign", action, type);
+        invalidRequestParam(request, "Invalid campaign id;", startTime, action, type);
+        esMetrics.meter("InvalidCampaign", 1, startTime, action, type);
         return;
       }
 
       kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
-
-      if (ChannelActionEnum.CLICK.equals(channelAction)) {
-        metrics.meter("SendKafkaClickCount");
-      }
-      if (ChannelActionEnum.IMPRESSION.equals(channelAction)) {
-        metrics.meter("SendKafkaImpressionCount");
-      }
-      esMetrics.meter("SendKafkaCount", action, type);
+      listenerFilteredKafkaTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
     } else {
-      invalidRequestParam(request, "Request params count != 5", action, type);
+      invalidRequestParam(request, "Request params count != 5", startTime, action, type);
       return;
     }
 
@@ -145,13 +116,25 @@ public class DefaultChannel implements Channel {
         startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, snid, requestUrl);
 
     if (message != null) {
-      producer.send(new ProducerRecord<>(kafkaTopic,
+      long eventTime = message.getTimestamp();
+      // Only save core site url
+      if(parser.isCoreSite(request)) {
+        producer.send(new ProducerRecord<>(kafkaTopic,
           message.getSnapshotId(), message), KafkaSink.callback);
+        stopTimerAndLogData(startTime, eventTime, action, type);
+      }
+      // Other site url are sent to another kafka topic
+      else {
+        producer.send(new ProducerRecord<>(listenerFilteredKafkaTopic,
+          message.getSnapshotId(), message), KafkaSink.callback);
+        esMetrics.meter("SendIntlKafkaCount", 1, eventTime);
+      }
     } else {
-      invalidRequestParam(request, "Parse message error;", action, type);
+      invalidRequestParam(request, "Parse message error;", startTime, action, type);
     }
-    stopTimerAndLogData(startTime, message.toString(), action, type);
   }
+
+
 
   /**
    * getCampaignId based on query pattern match
@@ -160,7 +143,7 @@ public class DefaultChannel implements Channel {
    * @param request incoming HttpServletRequest
    * @return campaignID, default -1L if no pattern match in the query of HttpServletRequest
    */
-  public long getCampaignID(final HttpServletRequest request) {
+  public long getCampaignID(final HttpServletRequest request, long eventTime, String channelAction, String channelType) {
     HashMap<String, String> lowerCaseParams = new HashMap<>();
     Enumeration params = request.getParameterNames();
     while (params.hasMoreElements()) {
@@ -175,7 +158,7 @@ public class DefaultChannel implements Channel {
         campaignId = Long.parseLong(request.getParameter(campaign));
       } catch (NumberFormatException e) {
         logger.warn("Invalid campaign: " + request.getParameter(campaign));
-        esMetrics.meter("InvalidCampaign");
+        esMetrics.meter("InvalidCampaign", 1, eventTime, channelAction, channelType);
       }
     }
 
@@ -187,15 +170,14 @@ public class DefaultChannel implements Channel {
    * Stops the timer and logs relevant debugging messages
    *
    * @param startTime    the start time, so that latency can be calculated
-   * @param kafkaMessage logged to CAL for debug purposes
+   * @param channelAction click, impression...
+   * @param channelType epn, dap...
    */
-  private void stopTimerAndLogData(long startTime, String kafkaMessage, String channelAction, String channelType) {
+  private void stopTimerAndLogData(long startTime, long eventTime, String channelAction, String channelType) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("SuccessCount");
-    metrics.mean("AverageLatency", endTime - startTime);
-    esMetrics.meter("SuccessCount", channelAction, channelType);
-    esMetrics.mean("AverageLatency", endTime - startTime);
+    esMetrics.meter("SuccessCount", 1, eventTime, channelAction, channelType);
+    esMetrics.mean("AverageLatency", endTime - startTime, eventTime);
   }
 
   /**
@@ -226,19 +208,17 @@ public class DefaultChannel implements Channel {
       logger.warn("Cannot get request start time, use system time instead. ", e);
     }
     logger.debug(String.format("StartTime: %d", startTime));
-    metrics.meter("ProxyIncomingCount");
-    esMetrics.meter("ProxyIncomingCount", channelAction, channelType);
+    esMetrics.meter("ProxyIncomingCount", 1, startTime, channelAction, channelType);
     return startTime;
   }
 
-  private void invalidRequestParam(HttpServletRequest request, String invalid, String channelAction, String channelType) {
+  private void invalidRequestParam(HttpServletRequest request, String invalid, long eventTime, String channelAction, String channelType) {
     StringBuffer sb = new StringBuffer();
     sb.append(invalid);
     sb = deriveWarningMessage(sb, request);
     logger.warn(sb.toString());
     logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
-    metrics.meter("un-managed");
-    esMetrics.meter("un-managed", channelAction, channelType);
+    esMetrics.meter("un-managed", 1, eventTime, channelAction, channelType);
   }
 
 }

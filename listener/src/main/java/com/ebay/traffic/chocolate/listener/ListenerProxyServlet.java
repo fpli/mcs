@@ -1,6 +1,5 @@
 package com.ebay.traffic.chocolate.listener;
 
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.listener.channel.Channel;
 import com.ebay.traffic.chocolate.listener.channel.ChannelFactory;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
@@ -45,7 +44,6 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
   private static String outputHttpsPort;
   private static int inputHttpPort;
   private static int inputHttpsPort;
-  private MetricsClient metrics;
   private ESMetrics esMetrics;
   private Channel channel;
 
@@ -57,10 +55,6 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
     outputHttpsPort = config.getInitParameter(ListenerOptions.OUTPUT_HTTPS_PORT);
     inputHttpPort = Integer.parseInt(config.getInitParameter(ListenerOptions.INPUT_HTTP_PORT));
     inputHttpsPort = Integer.parseInt(config.getInitParameter(ListenerOptions.INPUT_HTTPS_PORT));
-    metrics = MetricsClient.getInstance();
-    metrics.meter(PROXY_FAILURE, 0);
-    metrics.meter(CLIENT_FAILURE, 0);
-    metrics.meter(MALFORMED_URL, 0);
     esMetrics = ESMetrics.getInstance();
     esMetrics.meter(PROXY_FAILURE, 0);
     esMetrics.meter(CLIENT_FAILURE, 0);
@@ -107,7 +101,6 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
    */
   @Override
   protected void onProxyResponseFailure(HttpServletRequest clientRequest, HttpServletResponse proxyResponse, Response serverResponse, Throwable failure) {
-    metrics.meter(PROXY_FAILURE);
     esMetrics.meter(PROXY_FAILURE);
     logger.warn(failure);
     super.onProxyResponseFailure(clientRequest, proxyResponse, serverResponse, failure);
@@ -119,7 +112,6 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
    */
   @Override
   protected void onClientRequestFailure(HttpServletRequest clientRequest, org.eclipse.jetty.client.api.Request proxyRequest, HttpServletResponse proxyResponse, Throwable failure) {
-    metrics.meter(CLIENT_FAILURE);
     esMetrics.meter(CLIENT_FAILURE);
     logger.warn(failure);
     super.onClientRequestFailure(clientRequest, proxyRequest, proxyResponse, failure);
@@ -137,7 +129,6 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
       URI rewrittenURI = URI.create(super.rewriteTarget(clientRequest));
       return setPort(rewrittenURI, portMapping(clientRequest.getLocalPort()));
     } catch (IllegalArgumentException e) {
-      metrics.meter(MALFORMED_URL);
       esMetrics.meter(MALFORMED_URL);
       reencodeQuery(clientRequest);
       URI rewrittenURI = URI.create(super.rewriteTarget(clientRequest));

@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - CappingRule
 
-usage="Usage: cappingRule.sh [channel] [workDir] [outputDir] [ipThreshold] [elasticsearchUrl] [cappingMetrics]"
+usage="Usage: cappingRule.sh [channel] [workDir] [outputDir] [archiveDir] [ipThreshold] [elasticsearchUrl] [cappingMetrics]"
 
 # if no args specified, show usage
 if [ $# -le 3 ]; then
@@ -17,9 +17,10 @@ bin=`cd "$bin">/dev/null; pwd`
 CHANNEL=$1
 WORK_DIR=$2
 OUTPUT_DIR=$3
-IP_THRESHOLD=$4
-ES_URL=$5
-CAPPING_METRICS=$6
+ARCHIVE_DIR=$4
+IP_THRESHOLD=$5
+ES_URL=$6
+CAPPING_METRICS=$7
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
@@ -54,6 +55,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --channel ${CHANNEL} \
       --workDir "${WORK_DIR}" \
       --outputDir ${OUTPUT_DIR} \
+      --archiveDir ${ARCHIVE_DIR} \
       --ipThreshold ${IP_THRESHOLD} \
       --elasticsearchUrl ${ES_URL} \
       --cappingMetrics ${CAPPING_METRICS}

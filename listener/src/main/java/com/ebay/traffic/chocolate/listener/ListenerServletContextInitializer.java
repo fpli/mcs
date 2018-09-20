@@ -1,22 +1,21 @@
 package com.ebay.traffic.chocolate.listener;
 
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
-import com.ebay.cratchit.server.AcknowledgerServlet;
-import com.ebay.cratchit.server.Clerk;
+import com.ebay.traffic.chocolate.init.JettyServerConfiguration;
 import com.ebay.traffic.chocolate.listener.api.TrackingServlet;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.log4j.Logger;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Configuration;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRegistration.Dynamic;
 
 @Configuration
+@AutoConfigureAfter(JettyServerConfiguration.class)
 public class ListenerServletContextInitializer implements ServletContextInitializer {
 
     private static final Logger logger = Logger.getLogger(ListenerServletContextInitializer.class);
@@ -30,17 +29,11 @@ public class ListenerServletContextInitializer implements ServletContextInitiali
 
         logger.info("start registerServlet");
         ListenerOptions options = ListenerOptions.getInstance();
-        
-        // Add durability servlet
-        logger.info("start ackServlet");
-        Dynamic ackServlet = servletContext.addServlet("AcknowledgerServlet", new AcknowledgerServlet(Clerk.getInstance()));
-        ackServlet.addMapping("/ack/*"); 
-        ackServlet.setLoadOnStartup(2);
-        
+
         // Add tracking servlet 
         logger.info("start trackingServlet");
         ServletRegistration.Dynamic trackingServlet = servletContext.addServlet("ListenerTrackingServlet",
-                new TrackingServlet(MetricsClient.getInstance(), ESMetrics.getInstance(), MessageObjectParser.getInstance()));
+                new TrackingServlet(ESMetrics.getInstance(), MessageObjectParser.getInstance()));
         trackingServlet.addMapping("/1v/*", "/1c/*", "/1i/*");
         trackingServlet.setLoadOnStartup(2);
 

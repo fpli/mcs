@@ -100,8 +100,9 @@ class DedupeAndSink(params: Parameter)
       // output messages to files
       while (iter.hasNext) {
         val message = iter.next().value()
-        if (metrics != null)
-          metrics.meter("DedupeInputCount", message.getChannelAction.toString, message.getChannelType.toString)
+        if (metrics != null) {
+          metrics.meter("DedupeInputCount", 1, message.getTimestamp, message.getChannelAction.toString, message.getChannelType.toString)
+        }
         val date = DATE_COL + "=" + getDateString(message.getTimestamp) // get the event date
         var writer = writers.get(date)
         if (writer == null) {
@@ -125,14 +126,14 @@ class DedupeAndSink(params: Parameter)
             CouchbaseClient.dedupeBucket.upsert(JsonDocument.create(message.getSnapshotId.toString, couchbaseTTL, JsonObject.empty()))
             writer.write(message)
             if (metrics != null) {
-              metrics.meter("Dedupe-Temp-Output", message.getChannelAction.toString, message.getChannelType.toString)
+              metrics.meter("Dedupe-Temp-Output", 1, message.getTimestamp, message.getChannelAction.toString, message.getChannelType.toString)
             }
           }
         }
         else {
           writer.write(message)
           if (metrics != null) {
-            metrics.meter("Dedupe-Temp-Output", message.getChannelAction.toString, message.getChannelType.toString)
+            metrics.meter("Dedupe-Temp-Output", 1, message.getTimestamp, message.getChannelAction.toString, message.getChannelType.toString)
           }
         }
       }

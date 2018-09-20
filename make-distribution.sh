@@ -109,9 +109,9 @@ cp -r "$CHOCOLATE_HOME"/spark-common/src/main/bin/* "$CHOCOLATE_SPARK_NRT_BIN"/b
 cp -r "$CHOCOLATE_HOME"/spark-nrt/src/main/bin/* "$CHOCOLATE_SPARK_NRT_BIN"/bin
 
 # Chocolcate Tools - distcp
-CHOCOLATE_TOOLS_DISTCP_BIN="$DISTDIR/hadoop-distcp"
+CHOCOLATE_TOOLS_DISTCP_BIN="$DISTDIR/chocolate-distcp"
 mkdir -p "$CHOCOLATE_TOOLS_DISTCP_BIN/lib"
-cp "$CHOCOLATE_HOME"/tools/hadoop-distcp/target/hadoop-distcp-*-fat.jar "$CHOCOLATE_TOOLS_DISTCP_BIN"/lib/
+cp "$CHOCOLATE_HOME"/tools/hadoop-distcp/target/chocolate-distcp-*-fat.jar "$CHOCOLATE_TOOLS_DISTCP_BIN"/lib/
 
 if [ "$MAKE_TGZ" == "true" ]; then
   TARDIR_NAME=chocolate-$VERSION-bin
