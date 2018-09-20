@@ -48,11 +48,13 @@ public class ListenerOptionsTest {
     public void testGetElasticsearchData() {
         Properties prop = new Properties();
         prop.put(ListenerOptions.ELASTICSEARCH_URL, "A");
+        prop.put(ListenerOptions.ELASTICSEARCH_INDEX_PREFIX, "prefix");
 
         ListenerOptions.init(prop);
         ListenerOptions options = ListenerOptions.getInstance();
 
         assertEquals("A", options.getElasticsearchUrl());
+        assertEquals("prefix", options.getElasticsearchIndexPrefix());
     }
 
     @Test

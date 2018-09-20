@@ -35,6 +35,7 @@ class CappingRuleJob(params: Parameter)
   lazy val baseDir = params.workDir + "/capping/" + params.channel + "/"
   lazy val sparkDir = baseDir + "/spark/"
   lazy val outputDir = params.outputDir + "/" + params.channel + "/capping/"
+  lazy val archiveDir = params.archiveDir + "/" + params.channel + "/capping/"
 
   override def run(): Unit = {
 
@@ -51,7 +52,8 @@ class CappingRuleJob(params: Parameter)
           new CappingRuleContainer(params, new DateFiles(date, datesFiles.get(date).get), this)))
       )
       outputMetadata.writeDedupeOutputMeta(metaFiles)
-      inputMetadata.deleteDedupeOutputMeta(file)
+      // archive for future replay
+      archiveMetafile(file, archiveDir)
     }
   }
 

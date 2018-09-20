@@ -50,6 +50,7 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
     public static final String FRONTIER_URL = "frontier.url";
     public static final String FRONTIER_APP_SVC_NAME = "frontier.app.svc.name";
     public static final String ELASTICSEARCH_URL = "elasticsearch.url";
+    public static final String ELASTICSEARCH_INDEX_PREFIX = "elasticsearch.index.prefix";
     public static final String ROVER_CORE_SITES = "rover.core.sites";
 
     public static final String INPUT_HTTP_PORT = "http.port";
@@ -243,6 +244,11 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
     public String getElasticsearchUrl() {
         return ApplicationOptionsParser.getStringProperty(properties,
                 ELASTICSEARCH_URL);
+    }
+
+    public String getElasticsearchIndexPrefix() {
+        return ApplicationOptionsParser.getStringProperty(properties,
+            ELASTICSEARCH_INDEX_PREFIX);
     }
 
     public int getInputHttpPort() { return ApplicationOptionsParser.getNumericProperty(properties, INPUT_HTTP_PORT, 8000, 9000);

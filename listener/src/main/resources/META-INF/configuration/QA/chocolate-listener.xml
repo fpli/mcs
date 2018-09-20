@@ -25,24 +25,16 @@
   </property>
   <!-- Kafka producer end -->
 
-  <!-- Frontier begin -->
-  <property>
-    <name>frontier.url</name>
-    <value>frontier://tenant=mp;env=qa;app_svc=%s@sherlock-ftr-qa.stratus.phx.qa.ebay.com</value>
-    <description>Frontier URL</description>
-  </property>
-  <property>
-    <name>frontier.app.svc.name</name>
-    <value>Listener</value>
-    <description>Frontier App SVC name</description>
-  </property>
-  <!-- Frontier end -->
-
   <!-- ElasticSearch begin -->
   <property>
     <name>elasticsearch.url</name>
     <value>http://10.148.181.34:9200</value>
     <description>Elastic Search Url</description>
+  </property>
+  <property>
+    <name>elasticsearch.index.prefix</name>
+    <value>chocolate-metrics-</value>
+    <description>ElasticSearch index prefix</description>
   </property>
   <!-- ElasticSearch end -->
 

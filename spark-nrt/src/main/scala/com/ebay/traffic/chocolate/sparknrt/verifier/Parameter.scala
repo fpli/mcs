@@ -5,7 +5,8 @@ import scopt.OptionParser
 case class Parameter(appName: String = "RuleVerifier",
                      mode: String = "yarn",
                      srcPath: String = "",
-                     targetPath: String = "")
+                     targetPath: String = "",
+                     outputPath: String = "")
 
 object Parameter {
 
@@ -35,6 +36,12 @@ object Parameter {
       .valueName("<path>")
       .text("target data that source data to be verified against")
       .action((x, c) => c.copy(targetPath = x))
+
+    opt[String]("outputPath")
+      .required()
+      .valueName("<path>")
+      .text("file path where result data will be stored")
+      .action((x, c) => c.copy(outputPath = x))
   }
 
   def apply(args: Array[String]): Parameter = {
