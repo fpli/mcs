@@ -28,7 +28,7 @@ abstract class GenericRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
   extends CappingRule with Serializable {
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
-  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-preprod-";
+  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-";
   @transient lazy val metrics: ESMetrics = {
     if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
       ESMetrics.init(METRICS_INDEX_PREFIX, params.elasticsearchUrl)

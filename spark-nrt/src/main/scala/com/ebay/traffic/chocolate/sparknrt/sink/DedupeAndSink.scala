@@ -61,7 +61,7 @@ class DedupeAndSink(params: Parameter)
   lazy val outputDir = params.outputDir + "/" + params.channel + "/dedupe/"
   lazy val couchbaseDedupe = params.couchbaseDedupe
   lazy val couchbaseTTL = params.couchbaseTTL
-  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-preprod-";
+  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-";
 
   @transient lazy val metadata = {
     Metadata(params.workDir, params.channel, MetadataEnum.dedupe)
