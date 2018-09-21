@@ -53,6 +53,7 @@ object CorpCouchbaseClient {
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase upsert error.", e)
+        throw e
       }
     }
   }
@@ -77,6 +78,7 @@ object CorpCouchbaseClient {
       }
     } catch {
       case e: Exception => {
+        logger.error("Corp Couchbase return client error.", e)
         throw e
       }
     }
@@ -91,6 +93,7 @@ object CorpCouchbaseClient {
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase bucket close error.", e)
+        throw e
       }
     }
   }
