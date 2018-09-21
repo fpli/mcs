@@ -60,6 +60,14 @@
             <artifactId>raptor-cal-client-starter</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-perfmon-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-mcf-starter</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>

@@ -59,6 +59,14 @@
       </dependency>
       <dependency>
         <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-perfmon-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-mcf-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
         <artifactId>raptor-configresource-starter</artifactId>
       </dependency>
       <dependency>
