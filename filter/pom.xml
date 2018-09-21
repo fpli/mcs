@@ -68,6 +68,10 @@
             <artifactId>raptor-mcf-starter</artifactId>
         </dependency>
         <dependency>
+            <groupId>raptor-cal-client-parent</groupId>
+            <artifactId>raptor-cal-client-starter</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
