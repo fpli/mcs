@@ -2,31 +2,25 @@ package com.ebay.traffic.chocolate.couchbase;
 
 import com.couchbase.client.deps.io.netty.util.internal.StringUtil;
 import com.couchbase.client.java.Bucket;
-import com.couchbase.client.java.Cluster;
-import com.couchbase.client.java.CouchbaseCluster;
 import com.couchbase.client.java.document.json.JsonArray;
 import com.couchbase.client.java.document.json.JsonObject;
-import com.couchbase.client.java.env.CouchbaseEnvironment;
-import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
-import com.couchbase.client.java.query.N1qlQuery;
-import com.couchbase.client.java.query.N1qlQueryResult;
-import com.couchbase.client.java.query.N1qlQueryRow;
-import com.ebay.app.raptor.chocolate.constant.MPLXChannelEnum;
+import com.couchbase.client.java.view.ViewQuery;
+import com.couchbase.client.java.view.ViewRow;
 import com.ebay.app.raptor.chocolate.constant.MPLXClientEnum;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
+import com.ebay.dukes.CacheClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPOutputStream;
-
 
 public class DumpLegacyRotationFiles {
   static Logger logger = LoggerFactory.getLogger(DumpLegacyRotationFiles.class);
-  private static Cluster cluster;
+  private static CorpRotationCouchbaseClient client;
   private static Bucket bucket;
   private static Properties couchbasePros;
 
@@ -35,17 +29,22 @@ public class DumpLegacyRotationFiles {
     if (StringUtils.isEmpty(configFilePath))
       logger.error("No configFilePath was defined. please set configFilePath for rotation jobs");
 
-    String lastUpdateTime = (args != null && args.length > 1) ? args[1] : null;
+    String updateTimeStartKey = (args != null && args.length > 1) ? args[1] : null;
+    if(StringUtils.isEmpty(updateTimeStartKey)) logger.error("No updateTimeStartKey was defined. please set updateTimeStartKey for rotation jobs");
 
-    String outputFilePath = (args != null && args.length > 2) ? args[2] : null;
+    String updateTimeEndKey = (args != null && args.length > 2) ? args[2] : null;
+    if(StringUtils.isEmpty(updateTimeEndKey)) logger.error("No updateTimeEndKey was defined. please set updateTimeEndKey for rotation jobs");
+
+    String outputFilePath = (args != null && args.length > 3) ? args[3] : null;
 
     init(configFilePath);
 
     try {
-      if(StringUtils.isNotEmpty(lastUpdateTime) && Long.valueOf(lastUpdateTime) > 0){
-        connect();
-      }
-      dumpFileFromCouchbase(lastUpdateTime, outputFilePath);
+      client = new CorpRotationCouchbaseClient(couchbasePros);
+      CacheClient cacheClient = client.getCacheClient();
+      bucket = client.getBuctet(cacheClient);
+      dumpFileFromCouchbase(updateTimeStartKey, updateTimeEndKey, outputFilePath);
+      client.returnClient(cacheClient);
     } finally {
       close();
     }
@@ -57,14 +56,7 @@ public class DumpLegacyRotationFiles {
     couchbasePros.load(in);
   }
 
-  private static void connect() {
-    CouchbaseEnvironment env = DefaultCouchbaseEnvironment.builder().connectTimeout(100000).queryTimeout(500000).build();
-    cluster = CouchbaseCluster.create(env, couchbasePros.getProperty("couchbase.cluster.rotation"));
-    cluster.authenticate(couchbasePros.getProperty("couchbase.user.rotation"), couchbasePros.getProperty("couchbase.password.rotation"));
-    bucket = cluster.openBucket(couchbasePros.getProperty("couchbase.bucket.rotation"), 300000, TimeUnit.SECONDS);
-  }
-
-  private static void dumpFileFromCouchbase(String lastUpdateTime, String outputFilePath) throws IOException {
+  private static void dumpFileFromCouchbase(String startKey, String endKey, String outputFilePath) throws IOException {
     // File Path
     if (outputFilePath == null) {
       outputFilePath = couchbasePros.getProperty("job.dumpLegacyRotationFiles.outputFilePath");
@@ -74,13 +66,16 @@ public class DumpLegacyRotationFiles {
     // If the file need to be compressed, set "true".  default is "false"
     Boolean compress = (couchbasePros.getProperty("job.dumpLegacyRotationFiles.compressed") == null) ? Boolean.valueOf(couchbasePros.getProperty("job.dumpLegacyRotationFiles.compressed")) : Boolean.FALSE;
 
-    N1qlQueryResult result = null;
-    if(StringUtils.isNotEmpty(lastUpdateTime) && Long.valueOf(lastUpdateTime) > -1){
-      // n1qlQueryString
-      String n1qlQueryString = couchbasePros.getProperty("job.dumpRotationFiles.n1ql");
-      n1qlQueryString = String.format(n1qlQueryString, lastUpdateTime);
-      logger.info("couchbase n1qlQueryString = " + n1qlQueryString);
-      result = bucket.query(N1qlQuery.simple(n1qlQueryString));
+    List<ViewRow> result = null;
+
+    if(StringUtils.isNotEmpty(startKey) && Long.valueOf(startKey) > -1
+      && StringUtils.isNotEmpty(endKey) && Long.valueOf(endKey) > -1){
+
+      ViewQuery query = ViewQuery.from(couchbasePros.getProperty("couchbase.corp.rotation.designName"),
+        couchbasePros.getProperty("couchbase.corp.rotation.viewName"));
+      query.startKey(Long.valueOf(startKey));
+      query.endKey(Long.valueOf(endKey));
+      result = bucket.query(query).allRows();
     }
 
     // sample: 2018-02-22_01_rotations.txt
@@ -110,11 +105,13 @@ public class DumpLegacyRotationFiles {
   }
 
   private static void close() {
-    if(bucket != null) bucket.close();
-    if(cluster != null) cluster.disconnect();
+    if(client != null){
+      client.shutdown();
+    }
+    System.exit(0);
   }
 
-  private static void genFileForRotation(String output, boolean compress, N1qlQueryResult result) throws IOException {
+  private static void genFileForRotation(String output, boolean compress, List<ViewRow> result) throws IOException {
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_ROTATIONS + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;
@@ -136,8 +133,8 @@ public class DumpLegacyRotationFiles {
 
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
-      for (N1qlQueryRow row : result) {
-        rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
+      for (ViewRow row : result) {
+        rotationInfo = JsonObject.fromJson(row.value().toString());
         if (rotationInfo.containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
           rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
         } else {
@@ -271,7 +268,7 @@ public class DumpLegacyRotationFiles {
     logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
-  private static void genFileForCampaign(String output, boolean compress, N1qlQueryResult result) throws IOException {
+  private static void genFileForCampaign(String output, boolean compress, List<ViewRow> result) throws IOException {
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_CAMPAIGN;
     Integer count = 0;
@@ -292,8 +289,8 @@ public class DumpLegacyRotationFiles {
       }
 
       JsonObject rotationInfo = null;
-      for (N1qlQueryRow row : result) {
-        rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
+      for (ViewRow row : result) {
+        rotationInfo = JsonObject.fromJson(row.value().toString());
         if (rotationInfo == null) continue;
 
         if (rotationInfo.getLong(RotationConstant.FIELD_CAMPAIGN_ID) == null) {
@@ -334,7 +331,7 @@ public class DumpLegacyRotationFiles {
     logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
-  private static void genFileForRotationCreatives(String output, boolean compress, N1qlQueryResult result) throws IOException {
+  private static void genFileForRotationCreatives(String output, boolean compress, List<ViewRow> result) throws IOException {
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_ROTATION_CREATIVE;
     Integer count = 0;
@@ -356,8 +353,8 @@ public class DumpLegacyRotationFiles {
 
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
-      for (N1qlQueryRow row : result) {
-        rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
+      for (ViewRow row : result) {
+        rotationInfo = JsonObject.fromJson(row.value().toString());
         String rotationId = String.valueOf(rotationInfo.getLong(RotationConstant.FIELD_ROTATION_ID));
 
         if (rotationInfo.containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
@@ -436,7 +433,7 @@ public class DumpLegacyRotationFiles {
     out.flush();
   }
 
-  private static void genFileForCreatives(String output, boolean compress, N1qlQueryResult result) throws IOException {
+  private static void genFileForCreatives(String output, boolean compress, List<ViewRow> result) throws IOException {
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_CREATIVES;
     Integer count = 0;
@@ -458,8 +455,8 @@ public class DumpLegacyRotationFiles {
 
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
-      for (N1qlQueryRow row : result) {
-        rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
+      for (ViewRow row : result) {
+        rotationInfo = JsonObject.fromJson(row.value().toString());
         if (rotationInfo.containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
           rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
         } else {
@@ -551,7 +548,7 @@ public class DumpLegacyRotationFiles {
     out.flush();
   }
 
-  private static void genFileForPosition(String output, boolean compress, N1qlQueryResult result) throws IOException {
+  private static void genFileForPosition(String output, boolean compress, List<ViewRow> result) throws IOException {
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_POSITION;
     Integer count = 0;
@@ -573,8 +570,8 @@ public class DumpLegacyRotationFiles {
 
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
-      for (N1qlQueryRow row : result) {
-        rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
+      for (ViewRow row : result) {
+        rotationInfo = JsonObject.fromJson(row.value().toString());
         if (rotationInfo.containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
           rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
         } else {
@@ -625,7 +622,7 @@ public class DumpLegacyRotationFiles {
     logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
-  private static void genFileForPositionRotation(String output, boolean compress, N1qlQueryResult result) throws IOException {
+  private static void genFileForPositionRotation(String output, boolean compress, List<ViewRow> result) throws IOException {
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_POSITION_ROTATION;
     Integer count = 0;
@@ -647,8 +644,8 @@ public class DumpLegacyRotationFiles {
 
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
-      for (N1qlQueryRow row : result) {
-        rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
+      for (ViewRow row : result) {
+        rotationInfo = JsonObject.fromJson(row.value().toString());
         if (rotationInfo.containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
           rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
         } else {
@@ -674,7 +671,6 @@ public class DumpLegacyRotationFiles {
               }
               // |Rotation ID
               out.write(RotationConstant.FIELD_SEPARATOR);
-              rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
               out.write(String.valueOf(rotationInfo.getLong(RotationConstant.FIELD_ROTATION_ID)).getBytes());
               // |Active
               out.write(RotationConstant.FIELD_SEPARATOR);
@@ -706,7 +702,7 @@ public class DumpLegacyRotationFiles {
     logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
-  private static void genFileForPositionRule(String output, boolean compress, N1qlQueryResult result) throws IOException {
+  private static void genFileForPositionRule(String output, boolean compress, List<ViewRow> result) throws IOException {
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_POSITION_RULES;
     Integer count = 0;
@@ -728,8 +724,8 @@ public class DumpLegacyRotationFiles {
 
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
-      for (N1qlQueryRow row : result) {
-        rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
+      for (ViewRow row : result) {
+        rotationInfo = JsonObject.fromJson(row.value().toString());
         if (rotationInfo.containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
           rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
         } else {
@@ -789,7 +785,7 @@ public class DumpLegacyRotationFiles {
     logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
-  private static void genFileForDFStatus(String output, boolean compress, N1qlQueryResult result) throws IOException {
+  private static void genFileForDFStatus(String output, boolean compress, List<ViewRow> result) throws IOException {
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_DF;
     Integer count = 0;
@@ -808,7 +804,7 @@ public class DumpLegacyRotationFiles {
     logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
-  private static void genFileForLtRoi(String output, boolean compress, N1qlQueryResult result) throws IOException {
+  private static void genFileForLtRoi(String output, boolean compress, List<ViewRow> result) throws IOException {
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_LT + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;
@@ -829,9 +825,11 @@ public class DumpLegacyRotationFiles {
       }
 
       JsonObject rotationTag = null;
-      for (N1qlQueryRow row : result) {
-        if (row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO).containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
-          rotationTag = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO).getObject(RotationConstant.CHOCO_ROTATION_TAG);
+      JsonObject rotationInfo = null;
+      for (ViewRow row : result) {
+        rotationInfo = JsonObject.fromJson(row.value().toString());
+        if (rotationInfo.containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
+          rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
         }
         if (rotationTag == null) continue;
 
@@ -1003,7 +1001,7 @@ public class DumpLegacyRotationFiles {
     logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
-  private static void genFileForRoiCredit(String output, boolean compress, N1qlQueryResult result) throws IOException {
+  private static void genFileForRoiCredit(String output, boolean compress, List<ViewRow> result) throws IOException {
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_ROI_CREDIT + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;
@@ -1024,9 +1022,11 @@ public class DumpLegacyRotationFiles {
       }
 
       JsonObject rotationTag = null;
-      for (N1qlQueryRow row : result) {
-        if (row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO).containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
-          rotationTag = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO).getObject(RotationConstant.CHOCO_ROTATION_TAG);
+      JsonObject rotationInfo = null;
+      for (ViewRow row : result) {
+        rotationInfo = JsonObject.fromJson(row.value().toString());
+        if (rotationInfo.containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
+          rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
         }
         if (rotationTag == null) continue;
         if (!rotationTag.containsKey(RotationConstant.FIELD_ROI_CREDITS_V2)) continue;
@@ -1183,7 +1183,7 @@ public class DumpLegacyRotationFiles {
     logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
-  private static void genFileForRoiV2(String output, boolean compress, N1qlQueryResult result) throws IOException {
+  private static void genFileForRoiV2(String output, boolean compress, List<ViewRow> result) throws IOException {
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_ROI + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;
@@ -1204,9 +1204,11 @@ public class DumpLegacyRotationFiles {
       }
 
       JsonObject rotationTag = null;
-      for (N1qlQueryRow row : result) {
-        if (row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO).containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
-          rotationTag = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO).getObject(RotationConstant.CHOCO_ROTATION_TAG);
+      JsonObject rotationInfo = null;
+      for (ViewRow row : result) {
+        rotationInfo = JsonObject.fromJson(row.value().toString());
+        if (rotationInfo.containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
+          rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
         }
         if (rotationTag == null) continue;
         if (!rotationTag.containsKey(RotationConstant.FIELD_ROI_V2)) continue;
@@ -1316,7 +1318,7 @@ public class DumpLegacyRotationFiles {
     logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
-  private static void genFileForRules(String output, boolean compress, N1qlQueryResult result) throws IOException {
+  private static void genFileForRules(String output, boolean compress, List<ViewRow> result) throws IOException {
 
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_RULES;
@@ -1339,8 +1341,8 @@ public class DumpLegacyRotationFiles {
 
       JsonObject rotationInfo = null;
       JsonObject rotationTag = null;
-      for (N1qlQueryRow row : result) {
-        rotationInfo = row.value().getObject(RotationConstant.CHOCO_ROTATION_INFO);
+      for (ViewRow row : result) {
+        rotationInfo = JsonObject.fromJson(row.value().toString());
         if (rotationInfo.containsKey(RotationConstant.CHOCO_ROTATION_TAG)) {
           rotationTag = rotationInfo.getObject(RotationConstant.CHOCO_ROTATION_TAG);
         } else {
