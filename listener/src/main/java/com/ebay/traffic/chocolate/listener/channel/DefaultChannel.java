@@ -75,6 +75,11 @@ public class DefaultChannel implements Channel {
       parser.appendTagWhenRedirect(request, response, requestUrl);
     } catch (MalformedURLException | UnsupportedEncodingException e) {
       logger.error("Wrong with URL format/encoding", e);
+      String kafkaMalformedTopic = ListenerOptions.getInstance().getListenerMalformedTopic();
+      ListenerMessage message = new ListenerMessage();
+      message.setUri(requestUrl);
+      producer.send(new ProducerRecord<>(kafkaMalformedTopic,
+          -1L, message), KafkaSink.callback);
     }
 
     String snid = request.getParameter(SNID_PATTERN);
