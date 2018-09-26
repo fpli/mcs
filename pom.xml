@@ -4,12 +4,12 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.6.0-SNAPSHOT</version>
+    <version>0.6.0-RELEASE</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.ebay.traffic</groupId>
   <artifactId>chocolate</artifactId>
-  <version>3.1-RELEASE</version>
+  <version>3.3.0-RELEASE</version>
   <name>chocolate</name>
   <packaging>pom</packaging>
 
@@ -50,7 +50,6 @@
     <module>filter</module>
     <module>spark-nrt</module>
     <module>tools</module>
-    <module>trackapi</module>
   </modules>
 
   <dependencyManagement>
@@ -193,12 +192,6 @@
         <groupId>com.github.scopt</groupId>
         <artifactId>scopt_${scala.compat.version}</artifactId>
         <version>3.3.0</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.ebay.app.raptor.chocolate</groupId>
-        <artifactId>common</artifactId>
-        <version>${chocolate.common.version}</version>
       </dependency>
 
       <dependency>
@@ -358,33 +351,6 @@
 
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>2.4.3</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <shadedArtifactAttached>true</shadedArtifactAttached>
-              <shadedClassifierName>fat</shadedClassifierName>
-              <filters>
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.SF</exclude>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                  </excludes>
-                </filter>
-              </filters>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
       </plugin>
@@ -457,20 +423,6 @@
             </configuration>
           </execution>
 
-          <!-- Set reporting for Jacoco integrity tests. -->
-          <execution>
-            <id>post-integration-test</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-            <configuration>
-              <append>true</append>
-              <dataFile>${project.build.directory}/coverage-reports/jacoco-it.exec</dataFile>
-              <outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
-            </configuration>
-          </execution>
-
           <execution>
             <id>dump</id>
             <phase>post-integration-test</phase>
@@ -479,8 +431,22 @@
             </goals>
             <configuration>
               <append>true</append>
-              <destFile>${project.build.directory}/icoco-it.exec</destFile>
+              <destFile>${project.build.directory}/coverage-reports/jacoco-it.exec</destFile>
               <skip>${jacoco.dump.skip}</skip>
+            </configuration>
+          </execution>
+
+          <!-- Set reporting for Jacoco integrity tests. -->
+          <execution>
+            <id>it-report</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <append>true</append>
+              <dataFile>${project.build.directory}/coverage-reports/jacoco-it.exec</dataFile>
+              <outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
             </configuration>
           </execution>
 

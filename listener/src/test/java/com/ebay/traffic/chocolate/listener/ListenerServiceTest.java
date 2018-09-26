@@ -9,6 +9,7 @@ import com.ebay.traffic.chocolate.common.MiniZookeeperCluster;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
+import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.LongSerializer;
@@ -25,6 +26,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -33,6 +36,8 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by yliu29 on 3/4/18.
@@ -44,13 +49,6 @@ import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ListenerServiceTest {
 
-//  private static URL listenerConfigs = ListenerServiceTest.
-//          class.getClassLoader().getResource("META-INF/configuration/Dev/chocolate-listener.xml");
-//
-//  static {
-//    System.setProperty("chocolate-listener.xml", listenerConfigs.toString());
-//  }
-
   @LocalServerPort
   private int port;
 
@@ -59,18 +57,21 @@ public class ListenerServiceTest {
 
   private static MiniKafkaCluster kafkaCluster;
   private static MiniZookeeperCluster zookeeperCluster;
+  private static MockHttpServletRequest mockClientRequest;
+  private static MockHttpServletResponse mockProxyResponse;
+  private static MessageObjectParser parser;
 
   @BeforeClass
   public static void setUp() throws IOException {
-//    RuntimeContext.setConfigRoot(ListenerServiceTest.class.
-//            getClassLoader().getResource("META-INF/configuration/Dev/"));
-    //ListenerOptions.init(listenerConfigs.openStream());
     kafkaCluster = KafkaTestHelper.newKafkaCluster();
     zookeeperCluster = kafkaCluster.getZookeeper();
     ListenerOptions options = ListenerOptions.getInstance();
     options.setKafkaProperties(kafkaCluster.getProducerProperties(
             LongSerializer.class, ListenerMessageSerializer.class));
-    //ListenerInitializer.init(options);
+    mockClientRequest = new MockHttpServletRequest();
+    mockProxyResponse = new MockHttpServletResponse();
+    MessageObjectParser.init();
+    parser = MessageObjectParser.getInstance();
   }
 
   @AfterClass
@@ -83,7 +84,7 @@ public class ListenerServiceTest {
    * in kafka cluster after listener processes them.
    */
   @Test
-  public void testFilterService() throws Exception {
+  public void testListenerService() throws Exception {
     String page = "http://www.ebay.com/itm/The-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-/380963112068";
     String clickURL = "/1c/1-12345?page=" + page + "&item=380963112068";
     String vimpURL = "/1v/1-12345?page=" + page + "&item=380963112068";
@@ -144,5 +145,20 @@ public class ListenerServiceTest {
     consumer.close();
 
     Assert.assertEquals(1, listenerMessages.size());
+  }
+
+  @Test
+  public void testIsCoreSite() {
+    mockClientRequest.setScheme("http");
+    mockClientRequest.setServerName("rover.ebay.com");
+    mockClientRequest.setRequestURI("/a/b/c");
+    mockClientRequest.setServerPort(80);
+    mockClientRequest.addHeader("a", "b");
+    mockProxyResponse.setStatus(301);
+    mockProxyResponse.setHeader("Location", "https://www.ebay.co.uk/1/2/9?a=b&chocolateSauce=http%3A%2F%2Frover.ebay.com%2Fa%2Fb%2Fc");
+    assertTrue(parser.isCoreSite(mockClientRequest));
+
+    mockClientRequest.setServerName("rover.ebay.co.uk");
+    assertFalse(parser.isCoreSite(mockClientRequest));
   }
 }

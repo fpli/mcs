@@ -23,6 +23,7 @@ class TestIPCappingRule extends BaseFunSuite {
   val inputDir = tmpPath + "/workDir/dedupe"
   val workDir = tmpPath + "/workDir/capping"
   val outputDir = tmpPath + "/outputDir/"
+  val archiveDir = tmpPath + "/archiveDir/"
   val ipThreshold = "5"
   val channel = "EPN"
 
@@ -31,6 +32,7 @@ class TestIPCappingRule extends BaseFunSuite {
     "--channel", channel,
     "--workDir", workDir,
     "--outputDir", outputDir,
+    "--archiveDir", archiveDir,
     "--ipThreshold", ipThreshold
   )
 

@@ -15,10 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -87,15 +84,20 @@ public class LoadRotationInfoIntoCB {
   private static RotationInfo getRotationInfo(String row){
     String[] fields = row.split("\\|");
     RotationInfo rotationInfo = new RotationInfo();
-    rotationInfo.setLast_update_time(System.currentTimeMillis());
+    Calendar c = Calendar.getInstance();
+    c.add(Calendar.DATE, -2);
+    rotationInfo.setLast_update_time(c.getTimeInMillis());
     Date d = new Date(rotationInfo.getLast_update_time());
     rotationInfo.setUpdate_date(sdf.format(d));
+    rotationInfo.setUpdate_user("LoadRotationInfoIntoCB.class");
 
     if(StringUtils.isNotEmpty(fields[0])){
       rotationInfo.setRotation_id(Long.valueOf(fields[0]));
     }
     if(StringUtils.isNotEmpty(fields[1])){
       rotationInfo.setRotation_string(strSpaceStrip(fields[1]));
+      String clientId = rotationInfo.getRotation_string().split("-")[0];
+      rotationInfo.setSite_id(MPLXClientEnum.getByClientId(Integer.valueOf(clientId)).getEbaySiteId());
     }
     if(StringUtils.isNotEmpty(fields[2])){
       rotationInfo.setRotation_name(strSpaceStrip(fields[2]));
@@ -166,6 +168,6 @@ public class LoadRotationInfoIntoCB {
   }
 
   private static String strSpaceStrip(String field){
-    return field.replaceAll("^\\s+|\\s+$", "");
+    return field.replaceAll("^\\s|\\s$", "");
   }
 }

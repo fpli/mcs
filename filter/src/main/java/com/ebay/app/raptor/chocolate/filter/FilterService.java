@@ -1,7 +1,6 @@
 package com.ebay.app.raptor.chocolate.filter;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.app.raptor.chocolate.filter.service.FilterContainer;
 import com.ebay.app.raptor.chocolate.filter.service.FilterWorker;
 import com.ebay.app.raptor.chocolate.filter.util.CouchbaseClient;
@@ -36,7 +35,7 @@ public class FilterService {
   private static final String ELASTICSEARCH_URL = "chocolate.filter.elasticsearch.url";
   private static final String TOPIC_THREAD_COUNT = "chocolate.filter.topic.threads";
   private static final String RULE_CONFIG_FILENAME = "filter_rule_config.json";
-  private static final String METRICS_INDEX_PREFIX = "chocolate-metrics-";
+  private static final String METRICS_INDEX_PREFIX = "chocolate.filter.elasticsearch.index.prefix";
   private List<FilterWorker> workers = new ArrayList<>();
 
   FilterService() {
@@ -60,9 +59,7 @@ public class FilterService {
     logger.info("Initializer called.");
 
     ApplicationOptions.init();
-    MetricsClient.init(ApplicationOptions.getInstance().getByNameString(FRONTIER_URL),
-        ApplicationOptions.getInstance().getByNameString(FRONTIER_APPSVC));
-    ESMetrics.init(METRICS_INDEX_PREFIX, ApplicationOptions.getInstance().getByNameString(ELASTICSEARCH_URL));
+    ESMetrics.init(ApplicationOptions.getInstance().getByNameString(METRICS_INDEX_PREFIX), ApplicationOptions.getInstance().getByNameString(ELASTICSEARCH_URL));
     ApplicationOptions options = ApplicationOptions.getInstance();
     FilterZookeeperClient.init(options);
 

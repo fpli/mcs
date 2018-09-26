@@ -1,6 +1,15 @@
 #!/bin/bash
 # run job to pull transaction data from TD to apollo
 whoami
-ssh -T -i /usr/azkaban/id_rsa_mta yimeng@lvschocolatepits-1583710.stratus.lvs.ebay.com <<EOSSH
-/chocolate/rotation/dumpRotationToTD.sh
+ssh -t -t -i /usr/azkaban/id_rsa_rotation yimeng@slcchocolatepits-1242746.stratus.slc.ebay.com <<EOSSH
+/chocolate/rotation/bin/dumpRotationToTD.sh
+/chocolate/rotation/bin/sendToETLHost.sh
+rc=$?
+if [[ ${rc} != 0 ]]; then
+   echo "=====================================================JOB ERROR!!======================================================"
+   exit ${rc}
+else
+   echo "=====================================================JOB Completed======================================================"
+   exit 0
+fi
 EOSSH

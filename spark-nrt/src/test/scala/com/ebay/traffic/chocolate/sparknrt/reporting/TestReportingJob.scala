@@ -5,7 +5,7 @@ import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
 import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
-import com.ebay.traffic.chocolate.sparknrt.couchbase.{CouchbaseClient, CouchbaseClientMock}
+import com.ebay.traffic.chocolate.sparknrt.couchbase.{CorpCouchbaseClient, CouchbaseClient, CouchbaseClientMock}
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.conf.Configuration
@@ -22,13 +22,15 @@ class TestReportingJob extends BaseFunSuite {
   val tmpPath = createTempPath()
   val inputDir = tmpPath + "/inputDir/"
   val workDir = tmpPath + "/workDir/"
+  val archiveDir = tmpPath + "/archiveDir/"
 
   val channel = "EPN"
 
   val args = Array(
     "--mode", "local[8]",
     "--channel", channel,
-    "--workDir", workDir
+    "--workDir", workDir,
+    "--archiveDir", archiveDir
   )
 
   @transient lazy val hadoopConf = {
@@ -46,7 +48,10 @@ class TestReportingJob extends BaseFunSuite {
 
   override def beforeAll(): Unit = {
     CouchbaseClientMock.startCouchbaseMock()
-    CouchbaseClient.createClusterFunc = () => CouchbaseClientMock.connect()
+    CorpCouchbaseClient.getBucketFunc = () => {
+      (None, CouchbaseClientMock.connect().openBucket("default"))
+    }
+
     createTestDataForDedupe()
   }
 
@@ -60,16 +65,18 @@ class TestReportingJob extends BaseFunSuite {
 
     val metadata1 = Metadata(workDir, channel, MetadataEnum.capping)
     val dedupeMeta = metadata1.readDedupeOutputMeta()
+    val dedupeMetaPath = new Path(dedupeMeta(0)._1)
 
-    assert (fs.exists(new Path(dedupeMeta(0)._1)))
+    assert (fs.exists(dedupeMetaPath))
 
     job.run()
     job.stop()
 
-    assert (!fs.exists(new Path(dedupeMeta(0)._1)))
+    assert (!fs.exists(dedupeMetaPath)) // moved
+    assert (fs.exists(new Path(job.archiveDir, dedupeMetaPath.getName))) // archived
 
     // check against mock Couchbase...
-    val bucket = CouchbaseClient.reportBucket
+    val bucket = CorpCouchbaseClient.getBucketFunc.apply()._2
 
     val keyArray = Array(
       // publisher based report result...

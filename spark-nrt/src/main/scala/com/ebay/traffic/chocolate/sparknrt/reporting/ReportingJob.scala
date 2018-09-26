@@ -1,10 +1,11 @@
 package com.ebay.traffic.chocolate.sparknrt.reporting
 
 import java.text.SimpleDateFormat
+import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import com.ebay.traffic.chocolate.sparknrt.couchbase.CouchbaseClient
+import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
@@ -26,12 +27,25 @@ object ReportingJob extends App {
 class ReportingJob(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
-  // Get capping metadata for EPN, while getting dedupe metadata for Display.
+  @transient var properties: Properties = {
+    val properties = new Properties()
+    properties.load(getClass.getClassLoader.getResourceAsStream("reporting.properties"))
+    properties
+  }
+
   @transient lazy val metadata = {
-    Metadata(params.workDir, params.channel, if (params.channel == ChannelType.EPN.toString) MetadataEnum.capping else MetadataEnum.dedupe)
+    var usage = MetadataEnum.dedupe
+    if (params.channel == ChannelType.EPN.toString) {
+      usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("reporting.upstream.epn"))
+    } else if (params.channel == ChannelType.DISPLAY.toString) {
+      usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("reporting.upstream.display"))
+    }
+    Metadata(params.workDir, params.channel, usage)
   }
 
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
+
+  lazy val archiveDir = params.archiveDir + "/" + params.channel + "/reporting/"
 
   /**
     * Check whether current event is sent from mobile by check User-Agent.
@@ -94,7 +108,7 @@ class ReportingJob(params: Parameter)
 
       val mapData = Map("timestamp" -> row.getAs("timestamp"), "count" -> row.getAs("count"))
 
-      CouchbaseClient.upsertMap(key, mapData)
+      CorpCouchbaseClient.upsertMap(key, mapData)
     }
   }
 
@@ -171,9 +185,9 @@ class ReportingJob(params: Parameter)
         campaignDf.foreachPartition(iter => upsertCouchbase(date, iter, true))
       })
 
-      // 5. delete metafile that is processed
-      logger.info(s"delete metafile=$file")
-      metadata.deleteDedupeOutputMeta(file)
+      // 5. archive metafile that is processed for replay
+      logger.info(s"archive metafile=$file")
+      archiveMetafile(file, archiveDir)
     })
   }
 }

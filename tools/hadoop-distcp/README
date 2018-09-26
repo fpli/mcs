@@ -5,3 +5,21 @@ each of which will copy a partition of the files specified in the source list.
 
 Version 0.1 (2010/08/02 sriksun)
  - Initial Version
+
+(2018/02/23 weibdai)
+Enable feature that DistCp can then copy files from insecure hdfs cluster to secure
+one that requires Kerberos authentication.
+Command line:
+1. Use -copyFromInsecureToSecure to enable this new feature.
+2. Use -targetprinc to specify Kerberos principal name.
+3. Use -targetkeytab to specify the keytab file name so mapper task can find it in cache.
+4. Use generic option -files to specify config files of target secure cluster, and
+hadoop will copy and distribute these files to all nodes that DistCp mapper task will
+run. Config file names are core-site-target.xml, hdfs-site-target.xml by convention.
+You should also attach keytab for mapper task to do Kerberos authentication before
+accessing target file system.
+
+For example,
+hadoop jar chocolate-distcp-1.0-SNAPSHOT.jar -files core-site-target.xml,hdfs-site-target.xml,b_marketing_tracking_APD.keytab -copyFromInsecureToSecure -targetprinc b_marketing_tracking@APD.EBAY.COM -targetkeytab b_marketing_tracking_APD.keytab hdfs://elvisha/demo hdfs://apollo-phx-nn-ha/user/b_marketing_tracking/Test
+* Since main class has been set in the manifest during maven build, we must ignore it
+from command line, otherwise command options won't be parsed properly.

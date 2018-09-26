@@ -1,34 +1,34 @@
 #
-#	IAB_ABC_International_List_of_Valid_Browsers_201807_18-125935
-#	July 18, 2018
+#	IAB_ABC_International_List_of_Valid_Browsers_201808_21-090358
+#	August 21, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
 # This list has been reviewed by the IAB MTF Spider & Robot Policy Board.
-# The file contains a list of patterns that may be matched against HTTP User 
+# The file contains a list of patterns that may be matched against HTTP User
 # Agent (UA) strings to determine whether that UA matches a known browser. This
 # is one step of several required for compliance to IAB Advertising Measurement
-# Guidelines. 
-# 
+# Guidelines.
+#
 # The list is only valid for use with Client Side Counting (CSC) transactions.
 # See http://www.iab.com/guidelines/iab-measurement-guidelines/
 #
 # A User Agent must contain one of these patterns in order to be included
 # in impression counts.
 #
-# It is strongly suggested that users analyze their own log data and then sort 
-# this list in order of frequency to allow the filter program to work 
-# efficiently. The order presented below is based on an analysis performed by 
+# It is strongly suggested that users analyze their own log data and then sort
+# this list in order of frequency to allow the filter program to work
+# efficiently. The order presented below is based on an analysis performed by
 # ImServices but may not be representative of all traffic.
 #
-# This list is provided in good faith but must be used at the user's own risk.  
-# The IAB, ABC and AAM accept no responsibility for any 
-# legal, technical or commercial consequences arising from the use of this 
-# list. 
+# This list is provided in good faith but must be used at the user's own risk.
+# The IAB, ABC and AAM accept no responsibility for any
+# legal, technical or commercial consequences arising from the use of this
+# list.
 #
 # Special characters in this file:
-#	# - (only at the start of a line) this line is a comment 
-#	| - field separator 
+#	# - (only at the start of a line) this line is a comment
+#	| - field separator
 # blank lines may be present. ignore them.
 #
 # The fields are delimited by a pipe symbol [|]:
@@ -43,12 +43,12 @@
 # 4) **Inactive Date. Inactive User Agent List Only.
 # 	mm/dd/yyyy format
 #
-# UA strings are potentially valid if they contain one of the following 
-# patterns (note: patterns are case insensitive, but shown in this file in 
+# UA strings are potentially valid if they contain one of the following
+# patterns (note: patterns are case insensitive, but shown in this file in
 # mixed case for human legibility)
 #
-# Contact AAM in the U.S. (spiders.bots@auditedmedia.com) or 
-# ABC in the UK (spiders.bots@abc.org.uk) with any feedback 
+# Contact AAM in the U.S. (spiders.bots@auditedmedia.com) or
+# ABC in the UK (spiders.bots@abc.org.uk) with any feedback
 # regarding this file.
 #
 #******************* END OF COMMENTS ******************************************
@@ -349,6 +349,7 @@ adjust.com|1|0
 anonymized by abelssoft|1|0
 anonymized+by+abelssoft|1|0
 aolbrowser|1|1
+barcoo|1|1
 burnbubb|1|1
 checkpoints_|1|1
 clipfish|1|1
@@ -374,14 +375,17 @@ ipla_MOBILE|1|1
 kochava|1|0
 liquid air lab|1|1
 liquid+air+lab|1|1
+marktjagd|1|1
 mheg-uk|1|1
 mipla_a|1|1
 mipla_w8rt|1|1
 nook browser|1|1
 nook+browser|1|1
+offeristafr|1|1
 partner frontier|1|0
 partner+frontier|1|0
 pb0.6b|1|1
+profital|1|1
 scorecenter|1|1
 scrabblefree|1|1
 smartclip-atv|1|0
@@ -394,14 +398,15 @@ windows mobile application search|1|0
 windows+mobile+application+search|1|0
 windowsphoneadclient|1|0
 wininethttploader|1|0
+wunderkauf|1|1
 xbox|1|1
 #************************************BEGIN DEACTIVATED USER AGENTS HERE*******************************
 #DEACTIVATED USER AGENT|0|0|12/25/2005
 #
 # ***********************************BEGIN MODIFICATION TRACKING**************************************
 # January 2006 - removed QC07 UP.Browser and SEC02 UP.Browser as redundant with UP.Browser
-# February 2006 - Opera moved from the 44th spot to the 2nd spot and Amiga moved from the 3rd spot to the 6th spot 
-# March 2006 - added BREW, iCab 
+# February 2006 - Opera moved from the 44th spot to the 2nd spot and Amiga moved from the 3rd spot to the 6th spot
+# March 2006 - added BREW, iCab
 # April 2006 - removed Mazingo and DoCoMo, added AOLadServerGifbank, changed SonyEricsson from a start-of-string match to a sub-string match
 # May 2006 - added Sunrise, Eudora, Klondike, placed a "+" sign for all entries where there was a space to account for IIS user-agent strings
 # June 2006 - added gbplugin
@@ -453,9 +458,9 @@ xbox|1|1
 # April 2010 - no changes
 # May 2010 - added FOXNews/
 # June 2010 - no changes
-# July 2010 - added abcplayer, ipad, scorecenter, Alcatel, LG-, LG/, PG-, PT-, Pantech, SAGEM, SCH-, SGH-, Samsung, SHARP, SoftBank, BenQ, Mitsu-, Mitsu/, NEC- Vodafone, 
+# July 2010 - added abcplayer, ipad, scorecenter, Alcatel, LG-, LG/, PG-, PT-, Pantech, SAGEM, SCH-, SGH-, Samsung, SHARP, SoftBank, BenQ, Mitsu-, Mitsu/, NEC- Vodafone,
 # July 2010 - added Lenovo, MOTO, MOTORAZR, MOTORIZR, MOTOROKR, i-mobile, YahooMobile, MAUI, TWCiPadMax, Dalvik, updated PHILIPS- to PHILIPS, updated SEC-/ to SEC
-# August 2010 - added nook browser, nook+browser, FLY, HD2_, Micromax, Huawei, WellcoM, HS-, AHONG, Amoi, Asus ,BIRD, CDM, DBTEL, dopod, Haier, WinWAP, Solitaire, 
+# August 2010 - added nook browser, nook+browser, FLY, HD2_, Micromax, Huawei, WellcoM, HS-, AHONG, Amoi, Asus ,BIRD, CDM, DBTEL, dopod, Haier, WinWAP, Solitaire,
 # August 2010 - added GIONEE, Gradiente, Qtek, Spice, XDA, HP iPAQ, HP+iPAQ, Motorola, updated HTC- & HTC_ to HTC
 # September 2010 - added NYTimes/, Sportacular/
 # October 2010 - added WordsWithFriendsFree
@@ -477,7 +482,7 @@ xbox|1|1
 # February 2012 - added ScrambleWithFriends, DMTT, MailOnline, Boggle, Surviving_HS, Horoscopes, ScoreMobile/, SMFC/
 # March 2012 - added Dancing%20On%20Ice, DancingOnIce, ITV_Player, X%20Factor, mheg-uk, Draw%20Free
 # April 2012 - added CFNetwork/. Darwin/, WebtrendsClientLibrary
-# May 2012 - added WFB user agent & WFB+user+agent, AdobeAIR, SmartTV, updated the 3rd field for "iphone" and "ipad" from a "1" to "0", 
+# May 2012 - added WFB user agent & WFB+user+agent, AdobeAIR, SmartTV, updated the 3rd field for "iphone" and "ipad" from a "1" to "0",
 # May 2012 - removed the following as a result of the field updates to "iphone" and "ipad": Apple iPhone, Apple+iPhone, TWCiPadMax & CnnApp4iPad
 # June 2012 - added DoubleClick RProxy & DoubleClick+RProxy
 # July 2012 - no changes
@@ -533,9 +538,9 @@ xbox|1|1
 # June 2016 - (emergency update) added "Syabas"
 # July 2016 - added "AerServSDK/"
 # August 2016 - no changes
-# September 2016 - added "SpotXchange", added "okhttp/", added "Blitzlicht/com", added "BUNTE.de/de.burda.buntede" 
+# September 2016 - added "SpotXchange", added "okhttp/", added "Blitzlicht/com", added "BUNTE.de/de.burda.buntede"
 # September 2016 - added "ios_ampya", added "TwitterProxy/", updated the 3rd flag for "HbbTv" from a 1 to a 0
-# September 2016 - (emergency update 9/30/2016) added "YouViewHTML". Minor edits in the Comment Section were also made. 
+# September 2016 - (emergency update 9/30/2016) added "YouViewHTML". Minor edits in the Comment Section were also made.
 # October 2016 - updated "AerServSDK/" to "AerServ"
 # November 2016 - no changes
 # December 2016 - added "smartclip-atv", updated "TwitterProxy/" to "twitter"
@@ -558,3 +563,4 @@ xbox|1|1
 # May 2018 - added "FetchTV"
 # June 2018 - added "googletv"
 # July 2018 - added "Bose/", added "Echo/", added "Lavf", added "Sonos", added "Winamp3", added "XBOX360"
+# August 2018 - added "marktjagd", added "barcoo", added "wunderkauf", added "offeristafr", added "profital"

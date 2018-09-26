@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPOutputStream;
@@ -70,8 +69,8 @@ public class DumpLegacyRotationFiles {
     if (outputFilePath == null) {
       outputFilePath = couchbasePros.getProperty("job.dumpLegacyRotationFiles.outputFilePath");
     }
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH_");
-    outputFilePath = outputFilePath + sdf.format(System.currentTimeMillis());
+//    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH_");
+//    outputFilePath = outputFilePath + sdf.format(System.currentTimeMillis());
     // If the file need to be compressed, set "true".  default is "false"
     Boolean compress = (couchbasePros.getProperty("job.dumpLegacyRotationFiles.compressed") == null) ? Boolean.valueOf(couchbasePros.getProperty("job.dumpLegacyRotationFiles.compressed")) : Boolean.FALSE;
 
@@ -102,12 +101,12 @@ public class DumpLegacyRotationFiles {
     genFileForPosition(outputFilePath, compress, result);
     // sample: 2018-02-22_03_rules.txt
     genFileForRules(outputFilePath, compress, result);
-//    // sample: 2018-02-22_01_lt_roi.txt
-//    genFileForLtRoi(outputFilePath, compress, result);
-//    // sample: 2018-02-22_01_roi_credit_v2.txt
-//    genFileForRoiCredit(outputFilePath, compress, result);
-//    // sample: 2018-02-22_01_roi_v2.txt
-//    genFileForRoiV2(outputFilePath, compress, result);
+    // sample: 2018-02-22_01_lt_roi.txt
+    genFileForLtRoi(outputFilePath, compress, result);
+    // sample: 2018-02-22_01_roi_credit_v2.txt
+    genFileForRoiCredit(outputFilePath, compress, result);
+    // sample: 2018-02-22_01_roi_v2.txt
+    genFileForRoiV2(outputFilePath, compress, result);
   }
 
   private static void close() {
@@ -147,12 +146,11 @@ public class DumpLegacyRotationFiles {
         // Rotation ID|Rotation String
         out.write(String.valueOf(rotationInfo.getLong(RotationConstant.FIELD_ROTATION_ID)).getBytes());
         out.write(RotationConstant.FIELD_SEPARATOR);
-        out.write(rotationInfo.getString(RotationConstant.FIELD_ROTATION_STRING).getBytes());
+        String rotationStr = rotationInfo.getString(RotationConstant.FIELD_ROTATION_STRING);
+        out.write(rotationStr.getBytes());
 
-        MPLXClientEnum clientEnum = null;
-        if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
-          clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
-        }
+        Integer clientId = Integer.valueOf(rotationStr.split("-")[0]);
+        MPLXClientEnum clientEnum = MPLXClientEnum.getByClientId(clientId);
         // |Rotation Name
         out.write(RotationConstant.FIELD_SEPARATOR);
         if (rotationInfo.containsKey(RotationConstant.FIELD_ROTATION_NAME)) {
@@ -166,9 +164,7 @@ public class DumpLegacyRotationFiles {
         // |Channel ID
         out.write(RotationConstant.FIELD_SEPARATOR);
         if (rotationInfo.containsKey(RotationConstant.FIELD_CHANNEL_ID)) {
-          MPLXChannelEnum mplxChannelEnum = MPLXChannelEnum.getByRoverChannelId(rotationInfo.getInt(RotationConstant.FIELD_CHANNEL_ID));
-          Integer channelId = mplxChannelEnum == null ? rotationInfo.getInt(RotationConstant.FIELD_CHANNEL_ID) : mplxChannelEnum.getMplxChannelId();
-          out.write(String.valueOf(channelId).getBytes());
+          out.write(String.valueOf(rotationInfo.getInt(RotationConstant.FIELD_CHANNEL_ID)).getBytes());
         }
         // |Rotation Click Thru URL
         out.write(RotationConstant.FIELD_SEPARATOR);
@@ -253,7 +249,11 @@ public class DumpLegacyRotationFiles {
         // |Placement ID
         out.write(RotationConstant.FIELD_SEPARATOR);
         if (rotationTag.containsKey(RotationConstant.FIELD_PLACEMENT_ID)) {
-          out.write(String.valueOf(rotationTag.getLong(RotationConstant.FIELD_PLACEMENT_ID)).getBytes());
+          try {
+            out.write(String.valueOf(rotationTag.getLong(RotationConstant.FIELD_PLACEMENT_ID)).getBytes());
+          }catch(ClassCastException e){
+            out.write(rotationTag.getString(RotationConstant.FIELD_PLACEMENT_ID).getBytes());
+          }
         }
 
         // |Perf track 1|Perf track 2|Perf track 3|Perf track 4|Perf track 5|Perf track 6|Perf track 7|Perf track 8|Perf track 9|Perf track 10
@@ -300,9 +300,11 @@ public class DumpLegacyRotationFiles {
           continue;
         }
         // CLIENT ID|CAMPAIGN ID|
-        MPLXClientEnum clientEnum = null;
-        if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
-          clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
+        String rotationStr = rotationInfo.getString(RotationConstant.FIELD_ROTATION_STRING);
+        Integer clientId = Integer.valueOf(rotationStr.split("-")[0]);
+        MPLXClientEnum clientEnum = MPLXClientEnum.getByClientId(clientId);
+
+        if(clientEnum != null){
           out.write(String.valueOf(clientEnum.getMplxClientId()).getBytes());
         }
         out.write(RotationConstant.FIELD_SEPARATOR);
@@ -315,7 +317,6 @@ public class DumpLegacyRotationFiles {
           out.write(clientEnum.getMplxClientName().getBytes());
         }
         out.write(RotationConstant.FIELD_SEPARATOR);
-        // CAMPAIGN NAME
         if (rotationInfo.containsKey(RotationConstant.FIELD_CAMPAIGN_NAME)) {
           out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_NAME).getBytes());
         }
@@ -532,10 +533,12 @@ public class DumpLegacyRotationFiles {
       out.write(rotationInfo.getString(RotationConstant.FIELD_CAMPAIGN_NAME).getBytes());
     }
     //|Client ID|Client Name
-    MPLXClientEnum clientEnum = null;
-    if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
-      clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
-    }
+    String rotationStr = rotationInfo.getString(RotationConstant.FIELD_ROTATION_STRING);
+    Integer clientId = Integer.valueOf(rotationStr.split("-")[0]);
+    MPLXClientEnum clientEnum = MPLXClientEnum.getByClientId(clientId);
+//    if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
+//      clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
+//    }
     out.write(RotationConstant.FIELD_SEPARATOR);
     if (clientEnum != null) {
       out.write(String.valueOf(clientEnum.getMplxClientId()).getBytes());
@@ -807,16 +810,23 @@ public class DumpLegacyRotationFiles {
 
   private static void genFileForLtRoi(String output, boolean compress, N1qlQueryResult result) throws IOException {
     OutputStream out = null;
-    String filePath = output + RotationConstant.FILE_NAME_LT;
+    String filePath = output + RotationConstant.FILE_NAME_LT + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;
     try {
       if (compress) {
         out = new GZIPOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_ZIP), 8192);
       } else {
-        out = new BufferedOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_TXT));
+        out = new BufferedOutputStream(new FileOutputStream(filePath));
       }
       out.write(RotationConstant.FILE_HEADER_LT.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
+
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
 
       JsonObject rotationTag = null;
       for (N1qlQueryRow row : result) {
@@ -995,16 +1005,23 @@ public class DumpLegacyRotationFiles {
 
   private static void genFileForRoiCredit(String output, boolean compress, N1qlQueryResult result) throws IOException {
     OutputStream out = null;
-    String filePath = output + RotationConstant.FILE_NAME_ROI_CREDIT;
+    String filePath = output + RotationConstant.FILE_NAME_ROI_CREDIT + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;
     try {
       if (compress) {
         out = new GZIPOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_ZIP), 8192);
       } else {
-        out = new BufferedOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_TXT));
+        out = new BufferedOutputStream(new FileOutputStream(filePath));
       }
       out.write(RotationConstant.FILE_HEADER_ROI_CREDIT.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
+
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
 
       JsonObject rotationTag = null;
       for (N1qlQueryRow row : result) {
@@ -1168,16 +1185,23 @@ public class DumpLegacyRotationFiles {
 
   private static void genFileForRoiV2(String output, boolean compress, N1qlQueryResult result) throws IOException {
     OutputStream out = null;
-    String filePath = output + RotationConstant.FILE_NAME_ROI;
+    String filePath = output + RotationConstant.FILE_NAME_ROI + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;
     try {
       if (compress) {
         out = new GZIPOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_ZIP), 8192);
       } else {
-        out = new BufferedOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_TXT));
+        out = new BufferedOutputStream(new FileOutputStream(filePath));
       }
       out.write(RotationConstant.FILE_HEADER_ROI.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
+
+      if(result == null){
+        out.flush();
+        out.close();
+        logger.info("Successfully generate empty file " + filePath);
+        return;
+      }
 
       JsonObject rotationTag = null;
       for (N1qlQueryRow row : result) {
@@ -1293,6 +1317,7 @@ public class DumpLegacyRotationFiles {
   }
 
   private static void genFileForRules(String output, boolean compress, N1qlQueryResult result) throws IOException {
+
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_RULES;
     Integer count = 0;
@@ -1326,10 +1351,12 @@ public class DumpLegacyRotationFiles {
         if (rotationTag == null) continue;
         if (!rotationTag.containsKey(RotationConstant.FIELD_RULES)) continue;
 
-        MPLXClientEnum clientEnum = null;
-        if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
-          clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
-        }
+        String rotationStr = rotationInfo.getString(RotationConstant.FIELD_ROTATION_STRING);
+        Integer clientId = Integer.valueOf(rotationStr.split("-")[0]);
+        MPLXClientEnum clientEnum = MPLXClientEnum.getByClientId(clientId);
+//        if (rotationInfo.containsKey(RotationConstant.CHOCO_SITE_ID)) {
+//          clientEnum = MPLXClientEnum.getBySiteId(rotationInfo.getInt(RotationConstant.CHOCO_SITE_ID));
+//        }
 
         JsonArray ruleArray = rotationTag.getArray(RotationConstant.FIELD_RULES);
         if (ruleArray != null && ruleArray.size() > 0) {

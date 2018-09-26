@@ -13,9 +13,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static com.ebay.traffic.chocolate.kafka.KafkaCluster.DELIMITER;
 
@@ -52,12 +50,8 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
     public static final String FRONTIER_URL = "frontier.url";
     public static final String FRONTIER_APP_SVC_NAME = "frontier.app.svc.name";
     public static final String ELASTICSEARCH_URL = "elasticsearch.url";
-
-    public static final String JOURNAL_ENABLED = "chocolate.listener.journal.enabled";
-    public static final String JOURNAL_PAGE_SIZE = "chocolate.listener.journal.page.size";
-    public static final String JOURNAL_NUMBER_OF_PAGES = "chocolate.listener.journal.pages";
-    public static final String JOURNAL_ALIGNMENT_SIZE = "chocolate.listener.journal.alignment.size";
-    public static final String JOURNAL_PATH = "chocolate.listener.journal.path";
+    public static final String ELASTICSEARCH_INDEX_PREFIX = "elasticsearch.index.prefix";
+    public static final String ROVER_CORE_SITES = "rover.core.sites";
 
     public static final String INPUT_HTTP_PORT = "http.port";
     public static final String INPUT_HTTPS_PORT = "https.port";
@@ -75,6 +69,7 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
 
     private String sinkKafkaCluster;
     private Map<ChannelType, String> sinkKafkaConfigMap = new HashMap<>();
+    private Set<String> roverCoreSites;
 
     /** Static driver ID */
     static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
@@ -138,6 +133,7 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
         }
         rheosKafkaProperties = loadProperties(RHEOS_KAFKA_PROPERTIES_FILE);
         instance.initKafkaConfigs();
+        instance.initRoverCoreSites();
     }
 
     /**
@@ -209,8 +205,24 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
     /**
      * @return Return listener filtered topic
      */
-    public String getErrorTopic() {
+    public String getListenerFilteredTopic() {
         return ApplicationOptionsParser.getStringProperty(properties, KAFKA_TOPIC_FILTERED);
+    }
+
+    /**
+     * Set rover core site HashSet
+     */
+    public void initRoverCoreSites() {
+        String[] coreSites = ApplicationOptionsParser.getStringArrayProperty(properties, ROVER_CORE_SITES);
+        roverCoreSites = new HashSet<>(Arrays.asList(coreSites));
+    }
+
+    /**
+     * Get rover core sites
+     * @return list of core sites
+     */
+    public Set<String> getRoverCoreSites() {
+        return roverCoreSites;
     }
 
     /** @return true iff using a dummy (non-existent) kafka. false otherwise. */
@@ -234,35 +246,9 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
                 ELASTICSEARCH_URL);
     }
 
-    public boolean isJournalEnabled() {
-        return ApplicationOptionsParser.getBooleanProperty(properties, JOURNAL_ENABLED, false);
-    }
-
-    public int getJournalNumberOfPages() {
-        return getPowerOfTwo(JOURNAL_NUMBER_OF_PAGES,  4096, 8192);
-    }
-
-    public int getJournalPageSize() {
-        return getPowerOfTwo(JOURNAL_PAGE_SIZE, 8192, 32768);
-    }
-
-    public short getJournalAlignmentSize() {
-        return (short) getPowerOfTwo(JOURNAL_ALIGNMENT_SIZE, 128, 256);
-    }
-
-    public String getJournalPath() {
-        return ApplicationOptionsParser.getStringProperty(properties, JOURNAL_PATH);
-    }
-
-    private int getPowerOfTwo(String property, int min, int max) {
-        int number = ApplicationOptionsParser.getNumericProperty(properties, property, min, max);
-        if (!powerOfTwo(number))
-            throw new IllegalArgumentException("Pages must be a power of 2");
-        return number;
-    }
-
-    private boolean powerOfTwo(int number) {
-        return (number & (number - 1)) == 0;
+    public String getElasticsearchIndexPrefix() {
+        return ApplicationOptionsParser.getStringProperty(properties,
+            ELASTICSEARCH_INDEX_PREFIX);
     }
 
     public int getInputHttpPort() { return ApplicationOptionsParser.getNumericProperty(properties, INPUT_HTTP_PORT, 8000, 9000);

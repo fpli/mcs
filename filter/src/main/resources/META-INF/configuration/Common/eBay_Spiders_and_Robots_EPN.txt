@@ -1,4 +1,3 @@
-# ***********************************BEGIN EBAY BOT LIST**************************************
 netnewswire|1|0
 newsfire|1|0
 newsgator|1|0
