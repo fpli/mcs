@@ -9,7 +9,7 @@ dt="date="$DATE
 echo $dt
 
 path=hdfs://elvisha/apps/tracking-events/DISPLAY/capping/$dt
-apolloPath=hdfs://apollo-phx-nn-2.vip.ebay.com/apps/b_marketing_tracking/chocolate/tracking-events/DISPLAY/capping/$dt
+apolloPath=hdfs://apollo-phx-nn-ha/apps/b_marketing_tracking/chocolate/tracking-events/DISPLAY/capping/$dt
 displayLocalPath=/apps/tracking-events/DISPLAY/capping/$dt
 displayApolloPath=/apps/b_marketing_tracking/chocolate/tracking-events/DISPLAY/capping/$dt
 
