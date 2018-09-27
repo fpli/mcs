@@ -43,6 +43,10 @@ class ReportingJob(params: Parameter)
     Metadata(params.workDir, params.channel, usage)
   }
 
+  @transient lazy val batchSize = {
+    Integer.parseInt(properties.getProperty("reporting.metafile.batchsize"))
+  }
+
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
   lazy val archiveDir = params.archiveDir + "/" + params.channel + "/reporting/"
@@ -124,7 +128,10 @@ class ReportingJob(params: Parameter)
 
     // 1. load metafiles
     logger.info("load metadata...")
-    val dedupeOutputMeta = metadata.readDedupeOutputMeta()
+    var dedupeOutputMeta = metadata.readDedupeOutputMeta()
+    if (dedupeOutputMeta.length > batchSize) {
+      dedupeOutputMeta = dedupeOutputMeta.slice(0, batchSize)
+    }
 
     dedupeOutputMeta.foreach(metaIter => {
       val file = metaIter._1
