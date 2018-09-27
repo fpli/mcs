@@ -25,4 +25,4 @@ if [ -z "${FLUME_HOME}" ]; then
   export FLUME_HOME=/apache/flume-1.8.0
 fi
 
-${FLUME_HOME}/bin/flume-ng agent --conf ${FLUME_HOME}/conf --conf-file ${bin}/../conf/flume_${dc}.conf --classpath ${bin}/../lib/ingester-*.jar --name a1
+${FLUME_HOME}/bin/flume-ng agent --conf ${FLUME_HOME}/conf --conf-file ${bin}/../conf/flume_${dc}.conf --classpath ${bin}/../lib/chocolate-ingester-*.jar --name a1
