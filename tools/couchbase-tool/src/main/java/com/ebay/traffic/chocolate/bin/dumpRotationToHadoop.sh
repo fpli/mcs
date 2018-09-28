@@ -16,6 +16,7 @@ fi
 ROTATION_CONFIG_FILE=/chocolate/rotation/couchbase-dump.properties
 OUTPUT_PATH=/mnt/chocolate/rotation/hive/dt=${DT}/
 START_TIME=$(date +%s -d "$DT_HOUR")000
+END_TIME=$(date +%s)000
 HOUR=$(date +%H -d "$DT_HOUR")
 
 if [ ! -d ${OUTPUT_PATH} ]; then
@@ -44,7 +45,7 @@ echo "START_TIME="${START_TIME} | tee -a ${log_file}
 
 echo `date`" =============== Job Start ===========" | tee -a ${log_file}
 
-java -cp /chocolate/rotation/couchbase-tool-3.2-SNAPSHOT-fat.jar com.ebay.traffic.chocolate.couchbase.DumpRotationFiles ${ROTATION_CONFIG_FILE} ${START_TIME} ${OUTPUT_PATH}
+java -cp /chocolate/rotation/couchbase-tool-3.2.0-RELEASE-fat.jar com.ebay.traffic.chocolate.couchbase.DumpRotationFiles ${ROTATION_CONFIG_FILE} ${START_TIME} ${END_TIME} ${OUTPUT_PATH}
 rc=$?
 if [[ $rc != 0 ]]; then
    echo "=====================================================dumpRotationToHive ERROR!!======================================================" | tee -a ${log_file}

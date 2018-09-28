@@ -24,7 +24,7 @@ public class DumpLegacyRotationFiles {
   private static Bucket bucket;
   private static Properties couchbasePros;
 
-  public static void main(String args[]) throws IOException {
+  public static void main(String args[]) throws Exception {
     String configFilePath = (args != null && args.length > 0) ? args[0] : null;
     if (StringUtils.isEmpty(configFilePath))
       logger.error("No configFilePath was defined. please set configFilePath for rotation jobs");
@@ -45,7 +45,10 @@ public class DumpLegacyRotationFiles {
       bucket = client.getBuctet(cacheClient);
       dumpFileFromCouchbase(updateTimeStartKey, updateTimeEndKey, outputFilePath);
       client.returnClient(cacheClient);
-    } finally {
+    } catch (Exception e){
+      logger.error(e.getMessage());
+      throw e;
+    } finally{
       close();
     }
   }
