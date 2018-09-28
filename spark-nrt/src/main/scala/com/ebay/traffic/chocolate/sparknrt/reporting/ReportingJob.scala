@@ -7,6 +7,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
+import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
 
@@ -41,6 +42,15 @@ class ReportingJob(params: Parameter)
       usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("reporting.upstream.display"))
     }
     Metadata(params.workDir, params.channel, usage)
+  }
+
+  @transient lazy val batchSize = {
+    val batchSize = properties.getProperty("reporting.metafile.batchsize")
+    if (StringUtils.isNumeric(batchSize)) {
+      Integer.parseInt(batchSize)
+    } else {
+      10 // default to 10 metafiles
+    }
   }
 
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
@@ -124,7 +134,10 @@ class ReportingJob(params: Parameter)
 
     // 1. load metafiles
     logger.info("load metadata...")
-    val dedupeOutputMeta = metadata.readDedupeOutputMeta()
+    var dedupeOutputMeta = metadata.readDedupeOutputMeta()
+    if (dedupeOutputMeta.length > batchSize) {
+      dedupeOutputMeta = dedupeOutputMeta.slice(0, batchSize)
+    }
 
     dedupeOutputMeta.foreach(metaIter => {
       val file = metaIter._1
