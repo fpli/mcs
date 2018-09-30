@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.ebay.traffic</groupId>
     <artifactId>chocolate</artifactId>
-    <version>3.2.0-RELEASE</version>
+    <version>3.3.1-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -28,15 +28,6 @@
   </dependencies>
 
   <build>
-    <sourceDirectory>src/main/scala</sourceDirectory>
-    <testSourceDirectory>src/test/scala</testSourceDirectory>
-    <outputDirectory>target/classes</outputDirectory>
-    <testOutputDirectory>${project.basedir}/target/test-classes</testOutputDirectory>
-    <resources>
-      <resource>
-        <directory>${project.basedir}/src/main/resources</directory>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

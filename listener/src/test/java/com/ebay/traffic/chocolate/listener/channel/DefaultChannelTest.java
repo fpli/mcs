@@ -2,7 +2,6 @@ package com.ebay.traffic.chocolate.listener.channel;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.TestHelper;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
@@ -32,11 +31,10 @@ import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ListenerOptions.class, MetricsClient.class, ESMetrics.class, MessageObjectParser.class, KafkaSink.class})
+@PrepareForTest({ListenerOptions.class, ESMetrics.class, MessageObjectParser.class, KafkaSink.class})
 public class DefaultChannelTest {
   private MockHttpServletRequest mockClientRequest;
   private MessageObjectParser mockMessageParser;
-  private MetricsClient mockMetrics;
   private ESMetrics mockESMetrics;
   private MockHttpServletResponse mockProxyResponse;
   private Producer mockProducer;
@@ -57,9 +55,6 @@ public class DefaultChannelTest {
    mockProducer = mock(KafkaProducer.class);
    PowerMockito.mockStatic(KafkaSink.class);
    PowerMockito.when(KafkaSink.get()).thenReturn(mockProducer);
-   mockMetrics = mock(MetricsClient.class);
-   PowerMockito.mockStatic(MetricsClient.class);
-   PowerMockito.when(MetricsClient.getInstance()).thenReturn(mockMetrics);
    mockESMetrics = mock(ESMetrics.class);
    PowerMockito.mockStatic(ESMetrics.class);
    PowerMockito.when(ESMetrics.getInstance()).thenReturn(mockESMetrics);
@@ -79,7 +74,7 @@ public class DefaultChannelTest {
     params.put("campid", new String[] {"5337991765"});
     params.put("a", new String[] {"b"});
     mockClientRequest.setParameters(params);
-    long actual = channel.getCampaignID(mockClientRequest);
+    long actual = channel.getCampaignID(mockClientRequest, System.currentTimeMillis(), "click", "epn");
     assertEquals(expected, actual);
   }
 
@@ -90,7 +85,7 @@ public class DefaultChannelTest {
     params.put("campid", new String[] {"5331AQWAA765"});
     params.put("a", new String[] {"b"});
     mockClientRequest.setParameters(params);
-    long actual = channel.getCampaignID(mockClientRequest);
+    long actual = channel.getCampaignID(mockClientRequest, System.currentTimeMillis(), "click", "epn");
     assertEquals(expected, actual);
   }
 
@@ -101,7 +96,7 @@ public class DefaultChannelTest {
     params.put("CAmpID", new String[] {"5337991765"});
     params.put("a", new String[] {"b"});
     mockClientRequest.setParameters(params);
-    long actual = channel.getCampaignID(mockClientRequest);
+    long actual = channel.getCampaignID(mockClientRequest, System.currentTimeMillis(), "click", "epn");
     assertEquals(expected, actual);
   }
 
@@ -112,7 +107,7 @@ public class DefaultChannelTest {
     params.put("campidxyz", new String[] {"5337991765"});
     params.put("a", new String[] {"b"});
     mockClientRequest.setParameters(params);
-    long actual = channel.getCampaignID(mockClientRequest);
+    long actual = channel.getCampaignID(mockClientRequest, System.currentTimeMillis(), "click", "epn");
     assertEquals(expected, actual);
   }
 
@@ -123,7 +118,7 @@ public class DefaultChannelTest {
     params.put("caMpid", new String[] {""});
     params.put("a", new String[] {"b"});
     mockClientRequest.setParameters(params);
-    long actual = channel.getCampaignID(mockClientRequest);
+    long actual = channel.getCampaignID(mockClientRequest, System.currentTimeMillis(), "click", "epn");
     assertEquals(expected, actual);
   }
 

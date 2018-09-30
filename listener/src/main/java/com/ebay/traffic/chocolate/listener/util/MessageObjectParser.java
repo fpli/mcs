@@ -2,7 +2,6 @@ package com.ebay.traffic.chocolate.listener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.common.MetricsClient;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.kernel.util.StringUtils;
 import com.ebay.traffic.chocolate.listener.ListenerProxyServlet;
@@ -91,14 +90,12 @@ public class MessageObjectParser {
 
     private static final String CHOCO_TAG = "dashenId";
     private static final String REDIRECTION_CNT_TAG = "dashenCnt";
-    private static MetricsClient metrics = MetricsClient.getInstance();
 
     public String appendURLWithChocolateTag(String urlStr) {
         URL url = null;
         try {
             url = new URL(urlStr);
         } catch (MalformedURLException e) {
-            metrics.meter(ListenerProxyServlet.MALFORMED_URL);
         }
         String query = url.getQuery();
         // append snapshotId into URL

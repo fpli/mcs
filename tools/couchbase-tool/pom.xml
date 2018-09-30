@@ -19,10 +19,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.ebay.traffic</groupId>
-    <artifactId>chocolate</artifactId>
-    <version>3.2.0-RELEASE</version>
-    <!--<relativePath>..</relativePath>-->
-    <relativePath>../../pom.xml</relativePath>
+    <artifactId>tools</artifactId>
+    <version>3.3.1-SNAPSHOT</version>
+    <relativePath>..</relativePath>
   </parent>
   <groupId>com.ebay.traffic</groupId>
   <artifactId>couchbase-tool</artifactId>
@@ -45,7 +44,11 @@
     <dependency>
       <groupId>com.couchbase.client</groupId>
       <artifactId>java-client</artifactId>
-      <version>2.5.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes</artifactId>
+      <version>develop_2.0.10-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>

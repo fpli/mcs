@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - Reporting
 
-usage="Usage: ruleVerifier.sh [srcPath] [targetPath]"
+usage="Usage: ruleVerifier.sh [srcPath] [targetPath] [outputPath]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
@@ -16,12 +16,14 @@ bin=`cd "$bin">/dev/null; pwd`
 
 SRC_PATH=$1
 TARGET_PATH=$2
+OUTPUT_PATH=$3
 
 DRIVER_MEMORY=1g
 EXECUTOR_NUMBER=3
 EXECUTOR_MEMORY=1g
 EXECUTOR_CORES=1
 
+SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/verifier
 JOB_NAME="RuleVerifier"
 
 ${SPARK_HOME}/bin/spark-submit \
@@ -35,8 +37,10 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=8192 \
+    --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
       --srcPath ${SRC_PATH} \
-      --targetPath ${TARGET_PATH}
+      --targetPath ${TARGET_PATH} \
+      --outputPath ${OUTPUT_PATH}
