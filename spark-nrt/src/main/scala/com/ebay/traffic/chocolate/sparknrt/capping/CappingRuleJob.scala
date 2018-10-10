@@ -1,9 +1,11 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
 import java.text.SimpleDateFormat
+import java.util.Properties
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
+import org.apache.commons.lang3.StringUtils
 
 /**
   * Created by xiangli4 on 3/30/18.
@@ -39,6 +41,14 @@ class CappingRuleJob(params: Parameter)
 
   override def run(): Unit = {
 
+    val properties = new Properties()
+    properties.load(getClass.getClassLoader.getResourceAsStream("capping_rule.properties"))
+    val suffix = properties.getProperty("meta.output.suffix")
+    var suffixArray: Array[String] = Array()
+    if (StringUtils.isNotEmpty(suffix)) {
+      suffixArray = suffix.split(",")
+    }
+
     val dedupeOutputMeta = inputMetadata.readDedupeOutputMeta()
 
     if(dedupeOutputMeta.length > 0) {
@@ -51,7 +61,7 @@ class CappingRuleJob(params: Parameter)
         date => capping(date, datesFiles.get(date).get,
           new CappingRuleContainer(params, new DateFiles(date, datesFiles.get(date).get), this)))
       )
-      outputMetadata.writeDedupeOutputMeta(metaFiles)
+      outputMetadata.writeDedupeOutputMeta(metaFiles, suffixArray)
       // archive for future replay
       archiveMetafile(file, archiveDir)
     }
