@@ -275,7 +275,7 @@ class ReportingJob(params: Parameter)
 
         // 3. do aggregation (count) - click, impression, viewable for both desktop and mobile
         val isMobUdf = udf((requestHeaders: String) => checkMobileUserAgent(requestHeaders))
-        val getRotationIdUdf = udf((uri: String) => getRotationId(uri))
+        val getRotationIdUdf = udf((uri: String) => getRotationId(uri.trim))
 
         val commonDf = df
           .withColumn("is_mob", isMobUdf(col("request_headers")))
