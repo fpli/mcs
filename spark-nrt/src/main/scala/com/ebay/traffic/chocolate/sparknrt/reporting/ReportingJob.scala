@@ -177,8 +177,9 @@ class ReportingJob(params: Parameter)
     } else if (params.channel == ChannelType.DISPLAY.toString) {
       logger.info("generate report for Display channel.")
       generateReportForDisplay()
+    } else {
+      logger.warn(s"${params.channel} channel is not supported yet!")
     }
-    logger.warn(s"${params.channel} channel is not supported yet!")
   }
 
   def generateReportForEPN(): Unit = {
