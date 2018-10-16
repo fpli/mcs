@@ -11,6 +11,7 @@ echo $dt
 local=/apps/tracking-events/EPN/capping/$dt
 apollo=/apps/b_marketing_tracking/chocolate/tracking-events/EPN/capping/$dt
 path=hdfs://elvisha/apps/tracking-events/EPN/capping/$dt
+apolloPath=hdfs://apollo-phx-nn-ha/apps/b_marketing_tracking/chocolate/tracking-events/EPN/capping/$dt
 
 hdfs dfs -ls $local | grep -v "^$" | awk '{print $NF}' | xargs -i basename {} | grep parquet> /tmp/main.txt
 /apache/hadoop/bin/hdfs dfs -ls $apollo  | grep -v "^$" | awk '{print $NF}' | xargs -i basename {} | grep parquet> /tmp/sub.txt

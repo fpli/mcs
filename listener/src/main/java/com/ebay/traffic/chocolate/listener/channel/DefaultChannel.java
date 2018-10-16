@@ -177,7 +177,7 @@ public class DefaultChannel implements Channel {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
     esMetrics.meter("SuccessCount", 1, eventTime, channelAction, channelType);
-    esMetrics.mean("AverageLatency", endTime - startTime, eventTime);
+    esMetrics.mean("AverageLatency", endTime - startTime);
   }
 
   /**

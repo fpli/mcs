@@ -90,7 +90,7 @@ public class FilterWorker extends Thread {
           ListenerMessage message = record.value();
           esMetrics.meter("FilterInputCount", 1, message.getTimestamp(), message.getChannelAction().toString(), message.getChannelType().toString());
           long latency = System.currentTimeMillis() - message.getTimestamp();
-          esMetrics.mean("FilterLatency", latency, message.getTimestamp());
+          esMetrics.mean("FilterLatency", latency);
 
           ++count;
           esMetrics.meter("FilterThroughput", 1, message.getTimestamp(), message.getChannelAction().toString(), message.getChannelType().toString());

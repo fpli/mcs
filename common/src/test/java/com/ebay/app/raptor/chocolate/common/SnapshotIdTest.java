@@ -253,6 +253,7 @@ public class SnapshotIdTest {
         }
     
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMM");
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         assertEquals("210905", sdf.format(c.getTime()));
         c.setTimeInMillis(snapshotId.getTimeMillis());
         assertEquals("197001", sdf.format(c.getTime()));
