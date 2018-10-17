@@ -82,7 +82,7 @@ class TestDedupeAndSink extends BaseFunSuite {
     job.run()
 
     val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
-    val dom = metadata.readDedupeOutputMeta
+    val dom = metadata.readDedupeOutputMeta()
     assert (dom.length == 1)
     assert (dom(0)._2.contains(DATE_COL1))
     assert (dom(0)._2.contains(DATE_COL2))
@@ -106,7 +106,7 @@ class TestDedupeAndSink extends BaseFunSuite {
     job.run()
 
     val metadata1 = Metadata(workDir, channel, MetadataEnum.dedupe)
-    val dom1 = metadata1.readDedupeOutputMeta
+    val dom1 = metadata1.readDedupeOutputMeta()
     assert (dom1.length == 1)
     assert (dom1(0)._2.contains(DATE_COL1))
     assert (dom1(0)._2.contains(DATE_COL2))
@@ -124,7 +124,7 @@ class TestDedupeAndSink extends BaseFunSuite {
     // empty kafka input
     job.run()
 
-    val dom2 = metadata1.readDedupeOutputMeta
+    val dom2 = metadata1.readDedupeOutputMeta()
     assert(dom2.length == 0)
   }
 }
