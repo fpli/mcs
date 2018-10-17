@@ -22,11 +22,6 @@
     <value>listened-display-preprod</value>
     <description>Kafka topic for display channel to publish.</description>
   </property>
-  <property>
-    <name>chocolate.listener.kafka.topic_malformed</name>
-    <value>listened-malformed</value>
-    <description>Kafka topic for malformed URL.</description>
-  </property>
   <!-- Kafka producer end -->
 
   <!-- ElasticSearch begin -->
