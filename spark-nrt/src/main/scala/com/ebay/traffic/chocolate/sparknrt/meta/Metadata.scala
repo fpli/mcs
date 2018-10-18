@@ -5,6 +5,7 @@ import java.io.OutputStream
 
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
@@ -35,9 +36,17 @@ class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
   /**
     * Dedupe output meta
     */
-  def readDedupeOutputMeta(): Array[(String, Map[String, Array[String]])] = {
+  def readDedupeOutputMeta(suffix: String = ""): Array[(String, Map[String, Array[String]])] = {
     val status = fs.listStatus(new Path(DEDUPE_OUTPUT_META_DIR))
-    status.map(s => s.getPath).filter(path => path.getName.startsWith(DEDUPE_OUTPUT_META_PREFIX))
+    status
+      .map(s => s.getPath)
+      .filter(path => {
+        if (StringUtils.isEmpty(suffix)) {
+          path.getName.startsWith(DEDUPE_OUTPUT_META_PREFIX) && path.getName.endsWith(".meta")
+        } else {
+          path.getName.startsWith(DEDUPE_OUTPUT_META_PREFIX) && path.getName.endsWith(suffix)
+        }
+      })
       .map(path => {
         val file = path.toString
         val content = readFileContent(file)
@@ -45,15 +54,23 @@ class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
           (dateFiles.date, dateFiles.files)
         }).toMap
         (file, metaFiles)
-      }).sortBy(e => {
-      val name = e._1.substring(e._1.lastIndexOf("/") + 1)
-      name.substring(DEDUPE_OUTPUT_META_PREFIX.length, name.lastIndexOf(".")).toLong
-    })
+      })
+      .sortBy(e => {
+        var name = e._1.substring(e._1.lastIndexOf("/") + 1)
+        if (StringUtils.isNotEmpty(suffix)) {
+          name = name.substring(0, name.lastIndexOf(suffix))
+        }
+        name.substring(DEDUPE_OUTPUT_META_PREFIX.length, name.lastIndexOf(".")).toLong
+      })
   }
 
-  def writeDedupeOutputMeta(dedupeOutputMeta: MetaFiles) = {
+  def writeDedupeOutputMeta(dedupeOutputMeta: MetaFiles, suffixArray: Array[String] = Array()):Unit = {
     val time = System.currentTimeMillis()
+    // Ensure a default meta without suffix is written out.
     writeMetaFiles(dedupeOutputMeta, DEDUPE_OUTPUT_META_DIR + DEDUPE_OUTPUT_META_PREFIX + time + ".meta")
+    suffixArray.foreach(suffix => {
+      writeMetaFiles(dedupeOutputMeta, DEDUPE_OUTPUT_META_DIR + DEDUPE_OUTPUT_META_PREFIX + time + ".meta" + suffix)
+    })
   }
 
   def deleteDedupeOutputMeta(metaFile: String) = {
