@@ -222,7 +222,7 @@ class TestCGUIDCappingRule extends BaseFunSuite {
     val df_32 = job_32.test()
     df_31.show()
     df_32.show()
-    assert(df_31.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_S)).=!=(0)).count() == 2)
+    assert(df_31.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_S)).=!=(0)).count() == 0)
     assert(df_32.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_L)).=!=(0)).count() == 2)
     job_31.postTest()
     job_32.postTest()
