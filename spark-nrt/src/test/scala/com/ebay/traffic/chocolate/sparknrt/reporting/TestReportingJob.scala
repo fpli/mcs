@@ -54,7 +54,7 @@ class TestReportingJob extends BaseFunSuite {
     //CouchbaseClientMock.closeCouchbaseMock()
   }
 
-  test("Test EPN Reporting") {
+  test("Test EPN reporting job") {
 
     val args = Array(
       "--mode", "local[8]",
@@ -141,7 +141,7 @@ class TestReportingJob extends BaseFunSuite {
     }
   }
 
-  test("Test Display Reporting") {
+  test("Test Display reporting job") {
 
     val args = Array(
       "--mode", "local[8]",
@@ -187,6 +187,28 @@ class TestReportingJob extends BaseFunSuite {
       assert(bucket.exists(keyArray(i)))
       println("key: " + keyArray(i) + " value: " + bucket.get(keyArray(i), classOf[JsonArrayDocument]).content().toString)
     }
+  }
+
+  test("Test rotation id parser") {
+
+    val args = Array(
+      "--mode", "local[8]",
+      "--channel", "DISPLAY",
+      "--workDir", workDir,
+      "--archiveDir", archiveDir
+    )
+
+    val params = Parameter(args)
+    val job = new ReportingJob(params)
+
+    val r1 = job.getRotationId("http://rover.ebay.com/rover/1/707-53477-19255-0/4?test=display")
+    assertResult("707-53477-19255-0")(r1)
+    val r2 = job.getRotationId("https://rover.ebay.com/rover/1/707-53477-19255-1/4")
+    assertResult("707-53477-19255-1")(r2)
+    val r3 = job.getRotationId("https://rover.ebay.com/rover/1/abc707-53477-19255-1/4")
+    assertResult("-1")(r3)
+    val r4 = job.getRotationId("https://rover.ebay.com/rover/1/707707-53477534775-19255192551-11/4")
+    assertResult("-1")(r4)
   }
 
   def getTimestamp(date: String): Long = {
