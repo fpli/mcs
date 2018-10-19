@@ -75,6 +75,11 @@ public class DefaultChannel implements Channel {
       parser.appendTagWhenRedirect(request, response, requestUrl);
     } catch (MalformedURLException | UnsupportedEncodingException e) {
       logger.error("Wrong with URL format/encoding", e);
+      String kafkaMalformedTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
+      ListenerMessage message = parser.parseHeader(request, response,
+          startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, "999999", requestUrl);
+      producer.send(new ProducerRecord<>(kafkaMalformedTopic,
+          message.getSnapshotId(), message), KafkaSink.callback);
     }
 
     String snid = request.getParameter(SNID_PATTERN);
@@ -177,7 +182,7 @@ public class DefaultChannel implements Channel {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
     esMetrics.meter("SuccessCount", 1, eventTime, channelAction, channelType);
-    esMetrics.mean("AverageLatency", endTime - startTime, eventTime);
+    esMetrics.mean("AverageLatency", endTime - startTime);
   }
 
   /**

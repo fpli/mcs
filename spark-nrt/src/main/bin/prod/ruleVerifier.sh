@@ -23,6 +23,7 @@ EXECUTOR_NUMBER=30
 EXECUTOR_MEMORY=16g
 EXECUTOR_CORES=4
 
+SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/verifier
 JOB_NAME="RuleVerifier"
 
 ${SPARK_HOME}/bin/spark-submit \
@@ -36,6 +37,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=8192 \
+    --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
