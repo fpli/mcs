@@ -6,6 +6,7 @@ import com.couchbase.client.java.view.ViewResult;
 import com.couchbase.client.java.view.ViewRow;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.dukes.CacheClient;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,10 @@ public class DumpRotationFiles {
     couchbasePros.load(in);
   }
 
-  private static void dumpFileFromCouchbase(String startKey, String endKey, String outputFilePath) throws IOException {
+  public static void dumpFileFromCouchbase(String startKey, String endKey, String outputFilePath) throws IOException {
+    ESMetrics.init("batch-metrics-", couchbasePros.getProperty("chocolate.elasticsearch.url"));
+    ESMetrics esMetrics = ESMetrics.getInstance();
+
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
     if(outputFilePath == null){
       outputFilePath = couchbasePros.getProperty("job.dumpRotationFiles.outputFilePath");
@@ -88,6 +92,7 @@ public class DumpRotationFiles {
         count++;
       }
     } catch (IOException e) {
+      esMetrics.meter("rotation.dump.FromCBToHIVE.error");
       System.out.println("Error happened when write couchbase data to chocolate file");
       throw e;
     } finally {
@@ -95,6 +100,8 @@ public class DumpRotationFiles {
         out.close();
       }
     }
+    esMetrics.meter("rotation.dump.FromCBToHIVE.success", count);
+    esMetrics.flushMetrics();
     System.out.println("Successfully dump " + count + " records into chocolate file: " + outputFilePath);
   }
 
@@ -103,5 +110,13 @@ public class DumpRotationFiles {
       client.shutdown();
     }
     System.exit(0);
+  }
+
+  public static void setBucket(Bucket bucket) {
+    DumpRotationFiles.bucket = bucket;
+  }
+
+  public static void setCouchbasePros(Properties couchbasePros) {
+    DumpRotationFiles.couchbasePros = couchbasePros;
   }
 }
