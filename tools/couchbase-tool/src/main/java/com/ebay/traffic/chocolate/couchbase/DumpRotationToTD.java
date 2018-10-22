@@ -19,8 +19,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.zip.GZIPOutputStream;
 
-public class DumpLegacyRotationFiles2 {
-  static Logger logger = LoggerFactory.getLogger(DumpLegacyRotationFiles2.class);
+public class DumpRotationToTD {
+  static Logger logger = LoggerFactory.getLogger(DumpRotationToTD.class);
   private static CorpRotationCouchbaseClient client;
 
   private static Bucket bucket;
@@ -28,17 +28,27 @@ public class DumpLegacyRotationFiles2 {
   private static Properties couchbasePros;
 
   public static void main(String args[]) throws Exception {
+    boolean hasParams = true;
     String configFilePath = (args != null && args.length > 0) ? args[0] : null;
-    if (StringUtils.isEmpty(configFilePath))
+    if (StringUtils.isEmpty(configFilePath)){
       logger.error("No configFilePath was defined. please set configFilePath for rotation jobs");
+      hasParams = false;
+    }
 
     String updateTimeStartKey = (args != null && args.length > 1) ? args[1] : null;
-    if (StringUtils.isEmpty(updateTimeStartKey))
+    if (StringUtils.isEmpty(updateTimeStartKey)){
       logger.error("No updateTimeStartKey was defined. please set updateTimeStartKey for rotation jobs");
+      hasParams = false;
+    }
+
 
     String updateTimeEndKey = (args != null && args.length > 2) ? args[2] : null;
-    if (StringUtils.isEmpty(updateTimeEndKey))
+    if (StringUtils.isEmpty(updateTimeEndKey)) {
       logger.error("No updateTimeEndKey was defined. please set updateTimeEndKey for rotation jobs");
+      hasParams = false;
+    }
+
+    if(!hasParams) return;
 
     String outputFilePath = (args != null && args.length > 3) ? args[3] : null;
 
@@ -151,16 +161,16 @@ public class DumpLegacyRotationFiles2 {
         rotationInfo = gson.fromJson(row.value().toString(), RotationInfo.class);
         rotationTag = rotationInfo.getRotation_tag();
         // Rotation ID|Rotation String
-        out.write(String.valueOf(rotationInfo.getRotation_id()).getBytes());
+        writeString(out, rotationInfo.getRotation_id());
         out.write(RotationConstant.FIELD_SEPARATOR);
         String rotationStr = rotationInfo.getRotation_string();
-        out.write(rotationStr.getBytes());
+        writeString(out, rotationStr);
 
         Integer clientId = Integer.valueOf(rotationStr.split("-")[0]);
         MPLXClientEnum clientEnum = MPLXClientEnum.getByClientId(clientId);
         // |Rotation Name
         out.write(RotationConstant.FIELD_SEPARATOR);
-        out.write(rotationInfo.getRotation_name().getBytes());
+        writeString(out, rotationInfo.getRotation_name());
         //|Size
         out.write(RotationConstant.FIELD_SEPARATOR);
         if (rotationTag != null && "I".equalsIgnoreCase(String.valueOf(rotationTag.get(RotationConstant.FIELD_ROTATION_COUNT_TYPE)))) {
@@ -176,7 +186,7 @@ public class DumpLegacyRotationFiles2 {
         }
         // |Rotation Status
         out.write(RotationConstant.FIELD_SEPARATOR);
-        out.write(rotationInfo.getStatus().getBytes());
+        writeString(out, rotationInfo.getStatus());
         // |Rotation Cost (Rate)|Rotation Count|
         out.write(RotationConstant.FIELD_SEPARATOR);
         out.write(String.valueOf(0).getBytes());
@@ -210,18 +220,14 @@ public class DumpLegacyRotationFiles2 {
         out.write("|||||".getBytes());
         // |Vendor ID
         out.write(RotationConstant.FIELD_SEPARATOR);
-        if (rotationInfo.getVendor_id() != null) {
-          out.write(String.valueOf(rotationInfo.getVendor_id()).getBytes());
-        }
+        writeString(out, rotationInfo.getVendor_id());
         // |Vendor Name
         out.write(RotationConstant.FIELD_SEPARATOR);
-        if (StringUtils.isNotEmpty(rotationInfo.getVendor_name())) {
-          out.write(rotationInfo.getVendor_name().getBytes());
-        }
+        writeString(out, rotationInfo.getVendor_name());
         // |Vendor URL
         out.write(RotationConstant.FIELD_SEPARATOR);
-        if (rotationTag != null && StringUtils.isNotEmpty(String.valueOf(rotationTag.get(RotationConstant.FIELD_VENDOR_URL)))) {
-          out.write(String.valueOf(rotationTag.get(RotationConstant.FIELD_VENDOR_URL)).getBytes());
+        if (rotationTag != null) {
+          writeString(out, rotationTag.get(RotationConstant.FIELD_VENDOR_URL));
         }
         // |Vendor Type
         out.write(RotationConstant.FIELD_SEPARATOR);
@@ -233,7 +239,7 @@ public class DumpLegacyRotationFiles2 {
         }
         // |Campaign ID
         out.write(RotationConstant.FIELD_SEPARATOR);
-        out.write(String.valueOf(rotationInfo.getCampaign_id()).getBytes());
+        writeString(out, rotationInfo.getCampaign_id());
         // |Client Name
         out.write(RotationConstant.FIELD_SEPARATOR);
         if (clientEnum != null) {
@@ -241,13 +247,11 @@ public class DumpLegacyRotationFiles2 {
         }
         // |Campaign Name
         out.write(RotationConstant.FIELD_SEPARATOR);
-        if (StringUtils.isNotEmpty(rotationInfo.getCampaign_name())) {
-          out.write(rotationInfo.getCampaign_name().getBytes());
-        }
+        writeString(out, rotationInfo.getCampaign_name());
         // |Placement ID
         out.write(RotationConstant.FIELD_SEPARATOR);
-        if (StringUtils.isNotEmpty(String.valueOf(rotationTag.get(RotationConstant.FIELD_PLACEMENT_ID)))) {
-          out.write(String.valueOf(rotationTag.get(RotationConstant.FIELD_PLACEMENT_ID)).getBytes());
+        if (rotationTag != null) {
+          writeString(out, rotationTag.get(RotationConstant.FIELD_PLACEMENT_ID));
         }
         // |Perf track 1|Perf track 2|Perf track 3|Perf track 4|Perf track 5|Perf track 6|Perf track 7|Perf track 8|Perf track 9|Perf track 10
         out.write("||||||||||".getBytes());
@@ -301,16 +305,14 @@ public class DumpLegacyRotationFiles2 {
           out.write(String.valueOf(clientEnum.getMplxClientId()).getBytes());
         }
         out.write(RotationConstant.FIELD_SEPARATOR);
-        out.write(String.valueOf(rotationInfo.getCampaign_id()).getBytes());
+        writeString(out, rotationInfo.getCampaign_id());
         out.write(RotationConstant.FIELD_SEPARATOR);
         // CLIENT NAME|CAMPAIGN NAME
         if (clientEnum != null) {
           out.write(clientEnum.getMplxClientName().getBytes());
         }
         out.write(RotationConstant.FIELD_SEPARATOR);
-        if (StringUtils.isNotEmpty(rotationInfo.getCampaign_name())) {
-          out.write(rotationInfo.getCampaign_name().getBytes());
-        }
+        writeString(out, rotationInfo.getCampaign_name());
         out.write(RotationConstant.RECORD_SEPARATOR);
         out.flush();
         count++;
@@ -356,7 +358,7 @@ public class DumpLegacyRotationFiles2 {
    * @param bucket mocked couchbase bucket
    */
   public static void setBucket(Bucket bucket) {
-    DumpLegacyRotationFiles2.bucket = bucket;
+    DumpRotationToTD.bucket = bucket;
   }
 
   /**
@@ -364,6 +366,11 @@ public class DumpLegacyRotationFiles2 {
    * @param couchbasePros couchbase properties
    */
   public static void setCouchbasePros(Properties couchbasePros) {
-    DumpLegacyRotationFiles2.couchbasePros = couchbasePros;
+    DumpRotationToTD.couchbasePros = couchbasePros;
+  }
+
+  private static void writeString(OutputStream out, Object content) throws IOException {
+    String s = String.valueOf(content);
+    if(StringUtils.isNotEmpty(s)) out.write(s.getBytes());
   }
 }

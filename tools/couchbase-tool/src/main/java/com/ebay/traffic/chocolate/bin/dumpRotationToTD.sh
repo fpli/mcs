@@ -47,10 +47,10 @@ echo `date`" =============== Job Start ===========" | tee -a ${log_file}
 
 if [[ $HOUR -eq 23 ]]; then
    echo `date`" =============== dump rotation files from couchbase by the date $DT_HOUR===========" | tee -a ${log_file}
-   java -cp /chocolate/rotation/couchbase-tool-3.2.0-RELEASE-fat.jar com.ebay.traffic.chocolate.couchbase.DumpLegacyRotationFiles ${ROTATION_CONFIG_FILE} ${START_TIME} ${END_TIME} ${OUTPUT_PATH}
+   java -cp /chocolate/rotation/couchbase-tool-3.3.1-SNAPSHOT-fat.jar com.ebay.traffic.chocolate.couchbase.DumpRotationToTD ${ROTATION_CONFIG_FILE} ${START_TIME} ${END_TIME} ${OUTPUT_PATH}
 else
    echo `date`"=============== dump empty files ===========" | tee -a ${log_file}
-   java -cp /chocolate/rotation/couchbase-tool-3.2.0-RELEASE-fat.jar com.ebay.traffic.chocolate.couchbase.DumpLegacyRotationFiles ${ROTATION_CONFIG_FILE} "" "" ${OUTPUT_PATH}
+   java -cp /chocolate/rotation/couchbase-tool-3.3.1-SNAPSHOT-fat.jar com.ebay.traffic.chocolate.couchbase.DumpRotationToTD ${ROTATION_CONFIG_FILE} "" "" ${OUTPUT_PATH}
 fi
 
 rc=$?

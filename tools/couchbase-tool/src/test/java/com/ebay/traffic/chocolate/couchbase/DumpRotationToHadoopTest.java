@@ -5,12 +5,13 @@ import com.couchbase.client.java.document.StringDocument;
 import com.couchbase.client.java.view.DefaultView;
 import com.couchbase.client.java.view.DesignDocument;
 import com.ebay.app.raptor.chocolate.constant.MPLXChannelEnum;
-import com.ebay.app.raptor.chocolate.constant.MPLXClientEnum;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
+import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import com.google.gson.Gson;
+import com.google.gson.JsonParser;
 import org.junit.*;
 import org.mockito.Mockito;
 
@@ -23,10 +24,10 @@ import java.util.Properties;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
-public class DumpLegacyRotationFiles2Test {
+public class DumpRotationToHadoopTest {
   private static final String VIEW_NAME = "last_update_time";
   private static final String DESIGNED_DOC_NAME = "default";
-  private static final String TEMP_FILE_FOLDER = "/tmp/rotation/";
+  private static final String TEMP_FILE_FOLDER = "/tmp/rotation2/";
   private static final String TEMP_FILE_PREFIX = "rotation_test_";
   private static CorpRotationCouchbaseClient couchbaseClient;
   private static Bucket bucket;
@@ -86,8 +87,7 @@ public class DumpLegacyRotationFiles2Test {
     rotationTag.put(RotationConstant.FIELD_PLACEMENT_ID, "1234567890");
     rotationTag.put(RotationConstant.FIELD_ROTATION_CLICK_THRU_URL, "http://clickthrough.com");
     rotationInfo.setRotation_tag(rotationTag);
-    long currentTime = System.currentTimeMillis();
-    rotationInfo.setLast_update_time(currentTime);
+    rotationInfo.setLast_update_time(1540143551289l);
     rotationInfo.setUpdate_user("yimeng");
     rotationInfo.setCreate_date("2018-10-18 16:15:32");
     rotationInfo.setCreate_user("chocolate");
@@ -102,34 +102,43 @@ public class DumpLegacyRotationFiles2Test {
   @Test
   public void testDumpFileFromCouchbase() throws IOException {
     // set initialed cb related info
-    DumpLegacyRotationFiles2.setBucket(bucket);
+    DumpRotationToHadoop.setBucket(bucket);
     Properties couchbasePros = new Properties();
     couchbasePros.put("couchbase.corp.rotation.designName", DESIGNED_DOC_NAME);
     couchbasePros.put("couchbase.corp.rotation.viewName", VIEW_NAME);
     couchbasePros.put("chocolate.elasticsearch.url","http://10.148.181.34:9200");
-    DumpLegacyRotationFiles2.setCouchbasePros(couchbasePros);
+    ESMetrics.init("batch-metrics-", couchbasePros.getProperty("chocolate.elasticsearch.url"));
+    DumpRotationToHadoop.setCouchbasePros(couchbasePros);
 
     // run dump job
     createFolder();
-    DumpLegacyRotationFiles2.dumpFileFromCouchbase("1287554384000", "1603173584000", TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
+    DumpRotationToHadoop.dumpFileFromCouchbase("1287554384000", "1603173584000", TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
 
     // assertions
     File[] files = new File(TEMP_FILE_FOLDER).listFiles();
-    String fileName = null;
-    Map<String, String> fnameMap = getFileNameMap();
     RotationInfo rotationInfo = getTestRotationInfo();
+    JsonParser parser = new JsonParser();
+    Gson gson = new Gson();
     for (File file : files) {
       if (file.isFile()) {
-        fileName = file.getName().replaceAll(TEMP_FILE_PREFIX + "|.txt|.status", "");
-        Assert.assertNotNull(fnameMap.get(fileName));
-        Assert.assertEquals(fnameMap.get(fileName), file.getName());
-        if (fileName.equals("rotations")) checkRotationFile(file.getName(), rotationInfo);
-        if (fileName.equals("campaigns")) checkCampaignFile(file.getName(), rotationInfo);
+        Assert.assertEquals(TEMP_FILE_PREFIX+ "rotation-20101020135944.txt", file.getName());
+
+        FileInputStream fis = new FileInputStream(new File(TEMP_FILE_FOLDER + file.getName()));
+        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+        String line = null;
+        int i = 0;
+        boolean jsonEqual = false;
+        while ((line = br.readLine()) != null) {
+          i++;
+          jsonEqual = JsonUtils.areEqual(gson.toJson(rotationInfo), line);
+          Assert.assertTrue(jsonEqual);
+        }
+        Assert.assertEquals(1, i);
+        br.close();
+
         file.deleteOnExit();
       }
     }
-
-
   }
 
   private void createFolder() {
@@ -137,78 +146,5 @@ public class DumpLegacyRotationFiles2Test {
     if (!directory.exists()) {
       directory.mkdir();
     }
-  }
-
-  private Map<String, String> getFileNameMap() {
-    Map<String, String> fnameMap = new HashMap<String, String>();
-    fnameMap.put("rotations", TEMP_FILE_PREFIX + "rotations.txt");
-    fnameMap.put("campaigns", TEMP_FILE_PREFIX + "campaigns.txt");
-    fnameMap.put("creatives", TEMP_FILE_PREFIX + "creatives.txt");
-    fnameMap.put("rotation-creative", TEMP_FILE_PREFIX + "rotation-creative.txt");
-    fnameMap.put("df", TEMP_FILE_PREFIX + "df.status");
-    fnameMap.put("position_rotations", TEMP_FILE_PREFIX + "position_rotations.txt");
-    fnameMap.put("position_rules", TEMP_FILE_PREFIX + "position_rules.txt");
-    fnameMap.put("positions", TEMP_FILE_PREFIX + "positions.txt");
-    fnameMap.put("rules", TEMP_FILE_PREFIX + "rules.txt");
-    fnameMap.put("lt_roi", TEMP_FILE_PREFIX + "lt_roi.txt");
-    fnameMap.put("roi_credit_v2", TEMP_FILE_PREFIX + "roi_credit_v2.txt");
-    fnameMap.put("roi_v2", TEMP_FILE_PREFIX + "roi_v2.txt");
-    return fnameMap;
-  }
-
-  private void checkRotationFile(String fileName, RotationInfo rotationInfo) throws IOException {
-    FileInputStream fis = new FileInputStream(new File(TEMP_FILE_FOLDER + fileName));
-    BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-
-    String line = null;
-    int i = 0;
-    while ((line = br.readLine()) != null) {
-      i++;
-      if (i == 1) {
-        Assert.assertEquals(RotationConstant.FILE_HEADER_ROTATIONS, line);
-      } else {
-        String[] fields = line.split("\\|");
-        Assert.assertEquals(String.valueOf(rotationInfo.getRotation_id()), fields[0]);
-        Assert.assertEquals(rotationInfo.getRotation_string(), fields[1]);
-        Assert.assertEquals(rotationInfo.getRotation_name(), fields[2]);
-        Assert.assertEquals(String.valueOf(rotationInfo.getChannel_id()), fields[4]);
-        Assert.assertEquals(rotationInfo.getRotation_tag().get(RotationConstant.FIELD_ROTATION_CLICK_THRU_URL), fields[5]);
-        Assert.assertEquals(rotationInfo.getStatus(), fields[6]);
-        Assert.assertEquals(rotationInfo.getRotation_tag().get(RotationConstant.FIELD_ROTATION_START_DATE), fields[10]);
-        Assert.assertEquals(rotationInfo.getRotation_tag().get(RotationConstant.FIELD_ROTATION_END_DATE), fields[11]);
-        Assert.assertEquals(rotationInfo.getRotation_description(), fields[12]);
-        Assert.assertEquals(String.valueOf(rotationInfo.getVendor_id()), fields[18]);
-        Assert.assertEquals(rotationInfo.getVendor_name(), fields[19]);
-        Assert.assertEquals(String.valueOf(MPLXClientEnum.US.getMplxClientId()), fields[22]);
-        Assert.assertEquals(String.valueOf(rotationInfo.getCampaign_id()), fields[23]);
-        Assert.assertEquals(MPLXClientEnum.US.getMplxClientName(), fields[24]);
-        Assert.assertEquals(rotationInfo.getCampaign_name(), fields[25]);
-        Assert.assertEquals("1234567890", fields[26]);
-      }
-    }
-    Assert.assertEquals(2, i);
-    br.close();
-  }
-
-  private void checkCampaignFile(String fileName, RotationInfo rotationInfo) throws IOException {
-    FileInputStream fis = new FileInputStream(new File(TEMP_FILE_FOLDER + fileName));
-    BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-
-    String line = null;
-    int i = 0;
-    while ((line = br.readLine()) != null) {
-      i++;
-      if (i == 1) {
-        Assert.assertEquals(RotationConstant.FILE_HEADER_CAMPAIGN, line);
-      } else {
-        String[] fields = line.split("\\|");
-        Assert.assertEquals(String.valueOf(MPLXClientEnum.US.getMplxClientId()), fields[0]);
-        Assert.assertEquals(String.valueOf(rotationInfo.getCampaign_id()), fields[1]);
-        Assert.assertEquals(MPLXClientEnum.US.getMplxClientName(), fields[2]);
-        Assert.assertEquals(rotationInfo.getCampaign_name(), fields[3]);
-      }
-    }
-    Assert.assertEquals(2, i);
-    br.close();
   }
 }
