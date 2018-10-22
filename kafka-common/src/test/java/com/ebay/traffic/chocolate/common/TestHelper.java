@@ -404,6 +404,28 @@ public class TestHelper {
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
+    message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524" +
+      "|Accept: application/json|User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) " +
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive" +
+        "|X-eBay-Client-IP: 10.239.10.10" +
+        "|Referer: http://www.polo6rfreunde.de/index.php/Dereferer/?ref=aHR0cCUzQS8vcm92ZXIuZWJheS5jb20vcm92ZXIvMS83MDctNTM0Nzct" +
+        "|accept-language: zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7" +
+        "|cookie: paas.active.org=EBAY; altus.not_first=true; paas.environment=production; cssg=765619471660ac802342ae39fffffb2d;" +
+        "paas.user=huiclu; AMCVS_A71B5B5B54F607AB0A4C98A2%40AdobeOrg=1;" +
+        "AMCV_A71B5B5B54F607AB0A4C98A2%40AdobeOrg=-" +
+        "1758798782%7CMCIDTS%7C17829%7CMCMID%7C67754572831508364883533405785999125926%7CMCAAMLH-1540969649%7C9%7CMCAAMB" +
+        "-1540969650%7C6G1ynYcLPuiQxYZrsz_pkqfLG9yMXBpb2zX5dvJdYQJzPXImdj0y%7CMCCIDH%7C-456987536%7CMCOPTOUT" +
+        "-1540372050s%7CNONE%7CMCAID%7CNONE; aam_uuid=67766820294013938453532496876785767451;" +
+        "ns1=BAQAAAWZ6LAkKAAaAANgATF2xTbtjNzJ8NjAxXjE1Mzk1ODQwNjEzNzZeXjFeM3wyfDY1fDV8NHw3XjFeMl40XjNeMTJeMTJe" +
+        "Ml4xXjFeMF4xXjBeMV42NDQyNDU5MDc1YkrrEaQBrH0FDNX/QmKkLD/E0+Q*; dp1=bu1p/QEBfX0BAX19AQA**5db14dbb^bl/US5f" +
+        "92813b^pbf/%238000400000005db14dbb^; s=CgAD4ACBb0Wu7NzY1NjE5NDcxNjYwYWM4MDIzNDJhZTM5ZmZmZmZiMmTFKrqK;" +
+        "npii=btguid/765619471660ac802342ae39fffffb2d5db14dc2^cguid/" + cguid);
+    message.setUri("http://rover.ebay.com/rover/1/1346-53200-19255-0/4?ff1=2&toolid=10039&campid=5338195018" +
+        "&uq=263XXX365814851&customid=page&ff2=2&ff3=2&ff16=2&ctx=n&cb_kw=autograph%2C+signed" +
+        "&cb_cat=176985,176984&cb_ex_kw=Lego&cb_ex_cat=hah&fb_used=1&ad_format=123&ad_content_type=9012&load_time=11&lgeo=1");
+    message.setResponseHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|Cookie: cguid/" + cguid +
+      "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive"
+    + "|location: http://cgi.ebay.fr/ws/eBayISAPI.dll?ViewItem&item=dwddwdwdz&ixed=1");
     message.setSiteId(1L);
     message.setLandingPageUrl("");
     message.setSrcRotationId(1L);
@@ -416,8 +438,8 @@ public class TestHelper {
     message.setChannelAction(channelAction);
     message.setChannelType(channelType);
     message.setHttpMethod(HttpMethod.POST);
-    message.setRtRuleFlags(0L);
-    message.setNrtRuleFlags(0L);
+    message.setRtRuleFlags(1025L);
+    message.setNrtRuleFlags(1024L);
     message.setSnid("snidtest");
     return message;
   }
