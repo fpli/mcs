@@ -50,7 +50,7 @@ if [[ $HOUR -eq 23 ]]; then
    java -cp /chocolate/rotation/couchbase-tool-3.3.1-SNAPSHOT-fat.jar com.ebay.traffic.chocolate.couchbase.DumpRotationToTD ${ROTATION_CONFIG_FILE} ${START_TIME} ${END_TIME} ${OUTPUT_PATH}
 else
    echo `date`"=============== dump empty files ===========" | tee -a ${log_file}
-   java -cp /chocolate/rotation/couchbase-tool-3.3.1-SNAPSHOT-fat.jar com.ebay.traffic.chocolate.couchbase.DumpRotationToTD ${ROTATION_CONFIG_FILE} "" "" ${OUTPUT_PATH}
+   java -cp /chocolate/rotation/couchbase-tool-3.3.1-SNAPSHOT-fat.jar com.ebay.traffic.chocolate.couchbase.DumpRotationToTD ${ROTATION_CONFIG_FILE} -1 -1 ${OUTPUT_PATH}
 fi
 
 rc=$?
