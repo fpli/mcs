@@ -25,6 +25,7 @@ EXECUTOR_CORES=1
 BOOTSTRAP_SERVERS=lvschocolatepits-1448900.stratus.lvs.ebay.com:6667,lvschocolatepits-1583719.stratus.lvs.ebay.com:6667,lvschocolatequeue-1448908.stratus.lvs.ebay.com:6667
 KAFKA_TOPIC=zelda-sword-preprod
 
+SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/sword
 JOB_NAME="sword"
 
 ${SPARK_HOME}/bin/spark-submit \
@@ -38,7 +39,8 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=1024 \
-    ${bin}/../../lib/chocolate-spark-nrt-3.2.0-RELEASE-fat-sword.jar \
+    --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
+    ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
       --channel ${CHANNEL} \
