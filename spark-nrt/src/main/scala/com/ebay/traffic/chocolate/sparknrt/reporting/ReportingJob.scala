@@ -99,8 +99,21 @@ class ReportingJob(params: Parameter)
       StringUtils.isEmpty(splitted(splitted.length - 2))) { // check rotationId
       "-1" // default to -1 as unknown rotationId
     } else {
-      splitted(splitted.length - 2)
+      val rotationId = splitted(splitted.length - 2)
+      // It is often seen that some uri is malformed and has a incorrect rotation id.
+      if (checkRotationId(rotationId)) {
+        rotationId
+      } else {
+        "-1"
+      }
     }
+  }
+
+  def checkRotationId(rotationId: String): Boolean = {
+    // According to the query, the largest length of a valid rotation id is <=21,
+    // let's assume it <=25 for simplification. Besides that, rotation id should
+    // contain numeric char only after the removal of dash '-'.
+    rotationId.length <= 25 && StringUtils.isNumeric(rotationId.replace("-", ""))
   }
 
   /**
