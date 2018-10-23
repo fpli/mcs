@@ -272,13 +272,13 @@ public class DumpRotationToTD {
 
   private static void genFileForCampaign(String output, boolean compress, List<ViewRow> result, ESMetrics esMetrics) throws IOException {
     OutputStream out = null;
-    String filePath = output + RotationConstant.FILE_NAME_CAMPAIGN;
+    String filePath = output + RotationConstant.FILE_NAME_CAMPAIGN + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;
     try {
       if (compress) {
         out = new GZIPOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_ZIP), 8192);
       } else {
-        out = new BufferedOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_TXT));
+        out = new BufferedOutputStream(new FileOutputStream(filePath));
       }
       out.write(RotationConstant.FILE_HEADER_CAMPAIGN.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
@@ -331,11 +331,11 @@ public class DumpRotationToTD {
   private static void genEmptyFile(String outputFilePath, boolean compress, String fileHeaders) throws IOException {
     OutputStream out = null;
     String filePath = outputFilePath;
+    if(StringUtils.isNotEmpty(fileHeaders)) filePath = filePath + RotationConstant.FILE_NAME_SUFFIX_TXT;
     try {
       if (compress) {
         out = new GZIPOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_ZIP), 8192);
       } else {
-        if(StringUtils.isNotEmpty(fileHeaders)) filePath = filePath + RotationConstant.FILE_NAME_SUFFIX_TXT;
         out = new BufferedOutputStream(new FileOutputStream(filePath));
       }
       if (StringUtils.isNotEmpty(fileHeaders)) {
