@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Map;
 
 public class RotationInfo implements Serializable {
+  private static final long serialVersionUID = 4761729788970070186L;
+
   public static final String STATUS_ACTIVE = "ACTIVE";
   public static final String STATUS_INACTIVE = "INACTIVE";
 
@@ -24,7 +26,6 @@ public class RotationInfo implements Serializable {
   private String create_user;
   private String create_date;
   private String update_user;
-
 
   public Long getRotation_id() {
     return rotation_id;

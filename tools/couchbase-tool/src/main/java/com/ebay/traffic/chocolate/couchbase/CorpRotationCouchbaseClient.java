@@ -17,6 +17,10 @@ public class CorpRotationCouchbaseClient {
         init();
     }
 
+    public CorpRotationCouchbaseClient(CacheFactory factory) {
+        this.factory = factory;
+    }
+
     private void init() {
         factory =
           com.ebay.dukes.builder.GenericCacheFactoryBuilder.newBuilder()
