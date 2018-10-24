@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.reporting
 
+import java.text.SimpleDateFormat
+
 import com.couchbase.client.java.document.JsonArrayDocument
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
@@ -19,32 +21,22 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
   */
 class TestReportingJob extends BaseFunSuite {
 
-  val tmpPath = createTempPath()
-  val inputDir = tmpPath + "/inputDir/"
-  val workDir = tmpPath + "/workDir/"
-  val archiveDir = tmpPath + "/archiveDir/"
+  private val tmpPath = createTempPath()
+  private val inputDir = tmpPath + "/inputDir/"
+  private val workDir = tmpPath + "/workDir/"
+  private val archiveDir = tmpPath + "/archiveDir/"
 
-  val channel = "EPN"
+  private val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
-  val args = Array(
-    "--mode", "local[8]",
-    "--channel", channel,
-    "--workDir", workDir,
-    "--archiveDir", archiveDir
-  )
-
-  @transient lazy val hadoopConf = {
+  @transient private lazy val hadoopConf = {
     new Configuration()
   }
 
-  lazy val fs = {
+  private lazy val fs = {
     val fs = FileSystem.get(hadoopConf)
     sys.addShutdownHook(fs.close())
     fs
   }
-
-  val params = Parameter(args)
-  val job = new ReportingJob(params)
 
   override def beforeAll(): Unit = {
     CouchbaseClientMock.startCouchbaseMock()
@@ -52,7 +44,8 @@ class TestReportingJob extends BaseFunSuite {
       (None, CouchbaseClientMock.connect().openBucket("default"))
     }
 
-    createTestDataForDedupe()
+    createTestDataForEPN()
+    createTestDataForDisplay()
   }
 
   override def afterAll(): Unit = {
@@ -61,9 +54,19 @@ class TestReportingJob extends BaseFunSuite {
     //CouchbaseClientMock.closeCouchbaseMock()
   }
 
-  test("Test Reporting") {
+  test("Test EPN reporting job") {
 
-    val metadata1 = Metadata(workDir, channel, MetadataEnum.capping)
+    val args = Array(
+      "--mode", "local[8]",
+      "--channel", "EPN",
+      "--workDir", workDir,
+      "--archiveDir", archiveDir
+    )
+
+    val params = Parameter(args)
+    val job = new ReportingJob(params)
+
+    val metadata1 = Metadata(workDir, "EPN", MetadataEnum.capping)
     val dedupeMeta = metadata1.readDedupeOutputMeta()
     val dedupeMetaPath = new Path(dedupeMeta(0)._1)
 
@@ -138,8 +141,78 @@ class TestReportingJob extends BaseFunSuite {
     }
   }
 
+  test("Test Display reporting job") {
+
+    val args = Array(
+      "--mode", "local[8]",
+      "--channel", "DISPLAY",
+      "--workDir", workDir,
+      "--archiveDir", archiveDir
+    )
+
+    val params = Parameter(args)
+    val job = new ReportingJob(params)
+
+    val metadata1 = Metadata(workDir, "DISPLAY", MetadataEnum.capping)
+    val dedupeMeta = metadata1.readDedupeOutputMeta()
+    val dedupeMetaPath = new Path(dedupeMeta(0)._1)
+
+    assert (fs.exists(dedupeMetaPath))
+
+    job.run()
+    job.stop()
+
+    assert (!fs.exists(dedupeMetaPath)) // moved
+    assert (fs.exists(new Path(job.archiveDir, dedupeMetaPath.getName))) // archived
+
+    // check against mock Couchbase...
+    val bucket = CorpCouchbaseClient.getBucketFunc.apply()._2
+
+    val keyArray = Array(
+      "ROTATION_707-53477-19255-1_2018-05-02_CLICK_MOBILE_FILTERED",
+      "ROTATION_707-53477-19255-0_2018-05-02_CLICK_DESKTOP_FILTERED",
+      "ROTATION_707-53477-19255-1_2018-05-02_CLICK_MOBILE_RAW",
+      "ROTATION_707-53477-19255-0_2018-05-02_CLICK_DESKTOP_RAW",
+      "ROTATION_707-53477-19255-1_2018-05-02_IMPRESSION_MOBILE_FILTERED",
+      "ROTATION_707-53477-19255-0_2018-05-02_IMPRESSION_DESKTOP_FILTERED",
+      "ROTATION_707-53477-19255-1_2018-05-02_IMPRESSION_MOBILE_RAW",
+      "ROTATION_707-53477-19255-0_2018-05-02_IMPRESSION_DESKTOP_RAW",
+      "ROTATION_707-53477-19255-1_2018-05-02_VIEWABLE_MOBILE_FILTERED",
+      "ROTATION_707-53477-19255-0_2018-05-02_VIEWABLE_DESKTOP_FILTERED",
+      "ROTATION_707-53477-19255-1_2018-05-02_VIEWABLE_MOBILE_RAW",
+      "ROTATION_707-53477-19255-0_2018-05-02_VIEWABLE_DESKTOP_RAW"
+    )
+
+    for (i <- keyArray.indices) {
+      assert(bucket.exists(keyArray(i)))
+      println("key: " + keyArray(i) + " value: " + bucket.get(keyArray(i), classOf[JsonArrayDocument]).content().toString)
+    }
+  }
+
+  test("Test rotation id parser") {
+
+    val args = Array(
+      "--mode", "local[8]",
+      "--channel", "DISPLAY",
+      "--workDir", workDir,
+      "--archiveDir", archiveDir
+    )
+
+    val params = Parameter(args)
+    val job = new ReportingJob(params)
+
+    val r1 = job.getRotationId("http://rover.ebay.com/rover/1/707-53477-19255-0/4?test=display")
+    assertResult("707-53477-19255-0")(r1)
+    val r2 = job.getRotationId("https://rover.ebay.com/rover/1/707-53477-19255-1/4")
+    assertResult("707-53477-19255-1")(r2)
+    val r3 = job.getRotationId("https://rover.ebay.com/rover/1/abc707-53477-19255-1/4")
+    assertResult("-1")(r3)
+    val r4 = job.getRotationId("https://rover.ebay.com/rover/1/707707-53477534775-19255192551-11/4")
+    assertResult("-1")(r4)
+  }
+
   def getTimestamp(date: String): Long = {
-    job.sdf.parse(date).getTime
+    sdf.parse(date).getTime
   }
 
   def writeFilterMessage(channelType: ChannelType,
@@ -165,12 +238,35 @@ class TestReportingJob extends BaseFunSuite {
     message
   }
 
-  def createTestDataForDedupe(): Unit = {
+  def writeFilterMessage(channelType: ChannelType,
+                         channelAction: ChannelAction,
+                         snapshotId: Long,
+                         uri: String,
+                         timestamp: Long,
+                         rtRuleFlags: Long,
+                         nrtRuleFlags: Long,
+                         isMobi: Boolean,
+                         writer: ParquetWriter[GenericRecord]): FilterMessage = {
+    val message = TestHelper.newFilterMessage(channelType,
+      channelAction,
+      snapshotId,
+      -1L,
+      -1L,
+      timestamp,
+      rtRuleFlags,
+      nrtRuleFlags,
+      isMobi)
+    message.setUri(uri)
+    writer.write(message)
+    message
+  }
+
+  def createTestDataForEPN(): Unit = {
     // prepare metadata file
-    val metadata = Metadata(workDir, channel, MetadataEnum.capping)
+    val metadata = Metadata(workDir, "EPN", MetadataEnum.capping)
 
     val dateFiles = DateFiles("date=2018-05-01", Array("file://" + inputDir + "/date=2018-05-01/part-00000.snappy.parquet"))
-    var meta: MetaFiles = MetaFiles(Array(dateFiles))
+    val meta: MetaFiles = MetaFiles(Array(dateFiles))
 
     metadata.writeDedupeOutputMeta(meta)
 
@@ -215,6 +311,51 @@ class TestReportingJob extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 22L, 11L, 111L, timestamp - 3, 0, 0, true, writer)
     writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 23L, 22L, 222L, timestamp - 2, 1, 0, true, writer)
     writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 24L, 22L, 222L, timestamp - 1, 0, 0, true, writer)
+
+    writer.close()
+  }
+
+  def createTestDataForDisplay(): Unit = {
+    // prepare metadata file
+    val metadata = Metadata(workDir, "DISPLAY", MetadataEnum.capping)
+
+    val dateFiles = DateFiles("date=2018-05-02", Array("file://" + inputDir + "/date=2018-05-02/part-00000.snappy.parquet"))
+    val meta: MetaFiles = MetaFiles(Array(dateFiles))
+
+    metadata.writeDedupeOutputMeta(meta)
+
+    // prepare data file
+    val writer = AvroParquetWriter.
+      builder[GenericRecord](new Path(inputDir + "/date=2018-05-02/part-00000.snappy.parquet"))
+      .withSchema(FilterMessageV1.getClassSchema)
+      .withConf(hadoopConf)
+      .withCompressionCodec(CompressionCodecName.SNAPPY)
+      .build()
+
+    val timestamp = getTimestamp("2018-05-02")
+
+    val uri1 = "http://rover.ebay.com/rover/1/707-53477-19255-0/4?test=display"
+    val uri2 = "https://rover.ebay.com/rover/1/707-53477-19255-1/4"
+
+    // Desktop
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.CLICK, 1L, uri1, timestamp - 12, 1, 0, false, writer)
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.CLICK, 2L, uri1, timestamp - 11, 0, 0, false, writer)
+
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.IMPRESSION, 3L, uri1, timestamp - 8, 1, 0, false, writer)
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.IMPRESSION, 4L, uri1, timestamp - 7, 0, 0, false, writer)
+
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.VIEWABLE, 5L, uri1, timestamp - 4, 1, 0, false, writer)
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.VIEWABLE, 6L, uri1, timestamp - 3, 0, 0, false, writer)
+
+    // Mobile
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.CLICK, 7L, uri2, timestamp - 12, 1, 0, true, writer)
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.CLICK, 8L, uri2, timestamp - 11, 0, 0, true, writer)
+
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.IMPRESSION, 9L, uri2, timestamp - 8, 1, 0, true, writer)
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.IMPRESSION, 10L, uri2, timestamp - 7, 0, 0, true, writer)
+
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.VIEWABLE, 11L, uri2, timestamp - 4, 1, 0, true, writer)
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.VIEWABLE, 12L, uri2, timestamp - 3, 0, 0, true, writer)
 
     writer.close()
   }

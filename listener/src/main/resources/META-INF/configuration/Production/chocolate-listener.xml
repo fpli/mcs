@@ -22,6 +22,7 @@
     <value>listened-display</value>
     <description>Kafka topic for display channel to publish.</description>
   </property>
+
   <!-- Kafka producer end -->
 
   <!-- ElasticSearch begin -->
