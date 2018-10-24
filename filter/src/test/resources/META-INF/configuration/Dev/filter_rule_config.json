@@ -22,8 +22,8 @@
       {
         "ruleName": "PublisherValidRule"},
       {
-        "ruleName": "CGUIDStalenessWindowRule",
-        "windowStart": 500},
+        "ruleName": "TGUIDStalenessWindowRule",
+        "windowStart": 3000},
       {
         "ruleName": "EPNDomainBlacklistRule",
         "blacklistName": "EPN_domains_Blacklist.txt"},
