@@ -32,8 +32,8 @@ public class BasicRulesTest {
   @Before
   public void addTestRules() throws IOException {
     Map<ChannelType, Map<String, FilterRuleContent>> filterRules = ApplicationOptions.filterRuleConfigMap;
-    filterRules.get(ChannelType.EPN).put(CGUIDStalenessWindowRule.class.getSimpleName(), new FilterRuleContent
-        (CGUIDStalenessWindowRule.class.getSimpleName(), null, null, 500l, null));
+    filterRules.get(ChannelType.EPN).put(TGUIDStalenessWindowRule.class.getSimpleName(), new FilterRuleContent
+        (TGUIDStalenessWindowRule.class.getSimpleName(), null, null, 500l, null));
     filterRules.get(ChannelType.EPN).put(CampaignClickThroughRateRule.class.getSimpleName(), new FilterRuleContent
         (CampaignClickThroughRateRule.class.getSimpleName(), null, 0.01f, null, null));
     filterRules.get(ChannelType.EPN).put(ProtocolRule.class.getSimpleName(), new FilterRuleContent
@@ -116,12 +116,12 @@ public class BasicRulesTest {
 
   @Test
   public void testCGUIDTimestampWindow() {
-    BaseFilterRule wrule = new CGUIDStalenessWindowRule(ChannelType.EPN);
+    BaseFilterRule wrule = new TGUIDStalenessWindowRule(ChannelType.EPN);
     FilterRule rule = wrule;
     FilterRequest req = new FilterRequest();
     req.setChannelAction(ChannelAction.CLICK);
-    req.setRequestCGUID("foo");
-    req.setRequestCGUIDTimestamp(10000L);
+    req.setRequestTguid("foo");
+    req.setRequestTguidTimestamp(10000L);
     req.setTimestamp(10000L + 490);                // just before the window start
     assertEquals(1, rule.test(req));
     req.setTimestamp(10000L + 510);                // just after the window start
