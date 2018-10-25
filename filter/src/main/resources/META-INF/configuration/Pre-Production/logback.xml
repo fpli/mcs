@@ -41,7 +41,7 @@
             </layout>
             <charset>UTF-8</charset>
         </encoder>
-        <topic>logstash-test</topic>
+        <topic>chocolate-log-preprod</topic>
         <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy" />
         <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
         <producerConfig>bootstrap.servers=chocolate-kafka.g.vip.ebay.com:6667</producerConfig>
