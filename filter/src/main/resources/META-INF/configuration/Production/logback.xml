@@ -44,7 +44,7 @@
         <topic>chocolate-log</topic>
         <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy" />
         <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
-        <producerConfig>bootstrap.servers=chocolate-kafka.g.vip.ebay.com:6667</producerConfig>
+        <producerConfig>bootstrap.servers=chocolate-kafka-pits.vip.lvs.ebay.com:6667</producerConfig>
     </appender>
 
     <root level="info">
