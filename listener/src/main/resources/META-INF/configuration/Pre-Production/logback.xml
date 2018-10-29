@@ -12,11 +12,10 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml" />
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
-    <appender name="FILE"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>log/aero-ebay.log</file>
         <triggeringPolicy
-                class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
             <maxFileSize>10MB</maxFileSize>
         </triggeringPolicy>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
@@ -31,6 +30,10 @@
         </encoder>
     </appender>
 
+    <appender name="NOPAppender"
+              class="ch.qos.logback.core.helpers.NOPAppender" >
+    </appender>
+
     <appender name="KafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
         <encoder class="com.github.danielwegener.logback.kafka.encoding.LayoutKafkaMessageEncoder">
             <layout class="net.logstash.logback.layout.LogstashLayout" >
@@ -42,9 +45,21 @@
             <charset>UTF-8</charset>
         </encoder>
         <topic>chocolate-log-preprod</topic>
+        <!-- ensure that every message sent by the executing host is partitioned to the same partition strategy -->
         <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy" />
+        <!-- use async delivery. the application threads are not blocked by logging -->
         <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
+        <!-- even if the producer buffer runs full, do not block the application but start to drop messages -->
+        <producerConfig>max.block.ms=0</producerConfig>
+
         <producerConfig>bootstrap.servers=chocolate-kafka-pits.vip.lvs.ebay.com:6667</producerConfig>
+
+        <!-- this is the fallback appender if kafka is not available. -->
+        <appender-ref ref="NOPAppender"/>
+    </appender>
+
+    <appender name="CAL"
+              class="com.ebay.raptor.kernel.logging.CalLoggingAppender">
     </appender>
 
     <root level="info">
@@ -52,6 +67,7 @@
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
         <appender-ref ref="KafkaAppender" />
+        <appender-ref ref="CAL" />
     </root>
 
 </configuration>
