@@ -6,17 +6,17 @@ import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 
 /**
- * Checks the CGUID creation timestamp, filters clicks that are too close or too far
+ * Checks the tguid creation timestamp, filters clicks that are too close or too far
  * <p>
  * Created by spugach on 1/9/17.
  */
-public class CGUIDStalenessWindowRule extends BaseFilterRule {
+public class TGUIDStalenessWindowRule extends BaseFilterRule {
   private long windowStart;
   
   /**
    * Ctor
    */
-  public CGUIDStalenessWindowRule(ChannelType channelType) {
+  public TGUIDStalenessWindowRule(ChannelType channelType) {
     super(channelType);
     //this.windowStart = ApplicationOptions.getInstance().getByNameLong(WINDOW_START_KEY);
     this.windowStart = filterRuleContent.getWindowStart() == null ? windowStart : filterRuleContent.getWindowStart();
@@ -35,6 +35,6 @@ public class CGUIDStalenessWindowRule extends BaseFilterRule {
    */
   @Override
   public int test(FilterRequest event) {
-    return (event.getRequestCGUID() == null) || (event.getTimestamp() > event.getRequestCGUIDTimestamp() + windowStart) ? 0 : 1;
+    return (event.getRequestTguid() == null) || (event.getTimestamp() > event.getRequestTguidTimestamp() + windowStart) ? 0 : 1;
   }
 }
