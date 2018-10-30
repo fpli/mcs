@@ -1,6 +1,6 @@
 #
-#	IAB_ABC_International_List_of_Valid_Browsers_201808_21-090358
-#	August 21, 2018
+#	IAB_ABC_International_List_of_Valid_Browsers_201810_22-104604
+#	October 22, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
@@ -65,6 +65,7 @@ AUDIOVOX-|1|1
 AdXChange|1|1
 AdobeAIR|1|0
 AerServ|1|0
+Aftonbladet/|1|1
 Alcatel|1|1
 Amiga|1|1
 Amoi|1|1
@@ -96,6 +97,7 @@ Configuration/CLDC|1|0
 Crazy Browser|1|0
 Crazy+Browser|1|0
 Crunchyroll/|1|1
+Cupid/|1|1
 DBTEL|1|1
 DMTT|1|1
 Dalvik|1|1
@@ -232,6 +234,7 @@ Playstation|1|0
 Profile/MIDP|1|0
 QC-/|1|1
 QC6035/|1|1
+QYPlayer/iOS/|1|1
 QtWebKit|1|1
 Qtek|1|1
 RMA/|1|1
@@ -262,6 +265,8 @@ Semp|1|0
 Series60|1|0
 Silk-Accelerated|1|0
 SiteKiosk|1|0
+SkyD_STB|1|1
+SkyQ_STB/|1|1
 SmartDownload|1|1
 SmartTV|1|0
 SoftBank|1|1
@@ -272,6 +277,7 @@ SonyEricsson|1|0
 Spice|1|1
 Spinner|1|1
 Sportacular/|1|1
+Sportbladet/|1|1
 SpotXchange|1|0
 Spotify|1|0
 Spotx Web Proxy|1|0
@@ -382,6 +388,7 @@ mipla_w8rt|1|1
 nook browser|1|1
 nook+browser|1|1
 offeristafr|1|1
+ott_dt_stb|1|1
 partner frontier|1|0
 partner+frontier|1|0
 pb0.6b|1|1
@@ -398,6 +405,7 @@ windows mobile application search|1|0
 windows+mobile+application+search|1|0
 windowsphoneadclient|1|0
 wininethttploader|1|0
+wogibtswas|1|1
 wunderkauf|1|1
 xbox|1|1
 #************************************BEGIN DEACTIVATED USER AGENTS HERE*******************************
@@ -564,3 +572,5 @@ xbox|1|1
 # June 2018 - added "googletv"
 # July 2018 - added "Bose/", added "Echo/", added "Lavf", added "Sonos", added "Winamp3", added "XBOX360"
 # August 2018 - added "marktjagd", added "barcoo", added "wunderkauf", added "offeristafr", added "profital"
+# September 2018 - added "Aftonbladet/", added "Sportbladet/", added "QYPlayer/iOS/", added "Cupid/", added "SkyD_STB", added "SkyQ_STB/", added "ott_dt_stb"
+# October 2018 - added "wogibtswas"
