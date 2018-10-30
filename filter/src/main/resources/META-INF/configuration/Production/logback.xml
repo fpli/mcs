@@ -9,9 +9,6 @@
         </encoder>
     </appender>
 
-    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
-    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
-
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>log/aero-ebay.log</file>
         <triggeringPolicy
@@ -64,7 +61,6 @@
 
     <root level="info">
         <appender-ref ref="STARTUP" />
-        <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
         <appender-ref ref="KafkaAppender" />
         <appender-ref ref="CAL" />
