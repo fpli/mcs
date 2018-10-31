@@ -27,10 +27,6 @@
         </encoder>
     </appender>
 
-    <appender name="NOPAppender"
-              class="ch.qos.logback.core.helpers.NOPAppender" >
-    </appender>
-
     <appender name="KafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
         <encoder class="com.github.danielwegener.logback.kafka.encoding.LayoutKafkaMessageEncoder">
             <layout class="net.logstash.logback.layout.LogstashLayout" >
