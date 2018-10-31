@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <appender name="KafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+        <encoder class="com.github.danielwegener.logback.kafka.encoding.LayoutKafkaMessageEncoder">
+            <layout class="net.logstash.logback.layout.LogstashLayout" >
+                <includeContext>true</includeContext>
+                <includeCallerData>true</includeCallerData>
+                <customFields>{"component":"listener"}</customFields>
+                <fieldNames class="net.logstash.logback.fieldnames.ShortenedFieldNames"/>
+            </layout>
+            <charset>UTF-8</charset>
+        </encoder>
+        <topic>chocolate-log-qa</topic>
+        <!-- ensure that every message sent by the executing host is partitioned to the same partition strategy -->
+        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy" />
+        <!-- use async delivery. the application threads are not blocked by logging -->
+        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
+        <!-- even if the producer buffer runs full, do not block the application but start to drop messages -->
+        <producerConfig>max.block.ms=1000</producerConfig>
+        <producerConfig>request.timeout.ms=3000</producerConfig>
+        <producerConfig>acks=0</producerConfig>
+        <producerConfig>bootstrap.servers=choco-2217601.lvs02.dev.ebayc3.com:6667,choco-cent-1659401.slc07.dev.ebayc3.com:6667,
+            choco-cent-2218337.lvs02.dev.ebayc3.com:6667</producerConfig>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="KafkaAppender" />
+    </root>
+
+    <logger name="org.opensaml.xml.XMLConfigurator" level="warn"/>
+
+</configuration>
