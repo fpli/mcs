@@ -20,7 +20,7 @@
         <!-- use async delivery. the application threads are not blocked by logging -->
         <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
         <!-- even if the producer buffer runs full, do not block the application but start to drop messages -->
-        <producerConfig>max.block.ms=1000</producerConfig>
+        <producerConfig>max.block.ms=0</producerConfig>
         <producerConfig>request.timeout.ms=3000</producerConfig>
         <producerConfig>acks=0</producerConfig>
         <producerConfig>bootstrap.servers=choco-2217601.lvs02.dev.ebayc3.com:6667,choco-cent-1659401.slc07.dev.ebayc3.com:6667,
