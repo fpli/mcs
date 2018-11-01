@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.listener.channel;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
@@ -26,6 +27,7 @@ public class DefaultChannel implements Channel {
   private MessageObjectParser parser;
   private static final String CAMPAIGN_PATTERN = "campid";
   private static final String SNID_PATTERN = "snid";
+  private static final String MALFORMED_Tracking_URL = "malformedTrackingURL";
 
   DefaultChannel() {
     this.esMetrics = ESMetrics.getInstance();
@@ -75,11 +77,6 @@ public class DefaultChannel implements Channel {
       parser.appendTagWhenRedirect(request, response, requestUrl);
     } catch (MalformedURLException | UnsupportedEncodingException e) {
       logger.error("Wrong with URL format/encoding", e);
-      String kafkaMalformedTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
-      ListenerMessage message = parser.parseHeader(request, response,
-          startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, "999999", requestUrl);
-      producer.send(new ProducerRecord<>(kafkaMalformedTopic,
-          message.getSnapshotId(), message), KafkaSink.callback);
     }
 
     String snid = request.getParameter(SNID_PATTERN);
@@ -87,24 +84,24 @@ public class DefaultChannel implements Channel {
     if (result.length == 5) {
       channelType = ChannelIdEnum.parse(result[4]);
       if (channelType == null) {
-        invalidRequestParam(request, "No pattern matched;", startTime, action, type);
+        invalidRequestParam(request, response, campaignId,"No pattern matched;", startTime, action, type, requestUrl);
         esMetrics.meter("NoPatternMatched", 1, startTime, action, type);
         return;
       }
       channelAction = ChannelActionEnum.parse(channelType, result[1]);
       if (!channelType.getLogicalChannel().isValidRoverAction(channelAction)) {
-        invalidRequestParam(request, "Invalid tracking action given a channel;", startTime, action, type);
+        invalidRequestParam(request, response, campaignId,"Invalid tracking action given a channel;", startTime, action, type, requestUrl);
         esMetrics.meter("InvalidAction", 1, startTime, action, type);
         return;
       }
       if (channelType.isTestChannel()) {
-        invalidRequestParam(request, "Test channel;", startTime, action, type);
+        invalidRequestParam(request, response,campaignId,"Test channel;", startTime, action, type, requestUrl);
         esMetrics.meter("TestChannel", 1, startTime, action, type);
         return;
       }
 
       if (campaignId < 0 && channelType.equals(ChannelIdEnum.EPN)) {
-        invalidRequestParam(request, "Invalid campaign id;", startTime, action, type);
+        invalidRequestParam(request, response, campaignId, "Invalid campaign id;", startTime, action, type, requestUrl);
         esMetrics.meter("InvalidCampaign", 1, startTime, action, type);
         return;
       }
@@ -112,7 +109,7 @@ public class DefaultChannel implements Channel {
       kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
       listenerFilteredKafkaTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
     } else {
-      invalidRequestParam(request, "Request params count != 5", startTime, action, type);
+      invalidRequestParam(request, response, -1L, "Request params count != 5", startTime, action, "", "");
       return;
     }
 
@@ -135,7 +132,7 @@ public class DefaultChannel implements Channel {
         esMetrics.meter("SendIntlKafkaCount", 1, eventTime);
       }
     } else {
-      invalidRequestParam(request, "Parse message error;", startTime, action, type);
+      invalidRequestParam(request, response, -1L,"Parse message error;", startTime, action, type, "");
     }
   }
 
@@ -217,13 +214,25 @@ public class DefaultChannel implements Channel {
     return startTime;
   }
 
-  private void invalidRequestParam(HttpServletRequest request, String invalid, long eventTime, String channelAction, String channelType) {
+  private void invalidRequestParam(HttpServletRequest request, HttpServletResponse response,
+                                   long campaignId, String invalid, long eventTime, String channelAction, String channelType, String requestUrl) {
     StringBuffer sb = new StringBuffer();
     sb.append(invalid);
     sb = deriveWarningMessage(sb, request);
     logger.warn(sb.toString());
     logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
     esMetrics.meter("un-managed", 1, eventTime, channelAction, channelType);
+    esMetrics.meter(MALFORMED_Tracking_URL);
+    sendMalformedURLToKafka(request, response, eventTime, campaignId, requestUrl);
   }
 
+  private void sendMalformedURLToKafka(HttpServletRequest request, HttpServletResponse response,
+                                       long startTime, long campaignId, String requestUrl) {
+    String kafkaMalformedTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
+    Producer<Long, ListenerMessage> producer = KafkaSink.get();
+    ListenerMessage message = parser.parseHeader(request, response,
+        startTime, campaignId, ChannelType.EPN, ChannelActionEnum.IMPRESSION, "999999", requestUrl);
+    producer.send(new ProducerRecord<>(kafkaMalformedTopic,
+        message.getSnapshotId(), message), KafkaSink.callback);
+  }
 }
