@@ -25,15 +25,25 @@ public class DumpLegacyRotationFiles {
   private static Properties couchbasePros;
 
   public static void main(String args[]) throws Exception {
+    boolean hasParams = true;
     String configFilePath = (args != null && args.length > 0) ? args[0] : null;
-    if (StringUtils.isEmpty(configFilePath))
+    if (StringUtils.isEmpty(configFilePath)) {
       logger.error("No configFilePath was defined. please set configFilePath for rotation jobs");
+      hasParams = false;
+    }
 
     String updateTimeStartKey = (args != null && args.length > 1) ? args[1] : null;
-    if(StringUtils.isEmpty(updateTimeStartKey)) logger.error("No updateTimeStartKey was defined. please set updateTimeStartKey for rotation jobs");
+    if(StringUtils.isEmpty(updateTimeStartKey)){
+      logger.error("No updateTimeStartKey was defined. please set updateTimeStartKey for rotation jobs");
+      hasParams = false;
+    }
 
     String updateTimeEndKey = (args != null && args.length > 2) ? args[2] : null;
-    if(StringUtils.isEmpty(updateTimeEndKey)) logger.error("No updateTimeEndKey was defined. please set updateTimeEndKey for rotation jobs");
+    if(StringUtils.isEmpty(updateTimeEndKey)) {
+      logger.error("No updateTimeEndKey was defined. please set updateTimeEndKey for rotation jobs");
+      hasParams = false;
+    }
+    if(!hasParams) return;
 
     String outputFilePath = (args != null && args.length > 3) ? args[3] : null;
 

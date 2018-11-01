@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.ebay.traffic</groupId>
         <artifactId>chocolate</artifactId>
-        <version>3.3.0-RELEASE</version>
+        <version>3.3.1-RELEASE</version>
         <relativePath>..</relativePath>
     </parent>
     <groupId>com.ebay.traffic</groupId>
@@ -170,6 +170,17 @@
         <groupId>com.ebay.raptorio.component</groupId>
         <artifactId>raptor-io-test-framework</artifactId>
         <scope>test</scope>
+      </dependency>
+
+      <!--logging dependencies-->
+      <dependency>
+        <groupId>com.github.danielwegener</groupId>
+        <artifactId>logback-kafka-appender</artifactId>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>net.logstash.logback</groupId>
+        <artifactId>logstash-logback-encoder</artifactId>
       </dependency>
 
       <!-- test -->
