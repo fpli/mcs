@@ -5,6 +5,7 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.TestHelper;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
+import com.ebay.traffic.chocolate.listener.util.HttpMethodEnum;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
@@ -188,6 +189,7 @@ public class DefaultChannelTest {
     when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), anyLong(),
         eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), anyString(), anyString()))
         .thenReturn(mockMessage);
+    when(mockMessageParser.getMethod(mockClientRequest)).thenReturn(HttpMethodEnum.PUT);
     channel.process(mockClientRequest, mockProxyResponse);
     verify(mockProducer, times(1)).send(new ProducerRecord<>("listened-filtered", anyLong(), anyObject()), KafkaSink.callback);
   }
@@ -198,6 +200,7 @@ public class DefaultChannelTest {
     when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), anyLong(),
         eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), anyString(), anyString()))
         .thenReturn(mockMessage);
+    when(mockMessageParser.getMethod(mockClientRequest)).thenReturn(HttpMethodEnum.PUT);
     // with negative number
     mockClientRequest.setParameter("campid",String.valueOf(-1234L));
     channel.process(mockClientRequest, mockProxyResponse);
