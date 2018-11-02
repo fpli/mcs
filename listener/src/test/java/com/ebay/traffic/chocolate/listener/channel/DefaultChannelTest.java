@@ -186,28 +186,32 @@ public class DefaultChannelTest {
   public void processShouldNotSendMessageToKafkaOrJournalIfItCouldNotBeParsed() {
     ListenerMessage mockMessage = mock(ListenerMessage.class);
     when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), anyLong(),
-        eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), eq(""), eq(null)))
+        eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), anyString(), anyString()))
         .thenReturn(mockMessage);
     channel.process(mockClientRequest, mockProxyResponse);
-    verify(mockProducer, never()).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
+    verify(mockProducer, times(1)).send(new ProducerRecord<>("listened-filtered", anyLong(), anyObject()), KafkaSink.callback);
   }
 
   @Test
   public void processShouldNotSendMessageToKafkaOrJournalIfInvalidCampaign() {
+    ListenerMessage mockMessage = mock(ListenerMessage.class);
+    when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), anyLong(),
+        eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), anyString(), anyString()))
+        .thenReturn(mockMessage);
     // with negative number
     mockClientRequest.setParameter("campid",String.valueOf(-1234L));
     channel.process(mockClientRequest, mockProxyResponse);
-    verify(mockProducer, never()).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
+    verify(mockProducer, times(1)).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
 
     // with string
     mockClientRequest.setParameter("campid","12345abcde");
     channel.process(mockClientRequest, mockProxyResponse);
-    verify(mockProducer, never()).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
+    verify(mockProducer, times(2)).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
 
     // without campid tag
     mockClientRequest.setParameter("campxid","12345");
     channel.process(mockClientRequest, mockProxyResponse);
-    verify(mockProducer, never()).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
+    verify(mockProducer, times(3)).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
   }
 
 }

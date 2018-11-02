@@ -209,7 +209,7 @@ public class MessageObjectParser {
         return true;
     }
 
-    private String serializeRequestHeaders(HttpServletRequest clientRequest) {
+    public String serializeRequestHeaders(HttpServletRequest clientRequest) {
         StringBuilder requestHeaders = new StringBuilder();
         for (Enumeration<String> e = clientRequest.getHeaderNames(); e.hasMoreElements();) {
             String headerName = e.nextElement();
