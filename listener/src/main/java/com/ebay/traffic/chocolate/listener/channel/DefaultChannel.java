@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.listener.channel;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
@@ -84,8 +85,15 @@ public class DefaultChannel implements Channel {
       String kafkaMalformedTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
       ListenerMessage message = new ListenerMessage();
       message.setSnid("999998");
-      message.setTimestamp(((org.eclipse.jetty.server.Request)request).getTimeStamp());
       message.setUri(requestUrl);
+      message.setSnapshotId(SnapshotId.getNext(ListenerOptions.getInstance().getDriverId(), startTime).getRepresentation());
+      message.setTimestamp(startTime);
+      message.setCampaignId(campaignId);
+      message.setChannelType(ChannelType.DEFAULT);
+      message.setChannelAction(ChannelActionEnum.IMPRESSION.getAvro());
+      message.setHttpMethod(parser.getMethod(request).getAvro());
+      message.setRequestHeaders("");
+      message.setResponseHeaders("");
       producer.send(new ProducerRecord<>(kafkaMalformedTopic,
           message.getSnapshotId(), message), KafkaSink.callback);
     }
@@ -233,17 +241,24 @@ public class DefaultChannel implements Channel {
     logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
     esMetrics.meter("un-managed", 1, eventTime, channelAction, channelType);
     esMetrics.meter(MALFORMED_Tracking_URL);
-    sendMalformedURLToKafka(eventTime, campaignId, requestUrl);
+    sendMalformedURLToKafka(request, eventTime, campaignId, requestUrl);
   }
 
-  private void sendMalformedURLToKafka(long startTime, long campaignId, String requestUrl) {
+  private void sendMalformedURLToKafka(HttpServletRequest request, long startTime, long campaignId, String requestUrl) {
     String kafkaMalformedTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
     ListenerMessage message = new ListenerMessage();
+    message.setSnapshotId(SnapshotId.getNext(ListenerOptions.getInstance().getDriverId(), startTime).getRepresentation());
     message.setSnid("999999");
     message.setTimestamp(startTime);
     message.setCampaignId(campaignId);
     message.setUri(requestUrl);
+    message.setChannelType(ChannelType.DEFAULT);
+    message.setChannelAction(ChannelActionEnum.IMPRESSION.getAvro());
+    message.setHttpMethod(parser.getMethod(request).getAvro());
+    message.setRequestHeaders("");
+    message.setResponseHeaders("");
+
     producer.send(new ProducerRecord<>(kafkaMalformedTopic,
         message.getSnapshotId(), message), KafkaSink.callback);
   }
