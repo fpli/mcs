@@ -83,10 +83,9 @@ public class DefaultChannel implements Channel {
       esMetrics.meter(MALFORMED_URL);
       String kafkaMalformedTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
       ListenerMessage message = new ListenerMessage();
-      message.setRequestHeaders(parser.serializeRequestHeaders(request));
       message.setSnid("999998");
       message.setTimestamp(((org.eclipse.jetty.server.Request)request).getTimeStamp());
-      message.setUri(parser.getRequestURL(request));
+      message.setUri(requestUrl);
       producer.send(new ProducerRecord<>(kafkaMalformedTopic,
           message.getSnapshotId(), message), KafkaSink.callback);
     }
@@ -121,7 +120,7 @@ public class DefaultChannel implements Channel {
       kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
       listenerFilteredKafkaTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
     } else {
-      invalidRequestParam(request, -1L, "Request params count != 5", startTime, action, "", "");
+      invalidRequestParam(request, campaignId, "Request params count != 5", startTime, action, type, requestUrl);
       return;
     }
 
@@ -144,7 +143,7 @@ public class DefaultChannel implements Channel {
         esMetrics.meter("SendIntlKafkaCount", 1, eventTime);
       }
     } else {
-      invalidRequestParam(request, -1L,"Parse message error;", startTime, action, type, "");
+      invalidRequestParam(request, campaignId,"Parse message error;", startTime, action, type, requestUrl);
     }
   }
 
@@ -234,23 +233,17 @@ public class DefaultChannel implements Channel {
     logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
     esMetrics.meter("un-managed", 1, eventTime, channelAction, channelType);
     esMetrics.meter(MALFORMED_Tracking_URL);
-    sendMalformedURLToKafka(request, eventTime, campaignId, requestUrl);
+    sendMalformedURLToKafka(eventTime, campaignId, requestUrl);
   }
 
-  private void sendMalformedURLToKafka(HttpServletRequest request, long startTime, long campaignId, String requestUrl) {
+  private void sendMalformedURLToKafka(long startTime, long campaignId, String requestUrl) {
     String kafkaMalformedTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
-
     ListenerMessage message = new ListenerMessage();
-    message.setRequestHeaders(parser.serializeRequestHeaders(request));
     message.setSnid("999999");
     message.setTimestamp(startTime);
     message.setCampaignId(campaignId);
-    if (requestUrl == null || requestUrl.equals(""))
-      message.setUri(parser.getRequestURL(request));
-    else
-      message.setUri(requestUrl);
-
+    message.setUri(requestUrl);
     producer.send(new ProducerRecord<>(kafkaMalformedTopic,
         message.getSnapshotId(), message), KafkaSink.callback);
   }

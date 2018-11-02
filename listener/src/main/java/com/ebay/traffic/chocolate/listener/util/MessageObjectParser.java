@@ -241,8 +241,4 @@ public class MessageObjectParser {
             INSTANCE = new MessageObjectParser();
         }
     }
-
-    public String getRequestURL(HttpServletRequest request) {
-        return request.getRequestURL().toString() + (request.getQueryString() == null ? "" : "?" + request.getQueryString());
-    }
 }
