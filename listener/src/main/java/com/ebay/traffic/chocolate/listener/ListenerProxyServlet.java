@@ -35,7 +35,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
   private static final long serialVersionUID = 8041506560324325858L;
   private static final String PROXY_FAILURE = "proxyFailure";
   private static final String CLIENT_FAILURE = "clientFailure";
-  private static final String MALFORMED_Tracking_URL = "malformedTrackingURL";
+  private static final String MALFORMED_URL = "malformedURL";
 
   private static final int REQUEST_BUFFER_SIZE = 1024 * 12;
   private static final Logger logger = Logger.getLogger(ListenerProxyServlet.class);
@@ -66,7 +66,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
     esMetrics = ESMetrics.getInstance();
     esMetrics.meter(PROXY_FAILURE, 0);
     esMetrics.meter(CLIENT_FAILURE, 0);
-    esMetrics.meter(MALFORMED_Tracking_URL, 0);
+    esMetrics.meter(MALFORMED_URL, 0);
     channel = ChannelFactory.createChannel();
     parser = MessageObjectParser.getInstance();
     super.init();
@@ -138,22 +138,21 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
       URI rewrittenURI = URI.create(super.rewriteTarget(clientRequest));
       return setPort(rewrittenURI, portMapping(clientRequest.getLocalPort()));
     } catch (IllegalArgumentException e) {
-      esMetrics.meter(MALFORMED_Tracking_URL);
+      esMetrics.meter(MALFORMED_URL);
       String kafkaMalformedTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
       Producer<Long, ListenerMessage> producer = KafkaSink.get();
-      ListenerMessage message = parser.parseHeader(clientRequest, null,
-          ((org.eclipse.jetty.server.Request)clientRequest).getTimeStamp(), -1L,
-          ChannelIdEnum.EPN.getLogicalChannel().getAvro(), ChannelActionEnum.IMPRESSION, "999999", getRequestURL(clientRequest));
+      ListenerMessage message = new ListenerMessage();
+      message.setRequestHeaders(parser.serializeRequestHeaders(clientRequest));
+      message.setSnid("999998");
+      message.setCampaignId(-1L);
+      message.setTimestamp(((org.eclipse.jetty.server.Request)clientRequest).getTimeStamp());
+      message.setUri(parser.getRequestURL(clientRequest));
       producer.send(new ProducerRecord<>(kafkaMalformedTopic,
           message.getSnapshotId(), message), KafkaSink.callback);
       reencodeQuery(clientRequest);
       URI rewrittenURI = URI.create(super.rewriteTarget(clientRequest));
       return setPort(rewrittenURI, portMapping(clientRequest.getLocalPort()));
     }
-  }
-
-  private String getRequestURL(HttpServletRequest request) {
-    return request.getRequestURL().toString() + (request.getQueryString() == null ? "" : "?" + request.getQueryString());
   }
 
   void reencodeQuery(HttpServletRequest clientRequest) {
