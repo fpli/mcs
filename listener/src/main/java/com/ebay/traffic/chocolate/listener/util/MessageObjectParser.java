@@ -82,7 +82,7 @@ public class MessageObjectParser {
      * @param clientRequest Request
      * @return HttpMethodEnum
      */
-    protected HttpMethodEnum getMethod(HttpServletRequest clientRequest) {
+    public HttpMethodEnum getMethod(HttpServletRequest clientRequest) {
         HttpMethodEnum httpMethod = HttpMethodEnum.parse(clientRequest.getMethod());
         Validate.notNull(httpMethod, "Could not parse HTTP method from HTTP request=" + clientRequest.getMethod());
         return httpMethod;

@@ -1,10 +1,14 @@
 package com.ebay.traffic.chocolate.listener;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.channel.Channel;
 import com.ebay.traffic.chocolate.listener.channel.ChannelFactory;
+import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
+import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.kafka.clients.producer.Producer;
@@ -50,6 +54,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
   private static int inputHttpsPort;
   private ESMetrics esMetrics;
   private Channel channel;
+  private MessageObjectParser parser;
 
   @Override
   public void init() throws ServletException {
@@ -64,6 +69,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
     esMetrics.meter(CLIENT_FAILURE, 0);
     esMetrics.meter(MALFORMED_URL, 0);
     channel = ChannelFactory.createChannel();
+    parser = MessageObjectParser.getInstance();
     super.init();
 
   }
@@ -137,10 +143,17 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
       String kafkaMalformedTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
       Producer<Long, ListenerMessage> producer = KafkaSink.get();
       ListenerMessage message = new ListenerMessage();
+      long timestamp = ((org.eclipse.jetty.server.Request)clientRequest).getTimeStamp();
+      message.setSnapshotId(SnapshotId.getNext(ListenerOptions.getInstance().getDriverId(), timestamp).getRepresentation());
       message.setSnid("999998");
       message.setCampaignId(-1L);
-      message.setTimestamp(((org.eclipse.jetty.server.Request)clientRequest).getTimeStamp());
+      message.setTimestamp(timestamp);
       message.setUri(getRequestURL(clientRequest));
+      message.setChannelType(ChannelType.DEFAULT);
+      message.setChannelAction(ChannelActionEnum.IMPRESSION.getAvro());
+      message.setHttpMethod(parser.getMethod(clientRequest).getAvro());
+      message.setRequestHeaders("");
+      message.setResponseHeaders("");
       producer.send(new ProducerRecord<>(kafkaMalformedTopic,
           message.getSnapshotId(), message), KafkaSink.callback);
       reencodeQuery(clientRequest);
