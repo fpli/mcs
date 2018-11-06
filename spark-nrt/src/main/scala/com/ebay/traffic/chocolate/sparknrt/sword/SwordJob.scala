@@ -25,16 +25,6 @@ class SwordJob(params: Parameter)
     new KafkaProducer[Long, Array[Byte]](props)
   }
 
-  // not use DAP data now, just delete it
-  def deleteDAPMeta(): Unit = {
-    val usage = MetadataEnum.convertToMetadataEnum("capping")
-    val dapInputMetadata: Metadata = Metadata(params.workDir, "DISPLAY", usage)
-    val dedupeOutputMeta = dapInputMetadata.readDedupeOutputMeta(".detection")
-    dedupeOutputMeta.foreach(metaIter => {
-      dapInputMetadata.deleteDedupeOutputMeta(metaIter._1)
-    })
-  }
-
   import spark.implicits._
 
   override def run(): Unit = {
@@ -61,8 +51,6 @@ class SwordJob(params: Parameter)
     kafkaProducer.flush()
     kafkaProducer.close()
 
-    // not use DAP data now, just delete it
-    deleteDAPMeta()
   }
 
 }

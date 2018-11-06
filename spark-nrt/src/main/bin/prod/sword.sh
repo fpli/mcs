@@ -22,7 +22,7 @@ DRIVER_MEMORY=1g
 EXECUTOR_NUMBER=3
 EXECUTOR_MEMORY=1g
 EXECUTOR_CORES=1
-BOOTSTRAP_SERVERS=lvschocolatepits-1448900.stratus.lvs.ebay.com:6667,lvschocolatepits-1583719.stratus.lvs.ebay.com:6667,lvschocolatequeue-1448908.stratus.lvs.ebay.com:6667
+BOOTSTRAP_SERVERS=chocolate-kafka-lvs:6667
 KAFKA_TOPIC=zelda-sword-preprod
 
 SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/sword
