@@ -125,11 +125,14 @@ public class CouchbaseClient {
 
   /**Get publisherId by campaignId*/
   public long getPublisherID(long campaignId) throws InterruptedException{
+    esMetrics.meter("FilterCouchbaseQuery");
     CacheClient cacheClient = null;
     while (true) {
       try {
+        long start = System.currentTimeMillis();
         cacheClient = factory.getClient(datasourceName);
         Document document = getBucket(cacheClient).get(String.valueOf(campaignId), StringDocument.class);
+        esMetrics.mean("FilterCouchbaseLatency", System.currentTimeMillis() - start);
         if (document == null) {
           logger.warn("No publisherID found for campaign " + campaignId + " in couchbase");
           esMetrics.meter("ErrorPublishID");
@@ -142,6 +145,7 @@ public class CouchbaseClient {
         esMetrics.meter("ErrorPublishID");
         return DEFAULT_PUBLISHER_ID;
       } catch (Exception e) {
+        esMetrics.meter("FilterCouchbaseRetry");
         logger.warn("Couchbase query operation timeout, will sleep for 30s to retry", e);
         Thread.sleep(30000);
       } finally {

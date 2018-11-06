@@ -97,8 +97,10 @@ public class DumpRotationToTD {
       query.endKey(Long.valueOf(endKey));
       result = bucket.query(query).allRows();
     }
-    esMetrics.meter("rotation.dump.FromCBToTD.total", result.size());
+    int size = 0;
+    if(result != null) size = result.size();
 
+    esMetrics.meter("rotation.dump.FromCBToTD.total", size);
     // sample: 2018-02-22_01_rotations.txt
     genFileForRotation(outputFilePath, compress, result, esMetrics);
     // sample: 2018-02-22_01_campaigns.txt
@@ -181,8 +183,8 @@ public class DumpRotationToTD {
         out.write(String.valueOf(rotationInfo.getChannel_id()).getBytes());
         // |Rotation Click Thru URL
         out.write(RotationConstant.FIELD_SEPARATOR);
-        if (rotationTag != null && StringUtils.isNotEmpty(String.valueOf(rotationTag.get(RotationConstant.FIELD_ROTATION_CLICK_THRU_URL)))) {
-          out.write(String.valueOf(rotationTag.get(RotationConstant.FIELD_ROTATION_CLICK_THRU_URL)).getBytes());
+        if (rotationTag != null) {
+          writeString(out, rotationTag.get(RotationConstant.FIELD_ROTATION_CLICK_THRU_URL));
         }
         // |Rotation Status
         out.write(RotationConstant.FIELD_SEPARATOR);
@@ -194,28 +196,26 @@ public class DumpRotationToTD {
         out.write(String.valueOf(0).getBytes());
         out.write(RotationConstant.FIELD_SEPARATOR);
         // Rotation Count Type
-        if (rotationTag != null && StringUtils.isNotEmpty(String.valueOf(rotationTag.get(RotationConstant.FIELD_ROTATION_COUNT_TYPE)))) {
-          out.write(String.valueOf(rotationTag.get(RotationConstant.FIELD_ROTATION_COUNT_TYPE)).getBytes());
+        if (rotationTag != null) {
+          writeString(out, rotationTag.get(RotationConstant.FIELD_ROTATION_COUNT_TYPE));
         }
         // |Rotation Date Start
         out.write(RotationConstant.FIELD_SEPARATOR);
-        if (rotationTag != null && StringUtils.isNotEmpty(String.valueOf(rotationTag.get(RotationConstant.FIELD_ROTATION_START_DATE)))) {
+        if (rotationTag != null && rotationTag.get(RotationConstant.FIELD_ROTATION_START_DATE) != null) {
           String start = String.valueOf(rotationTag.get(RotationConstant.FIELD_ROTATION_START_DATE));
           start = StringUtil.isNullOrEmpty(start) ? start : start.replace("-", "");
           out.write(start.getBytes());
         }
         // |Rotation Date End
         out.write(RotationConstant.FIELD_SEPARATOR);
-        if (rotationTag != null && StringUtils.isNotEmpty(String.valueOf(rotationTag.get(RotationConstant.FIELD_ROTATION_END_DATE)))) {
+        if (rotationTag != null && rotationTag.get(RotationConstant.FIELD_ROTATION_END_DATE) != null) {
           String end = String.valueOf(rotationTag.get(RotationConstant.FIELD_ROTATION_END_DATE));
           end = StringUtil.isNullOrEmpty(end) ? end : end.replace("-", "");
           out.write(end.getBytes());
         }
         // |Rotation Description
         out.write(RotationConstant.FIELD_SEPARATOR);
-        if (StringUtils.isNotEmpty(rotationInfo.getRotation_description())) {
-          out.write(rotationInfo.getRotation_description().getBytes());
-        }
+        writeString(out, rotationInfo.getRotation_description());
         // |Org Code|TO-Std|TO-JS|TO-text|TO-text-tracer
         out.write("|||||".getBytes());
         // |Vendor ID
@@ -272,13 +272,13 @@ public class DumpRotationToTD {
 
   private static void genFileForCampaign(String output, boolean compress, List<ViewRow> result, ESMetrics esMetrics) throws IOException {
     OutputStream out = null;
-    String filePath = output + RotationConstant.FILE_NAME_CAMPAIGN;
+    String filePath = output + RotationConstant.FILE_NAME_CAMPAIGN + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;
     try {
       if (compress) {
         out = new GZIPOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_ZIP), 8192);
       } else {
-        out = new BufferedOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_TXT));
+        out = new BufferedOutputStream(new FileOutputStream(filePath));
       }
       out.write(RotationConstant.FILE_HEADER_CAMPAIGN.getBytes());
       out.write(RotationConstant.RECORD_SEPARATOR);
@@ -331,11 +331,11 @@ public class DumpRotationToTD {
   private static void genEmptyFile(String outputFilePath, boolean compress, String fileHeaders) throws IOException {
     OutputStream out = null;
     String filePath = outputFilePath;
+    if(StringUtils.isNotEmpty(fileHeaders)) filePath = filePath + RotationConstant.FILE_NAME_SUFFIX_TXT;
     try {
       if (compress) {
         out = new GZIPOutputStream(new FileOutputStream(filePath + RotationConstant.FILE_NAME_SUFFIX_ZIP), 8192);
       } else {
-        if(StringUtils.isNotEmpty(fileHeaders)) filePath = filePath + RotationConstant.FILE_NAME_SUFFIX_TXT;
         out = new BufferedOutputStream(new FileOutputStream(filePath));
       }
       if (StringUtils.isNotEmpty(fileHeaders)) {
@@ -370,7 +370,7 @@ public class DumpRotationToTD {
   }
 
   private static void writeString(OutputStream out, Object content) throws IOException {
-    String s = String.valueOf(content);
+    String s = content == null? null : String.valueOf(content);
     if(StringUtils.isNotEmpty(s)) out.write(s.getBytes());
   }
 }
