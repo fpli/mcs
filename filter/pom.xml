@@ -138,6 +138,17 @@
             <scope>test</scope>
         </dependency>
 
+        <!--logging dependencies-->
+        <dependency>
+            <groupId>com.github.danielwegener</groupId>
+            <artifactId>logback-kafka-appender</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+        </dependency>
+
         <!-- test -->
         <dependency>
             <groupId>com.ebay.traffic</groupId>

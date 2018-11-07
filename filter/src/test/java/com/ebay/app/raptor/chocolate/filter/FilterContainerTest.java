@@ -22,7 +22,7 @@ public class FilterContainerTest {
 
   @BeforeClass
   public static void setUp() {
-    ESMetrics.init("FilterTest","http://10.148.181.34:9200");
+    ESMetrics.init("test", "localhost");
     ESMetrics es = ESMetrics.getInstance();
   }
 
