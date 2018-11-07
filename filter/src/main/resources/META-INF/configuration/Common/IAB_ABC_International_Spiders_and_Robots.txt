@@ -1,6 +1,6 @@
 #
-#	IAB_ABC_International_Spiders_and_Robots_201808_21-090358
-#	August 21, 2018
+#	IAB_ABC_International_Spiders_and_Robots_201810_22-104604
+#	October 22, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
@@ -521,6 +521,9 @@ Laserlikebot/|1||0|2|0
 expo9|1||1|2|1
 ScooperBot/|1||0|2|0
 YaK/|1||0|2|0
+HeadlessChrome/|1||0|2|0
+OSZKbot/|1||0|2|0
+wewatchtgbu|1||0|2|0
 aport|1|netaporter, OperaPortable|0|2|0
 b2w|1|B2WTenisnew|0|0|0
 combine|1|Combined|0|0|0
@@ -993,3 +996,5 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 # July 2018 - (1) APIs-Google, (2) FlippBot, (3) HisBot
 # August 2018 - (1) Tesseract/, (2) Qwantify/, (3) archivethe.net, (4) G-i-g-a-b-o-t, (5) "HubSpot; combined-css" & "HubSpot;+combined-css",
 # August 2018 - (6) WhatsApp/, (7) ExtLinksBot/, (8) Laserlikebot/, (9) expo9, (10) ScooperBot/, (11) YaK/
+# September 2018 - No changes
+# October 2018 - (1) HeadlessChrome/, (2) OSZKbot/, (3) wewatchtgbu

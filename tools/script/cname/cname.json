@@ -1,0 +1,54 @@
+{
+      "records": [
+          {
+              "resourceType": "CNAME",
+              "records": [
+                  {
+                      "recordName": "chocolate-cb21",
+                      "ttl": 0,
+                      "canonicalName": "slcchocolatepits-1242751.stratus.slc.ebay.com"
+                  }
+              ]
+          },
+          {
+              "resourceType": "CNAME",
+              "records": [
+                  {
+                      "recordName": "chocolate-cb22",
+                      "ttl": 0,
+                      "canonicalName": "slcchocolatepits-1242750.stratus.slc.ebay.com"
+                  }
+              ]
+          },
+          {
+              "resourceType": "CNAME",
+              "records": [
+                  {
+                      "recordName": "chocolate-cb23",
+                      "ttl": 0,
+                      "canonicalName": "slcchocolatepits-1242747.stratus.slc.ebay.com"
+                  }
+              ]
+          },
+          {
+              "resourceType": "CNAME",
+              "records": [
+                  {
+                      "recordName": "chocolate-cb24",
+                      "ttl": 0,
+                      "canonicalName": "slcchocolatepits-1242746.stratus.slc.ebay.com"
+                  }
+              ]
+          },          
+          {
+              "resourceType": "CNAME",
+              "records": [
+                  {
+                      "recordName": "chocolate-cb25",
+                      "ttl": 0,
+                      "canonicalName": "slcchocolatepits-1242743.stratus.slc.ebay.com"
+                  }
+              ]
+          }         
+       ]
+  }
