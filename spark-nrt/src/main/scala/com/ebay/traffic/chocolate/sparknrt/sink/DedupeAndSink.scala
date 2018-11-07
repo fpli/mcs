@@ -61,8 +61,8 @@ class DedupeAndSink(params: Parameter)
   lazy val outputDir = params.outputDir + "/" + params.channel + "/dedupe/"
   var couchbaseDedupe = params.couchbaseDedupe
   lazy val couchbaseTTL = params.couchbaseTTL
-  lazy val DEDUPE_KEY_PREFIX = "DEDUPE_KEY_PREFIX"
-  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-";
+  lazy val DEDUPE_KEY_PREFIX = "DEDUPE_"
+  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
 
   @transient lazy val metadata = {
     Metadata(params.workDir, params.channel, MetadataEnum.dedupe)
@@ -123,24 +123,20 @@ class DedupeAndSink(params: Parameter)
         }
         // write message
         // couchbase dedupe only apply on click
-        if(message.getChannelAction == ChannelAction.CLICK) {
-          if(couchbaseDedupe) {
-            try {
-              val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-              val key = DEDUPE_KEY_PREFIX + message.getSnapshotId.toString
-              if(!bucket.exists(key)) {
-                bucket.upsert(JsonDocument.create(key, couchbaseTTL, JsonObject.empty()))
-                writeMessage(writer, message)
-              }
-              CorpCouchbaseClient.returnClient(cacheClient)
-            } catch {
-              case e: Exception =>
-                logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
-                writeMessage(writer, message)
-                couchbaseDedupe = false
+        if(message.getChannelAction == ChannelAction.CLICK && couchbaseDedupe) {
+          try {
+            val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+            val key = DEDUPE_KEY_PREFIX + message.getSnapshotId.toString
+            if (!bucket.exists(key)) {
+              bucket.upsert(JsonDocument.create(key, couchbaseTTL, JsonObject.empty()))
+              writeMessage(writer, message)
             }
-          } else {
-            writeMessage(writer, message)
+            CorpCouchbaseClient.returnClient(cacheClient)
+          } catch {
+            case e: Exception =>
+              logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
+              writeMessage(writer, message)
+              couchbaseDedupe = false
           }
         } else {
           writeMessage(writer, message)

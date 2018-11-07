@@ -21,6 +21,8 @@ class TestDedupeAndSinkUsingCouchbase extends BaseFunSuite {
 
   val topic = "test-kafka-topic"
 
+  val DEDUPE_KEY_PREFIX = "DEDUPE_"
+
   val channel = "EPN"
 
   val args = Array(
@@ -87,9 +89,9 @@ class TestDedupeAndSinkUsingCouchbase extends BaseFunSuite {
 
     job.run()
 
-    assert(CorpCouchbaseClient.getBucketFunc()._2.exists("DEDUPE_KEY_PREFIX1").equals(true))
-    assert(CorpCouchbaseClient.getBucketFunc()._2.exists("DEDUPE_KEY_PREFIX2").equals(true))
-    assert(CorpCouchbaseClient.getBucketFunc()._2.exists("DEDUPE_KEY_PREFIX3").equals(true))
+    assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "1").equals(true))
+    assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "2").equals(true))
+    assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "3").equals(true))
 
     val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
     val dom = metadata.readDedupeOutputMeta()
