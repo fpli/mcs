@@ -39,7 +39,7 @@ public class SeedWorker extends Thread {
   private final String inputTopic;
   private final String outputTopic;
   private String seedPJEndpoint;
-  private final Consumer<Long, JSONObject> consumer; // in
+  private final Consumer<String, JSONObject> consumer; // in
   private final Producer<Long, SeedOutMessage> producer; // out
   // Shutdown signal.
   private final AtomicBoolean shutdownRequested = new AtomicBoolean(false);
@@ -83,9 +83,9 @@ public class SeedWorker extends Thread {
       final long kafkaLagMetricInterval = 30000; // 30s
       Map<Integer, Long> offsets = new HashMap<>();
       long kafkaLagMetricStart = System.currentTimeMillis();
-      ConsumerRecords<Long, JSONObject> recordList;
-      Iterator<ConsumerRecord<Long, JSONObject>> iterator;
-      ConsumerRecord<Long, JSONObject> record;
+      ConsumerRecords<String, JSONObject> recordList;
+      Iterator<ConsumerRecord<String, JSONObject>> iterator;
+      ConsumerRecord<String, JSONObject> record;
       SeedOutMessage seedOutMessage;
       while (!shutdownRequested.get()) {
         recordList = consumer.poll(POLL_STEP_MS);
