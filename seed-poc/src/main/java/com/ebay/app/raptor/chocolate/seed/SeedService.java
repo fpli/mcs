@@ -1,7 +1,7 @@
 package com.ebay.app.raptor.chocolate.seed;
 
-import com.ebay.app.raptor.chocolate.common.Environment;
 import com.ebay.app.raptor.chocolate.seed.service.SeedWorker;
+import com.ebay.app.raptor.chocolate.seed.util.CouchbaseClient;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -10,7 +10,6 @@ import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
@@ -67,6 +66,8 @@ public class SeedService {
     int topicThreadCount = options.getByNameInteger(TOPIC_THREAD_COUNT);
     String pjEndpoint = options.getPJEndPoint();
 
+    CouchbaseClient cbclient = CouchbaseClient.getInstance();
+
     Map<KafkaCluster, Map<String, String>> kafkaConfigs = options.getInputKafkaConfigs();
     Map<String, String> sinkKafkaConfigs = options.getSinkKafkaConfigs();
     for (Map.Entry<KafkaCluster, Map<String, String>> kafkaConfig : kafkaConfigs.entrySet()) {
@@ -78,7 +79,7 @@ public class SeedService {
         String channelType = channelTopic.getKey();
         String topic = channelTopic.getValue();
         for (int i = 0; i < topicThreadCount; i++) {
-          SeedWorker worker = new SeedWorker(channelType, topic, properties, sinkKafkaConfigs.get(channelType), pjEndpoint);
+          SeedWorker worker = new SeedWorker(channelType, topic, properties, sinkKafkaConfigs.get(channelType), pjEndpoint, cbclient);
           worker.start();
           workers.add(worker);
         }

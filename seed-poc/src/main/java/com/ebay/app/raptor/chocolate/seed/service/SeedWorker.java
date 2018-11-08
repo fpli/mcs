@@ -43,10 +43,10 @@ public class SeedWorker extends Thread {
   private final Producer<Long, SeedOutMessage> producer; // out
   // Shutdown signal.
   private final AtomicBoolean shutdownRequested = new AtomicBoolean(false);
-  private final CouchbaseClient cbClient = CouchbaseClient.getInstance();
+  private final CouchbaseClient cbClient;
 
 
-  public SeedWorker(String channelType, String inputTopic, Properties kafkaProperties, String outputTopic, String seedPJEndpoint) {
+  public SeedWorker(String channelType, String inputTopic, Properties kafkaProperties, String outputTopic, String seedPJEndpoint,CouchbaseClient cbClient) {
     this.esMetrics = ESMetrics.getInstance();
     this.channelType = channelType;
     this.inputTopic = inputTopic;
@@ -55,6 +55,7 @@ public class SeedWorker extends Thread {
     this.consumer = KafkaConsumerFactory2.create(kafkaProperties);
     this.producer = KafkaSink2.get();
     this.seedPJEndpoint = seedPJEndpoint;
+    this.cbClient = cbClient;
   }
 
   /**

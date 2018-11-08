@@ -40,6 +40,9 @@ public class CouchbaseClient {
     CouchbaseEnvironment env = DefaultCouchbaseEnvironment.builder().
         connectTimeout(10000).queryTimeout(5000).build();
     this.cluster = CouchbaseCluster.create(env, ApplicationOptions.getInstance().getCouchBaseCluster());
+
+    logger.info("Couchbase cluster = " + ApplicationOptions.getInstance().getCouchBaseCluster());
+    logger.info("Couchbase bucket = " + ApplicationOptions.getInstance().getCouchBaseBucket());
     try {
       cluster.authenticate(ApplicationOptions.getInstance().getCouchBaseUser(),
           ApplicationOptions.getInstance().getCouchbasePassword());
@@ -61,7 +64,7 @@ public class CouchbaseClient {
   private static void init() {
     Validate.isTrue(INSTANCE == null, "Instance should be initialized only once");
     INSTANCE = new CouchbaseClient();
-    logger.info("Initial Couchbase cluster");
+    logger.info("Couchbase cluster is initialed");
   }
 
   /** For unit test */
