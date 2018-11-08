@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+    <type>Service</type>
+    <public>false</public>
+    <!-- Mandatory field -->
+    <description>Required for service registration and deploy to QA/ Prod</description>
+    <name>seedpoc</name>
+    <lifecycleState>Deployed</lifecycleState>
+    <!-- Optional field: Default value will be used if not specified -->
+    <urlStrategy></urlStrategy>
+    <webService-List>
+        <webService>
+            <description>Sample web service</description>
+            <lifecycleState>Deployed</lifecycleState>
+            <name>seedpoc.sampleResource.v1</name>
+            <svcMapping-List>
+                <svcMapping>/sampleResource/v1/</svcMapping>
+            </svcMapping-List>
+        </webService>
+    </webService-List>
+    <!-- Optional field: true if your application invokes services that require an IAFToken -->
+    <secureService>true</secureService>
+</application>
