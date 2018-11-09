@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -23,6 +22,8 @@ import java.util.*;
  * ElasticSearch api for reporting.
  *
  * Send data to ElasticSearch directly.
+ *
+ * Doc id must be specified externally, or data will be duplicated if reporting job fails.
  *
  */
 public class ESReporting {
@@ -94,14 +95,13 @@ public class ESReporting {
 
   private final SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy.MM.dd");
   private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-  private final Random random = new SecureRandom();
 
   /**
    * send a reporting data
    */
-  public void send(String key, long value) throws IOException{
+  public void send(String key, long value, String docId) throws IOException{
     final String index = createIndexIfNecessary();
-    sendReport(index, key, value, -1, null);
+    sendReport(index, key, value, docId, -1, null);
   }
 
   /**
@@ -109,9 +109,9 @@ public class ESReporting {
    *
    * @param eventTime data timestamp
    */
-  public void send(String key, long value, long eventTime) throws IOException{
+  public void send(String key, long value, String docId, long eventTime) throws IOException{
     final String index = createIndexIfNecessary();
-    sendReport(index, key, value, eventTime, null);
+    sendReport(index, key, value, docId, eventTime, null);
   }
 
   /**
@@ -119,17 +119,17 @@ public class ESReporting {
    *
    * @param additionalFields fields names except key and value
    */
-  public void send(String key, long value, Map<String, Object> additionalFields) throws IOException{
+  public void send(String key, long value, String docId, Map<String, Object> additionalFields) throws IOException{
     final String index = createIndexIfNecessary();
-    sendReport(index, key, value, -1, additionalFields);
+    sendReport(index, key, value, docId, -1, additionalFields);
   }
 
   /**
    * send with data timestamp and additional fields
    */
-  public void send(String key, long value, long eventTime, Map<String, Object> additionalFields) throws IOException{
+  public void send(String key, long value, String docId, long eventTime, Map<String, Object> additionalFields) throws IOException{
     final String index = createIndexIfNecessary();
-    sendReport(index, key, value, eventTime, additionalFields);
+    sendReport(index, key, value, docId, eventTime, additionalFields);
   }
 
   /**
@@ -137,9 +137,8 @@ public class ESReporting {
    *
    * @throws IOException
    */
-  private void sendReport(String index, String key, long value, long eventTime, Map<String, Object> additionalFields) throws IOException{
+  private void sendReport(String index, String key, long value, String docId, long eventTime, Map<String, Object> additionalFields) throws IOException{
     final String type = "_doc";
-    final String id = String.valueOf(System.currentTimeMillis()) + String.format("%04d", random.nextInt(10000));
     final String date;
     String logName = key + ";";
 
@@ -169,7 +168,7 @@ public class ESReporting {
     }
 
     Gson gson = new Gson();
-    restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
+    restClient.performRequest("PUT", "/" + index + "/" + type + "/" + docId, new HashMap<>(),
         new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
     logger.info("meter: " + logName + "=" + value);
   }
@@ -229,7 +228,7 @@ public class ESReporting {
    * test
    */
   public static void main(String[] args) throws Exception {
-    ESReporting.init("chocolate-reporting-", "http://10.148.181.34:9200");
+    ESReporting.init("chocolate-reporting-", "http://10.169.126.169:9200");
     ESReporting reporting = ESReporting.getInstance();
 
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -240,13 +239,15 @@ public class ESReporting {
     additionalFields.put("channelType", "EPN");
     additionalFields.put("channelAction", "CLICK");
 
-    for (int i = 0; i < 100; i++) {
-      reporting.send("test", 1);
-      reporting.send("test", 1, additionalFields);
-      reporting.send("test", 1, t);
-      reporting.send("test", 1, t, additionalFields);
+    for (int i = 0; i < 10; i++) {
+      reporting.send("test", 1, "1");
+      reporting.send("test", 1, "2", additionalFields);
+      reporting.send("test", 1, "3", t);
+      reporting.send("test", 1,"4", t, additionalFields);
       Thread.sleep(10);
     }
+
+    reporting.send("test", 2, "5", t, additionalFields);
 
     Thread.sleep(2000);
     System.out.println("finished");
