@@ -22,7 +22,7 @@ import java.util.*;
  *
  * ElasticSearch api for reporting.
  *
- * Data will be sent to ElasticSearch directly, and response is needed.
+ * Send data to ElasticSearch directly.
  *
  */
 public class ESReporting {
@@ -98,13 +98,10 @@ public class ESReporting {
 
   /**
    * send a reporting data
-   *
-   * @param name the metric name
-   * @param value the metric value
    */
-  public void send(String name, long value) throws IOException{
+  public void send(String key, long value) throws IOException{
     final String index = createIndexIfNecessary();
-    sendReport(index, name, value, -1, null);
+    sendReport(index, key, value, -1, null);
   }
 
   /**
@@ -112,27 +109,27 @@ public class ESReporting {
    *
    * @param eventTime data timestamp
    */
-  public void send(String name, long value, long eventTime) throws IOException{
+  public void send(String key, long value, long eventTime) throws IOException{
     final String index = createIndexIfNecessary();
-    sendReport(index, name, value, eventTime, null);
+    sendReport(index, key, value, eventTime, null);
   }
 
   /**
    * send with additional fields
    *
-   * @param additionalFields fields names except name and value
+   * @param additionalFields fields names except key and value
    */
-  public void send(String name, long value, Map<String, Object> additionalFields) throws IOException{
+  public void send(String key, long value, Map<String, Object> additionalFields) throws IOException{
     final String index = createIndexIfNecessary();
-    sendReport(index, name, value, -1, additionalFields);
+    sendReport(index, key, value, -1, additionalFields);
   }
 
   /**
    * send with data timestamp and additional fields
    */
-  public void send(String name, long value, long eventTime, Map<String, Object> additionalFields) throws IOException{
+  public void send(String key, long value, long eventTime, Map<String, Object> additionalFields) throws IOException{
     final String index = createIndexIfNecessary();
-    sendReport(index, name, value, eventTime, additionalFields);
+    sendReport(index, key, value, eventTime, additionalFields);
   }
 
   /**
@@ -140,11 +137,11 @@ public class ESReporting {
    *
    * @throws IOException
    */
-  private void sendReport(String index, String name, long value, long eventTime, Map<String, Object> additionalFields) throws IOException{
+  private void sendReport(String index, String key, long value, long eventTime, Map<String, Object> additionalFields) throws IOException{
     final String type = "_doc";
     final String id = String.valueOf(System.currentTimeMillis()) + String.format("%04d", random.nextInt(10000));
     final String date;
-    String logname = name + ";";
+    String logname = key + ";";
 
     if (eventTime != -1) {
       date = sdf.format(eventTime);
@@ -155,7 +152,7 @@ public class ESReporting {
 
     Map<String, Object> m = new HashMap<>();
     m.put("date", date);
-    m.put("key", name);
+    m.put("key", key);
     m.put("value", value);
     m.put("host", hostname);
     if (additionalFields != null) {
@@ -174,7 +171,6 @@ public class ESReporting {
     Gson gson = new Gson();
     restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
         new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
-    System.out.println("meter: " + logname + "=" + value);
     logger.info("meter: " + logname + "=" + value);
   }
 
