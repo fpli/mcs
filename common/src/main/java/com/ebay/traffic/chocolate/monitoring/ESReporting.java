@@ -141,7 +141,7 @@ public class ESReporting {
     final String type = "_doc";
     final String id = String.valueOf(System.currentTimeMillis()) + String.format("%04d", random.nextInt(10000));
     final String date;
-    String logname = key + ";";
+    String logName = key + ";";
 
     if (eventTime != -1) {
       date = sdf.format(eventTime);
@@ -164,14 +164,14 @@ public class ESReporting {
           additionalValue = ((String) additionalValue).toLowerCase();
         }
         m.put(entry.getKey(), additionalValue);
-        logname = logname + entry.getKey() + "=" + additionalValue + ";";
+        logName = logName + entry.getKey() + "=" + additionalValue + ";";
       }
     }
 
     Gson gson = new Gson();
     restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
         new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
-    logger.info("meter: " + logname + "=" + value);
+    logger.info("meter: " + logName + "=" + value);
   }
 
   private String createIndexIfNecessary() {
