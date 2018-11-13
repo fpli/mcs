@@ -5,6 +5,11 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.ws.rs.ApplicationPath;
 
+/**
+ * Template resource config class
+ *
+ * @author xiangli4
+ */
 @Configuration
 @ApplicationPath("/samplesvc")
 public class EventListenerResourceConfig extends ResourceConfig {
