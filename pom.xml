@@ -53,6 +53,7 @@
     <module>spark-nrt</module>
     <module>tools</module>
     <module>ingester</module>
+    <module>event-listener</module>
   </modules>
 
   <dependencyManagement>
