@@ -62,7 +62,7 @@ class Monitoring(params: Parameter)
             val firstEvent = head(0)
             val eventTime = firstEvent.getLong(firstEvent.fieldIndex("timestamp"))
 
-            logger.info("start counting...")
+            logger.info("Start counting...")
             val capping = dfMetrics.count()
             if (metrics != null) {
               metrics.meter("CappingCount", capping, eventTime)
