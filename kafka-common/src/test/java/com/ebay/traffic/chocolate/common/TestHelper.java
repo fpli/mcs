@@ -391,6 +391,29 @@ public class TestHelper {
     message.setSnid("");
     return message;
   }
+
+  public static FilterMessage newFilterMessage(long snapshotId,
+                                               long timestamp,
+                                               ChannelType channelType,
+                                               ChannelAction channelAction,
+                                               long rtRuleFlags,
+                                               long nrtRuleFlags) {
+    FilterMessage message = new FilterMessage();
+    message.setSnapshotId(snapshotId);
+    message.setTimestamp(timestamp);
+    message.setCampaignId(1L);
+    message.setPublisherId(11L);
+    message.setRequestHeaders("");
+    message.setUri("");
+    message.setResponseHeaders("");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setRtRuleFlags(rtRuleFlags);
+    message.setNrtRuleFlags(nrtRuleFlags);
+    message.setSnid("");
+    return message;
+  }
   
   /**
    * Create listener message
