@@ -85,6 +85,7 @@ class Monitoring(params: Parameter)
               metrics.flushMetrics()
             }
           }
+          metadata.deleteDedupeOutputMeta(file)
         })
       })
     }
