@@ -9,16 +9,16 @@ import org.apache.spark.sql.DataFrame
 /**
   * Created by jialili1 on 11/14/18.
   */
-object Monitoring extends App {
+object MonitoringJob extends App {
   override def main(args: Array[String]): Unit = {
     val params = Parameter(args)
-    val job = new Monitoring(params)
+    val job = new MonitoringJob(params)
 
     job.run()
     job.stop()
   }
 }
-class Monitoring(params: Parameter)
+class MonitoringJob(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
   lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"

@@ -6,7 +6,6 @@ import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
 import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
-import com.ebay.traffic.chocolate.sparknrt.capping.CappingRuleEnum
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.conf.Configuration
@@ -18,7 +17,7 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 /**
   * Created by jialili1 on 11/15/18
  */
-class TestMonitoring extends BaseFunSuite {
+class TestMonitoringJob extends BaseFunSuite {
   private val tmpPath = createTempPath()
   private val inputDir = tmpPath + "/inputDir/"
   private val workDir = tmpPath + "/workDir/"
@@ -45,7 +44,7 @@ class TestMonitoring extends BaseFunSuite {
   }
 
   val params = Parameter(args)
-  val job = new Monitoring(params)
+  val job = new MonitoringJob(params)
   val timestamp1 = getTimestamp("2018-11-01")
   val timestamp2 = timestamp1 + 3600000
 
