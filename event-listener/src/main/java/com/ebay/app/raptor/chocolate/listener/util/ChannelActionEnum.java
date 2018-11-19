@@ -13,78 +13,109 @@ import java.util.Map;
  * actions in the future
  */
 public enum ChannelActionEnum {
-    /** The Rover click action */
-    CLICK(ChannelAction.CLICK, "1c", "rover"),
+  /**
+   * The Rover click action
+   */
+  CLICK(ChannelAction.CLICK, "1c", "rover"),
 
-    /** The viewable impression action */
-    VIMP(ChannelAction.VIEWABLE, "1v"),
+  /**
+   * The viewable impression action
+   */
+  VIMP(ChannelAction.VIEWABLE, "1v"),
 
-    /** The Rover impression action */
-    IMPRESSION(ChannelAction.IMPRESSION, "1i", "roverimp", "ar"),
+  /**
+   * The Rover impression action
+   */
+  IMPRESSION(ChannelAction.IMPRESSION, "1i", "roverimp", "ar"),
 
-    /** Ad Serve action */
-    SERVE(ChannelAction.SERVE, "1s"),
+  /**
+   * Ad Serve action
+   */
+  SERVE(ChannelAction.SERVE, "1s"),
 
-    /** ePN page impression */
-    PAGE_IMP(ChannelAction.PAGE_IMP, "1p"),
+  /**
+   * ePN page impression
+   */
+  PAGE_IMP(ChannelAction.PAGE_IMP, "1p"),
 
-    /** Item view on multipage ads (carousel rotation) */
-    VIEW_ITEM(ChannelAction.VIEW_ITEM, "1r"),
+  /**
+   * Item view on multipage ads (carousel rotation)
+   */
+  VIEW_ITEM(ChannelAction.VIEW_ITEM, "1r"),
 
-    /** Ad view timer (dwell time tracking) */
-    VIEW_TIME(ChannelAction.VIEW_TIME, "1d"),
+  /**
+   * Ad view timer (dwell time tracking)
+   */
+  VIEW_TIME(ChannelAction.VIEW_TIME, "1d"),
 
-    /** Mobile App first start */
-    APP_FIRST_START(ChannelAction.APP_FIRST_START, "1m");
+  /**
+   * Mobile App first start
+   */
+  APP_FIRST_START(ChannelAction.APP_FIRST_START, "1m");
 
-    /** The human-readable action name */
-    private final String [] actions;
+  /**
+   * The human-readable action name
+   */
+  private final String[] actions;
 
-    /** The Avro equivalent in this */
-    private final ChannelAction avroAction;
+  /**
+   * The Avro equivalent in this
+   */
+  private final ChannelAction avroAction;
 
-    /** Mapping from action to enum */
-    private static final Map<String, ChannelActionEnum> MAP;
-    static {
-        // Create the mapping, checking duplicates as we go.
-        Map<String, ChannelActionEnum> map = new HashMap<>();
-        for (ChannelActionEnum a : ChannelActionEnum.values()) {
-            for (String action : a.getActions()) {
-                Validate.isTrue(StringUtils.isNotEmpty(action) && StringUtils.isAlphanumeric(action)
-                        && action.toLowerCase().equals(action), "Action must be lowercase");
-                Validate.isTrue(!map.containsKey(action), "No duplicate entries allowed");
-                map.put(action, a);
-            }
-        }
+  /**
+   * Mapping from action to enum
+   */
+  private static final Map<String, ChannelActionEnum> MAP;
 
-        // now that we have a mapping, create the immutable construct.
-        MAP = Collections.unmodifiableMap(map);
+  static {
+    // Create the mapping, checking duplicates as we go.
+    Map<String, ChannelActionEnum> map = new HashMap<>();
+    for (ChannelActionEnum a : ChannelActionEnum.values()) {
+      for (String action : a.getActions()) {
+        Validate.isTrue(StringUtils.isNotEmpty(action) && StringUtils.isAlphanumeric(action)
+          && action.toLowerCase().equals(action), "Action must be lowercase");
+        Validate.isTrue(!map.containsKey(action), "No duplicate entries allowed");
+        map.put(action, a);
+      }
     }
 
-    /** Ctor. Takes in the human-readable URI segment representing this value */
-    ChannelActionEnum(ChannelAction avro, String ... actions) {
-        Validate.notNull(avro, "Avro action cannot be null");
-        Validate.isTrue(actions != null && actions.length > 0, "actions cannot be null");
-        this.actions = actions;
-        this.avroAction = avro;
-    }
+    // now that we have a mapping, create the immutable construct.
+    MAP = Collections.unmodifiableMap(map);
+  }
 
-    /** @return the URI segment representing this action */
-    String [] getActions() {
-        return this.actions;
-    }
+  /**
+   * Ctor. Takes in the human-readable URI segment representing this value
+   */
+  ChannelActionEnum(ChannelAction avro, String... actions) {
+    Validate.notNull(avro, "Avro action cannot be null");
+    Validate.isTrue(actions != null && actions.length > 0, "actions cannot be null");
+    this.actions = actions;
+    this.avroAction = avro;
+  }
 
-    /** @return the Avro enum associated with this action */
-    public ChannelAction getAvro() {
-        return this.avroAction;
-    }
+  /**
+   * @return the URI segment representing this action
+   */
+  String[] getActions() {
+    return this.actions;
+  }
 
-    /** Return the Rover action given an URI segment candidate, or null if no matches are found. */
-    public static ChannelActionEnum parse(ChannelIdEnum channel, String candidate) {
-        if (candidate == null) return null;
-        String converted = candidate.toLowerCase();
-        ChannelActionEnum basicResult = MAP.getOrDefault(converted, null);
+  /**
+   * @return the Avro enum associated with this action
+   */
+  public ChannelAction getAvro() {
+    return this.avroAction;
+  }
 
-        return basicResult;
-    }
+  /**
+   * Return the Rover action given an URI segment candidate, or null if no matches are found.
+   */
+  public static ChannelActionEnum parse(ChannelIdEnum channel, String candidate) {
+    if (candidate == null) return null;
+    String converted = candidate.toLowerCase();
+    ChannelActionEnum basicResult = MAP.getOrDefault(converted, null);
+
+    return basicResult;
+  }
 }

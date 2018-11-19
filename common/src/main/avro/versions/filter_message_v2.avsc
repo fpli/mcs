@@ -70,7 +70,9 @@
           "DEFAULT",
           "EPN",
           "DISPLAY",
-          "PS"
+          "PAID_SEARCH",
+          "SOCIAL_MEDIA",
+          "PAID_SOCIAL"
         ]
       }
     },
