@@ -18,11 +18,11 @@ class SwordJob(params: Parameter)
   }
 
   @transient lazy val kafkaProducer: KafkaProducer[Long, Array[Byte]] = {
-    val props = new Properties()
-    props.put("bootstrap.servers", params.bootstrapServers)
-    props.put("key.serializer", "org.apache.kafka.common.serialization.LongSerializer")
-    props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer")
-    new KafkaProducer[Long, Array[Byte]](props)
+    val properties = new Properties()
+    properties.load(getClass.getClassLoader.getResourceAsStream("sword_kafka.properties"))
+    // easy for unit test
+    properties.put("bootstrap.servers", params.bootstrapServers)
+    new KafkaProducer[Long, Array[Byte]](properties)
   }
 
   import spark.implicits._
