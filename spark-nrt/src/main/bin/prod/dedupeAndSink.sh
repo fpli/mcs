@@ -19,6 +19,7 @@ KAFKA_TOPIC=$2
 WORK_DIR=$3
 OUTPUT_DIR=$4
 ES_URL=$5
+CB_DEDUPE=$6
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
@@ -55,4 +56,4 @@ ${SPARK_HOME}/bin/spark-submit \
       --workDir "${WORK_DIR}" \
       --outputDir ${OUTPUT_DIR} \
       --elasticsearchUrl ${ES_URL} \
-      --couchbaseDedupe true
+      --couchbaseDedupe ${CB_DEDUPE}
