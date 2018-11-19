@@ -36,13 +36,9 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
   public static final String EVENT_LISTENER_PROPERTIES_FILE = "event-listener.properties";
 
-  public static final String INPUT_RHEOS_KAFKA_PROPERTIES_FILE = "event-listener-rheos-consumer.properties";
-
   public static final String SINK_KAFKA_PROPERTIES_FILE = "event-listener-kafka-producer.properties";
 
   public static final String SINK_RHEOS_KAFKA_PROPERTIES_FILE = "event-listener-rheos-producer.properties";
-
-  public static final String KAFKA_IN_TOPIC = "chocolate.event-listener.kafka.consumer.topic";
 
   /**
    * Out Kafka cluster, can be "kafka", "rheos", "rheos,kafka", "kafka,rheos".
@@ -55,6 +51,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   // refer to com.ebay.app.raptor.chocolate.avro.ChannelType for channels.
   // for ePN:  chocolate.filter.kafka.consumer.topic.EPN
   // for display: chocolate.filter.kafka.consumer.topic.DISPLAY
+  // for paid search: chocolate.filter.kafka.consumer.topic.PS
   public static final String KAFKA_OUT_TOPIC_PREFIX = "chocolate.filter.kafka.producer.topic.";
 
   /**
@@ -65,7 +62,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   /**
    * kafka related
    **/
-  private static Properties inputRheosKafkaProperties;
   private static Properties sinkKafkaProperties;
   private static Properties sinkRheosKafkaProperties;
 
@@ -80,7 +76,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   public static void init() throws IOException {
     instance.initInstance(loadProperties(EVENT_LISTENER_PROPERTIES_FILE));
 
-    inputRheosKafkaProperties = loadProperties(INPUT_RHEOS_KAFKA_PROPERTIES_FILE);
     if (sinkKafkaProperties == null) {
       sinkKafkaProperties = loadProperties(SINK_KAFKA_PROPERTIES_FILE);
     }
@@ -119,23 +114,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    */
   public static ApplicationOptions getInstance() {
     return instance;
-  }
-
-  /**
-   * Only for test
-   */
-  public void setInputRheosProperties(Properties properties) {
-    inputRheosKafkaProperties = properties;
-  }
-
-  /**
-   * Get input rheos kafka properties
-   *
-   * @return kafka properties
-   * @throws IOException
-   */
-  public Properties getInputRheosKafkaProperties() throws IOException {
-    return inputRheosKafkaProperties;
   }
 
   @Override

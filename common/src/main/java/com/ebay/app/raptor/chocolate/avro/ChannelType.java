@@ -7,7 +7,7 @@ package com.ebay.app.raptor.chocolate.avro;
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public enum ChannelType {
-  DEFAULT, EPN, DISPLAY  ;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\"]}");
+  DEFAULT, EPN, DISPLAY, PS  ;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\",\"PS\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 }

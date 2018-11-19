@@ -1,8 +1,6 @@
 package com.ebay.app.raptor.chocolate.listener;
 
-import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.kernel.context.RuntimeContext;
-import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.log4j.BasicConfigurator;
