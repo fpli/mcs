@@ -10,12 +10,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
-import javax.servlet.http.HttpServletRequest;
 import org.eclipse.jetty.server.Request;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author xiangli4
@@ -24,6 +25,8 @@ public class CollectionService {
   private static final Logger logger = Logger.getLogger(CollectionService.class);
   private final ESMetrics esMetrics;
   private ListenerMessageParser parser;
+  private final String CID = "cid";
+  private final String CAMPID = "campid";
   private static CollectionService instance = null;
 
   private CollectionService() {
@@ -37,27 +40,51 @@ public class CollectionService {
     return instance;
   }
 
-  public void process(HttpServletRequest request) {
+  public void collect(HttpServletRequest request) {
+
     String kafkaTopic;
     Producer<Long, ListenerMessage> producer;
     ChannelActionEnum channelAction = null;
     ChannelIdEnum channelType;
+    long campaignId = -1l;
 
     String uri = "";
-
     try {
       // uri is from post body
       uri = IOUtils.toString(request.getReader());
-    } catch (IOException ex) {
+    } catch (Exception ex) {
       logger.error("Read post body error");
+      esMetrics.meter("ReadPostError");
+      return;
     }
 
     // parse channel from uri
     MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(uri).build().getQueryParams();
+    if (parameters.size() == 0) {
+      logger.error("No query parameter");
+      esMetrics.meter("NoQueryParameter");
+      return;
+    }
 
-    channelType = ChannelIdEnum.parse(parameters.get("cid").get(0));
+    // parse channel from query cid
+    channelType = ChannelIdEnum.parse(parameters.get(CID).get(0));
+
+    if (channelType == null) {
+      logger.error("No cid" + request.getRequestURL());
+      esMetrics.meter("InvalidCid");
+      return;
+    }
+
+    try {
+      campaignId = Long.parseLong(parameters.get(CAMPID).get(0));
+    } catch (Exception e) {
+      logger.debug("No campaign id");
+    }
+
+    channelAction = ChannelActionEnum.CLICK;
 
     String action = ChannelActionEnum.CLICK.toString();
+
     String type = channelType.getLogicalChannel().getAvro().toString();
 
     long startTime = startTimerAndLogData(request, action, type);
@@ -68,7 +95,7 @@ public class CollectionService {
 
     // Parse the response
     ListenerMessage message = parser.parse(request,
-      startTime, null, channelType.getLogicalChannel().getAvro(), channelAction, uri, null);
+      startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, uri, null);
 
     if (message != null) {
       long eventTime = message.getTimestamp();

@@ -1,11 +1,8 @@
 package com.ebay.app.raptor.chocolate;
 
-import com.ebay.app.raptor.chocolate.listener.CollectionService;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
+import com.ebay.cos.raptor.service.annotations.ApiRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -18,8 +15,10 @@ import javax.ws.rs.Path;
  *
  * @author xiangli4
  */
+
+@ApiRef(api = "marketingtracking", version = "1")
 @Component
-@Path("/v1")
+@Path("/events")
 public class EventListenerResource {
 
   @Autowired
@@ -34,16 +33,9 @@ public class EventListenerResource {
     return "Hello from Raptor IO";
   }
 
-  @GET
+  @POST
   @Path("/collect")
   public String collect() {
-    CollectionService.getInstance().process(request);
-    return request.getQueryString();
-  }
-
-  @POST
-  @Path("/collect2")
-  public String collect2() {
     return "hello";
   }
 }

@@ -7,6 +7,7 @@ import com.ebay.app.raptor.chocolate.listener.ApplicationOptions;
 import com.ebay.kernel.util.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Enumeration;
@@ -49,7 +50,7 @@ public class ListenerMessageParser {
     record.setChannelAction(action.getAvro());
     // Format record
     record.setRequestHeaders(serializeRequestHeaders(clientRequest));
-    record.setResponseHeaders(null);
+    record.setResponseHeaders("");
     record.setTimestamp(startTime);
 
     // Get snapshotId from request

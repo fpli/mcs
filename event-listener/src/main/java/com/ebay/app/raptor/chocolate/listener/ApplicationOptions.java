@@ -8,7 +8,8 @@ import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -49,10 +50,10 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    * prefix of out Kafka topic for channels.
    */
   // refer to com.ebay.app.raptor.chocolate.avro.ChannelType for channels.
-  // for ePN:  chocolate.filter.kafka.consumer.topic.EPN
-  // for display: chocolate.filter.kafka.consumer.topic.DISPLAY
-  // for paid search: chocolate.filter.kafka.consumer.topic.PS
-  public static final String KAFKA_OUT_TOPIC_PREFIX = "chocolate.filter.kafka.producer.topic.";
+  // for ePN:  chocolate.event-listener.kafka.consumer.topic.EPN
+  // for display: chocolate.event-listener.kafka.consumer.topic.DISPLAY
+  // for paid search: chocolate.event-listener.kafka.consumer.topic.PAID_SEARCH
+  public static final String KAFKA_OUT_TOPIC_PREFIX = "chocolate.event-listener.kafka.producer.topic.";
 
   /**
    * Static driver ID
@@ -186,7 +187,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
 
   /**
-   * @return the driver ID for the filter.
+   * @return the driver ID for the event-listener.
    */
   public int getDriverId() {
     return DRIVER_ID;
