@@ -59,6 +59,24 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-ginger-client-starter</artifactId>
+        <version>0.6.0-RELEASE</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-ginger-server-starter</artifactId>
+        <version>0.6.0-RELEASE</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.standards</groupId>
+        <artifactId>standards-annotation-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.standards</groupId>
+        <artifactId>standards-error-starter</artifactId>
+      </dependency>
+      <dependency>
         <groupId>org.scala-lang</groupId>
         <artifactId>scala-library</artifactId>
         <version>${scala.version}</version>
