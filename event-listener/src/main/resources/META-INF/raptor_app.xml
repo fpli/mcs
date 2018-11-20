@@ -4,7 +4,7 @@
     <public>false</public>
     <!-- Mandatory field -->
     <description>Chocolate Event Listener</description>
-    <name>eventlistener</name>
+    <name>chocoeventlis</name>
     <lifecycleState>Deployed</lifecycleState>
     <page-Map>
         <page>
