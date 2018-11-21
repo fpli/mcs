@@ -1,4 +1,4 @@
-package com.ebay.app.raptor.chocolate.listener.util;
+package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import org.apache.commons.lang.Validate;

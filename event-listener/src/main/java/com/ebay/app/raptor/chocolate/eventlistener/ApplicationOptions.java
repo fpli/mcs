@@ -1,4 +1,4 @@
-package com.ebay.app.raptor.chocolate.listener;
+package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.common.AbstractApplicationOptions;

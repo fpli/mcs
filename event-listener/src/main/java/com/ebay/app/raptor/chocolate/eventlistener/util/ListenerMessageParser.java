@@ -1,15 +1,14 @@
-package com.ebay.app.raptor.chocolate.listener.util;
+package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
-import com.ebay.app.raptor.chocolate.listener.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.kernel.util.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Enumeration;
 
 /**
@@ -77,20 +76,6 @@ public class ListenerMessageParser {
     return httpMethod;
   }
 
-  /**
-   * Return if it is core site url
-   *
-   * @param clientRequest http servlet request
-   * @return is core site
-   */
-  public boolean isCoreSite(HttpServletRequest clientRequest) {
-    String serverName = clientRequest.getServerName();
-    if (ListenerOptions.getInstance().getRoverCoreSites().contains(serverName)) {
-      return true;
-    }
-    return false;
-  }
-
   private String serializeRequestHeaders(HttpServletRequest clientRequest) {
     StringBuilder requestHeaders = new StringBuilder();
     for (Enumeration<String> e = clientRequest.getHeaderNames(); e.hasMoreElements(); ) {
@@ -98,15 +83,6 @@ public class ListenerMessageParser {
       requestHeaders.append("|").append(headerName).append(": ").append(clientRequest.getHeader(headerName));
     }
     if (!StringUtils.isEmpty(requestHeaders.toString())) requestHeaders.deleteCharAt(0);
-    return requestHeaders.toString();
-  }
-
-  private String serializeResponseHeaders(HttpServletResponse response) {
-    StringBuilder requestHeaders = new StringBuilder();
-    for (String headerName : response.getHeaderNames()) {
-      requestHeaders.append("|").append(headerName).append(": ").append(response.getHeader(headerName));
-    }
-    requestHeaders.deleteCharAt(0);
     return requestHeaders.toString();
   }
 
