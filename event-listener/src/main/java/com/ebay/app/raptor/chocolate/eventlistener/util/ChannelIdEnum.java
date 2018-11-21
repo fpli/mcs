@@ -1,4 +1,4 @@
-package com.ebay.app.raptor.chocolate.listener.util;
+package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.StringUtils;

@@ -1,22 +1,19 @@
-package com.ebay.app.raptor.chocolate.listener;
+package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.listener.util.ChannelActionEnum;
-import com.ebay.app.raptor.chocolate.listener.util.ChannelIdEnum;
-import com.ebay.app.raptor.chocolate.listener.util.ListenerMessageParser;
+import com.ebay.app.raptor.chocolate.eventlistener.util.ChannelActionEnum;
+import com.ebay.app.raptor.chocolate.eventlistener.util.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
-import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
-import org.eclipse.jetty.server.Request;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
+import com.ebay.app.raptor.chocolate.gen.model.Event;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author xiangli4
@@ -40,7 +37,7 @@ public class CollectionService {
     return instance;
   }
 
-  public void collect(HttpServletRequest request) {
+  public boolean collect(HttpServletRequest request, Event event) {
 
     String kafkaTopic;
     Producer<Long, ListenerMessage> producer;
@@ -48,31 +45,29 @@ public class CollectionService {
     ChannelIdEnum channelType;
     long campaignId = -1l;
 
-    String uri = "";
-    try {
-      // uri is from post body
-      uri = IOUtils.toString(request.getReader());
-    } catch (Exception ex) {
-      logger.error("Read post body error");
-      esMetrics.meter("ReadPostError");
-      return;
-    }
+    // uri is from post body
+    String uri = event.getTargetUrl();
 
     // parse channel from uri
     MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(uri).build().getQueryParams();
     if (parameters.size() == 0) {
       logger.error("No query parameter");
       esMetrics.meter("NoQueryParameter");
-      return;
+      return false;
     }
 
     // parse channel from query cid
+    if(!parameters.containsKey(CID)) {
+      logger.error("No cid parameter");
+      esMetrics.meter("NoCIDParameter");
+      return false;
+    }
     channelType = ChannelIdEnum.parse(parameters.get(CID).get(0));
 
     if (channelType == null) {
-      logger.error("No cid" + request.getRequestURL());
+      logger.error("Invalid cid " + uri);
       esMetrics.meter("InvalidCid");
-      return;
+      return false;
     }
 
     try {
@@ -102,6 +97,7 @@ public class CollectionService {
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       stopTimerAndLogData(startTime, eventTime, action, type);
     }
+    return true;
   }
 
   /**
@@ -114,13 +110,6 @@ public class CollectionService {
     // the main rover process is already finished at this moment
     // use the timestamp from request as the start time
     long startTime = System.currentTimeMillis();
-
-    try {
-      startTime = ((Request) request).getTimeStamp();
-    } catch (ClassCastException e) {
-      // ideally only touch this part in unit test
-      logger.warn("Cannot get request start time, use system time instead. ", e);
-    }
     logger.debug(String.format("StartTime: %d", startTime));
     esMetrics.meter("CollectionServiceIncoming", 1, startTime, channelAction, channelType);
     return startTime;

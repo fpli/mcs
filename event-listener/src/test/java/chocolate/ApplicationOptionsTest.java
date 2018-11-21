@@ -1,7 +1,7 @@
 package chocolate;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.listener.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import org.junit.BeforeClass;

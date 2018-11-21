@@ -1,28 +1,38 @@
 package chocolate;
 
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
-import com.ebay.app.raptor.chocolate.listener.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
+import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
 import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
+import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.LongSerializer;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
 
+import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -49,27 +59,33 @@ public class EventListenerServiceTest {
   private Client client;
   private String svcEndPoint;
 
-  private static final String helloPath = "/marketingtracking/v1/events/hello";
+  private final String path = "/marketingtracking/v1/events";
+
+  @BeforeClass
+  public static void initBeforeTest() throws Exception {
+    // inject kafka properties before springboot start
+    kafkaCluster = KafkaTestHelper.newKafkaCluster();
+    ApplicationOptions options = ApplicationOptions.getInstance();
+    options.setSinkKafkaProperties(kafkaCluster.getProducerProperties(
+      LongSerializer.class, ListenerMessageSerializer.class));
+  }
 
   @Before
-  public void setUp() throws IOException {
-
-    if (!initialized) {
+  public void setUp() {
+    if(!initialized) {
+      RuntimeContext.setConfigRoot(EventListenerServiceTest.class.getClassLoader().getResource
+        ("META-INF/configuration/Dev/"));
       Configuration configuration = ConfigurationBuilder.newConfig("testService.testClient");
       client = ClientBuilder.newClient(configuration);
       String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
       svcEndPoint = endpoint + ":" + port;
-      kafkaCluster = KafkaTestHelper.newKafkaCluster();
-      ApplicationOptions options = ApplicationOptions.getInstance();
-      options.setSinkKafkaProperties(kafkaCluster.getProducerProperties(
-        LongSerializer.class, ListenerMessageSerializer.class));
 
       prepareData();
       initialized = true;
     }
   }
 
-  private static void prepareData() throws IOException {
+  private static void prepareData() {
 
   }
 
@@ -79,29 +95,44 @@ public class EventListenerServiceTest {
   }
 
   @Test
-  public void testHello() {
-    Response result = client.target(svcEndPoint).path(helloPath).request().accept(MediaType.APPLICATION_JSON_TYPE).get();
+  public void testSerivce() throws Exception {
+
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.addHeader("X-EBAY-C-ENDUSERCTX", "deviceId=ABCD,deviceIdSource=4PP,appVersion=3.3.0");
+    request.addHeader("X-EBAY-C-TRACKING-REF", "guid=0570cd201670a9c422187f22fffee86e5dd496c4," +
+      "cguid=0570d8901670a990a825b905ea456fe85dd496c4,tguid=0570cd201670a9c422187f22fffee86e5dd496c4,uid=39787429," +
+      "buid=39787429,pageid=3286,cobrandId=2");
+
+    request.setMethod("POST");
+    Event event = new Event();
+    event.setTargetUrl("https://www.ebay.com/itm/123456?cid=2");
+    Response result = client.target(svcEndPoint).path(path).request().accept(MediaType.APPLICATION_JSON_TYPE).post
+      (Entity.entity(event, MediaType.APPLICATION_JSON_TYPE));
     assertEquals(200, result.getStatus());
-    assertEquals("Hello from Raptor IO", result.readEntity(String.class));
+
+    event.setTargetUrl("https://www.ebay.com/itm/123456?cid=0");
+    result = client.target(svcEndPoint).path(path).request().accept(MediaType.APPLICATION_JSON_TYPE).post
+      (Entity.entity(event, MediaType.APPLICATION_JSON_TYPE));
+    assertEquals(400, result.getStatus());
+
+    event.setTargetUrl("https://www.ebay.com/itm/123456");
+    result = client.target(svcEndPoint).path(path).request().accept(MediaType.APPLICATION_JSON_TYPE).post
+      (Entity.entity(event, MediaType.APPLICATION_JSON_TYPE));
+    assertEquals(400, result.getStatus());
+
+    event.setTargetUrl("https://www.ebay.com/itm/123456?abc=123");
+    result = client.target(svcEndPoint).path(path).request().accept(MediaType.APPLICATION_JSON_TYPE).post
+      (Entity.entity(event, MediaType.APPLICATION_JSON_TYPE));
+    assertEquals(400, result.getStatus());
+
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
+      LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
+      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 4, 5 * 1000);
+    consumerPaidSearch.close();
+
+    assertEquals(1, listenerMessagesPaidSearch.size());
   }
-//
-//  @Test
-//  public void testFilterService() throws Exception {
-//
-//    // wait few seconds to let Filter worker threads run first.
-//    Thread.sleep(3000);
-//
-//    KafkaSink.get().flush();
-//
-//    Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
-//      LongDeserializer.class, ListenerMessageDeserializer.class);
-//    Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
-//      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 3, 60 * 1000);
-//    consumerPaidSearch.close();
-//
-//    Assert.assertEquals(3, listenerMessagesPaidSearch.size());
-//    Assert.assertEquals(1L, listenerMessagesPaidSearch.get(1L).getSnapshotId().longValue());
-//    Assert.assertEquals(2L, listenerMessagesPaidSearch.get(2L).getSnapshotId().longValue());
-//    Assert.assertEquals(3L, listenerMessagesPaidSearch.get(3L).getSnapshotId().longValue());
-//  }
 }
