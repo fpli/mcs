@@ -22,7 +22,7 @@ public class FilterContainerTest {
 
   @BeforeClass
   public static void setUp() {
-    ESMetrics.init("FilterTest","http://10.148.181.34:9200");
+    ESMetrics.init("test", "localhost");
     ESMetrics es = ESMetrics.getInstance();
   }
 
@@ -197,8 +197,8 @@ public class FilterContainerTest {
     lm.setRequestHeaders("Cookie: npii=btguid/7157f9891590abc5e9e24766c9edf1fa5a505d29^trm/svid%3D2716036593043142815a505d29^tpim/1586f29e5^cguid/d30ebafe1580a93d128516d5ffef202f5a505d29^;dp1=bu1p/QEBfX0BAX19AQA**5a505d2a^bl/US5c3190aa^;nonsession=CgAAIABxYlraqMTQ4MzY4MDE3MHgyNzIyNDk1NjcxMzR4MHgyTgDLAAFYbzCyMgDKACBh1SsqNzE1N2Y5ODkxNTkwYWJjNWU5ZTI0NzY2YzllZGYxZmGSq2XR||");
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     FilterRequest req = new FilterRequest(lm);
-    assertEquals("d30ebafe1580a93d128516d5ffef202f", req.getRequestCGUID());
-    assertEquals(1481009707774L, req.getRequestCGUIDTimestamp());
+    assertEquals("7157f9891590abc5e9e24766c9edf1fa", req.getRequestTguid());
+    assertEquals(1483665308041L, req.getRequestTguidTimestamp());
     assertNull(req.getResponseCGUID());
   }
   

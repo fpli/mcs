@@ -6,4 +6,4 @@ cd /home/chocolate/chocolate-sparknrt/bin/prod
 pwd
 export HADOOP_USER_NAME=chocolate
 echo $HADOOP_USER_NAME
-./reporting.sh DISPLAY /apps/tracking-events-workdir /apps/tracking-events-archiveDir
+./reporting.sh DISPLAY /apps/tracking-events-workdir /apps/tracking-events-archiveDir http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200

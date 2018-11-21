@@ -122,10 +122,18 @@ abstract class GenericRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
     if (fs.exists(new Path(cappingTempPathToday))) {
       cappingPath = cappingPath :+ cappingTempPathToday
     }
+    //read today's data, filter by time window
     if (fs.exists(new Path(cappingPathToday))) {
-      cappingPath = cappingPath :+ cappingPathToday
+      if (window == "long")
+        cappingPath = cappingPath :+ cappingPathToday
+      else {
+        val fileStatus = fs.listStatus(new Path(cappingPathToday))
+          .filter(status => String.valueOf(status.getPath.getName.substring(DATE_COL.length + 1, status.getPath.getName.indexOf(".")))
+            >= (timestamp - timeWindow).toString)
+          .map(status => cappingPath = cappingPath :+ status.getPath.toString)
+      }
     }
-    // read yesterday's data
+    // read yesterday's data, filter by time window
     if (fs.exists(new Path(prevPathYesterday))) {
       val fileStatus = fs.listStatus(new Path(prevPathYesterday))
         .filter(status => String.valueOf(status.getPath.getName.substring(DATE_COL.length + 1, status.getPath.getName.indexOf(".")))
