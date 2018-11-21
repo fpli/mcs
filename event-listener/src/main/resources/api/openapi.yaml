@@ -1,0 +1,56 @@
+---
+openapi: 3.0.0
+servers:
+  - url: 'http://localhost:8080/marketingtracking/v1'
+    description: 'Development server running on localhost'
+  # - url: 'https://staging.serviceregistryio.vip.qa.ebay.com:{port}/registry/v3'
+  #   description: 'Staging server (used for production in order to access GitHub)'
+  #   variables:
+  #     port:
+  #       default: '443'
+  #       description: port number on which the server is running
+  # - url: 'https://lnp.serviceregistryio.vip.qa.ebay.com:{port}/registry/v3'
+  #   description: 'LnP server (used for QA in order to access GitHub and avoid conflict with staging)'
+  #   variables:
+  #     port:
+  #       default: '443'
+  #       description: port number on which the server is running
+info:
+  description: >-
+    marketing tracking compoent to receive marketing events
+  version: 1.0.0
+  title: service-tracking-events
+paths:
+  /events:
+    post:
+      summary: Send one event to marketing tracking
+      description: Send one event to marketing tracking
+      tags:
+        - events
+      operationId: event
+      security:
+        - corp_user_scope_auth:
+            - eBayCorpUser
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+components:
+   schemas:
+    Event:
+      type: object
+      properties:
+        referrer:
+          type: "string"
+          example: "http://www.google.com"
+        target_url:
+          type: "string"
+          example: "htttp://www.ebay.com/deals"

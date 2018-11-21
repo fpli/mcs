@@ -11,7 +11,7 @@ import javax.ws.rs.ApplicationPath;
  * @author xiangli4
  */
 @Configuration
-@ApplicationPath("/marketingtracking/v1")
+@ApplicationPath("/marketingtracking")
 public class EventListenerResourceConfig extends ResourceConfig {
 
   public EventListenerResourceConfig() {
