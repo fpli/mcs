@@ -9,7 +9,7 @@
   </parent>
   <groupId>com.ebay.traffic</groupId>
   <artifactId>chocolate</artifactId>
-  <version>3.0.3-SNAPSHOT</version>
+  <version>3.3.1-RELEASE</version>
   <name>chocolate</name>
   <packaging>pom</packaging>
 
@@ -53,7 +53,6 @@
     <module>spark-nrt</module>
     <module>tools</module>
     <module>ingester</module>
-    <module>seed-poc</module>
   </modules>
 
   <dependencyManagement>
