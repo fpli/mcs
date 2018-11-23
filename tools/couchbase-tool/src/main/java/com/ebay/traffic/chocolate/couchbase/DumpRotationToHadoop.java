@@ -1,19 +1,26 @@
 package com.ebay.traffic.chocolate.couchbase;
 
 import com.couchbase.client.java.Bucket;
+import com.couchbase.client.java.document.JsonDocument;
 import com.couchbase.client.java.view.ViewQuery;
 import com.couchbase.client.java.view.ViewResult;
 import com.couchbase.client.java.view.ViewRow;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.dukes.CacheClient;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
+import rx.functions.Func1;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Properties;
 import java.util.zip.GZIPOutputStream;
 
@@ -47,7 +54,8 @@ public class DumpRotationToHadoop {
 
     String outputFilePath = (args != null && args.length > 3) ? args[3] : null;
 
-    init(configFilePath);
+    initCB(configFilePath);
+    initLog4j(configFilePath);
 
     try {
       client = new CorpRotationCouchbaseClient(couchbasePros);
@@ -60,11 +68,24 @@ public class DumpRotationToHadoop {
     }
   }
 
-  private static void init(String configFilePath) throws IOException {
+
+  public static void initCB(String configFilePath) throws IOException {
     couchbasePros = new Properties();
-    InputStream in = new FileInputStream(configFilePath);
+    InputStream in = new FileInputStream(configFilePath + "couchbase.properties");
     couchbasePros.load(in);
   }
+
+  private static void initLog4j(String configFilePath) throws IOException {
+    Properties log4jProps = new Properties();
+    try {
+      log4jProps.load(new FileInputStream(configFilePath + "log4j.properties"));
+      PropertyConfigurator.configure(log4jProps);
+    } catch (IOException e) {
+      logger.error("Can't load seed properties");
+      throw e;
+    }
+  }
+
 
   public static void dumpFileFromCouchbase(String startKey, String endKey, String outputFilePath) throws IOException {
     ESMetrics.init("batch-metrics-", couchbasePros.getProperty("chocolate.elasticsearch.url"));
@@ -88,20 +109,34 @@ public class DumpRotationToHadoop {
         out = new BufferedOutputStream(new FileOutputStream(outputFilePath));
       }
       ViewQuery query = ViewQuery.from(couchbasePros.getProperty("couchbase.corp.rotation.designName"),
-        couchbasePros.getProperty("couchbase.corp.rotation.viewName"));
+          couchbasePros.getProperty("couchbase.corp.rotation.viewName"));
       query.startKey(Long.valueOf(startKey));
       query.endKey(Long.valueOf(endKey));
 
-      ViewResult result = bucket.query(query);
-      String rotationInfo;
-      for (ViewRow row : result) {
-        rotationInfo = row.value().toString();
-        if(rotationInfo == null) continue;
-        out.write(String.valueOf(rotationInfo).getBytes());
-        out.write(RotationConstant.RECORD_SEPARATOR);
-        out.flush();
-        count++;
+      List<ViewRow> viewResult = bucket.query(query).allRows();
+
+      List<String> keys = new ArrayList<>();
+
+      if(viewResult != null && viewResult.size() > 0) {
+        for (ViewRow row : viewResult) {
+          keys.add(row.id());
+        }
+        List<JsonDocument> result = Observable
+            .from(keys)
+            .flatMap((Func1<String, Observable<JsonDocument>>) k -> bucket.async().get(k, JsonDocument.class))
+            .toList()
+            .toBlocking()
+            .single();
+        for (JsonDocument row : result) {
+          String rotationInfoStr = row.content().toString();
+          if(rotationInfoStr == null) continue;
+          out.write(rotationInfoStr.getBytes());
+          out.write(RotationConstant.RECORD_SEPARATOR);
+          out.flush();
+          count++;
+        }
       }
+
     } catch (IOException e) {
       esMetrics.meter("rotation.dump.FromCBToHIVE.error");
       System.out.println("Error happened when write couchbase data to chocolate file");
