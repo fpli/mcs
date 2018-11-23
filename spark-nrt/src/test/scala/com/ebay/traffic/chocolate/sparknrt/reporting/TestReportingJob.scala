@@ -60,7 +60,8 @@ class TestReportingJob extends BaseFunSuite {
       "--mode", "local[8]",
       "--channel", "EPN",
       "--workDir", workDir,
-      "--archiveDir", archiveDir
+      "--archiveDir", archiveDir,
+      "--elasticsearchUrl", "http://10.148.181.34:9200"
     )
 
     val params = Parameter(args)
@@ -147,7 +148,8 @@ class TestReportingJob extends BaseFunSuite {
       "--mode", "local[8]",
       "--channel", "DISPLAY",
       "--workDir", workDir,
-      "--archiveDir", archiveDir
+      "--archiveDir", archiveDir,
+      "--elasticsearchUrl", "http://10.148.181.34:9200"
     )
 
     val params = Parameter(args)
