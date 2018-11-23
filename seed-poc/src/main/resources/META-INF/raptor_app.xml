@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<application>
-    <type>Service</type>
-    <public>false</public>
-    <!-- Mandatory field -->
-    <description>Required for service registration and deploy to QA/ Prod</description>
-    <name>seedpoc</name>
-    <lifecycleState>Deployed</lifecycleState>
-</application>
