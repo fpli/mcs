@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
@@ -45,7 +46,7 @@ public class ListenerMessageParser {
     record.setUri(uri);
     // Set the channel type + HTTP headers + channel action
     record.setChannelType(channelType);
-    record.setHttpMethod(this.getMethod(clientRequest).getAvro());
+    record.setHttpMethod(HttpMethod.GET);
     record.setChannelAction(action.getAvro());
     // Format record
     record.setRequestHeaders(serializeRequestHeaders(clientRequest));
