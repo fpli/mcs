@@ -3,12 +3,15 @@ package com.ebay.traffic.chocolate.sparknrt.reporting
 import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
+import com.ebay.traffic.chocolate.monitoring.ESReporting
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
+
+import collection.JavaConverters._
 
 /**
   * Created by weibdai on 5/19/18.
@@ -49,6 +52,15 @@ class ReportingJob(params: Parameter)
       Integer.parseInt(batchSize)
     } else {
       10 // default to 10 metafiles
+    }
+  }
+
+  @transient lazy val esReporting: ESReporting = {
+    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
+      ESReporting.init("chocolate-report-", params.elasticsearchUrl)
+      ESReporting.getInstance()
+    } else {
+      throw new Exception("no es url")
     }
   }
 
@@ -141,25 +153,38 @@ class ReportingJob(params: Parameter)
       key + "_DESKTOP_RAW"
   }
 
-  def upsertCouchbase(date: String, iter: Iterator[Row], isCampaignReport: Boolean): Unit = {
-    while (iter.hasNext) {
-      val row = iter.next()
+  def upsertCouchbase(date: String, row: Row, isCampaignReport: Boolean): Unit = {
+    var prefix = "PUBLISHER_" + row.getAs("publisher_id").toString
+    if (isCampaignReport) {
+      prefix += "_CAMPAIGN_" + row.getAs("campaign_id").toString
+    }
 
-      var prefix = "PUBLISHER_" + row.getAs("publisher_id").toString
-      if (isCampaignReport) {
-        prefix += "_CAMPAIGN_" + row.getAs("campaign_id").toString
-      }
+    upsertCouchbase(prefix, date, row)
 
-      upsertCouchbase(prefix, date, row)
+  }
+
+  def upsertElasticSearch(row: Row): Unit = {
+    retry(3) {
+      val docId = row.mkString("-")
+      esReporting.send("CHOCOLATE_REPORT", row.getAs("count").toString.toLong, docId,
+        row.getAs("timestamp").toString.toLong, row.getValuesMap(row.schema.fieldNames).asJava
+      )
     }
   }
 
-  def upsertCouchbase(date: String, iter: Iterator[Row]): Unit = {
-    while (iter.hasNext) {
-      val row = iter.next()
-      val prefix = "ROTATION_" + row.getAs("rotation_id").toString
-      upsertCouchbase(prefix, date, row)
+  def retry[T](n: Int)(fn: => T): T = {
+    try {
+      fn
+    } catch {
+      case e:Exception =>
+        if (n > 1) retry(n - 1)(fn)
+        else throw e
     }
+  }
+
+  def upsertCouchbase(date: String, row: Row): Unit = {
+    val prefix = "ROTATION_" + row.getAs("rotation_id").toString
+    upsertCouchbase(prefix, date, row)
   }
 
   def upsertCouchbase(prefix: String, date: String, row: Row): Unit = {
@@ -238,7 +263,11 @@ class ReportingJob(params: Parameter)
 
         // 4. persist the result into Couchbase
         logger.info("persist publisher report into Couchbase...")
-        publisherDf.foreachPartition(iter => upsertCouchbase(date, iter, false))
+        publisherDf.foreachPartition(iter => {
+          while (iter.hasNext) {
+            upsertCouchbase(date, iter.next(), false)
+          }
+        })
 
         // campaign based report...
         logger.info("generate campaign based report...")
@@ -255,11 +284,18 @@ class ReportingJob(params: Parameter)
           .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
           .withColumn("is_filtered", lit(true))
 
-        val campaignDf = campaignDf1 union campaignDf2
+        val campaignDf = (campaignDf1 union campaignDf2).withColumn("channel_type", lit(ChannelType.EPN.toString))
 
-        // 4. persist the result into Couchbase
-        logger.info("persist campaign report into Couchbase...")
-        campaignDf.foreachPartition(iter => upsertCouchbase(date, iter, true))
+        // 4. persist the result into Couchbase and elasticsearch
+        logger.info("persist campaign report into Couchbase and elasticsearch...")
+        campaignDf.foreachPartition(iter => {
+          while (iter.hasNext) {
+            val row = iter.next()
+            upsertCouchbase(date, row, true)
+            upsertElasticSearch(row)
+          }
+        })
+
       })
 
       // 5. archive metafile that is processed for replay
@@ -311,11 +347,17 @@ class ReportingJob(params: Parameter)
           .agg(count("snapshot_id").alias("count"), min("timestamp").alias("timestamp"))
           .withColumn("is_filtered", lit(true))
 
-        val publisherDf = rotationDf1 union rotationDf2
+        val publisherDf = (rotationDf1 union rotationDf2).withColumn("channel_type", lit(ChannelType.DISPLAY.toString))
 
-        // 4. persist the result into Couchbase
-        logger.info("persist report into Couchbase...")
-        publisherDf.foreachPartition(iter => upsertCouchbase(date, iter))
+        // 4. persist the result into Couchbase and elasticsearch
+        logger.info("persist report into Couchbase and elasticsearch...")
+        publisherDf.foreachPartition(iter => {
+          while (iter.hasNext) {
+            val row = iter.next()
+            upsertCouchbase(date, row)
+            upsertElasticSearch(row)
+          }
+        })
       })
 
       // 5. archive metafile that is processed for replay
