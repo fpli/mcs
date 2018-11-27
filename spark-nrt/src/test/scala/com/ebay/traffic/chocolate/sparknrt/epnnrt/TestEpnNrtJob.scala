@@ -17,6 +17,7 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 
 class TestEpnNrtJob extends BaseFunSuite{
   private val tmpPath = createTempPath()
+ // private val tmpPath = "/Users/huiclu/tmp_3/"
   private val inputDir = tmpPath + "/inputDir/"
   private val workDir = tmpPath + "/workDir/"
   private val resourceDir = tmpPath
@@ -41,6 +42,7 @@ class TestEpnNrtJob extends BaseFunSuite{
 
   override def beforeAll(): Unit = {
     createTestDataForEPN()
+   // createTmpMetaFile1()
   }
 
   test("Test EPN Nrt job") {
@@ -62,6 +64,32 @@ class TestEpnNrtJob extends BaseFunSuite{
     job.run()
     job.stop()
 
+  }
+
+  def createTmpMetaFile(): Unit = {
+    val metadata = Metadata(workDir, "EPN", MetadataEnum.capping)
+    var array = new Array[String](0)
+    for (i <- 0 to 9)
+      array = array :+ ("file://" + tmpPath + "/date=2018-11-25/part-0000" + i.toString + ".snappy.parquet")
+    for (i <- 10 to 99)
+      array = array :+ ("file://" + tmpPath + "/date=2018-11-25/part-000" + i.toString + ".snappy.parquet")
+    for (i <- 100 to 375)
+      array = array :+ ("file://" + tmpPath + "/date=2018-11-25/part-00" + i.toString + ".snappy.parquet")
+
+    val dateFiles1 = DateFiles("date=2018-11-25", array)
+    val meta: MetaFiles = MetaFiles(Array(dateFiles1))
+    metadata.writeDedupeOutputMeta(meta, Array(".epnnrt"))
+  }
+
+  def createTmpMetaFile1(): Unit = {
+    val metadata = Metadata(workDir, "EPN", MetadataEnum.capping)
+    var array = new Array[String](0)
+   /* for (i <- 0 to 9)
+      array = array :+ ("file://" + tmpPath + "/date=2018-11-25/part-0000" + i.toString + ".snappy.parquet")*/
+    array = array :+ ("file://" + tmpPath + "/date=2018-11-25/part-11111" + ".snappy.parquet")
+    val dateFiles1 = DateFiles("date=2018-11-25", array)
+    val meta: MetaFiles = MetaFiles(Array(dateFiles1))
+    metadata.writeDedupeOutputMeta(meta, Array(".epnnrt"))
   }
 
 

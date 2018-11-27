@@ -20,7 +20,7 @@ object CorpCouchbaseClient {
     properties
   }
 
-  @transient private lazy val dataSource: String = properties.getProperty("chocolate.corp.couchbase.dataSource")
+  var dataSource = ""
 
   @transient private lazy val factory =
     com.ebay.dukes.builder.FountCacheFactoryBuilder.newBuilder()
@@ -32,6 +32,10 @@ object CorpCouchbaseClient {
       .poolType(properties.getProperty("chocolate.corp.couchbase.poolType"))
       .appName(properties.getProperty("chocolate.corp.couchbase.appName"))
       .build()
+
+  def initDataSource(cbDataSource: String): Unit = {
+    dataSource = cbDataSource
+  }
 
   @transient var getBucketFunc: () => (Option[CacheClient], Bucket) = getBucket
 

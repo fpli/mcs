@@ -1,18 +1,20 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
-import java.net.URL
+import java.net.{MalformedURLException, URL}
 import java.text.SimpleDateFormat
 import java.util.Properties
+import java.util.concurrent.TimeUnit
 
-import com.couchbase.client.java.Bucket
-import com.couchbase.client.java.document.JsonDocument
+import com.couchbase.client.java.{Bucket, CouchbaseCluster}
+import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
+import com.couchbase.client.java.env.DefaultCouchbaseEnvironment
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId
 import com.ebay.dukes.CacheClient
 import com.ebay.dukes.base.BaseDelegatingCacheClient
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient
-import com.ebay.globalenv.util.DateTime
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
+import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
@@ -42,7 +44,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   }
 
   @transient lazy val metadata: Metadata = {
-    val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"));
+    val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
     Metadata(params.workDir, ChannelType.EPN.toString, usage)
   }
 
@@ -117,7 +119,15 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     map
   }
 
+  override def stop(): Unit = {
+    super.stop()
+    CorpCouchbaseClient.close()
+  }
+
   override def run(): Unit = {
+    //0. init couchbase datasource
+    CorpCouchbaseClient.initDataSource(properties.getProperty("eppnrt.datasource"))
+
     //1. load meta files
     logger.info("load metadata...")
 
@@ -140,22 +150,19 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
      //   val dfTest = readFilesAsDFEx(Array(properties.getProperty("epnnrt.landingpage.type")),null,"csv","tab", false)
 
-        //3. build impression dataframe
+        //3. build impression dataframe  save dataframe to files and rename files
         val impressionDf = nrtCore_impression(df)
+        impressionDf.repartition(3)
         saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
         renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
         //impressionDf.show()
 
-        //4. build click dataframe
+        //4. build click dataframe  save dataframe to files and rename files
         val clickDf = nrtCore_click(df)
         saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
         renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
         //clickDf.show()
 
-        //5. rename files
-
-        //4. save dataframe to txt
-       // saveDFToFiles(impressionDf, outputDir, "gzip", "txt", "tab")
 
         // 5.delete the finished meta files
         metadata.deleteDedupeOutputMeta(file)
@@ -169,7 +176,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     var max = -1
     if (fs.exists(dateOutputPath)) {
       val outputStatus = fs.listStatus(dateOutputPath)
-      if (outputStatus.length > 0) {
+      if (outputStatus.nonEmpty) {
         max = outputStatus.map(status => {
           val name = status.getPath.getName
           Integer.valueOf(name.substring(name.lastIndexOf("-") + 1).substring(0, name.indexOf(".")))
@@ -361,15 +368,9 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       .withColumn("NRT_RULE_FLAG62", lit(0))
       .withColumn("NRT_RULE_FLAG63", lit(0))
       .withColumn("NRT_RULE_FLAG64", lit(0))
-     // .withColumn("Test", test_udf(lit("amspubdomain_7000000000")))
       .cache()
 
-
-    //impressionDf.select("ROVER_URL_TXT").take(10).foreach(x => println(x))
-   // impressionDf.select("RT_RULE_FLAG1", "RT_RULE_FLAG2", "RT_RULE_FLAG3").show()
-    //impressionDf.show()
       impressionDf
-   // saveDFToFiles(impressionDf, outputDir, "snappy", "txt")
   }
 
 
@@ -575,7 +576,6 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       .withColumn("NRT_RULE_FLAG80", lit(0))
       .cache()
 
-   // clickDf.select("ITEM_ID", "TOOL_LVL_OPTN_IND").show()
     clickDf
   }
 
@@ -626,8 +626,6 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   val get_click_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long) => getReasonCode("click", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag))
   val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long) => getReasonCode("impression", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag))
 
-  val test_udf = udf((test: String) => getclickFilterTypeId(test))
-
 
   def getDateTimeFromTimestamp(timestamp: Long): String = {
     val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
@@ -635,7 +633,17 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   }
 
   def getRefererHost(requestHeaders: String): String = {
-    new URL(getValueFromRequest(requestHeaders, "Referer")).getHost()
+    val referer = getValueFromRequest(requestHeaders, "Referer")
+    if (referer != null && !referer.equals("")) {
+      try {
+        return new URL(referer).getHost()
+      } catch {
+        case e: MalformedURLException => {
+          logger.error("Malformed URL for referer host: " + referer)
+        }
+      }
+    }
+    ""
   }
 
   def getFFValue(uri: String, index: String): String = {
@@ -646,7 +654,9 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   def getRoverUriInfo(uri: String, index: Int): String = {
     val path = new URL(uri).getPath()
     if (path != null && path != "" && index >= 0 && index <= 4) {
-      return path.split("/")(index)
+      val pathArray = path.split("/")
+      if (pathArray.length == 4)
+        return pathArray(index)
     }
     ""
   }
@@ -654,9 +664,10 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   def getGUIDFromCookie(requestHeader: String, guid: String) : String = {
     if (requestHeader != null) {
       val cookie = getValueFromRequest(requestHeader, "Cookie")
-      if (cookie != null) {
+      if (cookie != null && !cookie.equals("")) {
         val index = cookie.indexOf(guid)
-        return cookie.substring(index + 6, index + 38)
+        if (index != -1)
+          return cookie.substring(index + 6, index + 38)
       }
     }
     ""
@@ -697,9 +708,12 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     if (uri != null) {
       val params = new URL(uri).getQuery().split("&")
       for (i <- params) {
+        val array = i.split("=")
         val key = i.split("=")(0)
-        if (key.equalsIgnoreCase(param))
+        if (key.equalsIgnoreCase(param) && array.size == 2)
           return i.split("=")(1)
+        else
+          ""
       }
     }
     ""
@@ -722,9 +736,10 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
   def getCountryLocaleFromHeader(requestHeader: String): String = {
     var accept = getValueFromRequest(requestHeader, "accept-language")
-    if (accept != null)
+    logger.info(accept)
+    if (accept != null && !accept.equals(""))
       accept = accept.split(",")(0)
-    if (accept != null)
+    if (accept != null && !accept.equals("") && accept.contains("-"))
       accept = accept.split("-")(1)
     accept
   }
@@ -939,11 +954,28 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   def amsPubDomainLookup(publisherId: String, roi_rule: String): ListBuffer[PubDomainInfo] = {
     var list: ListBuffer[PubDomainInfo] = ListBuffer.empty[PubDomainInfo]
     if (publisherId != null && !publisherId.equals("")) {
-      val map = CouchbaseClient.getBucket()._2.get("amspubdomain_" + publisherId, classOf[JsonDocument])
-      if (map == null)
-        return list
-      for (i <- 0 until map.content().getNames.size()) {
-        list += new Gson().fromJson(String.valueOf(map.content().get(i.toString)), classOf[PubDomainInfo])
+      try {
+        logger.debug("Get publisher domain for publisherId = " + publisherId + " from corp couchbase")
+       // val (cacheClient, bucket) = CouchbaseClient.getCorpBucket()
+        val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+        //var bucket = CouchbaseClient.bucket
+        if (bucket.exists("amspubdomain_" + publisherId)) {
+         // val map = bucket.get("amspubdomain_" + publisherId, classOf[JsonDocument])
+          val array = bucket.get("amspubdomain_" + publisherId, classOf[JsonArrayDocument])
+         /* for (i <- 0 until map.content().getNames.size()) {
+            list += new Gson().fromJson(String.valueOf(map.content().get(i.toString)), classOf[PubDomainInfo])
+          }*/
+          for (i <- 0 until array.content().size()) {
+            list += new Gson().fromJson(String.valueOf(array.content().get(i)), classOf[PubDomainInfo])
+          }
+         // CouchbaseClient.returnClient(cacheClient)
+          CorpCouchbaseClient.returnClient(cacheClient)
+        }
+      } catch {
+        case e: Exception => {
+          logger.error("Corp Couchbase error while getting publisher domain for publisherId = " + publisherId, e)
+          throw e
+        }
       }
     }
     if (roi_rule.equals("NETWORK_QUALITY_WHITELIST"))
@@ -1038,9 +1070,27 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   def getAdvClickFilterMap(publisherId: String): ListBuffer[PubAdvClickFilterMapInfo] = {
     var list: ListBuffer[PubAdvClickFilterMapInfo] = ListBuffer.empty[PubAdvClickFilterMapInfo]
     if (publisherId != null && !publisherId.equals("")) {
-      val map = CouchbaseClient.getBucket()._2.get("amspubfilter_" + publisherId, classOf[JsonDocument])
-      for (i <- 0 until map.content().getNames.size()) {
-        list += new Gson().fromJson(String.valueOf(map.content().get(i.toString)), classOf[PubAdvClickFilterMapInfo])
+      try {
+        logger.debug("Get advClickFilterMap for publisherId = " + publisherId + " from corp couchbase")
+        //val (cacheClient, bucket) = CouchbaseClient.getCorpBucket()
+        val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+       // val bucket = CouchbaseClient.bucket
+        if (bucket.exists("amspubfilter_" + publisherId)) {
+          val array = bucket.get("amspubfilter_" + publisherId, classOf[JsonArrayDocument])
+         // val map = bucket.get("amspubfilter_" + publisherId, classOf[JsonDocument])
+          /*for (i <- 0 until map.content().getNames.size()) {
+            list += new Gson().fromJson(String.valueOf(map.content().get(i.toString)), classOf[PubAdvClickFilterMapInfo])
+          }*/
+          for (i <- 0 until array.content().size()) {
+            list += new Gson().fromJson(String.valueOf(array.content().get(i)), classOf[PubAdvClickFilterMapInfo])
+          }
+        }
+       // CouchbaseClient.returnClient(cacheClient)
+        CorpCouchbaseClient.returnClient(cacheClient)
+      } catch {
+        case e: Exception => {
+          logger.error("Corp Couchbase error while getting advClickFilterMap for publisherId = " + publisherId, e)
+        }
       }
     }
     list
@@ -1081,10 +1131,23 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   def getPublisherStatus(publisherId: String): String = {
     var publisherInfo = new PublisherInfo
     if (publisherId != null && !publisherId.equals("")) {
-      val map = CouchbaseClient.getBucket()._2.get("publisher_" + publisherId, classOf[JsonDocument])
-      if (map == null)
-        return ""
-      publisherInfo = new Gson().fromJson(String.valueOf(map.content()), classOf[PublisherInfo])
+      try {
+        logger.debug("Get publisher domain for publisherId = " + publisherId + " from corp couchbase")
+       // val (cacheClient, bucket) = CouchbaseClient.getCorpBucket()
+        val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+       // val bucket = CouchbaseClient.bucket
+        if (bucket.exists("publisher_" + publisherId)) {
+          val map = bucket.get("publisher_" + publisherId, classOf[JsonDocument])
+          publisherInfo = new Gson().fromJson(String.valueOf(map.content()), classOf[PublisherInfo])
+        }
+        //CouchbaseClient.returnClient(cacheClient)
+        CorpCouchbaseClient.returnClient(cacheClient)
+      } catch {
+        case e: Exception => {
+          logger.error("Corp Couchbase error while getting publisher status for publisherId = " + publisherId, e)
+          throw e
+        }
+      }
     }
     publisherInfo.getApplication_status_enum
   }
@@ -1097,10 +1160,23 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       programId = res(0)
     }
     if (publisherId != null && !publisherId.equals("") && programId != -1) {
-      val map = CouchbaseClient.getBucket()._2.get("ppm_" + publisherId + "_" + programId , classOf[JsonDocument])
-      if (map == null || map.content().getNames.size() == 0)
-        return ""
-      progPubMapInfo = new Gson().fromJson(String.valueOf(map.content()), classOf[ProgPubMapInfo])
+      try {
+        logger.debug("Get progMap status for publisherId = " + publisherId + " from corp couchbase")
+        //val (cacheClient, bucket) = CouchbaseClient.getCorpBucket()
+        val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+       // val bucket = CouchbaseClient.bucket
+        if (bucket.exists("ppm_" + publisherId + "_" + programId)) {
+          val map = bucket.get("ppm_" + publisherId + "_" + programId , classOf[JsonDocument])
+          progPubMapInfo = new Gson().fromJson(String.valueOf(map.content()), classOf[ProgPubMapInfo])
+        }
+       // CouchbaseClient.returnClient(cacheClient)
+        CorpCouchbaseClient.returnClient(cacheClient)
+      } catch {
+        case e: Exception => {
+          logger.error("Corp Couchbase error while getting progMap status for publisherId = " + publisherId, e)
+          throw e
+        }
+      }
     }
     progPubMapInfo.getStatus_enum
   }
@@ -1108,10 +1184,23 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   def getcampaignStatus(campaignId: String): String = {
     var campaign_sts = new PublisherCampaignInfo
     if (campaignId != null && !campaignId.equals("")) {
-      val map = CouchbaseClient.getBucket()._2.get("pubcmpn_" + campaignId, classOf[JsonDocument])
-      if (map == null || map.content().getNames.size() == 0)
-        return ""
-      campaign_sts = new Gson().fromJson(String.valueOf(map.content().get("0")), classOf[PublisherCampaignInfo])
+      try {
+        logger.debug("Get campaign status for campaignId = " + campaignId + " from corp couchbase")
+        //val (cacheClient, bucket) = CouchbaseClient.getCorpBucket()
+        val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+        //val bucket = CouchbaseClient.bucket
+        if (bucket.exists("pubcmpn_" + campaignId)) {
+          val map = bucket.get("pubcmpn_" + campaignId, classOf[JsonDocument])
+          campaign_sts = new Gson().fromJson(String.valueOf(map.content().get("0")), classOf[PublisherCampaignInfo])
+        }
+       // CouchbaseClient.returnClient(cacheClient)
+        CorpCouchbaseClient.returnClient(cacheClient)
+      } catch {
+        case e: Exception => {
+          logger.error("Corp Couchbase error while getting campaign status for campaignId = " + campaignId, e)
+          throw e
+        }
+      }
     }
     campaign_sts.getStatus_enum
   }
@@ -1119,15 +1208,30 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
   object CouchbaseClient {
 
+       val environment = DefaultCouchbaseEnvironment.builder()
+      .mutationTokensEnabled(true)
+      .computationPoolSize(1000)
+      .connectTimeout(150000)
+      .queryTimeout(150000)
+      .build()
+
+    val cluster = CouchbaseCluster.create(environment, "scb-chocolate01.db.dev.ebayc3.com")
+    cluster.authenticate("choco_cp_mapping", "choco_cp_mapping")
+
+    import java.util.concurrent.TimeUnit
+
+    val bucket = cluster.openBucket("choco_cp_mapping", 150000, TimeUnit.SECONDS)
+      //var bucket
+
     @transient private lazy val properties = {
       val properties = new Properties
       properties.load(getClass.getClassLoader.getResourceAsStream("couchbase.properties"))
       properties
     }
 
-    @transient private lazy val dataSource: String = properties.getProperty("chocolate.corp.couchbase.dataSource.epnnrt")
+   // @transient private lazy val dataSource: String = properties.getProperty("chocolate.corp.couchbase.dataSource.epnnrt")
 
-    @transient private lazy val factory =
+    /*@transient private lazy val factory =
       com.ebay.dukes.builder.GenericCacheFactoryBuilder.newBuilder()
         .cache(dataSource)
         .dbEnv(properties.getProperty("chocolate.corp.couchbase.dbEnv"))
@@ -1136,18 +1240,36 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         .pool(properties.getProperty("chocolate.corp.couchbase.pool"))
         .poolType(properties.getProperty("chocolate.corp.couchbase.poolType"))
         .appName(properties.getProperty("chocolate.corp.couchbase.appName"))
-        .build()
+        .build()*/
 
-    @transient var getBucketFunc: () => (Option[CacheClient], Bucket) = getBucket
+
+
+   // @transient var getCorpBucket: () => (Option[CacheClient], Bucket) = getBucket
 
     /**
       * get bucket
       */
-    def getBucket(): (Option[CacheClient], Bucket) = {
+   /* def getBucket(): (Option[CacheClient], Bucket) = {
       val cacheClient: CacheClient = factory.getClient(dataSource)
       val baseClient: BaseDelegatingCacheClient = cacheClient.asInstanceOf[BaseDelegatingCacheClient]
       val cbCacheClient: Couchbase2CacheClient = baseClient.getCacheClient.asInstanceOf[Couchbase2CacheClient]
       (Option(cacheClient), cbCacheClient.getCouchbaseClient)
+    }*/
+
+    /**
+      * return cacheClient to factory
+      */
+   /* def returnClient(cacheClient: Option[CacheClient]): Unit = {
+      try {
+        if (cacheClient.isDefined) {
+          factory.returnClient(cacheClient.get)
+        }
+      } catch {
+        case e: Exception => {
+          logger.error("Corp Couchbase return client error.", e)
+          throw e
+        }
+      }
     }
 
     /**
@@ -1163,9 +1285,6 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         }
       }
     }
-
+*/
   }
-
-
-
 }
