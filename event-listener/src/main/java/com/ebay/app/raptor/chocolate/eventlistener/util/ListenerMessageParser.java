@@ -6,7 +6,6 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.kernel.util.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -63,18 +62,6 @@ public class ListenerMessageParser {
     record.setIsTracked(false);     //TODO No messages are Durability-tracked for now
 
     return record;
-  }
-
-  /**
-   * Get request method and validate from request
-   *
-   * @param clientRequest Request
-   * @return HttpMethodEnum
-   */
-  protected HttpMethodEnum getMethod(HttpServletRequest clientRequest) {
-    HttpMethodEnum httpMethod = HttpMethodEnum.parse(clientRequest.getMethod());
-    Validate.notNull(httpMethod, "Could not parse HTTP method from HTTP request=" + clientRequest.getMethod());
-    return httpMethod;
   }
 
   private String serializeRequestHeaders(HttpServletRequest clientRequest) {

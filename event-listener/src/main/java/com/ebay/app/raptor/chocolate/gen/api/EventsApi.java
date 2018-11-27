@@ -10,6 +10,7 @@ import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @Api(description = "The Events API")
+
 @javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2018-11-20T17:07:46.846+08:00[Asia/Shanghai]")
 public interface EventsApi {
     @POST

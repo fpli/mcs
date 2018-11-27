@@ -2,10 +2,11 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.eventlistener.util.Constants;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
-import com.ebay.app.raptor.chocolate.gen.model.ErrorResponse;
+import com.ebay.app.raptor.chocolate.gen.model.CollectionResponse;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,6 +22,7 @@ import javax.ws.rs.core.Response;
  */
 
 @Path("/v1")
+
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class EventListenerResource implements EventsApi {
@@ -32,14 +34,11 @@ public class EventListenerResource implements EventsApi {
 
   @Override
   public Response event(Event body) {
-    String result = CollectionService.getInstance().collect(request, body);
-    if(result.equals(Constants.ACCEPTED)) {
-      return Response.ok().build();
-    }
-    else {
-      ErrorResponse response = new ErrorResponse();
-      response.setErrorMessage(result);
-      return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+    CollectionResponse result = CollectionService.getInstance().collect(request, body);
+    if (result.getStatus().equals(Constants.ACCEPTED)) {
+      return Response.ok().entity(result).build();
+    } else {
+      return Response.status(Response.Status.BAD_REQUEST).entity(result).build();
     }
   }
 }

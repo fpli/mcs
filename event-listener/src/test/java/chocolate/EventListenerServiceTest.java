@@ -2,6 +2,9 @@ package chocolate;
 
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
+import com.ebay.app.raptor.chocolate.eventlistener.util.Constants;
+import com.ebay.app.raptor.chocolate.gen.model.CollectionResponse;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.jaxrs.client.EndpointUri;
@@ -72,7 +75,7 @@ public class EventListenerServiceTest {
 
   @Before
   public void setUp() {
-    if(!initialized) {
+    if (!initialized) {
       RuntimeContext.setConfigRoot(EventListenerServiceTest.class.getClassLoader().getResource
         ("META-INF/configuration/Dev/"));
       Configuration configuration = ConfigurationBuilder.newConfig("testService.testClient");
@@ -102,28 +105,46 @@ public class EventListenerServiceTest {
     request.addHeader("X-EBAY-C-TRACKING-REF", "guid=0570cd201670a9c422187f22fffee86e5dd496c4," +
       "cguid=0570d8901670a990a825b905ea456fe85dd496c4,tguid=0570cd201670a9c422187f22fffee86e5dd496c4,uid=39787429," +
       "buid=39787429,pageid=3286,cobrandId=2");
+    request.addHeader("User-Agent", "Desktop");
 
     request.setMethod("POST");
     Event event = new Event();
-    event.setTargetUrl("https://www.ebay.com/itm/123456?cid=2");
-    Response result = client.target(svcEndPoint).path(path).request().accept(MediaType.APPLICATION_JSON_TYPE).post
-      (Entity.entity(event, MediaType.APPLICATION_JSON_TYPE));
-    assertEquals(200, result.getStatus());
+    event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=1");
+    CollectionResponse response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.ACCEPTED, response.getStatus());
 
-    event.setTargetUrl("https://www.ebay.com/itm/123456?cid=0");
-    result = client.target(svcEndPoint).path(path).request().accept(MediaType.APPLICATION_JSON_TYPE).post
-      (Entity.entity(event, MediaType.APPLICATION_JSON_TYPE));
-    assertEquals(400, result.getStatus());
+    event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=1&cid=2");
+    response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.ACCEPTED, response.getStatus());
+
+    event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=1&cid=100");
+    response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.ACCEPTED, response.getStatus());
+
+    event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=1&cid");
+    response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.ACCEPTED, response.getStatus());
+
+    event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=0");
+    response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.REJECTED, response.getStatus());
 
     event.setTargetUrl("https://www.ebay.com/itm/123456");
-    result = client.target(svcEndPoint).path(path).request().accept(MediaType.APPLICATION_JSON_TYPE).post
-      (Entity.entity(event, MediaType.APPLICATION_JSON_TYPE));
-    assertEquals(400, result.getStatus());
+    response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.REJECTED, response.getStatus());
 
     event.setTargetUrl("https://www.ebay.com/itm/123456?abc=123");
-    result = client.target(svcEndPoint).path(path).request().accept(MediaType.APPLICATION_JSON_TYPE).post
-      (Entity.entity(event, MediaType.APPLICATION_JSON_TYPE));
-    assertEquals(400, result.getStatus());
+    response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.REJECTED, response.getStatus());
+
+    event.setTargetUrl("___");
+    response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.REJECTED, response.getStatus());
+
+    request.addHeader("User-Agent", "Mobile");
+    event.setTargetUrl("https://www.ebay.com?mkevt=1&cid=2");
+    response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.ACCEPTED, response.getStatus());
 
     Thread.sleep(3000);
     KafkaSink.get().flush();
@@ -133,6 +154,6 @@ public class EventListenerServiceTest {
       consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 4, 5 * 1000);
     consumerPaidSearch.close();
 
-    assertEquals(1, listenerMessagesPaidSearch.size());
+    assertEquals(2, listenerMessagesPaidSearch.size());
   }
 }

@@ -5,6 +5,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.util.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.util.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
+import com.ebay.app.raptor.chocolate.gen.model.CollectionResponse;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.kafka.clients.producer.Producer;
@@ -49,7 +50,7 @@ public class CollectionService {
     return instance;
   }
 
-  public String collect(HttpServletRequest request, Event event) {
+  public CollectionResponse collect(HttpServletRequest request, Event event) {
 
     String kafkaTopic;
     Producer<Long, ListenerMessage> producer;
@@ -57,38 +58,71 @@ public class CollectionService {
     ChannelIdEnum channelType;
     long campaignId = -1l;
 
+    CollectionResponse response = new CollectionResponse();
+
     // uri is from post body
     String uri = event.getTargetUrl();
 
     // parse channel from uri
+    // illegal url, rejected
     UriComponents uriComponents;
     try {
       uriComponents = UriComponentsBuilder.fromUriString(uri).build();
     } catch (IllegalArgumentException e) {
       logger.error(Constants.ERROR_ILLEGAL_URL);
       esMetrics.meter("IllegalUrl");
-      return Constants.ERROR_ILLEGAL_URL;
+      response.setStatus(Constants.REJECTED);
+      response.setMessage(Constants.ERROR_ILLEGAL_URL);
+      return response;
     }
 
+    // no query parameter, rejected
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
     if (parameters.size() == 0) {
       logger.error(Constants.ERROR_NO_QUERY_PARAMETER);
       esMetrics.meter("NoQueryParameter");
-      return Constants.ERROR_NO_QUERY_PARAMETER;
+      response.setStatus(Constants.REJECTED);
+      response.setMessage(Constants.ERROR_NO_QUERY_PARAMETER);
+      return response;
+    }
+
+    // no mkevt, rejected
+    if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
+      logger.error(Constants.ERROR_NO_MKEVT);
+      esMetrics.meter("NoMkevtParameter");
+      response.setStatus(Constants.REJECTED);
+      response.setMessage(Constants.ERROR_NO_MKEVT);
+      return response;
+    }
+
+    // mkevt != 1, rejected
+    String mkevt = parameters.get(Constants.MKEVT).get(0);
+    if (!mkevt.equals(Constants.VALID_MKEVT)) {
+      logger.error(Constants.ERROR_INVALID_MKEVT);
+      esMetrics.meter("InvalidMkevt");
+      response.setStatus(Constants.REJECTED);
+      response.setMessage(Constants.ERROR_INVALID_MKEVT);
+      return response;
     }
 
     // parse channel from query cid
-    if(!parameters.containsKey(Constants.CID)) {
+    // no cid, show error and accept
+    if (!parameters.containsKey(Constants.CID) || parameters.get(Constants.CID).get(0) == null) {
       logger.error(Constants.ERROR_NO_CID);
-      esMetrics.meter("NoCIDParameter");
-      return Constants.ERROR_NO_CID;
+      esMetrics.meter("NoCidParameter");
+      response.setStatus(Constants.ACCEPTED);
+      response.setMessage(Constants.ERROR_NO_CID);
+      return response;
     }
-    channelType = ChannelIdEnum.parse(parameters.get(Constants.CID).get(0));
 
+    // invalid cid, show error and accept
+    channelType = ChannelIdEnum.parse(parameters.get(Constants.CID).get(0));
     if (channelType == null) {
       logger.error(Constants.ERROR_INVALID_CID);
       esMetrics.meter("InvalidCid");
-      return Constants.ERROR_INVALID_CID;
+      response.setStatus(Constants.ACCEPTED);
+      response.setMessage(Constants.ERROR_INVALID_CID);
+      return response;
     }
 
     try {
@@ -105,18 +139,17 @@ public class CollectionService {
 
     String platform = PLATFORM_UNKNOWN;
     String userAgent = request.getHeader("User-Agent");
-    if(userAgent!=null) {
-      if(userAgent.contains("Mobi")) {
+    if (userAgent != null) {
+      if (userAgent.contains("Mobi")) {
         platform = PLATFORM_MOBILE;
-      }
-      else {
+      } else {
         platform = PLATFORM_DESKTOP;
       }
     }
 
     String landingPageType;
     List<String> pathSegments = uriComponents.getPathSegments();
-    if(pathSegments == null || pathSegments.size() == 0) {
+    if (pathSegments == null || pathSegments.size() == 0) {
       landingPageType = "home";
     } else {
       landingPageType = pathSegments.get(0);
@@ -144,11 +177,14 @@ public class CollectionService {
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       stopTimerAndLogData(startTime, eventTime, additionalFields);
     }
-    return Constants.ACCEPTED;
+    response.setStatus(Constants.ACCEPTED);
+    response.setMessage(Constants.ACCEPTED);
+    return response;
   }
 
   /**
    * Starts the timer and logs some basic info
+   *
    * @param additionalFields channelAction, channelType, platform, landing page type
    * @return start time
    */
@@ -164,7 +200,7 @@ public class CollectionService {
   /**
    * Stops the timer and logs relevant debugging messages
    *
-   * @param startTime     the start time, so that latency can be calculated
+   * @param startTime        the start time, so that latency can be calculated
    * @param additionalFields channelAction, channelType, platform, landing page type
    */
   private void stopTimerAndLogData(long startTime, long eventTime, Map<String, Object> additionalFields) {

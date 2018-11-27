@@ -21,36 +21,51 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import com.fasterxml.jackson.annotation.*;
 
 /**
- * ErrorResponse
+ * CollectionResponse
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2018-11-26T09:04:32.765+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "errorMessage" })
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2018-11-27T15:17:13.811+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "status","message" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
-public class ErrorResponse implements Serializable {
+public class CollectionResponse implements Serializable {
 
 private static final long serialVersionUID = 1L;
 
 
 
-    @JsonProperty("error_message")
+    @JsonProperty("status")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String errorMessage = null;
+    private String status = null;
+    @JsonProperty("message")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String message = null;
 
 /**
-    * Get errorMessage
-* @return errorMessage
+    * Get status
+* @return status
     **/
-    @ApiModelProperty(example = "No query parameter", value = "")
-public String getErrorMessage() {
-    return errorMessage;
+    @ApiModelProperty(example = "OK", value = "")
+public String getStatus() {
+    return status;
     }
 
-public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
+public void setStatus(String status) {
+        this.status = status;
+        }
+/**
+    * Get message
+* @return message
+    **/
+    @ApiModelProperty(example = "No query parameter", value = "")
+public String getMessage() {
+    return message;
+    }
+
+public void setMessage(String message) {
+        this.message = message;
         }
     @Override
     public boolean equals(Object o) {
@@ -60,21 +75,23 @@ public void setErrorMessage(String errorMessage) {
     if (o == null || getClass() != o.getClass()) {
     return false;
     }
-        ErrorResponse errorResponse = (ErrorResponse) o;
-        return Objects.equals(this.errorMessage, errorResponse.errorMessage);
+        CollectionResponse collectionResponse = (CollectionResponse) o;
+        return Objects.equals(this.status, collectionResponse.status) &&
+        Objects.equals(this.message, collectionResponse.message);
     }
 
     @Override
     public int hashCode() {
-    return Objects.hash(errorMessage);
+    return Objects.hash(status, message);
     }
 
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append("class ErrorResponse {\n");
+      sb.append("class CollectionResponse {\n");
       
-      sb.append("    errorMessage: ").append(toIndentedString(errorMessage)).append("\n");
+      sb.append("    status: ").append(toIndentedString(status)).append("\n");
+      sb.append("    message: ").append(toIndentedString(message)).append("\n");
       sb.append("}");
       return sb.toString();
     }
