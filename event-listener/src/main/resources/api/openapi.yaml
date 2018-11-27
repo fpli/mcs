@@ -54,9 +54,12 @@ components:
         target_url:
           type: "string"
           example: "htttp://www.ebay.com/deals"
-    ErrorResponse:
+    CollectionResponse:
       type: object
       properties:
-        error_message:
+        status:
+          type: "string"
+          example: "Accepted"
+        message:
           type: "string"
           example: "No query parameter"
