@@ -1,20 +1,9 @@
 ---
 openapi: 3.0.0
 servers:
-  - url: 'http://localhost:8080/marketingtracking/v1'
-    description: 'Development server running on localhost'
-  # - url: 'https://staging.serviceregistryio.vip.qa.ebay.com:{port}/registry/v3'
-  #   description: 'Staging server (used for production in order to access GitHub)'
-  #   variables:
-  #     port:
-  #       default: '443'
-  #       description: port number on which the server is running
-  # - url: 'https://lnp.serviceregistryio.vip.qa.ebay.com:{port}/registry/v3'
-  #   description: 'LnP server (used for QA in order to access GitHub and avoid conflict with staging)'
-  #   variables:
-  #     port:
-  #       default: '443'
-  #       description: port number on which the server is running
+  - url: 'http://api.ebay.com/marketingtracking/v1'
+    description: 'Marketing tracking collection services'
+
 info:
   description: >-
     marketing tracking compoent to receive marketing events
@@ -29,8 +18,10 @@ paths:
         - events
       operationId: event
       security:
-        - corp_user_scope_auth:
-            - eBayCorpUser
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
       responses:
         '200':
           description: OK
@@ -44,6 +35,19 @@ paths:
             schema:
               $ref: '#/components/schemas/Event'
 components:
+   securitySchemes:
+    app_scope_auth:
+      type: oauth2
+      description: >-
+        The security definitions for this API. Please check individual
+        operations for applicable scopes.
+      flows:
+        clientCredentials:
+          tokenUrl: 'https://api.ebay.com/identity/v1/oauth2/token'
+          scopes:
+            'https://api.ebay.com/oauth/scope/@public': This scope would allow public access.
+            'https://api.ebay.com/oauth/scope/base@public': This scope would allow base public access.
+            'https://api.ebay.com/oauth/scope/experience@public': This scope would allow experience public access.
    schemas:
     Event:
       type: object
