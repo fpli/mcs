@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - Reporting
 
-usage="Usage: ruleVerifier.sh [srcPath] [targetPath] [outputPath]"
+usage="Usage: ruleVerifier.sh [workPath] [srcPath] [targetPath] [outputPath]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
@@ -14,9 +14,10 @@ bin=`cd "$bin">/dev/null; pwd`
 
 . ${bin}/../chocolate-env.sh
 
-SRC_PATH=$1
-TARGET_PATH=$2
-OUTPUT_PATH=$3
+WORK_PATH=$1
+SRC_PATH=$2
+TARGET_PATH=$3
+OUTPUT_PATH=$4
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
@@ -41,6 +42,7 @@ ${SPARK_HOME}/bin/spark-submit \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
+      --workPath ${WORK_PATH} \
       --srcPath ${SRC_PATH} \
       --targetPath ${TARGET_PATH} \
       --outputPath ${OUTPUT_PATH}
