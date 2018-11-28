@@ -27,8 +27,6 @@ public class FilterRequest {
     private long timestamp = 0;
     private String requestCguid = null;
     private long requestCguidTimestamp;
-    private String requestTguid = null;
-    private long requestTguidTimestamp;
     private String responseCguid = null;
     private long responseCguidTimestamp;
     private String rotationId;
@@ -67,10 +65,8 @@ public class FilterRequest {
             } else if (key.equalsIgnoreCase("User-Agent")) {
                 this.userAgent = item.getValue();
             } else if (key.equalsIgnoreCase("Cookie")) {
-                this.requestCguid = parseGuidFromCookie(item.getValue(), "cguid");
-                this.requestCguidTimestamp = parseTimestampFromGuid(this.requestCguid);
-                this.requestTguid = parseGuidFromCookie(item.getValue(), "tguid");
-                this.requestTguidTimestamp = parseTimestampFromGuid(this.requestTguid);
+                this.requestCguid = parseCguidFromCookie(item.getValue());
+                this.requestCguidTimestamp = parseTimestampFromCguid(this.requestCguid);
             }
         }
 
@@ -78,8 +74,8 @@ public class FilterRequest {
         for (Map.Entry<String, String> item : responseHeaders.entrySet()) {
             String key = item.getKey();
             if (key.equalsIgnoreCase("Set-Cookie")) {
-                this.responseCguid = parseGuidFromCookie(item.getValue(), "cguid");
-                this.responseCguidTimestamp = parseTimestampFromGuid(this.responseCguid);
+                this.responseCguid = parseCguidFromCookie(item.getValue());
+                this.responseCguidTimestamp = parseTimestampFromCguid(this.responseCguid);
             }
         }
 
@@ -142,52 +138,36 @@ public class FilterRequest {
         this.channelAction = action;
     }
 
-    public String getRequestCGUID() {
+    public String getRequestCguid() {
         return this.requestCguid;
     }
 
-    public void setRequestCGUID(String cguid) {
+    public void setRequestCguid(String cguid) {
         this.requestCguid = cguid;
     }
 
-    public long getRequestCGUIDTimestamp() {
+    public long getRequestCguidTimestamp() {
         return this.requestCguidTimestamp;
     }
 
-    public void setRequestCGUIDTimestamp(long cguidTimestamp) {
+    public void setRequestCguidTimestamp(long cguidTimestamp) {
         this.requestCguidTimestamp = cguidTimestamp;
     }
 
-    public String getResponseCGUID() {
+    public String getResponseCguid() {
         return this.responseCguid;
     }
 
-    public void setResponseCGUID(String cguid) {
+    public void setResponseCguid(String cguid) {
         this.responseCguid = cguid;
     }
 
-    public long getResponseCGUIDTimestamp() {
+    public long getResponseCguidTimestamp() {
         return this.responseCguidTimestamp;
     }
 
-    public void setResponseCGUIDTimestamp(long cguidTimestamp) {
+    public void setResponseCguidTimestamp(long cguidTimestamp) {
         this.responseCguidTimestamp = cguidTimestamp;
-    }
-
-    public String getRequestTguid() {
-        return this.requestTguid;
-    }
-
-    public void setRequestTguid(String tguid) {
-        this.requestTguid = tguid;
-    }
-
-    public long getRequestTguidTimestamp() {
-        return this.requestTguidTimestamp;
-    }
-
-    public void setRequestTguidTimestamp(long tguidTimestamp) {
-        this.requestTguidTimestamp = tguidTimestamp;
     }
 
     public long getCampaignId() {
@@ -289,21 +269,20 @@ public class FilterRequest {
         }
     }
 
-    private String parseGuidFromCookie(String cookieStr, String guidType) {
-        String index = guidType + "/";
-        int guidPos = cookieStr.indexOf(index);
-        if (guidPos < 0) {
+    private String parseCguidFromCookie(String cookieStr) {
+        int cguidPos = cookieStr.indexOf("cguid/");
+        if (cguidPos < 0) {
             return null;
         }
-        return cookieStr.substring(guidPos + 6, guidPos + 38);
+        return cookieStr.substring(cguidPos + 6, cguidPos + 38);
     }
 
-    private long parseTimestampFromGuid(String guid) {
-        if (guid == null) {
+    private long parseTimestampFromCguid(String cguid) {
+        if (cguid == null) {
             return 0;
         }
 
-        String milliStr = guid.substring(8, 11) + guid.substring(0, 8);
+        String milliStr = cguid.substring(8, 11) + cguid.substring(0, 8);
         return Long.parseLong(milliStr, 16);
     }
 }
