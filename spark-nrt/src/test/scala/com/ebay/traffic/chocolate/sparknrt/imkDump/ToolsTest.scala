@@ -29,17 +29,23 @@ class ToolsTest extends FunSuite {
     assert(Tools.getParamValueFromUrl("http://www.ebay.com?A=test", "a") == "test")
   }
 
-  test("test getUserMapInd") {
-    assert(Tools.getUserMapInd("userid:gang") == "1")
-    assert(Tools.getUserMapInd("userid:gang:handsome") == "1")
-    assert(Tools.getUserMapInd("userid:") == "0")
-    assert(Tools.getUserMapInd("test:0") == "0")
+  test("test getUserIdFromHeader") {
+    assert(Tools.getUserIdFromHeader("X-EBAY-C-ENDUSERCTX:userid=gang") == "gang")
+    assert(Tools.getUserIdFromHeader("X-EBAY-C-ENDUSERCTX:loc=ch, userid=gang") == "gang")
+    assert(Tools.getUserIdFromHeader("X-EBAY-C-ENDUSERCTX:userid=0") == "0")
+    assert(Tools.getUserIdFromHeader("X-EBAY-C-ENDUSERCTX:loc=ch") == "")
   }
 
-  test("test getSiteIdFromRotationId") {
-    assert(Tools.getSiteIdFromRotationId("123") == "")
-    assert(Tools.getSiteIdFromRotationId("711-198453-24755-13") == "1")
-    assert(Tools.getSiteIdFromRotationId("") == "")
+  test("test getUserMapInd") {
+    assert(Tools.getUserMapInd("gang") == "1")
+    assert(Tools.getUserMapInd("") == "0")
+    assert(Tools.getUserMapInd("0") == "0")
+  }
+
+  test("test getClientIdFromRotationId") {
+    assert(Tools.getClientIdFromRotationId("123") == "")
+    assert(Tools.getClientIdFromRotationId("711-123-223") == "711")
+    assert(Tools.getClientIdFromRotationId("") == "")
   }
 
   test("test getItemIdFromUri") {
@@ -69,6 +75,12 @@ class ToolsTest extends FunSuite {
     assert(Tools.getParamFromQuery("http://www.ebay.com?_nkw=apple", keywordParams) == "apple")
     assert(Tools.getParamFromQuery("http://www.ebay.com?nkw=apple", keywordParams) == "")
     assert(Tools.getParamFromQuery("http://www.ebay.com?_Nkw=apple", keywordParams) == "apple")
+  }
+
+  test("test getCommandType") {
+    assert(Tools.getCommandType("IMPRESSION") == "4")
+    assert(Tools.getCommandType("CLICK") == "1")
+    assert(Tools.getCommandType("") == "1")
   }
 
 }

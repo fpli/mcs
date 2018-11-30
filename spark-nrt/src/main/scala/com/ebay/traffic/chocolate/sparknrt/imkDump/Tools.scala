@@ -3,53 +3,12 @@ package com.ebay.traffic.chocolate.sparknrt.imkDump
 import java.net.URL
 import java.text.SimpleDateFormat
 
+import com.ebay.app.raptor.chocolate.avro.ChannelAction
 import org.apache.commons.lang3.StringUtils
 
 import scala.collection.immutable.HashMap
 
 object Tools {
-
-  //refer to https://github.corp.ebay.com/chocolate/lp_url_rewrite/blob/CC-2.0.0/src/main/java/com/ebay/traffic/lprewrite/common/constant/DefaultUrlEnum.java
-  lazy val rotationIdPrefixSiteIdMap: HashMap[String, Int] = HashMap(
-    "711-" -> 1,
-    "1065-" -> 1,
-    "8971-" -> 1,
-    "705-" -> 15,
-    "5221-" -> 16,
-    "13031-" -> 16,
-    "706-" -> 2,
-    "1242-" -> 2,
-    "4080-" -> 223,
-    "709-" -> 71,
-    "1833-" -> 71,
-    "707-" -> 77,
-    "1066-" -> 77,
-    "3422-" -> 201,
-    "4686-" -> 203,
-    "3416-" -> 203,
-    "5282-" -> 205,
-    "5284-" -> 205,
-    "13032-" -> 205,
-    "724-" -> 101,
-    "1561-" -> 101,
-    "4825-" -> 207,
-    "1346-" -> 146,
-    "1841-" -> 146,
-    "4824-" -> 211,
-    "4908-" -> 212,
-    "3423-" -> 216,
-    "1185-" -> 186,
-    "1721-" -> 186,
-    "13029-" -> 186,
-    "3424-" -> 218,
-    "5222-" -> 193,
-    "1631-" -> 223,
-    "710-" -> 3,
-    "1116-" -> 3,
-    "1553-" -> 23,
-    "1842-" -> 23,
-    "13030-" -> 23
-  )
 
   lazy val keywordParams: Array[String] = Array("_nkw")
 
@@ -111,19 +70,10 @@ object Tools {
     ""
   }
 
-  def getUserMapInd(header: String): String = {
-    val userId = getValueFromRequestHeader(header, "userid")
-    if(StringUtils.isEmpty(userId) || userId == "0") {
-      "0"
-    } else {
-      "1"
-    }
-  }
-
-  def getSiteIdFromRotationId(rotationId: String): String = {
+  def getClientIdFromRotationId(rotationId: String): String = {
     // sample data from imk table, siteid for ps is always null, need this function?
     if (rotationId.contains("-")) {
-      rotationIdPrefixSiteIdMap(rotationId.substring(0, rotationId.indexOf("-") + 1)).toString
+      rotationId.substring(0, rotationId.indexOf("-"))
     } else {
       ""
     }
@@ -177,4 +127,36 @@ object Tools {
     }
     ""
   }
+
+  def getCommandType(commandType: String): String = {
+    commandType match {
+      case "IMPRESSION" => "4"
+      case _ => "1"
+    }
+  }
+
+  def getUserIdFromHeader(request_header: String): String = {
+    if(StringUtils.isNotEmpty(request_header)) {
+      val value = getValueFromRequestHeader(request_header, "X-EBAY-C-ENDUSERCTX")
+      if(StringUtils.isNotEmpty(value)) {
+        value.split(",").foreach(keyValueMap => {
+          val keyValueArray = keyValueMap.split("=")
+          if(keyValueArray(0).trim.equalsIgnoreCase("userid")
+            && keyValueArray.length == 2 && StringUtils.isNotEmpty(keyValueArray(1).trim)) {
+            return keyValueArray(1).trim
+          }
+        })
+      }
+    }
+    ""
+  }
+
+  def getUserMapInd(userId: String): String = {
+    if(StringUtils.isEmpty(userId) || userId == "0") {
+      "0"
+    } else{
+      "1"
+    }
+  }
+
 }
