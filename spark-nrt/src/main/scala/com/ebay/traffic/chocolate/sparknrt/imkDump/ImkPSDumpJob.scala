@@ -114,7 +114,7 @@ class ImkPSDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       .withColumn("BRWSR_TYPE_ID", getBrowserTypeUdf(col("request_headers")))
       .withColumn("RFRR_URL", getValueFromHeaderUdf(col("request_headers"), lit("Referer")))
 //      .withColumn("EXTRNL_COOKIE", lit(""))
-      .withColumn("MT_ID", lit(""))
+      .withColumn("MT_ID", getParamFromQueryUdf(col("uri"), lit("mt_id")))
       .withColumn("CART_ID", lit(""))
       .withColumn("RULE_BIT_FLAG_STRNG", lit("0"))
   }
