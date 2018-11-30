@@ -16,4 +16,7 @@ public class Constants {
   public static final String ERROR_INVALID_CID = "Invalid cid";
   public static final String ACCEPTED = "Accepted";
   public static final String REJECTED = "Rejected";
+  public static final String PLATFORM_MOBILE = "MOBILE";
+  public static final String PLATFORM_DESKTOP = "DESKTOP";
+  public static final String PLATFORM_UNKNOWN = "UNKNOWN";
 }

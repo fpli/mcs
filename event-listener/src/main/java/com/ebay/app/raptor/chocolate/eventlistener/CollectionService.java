@@ -30,15 +30,15 @@ public class CollectionService {
   private ListenerMessageParser parser;
   private static CollectionService instance = null;
 
-  private final String PLATFORM_MOBILE = "MOBILE";
-  private final String PLATFORM_DESKTOP = "DESKTOP";
-  private final String PLATFORM_UNKNOWN = "UNKNOWN";
-
   private CollectionService() {
     this.esMetrics = ESMetrics.getInstance();
     parser = ListenerMessageParser.getInstance();
   }
 
+  /**
+   * singleton get instance
+   * @return CollectionService object
+   */
   public static CollectionService getInstance() {
     if (instance == null) {
       synchronized (CollectionService.class) {
@@ -50,6 +50,12 @@ public class CollectionService {
     return instance;
   }
 
+  /**
+   * Collect event and publish to kafka
+   * @param request raw request
+   * @param event event body
+   * @return Response of status and message
+   */
   public CollectionResponse collect(HttpServletRequest request, Event event) {
 
     String kafkaTopic;
@@ -137,13 +143,13 @@ public class CollectionService {
 
     String type = channelType.getLogicalChannel().getAvro().toString();
 
-    String platform = PLATFORM_UNKNOWN;
+    String platform = Constants.PLATFORM_UNKNOWN;
     String userAgent = request.getHeader("User-Agent");
     if (userAgent != null) {
       if (userAgent.contains("Mobi")) {
-        platform = PLATFORM_MOBILE;
+        platform = Constants.PLATFORM_MOBILE;
       } else {
-        platform = PLATFORM_DESKTOP;
+        platform = Constants.PLATFORM_DESKTOP;
       }
     }
 
