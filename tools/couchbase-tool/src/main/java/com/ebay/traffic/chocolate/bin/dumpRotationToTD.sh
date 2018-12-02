@@ -14,14 +14,14 @@ else
 fi
 
 ROTATION_CONFIG_FILE=${bin}/../conf/
-OUTPUT_PATH=/mnt/chocolate/rotation/teradata/dt=${DT}/
+OUTPUT_PATH=/datashare/mkttracking/data/rotation/teradata/dt=${DT}/
 JOB_DATA_TIME=$(date +%Y-%m-%d' '23:00:00 -d "$DT - 1 day")
 START_TIME=$(date +%s -d "$JOB_DATA_TIME")000
 END_TIME=$(date +%s)000
 HOUR=$(date +%H -d "$DT_HOUR")
 
 log_dt=$(date +%Y%m%d%H%M%S -d "$DT_HOUR")
-log_file="/mnt/chocolate/rotation/logs/toTD_${log_dt}.log"
+log_file="/datashare/mkttracking/logs/rotation/teradata/toTD_${log_dt}.log"
 echo "log_file="${log_file}
 echo "DT="${DT} | tee -a ${log_file}
 echo "JOB_DATA_TIME="${JOB_DATA_TIME} | tee -a ${log_file}

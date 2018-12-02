@@ -15,28 +15,18 @@ else
 fi
 
 ROTATION_CONFIG_FILE=${bin}/../conf/
-OUTPUT_PATH=/mnt/chocolate/rotation/hive/dt=${DT}/
 START_TIME=$(date +%s -d "$DT_HOUR")000
 END_TIME=$(date +%s)000
 HOUR=$(date +%H -d "$DT_HOUR")
 
+OUTPUT_PATH=/datashare/mkttracking/data/rotation/hive/dt=${DT}/${HOUR}/
 if [ ! -d ${OUTPUT_PATH} ]; then
- mkdir ${OUTPUT_PATH}
- chmod 777 ${OUTPUT_PATH}
+ mkdir -p ${OUTPUT_PATH}
+ chmod -R 777 ${OUTPUT_PATH}
 fi
-OUTPUT_PATH=/mnt/chocolate/rotation/hive/dt=${DT}/${HOUR}/
-if [ ! -d ${OUTPUT_PATH} ]; then
- mkdir ${OUTPUT_PATH}
- chmod 777 ${OUTPUT_PATH}
-fi
-
-log_file="/mnt/chocolate/rotation/logs/dt=${DT}/"
-if [ ! -d ${log_file} ]; then
- mkdir ${log_file}
- chmod 777 ${log_file}
-fi
-log_file=${log_file}${DT}_${START_TIME}.log
-
+log_dt=$(date +%Y%m%d%H%M%S -d "$DT_HOUR")
+log_file="/datashare/mkttracking/logs/rotation/hive/toHive_${log_dt}.log"
+echo "log_file="${log_file}
 echo "DT="${DT} | tee -a ${log_file}
 echo "DT_HOUR="${DT} | tee -a ${log_file}
 echo "ROTATION_CONFIG_FILE="${ROTATION_CONFIG_FILE} | tee -a ${log_file}
