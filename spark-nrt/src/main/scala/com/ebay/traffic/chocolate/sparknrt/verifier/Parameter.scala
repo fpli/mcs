@@ -4,9 +4,11 @@ import scopt.OptionParser
 
 case class Parameter(appName: String = "RuleVerifier",
                      mode: String = "yarn",
+                     workPath: String = "/tmp",
                      srcPath: String = "",
                      targetPath: String = "",
-                     outputPath: String = "")
+                     outputPath: String = "",
+                     selfCheck: Boolean = true)
 
 object Parameter {
 
@@ -25,6 +27,12 @@ object Parameter {
       .text("spark job running on yarn or local")
       .action((x, c) => c.copy(mode = x))
 
+    opt[String]("workPath")
+      .optional()
+      .valueName("<path>")
+      .text("work path")
+      .action((x, c) => c.copy(workPath = x))
+
     opt[String]("srcPath")
       .required()
       .valueName("<path>")
@@ -42,6 +50,12 @@ object Parameter {
       .valueName("<path>")
       .text("file path where result data will be stored")
       .action((x, c) => c.copy(outputPath = x))
+
+    opt[Boolean]("selfCheck")
+      .optional()
+      .valueName("<check>")
+      .text("whether to open selfCheck")
+      .action((x, c) => c.copy(selfCheck = x))
   }
 
   def apply(args: Array[String]): Parameter = {
