@@ -20,6 +20,7 @@ object CorpCouchbaseClient {
     properties
   }
 
+ // var dataSource = ""
   var dataSource = ""
 
   @transient private lazy val factory =

@@ -10,6 +10,10 @@ public class PublisherInfo implements Serializable {
   private String ams_currency_id;
   private String ams_country_id;
 
+  public PublisherInfo() {
+    application_status_enum = "";
+  }
+
   public String getAms_publisher_id() {
     return ams_publisher_id;
   }

@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt;
 import java.io.Serializable;
 
 public class PubDomainInfo implements Serializable {
+  private String ams_pub_domain_id;
   private String ams_publisher_id;
   private String validation_status_enum;
   private String url_domain;
@@ -13,6 +14,18 @@ public class PubDomainInfo implements Serializable {
   private String publisher_bizmodel_id;
   private String publisher_category_id;
   private String is_registered;
+
+  public PubDomainInfo() {
+    url_domain = "";
+  }
+
+  public String getAms_pub_domain_id() {
+    return ams_pub_domain_id;
+  }
+
+  public void setAms_pub_domain_id(String ams_pub_domain_id) {
+    this.ams_pub_domain_id = ams_pub_domain_id;
+  }
 
   public String getAms_publisher_id() {
     return ams_publisher_id;

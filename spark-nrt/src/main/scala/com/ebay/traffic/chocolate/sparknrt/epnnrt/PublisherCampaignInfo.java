@@ -8,6 +8,10 @@ public class PublisherCampaignInfo implements Serializable {
   private String publisher_campaign_name;
   private String status_enum;
 
+  public PublisherCampaignInfo(){
+    status_enum = "";
+  }
+
   public String getAms_publisher_campaign_id() {
     return ams_publisher_campaign_id;
   }

@@ -8,6 +8,11 @@ public class ProgPubMapInfo implements Serializable {
   private String status_enum;
   private String reject_reason_enum;
 
+  public ProgPubMapInfo() {
+    status_enum = "";
+  }
+
+
   public String getAms_program_id() {
     return ams_program_id;
   }
