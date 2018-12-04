@@ -1,8 +1,8 @@
 package com.ebay.app.raptor.chocolate.common;
 
 import com.ebay.app.raptor.chocolate.avro.*;
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV0;
-import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV0;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1;
+import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV1;
 import org.apache.avro.io.*;
 import org.apache.avro.specific.SpecificDatumWriter;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class AvroVersioningTest {
 
     @Test
     public void readOldLietenerMessageSchema() throws IOException {
-        ListenerMessageV0 om = new ListenerMessageV0();
+        ListenerMessageV1 om = new ListenerMessageV1();
         om.setSnapshotId(321L);
         om.setRequestHeaders("");
         om.setResponseHeaders("");
@@ -49,11 +49,12 @@ public class AvroVersioningTest {
         om.setChannelAction(ChannelAction.CLICK);
         om.setHttpMethod(HttpMethod.GET);
         om.setChannelType(ChannelType.EPN);
+        om.setSnid("foo");
 
-        DatumWriter<ListenerMessageV0> writer = new SpecificDatumWriter<>(ListenerMessageV0.getClassSchema());
+        DatumWriter<ListenerMessageV1> writer = new SpecificDatumWriter<>(ListenerMessageV1.getClassSchema());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonEncoder encoder = EncoderFactory.get().jsonEncoder(ListenerMessageV0.getClassSchema(), out);
+        JsonEncoder encoder = EncoderFactory.get().jsonEncoder(ListenerMessageV1.getClassSchema(), out);
         writer.write(om, encoder);
         encoder.flush();
         String json = out.toString();
@@ -87,7 +88,7 @@ public class AvroVersioningTest {
 
     @Test
     public void readOldFilterMessageSchema() throws IOException {
-        FilterMessageV0 om = new FilterMessageV0();
+        FilterMessageV1 om = new FilterMessageV1();
         om.setSnapshotId(321L);
         om.setRequestHeaders("");
         om.setResponseHeaders("");
@@ -95,11 +96,12 @@ public class AvroVersioningTest {
         om.setChannelAction(ChannelAction.CLICK);
         om.setHttpMethod(HttpMethod.GET);
         om.setChannelType(ChannelType.EPN);
+        om.setSnid("foo");
 
-        DatumWriter<FilterMessageV0> writer = new SpecificDatumWriter<>(FilterMessageV0.getClassSchema());
+        DatumWriter<FilterMessageV1> writer = new SpecificDatumWriter<>(FilterMessageV1.getClassSchema());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonEncoder encoder = EncoderFactory.get().jsonEncoder(FilterMessageV0.getClassSchema(), out);
+        JsonEncoder encoder = EncoderFactory.get().jsonEncoder(FilterMessageV1.getClassSchema(), out);
         writer.write(om, encoder);
         encoder.flush();
         String json = out.toString();
