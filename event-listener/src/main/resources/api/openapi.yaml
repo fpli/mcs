@@ -1,0 +1,69 @@
+---
+openapi: 3.0.0
+servers:
+  - url: 'http://api.ebay.com/marketingtracking/v1'
+    description: 'Marketing tracking collection services'
+
+info:
+  description: >-
+    marketing tracking compoent to receive marketing events
+  version: 1.0.0
+  title: service-tracking-events
+paths:
+  /events:
+    post:
+      summary: Send one event to marketing tracking
+      description: Send one event to marketing tracking
+      tags:
+        - events
+      operationId: event
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+components:
+   securitySchemes:
+    app_scope_auth:
+      type: oauth2
+      description: >-
+        The security definitions for this API. Please check individual
+        operations for applicable scopes.
+      flows:
+        clientCredentials:
+          tokenUrl: 'https://api.ebay.com/identity/v1/oauth2/token'
+          scopes:
+            'https://api.ebay.com/oauth/scope/@public': This scope would allow public access.
+            'https://api.ebay.com/oauth/scope/base@public': This scope would allow base public access.
+            'https://api.ebay.com/oauth/scope/experience@public': This scope would allow experience public access.
+   schemas:
+    Event:
+      type: object
+      properties:
+        referrer:
+          type: "string"
+          example: "http://www.google.com"
+        target_url:
+          type: "string"
+          example: "htttp://www.ebay.com/deals"
+    CollectionResponse:
+      type: object
+      properties:
+        status:
+          type: "string"
+          example: "Accepted"
+        message:
+          type: "string"
+          example: "No query parameter"

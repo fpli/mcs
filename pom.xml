@@ -53,10 +53,21 @@
     <module>spark-nrt</module>
     <module>tools</module>
     <module>ingester</module>
+    <module>event-listener</module>
   </modules>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-ginger-client-starter</artifactId>
+        <version>0.6.0-RELEASE</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-ginger-server-starter</artifactId>
+        <version>0.6.0-RELEASE</version>
+      </dependency>
       <dependency>
         <groupId>org.scala-lang</groupId>
         <artifactId>scala-library</artifactId>
