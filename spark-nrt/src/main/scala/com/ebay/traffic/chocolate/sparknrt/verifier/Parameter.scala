@@ -8,7 +8,7 @@ case class Parameter(appName: String = "RuleVerifier",
                      srcPath: String = "",
                      targetPath: String = "",
                      outputPath: String = "",
-                     selfCheck: Boolean = true)
+                     selfCheck: Boolean = false)
 
 object Parameter {
 
