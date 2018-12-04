@@ -15,7 +15,7 @@ public enum FilterRuleType {
   IAB_BOT_LIST("IAB_BOT_LIST", "TwoPassIABRule", TwoPassIABRule.class, 4),
   EPN_DOMAIN_BLACKLIST("EPN_DOMAIN_BLACKLIST", "EPNDomainBlacklistRule", EPNDomainBlacklistRule.class, 5),
   IP_BLACKLIST("IP_BLACKLIST", "IPBlacklistRule", IPBlacklistRule.class, 6),
-  TGUID_STALENESS("TGUID_STALENESS", "TGUIDStalenessWindowRule", TGUIDStalenessWindowRule.class, 7),
+  TGUID_STALENESS("TGUID_STALENESS", "CguidStalenessWindowRule", CguidStalenessWindowRule.class, 7),
   CLICKTHROUGH_RATE("CLICKTHROUGH_RATE", "CampaignClickThroughRateRule", CampaignClickThroughRateRule.class, 8),
   REPEAT_CLICK("CLICKTHROUGH_RATE", "RepeatClickRule", RepeatClickRule.class, 9),
   VALID_PUBLISHER("VALID_PUBLISHER", "PublisherValidRule", PublisherValidRule.class, 10),

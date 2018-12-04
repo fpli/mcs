@@ -22,7 +22,7 @@
       {
         "ruleName": "PublisherValidRule"},
       {
-        "ruleName": "TGUIDStalenessWindowRule",
+        "ruleName": "CguidStalenessWindowRule",
         "windowStart": 3000},
       {
         "ruleName": "EPNDomainBlacklistRule",
