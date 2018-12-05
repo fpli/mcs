@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<tasks>
+    <task name="test"
+          period="1"
+          inputDir="/Users/lxiong1/ebay/chocolate-data/CheckRecover/test/date="
+          dataCountDir="/Users/lxiong1/ebay/chocolate-data/CheckRecover/countDate/test">
+    </task>
+</tasks>
