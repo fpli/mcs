@@ -55,7 +55,7 @@ components:
         referrer:
           type: "string"
           example: "http://www.google.com"
-        target_url:
+        targetUrl:
           type: "string"
           example: "htttp://www.ebay.com/deals"
     CollectionResponse:

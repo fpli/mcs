@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2018-11-20T17:07:46.846+08:00[Asia/Shanghai]")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2018-12-05T13:29:29.840+08:00[Asia/Shanghai]")
 @JsonPropertyOrder({ "referrer","targetUrl" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
@@ -39,7 +39,7 @@ private static final long serialVersionUID = 1L;
     @JsonProperty("referrer")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String referrer = null;
-    @JsonProperty("target_url")
+    @JsonProperty("targetUrl")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String targetUrl = null;
 
