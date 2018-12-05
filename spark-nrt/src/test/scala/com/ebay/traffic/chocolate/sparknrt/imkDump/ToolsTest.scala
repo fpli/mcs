@@ -83,4 +83,15 @@ class ToolsTest extends FunSuite {
     assert(Tools.getCommandType("") == "1")
   }
 
+  test("test getSvidFromCookie") {
+    assert(Tools.getSvidFromCookie("Cookie: npii=btguid/2fe65cc415c0ab1ca77184baf77400565d8c95b4^trm/mojo1%3Ds%2F005121%2F20%3B+svid%3D1108043186490388215d8c95b4^cguid/2fe65cc415c0ab1ca77184baf77400545d8c95b4^|X-eBay-Web-Tier-IP: 10.164.225.21")
+      == "110804318649038821")
+  }
+
+  test("test convertRotationId") {
+    assert(Tools.convertRotationId("711-15380-6615-0630") == "7111538066150630")
+    assert(Tools.convertRotationId("711-15380-6615-06303333333") == "")
+    assert(Tools.convertRotationId("711-15380-6615-063a0") == "")
+  }
+
 }

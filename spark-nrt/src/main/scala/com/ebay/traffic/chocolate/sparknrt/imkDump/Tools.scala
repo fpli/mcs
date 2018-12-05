@@ -3,12 +3,16 @@ package com.ebay.traffic.chocolate.sparknrt.imkDump
 import java.net.URL
 import java.text.SimpleDateFormat
 
-import com.ebay.app.raptor.chocolate.avro.ChannelAction
 import org.apache.commons.lang3.StringUtils
 
 import scala.collection.immutable.HashMap
 
-object Tools {
+/**
+  * Created by ganghuang on 12/3/18.
+  * some utilities of dump job
+  */
+
+object Tools extends Serializable{
 
   lazy val keywordParams: Array[String] = Array("_nkw")
 
@@ -71,8 +75,10 @@ object Tools {
   }
 
   def getClientIdFromRotationId(rotationId: String): String = {
-    // sample data from imk table, siteid for ps is always null, need this function?
-    if (rotationId.contains("-")) {
+    if (StringUtils.isNotEmpty(rotationId)
+      && rotationId.length <= 25
+      && StringUtils.isNumeric(rotationId.replace("-", ""))
+      && rotationId.contains("-")) {
       rotationId.substring(0, rotationId.indexOf("-"))
     } else {
       ""
@@ -108,6 +114,22 @@ object Tools {
       val index = cookie.indexOf(cguid)
       if (index != -1)
         return cookie.substring(index + 6, index + 38)
+    }
+    ""
+  }
+
+  /**
+    * get extrnl_cookie from svid in request header cookie
+    * @param request_header header of request
+    * @return Svid
+    */
+  def getSvidFromCookie(request_header: String): String = {
+    val cookie = getValueFromRequestHeader(request_header, "Cookie")
+    if (StringUtils.isNotEmpty(cookie)) {
+      val index = cookie.indexOf("svid")
+      if (index != -1) {
+        return cookie.substring(index + 7, index + 25)
+      }
     }
     ""
   }
@@ -156,6 +178,21 @@ object Tools {
       "0"
     } else{
       "1"
+    }
+  }
+
+  /**
+    * replace '-' in ram rotationid and check the rotation id can be convert to long
+    * @param rotationId raw rotation id
+    * @return
+    */
+  def convertRotationId(rotationId: String): String = {
+    if (StringUtils.isNotEmpty(rotationId)
+      && rotationId.length <= 25
+      && StringUtils.isNumeric(rotationId.replace("-", ""))) {
+      rotationId.replace("-", "")
+    } else {
+      ""
     }
   }
 

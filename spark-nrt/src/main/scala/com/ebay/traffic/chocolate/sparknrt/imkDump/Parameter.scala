@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.imkDump
 import scopt.OptionParser
 
 /**
-  * Created by weibdai on 5/19/18.
+  * Created by ganghuang on 12/3/18.
   */
 case class Parameter(appName: String = "Sword",
                      mode: String = "yarn",
