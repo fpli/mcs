@@ -4,7 +4,6 @@ import com.ebay.app.raptor.chocolate.EventListenerApplication;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.eventlistener.util.Constants;
-import com.ebay.app.raptor.chocolate.gen.model.CollectionResponse;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.jaxrs.client.EndpointUri;
@@ -27,10 +26,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Configuration;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -101,50 +97,59 @@ public class EventListenerServiceTest {
   public void testSerivce() throws Exception {
 
     MockHttpServletRequest request = new MockHttpServletRequest();
-    request.addHeader("X-EBAY-C-ENDUSERCTX", "deviceId=ABCD,deviceIdSource=4PP,appVersion=3.3.0");
-    request.addHeader("X-EBAY-C-TRACKING-REF", "guid=0570cd201670a9c422187f22fffee86e5dd496c4," +
-      "cguid=0570d8901670a990a825b905ea456fe85dd496c4,tguid=0570cd201670a9c422187f22fffee86e5dd496c4,uid=39787429," +
-      "buid=39787429,pageid=3286,cobrandId=2");
-    request.addHeader("User-Agent", "Desktop");
-
     request.setMethod("POST");
+
     Event event = new Event();
     event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=1");
-    CollectionResponse response = CollectionService.getInstance().collect(request, event);
-    assertEquals(Constants.ACCEPTED, response.getStatus());
+    String response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.ERROR_NO_USER_AGENT, response);
+
+    request.addHeader("User-Agent", "Desktop");
+    response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.ERROR_NO_ENDUSERCTX, response);
+
+    request.addHeader("X-EBAY-C-ENDUSERCTX", "deviceId=ABCD,deviceIdSource=4PP,appVersion=3.3.0");
+    response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.ERROR_NO_TRACKING_REF, response);
+
+
+    request.addHeader("X-EBAY-C-TRACKING-REF", "cguid=xxx");
+    response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.ERROR_NO_REFERRER, response);
+
+
+    event.setReferrer("https://www.google.com");
+    response = CollectionService.getInstance().collect(request, event);
+    assertEquals(Constants.ACCEPTED, response);
 
     event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=1&cid=2");
     response = CollectionService.getInstance().collect(request, event);
-    assertEquals(Constants.ACCEPTED, response.getStatus());
+    assertEquals(Constants.ACCEPTED, response);
 
     event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=1&cid=100");
     response = CollectionService.getInstance().collect(request, event);
-    assertEquals(Constants.ACCEPTED, response.getStatus());
+    assertEquals(Constants.ACCEPTED, response);
 
     event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=1&cid");
     response = CollectionService.getInstance().collect(request, event);
-    assertEquals(Constants.ACCEPTED, response.getStatus());
+    assertEquals(Constants.ACCEPTED, response);
 
     event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=0");
     response = CollectionService.getInstance().collect(request, event);
-    assertEquals(Constants.REJECTED, response.getStatus());
+    assertEquals(Constants.ERROR_INVALID_MKEVT, response);
 
     event.setTargetUrl("https://www.ebay.com/itm/123456");
     response = CollectionService.getInstance().collect(request, event);
-    assertEquals(Constants.REJECTED, response.getStatus());
+    assertEquals(Constants.ERROR_NO_QUERY_PARAMETER, response);
 
     event.setTargetUrl("https://www.ebay.com/itm/123456?abc=123");
     response = CollectionService.getInstance().collect(request, event);
-    assertEquals(Constants.REJECTED, response.getStatus());
-
-    event.setTargetUrl("___");
-    response = CollectionService.getInstance().collect(request, event);
-    assertEquals(Constants.REJECTED, response.getStatus());
+    assertEquals(Constants.ERROR_NO_MKEVT, response);
 
     request.addHeader("User-Agent", "Mobile");
     event.setTargetUrl("https://www.ebay.com?mkevt=1&cid=2");
     response = CollectionService.getInstance().collect(request, event);
-    assertEquals(Constants.ACCEPTED, response.getStatus());
+    assertEquals(Constants.ACCEPTED, response);
 
     Thread.sleep(3000);
     KafkaSink.get().flush();

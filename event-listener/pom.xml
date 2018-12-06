@@ -105,6 +105,10 @@
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-validateinternals-starter</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.ebay.standards</groupId>
+      <artifactId>standards-error-starter</artifactId>
+    </dependency>
 
     <!--global config-->
     <dependency>
@@ -121,6 +125,19 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
+    </dependency>
+
+    <!--for URL validation-->
+    <dependency>
+      <groupId>commons-validator</groupId>
+      <artifactId>commons-validator</artifactId>
+      <version>1.4.1</version>
+    </dependency>
+
+    <!--for URIBuilder-->
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
     </dependency>
 
     <!--Chocolate dependencies-->
@@ -248,6 +265,19 @@
     <plugins>
       <!-- spring boot plugin -->
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.5.1</version>
+        <configuration>
+          <encoding>${encoding}</encoding>
+          <compilerVersion>${java.version}</compilerVersion>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <optimize>true</optimize>
+        </configuration>
+      </plugin>
+      <!-- spring boot plugin -->
+      <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
@@ -259,6 +289,14 @@
       <plugin>
         <groupId>com.ebay.raptor.build</groupId>
         <artifactId>assembler-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.ebay.raptor.build</groupId>
+        <artifactId>maven-content-plugin</artifactId>
       </plugin>
       <!--<plugin>-->
         <!--<groupId>com.ebay.cos</groupId>-->
