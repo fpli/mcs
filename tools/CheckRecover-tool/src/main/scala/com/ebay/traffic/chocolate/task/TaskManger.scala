@@ -15,19 +15,19 @@ object TaskManger {
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
-  /** *
-    * run the all task in the current time.
+  /**
+    * Run the all task in the current time.
     *
     * @param tasks
     */
   def runTasks(tasks: List[CheckTask], esMetrics: ESMetrics, spark: SparkSession) = {
-    for(task <- tasks){
+    for (task <- tasks) {
       runTask(task, esMetrics, spark);
     }
   }
 
-  /** *
-    * run the current task in the current time.
+  /**
+    * Run the current task in the current time.
     *
     * @param checkTask
     */
@@ -50,8 +50,8 @@ object TaskManger {
     }
   }
 
-  /***
-    *check the status of the current job.
+  /**
+    * Check the status of the current job.
     *
     * @param checkTask
     * @return return true if the ob is the runnable.
@@ -63,17 +63,17 @@ object TaskManger {
       return false;
   }
 
-  /***
-    *get the generated file count of the last job
+  /**
+    * Get the generated file count of the last job
     *
     * @param data
     * @param checkTask
     * @return return the count of the file.
     */
   def getLastCount(data: DataFrame, checkTask: CheckTask): Int = {
-    if(data != null) {
+    if (data != null) {
       val lastCount = data.filter(col => {
-        col.get(1).equals((checkTask.ts - checkTask.period * 60 * 1000).toString)
+        col.get(1).toString.equals((checkTask.ts - checkTask.period * 60 * 1000).toString)
       })
 
       if (lastCount.count() > 0) {
@@ -85,8 +85,8 @@ object TaskManger {
     return 0;
   }
 
-  /***
-    *get the count of the file in the current day.
+  /**
+    * Get the count of the file in the current day.
     *
     * @param currentCount
     * @param lastCount
@@ -101,8 +101,8 @@ object TaskManger {
     }
   }
 
-  /***
-    * judge the ts is Whole day or not
+  /**
+    * Judge the ts is Whole day or not
     *
     * @param ts
     * @return return true if the ts is whole day.
@@ -111,7 +111,7 @@ object TaskManger {
     val time = new Date(ts);
     if (time.getHours == 0 && time.getMinutes == 0 && time.getSeconds == 0) {
       return true;
-    } else{
+    } else {
       return false;
     }
   }

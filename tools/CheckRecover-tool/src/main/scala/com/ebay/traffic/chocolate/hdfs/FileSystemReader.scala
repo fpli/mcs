@@ -25,6 +25,13 @@ object FileSystemReader {
     fs
   }
 
+  /**
+    * Read data from hdfs.
+    *
+    * @param file
+    * @param spark
+    * @return
+    */
   def read(file: String, spark: SparkSession): DataFrame = {
     if (fs.exists(new Path(file)) && FileUtil.isExistFile(file)) {
       return spark.read.csv(file);
@@ -33,16 +40,21 @@ object FileSystemReader {
     }
   }
 
+  /**
+    * Count the file in the current directory.
+    *
+    * @param inputDir
+    * @return
+    */
   def getFileNum(inputDir: String): Int = {
-    if(fs.exists(new Path(inputDir))){
+    if (fs.exists(new Path(inputDir))) {
       val fileStatus = fs.listStatus(new Path(inputDir));
       val files = fileStatus.filter(status => status.getPath.getName != "_SUCCESS");
 
       return files.size;
-    }else{
+    } else {
       return 0;
     }
-
   }
 
 }

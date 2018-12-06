@@ -1,6 +1,5 @@
 package com.ebay.traffic.chocolate.hdfs
 
-import com.ebay.traffic.chocolate.hdfs.FileSystemReader.fs
 import com.ebay.traffic.chocolate.task.CountData
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -27,7 +26,15 @@ object FileSystemWriter {
     fs
   }
 
-  def write(dataCountDir: String, countData: CountData, spark: SparkSession) = {
+  /**
+    * Write the data to hdfs.
+    *
+    * @param dataCountDir
+    * @param countData
+    * @param spark
+    * @return
+    */
+  def write(dataCountDir: String, countData: CountData, spark: SparkSession): Unit = {
     val temp = dataCountDir + "_temp";
     val allDF = spark.sqlContext.createDataFrame(Seq(countData));
 
@@ -38,7 +45,6 @@ object FileSystemWriter {
     }
     fs.rename(new Path(temp), new Path(dataCountDir));
   }
-
 
 }
 

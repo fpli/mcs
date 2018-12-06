@@ -8,10 +8,10 @@ import scopt.OptionParser
 case class Parameter(appName: String = "CheckJob",
                      mode: String = "yarn",
                      countDataDir: String = "",
-                     ts: Long = 1l,
+                     ts: String = "1l",
                      taskFile: String = "task.xml",
                      elasticsearchUrl: String = ""
-                     )
+                    )
 
 object Parameter {
 
@@ -33,7 +33,7 @@ object Parameter {
       .valueName("countDataDir")
       .action((cont, param) => param.copy(countDataDir = cont))
 
-    opt[Long]("ts")
+    opt[String]("ts")
       .required
       .valueName("timestamp")
       .action((cont, param) => param.copy(ts = cont))

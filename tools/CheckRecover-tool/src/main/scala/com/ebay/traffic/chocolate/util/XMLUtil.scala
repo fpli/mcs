@@ -16,7 +16,7 @@ object XMLUtil {
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
-  /** *
+  /**
     * Read the XML file.
     *
     * @param file
@@ -31,8 +31,8 @@ object XMLUtil {
     logger.info("read file start by xml");
     for (task <- tasks) {
       val checkTask = CheckTask(task.attribute("name").get.toString(),
-        getInputDir(task.attribute("inputDir").get.toString(), parameter.ts, Integer.parseInt(task.attribute("timeDiff").get.toString())),
-        getVerifiedTime(parameter.ts),
+        getInputDir(task.attribute("inputDir").get.toString(), parameter.ts.toLong, Integer.parseInt(task.attribute("timeDiff").get.toString())),
+        getVerifiedTime(parameter.ts.toLong),
         Integer.parseInt(task.attribute("timeDiff").get.toString()),
         Integer.parseInt(task.attribute("period").get.toString()),
         task.attribute("dataCountDir").get.toString())
@@ -48,7 +48,7 @@ object XMLUtil {
     return taskList.toList;
   }
 
-  /** *
+  /**
     * recover the ts to min level.
     *
     * @param ts ms
@@ -59,8 +59,8 @@ object XMLUtil {
     return realMin * 1000 * 60;
   }
 
-  /***
-    * get the directory which stored the count data.
+  /**
+    * Get the directory which stored the count data.
     *
     * @param jobName
     * @param parameter
@@ -70,8 +70,8 @@ object XMLUtil {
     return parameter.countDataDir + "/" + jobName;
   }
 
-  /***
-    * get the input directory.
+  /**
+    * Get the input directory.
     *
     * @param rawInputDir
     * @param ts ms

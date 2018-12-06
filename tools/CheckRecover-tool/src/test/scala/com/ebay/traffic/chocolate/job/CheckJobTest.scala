@@ -25,7 +25,7 @@ class CheckJobTest extends BaseFunSuite {
     val parameter = new Parameter("checkJob",
       "local",
       outputDir + "countFileDir",
-      1543477214789l,
+      "1543477214789l",
       getTestResourcePath("testCheck"),
       "http://10.148.181.34:9200");
     val job = new CheckJob(parameter);

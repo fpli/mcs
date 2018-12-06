@@ -11,4 +11,10 @@ echo $ESURL
     --class com.ebay.traffic.chocolate.job.CheckJob \
     --master yarn \
     --deploy-mode client \
-    CheckRecover-tool-*.jar "CheckJob" "yarn" "" $IMESTAMP "task.xml" "http://10.148.181.34:9200"
+        CheckRecover-tool-*.jar \
+        --appName "CheckJob" \
+        --mode "yarn" \
+        --countDataDir "" \
+        --ts $IMESTAMP \
+        --taskFile "task.xml" \
+        --elasticsearchUrl $ESURL

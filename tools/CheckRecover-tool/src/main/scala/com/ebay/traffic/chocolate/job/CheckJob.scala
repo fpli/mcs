@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.job
 
 import com.ebay.traffic.chocolate.conf.CheckTask
 import com.ebay.traffic.chocolate.monitoring.ESMetrics
+import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import com.ebay.traffic.chocolate.task.TaskManger
 import com.ebay.traffic.chocolate.util.{Constant, Parameter, XMLUtil}
 
@@ -39,8 +40,8 @@ class CheckJob(params: Parameter) extends BaseSparkJob(params.appName, params.mo
     }
   }
 
-  /***
-    * the entrance of the checkJob.
+  /**
+    * The entrance of the checkJob.
     */
   def run(): Unit = {
 

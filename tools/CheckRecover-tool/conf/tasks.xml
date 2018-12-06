@@ -2,6 +2,7 @@
 <tasks>
     <task name="test"
           period="1"
+          timeDiff="0"
           inputDir="/Users/lxiong1/ebay/chocolate-data/CheckRecover/test/date="
           dataCountDir="/Users/lxiong1/ebay/chocolate-data/CheckRecover/countDate/test">
     </task>
