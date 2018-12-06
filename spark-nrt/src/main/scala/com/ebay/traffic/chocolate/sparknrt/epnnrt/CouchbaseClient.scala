@@ -19,7 +19,6 @@ object CouchbaseClient {
     properties
   }
 
-  // var dataSource = ""
   @transient var dataSource = properties.getProperty("epnnrt.datasource")
 
   @transient private lazy val factory =

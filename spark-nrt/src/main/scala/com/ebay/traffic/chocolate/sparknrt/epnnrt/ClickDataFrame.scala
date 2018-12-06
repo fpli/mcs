@@ -38,7 +38,6 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
       .withColumn("LAST_VWD_ITEM_TS",  lit(""))
       .withColumn("LAST_ADN_CLICK_ID",  lit(""))
       .withColumn("LAST_ADN_CLICK_TS",  lit(""))
-      .withColumn("LAST_VWD_ITEM_ID",  lit(""))
       .withColumn("FLEX_FLD_5_TXT",  lit(""))
       .withColumn("FLEX_FLD_6_TXT",  common.getFFValueUdf(col("uri"), lit(6)))
       .withColumn("FLEX_FLD_7_TXT",  common.getFFValueUdf(col("uri"), lit(7)))

@@ -3,16 +3,10 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt
 import java.net.{MalformedURLException, URL}
 import java.text.SimpleDateFormat
 import java.util.Properties
-import java.util.concurrent.TimeUnit
 
-import com.couchbase.client.java.{Bucket, CouchbaseCluster}
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
-import com.couchbase.client.java.env.DefaultCouchbaseEnvironment
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId
-import com.ebay.dukes.CacheClient
-import com.ebay.dukes.base.BaseDelegatingCacheClient
-import com.ebay.dukes.couchbase2.Couchbase2CacheClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
@@ -212,7 +206,7 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     val path = new URL(uri).getPath()
     if (path != null && path != "" && index >= 0 && index <= 4) {
       val pathArray = path.split("/")
-      if (pathArray.length == 4)
+      if (pathArray.length == 5)
         return pathArray(index)
     }
     ""
@@ -368,17 +362,24 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     if (location == null || location.equals(""))
       return ""
     val splits = location.trim.split("/")
-    if (splits(2).startsWith("cgi6") && landing_page_pageId_map.contains("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewStoreV4&name=")) {
-      return landing_page_pageId_map("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewStoreV4&name=")
-    } else if (splits(2).startsWith("cgi") && landing_page_pageId_map.contains("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewItem")) {
-      return landing_page_pageId_map("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewItem")
-    }
-    if (splits.length >= 3) {
-      if (landing_page_pageId_map.contains("http://" + splits(2) + "/")){
-        return landing_page_pageId_map("http://" + splits(2) + "/")
+    try {
+      if (splits(2).startsWith("cgi6") && landing_page_pageId_map.contains("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewStoreV4&name=")) {
+        return landing_page_pageId_map("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewStoreV4&name=")
+      } else if (splits(2).startsWith("cgi") && landing_page_pageId_map.contains("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewItem")) {
+        return landing_page_pageId_map("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewItem")
       }
-      if (landing_page_pageId_map.contains("http://" + splits(2) + "/" + splits(3) + "/")) {
-        return landing_page_pageId_map("http://" + splits(2) + "/" + splits(3) + "/")
+      if (splits.length >= 3) {
+        if (landing_page_pageId_map.contains("http://" + splits(2) + "/")){
+          return landing_page_pageId_map("http://" + splits(2) + "/")
+        }
+        if (landing_page_pageId_map.contains("http://" + splits(2) + "/" + splits(3) + "/")) {
+          return landing_page_pageId_map("http://" + splits(2) + "/" + splits(3) + "/")
+        }
+      }
+    } catch {
+      case e: Exception => {
+        logger.error("Error while getting PageId for location = " + location + " in the request", e)
+        return ""
       }
     }
     ""
@@ -512,8 +513,6 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     if (publisherId != null && !publisherId.equals("")) {
       try {
         logger.debug("Get publisher domain for publisherId = " + publisherId + " from corp couchbase")
-       // val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-        //val bucket = TestCouchbase.bucket
         val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
         if (bucket.exists("EPN_amspubdomain_" + publisherId)) {
           val array = bucket.get("EPN_amspubdomain_" + publisherId, classOf[JsonArrayDocument])
@@ -623,9 +622,7 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     if (publisherId != null && !publisherId.equals("")) {
       try {
         logger.debug("Get advClickFilterMap for publisherId = " + publisherId + " from corp couchbase")
-        //val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-       // val bucket = TestCouchbase.bucket
-       val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
+        val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
         if (bucket.exists("EPN_amspubfilter_" + publisherId)) {
           val array = bucket.get("EPN_amspubfilter_" + publisherId, classOf[JsonArrayDocument])
           for (i <- 0 until array.content().size()) {
@@ -679,9 +676,7 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     if (publisherId != null && !publisherId.equals("")) {
       try {
         logger.debug("Get publisher domain for publisherId = " + publisherId + " from corp couchbase")
-       // val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-       // val bucket = TestCouchbase.bucket
-       val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
+        val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
         if (bucket.exists("EPN_publisher_" + publisherId)) {
           val map = bucket.get("EPN_publisher_" + publisherId, classOf[JsonDocument])
           publisherInfo = new Gson().fromJson(String.valueOf(map.content()), classOf[PublisherInfo])
@@ -709,9 +704,7 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     if (publisherId != null && !publisherId.equals("") && programId != -1) {
       try {
         logger.debug("Get progMap status for publisherId = " + publisherId + " from corp couchbase")
-       //val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-       // val bucket = TestCouchbase.bucket
-       val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
+        val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
         if (bucket.exists("EPN_ppm_" + publisherId + "_" + programId)) {
           val map = bucket.get("EPN_ppm_" + publisherId + "_" + programId , classOf[JsonDocument])
           progPubMapInfo = new Gson().fromJson(String.valueOf(map.content()), classOf[ProgPubMapInfo])
@@ -734,8 +727,6 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     if (campaignId != null && !campaignId.equals("")) {
       try {
         logger.debug("Get campaign status for campaignId = " + campaignId + " from corp couchbase")
-        //val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-        //val bucket = TestCouchbase.bucket
         val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
         if (bucket.exists("EPN_pubcmpn_" + campaignId)) {
           val map = bucket.get("EPN_pubcmpn_" + campaignId, classOf[JsonDocument])
@@ -759,19 +750,4 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     if (splitted != null && splitted.nonEmpty) splitted(1)
     else throw new Exception("Invalid date field in metafile.")
   }
-
-/*
-  object TestCouchbase {
-    val environment = DefaultCouchbaseEnvironment.builder()
-      .mutationTokensEnabled(true)
-      .computationPoolSize(1000)
-      .connectTimeout(150000)
-      .queryTimeout(150000)
-      .build()
-
-    val cluster = CouchbaseCluster.create(environment, "scb-chocolate01.db.dev.ebayc3.com")
-    cluster.authenticate("appdl_report", "appdl_report")
-    val bucket = cluster.openBucket("appdl_report", 150000, TimeUnit.SECONDS)
-  }*/
-
 }

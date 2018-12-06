@@ -217,7 +217,6 @@ class ReportingJob(params: Parameter)
   //import spark.implicits._
 
   override def run(): Unit = {
-    CorpCouchbaseClient.initDataSource(properties.getProperty("reporting.cbDataSource"))
     if (params.channel == ChannelType.EPN.toString) {
       logger.info("generate report for EPN channel.")
       generateReportForEPN()

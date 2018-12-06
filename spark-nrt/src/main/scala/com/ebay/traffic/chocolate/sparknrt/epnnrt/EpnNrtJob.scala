@@ -4,7 +4,6 @@ import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
@@ -22,11 +21,11 @@ object EpnNrtJob extends App {
 
 class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, params.mode) {
 
-  lazy val outputDir = params.workDir + "/epn_nrt/"
+  lazy val outputDir = properties.getProperty("epnnrt.outputdir")
 
   lazy val epnNrtTempDir = outputDir + "/tmp/"
 
-  var properties: Properties = {
+  @transient lazy val properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
     properties
@@ -51,11 +50,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     common
   }
 
-
   override def run(): Unit = {
-    //0. init couchbase datasource
-    //CorpCouchbaseClient.initDataSource(properties.getProperty("epnnrt.datasource"))
-
     //1. load meta files
     logger.info("load metadata...")
 
@@ -94,7 +89,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
   def renameFile(outputDir: String, sparkDir: String, date: String, prefix: String) = {
     // rename result to output dir
-    val dateOutputPath = new Path(outputDir + "/" + date)
+    val dateOutputPath = new Path(outputDir + "/date=" + date)
     var max = -1
     if (fs.exists(dateOutputPath)) {
       val outputStatus = fs.listStatus(dateOutputPath)
