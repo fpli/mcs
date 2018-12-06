@@ -54,7 +54,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
   override def run(): Unit = {
     //0. init couchbase datasource
-    CorpCouchbaseClient.initDataSource(properties.getProperty("epnnrt.datasource"))
+    //CorpCouchbaseClient.initDataSource(properties.getProperty("epnnrt.datasource"))
 
     //1. load meta files
     logger.info("load metadata...")

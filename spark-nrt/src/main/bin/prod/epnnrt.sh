@@ -12,7 +12,7 @@ fi
 bin=`dirname "$0"`
 bin=`cd "$bin">/dev/null; pwd`
 
-. ${bin}/../chocolate-env-qa.sh
+. ${bin}/../chocolate-env.sh
 
 WORK_DIR=$1
 RESOURCE_DIR=$2
@@ -42,6 +42,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=8192 \
+    --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \

@@ -3,11 +3,16 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt
 import java.net.{MalformedURLException, URL}
 import java.text.SimpleDateFormat
 import java.util.Properties
+import java.util.concurrent.TimeUnit
 
+import com.couchbase.client.java.{Bucket, CouchbaseCluster}
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
+import com.couchbase.client.java.env.DefaultCouchbaseEnvironment
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId
-import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
+import com.ebay.dukes.CacheClient
+import com.ebay.dukes.base.BaseDelegatingCacheClient
+import com.ebay.dukes.couchbase2.Couchbase2CacheClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
@@ -507,13 +512,15 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     if (publisherId != null && !publisherId.equals("")) {
       try {
         logger.debug("Get publisher domain for publisherId = " + publisherId + " from corp couchbase")
-        val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+       // val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+        //val bucket = TestCouchbase.bucket
+        val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
         if (bucket.exists("EPN_amspubdomain_" + publisherId)) {
           val array = bucket.get("EPN_amspubdomain_" + publisherId, classOf[JsonArrayDocument])
           for (i <- 0 until array.content().size()) {
             list += new Gson().fromJson(String.valueOf(array.content().get(i)), classOf[PubDomainInfo])
           }
-          CorpCouchbaseClient.returnClient(cacheClient)
+          CouchbaseClient.returnClient(cacheClient)
         }
       } catch {
         case e: Exception => {
@@ -616,14 +623,16 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     if (publisherId != null && !publisherId.equals("")) {
       try {
         logger.debug("Get advClickFilterMap for publisherId = " + publisherId + " from corp couchbase")
-        val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+        //val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+       // val bucket = TestCouchbase.bucket
+       val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
         if (bucket.exists("EPN_amspubfilter_" + publisherId)) {
           val array = bucket.get("EPN_amspubfilter_" + publisherId, classOf[JsonArrayDocument])
           for (i <- 0 until array.content().size()) {
             list += new Gson().fromJson(String.valueOf(array.content().get(i)), classOf[PubAdvClickFilterMapInfo])
           }
         }
-        CorpCouchbaseClient.returnClient(cacheClient)
+        CouchbaseClient.returnClient(cacheClient)
       } catch {
         case e: Exception => {
           logger.error("Corp Couchbase error while getting advClickFilterMap for publisherId = " + publisherId, e)
@@ -670,12 +679,14 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     if (publisherId != null && !publisherId.equals("")) {
       try {
         logger.debug("Get publisher domain for publisherId = " + publisherId + " from corp couchbase")
-        val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+       // val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+       // val bucket = TestCouchbase.bucket
+       val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
         if (bucket.exists("EPN_publisher_" + publisherId)) {
           val map = bucket.get("EPN_publisher_" + publisherId, classOf[JsonDocument])
           publisherInfo = new Gson().fromJson(String.valueOf(map.content()), classOf[PublisherInfo])
         }
-        CorpCouchbaseClient.returnClient(cacheClient)
+        CouchbaseClient.returnClient(cacheClient)
       } catch {
         case e: Exception => {
           logger.error("Corp Couchbase error while getting publisher status for publisherId = " + publisherId, e)
@@ -683,6 +694,8 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
         }
       }
     }
+    if (publisherInfo == null)
+      return ""
     publisherInfo.getApplication_status_enum
   }
 
@@ -696,12 +709,14 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     if (publisherId != null && !publisherId.equals("") && programId != -1) {
       try {
         logger.debug("Get progMap status for publisherId = " + publisherId + " from corp couchbase")
-        val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+       //val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+       // val bucket = TestCouchbase.bucket
+       val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
         if (bucket.exists("EPN_ppm_" + publisherId + "_" + programId)) {
           val map = bucket.get("EPN_ppm_" + publisherId + "_" + programId , classOf[JsonDocument])
           progPubMapInfo = new Gson().fromJson(String.valueOf(map.content()), classOf[ProgPubMapInfo])
         }
-        CorpCouchbaseClient.returnClient(cacheClient)
+        CouchbaseClient.returnClient(cacheClient)
       } catch {
         case e: Exception => {
           logger.error("Corp Couchbase error while getting progMap status for publisherId = " + publisherId, e)
@@ -709,6 +724,8 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
         }
       }
     }
+    if (progPubMapInfo == null)
+      return ""
     progPubMapInfo.getStatus_enum
   }
 
@@ -717,12 +734,14 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     if (campaignId != null && !campaignId.equals("")) {
       try {
         logger.debug("Get campaign status for campaignId = " + campaignId + " from corp couchbase")
-        val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+        //val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+        //val bucket = TestCouchbase.bucket
+        val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
         if (bucket.exists("EPN_pubcmpn_" + campaignId)) {
           val map = bucket.get("EPN_pubcmpn_" + campaignId, classOf[JsonDocument])
           campaign_sts = new Gson().fromJson(String.valueOf(map.content().get("0")), classOf[PublisherCampaignInfo])
         }
-        CorpCouchbaseClient.returnClient(cacheClient)
+        CouchbaseClient.returnClient(cacheClient)
       } catch {
         case e: Exception => {
           logger.error("Corp Couchbase error while getting campaign status for campaignId = " + campaignId, e)
@@ -730,6 +749,8 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
         }
       }
     }
+    if (campaign_sts == null)
+      return ""
     campaign_sts.getStatus_enum
   }
 
@@ -738,4 +759,19 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     if (splitted != null && splitted.nonEmpty) splitted(1)
     else throw new Exception("Invalid date field in metafile.")
   }
+
+/*
+  object TestCouchbase {
+    val environment = DefaultCouchbaseEnvironment.builder()
+      .mutationTokensEnabled(true)
+      .computationPoolSize(1000)
+      .connectTimeout(150000)
+      .queryTimeout(150000)
+      .build()
+
+    val cluster = CouchbaseCluster.create(environment, "scb-chocolate01.db.dev.ebayc3.com")
+    cluster.authenticate("appdl_report", "appdl_report")
+    val bucket = cluster.openBucket("appdl_report", 150000, TimeUnit.SECONDS)
+  }*/
+
 }

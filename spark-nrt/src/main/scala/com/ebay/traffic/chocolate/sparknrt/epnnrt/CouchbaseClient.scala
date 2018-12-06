@@ -1,30 +1,29 @@
-package com.ebay.traffic.chocolate.sparknrt.couchbase
+package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
 import java.util.Properties
 
-import com.couchbase.client.java.document.json.JsonObject
 import com.couchbase.client.java.Bucket
 import com.couchbase.client.java.datastructures.MutationOptionBuilder
+import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.dukes.CacheClient
 import com.ebay.dukes.base.BaseDelegatingCacheClient
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient
 import org.slf4j.LoggerFactory
 
-object CorpCouchbaseClient {
-
+object CouchbaseClient {
   @transient private lazy val logger = LoggerFactory.getLogger(this.getClass)
 
   @transient private lazy val properties = {
     val properties = new Properties
-    properties.load(getClass.getClassLoader.getResourceAsStream("couchbase.properties"))
+    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
     properties
   }
 
- // var dataSource = ""
-  @transient var dataSource = ""
+  // var dataSource = ""
+  @transient var dataSource = properties.getProperty("epnnrt.datasource")
 
   @transient private lazy val factory =
-    com.ebay.dukes.builder.FountCacheFactoryBuilder.newBuilder()
+    com.ebay.dukes.builder.GenericCacheFactoryBuilder.newBuilder()
       .cache(dataSource)
       .dbEnv(properties.getProperty("chocolate.corp.couchbase.dbEnv"))
       .deploymentSlot(properties.getProperty("chocolate.corp.couchbase.deploymentSlot"))
@@ -34,9 +33,9 @@ object CorpCouchbaseClient {
       .appName(properties.getProperty("chocolate.corp.couchbase.appName"))
       .build()
 
-  def initDataSource(cbDataSource: String): Unit = {
+ /* def initDataSource(cbDataSource: String): Unit = {
     dataSource = cbDataSource
-  }
+  }*/
 
   @transient var getBucketFunc: () => (Option[CacheClient], Bucket) = getBucket
 
