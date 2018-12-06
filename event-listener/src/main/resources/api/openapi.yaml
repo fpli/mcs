@@ -13,6 +13,13 @@ paths:
   /events:
     post:
       summary: Send one event to marketing tracking
+      parameters:
+        - $ref: '#/components/parameters/content-type'
+        - $ref: '#/components/parameters/user-agent'
+        - $ref: '#/components/parameters/referrer'
+        - $ref: '#/components/parameters/enduser-ctx'
+        - $ref: '#/components/parameters/tracking-ref'
+
       description: Send one event to marketing tracking
       tags:
         - events
@@ -24,17 +31,58 @@ paths:
             - 'https://api.ebay.com/oauth/scope/experience@public'
       responses:
         '200':
-          description: OK
+          description: Accepted
         '400':
-          description: Bad Request
+          description: Rejected due to message format
+          content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/errorModel'
         '500':
-          description: Internal Server Error
+          description: The call was unsuccessful due to exceptions on the Server
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Event'
 components:
+   parameters:
+      content-type:
+        name: Content-Type
+        in: header
+        required: true
+        schema:
+          type: string
+      user-agent:
+        name: User-Agent
+        in: header
+        required: true
+        schema:
+          type: string
+        description: 'Example: eBayIPhone/3.1.4'
+      referrer:
+        name: Referrer
+        in: header
+        required: false
+        schema:
+          type: string
+        description: 'Referrer of the click'
+      enduser-ctx:
+        name: X-EBAY-C-ENDUSERCTX
+        in: header
+        required: true
+        schema:
+          type: string
+        description: 'User context including userid'
+      tracking-ref:
+        name: X-EBAY-C-TRACKING-REF
+        in: header
+        required: true
+        schema:
+          type: string
+        description: 'Tracking header containing cguid, guid...'
+
    securitySchemes:
     app_scope_auth:
       type: oauth2
@@ -52,18 +100,67 @@ components:
     Event:
       type: object
       properties:
-        referrer:
-          type: "string"
-          example: "http://www.google.com"
         targetUrl:
           type: "string"
-          example: "htttp://www.ebay.com/deals"
-    CollectionResponse:
+          example: "htttps://www.ebay.com/deals"
+        referrer:
+          type: "string"
+          example: "htttps://www.google.com"
+    errorData:
+      type: object
+      description: >
+        Detail of each error modeled based on the cos error and exceptions spec:  https://github.corp.ebay.com/commerceos/cos-error-and-exceptions/blob/master/error-and-exception-handling.md
+      properties:
+        errorCode:
+          example:
+            4000: No User-Agent header
+            4001: No X-EBAY-C-ENDUSERCTX header
+            4002: No X-EBAY-C-TRACKING-REF header
+            4003: No Referrer in header nor in post body
+            4004: Illegal URL
+            4005: No query parameter
+            4006: No mkevt
+            4007: Invalid mkevt
+            5000: Internal Service Error
+          type: number
+          description: Value indicates type of error
+        domain:
+          type: string
+          enum:
+            - Marketing
+        subdomain:
+          type: string
+          enum:
+            - Tracking
+        category:
+          type: string
+          example:
+            REQUEST: Incorrect request e.g. auth, headers etc (Error Code 4xxx)
+            APPLICATION: Service related runtime exception (Error Code 5xxx)
+          enum:
+            - REQUEST # Issues with the request e.g. auth, headers etc.
+            - APPLICATION # application/runtime exception
+        message:
+          type: string
+        longMessage:
+          type: string
+        inputRefIds:
+          type: array
+          items:
+            type: string
+        outputRefIds:
+          type: array
+          items:
+            type: string
+        parameters:
+          type: array
+          items:
+            type: string
+    errorModel:
+      description: One or more error details
       type: object
       properties:
-        status:
-          type: "string"
-          example: "Accepted"
-        message:
-          type: "string"
-          example: "No query parameter"
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/errorData'
