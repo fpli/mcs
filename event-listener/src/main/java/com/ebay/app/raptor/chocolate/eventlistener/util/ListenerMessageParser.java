@@ -59,11 +59,18 @@ public class ListenerMessageParser {
     record.setCampaignId(campaignId);
     record.setPublisherId(DEFAULT_PUBLISHER_ID);
     record.setSnid((snid != null) ? snid : "");
-    record.setIsTracked(false);     //TODO No messages are Durability-tracked for now
+    record.setIsTracked(false);
 
     return record;
   }
 
+  /**
+   * Serialize the headers
+   * @param clientRequest input request
+   * @return headers string
+   */
+  //TODO: We may need to map the headers to the current format of chocolate result for backward compatibility.
+  // Or we change the result schema. Trade off needs to be considered here.
   private String serializeRequestHeaders(HttpServletRequest clientRequest) {
     StringBuilder requestHeaders = new StringBuilder();
     for (Enumeration<String> e = clientRequest.getHeaderNames(); e.hasMoreElements(); ) {

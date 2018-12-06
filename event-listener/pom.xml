@@ -20,32 +20,34 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-proxy</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jersey</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-ginger-client-starter</artifactId>
     </dependency>
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-ginger-server-starter</artifactId>
+      <artifactId>raptor-initializer-api</artifactId>
+    </dependency>
+    <!--eBay Core-->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-esams-starter</artifactId>
     </dependency>
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-initializer-starter</artifactId>
+      <artifactId>raptor-hystrix-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-metadata-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-qualys-starter</artifactId>
+    </dependency>
+    <!--eBay Operational-->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-cal-client-starter</artifactId>
     </dependency>
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
@@ -56,8 +58,16 @@
       <artifactId>raptor-configbean-starter</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jersey</artifactId>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-initializer-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-jersey-operational-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-jmx-starter</artifactId>
     </dependency>
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
@@ -65,7 +75,19 @@
     </dependency>
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-metadata-starter</artifactId>
+      <artifactId>raptor-mcf-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-opentracing-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-opentracing-cal-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-perfmon-starter</artifactId>
     </dependency>
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
@@ -83,13 +105,17 @@
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-validateinternals-starter</artifactId>
     </dependency>
+
+    <!--global config-->
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-mcf-starter</artifactId>
+      <artifactId>raptor-globalconfig-starter</artifactId>
     </dependency>
+
+    <!--Third Party-->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
+      <artifactId>spring-boot-starter-jersey</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -181,7 +207,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Test -->
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka_2.11</artifactId>
