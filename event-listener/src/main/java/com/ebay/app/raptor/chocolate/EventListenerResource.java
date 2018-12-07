@@ -7,8 +7,9 @@ import com.ebay.app.raptor.chocolate.gen.model.ErrorModel;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.kernel.calwrapper.CalTransaction;
-import com.ebay.raptor.calclient.api.ICalTransactionFactory;
+import com.ebay.kernel.calwrapper.CalTransactionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,7 +28,7 @@ import java.util.List;
  */
 
 @Path("/v1")
-
+@Component
 @Consumes(MediaType.APPLICATION_JSON)
 public class EventListenerResource implements EventsApi {
   @Autowired
@@ -35,9 +36,6 @@ public class EventListenerResource implements EventsApi {
 
   @Autowired
   private HttpServletResponse response;
-
-  @Autowired
-  ICalTransactionFactory calTransactionFactory;
 
   /**
    * Generate error response
@@ -63,10 +61,10 @@ public class EventListenerResource implements EventsApi {
   @Override
   public Response event(Event body, String contentType, String userAgent, String X_EBAY_C_ENDUSERCTX, String
     X_EBAY_C_TRACKING_REF, String referrer) {
-    CalTransaction calTransaction = calTransactionFactory.create("MarketingCollectionService");
+    CalTransaction calTransaction = CalTransactionFactory.create("URL");
+    calTransaction.setName("MktCollectionSvc");
     Response res;
     try {
-      calTransaction.setName("events");
       String result = CollectionService.getInstance().collect(request, body);
       if (result.equals(Constants.ACCEPTED)) {
         res = Response.ok().entity(result).build();
