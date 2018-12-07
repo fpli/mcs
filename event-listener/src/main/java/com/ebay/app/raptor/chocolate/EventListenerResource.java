@@ -29,7 +29,6 @@ import java.util.List;
 @Path("/v1")
 
 @Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
 public class EventListenerResource implements EventsApi {
   @Autowired
   private HttpServletRequest request;
@@ -65,20 +64,24 @@ public class EventListenerResource implements EventsApi {
   public Response event(Event body, String contentType, String userAgent, String X_EBAY_C_ENDUSERCTX, String
     X_EBAY_C_TRACKING_REF, String referrer) {
     CalTransaction calTransaction = calTransactionFactory.create("MarketingCollectionService");
+    Response res;
     try {
       calTransaction.setName("events");
       String result = CollectionService.getInstance().collect(request, body);
-
       if (result.equals(Constants.ACCEPTED)) {
-        return Response.ok().entity(result).build();
+        res = Response.ok().entity(result).build();
       } else {
-        return Response.status(Response.Status.BAD_REQUEST).entity(makeBadRequestError(result)).build();
+        res = Response.status(Response.Status.BAD_REQUEST).entity(makeBadRequestError(result)).build();
       }
+      calTransaction.setStatus("0");
+    } catch (Exception e) {
+      calTransaction.setStatus(e);
+      res = Response.status(Response.Status.BAD_REQUEST).entity(makeBadRequestError(Constants.ERROR_INTERNAL_SERVICE)).build();
     }
     finally {
-      calTransaction.setStatus("0");
       calTransaction.completed();
     }
+    return res;
   }
 }
 
