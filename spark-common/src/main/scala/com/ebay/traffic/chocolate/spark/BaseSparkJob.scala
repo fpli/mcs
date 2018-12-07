@@ -193,18 +193,15 @@ abstract class BaseSparkJob(val jobName: String,
         spark.conf.set("spark.sql.orc.filterPushdown", "true")
         spark.read.orc(inputPaths: _*)
       }
-
-      /**
-        * case "csv" => spark.read.format("com.databricks.spark.csv")
-        * .option("delimiter", delimiterMap(delimiter))
-        * .schema(schema)
-        * .load(inputPath)
-        */
-      case "csv" => {
-        spark.createDataFrame(sc.textFile(inputPaths.mkString(","))
-          .map(asRow(_, delimiterMap(delimiter)))
-          .map(toDfRow(_, schema)).filter(_ != null), schema)
-      }
+      case "csv" => spark.read.format("com.databricks.spark.csv")
+        .option("delimiter", delimiterMap(delimiter))
+        .schema(schema)
+        .load(inputPaths: _*)
+//      case "csv" => {
+//        spark.createDataFrame(sc.textFile(inputPaths.mkString(","))
+//          .map(asRow(_, delimiterMap(delimiter)))
+//          .map(toDfRow(_, schema)).filter(_ != null), schema)
+//      }
       case "sequence" => {
         spark.createDataFrame(sc.sequenceFile[String, String](inputPaths.mkString(","))
           .values.map(asRow(_, delimiterMap(delimiter)))
