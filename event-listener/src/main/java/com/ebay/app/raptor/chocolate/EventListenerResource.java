@@ -6,10 +6,12 @@ import com.ebay.app.raptor.chocolate.gen.model.ErrorData;
 import com.ebay.app.raptor.chocolate.gen.model.ErrorModel;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
-import com.ebay.kernel.calwrapper.CalTransaction;
-import com.ebay.kernel.calwrapper.CalTransactionFactory;
+import com.ebay.raptor.opentracing.Tags;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +30,6 @@ import java.util.List;
  */
 
 @Path("/v1")
-@Component
 @Consumes(MediaType.APPLICATION_JSON)
 public class EventListenerResource implements EventsApi {
   @Autowired
@@ -61,25 +62,25 @@ public class EventListenerResource implements EventsApi {
   @Override
   public Response event(Event body, String contentType, String userAgent, String X_EBAY_C_ENDUSERCTX, String
     X_EBAY_C_TRACKING_REF, String referrer) {
-    CalTransaction calTransaction = CalTransactionFactory.create("URL");
-    calTransaction.setName("MktCollectionSvc");
-    Response res;
-    try {
-      String result = CollectionService.getInstance().collect(request, body);
-      if (result.equals(Constants.ACCEPTED)) {
-        res = Response.ok().entity(result).build();
-      } else {
-        res = Response.status(Response.Status.BAD_REQUEST).entity(makeBadRequestError(result)).build();
+
+    Tracer tracer = GlobalTracer.get();
+    try(Scope scope = tracer.buildSpan("mktCollectionSvc").withTag(Tags.TYPE.getKey(), "URL").startActive(true)){
+      Span span = scope.span();
+      Response res;
+      try {
+        String result = CollectionService.getInstance().collect(request, body);
+        if (result.equals(Constants.ACCEPTED)) {
+          res = Response.ok().entity(result).build();
+        } else {
+          res = Response.status(Response.Status.BAD_REQUEST).entity(makeBadRequestError(result)).build();
+        }
+        Tags.STATUS.set(span, "0");
+      } catch (Exception e) {
+        Tags.STATUS.set(span, e.getClass().getSimpleName());
+        res = Response.status(Response.Status.BAD_REQUEST).entity(makeBadRequestError(Constants.ERROR_INTERNAL_SERVICE)).build();
       }
-      calTransaction.setStatus("0");
-    } catch (Exception e) {
-      calTransaction.setStatus(e);
-      res = Response.status(Response.Status.BAD_REQUEST).entity(makeBadRequestError(Constants.ERROR_INTERNAL_SERVICE)).build();
+      return res;
     }
-    finally {
-      calTransaction.completed();
-    }
-    return res;
   }
 }
 
