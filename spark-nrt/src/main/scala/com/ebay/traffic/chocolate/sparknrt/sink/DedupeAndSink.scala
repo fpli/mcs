@@ -36,7 +36,7 @@ object DedupeAndSink extends App {
   }
 }
 
-class  DedupeAndSink(params: Parameter)
+class DedupeAndSink(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
   @transient var properties: Properties = {
