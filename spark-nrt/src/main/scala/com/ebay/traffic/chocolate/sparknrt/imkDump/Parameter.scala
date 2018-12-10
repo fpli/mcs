@@ -10,7 +10,8 @@ case class Parameter(appName: String = "Sword",
                      channel: String = "",
                      workDir: String = "",
                      outPutDir: String = "",
-                     tmpDir: String = "")
+                     tmpDir: String = "",
+                     elasticsearchUrl: String = "")
 
 object Parameter {
 
@@ -46,6 +47,11 @@ object Parameter {
       .required
       .valueName("tmpDir")
       .action((cont, param) => param.copy(tmpDir = cont))
+
+    opt[String]("elasticsearchUrl")
+      .optional
+      .valueName("elasticsearchUrl")
+      .action((cont, param) => param.copy(elasticsearchUrl = cont))
   }
 
   def apply(args: Array[String]): Parameter = parser.parse(args, Parameter()) match {

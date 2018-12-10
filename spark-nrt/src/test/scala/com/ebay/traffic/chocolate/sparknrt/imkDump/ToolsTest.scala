@@ -2,6 +2,9 @@ package com.ebay.traffic.chocolate.sparknrt.imkDump
 
 import org.scalatest.FunSuite
 
+/**
+  * Created by ganghuang on 12/3/18.
+  */
 class ToolsTest extends FunSuite {
 
   test("test getDateTimeFromTimestamp") {
@@ -92,6 +95,14 @@ class ToolsTest extends FunSuite {
     assert(Tools.convertRotationId("711-15380-6615-0630") == "7111538066150630")
     assert(Tools.convertRotationId("711-15380-6615-06303333333") == "")
     assert(Tools.convertRotationId("711-15380-6615-063a0") == "")
+  }
+
+  test("test getOutPutFileDate") {
+    assert(Tools.getOutPutFileDate.length == 15)
+  }
+
+  test("test getBatchId") {
+    println(Tools.getBatchId)
   }
 
 }

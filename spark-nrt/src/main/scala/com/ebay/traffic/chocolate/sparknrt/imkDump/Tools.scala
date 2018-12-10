@@ -1,7 +1,8 @@
 package com.ebay.traffic.chocolate.sparknrt.imkDump
 
 import java.net.URL
-import java.text.SimpleDateFormat
+import java.text.{DecimalFormat, SimpleDateFormat}
+import java.util.Date
 
 import org.apache.commons.lang3.StringUtils
 
@@ -59,6 +60,11 @@ object Tools extends Serializable{
   def getDateFromTimestamp(timestamp: Long): String = {
     val df = new SimpleDateFormat("yyyy-MM-dd")
     df.format(timestamp)
+  }
+
+  def getOutPutFileDate: String = {
+    val df = new SimpleDateFormat("yyyyMMdd_HHmmss")
+    df.format(new Date())
   }
 
   def getParamValueFromUrl(uri: String, key: String): String = {
@@ -194,6 +200,16 @@ object Tools extends Serializable{
     } else {
       ""
     }
+  }
+
+  /**
+    * get batch id
+    * @return batch id byte array
+    */
+  def getBatchId: String = {
+    val date = new Date()
+    val formatter = new DecimalFormat("00")
+    formatter.format(date.getHours) + formatter.format(date.getMinutes) + formatter.format(date.getSeconds)
   }
 
 }

@@ -14,6 +14,9 @@ import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 
+/**
+  * Created by ganghuang on 12/3/18.
+  */
 class TestImkDumpJob extends BaseFunSuite{
 
   private val tmpPath = createTempDir()
@@ -43,7 +46,8 @@ class TestImkDumpJob extends BaseFunSuite{
       "--channel", "PAID_SEARCH",
       "--workDir", workDir,
       "--outPutDir", outPutDir,
-      "--tmpDir", tmpDir
+      "--tmpDir", tmpDir,
+      "--elasticsearchUrl", "http://10.148.185.16:9200"
     )
     val params = Parameter(args)
     val job = new ImkDumpJob(params)
@@ -53,10 +57,10 @@ class TestImkDumpJob extends BaseFunSuite{
 
     assert (fs.exists(dedupeMetaPath))
     job.run()
-    val outputFolder = new File(outPutDir + "/PAID_SEARCH/2018-05-01")
+    val outputFolder = new File(outPutDir + "/PAID_SEARCH/")
     assert(outputFolder.listFiles().length > 0)
     outputFolder.listFiles().foreach(file => {
-      assert(file.toPath.toString.contains("dw_imk.imk_20180501"))
+      assert(file.toPath.toString.contains("imk_rvr_trckng_"))
     })
     job.stop()
 
