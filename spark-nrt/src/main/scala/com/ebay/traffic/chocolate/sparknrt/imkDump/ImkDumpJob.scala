@@ -93,7 +93,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       })
       metrics.meter("imk.dump.spark.out", datesFiles.size)
     })
-
+    metrics.flushMetrics()
   }
 
   def imkDumpCore(df: DataFrame): DataFrame = {
