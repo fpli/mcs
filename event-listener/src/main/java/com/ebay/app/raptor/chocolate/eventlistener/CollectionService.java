@@ -57,7 +57,7 @@ public class CollectionService {
    */
   public String collect(HttpServletRequest request, Event event) {
 
-    if(request.getHeader("User-Agent") == null) {
+    if(request.getHeader("User-Agent") == null && request.getHeader("user-agent") == null) {
       logger.error(Constants.ERROR_NO_USER_AGENT);
       esMetrics.meter("NoAgent");
       return Constants.ERROR_NO_USER_AGENT;
@@ -75,7 +75,7 @@ public class CollectionService {
       return Constants.ERROR_NO_TRACKING;
     }
 
-    if(request.getHeader("Referrer") == null && event.getReferrer() == null) {
+    if(request.getHeader("Referrer") == null && request.getHeader("referrer") == null && event.getReferrer() == null) {
       logger.error(Constants.ERROR_NO_REFERRER);
       esMetrics.meter("NoReferrer");
       return Constants.ERROR_NO_REFERRER;
