@@ -110,10 +110,10 @@ public class EventListenerServiceTest {
 
     request.addHeader("X-EBAY-C-ENDUSERCTX", "deviceId=ABCD,deviceIdSource=4PP,appVersion=3.3.0");
     response = CollectionService.getInstance().collect(request, event);
-    assertEquals(Constants.ERROR_NO_TRACKING_REF, response);
+    assertEquals(Constants.ERROR_NO_TRACKING, response);
 
 
-    request.addHeader("X-EBAY-C-TRACKING-REF", "cguid=xxx");
+    request.addHeader("X-EBAY-C-TRACKING", "cguid=xxx");
     response = CollectionService.getInstance().collect(request, event);
     assertEquals(Constants.ERROR_NO_REFERRER, response);
 

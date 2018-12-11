@@ -69,10 +69,10 @@ public class CollectionService {
       return Constants.ERROR_NO_ENDUSERCTX;
     }
 
-    if(request.getHeader("X-EBAY-C-TRACKING-REF") == null) {
-      logger.error(Constants.ERROR_NO_TRACKING_REF);
-      esMetrics.meter("NoTrackingRef");
-      return Constants.ERROR_NO_TRACKING_REF;
+    if(request.getHeader("X-EBAY-C-TRACKING") == null) {
+      logger.error(Constants.ERROR_NO_TRACKING);
+      esMetrics.meter("NoTracking");
+      return Constants.ERROR_NO_TRACKING;
     }
 
     if(request.getHeader("Referrer") == null && event.getReferrer() == null) {
