@@ -22,7 +22,7 @@ import org.apache.spark.sql.functions._
 class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, params.mode){
   lazy val outputDir: String = params.outPutDir + "/" + params.channel + "/"
 
-  lazy val epnNrtTempDir: String = params.tmpDir + "/" + params.channel + "/"
+  lazy val imkWorkDir: String = params.imkWorkDir + "/" + params.channel + "/"
 
   lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
 
@@ -62,7 +62,6 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     }
   }
 
-
   /**
     * :: DeveloperApi ::
     * Implemented by subclasses to run the spark job.
@@ -71,6 +70,10 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     var dedupeOutputMeta = inputMetadata.readDedupeOutputMeta(".imk")
     if (dedupeOutputMeta.length > batchSize) {
       dedupeOutputMeta = dedupeOutputMeta.slice(0, batchSize)
+    }
+    val imkWorkDirPath = new Path(imkWorkDir)
+    if (!fs.exists(imkWorkDirPath)) {
+      fs.mkdirs(imkWorkDirPath)
     }
 
     dedupeOutputMeta.foreach(metaIter => {
@@ -81,19 +84,19 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
         val df = readFilesAsDFEx(datesFile._2)
         logger.info("load DataFrame, date=" + date +", with files=" + datesFile._2.mkString(","))
 
-        val imkDf = nrtCore(df)
+        val imkDf = imkDumpCore(df)
 
-        saveDFToFiles(imkDf, epnNrtTempDir, "gzip", "csv", "bel", headerHint = true)
-        renameFile(outputDir, epnNrtTempDir, "imk_rvr_trckng_")
+        saveDFToFiles(imkDf, imkWorkDir, "gzip", "csv", "bel", headerHint = true)
+        renameFile("imk_rvr_trckng_")
 
         inputMetadata.deleteDedupeOutputMeta(file)
       })
-      metrics.meter("imk.dump.1.out", datesFiles.size)
+      metrics.meter("imk.dump.spark.out", datesFiles.size)
     })
 
   }
 
-  def nrtCore(df: DataFrame): DataFrame = {
+  def imkDumpCore(df: DataFrame): DataFrame = {
     df
       .withColumn("batch_id", getBatchIdUdf())
       .withColumn("file_id", lit(""))
@@ -190,19 +193,20 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getRotationIdUdf: UserDefinedFunction = udf((uri: String) => Tools.convertRotationId(Tools.getParamValueFromUrl(uri, "rid")))
   val getBatchIdUdf: UserDefinedFunction = udf(() => Tools.getBatchId)
 
-  def renameFile(outDir: String, tmpDir: String, prefix: String):Unit = {
+  def renameFile(prefix: String):Unit = {
     // rename result to output dir
-    val outputDir = new Path(outDir + "/")
-    if (!fs.exists(outputDir)) {
-      fs.mkdirs(outputDir)
+    val outputDirPath = new Path(outputDir)
+    if (!fs.exists(outputDirPath)) {
+      fs.mkdirs(outputDirPath)
     }
 
     val hostName = InetAddress.getLocalHost.getHostName
 
-    val fileStatus = fs.listStatus(new Path(tmpDir))
+    val fileStatus = fs.listStatus(new Path(imkWorkDir))
     fileStatus.filter(status => status.getPath.getName != "_SUCCESS").foreach(fileStatus => {
       val src = fileStatus.getPath
-      val target = new Path(outputDir, prefix + Tools.getOutPutFileDate + ".V" + outPutFileVersion + "." + hostName + ".dat.gz")
+//      imk_rvr_trckng_????????_??????.V4.*dat.gz
+      val target = new Path(outputDir, prefix + Tools.getOutPutFileDate + ".V" + outPutFileVersion + "." + hostName + "." + params.channel + ".dat.gz")
       logger.info("Rename from: " + src.toString + " to: " + target.toString)
       fs.rename(src, target)
     })

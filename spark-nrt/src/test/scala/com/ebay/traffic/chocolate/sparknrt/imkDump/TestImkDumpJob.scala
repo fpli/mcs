@@ -22,7 +22,7 @@ class TestImkDumpJob extends BaseFunSuite{
   private val tmpPath = createTempDir()
   private val workDir = tmpPath + "/workDir/"
   private val outPutDir = tmpPath + "/outPutDir/"
-  private val tmpDir = tmpPath + "/tmpDir/"
+  private val imkWorkDir = tmpPath + "/imkWorkDir/"
 
   private val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
@@ -46,7 +46,7 @@ class TestImkDumpJob extends BaseFunSuite{
       "--channel", "PAID_SEARCH",
       "--workDir", workDir,
       "--outPutDir", outPutDir,
-      "--tmpDir", tmpDir,
+      "--imkWorkDir", imkWorkDir,
       "--elasticsearchUrl", "http://10.148.185.16:9200"
     )
     val params = Parameter(args)

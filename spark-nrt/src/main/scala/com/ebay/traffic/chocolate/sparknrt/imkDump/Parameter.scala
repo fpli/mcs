@@ -10,7 +10,7 @@ case class Parameter(appName: String = "Sword",
                      channel: String = "",
                      workDir: String = "",
                      outPutDir: String = "",
-                     tmpDir: String = "",
+                     imkWorkDir: String = "",
                      elasticsearchUrl: String = "")
 
 object Parameter {
@@ -43,10 +43,10 @@ object Parameter {
       .valueName("outPutDir")
       .action((cont, param) => param.copy(outPutDir = cont))
 
-    opt[String]("tmpDir")
+    opt[String]("imkWorkDir")
       .required
-      .valueName("tmpDir")
-      .action((cont, param) => param.copy(tmpDir = cont))
+      .valueName("imkWorkDir")
+      .action((cont, param) => param.copy(imkWorkDir = cont))
 
     opt[String]("elasticsearchUrl")
       .optional
