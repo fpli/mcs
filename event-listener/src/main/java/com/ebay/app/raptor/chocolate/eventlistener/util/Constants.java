@@ -13,7 +13,7 @@ public class Constants {
   public static final String CAMPID = "campid";
   public static final String ERROR_NO_USER_AGENT="No User-Agent header";
   public static final String ERROR_NO_ENDUSERCTX="No X-EBAY-C-ENDUSERCTX header";
-  public static final String ERROR_NO_TRACKING_REF="No X-EBAY-C-TRACKING-REF header";
+  public static final String ERROR_NO_TRACKING ="No X-EBAY-C-TRACKING header";
   public static final String ERROR_NO_REFERRER="No Referrer in header nor in post body";
   public static final String ERROR_ILLEGAL_URL = "Illegal url";
   public static final String ERROR_NO_QUERY_PARAMETER = "No query parameter";
@@ -31,7 +31,7 @@ public class Constants {
   static {
     errorMessageMap.put(ERROR_NO_USER_AGENT, 4000);
     errorMessageMap.put(ERROR_NO_ENDUSERCTX, 4001);
-    errorMessageMap.put(ERROR_NO_TRACKING_REF, 4002);
+    errorMessageMap.put(ERROR_NO_TRACKING, 4002);
     errorMessageMap.put(ERROR_NO_REFERRER, 4003);
     errorMessageMap.put(ERROR_ILLEGAL_URL, 4004);
     errorMessageMap.put(ERROR_NO_QUERY_PARAMETER, 4005);

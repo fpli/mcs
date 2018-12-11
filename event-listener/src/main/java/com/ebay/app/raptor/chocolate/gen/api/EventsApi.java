@@ -10,7 +10,7 @@ import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @Api(description = "The Events API")
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2018-12-06T16:28:11.106+08:00[Asia/Shanghai]")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2018-12-11T13:52:36.816+08:00[Asia/Shanghai]")
 public interface EventsApi {
     @POST
     @Path("/events")
@@ -27,5 +27,5 @@ public interface EventsApi {
       @ApiResponse(code = 500, message = "The call was unsuccessful due to exceptions on the Server", response = Void.class) }
     )
     @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public') and hasAuthority('https://api.ebay.com/oauth/scope/base@public') and hasAuthority('https://api.ebay.com/oauth/scope/experience@public')")
-    Response event(Event body, @HeaderParam("Content-Type")  String contentType, @HeaderParam("User-Agent")  @ApiParam("Example: eBayIPhone/3.1.4") String userAgent, @HeaderParam("X-EBAY-C-ENDUSERCTX")  @ApiParam("User context including userid") String X_EBAY_C_ENDUSERCTX, @HeaderParam("X-EBAY-C-TRACKING-REF")  @ApiParam("Tracking header containing cguid, guid...") String X_EBAY_C_TRACKING_REF, @HeaderParam("Referrer")  @ApiParam("Referrer of the click") String referrer);
+    Response event(Event body, @HeaderParam("Content-Type")  String contentType, @HeaderParam("User-Agent")  @ApiParam("Example: eBayIPhone/3.1.4") String userAgent, @HeaderParam("X-EBAY-C-ENDUSERCTX")  @ApiParam("User context including userid") String X_EBAY_C_ENDUSERCTX, @HeaderParam("X-EBAY-C-TRACKING")  @ApiParam("Tracking header containing cguid, guid...") String X_EBAY_C_TRACKING, @HeaderParam("Referrer")  @ApiParam("Referrer of the click") String referrer);
 }

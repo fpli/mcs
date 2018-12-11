@@ -76,7 +76,7 @@ components:
           type: string
         description: 'User context including userid'
       tracking-ref:
-        name: X-EBAY-C-TRACKING-REF
+        name: X-EBAY-C-TRACKING
         in: header
         required: true
         schema:
@@ -115,7 +115,7 @@ components:
           example:
             4000: No User-Agent header
             4001: No X-EBAY-C-ENDUSERCTX header
-            4002: No X-EBAY-C-TRACKING-REF header
+            4002: No X-EBAY-C-TRACKING header
             4003: No Referrer in header nor in post body
             4004: Illegal URL
             4005: No query parameter
