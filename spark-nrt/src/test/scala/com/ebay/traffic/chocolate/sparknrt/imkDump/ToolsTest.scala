@@ -32,13 +32,6 @@ class ToolsTest extends FunSuite {
     assert(Tools.getParamValueFromUrl("http://www.ebay.com?A=test", "a") == "test")
   }
 
-  test("test getUserIdFromHeader") {
-    assert(Tools.getUserIdFromHeader("X-EBAY-C-ENDUSERCTX:userid=gang") == "gang")
-    assert(Tools.getUserIdFromHeader("X-EBAY-C-ENDUSERCTX:loc=ch, userid=gang") == "gang")
-    assert(Tools.getUserIdFromHeader("X-EBAY-C-ENDUSERCTX:userid=0") == "0")
-    assert(Tools.getUserIdFromHeader("X-EBAY-C-ENDUSERCTX:loc=ch") == "")
-  }
-
   test("test getUserMapInd") {
     assert(Tools.getUserMapInd("gang") == "1")
     assert(Tools.getUserMapInd("") == "0")
@@ -66,13 +59,6 @@ class ToolsTest extends FunSuite {
     == 8)
   }
 
-  test("test getCGuidFromCookie") {
-    assert(Tools.getCGuidFromCookie("Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/76cbd9ea15b0a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", "cguid")
-    == "76cbd9ea15b0a93d12831833fff1c106")
-    assert(Tools.getCGuidFromCookie("Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/76cbd9ea15b0a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", "guid")
-    == "6cbd9ea15b0a93d12831833fff1c1085")
-  }
-
   test("test getParamFromQuery") {
     val keywordParams: Array[String] = Array("_nkw")
     assert(Tools.getParamFromQuery("http://www.ebay.com?_nkw=apple", keywordParams) == "apple")
@@ -84,11 +70,6 @@ class ToolsTest extends FunSuite {
     assert(Tools.getCommandType("IMPRESSION") == "4")
     assert(Tools.getCommandType("CLICK") == "1")
     assert(Tools.getCommandType("") == "1")
-  }
-
-  test("test getSvidFromCookie") {
-    assert(Tools.getSvidFromCookie("Cookie: npii=btguid/2fe65cc415c0ab1ca77184baf77400565d8c95b4^trm/mojo1%3Ds%2F005121%2F20%3B+svid%3D1108043186490388215d8c95b4^cguid/2fe65cc415c0ab1ca77184baf77400545d8c95b4^|X-eBay-Web-Tier-IP: 10.164.225.21")
-      == "110804318649038821")
   }
 
   test("test convertRotationId") {
@@ -105,11 +86,17 @@ class ToolsTest extends FunSuite {
     println(Tools.getBatchId)
   }
 
-  test("test getGuidFromHeader") {
-    assert(Tools.getGuidFromHeader("X-EBAY-C-TRACKING: guid=cc3af5c11660ac3d8844157cff04c381,cguid=cc3af5c71660ac3d8844157cff04c37c,tguid=cc3af5c11660ac3d8844157cff04c381,pageid=2067260,cobrandId=2", "cguid")
-      == "cc3af5c71660ac3d8844157cff04c37c")
-    assert(Tools.getGuidFromHeader("", "cguid") == "")
-    assert(Tools.getGuidFromHeader("X-EBAY-C-TRACKING: ut=123", "cguid") == "")
+  test("test getFromHeader") {
+    assert(Tools.getFromHeader("X-EBAY-C-TRACKING: guid=cc3af5c11660ac3d8844157cff04c381,cguid=cc3af5c71660ac3d8844157cff04c37c,tguid=cc3af5c11660ac3d8844157cff04c381,pageid=2067260,cobrandId=2",
+      "X-EBAY-C-TRACKING",
+    "cguid") == "cc3af5c71660ac3d8844157cff04c37c")
+    assert(Tools.getFromHeader("X-EBAY-C-TRACKING: cguid=cc3af5c71660ac3d8844157cff04c37c",
+      "X-EBAY-C-TRACKING",
+      "cguid") == "cc3af5c71660ac3d8844157cff04c37c")
+    assert(Tools.getFromHeader("", "X-EBAY-C-TRACKING",
+      "cguid") == "")
+    assert(Tools.getFromHeader("X-EBAY-C-TRACKING: guid=cc3", "X-EBAY-C-TRACKING",
+      "cguid") == "")
   }
 
 }

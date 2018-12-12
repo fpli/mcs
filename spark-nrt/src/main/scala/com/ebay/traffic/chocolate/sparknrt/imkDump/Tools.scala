@@ -29,6 +29,12 @@ object Tools extends Serializable{
     map
   }
 
+  /**
+    * get one field from header
+    * @param request header
+    * @param key field key
+    * @return value
+    */
   def getValueFromRequestHeader(request: String, key: String): String = {
     if (StringUtils.isNotEmpty(request)) {
       request.split("\\|").foreach(paramMapString => {
@@ -47,6 +53,11 @@ object Tools extends Serializable{
     df.format(timestamp)
   }
 
+  /**
+    * get query string from url string
+    * @param uri url string
+    * @return query string
+    */
   def getQueryString(uri: String): String = {
     // do we need catch malformed url? illegal url are filtered in event-listener
     val query = new URL(uri).getQuery
@@ -67,6 +78,12 @@ object Tools extends Serializable{
     df.format(new Date())
   }
 
+  /**
+    * get one param from the url string
+    * @param uri url string
+    * @param key param name
+    * @return param value
+    */
   def getParamValueFromUrl(uri: String, key: String): String = {
     val query = new URL(uri).getQuery
     if (StringUtils.isNotEmpty(query)) {
@@ -80,6 +97,11 @@ object Tools extends Serializable{
     ""
   }
 
+  /**
+    * client id is the first part of rotation id
+    * @param rotationId rotation id
+    * @return client id
+    */
   def getClientIdFromRotationId(rotationId: String): String = {
     if (StringUtils.isNotEmpty(rotationId)
       && rotationId.length <= 25
@@ -91,6 +113,11 @@ object Tools extends Serializable{
     }
   }
 
+  /**
+    * get item id from url, only support itm and i page now
+    * @param uri url string
+    * @return item id
+    */
   def getItemIdFromUri(uri: String): String = {
     val path = new URL(uri).getPath
     if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))){
@@ -102,66 +129,28 @@ object Tools extends Serializable{
     ""
   }
 
-  def getBrowserType(requestHeader: String): Int = {
-    val userAgentStr = getValueFromRequestHeader(requestHeader, "User-Agent")
-    if (userAgentStr == null)
-      return user_agent_map("NULL_USERAGENT")
-    val agentStr = userAgentStr.toLowerCase()
-    for ((k, v) <- user_agent_map) {
-      if (agentStr.contains(k))
-        return v
+  /**
+    * get browser type by user agent
+    * @param userAgent user agent
+    * @return browser type
+    */
+  def getBrowserType(userAgent: String): Int = {
+    if (StringUtils.isNotEmpty(userAgent)) {
+      val agentStr = userAgent.toLowerCase()
+      for ((k, v) <- user_agent_map) {
+        if (agentStr.contains(k))
+          return v
+      }
     }
     user_agent_map("UNKNOWN_USERAGENT")
   }
 
-  def getCGuidFromCookie(request_header: String, cguid: String): String = {
-    val cookie = getValueFromRequestHeader(request_header, "Cookie")
-    if (StringUtils.isNotEmpty(cookie)) {
-      val index = cookie.indexOf(cguid)
-      if (index != -1)
-        return cookie.substring(index + 6, index + 38)
-    }
-    ""
-  }
-
   /**
-    * get cguid or tguid from X-EBAY-C-TRACKING header
-    * @param request_header request header
-    * @param guid cguid or tguid
-    * @return
+    * get one value from a list of param names
+    * @param uri url string
+    * @param keys param name list
+    * @return param value
     */
-  def getGuidFromHeader(request_header: String, guid: String): String = {
-    if (StringUtils.isNotEmpty(request_header)) {
-      val value = getValueFromRequestHeader(request_header, "X-EBAY-C-TRACKING")
-      if (StringUtils.isNotEmpty(value)) {
-        value.split(",").foreach(keyValueMap => {
-          val keyValueArray = keyValueMap.split("=")
-          if(keyValueArray(0).trim.equalsIgnoreCase(guid)
-            && keyValueArray.length == 2 && StringUtils.isNotEmpty(keyValueArray(1).trim)) {
-            return keyValueArray(1).trim
-          }
-        })
-      }
-    }
-    ""
-  }
-
-  /**
-    * get extrnl_cookie from svid in request header cookie
-    * @param request_header header of request
-    * @return Svid
-    */
-  def getSvidFromCookie(request_header: String): String = {
-    val cookie = getValueFromRequestHeader(request_header, "Cookie")
-    if (StringUtils.isNotEmpty(cookie)) {
-      val index = cookie.indexOf("svid")
-      if (index != -1) {
-        return cookie.substring(index + 7, index + 25)
-      }
-    }
-    ""
-  }
-
   def getParamFromQuery(uri: String, keys: Array[String]): String = {
     val query = new URL(uri).getQuery
     if(StringUtils.isNotEmpty(query)) {
@@ -178,6 +167,11 @@ object Tools extends Serializable{
     ""
   }
 
+  /**
+    * get command type
+    * @param commandType command
+    * @return
+    */
   def getCommandType(commandType: String): String = {
     commandType match {
       case "IMPRESSION" => "4"
@@ -185,18 +179,36 @@ object Tools extends Serializable{
     }
   }
 
-  def getUserIdFromHeader(request_header: String): String = {
-    if(StringUtils.isNotEmpty(request_header)) {
-      val value = getValueFromRequestHeader(request_header, "X-EBAY-C-ENDUSERCTX")
-      if(StringUtils.isNotEmpty(value)) {
-        value.split(",").foreach(keyValueMap => {
-          val keyValueArray = keyValueMap.split("=")
-          if(keyValueArray(0).trim.equalsIgnoreCase("userid")
-            && keyValueArray.length == 2 && StringUtils.isNotEmpty(keyValueArray(1).trim)) {
-            return keyValueArray(1).trim
-          }
-        })
-      }
+  /**
+    * get one field value from one header
+    * @param request_header all headers
+    * @param headerField header name
+    * @param key field name
+    * @return value
+    */
+  def getFromHeader(request_header: String, headerField: String, key: String): String = {
+    if (StringUtils.isNotEmpty(request_header)) {
+      getValueFromHeaderField(getValueFromRequestHeader(request_header, headerField), key)
+    } else {
+      ""
+    }
+  }
+
+  /**
+    * get value from one header field
+    * @param headerField field of one header
+    * @param key key name
+    * @return value
+    */
+  def getValueFromHeaderField(headerField: String, key: String): String = {
+    if(StringUtils.isNotEmpty(headerField)) {
+      headerField.split(",").foreach(keyValueMap => {
+        val keyValueArray = keyValueMap.split("=")
+        if(keyValueArray(0).trim.equalsIgnoreCase(key)
+          && keyValueArray.length == 2 && StringUtils.isNotEmpty(keyValueArray(1).trim)) {
+          return keyValueArray(1).trim
+        }
+      })
     }
     ""
   }
