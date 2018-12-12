@@ -30,8 +30,14 @@ public class ScpJob {
             throw new Exception("init error");
         }
         String env = "prod".equalsIgnoreCase(args[0]) ? "prod" : "qa";
-        init(env);
-        runJob();
+        try {
+            init(env);
+            runJob();
+        } catch (Exception e) {
+            throw new Exception(e);
+        } finally {
+            shutdown();
+        }
     }
 
     /**
@@ -62,6 +68,13 @@ public class ScpJob {
 
         ESMetrics.init(properties.getProperty("imkscp.es.prefix"), properties.getProperty("imkscp.es.url"));
         esMetrics = ESMetrics.getInstance();
+    }
+
+    /**
+     * shutdown job
+     */
+    private static void shutdown() {
+        esMetrics.flushMetrics();
     }
 
     /**
