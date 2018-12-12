@@ -6,7 +6,6 @@ import com.ebay.app.raptor.chocolate.gen.model.ErrorData;
 import com.ebay.app.raptor.chocolate.gen.model.ErrorModel;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
-import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.raptor.opentracing.Tags;
@@ -45,7 +44,7 @@ public class EventListenerResource implements EventsApi {
   private IEndUserContextProvider userCtxProvider;
 
   @Autowired
-  RaptorSecureContextProvider raptorSecureContextProvider;
+  private RaptorSecureContextProvider raptorSecureContextProvider;
 
   /**
    * Generate error response

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.ApplicationPath;
@@ -26,7 +27,7 @@ public class EventListenerResourceConfig extends ResourceConfig {
   private Feature jerseyOperationalFeature;
 
   @Inject
-  @Named("cos-user-context-filter")
+  @Qualifier("cos-user-context-filter")
   private ContainerRequestFilter userCtxFilter;
 
   @Inject

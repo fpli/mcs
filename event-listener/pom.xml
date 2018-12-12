@@ -245,6 +245,7 @@
       <version>${swagger.annotations.version}</version>
     </dependency>
 
+    <!-- auth related -->
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-core-auth-starter</artifactId>
@@ -252,14 +253,20 @@
 
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-esams-starter</artifactId>
+      <artifactId>raptor-cos-token-starter</artifactId>
     </dependency>
 
-    <!-- cos related -->
+    <!-- userctx related -->
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-cos-usercontext-starter</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-cos-client-filter</artifactId>
+    </dependency>
+
 
   </dependencies>
 

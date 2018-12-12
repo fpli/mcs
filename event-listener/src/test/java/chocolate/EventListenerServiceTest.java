@@ -108,16 +108,13 @@ public class EventListenerServiceTest {
 
     RaptorSecureContext raptorSecureContext = mock(RaptorSecureContext.class);
     when(raptorSecureContext.getClientId()).thenReturn("1234");
+    when(raptorSecureContext.getSubjectDomain()).thenReturn("EBAYUSER");
 
     request.setMethod("POST");
 
     Event event = new Event();
     event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=1");
     String response = CollectionService.getInstance().collect(request, endUserContext, raptorSecureContext, event);
-    assertEquals(Constants.ERROR_NO_ENDUSERCTX, response);
-
-    request.addHeader("X-EBAY-C-ENDUSERCTX", "deviceId=ABCD,deviceIdSource=4PP,appVersion=3.3.0");
-    response = CollectionService.getInstance().collect(request, endUserContext, raptorSecureContext, event);
     assertEquals(Constants.ERROR_NO_TRACKING, response);
 
     request.addHeader("X-EBAY-C-TRACKING", "cguid=xxx");

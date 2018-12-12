@@ -61,12 +61,6 @@ public class CollectionService {
    */
   public String collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext, Event event) {
 
-    if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
-      logger.error(Constants.ERROR_NO_ENDUSERCTX);
-      esMetrics.meter("NoEnduserCtx");
-      return Constants.ERROR_NO_ENDUSERCTX;
-    }
-
     if (request.getHeader("X-EBAY-C-TRACKING") == null) {
       logger.error(Constants.ERROR_NO_TRACKING);
       esMetrics.meter("NoTracking");
@@ -105,7 +99,10 @@ public class CollectionService {
     addHeaders.put("Referer", referer);
     addHeaders.put("X-eBay-Client-IP", endUserContext.getIPAddress());
     addHeaders.put("User-Agent", endUserContext.getUserAgent());
-    addHeaders.put("UserId", raptorSecureContext.getSubjectId());
+    // only add UserId header when token is user token, otherwise it is app consumer id
+    if(raptorSecureContext.getSubjectDomain().equals("EBAYUSER")) {
+      addHeaders.put("UserId", raptorSecureContext.getSubjectId());
+    }
 
     String kafkaTopic;
     Producer<Long, ListenerMessage> producer;
