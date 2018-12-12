@@ -255,6 +255,12 @@
       <artifactId>raptor-esams-starter</artifactId>
     </dependency>
 
+    <!-- cos related -->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-cos-usercontext-starter</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>
