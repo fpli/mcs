@@ -6,8 +6,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 
 import java.io.*;
@@ -15,7 +13,6 @@ import java.net.URI;
 import java.util.Properties;
 
 public class ScpJob {
-    private static Logger logger = LoggerFactory.getLogger(ScpJob.class);
 
     private static Properties properties;
 
@@ -34,6 +31,7 @@ public class ScpJob {
             init(env);
             runJob();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new Exception(e);
         } finally {
             shutdown();
@@ -54,6 +52,7 @@ public class ScpJob {
      * @throws IOException fast fail
      */
     private static void init(String env) throws IOException {
+        System.out.println("start init");
         // load priperties
         if(properties == null) {
             properties = new Properties();
@@ -63,18 +62,24 @@ public class ScpJob {
 
         // init hdfs filesystem
         Configuration conf = new Configuration();
+        conf.set("fs.hdfs.impl",org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
         System.setProperty("HADOOP_USER_NAME", properties.getProperty("imkscp.hdfs.username"));
         fs = FileSystem.get(URI.create(properties.getProperty("imkscp.hdfs.uri")), conf);
 
         ESMetrics.init(properties.getProperty("imkscp.es.prefix"), properties.getProperty("imkscp.es.url"));
         esMetrics = ESMetrics.getInstance();
+        System.out.println("init success");
     }
 
     /**
      * shutdown job
      */
     private static void shutdown() {
-        esMetrics.flushMetrics();
+        if (esMetrics != null) {
+            esMetrics.flushMetrics();
+            esMetrics.close();
+        }
+        System.out.println("shutdown success");
     }
 
     /**
@@ -112,7 +117,8 @@ public class ScpJob {
             esMetrics.meter("imk.dump.count.getHdfs");
         } catch (Exception e) {
             esMetrics.meter("imk.dump.error.getHdfs");
-            logger.error("failed get file from hdfs: " + fileName, e);
+            System.out.println("failed get file from hdfs: " + fileName);
+            e.printStackTrace();
             throw new Exception(e);
         }
     }
@@ -140,7 +146,8 @@ public class ScpJob {
             esMetrics.meter("imk.dump.count.scpToEtl");
         } catch (Exception e) {
             esMetrics.meter("imk.dump.error.scpToEtl");
-            logger.error("failed scp file to etl: " + fileName, e);
+            System.out.println("failed scp file to etl: " + fileName);
+            e.printStackTrace();
             throw new Exception(e);
         }
     }
@@ -165,7 +172,8 @@ public class ScpJob {
             esMetrics.meter("imk.dump.count.deleteLocal");
         } catch (Exception e) {
             esMetrics.meter("imk.dump.error.deleteLocal");
-            logger.error("failed delete local file: " + fileName, e);
+            System.out.println("failed delete local file: " + fileName);
+            e.printStackTrace();
         }
     }
 
@@ -180,7 +188,8 @@ public class ScpJob {
             esMetrics.meter("imk.dump.count.deleteHdfs");
         } catch (IOException e) {
             esMetrics.meter("imk.dump.error.deleteHdfs");
-            logger.error("failed delete file in Hdfs: " + filePath, e);
+            System.out.println("failed delete file in Hdfs: " + filePath);
+            e.printStackTrace();
         }
     }
 

@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.imkDump
 
-import java.net.{InetAddress, URL}
+import java.net.{InetAddress, MalformedURLException, URL}
 import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId
@@ -104,6 +104,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       metrics.meter("imk.dump.spark.out", datesFiles.size)
     })
     metrics.flushMetrics()
+    metrics.close()
   }
 
   def imkDumpCore(df: DataFrame): DataFrame = {
@@ -188,7 +189,6 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getDateTimeUdf: UserDefinedFunction = udf((timestamp: Long) => Tools.getDateTimeFromTimestamp(timestamp))
   val getDateUdf: UserDefinedFunction = udf((timestamp: Long) => Tools.getDateFromTimestamp(timestamp))
   val getClientIdUdf: UserDefinedFunction = udf((uri: String) => Tools.getClientIdFromRotationId(Tools.getParamValueFromUrl(uri, "rid")))
-  val getDomainFromHeaderUdf: UserDefinedFunction = udf((request_headers: String, headerKey: String) => Tools.getDomain(Tools.getValueFromRequestHeader(request_headers, headerKey)))
   val getItemIdUdf: UserDefinedFunction = udf((uri: String) => Tools.getItemIdFromUri(uri))
   val getKeywordUdf: UserDefinedFunction = udf((uri: String) => Tools.getParamFromQuery(uri, keywordParams))
   val getLandingPageDomainUdf: UserDefinedFunction = udf((uri: String) => Tools.getDomain(uri))
@@ -200,6 +200,21 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getRotationIdUdf: UserDefinedFunction = udf((uri: String) => Tools.convertRotationId(Tools.getParamValueFromUrl(uri, "rid")))
   val getBatchIdUdf: UserDefinedFunction = udf(() => Tools.getBatchId)
   val getFromHeaderUdf: UserDefinedFunction = udf((request_header: String, headerField: String, key: String) => Tools.getFromHeader(request_header, headerField, key))
+  val getDomainFromHeaderUdf: UserDefinedFunction = udf((request_headers: String, headerKey: String) => {
+    try{
+      Tools.getDomain(Tools.getValueFromRequestHeader(request_headers, headerKey))
+    } catch {
+      case mal: MalformedURLException => {
+        logger.error("url in header is malformed", mal)
+        metrics.meter("imk.dump.error.malformed")
+        ""
+      }
+      case e: Exception => {
+        throw new Exception(e)
+        ""
+      }
+    }
+  })
 
   def renameFile(prefix: String):Unit = {
     // rename result to output dir
