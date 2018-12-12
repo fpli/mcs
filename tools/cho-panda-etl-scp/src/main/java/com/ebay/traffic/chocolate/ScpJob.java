@@ -25,7 +25,10 @@ public class ScpJob {
 
     public static void main(String args[]) throws Exception {
         assert args != null;
-        if(args.length != 1) logger.error("USAGE: [env]");
+        if(args.length != 1) {
+            System.out.println("UAGES: java -classpath cho-panda-etl-scp-*.jar com.ebay.traffic.chocolate.ScpJob [env]");
+            throw new Exception("init error");
+        }
         String env = "prod".equalsIgnoreCase(args[0]) ? "prod" : "qa";
         init(env);
         runJob();
