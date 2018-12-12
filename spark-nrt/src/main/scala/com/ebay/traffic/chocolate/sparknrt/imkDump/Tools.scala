@@ -125,6 +125,28 @@ object Tools extends Serializable{
   }
 
   /**
+    * get cguid or tguid from X-EBAY-C-TRACKING header
+    * @param request_header request header
+    * @param guid cguid or tguid
+    * @return
+    */
+  def getGuidFromHeader(request_header: String, guid: String): String = {
+    if (StringUtils.isNotEmpty(request_header)) {
+      val value = getValueFromRequestHeader(request_header, "X-EBAY-C-TRACKING")
+      if (StringUtils.isNotEmpty(value)) {
+        value.split(",").foreach(keyValueMap => {
+          val keyValueArray = keyValueMap.split("=")
+          if(keyValueArray(0).trim.equalsIgnoreCase(guid)
+            && keyValueArray.length == 2 && StringUtils.isNotEmpty(keyValueArray(1).trim)) {
+            return keyValueArray(1).trim
+          }
+        })
+      }
+    }
+    ""
+  }
+
+  /**
     * get extrnl_cookie from svid in request header cookie
     * @param request_header header of request
     * @return Svid

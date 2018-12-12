@@ -105,4 +105,11 @@ class ToolsTest extends FunSuite {
     println(Tools.getBatchId)
   }
 
+  test("test getGuidFromHeader") {
+    assert(Tools.getGuidFromHeader("X-EBAY-C-TRACKING: guid=cc3af5c11660ac3d8844157cff04c381,cguid=cc3af5c71660ac3d8844157cff04c37c,tguid=cc3af5c11660ac3d8844157cff04c381,pageid=2067260,cobrandId=2", "cguid")
+      == "cc3af5c71660ac3d8844157cff04c37c")
+    assert(Tools.getGuidFromHeader("", "cguid") == "")
+    assert(Tools.getGuidFromHeader("X-EBAY-C-TRACKING: ut=123", "cguid") == "")
+  }
+
 }
