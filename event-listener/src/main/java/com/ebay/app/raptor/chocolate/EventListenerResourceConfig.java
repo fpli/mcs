@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate;
 
 import org.glassfish.jersey.server.ResourceConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,9 +25,19 @@ public class EventListenerResourceConfig extends ResourceConfig {
   @Named("jersey-operational-feature")
   private Feature jerseyOperationalFeature;
 
+  @Inject
+  @Named("cos-user-context-filter")
+  private ContainerRequestFilter userCtxFilter;
+
+  @Inject
+  @Qualifier("core-auth-filter")
+  private ContainerRequestFilter coreAuthFilter;
+
   @PostConstruct
   public void init() {
     register(jerseyOperationalFeature);
+    register(userCtxFilter);
+    register(coreAuthFilter);
     register(EventListenerResource.class);
   }
 }

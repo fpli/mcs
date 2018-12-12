@@ -5,6 +5,8 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.util.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.util.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
+import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.kafka.clients.producer.Producer;
@@ -36,6 +38,7 @@ public class CollectionService {
 
   /**
    * singleton get instance
+   *
    * @return CollectionService object
    */
   public static CollectionService getInstance() {
@@ -51,35 +54,58 @@ public class CollectionService {
 
   /**
    * Collect event and publish to kafka
+   *
    * @param request raw request
-   * @param event event body
+   * @param event   event body
    * @return Response of status and message
    */
-  public String collect(HttpServletRequest request, Event event) {
+  public String collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext, Event event) {
 
-    if(request.getHeader("User-Agent") == null && request.getHeader("user-agent") == null) {
-      logger.error(Constants.ERROR_NO_USER_AGENT);
-      esMetrics.meter("NoAgent");
-      return Constants.ERROR_NO_USER_AGENT;
-    }
-
-    if(request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
+    if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
       logger.error(Constants.ERROR_NO_ENDUSERCTX);
       esMetrics.meter("NoEnduserCtx");
       return Constants.ERROR_NO_ENDUSERCTX;
     }
 
-    if(request.getHeader("X-EBAY-C-TRACKING") == null) {
+    if (request.getHeader("X-EBAY-C-TRACKING") == null) {
       logger.error(Constants.ERROR_NO_TRACKING);
       esMetrics.meter("NoTracking");
       return Constants.ERROR_NO_TRACKING;
     }
 
-    if(request.getHeader("Referrer") == null && request.getHeader("referrer") == null && event.getReferrer() == null) {
-      logger.error(Constants.ERROR_NO_REFERRER);
-      esMetrics.meter("NoReferrer");
-      return Constants.ERROR_NO_REFERRER;
+    // add headers for compatible with chocolate filter and nrt
+    Map<String, String> addHeaders = new HashMap<>();
+
+    // referrer is from post body (mobile) and from header (NodeJs and handler)
+    String referer;
+    if (event.getReferrer() != null) {
+      referer = event.getReferrer();
+    } else if(request.getHeader("referer") != null) {
+        referer = request.getHeader("referer");
+    } else if (request.getHeader("Referer") != null) {
+      referer = request.getHeader("Referer");
+    } else {
+        referer = endUserContext.getReferer();
     }
+
+    String userAgent = endUserContext.getUserAgent();
+
+    if (referer == null) {
+      logger.error(Constants.ERROR_NO_REFERER);
+      esMetrics.meter("NoReferer");
+      return Constants.ERROR_NO_REFERER;
+    }
+
+    if(userAgent == null) {
+      logger.error(Constants.ERROR_NO_USER_AGENT);
+      esMetrics.meter("NoUserAgent");
+      return Constants.ERROR_NO_USER_AGENT;
+    }
+
+    addHeaders.put("Referer", referer);
+    addHeaders.put("X-eBay-Client-IP", endUserContext.getIPAddress());
+    addHeaders.put("User-Agent", endUserContext.getUserAgent());
+    addHeaders.put("UserId", raptorSecureContext.getSubjectId());
 
     String kafkaTopic;
     Producer<Long, ListenerMessage> producer;
@@ -153,7 +179,7 @@ public class CollectionService {
     String type = channelType.getLogicalChannel().getAvro().toString();
 
     String platform = Constants.PLATFORM_UNKNOWN;
-    String userAgent = request.getHeader("User-Agent");
+
     if (userAgent != null) {
       if (userAgent.contains("Mobi")) {
         platform = Constants.PLATFORM_MOBILE;
@@ -184,7 +210,7 @@ public class CollectionService {
 
     // Parse the response
     ListenerMessage message = parser.parse(request,
-      startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, uri, null);
+      startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, uri, null, addHeaders);
 
 
     if (message != null) {
