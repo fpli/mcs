@@ -99,4 +99,9 @@ class ToolsTest extends FunSuite {
       "cguid") == "")
   }
 
+  test("test getDomain") {
+    assert(Tools.getDomain("http://www.ebay.com") == "www.ebay.com")
+    assert(Tools.getDomain("") == "")
+  }
+
 }

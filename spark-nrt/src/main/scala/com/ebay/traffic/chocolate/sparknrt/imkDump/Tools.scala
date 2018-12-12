@@ -246,4 +246,17 @@ object Tools extends Serializable{
     formatter.format(date.getHours) + formatter.format(date.getMinutes) + formatter.format(date.getSeconds)
   }
 
+  /**
+    * get domain of one link
+    * @param link link
+    * @return domain
+    */
+  def getDomain(link: String): String = {
+    if (StringUtils.isNotEmpty(link)) {
+      new URL(link).getHost
+    } else {
+      ""
+    }
+  }
+
 }

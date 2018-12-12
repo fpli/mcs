@@ -18,6 +18,16 @@ import org.apache.spark.sql.functions._
   * Created by ganghuang on 12/3/18.
   * read capping result and generate files for imk table
   */
+object ImkDumpJob extends App {
+  override def main(args: Array[String]): Unit = {
+    val params = Parameter(args)
+
+    val job = new ImkDumpJob(params)
+
+    job.run()
+    job.stop()
+  }
+}
 
 class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, params.mode){
   lazy val outputDir: String = params.outPutDir + "/" + params.channel + "/"
@@ -178,10 +188,10 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getDateTimeUdf: UserDefinedFunction = udf((timestamp: Long) => Tools.getDateTimeFromTimestamp(timestamp))
   val getDateUdf: UserDefinedFunction = udf((timestamp: Long) => Tools.getDateFromTimestamp(timestamp))
   val getClientIdUdf: UserDefinedFunction = udf((uri: String) => Tools.getClientIdFromRotationId(Tools.getParamValueFromUrl(uri, "rid")))
-  val getDomainFromHeaderUdf: UserDefinedFunction = udf((request_headers: String, headerKey: String) => new URL(Tools.getValueFromRequestHeader(request_headers, headerKey)).getHost)
+  val getDomainFromHeaderUdf: UserDefinedFunction = udf((request_headers: String, headerKey: String) => Tools.getDomain(Tools.getValueFromRequestHeader(request_headers, headerKey)))
   val getItemIdUdf: UserDefinedFunction = udf((uri: String) => Tools.getItemIdFromUri(uri))
   val getKeywordUdf: UserDefinedFunction = udf((uri: String) => Tools.getParamFromQuery(uri, keywordParams))
-  val getLandingPageDomainUdf: UserDefinedFunction = udf((uri: String) => new URL(uri).getHost)
+  val getLandingPageDomainUdf: UserDefinedFunction = udf((uri: String) => Tools.getDomain(uri))
   val getUserMapIndUdf: UserDefinedFunction = udf((header: String) => Tools.getUserMapInd(Tools.getValueFromRequestHeader(header, "userid")))
   val getParamFromQueryUdf: UserDefinedFunction = udf((uri: String, key: String) => Tools.getParamValueFromUrl(uri, key))
   val getBrowserTypeUdf: UserDefinedFunction = udf((requestHeader: String) => Tools.getBrowserType(Tools.getFromHeader(requestHeader, "X-EBAY-C-ENDUSERCTX", "userAgent")))
