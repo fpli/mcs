@@ -81,7 +81,7 @@ class TestImkDumpJob extends BaseFunSuite{
       .build()
     val timestamp = getTimestamp("2018-05-01")
 
-    writeFilterMessage(6457493984045429247L, timestamp - 12, -1, "X-EBAY-CLIENT-IP:157.55.39.67|X-EBAY-C-TRACKING: guid=cc3af5c11660ac3d8844157cff04c381,cguid=cc3af5c71660ac3d8844157cff04c37c,tguid=cc3af5c11660ac3d8844157cff04c381,pageid=2067260,cobrandId=2|Referer:http://www.google.com|X-EBAY-C-ENDUSERCTX: userAgent=ebayUserAgent/eBayIOS;5.19.0;iOS;11.2;Apple;x86_64;no-carrier;414x736;3.0,deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF,contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134|userid:ganghuang|geoid:123456", "http://www.ebay.co.uk/", "Cache-Control:private,no-cache,no-store", writer)
+    writeFilterMessage(6457493984045429247L, timestamp - 12, -1, "X-EBAY-CLIENT-IP:157.55.39.67|X-EBAY-C-TRACKING: guid=cc3af5c11660ac3d8844157cff04c381,cguid=cc3af5c71660ac3d8844157cff04c37c,tguid=cc3af5c11660ac3d8844157cff04c381,pageid=2067260,cobrandId=2|Referer:http://www.google.com|X-EBAY-C-ENDUSERCTX: userAgent=ebayUserAgent/eBayIOS;5.19.0;iOS;11.2;Apple;x86_64;no-carrier;414x736;3.0,deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF,contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134|userid:123456|geoid:123456", "http://www.ebay.co.uk/", "Cache-Control:private,no-cache,no-store", writer)
     writer.close()
   }
 

@@ -12,6 +12,9 @@ import java.io.*;
 import java.net.URI;
 import java.util.Properties;
 
+/**
+ * Created by ganghuang on 12/3/18.
+ */
 public class ScpJob {
 
     private static Properties properties;

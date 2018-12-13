@@ -26,7 +26,7 @@ EXECUTOR_MEMORY=16g
 EXECUTOR_CORES=4
 
 SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/imkDump
-JOB_NAME="Reporting"
+JOB_NAME="imkDump"
 
 for f in $(find $bin/../../conf/prod -name '*.*');
 do

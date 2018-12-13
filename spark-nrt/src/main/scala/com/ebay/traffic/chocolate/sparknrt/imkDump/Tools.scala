@@ -48,6 +48,22 @@ object Tools extends Serializable{
     ""
   }
 
+  def getNumValueFromRequestHeader(request: String, key: String): String = {
+    if (StringUtils.isNotEmpty(request)) {
+      request.split("\\|").foreach(paramMapString => {
+        val paramMapStringArray = paramMapString.split(":")
+        val param = paramMapStringArray(0)
+        if(param.trim.equalsIgnoreCase(key) && paramMapStringArray.size >= 2) {
+          val valueStr = paramMapString.substring(paramMapString.indexOf(":") + 1).trim
+          if (StringUtils.isNumeric(valueStr)) {
+            return valueStr
+          }
+        }
+      })
+    }
+    "0"
+  }
+
   def getDateTimeFromTimestamp(timestamp: Long): String = {
     val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
     df.format(timestamp)
@@ -97,6 +113,21 @@ object Tools extends Serializable{
     ""
   }
 
+  def getDefaultNullNumParamValueFromUrl(uri: String, key: String): String = {
+    val query = new URL(uri).getQuery
+    if (StringUtils.isNotEmpty(query)) {
+      query.split("&").foreach(paramMapString => {
+        val paramStringArray = paramMapString.split("=")
+        if (paramStringArray(0).trim.equalsIgnoreCase(key) && paramStringArray.length == 2) {
+          if (StringUtils.isNumeric(paramStringArray(1).trim)){
+            return paramStringArray(1).trim
+          }
+        }
+      })
+    }
+    ""
+  }
+
   /**
     * client id is the first part of rotation id
     * @param rotationId rotation id
@@ -109,7 +140,7 @@ object Tools extends Serializable{
       && rotationId.contains("-")) {
       rotationId.substring(0, rotationId.indexOf("-"))
     } else {
-      ""
+      "0"
     }
   }
 
@@ -122,7 +153,7 @@ object Tools extends Serializable{
     val path = new URL(uri).getPath
     if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))){
       val itemId = path.substring(path.lastIndexOf("/") + 1)
-      if(itemId forall Character.isDigit){
+      if (StringUtils.isNumeric(itemId)) {
         return itemId
       }
     }
@@ -232,7 +263,7 @@ object Tools extends Serializable{
       && StringUtils.isNumeric(rotationId.replace("-", ""))) {
       rotationId.replace("-", "")
     } else {
-      ""
+      "0"
     }
   }
 

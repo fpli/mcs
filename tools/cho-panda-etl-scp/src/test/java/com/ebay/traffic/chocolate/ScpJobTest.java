@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Properties;
 
+/**
+ * Created by ganghuang on 12/3/18.
+ */
 public class ScpJobTest {
 
     private static Properties props;

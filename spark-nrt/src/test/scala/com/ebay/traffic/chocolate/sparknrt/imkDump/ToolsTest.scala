@@ -17,6 +17,12 @@ class ToolsTest extends FunSuite {
       == "http://www.google.com")
   }
 
+  test("test getNumValueFromRequestHeader") {
+    assert(Tools.getNumValueFromRequestHeader("userid: 123", "userid") == "123")
+    assert(Tools.getNumValueFromRequestHeader("userid", "userid") == "0")
+    assert(Tools.getNumValueFromRequestHeader("userid: 123a", "userid") == "0")
+  }
+
   test("test getQueryString") {
     assert(Tools.getQueryString("http://www.ebay.com?a=test") == "a=test")
     assert(Tools.getQueryString("http://www.ebay.com") == "")
@@ -30,6 +36,13 @@ class ToolsTest extends FunSuite {
     assert(Tools.getParamValueFromUrl("http://www.ebay.com", "a") == "")
     assert(Tools.getParamValueFromUrl("http://www.ebay.com?a=test=test2", "a") == "")
     assert(Tools.getParamValueFromUrl("http://www.ebay.com?A=test", "a") == "test")
+  }
+
+  test("test getDefaultNullNumParamValueFromUrl") {
+    assert(Tools.getDefaultNullNumParamValueFromUrl("http://www.ebay.com?a=123", "a") == "123")
+    assert(Tools.getDefaultNullNumParamValueFromUrl("http://www.ebay.com?a=", "a") == "")
+    assert(Tools.getDefaultNullNumParamValueFromUrl("http://www.ebay.com?a=123a", "a") == "")
+    assert(Tools.getDefaultNullNumParamValueFromUrl("http://www.ebay.com", "a") == "")
   }
 
   test("test getUserMapInd") {
@@ -103,5 +116,6 @@ class ToolsTest extends FunSuite {
     assert(Tools.getDomain("http://www.ebay.com") == "www.ebay.com")
     assert(Tools.getDomain("") == "")
   }
+
 
 }
