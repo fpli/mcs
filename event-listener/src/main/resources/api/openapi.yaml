@@ -74,7 +74,7 @@ components:
         required: true
         schema:
           type: string
-        description: 'User context including userid'
+        description: 'User context. For handler and nodejs call, it has userid if user login'
       tracking:
         name: X-EBAY-C-TRACKING
         in: header
