@@ -13,6 +13,7 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
@@ -54,12 +55,14 @@ public class CollectionService {
 
   /**
    * Collect event and publish to kafka
-   *
    * @param request raw request
-   * @param event   event body
-   * @return Response of status and message
+   * @param endUserContext wrapped end user context
+   * @param raptorSecureContext wrapped secure header context
+   * @param event post body event
+   * @return OK or Error message
    */
-  public String collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext, Event event) {
+  public String collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
+    raptorSecureContext, Event event) {
 
     if (request.getHeader("X-EBAY-C-TRACKING") == null) {
       logger.error(Constants.ERROR_NO_TRACKING);
@@ -70,27 +73,30 @@ public class CollectionService {
     // add headers for compatible with chocolate filter and nrt
     Map<String, String> addHeaders = new HashMap<>();
 
+    // response headers for compatible with chocolate filter and nrt
+    Map<String, String> responseHeaders = new HashMap<>();
+
     // referrer is from post body (mobile) and from header (NodeJs and handler)
-    String referer;
-    if (event.getReferrer() != null) {
+    String referer = null;
+    if (!StringUtils.isEmpty(event.getReferrer())) {
       referer = event.getReferrer();
-    } else if(request.getHeader("referer") != null) {
-        referer = request.getHeader("referer");
-    } else if (request.getHeader("Referer") != null) {
+    } else if (!StringUtils.isEmpty(request.getHeader("referer"))) {
+      referer = request.getHeader("referer");
+    } else if (!StringUtils.isEmpty(request.getHeader("Referer"))) {
       referer = request.getHeader("Referer");
     } else {
-        referer = endUserContext.getReferer();
+      referer = endUserContext.getReferer();
     }
 
     String userAgent = endUserContext.getUserAgent();
 
-    if (referer == null) {
+    if (StringUtils.isEmpty(referer)) {
       logger.error(Constants.ERROR_NO_REFERER);
       esMetrics.meter("NoReferer");
       return Constants.ERROR_NO_REFERER;
     }
 
-    if(userAgent == null) {
+    if (null == userAgent) {
       logger.error(Constants.ERROR_NO_USER_AGENT);
       esMetrics.meter("NoUserAgent");
       return Constants.ERROR_NO_USER_AGENT;
@@ -100,15 +106,29 @@ public class CollectionService {
     addHeaders.put("X-eBay-Client-IP", endUserContext.getIPAddress());
     addHeaders.put("User-Agent", endUserContext.getUserAgent());
     // only add UserId header when token is user token, otherwise it is app consumer id
-    if(raptorSecureContext.getSubjectDomain().equals("EBAYUSER")) {
+    if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
       addHeaders.put("UserId", raptorSecureContext.getSubjectId());
     }
+    // add guid,cguid to cookie header to addHeaders and responseHeaders for compatibility
+    String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
+    StringBuilder cookie = new StringBuilder("npii=");
+    if(!StringUtils.isEmpty(trackingHeader)) {
+      for (String seg: trackingHeader.split(",")
+           ) {
+        String[] keyValue = seg.split("=");
+        if(keyValue.length == 2) {
+          cookie.append(keyValue[0]).append("/").append(keyValue[1]).append("^");
+        }
+      }
+    }
+    addHeaders.put("Cookie", cookie.toString());
+    responseHeaders.put("Set-Cookie", cookie.toString());
 
     String kafkaTopic;
     Producer<Long, ListenerMessage> producer;
     ChannelActionEnum channelAction;
     ChannelIdEnum channelType;
-    long campaignId = -1l;
+    long campaignId = -1L;
 
     // uri is from post body
     String uri = event.getTargetUrl();
@@ -175,14 +195,12 @@ public class CollectionService {
 
     String type = channelType.getLogicalChannel().getAvro().toString();
 
-    String platform = Constants.PLATFORM_UNKNOWN;
+    String platform;
 
-    if (userAgent != null) {
-      if (userAgent.contains("Mobi")) {
-        platform = Constants.PLATFORM_MOBILE;
-      } else {
-        platform = Constants.PLATFORM_DESKTOP;
-      }
+    if (userAgent.contains("Mobi")) {
+      platform = Constants.PLATFORM_MOBILE;
+    } else {
+      platform = Constants.PLATFORM_DESKTOP;
     }
 
     String landingPageType;
@@ -207,7 +225,7 @@ public class CollectionService {
 
     // Parse the response
     ListenerMessage message = parser.parse(request,
-      startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, uri, null, addHeaders);
+      startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, uri, null, addHeaders, responseHeaders);
 
 
     if (message != null) {
