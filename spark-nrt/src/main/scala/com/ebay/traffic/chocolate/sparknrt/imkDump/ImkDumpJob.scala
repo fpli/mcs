@@ -179,6 +179,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("rvr_url", lit(""))
       .withColumn("mgvalue", lit(""))
       .withColumn("mgvaluereason", lit(""))
+      .withColumn("delimiter", lit(""))
       .drop("snapshot_id", "timestamp", "publisher_id", "campaign_id", "request_headers",
         "uri", "response_headers", "rt_rule_flags", "nrt_rule_flags", "channel_action", "channel_type",
         "http_method", "snid", "is_tracked")
