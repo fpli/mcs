@@ -76,7 +76,14 @@ public class CollectionService {
     // response headers for compatible with chocolate filter and nrt
     Map<String, String> responseHeaders = new HashMap<>();
 
-    // referrer is from post body (mobile) and from header (NodeJs and handler)
+    /** referer is from post body (mobile) and from header (NodeJs and handler)
+     *  By internet standard, referer is typo of referrer.
+     *  From ginger client call, the referer is embedded in enduserctx header, but we also check header for other cases.
+     *  For local test using postman, do not include enduserctx header, the service will generate enduserctx by
+     *  cos-user-context-filter.
+     *  Ginger client call will pass enduserctx in its header.
+     */
+
     String referer = null;
     if (!StringUtils.isEmpty(event.getReferrer())) {
       referer = event.getReferrer();
@@ -107,7 +114,7 @@ public class CollectionService {
     addHeaders.put("User-Agent", endUserContext.getUserAgent());
     // only add UserId header when token is user token, otherwise it is app consumer id
     if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
-      addHeaders.put("UserId", raptorSecureContext.getSubjectId());
+      addHeaders.put("UserId", raptorSecureContext.getSubjectImmutableId());
     }
     // add guid,cguid to cookie header to addHeaders and responseHeaders for compatibility
     String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");

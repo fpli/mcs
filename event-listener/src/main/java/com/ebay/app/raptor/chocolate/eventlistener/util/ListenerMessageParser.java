@@ -52,7 +52,7 @@ public class ListenerMessageParser {
     record.setChannelAction(action.getAvro());
     // Format record
     record.setRequestHeaders(serializeRequestHeaders(clientRequest, addHeaders));
-    record.setResponseHeaders("");
+    record.setResponseHeaders(serializeResponseHeaders(responseHeaders));
     record.setTimestamp(startTime);
 
     // Get snapshotId from request
@@ -81,6 +81,10 @@ public class ListenerMessageParser {
     Map<String, String> headers = new HashMap<>();
     for (Enumeration<String> e = clientRequest.getHeaderNames(); e.hasMoreElements(); ) {
       String headerName = e.nextElement();
+      // skip auth header
+      if(headerName.equalsIgnoreCase("Authorization")) {
+        continue;
+      }
       headers.put(headerName, clientRequest.getHeader(headerName));
       headersBuilder.append("|").append(headerName).append(": ").append(clientRequest.getHeader(headerName));
     }

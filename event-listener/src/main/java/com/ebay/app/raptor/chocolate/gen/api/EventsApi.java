@@ -10,7 +10,7 @@ import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @Api(description = "The Events API")
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2018-12-12T16:00:33.633+08:00[Asia/Shanghai]")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2018-12-13T10:59:04.727+08:00[Asia/Shanghai]")
 public interface EventsApi {
     @POST
     @Path("/events")

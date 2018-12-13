@@ -1,12 +1,10 @@
 package com.ebay.app.raptor.chocolate;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.ApplicationPath;
