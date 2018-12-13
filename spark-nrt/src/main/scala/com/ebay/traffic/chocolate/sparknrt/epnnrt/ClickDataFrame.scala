@@ -1,10 +1,14 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
-import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.sql.functions.{col, lit}
 import org.apache.spark.sql.types.IntegerType
+import org.apache.spark.sql.{Column, DataFrame}
+import org.slf4j.LoggerFactory
 
 class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
+  @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
+
+  logger.info("Buiding Click DataFrame...")
   def build(): DataFrame = {
     var clickDf  = df.withColumn("IMPRSN_CNTNR_ID", lit(""))
       .withColumn("FILE_SCHM_VRSN_NUM", lit(4))

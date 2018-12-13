@@ -1,10 +1,14 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
-import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.IntegerType
+import org.apache.spark.sql.{Column, DataFrame}
+import org.slf4j.LoggerFactory
 
 class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
+  @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
+
+  logger.info("Buiding Impression DataFrame...")
   def build(): DataFrame = {
     var impressionDf = df.withColumn("IMPRSN_CNTNR_ID", common.snapshotIdUdf(col("snapshot_id")))
       .withColumn("FILE_SCHM_VRSN_NUM", lit(4))

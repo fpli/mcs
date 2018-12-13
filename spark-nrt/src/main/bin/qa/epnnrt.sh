@@ -45,5 +45,4 @@ ${SPARK_HOME}/bin/spark-submit \
       --appName ${JOB_NAME} \
       --mode yarn \
       --workDir "${WORK_DIR}" \
-      --ls
-       ${RESOURCE_DIR}
+      --resourceDir ${RESOURCE_DIR}

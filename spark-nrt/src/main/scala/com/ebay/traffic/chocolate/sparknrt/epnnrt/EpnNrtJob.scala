@@ -71,6 +71,9 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
         println("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
 
+        //2.1 async get couchbase data
+        epnNrtCommon.asyncCouchbaseGet(df)
+
         //3. build impression dataframe  save dataframe to files and rename files
         val impressionDf = new ImpressionDataFrame(df, epnNrtCommon).build()
         saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
@@ -96,7 +99,8 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       if (outputStatus.nonEmpty) {
         max = outputStatus.map(status => {
           val name = status.getPath.getName
-          Integer.valueOf(name.substring(name.lastIndexOf("-") + 1).substring(0, name.indexOf(".")))
+          val number = name.substring(name.lastIndexOf("_") + 1)
+          Integer.valueOf(number.substring(0, number.indexOf(".")))
         }).sortBy(i => i).last
       }
     } else {
