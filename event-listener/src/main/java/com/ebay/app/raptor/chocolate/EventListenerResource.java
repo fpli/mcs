@@ -6,6 +6,8 @@ import com.ebay.app.raptor.chocolate.gen.model.ErrorData;
 import com.ebay.app.raptor.chocolate.gen.model.ErrorModel;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
+import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.raptor.opentracing.Tags;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -38,6 +40,12 @@ public class EventListenerResource implements EventsApi {
   @Autowired
   private HttpServletResponse response;
 
+  @Autowired
+  private IEndUserContextProvider userCtxProvider;
+
+  @Autowired
+  private RaptorSecureContextProvider raptorSecureContextProvider;
+
   /**
    * Generate error response
    * @param errorMsg
@@ -68,7 +76,7 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res;
       try {
-        String result = CollectionService.getInstance().collect(request, body);
+        String result = CollectionService.getInstance().collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(), body);
         if (result.equals(Constants.ACCEPTED)) {
           res = Response.ok().entity(result).build();
         } else {

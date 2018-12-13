@@ -24,9 +24,19 @@ public class EventListenerResourceConfig extends ResourceConfig {
   @Named("jersey-operational-feature")
   private Feature jerseyOperationalFeature;
 
+  @Inject
+  @Qualifier("cos-user-context-filter")
+  private ContainerRequestFilter userCtxFilter;
+
+  @Inject
+  @Qualifier("core-auth-filter")
+  private ContainerRequestFilter coreAuthFilter;
+
   @PostConstruct
   public void init() {
     register(jerseyOperationalFeature);
+    register(userCtxFilter);
+    register(coreAuthFilter);
     register(EventListenerResource.class);
   }
 }

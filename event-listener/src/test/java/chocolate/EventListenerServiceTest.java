@@ -9,6 +9,10 @@ import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
+import com.ebay.raptor.auth.RaptorSecureContext;
+import com.ebay.raptor.auth.RaptorSecureContextProvider;
+import com.ebay.raptor.auth.impl.RaptorSecureContextImpl;
 import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
 import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
@@ -33,6 +37,8 @@ import java.util.Map;
 
 import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by xiangli4 on 11/19/18.
@@ -97,58 +103,59 @@ public class EventListenerServiceTest {
   public void testSerivce() throws Exception {
 
     MockHttpServletRequest request = new MockHttpServletRequest();
+
+    IEndUserContext endUserContext = mock(IEndUserContext.class);
+
+    RaptorSecureContext raptorSecureContext = mock(RaptorSecureContext.class);
+    when(raptorSecureContext.getClientId()).thenReturn("1234");
+    when(raptorSecureContext.getSubjectDomain()).thenReturn("EBAYUSER");
+
     request.setMethod("POST");
 
     Event event = new Event();
     event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=1");
-    String response = CollectionService.getInstance().collect(request, event);
-    assertEquals(Constants.ERROR_NO_USER_AGENT, response);
-
-    request.addHeader("User-Agent", "Desktop");
-    response = CollectionService.getInstance().collect(request, event);
-    assertEquals(Constants.ERROR_NO_ENDUSERCTX, response);
-
-    request.addHeader("X-EBAY-C-ENDUSERCTX", "deviceId=ABCD,deviceIdSource=4PP,appVersion=3.3.0");
-    response = CollectionService.getInstance().collect(request, event);
+    String response = CollectionService.getInstance().collect(request, endUserContext, raptorSecureContext, event);
     assertEquals(Constants.ERROR_NO_TRACKING, response);
 
-
     request.addHeader("X-EBAY-C-TRACKING", "cguid=xxx");
-    response = CollectionService.getInstance().collect(request, event);
-    assertEquals(Constants.ERROR_NO_REFERRER, response);
-
+    response = CollectionService.getInstance().collect(request, endUserContext, raptorSecureContext, event);
+    assertEquals(Constants.ERROR_NO_REFERER, response);
 
     event.setReferrer("https://www.google.com");
-    response = CollectionService.getInstance().collect(request, event);
+    response = CollectionService.getInstance().collect(request, endUserContext, raptorSecureContext, event);
+    assertEquals(Constants.ERROR_NO_USER_AGENT, response);
+
+    when(endUserContext.getUserAgent()).thenReturn("ebayiphone");
+    response = CollectionService.getInstance().collect(request, endUserContext, raptorSecureContext, event);
     assertEquals(Constants.ACCEPTED, response);
 
     event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=1&cid=2");
-    response = CollectionService.getInstance().collect(request, event);
+    response = CollectionService.getInstance().collect(request, endUserContext, raptorSecureContext, event);
     assertEquals(Constants.ACCEPTED, response);
 
     event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=1&cid=100");
-    response = CollectionService.getInstance().collect(request, event);
+    response = CollectionService.getInstance().collect(request, endUserContext, raptorSecureContext, event);
     assertEquals(Constants.ACCEPTED, response);
 
     event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=1&cid");
-    response = CollectionService.getInstance().collect(request, event);
+    response = CollectionService.getInstance().collect(request, endUserContext, raptorSecureContext, event);
     assertEquals(Constants.ACCEPTED, response);
 
     event.setTargetUrl("https://www.ebay.com/itm/123456?mkevt=0");
-    response = CollectionService.getInstance().collect(request, event);
+    response = CollectionService.getInstance().collect(request, endUserContext, raptorSecureContext, event);
     assertEquals(Constants.ERROR_INVALID_MKEVT, response);
 
     event.setTargetUrl("https://www.ebay.com/itm/123456");
-    response = CollectionService.getInstance().collect(request, event);
+    response = CollectionService.getInstance().collect(request, endUserContext, raptorSecureContext, event);
     assertEquals(Constants.ERROR_NO_QUERY_PARAMETER, response);
 
     event.setTargetUrl("https://www.ebay.com/itm/123456?abc=123");
-    response = CollectionService.getInstance().collect(request, event);
+    response = CollectionService.getInstance().collect(request, endUserContext, raptorSecureContext, event);
     assertEquals(Constants.ERROR_NO_MKEVT, response);
 
     request.addHeader("User-Agent", "Mobile");
     event.setTargetUrl("https://www.ebay.com?mkevt=1&cid=2");
-    response = CollectionService.getInstance().collect(request, event);
+    response = CollectionService.getInstance().collect(request, endUserContext, raptorSecureContext, event);
     assertEquals(Constants.ACCEPTED, response);
 
     Thread.sleep(3000);
