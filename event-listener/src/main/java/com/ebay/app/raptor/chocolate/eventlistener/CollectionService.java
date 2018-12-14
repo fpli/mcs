@@ -25,6 +25,11 @@ import java.util.Map;
 
 /**
  * @author xiangli4
+ * The main logic of collection service:
+ * 1. Check headers
+ * 2. Parse everything from headers and bodies
+ * 3. Add compatible headers
+ * 4. Parse to ListenerMessage
  */
 public class CollectionService {
   private static final Logger logger = Logger.getLogger(CollectionService.class);
@@ -76,32 +81,35 @@ public class CollectionService {
     // response headers for compatible with chocolate filter and nrt
     Map<String, String> responseHeaders = new HashMap<>();
 
-    /** referer is from post body (mobile) and from header (NodeJs and handler)
-     *  By internet standard, referer is typo of referrer.
-     *  From ginger client call, the referer is embedded in enduserctx header, but we also check header for other cases.
-     *  For local test using postman, do not include enduserctx header, the service will generate enduserctx by
-     *  cos-user-context-filter.
-     *  Ginger client call will pass enduserctx in its header.
+    /* referer is from post body (mobile) and from header (NodeJs and handler)
+       By internet standard, referer is typo of referrer.
+       From ginger client call, the referer is embedded in enduserctx header, but we also check header for other cases.
+       For local test using postman, do not include enduserctx header, the service will generate enduserctx by
+       cos-user-context-filter.
+       Ginger client call will pass enduserctx in its header.
+       Priority 1. native app from body, as they are the most part 2. enduserctx, ginger client calls 3. referer header
      */
+
+    String platform = Constants.PLATFORM_UNKNOWN;
 
     String referer = null;
     if (!StringUtils.isEmpty(event.getReferrer())) {
       referer = event.getReferrer();
-    } else if (!StringUtils.isEmpty(request.getHeader("referer"))) {
-      referer = request.getHeader("referer");
-    } else if (!StringUtils.isEmpty(request.getHeader("Referer"))) {
-      referer = request.getHeader("Referer");
-    } else {
-      referer = endUserContext.getReferer();
+      platform = Constants.PLATFORM_MOBILE;
     }
 
-    String userAgent = endUserContext.getUserAgent();
+    if(StringUtils.isEmpty(referer)) {
+      referer = endUserContext.getReferer();
+      platform = Constants.PLATFORM_DESKTOP;
+    }
 
-    if (StringUtils.isEmpty(referer)) {
+    if(StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
       logger.error(Constants.ERROR_NO_REFERER);
       esMetrics.meter("NoReferer");
       return Constants.ERROR_NO_REFERER;
     }
+
+    String userAgent = endUserContext.getUserAgent();
 
     if (null == userAgent) {
       logger.error(Constants.ERROR_NO_USER_AGENT);
@@ -201,14 +209,6 @@ public class CollectionService {
     String action = ChannelActionEnum.CLICK.toString();
 
     String type = channelType.getLogicalChannel().getAvro().toString();
-
-    String platform;
-
-    if (userAgent.contains("Mobi")) {
-      platform = Constants.PLATFORM_MOBILE;
-    } else {
-      platform = Constants.PLATFORM_DESKTOP;
-    }
 
     String landingPageType;
     List<String> pathSegments = uriComponents.getPathSegments();
