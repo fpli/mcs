@@ -8,6 +8,29 @@ import org.slf4j.LoggerFactory
 class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
+  @transient lazy val impression_columns: Array[String] = {
+    val column_list = Array("IMPRSN_CNTNR_ID", "FILE_SCHM_VRSN_NUM", "FILE_ID", "BATCH_ID", "CHNL_ID",
+      "CRLTN_GUID_TXT", "GUID_TXT", "USER_ID", "CLNT_RMT_IP", "BRWSR_TYPE_NUM", "BRWSR_NAME",
+      "RFR_URL_NAME", "PRVS_RFR_DMN_NAME", "USER_QUERY_TXT", "PLCMNT_DATA_TXT", "PBLSHR_ID", "AMS_PBLSHR_CMPGN_ID", "AMS_TOOL_ID", "CSTM_ID",
+      "FLEX_FLD_VRSN_NUM", "FLEX_FLD_1_TXT", "FLEX_FLD_2_TXT", "FLEX_FLD_3_TXT", "FLEX_FLD_4_TXT", "FLEX_FLD_5_TXT", "FLEX_FLD_6_TXT",
+      "FLEX_FLD_7_TXT", "FLEX_FLD_8_TXT", "FLEX_FLD_9_TXT", "FLEX_FLD_10_TXT", "FLEX_FLD_11_TXT", "FLEX_FLD_12_TXT", "FLEX_FLD_13_TXT", "FLEX_FLD_14_TXT",
+      "FLEX_FLD_15_TXT", "FLEX_FLD_16_TXT", "FLEX_FLD_17_TXT", "FLEX_FLD_18_TXT", "FLEX_FLD_19_TXT", "FLEX_FLD_20_TXT","CTX_TXT", "CTX_CLD_TXT",
+      "CTX_RSLT_TXT", "RFR_DMN_NAME", "IMPRSN_TS", "AMS_PRGRM_ID", "ADVRTSR_ID", "AMS_CLICK_FLTR_TYPE_ID", "FILTER_YN_IND", "ROVER_URL_TXT",
+      "MPLX_TIMEOUT_FLAG", "CB_KW", "CB_CAT", "CB_EX_KW", "FB_USED", "AD_FORMAT", "AD_CONTENT_TYPE", "LOAD_TIME", "APP_ID", "APP_PACKAGE_NAME", "APP_NAME",
+      "APP_VERSION", "DEVICE_NAME", "OS_NAME", "OS_VERSION", "UDID", "SDK_NAME", "SDK_VERSION", "AMS_TRANS_RSN_CD",
+      "TRFC_SRC_CD", "RT_RULE_FLAG1", "RT_RULE_FLAG2", "RT_RULE_FLAG3", "RT_RULE_FLAG4", "RT_RULE_FLAG5", "RT_RULE_FLAG6",
+      "RT_RULE_FLAG7", "RT_RULE_FLAG8", "RT_RULE_FLAG9", "RT_RULE_FLAG10", "RT_RULE_FLAG11", "RT_RULE_FLAG12", "RT_RULE_FLAG13", "RT_RULE_FLAG14", "RT_RULE_FLAG15", "RT_RULE_FLAG16",
+      "RT_RULE_FLAG17", "RT_RULE_FLAG18", "RT_RULE_FLAG19", "RT_RULE_FLAG20", "RT_RULE_FLAG21", "RT_RULE_FLAG22", "RT_RULE_FLAG23", "RT_RULE_FLAG24",
+      "NRT_RULE_FLAG1","NRT_RULE_FLAG2","NRT_RULE_FLAG3","NRT_RULE_FLAG4","NRT_RULE_FLAG5","NRT_RULE_FLAG6","NRT_RULE_FLAG7","NRT_RULE_FLAG8","NRT_RULE_FLAG9",
+      "NRT_RULE_FLAG10", "NRT_RULE_FLAG11","NRT_RULE_FLAG12","NRT_RULE_FLAG13","NRT_RULE_FLAG14","NRT_RULE_FLAG15","NRT_RULE_FLAG16","NRT_RULE_FLAG17","NRT_RULE_FLAG18","NRT_RULE_FLAG19",
+      "NRT_RULE_FLAG20", "NRT_RULE_FLAG21","NRT_RULE_FLAG22","NRT_RULE_FLAG23","NRT_RULE_FLAG24","NRT_RULE_FLAG25","NRT_RULE_FLAG26","NRT_RULE_FLAG27","NRT_RULE_FLAG28","NRT_RULE_FLAG29",
+      "NRT_RULE_FLAG30", "NRT_RULE_FLAG31","NRT_RULE_FLAG32","NRT_RULE_FLAG33","NRT_RULE_FLAG34","NRT_RULE_FLAG35","NRT_RULE_FLAG36","NRT_RULE_FLAG37","NRT_RULE_FLAG38","NRT_RULE_FLAG39",
+      "NRT_RULE_FLAG40", "NRT_RULE_FLAG41","NRT_RULE_FLAG42","NRT_RULE_FLAG43","NRT_RULE_FLAG44","NRT_RULE_FLAG45","NRT_RULE_FLAG46","NRT_RULE_FLAG47","NRT_RULE_FLAG48","NRT_RULE_FLAG49",
+      "NRT_RULE_FLAG50", "NRT_RULE_FLAG51","NRT_RULE_FLAG52","NRT_RULE_FLAG53","NRT_RULE_FLAG54","NRT_RULE_FLAG55","NRT_RULE_FLAG56","NRT_RULE_FLAG57","NRT_RULE_FLAG58","NRT_RULE_FLAG59",
+      "NRT_RULE_FLAG60", "NRT_RULE_FLAG61", "NRT_RULE_FLAG62", "NRT_RULE_FLAG63", "NRT_RULE_FLAG64")
+    column_list
+  }
+
   logger.info("Buiding Impression DataFrame...")
   def build(): DataFrame = {
     var impressionDf = df.withColumn("IMPRSN_CNTNR_ID", common.snapshotIdUdf(col("snapshot_id")))
@@ -170,11 +193,11 @@ class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializa
       .withColumn("NRT_RULE_FLAG64", lit(0))
       .cache()
 
-    impressionDf = impressionDf.select(impressionDf.columns.filter(
+   /* impressionDf = impressionDf.select(impressionDf.columns.filter(
       col => !common.drop_columns.contains(col))
-      .map(col => new Column(col)): _*)
+      .map(col => new Column(col)): _*)*/
 
+    impressionDf = impressionDf.select(impression_columns.head, impression_columns.tail: _*)
     impressionDf
   }
-
 }

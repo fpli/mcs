@@ -7,6 +7,8 @@ import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
+import org.apache.spark.sql.{Column, DataFrame}
+import org.apache.spark.sql.functions._
 
 object EpnNrtJob extends App {
   override def main(args: Array[String]): Unit = {
@@ -45,10 +47,10 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     }
   }
 
-  @transient lazy val epnNrtCommon: EpnNrtCommon = {
-    val common = new EpnNrtCommon(params)
+ /* @transient lazy val epnNrtCommon: EpnNrtCommon = {
+    val common = new EpnNrtCommon(params, )
     common
-  }
+  }*/
 
   override def run(): Unit = {
     //1. load meta files
@@ -65,22 +67,24 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       val datesFiles = metaIter._2
       datesFiles.foreach(datesFile => {
         //2. load DataFrame
-        val date = epnNrtCommon.getDate(datesFile._1)
+        val date = getDate(datesFile._1)
         val df = readFilesAsDFEx(datesFile._2)
+        val epnNrtCommon = new EpnNrtCommon(params, df)
         logger.info("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
-
         println("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
 
         //2.1 async get couchbase data
-        epnNrtCommon.asyncCouchbaseGet(df)
+        //val cbData = sc.broadcast(epnNrtCommon.asyncCouchbaseGet_2(df))
 
         //3. build impression dataframe  save dataframe to files and rename files
-        val impressionDf = new ImpressionDataFrame(df, epnNrtCommon).build()
+        var impressionDf = new ImpressionDataFrame(df, epnNrtCommon).build()
+        impressionDf = impressionDf.repartition(params.partitions)
         saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
         renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
 
         //4. build click dataframe  save dataframe to files and rename files
-        val clickDf = new ClickDataFrame(df, epnNrtCommon).build()
+        var clickDf = new ClickDataFrame(df, epnNrtCommon).build()
+        clickDf = clickDf.repartition(params.partitions)
         saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
         renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
 
@@ -99,8 +103,8 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       if (outputStatus.nonEmpty) {
         max = outputStatus.map(status => {
           val name = status.getPath.getName
-          val number = name.substring(name.lastIndexOf("_") + 1)
-          Integer.valueOf(number.substring(0, number.indexOf(".")))
+          val number = name.substring(name.lastIndexOf("_"))
+          Integer.valueOf(number.substring(1, number.indexOf(".")))
         }).sortBy(i => i).last
       }
     } else {
@@ -112,12 +116,18 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       .zipWithIndex
       .map(swi => {
         val src = swi._1.getPath
-        val seq = swi._2
+        val seq = ("%5d" format max + 1 + swi._2).replace(" ", "0")
         val target = new Path(dateOutputPath, prefix +
           date.replaceAll("-", "") + "_" + sc.applicationId + "_" + seq + ".dat.gz")
         fs.rename(src, target)
         target.toString
       })
     files
+  }
+
+  def getDate(date: String): String = {
+    val splitted = date.split("=")
+    if (splitted != null && splitted.nonEmpty) splitted(1)
+    else throw new Exception("Invalid date field in metafile.")
   }
 }

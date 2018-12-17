@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
-import java.net.{MalformedURLException, URL}
+import java.net.{MalformedURLException, URL, URLDecoder}
+import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.Properties
 
@@ -12,8 +13,8 @@ import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.functions.{lit, udf}
+import org.apache.spark.sql.{Column, DataFrame}
 import org.slf4j.LoggerFactory
 import rx.Observable
 import rx.functions.Func1
@@ -22,9 +23,11 @@ import scala.collection.immutable.HashMap
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class EpnNrtCommon(params: Parameter) extends Serializable {
+class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
+
+  val cbData = asyncCouchbaseGet(df)
 
   /**
     * The hadoop conf
@@ -62,12 +65,12 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     }
   }
 
-  lazy val ams_map: HashMap[Int, Array[Int]] = {
-    val value = Array(Array(2, 1), Array(6, 1), Array(4, 1), Array(10, 1), Array(16, 1), Array(9, 1), Array(5, 1),
-      Array(15, 1), Array(3, 1), Array(14, 1), Array(17, 2), Array(12, 1), Array(11, 1), Array(8, 1), Array(13, 1),
-      Array(1, 1), Array(7, 1))
+  lazy val ams_map: HashMap[Int, Array[String]] = {
+    val value = Array(Array("2", "1"), Array("6", "1"), Array("4", "1"), Array("10", "1"), Array("16", "1"), Array("9", "1"), Array("5", "1"),
+      Array("15", "1"), Array("3", "1"), Array("14", "1"), Array("17", "2"), Array("12", "1"), Array("11", "1"), Array("8", "1"), Array("13", "1"),
+      Array("1", "1"), Array("7", "1"))
     val key = Array(5282, 4686, 705, 709, 1346, 3422, 1553, 710, 5221, 5222, 8971, 724, 707, 3423, 1185, 711, 706)
-    var map = new HashMap[Int, Array[Int]]
+    var map = new HashMap[Int, Array[String]]
 
     for(i <- key.indices) {
       map = map + (key(i) -> value(i))
@@ -131,35 +134,9 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     drop_list
   }
 
-  //publisher status map
-   var publisher_status_map: HashMap[String, String] = {
-     val map = new HashMap[String, String]
-     map
-   }
 
-  //campaign status map
-  var campaign_status_map: HashMap[String, String] = {
-    val map = new HashMap[String, String]
-    map
-  }
 
-  //progmap status map
-  var progmap_status_map: HashMap[String, String] = {
-    val map = new HashMap[String, String]
-    map
-  }
 
-  //adv_click_filter_map
-  var adv_click_filter_map: HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]] = {
-    val map = new HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]]
-    map
-  }
-
-  //pub domain map
-  var pub_domain_map: HashMap[String, ListBuffer[PubDomainInfo]] = {
-    val map = new HashMap[String, ListBuffer[PubDomainInfo]]
-    map
-  }
 
   // all udf
   val snapshotIdUdf = udf((snapshotId: String) => {
@@ -188,7 +165,7 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
   val get_ad_content_type_Udf = udf((url: String) => getQueryParam(url, "ad_content_type"))
   val get_load_time_udf = udf((url: String) => getQueryParam(url, "load_time"))
   val get_udid_Udf = udf((url: String) => getQueryParam(url, "udid"))
-  val get_rule_flag_udf = udf((ruleFlag: Long, index: Int) => getRuleFlag2(ruleFlag, index))
+  val get_rule_flag_udf = udf((ruleFlag: Long, index: Int) => getRuleFlag(ruleFlag, index))
   val get_country_locale_udf = udf((requestHeader: String) => getCountryLocaleFromHeader(requestHeader))
   val get_lego_udf = udf((uri: String) => getToolLvlOptn(uri))
   val get_icep_vectorid_udf = udf((uri: String) => getQueryParam(uri, "icep_vectorid"))
@@ -290,28 +267,44 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
   def getQueryParam(uri: String, param: String): String = {
     if (uri != null) {
       val params = new URL(uri).getQuery().split("&")
-      for (i <- params) {
-        val array = i.split("=")
-        val key = i.split("=")(0)
-        if (key.equalsIgnoreCase(param) && array.size == 2)
-          return i.split("=")(1)
-        else
-          ""
+      for (i <- params.indices) {
+        try {
+          val array = params(i).split("=")
+          val key = array(0)
+          if (key.equalsIgnoreCase(param) && array.size == 2)
+            return URLDecoder.decode(array(1), "UTF-8")
+          else
+            ""
+        } catch {
+          case e: ArrayIndexOutOfBoundsException => {
+            logger.error("Error query parameters " + uri + e)
+            return ""
+          }
+        }
       }
+
     }
     ""
   }
 
-  def getPrgrmIdAdvrtsrIdFromAMSClick(rotationId: String): Array[Int] = {
+  def getPrgrmIdAdvrtsrIdFromAMSClick(rotationId: String): Array[String] = {
+    val empty = Array("","")
     if (rotationId == null || rotationId.equals(""))
-      return Array.empty[Int]
+      return empty
     val parts = rotationId.split("-")
-    if (parts.length == 4)
-      return ams_map(parts(0).toInt)
-    Array.empty[Int]
+    try {
+      if (parts.length == 4)
+        return ams_map(parts(0).toInt)
+    } catch {
+      case e: NoSuchElementException => {
+        logger.error("Key " + parts(0) +  " not found in the ams_map " + e)
+        return empty
+      }
+    }
+    empty
   }
 
-  def getRuleFlag2(flag: Long, index: Int): Int = {
+  def getRuleFlag(flag: Long, index: Int): Int = {
     if ((flag & 1L << index) == (1L << index))
       return 1
     0
@@ -319,10 +312,17 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
 
   def getCountryLocaleFromHeader(requestHeader: String): String = {
     var accept = getValueFromRequest(requestHeader, "accept-language")
-    if (accept != null && !accept.equals(""))
-      accept = accept.split(",")(0)
-    if (accept != null && !accept.equals("") && accept.contains("-"))
-      accept = accept.split("-")(1)
+    try {
+      if (accept != null && !accept.equals(""))
+        accept = accept.split(",")(0)
+      if (accept != null && !accept.equals("") && accept.contains("-"))
+        accept = accept.split("-")(1)
+    } catch {
+      case e: ArrayIndexOutOfBoundsException => {
+        logger.error("Error accept-language " + accept + e)
+        return ""
+      }
+    }
     accept
   }
 
@@ -347,7 +347,7 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
 
   def get_TRFC_SRC_CD(flag: Long, action: String): Int = {
     if (action.equalsIgnoreCase("click")) {
-      val res = getRuleFlag2(flag, 9)
+      val res = getRuleFlag(flag, 9)
       if (res == 0)
         return 0
       else {
@@ -375,16 +375,16 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
 
   def getFilter_Yn_Ind(rt_rule_flag: Long, nrt_rule_flag: Long, action: String): Int = {
     if (action.equalsIgnoreCase("impression")) {
-      return getRuleFlag2(rt_rule_flag, 0) | getRuleFlag2(rt_rule_flag, 2) |
-        getRuleFlag2(rt_rule_flag, 9) | getRuleFlag2(rt_rule_flag, 4) | getRuleFlag2(rt_rule_flag, 1) |
-        getRuleFlag2(rt_rule_flag, 11) | getRuleFlag2(rt_rule_flag, 5) | getRuleFlag2(rt_rule_flag, 3)
+      return getRuleFlag(rt_rule_flag, 0) | getRuleFlag(rt_rule_flag, 2) |
+        getRuleFlag(rt_rule_flag, 9) | getRuleFlag(rt_rule_flag, 4) | getRuleFlag(rt_rule_flag, 1) |
+        getRuleFlag(rt_rule_flag, 11) | getRuleFlag(rt_rule_flag, 5) | getRuleFlag(rt_rule_flag, 3)
     }
     if(action.equalsIgnoreCase("click")) {
-      return getRuleFlag2(rt_rule_flag, 0) | getRuleFlag2(rt_rule_flag, 2) |
-        getRuleFlag2(rt_rule_flag, 9) | getRuleFlag2(rt_rule_flag, 4) | getRuleFlag2(rt_rule_flag, 1) |
-        getRuleFlag2(rt_rule_flag, 11) | getRuleFlag2(rt_rule_flag, 5) | getRuleFlag2(rt_rule_flag, 3) |
-        getRuleFlag2(nrt_rule_flag, 1) | getRuleFlag2(nrt_rule_flag, 2) | getRuleFlag2(nrt_rule_flag, 4) |
-        getRuleFlag2(nrt_rule_flag, 5) | getRuleFlag2(nrt_rule_flag, 3)
+      return getRuleFlag(rt_rule_flag, 0) | getRuleFlag(rt_rule_flag, 2) |
+        getRuleFlag(rt_rule_flag, 9) | getRuleFlag(rt_rule_flag, 4) | getRuleFlag(rt_rule_flag, 1) |
+        getRuleFlag(rt_rule_flag, 11) | getRuleFlag(rt_rule_flag, 5) | getRuleFlag(rt_rule_flag, 3) |
+        getRuleFlag(nrt_rule_flag, 1) | getRuleFlag(nrt_rule_flag, 2) | getRuleFlag(nrt_rule_flag, 4) |
+        getRuleFlag(nrt_rule_flag, 5) | getRuleFlag(nrt_rule_flag, 3)
     }
     0
   }
@@ -437,8 +437,8 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     var roi_fltr_yn_ind = 0
 
     if (isDefinedPublisher(publisherId) && isDefinedAdvertiserId(rotationId)) {
-      if(callRoiRulesSwitch(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1).toString).equals("2")) {
-        val roiRuleList = lookupAdvClickFilterMapAndROI(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1).toString)
+      if(callRoiRulesSwitch(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1)).equals("2")) {
+        val roiRuleList = lookupAdvClickFilterMapAndROI(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1))
         roiRuleList(0).setRule_result(callRoiSdkRule(roiRuleList(0).getIs_rule_enable, roiRuleList(0).getIs_pblshr_advsr_enable_rule, 0))
         roiRuleList(1).setRule_result(callRoiEbayReferrerRule(roiRuleList(1).getIs_rule_enable, roiRuleList(1).getIs_pblshr_advsr_enable_rule, 0))
         roiRuleList(2).setRule_result(callRoiNqBlacklistRule(roiRuleList(2).getIs_rule_enable, roiRuleList(2).getIs_pblshr_advsr_enable_rule, 0))
@@ -541,27 +541,9 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
   }
 
   def amsPubDomainLookup(publisherId: String, roi_rule: String): ListBuffer[PubDomainInfo] = {
-    var list: ListBuffer[PubDomainInfo] = ListBuffer.empty[PubDomainInfo]
-    /*if (publisherId != null && !publisherId.equals("")) {
-      try {
-        logger.debug("Get publisher domain for publisherId = " + publisherId + " from corp couchbase")
-        val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
-        if (bucket.exists("EPN_amspubdomain_" + publisherId)) {
-          val array = bucket.get("EPN_amspubdomain_" + publisherId, classOf[JsonArrayDocument])
-          for (i <- 0 until array.content().size()) {
-            list += new Gson().fromJson(String.valueOf(array.content().get(i)), classOf[PubDomainInfo])
-          }
-          CouchbaseClient.returnClient(cacheClient)
-        }
-      } catch {
-        case e: Exception => {
-          logger.error("Corp Couchbase error while getting publisher domain for publisherId = " + publisherId, e)
-          throw e
-        }
-      }
-    }
+    var list = cbData._5.getOrElse(publisherId, ListBuffer.empty[PubDomainInfo])
     if (roi_rule.equals("NETWORK_QUALITY_WHITELIST"))
-      list.filterNot(e => !e.getDomain_status_enum.equals("1") || !e.getWhitelist_status_enum.equals("1") && e.getIs_registered.equals("0"))*/
+      list = list.filterNot(e => !e.getDomain_status_enum.equals("1") || !e.getWhitelist_status_enum.equals("1") && e.getIs_registered.equals("0"))
     list
   }
 
@@ -650,25 +632,7 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
   }
 
   def getAdvClickFilterMap(publisherId: String): ListBuffer[PubAdvClickFilterMapInfo] = {
-    var list: ListBuffer[PubAdvClickFilterMapInfo] = ListBuffer.empty[PubAdvClickFilterMapInfo]
-    /*if (publisherId != null && !publisherId.equals("")) {
-      try {
-        logger.debug("Get advClickFilterMap for publisherId = " + publisherId + " from corp couchbase")
-        val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
-        if (bucket.exists("EPN_amspubfilter_" + publisherId)) {
-          val array = bucket.get("EPN_amspubfilter_" + publisherId, classOf[JsonArrayDocument])
-          for (i <- 0 until array.content().size()) {
-            list += new Gson().fromJson(String.valueOf(array.content().get(i)), classOf[PubAdvClickFilterMapInfo])
-          }
-        }
-        CouchbaseClient.returnClient(cacheClient)
-      } catch {
-        case e: Exception => {
-          logger.error("Corp Couchbase error while getting advClickFilterMap for publisherId = " + publisherId, e)
-        }
-      }
-    }*/
-    list
+    cbData._4.getOrElse(publisherId, ListBuffer.empty[PubAdvClickFilterMapInfo])
   }
 
   def getReasonCode(action: String, rotationId: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long) : String = {
@@ -679,8 +643,8 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
     val publisherStatus = getPublisherStatus(publisherId)
     val res = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)
     val filter_yn_ind = getFilter_Yn_Ind(rt_rule_flag, nrt_rule_flag, action)
-    if (!res.isEmpty) {
-      config_flag = res(1) & 1
+    if (!res(1).equals("")) {
+      config_flag = res(1).toInt & 1
     }
     if (action.equalsIgnoreCase("click") && ams_flag_map("google_fltr_do_flag") == 1)
       rsn_cd = ReasonCodeEnum.REASON_CODE10.getReasonCode
@@ -704,114 +668,88 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
   }
 
   def getPublisherStatus(publisherId: String): String = {
-    var publisherInfo = new PublisherInfo
-   /* if (publisherId != null && !publisherId.equals("")) {
-      try {
-        logger.debug("Get publisher domain for publisherId = " + publisherId + " from corp couchbase")
-        val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
-        if (bucket.exists("EPN_publisher_" + publisherId)) {
-          val map = bucket.get("EPN_publisher_" + publisherId, classOf[JsonDocument])
-          publisherInfo = new Gson().fromJson(String.valueOf(map.content()), classOf[PublisherInfo])
-        }
-        CouchbaseClient.returnClient(cacheClient)
-      } catch {
-        case e: Exception => {
-          logger.error("Corp Couchbase error while getting publisher status for publisherId = " + publisherId, e)
-          throw e
-        }
-      }
-    }*/
-    if (publisherInfo == null)
-      return ""
-    publisherInfo.getApplication_status_enum
+    cbData._1.getOrElse(publisherId, "")
   }
 
   def getProgMapStatus(publisherId: String, rotationId: String): String = {
-    var progPubMapInfo = new ProgPubMapInfo
-    /*val res = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)
-    var programId = -1
-    if (!res.isEmpty) {
+    val res = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)
+    var programId = ""
+    if (!res(0).equals(""))
       programId = res(0)
-    }
-    if (publisherId != null && !publisherId.equals("") && programId != -1) {
-      try {
-        logger.debug("Get progMap status for publisherId = " + publisherId + " from corp couchbase")
-        val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
-        if (bucket.exists("EPN_ppm_" + publisherId + "_" + programId)) {
-          val map = bucket.get("EPN_ppm_" + publisherId + "_" + programId , classOf[JsonDocument])
-          progPubMapInfo = new Gson().fromJson(String.valueOf(map.content()), classOf[ProgPubMapInfo])
-        }
-        CouchbaseClient.returnClient(cacheClient)
-      } catch {
-        case e: Exception => {
-          logger.error("Corp Couchbase error while getting progMap status for publisherId = " + publisherId, e)
-          throw e
-        }
-      }
-    }*/
-    if (progPubMapInfo == null)
-      return ""
-    progPubMapInfo.getStatus_enum
+    cbData._3.getOrElse(publisherId + "_" + programId, "")
   }
 
   def getcampaignStatus(campaignId: String): String = {
-    var campaign_sts = new PublisherCampaignInfo
-    /*if (campaignId != null && !campaignId.equals("")) {
-      try {
-        logger.debug("Get campaign status for campaignId = " + campaignId + " from corp couchbase")
-        val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
-        if (bucket.exists("EPN_pubcmpn_" + campaignId)) {
-          val map = bucket.get("EPN_pubcmpn_" + campaignId, classOf[JsonDocument])
-          campaign_sts = new Gson().fromJson(String.valueOf(map.content().get("0")), classOf[PublisherCampaignInfo])
-        }
-        CouchbaseClient.returnClient(cacheClient)
-      } catch {
-        case e: Exception => {
-          logger.error("Corp Couchbase error while getting campaign status for campaignId = " + campaignId, e)
-          throw e
-        }
-      }
-    }*/
-    if (campaign_sts == null)
-      return ""
-    campaign_sts.getStatus_enum
+   cbData._2.getOrElse(campaignId, "")
   }
 
-  def getDate(date: String): String = {
-    val splitted = date.split("=")
-    if (splitted != null && splitted.nonEmpty) splitted(1)
-    else throw new Exception("Invalid date field in metafile.")
-  }
+  // async couchbase get
 
-  def asyncCouchbaseGet(df: DataFrame): Unit = {
-    logger.info("Async get couchbase data...")
+  def asyncCouchbaseGet(df: DataFrame): (HashMap[String, String], HashMap[String, String],
+    HashMap[String, String], HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]],
+    HashMap[String, ListBuffer[PubDomainInfo]]) = {
+    logger.info("Set Broadcast couchbase data...")
+    logger.info("DF columns " + df.count())
     val test = df.select("publisher_id", "campaign_id", "uri").collect()
-    val publisher_list = new Array[String](test.length)
-    val campaign_list = new Array[String](test.length)
+    var publisher_list = new Array[String](test.length)
+    var campaign_list = new Array[String](test.length)
     val rotation_list = new Array[String](test.length)
-    val progmap_list = new Array[String](test.length)
+    var progmap_list = new Array[String](test.length)
+    var publisher_map = new HashMap[String, String]
+    var campaign_map = new HashMap[String, String]
+    var prog_map = new HashMap[String, String]
+    var clickFilter_map = new HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]]
+    var pubDomain_map = new HashMap[String, ListBuffer[PubDomainInfo]]
+
+
     for (i <- test.indices) {
       publisher_list(i) = String.valueOf(test(i).get(0))
       campaign_list(i) = String.valueOf(test(i).get(1))
       rotation_list(i) = getRoverUriInfo(String.valueOf(test(i).get(2)), 3)
     }
 
+
     for (i <- publisher_list.indices) {
       val res = getPrgrmIdAdvrtsrIdFromAMSClick(rotation_list(i))
-      var programId = -1
-      if (!res.isEmpty)
+      var programId = ""
+      if (!res(0).equals(""))
         programId = res(0)
       progmap_list(i) = publisher_list(i) + "_" + programId
     }
 
-    batchGetPublisherStatus(publisher_list)
-    batchGetCampaignStatus(campaign_list)
-    batchGetProgMapStatus(progmap_list)
-    batchGetAdvClickFilterMap(publisher_list)
-    batchGetPubDomainMap(publisher_list)
+    logger.info("publisher_list count is " + publisher_list.length)
+    logger.info("campaign_list count is " + campaign_list.length)
+    logger.info("progmap_list count is " + progmap_list.length)
+
+    publisher_list = publisher_list.distinct
+    campaign_list = campaign_list.distinct
+    progmap_list = progmap_list.distinct
+
+    logger.info("after publisher_list count is " + publisher_list.length)
+    logger.info("after campaign_list count is " + campaign_list.length)
+    logger.info("after progmap_list count is " + progmap_list.length)
+
+    logger.info("Begin load data from couchbase")
+    publisher_map = batchGetPublisherStatus(publisher_list)
+    campaign_map = batchGetCampaignStatus(campaign_list)
+    prog_map = batchGetProgMapStatus(progmap_list)
+    clickFilter_map = batchGetAdvClickFilterMap(publisher_list)
+    pubDomain_map = batchGetPubDomainMap(publisher_list)
+
+
+    logger.info("publisher_map count is " + publisher_map.size)
+    logger.info("campaign_map count is " + campaign_map.size)
+    logger.info("prog_map count is " + prog_map.size)
+    logger.info("clickFilter_map is " + clickFilter_map.size)
+    logger.info("pubDomain_map count is " + pubDomain_map.size)
+    (publisher_map, campaign_map, prog_map, clickFilter_map, pubDomain_map)
   }
 
-  def batchGetPublisherStatus(list: Array[String]): Unit = {
+
+
+  def batchGetPublisherStatus(list: Array[String]): HashMap[String, String] = {
+    logger.info("loading publisher status...")
+    var res = new HashMap[String, String]
     val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
     try {
       val jsonDocuments = Observable
@@ -821,29 +759,32 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
             bucket.async.get("EPN_publisher_" + key, classOf[JsonDocument])
           }
         }).toList.toBlocking.single
+      logger.info("publisher status count " + jsonDocuments.size())
       for (i <- 0 until jsonDocuments.size()) {
         val publisherInfo = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherInfo])
         if (publisherInfo != null)
-          publisher_status_map = publisher_status_map + (publisherInfo.getAms_publisher_id -> publisherInfo.getApplication_status_enum)
+          res = res + (publisherInfo.getAms_publisher_id -> publisherInfo.getApplication_status_enum)
         else
-          publisher_status_map = publisher_status_map + (publisherInfo.getAms_publisher_id -> "")
+          res = res + (publisherInfo.getAms_publisher_id -> "")
       }
       if (jsonDocuments.size() != list.length) {
         for (i <- list.indices) {
-          if (!publisher_status_map.contains(list(i)))
-            publisher_status_map = publisher_status_map + (list(i) -> "")
+          if (!res.contains(list(i)))
+            res = res + (list(i) -> "")
         }
       }
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting publisher status " +  e)
-        throw e
       }
     }
     CouchbaseClient.returnClient(cacheClient)
+    res
   }
 
-  def batchGetCampaignStatus(list: Array[String]): Unit = {
+  def batchGetCampaignStatus(list: Array[String]): HashMap[String, String] = {
+    logger.info("loading campaign status...")
+    var res = new HashMap[String, String]
     val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
     try {
       val jsonDocuments = Observable
@@ -853,29 +794,33 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
             bucket.async.get("EPN_pubcmpn_" + key, classOf[JsonDocument])
           }
         }).toList.toBlocking.single()
+
+      logger.info("campaign status count " + jsonDocuments.size())
       for (i <- 0 until jsonDocuments.size()) {
         val campaign_sts = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherCampaignInfo])
         if (campaign_sts != null)
-          campaign_status_map = campaign_status_map + (campaign_sts.getAms_publisher_campaign_id -> campaign_sts.getStatus_enum)
+          res = res + (campaign_sts.getAms_publisher_campaign_id -> campaign_sts.getStatus_enum)
         else
-          campaign_status_map = campaign_status_map + (campaign_sts.getAms_publisher_campaign_id -> "")
+          res = res + (campaign_sts.getAms_publisher_campaign_id -> "")
         if (jsonDocuments.size() != list.length) {
           for (i <- list.indices) {
-            if (!campaign_status_map.contains(list(i)))
-              campaign_status_map = campaign_status_map + (list(i) -> "")
+            if (!res.contains(list(i)))
+              res = res + (list(i) -> "")
           }
         }
       }
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting campaign status " +  e)
-        throw e
       }
     }
     CouchbaseClient.returnClient(cacheClient)
+    res
   }
 
-  def batchGetProgMapStatus(list: Array[String]): Unit = {
+  def batchGetProgMapStatus(list: Array[String]): HashMap[String, String] = {
+    logger.info("loading progmap status...")
+    var res = new HashMap[String, String]
     val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
     try {
       val jsonDocuments = Observable
@@ -885,30 +830,33 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
             bucket.async.get("EPN_ppm_" + key, classOf[JsonDocument])
           }
         }).toList.toBlocking.single()
+      logger.info("progmap status count " + jsonDocuments.size())
       for (i <- 0 until jsonDocuments.size()) {
         val progPubMap = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[ProgPubMapInfo])
         if (progPubMap != null)
-          progmap_status_map = progmap_status_map + ((progPubMap.getAms_publisher_id + "_" + progPubMap.getAms_program_id) -> progPubMap.getStatus_enum)
+          res = res + ((progPubMap.getAms_publisher_id + "_" + progPubMap.getAms_program_id) -> progPubMap.getStatus_enum)
         else
-          progmap_status_map = progmap_status_map + ((progPubMap.getAms_publisher_id + "_" + progPubMap.getAms_program_id) -> "")
+          res = res + ((progPubMap.getAms_publisher_id + "_" + progPubMap.getAms_program_id) -> "")
         if (jsonDocuments.size() != list.length) {
           for (i <- list.indices) {
-            if (!progmap_status_map.contains(list(i)))
-              progmap_status_map = progmap_status_map + (list(i) -> "")
+            if (!res.contains(list(i)))
+              res = res + (list(i) -> "")
           }
         }
       }
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting progmap status " +  e)
-        throw e
       }
     }
     CouchbaseClient.returnClient(cacheClient)
+    res
   }
 
 
-  def batchGetAdvClickFilterMap(list: Array[String]): Unit = {
+  def batchGetAdvClickFilterMap(list: Array[String]): HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]] = {
+    logger.info("loading click filter map...")
+    var res = new HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]]
     val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
     try {
       val jsonArrayDocuments = Observable
@@ -918,30 +866,33 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
             bucket.async.get("EPN_amspubfilter_" + key, classOf[JsonArrayDocument])
           }
         }).toList.toBlocking.single()
+      logger.info("click filter count " + jsonArrayDocuments.size())
       for (i <- 0 until jsonArrayDocuments.size()) {
         var objectList: ListBuffer[PubAdvClickFilterMapInfo] = ListBuffer.empty[PubAdvClickFilterMapInfo]
         for (j <-0 until jsonArrayDocuments.get(i).content().size()) {
           objectList += new Gson().fromJson(String.valueOf(jsonArrayDocuments.get(i).content().get(j)), classOf[PubAdvClickFilterMapInfo])
         }
         if (objectList.nonEmpty)
-          adv_click_filter_map = adv_click_filter_map + (objectList.head.getAms_publisher_id -> objectList)
+          res = res + (objectList.head.getAms_publisher_id -> objectList)
       }
       if (jsonArrayDocuments.size() != list.length) {
         for (i <- list.indices) {
-          if (!adv_click_filter_map.contains(list(i)))
-            adv_click_filter_map = adv_click_filter_map + (list(i) -> ListBuffer.empty[PubAdvClickFilterMapInfo])
+          if (!res.contains(list(i)))
+            res = res + (list(i) -> ListBuffer.empty[PubAdvClickFilterMapInfo])
         }
       }
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting advClickFilterMap" +  e)
-        throw e
       }
     }
     CouchbaseClient.returnClient(cacheClient)
+    res
   }
 
-  def batchGetPubDomainMap(list: Array[String]): Unit = {
+  def batchGetPubDomainMap(list: Array[String]): HashMap[String, ListBuffer[PubDomainInfo]] = {
+    logger.info("loading pubdomain map...")
+    var res = new HashMap[String, ListBuffer[PubDomainInfo]]
     val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
     try {
       val jsonArrayDocuments = Observable
@@ -951,29 +902,28 @@ class EpnNrtCommon(params: Parameter) extends Serializable {
             bucket.async.get("EPN_amspubdomain_" + key, classOf[JsonArrayDocument])
           }
         }).toList.toBlocking.single()
+      logger.info("pubdomain count " + jsonArrayDocuments.size())
+
       for (i <- 0 until jsonArrayDocuments.size()) {
         var objectList: ListBuffer[PubDomainInfo] = ListBuffer.empty[PubDomainInfo]
         for (j <-0 until jsonArrayDocuments.get(i).content().size()) {
           objectList += new Gson().fromJson(String.valueOf(jsonArrayDocuments.get(i).content().get(j)), classOf[PubDomainInfo])
         }
         if (objectList.nonEmpty)
-          pub_domain_map = pub_domain_map + (objectList.head.getAms_publisher_id -> objectList)
+          res = res + (objectList.head.getAms_publisher_id -> objectList)
       }
       if (jsonArrayDocuments.size() != list.length) {
         for (i <- list.indices) {
-          if (!pub_domain_map.contains(list(i)))
-            pub_domain_map = pub_domain_map + (list(i) -> ListBuffer.empty[PubDomainInfo])
+          if (!res.contains(list(i)))
+            res = res + (list(i) -> ListBuffer.empty[PubDomainInfo])
         }
       }
     } catch {
       case e: Exception => {
-        logger.error("Corp Couchbase error while getting pubDomainMap" +  e)
-        throw e
+        logger.error("Corp Couchbase error while getting pubDomainMap " +  e)
       }
     }
     CouchbaseClient.returnClient(cacheClient)
+    res
   }
-
-
-
 }

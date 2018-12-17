@@ -5,6 +5,7 @@ import scopt.OptionParser
 
 case class Parameter(appName: String = "epnnrt",
                      mode: String = "yarn",
+                     partitions: Int = 3,
                      workDir: String = "",
                      resourceDir: String = "")
 
@@ -21,6 +22,11 @@ object Parameter {
       .optional
       .valueName("mode")
       .action((cont, param) => param.copy(mode = cont))
+
+    opt[Int]("partitions")
+      .optional
+      .valueName("partitions")
+      .action((cont, param) => param.copy(partitions = cont))
 
     opt[String]("workDir")
       .required

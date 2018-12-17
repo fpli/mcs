@@ -421,8 +421,8 @@ public class TestHelper {
         "92813b^pbf/%238000400000005db14dbb^; s=CgAD4ACBb0Wu7NzY1NjE5NDcxNjYwYWM4MDIzNDJhZTM5ZmZmZmZiMmTFKrqK;" +
         "npii=btguid/765619471660ac802342ae39fffffb2d5db14dc2^cguid/" + cguid);
     message.setUri("http://rover.ebay.com/rover/1/1346-53200-19255-0/4?ff1=2&toolid=10039&campid=5338195018" +
-        "&uq=263XXX365814851&customid=page&ff2=2&ff3=2&ff16=2&ctx=n&cb_kw=autograph%2C+signed" +
-        "&cb_cat=176985,176984&cb_ex_kw=Lego&cb_ex_cat=hah&fb_used=1&ad_format=123&ad_content_type=9012&load_time=11&lgeo=1");
+        "&uq=A%26B%3DC&customid=page&ff2=2&ff3=2&ff16=2&ctx=n&cb_kw=autograph%2C+signed" +
+        "&cb_cat=176985,176984&cb_ex_kw=Lego&cb_ex_cat=hah&fb_used=1&ad_format=123&ad_content_type=9012&load_time=11&lgeo=1&FirstName=Foo+A%26B%3DC&LastName=Bar");
     message.setResponseHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|Cookie: cguid/" + cguid +
       "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive"
     + "|location: http://cgi.ebay.fr/ws/eBayISAPI.dll?ViewItem&item=dwddwdwdz&ixed=1");
