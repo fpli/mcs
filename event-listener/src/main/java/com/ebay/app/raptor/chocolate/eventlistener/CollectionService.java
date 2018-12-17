@@ -121,9 +121,14 @@ public class CollectionService {
     addHeaders.put("X-eBay-Client-IP", endUserContext.getIPAddress());
     addHeaders.put("User-Agent", endUserContext.getUserAgent());
     // only add UserId header when token is user token, otherwise it is app consumer id
+    String userId;
     if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
+      userId = raptorSecureContext.getSubjectImmutableId();
       addHeaders.put("UserId", raptorSecureContext.getSubjectImmutableId());
+    } else {
+      userId = Long.toString(endUserContext.getOrigUserOracleId());
     }
+    addHeaders.put("UserId", userId);
     // add guid,cguid to cookie header to addHeaders and responseHeaders for compatibility
     String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
     StringBuilder cookie = new StringBuilder("npii=");
