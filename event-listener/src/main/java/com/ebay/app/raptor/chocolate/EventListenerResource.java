@@ -78,7 +78,7 @@ public class EventListenerResource implements EventsApi {
       try {
         String result = CollectionService.getInstance().collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(), body);
         if (result.equals(Constants.ACCEPTED)) {
-          res = Response.ok().entity(result).build();
+          res = Response.status(Response.Status.CREATED).build();
         } else {
           res = Response.status(Response.Status.BAD_REQUEST).entity(makeBadRequestError(result)).build();
         }
