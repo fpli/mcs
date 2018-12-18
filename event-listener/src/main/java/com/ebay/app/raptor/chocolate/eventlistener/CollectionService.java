@@ -118,7 +118,7 @@ public class CollectionService {
     }
 
     addHeaders.put("Referer", referer);
-    //addHeaders.put("X-eBay-Client-IP", endUserContext.getIPAddress());
+    addHeaders.put("X-eBay-Client-IP", endUserContext.getIPAddress());
     addHeaders.put("User-Agent", endUserContext.getUserAgent());
     // only add UserId header when token is user token, otherwise it is app consumer id
     String userId;
