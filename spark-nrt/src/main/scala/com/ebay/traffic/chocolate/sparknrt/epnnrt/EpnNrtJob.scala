@@ -7,8 +7,6 @@ import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
-import org.apache.spark.sql.{Column, DataFrame}
-import org.apache.spark.sql.functions._
 
 object EpnNrtJob extends App {
   override def main(args: Array[String]): Unit = {

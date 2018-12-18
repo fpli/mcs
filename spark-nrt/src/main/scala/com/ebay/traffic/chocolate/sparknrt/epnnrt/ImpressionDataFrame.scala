@@ -1,8 +1,8 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.IntegerType
-import org.apache.spark.sql.{Column, DataFrame}
 import org.slf4j.LoggerFactory
 
 class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
@@ -33,7 +33,11 @@ class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializa
 
   logger.info("Buiding Impression DataFrame...")
   def build(): DataFrame = {
-    var impressionDf = df.withColumn("IMPRSN_CNTNR_ID", common.snapshotIdUdf(col("snapshot_id")))
+    var impressionDf = df
+      .withColumn("google_fltr_do_flag", common.get_google_fltr_do_flag_udf(col("request_headers"), col("publisher_id")))
+      .withColumn("traffic_source_code", common.get_trfc_src_cd_impression_udf(col("rt_rule_flags")))
+      .withColumn("ams_fltr_roi_value", common.get_roi_fltr_yn_ind_udf(col("uri"), col("publisher_id"), col("request_headers"), col("google_fltr_do_flag"), col("traffic_source_code")))
+      .withColumn("IMPRSN_CNTNR_ID", common.snapshotIdUdf(col("snapshot_id")))
       .withColumn("FILE_SCHM_VRSN_NUM", lit(4))
       .withColumn("FILE_ID", lit(1995))
       .withColumn("BATCH_ID", lit(1994))
@@ -101,19 +105,19 @@ class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializa
       .withColumn("UDID", common.get_udid_Udf(col("uri")))
       .withColumn("SDK_NAME", lit(""))
       .withColumn("SDK_VERSION", lit(""))
-      .withColumn("AMS_TRANS_RSN_CD", common.get_impression_reason_code_udf(col("uri"), col("publisher_id"), col("campaign_id"), col("rt_rule_flags"), col("nrt_rule_flags")))
-      .withColumn("TRFC_SRC_CD", common.get_trfc_src_cd_impression_udf(col("rt_rule_flags")))
-      .withColumn("RT_RULE_FLAG1", common.get_rule_flag_udf(col("rt_rule_flags"), lit(10)))
-      .withColumn("RT_RULE_FLAG2", common.get_rule_flag_udf(col("rt_rule_flags"), lit(0)))
-      .withColumn("RT_RULE_FLAG3", common.get_rule_flag_udf(col("rt_rule_flags"), lit(2)))
-      .withColumn("RT_RULE_FLAG4", common.get_rule_flag_udf(col("rt_rule_flags"), lit(2)))
-      .withColumn("RT_RULE_FLAG5", common.get_rule_flag_udf(col("rt_rule_flags"), lit(9)))
-      .withColumn("RT_RULE_FLAG6", common.get_rule_flag_udf(col("rt_rule_flags"), lit(4)))
-      .withColumn("RT_RULE_FLAG7", common.get_rule_flag_udf(col("rt_rule_flags"), lit(1)))
-      .withColumn("RT_RULE_FLAG8", common.get_rule_flag_udf(col("rt_rule_flags"), lit(11)))
+      .withColumn("AMS_TRANS_RSN_CD", common.get_impression_reason_code_udf(col("uri"), col("publisher_id"), col("campaign_id"), col("rt_rule_flags"), col("nrt_rule_flags"), col("ams_fltr_roi_value")))
+      .withColumn("TRFC_SRC_CD", col("traffic_source_code"))
+      .withColumn("RT_RULE_FLAG1", common.get_rule_flag_udf(col("rt_rule_flags"), lit(11)))
+      .withColumn("RT_RULE_FLAG2", common.get_rule_flag_udf(col("rt_rule_flags"), lit(1)))
+      .withColumn("RT_RULE_FLAG3", common.get_rule_flag_udf(col("rt_rule_flags"), lit(3)))
+      .withColumn("RT_RULE_FLAG4", common.get_rule_flag_udf(col("rt_rule_flags"), lit(3)))
+      .withColumn("RT_RULE_FLAG5", common.get_rule_flag_udf(col("rt_rule_flags"), lit(10)))
+      .withColumn("RT_RULE_FLAG6", common.get_rule_flag_udf(col("rt_rule_flags"), lit(5)))
+      .withColumn("RT_RULE_FLAG7", common.get_rule_flag_udf(col("rt_rule_flags"), lit(2)))
+      .withColumn("RT_RULE_FLAG8", common.get_rule_flag_udf(col("rt_rule_flags"), lit(12)))
       .withColumn("RT_RULE_FLAG9", lit(0))
-      .withColumn("RT_RULE_FLAG10", common.get_rule_flag_udf(col("rt_rule_flags"), lit(5)))
-      .withColumn("RT_RULE_FLAG11", common.get_rule_flag_udf(col("rt_rule_flags"), lit(3)))
+      .withColumn("RT_RULE_FLAG10", common.get_rule_flag_udf(col("rt_rule_flags"), lit(6)))
+      .withColumn("RT_RULE_FLAG11", common.get_rule_flag_udf(col("rt_rule_flags"), lit(4)))
       .withColumn("RT_RULE_FLAG12", lit(0))
       .withColumn("RT_RULE_FLAG13", lit(0))
       .withColumn("RT_RULE_FLAG14", lit(0))
@@ -163,13 +167,13 @@ class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializa
       .withColumn("NRT_RULE_FLAG34", lit(0))
       .withColumn("NRT_RULE_FLAG35", lit(0))
       .withColumn("NRT_RULE_FLAG36", lit(0))
-      .withColumn("NRT_RULE_FLAG37", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(0)))
+      .withColumn("NRT_RULE_FLAG37", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(1)))
       .withColumn("NRT_RULE_FLAG38", lit(0))
-      .withColumn("NRT_RULE_FLAG39", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(1)))
+      .withColumn("NRT_RULE_FLAG39", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(2)))
       .withColumn("NRT_RULE_FLAG40", lit(0))
       .withColumn("NRT_RULE_FLAG41", lit(0))
       .withColumn("NRT_RULE_FLAG42", lit(0))
-      .withColumn("NRT_RULE_FLAG43", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(2)))
+      .withColumn("NRT_RULE_FLAG43", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(3)))
       .withColumn("NRT_RULE_FLAG44", lit(0))
       .withColumn("NRT_RULE_FLAG45", lit(0))
       .withColumn("NRT_RULE_FLAG46", lit(0))
@@ -177,12 +181,12 @@ class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializa
       .withColumn("NRT_RULE_FLAG48", lit(0))
       .withColumn("NRT_RULE_FLAG49", lit(0))
       .withColumn("NRT_RULE_FLAG50", lit(0))
-      .withColumn("NRT_RULE_FLAG51", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(4)))
+      .withColumn("NRT_RULE_FLAG51", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(5)))
       .withColumn("NRT_RULE_FLAG52", lit(0))
-      .withColumn("NRT_RULE_FLAG53", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(5)))
-      .withColumn("NRT_RULE_FLAG54", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(3)))
+      .withColumn("NRT_RULE_FLAG53", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(6)))
+      .withColumn("NRT_RULE_FLAG54", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(4)))
       .withColumn("NRT_RULE_FLAG55", lit(0))
-      .withColumn("NRT_RULE_FLAG56", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(4)))
+      .withColumn("NRT_RULE_FLAG56", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(5)))
       .withColumn("NRT_RULE_FLAG57", lit(0))
       .withColumn("NRT_RULE_FLAG58", lit(0))
       .withColumn("NRT_RULE_FLAG59", lit(0))
