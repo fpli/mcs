@@ -141,7 +141,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   // val getRoverChannelIdUdf = udf((uri: String) => getRoverUriInfo(uri, 4))
   val getRoverUriInfoUdf = udf((uri: String, index: Int) => getRoverUriInfo(uri, index))
 
-  val getGUIDUdf = udf((requestHeader: String, guid: String) => getGUIDFromCookie(requestHeader, guid))
+  val getGUIDUdf = udf((requestHeader: String, responseHeader:String, guid: String) => getGUIDFromCookie(requestHeader, responseHeader, guid))
   val getValueFromRequestUdf = udf((requestHeader: String, key: String) => getValueFromRequest(requestHeader, key))
   val getUserQueryTextUdf = udf((url: String) => getUserQueryTxt(url))
   val getToolIdUdf = udf((url: String) => getQueryParam(url, "toolid"))
@@ -216,13 +216,27 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     ""
   }
 
-  def getGUIDFromCookie(requestHeader: String, guid: String) : String = {
-    if (requestHeader != null) {
-      val cookie = getValueFromRequest(requestHeader, "Cookie")
+  def getGUIDFromCookie(requestHeader: String, response_headers: String, guid: String) : String = {
+    var cookie = ""
+    if (response_headers != null) {
+      cookie = getValueFromRequest(response_headers, "Set-Cookie")
+      if (cookie.equalsIgnoreCase(""))
+        cookie = getValueFromRequest(response_headers, "Cookie")
+    } else if(requestHeader != null) {
+      cookie = getValueFromRequest(requestHeader, "Cookie")
+      if (cookie.equalsIgnoreCase(""))
+        cookie = getValueFromRequest(response_headers, "Set-Cookie")
+    }
+    try {
       if (cookie != null && !cookie.equals("")) {
         val index = cookie.indexOf(guid)
         if (index != -1)
           return cookie.substring(index + 6, index + 38)
+      }
+    } catch {
+      case e: StringIndexOutOfBoundsException => {
+        logger.error("Error in get GUID from cookie " + cookie + e)
+        return ""
       }
     }
     ""
@@ -293,6 +307,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } catch {
       case e: NoSuchElementException => {
         logger.error("Key " + parts(0) +  " not found in the ams_map " + e)
+        return empty
+      }
+      case e: NumberFormatException => {
+        logger.error("RotationId " + rotationId +  " is not accepted " + e)
         return empty
       }
     }
@@ -395,16 +413,17 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       } else if (splits(2).startsWith("cgi") && landing_page_pageId_map.contains("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewItem")) {
         return landing_page_pageId_map("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewItem")
       }
-      if (splits.length >= 3) {
+      if (splits.length == 3) {
         if (landing_page_pageId_map.contains("http://" + splits(2) + "/")){
           return landing_page_pageId_map("http://" + splits(2) + "/")
         }
+      } else if (splits.length > 3) {
         if (landing_page_pageId_map.contains("http://" + splits(2) + "/" + splits(3) + "/")) {
           return landing_page_pageId_map("http://" + splits(2) + "/" + splits(3) + "/")
         }
       }
     } catch {
-      case e: Exception => {
+      case e: ArrayIndexOutOfBoundsException => {
         logger.error("Error while getting PageId for location = " + location + " in the request", e)
         return ""
       }
@@ -617,10 +636,21 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def isDefinedAdvertiserId(rotationId: String): Boolean = {
-    if (rotationId != null && !rotationId.equals("")) {
-      val parts = rotationId.split("-")
-      if (parts.length == 4)
-        return ams_map.contains(parts(0).toInt)
+    try {
+      if (rotationId != null && !rotationId.equals("")) {
+        val parts = rotationId.split("-")
+        if (parts.length == 4)
+          return ams_map.contains(parts(0).toInt)
+      }
+    } catch {
+      case e: NoSuchElementException => {
+        logger.error("RotationId " + rotationId +  " is not accepted " + e)
+        return false
+      }
+      case e: NumberFormatException => {
+        logger.error("RotationId " + rotationId +  " is not accepted " + e)
+        return false
+      }
     }
     false
   }
