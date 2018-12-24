@@ -14,10 +14,11 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
@@ -34,6 +35,10 @@ import java.util.List;
 @Path("/v1")
 @Consumes(MediaType.APPLICATION_JSON)
 public class EventListenerResource implements EventsApi {
+
+  @Autowired
+  private CollectionService collectionService;
+
   @Autowired
   private HttpServletRequest request;
 
@@ -45,6 +50,9 @@ public class EventListenerResource implements EventsApi {
 
   @Autowired
   private RaptorSecureContextProvider raptorSecureContextProvider;
+
+  @Context
+  private ContainerRequestContext requestContext;
 
   /**
    * Generate error response
@@ -76,7 +84,7 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res;
       try {
-        String result = CollectionService.getInstance().collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(), body);
+        String result = collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
         if (result.equals(Constants.ACCEPTED)) {
           res = Response.status(Response.Status.CREATED).build();
         } else {

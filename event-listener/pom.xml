@@ -267,6 +267,45 @@
       <artifactId>raptor-cos-client-filter</artifactId>
     </dependency>
 
+    <!-- tracking -->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-tracking-api</artifactId>
+      <version>0.5.4-RELEASE</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-tracking-starter</artifactId>
+      <version>0.5.3-RELEASE</version>
+    </dependency>
+
+    <!-- domain request -->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-domain-request-starter</artifactId>
+    </dependency>
+
+    <!--JAX-RS Operational Components-->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-ginger-client-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-ginger-server-starter</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-configresource-starter</artifactId>
+    </dependency>
+
+    <!-- for tracking app tag -->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-dds-client-starter</artifactId>
+    </dependency>
 
   </dependencies>
 
