@@ -206,7 +206,7 @@ public class EventListenerServiceTest {
     Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
       LongDeserializer.class, ListenerMessageDeserializer.class);
     Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
-      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 4, 5 * 1000);
+      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 4, 30 * 1000);
     consumerPaidSearch.close();
 
     assertEquals(2, listenerMessagesPaidSearch.size());
