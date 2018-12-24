@@ -17,6 +17,9 @@ public class PubDomainInfo implements Serializable {
 
   public PubDomainInfo() {
     url_domain = "";
+    domain_status_enum = "";
+    whitelist_status_enum = "";
+    is_registered = "";
   }
 
   public String getAms_pub_domain_id() {

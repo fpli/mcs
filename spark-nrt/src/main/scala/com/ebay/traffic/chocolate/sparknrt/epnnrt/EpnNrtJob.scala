@@ -7,6 +7,7 @@ import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
+import org.apache.spark.sql.functions.{col, lit}
 
 object EpnNrtJob extends App {
   override def main(args: Array[String]): Unit = {
@@ -71,17 +72,17 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         logger.info("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
         println("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
 
-        //2.1 async get couchbase data
-        //val cbData = sc.broadcast(epnNrtCommon.asyncCouchbaseGet_2(df))
+        val df_click = df.filter(col("channel_action") === "CLICK")
+        val df_impression = df.filter(col("channel_action") === "IMPRESSION")
 
         //3. build impression dataframe  save dataframe to files and rename files
-        var impressionDf = new ImpressionDataFrame(df, epnNrtCommon).build()
+        var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
         impressionDf = impressionDf.repartition(params.partitions)
         saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
         renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
 
         //4. build click dataframe  save dataframe to files and rename files
-        var clickDf = new ClickDataFrame(df, epnNrtCommon).build()
+        var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
         clickDf = clickDf.repartition(params.partitions)
         saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
         renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")

@@ -88,7 +88,6 @@ class TestEpnNrtJob extends BaseFunSuite{
     val writer1 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-05-01/part-00000.snappy.parquet"))
       .withSchema(FilterMessageV1.getClassSchema)
-      .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
 
@@ -109,7 +108,7 @@ class TestEpnNrtJob extends BaseFunSuite{
     val timestamp = getTimestamp("2018-05-01")
 
     // Desktop
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429247L, 7000001728L, 9000081120L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", timestamp - 12, writer1)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429247L, 56826256L, 9000081120L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", timestamp - 12, writer1)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 1109090984045429247L, 7000001727L, 9000028992L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 12, writer1)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7817281212121239247L, 7000001564L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", timestamp - 8, writer1)
@@ -117,10 +116,10 @@ class TestEpnNrtJob extends BaseFunSuite{
     writer1.close()
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429247L, 7000001711L, -1L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", timestamp - 12, writer2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 1109090984045429247L, 7000001262L, -1L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 12, writer2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.SERVE, 1109090984045429247L, 7000001262L, -1L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 12, writer2)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7817281212121239247L, 7000001556L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", timestamp - 8, writer2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 2902129817128329247L, 7000001538L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 7,  writer2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 2902129817128329247L, 7000001538L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 7,  writer2)
     writer2.close()
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429247L, 7000001262L, -1L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", timestamp - 12, writer3)

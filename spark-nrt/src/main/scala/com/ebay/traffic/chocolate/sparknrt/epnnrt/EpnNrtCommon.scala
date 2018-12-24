@@ -176,7 +176,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_page_id_udf = udf((responseHeaders: String) => getPageIdByLandingPage(responseHeaders))
   val get_roi_rule_value_udf = udf((uri: String, publisherId: String, requestHeader: String, google_fltr_do_flag: Int, traffic_source_code: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getValueFromRequest(requestHeader, "Referer"), google_fltr_do_flag, traffic_source_code)._1)
   val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, requestHeader: String, google_fltr_do_flag: Int, traffic_source_code: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getValueFromRequest(requestHeader, "Referer"), google_fltr_do_flag, traffic_source_code)._2)
-  val get_ams_clk_fltr_type_id_udf = udf((publisherId: String) => getclickFilterTypeId(publisherId))
+  val get_ams_clk_fltr_type_id_udf = udf((publisherId: String, uri: String) => getclickFilterTypeId(publisherId, getRoverUriInfo(uri, 3)))
   val get_click_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int) => getReasonCode("click", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value))
   val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int) => getReasonCode("impression", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value))
   val get_google_fltr_do_flag_udf = udf((requestHeader: String, publisherId: String) => getGoogleFltrDoFlag(getValueFromRequest(requestHeader, "Referer"), publisherId))
@@ -220,16 +220,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     var cookie = ""
     if (response_headers != null) {
       cookie = getValueFromRequest(response_headers, "Set-Cookie")
-      if (cookie.equalsIgnoreCase(""))
-        cookie = getValueFromRequest(response_headers, "Cookie")
-    } else if(requestHeader != null) {
+    }
+    if(cookie.equals("") && requestHeader != null) {
       cookie = getValueFromRequest(requestHeader, "Cookie")
-      if (cookie.equalsIgnoreCase(""))
-        cookie = getValueFromRequest(response_headers, "Set-Cookie")
     }
     try {
       if (cookie != null && !cookie.equals("")) {
-        val index = cookie.indexOf(guid)
+        val index = cookie.toLowerCase.indexOf(guid)
         if (index != -1)
           return cookie.substring(index + 6, index + 38)
       }
@@ -275,23 +272,26 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def getQueryParam(uri: String, param: String): String = {
     if (uri != null) {
-      val params = new URL(uri).getQuery().split("&")
-      for (i <- params.indices) {
-        try {
+      try {
+        val params = new URL(uri).getQuery().split("&")
+        for (i <- params.indices) {
           val array = params(i).split("=")
           val key = array(0)
           if (key.equalsIgnoreCase(param) && array.size == 2)
             return URLDecoder.decode(array(1), "UTF-8")
           else
             ""
-        } catch {
-          case e: ArrayIndexOutOfBoundsException => {
-            logger.error("Error query parameters " + uri + e)
-            return ""
-          }
+        }
+      } catch {
+        case e: ArrayIndexOutOfBoundsException => {
+          logger.error("Error query parameters " + uri + e)
+          return ""
+        }
+        case e: NullPointerException => {
+          logger.error("Error query parameters " + uri + e)
+          return ""
         }
       }
-
     }
     ""
   }
@@ -376,7 +376,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def getBrowserType(requestHeader: String): Int = {
     val userAgentStr = getValueFromRequest(requestHeader, "User-Agent")
-    if (userAgentStr == null)
+    if (userAgentStr == null | userAgentStr.equals(""))
       return user_agent_map("NULL_USERAGENT")
     val agentStr = userAgentStr.toLowerCase()
     for ((k, v) <- user_agent_map) {
@@ -396,8 +396,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if(action.equalsIgnoreCase("click")) {
       return getRuleFlag(rt_rule_flag, 11) | getRuleFlag(rt_rule_flag, 1) |
         getRuleFlag(rt_rule_flag, 10) | getRuleFlag(rt_rule_flag, 5) |
-        getRuleFlag(nrt_rule_flag, 2) | getRuleFlag(nrt_rule_flag, 3) | getRuleFlag(nrt_rule_flag, 5) |
-        getRuleFlag(nrt_rule_flag, 6) | getRuleFlag(nrt_rule_flag, 4)
+        getRuleFlag(nrt_rule_flag, 1) | getRuleFlag(nrt_rule_flag, 2) | getRuleFlag(nrt_rule_flag, 4) |
+        getRuleFlag(nrt_rule_flag, 5) | getRuleFlag(nrt_rule_flag, 3)
     }
     0
   }
@@ -431,9 +431,11 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     ""
   }
 
-  def getclickFilterTypeId(publisherId: String): String = {
+  def getclickFilterTypeId(publisherId: String, rotationId: String): String = {
     var clickFilterTypeId = "3"
-    val list = getAdvClickFilterMap(publisherId)
+    val advrtsrId = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1)
+    var list = getAdvClickFilterMap(publisherId)
+    list = list.filter(e => e.getAms_advertiser_id.equalsIgnoreCase(advrtsrId))
     list.foreach(e => {
       if (e.getStatus_enum != null) {
         if (e.getStatus_enum.equals("1") || e.getStatus_enum.equals("2"))
@@ -447,7 +449,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   def getRoiRuleValue(rotationId: String, publisherId: String, referer_domain: String, google_fltr_do_flag: Int, traffic_source_code: Int): (Int, Int) = {
     var temp_roi_values = 0
     var roiRuleValues = 0
-    var amsFilterRoiValue = 0
+  //  var amsFilterRoiValue = 0
     var roi_fltr_yn_ind = 0
 
     if (isDefinedPublisher(publisherId) && isDefinedAdvertiserId(rotationId)) {
@@ -456,7 +458,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         roiRuleList(0).setRule_result(callRoiSdkRule(roiRuleList(0).getIs_rule_enable, roiRuleList(0).getIs_pblshr_advsr_enable_rule, 0))
         roiRuleList(1).setRule_result(callRoiEbayReferrerRule(roiRuleList(1).getIs_rule_enable, roiRuleList(1).getIs_pblshr_advsr_enable_rule, 0))
         roiRuleList(2).setRule_result(callRoiNqBlacklistRule(roiRuleList(2).getIs_rule_enable, roiRuleList(2).getIs_pblshr_advsr_enable_rule, 0))
-        roiRuleList(3).setRule_result(callRoiNqWhitelistRule(publisherId, roiRuleList(2).getIs_rule_enable, roiRuleList(2).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
+        roiRuleList(3).setRule_result(callRoiNqWhitelistRule(publisherId, roiRuleList(3).getIs_rule_enable, roiRuleList(3).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
         roiRuleList(4).setRule_result(callRoiMissingReferrerUrlRule(roiRuleList(4).getIs_rule_enable, roiRuleList(4).getIs_pblshr_advsr_enable_rule, referer_domain))
         roiRuleList(5).setRule_result(callRoiNotRegisteredRule(publisherId, roiRuleList(5).getIs_rule_enable, roiRuleList(5).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
 
@@ -469,7 +471,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
  //   roiRuleValues = temp_roi_values + ams_flag_map("google_fltr_do_flag") << 6
     roiRuleValues = temp_roi_values + google_fltr_do_flag << 6
     if (roiRuleValues != 0) {
-      amsFilterRoiValue = 1
+    //  amsFilterRoiValue = 1
       roi_fltr_yn_ind = 1
     }
    // ams_flag_map("ams_fltr_roi_value") = amsFilterRoiValue
@@ -561,19 +563,20 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def amsPubDomainLookup(publisherId: String, roi_rule: String): ListBuffer[PubDomainInfo] = {
     var list = cbData._5.getOrElse(publisherId, ListBuffer.empty[PubDomainInfo])
-    if (roi_rule.equals("NETWORK_QUALITY_WHITELIST"))
-      list = list.filterNot(e => !e.getDomain_status_enum.equals("1") || !e.getWhitelist_status_enum.equals("1") && e.getIs_registered.equals("0"))
+    if (roi_rule.equals("NETWORK_QUALITY_WHITELIST") && list.nonEmpty)
+      list = list.filterNot(e => (e.getDomain_status_enum != null && !e.getDomain_status_enum.equals("1")) ||
+        (e.getWhitelist_status_enum != null && !e.getWhitelist_status_enum.equals("1")) && (e.getIs_registered != null && e.getIs_registered.equals("0")))
     list
   }
 
   def lookupAdvClickFilterMapAndROI(publisherId: String, advertiserId: String, traffic_source_code: Int): ListBuffer[RoiRule] = {
     val roiList = getRoiRuleList(traffic_source_code)
-    val clickFilterMapList = getAdvClickFilterMap(publisherId)
-    var loop = true
-    clickFilterMapList.filter(e => e.getAms_advertiser_id.equalsIgnoreCase(advertiserId))
+    var clickFilterMapList = getAdvClickFilterMap(publisherId)
+    clickFilterMapList = clickFilterMapList.filter(e => e.getAms_advertiser_id.equalsIgnoreCase(advertiserId))
     clickFilterMapList.foreach(e => {
+      var loop = true
       roiList.foreach(k => {
-        if (k.getAms_clk_fltr_type_id.equals(e.getAms_clk_fltr_type_id) && loop) {
+        if (k.getAms_clk_fltr_type_id == e.getAms_clk_fltr_type_id.toInt && loop) {
           if (e.getStatus_enum != null) {
             if (e.getStatus_enum.equals("1")) {
               k.setIs_pblshr_advsr_enable_rule(0)
@@ -603,7 +606,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         rr.setAms_clk_fltr_type_id(0)
       } else {
         rr.setIs_rule_enable(1)
-        rr.setAms_clk_fltr_type_id(1)
+        rr.setAms_clk_fltr_type_id(value)
       }
       list += rr
     }
@@ -624,8 +627,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def callRoiRulesSwitch(publisherId: String, advertiserId: String): String = {
     var result = "1"
-    val list = getAdvClickFilterMap(publisherId)
-    list.filter(e => e.getAms_advertiser_id.equalsIgnoreCase(advertiserId))
+    var list = getAdvClickFilterMap(publisherId)
+    list = list.filter(e => e.getAms_advertiser_id.equalsIgnoreCase(advertiserId))
     if (list.nonEmpty) {
       list.foreach( e => {
         if (e.getAms_clk_fltr_type_id.equals("100"))
@@ -718,8 +721,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   def asyncCouchbaseGet(df: DataFrame): (HashMap[String, String], HashMap[String, String],
     HashMap[String, String], HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]],
     HashMap[String, ListBuffer[PubDomainInfo]]) = {
-    logger.info("Set Broadcast couchbase data...")
-    logger.info("DF columns " + df.count())
+
     val test = df.select("publisher_id", "campaign_id", "uri").collect()
     var publisher_list = new Array[String](test.length)
     var campaign_list = new Array[String](test.length)
@@ -747,38 +749,24 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       progmap_list(i) = publisher_list(i) + "_" + programId
     }
 
-    logger.info("publisher_list count is " + publisher_list.length)
-    logger.info("campaign_list count is " + campaign_list.length)
-    logger.info("progmap_list count is " + progmap_list.length)
 
     publisher_list = publisher_list.distinct
     campaign_list = campaign_list.distinct
     progmap_list = progmap_list.distinct
 
-    logger.info("after publisher_list count is " + publisher_list.length)
-    logger.info("after campaign_list count is " + campaign_list.length)
-    logger.info("after progmap_list count is " + progmap_list.length)
 
-    logger.info("Begin load data from couchbase")
     publisher_map = batchGetPublisherStatus(publisher_list)
     campaign_map = batchGetCampaignStatus(campaign_list)
     prog_map = batchGetProgMapStatus(progmap_list)
     clickFilter_map = batchGetAdvClickFilterMap(publisher_list)
     pubDomain_map = batchGetPubDomainMap(publisher_list)
 
-
-    logger.info("publisher_map count is " + publisher_map.size)
-    logger.info("campaign_map count is " + campaign_map.size)
-    logger.info("prog_map count is " + prog_map.size)
-    logger.info("clickFilter_map is " + clickFilter_map.size)
-    logger.info("pubDomain_map count is " + pubDomain_map.size)
     (publisher_map, campaign_map, prog_map, clickFilter_map, pubDomain_map)
   }
 
 
 
   def batchGetPublisherStatus(list: Array[String]): HashMap[String, String] = {
-    logger.info("loading publisher status...")
     var res = new HashMap[String, String]
     val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
     try {
@@ -789,7 +777,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
             bucket.async.get("EPN_publisher_" + key, classOf[JsonDocument])
           }
         }).toList.toBlocking.single
-      logger.info("publisher status count " + jsonDocuments.size())
       for (i <- 0 until jsonDocuments.size()) {
         val publisherInfo = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherInfo])
         if (publisherInfo != null)
@@ -813,7 +800,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def batchGetCampaignStatus(list: Array[String]): HashMap[String, String] = {
-    logger.info("loading campaign status...")
     var res = new HashMap[String, String]
     val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
     try {
@@ -825,7 +811,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           }
         }).toList.toBlocking.single()
 
-      logger.info("campaign status count " + jsonDocuments.size())
       for (i <- 0 until jsonDocuments.size()) {
         val campaign_sts = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherCampaignInfo])
         if (campaign_sts != null)
@@ -849,7 +834,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def batchGetProgMapStatus(list: Array[String]): HashMap[String, String] = {
-    logger.info("loading progmap status...")
     var res = new HashMap[String, String]
     val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
     try {
@@ -860,7 +844,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
             bucket.async.get("EPN_ppm_" + key, classOf[JsonDocument])
           }
         }).toList.toBlocking.single()
-      logger.info("progmap status count " + jsonDocuments.size())
       for (i <- 0 until jsonDocuments.size()) {
         val progPubMap = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[ProgPubMapInfo])
         if (progPubMap != null)
@@ -885,7 +868,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
 
   def batchGetAdvClickFilterMap(list: Array[String]): HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]] = {
-    logger.info("loading click filter map...")
     var res = new HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]]
     val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
     try {
@@ -896,7 +878,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
             bucket.async.get("EPN_amspubfilter_" + key, classOf[JsonArrayDocument])
           }
         }).toList.toBlocking.single()
-      logger.info("click filter count " + jsonArrayDocuments.size())
       for (i <- 0 until jsonArrayDocuments.size()) {
         var objectList: ListBuffer[PubAdvClickFilterMapInfo] = ListBuffer.empty[PubAdvClickFilterMapInfo]
         for (j <-0 until jsonArrayDocuments.get(i).content().size()) {
@@ -921,7 +902,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def batchGetPubDomainMap(list: Array[String]): HashMap[String, ListBuffer[PubDomainInfo]] = {
-    logger.info("loading pubdomain map...")
     var res = new HashMap[String, ListBuffer[PubDomainInfo]]
     val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
     try {
@@ -932,7 +912,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
             bucket.async.get("EPN_amspubdomain_" + key, classOf[JsonArrayDocument])
           }
         }).toList.toBlocking.single()
-      logger.info("pubdomain count " + jsonArrayDocuments.size())
 
       for (i <- 0 until jsonArrayDocuments.size()) {
         var objectList: ListBuffer[PubDomainInfo] = ListBuffer.empty[PubDomainInfo]
