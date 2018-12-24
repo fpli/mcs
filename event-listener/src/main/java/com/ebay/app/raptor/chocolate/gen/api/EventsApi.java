@@ -22,7 +22,7 @@ public interface EventsApi {
         @AuthorizationScope(scope = "https://api.ebay.com/oauth/scope/base@public", description = "This scope would allow base public access."),
         @AuthorizationScope(scope = "https://api.ebay.com/oauth/scope/experience@public", description = "This scope would allow experience public access.")        })    }, tags={  })
     @ApiResponses(value = {
-      @ApiResponse(code = 200, message = "Accepted", response = Void.class),
+      @ApiResponse(code = 201, message = "Created", response = Void.class),
       @ApiResponse(code = 400, message = "Rejected due to message format", response = ErrorModel.class),
       @ApiResponse(code = 500, message = "The call was unsuccessful due to exceptions on the Server", response = Void.class) }
     )

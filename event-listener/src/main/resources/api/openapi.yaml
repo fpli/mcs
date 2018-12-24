@@ -30,8 +30,8 @@ paths:
             - 'https://api.ebay.com/oauth/scope/base@public'
             - 'https://api.ebay.com/oauth/scope/experience@public'
       responses:
-        '200':
-          description: Accepted
+        '201':
+          description: Created
         '400':
           description: Rejected due to message format
           content:

@@ -1,40 +1,53 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.eventlistener.util.ChannelActionEnum;
-import com.ebay.app.raptor.chocolate.eventlistener.util.ChannelIdEnum;
-import com.ebay.app.raptor.chocolate.eventlistener.util.Constants;
-import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
+import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
+import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
+import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.auth.RaptorSecureContext;
+import com.ebay.tracking.api.IRequestScopeTracker;
+import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * @author xiangli4
+ * The main logic of collection service:
+ * 1. Check headers
+ * 2. Parse everything from headers and bodies
+ * 3. Add compatible headers
+ * 4. Parse to ListenerMessage
  */
+@Component
+@DependsOn("EventListenerService")
 public class CollectionService {
   private static final Logger logger = Logger.getLogger(CollectionService.class);
-  private final ESMetrics esMetrics;
+  private ESMetrics esMetrics;
   private ListenerMessageParser parser;
   private static CollectionService instance = null;
 
-  private CollectionService() {
+  @PostConstruct
+  public void postInit() {
     this.esMetrics = ESMetrics.getInstance();
-    parser = ListenerMessageParser.getInstance();
+    this.parser = ListenerMessageParser.getInstance();
   }
 
   /**
@@ -55,14 +68,15 @@ public class CollectionService {
 
   /**
    * Collect event and publish to kafka
-   * @param request raw request
-   * @param endUserContext wrapped end user context
+   *
+   * @param request             raw request
+   * @param endUserContext      wrapped end user context
    * @param raptorSecureContext wrapped secure header context
-   * @param event post body event
+   * @param event               post body event
    * @return OK or Error message
    */
   public String collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
-    raptorSecureContext, Event event) {
+    raptorSecureContext, ContainerRequestContext requestContext, Event event) {
 
     if (request.getHeader("X-EBAY-C-TRACKING") == null) {
       logger.error(Constants.ERROR_NO_TRACKING);
@@ -76,32 +90,35 @@ public class CollectionService {
     // response headers for compatible with chocolate filter and nrt
     Map<String, String> responseHeaders = new HashMap<>();
 
-    /** referer is from post body (mobile) and from header (NodeJs and handler)
-     *  By internet standard, referer is typo of referrer.
-     *  From ginger client call, the referer is embedded in enduserctx header, but we also check header for other cases.
-     *  For local test using postman, do not include enduserctx header, the service will generate enduserctx by
-     *  cos-user-context-filter.
-     *  Ginger client call will pass enduserctx in its header.
+    /* referer is from post body (mobile) and from header (NodeJs and handler)
+       By internet standard, referer is typo of referrer.
+       From ginger client call, the referer is embedded in enduserctx header, but we also check header for other cases.
+       For local test using postman, do not include enduserctx header, the service will generate enduserctx by
+       cos-user-context-filter.
+       Ginger client call will pass enduserctx in its header.
+       Priority 1. native app from body, as they are the most part 2. enduserctx, ginger client calls 3. referer header
      */
+
+    String platform = Constants.PLATFORM_UNKNOWN;
 
     String referer = null;
     if (!StringUtils.isEmpty(event.getReferrer())) {
       referer = event.getReferrer();
-    } else if (!StringUtils.isEmpty(request.getHeader("referer"))) {
-      referer = request.getHeader("referer");
-    } else if (!StringUtils.isEmpty(request.getHeader("Referer"))) {
-      referer = request.getHeader("Referer");
-    } else {
-      referer = endUserContext.getReferer();
+      platform = Constants.PLATFORM_MOBILE;
     }
 
-    String userAgent = endUserContext.getUserAgent();
-
     if (StringUtils.isEmpty(referer)) {
+      referer = endUserContext.getReferer();
+      platform = Constants.PLATFORM_DESKTOP;
+    }
+
+    if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
       logger.error(Constants.ERROR_NO_REFERER);
       esMetrics.meter("NoReferer");
       return Constants.ERROR_NO_REFERER;
     }
+
+    String userAgent = endUserContext.getUserAgent();
 
     if (null == userAgent) {
       logger.error(Constants.ERROR_NO_USER_AGENT);
@@ -113,17 +130,22 @@ public class CollectionService {
     addHeaders.put("X-eBay-Client-IP", endUserContext.getIPAddress());
     addHeaders.put("User-Agent", endUserContext.getUserAgent());
     // only add UserId header when token is user token, otherwise it is app consumer id
+    String userId;
     if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
+      userId = raptorSecureContext.getSubjectImmutableId();
       addHeaders.put("UserId", raptorSecureContext.getSubjectImmutableId());
+    } else {
+      userId = Long.toString(endUserContext.getOrigUserOracleId());
     }
+    addHeaders.put("UserId", userId);
     // add guid,cguid to cookie header to addHeaders and responseHeaders for compatibility
     String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
     StringBuilder cookie = new StringBuilder("npii=");
-    if(!StringUtils.isEmpty(trackingHeader)) {
-      for (String seg: trackingHeader.split(",")
-           ) {
+    if (!StringUtils.isEmpty(trackingHeader)) {
+      for (String seg : trackingHeader.split(",")
+        ) {
         String[] keyValue = seg.split("=");
-        if(keyValue.length == 2) {
+        if (keyValue.length == 2) {
           cookie.append(keyValue[0]).append("/").append(keyValue[1]).append("^");
         }
       }
@@ -137,14 +159,14 @@ public class CollectionService {
     ChannelIdEnum channelType;
     long campaignId = -1L;
 
-    // uri is from post body
-    String uri = event.getTargetUrl();
+    // targetUrl is from post body
+    String targetUrl = event.getTargetUrl();
 
     // parse channel from uri
     // illegal url, rejected
     UriComponents uriComponents;
     try {
-      uriComponents = UriComponentsBuilder.fromUriString(uri).build();
+      uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
     } catch (IllegalArgumentException e) {
       logger.error(Constants.ERROR_ILLEGAL_URL);
       esMetrics.meter("IllegalUrl");
@@ -202,14 +224,6 @@ public class CollectionService {
 
     String type = channelType.getLogicalChannel().getAvro().toString();
 
-    String platform;
-
-    if (userAgent.contains("Mobi")) {
-      platform = Constants.PLATFORM_MOBILE;
-    } else {
-      platform = Constants.PLATFORM_DESKTOP;
-    }
-
     String landingPageType;
     List<String> pathSegments = uriComponents.getPathSegments();
     if (pathSegments == null || pathSegments.size() == 0) {
@@ -232,8 +246,35 @@ public class CollectionService {
 
     // Parse the response
     ListenerMessage message = parser.parse(request,
-      startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, uri, null, addHeaders, responseHeaders);
+      startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, targetUrl, null, addHeaders,
+      responseHeaders);
 
+    try {
+      // Ubi tracking
+      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+      // page id
+      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2057253, Integer.class);
+      // event action and event family
+      requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
+      requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
+
+      // new tags, targeturl and referer independent from client data ones
+      requestTracker.addTag("url_mpre", targetUrl, String.class);
+      requestTracker.addTag("n2referrer", referer, String.class);
+
+      // add rvr id
+      ShortSnapshotId shortSnapshotId = new ShortSnapshotId(message.getSnapshotId().longValue());
+      requestTracker.addTag("rvrid", shortSnapshotId.getRepresentation(), Long.class);
+
+      // populate device info
+      UserAgentInfo agentInfo = (UserAgentInfo) requestContext
+        .getProperty(UserAgentInfo.NAME);
+      CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
+    } catch (Exception ex) {
+      logger.error("Error when tracking ubi: " + ex.toString());
+      esMetrics.meter("ErrorTrackUbi");
+    }
 
     if (message != null) {
       long eventTime = message.getTimestamp();

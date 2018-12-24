@@ -17,7 +17,7 @@ import java.io.IOException;
  * @author - xiangli4
  */
 
-@Configuration
+@Configuration("EventListenerService")
 @Singleton
 public class EventListenerService {
   private static final Logger logger = Logger.getLogger(EventListenerService.class);
