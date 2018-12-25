@@ -1,7 +1,7 @@
 package com.ebay.app.raptor.chocolate.avro;
 
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV0;
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2;
 import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
 import org.apache.avro.io.*;
@@ -11,9 +11,9 @@ import org.apache.avro.specific.SpecificDatumWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class FilterMessage extends FilterMessageV1 {
+public class FilterMessage extends FilterMessageV2 {
   private static Schema getOldSchema() {
-    return FilterMessageV0.getClassSchema();
+    return FilterMessageV1.getClassSchema();
   }
 
   // Avro reader (threadsafe, therefore static)

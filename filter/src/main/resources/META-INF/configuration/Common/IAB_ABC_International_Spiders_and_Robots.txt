@@ -1,6 +1,6 @@
 #
-#	IAB_ABC_International_Spiders_and_Robots_201810_22-104604
-#	October 22, 2018
+#	IAB_ABC_International_Spiders_and_Robots_201811_14-161604
+#	November 14, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
@@ -524,6 +524,7 @@ YaK/|1||0|2|0
 HeadlessChrome/|1||0|2|0
 OSZKbot/|1||0|2|0
 wewatchtgbu|1||0|2|0
+Google-Apps-Script|1||0|2|0
 aport|1|netaporter, OperaPortable|0|2|0
 b2w|1|B2WTenisnew|0|0|0
 combine|1|Combined|0|0|0
@@ -998,3 +999,4 @@ Seznam|1|Edition Seznam, Edition+Seznam|0|2|0
 # August 2018 - (6) WhatsApp/, (7) ExtLinksBot/, (8) Laserlikebot/, (9) expo9, (10) ScooperBot/, (11) YaK/
 # September 2018 - No changes
 # October 2018 - (1) HeadlessChrome/, (2) OSZKbot/, (3) wewatchtgbu
+# November 2018 - (1) Google-Apps-Script
