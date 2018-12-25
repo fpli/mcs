@@ -20,7 +20,7 @@ if [ ! -d ${log_file} ]; then
  mkdir -p ${log_file}
  chmod 777 ${log_file}
 fi
-log_file=${log_file}"/dumpRotationSnapshot_"${DT_YMD}.log
+log_file=${log_file}"/${HOSTNAME}_"${DT_YMD}.log
 
 echo "DT_YMD="${DT_YMD} | tee -a ${log_file}
 echo "ROTATION_CONFIG_FILE="${ROTATION_CONFIG_FILE} | tee -a ${log_file}
@@ -51,7 +51,7 @@ kinit -kt /apache/b_marketing_tracking_APD.keytab b_marketing_tracking@APD.EBAY.
 
 echo `date`"=====================================================Apollo -- LoadData started======================================================" | tee -a ${log_file}
 echo `date`"------ Apollo -- LoadData started~~~" | tee -a ${log_file}
-APOLLO_HDP=hdfs://apollo-phx-nn-ha/user/b_marketing_tracking/chocolate/rotation-snapshot
+APOLLO_HDP=hdfs://apollo-phx-nn-ha/apps/b_marketing_tracking/chocolate/rotation
 /apache/hadoop/bin/hadoop fs -rm -r -skipTrash ${APOLLO_HDP}/dt=${DT}
 /apache/hadoop/bin/hadoop fs -put ${OUTPUT_PATH} ${APOLLO_HDP}
 /apache/hadoop/bin/hadoop fs -ls ${APOLLO_HDP}/dt=${DT} | tee -a ${log_file}
@@ -60,7 +60,7 @@ echo `date`"=====================================================Apollo -- LoadD
 
 echo `date`"=====================================================Ares -- LoadData Started======================================================" | tee -a ${log_file}
 echo `date`"------ Ares -- LoadData started~~~" | tee -a ${log_file}
-ARES_HDP=hdfs://ares-lvs-nn-ha/user/b_marketing_tracking/chocolate/rotation-snapshot
+ARES_HDP=hdfs://ares-lvs-nn-ha/apps/b_marketing_tracking/chocolate/rotation
 /apache/hadoop_ares/bin/hadoop fs -rm -r -skipTrash ${ARES_HDP}/dt=${DT}
 /apache/hadoop_ares/bin/hadoop fs -put ${OUTPUT_PATH} ${ARES_HDP}
 /apache/hadoop_ares/bin/hadoop fs -ls ${ARES_HDP}/dt=${DT} | tee -a ${log_file}

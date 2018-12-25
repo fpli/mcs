@@ -25,7 +25,7 @@ if [ ! -d ${OUTPUT_PATH} ]; then
  chmod -R 777 ${OUTPUT_PATH}
 fi
 log_dt=$(date +%Y%m%d%H%M%S -d "$DT_HOUR")
-log_file="/datashare/mkttracking/logs/rotation/hive/toHive_${log_dt}.log"
+log_file="/datashare/mkttracking/logs/rotation/hive/${HOSTNAME}_${log_dt}.log"
 echo "log_file="${log_file}
 echo "DT="${DT} | tee -a ${log_file}
 echo "DT_HOUR="${DT} | tee -a ${log_file}
@@ -88,6 +88,3 @@ else
    echo `date`" =============== Job End ===========" | tee -a ${log_file}
    exit 0
 fi
-
-
-

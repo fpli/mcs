@@ -20,8 +20,8 @@ START_TIME=$(date +%s -d "$JOB_DATA_TIME")000
 END_TIME=$(date +%s)000
 HOUR=$(date +%H -d "$DT_HOUR")
 
-log_dt=$(date +%Y%m%d%H%M%S -d "$DT_HOUR")
-log_file="/datashare/mkttracking/logs/rotation/teradata/toTD_${log_dt}.log"
+log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S -d "$DT_HOUR")
+log_file="/datashare/mkttracking/logs/rotation/teradata/${log_dt}.log"
 echo "log_file="${log_file}
 echo "DT="${DT} | tee -a ${log_file}
 echo "JOB_DATA_TIME="${JOB_DATA_TIME} | tee -a ${log_file}

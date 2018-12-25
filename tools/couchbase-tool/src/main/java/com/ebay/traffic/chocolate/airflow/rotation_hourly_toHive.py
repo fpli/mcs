@@ -3,24 +3,25 @@ from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from datetime import timedelta
 
-default_args = {
+rotation_hive_hourly_args = {
     'owner': 'rotation',
     'depends_on_past': False,
     'start_date': airflow.utils.dates.days_ago(1),
-    'email': ['yimeng@ebay.com'],
+    'email': ['DL-eBay-Chocolate-GC@ebay.com'],
     'email_on_failure': True,
     'email_on_retry': True,
     'retries': 1,
     'retry_delay': timedelta(minutes=5)
 }
 
-dag = DAG(
-    'rotation_dump_to_hive_hourly',
-    default_args=default_args,
-    description='hourly dump rotation info from CB to TD',
-    schedule_interval='0 * * * *')
+rotation_hive_hourly_dag = DAG(
+    'rotation_hive_hourly_dag',
+    default_args=rotation_hive_hourly_args,
+    description='hourly dump rotation info from CB to Hive',
+    schedule_interval='@hourly')
 
-task = BashOperator(
-    task_id='task_dumpRotationToHive',
+rotation_hive_hourly_task = BashOperator(
+    task_id='rotation_hive_hourly_task',
     bash_command='/datashare/mkttracking/jobs/rotation/bin/dumpRotationToHadoop.sh ',
-    dag=dag)
+    execution_timeout=timedelta(minutes=10),
+    dag=rotation_hive_hourly_dag)
