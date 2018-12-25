@@ -30,7 +30,7 @@ public class EBayRefererDomainRule extends GenericBlacklistRule {
       String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + listName)));
       this.readFromString(blString);
     } catch (Exception e) {
-      Logger.getLogger(EPNDomainBlacklistRule.class).error("Failed to get eBay referer domain list in local file", e);
+      Logger.getLogger(EBayRefererDomainRule.class).error("Failed to get eBay referer domain list in local file", e);
       return false;
     }
 
