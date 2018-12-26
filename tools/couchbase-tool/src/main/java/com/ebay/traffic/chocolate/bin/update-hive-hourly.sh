@@ -44,7 +44,7 @@ echo "HDP="${HDP} | tee -a ${log_file}
 
 echo `date`" =============== Job Start ===========" | tee -a ${log_file}
 
-kinit -kt /apache/b_marketing_tracking_APD.keytab b_marketing_tracking@APD.EBAY.COM
+kinit -kt /datashare/mkttracking/common/b_marketing_tracking_APD.keytab b_marketing_tracking@APD.EBAY.COM
 
 echo `date`"-------- LoadData started~~~" | tee -a ${log_file}
 

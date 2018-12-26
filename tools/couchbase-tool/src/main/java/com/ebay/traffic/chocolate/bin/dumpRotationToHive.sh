@@ -56,7 +56,7 @@ if [ ! -s "$FILE_NAME" ]
 then exit 0
 fi
 
-kinit -kt /apache/b_marketing_tracking_APD.keytab b_marketing_tracking@APD.EBAY.COM
+kinit -kt /datashare/mkttracking/common/b_marketing_tracking_APD.keytab b_marketing_tracking@APD.EBAY.COM
 
 SQL_FILE=/chocolate/rotation/sql/choco_rotation_update.sql
 echo `date`"=====================================================Apollo -- LoadData started======================================================" | tee -a ${log_file}
