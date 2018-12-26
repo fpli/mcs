@@ -1,45 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <tasks>
     <task name="cappingRule_EPN"
-          period="2"
+          period="5"
           timeDiff="0"
-          inputDir="/apps/tracking-events/EPN/dedupe/date="
-          dataCountDir="/apps/tracking-CheckRecover/countData/cappingRule_EPN">
+          inputDir="hdfs://elvisha/apps/tracking-events/EPN/dedupe/date="
+          dataCountDir="hdfs://elvisha/apps/tracking-CheckRecover/countData/cappingRule_EPN">
     </task>
     <task name="cappingRule_DAP"
-          period="2"
+          period="5"
           timeDiff="0"
-          inputDir="/apps/tracking-events/DISPLAY/dedupe/date="
-          dataCountDir="apps/tracking-CheckRecover/countData/cappingRule_DAP">
+          inputDir="hdfs://elvisha/apps/tracking-events/DISPLAY/dedupe/date="
+          dataCountDir="hdfs://elvisha/apps/tracking-CheckRecover/countData/cappingRule_DAP">
     </task>
     <task name="dedupeAndSink_EPN"
           period="5"
           timeDiff="0"
-          inputDir="/apps/tracking-events/EPN/capping/date="
-          dataCountDir="apps/tracking-CheckRecover/countData/dedupeAndSink_EPN">
+          inputDir="hdfs://elvisha/apps/tracking-events/EPN/capping/date="
+          dataCountDir="hdfs://elvisha/apps/tracking-CheckRecover/countData/dedupeAndSink_EPN">
     </task>
     <task name="dedupeAndSink_DAP"
           period="5"
           timeDiff="0"
-          inputDir="/apps/tracking-events/DISPLAY/capping/date="
-          dataCountDir="apps/tracking-CheckRecover/countData/dedupeAndSink_EPN">
+          inputDir="hdfs://elvisha/apps/tracking-events/DISPLAY/capping/date="
+          dataCountDir="hdfs://elvisha/apps/tracking-CheckRecover/countData/dedupeAndSink_EPN">
     </task>
     <task name="DistcpEPNToApollo"
           period="5"
           timeDiff="0"
           inputDir="hdfs://apollo-phx-nn-ha/apps/b_marketing_tracking/chocolate/tracking-events/EPN/capping/capping/date="
-          dataCountDir="apps/tracking-CheckRecover/countData/DistcpEPNToApollo">
+          dataCountDir="hdfs://lvschocolatemaster-1448895.stratus.lvs.ebay.com/apps/tracking-CheckRecover/countData/DistcpEPNToApollo">
     </task>
     <task name="DistcpDAPToApollo"
           period="5"
           timeDiff="0"
           inputDir="hdfs://apollo-phx-nn-ha/apps/b_marketing_tracking/chocolate/tracking-events/DISPLAY/capping/date="
-          dataCountDir="apps/tracking-CheckRecover/countData/DistcpDAPToApollo">
-    </task>
-    <task name="sword"
-          period="15"
-          timeDiff="0"
-          inputDir="/apps/sword/date="
-          dataCountDir="apps/tracking-CheckRecover/countData/sword">
+          dataCountDir="hdfs://elvisha/apps/tracking-CheckRecover/countData/DistcpDAPToApollo">
     </task>
 </tasks>
