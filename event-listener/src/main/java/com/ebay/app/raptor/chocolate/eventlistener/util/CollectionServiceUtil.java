@@ -62,8 +62,9 @@ public class CollectionServiceUtil {
         tracker.addTag("mobile", true, Boolean.class);
       } else if (info.isNativeApp()) {
         tracker.addTag("nativeApp", true, Boolean.class);
-        String appNameVersion = info.getAppInfo().getAppName() + "/" + info.getAppInfo().getAppVersion();
-        tracker.addTag("metadataAppNameVersion", appNameVersion, String.class);
+        //comment metadataAppNameVersion waiting for tracking team's confirmation
+        //String appNameVersion = info.getAppInfo().getAppName() + "/" + info.getAppInfo().getAppVersion();
+        //tracker.addTag("metadataAppNameVersion", appNameVersion, String.class);
       }
       if (info.getAppInfo() != null) {
         tracker.addTag("an", info.getAppInfo().getAppName(), String.class);

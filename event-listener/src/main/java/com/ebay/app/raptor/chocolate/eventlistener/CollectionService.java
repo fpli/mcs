@@ -84,6 +84,12 @@ public class CollectionService {
       return Constants.ERROR_NO_TRACKING;
     }
 
+    if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
+      logger.error(Constants.ERROR_NO_ENDUSERCTX);
+      esMetrics.meter("NoEndUserCtx");
+      return Constants.ERROR_NO_ENDUSERCTX;
+    }
+
     // add headers for compatible with chocolate filter and nrt
     Map<String, String> addHeaders = new HashMap<>();
 
