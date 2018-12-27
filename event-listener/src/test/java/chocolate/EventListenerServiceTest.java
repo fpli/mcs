@@ -160,6 +160,10 @@ public class EventListenerServiceTest {
 
     request.addHeader("X-EBAY-C-TRACKING", "cguid=xxx");
     response = collectionService.collect(request, endUserContext, raptorSecureContext, requestContext, event);
+    assertEquals(Constants.ERROR_NO_ENDUSERCTX, response);
+
+    request.addHeader("X-EBAY-C-ENDUSERCTX", "xxxxx");
+    response = collectionService.collect(request, endUserContext, raptorSecureContext, requestContext, event);
     assertEquals(Constants.ERROR_NO_REFERER, response);
 
     event.setReferrer("https://www.google.com");
