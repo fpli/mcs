@@ -4,7 +4,7 @@ export HADOOP_USER_NAME=hdfs
 DIFF=0
 DATE=`date --date=$DIFF" days ago" +%Y-%m-%d`
 echo $DATE
-kinit -kt /datashare/mkttracking/common/b_marketing_tracking_APD.keytab b_marketing_tracking@APD.EBAY.COM
+kinit -kt b_marketing_tracking_APD.keytab b_marketing_tracking@APD.EBAY.COM
 dt="date="$DATE
 echo $dt
 
