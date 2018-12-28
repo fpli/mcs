@@ -32,7 +32,10 @@
         "blacklistName": "IP_Blacklist_EPN.txt"},
       {
         "ruleName": "EBayRobotRule",
-        "blacklistName": "eBay_Spiders_and_Robots_EPN.txt"}
+        "blacklistName": "eBay_Spiders_and_Robots_EPN.txt"},
+      {
+        "ruleName": "EBayRefererDomainRule",
+        "blacklistName": "eBay_Referral_Domain.txt"}
     ]
   },
   {
