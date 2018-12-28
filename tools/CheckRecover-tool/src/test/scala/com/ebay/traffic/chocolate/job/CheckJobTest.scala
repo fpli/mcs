@@ -27,12 +27,12 @@ class CheckJobTest extends BaseFunSuite {
       outputDir + "countFileDir",
       "1543477214789l",
       getTestResourcePath("testCheck"),
-      "http://10.148.181.34:9200");
-    val job = new CheckJob(parameter);
+      "http://10.148.181.34:9200")
+    val job = new CheckJob(parameter)
 
     job.run()
-    val df = job.spark.read.csv(outputDir + "countFileDir");
-    assert(df.count() == 1);
+    val df = job.spark.read.csv(outputDir + "countFileDir")
+    assert(df.count() == 1)
     job.stop()
   }
 }

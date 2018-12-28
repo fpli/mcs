@@ -3,37 +3,49 @@
     <task name="cappingRule_EPN"
           period="5"
           timeDiff="0"
+          inputURI="hdfs://elvisha"
+          dataCountURI="hdfs://slickha"
           inputDir="hdfs://elvisha/apps/tracking-events/EPN/dedupe/date="
-          dataCountDir="hdfs://elvisha/apps/tracking-CheckRecover/countData/cappingRule_EPN">
+          dataCountDir="hdfs://slickha/apps/tracking-CheckRecover/countData/cappingRule_EPN">
     </task>
     <task name="cappingRule_DAP"
           period="5"
           timeDiff="0"
+          inputURI="hdfs://elvisha"
+          dataCountURI="hdfs://slickha"
           inputDir="hdfs://elvisha/apps/tracking-events/DISPLAY/dedupe/date="
-          dataCountDir="hdfs://elvisha/apps/tracking-CheckRecover/countData/cappingRule_DAP">
+          dataCountDir="hdfs://slickha/apps/tracking-CheckRecover/countData/cappingRule_DAP">
     </task>
     <task name="dedupeAndSink_EPN"
           period="5"
           timeDiff="0"
+          inputURI="hdfs://elvisha"
+          dataCountURI="hdfs://slickha"
           inputDir="hdfs://elvisha/apps/tracking-events/EPN/capping/date="
-          dataCountDir="hdfs://elvisha/apps/tracking-CheckRecover/countData/dedupeAndSink_EPN">
+          dataCountDir="hdfs://slickha/apps/tracking-CheckRecover/countData/dedupeAndSink_EPN">
     </task>
     <task name="dedupeAndSink_DAP"
           period="5"
           timeDiff="0"
+          inputURI="hdfs://elvisha"
+          dataCountURI="hdfs://slickha"
           inputDir="hdfs://elvisha/apps/tracking-events/DISPLAY/capping/date="
-          dataCountDir="hdfs://elvisha/apps/tracking-CheckRecover/countData/dedupeAndSink_EPN">
+          dataCountDir="hdfs://slickha/apps/tracking-CheckRecover/countData/dedupeAndSink_EPN">
     </task>
-    <task name="DistcpEPNToApollo"
-          period="5"
-          timeDiff="0"
-          inputDir="hdfs://apollo-phx-nn-ha/apps/b_marketing_tracking/chocolate/tracking-events/EPN/capping/capping/date="
-          dataCountDir="hdfs://lvschocolatemaster-1448895.stratus.lvs.ebay.com/apps/tracking-CheckRecover/countData/DistcpEPNToApollo">
+    <task name="AppdlDistcpFromS3"
+          period="0"
+          timeDiff="24"
+          inputURI="hdfs://slickha"
+          dataCountURI="hdfs://slickha"
+          inputDir="hdfs://slickha/apps/appdl/in_app_events/installs/date="
+          dataCountDir="hdfs://slickha/apps/tracking-CheckRecover/countData/AppdlDistcpFromS3">
     </task>
-    <task name="DistcpDAPToApollo"
-          period="5"
-          timeDiff="0"
-          inputDir="hdfs://apollo-phx-nn-ha/apps/b_marketing_tracking/chocolate/tracking-events/DISPLAY/capping/date="
-          dataCountDir="hdfs://elvisha/apps/tracking-CheckRecover/countData/DistcpDAPToApollo">
+    <task name="AppdlNorbTdToHadoop"
+          period="0"
+          timeDiff="24"
+          inputURI="hdfs://slickha"
+          dataCountURI="hdfs://slickha"
+          inputDir="hdfs://elvisha/apps/appdl/norb/dt="
+          dataCountDir="hdfs://elvisha/apps/tracking-CheckRecover/countData/AppdlNorbTdToHadoop">
     </task>
 </tasks>

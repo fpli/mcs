@@ -16,7 +16,7 @@ object CheckJob extends App {
     val job = new CheckJob(params)
 
     job.run()
-    job.metrics.close();
+    job.metrics.close()
     job.stop()
   }
 }
@@ -32,11 +32,11 @@ class CheckJob(params: Parameter) extends BaseSparkJob(params.appName, params.mo
 
   @transient lazy val listTask: List[CheckTask] = {
     if (params.mode.indexOf("local") == 0) {
-      logger.info("get listTask for test.");
-      List(CheckTask("testJob", params.taskFile, 1543477200000l, 0, 5, params.countDataDir));
+      logger.info("get listTask for test.")
+      List(CheckTask("testJob", "", "", params.taskFile, 1543477200000l, 0, 5, params.countDataDir))
     } else {
-      logger.info("get listTask.");
-      XMLUtil.readFile(params.taskFile, params);
+      logger.info("get listTask.")
+      XMLUtil.readFile(params.taskFile, params)
     }
   }
 
@@ -49,9 +49,9 @@ class CheckJob(params: Parameter) extends BaseSparkJob(params.appName, params.mo
     // step 2: run task,
     // step 3: save the data to hdfs,
     // step 4: send data to grafana
-    logger.info("check job start.");
-    TaskManger.runTasks(listTask, metrics, spark);
-    logger.info("check job end.");
+    logger.info("check job start.")
+    TaskManger.runTasks(listTask, metrics, spark)
+    logger.info("check job end.")
   }
 
 }

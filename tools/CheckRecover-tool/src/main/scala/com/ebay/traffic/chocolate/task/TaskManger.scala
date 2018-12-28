@@ -22,7 +22,7 @@ object TaskManger {
     */
   def runTasks(tasks: List[CheckTask], esMetrics: ESMetrics, spark: SparkSession) = {
     for (task <- tasks) {
-      runTask(task, esMetrics, spark);
+      runTask(task, esMetrics, spark)
     }
   }
 
@@ -32,21 +32,31 @@ object TaskManger {
     * @param checkTask
     */
   def runTask(checkTask: CheckTask, esMetrics: ESMetrics, spark: SparkSession) = {
-    if (isRunnableTask(checkTask)) {
+    if (isRunnableTask(checkTask) && checkTask.period != 0) {
+      //for many time one day
       //step 1.read last count from hdfs (c1);
-      val lastCount = getLastCount(FileSystemReader.read(checkTask.dataCountDir, spark), checkTask);
-      logger.info("name: " + checkTask.jobName + "-----lastCount: " + lastCount);
+      val lastCount = getLastCount(FileSystemReader.read(checkTask.dataCountDir, checkTask.dataCountURI, spark), checkTask)
+      logger.info("name: " + checkTask.jobName + "-----lastCount: " + lastCount)
 
       //step 2.count the current file (c2);
-      val currentCount = FileSystemReader.getFileNum(checkTask.inputDir);
-      logger.info("name: " + checkTask.jobName + "-----currentCount: " + lastCount);
+      val currentCount = FileSystemReader.getFileNum(checkTask.inputDir, checkTask.inputURI)
+      logger.info("name: " + checkTask.jobName + "-----currentCount: " + currentCount)
 
       //step 3. save to hdfs;
-      FileSystemWriter.write(checkTask.dataCountDir, new CountData(checkTask.jobName, checkTask.ts, currentCount), spark)
+      FileSystemWriter.write(checkTask.dataCountDir, checkTask.dataCountURI, new CountData(checkTask.jobName, checkTask.ts, currentCount), spark)
 
       //step 4.send the current files count to ES ( = c2- c1);
       esMetrics.trace(checkTask.jobName, getCount(currentCount, lastCount, checkTask.ts), checkTask.ts)
-      logger.info("name: " + checkTask.jobName + "-----esMetrics send successfully");
+      logger.info("name: " + checkTask.jobName + "-----esMetrics send successfully")
+    }else if (isRunnableTask(checkTask) && checkTask.period == 0){
+      //for once one day
+      //step 1.count the current file (c2);
+      val currentCount = FileSystemReader.getFileNum(checkTask.inputDir, checkTask.inputURI)
+      logger.info("name: " + checkTask.jobName + "-----currentCount: " + currentCount)
+
+      //step 2.send the current files count to ES ( = c2);
+      esMetrics.trace(checkTask.jobName, currentCount, checkTask.ts)
+      logger.info("name: " + checkTask.jobName + "-----esMetrics send successfully")
     }
   }
 
@@ -57,10 +67,13 @@ object TaskManger {
     * @return return true if the ob is the runnable.
     */
   def isRunnableTask(checkTask: CheckTask): Boolean = {
-    if ((new Date(checkTask.ts).getMinutes() % checkTask.period) == 0)
-      return true;
-    else
-      return false;
+    if (checkTask.period != 0 && (new Date(checkTask.ts).getMinutes() % checkTask.period) == 0)
+      return true
+    else if (checkTask.period == 0 && new Date(checkTask.ts).getHours() == 0 && new Date(checkTask.ts).getMinutes() == 0){
+      return true
+    }else{
+      return false
+    }
   }
 
   /**
@@ -77,12 +90,12 @@ object TaskManger {
       })
 
       if (lastCount.count() > 0) {
-        return Integer.parseInt(lastCount.take(1)(0).get(2).toString);
+        return Integer.parseInt(lastCount.take(1)(0).get(2).toString)
       } else {
-        return 0;
+        return 0
       }
     }
-    return 0;
+    return 0
   }
 
   /**
@@ -95,9 +108,9 @@ object TaskManger {
     */
   def getCount(currentCount: Int, lastCount: Int, ts: Long): Int = {
     if (isWholeDay(ts)) {
-      return currentCount;
+      return currentCount
     } else {
-      return currentCount - lastCount;
+      return currentCount - lastCount
     }
   }
 
@@ -108,11 +121,11 @@ object TaskManger {
     * @return return true if the ts is whole day.
     */
   def isWholeDay(ts: Long): Boolean = {
-    val time = new Date(ts);
+    val time = new Date(ts)
     if (time.getHours == 0 && time.getMinutes == 0 && time.getSeconds == 0) {
-      return true;
+      return true
     } else {
-      return false;
+      return false
     }
   }
 

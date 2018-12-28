@@ -5,8 +5,8 @@ import com.ebay.traffic.chocolate.spark.BaseFunSuite
 class FileUtilTest extends BaseFunSuite{
 
   test("test isExistFile"){
-    val isExist = FileUtil.isExistFile(getTestResourcePath("testCheck"));
-    assert(isExist == true);
+    val isExist = FileUtil.isExistFile(getTestResourcePath("testCheck"), "")
+    assert(isExist == true)
   }
 
 }

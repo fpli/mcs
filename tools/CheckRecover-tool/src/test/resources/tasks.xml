@@ -3,6 +3,8 @@
     <task name="test-checkJob"
           period="5"
           timeDiff="0"
+          inputURI=""
+          dataCountURI=""
           inputDir="/input/test"
           dataCountDir="/input/countData">
     </task>

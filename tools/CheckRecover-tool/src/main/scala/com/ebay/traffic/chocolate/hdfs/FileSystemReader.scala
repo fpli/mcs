@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.hdfs
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, FsStatus, Path}
+import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
@@ -10,31 +9,15 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 object FileSystemReader {
 
   /**
-    * The hadoop conf
-    */
-  @transient lazy val hadoopConf = {
-    new Configuration()
-  }
-
-  /**
-    * The file system
-    */
-  @transient lazy val fs = {
-    val fs = FileSystem.get(hadoopConf)
-    sys.addShutdownHook(fs.close())
-    fs
-  }
-
-  /**
     * Read data from hdfs.
     *
     * @param file
     * @param spark
     * @return
     */
-  def read(file: String, spark: SparkSession): DataFrame = {
-    if (fs.exists(new Path(file)) && FileUtil.isExistFile(file)) {
-      return spark.read.csv(file);
+  def read(file: String, uri: String, spark: SparkSession): DataFrame = {
+    if (FileUtil.getFS(uri).exists(new Path(file)) && FileUtil.isExistFile(file, uri)) {
+      return spark.read.csv(file)
     } else {
       return null
     }
@@ -46,14 +29,14 @@ object FileSystemReader {
     * @param inputDir
     * @return
     */
-  def getFileNum(inputDir: String): Int = {
-    if (fs.exists(new Path(inputDir))) {
-      val fileStatus = fs.listStatus(new Path(inputDir));
-      val files = fileStatus.filter(status => status.getPath.getName != "_SUCCESS");
+  def getFileNum(inputDir: String, uri: String): Int = {
+    if (FileUtil.getFS(uri).exists(new Path(inputDir))) {
+      val fileStatus = FileUtil.getFS(uri).listStatus(new Path(inputDir))
+      val files = fileStatus.filter(status => status.getPath.getName != "_SUCCESS")
 
-      return files.size;
+      return files.size
     } else {
-      return 0;
+      return 0
     }
   }
 

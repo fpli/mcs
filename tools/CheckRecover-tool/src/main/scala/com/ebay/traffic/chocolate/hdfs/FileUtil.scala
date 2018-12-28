@@ -1,7 +1,9 @@
 package com.ebay.traffic.chocolate.hdfs
 
-import com.ebay.traffic.chocolate.hdfs.FileSystemReader.fs
-import org.apache.hadoop.fs.Path
+import java.net.URI
+
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 
 object FileUtil {
 
@@ -11,14 +13,22 @@ object FileUtil {
     * @param file
     * @return true when it exist file in the current directory.
     */
-  def isExistFile(file: String): Boolean = {
-    val fsStatus = fs.listStatus(new Path(file));
-    val files = fsStatus.filter(status => status.getPath.getName != "_SUCCESS");
+  def isExistFile(file: String, uri: String): Boolean = {
+    val fsStatus = getFS(uri).listStatus(new Path(file))
+    val files = fsStatus.filter(status => status.getPath.getName != "_SUCCESS")
     if (fsStatus.size > 0) {
-      return true;
+      return true
     } else {
-      return false;
+      return false
     }
+  }
+
+  def getFS(uri: String): FileSystem = {
+    var conf = new Configuration()
+    if (!uri.equals(""))
+      FileSystem.get(URI.create(uri), conf)
+    else
+      FileSystem.get(conf)
   }
 
 }

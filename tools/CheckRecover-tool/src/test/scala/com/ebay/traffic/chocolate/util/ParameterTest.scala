@@ -16,15 +16,15 @@ class ParameterTest extends BaseFunSuite {
       "--taskFile",
       "testCheck",
       "--elasticsearchUrl",
-      "http://10.148.181.34:9200");
-    val parameter = Parameter(arr);
+      "http://10.148.181.34:9200")
+    val parameter = Parameter(arr)
 
-    assert(parameter.appName == "checkJob");
-    assert(parameter.mode == "local");
-    assert(parameter.countDataDir == "countFileDir");
-    assert(parameter.ts == "1543477214789");
-    assert(parameter.taskFile == "testCheck");
-    assert(parameter.elasticsearchUrl == "http://10.148.181.34:9200");
+    assert(parameter.appName == "checkJob")
+    assert(parameter.mode == "local")
+    assert(parameter.countDataDir == "countFileDir")
+    assert(parameter.ts == "1543477214789")
+    assert(parameter.taskFile == "testCheck")
+    assert(parameter.elasticsearchUrl == "http://10.148.181.34:9200")
   }
 
 }

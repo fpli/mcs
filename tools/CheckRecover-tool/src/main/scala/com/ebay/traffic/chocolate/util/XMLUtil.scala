@@ -24,28 +24,33 @@ object XMLUtil {
     * @return
     */
   def readFile(file: String, parameter: Parameter): List[CheckTask] = {
-    var taskList: mutable.ListBuffer[CheckTask] = mutable.ListBuffer[CheckTask]();
-    val doc = XML.loadFile(file);
-    val tasks = doc \ "task";
+    var taskList: mutable.ListBuffer[CheckTask] = mutable.ListBuffer[CheckTask]()
+    val doc = XML.loadFile(file)
+    val tasks = doc \ "task"
 
-    logger.info("read file start by xml");
+    logger.info("read file start by xml")
     for (task <- tasks) {
       val checkTask = CheckTask(task.attribute("name").get.toString(),
+        task.attribute("inputURI").get.toString(),
+        task.attribute("dataCountURI").get.toString(),
         getInputDir(task.attribute("inputDir").get.toString(), parameter.ts.toLong, Integer.parseInt(task.attribute("timeDiff").get.toString())),
-        getVerifiedTime(parameter.ts.toLong),
+        getVerifiedTime(parameter.ts.toLong - Integer.parseInt(task.attribute("timeDiff").get.toString()) * 60 * 60 * 1000),
         Integer.parseInt(task.attribute("timeDiff").get.toString()),
         Integer.parseInt(task.attribute("period").get.toString()),
         task.attribute("dataCountDir").get.toString())
-      logger.info(checkTask.jobName);
-      logger.info(checkTask.period.toString);
-      logger.info(checkTask.ts.toString);
-      logger.info(checkTask.inputDir);
-      logger.info(checkTask.dataCountDir);
-      taskList.+=(checkTask);
+      logger.info(checkTask.jobName)
+      logger.info(checkTask.inputURI)
+      logger.info(checkTask.dataCountURI)
+      logger.info(checkTask.period.toString)
+      logger.info(checkTask.ts.toString)
+      logger.info(checkTask.period.toString)
+      logger.info(checkTask.inputDir)
+      logger.info(checkTask.dataCountDir)
+      taskList.+=(checkTask)
     }
-    logger.info("read file end by xml");
+    logger.info("read file end by xml")
 
-    return taskList.toList;
+    return taskList.toList
   }
 
   /**
@@ -55,8 +60,8 @@ object XMLUtil {
     * @return
     */
   def getVerifiedTime(ts: Long): Long = {
-    val realMin = ts / (1000 * 60);
-    return realMin * 1000 * 60;
+    val realMin = ts / (1000 * 60)
+    return realMin * 1000 * 60
   }
 
   /**
@@ -67,7 +72,7 @@ object XMLUtil {
     * @return
     */
   def getDataCountDir(jobName: String, parameter: Parameter): String = {
-    return parameter.countDataDir + "/" + jobName;
+    return parameter.countDataDir + "/" + jobName
   }
 
   /**
@@ -79,11 +84,15 @@ object XMLUtil {
     * @return return input directory
     */
   def getInputDir(rawInputDir: String, ts: Long, td: Int): String = {
-    val dt = new SimpleDateFormat("yyyy-MM-dd");
-    val date = dt.format(new Date(ts - td * 60 * 60 * 1000));
-    val inputDir = rawInputDir + date;
-    logger.info("inputDir: " + inputDir);
-    return inputDir;
+    var timeDiff = 0
+    if(td == 0){
+      timeDiff = td + 1
+    }
+    val dt = new SimpleDateFormat("yyyy-MM-dd")
+    val date = dt.format(new Date(ts - timeDiff * 60 * 60 * 1000))
+    val inputDir = rawInputDir + date
+    logger.info("inputDir: " + inputDir)
+    return inputDir
   }
 
 }
