@@ -6,8 +6,6 @@ usage="Usage: dumpRotationToTD.sh"
 bin=`dirname "$0"`
 bin=`cd "$bin">/dev/null; pwd`
 
-echo `date`
-
 DT=$(date +%Y-%m-%d -d "`date` - 1 hour")
 if [ $# -eq 1 ]; then
   DT_HOUR=$(date +%Y-%m-%d' '$1:00:00 -d "`date` - 1 hour")
@@ -15,15 +13,15 @@ else
   DT_HOUR=$(date +%Y-%m-%d' '%H:00:00 -d "`date` - 1 hour")
 fi
 
-ROTATION_CONFIG_FILE=/chocolate/rotation/couchbase.properties
-OUTPUT_PATH=/mnt/chocolate/rotation/teradata/dt=${DT}/
+ROTATION_CONFIG_FILE=${bin}/../conf/
+OUTPUT_PATH=/datashare/mkttracking/data/rotation/teradata/dt=${DT}/
 JOB_DATA_TIME=$(date +%Y-%m-%d' '23:00:00 -d "$DT - 1 day")
 START_TIME=$(date +%s -d "$JOB_DATA_TIME")000
 END_TIME=$(date +%s)000
 HOUR=$(date +%H -d "$DT_HOUR")
 
-log_dt=$(date +%Y%m%d%H%M%S -d "$DT_HOUR")
-log_file="/mnt/chocolate/rotation/logs/toTD_${log_dt}.log"
+log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S -d "$DT_HOUR")
+log_file="/datashare/mkttracking/logs/rotation/teradata/${log_dt}.log"
 echo "log_file="${log_file}
 echo "DT="${DT} | tee -a ${log_file}
 echo "JOB_DATA_TIME="${JOB_DATA_TIME} | tee -a ${log_file}
@@ -47,10 +45,10 @@ echo `date`" =============== Job Start ===========" | tee -a ${log_file}
 
 if [[ $HOUR -eq 23 ]]; then
    echo `date`" =============== dump rotation files from couchbase by the date $DT_HOUR===========" | tee -a ${log_file}
-   java -cp /chocolate/rotation/couchbase-tool-3.3.1-SNAPSHOT-fat.jar com.ebay.traffic.chocolate.couchbase.DumpRotationToTD ${ROTATION_CONFIG_FILE} ${START_TIME} ${END_TIME} ${OUTPUT_PATH}
+   java -cp ${bin}/../lib/couchbase-tool-*.jar com.ebay.traffic.chocolate.couchbase.DumpRotationToTD ${ROTATION_CONFIG_FILE} ${START_TIME} ${END_TIME} ${OUTPUT_PATH}
 else
    echo `date`"=============== dump empty files ===========" | tee -a ${log_file}
-   java -cp /chocolate/rotation/couchbase-tool-3.3.1-SNAPSHOT-fat.jar com.ebay.traffic.chocolate.couchbase.DumpRotationToTD ${ROTATION_CONFIG_FILE} -1 -1 ${OUTPUT_PATH}
+   java -cp ${bin}/../lib/couchbase-tool-*.jar com.ebay.traffic.chocolate.couchbase.DumpRotationToTD ${ROTATION_CONFIG_FILE} -1 -1 ${OUTPUT_PATH}
 fi
 
 rc=$?
@@ -61,5 +59,3 @@ else
    echo "=============== dump  data from couchbase done  ==========="
    echo `date`"=====================================================dumpFromCouchbase is completed======================================================" | tee -a ${log_file}
 fi
-
-
