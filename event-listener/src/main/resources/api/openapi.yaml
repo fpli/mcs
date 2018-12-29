@@ -16,9 +16,9 @@ paths:
       parameters:
         - $ref: '#/components/parameters/content-type'
         - $ref: '#/components/parameters/user-agent'
-        - $ref: '#/components/parameters/referrer'
+        - $ref: '#/components/parameters/referer'
         - $ref: '#/components/parameters/enduser-ctx'
-        - $ref: '#/components/parameters/tracking-ref'
+        - $ref: '#/components/parameters/tracking'
 
       description: Send one event to marketing tracking
       tags:
@@ -30,8 +30,8 @@ paths:
             - 'https://api.ebay.com/oauth/scope/base@public'
             - 'https://api.ebay.com/oauth/scope/experience@public'
       responses:
-        '200':
-          description: Accepted
+        '201':
+          description: Created
         '400':
           description: Rejected due to message format
           content:
@@ -61,22 +61,22 @@ components:
         schema:
           type: string
         description: 'Example: eBayIPhone/3.1.4'
-      referrer:
-        name: Referrer
+      referer:
+        name: Referer
         in: header
         required: false
         schema:
           type: string
-        description: 'Referrer of the click'
+        description: 'Referer of the click'
       enduser-ctx:
         name: X-EBAY-C-ENDUSERCTX
         in: header
         required: true
         schema:
           type: string
-        description: 'User context including userid'
-      tracking-ref:
-        name: X-EBAY-C-TRACKING-REF
+        description: 'User context. For handler and nodejs call, it has userid if user login'
+      tracking:
+        name: X-EBAY-C-TRACKING
         in: header
         required: true
         schema:
@@ -115,12 +115,13 @@ components:
           example:
             4000: No User-Agent header
             4001: No X-EBAY-C-ENDUSERCTX header
-            4002: No X-EBAY-C-TRACKING-REF header
-            4003: No Referrer in header nor in post body
+            4002: No X-EBAY-C-TRACKING header
+            4003: No Referer in header nor in post body
             4004: Illegal URL
             4005: No query parameter
             4006: No mkevt
             4007: Invalid mkevt
+            4008: Invalid X-EBAY-C-ENDUSERCTX header
             5000: Internal Service Error
           type: number
           description: Value indicates type of error

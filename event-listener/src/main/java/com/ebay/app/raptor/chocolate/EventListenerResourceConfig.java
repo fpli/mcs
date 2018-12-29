@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate;
 
+import com.ebay.tracking.filter.TrackingServiceFilter;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
@@ -24,9 +25,34 @@ public class EventListenerResourceConfig extends ResourceConfig {
   @Named("jersey-operational-feature")
   private Feature jerseyOperationalFeature;
 
+  @Inject
+  @Qualifier("cos-user-context-filter")
+  private ContainerRequestFilter userCtxFilter;
+
+  @Inject
+  @Qualifier("core-auth-filter")
+  private ContainerRequestFilter coreAuthFilter;
+
+  @Inject
+  @Qualifier("domain-request-filter")
+  private ContainerRequestFilter domainRequestFilter;
+
+  @Inject
+  @Qualifier("dds-filter")
+  private ContainerRequestFilter ddsFilter;
+
+  @Inject
+  @Qualifier("tracking-filter")
+  private TrackingServiceFilter trackingFilter;
+
   @PostConstruct
   public void init() {
     register(jerseyOperationalFeature);
+    register(coreAuthFilter);
+    register(userCtxFilter);
+    register(domainRequestFilter);
+    register(ddsFilter);
+    register(trackingFilter);
     register(EventListenerResource.class);
   }
 }
