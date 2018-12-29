@@ -80,7 +80,7 @@ public class EventListenerResource implements EventsApi {
     X_EBAY_C_TRACKING_REF, String referrer) {
 
     Tracer tracer = GlobalTracer.get();
-    try(Scope scope = tracer.buildSpan("mktCollectionSvc").withTag(Tags.TYPE.getKey(), "URL").startActive(true)){
+    try(Scope scope = tracer.buildSpan("mktCollectionSvc").withTag(Tags.TYPE.getKey(), "URL").startActive(true)) {
       Span span = scope.span();
       Response res;
       try {
