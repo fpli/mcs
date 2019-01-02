@@ -30,13 +30,6 @@ class XMLUtilTest extends BaseFunSuite {
     assert(real == "/test/date=2018-12-28")
   }
 
-  test("test get hpur and min") {
-    val hour = new Date(1546174800000l ).getHours()
-    val min = new Date(1546174800000l ).getMinutes
-    assert(hour == 0)
-    assert(min == 0)
-  }
-
   test("test the getDataCountDir") {
     val parameter = new Parameter("test", "b", "/countDataDir", "1543477214789", "task.xml", "f")
     val real = XMLUtil.getDataCountDir("test", parameter)
