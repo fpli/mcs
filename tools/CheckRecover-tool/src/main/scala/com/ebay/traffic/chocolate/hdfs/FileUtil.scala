@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.hdfs
 import java.net.URI
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.{FileSystem, LocalFileSystem, Path}
 
 object FileUtil {
 
@@ -24,11 +24,15 @@ object FileUtil {
   }
 
   def getFS(uri: String): FileSystem = {
-    var conf = new Configuration()
-    if (!uri.equals(""))
-      FileSystem.get(URI.create(uri), conf)
-    else
-      FileSystem.get(conf)
+    if (uri != null && uri.length > 0) {
+      var conf = new Configuration()
+      if (!uri.equals(""))
+        FileSystem.get(URI.create(uri), conf)
+      else
+        FileSystem.get(conf)
+    } else {
+      FileSystem.getLocal(new Configuration())
+    }
   }
 
 }
