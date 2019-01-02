@@ -26,9 +26,7 @@ public class CollectionServiceUtil {
 
       if (uaInfo.requestedFromSmallDevice() && uaInfo.requestIsWeb()) {
         //mweb
-
         appId = MOBILE_WEB_APPID;
-
       } else if (uaInfo.requestedFromSmallDevice() && uaInfo.getDeviceInfo().osiOS() && uaInfo.requestIsNativeApp()) {
         //iphone
         appId = IPHONE_APPID;
@@ -52,7 +50,8 @@ public class CollectionServiceUtil {
   public static void populateDeviceDetectionParams(UserAgentInfo info, IRequestScopeTracker tracker) {
 
     if (info != null) {
-      tracker.addTag("app", getAppIdFromUserAgent(info), String.class);
+      //comment metadataAppNameVersion waiting for tracking team's confirmation
+      //tracker.addTag("app", getAppIdFromUserAgent(info), String.class);
       if (info.isDesktop()) {
         tracker.addTag("dsktop", true, Boolean.class);
         return;
