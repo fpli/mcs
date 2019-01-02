@@ -67,9 +67,9 @@ object TaskManger {
     * @return return true if the ob is the runnable.
     */
   def isRunnableTask(checkTask: CheckTask): Boolean = {
-    if (checkTask.period != 0 && (new Date(checkTask.ts).getMinutes() % checkTask.period) == 0)
+    if (checkTask.period != 0 && (new Date(checkTask.ts).getMinutes() % checkTask.period) == 0) {
       return true
-    else if (checkTask.period == 0 && new Date(checkTask.ts).getHours() == 0 && new Date(checkTask.ts).getMinutes() == 0){
+    } else if (checkTask.period == 0 && new Date(checkTask.ts).getHours() == 0 && new Date(checkTask.ts).getMinutes() == 0){
       return true
     }else{
       return false

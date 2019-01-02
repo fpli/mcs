@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.util
 
+import java.util.Date
+
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 
 class XMLUtilTest extends BaseFunSuite {
@@ -21,6 +23,18 @@ class XMLUtilTest extends BaseFunSuite {
   test("test the getInputDir") {
     val real = XMLUtil.getInputDir("/test/date=", 1543477200000l, 0)
     assert(real == "/test/date=2018-11-29")
+  }
+
+  test("test the getInputDir when diffTime is not 0") {
+    val real = XMLUtil.getInputDir("/test/date=", 1546120800000l, 46)
+    assert(real == "/test/date=2018-12-28")
+  }
+
+  test("test get hpur and min") {
+    val hour = new Date(1546174800000l ).getHours()
+    val min = new Date(1546174800000l ).getMinutes
+    assert(hour == 0)
+    assert(min == 0)
   }
 
   test("test the getDataCountDir") {

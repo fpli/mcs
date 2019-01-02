@@ -34,7 +34,7 @@
     </task>
     <task name="AppdlDistcpFromS3"
           period="0"
-          timeDiff="24"
+          timeDiff="28"
           inputURI="hdfs://slickha"
           dataCountURI="hdfs://slickha"
           inputDir="hdfs://slickha/apps/appdl/in_app_events/installs/date="
@@ -42,10 +42,10 @@
     </task>
     <task name="AppdlNorbTdToHadoop"
           period="0"
-          timeDiff="24"
+          timeDiff="46"
           inputURI="hdfs://slickha"
           dataCountURI="hdfs://slickha"
-          inputDir="hdfs://elvisha/apps/appdl/norb/dt="
-          dataCountDir="hdfs://elvisha/apps/tracking-CheckRecover/countData/AppdlNorbTdToHadoop">
+          inputDir="hdfs://slickha/apps/appdl/norb/dt="
+          dataCountDir="hdfs://slickha/apps/tracking-CheckRecover/countData/AppdlNorbTdToHadoop">
     </task>
 </tasks>

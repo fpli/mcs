@@ -84,12 +84,8 @@ object XMLUtil {
     * @return return input directory
     */
   def getInputDir(rawInputDir: String, ts: Long, td: Int): String = {
-    var timeDiff = 0
-    if(td == 0){
-      timeDiff = td + 1
-    }
     val dt = new SimpleDateFormat("yyyy-MM-dd")
-    val date = dt.format(new Date(ts - timeDiff * 60 * 60 * 1000))
+    val date = dt.format(new Date(ts - td * 60 * 60 * 1000))
     val inputDir = rawInputDir + date
     logger.info("inputDir: " + inputDir)
     return inputDir
