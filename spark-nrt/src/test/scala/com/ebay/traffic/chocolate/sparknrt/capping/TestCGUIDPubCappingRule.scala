@@ -63,6 +63,18 @@ class TestCGUIDPubCappingRule extends BaseFunSuite {
     message
   }
 
+  def writeFilterMessage1(channelType: ChannelType, channelAction: ChannelAction, snapshotId: Long, publisherId: Long, campaignId: Long, cguid: String, timestamp: Long, writer: ParquetWriter[GenericRecord]): FilterMessage = {
+    val message = TestHelper.newFilterMessage(channelType, channelAction, snapshotId, publisherId, cguid, campaignId, timestamp)
+    writer.write(message)
+    message
+  }
+
+  def writeFilterMessage2(channelType: ChannelType, channelAction: ChannelAction, snapshotId: Long, publisherId: Long, campaignId: Long, cguid_req: String, cguid_res: String, timestamp: Long, writer: ParquetWriter[GenericRecord]): FilterMessage = {
+    val message = TestHelper.newFilterMessage(channelType, channelAction, snapshotId, publisherId, campaignId, cguid_req, cguid_res, timestamp)
+    writer.write(message)
+    message
+  }
+
   import sparkJob.spark.implicits._
 
   ignore("test cguid-pub capping rule") {
@@ -167,8 +179,8 @@ class TestCGUIDPubCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 5L, 11L, 111L, cguid2, timestamp2, writer1_2)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6L, 11L, 111L, cguid1, timestamp2, writer2_1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 7L, 11L, 111L, cguid2, timestamp2, writer2_1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 8L, 11L, 111L, cguid2, timestamp2, writer2_2)
+    writeFilterMessage1(ChannelType.EPN, ChannelAction.CLICK, 7L, 11L, 111L, cguid2, timestamp2, writer2_1)
+    writeFilterMessage2(ChannelType.EPN, ChannelAction.CLICK, 8L, 11L, 111L, cguid1, cguid2, timestamp2, writer2_2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 9L, 11L, 111L, cguid3, timestamp2, writer2_2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 10L, 11L, 111L, cguid3, timestamp2, writer2_2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 11L, 11L, 111L, cguid3, timestamp2, writer2_2)
