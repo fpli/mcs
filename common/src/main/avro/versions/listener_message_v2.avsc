@@ -15,6 +15,26 @@
       "type": "long"
     },
     {
+      "name": "user_id",
+      "type": "string"
+    },
+    {
+      "name": "guid",
+      "type": "string"
+    },
+    {
+      "name": "cguid",
+      "type": "string"
+    },
+    {
+      "name": "client_remote_ip",
+      "type": "string"
+    },
+    {
+      "name": "referer",
+      "type": "string"
+    },
+    {
       "name": "publisher_id",
       "type": "long"
     },

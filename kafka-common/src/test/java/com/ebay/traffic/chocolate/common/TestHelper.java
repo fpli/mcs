@@ -203,6 +203,11 @@ public class TestHelper {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
     message.setTimestamp(timestamp);
+    message.setUserId("1");
+    message.setCguid("");
+    message.setGuid("");
+    message.setClientRemoteIp("127.0.0.1");
+    message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
     message.setRequestHeaders("");
@@ -239,6 +244,11 @@ public class TestHelper {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
     message.setTimestamp(timestamp);
+    message.setUserId("1");
+    message.setCguid("");
+    message.setGuid("");
+    message.setClientRemoteIp(ip);
+    message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
     message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-eBay-Client-IP: " + ip +
@@ -276,6 +286,11 @@ public class TestHelper {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
     message.setTimestamp(timestamp);
+    message.setUserId("1");
+    message.setCguid(cguid);
+    message.setGuid("");
+    message.setClientRemoteIp("127.0.0.1");
+    message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
     message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|" +
@@ -314,6 +329,11 @@ public class TestHelper {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
     message.setTimestamp(timestamp);
+    message.setUserId("1");
+    message.setCguid(cguid);
+    message.setGuid("");
+    message.setClientRemoteIp("127.0.0.1");
+    message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
     message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|Cookie: cguid/" + cguid +
@@ -355,6 +375,11 @@ public class TestHelper {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
     message.setTimestamp(timestamp);
+    message.setUserId("1");
+    message.setCguid(cguid_res);
+    message.setGuid("");
+    message.setClientRemoteIp("127.0.0.1");
+    message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
     message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|Cookie: cguid/" + cguid_req +
@@ -395,6 +420,11 @@ public class TestHelper {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
     message.setTimestamp(timestamp);
+    message.setUserId("1");
+    message.setCguid(cguid);
+    message.setGuid("");
+    message.setClientRemoteIp(ip);
+    message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
     message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-eBay-Client-IP: " + ip +
@@ -431,6 +461,11 @@ public class TestHelper {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
     message.setTimestamp(timestamp);
+    message.setUserId("1");
+    message.setCguid("");
+    message.setGuid("");
+    message.setClientRemoteIp("127.0.0.1");
+    message.setReferer("");
     message.setCampaignId(1l);
     message.setPublisherId(publisherId);
     message.setRequestHeaders("");
@@ -457,6 +492,11 @@ public class TestHelper {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
     message.setTimestamp(timestamp);
+    message.setUserId("1");
+    message.setCguid("");
+    message.setGuid("");
+    message.setClientRemoteIp("127.0.0.1");
+    message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
     message.setRequestHeaders(isMobi ? "Accept: application/json|User-Agent: Mobi" : "");
@@ -504,6 +544,11 @@ public class TestHelper {
     ListenerMessage message = new ListenerMessage();
     message.setSnapshotId(snapshotId);
     message.setTimestamp(System.currentTimeMillis());
+    message.setUserId("1");
+    message.setCguid("");
+    message.setGuid("");
+    message.setClientRemoteIp("127.0.0.1");
+    message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
     message.setRequestHeaders("");

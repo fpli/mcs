@@ -22,6 +22,11 @@ public class AvroVersioningTest {
     public void writeReadListenerMessage() throws IOException {
         ListenerMessage om = new ListenerMessage();
         om.setSnapshotId(1234L);
+        om.setUserId("");
+        om.setCguid("");
+        om.setGuid("");
+        om.setClientRemoteIp("");
+        om.setReferer("");
         om.setRequestHeaders("");
         om.setResponseHeaders("");
         om.setUri("");
@@ -69,6 +74,11 @@ public class AvroVersioningTest {
     public void writeReadFilterMessage() throws IOException {
         FilterMessage om = new FilterMessage();
         om.setSnapshotId(1234L);
+        om.setUserId("");
+        om.setClientRemoteIp("");
+        om.setGuid("");
+        om.setCguid("");
+        om.setReferer("");
         om.setRequestHeaders("");
         om.setResponseHeaders("");
         om.setUri("");

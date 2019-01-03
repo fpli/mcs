@@ -129,15 +129,22 @@ public class FilterContainerTest {
   @Test
   public void filterRequestTransformImpression() {
     ListenerMessage lm = new ListenerMessage();
-    lm.setRequestHeaders("User-Agent: foo|X-Forwarded-For: 127.0.0.1|Referer: https://www.google.com/|X-Purpose:preview||");
+    String remoteIp = "127.0.0.1";
+    String referer = "https://www.google.com/";
+    lm.setRequestHeaders("User-Agent: foo|X-Forwarded-For: " + remoteIp + "|Referer: " + referer + "|X-Purpose:preview||");
     lm.setChannelAction(ChannelAction.IMPRESSION);
     lm.setResponseHeaders("");
     lm.setSnapshotId(12345L);
     lm.setTimestamp(314159L);
+    lm.setUserId("1");
+    lm.setClientRemoteIp(remoteIp);
+    lm.setGuid("");
+    lm.setCguid("");
+    lm.setReferer(referer);
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     FilterRequest req = new FilterRequest(lm);
     assertEquals("foo", req.getUserAgent());
-    assertEquals("127.0.0.1", req.getSourceIP());
+    assertEquals(remoteIp, req.getSourceIP());
     assertEquals("google.com", req.getReferrerDomain());
     assertEquals(true, req.isPrefetch());
     assertEquals(ChannelAction.IMPRESSION, req.getChannelAction());
@@ -146,11 +153,18 @@ public class FilterContainerTest {
   @Test
   public void filterRequestTransformClick() {
     ListenerMessage lm = new ListenerMessage();
-    lm.setRequestHeaders("X-Forwarded-For: 192.168.0.1|X-EBAY-CLIENT-IP:10.11.12.13|Referer: 100partnerprogramme.de||");
+    String remoteIp = "10.11.12.13";
+    String referer = "100partnerprogramme.de";
+    lm.setRequestHeaders("X-Forwarded-For: 192.168.0.1|X-EBAY-CLIENT-IP:" + remoteIp + "|Referer: " + referer + "||");
     lm.setChannelAction(ChannelAction.CLICK);
     lm.setResponseHeaders("");
     lm.setSnapshotId(12345L);
     lm.setTimestamp(314159L);
+    lm.setUserId("1");
+    lm.setClientRemoteIp(remoteIp);
+    lm.setGuid("");
+    lm.setCguid("");
+    lm.setReferer(referer);
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     FilterRequest req = new FilterRequest(lm);
     assertNull(req.getUserAgent());
@@ -166,8 +180,6 @@ public class FilterContainerTest {
     lm.setResponseHeaders("Set-Cookie: npii=btrm/svid%3D2649036588643001945a273571^cguid/73eadd911590a93fd3d7362effcb60d85a50cbc9^;Domain=.ebay.co.uk;Expires=Wed, 06-Dec-2017 00:10:25 GMT;Path=/");
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     FilterRequest req = new FilterRequest(lm);
-    assertEquals("73eadd911590a93fd3d7362effcb60d8", req.getResponseCguid());
-    assertEquals(1483708489105L, req.getResponseCguidTimestamp());
     assertNull(req.getRequestCguid());
   }
   
@@ -177,7 +189,6 @@ public class FilterContainerTest {
     lm.setCampaignId(5337991765L);
     lm.setUri("http://rover.qa.ebay.com/roverimp/1/705-53470-19255-0/1?campid=5337991765&toolid=20001&customid=link&mpt=606109525");
     FilterRequest req = new FilterRequest(lm);
-    assertEquals("705-53470-19255-0", req.getRotationID());
     assertEquals(5337991765L, req.getCampaignId());
   }
   
@@ -187,7 +198,6 @@ public class FilterContainerTest {
     lm.setCampaignId(5337991766L);
     lm.setUri("http://c.ebay.com/1c/1-12345?page=http%3A%2F%2Fwww.ebay.com");
     FilterRequest req = new FilterRequest(lm);
-    assertEquals("1-12345", req.getRotationID());
     assertEquals(5337991766L, req.getCampaignId());
   }
   
@@ -199,7 +209,6 @@ public class FilterContainerTest {
     FilterRequest req = new FilterRequest(lm);
     assertEquals("d30ebafe1580a93d128516d5ffef202f", req.getRequestCguid());
     assertEquals(1481009707774L, req.getRequestCguidTimestamp());
-    assertNull(req.getResponseCguid());
   }
   
   private class BaseRuleMock implements FilterRule {

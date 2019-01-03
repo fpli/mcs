@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.reporting
 import java.text.SimpleDateFormat
 
 import com.couchbase.client.java.document.JsonArrayDocument
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
+import com.ebay.app.raptor.chocolate.avro.versions.{FilterMessageV1, FilterMessageV2}
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
 import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
@@ -275,7 +275,7 @@ class TestReportingJob extends BaseFunSuite {
     // prepare data file
     val writer = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-05-01/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema)
+      .withSchema(FilterMessageV2.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
@@ -329,7 +329,7 @@ class TestReportingJob extends BaseFunSuite {
     // prepare data file
     val writer = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-05-02/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema)
+      .withSchema(FilterMessageV2.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()

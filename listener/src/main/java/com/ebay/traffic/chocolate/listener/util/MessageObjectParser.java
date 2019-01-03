@@ -56,6 +56,21 @@ public class MessageObjectParser {
         }
         record.setUri(requestUrl);
 
+        // user id
+        record.setUserId("");
+
+        // cguid, guid
+        String cookieRequestHeader = clientRequest.getHeader("Cookie");
+        String cookieResponseHeader = proxyResponse.getHeader("Set-Cookie");
+        record.setCguid(getGuid(cookieRequestHeader, cookieResponseHeader, "cguid"));
+        record.setGuid(getGuid(cookieRequestHeader, cookieResponseHeader, "tguid"));
+
+        // client remote IP
+        record.setClientRemoteIp(getClientRemoteIp(clientRequest));
+
+        // referer
+        record.setReferer(getReferer(clientRequest));
+
         // Set the channel type + HTTP headers + channel action
         record.setChannelType(channelType);
         record.setHttpMethod(this.getMethod(clientRequest).getAvro());
@@ -75,6 +90,47 @@ public class MessageObjectParser {
         record.setIsTracked(false);     //TODO No messages are Durability-tracked for now
 
         return record;
+    }
+
+    /**
+     * Get Referer header
+     */
+    private String getReferer(HttpServletRequest request) {
+        String referer = request.getHeader("Referer");
+        return referer == null ? "" : referer;
+    }
+
+    /**
+     * Get client remote Ip
+     */
+    private String getClientRemoteIp(HttpServletRequest request) {
+        String remoteIp = request.getHeader("X-eBay-Client-IP");
+
+        if (remoteIp == null) {
+            String xForwardFor = request.getHeader("X-Forwarded-For");
+            if (xForwardFor != null && !xForwardFor.isEmpty()) {
+                remoteIp = xForwardFor.split(",")[0];
+            }
+        }
+        return remoteIp == null ? "" : remoteIp;
+    }
+
+    //parse CGUID from response headers, if null, parse from request headers
+    private String getGuid(String cookieRequestHeader, String cookieResponseHeader, String guid) {
+        String result = null;
+        if (cookieResponseHeader != null && !cookieResponseHeader.isEmpty()) {
+            String[] splits = cookieResponseHeader.split(guid + "/");
+            if (splits.length > 1) {
+                result = splits[1].substring(0, 32);
+            }
+        }
+        if (result == null && cookieRequestHeader != null && !cookieRequestHeader.isEmpty()) {
+            String[] splits = cookieRequestHeader.split(guid + "/");
+            if (splits.length > 1) {
+                result = splits[1].substring(0, 32);
+            }
+        }
+        return result == null ? "" : result;
     }
 
     /**

@@ -25,18 +25,18 @@ class IPPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
   }
 
   //parse IP from request_headers
-  def parseIP(): Column = {
-    split(split($"request_headers", "X-eBay-Client-IP: ")(1), """\|""")(0).alias("IP")
+  def ip(): Column = {
+    $"client_remote_ip".alias("IP")
   }
 
   //counting columns
   def selectCondition(): Array[Column] = {
-    Array(parseIP(), cols(1))
+    Array(ip(), cols(1))
   }
 
   //add new column if needed
   def withColumnCondition(): Column = {
-    when($"channel_action" === "CLICK", parseIP()).otherwise("NA")
+    when($"channel_action" === "CLICK", ip()).otherwise("NA")
   }
 
   //final join condition

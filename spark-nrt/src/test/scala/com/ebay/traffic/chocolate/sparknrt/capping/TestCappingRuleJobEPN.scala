@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
+import com.ebay.app.raptor.chocolate.avro.versions.{FilterMessageV1, FilterMessageV2}
 import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
@@ -80,7 +80,7 @@ class TestCappingRuleJobEPN extends BaseFunSuite {
 
     val writer1_0 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessageV2.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
@@ -116,42 +116,42 @@ class TestCappingRuleJobEPN extends BaseFunSuite {
 
     val writer1_1 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00001.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessageV2.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer1_2 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessageV2.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer2_1 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00001.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessageV2.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer2_2 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessageV2.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer3 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessageV2.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer4 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessageV2.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()

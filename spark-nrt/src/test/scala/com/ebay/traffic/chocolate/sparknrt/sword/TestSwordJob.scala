@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 import java.util
 
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
+import com.ebay.app.raptor.chocolate.avro.versions.{FilterMessageV1, FilterMessageV2}
 import com.ebay.traffic.chocolate.common.{KafkaTestHelper, MiniKafkaCluster, TestHelper}
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
@@ -88,7 +88,7 @@ class TestSwordJob extends BaseFunSuite {
     // prepare data file
     val writer = AvroParquetWriter.
       builder[GenericRecord](new Path(dataDir + "/date=2018-05-01/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema)
+      .withSchema(FilterMessageV2.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()

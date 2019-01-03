@@ -173,14 +173,20 @@ public class FilterWorker extends Thread {
     FilterMessage outMessage = new FilterMessage();
     outMessage.setSnapshotId(message.getSnapshotId());
     outMessage.setTimestamp(message.getTimestamp());
+    outMessage.setUserId(message.getUserId());
+    outMessage.setCguid(message.getCguid());
+    outMessage.setGuid(message.getGuid());
+    outMessage.setClientRemoteIp(message.getClientRemoteIp());
+    outMessage.setReferer(message.getReferer());
     // only EPN needs to get publisher id
     if (message.getPublisherId() == DEFAULT_PUBLISHER_ID && message.getChannelType() == ChannelType.EPN) {
       long publisherId = getPublisherId(message.getCampaignId());
       outMessage.setPublisherId(publisherId);
       message.setPublisherId(publisherId);
     }
-    else
+    else {
       outMessage.setPublisherId(message.getPublisherId());
+    }
     outMessage.setCampaignId(message.getCampaignId());
     outMessage.setRequestHeaders(message.getRequestHeaders());
     outMessage.setUri(message.getUri());

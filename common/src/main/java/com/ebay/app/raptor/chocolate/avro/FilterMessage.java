@@ -12,7 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class FilterMessage extends FilterMessageV2 {
-  private static Schema getOldSchema() {
+  private static Schema getV1Schema() {
     return FilterMessageV1.getClassSchema();
   }
 
@@ -21,12 +21,26 @@ public class FilterMessage extends FilterMessageV2 {
           getClassSchema());
 
   // Avro reader that reads previous version of schema (threadsafe, therefore static)
-  private final static DatumReader<FilterMessage> readerUpgrade = new SpecificDatumReader<>(
-          getOldSchema(), getClassSchema());
+  private final static DatumReader<FilterMessageV1> readerV1 = new SpecificDatumReader<>(
+          getV1Schema(), FilterMessageV1.getClassSchema());
 
   // Avro writer (threadsafe, therefore static)
   private final static DatumWriter<FilterMessage> writer = new SpecificDatumWriter<>(
           getClassSchema());
+
+  public FilterMessage() {
+  }
+
+  public FilterMessage(Long snapshot_id, Long timestamp, String user_id, String guid,
+                       String cguid, String client_remote_ip, String referer, Long publisher_id,
+                       Long campaign_id, String request_headers, String uri,
+                       String response_headers, Long rt_rule_flags, Long nrt_rule_flags,
+                       ChannelAction channel_action, ChannelType channel_type, HttpMethod http_method,
+                       String snid, Boolean is_tracked) {
+    super(snapshot_id, timestamp, user_id, guid, cguid, client_remote_ip, referer, publisher_id,
+            campaign_id, request_headers, uri, response_headers, rt_rule_flags, nrt_rule_flags,
+            channel_action, channel_type, http_method, snid, is_tracked);
+  }
 
   public static FilterMessage readFromJSON(String json) throws IOException {
     JsonDecoder decoder;
@@ -39,8 +53,15 @@ public class FilterMessage extends FilterMessageV2 {
       // Nothing to do, need to try the upgrading reader first
     }
 
-    decoder = DecoderFactory.get().jsonDecoder(getOldSchema(), json);
-    datum = readerUpgrade.read(datum, decoder);
+    // fallback to read V1
+    decoder = DecoderFactory.get().jsonDecoder(getV1Schema(), json);
+    FilterMessageV1 datumV1 = new FilterMessageV1();
+    datumV1 = readerV1.read(datumV1, decoder);
+    datum = new FilterMessage(datumV1.getSnapshotId(), datumV1.getTimestamp(), "", "", "", "", "",
+            datumV1.getPublisherId(), datumV1.getCampaignId(), datumV1.getRequestHeaders(), datumV1.getUri(),
+            datumV1.getResponseHeaders(), datumV1.getRtRuleFlags(), datumV1.getNrtRuleFlags(),
+            datumV1.getChannelAction(), datumV1.getChannelType(), datumV1.getHttpMethod(), datumV1.getSnid(),
+            datumV1.getIsTracked());
     return datum;
   }
 
