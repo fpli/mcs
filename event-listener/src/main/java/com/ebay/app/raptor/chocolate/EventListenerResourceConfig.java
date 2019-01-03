@@ -13,7 +13,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Feature;
 
 /**
- * Template resource config class
+ * Resource config class
  *
  * @author xiangli4
  */
@@ -24,6 +24,14 @@ public class EventListenerResourceConfig extends ResourceConfig {
   @Inject
   @Named("jersey-operational-feature")
   private Feature jerseyOperationalFeature;
+
+  @Inject
+  @Named("content-filter")
+  private ContainerRequestFilter contentFilter;
+
+  @Inject
+  @Named("permutation-filter")
+  private ContainerRequestFilter permutationFilter;
 
   @Inject
   @Qualifier("cos-user-context-filter")
@@ -48,6 +56,8 @@ public class EventListenerResourceConfig extends ResourceConfig {
   @PostConstruct
   public void init() {
     register(jerseyOperationalFeature);
+    register(contentFilter);
+    register(permutationFilter);
     register(coreAuthFilter);
     register(userCtxFilter);
     register(domainRequestFilter);

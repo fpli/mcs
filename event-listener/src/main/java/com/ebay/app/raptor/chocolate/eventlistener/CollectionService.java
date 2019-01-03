@@ -2,6 +2,9 @@ package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
@@ -51,22 +54,6 @@ public class CollectionService {
   }
 
   /**
-   * singleton get instance
-   *
-   * @return CollectionService object
-   */
-  public static CollectionService getInstance() {
-    if (instance == null) {
-      synchronized (CollectionService.class) {
-        if (instance == null) {
-          instance = new CollectionService();
-        }
-      }
-    }
-    return instance;
-  }
-
-  /**
    * Collect event and publish to kafka
    *
    * @param request             raw request
@@ -75,19 +62,15 @@ public class CollectionService {
    * @param event               post body event
    * @return OK or Error message
    */
-  public String collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
-    raptorSecureContext, ContainerRequestContext requestContext, Event event) {
+  public boolean collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
+    raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
 
     if (request.getHeader("X-EBAY-C-TRACKING") == null) {
-      logger.error(Constants.ERROR_NO_TRACKING);
-      esMetrics.meter("NoTracking");
-      return Constants.ERROR_NO_TRACKING;
+      logError(ErrorType.NO_TRACKING);
     }
 
     if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
-      logger.error(Constants.ERROR_NO_ENDUSERCTX);
-      esMetrics.meter("NoEndUserCtx");
-      return Constants.ERROR_NO_ENDUSERCTX;
+      logError(ErrorType.NO_ENDUSERCTX);
     }
 
     // add headers for compatible with chocolate filter and nrt
@@ -119,17 +102,13 @@ public class CollectionService {
     }
 
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
-      logger.error(Constants.ERROR_NO_REFERER);
-      esMetrics.meter("NoReferer");
-      return Constants.ERROR_NO_REFERER;
+      logError(ErrorType.NO_REFERER);
     }
 
     String userAgent = endUserContext.getUserAgent();
 
     if (null == userAgent) {
-      logger.error(Constants.ERROR_NO_USER_AGENT);
-      esMetrics.meter("NoUserAgent");
-      return Constants.ERROR_NO_USER_AGENT;
+      logError(ErrorType.NO_USER_AGENT);
     }
 
     addHeaders.put("Referer", referer);
@@ -171,51 +150,42 @@ public class CollectionService {
     // parse channel from uri
     // illegal url, rejected
     UriComponents uriComponents;
-    try {
-      uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    } catch (IllegalArgumentException e) {
-      logger.error(Constants.ERROR_ILLEGAL_URL);
-      esMetrics.meter("IllegalUrl");
-      return Constants.ERROR_ILLEGAL_URL;
+    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+    if(uriComponents == null) {
+      logError(ErrorType.ILLEGAL_URL);
     }
 
     // no query parameter, rejected
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
     if (parameters.size() == 0) {
-      logger.error(Constants.ERROR_NO_QUERY_PARAMETER);
-      esMetrics.meter("NoQueryParameter");
-      return Constants.ERROR_NO_QUERY_PARAMETER;
+      logError(ErrorType.NO_QUERY_PARAMETER);
     }
 
     // no mkevt, rejected
     if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
-      logger.error(Constants.ERROR_NO_MKEVT);
-      esMetrics.meter("NoMkevtParameter");
-      return Constants.ERROR_NO_MKEVT;
+      logError(ErrorType.NO_MKEVT);
     }
 
     // mkevt != 1, rejected
     String mkevt = parameters.get(Constants.MKEVT).get(0);
     if (!mkevt.equals(Constants.VALID_MKEVT)) {
-      logger.error(Constants.ERROR_INVALID_MKEVT);
-      esMetrics.meter("InvalidMkevt");
-      return Constants.ERROR_INVALID_MKEVT;
+      logError(ErrorType.INVALID_MKEVT);
     }
 
     // parse channel from query cid
     // no cid, accepted
     if (!parameters.containsKey(Constants.CID) || parameters.get(Constants.CID).get(0) == null) {
-      logger.error(Constants.ERROR_NO_CID);
+      logger.error(Errors.ERROR_NO_CID);
       esMetrics.meter("NoCidParameter");
-      return Constants.ACCEPTED;
+      return true;
     }
 
     // invalid cid, show error and accept
     channelType = ChannelIdEnum.parse(parameters.get(Constants.CID).get(0));
     if (channelType == null) {
-      logger.error(Constants.ERROR_INVALID_CID);
+      logger.error(Errors.ERROR_INVALID_CID);
       esMetrics.meter("InvalidCid");
-      return Constants.ACCEPTED;
+      return true;
     }
 
     try {
@@ -287,7 +257,19 @@ public class CollectionService {
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       stopTimerAndLogData(startTime, eventTime, additionalFields);
     }
-    return Constants.ACCEPTED;
+    return true;
+  }
+
+  /**
+   * log error, log metric and throw error with error key
+   *
+   * @param errorType error type
+   * @throws Exception exception with error key
+   */
+  private void logError(ErrorType errorType) throws Exception {
+    logger.error(errorType.getErrorMessage());
+    esMetrics.meter(errorType.getErrorKey());
+    throw new Exception(errorType.getErrorKey());
   }
 
   /**

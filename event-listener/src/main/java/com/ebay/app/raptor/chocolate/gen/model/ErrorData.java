@@ -28,8 +28,8 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 @ApiModel(description = "Detail of each error modeled based on the cos error and exceptions spec:  https://github.corp.ebay.com/commerceos/cos-error-and-exceptions/blob/master/error-and-exception-handling.md ")
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2018-12-06T16:56:03.390+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "errorCode","domain","subdomain","category","message","longMessage","inputRefIds","outputRefIds","parameters" })
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2019-01-02T16:56:26.190+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "errorId","domain","subdomain","category","message","longMessage","inputRefIds","outputRefIds","parameters" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -39,9 +39,9 @@ private static final long serialVersionUID = 1L;
 
 
 
-    @JsonProperty("errorCode")
+    @JsonProperty("errorId")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private BigDecimal errorCode = null;
+    private BigDecimal errorId = null;
             /**
             * Gets or Sets domain
             */
@@ -169,15 +169,15 @@ REQUEST("REQUEST"),
 
 /**
     * Value indicates type of error
-* @return errorCode
+* @return errorId
     **/
     @ApiModelProperty(value = "Value indicates type of error")
-public BigDecimal getErrorCode() {
-    return errorCode;
+public BigDecimal getErrorId() {
+    return errorId;
     }
 
-public void setErrorCode(BigDecimal errorCode) {
-        this.errorCode = errorCode;
+public void setErrorId(BigDecimal errorId) {
+        this.errorId = errorId;
         }
 /**
     * Get domain
@@ -267,7 +267,7 @@ public void setOutputRefIds(List<String> outputRefIds) {
     * Get parameters
 * @return parameters
     **/
-    @ApiModelProperty(example = "targetUrl:https://www.ebay.com/i/1234?mkevt=1&rid=2", value = "")
+    @ApiModelProperty(value = "")
 public List<String> getParameters() {
     return parameters;
     }
@@ -284,7 +284,7 @@ public void setParameters(List<String> parameters) {
     return false;
     }
         ErrorData errorData = (ErrorData) o;
-        return Objects.equals(this.errorCode, errorData.errorCode) &&
+        return Objects.equals(this.errorId, errorData.errorId) &&
         Objects.equals(this.domain, errorData.domain) &&
         Objects.equals(this.subdomain, errorData.subdomain) &&
         Objects.equals(this.category, errorData.category) &&
@@ -297,7 +297,7 @@ public void setParameters(List<String> parameters) {
 
     @Override
     public int hashCode() {
-    return Objects.hash(errorCode, domain, subdomain, category, message, longMessage, inputRefIds, outputRefIds, parameters);
+    return Objects.hash(errorId, domain, subdomain, category, message, longMessage, inputRefIds, outputRefIds, parameters);
     }
 
     @Override
@@ -305,7 +305,7 @@ public void setParameters(List<String> parameters) {
       StringBuilder sb = new StringBuilder();
       sb.append("class ErrorData {\n");
       
-      sb.append("    errorCode: ").append(toIndentedString(errorCode)).append("\n");
+      sb.append("    errorId: ").append(toIndentedString(errorId)).append("\n");
       sb.append("    domain: ").append(toIndentedString(domain)).append("\n");
       sb.append("    subdomain: ").append(toIndentedString(subdomain)).append("\n");
       sb.append("    category: ").append(toIndentedString(category)).append("\n");

@@ -69,19 +69,19 @@ components:
           type: string
         description: 'Referer of the click'
       enduser-ctx:
-        name: X-EBAY-C-ENDUSERCTX
+        name: endUserCtx
         in: header
         required: true
         schema:
           type: string
-        description: 'User context. For handler and nodejs call, it has userid if user login'
+        description: 'X-EBAY-C-ENDUSERCTX header. For handler and nodejs call, it has userid if user login'
       tracking:
-        name: X-EBAY-C-TRACKING
+        name: tracking
         in: header
         required: true
         schema:
           type: string
-        description: 'Tracking header containing cguid, guid...'
+        description: 'X-EBAY-C-TRACKING header'
 
    securitySchemes:
     app_scope_auth:
@@ -111,7 +111,7 @@ components:
       description: >
         Detail of each error modeled based on the cos error and exceptions spec:  https://github.corp.ebay.com/commerceos/cos-error-and-exceptions/blob/master/error-and-exception-handling.md
       properties:
-        errorCode:
+        errorId:
           example:
             4000: No User-Agent header
             4001: No X-EBAY-C-ENDUSERCTX header
