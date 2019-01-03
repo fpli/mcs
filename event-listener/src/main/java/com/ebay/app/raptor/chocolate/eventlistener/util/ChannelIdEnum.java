@@ -99,13 +99,6 @@ public enum ChannelIdEnum {
   }
 
   /**
-   * @return true iff this is a mock (test purposes only) channel.
-   */
-  public boolean isTestChannel() {
-    return this.isTestChannel;
-  }
-
-  /**
    * @return the logical channel that this channel ID represents
    */
   public LogicalChannelEnum getLogicalChannel() {

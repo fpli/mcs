@@ -1,0 +1,44 @@
+<ContentBundle xmlns="http://www.ebay.com/2006/v4/content" xmlns:its="http://www.w3.org/2005/11/its" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" instanceOf="mktCollectionSvcErrorContent.mktCollectionSvcErrorContent" version="2.0" xsi:schemaLocation="http://www.ebay.com/2006/v4/content ../../../../schema/V4Content2.xsd">
+   <ContentList domain="marketingTrackingDomain" errorVersion="1.0" id="errors">
+      <ContentStructure category="REQUEST" id="4000" name="NoUserAgent" subdomain="events">
+         <ContentElement id="longMessage">Please try again with User-Agent header.</ContentElement>
+         <ContentElement id="message">No User-Agent header.</ContentElement>
+      </ContentStructure>
+      <ContentStructure category="REQUEST" id="4001" name="NoEndUserCtx" subdomain="events">
+         <ContentElement id="longMessage">Please try again with X-EBAY-C-ENDUSERCTX header.</ContentElement>
+         <ContentElement id="message">No X-EBAY-C-ENDUSERCTX header.</ContentElement>
+      </ContentStructure>
+      <ContentStructure category="REQUEST" id="4002" name="NoTracking" subdomain="events">
+         <ContentElement id="longMessage">Please try again with tracking header.</ContentElement>
+         <ContentElement id="message">No Tracking Header.</ContentElement>
+      </ContentStructure>
+      <ContentStructure category="REQUEST" id="4003" name="NoReferer" subdomain="events">
+         <ContentElement id="longMessage">Please try again with Referer header.</ContentElement>
+         <ContentElement id="message">No Referer Header.</ContentElement>
+      </ContentStructure>
+      <ContentStructure category="REQUEST" id="4004" name="IllegalUrl" subdomain="events">
+         <ContentElement id="longMessage">Please try again with valid url.</ContentElement>
+         <ContentElement id="message">Illegal url format.</ContentElement>
+      </ContentStructure>
+      <ContentStructure category="REQUEST" id="4005" name="NoQueryParameter" subdomain="events">
+         <ContentElement id="longMessage">Please try again with mandatory query parameters.</ContentElement>
+         <ContentElement id="message">No query parameter.</ContentElement>
+      </ContentStructure>
+      <ContentStructure category="REQUEST" id="4006" name="NoMkevt" subdomain="events">
+         <ContentElement id="longMessage">Please try again with mkevt=1.</ContentElement>
+         <ContentElement id="message">No mkevt.</ContentElement>
+      </ContentStructure>
+      <ContentStructure category="REQUEST" id="4007" name="InvalidMkevt" subdomain="events">
+         <ContentElement id="longMessage">Please try again with a valid request.</ContentElement>
+         <ContentElement id="message">Invalid mkevt.</ContentElement>
+      </ContentStructure>
+      <ContentStructure category="REQUEST" id="4008" name="InvalidEndUserCtx" subdomain="events">
+         <ContentElement id="longMessage">Please try again with a valid request.</ContentElement>
+         <ContentElement id="message">Invalid X-EBAY-C-ENDUSERCTX header.</ContentElement>
+      </ContentStructure>
+      <ContentStructure category="REQUEST" id="5000" name="InternalServiceError" subdomain="events">
+         <ContentElement id="longMessage">This partner is not allowed to make this request. Please try again with a valid request.</ContentElement>
+         <ContentElement id="message">Please try again with a valid request.</ContentElement>
+      </ContentStructure>
+   </ContentList>
+</ContentBundle>

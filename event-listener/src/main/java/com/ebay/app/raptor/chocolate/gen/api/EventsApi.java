@@ -5,8 +5,6 @@ import com.ebay.app.raptor.chocolate.gen.model.ErrorModel;import com.ebay.app.ra
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import io.swagger.annotations.*;
-import java.util.Map;
-import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @Api(description = "The Events API")
@@ -27,5 +25,5 @@ public interface EventsApi {
       @ApiResponse(code = 500, message = "The call was unsuccessful due to exceptions on the Server", response = Void.class) }
     )
     @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public') and hasAuthority('https://api.ebay.com/oauth/scope/base@public') and hasAuthority('https://api.ebay.com/oauth/scope/experience@public')")
-    Response event(Event body, @HeaderParam("Content-Type")  String contentType, @HeaderParam("User-Agent")  @ApiParam("Example: eBayIPhone/3.1.4") String userAgent, @HeaderParam("X-EBAY-C-ENDUSERCTX")  @ApiParam("User context. For handler and nodejs call, it has userid if user login") String X_EBAY_C_ENDUSERCTX, @HeaderParam("X-EBAY-C-TRACKING")  @ApiParam("Tracking header containing cguid, guid...") String X_EBAY_C_TRACKING, @HeaderParam("Referer")  @ApiParam("Referer of the click") String referer);
+    Response event(Event body, @HeaderParam("Content-Type")  String contentType, @HeaderParam("User-Agent")  @ApiParam("Example: eBayIPhone/3.1.4") String userAgent, @HeaderParam("X-EBAY-C-ENDUSERCTX")  @ApiParam("User context. For handler and nodejs call, it has userid if user login") String endUserCtx, @HeaderParam("X-EBAY-C-TRACKING")  @ApiParam("Tracking header containing cguid, guid...") String tracking, @HeaderParam("Referer")  @ApiParam("Referer of the click") String referer);
 }
