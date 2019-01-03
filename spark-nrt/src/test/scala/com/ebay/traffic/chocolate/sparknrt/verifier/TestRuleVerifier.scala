@@ -134,7 +134,7 @@ class TestRuleVerifier extends BaseFunSuite {
     val rdd = job.sc.parallelize(
       Seq(
         Row(
-          1L, 1L, 1L, 1L, "",
+          1L, 1L, 1L, 1L, "X-eBay-Client-IP: 1|cguid/1",
           "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338107049&item=132355040461&vectorid=229466&lgeo=1&dashenId=6432328199681789952&dashenCnt=0",
           "",
           generateRtRuleFlags("1", "1", "1", "1", "1", "1", "1", "1", "1", "1"),
@@ -142,7 +142,7 @@ class TestRuleVerifier extends BaseFunSuite {
           "CLICK", "EPN", "", "", false
         ),
         Row(
-          1L, 1L, 1L, 1L, "",
+          1L, 1L, 1L, 1L, "X-eBay-Client-IP: 1|cguid/1",
           "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338107049&item=132355040461&vectorid=229466&lgeo=1&dashenId=6432328199681789952&dashenCnt=0",
           "",
           generateRtRuleFlags("1", "1", "1", "1", "1", "1", "1", "1", "1", "1"),
@@ -150,7 +150,7 @@ class TestRuleVerifier extends BaseFunSuite {
           "CLICK", "EPN", "", "", false
         ),
         Row(
-          1L, 1L, 1L, 1L, "",
+          1L, 1L, 1L, 1L, "X-eBay-Client-IP: 1|cguid/1",
           "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5337666873&customid=&lgeo=1&vectorid=229466&item=222853652218&dashenId=6432328199681789952&dashenCnt=0",
           "",
           generateRtRuleFlags("1", "0", "1", "0", "1", "0", "1", "0", "1", "0"),
@@ -158,7 +158,7 @@ class TestRuleVerifier extends BaseFunSuite {
           "CLICK", "EPN", "", "", false
         ),
         Row(
-          1L, 1L, 1L, 1L, "",
+          1L, 1L, 1L, 1L, "X-eBay-Client-IP: 1|cguid/1",
           "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5337666873&customid=&lgeo=1&vectorid=229466&item=222853652218&dashenId=6432328199681789952&dashenCnt=0",
           "",
           generateRtRuleFlags("1", "0", "1", "0", "1", "0", "1", "0", "1", "0"),
