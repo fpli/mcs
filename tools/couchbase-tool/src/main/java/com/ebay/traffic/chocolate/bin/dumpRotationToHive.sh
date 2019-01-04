@@ -25,7 +25,7 @@ if [ ! -d ${log_file} ]; then
  mkdir ${log_file}
  chmod 777 ${log_file}
 fi
-log_file=${log_file}${DT}_${START_TIME}.log
+log_file=${log_file}${HOSTNAME}_${DT}_${START_TIME}.log
 
 echo "DT="${DT} | tee -a ${log_file}
 echo "DT_HOUR="${DT} | tee -a ${log_file}

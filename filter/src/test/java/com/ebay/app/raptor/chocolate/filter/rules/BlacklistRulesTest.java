@@ -45,6 +45,8 @@ public class BlacklistRulesTest {
         (EPNDomainBlacklistRule.class.getSimpleName(), "EPN_domains_Blacklist.txt"));
     filterRules.get(ChannelType.EPN).put(EBayRobotRule.class.getSimpleName(), new FilterRuleContent
         (EBayRobotRule.class.getSimpleName(), "eBay_Spiders_and_Robots_EPN.txt"));
+    filterRules.get(ChannelType.EPN).put(EBayRefererDomainRule.class.getSimpleName(), new FilterRuleContent
+        (EBayRefererDomainRule.class.getSimpleName(), "eBay_Referral_Domain.txt"));
 
     //Testing Data for DAP channel
     if (filterRules.get(ChannelType.DISPLAY) == null) {
@@ -245,6 +247,22 @@ public class BlacklistRulesTest {
     assertEquals(1, rule.test(req));
     rule.clear();
     assertEquals(0, rule.test(req));
+  }
+
+  @Test
+  public void testEBayRefererDomainRule() {
+    EBayRefererDomainRule rule = new EBayRefererDomainRule(ChannelType.EPN);
+    FilterRequest req = new FilterRequest();
+    req.setReferrerDomain(null);
+    assertEquals(0, rule.test(req));
+    req.setReferrerDomain("foo");
+    assertEquals(0, rule.test(req));
+    rule.add("FOO");
+    assertEquals(1, rule.test(req));
+    rule.clear();
+    assertEquals(0, rule.test(req));
+    req.setReferrerDomain("http://www.ebay.com");
+    assertEquals(1,rule.test(req));
   }
 
   private class TestBlacklistRule extends GenericBlacklistRule {

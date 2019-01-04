@@ -24,9 +24,11 @@ class CGUIDCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
     $"channel_action" === "CLICK"
   }
 
-  //parse CGUID from request_headers
+  //parse CGUID from response_headers, if null, parse from request_headers
   def parseCGUID(): Column = {
-    split($"response_headers", "cguid/")(1).substr(0, 32).alias("CGUID")
+    val CGUID_Response = split($"response_headers", "cguid/")(1).substr(0, 32)
+    val CGUID_Request = split($"request_headers", "cguid/")(1).substr(0, 32)
+    when(CGUID_Response.isNotNull, CGUID_Response).otherwise(CGUID_Request).alias("CGUID")
   }
 
   //counting columns
