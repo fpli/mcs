@@ -187,7 +187,7 @@ public class EventListenerServiceTest {
       "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
 
     String tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
-      "tguid=8101a7ad1670ac3c41a87509fffc40b4,pageid=2067260,cobrandId=2";
+      "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
     // success request
     // iphone
     Response response = client.target(svcEndPoint).path(path)

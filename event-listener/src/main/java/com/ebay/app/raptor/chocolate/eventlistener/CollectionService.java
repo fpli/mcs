@@ -230,7 +230,6 @@ public class CollectionService {
       IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
       // page id
-      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2057253, Integer.class);
       // event action and event family
       requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
       requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
