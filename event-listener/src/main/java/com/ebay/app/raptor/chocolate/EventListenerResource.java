@@ -49,8 +49,7 @@ public class EventListenerResource implements EventsApi {
   private ContainerRequestContext requestContext;
 
   @Override
-  public Response event(Event body, String contentType, String userAgent, String endUserCtx, String
-    tracking, String referrer) {
+  public Response event(Event body) {
     Tracer tracer = GlobalTracer.get();
     try(Scope scope = tracer.buildSpan("mktCollectionSvc").withTag(Tags.TYPE.getKey(), "URL").startActive(true)) {
       Span span = scope.span();

@@ -13,13 +13,6 @@ paths:
   /events:
     post:
       summary: Send one event to marketing tracking
-      parameters:
-        - $ref: '#/components/parameters/content-type'
-        - $ref: '#/components/parameters/user-agent'
-        - $ref: '#/components/parameters/referer'
-        - $ref: '#/components/parameters/enduser-ctx'
-        - $ref: '#/components/parameters/tracking'
-
       description: Send one event to marketing tracking
       tags:
         - events
@@ -47,42 +40,6 @@ paths:
             schema:
               $ref: '#/components/schemas/Event'
 components:
-   parameters:
-      content-type:
-        name: Content-Type
-        in: header
-        required: true
-        schema:
-          type: string
-      user-agent:
-        name: User-Agent
-        in: header
-        required: true
-        schema:
-          type: string
-        description: 'Example: eBayIPhone/3.1.4'
-      referer:
-        name: Referer
-        in: header
-        required: false
-        schema:
-          type: string
-        description: 'Referer of the click'
-      enduser-ctx:
-        name: endUserCtx
-        in: header
-        required: true
-        schema:
-          type: string
-        description: 'X-EBAY-C-ENDUSERCTX header. For handler and nodejs call, it has userid if user login'
-      tracking:
-        name: tracking
-        in: header
-        required: true
-        schema:
-          type: string
-        description: 'X-EBAY-C-TRACKING header'
-
    securitySchemes:
     app_scope_auth:
       type: oauth2
