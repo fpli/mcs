@@ -1,143 +1,191 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.eventlistener.util.ChannelActionEnum;
-import com.ebay.app.raptor.chocolate.eventlistener.util.ChannelIdEnum;
-import com.ebay.app.raptor.chocolate.eventlistener.util.Constants;
-import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
+import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
+import com.ebay.app.raptor.chocolate.eventlistener.util.*;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
+import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
+import com.ebay.raptor.auth.RaptorSecureContext;
+import com.ebay.tracking.api.IRequestScopeTracker;
+import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * @author xiangli4
+ * The main logic of collection service:
+ * 1. Check headers
+ * 2. Parse everything from headers and bodies
+ * 3. Add compatible headers
+ * 4. Parse to ListenerMessage
  */
+@Component
+@DependsOn("EventListenerService")
 public class CollectionService {
   private static final Logger logger = Logger.getLogger(CollectionService.class);
-  private final ESMetrics esMetrics;
+  private ESMetrics esMetrics;
   private ListenerMessageParser parser;
   private static CollectionService instance = null;
 
-  private CollectionService() {
+  @PostConstruct
+  public void postInit() {
     this.esMetrics = ESMetrics.getInstance();
-    parser = ListenerMessageParser.getInstance();
-  }
-
-  /**
-   * singleton get instance
-   * @return CollectionService object
-   */
-  public static CollectionService getInstance() {
-    if (instance == null) {
-      synchronized (CollectionService.class) {
-        if (instance == null) {
-          instance = new CollectionService();
-        }
-      }
-    }
-    return instance;
+    this.parser = ListenerMessageParser.getInstance();
   }
 
   /**
    * Collect event and publish to kafka
-   * @param request raw request
-   * @param event event body
-   * @return Response of status and message
+   *
+   * @param request             raw request
+   * @param endUserContext      wrapped end user context
+   * @param raptorSecureContext wrapped secure header context
+   * @param event               post body event
+   * @return OK or Error message
    */
-  public String collect(HttpServletRequest request, Event event) {
+  public boolean collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
+    raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
 
-    if(request.getHeader("User-Agent") == null) {
-      logger.error(Constants.ERROR_NO_USER_AGENT);
-      esMetrics.meter("NoAgent");
-      return Constants.ERROR_NO_USER_AGENT;
+    if (request.getHeader("X-EBAY-C-TRACKING") == null) {
+      logError(ErrorType.NO_TRACKING);
     }
 
-    if(request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
-      logger.error(Constants.ERROR_NO_ENDUSERCTX);
-      esMetrics.meter("NoEnduserCtx");
-      return Constants.ERROR_NO_ENDUSERCTX;
+    if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
+      logError(ErrorType.NO_ENDUSERCTX);
     }
 
-    if(request.getHeader("X-EBAY-C-TRACKING-REF") == null) {
-      logger.error(Constants.ERROR_NO_TRACKING_REF);
-      esMetrics.meter("NoTrackingRef");
-      return Constants.ERROR_NO_TRACKING_REF;
+    // add headers for compatible with chocolate filter and nrt
+    Map<String, String> addHeaders = new HashMap<>();
+
+    // response headers for compatible with chocolate filter and nrt
+    Map<String, String> responseHeaders = new HashMap<>();
+
+    /* referer is from post body (mobile) and from header (NodeJs and handler)
+       By internet standard, referer is typo of referrer.
+       From ginger client call, the referer is embedded in enduserctx header, but we also check header for other cases.
+       For local test using postman, do not include enduserctx header, the service will generate enduserctx by
+       cos-user-context-filter.
+       Ginger client call will pass enduserctx in its header.
+       Priority 1. native app from body, as they are the most part 2. enduserctx, ginger client calls 3. referer header
+     */
+
+    String platform = Constants.PLATFORM_UNKNOWN;
+
+    String referer = null;
+    if (!StringUtils.isEmpty(event.getReferrer())) {
+      referer = event.getReferrer();
+      platform = Constants.PLATFORM_MOBILE;
     }
 
-    if(request.getHeader("Referrer") == null && event.getReferrer() == null) {
-      logger.error(Constants.ERROR_NO_REFERRER);
-      esMetrics.meter("NoReferrer");
-      return Constants.ERROR_NO_REFERRER;
+    if (StringUtils.isEmpty(referer)) {
+      referer = endUserContext.getReferer();
+      platform = Constants.PLATFORM_DESKTOP;
     }
+
+    if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
+      logError(ErrorType.NO_REFERER);
+    }
+
+    String userAgent = endUserContext.getUserAgent();
+
+    if (null == userAgent) {
+      logError(ErrorType.NO_USER_AGENT);
+    }
+
+    addHeaders.put("Referer", referer);
+    addHeaders.put("X-eBay-Client-IP", endUserContext.getIPAddress());
+    addHeaders.put("User-Agent", endUserContext.getUserAgent());
+    // only add UserId header when token is user token, otherwise it is app consumer id
+    String userId;
+    if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
+      userId = raptorSecureContext.getSubjectImmutableId();
+      addHeaders.put("UserId", raptorSecureContext.getSubjectImmutableId());
+    } else {
+      userId = Long.toString(endUserContext.getOrigUserOracleId());
+    }
+    addHeaders.put("UserId", userId);
+    // add guid,cguid to cookie header to addHeaders and responseHeaders for compatibility
+    String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
+    StringBuilder cookie = new StringBuilder("npii=");
+    if (!StringUtils.isEmpty(trackingHeader)) {
+      for (String seg : trackingHeader.split(",")
+        ) {
+        String[] keyValue = seg.split("=");
+        if (keyValue.length == 2) {
+          cookie.append(keyValue[0]).append("/").append(keyValue[1]).append("^");
+        }
+      }
+    }
+    addHeaders.put("Cookie", cookie.toString());
+    responseHeaders.put("Set-Cookie", cookie.toString());
 
     String kafkaTopic;
     Producer<Long, ListenerMessage> producer;
     ChannelActionEnum channelAction;
     ChannelIdEnum channelType;
-    long campaignId = -1l;
+    long campaignId = -1L;
 
-    // uri is from post body
-    String uri = event.getTargetUrl();
+    // targetUrl is from post body
+    String targetUrl = event.getTargetUrl();
 
     // parse channel from uri
     // illegal url, rejected
     UriComponents uriComponents;
-    try {
-      uriComponents = UriComponentsBuilder.fromUriString(uri).build();
-    } catch (IllegalArgumentException e) {
-      logger.error(Constants.ERROR_ILLEGAL_URL);
-      esMetrics.meter("IllegalUrl");
-      return Constants.ERROR_ILLEGAL_URL;
+    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+    if(uriComponents == null) {
+      logError(ErrorType.ILLEGAL_URL);
     }
 
     // no query parameter, rejected
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
     if (parameters.size() == 0) {
-      logger.error(Constants.ERROR_NO_QUERY_PARAMETER);
-      esMetrics.meter("NoQueryParameter");
-      return Constants.ERROR_NO_QUERY_PARAMETER;
+      logError(ErrorType.NO_QUERY_PARAMETER);
     }
 
     // no mkevt, rejected
     if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
-      logger.error(Constants.ERROR_NO_MKEVT);
-      esMetrics.meter("NoMkevtParameter");
-      return Constants.ERROR_NO_MKEVT;
+      logError(ErrorType.NO_MKEVT);
     }
 
     // mkevt != 1, rejected
     String mkevt = parameters.get(Constants.MKEVT).get(0);
     if (!mkevt.equals(Constants.VALID_MKEVT)) {
-      logger.error(Constants.ERROR_INVALID_MKEVT);
-      esMetrics.meter("InvalidMkevt");
-      return Constants.ERROR_INVALID_MKEVT;
+      logError(ErrorType.INVALID_MKEVT);
     }
 
     // parse channel from query cid
     // no cid, accepted
     if (!parameters.containsKey(Constants.CID) || parameters.get(Constants.CID).get(0) == null) {
-      logger.error(Constants.ERROR_NO_CID);
+      logger.error(Errors.ERROR_NO_CID);
       esMetrics.meter("NoCidParameter");
-      return Constants.ACCEPTED;
+      return true;
     }
 
     // invalid cid, show error and accept
     channelType = ChannelIdEnum.parse(parameters.get(Constants.CID).get(0));
     if (channelType == null) {
-      logger.error(Constants.ERROR_INVALID_CID);
+      logger.error(Errors.ERROR_INVALID_CID);
       esMetrics.meter("InvalidCid");
-      return Constants.ACCEPTED;
+      return true;
     }
 
     try {
@@ -151,16 +199,6 @@ public class CollectionService {
     String action = ChannelActionEnum.CLICK.toString();
 
     String type = channelType.getLogicalChannel().getAvro().toString();
-
-    String platform = Constants.PLATFORM_UNKNOWN;
-    String userAgent = request.getHeader("User-Agent");
-    if (userAgent != null) {
-      if (userAgent.contains("Mobi")) {
-        platform = Constants.PLATFORM_MOBILE;
-      } else {
-        platform = Constants.PLATFORM_DESKTOP;
-      }
-    }
 
     String landingPageType;
     List<String> pathSegments = uriComponents.getPathSegments();
@@ -184,15 +222,54 @@ public class CollectionService {
 
     // Parse the response
     ListenerMessage message = parser.parse(request,
-      startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, uri, null);
+      startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, targetUrl, null, addHeaders,
+      responseHeaders);
 
+    try {
+      // Ubi tracking
+      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+      // page id
+      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2057253, Integer.class);
+      // event action and event family
+      requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
+      requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
+
+      // new tags, targeturl and referer independent from client data ones
+      requestTracker.addTag("url_mpre", targetUrl, String.class);
+      requestTracker.addTag("n2referrer", referer, String.class);
+
+      // add rvr id
+      ShortSnapshotId shortSnapshotId = new ShortSnapshotId(message.getSnapshotId().longValue());
+      requestTracker.addTag("rvrid", shortSnapshotId.getRepresentation(), Long.class);
+
+      // populate device info
+      UserAgentInfo agentInfo = (UserAgentInfo) requestContext
+        .getProperty(UserAgentInfo.NAME);
+      CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
+    } catch (Exception ex) {
+      logger.error("Error when tracking ubi: " + ex.toString());
+      esMetrics.meter("ErrorTrackUbi");
+    }
 
     if (message != null) {
       long eventTime = message.getTimestamp();
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       stopTimerAndLogData(startTime, eventTime, additionalFields);
     }
-    return Constants.ACCEPTED;
+    return true;
+  }
+
+  /**
+   * log error, log metric and throw error with error key
+   *
+   * @param errorType error type
+   * @throws Exception exception with error key
+   */
+  private void logError(ErrorType errorType) throws Exception {
+    logger.error(errorType.getErrorMessage());
+    esMetrics.meter(errorType.getErrorKey());
+    throw new Exception(errorType.getErrorKey());
   }
 
   /**

@@ -107,15 +107,4 @@ public enum ChannelActionEnum {
   public ChannelAction getAvro() {
     return this.avroAction;
   }
-
-  /**
-   * Return the Rover action given an URI segment candidate, or null if no matches are found.
-   */
-  public static ChannelActionEnum parse(ChannelIdEnum channel, String candidate) {
-    if (candidate == null) return null;
-    String converted = candidate.toLowerCase();
-    ChannelActionEnum basicResult = MAP.getOrDefault(converted, null);
-
-    return basicResult;
-  }
 }
