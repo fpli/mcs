@@ -22,11 +22,20 @@ public class AvroVersioningTest {
     public void writeReadListenerMessage() throws IOException {
         ListenerMessage om = new ListenerMessage();
         om.setSnapshotId(1234L);
-        om.setUserId("");
+        om.setShortSnapshotId(123L);
+        om.setUserId(1L);
         om.setCguid("");
         om.setGuid("");
         om.setRemoteIp("");
         om.setReferer("");
+        om.setSiteId(1L);
+        om.setLangCd("");
+        om.setUserAgent("");
+        om.setLandingPageUrl("");
+        om.setSrcRotationId(1L);
+        om.setDstRotationId(2L);
+        om.setGeoId(1L);
+        om.setUdid("");
         om.setRequestHeaders("");
         om.setResponseHeaders("");
         om.setUri("");
@@ -74,11 +83,20 @@ public class AvroVersioningTest {
     public void writeReadFilterMessage() throws IOException {
         FilterMessage om = new FilterMessage();
         om.setSnapshotId(1234L);
-        om.setUserId("");
+        om.setShortSnapshotId(123L);
+        om.setUserId(1L);
         om.setRemoteIp("");
         om.setGuid("");
         om.setCguid("");
         om.setReferer("");
+        om.setSiteId(1L);
+        om.setLangCd("");
+        om.setUserAgent("");
+        om.setLandingPageUrl("");
+        om.setSrcRotationId(1L);
+        om.setDstRotationId(2L);
+        om.setGeoId(1L);
+        om.setUdid("");
         om.setRequestHeaders("");
         om.setResponseHeaders("");
         om.setUri("");

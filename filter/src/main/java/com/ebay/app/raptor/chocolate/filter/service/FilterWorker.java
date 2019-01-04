@@ -172,6 +172,7 @@ public class FilterWorker extends Thread {
   private FilterMessage processMessage(ListenerMessage message) throws InterruptedException {
     FilterMessage outMessage = new FilterMessage();
     outMessage.setSnapshotId(message.getSnapshotId());
+    outMessage.setShortSnapshotId(message.getShortSnapshotId());
     outMessage.setTimestamp(message.getTimestamp());
     outMessage.setUserId(message.getUserId());
     outMessage.setCguid(message.getCguid());
@@ -188,6 +189,14 @@ public class FilterWorker extends Thread {
       outMessage.setPublisherId(message.getPublisherId());
     }
     outMessage.setCampaignId(message.getCampaignId());
+    outMessage.setSiteId(message.getSiteId());
+    outMessage.setLangCd(message.getLangCd());
+    outMessage.setUserAgent(message.getUserAgent());
+    outMessage.setLandingPageUrl(message.getLandingPageUrl());
+    outMessage.setSrcRotationId(message.getSrcRotationId());
+    outMessage.setDstRotationId(message.getDstRotationId());
+    outMessage.setGeoId(message.getGeoId());
+    outMessage.setUdid(message.getUdid());
     outMessage.setRequestHeaders(message.getRequestHeaders());
     outMessage.setUri(message.getUri());
     outMessage.setResponseHeaders(message.getResponseHeaders());

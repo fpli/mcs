@@ -202,14 +202,23 @@ public class TestHelper {
                                                long timestamp) {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
     message.setTimestamp(timestamp);
-    message.setUserId("1");
+    message.setUserId(1L);
     message.setCguid("");
     message.setGuid("");
     message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setGeoId(1L);
+    message.setUdid("");
     message.setRequestHeaders("");
     message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
     message.setResponseHeaders("");
@@ -243,14 +252,23 @@ public class TestHelper {
                                                String ip) {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
     message.setTimestamp(timestamp);
-    message.setUserId("1");
+    message.setUserId(1L);
     message.setCguid("");
     message.setGuid("");
     message.setRemoteIp(ip);
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setGeoId(1L);
+    message.setUdid("");
     message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-eBay-Client-IP: " + ip +
       "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
     message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
@@ -285,14 +303,23 @@ public class TestHelper {
                                                long timestamp) {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
     message.setTimestamp(timestamp);
-    message.setUserId("1");
+    message.setUserId(1L);
     message.setCguid(cguid);
     message.setGuid("");
     message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setGeoId(1L);
+    message.setUdid("");
     message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|" +
       "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
     message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
@@ -328,14 +355,23 @@ public class TestHelper {
                                                long timestamp) {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
     message.setTimestamp(timestamp);
-    message.setUserId("1");
+    message.setUserId(1L);
     message.setCguid(cguid);
     message.setGuid("");
     message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setGeoId(1L);
+    message.setUdid("");
     message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|Cookie: cguid/" + cguid +
         "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
     message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
@@ -374,14 +410,23 @@ public class TestHelper {
                                                ) {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
     message.setTimestamp(timestamp);
-    message.setUserId("1");
+    message.setUserId(1L);
     message.setCguid(cguid_res);
     message.setGuid("");
     message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setGeoId(1L);
+    message.setUdid("");
     message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|Cookie: cguid/" + cguid_req +
         "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
     message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
@@ -419,14 +464,23 @@ public class TestHelper {
                                                String cguid) {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
     message.setTimestamp(timestamp);
-    message.setUserId("1");
+    message.setUserId(1L);
     message.setCguid(cguid);
     message.setGuid("");
     message.setRemoteIp(ip);
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setGeoId(1L);
+    message.setUdid("");
     message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-eBay-Client-IP: " + ip +
       "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
     message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
@@ -460,14 +514,23 @@ public class TestHelper {
                                                String snid) {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
     message.setTimestamp(timestamp);
-    message.setUserId("1");
+    message.setUserId(1L);
     message.setCguid("");
     message.setGuid("");
     message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(1l);
     message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setGeoId(1L);
+    message.setUdid("");
     message.setRequestHeaders("");
     message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
     message.setResponseHeaders("");
@@ -491,14 +554,23 @@ public class TestHelper {
                                                boolean isMobi) {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
     message.setTimestamp(timestamp);
-    message.setUserId("1");
+    message.setUserId(1L);
     message.setCguid("");
     message.setGuid("");
     message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setGeoId(1L);
+    message.setUdid("");
     message.setRequestHeaders(isMobi ? "Accept: application/json|User-Agent: Mobi" : "");
     message.setUri("");
     message.setResponseHeaders("");
@@ -543,14 +615,23 @@ public class TestHelper {
                                                    long campaignId) {
     ListenerMessage message = new ListenerMessage();
     message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
     message.setTimestamp(System.currentTimeMillis());
-    message.setUserId("1");
+    message.setUserId(1L);
     message.setCguid("");
     message.setGuid("");
     message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setGeoId(1L);
+    message.setUdid("");
     message.setRequestHeaders("");
     message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
     message.setResponseHeaders("");

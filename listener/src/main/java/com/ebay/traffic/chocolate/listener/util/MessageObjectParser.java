@@ -56,7 +56,7 @@ public class MessageObjectParser {
         record.setUri(requestUrl);
 
         // user id
-        record.setUserId("");
+        record.setUserId(-1L);
 
         // cguid, guid
         String cookieRequestHeader = clientRequest.getHeader("Cookie");
@@ -70,6 +70,28 @@ public class MessageObjectParser {
         // referer
         record.setReferer(getReferer(clientRequest));
 
+        // site id
+        record.setSiteId(-1L);
+
+        // language code
+        record.setLangCd("");
+
+        // user agent
+        record.setUserAgent("");
+
+        // landing page url
+        record.setLandingPageUrl("");
+
+        // source and destination rotation id
+        record.setSrcRotationId(-1L);
+        record.setDstRotationId(-1L);
+
+        // geography identifier
+        record.setGeoId(-1L);
+
+        // udid
+        record.setUdid("");
+
         // Set the channel type + HTTP headers + channel action
         record.setChannelType(channelType);
         record.setHttpMethod(this.getMethod(clientRequest).getAvro());
@@ -82,6 +104,7 @@ public class MessageObjectParser {
         // Get snapshotId from request
         Long snapshotId = SnapshotId.getNext(ListenerOptions.getInstance().getDriverId(), startTime).getRepresentation();
         record.setSnapshotId(snapshotId);
+        record.setShortSnapshotId(-1L);
 
         record.setCampaignId(campaignId);
         record.setPublisherId(DEFAULT_PUBLISHER_ID);

@@ -11,12 +11,16 @@
       "type": "long"
     },
     {
+      "name": "short_snapshot_id",
+      "type": "long"
+    },
+    {
       "name": "timestamp",
       "type": "long"
     },
     {
       "name": "user_id",
-      "type": "string"
+      "type": "long"
     },
     {
       "name": "guid",
@@ -41,6 +45,38 @@
     {
       "name": "campaign_id",
       "type": "long"
+    },
+    {
+      "name": "site_id",
+      "type": "long"
+    },
+    {
+      "name": "lang_cd",
+      "type": "string"
+    },
+    {
+      "name": "user_agent",
+      "type": "string"
+    },
+    {
+      "name": "landing_page_url",
+      "type": "string"
+    },
+    {
+      "name": "src_rotation_id",
+      "type": "long"
+    },
+    {
+      "name": "dst_rotation_id",
+      "type": "long"
+    },
+    {
+      "name": "geo_id",
+      "type": "long"
+    },
+    {
+      "name": "udid",
+      "type": "string"
     },
     {
       "name": "request_headers",
