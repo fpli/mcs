@@ -17,6 +17,7 @@
     <module>hadoop-distcp</module>
     <module>couchbase-tool</module>
     <module>zookeeper-tool</module>
+      <module>CheckRecover-tool</module>
   </modules>
 
   <dependencies>

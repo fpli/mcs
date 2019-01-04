@@ -10,13 +10,13 @@ import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
  * <p>
  * Created by spugach on 1/9/17.
  */
-public class TGUIDStalenessWindowRule extends BaseFilterRule {
+public class CguidStalenessWindowRule extends BaseFilterRule {
   private long windowStart;
   
   /**
    * Ctor
    */
-  public TGUIDStalenessWindowRule(ChannelType channelType) {
+  public CguidStalenessWindowRule(ChannelType channelType) {
     super(channelType);
     //this.windowStart = ApplicationOptions.getInstance().getByNameLong(WINDOW_START_KEY);
     this.windowStart = filterRuleContent.getWindowStart() == null ? windowStart : filterRuleContent.getWindowStart();
@@ -35,6 +35,6 @@ public class TGUIDStalenessWindowRule extends BaseFilterRule {
    */
   @Override
   public int test(FilterRequest event) {
-    return (event.getRequestTguid() == null) || (event.getTimestamp() > event.getRequestTguidTimestamp() + windowStart) ? 0 : 1;
+    return (event.getRequestCguid() == null) || (event.getTimestamp() > event.getRequestCguidTimestamp() + windowStart) ? 0 : 1;
   }
 }
