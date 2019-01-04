@@ -4,7 +4,6 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.kernel.util.StringUtils;
-import com.ebay.traffic.chocolate.listener.ListenerProxyServlet;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -66,7 +65,7 @@ public class MessageObjectParser {
         record.setGuid(getGuid(cookieRequestHeader, cookieResponseHeader, "tguid"));
 
         // client remote IP
-        record.setClientRemoteIp(getClientRemoteIp(clientRequest));
+        record.setRemoteIp(getRemoteIp(clientRequest));
 
         // referer
         record.setReferer(getReferer(clientRequest));
@@ -103,7 +102,7 @@ public class MessageObjectParser {
     /**
      * Get client remote Ip
      */
-    private String getClientRemoteIp(HttpServletRequest request) {
+    private String getRemoteIp(HttpServletRequest request) {
         String remoteIp = request.getHeader("X-eBay-Client-IP");
 
         if (remoteIp == null) {

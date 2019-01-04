@@ -62,7 +62,7 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
       val firstRow = head(0)
       val timestamp = firstRow.getLong(firstRow.fieldIndex("timestamp"));
 
-      dfIP = dfIP.withColumnRenamed("client_remote_ip", "IP")
+      dfIP = dfIP.withColumnRenamed("remote_ip", "IP")
         .select($"IP")
         .groupBy($"IP").agg(count(lit(1)).alias("count"))
 
@@ -79,7 +79,7 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
 
       // IP rule
       var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).filter($"channel_action" === "CLICK")
-        .withColumnRenamed("client_remote_ip", "IP_1")
+        .withColumnRenamed("remote_ip", "IP_1")
         .select($"IP_1", $"snapshot_id")
 
       val ipCountTempPathToday = baseTempDir + dateFiles.date

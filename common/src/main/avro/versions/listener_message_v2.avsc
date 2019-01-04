@@ -27,7 +27,7 @@
       "type": "string"
     },
     {
-      "name": "client_remote_ip",
+      "name": "remote_ip",
       "type": "string"
     },
     {

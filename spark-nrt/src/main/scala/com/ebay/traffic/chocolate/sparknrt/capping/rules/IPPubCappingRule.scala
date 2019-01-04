@@ -26,7 +26,7 @@ class IPPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
 
   //parse IP from request_headers
   def ip(): Column = {
-    $"client_remote_ip".alias("IP")
+    $"remote_ip".alias("IP")
   }
 
   //counting columns

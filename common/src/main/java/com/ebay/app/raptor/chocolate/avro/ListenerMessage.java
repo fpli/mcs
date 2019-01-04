@@ -32,11 +32,11 @@ public class ListenerMessage extends ListenerMessageV2 {
   }
 
   public ListenerMessage(Long snapshot_id, Long timestamp, String user_id, String guid,
-                         String cguid, String client_remote_ip, String referer, Long publisher_id,
+                         String cguid, String remote_ip, String referer, Long publisher_id,
                          Long campaign_id, String request_headers, String uri, String response_headers,
                          ChannelAction channel_action, ChannelType channel_type, HttpMethod http_method,
                          String snid, Boolean is_tracked) {
-    super(snapshot_id, timestamp, user_id, guid, cguid, client_remote_ip, referer, publisher_id,
+    super(snapshot_id, timestamp, user_id, guid, cguid, remote_ip, referer, publisher_id,
             campaign_id, request_headers, uri, response_headers, channel_action, channel_type,
             http_method, snid, is_tracked);
   }

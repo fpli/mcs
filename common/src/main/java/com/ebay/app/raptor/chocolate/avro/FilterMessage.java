@@ -32,12 +32,12 @@ public class FilterMessage extends FilterMessageV2 {
   }
 
   public FilterMessage(Long snapshot_id, Long timestamp, String user_id, String guid,
-                       String cguid, String client_remote_ip, String referer, Long publisher_id,
+                       String cguid, String remote_ip, String referer, Long publisher_id,
                        Long campaign_id, String request_headers, String uri,
                        String response_headers, Long rt_rule_flags, Long nrt_rule_flags,
                        ChannelAction channel_action, ChannelType channel_type, HttpMethod http_method,
                        String snid, Boolean is_tracked) {
-    super(snapshot_id, timestamp, user_id, guid, cguid, client_remote_ip, referer, publisher_id,
+    super(snapshot_id, timestamp, user_id, guid, cguid, remote_ip, referer, publisher_id,
             campaign_id, request_headers, uri, response_headers, rt_rule_flags, nrt_rule_flags,
             channel_action, channel_type, http_method, snid, is_tracked);
   }

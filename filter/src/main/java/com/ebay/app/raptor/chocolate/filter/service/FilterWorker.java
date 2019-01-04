@@ -176,7 +176,7 @@ public class FilterWorker extends Thread {
     outMessage.setUserId(message.getUserId());
     outMessage.setCguid(message.getCguid());
     outMessage.setGuid(message.getGuid());
-    outMessage.setClientRemoteIp(message.getClientRemoteIp());
+    outMessage.setRemoteIp(message.getRemoteIp());
     outMessage.setReferer(message.getReferer());
     // only EPN needs to get publisher id
     if (message.getPublisherId() == DEFAULT_PUBLISHER_ID && message.getChannelType() == ChannelType.EPN) {

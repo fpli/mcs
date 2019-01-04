@@ -13,8 +13,8 @@ import org.apache.avro.message.SchemaStore;
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 6100233720729886545L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"FilterMessageV2\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"snapshot_id\",\"type\":\"long\"},{\"name\":\"timestamp\",\"type\":\"long\"},{\"name\":\"user_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"cguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"client_remote_ip\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"referer\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"publisher_id\",\"type\":\"long\"},{\"name\":\"campaign_id\",\"type\":\"long\"},{\"name\":\"request_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"uri\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"response_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rt_rule_flags\",\"type\":\"long\"},{\"name\":\"nrt_rule_flags\",\"type\":\"long\"},{\"name\":\"channel_action\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelAction\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CLICK\",\"IMPRESSION\",\"VIEWABLE\",\"SERVE\",\"PAGE_IMP\",\"VIEW_ITEM\",\"VIEW_TIME\",\"APP_FIRST_START\"]}},{\"name\":\"channel_type\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\",\"PAID_SEARCH\",\"SOCIAL_MEDIA\",\"PAID_SOCIAL\"]}},{\"name\":\"http_method\",\"type\":{\"type\":\"enum\",\"name\":\"HttpMethod\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CONNECT\",\"DELETE\",\"GET\",\"HEAD\",\"OPTIONS\",\"PATCH\",\"POST\",\"PUT\",\"TRACE\"]}},{\"name\":\"snid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"is_tracked\",\"type\":\"boolean\",\"default\":false}],\"pk\":[\"snapshot_id\"]}");
+  private static final long serialVersionUID = -6335919624824821412L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"FilterMessageV2\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"snapshot_id\",\"type\":\"long\"},{\"name\":\"timestamp\",\"type\":\"long\"},{\"name\":\"user_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"cguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"remote_ip\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"referer\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"publisher_id\",\"type\":\"long\"},{\"name\":\"campaign_id\",\"type\":\"long\"},{\"name\":\"request_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"uri\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"response_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rt_rule_flags\",\"type\":\"long\"},{\"name\":\"nrt_rule_flags\",\"type\":\"long\"},{\"name\":\"channel_action\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelAction\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CLICK\",\"IMPRESSION\",\"VIEWABLE\",\"SERVE\",\"PAGE_IMP\",\"VIEW_ITEM\",\"VIEW_TIME\",\"APP_FIRST_START\"]}},{\"name\":\"channel_type\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\",\"PAID_SEARCH\",\"SOCIAL_MEDIA\",\"PAID_SOCIAL\"]}},{\"name\":\"http_method\",\"type\":{\"type\":\"enum\",\"name\":\"HttpMethod\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CONNECT\",\"DELETE\",\"GET\",\"HEAD\",\"OPTIONS\",\"PATCH\",\"POST\",\"PUT\",\"TRACE\"]}},{\"name\":\"snid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"is_tracked\",\"type\":\"boolean\",\"default\":false}],\"pk\":[\"snapshot_id\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -56,7 +56,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
    private java.lang.String user_id;
    private java.lang.String guid;
    private java.lang.String cguid;
-   private java.lang.String client_remote_ip;
+   private java.lang.String remote_ip;
    private java.lang.String referer;
    private long publisher_id;
    private long campaign_id;
@@ -85,7 +85,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
    * @param user_id The new value for user_id
    * @param guid The new value for guid
    * @param cguid The new value for cguid
-   * @param client_remote_ip The new value for client_remote_ip
+   * @param remote_ip The new value for remote_ip
    * @param referer The new value for referer
    * @param publisher_id The new value for publisher_id
    * @param campaign_id The new value for campaign_id
@@ -100,13 +100,13 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
    * @param snid The new value for snid
    * @param is_tracked The new value for is_tracked
    */
-  public FilterMessageV2(java.lang.Long snapshot_id, java.lang.Long timestamp, java.lang.String user_id, java.lang.String guid, java.lang.String cguid, java.lang.String client_remote_ip, java.lang.String referer, java.lang.Long publisher_id, java.lang.Long campaign_id, java.lang.String request_headers, java.lang.String uri, java.lang.String response_headers, java.lang.Long rt_rule_flags, java.lang.Long nrt_rule_flags, com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action, com.ebay.app.raptor.chocolate.avro.ChannelType channel_type, com.ebay.app.raptor.chocolate.avro.HttpMethod http_method, java.lang.String snid, java.lang.Boolean is_tracked) {
+  public FilterMessageV2(java.lang.Long snapshot_id, java.lang.Long timestamp, java.lang.String user_id, java.lang.String guid, java.lang.String cguid, java.lang.String remote_ip, java.lang.String referer, java.lang.Long publisher_id, java.lang.Long campaign_id, java.lang.String request_headers, java.lang.String uri, java.lang.String response_headers, java.lang.Long rt_rule_flags, java.lang.Long nrt_rule_flags, com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action, com.ebay.app.raptor.chocolate.avro.ChannelType channel_type, com.ebay.app.raptor.chocolate.avro.HttpMethod http_method, java.lang.String snid, java.lang.Boolean is_tracked) {
     this.snapshot_id = snapshot_id;
     this.timestamp = timestamp;
     this.user_id = user_id;
     this.guid = guid;
     this.cguid = cguid;
-    this.client_remote_ip = client_remote_ip;
+    this.remote_ip = remote_ip;
     this.referer = referer;
     this.publisher_id = publisher_id;
     this.campaign_id = campaign_id;
@@ -131,7 +131,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
     case 2: return user_id;
     case 3: return guid;
     case 4: return cguid;
-    case 5: return client_remote_ip;
+    case 5: return remote_ip;
     case 6: return referer;
     case 7: return publisher_id;
     case 8: return campaign_id;
@@ -158,7 +158,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
     case 2: user_id = (java.lang.String)value$; break;
     case 3: guid = (java.lang.String)value$; break;
     case 4: cguid = (java.lang.String)value$; break;
-    case 5: client_remote_ip = (java.lang.String)value$; break;
+    case 5: remote_ip = (java.lang.String)value$; break;
     case 6: referer = (java.lang.String)value$; break;
     case 7: publisher_id = (java.lang.Long)value$; break;
     case 8: campaign_id = (java.lang.Long)value$; break;
@@ -257,19 +257,19 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
   }
 
   /**
-   * Gets the value of the 'client_remote_ip' field.
-   * @return The value of the 'client_remote_ip' field.
+   * Gets the value of the 'remote_ip' field.
+   * @return The value of the 'remote_ip' field.
    */
-  public java.lang.String getClientRemoteIp() {
-    return client_remote_ip;
+  public java.lang.String getRemoteIp() {
+    return remote_ip;
   }
 
   /**
-   * Sets the value of the 'client_remote_ip' field.
+   * Sets the value of the 'remote_ip' field.
    * @param value the value to set.
    */
-  public void setClientRemoteIp(java.lang.String value) {
-    this.client_remote_ip = value;
+  public void setRemoteIp(java.lang.String value) {
+    this.remote_ip = value;
   }
 
   /**
@@ -517,7 +517,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
     private java.lang.String user_id;
     private java.lang.String guid;
     private java.lang.String cguid;
-    private java.lang.String client_remote_ip;
+    private java.lang.String remote_ip;
     private java.lang.String referer;
     private long publisher_id;
     private long campaign_id;
@@ -563,8 +563,8 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
         this.cguid = data().deepCopy(fields()[4].schema(), other.cguid);
         fieldSetFlags()[4] = true;
       }
-      if (isValidValue(fields()[5], other.client_remote_ip)) {
-        this.client_remote_ip = data().deepCopy(fields()[5].schema(), other.client_remote_ip);
+      if (isValidValue(fields()[5], other.remote_ip)) {
+        this.remote_ip = data().deepCopy(fields()[5].schema(), other.remote_ip);
         fieldSetFlags()[5] = true;
       }
       if (isValidValue(fields()[6], other.referer)) {
@@ -647,8 +647,8 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
         this.cguid = data().deepCopy(fields()[4].schema(), other.cguid);
         fieldSetFlags()[4] = true;
       }
-      if (isValidValue(fields()[5], other.client_remote_ip)) {
-        this.client_remote_ip = data().deepCopy(fields()[5].schema(), other.client_remote_ip);
+      if (isValidValue(fields()[5], other.remote_ip)) {
+        this.remote_ip = data().deepCopy(fields()[5].schema(), other.remote_ip);
         fieldSetFlags()[5] = true;
       }
       if (isValidValue(fields()[6], other.referer)) {
@@ -899,40 +899,40 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
     }
 
     /**
-      * Gets the value of the 'client_remote_ip' field.
+      * Gets the value of the 'remote_ip' field.
       * @return The value.
       */
-    public java.lang.String getClientRemoteIp() {
-      return client_remote_ip;
+    public java.lang.String getRemoteIp() {
+      return remote_ip;
     }
 
     /**
-      * Sets the value of the 'client_remote_ip' field.
-      * @param value The value of 'client_remote_ip'.
+      * Sets the value of the 'remote_ip' field.
+      * @param value The value of 'remote_ip'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setClientRemoteIp(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setRemoteIp(java.lang.String value) {
       validate(fields()[5], value);
-      this.client_remote_ip = value;
+      this.remote_ip = value;
       fieldSetFlags()[5] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'client_remote_ip' field has been set.
-      * @return True if the 'client_remote_ip' field has been set, false otherwise.
+      * Checks whether the 'remote_ip' field has been set.
+      * @return True if the 'remote_ip' field has been set, false otherwise.
       */
-    public boolean hasClientRemoteIp() {
+    public boolean hasRemoteIp() {
       return fieldSetFlags()[5];
     }
 
 
     /**
-      * Clears the value of the 'client_remote_ip' field.
+      * Clears the value of the 'remote_ip' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearClientRemoteIp() {
-      client_remote_ip = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearRemoteIp() {
+      remote_ip = null;
       fieldSetFlags()[5] = false;
       return this;
     }
@@ -1449,7 +1449,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
         record.user_id = fieldSetFlags()[2] ? this.user_id : (java.lang.String) defaultValue(fields()[2]);
         record.guid = fieldSetFlags()[3] ? this.guid : (java.lang.String) defaultValue(fields()[3]);
         record.cguid = fieldSetFlags()[4] ? this.cguid : (java.lang.String) defaultValue(fields()[4]);
-        record.client_remote_ip = fieldSetFlags()[5] ? this.client_remote_ip : (java.lang.String) defaultValue(fields()[5]);
+        record.remote_ip = fieldSetFlags()[5] ? this.remote_ip : (java.lang.String) defaultValue(fields()[5]);
         record.referer = fieldSetFlags()[6] ? this.referer : (java.lang.String) defaultValue(fields()[6]);
         record.publisher_id = fieldSetFlags()[7] ? this.publisher_id : (java.lang.Long) defaultValue(fields()[7]);
         record.campaign_id = fieldSetFlags()[8] ? this.campaign_id : (java.lang.Long) defaultValue(fields()[8]);

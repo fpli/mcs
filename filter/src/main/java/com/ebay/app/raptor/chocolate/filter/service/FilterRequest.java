@@ -3,11 +3,8 @@ package com.ebay.app.raptor.chocolate.filter.service;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +57,7 @@ public class FilterRequest {
         }
 
         this.referrerDomain = getDomainName(message.getReferer());
-        this.sourceIP = message.getClientRemoteIp();
+        this.sourceIP = message.getRemoteIp();
         this.timestamp = message.getTimestamp();
         this.publisherId = message.getPublisherId();
         this.campaignId = message.getCampaignId();

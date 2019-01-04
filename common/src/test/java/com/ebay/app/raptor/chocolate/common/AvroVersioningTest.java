@@ -25,7 +25,7 @@ public class AvroVersioningTest {
         om.setUserId("");
         om.setCguid("");
         om.setGuid("");
-        om.setClientRemoteIp("");
+        om.setRemoteIp("");
         om.setReferer("");
         om.setRequestHeaders("");
         om.setResponseHeaders("");
@@ -75,7 +75,7 @@ public class AvroVersioningTest {
         FilterMessage om = new FilterMessage();
         om.setSnapshotId(1234L);
         om.setUserId("");
-        om.setClientRemoteIp("");
+        om.setRemoteIp("");
         om.setGuid("");
         om.setCguid("");
         om.setReferer("");

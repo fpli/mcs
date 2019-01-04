@@ -137,7 +137,7 @@ public class FilterContainerTest {
     lm.setSnapshotId(12345L);
     lm.setTimestamp(314159L);
     lm.setUserId("1");
-    lm.setClientRemoteIp(remoteIp);
+    lm.setRemoteIp(remoteIp);
     lm.setGuid("");
     lm.setCguid("");
     lm.setReferer(referer);
@@ -161,7 +161,7 @@ public class FilterContainerTest {
     lm.setSnapshotId(12345L);
     lm.setTimestamp(314159L);
     lm.setUserId("1");
-    lm.setClientRemoteIp(remoteIp);
+    lm.setRemoteIp(remoteIp);
     lm.setGuid("");
     lm.setCguid("");
     lm.setReferer(referer);

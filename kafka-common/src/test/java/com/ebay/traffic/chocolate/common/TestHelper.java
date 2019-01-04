@@ -206,7 +206,7 @@ public class TestHelper {
     message.setUserId("1");
     message.setCguid("");
     message.setGuid("");
-    message.setClientRemoteIp("127.0.0.1");
+    message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
@@ -247,7 +247,7 @@ public class TestHelper {
     message.setUserId("1");
     message.setCguid("");
     message.setGuid("");
-    message.setClientRemoteIp(ip);
+    message.setRemoteIp(ip);
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
@@ -289,7 +289,7 @@ public class TestHelper {
     message.setUserId("1");
     message.setCguid(cguid);
     message.setGuid("");
-    message.setClientRemoteIp("127.0.0.1");
+    message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
@@ -332,7 +332,7 @@ public class TestHelper {
     message.setUserId("1");
     message.setCguid(cguid);
     message.setGuid("");
-    message.setClientRemoteIp("127.0.0.1");
+    message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
@@ -378,7 +378,7 @@ public class TestHelper {
     message.setUserId("1");
     message.setCguid(cguid_res);
     message.setGuid("");
-    message.setClientRemoteIp("127.0.0.1");
+    message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
@@ -423,7 +423,7 @@ public class TestHelper {
     message.setUserId("1");
     message.setCguid(cguid);
     message.setGuid("");
-    message.setClientRemoteIp(ip);
+    message.setRemoteIp(ip);
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
@@ -464,7 +464,7 @@ public class TestHelper {
     message.setUserId("1");
     message.setCguid("");
     message.setGuid("");
-    message.setClientRemoteIp("127.0.0.1");
+    message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(1l);
     message.setPublisherId(publisherId);
@@ -495,7 +495,7 @@ public class TestHelper {
     message.setUserId("1");
     message.setCguid("");
     message.setGuid("");
-    message.setClientRemoteIp("127.0.0.1");
+    message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
@@ -547,7 +547,7 @@ public class TestHelper {
     message.setUserId("1");
     message.setCguid("");
     message.setGuid("");
-    message.setClientRemoteIp("127.0.0.1");
+    message.setRemoteIp("127.0.0.1");
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
