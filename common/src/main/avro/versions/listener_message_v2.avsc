@@ -35,6 +35,22 @@
       "type": "string"
     },
     {
+      "name": "lang_cd",
+      "type": "string"
+    },
+    {
+      "name": "user_agent",
+      "type": "string"
+    },
+    {
+      "name": "geo_id",
+      "type": "long"
+    },
+    {
+      "name": "udid",
+      "type": "string"
+    },
+    {
       "name": "referer",
       "type": "string"
     },
@@ -51,14 +67,6 @@
       "type": "long"
     },
     {
-      "name": "lang_cd",
-      "type": "string"
-    },
-    {
-      "name": "user_agent",
-      "type": "string"
-    },
-    {
       "name": "landing_page_url",
       "type": "string"
     },
@@ -69,14 +77,6 @@
     {
       "name": "dst_rotation_id",
       "type": "long"
-    },
-    {
-      "name": "geo_id",
-      "type": "long"
-    },
-    {
-      "name": "udid",
-      "type": "string"
     },
     {
       "name": "request_headers",
