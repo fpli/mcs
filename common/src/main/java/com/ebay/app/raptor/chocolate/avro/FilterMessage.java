@@ -2,8 +2,9 @@ package com.ebay.app.raptor.chocolate.avro;
 
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1;
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2;
-import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.*;
 import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.avro.specific.SpecificDatumWriter;
@@ -12,7 +13,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class FilterMessage extends FilterMessageV2 {
-  public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
+  public static org.apache.avro.Schema getClassSchema() {
+    return SCHEMA$;
+  }
 
   private static Schema getV1Schema() {
     return FilterMessageV1.getClassSchema();
@@ -46,24 +49,45 @@ public class FilterMessage extends FilterMessageV2 {
   }
 
   public static FilterMessage readFromJSON(String json) throws IOException {
-    JsonDecoder decoder;
+    JsonDecoder decoder = DecoderFactory.get().jsonDecoder(getClassSchema(), json);
+    JsonDecoder decoderV1 = DecoderFactory.get().jsonDecoder(getV1Schema(), json);
+
+    return decode(decoder, decoderV1);
+  }
+
+  public static FilterMessage decodeRheos(Schema rheosHeaderSchema,
+                                          byte[] data) throws IOException {
+    DatumReader<GenericRecord> rheosHeaderReader = new GenericDatumReader<>(
+        rheosHeaderSchema);
+    BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(data, null);
+    // skips the rheos header
+    rheosHeaderReader.read(null, decoder);
+
+    BinaryDecoder decoderV1 = DecoderFactory.get().binaryDecoder(data, null);
+    // skips the rheos header
+    rheosHeaderReader.read(null, decoderV1);
+
+    return decode(decoder, decoderV1);
+  }
+
+  public static <D extends Decoder> FilterMessage decode(D decoder, D decoderV1) throws IOException {
+
     FilterMessage datum = new FilterMessage();
     try {
-      decoder = DecoderFactory.get().jsonDecoder(getClassSchema(), json);
       datum = reader.read(datum, decoder);
       return datum;
-    } catch (AvroRuntimeException e) {
+
+    } catch (Exception e) {
       // Nothing to do, need to try the upgrading reader first
     }
 
     // fallback to read V1
-    decoder = DecoderFactory.get().jsonDecoder(getV1Schema(), json);
     FilterMessageV1 datumV1 = new FilterMessageV1();
-    datumV1 = readerV1.read(datumV1, decoder);
+    datumV1 = readerV1.read(datumV1, decoderV1);
     datum = new FilterMessage(datumV1.getSnapshotId(), -1L, datumV1.getTimestamp(),
         -1L, "", "", "", "", "", -1L, "", "",
         datumV1.getPublisherId(), datumV1.getCampaignId(),
-        -1L, "",  -1L, -1L,
+        -1L, "", -1L, -1L,
         datumV1.getRequestHeaders(), datumV1.getUri(), datumV1.getResponseHeaders(),
         datumV1.getRtRuleFlags(), datumV1.getNrtRuleFlags(), datumV1.getChannelAction(), datumV1.getChannelType(),
         datumV1.getHttpMethod(), datumV1.getSnid(), datumV1.getIsTracked());
