@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.listener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.kernel.util.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -101,10 +102,11 @@ public class MessageObjectParser {
         record.setResponseHeaders(serializeResponseHeaders(proxyResponse));
         record.setTimestamp(startTime);
 
-        // Get snapshotId from request
+        // Get snapshotId and short snapshotId from request
         Long snapshotId = SnapshotId.getNext(ListenerOptions.getInstance().getDriverId(), startTime).getRepresentation();
         record.setSnapshotId(snapshotId);
-        record.setShortSnapshotId(-1L);
+        ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId().longValue());
+        record.setShortSnapshotId(shortSnapshotId.getRepresentation());
 
         record.setCampaignId(campaignId);
         record.setPublisherId(DEFAULT_PUBLISHER_ID);
