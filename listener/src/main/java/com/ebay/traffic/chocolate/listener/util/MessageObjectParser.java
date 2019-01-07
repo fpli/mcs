@@ -72,7 +72,7 @@ public class MessageObjectParser {
         record.setLangCd("");
 
         // user agent
-        record.setUserAgent("");
+        record.setUserAgent(getUserAgent(clientRequest));
 
         // geography identifier
         record.setGeoId(-1L);
@@ -114,6 +114,14 @@ public class MessageObjectParser {
         record.setIsTracked(false);     //TODO No messages are Durability-tracked for now
 
         return record;
+    }
+
+    /**
+     * Get User Agent
+     */
+    private String getUserAgent(HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        return userAgent == null ? "" : userAgent;
     }
 
     /**
