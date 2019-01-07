@@ -39,6 +39,30 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Event'
+  /version:
+    get:
+      summary: Get api version
+      description: Get marketing tracking api version
+      tags:
+        - version
+      operationId: version
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '200':
+          description: version number
+        '400':
+          description: Rejected due to message format
+            content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/errorModel'
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+
 components:
    securitySchemes:
     app_scope_auth:
