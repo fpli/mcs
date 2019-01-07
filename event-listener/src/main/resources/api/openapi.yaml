@@ -39,7 +39,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Event'
-  /version:
+  /getVersion:
     get:
       summary: Get api version
       description: Get marketing tracking api version
