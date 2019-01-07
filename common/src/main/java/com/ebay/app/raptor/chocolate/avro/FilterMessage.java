@@ -2,6 +2,7 @@ package com.ebay.app.raptor.chocolate.avro;
 
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1;
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2;
+import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
@@ -84,7 +85,8 @@ public class FilterMessage extends FilterMessageV2 {
     // fallback to read V1
     FilterMessageV1 datumV1 = new FilterMessageV1();
     datumV1 = readerV1.read(datumV1, decoderV1);
-    datum = new FilterMessage(datumV1.getSnapshotId(), -1L, datumV1.getTimestamp(),
+    ShortSnapshotId shortSnapshotId = new ShortSnapshotId(datumV1.getSnapshotId().longValue());
+    datum = new FilterMessage(datumV1.getSnapshotId(), shortSnapshotId.getRepresentation(), datumV1.getTimestamp(),
         -1L, "", "", "", "", "", -1L, "", "",
         datumV1.getPublisherId(), datumV1.getCampaignId(),
         -1L, "", -1L, -1L,
