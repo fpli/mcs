@@ -12,6 +12,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class FilterMessage extends FilterMessageV2 {
+  public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
+
   private static Schema getV1Schema() {
     return FilterMessageV1.getClassSchema();
   }

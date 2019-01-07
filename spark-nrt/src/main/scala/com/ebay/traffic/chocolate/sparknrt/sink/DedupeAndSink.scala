@@ -8,7 +8,6 @@ import java.util.{Date, Properties}
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
-import com.ebay.app.raptor.chocolate.avro.versions.{FilterMessageV1, FilterMessageV2}
 import com.ebay.traffic.chocolate.monitoring.ESMetrics
 import com.ebay.traffic.chocolate.spark.kafka.KafkaRDD
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
@@ -114,7 +113,7 @@ class DedupeAndSink(params: Parameter)
 
           writer = AvroParquetWriter.
             builder[GenericRecord](new Path(baseTempDir + file))
-            .withSchema(FilterMessageV2.getClassSchema())
+            .withSchema(FilterMessage.getClassSchema())
             .withConf(hadoopConf)
             .withCompressionCodec(CompressionCodecName.SNAPPY)
             .build()

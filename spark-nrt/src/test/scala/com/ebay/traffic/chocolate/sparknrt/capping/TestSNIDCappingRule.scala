@@ -2,7 +2,6 @@ package com.ebay.traffic.chocolate.sparknrt.capping
 
 import java.text.SimpleDateFormat
 
-import com.ebay.app.raptor.chocolate.avro.versions.{FilterMessageV1, FilterMessageV2}
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
 import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
@@ -72,7 +71,7 @@ class TestSNIDCappingRule extends BaseFunSuite {
     // test only impression
     val writer0 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV2.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
@@ -91,7 +90,7 @@ class TestSNIDCappingRule extends BaseFunSuite {
     // test only click
     val writer1 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV2.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
@@ -109,7 +108,7 @@ class TestSNIDCappingRule extends BaseFunSuite {
     // test impression and click in today
     val writer2 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-03/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV2.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
@@ -129,7 +128,7 @@ class TestSNIDCappingRule extends BaseFunSuite {
     // test impression and click in cross day
     val writer3 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-04/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV2.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
@@ -153,7 +152,7 @@ class TestSNIDCappingRule extends BaseFunSuite {
     // test only impression
     val writer4 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-05/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV2.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
@@ -170,7 +169,7 @@ class TestSNIDCappingRule extends BaseFunSuite {
     // test only click
     val writer5 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-06/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV2.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
@@ -190,7 +189,7 @@ class TestSNIDCappingRule extends BaseFunSuite {
     // test impression and click in today
     val writer6 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-07/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV2.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
@@ -213,7 +212,7 @@ class TestSNIDCappingRule extends BaseFunSuite {
     // test impression and click in cross day
     val writer7 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-08/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV2.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
