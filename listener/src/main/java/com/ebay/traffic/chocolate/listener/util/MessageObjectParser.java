@@ -67,17 +67,23 @@ public class MessageObjectParser {
         // client remote IP
         record.setRemoteIp(getRemoteIp(clientRequest));
 
-        // referer
-        record.setReferer(getReferer(clientRequest));
-
-        // site id
-        record.setSiteId(-1L);
-
         // language code
         record.setLangCd("");
 
         // user agent
         record.setUserAgent("");
+
+        // geography identifier
+        record.setGeoId(-1L);
+
+        // udid
+        record.setUdid("");
+
+        // referer
+        record.setReferer(getReferer(clientRequest));
+
+        // site id
+        record.setSiteId(-1L);
 
         // landing page url
         record.setLandingPageUrl("");
@@ -85,12 +91,6 @@ public class MessageObjectParser {
         // source and destination rotation id
         record.setSrcRotationId(-1L);
         record.setDstRotationId(-1L);
-
-        // geography identifier
-        record.setGeoId(-1L);
-
-        // udid
-        record.setUdid("");
 
         // Set the channel type + HTTP headers + channel action
         record.setChannelType(channelType);

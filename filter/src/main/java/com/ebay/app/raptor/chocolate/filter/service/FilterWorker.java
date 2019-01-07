@@ -178,6 +178,10 @@ public class FilterWorker extends Thread {
     outMessage.setCguid(message.getCguid());
     outMessage.setGuid(message.getGuid());
     outMessage.setRemoteIp(message.getRemoteIp());
+    outMessage.setLangCd(message.getLangCd());
+    outMessage.setUserAgent(message.getUserAgent());
+    outMessage.setGeoId(message.getGeoId());
+    outMessage.setUdid(message.getUdid());
     outMessage.setReferer(message.getReferer());
     // only EPN needs to get publisher id
     if (message.getPublisherId() == DEFAULT_PUBLISHER_ID && message.getChannelType() == ChannelType.EPN) {
@@ -190,13 +194,9 @@ public class FilterWorker extends Thread {
     }
     outMessage.setCampaignId(message.getCampaignId());
     outMessage.setSiteId(message.getSiteId());
-    outMessage.setLangCd(message.getLangCd());
-    outMessage.setUserAgent(message.getUserAgent());
     outMessage.setLandingPageUrl(message.getLandingPageUrl());
     outMessage.setSrcRotationId(message.getSrcRotationId());
     outMessage.setDstRotationId(message.getDstRotationId());
-    outMessage.setGeoId(message.getGeoId());
-    outMessage.setUdid(message.getUdid());
     outMessage.setRequestHeaders(message.getRequestHeaders());
     outMessage.setUri(message.getUri());
     outMessage.setResponseHeaders(message.getResponseHeaders());
