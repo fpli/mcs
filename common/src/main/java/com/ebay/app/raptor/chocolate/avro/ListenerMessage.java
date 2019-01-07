@@ -32,14 +32,14 @@ public class ListenerMessage extends ListenerMessageV2 {
   }
 
   public ListenerMessage(Long snapshot_id, Long short_snapshot_id, Long timestamp, Long user_id, String guid,
-                         String cguid, String remote_ip, String referer, Long publisher_id, Long campaign_id,
-                         Long site_id, String lang_cd, String user_agent, String landing_page_url, Long src_rotation_id,
-                         Long dst_rotation_id, Long geo_id, String udid, String request_headers, String uri,
+                         String cguid, String remote_ip, String lang_cd, String user_agent, Long geo_id, String udid,
+                         String referer, Long publisher_id, Long campaign_id, Long site_id, String landing_page_url,
+                         Long src_rotation_id, Long dst_rotation_id, String request_headers, String uri,
                          String response_headers, ChannelAction channel_action, ChannelType channel_type,
                          HttpMethod http_method, String snid, Boolean is_tracked) {
-    super(snapshot_id, short_snapshot_id, timestamp, user_id, guid, cguid, remote_ip, referer, publisher_id,
-        campaign_id, site_id, lang_cd, user_agent, landing_page_url, src_rotation_id, dst_rotation_id, geo_id,
-        udid, request_headers, uri, response_headers, channel_action, channel_type, http_method, snid, is_tracked);
+    super(snapshot_id, short_snapshot_id, timestamp, user_id, guid, cguid, remote_ip, lang_cd, user_agent, geo_id, udid,
+        referer, publisher_id, campaign_id, site_id, landing_page_url, src_rotation_id, dst_rotation_id, request_headers,
+        uri, response_headers, channel_action, channel_type, http_method, snid, is_tracked);
   }
 
   public static ListenerMessage readFromJSON(String json) throws IOException {
@@ -58,9 +58,9 @@ public class ListenerMessage extends ListenerMessageV2 {
     ListenerMessageV1 datumV1 = new ListenerMessageV1();
     datumV1 = readerV1.read(datumV1, decoder);
     datum = new ListenerMessage(datumV1.getSnapshotId(), -1L, datumV1.getTimestamp(),
-        -1L, "", "", "", "",
+        -1L, "", "", "", "", "", -1L, "", "",
         datumV1.getPublisherId(), datumV1.getCampaignId(),
-        -1L, "", "", "", -1L, -1L, -1L, "",
+        -1L, "",  -1L, -1L,
         datumV1.getRequestHeaders(), datumV1.getUri(), datumV1.getResponseHeaders(),
         datumV1.getChannelAction(), datumV1.getChannelType(),
         datumV1.getHttpMethod(), datumV1.getSnid(), datumV1.getIsTracked());

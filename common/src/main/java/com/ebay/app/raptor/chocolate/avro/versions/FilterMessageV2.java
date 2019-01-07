@@ -13,8 +13,8 @@ import org.apache.avro.message.SchemaStore;
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 1481066175832636785L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"FilterMessageV2\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"snapshot_id\",\"type\":\"long\"},{\"name\":\"short_snapshot_id\",\"type\":\"long\"},{\"name\":\"timestamp\",\"type\":\"long\"},{\"name\":\"user_id\",\"type\":\"long\"},{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"cguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"remote_ip\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"referer\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"publisher_id\",\"type\":\"long\"},{\"name\":\"campaign_id\",\"type\":\"long\"},{\"name\":\"site_id\",\"type\":\"long\"},{\"name\":\"lang_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"user_agent\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"landing_page_url\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"src_rotation_id\",\"type\":\"long\"},{\"name\":\"dst_rotation_id\",\"type\":\"long\"},{\"name\":\"geo_id\",\"type\":\"long\"},{\"name\":\"udid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"request_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"uri\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"response_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rt_rule_flags\",\"type\":\"long\"},{\"name\":\"nrt_rule_flags\",\"type\":\"long\"},{\"name\":\"channel_action\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelAction\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CLICK\",\"IMPRESSION\",\"VIEWABLE\",\"SERVE\",\"PAGE_IMP\",\"VIEW_ITEM\",\"VIEW_TIME\",\"APP_FIRST_START\"]}},{\"name\":\"channel_type\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\",\"PAID_SEARCH\",\"SOCIAL_MEDIA\",\"PAID_SOCIAL\"]}},{\"name\":\"http_method\",\"type\":{\"type\":\"enum\",\"name\":\"HttpMethod\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CONNECT\",\"DELETE\",\"GET\",\"HEAD\",\"OPTIONS\",\"PATCH\",\"POST\",\"PUT\",\"TRACE\"]}},{\"name\":\"snid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"is_tracked\",\"type\":\"boolean\",\"default\":false}],\"pk\":[\"snapshot_id\"]}");
+  private static final long serialVersionUID = 5131018802593597959L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"FilterMessageV2\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"snapshot_id\",\"type\":\"long\"},{\"name\":\"short_snapshot_id\",\"type\":\"long\"},{\"name\":\"timestamp\",\"type\":\"long\"},{\"name\":\"user_id\",\"type\":\"long\"},{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"cguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"remote_ip\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"lang_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"user_agent\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"geo_id\",\"type\":\"long\"},{\"name\":\"udid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"referer\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"publisher_id\",\"type\":\"long\"},{\"name\":\"campaign_id\",\"type\":\"long\"},{\"name\":\"site_id\",\"type\":\"long\"},{\"name\":\"landing_page_url\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"src_rotation_id\",\"type\":\"long\"},{\"name\":\"dst_rotation_id\",\"type\":\"long\"},{\"name\":\"request_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"uri\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"response_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rt_rule_flags\",\"type\":\"long\"},{\"name\":\"nrt_rule_flags\",\"type\":\"long\"},{\"name\":\"channel_action\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelAction\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CLICK\",\"IMPRESSION\",\"VIEWABLE\",\"SERVE\",\"PAGE_IMP\",\"VIEW_ITEM\",\"VIEW_TIME\",\"APP_FIRST_START\"]}},{\"name\":\"channel_type\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\",\"PAID_SEARCH\",\"SOCIAL_MEDIA\",\"PAID_SOCIAL\"]}},{\"name\":\"http_method\",\"type\":{\"type\":\"enum\",\"name\":\"HttpMethod\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CONNECT\",\"DELETE\",\"GET\",\"HEAD\",\"OPTIONS\",\"PATCH\",\"POST\",\"PUT\",\"TRACE\"]}},{\"name\":\"snid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"is_tracked\",\"type\":\"boolean\",\"default\":false}],\"pk\":[\"snapshot_id\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -58,17 +58,17 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
    private java.lang.String guid;
    private java.lang.String cguid;
    private java.lang.String remote_ip;
+   private java.lang.String lang_cd;
+   private java.lang.String user_agent;
+   private long geo_id;
+   private java.lang.String udid;
    private java.lang.String referer;
    private long publisher_id;
    private long campaign_id;
    private long site_id;
-   private java.lang.String lang_cd;
-   private java.lang.String user_agent;
    private java.lang.String landing_page_url;
    private long src_rotation_id;
    private long dst_rotation_id;
-   private long geo_id;
-   private java.lang.String udid;
    private java.lang.String request_headers;
    private java.lang.String uri;
    private java.lang.String response_headers;
@@ -96,17 +96,17 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
    * @param guid The new value for guid
    * @param cguid The new value for cguid
    * @param remote_ip The new value for remote_ip
+   * @param lang_cd The new value for lang_cd
+   * @param user_agent The new value for user_agent
+   * @param geo_id The new value for geo_id
+   * @param udid The new value for udid
    * @param referer The new value for referer
    * @param publisher_id The new value for publisher_id
    * @param campaign_id The new value for campaign_id
    * @param site_id The new value for site_id
-   * @param lang_cd The new value for lang_cd
-   * @param user_agent The new value for user_agent
    * @param landing_page_url The new value for landing_page_url
    * @param src_rotation_id The new value for src_rotation_id
    * @param dst_rotation_id The new value for dst_rotation_id
-   * @param geo_id The new value for geo_id
-   * @param udid The new value for udid
    * @param request_headers The new value for request_headers
    * @param uri The new value for uri
    * @param response_headers The new value for response_headers
@@ -118,7 +118,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
    * @param snid The new value for snid
    * @param is_tracked The new value for is_tracked
    */
-  public FilterMessageV2(java.lang.Long snapshot_id, java.lang.Long short_snapshot_id, java.lang.Long timestamp, java.lang.Long user_id, java.lang.String guid, java.lang.String cguid, java.lang.String remote_ip, java.lang.String referer, java.lang.Long publisher_id, java.lang.Long campaign_id, java.lang.Long site_id, java.lang.String lang_cd, java.lang.String user_agent, java.lang.String landing_page_url, java.lang.Long src_rotation_id, java.lang.Long dst_rotation_id, java.lang.Long geo_id, java.lang.String udid, java.lang.String request_headers, java.lang.String uri, java.lang.String response_headers, java.lang.Long rt_rule_flags, java.lang.Long nrt_rule_flags, com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action, com.ebay.app.raptor.chocolate.avro.ChannelType channel_type, com.ebay.app.raptor.chocolate.avro.HttpMethod http_method, java.lang.String snid, java.lang.Boolean is_tracked) {
+  public FilterMessageV2(java.lang.Long snapshot_id, java.lang.Long short_snapshot_id, java.lang.Long timestamp, java.lang.Long user_id, java.lang.String guid, java.lang.String cguid, java.lang.String remote_ip, java.lang.String lang_cd, java.lang.String user_agent, java.lang.Long geo_id, java.lang.String udid, java.lang.String referer, java.lang.Long publisher_id, java.lang.Long campaign_id, java.lang.Long site_id, java.lang.String landing_page_url, java.lang.Long src_rotation_id, java.lang.Long dst_rotation_id, java.lang.String request_headers, java.lang.String uri, java.lang.String response_headers, java.lang.Long rt_rule_flags, java.lang.Long nrt_rule_flags, com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action, com.ebay.app.raptor.chocolate.avro.ChannelType channel_type, com.ebay.app.raptor.chocolate.avro.HttpMethod http_method, java.lang.String snid, java.lang.Boolean is_tracked) {
     this.snapshot_id = snapshot_id;
     this.short_snapshot_id = short_snapshot_id;
     this.timestamp = timestamp;
@@ -126,17 +126,17 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
     this.guid = guid;
     this.cguid = cguid;
     this.remote_ip = remote_ip;
+    this.lang_cd = lang_cd;
+    this.user_agent = user_agent;
+    this.geo_id = geo_id;
+    this.udid = udid;
     this.referer = referer;
     this.publisher_id = publisher_id;
     this.campaign_id = campaign_id;
     this.site_id = site_id;
-    this.lang_cd = lang_cd;
-    this.user_agent = user_agent;
     this.landing_page_url = landing_page_url;
     this.src_rotation_id = src_rotation_id;
     this.dst_rotation_id = dst_rotation_id;
-    this.geo_id = geo_id;
-    this.udid = udid;
     this.request_headers = request_headers;
     this.uri = uri;
     this.response_headers = response_headers;
@@ -160,17 +160,17 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
     case 4: return guid;
     case 5: return cguid;
     case 6: return remote_ip;
-    case 7: return referer;
-    case 8: return publisher_id;
-    case 9: return campaign_id;
-    case 10: return site_id;
-    case 11: return lang_cd;
-    case 12: return user_agent;
-    case 13: return landing_page_url;
-    case 14: return src_rotation_id;
-    case 15: return dst_rotation_id;
-    case 16: return geo_id;
-    case 17: return udid;
+    case 7: return lang_cd;
+    case 8: return user_agent;
+    case 9: return geo_id;
+    case 10: return udid;
+    case 11: return referer;
+    case 12: return publisher_id;
+    case 13: return campaign_id;
+    case 14: return site_id;
+    case 15: return landing_page_url;
+    case 16: return src_rotation_id;
+    case 17: return dst_rotation_id;
     case 18: return request_headers;
     case 19: return uri;
     case 20: return response_headers;
@@ -196,17 +196,17 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
     case 4: guid = (java.lang.String)value$; break;
     case 5: cguid = (java.lang.String)value$; break;
     case 6: remote_ip = (java.lang.String)value$; break;
-    case 7: referer = (java.lang.String)value$; break;
-    case 8: publisher_id = (java.lang.Long)value$; break;
-    case 9: campaign_id = (java.lang.Long)value$; break;
-    case 10: site_id = (java.lang.Long)value$; break;
-    case 11: lang_cd = (java.lang.String)value$; break;
-    case 12: user_agent = (java.lang.String)value$; break;
-    case 13: landing_page_url = (java.lang.String)value$; break;
-    case 14: src_rotation_id = (java.lang.Long)value$; break;
-    case 15: dst_rotation_id = (java.lang.Long)value$; break;
-    case 16: geo_id = (java.lang.Long)value$; break;
-    case 17: udid = (java.lang.String)value$; break;
+    case 7: lang_cd = (java.lang.String)value$; break;
+    case 8: user_agent = (java.lang.String)value$; break;
+    case 9: geo_id = (java.lang.Long)value$; break;
+    case 10: udid = (java.lang.String)value$; break;
+    case 11: referer = (java.lang.String)value$; break;
+    case 12: publisher_id = (java.lang.Long)value$; break;
+    case 13: campaign_id = (java.lang.Long)value$; break;
+    case 14: site_id = (java.lang.Long)value$; break;
+    case 15: landing_page_url = (java.lang.String)value$; break;
+    case 16: src_rotation_id = (java.lang.Long)value$; break;
+    case 17: dst_rotation_id = (java.lang.Long)value$; break;
     case 18: request_headers = (java.lang.String)value$; break;
     case 19: uri = (java.lang.String)value$; break;
     case 20: response_headers = (java.lang.String)value$; break;
@@ -334,6 +334,70 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
   }
 
   /**
+   * Gets the value of the 'lang_cd' field.
+   * @return The value of the 'lang_cd' field.
+   */
+  public java.lang.String getLangCd() {
+    return lang_cd;
+  }
+
+  /**
+   * Sets the value of the 'lang_cd' field.
+   * @param value the value to set.
+   */
+  public void setLangCd(java.lang.String value) {
+    this.lang_cd = value;
+  }
+
+  /**
+   * Gets the value of the 'user_agent' field.
+   * @return The value of the 'user_agent' field.
+   */
+  public java.lang.String getUserAgent() {
+    return user_agent;
+  }
+
+  /**
+   * Sets the value of the 'user_agent' field.
+   * @param value the value to set.
+   */
+  public void setUserAgent(java.lang.String value) {
+    this.user_agent = value;
+  }
+
+  /**
+   * Gets the value of the 'geo_id' field.
+   * @return The value of the 'geo_id' field.
+   */
+  public java.lang.Long getGeoId() {
+    return geo_id;
+  }
+
+  /**
+   * Sets the value of the 'geo_id' field.
+   * @param value the value to set.
+   */
+  public void setGeoId(java.lang.Long value) {
+    this.geo_id = value;
+  }
+
+  /**
+   * Gets the value of the 'udid' field.
+   * @return The value of the 'udid' field.
+   */
+  public java.lang.String getUdid() {
+    return udid;
+  }
+
+  /**
+   * Sets the value of the 'udid' field.
+   * @param value the value to set.
+   */
+  public void setUdid(java.lang.String value) {
+    this.udid = value;
+  }
+
+  /**
    * Gets the value of the 'referer' field.
    * @return The value of the 'referer' field.
    */
@@ -398,38 +462,6 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
   }
 
   /**
-   * Gets the value of the 'lang_cd' field.
-   * @return The value of the 'lang_cd' field.
-   */
-  public java.lang.String getLangCd() {
-    return lang_cd;
-  }
-
-  /**
-   * Sets the value of the 'lang_cd' field.
-   * @param value the value to set.
-   */
-  public void setLangCd(java.lang.String value) {
-    this.lang_cd = value;
-  }
-
-  /**
-   * Gets the value of the 'user_agent' field.
-   * @return The value of the 'user_agent' field.
-   */
-  public java.lang.String getUserAgent() {
-    return user_agent;
-  }
-
-  /**
-   * Sets the value of the 'user_agent' field.
-   * @param value the value to set.
-   */
-  public void setUserAgent(java.lang.String value) {
-    this.user_agent = value;
-  }
-
-  /**
    * Gets the value of the 'landing_page_url' field.
    * @return The value of the 'landing_page_url' field.
    */
@@ -475,38 +507,6 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
    */
   public void setDstRotationId(java.lang.Long value) {
     this.dst_rotation_id = value;
-  }
-
-  /**
-   * Gets the value of the 'geo_id' field.
-   * @return The value of the 'geo_id' field.
-   */
-  public java.lang.Long getGeoId() {
-    return geo_id;
-  }
-
-  /**
-   * Sets the value of the 'geo_id' field.
-   * @param value the value to set.
-   */
-  public void setGeoId(java.lang.Long value) {
-    this.geo_id = value;
-  }
-
-  /**
-   * Gets the value of the 'udid' field.
-   * @return The value of the 'udid' field.
-   */
-  public java.lang.String getUdid() {
-    return udid;
-  }
-
-  /**
-   * Sets the value of the 'udid' field.
-   * @param value the value to set.
-   */
-  public void setUdid(java.lang.String value) {
-    this.udid = value;
   }
 
   /**
@@ -708,17 +708,17 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
     private java.lang.String guid;
     private java.lang.String cguid;
     private java.lang.String remote_ip;
+    private java.lang.String lang_cd;
+    private java.lang.String user_agent;
+    private long geo_id;
+    private java.lang.String udid;
     private java.lang.String referer;
     private long publisher_id;
     private long campaign_id;
     private long site_id;
-    private java.lang.String lang_cd;
-    private java.lang.String user_agent;
     private java.lang.String landing_page_url;
     private long src_rotation_id;
     private long dst_rotation_id;
-    private long geo_id;
-    private java.lang.String udid;
     private java.lang.String request_headers;
     private java.lang.String uri;
     private java.lang.String response_headers;
@@ -769,48 +769,48 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
         this.remote_ip = data().deepCopy(fields()[6].schema(), other.remote_ip);
         fieldSetFlags()[6] = true;
       }
-      if (isValidValue(fields()[7], other.referer)) {
-        this.referer = data().deepCopy(fields()[7].schema(), other.referer);
+      if (isValidValue(fields()[7], other.lang_cd)) {
+        this.lang_cd = data().deepCopy(fields()[7].schema(), other.lang_cd);
         fieldSetFlags()[7] = true;
       }
-      if (isValidValue(fields()[8], other.publisher_id)) {
-        this.publisher_id = data().deepCopy(fields()[8].schema(), other.publisher_id);
+      if (isValidValue(fields()[8], other.user_agent)) {
+        this.user_agent = data().deepCopy(fields()[8].schema(), other.user_agent);
         fieldSetFlags()[8] = true;
       }
-      if (isValidValue(fields()[9], other.campaign_id)) {
-        this.campaign_id = data().deepCopy(fields()[9].schema(), other.campaign_id);
+      if (isValidValue(fields()[9], other.geo_id)) {
+        this.geo_id = data().deepCopy(fields()[9].schema(), other.geo_id);
         fieldSetFlags()[9] = true;
       }
-      if (isValidValue(fields()[10], other.site_id)) {
-        this.site_id = data().deepCopy(fields()[10].schema(), other.site_id);
+      if (isValidValue(fields()[10], other.udid)) {
+        this.udid = data().deepCopy(fields()[10].schema(), other.udid);
         fieldSetFlags()[10] = true;
       }
-      if (isValidValue(fields()[11], other.lang_cd)) {
-        this.lang_cd = data().deepCopy(fields()[11].schema(), other.lang_cd);
+      if (isValidValue(fields()[11], other.referer)) {
+        this.referer = data().deepCopy(fields()[11].schema(), other.referer);
         fieldSetFlags()[11] = true;
       }
-      if (isValidValue(fields()[12], other.user_agent)) {
-        this.user_agent = data().deepCopy(fields()[12].schema(), other.user_agent);
+      if (isValidValue(fields()[12], other.publisher_id)) {
+        this.publisher_id = data().deepCopy(fields()[12].schema(), other.publisher_id);
         fieldSetFlags()[12] = true;
       }
-      if (isValidValue(fields()[13], other.landing_page_url)) {
-        this.landing_page_url = data().deepCopy(fields()[13].schema(), other.landing_page_url);
+      if (isValidValue(fields()[13], other.campaign_id)) {
+        this.campaign_id = data().deepCopy(fields()[13].schema(), other.campaign_id);
         fieldSetFlags()[13] = true;
       }
-      if (isValidValue(fields()[14], other.src_rotation_id)) {
-        this.src_rotation_id = data().deepCopy(fields()[14].schema(), other.src_rotation_id);
+      if (isValidValue(fields()[14], other.site_id)) {
+        this.site_id = data().deepCopy(fields()[14].schema(), other.site_id);
         fieldSetFlags()[14] = true;
       }
-      if (isValidValue(fields()[15], other.dst_rotation_id)) {
-        this.dst_rotation_id = data().deepCopy(fields()[15].schema(), other.dst_rotation_id);
+      if (isValidValue(fields()[15], other.landing_page_url)) {
+        this.landing_page_url = data().deepCopy(fields()[15].schema(), other.landing_page_url);
         fieldSetFlags()[15] = true;
       }
-      if (isValidValue(fields()[16], other.geo_id)) {
-        this.geo_id = data().deepCopy(fields()[16].schema(), other.geo_id);
+      if (isValidValue(fields()[16], other.src_rotation_id)) {
+        this.src_rotation_id = data().deepCopy(fields()[16].schema(), other.src_rotation_id);
         fieldSetFlags()[16] = true;
       }
-      if (isValidValue(fields()[17], other.udid)) {
-        this.udid = data().deepCopy(fields()[17].schema(), other.udid);
+      if (isValidValue(fields()[17], other.dst_rotation_id)) {
+        this.dst_rotation_id = data().deepCopy(fields()[17].schema(), other.dst_rotation_id);
         fieldSetFlags()[17] = true;
       }
       if (isValidValue(fields()[18], other.request_headers)) {
@@ -889,48 +889,48 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
         this.remote_ip = data().deepCopy(fields()[6].schema(), other.remote_ip);
         fieldSetFlags()[6] = true;
       }
-      if (isValidValue(fields()[7], other.referer)) {
-        this.referer = data().deepCopy(fields()[7].schema(), other.referer);
+      if (isValidValue(fields()[7], other.lang_cd)) {
+        this.lang_cd = data().deepCopy(fields()[7].schema(), other.lang_cd);
         fieldSetFlags()[7] = true;
       }
-      if (isValidValue(fields()[8], other.publisher_id)) {
-        this.publisher_id = data().deepCopy(fields()[8].schema(), other.publisher_id);
+      if (isValidValue(fields()[8], other.user_agent)) {
+        this.user_agent = data().deepCopy(fields()[8].schema(), other.user_agent);
         fieldSetFlags()[8] = true;
       }
-      if (isValidValue(fields()[9], other.campaign_id)) {
-        this.campaign_id = data().deepCopy(fields()[9].schema(), other.campaign_id);
+      if (isValidValue(fields()[9], other.geo_id)) {
+        this.geo_id = data().deepCopy(fields()[9].schema(), other.geo_id);
         fieldSetFlags()[9] = true;
       }
-      if (isValidValue(fields()[10], other.site_id)) {
-        this.site_id = data().deepCopy(fields()[10].schema(), other.site_id);
+      if (isValidValue(fields()[10], other.udid)) {
+        this.udid = data().deepCopy(fields()[10].schema(), other.udid);
         fieldSetFlags()[10] = true;
       }
-      if (isValidValue(fields()[11], other.lang_cd)) {
-        this.lang_cd = data().deepCopy(fields()[11].schema(), other.lang_cd);
+      if (isValidValue(fields()[11], other.referer)) {
+        this.referer = data().deepCopy(fields()[11].schema(), other.referer);
         fieldSetFlags()[11] = true;
       }
-      if (isValidValue(fields()[12], other.user_agent)) {
-        this.user_agent = data().deepCopy(fields()[12].schema(), other.user_agent);
+      if (isValidValue(fields()[12], other.publisher_id)) {
+        this.publisher_id = data().deepCopy(fields()[12].schema(), other.publisher_id);
         fieldSetFlags()[12] = true;
       }
-      if (isValidValue(fields()[13], other.landing_page_url)) {
-        this.landing_page_url = data().deepCopy(fields()[13].schema(), other.landing_page_url);
+      if (isValidValue(fields()[13], other.campaign_id)) {
+        this.campaign_id = data().deepCopy(fields()[13].schema(), other.campaign_id);
         fieldSetFlags()[13] = true;
       }
-      if (isValidValue(fields()[14], other.src_rotation_id)) {
-        this.src_rotation_id = data().deepCopy(fields()[14].schema(), other.src_rotation_id);
+      if (isValidValue(fields()[14], other.site_id)) {
+        this.site_id = data().deepCopy(fields()[14].schema(), other.site_id);
         fieldSetFlags()[14] = true;
       }
-      if (isValidValue(fields()[15], other.dst_rotation_id)) {
-        this.dst_rotation_id = data().deepCopy(fields()[15].schema(), other.dst_rotation_id);
+      if (isValidValue(fields()[15], other.landing_page_url)) {
+        this.landing_page_url = data().deepCopy(fields()[15].schema(), other.landing_page_url);
         fieldSetFlags()[15] = true;
       }
-      if (isValidValue(fields()[16], other.geo_id)) {
-        this.geo_id = data().deepCopy(fields()[16].schema(), other.geo_id);
+      if (isValidValue(fields()[16], other.src_rotation_id)) {
+        this.src_rotation_id = data().deepCopy(fields()[16].schema(), other.src_rotation_id);
         fieldSetFlags()[16] = true;
       }
-      if (isValidValue(fields()[17], other.udid)) {
-        this.udid = data().deepCopy(fields()[17].schema(), other.udid);
+      if (isValidValue(fields()[17], other.dst_rotation_id)) {
+        this.dst_rotation_id = data().deepCopy(fields()[17].schema(), other.dst_rotation_id);
         fieldSetFlags()[17] = true;
       }
       if (isValidValue(fields()[18], other.request_headers)) {
@@ -1245,159 +1245,6 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
     }
 
     /**
-      * Gets the value of the 'referer' field.
-      * @return The value.
-      */
-    public java.lang.String getReferer() {
-      return referer;
-    }
-
-    /**
-      * Sets the value of the 'referer' field.
-      * @param value The value of 'referer'.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setReferer(java.lang.String value) {
-      validate(fields()[7], value);
-      this.referer = value;
-      fieldSetFlags()[7] = true;
-      return this;
-    }
-
-    /**
-      * Checks whether the 'referer' field has been set.
-      * @return True if the 'referer' field has been set, false otherwise.
-      */
-    public boolean hasReferer() {
-      return fieldSetFlags()[7];
-    }
-
-
-    /**
-      * Clears the value of the 'referer' field.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearReferer() {
-      referer = null;
-      fieldSetFlags()[7] = false;
-      return this;
-    }
-
-    /**
-      * Gets the value of the 'publisher_id' field.
-      * @return The value.
-      */
-    public java.lang.Long getPublisherId() {
-      return publisher_id;
-    }
-
-    /**
-      * Sets the value of the 'publisher_id' field.
-      * @param value The value of 'publisher_id'.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setPublisherId(long value) {
-      validate(fields()[8], value);
-      this.publisher_id = value;
-      fieldSetFlags()[8] = true;
-      return this;
-    }
-
-    /**
-      * Checks whether the 'publisher_id' field has been set.
-      * @return True if the 'publisher_id' field has been set, false otherwise.
-      */
-    public boolean hasPublisherId() {
-      return fieldSetFlags()[8];
-    }
-
-
-    /**
-      * Clears the value of the 'publisher_id' field.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearPublisherId() {
-      fieldSetFlags()[8] = false;
-      return this;
-    }
-
-    /**
-      * Gets the value of the 'campaign_id' field.
-      * @return The value.
-      */
-    public java.lang.Long getCampaignId() {
-      return campaign_id;
-    }
-
-    /**
-      * Sets the value of the 'campaign_id' field.
-      * @param value The value of 'campaign_id'.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setCampaignId(long value) {
-      validate(fields()[9], value);
-      this.campaign_id = value;
-      fieldSetFlags()[9] = true;
-      return this;
-    }
-
-    /**
-      * Checks whether the 'campaign_id' field has been set.
-      * @return True if the 'campaign_id' field has been set, false otherwise.
-      */
-    public boolean hasCampaignId() {
-      return fieldSetFlags()[9];
-    }
-
-
-    /**
-      * Clears the value of the 'campaign_id' field.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearCampaignId() {
-      fieldSetFlags()[9] = false;
-      return this;
-    }
-
-    /**
-      * Gets the value of the 'site_id' field.
-      * @return The value.
-      */
-    public java.lang.Long getSiteId() {
-      return site_id;
-    }
-
-    /**
-      * Sets the value of the 'site_id' field.
-      * @param value The value of 'site_id'.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setSiteId(long value) {
-      validate(fields()[10], value);
-      this.site_id = value;
-      fieldSetFlags()[10] = true;
-      return this;
-    }
-
-    /**
-      * Checks whether the 'site_id' field has been set.
-      * @return True if the 'site_id' field has been set, false otherwise.
-      */
-    public boolean hasSiteId() {
-      return fieldSetFlags()[10];
-    }
-
-
-    /**
-      * Clears the value of the 'site_id' field.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearSiteId() {
-      fieldSetFlags()[10] = false;
-      return this;
-    }
-
-    /**
       * Gets the value of the 'lang_cd' field.
       * @return The value.
       */
@@ -1411,9 +1258,9 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setLangCd(java.lang.String value) {
-      validate(fields()[11], value);
+      validate(fields()[7], value);
       this.lang_cd = value;
-      fieldSetFlags()[11] = true;
+      fieldSetFlags()[7] = true;
       return this;
     }
 
@@ -1422,7 +1269,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
       * @return True if the 'lang_cd' field has been set, false otherwise.
       */
     public boolean hasLangCd() {
-      return fieldSetFlags()[11];
+      return fieldSetFlags()[7];
     }
 
 
@@ -1432,7 +1279,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
       */
     public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearLangCd() {
       lang_cd = null;
-      fieldSetFlags()[11] = false;
+      fieldSetFlags()[7] = false;
       return this;
     }
 
@@ -1450,9 +1297,9 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setUserAgent(java.lang.String value) {
-      validate(fields()[12], value);
+      validate(fields()[8], value);
       this.user_agent = value;
-      fieldSetFlags()[12] = true;
+      fieldSetFlags()[8] = true;
       return this;
     }
 
@@ -1461,7 +1308,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
       * @return True if the 'user_agent' field has been set, false otherwise.
       */
     public boolean hasUserAgent() {
-      return fieldSetFlags()[12];
+      return fieldSetFlags()[8];
     }
 
 
@@ -1471,122 +1318,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
       */
     public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearUserAgent() {
       user_agent = null;
-      fieldSetFlags()[12] = false;
-      return this;
-    }
-
-    /**
-      * Gets the value of the 'landing_page_url' field.
-      * @return The value.
-      */
-    public java.lang.String getLandingPageUrl() {
-      return landing_page_url;
-    }
-
-    /**
-      * Sets the value of the 'landing_page_url' field.
-      * @param value The value of 'landing_page_url'.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setLandingPageUrl(java.lang.String value) {
-      validate(fields()[13], value);
-      this.landing_page_url = value;
-      fieldSetFlags()[13] = true;
-      return this;
-    }
-
-    /**
-      * Checks whether the 'landing_page_url' field has been set.
-      * @return True if the 'landing_page_url' field has been set, false otherwise.
-      */
-    public boolean hasLandingPageUrl() {
-      return fieldSetFlags()[13];
-    }
-
-
-    /**
-      * Clears the value of the 'landing_page_url' field.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearLandingPageUrl() {
-      landing_page_url = null;
-      fieldSetFlags()[13] = false;
-      return this;
-    }
-
-    /**
-      * Gets the value of the 'src_rotation_id' field.
-      * @return The value.
-      */
-    public java.lang.Long getSrcRotationId() {
-      return src_rotation_id;
-    }
-
-    /**
-      * Sets the value of the 'src_rotation_id' field.
-      * @param value The value of 'src_rotation_id'.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setSrcRotationId(long value) {
-      validate(fields()[14], value);
-      this.src_rotation_id = value;
-      fieldSetFlags()[14] = true;
-      return this;
-    }
-
-    /**
-      * Checks whether the 'src_rotation_id' field has been set.
-      * @return True if the 'src_rotation_id' field has been set, false otherwise.
-      */
-    public boolean hasSrcRotationId() {
-      return fieldSetFlags()[14];
-    }
-
-
-    /**
-      * Clears the value of the 'src_rotation_id' field.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearSrcRotationId() {
-      fieldSetFlags()[14] = false;
-      return this;
-    }
-
-    /**
-      * Gets the value of the 'dst_rotation_id' field.
-      * @return The value.
-      */
-    public java.lang.Long getDstRotationId() {
-      return dst_rotation_id;
-    }
-
-    /**
-      * Sets the value of the 'dst_rotation_id' field.
-      * @param value The value of 'dst_rotation_id'.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setDstRotationId(long value) {
-      validate(fields()[15], value);
-      this.dst_rotation_id = value;
-      fieldSetFlags()[15] = true;
-      return this;
-    }
-
-    /**
-      * Checks whether the 'dst_rotation_id' field has been set.
-      * @return True if the 'dst_rotation_id' field has been set, false otherwise.
-      */
-    public boolean hasDstRotationId() {
-      return fieldSetFlags()[15];
-    }
-
-
-    /**
-      * Clears the value of the 'dst_rotation_id' field.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearDstRotationId() {
-      fieldSetFlags()[15] = false;
+      fieldSetFlags()[8] = false;
       return this;
     }
 
@@ -1604,9 +1336,9 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setGeoId(long value) {
-      validate(fields()[16], value);
+      validate(fields()[9], value);
       this.geo_id = value;
-      fieldSetFlags()[16] = true;
+      fieldSetFlags()[9] = true;
       return this;
     }
 
@@ -1615,7 +1347,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
       * @return True if the 'geo_id' field has been set, false otherwise.
       */
     public boolean hasGeoId() {
-      return fieldSetFlags()[16];
+      return fieldSetFlags()[9];
     }
 
 
@@ -1624,7 +1356,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearGeoId() {
-      fieldSetFlags()[16] = false;
+      fieldSetFlags()[9] = false;
       return this;
     }
 
@@ -1642,9 +1374,9 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setUdid(java.lang.String value) {
-      validate(fields()[17], value);
+      validate(fields()[10], value);
       this.udid = value;
-      fieldSetFlags()[17] = true;
+      fieldSetFlags()[10] = true;
       return this;
     }
 
@@ -1653,7 +1385,7 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
       * @return True if the 'udid' field has been set, false otherwise.
       */
     public boolean hasUdid() {
-      return fieldSetFlags()[17];
+      return fieldSetFlags()[10];
     }
 
 
@@ -1663,6 +1395,274 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
       */
     public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearUdid() {
       udid = null;
+      fieldSetFlags()[10] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'referer' field.
+      * @return The value.
+      */
+    public java.lang.String getReferer() {
+      return referer;
+    }
+
+    /**
+      * Sets the value of the 'referer' field.
+      * @param value The value of 'referer'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setReferer(java.lang.String value) {
+      validate(fields()[11], value);
+      this.referer = value;
+      fieldSetFlags()[11] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'referer' field has been set.
+      * @return True if the 'referer' field has been set, false otherwise.
+      */
+    public boolean hasReferer() {
+      return fieldSetFlags()[11];
+    }
+
+
+    /**
+      * Clears the value of the 'referer' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearReferer() {
+      referer = null;
+      fieldSetFlags()[11] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'publisher_id' field.
+      * @return The value.
+      */
+    public java.lang.Long getPublisherId() {
+      return publisher_id;
+    }
+
+    /**
+      * Sets the value of the 'publisher_id' field.
+      * @param value The value of 'publisher_id'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setPublisherId(long value) {
+      validate(fields()[12], value);
+      this.publisher_id = value;
+      fieldSetFlags()[12] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'publisher_id' field has been set.
+      * @return True if the 'publisher_id' field has been set, false otherwise.
+      */
+    public boolean hasPublisherId() {
+      return fieldSetFlags()[12];
+    }
+
+
+    /**
+      * Clears the value of the 'publisher_id' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearPublisherId() {
+      fieldSetFlags()[12] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'campaign_id' field.
+      * @return The value.
+      */
+    public java.lang.Long getCampaignId() {
+      return campaign_id;
+    }
+
+    /**
+      * Sets the value of the 'campaign_id' field.
+      * @param value The value of 'campaign_id'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setCampaignId(long value) {
+      validate(fields()[13], value);
+      this.campaign_id = value;
+      fieldSetFlags()[13] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'campaign_id' field has been set.
+      * @return True if the 'campaign_id' field has been set, false otherwise.
+      */
+    public boolean hasCampaignId() {
+      return fieldSetFlags()[13];
+    }
+
+
+    /**
+      * Clears the value of the 'campaign_id' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearCampaignId() {
+      fieldSetFlags()[13] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'site_id' field.
+      * @return The value.
+      */
+    public java.lang.Long getSiteId() {
+      return site_id;
+    }
+
+    /**
+      * Sets the value of the 'site_id' field.
+      * @param value The value of 'site_id'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setSiteId(long value) {
+      validate(fields()[14], value);
+      this.site_id = value;
+      fieldSetFlags()[14] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'site_id' field has been set.
+      * @return True if the 'site_id' field has been set, false otherwise.
+      */
+    public boolean hasSiteId() {
+      return fieldSetFlags()[14];
+    }
+
+
+    /**
+      * Clears the value of the 'site_id' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearSiteId() {
+      fieldSetFlags()[14] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'landing_page_url' field.
+      * @return The value.
+      */
+    public java.lang.String getLandingPageUrl() {
+      return landing_page_url;
+    }
+
+    /**
+      * Sets the value of the 'landing_page_url' field.
+      * @param value The value of 'landing_page_url'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setLandingPageUrl(java.lang.String value) {
+      validate(fields()[15], value);
+      this.landing_page_url = value;
+      fieldSetFlags()[15] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'landing_page_url' field has been set.
+      * @return True if the 'landing_page_url' field has been set, false otherwise.
+      */
+    public boolean hasLandingPageUrl() {
+      return fieldSetFlags()[15];
+    }
+
+
+    /**
+      * Clears the value of the 'landing_page_url' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearLandingPageUrl() {
+      landing_page_url = null;
+      fieldSetFlags()[15] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'src_rotation_id' field.
+      * @return The value.
+      */
+    public java.lang.Long getSrcRotationId() {
+      return src_rotation_id;
+    }
+
+    /**
+      * Sets the value of the 'src_rotation_id' field.
+      * @param value The value of 'src_rotation_id'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setSrcRotationId(long value) {
+      validate(fields()[16], value);
+      this.src_rotation_id = value;
+      fieldSetFlags()[16] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'src_rotation_id' field has been set.
+      * @return True if the 'src_rotation_id' field has been set, false otherwise.
+      */
+    public boolean hasSrcRotationId() {
+      return fieldSetFlags()[16];
+    }
+
+
+    /**
+      * Clears the value of the 'src_rotation_id' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearSrcRotationId() {
+      fieldSetFlags()[16] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'dst_rotation_id' field.
+      * @return The value.
+      */
+    public java.lang.Long getDstRotationId() {
+      return dst_rotation_id;
+    }
+
+    /**
+      * Sets the value of the 'dst_rotation_id' field.
+      * @param value The value of 'dst_rotation_id'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder setDstRotationId(long value) {
+      validate(fields()[17], value);
+      this.dst_rotation_id = value;
+      fieldSetFlags()[17] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'dst_rotation_id' field has been set.
+      * @return True if the 'dst_rotation_id' field has been set, false otherwise.
+      */
+    public boolean hasDstRotationId() {
+      return fieldSetFlags()[17];
+    }
+
+
+    /**
+      * Clears the value of the 'dst_rotation_id' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2.Builder clearDstRotationId() {
       fieldSetFlags()[17] = false;
       return this;
     }
@@ -2066,17 +2066,17 @@ public class FilterMessageV2 extends org.apache.avro.specific.SpecificRecordBase
         record.guid = fieldSetFlags()[4] ? this.guid : (java.lang.String) defaultValue(fields()[4]);
         record.cguid = fieldSetFlags()[5] ? this.cguid : (java.lang.String) defaultValue(fields()[5]);
         record.remote_ip = fieldSetFlags()[6] ? this.remote_ip : (java.lang.String) defaultValue(fields()[6]);
-        record.referer = fieldSetFlags()[7] ? this.referer : (java.lang.String) defaultValue(fields()[7]);
-        record.publisher_id = fieldSetFlags()[8] ? this.publisher_id : (java.lang.Long) defaultValue(fields()[8]);
-        record.campaign_id = fieldSetFlags()[9] ? this.campaign_id : (java.lang.Long) defaultValue(fields()[9]);
-        record.site_id = fieldSetFlags()[10] ? this.site_id : (java.lang.Long) defaultValue(fields()[10]);
-        record.lang_cd = fieldSetFlags()[11] ? this.lang_cd : (java.lang.String) defaultValue(fields()[11]);
-        record.user_agent = fieldSetFlags()[12] ? this.user_agent : (java.lang.String) defaultValue(fields()[12]);
-        record.landing_page_url = fieldSetFlags()[13] ? this.landing_page_url : (java.lang.String) defaultValue(fields()[13]);
-        record.src_rotation_id = fieldSetFlags()[14] ? this.src_rotation_id : (java.lang.Long) defaultValue(fields()[14]);
-        record.dst_rotation_id = fieldSetFlags()[15] ? this.dst_rotation_id : (java.lang.Long) defaultValue(fields()[15]);
-        record.geo_id = fieldSetFlags()[16] ? this.geo_id : (java.lang.Long) defaultValue(fields()[16]);
-        record.udid = fieldSetFlags()[17] ? this.udid : (java.lang.String) defaultValue(fields()[17]);
+        record.lang_cd = fieldSetFlags()[7] ? this.lang_cd : (java.lang.String) defaultValue(fields()[7]);
+        record.user_agent = fieldSetFlags()[8] ? this.user_agent : (java.lang.String) defaultValue(fields()[8]);
+        record.geo_id = fieldSetFlags()[9] ? this.geo_id : (java.lang.Long) defaultValue(fields()[9]);
+        record.udid = fieldSetFlags()[10] ? this.udid : (java.lang.String) defaultValue(fields()[10]);
+        record.referer = fieldSetFlags()[11] ? this.referer : (java.lang.String) defaultValue(fields()[11]);
+        record.publisher_id = fieldSetFlags()[12] ? this.publisher_id : (java.lang.Long) defaultValue(fields()[12]);
+        record.campaign_id = fieldSetFlags()[13] ? this.campaign_id : (java.lang.Long) defaultValue(fields()[13]);
+        record.site_id = fieldSetFlags()[14] ? this.site_id : (java.lang.Long) defaultValue(fields()[14]);
+        record.landing_page_url = fieldSetFlags()[15] ? this.landing_page_url : (java.lang.String) defaultValue(fields()[15]);
+        record.src_rotation_id = fieldSetFlags()[16] ? this.src_rotation_id : (java.lang.Long) defaultValue(fields()[16]);
+        record.dst_rotation_id = fieldSetFlags()[17] ? this.dst_rotation_id : (java.lang.Long) defaultValue(fields()[17]);
         record.request_headers = fieldSetFlags()[18] ? this.request_headers : (java.lang.String) defaultValue(fields()[18]);
         record.uri = fieldSetFlags()[19] ? this.uri : (java.lang.String) defaultValue(fields()[19]);
         record.response_headers = fieldSetFlags()[20] ? this.response_headers : (java.lang.String) defaultValue(fields()[20]);
