@@ -13,7 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class FilterMessage extends FilterMessageV2 {
-  public static org.apache.avro.Schema getClassSchema() {
+  public static Schema getClassSchema() {
     return SCHEMA$;
   }
 
