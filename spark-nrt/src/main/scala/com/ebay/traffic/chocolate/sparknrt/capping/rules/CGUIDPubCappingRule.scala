@@ -24,21 +24,18 @@ class CGUIDPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, ca
     $"publisher_id" =!= -1 and $"channel_action" === "CLICK"
   }
 
-  //parse CGUID from response_headers, if null, parse from request_headers
-  def parseCGUID(): Column = {
-    val CGUID_Response = split($"response_headers", "cguid/")(1).substr(0, 32)
-    val CGUID_Request = split($"request_headers", "cguid/")(1).substr(0, 32)
-    when(CGUID_Response.isNotNull, CGUID_Response).otherwise(CGUID_Request).alias("CGUID")
+  def cguid(): Column = {
+    $"cguid".alias("CGUID")
   }
 
   //counting columns
   def selectCondition(): Array[Column] = {
-    Array(parseCGUID(), cols(1))
+    Array(cguid(), cols(1))
   }
 
   //add new column if needed
   def withColumnCondition(): Column = {
-    when($"channel_action" === "CLICK", parseCGUID()).otherwise("NA")
+    when($"channel_action" === "CLICK", cguid()).otherwise("NA")
   }
 
   //final join condition
