@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.common;
 
 import com.ebay.app.raptor.chocolate.avro.*;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -279,6 +280,44 @@ public class TestHelper {
     message.setRtRuleFlags(0L);
     message.setNrtRuleFlags(0L);
     message.setSnid("testsnid");
+    return message;
+  }
+
+  /**
+   * Create filter message v1
+   *
+   * @param channelType channel type
+   * @param channelAction channel action
+   * @param snapshotId the snapshot ID
+   * @param publisherId the publisher ID
+   * @param campaignId the campaign ID
+   * @param timestamp the timestamp
+   * @param cguid the cguid in response cookie
+   * @return filter message
+   */
+  public static FilterMessageV1 newFilterMessageV1(ChannelType channelType,
+                                                   ChannelAction channelAction,
+                                                   long snapshotId,
+                                                   long publisherId,
+                                                   long campaignId,
+                                                   String cguid,
+                                                   long timestamp) {
+    FilterMessageV1 message = new FilterMessageV1();
+    message.setSnapshotId(snapshotId);
+    message.setTimestamp(timestamp);
+    message.setCampaignId(campaignId);
+    message.setPublisherId(publisherId);
+    message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|" +
+            "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
+    message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
+    message.setResponseHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|Set-Cookie: cguid/" + cguid +
+            "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setRtRuleFlags(0L);
+    message.setNrtRuleFlags(0L);
+    message.setSnid("snidtest");
     return message;
   }
 
