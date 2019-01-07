@@ -67,7 +67,7 @@ public class EventListenerResource implements EventsApi {
   }
 
   @Override
-  public Response version() {
+  public Response getVersion() {
     return Response.ok("1.0").build();
   }
 }

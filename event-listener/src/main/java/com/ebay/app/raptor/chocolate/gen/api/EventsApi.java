@@ -28,7 +28,7 @@ public interface EventsApi {
     Response event(Event body);
 
     @GET
-    @Path("/version")
+    @Path("/getVersion")
     @ApiOperation(value = "Get api version", notes = "Get marketing tracking api version", authorizations = {
       @Authorization(value = "app_scope_auth", scopes = {
         @AuthorizationScope(scope = "https://api.ebay.com/oauth/scope/@public", description = "This scope would allow public access."),
@@ -40,5 +40,5 @@ public interface EventsApi {
       @ApiResponse(code = 500, message = "The call was unsuccessful due to exceptions on the Server", response = Void.class) }
     )
     @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public') and hasAuthority('https://api.ebay.com/oauth/scope/base@public') and hasAuthority('https://api.ebay.com/oauth/scope/experience@public')")
-    Response version();
+    Response getVersion();
 }

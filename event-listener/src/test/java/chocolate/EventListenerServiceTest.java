@@ -65,7 +65,7 @@ public class EventListenerServiceTest {
   private String svcEndPoint;
 
   private final String eventsPath = "/marketingtracking/v1/events";
-  private final String versionPath = "/marketingtracking/v1/version";
+  private final String versionPath = "/marketingtracking/v1/getVersion";
 
   @Autowired
   private CollectionService collectionService;
