@@ -18,7 +18,7 @@
     <module>couchbase-tool</module>
     <module>zookeeper-tool</module>
     <module>cho-panda-etl-scp</module>
-      <module>CheckRecover-tool</module>
+    <module>CheckRecover-tool</module>
   </modules>
 
   <dependencies>

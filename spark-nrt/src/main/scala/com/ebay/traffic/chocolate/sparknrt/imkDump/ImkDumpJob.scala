@@ -107,7 +107,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   }
 
   def imkDumpCore(df: DataFrame): DataFrame = {
-    df
+    var imkDf = df
       .withColumn("batch_id", getBatchIdUdf())
       .withColumn("rvr_id", col("short_snapshot_id"))
       .withColumn("event_dt", getDateUdf(col("timestamp")))
@@ -133,10 +133,10 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("item_id", getItemIdUdf(col("uri")))
 
     val schema_imk_table = TableSchema("df_imk.json")
-    schema_imk_table.filterNotColumns(df.columns).foreach(e => {
-      df.withColumn(e, lit(schema_imk_table.defaultValues(e)))
+    schema_imk_table.filterNotColumns(imkDf.columns).foreach(e => {
+      imkDf = imkDf.withColumn(e, lit(schema_imk_table.defaultValues(e)))
     })
-    df.select(schema_imk_table.columnNames.head, schema_imk_table.columnNames.tail: _*).withColumn("delimeter", lit(""))
+    imkDf.select(schema_imk_table.columnNames.head, schema_imk_table.columnNames.tail: _*).withColumn("delimeter", lit(""))
   }
 
   val getUserQueryUdf: UserDefinedFunction = udf((uri: String) => Tools.getQueryString(uri))

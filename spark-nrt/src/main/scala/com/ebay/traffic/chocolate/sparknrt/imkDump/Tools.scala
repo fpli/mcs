@@ -105,7 +105,7 @@ object Tools extends Serializable{
       && rotationId.contains("-")) {
       rotationId.substring(0, rotationId.indexOf("-"))
     } else {
-      "0"
+      ""
     }
   }
 

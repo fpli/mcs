@@ -5,7 +5,7 @@
     {
       "name": "batch_id",
       "dataType": "string",
-      "default": null
+      "default": ""
     },
     {
       "name": "file_id",
@@ -25,7 +25,7 @@
     {
       "name": "event_dt",
       "dataType": "string",
-      "default": null
+      "default": ""
     },
     {
       "name": "srvd_pstn",
@@ -118,6 +118,11 @@
       "default": 0
     },
     {
+      "name": "pblshr_id",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
       "name": "lndng_page_dmn_name",
       "dataType": "string",
       "default": ""
@@ -135,7 +140,7 @@
     {
       "name": "rule_bit_flag_strng",
       "dataType": "string",
-      "default": null
+      "default": ""
     },
     {
       "name": "flex_field_vrsn_num",
@@ -245,7 +250,7 @@
     {
       "name": "event_ts",
       "dataType": "string",
-      "default": null
+      "default": ""
     },
     {
       "name": "dflt_bhrv_id",
@@ -285,7 +290,7 @@
     {
       "name": "user_map_ind",
       "dataType": "string",
-      "default": null
+      "default": ""
     },
     {
       "name": "creative_id",
@@ -304,23 +309,23 @@
     },
     {
       "name": "transaction_id",
-      "dataType": "long",
-      "default": null
+      "dataType": "string",
+      "default": ""
     },
     {
       "name": "item_id",
-      "dataType": "long",
-      "default": null
+      "dataType": "string",
+      "default": ""
     },
     {
       "name": "roi_item_id",
-      "dataType": "long",
-      "default": null
+      "dataType": "string",
+      "default": ""
     },
     {
       "name": "cart_id",
-      "dataType": "long",
-      "default": null
+      "dataType": "string",
+      "default": ""
     },
     {
       "name": "extrnl_cookie",
@@ -329,8 +334,8 @@
     },
     {
       "name": "ebay_site_id",
-      "dataType": "long",
-      "default": null
+      "dataType": "string",
+      "default": ""
     },
     {
       "name": "rvr_url",
