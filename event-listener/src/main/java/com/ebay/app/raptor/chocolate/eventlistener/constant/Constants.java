@@ -5,6 +5,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.constant;
  */
 public class Constants {
   public static final String CID = "cid";
+  public static final String RID= "rid";
   public static final String MKEVT = "mkevt";
   public static final String VALID_MKEVT = "1";
   public static final String CAMPID = "campid";

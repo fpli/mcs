@@ -1,7 +1,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
@@ -150,6 +149,21 @@ public class CollectionService {
       return true;
     }
 
+    // parse rotation id from query rid
+    long rotationId = -1L;
+    if (parameters.containsKey(Constants.RID) && parameters.get(Constants.RID).get(0) != null) {
+      try {
+        String rawRotationId = parameters.get(Constants.RID).get(0);
+        rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
+      } catch (Exception e) {
+        logger.error(Errors.ERROR_INVALID_RID);
+        esMetrics.meter("InvalidRid");
+      }
+    } else {
+      logger.error(Errors.ERROR_NO_RID);
+      esMetrics.meter("NoRid");
+    }
+
     try {
       campaignId = Long.parseLong(parameters.get(Constants.CAMPID).get(0));
     } catch (Exception e) {
@@ -207,7 +221,7 @@ public class CollectionService {
     // Parse the response
     ListenerMessage message = parser.parse(request,
       startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl,
-      referer, null);
+      referer, rotationId, null);
 
     try {
       // Ubi tracking

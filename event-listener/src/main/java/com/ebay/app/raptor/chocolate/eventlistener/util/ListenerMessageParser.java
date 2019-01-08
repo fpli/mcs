@@ -36,20 +36,22 @@ public class ListenerMessageParser {
   /**
    * Convert a HTTP request to a listener message for Kafka.
    *
-   * @param clientRequest   raw client request
-   * @param startTime       as start time of the request
-   * @param campaignId      campaign id
-   * @param channelType     channel type
-   * @param action          action
-   * @param endUserContext  X-C-EBAY-ENDUSERCTX
-   * @param uri             landing page url
-   * @param referer         ad referer
-   * @param snid            snid
-   * @return                ListenerMessage object
+   * @param clientRequest  raw client request
+   * @param startTime      as start time of the request
+   * @param campaignId     campaign id
+   * @param channelType    channel type
+   * @param action         action
+   * @param endUserContext X-C-EBAY-ENDUSERCTX
+   * @param uri            landing page url
+   * @param referer        ad referer
+   * @param rotationId     rotation id
+   * @param snid           snid
+   * @return ListenerMessage object
    */
   public ListenerMessage parse(
     final HttpServletRequest clientRequest, Long startTime, Long campaignId,
-    final ChannelType channelType, final ChannelActionEnum action, String userId, IEndUserContext endUserContext, String uri, String referer, String snid) {
+    final ChannelType channelType, final ChannelActionEnum action, String userId, IEndUserContext endUserContext,
+    String uri, String referer, long rotationId, String snid) {
 
     ListenerMessage record = new ListenerMessage();
 
@@ -86,7 +88,11 @@ public class ListenerMessageParser {
     record.setGeoId(-1L);
 
     // udid
-    record.setUdid(endUserContext.getDeviceId());
+    if (endUserContext.getDeviceId() != null) {
+      record.setUdid(endUserContext.getDeviceId());
+    } else {
+      record.setUdid("");
+    }
 
     // referer
     record.setReferer(referer);
@@ -98,8 +104,8 @@ public class ListenerMessageParser {
     record.setLandingPageUrl(uri);
 
     // source and destination rotation id
-    record.setSrcRotationId(-1L);
-    record.setDstRotationId(-1L);
+    record.setSrcRotationId(Long.valueOf(rotationId));
+    record.setDstRotationId(Long.valueOf(rotationId));
 
     record.setUri(uri);
     // Set the channel type + HTTP headers + channel action
