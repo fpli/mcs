@@ -88,17 +88,15 @@ public class CollectionService {
        Priority 1. native app from body, as they are the most part 2. enduserctx, ginger client calls 3. referer header
      */
 
-    String platform = Constants.PLATFORM_UNKNOWN;
+
 
     String referer = null;
     if (!StringUtils.isEmpty(event.getReferrer())) {
       referer = event.getReferrer();
-      platform = Constants.PLATFORM_MOBILE;
     }
 
     if (StringUtils.isEmpty(referer)) {
       referer = endUserContext.getReferer();
-      platform = Constants.PLATFORM_DESKTOP;
     }
 
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
@@ -208,6 +206,20 @@ public class CollectionService {
       landingPageType = pathSegments.get(0);
     }
 
+    // platform check by user agent
+    UserAgentInfo agentInfo = (UserAgentInfo) requestContext
+      .getProperty(UserAgentInfo.NAME);
+    String platform = Constants.PLATFORM_UNKNOWN;
+    if(agentInfo.isDesktop()) {
+      platform = Constants.PLATFORM_DESKTOP;
+    } else if (agentInfo.isTablet()) {
+      platform = Constants.PLATFORM_TABLET;
+    } else if (agentInfo.isMobile()) {
+      platform = Constants.PLATFORM_MOBILE;
+    } else if (agentInfo.isNativeApp()) {
+      platform = Constants.PLATFORM_NATIVE_APP;
+    }
+
     Map<String, Object> additionalFields = new HashMap<>();
     additionalFields.put("channelAction", action);
     additionalFields.put("channelType", type);
@@ -244,8 +256,6 @@ public class CollectionService {
       requestTracker.addTag("rvrid", shortSnapshotId.getRepresentation(), Long.class);
 
       // populate device info
-      UserAgentInfo agentInfo = (UserAgentInfo) requestContext
-        .getProperty(UserAgentInfo.NAME);
       CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
     } catch (Exception ex) {
       logger.error("Error when tracking ubi: " + ex.toString());
