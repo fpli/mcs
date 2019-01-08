@@ -29,41 +29,6 @@ object Tools extends Serializable{
     map
   }
 
-  /**
-    * get one field from header
-    * @param request header
-    * @param key field key
-    * @return value
-    */
-  def getValueFromRequestHeader(request: String, key: String): String = {
-    if (StringUtils.isNotEmpty(request)) {
-      request.split("\\|").foreach(paramMapString => {
-        val paramMapStringArray = paramMapString.split(":")
-        val param = paramMapStringArray(0)
-        if(param.trim.equalsIgnoreCase(key) && paramMapStringArray.size >= 2) {
-          return paramMapString.substring(paramMapString.indexOf(":") + 1).trim
-        }
-      })
-    }
-    ""
-  }
-
-  def getNumValueFromRequestHeader(request: String, key: String): String = {
-    if (StringUtils.isNotEmpty(request)) {
-      request.split("\\|").foreach(paramMapString => {
-        val paramMapStringArray = paramMapString.split(":")
-        val param = paramMapStringArray(0)
-        if(param.trim.equalsIgnoreCase(key) && paramMapStringArray.size >= 2) {
-          val valueStr = paramMapString.substring(paramMapString.indexOf(":") + 1).trim
-          if (StringUtils.isNumeric(valueStr)) {
-            return valueStr
-          }
-        }
-      })
-    }
-    "0"
-  }
-
   def getDateTimeFromTimestamp(timestamp: Long): String = {
     val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
     df.format(timestamp)
@@ -210,60 +175,11 @@ object Tools extends Serializable{
     }
   }
 
-  /**
-    * get one field value from one header
-    * @param request_header all headers
-    * @param headerField header name
-    * @param key field name
-    * @return value
-    */
-  def getFromHeader(request_header: String, headerField: String, key: String): String = {
-    if (StringUtils.isNotEmpty(request_header)) {
-      getValueFromHeaderField(getValueFromRequestHeader(request_header, headerField), key)
-    } else {
-      ""
-    }
-  }
-
-  /**
-    * get value from one header field
-    * @param headerField field of one header
-    * @param key key name
-    * @return value
-    */
-  def getValueFromHeaderField(headerField: String, key: String): String = {
-    if(StringUtils.isNotEmpty(headerField)) {
-      headerField.split(",").foreach(keyValueMap => {
-        val keyValueArray = keyValueMap.split("=")
-        if(keyValueArray(0).trim.equalsIgnoreCase(key)
-          && keyValueArray.length == 2 && StringUtils.isNotEmpty(keyValueArray(1).trim)) {
-          return keyValueArray(1).trim
-        }
-      })
-    }
-    ""
-  }
-
   def getUserMapInd(userId: String): String = {
     if(StringUtils.isEmpty(userId) || userId == "0") {
       "0"
     } else{
       "1"
-    }
-  }
-
-  /**
-    * replace '-' in ram rotationid and check the rotation id can be convert to long
-    * @param rotationId raw rotation id
-    * @return
-    */
-  def convertRotationId(rotationId: String): String = {
-    if (StringUtils.isNotEmpty(rotationId)
-      && rotationId.length <= 25
-      && StringUtils.isNumeric(rotationId.replace("-", ""))) {
-      rotationId.replace("-", "")
-    } else {
-      "0"
     }
   }
 

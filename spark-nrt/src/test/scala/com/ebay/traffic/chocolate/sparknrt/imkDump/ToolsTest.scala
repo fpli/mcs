@@ -12,17 +12,6 @@ class ToolsTest extends FunSuite {
     assert(Tools.getDateTimeFromTimestamp(1531377313068L) == "2018-07-12 14:35:13.068")
   }
 
-  test("test getValueFromRequestHeader") {
-    assert(Tools.getValueFromRequestHeader("Referer:http://www.google.com|User-Agent:Shuang-UP.Browser|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/76cbd9ea15b0a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/76cbd9ea15b0a93d12831833fff1c1065ad49dd7^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:157.55.39.67", "Referer")
-      == "http://www.google.com")
-  }
-
-  test("test getNumValueFromRequestHeader") {
-    assert(Tools.getNumValueFromRequestHeader("userid: 123", "userid") == "123")
-    assert(Tools.getNumValueFromRequestHeader("userid", "userid") == "0")
-    assert(Tools.getNumValueFromRequestHeader("userid: 123a", "userid") == "0")
-  }
-
   test("test getQueryString") {
     assert(Tools.getQueryString("http://www.ebay.com?a=test") == "a=test")
     assert(Tools.getQueryString("http://www.ebay.com") == "")
@@ -85,31 +74,12 @@ class ToolsTest extends FunSuite {
     assert(Tools.getCommandType("") == "1")
   }
 
-  test("test convertRotationId") {
-    assert(Tools.convertRotationId("711-15380-6615-0630") == "7111538066150630")
-    assert(Tools.convertRotationId("711-15380-6615-06303333333") == "")
-    assert(Tools.convertRotationId("711-15380-6615-063a0") == "")
-  }
-
   test("test getOutPutFileDate") {
     assert(Tools.getOutPutFileDate.length == 15)
   }
 
   test("test getBatchId") {
     println(Tools.getBatchId)
-  }
-
-  test("test getFromHeader") {
-    assert(Tools.getFromHeader("X-EBAY-C-TRACKING: guid=cc3af5c11660ac3d8844157cff04c381,cguid=cc3af5c71660ac3d8844157cff04c37c,tguid=cc3af5c11660ac3d8844157cff04c381,pageid=2067260,cobrandId=2",
-      "X-EBAY-C-TRACKING",
-    "cguid") == "cc3af5c71660ac3d8844157cff04c37c")
-    assert(Tools.getFromHeader("X-EBAY-C-TRACKING: cguid=cc3af5c71660ac3d8844157cff04c37c",
-      "X-EBAY-C-TRACKING",
-      "cguid") == "cc3af5c71660ac3d8844157cff04c37c")
-    assert(Tools.getFromHeader("", "X-EBAY-C-TRACKING",
-      "cguid") == "")
-    assert(Tools.getFromHeader("X-EBAY-C-TRACKING: guid=cc3", "X-EBAY-C-TRACKING",
-      "cguid") == "")
   }
 
   test("test getDomain") {

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<tasks>
+    <task name="cappingRule_EPN"
+          period="5"
+          timeDiff="0"
+          inputURI="hdfs://elvisha"
+          dataCountURI="hdfs://slickha"
+          inputDir="hdfs://elvisha/apps/tracking-events/EPN/dedupe/date="
+          dataCountDir="hdfs://slickha/apps/tracking-CheckRecover/countData/cappingRule_EPN">
+    </task>
+    <task name="cappingRule_DAP"
+          period="5"
+          timeDiff="0"
+          inputURI="hdfs://elvisha"
+          dataCountURI="hdfs://slickha"
+          inputDir="hdfs://elvisha/apps/tracking-events/DISPLAY/dedupe/date="
+          dataCountDir="hdfs://slickha/apps/tracking-CheckRecover/countData/cappingRule_DAP">
+    </task>
+    <task name="dedupeAndSink_EPN"
+          period="5"
+          timeDiff="0"
+          inputURI="hdfs://elvisha"
+          dataCountURI="hdfs://slickha"
+          inputDir="hdfs://elvisha/apps/tracking-events/EPN/capping/date="
+          dataCountDir="hdfs://slickha/apps/tracking-CheckRecover/countData/dedupeAndSink_EPN">
+    </task>
+    <task name="dedupeAndSink_DAP"
+          period="5"
+          timeDiff="0"
+          inputURI="hdfs://elvisha"
+          dataCountURI="hdfs://slickha"
+          inputDir="hdfs://elvisha/apps/tracking-events/DISPLAY/capping/date="
+          dataCountDir="hdfs://slickha/apps/tracking-CheckRecover/countData/dedupeAndSink_EPN">
+    </task>
+    <task name="AppdlDistcpFromS3"
+          period="0"
+          timeDiff="28"
+          inputURI="hdfs://slickha"
+          dataCountURI="hdfs://slickha"
+          inputDir="hdfs://slickha/apps/appdl/in_app_events/installs/dt="
+          dataCountDir="hdfs://slickha/apps/tracking-CheckRecover/countData/AppdlDistcpFromS3">
+    </task>
+    <task name="AppdlNorbTdToHadoop"
+          period="0"
+          timeDiff="46"
+          inputURI="hdfs://slickha"
+          dataCountURI="hdfs://slickha"
+          inputDir="hdfs://slickha/apps/appdl/norb/dt="
+          dataCountDir="hdfs://slickha/apps/tracking-CheckRecover/countData/AppdlNorbTdToHadoop">
+    </task>
+</tasks>

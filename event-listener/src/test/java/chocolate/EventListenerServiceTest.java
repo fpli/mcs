@@ -3,22 +3,13 @@ package chocolate;
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
-import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
-import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.cos.raptor.error.v3.ErrorMessageV3;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
-import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
-import com.ebay.platform.raptor.cosadaptor.token.SecureTokenFactory;
-import com.ebay.platform.raptor.ddsmodels.AppInfo;
-import com.ebay.platform.raptor.ddsmodels.DDSResponse;
-import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
-import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
-import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
 import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -30,16 +21,13 @@ import org.apache.kafka.common.serialization.LongSerializer;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -51,8 +39,6 @@ import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.doAnswer;
 
 /**
  * Created by xiangli4 on 11/19/18.
@@ -78,7 +64,8 @@ public class EventListenerServiceTest {
   private Client client;
   private String svcEndPoint;
 
-  private final String path = "/marketingtracking/v1/events";
+  private final String eventsPath = "/marketingtracking/v1/events";
+  private final String versionPath = "/marketingtracking/v1/getVersion";
 
   @Autowired
   private CollectionService collectionService;
@@ -187,10 +174,10 @@ public class EventListenerServiceTest {
       "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
 
     String tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
-      "tguid=8101a7ad1670ac3c41a87509fffc40b4,pageid=2067260,cobrandId=2";
+      "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
     // success request
     // iphone
-    Response response = client.target(svcEndPoint).path(path)
+    Response response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
       .header("X-EBAY-C-TRACKING", tracking)
@@ -199,7 +186,7 @@ public class EventListenerServiceTest {
     assertEquals(201, response.getStatus());
 
     // desktop
-    response = client.target(svcEndPoint).path(path)
+    response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxDesktop)
       .header("X-EBAY-C-TRACKING", tracking)
@@ -208,7 +195,7 @@ public class EventListenerServiceTest {
     assertEquals(201, response.getStatus());
 
     // android
-    response = client.target(svcEndPoint).path(path)
+    response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxAndroid)
       .header("X-EBAY-C-TRACKING", tracking)
@@ -217,7 +204,7 @@ public class EventListenerServiceTest {
     assertEquals(201, response.getStatus());
 
     // mweb
-    response = client.target(svcEndPoint).path(path)
+    response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxMweb)
       .header("X-EBAY-C-TRACKING", tracking)
@@ -226,7 +213,7 @@ public class EventListenerServiceTest {
     assertEquals(201, response.getStatus());
 
     // no X-EBAY-C-ENDUSERCTX
-    response = client.target(svcEndPoint).path(path)
+    response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-TRACKING", tracking)
       .accept(MediaType.APPLICATION_JSON_TYPE)
@@ -236,7 +223,7 @@ public class EventListenerServiceTest {
     assertEquals(4001, errorMessageV3.getErrors().get(0).getErrorId());
 
     // no X-EBAY-C-TRACKING
-    response = client.target(svcEndPoint).path(path)
+    response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
       .accept(MediaType.APPLICATION_JSON_TYPE)
@@ -247,7 +234,7 @@ public class EventListenerServiceTest {
 
     // no referer
     event.setReferrer(null);
-    response = client.target(svcEndPoint).path(path)
+    response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxNoReferer)
       .header("X-EBAY-C-TRACKING", tracking)
@@ -259,7 +246,7 @@ public class EventListenerServiceTest {
 
     // no query parameter
     event.setTargetUrl("https://www.ebay.com");
-    response = client.target(svcEndPoint).path(path)
+    response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
       .header("X-EBAY-C-TRACKING", tracking)
@@ -271,7 +258,7 @@ public class EventListenerServiceTest {
 
     // no mkevt
     event.setTargetUrl("https://www.ebay.com?cid=2");
-    response = client.target(svcEndPoint).path(path)
+    response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
       .header("X-EBAY-C-TRACKING", tracking)
@@ -283,7 +270,7 @@ public class EventListenerServiceTest {
 
     // invalid mkevt
     event.setTargetUrl("https://www.ebay.com?cid=2&mkevt=0");
-    response = client.target(svcEndPoint).path(path)
+    response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
       .header("X-EBAY-C-TRACKING", tracking)
@@ -296,7 +283,7 @@ public class EventListenerServiceTest {
     // no cid
     // service will pass but no message to kafka
     event.setTargetUrl("https://www.ebay.com?mkevt=1");
-    response = client.target(svcEndPoint).path(path)
+    response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
       .header("X-EBAY-C-TRACKING", tracking)
@@ -307,7 +294,7 @@ public class EventListenerServiceTest {
     // invalid cid
     // service will pass but no message to kafka
     event.setTargetUrl("https://www.ebay.com?cid=99&mkevt=1");
-    response = client.target(svcEndPoint).path(path)
+    response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
       .header("X-EBAY-C-TRACKING", tracking)
@@ -325,5 +312,14 @@ public class EventListenerServiceTest {
     consumerPaidSearch.close();
 
     assertEquals(4, listenerMessagesPaidSearch.size());
+  }
+
+  @Test
+  public void testVersion() {
+    Response response = client.target(svcEndPoint).path(versionPath)
+      .request()
+      .accept(MediaType.APPLICATION_JSON_TYPE)
+      .get();
+    assertEquals(200, response.getStatus());
   }
 }

@@ -115,7 +115,7 @@ public class RepeatClickRule extends BaseFilterRule {
   
   private long calculateFingerprint(FilterRequest event) {
     StringBuilder sb = new StringBuilder();
-    sb.append(event.getResponseCGUID());
+    sb.append(event.getResponseCguid());
     sb.append(event.getRotationID());
     sb.append(event.getCampaignId());
     

@@ -100,7 +100,7 @@ public class ESReporting {
    * send a reporting data
    */
   public void send(String key, long value, String docId) throws IOException{
-    final String index = createIndexIfNecessary();
+    final String index = createIndexIfNecessary(-1);
     sendReport(index, key, value, docId, -1, null);
   }
 
@@ -110,7 +110,7 @@ public class ESReporting {
    * @param eventTime data timestamp
    */
   public void send(String key, long value, String docId, long eventTime) throws IOException{
-    final String index = createIndexIfNecessary();
+    final String index = createIndexIfNecessary(eventTime);
     sendReport(index, key, value, docId, eventTime, null);
   }
 
@@ -120,7 +120,7 @@ public class ESReporting {
    * @param additionalFields fields names except key and value
    */
   public void send(String key, long value, String docId, Map<String, Object> additionalFields) throws IOException{
-    final String index = createIndexIfNecessary();
+    final String index = createIndexIfNecessary(-1);
     sendReport(index, key, value, docId, -1, additionalFields);
   }
 
@@ -128,7 +128,7 @@ public class ESReporting {
    * send with data timestamp and additional fields
    */
   public void send(String key, long value, String docId, long eventTime, Map<String, Object> additionalFields) throws IOException{
-    final String index = createIndexIfNecessary();
+    final String index = createIndexIfNecessary(eventTime);
     sendReport(index, key, value, docId, eventTime, additionalFields);
   }
 
@@ -173,9 +173,12 @@ public class ESReporting {
     logger.info("meter: " + logName + "=" + value);
   }
 
-  private String createIndexIfNecessary() {
-    final Date date = new Date();
-    final String index = INDEX_PREFIX + sdf0.format(date);
+  private String createIndexIfNecessary(long eventTime) {
+    final String index;
+    if (eventTime != -1)
+      index = INDEX_PREFIX + sdf0.format(eventTime);
+    else
+      index = INDEX_PREFIX + sdf0.format(new Date());
     try {
       restClient.performRequest("GET", "/" + index);
     } catch (ResponseException e) {
@@ -228,7 +231,7 @@ public class ESReporting {
    * test
    */
   public static void main(String[] args) throws Exception {
-    ESReporting.init("chocolate-reporting-", "http://10.169.126.169:9200");
+    ESReporting.init("chocolate-reporting-", "http://10.148.181.34:9200");
     ESReporting reporting = ESReporting.getInstance();
 
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

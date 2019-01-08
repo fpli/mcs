@@ -54,10 +54,10 @@ public class RepeatEventRuleTest {
     public void testRepeatClickTriggerAndExpiry(){
         FilterRule ruleEPN= new RepeatClickRule(ChannelType.EPN);
         FilterRequest req = new FilterRequest();
-        req.setResponseCGUID("epn1");
+        req.setResponseCguid("epn1");
         req.setChannelAction(ChannelAction.CLICK);
         FilterRequest req2 = new FilterRequest();
-        req2.setResponseCGUID("epn2");
+        req2.setResponseCguid("epn2");
         req2.setChannelAction(ChannelAction.CLICK);
         req.setTimestamp(1000);
         assertEquals(0, ruleEPN.test(req), 0.001);
@@ -77,10 +77,10 @@ public class RepeatEventRuleTest {
         FilterRule rule2 = new RepeatClickRule(ChannelType.EPN);
 
         FilterRequest req = new FilterRequest();
-        req.setResponseCGUID("aaa");
+        req.setResponseCguid("aaa");
         req.setChannelAction(ChannelAction.CLICK);
         FilterRequest req2 = new FilterRequest();
-        req2.setResponseCGUID("bbb");
+        req2.setResponseCguid("bbb");
         req2.setChannelAction(ChannelAction.CLICK);
         req.setTimestamp(1000);
         req2.setTimestamp(1000);
