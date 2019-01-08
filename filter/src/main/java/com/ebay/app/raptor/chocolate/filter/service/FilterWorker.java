@@ -172,16 +172,31 @@ public class FilterWorker extends Thread {
   private FilterMessage processMessage(ListenerMessage message) throws InterruptedException {
     FilterMessage outMessage = new FilterMessage();
     outMessage.setSnapshotId(message.getSnapshotId());
+    outMessage.setShortSnapshotId(message.getShortSnapshotId());
     outMessage.setTimestamp(message.getTimestamp());
+    outMessage.setUserId(message.getUserId());
+    outMessage.setCguid(message.getCguid());
+    outMessage.setGuid(message.getGuid());
+    outMessage.setRemoteIp(message.getRemoteIp());
+    outMessage.setLangCd(message.getLangCd());
+    outMessage.setUserAgent(message.getUserAgent());
+    outMessage.setGeoId(message.getGeoId());
+    outMessage.setUdid(message.getUdid());
+    outMessage.setReferer(message.getReferer());
     // only EPN needs to get publisher id
     if (message.getPublisherId() == DEFAULT_PUBLISHER_ID && message.getChannelType() == ChannelType.EPN) {
       long publisherId = getPublisherId(message.getCampaignId());
       outMessage.setPublisherId(publisherId);
       message.setPublisherId(publisherId);
     }
-    else
+    else {
       outMessage.setPublisherId(message.getPublisherId());
+    }
     outMessage.setCampaignId(message.getCampaignId());
+    outMessage.setSiteId(message.getSiteId());
+    outMessage.setLandingPageUrl(message.getLandingPageUrl());
+    outMessage.setSrcRotationId(message.getSrcRotationId());
+    outMessage.setDstRotationId(message.getDstRotationId());
     outMessage.setRequestHeaders(message.getRequestHeaders());
     outMessage.setUri(message.getUri());
     outMessage.setResponseHeaders(message.getResponseHeaders());
