@@ -66,6 +66,10 @@ public class ScpJob {
         // init hdfs filesystem
         Configuration conf = new Configuration();
         conf.set("fs.hdfs.impl",org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
+        if ("prod".equals(env)) {
+            conf.addResource(Object.class.getResourceAsStream("/prod/core-site.xml"));
+            conf.addResource(Object.class.getResourceAsStream("/prod/hdfs-site.xml"));
+        }
         System.setProperty("HADOOP_USER_NAME", properties.getProperty("imkscp.hdfs.username"));
         fs = FileSystem.get(URI.create(properties.getProperty("imkscp.hdfs.uri")), conf);
 
