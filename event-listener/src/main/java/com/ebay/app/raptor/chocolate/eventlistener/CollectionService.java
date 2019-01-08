@@ -73,12 +73,6 @@ public class CollectionService {
       logError(ErrorType.NO_ENDUSERCTX);
     }
 
-    // add headers for compatible with chocolate filter and nrt
-    Map<String, String> addHeaders = new HashMap<>();
-
-    // response headers for compatible with chocolate filter and nrt
-    Map<String, String> responseHeaders = new HashMap<>();
-
     /* referer is from post body (mobile) and from header (NodeJs and handler)
        By internet standard, referer is typo of referrer.
        From ginger client call, the referer is embedded in enduserctx header, but we also check header for other cases.
@@ -87,9 +81,6 @@ public class CollectionService {
        Ginger client call will pass enduserctx in its header.
        Priority 1. native app from body, as they are the most part 2. enduserctx, ginger client calls 3. referer header
      */
-
-
-
     String referer = null;
     if (!StringUtils.isEmpty(event.getReferrer())) {
       referer = event.getReferrer();
@@ -109,33 +100,6 @@ public class CollectionService {
       logError(ErrorType.NO_USER_AGENT);
     }
 
-    addHeaders.put("Referer", referer);
-    addHeaders.put("X-eBay-Client-IP", endUserContext.getIPAddress());
-    addHeaders.put("User-Agent", endUserContext.getUserAgent());
-    // only add UserId header when token is user token, otherwise it is app consumer id
-    String userId;
-    if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
-      userId = raptorSecureContext.getSubjectImmutableId();
-      addHeaders.put("UserId", raptorSecureContext.getSubjectImmutableId());
-    } else {
-      userId = Long.toString(endUserContext.getOrigUserOracleId());
-    }
-    addHeaders.put("UserId", userId);
-    // add guid,cguid to cookie header to addHeaders and responseHeaders for compatibility
-    String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
-    StringBuilder cookie = new StringBuilder("npii=");
-    if (!StringUtils.isEmpty(trackingHeader)) {
-      for (String seg : trackingHeader.split(",")
-        ) {
-        String[] keyValue = seg.split("=");
-        if (keyValue.length == 2) {
-          cookie.append(keyValue[0]).append("/").append(keyValue[1]).append("^");
-        }
-      }
-    }
-    addHeaders.put("Cookie", cookie.toString());
-    responseHeaders.put("Set-Cookie", cookie.toString());
-
     String kafkaTopic;
     Producer<Long, ListenerMessage> producer;
     ChannelActionEnum channelAction;
@@ -149,7 +113,7 @@ public class CollectionService {
     // illegal url, rejected
     UriComponents uriComponents;
     uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    if(uriComponents == null) {
+    if (uriComponents == null) {
       logError(ErrorType.ILLEGAL_URL);
     }
 
@@ -210,7 +174,7 @@ public class CollectionService {
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext
       .getProperty(UserAgentInfo.NAME);
     String platform = Constants.PLATFORM_UNKNOWN;
-    if(agentInfo.isDesktop()) {
+    if (agentInfo.isDesktop()) {
       platform = Constants.PLATFORM_DESKTOP;
     } else if (agentInfo.isTablet()) {
       platform = Constants.PLATFORM_TABLET;
@@ -218,6 +182,14 @@ public class CollectionService {
       platform = Constants.PLATFORM_MOBILE;
     } else if (agentInfo.isNativeApp()) {
       platform = Constants.PLATFORM_NATIVE_APP;
+    }
+
+    // get user id from auth token if it's user token, else we get from end user ctx
+    String userId;
+    if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
+      userId = raptorSecureContext.getSubjectImmutableId();
+    } else {
+      userId = Long.toString(endUserContext.getOrigUserOracleId());
     }
 
     Map<String, Object> additionalFields = new HashMap<>();
@@ -234,12 +206,13 @@ public class CollectionService {
 
     // Parse the response
     ListenerMessage message = parser.parse(request,
-      startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, targetUrl, null, addHeaders,
-      responseHeaders);
+      startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl,
+      referer, null);
 
     try {
       // Ubi tracking
-      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker
+        .NAME);
 
       // page id
       requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
@@ -252,8 +225,7 @@ public class CollectionService {
       requestTracker.addTag("n2referrer", referer, String.class);
 
       // add rvr id
-      ShortSnapshotId shortSnapshotId = new ShortSnapshotId(message.getSnapshotId().longValue());
-      requestTracker.addTag("rvrid", shortSnapshotId.getRepresentation(), Long.class);
+      requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
 
       // populate device info
       CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
