@@ -91,7 +91,7 @@ public class ScpJob {
      * 1. get one data file from hdfs, sava the data file to local and touch one done file,
      * 2. scp one local data file and one local done file to ETL
      * 3. delete one local data file and done file
-     * 4. delete the data file in chocolate hdfs
+     * 4. archive the data file in chocolate hdfs
      * @throws Exception fast fail if any exception
      */
     private static void runJob() throws Exception {
@@ -102,7 +102,7 @@ public class ScpJob {
                 getFileInHdfs(status.getPath().toString(), status.getPath().getName());
                 scpToETL(status.getPath().getName());
                 deleteLocalFile(status.getPath().getName());
-                deleteFileInHdfs(status.getPath().toString());
+                archiveFileInHdfs(status.getPath().toString(), status.getPath().getName());
             }
         }
     }
@@ -181,19 +181,34 @@ public class ScpJob {
     }
 
     /**
-     * delete one data file in chocolate hdfs
+     * archive one data file in chocolate hdfs
      * not fast fail, ok when failed delete data file in hdfs
      * @param filePath full path of file in hdfs
+     * @param fileName filename
      */
-    private static void deleteFileInHdfs(String filePath) {
+    private static void archiveFileInHdfs(String filePath, String fileName) {
         try {
-            fs.delete(new Path(filePath), false);
-            esMetrics.meter("imk.dump.count.deleteHdfs");
+            Path dateOutputPath =new Path(properties.getProperty("imkscp.hdfs.archiveDir") + "/date=" + getDateFromDataFileName(fileName));
+            if (!fs.exists(dateOutputPath)) {
+                fs.mkdirs(dateOutputPath);
+            }
+            fs.rename(new Path(filePath), new Path(dateOutputPath, fileName));
+            esMetrics.meter("imk.dump.count.archiveHdfs");
         } catch (IOException e) {
-            esMetrics.meter("imk.dump.error.deleteHdfs");
-            System.out.println("failed delete file in Hdfs: " + filePath);
+            esMetrics.meter("imk.dump.error.archiveHdfs");
+            System.out.println("failed archive file in Hdfs: " + filePath);
             e.printStackTrace();
         }
+    }
+
+    /**
+     * get date string from data file name
+     * @param fileName filename, eg:imk_rvr_trckng_20181229_100542.V4.LM-SHC-16502886.PAID_SEARCH.dat.gz
+     * @return date string, eg: 20181229
+     */
+    private static String getDateFromDataFileName(String fileName) {
+        String filePrefix = properties.getProperty("imkscp.hdfs.fileprefix");
+        return fileName.substring(fileName.indexOf(filePrefix) + filePrefix.length()).substring(0, 8);
     }
 
 }

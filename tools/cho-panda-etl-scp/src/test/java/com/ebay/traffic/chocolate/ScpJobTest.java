@@ -47,6 +47,7 @@ public class ScpJobTest {
         props =  new Properties();
         props.setProperty("imkscp.local.workDir", localWordDir);
         props.setProperty("imkscp.hdfs.outputDir", "/outDir");
+        props.setProperty("imkscp.hdfs.archiveDir", "/archDir");
         props.setProperty("imkscp.hdfs.uri", hdfsURI);
         props.setProperty("imkscp.hdfs.username", "utuser");
 //        props.setProperty("imkscp.etl.command", "scp -i ~/.ssh/id_rsa_stack %s stack@choco-cent-2218410.lvs02.dev.ebayc3.com:/home/stack/%s");
@@ -71,6 +72,7 @@ public class ScpJobTest {
         ScpJob.main(args);
 
         Assert.assertTrue(!fileSystem.exists(new Path("/outDir/" + testDataFileName)));
+        Assert.assertTrue(fileSystem.exists(new Path("/archDir/date=20181211/" + testDataFileName)));
         Assert.assertTrue((new File(etlDir + "/" + testDataFileName)).exists());
     }
 
