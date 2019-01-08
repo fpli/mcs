@@ -2,17 +2,14 @@ package com.ebay.traffic.chocolate.sparknrt.capping.rules
 
 import java.text.SimpleDateFormat
 import java.util.Calendar
+
 import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import com.ebay.traffic.chocolate.sparknrt.capping.{CappingRule, Parameter}
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.split
-import org.apache.spark.sql.functions.count
-import org.apache.spark.sql.functions.lit
-import org.apache.spark.sql.functions.when
-import org.apache.spark.sql.functions.sum
+import org.apache.spark.sql.{Column, DataFrame}
+import org.apache.spark.sql.functions._
 import org.slf4j.LoggerFactory
 
 /**
@@ -47,6 +44,15 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
 
   lazy val cappingBit = bit
 
+  //parse IP from request_headers
+  def ip(ipColumn: String, alias: String): Column = {
+    if (ipColumn != null) {
+      col(ipColumn).alias(alias)
+    } else {
+      split(split($"request_headers", "X-eBay-Client-IP: ")(1), """\|""")(0).alias(alias)
+    }
+  }
+
   override def test(): DataFrame = {
 
     // filter click only, count ip and save to tmp file
@@ -62,8 +68,9 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
       val firstRow = head(0)
       val timestamp = firstRow.getLong(firstRow.fieldIndex("timestamp"));
 
-      dfIP = dfIP.withColumnRenamed("remote_ip", "IP")
-        .select($"IP")
+      val ipColumn = if (dfIP.columns.contains("remote_ip")) "remote_ip" else null
+
+      dfIP = dfIP.select(ip(ipColumn, "IP"))
         .groupBy($"IP").agg(count(lit(1)).alias("count"))
 
       // reduce the number of ip count file to 1
@@ -79,8 +86,7 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
 
       // IP rule
       var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).filter($"channel_action" === "CLICK")
-        .withColumnRenamed("remote_ip", "IP_1")
-        .select($"IP_1", $"snapshot_id")
+        .select(ip(ipColumn, "IP_1"), $"snapshot_id")
 
       val ipCountTempPathToday = baseTempDir + dateFiles.date
       val ipCountPathToday = baseDir + dateFiles.date

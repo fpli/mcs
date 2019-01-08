@@ -24,18 +24,25 @@ class CGUIDCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
     $"channel_action" === "CLICK"
   }
 
-  def cguid(): Column = {
-    $"cguid".alias("CGUID")
+  // parse CGUID from response_headers, if null, parse from request_headers
+  def cguid(cguidColumn: String): Column = {
+    if (cguidColumn != null) {
+      col(cguidColumn).alias("CGUID")
+    } else {
+      val CGUID_Response = split($"response_headers", "cguid/")(1).substr(0, 32)
+      val CGUID_Request = split($"request_headers", "cguid/")(1).substr(0, 32)
+      when(CGUID_Response.isNotNull, CGUID_Response).otherwise(CGUID_Request).alias("CGUID")
+    }
   }
 
   //counting columns
-  def selectCondition(): Array[Column] = {
-    Array(cguid())
+  def selectCondition(cguidColumn: String): Array[Column] = {
+    Array(cguid(cguidColumn))
   }
 
   //add new column if needed
-  def withColumnCondition(): Column = {
-    when($"channel_action" === "CLICK", cguid()).otherwise("NA")
+  def withColumnCondition(cguidColumn: String): Column = {
+    when($"channel_action" === "CLICK", cguid(cguidColumn)).otherwise("NA")
   }
 
   //final join condition
@@ -58,9 +65,11 @@ class CGUIDCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
       val firstRow = head(0)
       val timestamp = dfCGUID.select($"timestamp").first().getLong(0)
 
+      val cguidColumn = if (dfCGUID.columns.contains("cguid")) "cguid" else null
+
       //Step 2: Count by CGUID in this job, then integrate data to 1 file, and add timestamp to file name.
       //count by CGUID and in the job
-      dfCGUID = dfLoadCappingInJob(dfCGUID, selectCondition())
+      dfCGUID = dfLoadCappingInJob(dfCGUID, selectCondition(cguidColumn))
 
       //reduce the number of counting file to 1, and rename file name to include timestamp
       saveCappingInJob(dfCGUID, timestamp)
@@ -68,7 +77,7 @@ class CGUIDCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
       //Step 3: Read a new df for join purpose, just select CGUID and snapshot_id, and read previous data for counting purpose.
       //df for join
       val selectCols: Array[Column] = $"snapshot_id" +: cols
-      var df = dfForJoin(cols(0), withColumnCondition(), selectCols)
+      var df = dfForJoin(cols(0), withColumnCondition(cguidColumn), selectCols)
 
       //read previous data and add to count path
       val cguidCountPath = getCappingDataPath(timestamp)
