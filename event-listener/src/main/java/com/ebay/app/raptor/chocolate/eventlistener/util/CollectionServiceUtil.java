@@ -5,7 +5,35 @@ import com.ebay.tracking.api.IRequestScopeTracker;
 
 /**
  * @author xiangli4
- * Utility for parsing agent info to app tags
+ * Utility for parsing agent info to app tags. These logic will be removed after tracking team fixed the bug in
+ * raptor-io. The raptor-io api won't write app tags for now, so we implement the same logic as they do.
+ * <p>
+ * Tags determined by Device Detection Service - DDS, RaptorUserExperienceData & Collection Service
+ * https://github.corp.ebay.com/dds/RaptorDDSHandler/blob/master/README.md
+ * app (also called appid)
+ * Please see app tag for detailed explanation.
+ * https://wiki.vip.corp.ebay.com/display/X/app+tag
+ * <p>
+ * Tags determined by Device Detection Service - DDS & Collection Service
+ * https://github.corp.ebay.com/dds/RaptorDDSHandler/blob/master/README.md
+ * If isDesktop()
+ * dsktop
+ * If isTablet()
+ * tablet
+ * If isMobile()
+ * mobile
+ * If isNativeApp()
+ * nativeApp
+ * metadataAppNameVersion
+ * getAppInfo()
+ * an
+ * mav
+ * getDeviceInfo()
+ * mos
+ * osv
+ * res
+ * dn
+ * dm
  */
 public class CollectionServiceUtil {
 
@@ -16,6 +44,7 @@ public class CollectionServiceUtil {
 
   /**
    * get app id from user agent info
+   *
    * @param uaInfo UserAgentInfo object
    * @return defined id
    */
@@ -44,7 +73,8 @@ public class CollectionServiceUtil {
 
   /**
    * populate device tags
-   * @param info user agent info
+   *
+   * @param info    user agent info
    * @param tracker the tracking tracker
    */
   public static void populateDeviceDetectionParams(UserAgentInfo info, IRequestScopeTracker tracker) {

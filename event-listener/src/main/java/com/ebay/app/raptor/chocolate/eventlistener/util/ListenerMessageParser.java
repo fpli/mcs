@@ -3,9 +3,11 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.kernel.util.StringUtils;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,16 +36,76 @@ public class ListenerMessageParser {
   /**
    * Convert a HTTP request to a listener message for Kafka.
    *
-   * @param clientRequest to use in parsing uri and timestamp
-   * @param startTime     as start time of the request
-   * @return ListenerMessage  as the parse result.
+   * @param clientRequest  raw client request
+   * @param startTime      as start time of the request
+   * @param campaignId     campaign id
+   * @param channelType    channel type
+   * @param action         action
+   * @param endUserContext X-C-EBAY-ENDUSERCTX
+   * @param uri            landing page url
+   * @param referer        ad referer
+   * @param rotationId     rotation id
+   * @param snid           snid
+   * @return ListenerMessage object
    */
   public ListenerMessage parse(
     final HttpServletRequest clientRequest, Long startTime, Long campaignId,
-    final ChannelType channelType, final ChannelActionEnum action, String uri, String snid, Map<String, String>
-      addHeaders, Map<String, String> responseHeaders) {
+    final ChannelType channelType, final ChannelActionEnum action, String userId, IEndUserContext endUserContext,
+    String uri, String referer, long rotationId, String snid) {
 
     ListenerMessage record = new ListenerMessage();
+
+    // user id
+    record.setUserId(Long.valueOf(userId));
+
+    // guid, cguid from tracking header
+    String trackingHeader = clientRequest.getHeader("X-EBAY-C-TRACKING");
+    if (!org.springframework.util.StringUtils.isEmpty(trackingHeader)) {
+      for (String seg : trackingHeader.split(",")
+        ) {
+        String[] keyValue = seg.split("=");
+        if (keyValue.length == 2) {
+          if (keyValue[0].equalsIgnoreCase("guid")) {
+            record.setGuid(keyValue[1]);
+          }
+          if (keyValue[0].equalsIgnoreCase("cguid")) {
+            record.setCguid(keyValue[1]);
+          }
+        }
+      }
+    }
+
+    // remote ip
+    record.setRemoteIp(endUserContext.getIPAddress());
+
+    // language code
+    record.setLangCd("");
+
+    // user agent
+    record.setUserAgent(endUserContext.getUserAgent());
+
+    // geography identifier
+    record.setGeoId(-1L);
+
+    // udid
+    if (endUserContext.getDeviceId() != null) {
+      record.setUdid(endUserContext.getDeviceId());
+    } else {
+      record.setUdid("");
+    }
+
+    // referer
+    record.setReferer(referer);
+
+    // site id
+    record.setSiteId(-1L);
+
+    // landing page url
+    record.setLandingPageUrl(uri);
+
+    // source and destination rotation id
+    record.setSrcRotationId(Long.valueOf(rotationId));
+    record.setDstRotationId(Long.valueOf(rotationId));
 
     record.setUri(uri);
     // Set the channel type + HTTP headers + channel action
@@ -51,13 +113,15 @@ public class ListenerMessageParser {
     record.setHttpMethod(HttpMethod.GET);
     record.setChannelAction(action.getAvro());
     // Format record
-    record.setRequestHeaders(serializeRequestHeaders(clientRequest, addHeaders));
-    record.setResponseHeaders(serializeResponseHeaders(responseHeaders));
+    record.setRequestHeaders(serializeRequestHeaders(clientRequest));
+    record.setResponseHeaders("");
     record.setTimestamp(startTime);
 
     // Get snapshotId from request
     Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId(), startTime).getRepresentation();
     record.setSnapshotId(snapshotId);
+    ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId().longValue());
+    record.setShortSnapshotId(shortSnapshotId.getRepresentation());
 
     record.setCampaignId(campaignId);
     record.setPublisherId(DEFAULT_PUBLISHER_ID);
@@ -74,7 +138,7 @@ public class ListenerMessageParser {
    * @return headers string
    */
   // Or we change the result schema. Trade off needs to be considered here.
-  private String serializeRequestHeaders(HttpServletRequest clientRequest, Map<String, String> addHeaders) {
+  private String serializeRequestHeaders(HttpServletRequest clientRequest) {
 
     StringBuilder headersBuilder = new StringBuilder();
 
@@ -82,46 +146,13 @@ public class ListenerMessageParser {
     for (Enumeration<String> e = clientRequest.getHeaderNames(); e.hasMoreElements(); ) {
       String headerName = e.nextElement();
       // skip auth header
-      if(headerName.equalsIgnoreCase("Authorization")) {
+      if (headerName.equalsIgnoreCase("Authorization")) {
         continue;
       }
       headers.put(headerName, clientRequest.getHeader(headerName));
       headersBuilder.append("|").append(headerName).append(": ").append(clientRequest.getHeader(headerName));
     }
 
-    /** Add compatible headers. it will overwrite User-Agent, Referrer, X-eBay-Client-IP if have
-     *  User-Agent is always GingerClient when calling from handler
-     *  Referrer is null when calling from handler
-     *  X-eBay-Client-IP is null when calling from handler
-     */
-
-    for (String headerName : addHeaders.keySet()
-      ) {
-      headersBuilder.append("|").append(headerName).append(": ").append(addHeaders.get(headerName));
-    }
-
-    if (!StringUtils.isEmpty(headersBuilder.toString())) headersBuilder.deleteCharAt(0);
-
-    return headersBuilder.toString();
-  }
-
-  /**
-   * Serialize the headers
-   *
-   * @param responseHeaders compatible response headers
-   * @return headers string
-   */
-  // Or we change the result schema. Trade off needs to be considered here.
-  private String serializeResponseHeaders(Map<String, String> responseHeaders) {
-
-    StringBuilder headersBuilder = new StringBuilder();
-
-    /* Add compatible headers. Set-Cookie maybe more in future */
-
-    for (String headerName : responseHeaders.keySet()
-      ) {
-      headersBuilder.append("|").append(headerName).append(": ").append(responseHeaders.get(headerName));
-    }
     if (!StringUtils.isEmpty(headersBuilder.toString())) headersBuilder.deleteCharAt(0);
 
     return headersBuilder.toString();
