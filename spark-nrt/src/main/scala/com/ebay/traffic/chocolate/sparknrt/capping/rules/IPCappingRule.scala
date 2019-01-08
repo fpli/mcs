@@ -62,11 +62,9 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
       val firstRow = head(0)
       val timestamp = firstRow.getLong(firstRow.fieldIndex("timestamp"));
 
-      dfIP = dfIP.select(split($"request_headers", "X-eBay-Client-IP: ")(1).alias("tmpIP"))
-        .select(split($"tmpIP", """\|""")(0).alias("IP"))
+      dfIP = dfIP.withColumnRenamed("remote_ip", "IP")
+        .select($"IP")
         .groupBy($"IP").agg(count(lit(1)).alias("count"))
-        .drop($"request_headers")
-        .drop($"tmpIP")
 
       // reduce the number of ip count file to 1
       dfIP = dfIP.repartition(1)
@@ -80,10 +78,9 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
       fs.rename(src, target)
 
       // IP rule
-      var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
-          .withColumn("tmpIP", split($"request_headers", "X-eBay-Client-IP: ")(1))
-          .withColumn("IP_1", when($"channel_action" === "CLICK", split($"tmpIP", """\|""")(0)).otherwise("NA"))
-          .select($"IP_1", $"snapshot_id")
+      var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).filter($"channel_action" === "CLICK")
+        .withColumnRenamed("remote_ip", "IP_1")
+        .select($"IP_1", $"snapshot_id")
 
       val ipCountTempPathToday = baseTempDir + dateFiles.date
       val ipCountPathToday = baseDir + dateFiles.date

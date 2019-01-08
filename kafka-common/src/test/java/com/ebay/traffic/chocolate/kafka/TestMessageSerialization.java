@@ -14,6 +14,7 @@ import static com.ebay.traffic.chocolate.common.TestHelper.*;
 public class TestMessageSerialization {
 
   @Test
+  @Ignore
   public void testFilterMessageSerialization() throws Exception {
     final String topic = "marketingtech.ap.tracking-events.filtered-epn";
 
@@ -39,6 +40,7 @@ public class TestMessageSerialization {
   }
 
   @Test
+  @Ignore
   public void testListenerMessageSerialization() throws Exception {
     final String topic = "marketingtech.ap.tracking-events.listened-epn";
 
