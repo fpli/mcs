@@ -170,7 +170,7 @@ public class MessageObjectParser {
      * @param clientRequest Request
      * @return HttpMethodEnum
      */
-    protected HttpMethodEnum getMethod(HttpServletRequest clientRequest) {
+    public HttpMethodEnum getMethod(HttpServletRequest clientRequest) {
         HttpMethodEnum httpMethod = HttpMethodEnum.parse(clientRequest.getMethod());
         Validate.notNull(httpMethod, "Could not parse HTTP method from HTTP request=" + clientRequest.getMethod());
         return httpMethod;
@@ -297,7 +297,7 @@ public class MessageObjectParser {
         return true;
     }
 
-    private String serializeRequestHeaders(HttpServletRequest clientRequest) {
+    public String serializeRequestHeaders(HttpServletRequest clientRequest) {
         StringBuilder requestHeaders = new StringBuilder();
         for (Enumeration<String> e = clientRequest.getHeaderNames(); e.hasMoreElements();) {
             String headerName = e.nextElement();
