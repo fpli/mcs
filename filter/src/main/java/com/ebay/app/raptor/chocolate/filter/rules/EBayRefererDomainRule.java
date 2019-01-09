@@ -38,6 +38,21 @@ public class EBayRefererDomainRule extends GenericBlacklistRule {
   }
 
   @Override
+  public void readFromString(String blacklist) {
+    this.clear();
+
+    String[] parts = blacklist.split("[\n\r]");
+    for (String part : parts) {
+      String t = part.trim();
+      if (t.isEmpty() || t.startsWith("#")) {
+        continue;
+      }
+
+      this.add(t.startsWith("www.") ? t.substring(4).toLowerCase() : t.toLowerCase());
+    }
+  }
+
+  @Override
   protected String getFilteredValue(FilterRequest request) {
     return request.getReferrerDomain();
   }
