@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - Reporting
 
-usage="Usage: reporting.sh [channel] [workDir] [archiveDir]"
+usage="Usage: reporting.sh [channel] [workDir] [archiveDir] [elasticsearchUrl]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
@@ -17,6 +17,7 @@ bin=`cd "$bin">/dev/null; pwd`
 CHANNEL=$1
 WORK_DIR=$2
 ARCHIVE_DIR=$3
+ES_URL=$4
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
@@ -49,4 +50,5 @@ ${SPARK_HOME}/bin/spark-submit \
       --mode yarn \
       --channel ${CHANNEL} \
       --workDir "${WORK_DIR}" \
-      --archiveDir ${ARCHIVE_DIR}
+      --archiveDir ${ARCHIVE_DIR} \
+      --elasticsearchUrl ${ES_URL}

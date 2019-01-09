@@ -1,0 +1,157 @@
+{
+  "namespace": "com.ebay.app.raptor.chocolate.avro.versions",
+  "type": "record",
+  "name": "ListenerMessageV2",
+  "pk": [
+    "snapshot_id"
+  ],
+  "fields": [
+    {
+      "name": "snapshot_id",
+      "type": "long"
+    },
+    {
+      "name": "short_snapshot_id",
+      "type": "long"
+    },
+    {
+      "name": "timestamp",
+      "type": "long"
+    },
+    {
+      "name": "user_id",
+      "type": "long"
+    },
+    {
+      "name": "guid",
+      "type": "string"
+    },
+    {
+      "name": "cguid",
+      "type": "string"
+    },
+    {
+      "name": "remote_ip",
+      "type": "string"
+    },
+    {
+      "name": "lang_cd",
+      "type": "string"
+    },
+    {
+      "name": "user_agent",
+      "type": "string"
+    },
+    {
+      "name": "geo_id",
+      "type": "long"
+    },
+    {
+      "name": "udid",
+      "type": "string"
+    },
+    {
+      "name": "referer",
+      "type": "string"
+    },
+    {
+      "name": "publisher_id",
+      "type": "long"
+    },
+    {
+      "name": "campaign_id",
+      "type": "long"
+    },
+    {
+      "name": "site_id",
+      "type": "long"
+    },
+    {
+      "name": "landing_page_url",
+      "type": "string"
+    },
+    {
+      "name": "src_rotation_id",
+      "type": "long"
+    },
+    {
+      "name": "dst_rotation_id",
+      "type": "long"
+    },
+    {
+      "name": "request_headers",
+      "type": "string"
+    },
+    {
+      "name": "uri",
+      "type": "string"
+    },
+    {
+      "name": "response_headers",
+      "type": "string"
+    },
+    {
+      "name": "channel_action",
+      "type": {
+        "name": "ChannelAction",
+        "namespace": "com.ebay.app.raptor.chocolate.avro",
+        "type": "enum",
+        "symbols": [
+          "CLICK",
+          "IMPRESSION",
+          "VIEWABLE",
+          "SERVE",
+          "PAGE_IMP",
+          "VIEW_ITEM",
+          "VIEW_TIME",
+          "APP_FIRST_START"
+        ]
+      }
+    },
+    {
+      "name": "channel_type",
+      "type": {
+        "name": "ChannelType",
+        "namespace": "com.ebay.app.raptor.chocolate.avro",
+        "type": "enum",
+        "symbols": [
+          "DEFAULT",
+          "EPN",
+          "DISPLAY",
+          "PAID_SEARCH",
+          "SOCIAL_MEDIA",
+          "PAID_SOCIAL"
+        ]
+      }
+    },
+    {
+      "name": "http_method",
+      "type": {
+        "name": "HttpMethod",
+        "namespace": "com.ebay.app.raptor.chocolate.avro",
+        "type": "enum",
+        "symbols": [
+          "CONNECT",
+          "DELETE",
+          "GET",
+          "HEAD",
+          "OPTIONS",
+          "PATCH",
+          "POST",
+          "PUT",
+          "TRACE"
+        ]
+      }
+    },
+    {
+      "name": "snid",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "is_tracked",
+      "type": "boolean",
+      "default": false
+    }
+  ]
+}

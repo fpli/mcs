@@ -1,10 +1,10 @@
 package com.ebay.traffic.chocolate.sparknrt.sink;
 
-import com.ebay.app.raptor.chocolate.avro.FilterMessage
+import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
 import com.ebay.traffic.chocolate.common.{KafkaTestHelper, MiniKafkaCluster, TestHelper}
 import com.ebay.traffic.chocolate.kafka.{FilterMessageDeserializer, FilterMessageSerializer}
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
-import com.ebay.traffic.chocolate.sparknrt.couchbase.{CouchbaseClient, CouchbaseClientMock}
+import com.ebay.traffic.chocolate.sparknrt.couchbase.{CorpCouchbaseClient, CouchbaseClientMock}
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.kafka.clients.producer.{Callback, Producer, ProducerRecord}
 import org.apache.kafka.common.serialization.{LongDeserializer, LongSerializer}
@@ -20,6 +20,8 @@ class TestDedupeAndSinkUsingCouchbase extends BaseFunSuite {
   val outputDir = tmpPath + "/outputDir/"
 
   val topic = "test-kafka-topic"
+
+  val DEDUPE_KEY_PREFIX = "DEDUPE_"
 
   val channel = "EPN"
 
@@ -41,7 +43,9 @@ class TestDedupeAndSinkUsingCouchbase extends BaseFunSuite {
 
   override def beforeAll() = {
     CouchbaseClientMock.startCouchbaseMock()
-    CouchbaseClient.createClusterFunc = () => CouchbaseClientMock.connect()
+    CorpCouchbaseClient.getBucketFunc = () => {
+      (None, CouchbaseClientMock.connect().openBucket("default"))
+    }
     kafkaCluster = KafkaTestHelper.newKafkaCluster()
     producer = kafkaCluster.createProducer[java.lang.Long, FilterMessage](
       classOf[LongSerializer], classOf[FilterMessageSerializer])
@@ -52,8 +56,6 @@ class TestDedupeAndSinkUsingCouchbase extends BaseFunSuite {
   override def afterAll() = {
     job.stop()
     producer.close()
-    //CouchbaseClient.close(CouchbaseClient.dedupeBucket)
-    //CouchbaseClientMock.closeCouchbaseMock()
     KafkaTestHelper.shutdown()
   }
 
@@ -63,6 +65,7 @@ class TestDedupeAndSinkUsingCouchbase extends BaseFunSuite {
 
   def sendFilterMessage(snapshotId: Long, publisherId: Long, campaignId: Long, date: String): FilterMessage = {
     val message = TestHelper.newFilterMessage(snapshotId, publisherId, campaignId, getTimestamp(date))
+    message.setChannelAction(ChannelAction.CLICK)
     val record = new ProducerRecord[java.lang.Long, FilterMessage](
       topic, message.getSnapshotId, message)
     producer.send(record)
@@ -85,6 +88,10 @@ class TestDedupeAndSinkUsingCouchbase extends BaseFunSuite {
     sendFilterMessage(3L, 33L, 333L, date2) // send duplicate message
 
     job.run()
+
+    assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "1").equals(true))
+    assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "2").equals(true))
+    assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "3").equals(true))
 
     val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
     val dom = metadata.readDedupeOutputMeta()

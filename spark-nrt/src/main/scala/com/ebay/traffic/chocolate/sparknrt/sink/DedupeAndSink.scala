@@ -7,12 +7,11 @@ import java.util.{Date, Properties}
 
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
-import com.ebay.app.raptor.chocolate.avro.FilterMessage
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
+import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
 import com.ebay.traffic.chocolate.monitoring.ESMetrics
 import com.ebay.traffic.chocolate.spark.kafka.KafkaRDD
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import com.ebay.traffic.chocolate.sparknrt.couchbase.CouchbaseClient
+import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.fs.Path
@@ -59,9 +58,10 @@ class DedupeAndSink(params: Parameter)
   lazy val baseTempDir = baseDir + "/tmp/"
   lazy val sparkDir = baseDir + "/spark/"
   lazy val outputDir = params.outputDir + "/" + params.channel + "/dedupe/"
-  lazy val couchbaseDedupe = params.couchbaseDedupe
+  var couchbaseDedupe = params.couchbaseDedupe
   lazy val couchbaseTTL = params.couchbaseTTL
-  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-";
+  lazy val DEDUPE_KEY_PREFIX = "DEDUPE_"
+  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
 
   @transient lazy val metadata = {
     Metadata(params.workDir, params.channel, MetadataEnum.dedupe)
@@ -113,7 +113,7 @@ class DedupeAndSink(params: Parameter)
 
           writer = AvroParquetWriter.
             builder[GenericRecord](new Path(baseTempDir + file))
-            .withSchema(FilterMessageV1.getClassSchema())
+            .withSchema(FilterMessage.getClassSchema())
             .withConf(hadoopConf)
             .withCompressionCodec(CompressionCodecName.SNAPPY)
             .build()
@@ -121,20 +121,24 @@ class DedupeAndSink(params: Parameter)
           writers.put(date, writer)
         }
         // write message
-        if(couchbaseDedupe) {
-          if(!CouchbaseClient.dedupeBucket.exists(message.getSnapshotId.toString)) {
-            CouchbaseClient.dedupeBucket.upsert(JsonDocument.create(message.getSnapshotId.toString, couchbaseTTL, JsonObject.empty()))
-            writer.write(message)
-            if (metrics != null) {
-              metrics.meter("Dedupe-Temp-Output", 1, message.getTimestamp, message.getChannelAction.toString, message.getChannelType.toString)
+        // couchbase dedupe only apply on click
+        if(message.getChannelAction == ChannelAction.CLICK && couchbaseDedupe) {
+          try {
+            val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+            val key = DEDUPE_KEY_PREFIX + message.getSnapshotId.toString
+            if (!bucket.exists(key)) {
+              bucket.upsert(JsonDocument.create(key, couchbaseTTL, JsonObject.empty()))
+              writeMessage(writer, message)
             }
+            CorpCouchbaseClient.returnClient(cacheClient)
+          } catch {
+            case e: Exception =>
+              logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
+              writeMessage(writer, message)
+              couchbaseDedupe = false
           }
-        }
-        else {
-          writer.write(message)
-          if (metrics != null) {
-            metrics.meter("Dedupe-Temp-Output", 1, message.getTimestamp, message.getChannelAction.toString, message.getChannelType.toString)
-          }
+        } else {
+          writeMessage(writer, message)
         }
       }
       if (metrics != null)
@@ -188,19 +192,17 @@ class DedupeAndSink(params: Parameter)
     // dedupe current df
     var df = readFilesAsDF(baseDir + "/" + date)
 
-    if (!couchbaseDedupe) {
-      df = df.dropDuplicates(SNAPSHOT_ID_COL)
-      val dedupeCompMeta = metadata.readDedupeCompMeta
-      if (dedupeCompMeta != null && dedupeCompMeta.contains(date)) {
-        val input = dedupeCompMeta.get(date).get
-        val dfDedupe = readFilesAsDFEx(input)
-          .select($"snapshot_id")
-          .withColumnRenamed(SNAPSHOT_ID_COL, "snapshot_id_1")
+    df = df.dropDuplicates(SNAPSHOT_ID_COL)
+    val dedupeCompMeta = metadata.readDedupeCompMeta
+    if (dedupeCompMeta != null && dedupeCompMeta.contains(date)) {
+      val input = dedupeCompMeta.get(date).get
+      val dfDedupe = readFilesAsDFEx(input)
+        .select($"snapshot_id")
+        .withColumnRenamed(SNAPSHOT_ID_COL, "snapshot_id_1")
 
-        df = df.join(dfDedupe, $"snapshot_id" === $"snapshot_id_1", "left_outer")
-          .filter($"snapshot_id_1".isNull)
-          .drop("snapshot_id_1")
-      }
+      df = df.join(dfDedupe, $"snapshot_id" === $"snapshot_id_1", "left_outer")
+        .filter($"snapshot_id_1".isNull)
+        .drop("snapshot_id_1")
     }
 
     // reduce the number of file
@@ -215,5 +217,12 @@ class DedupeAndSink(params: Parameter)
 
   def setProperties(props: Properties) = {
     this.properties = props
+  }
+
+  def writeMessage(writer: ParquetWriter[GenericRecord], message: FilterMessage)  = {
+    writer.write(message)
+    if (metrics != null) {
+      metrics.meter("Dedupe-Temp-Output", 1, message.getTimestamp, message.getChannelAction.toString, message.getChannelType.toString)
+    }
   }
 }

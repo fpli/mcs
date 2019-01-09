@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<tasks>
+    <task name="test-checkJob"
+          period="5"
+          timeDiff="0"
+          inputURI=""
+          dataCountURI=""
+          inputDir="/input/test"
+          dataCountDir="/input/countData">
+    </task>
+</tasks>

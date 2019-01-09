@@ -1,0 +1,1450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ebay:config-category-file xmlns:ebay="http://www.ebay.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<!--
+  Configuration file for SearchDriver. 
+  -->
+	<!-- Common configuration -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.General" alias="SDConfig.General" group="ebay.domain.search.integ.SearchDriverConfig" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute name="TwoTripLimit" value="200"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="RetryCount" value="0"/>
+		<attribute name="QueryPath" value="/query"/>
+		<attribute name="ItemsPath" value="/items"/>
+		<attribute name="AsyncSearchMechanism" value="CommandRunner"/>
+	</config-category>
+	<!-- Title index. -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.Title.Primary.1" alias="SDConfig.Index.Title.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.Title" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="titledb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="vngnode1.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9044"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.Title.Backup1.1" alias="SDConfig.Index.Title.Backup.1" group="ebay.domain.search.integ.SearchDriverConfig.Title" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="descdb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxdesc-agg-phx-001.vip.ebay.com"/>
+			<default value="vngnode2.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9044"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="true"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitlePreview.Primary.1" alias="SDConfig.Index.TitlePreview.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitlePreview" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="sn-batch.vip.ebay.com"/>
+			<case case="sandbox" value="sn-batch.vip.ebay.com"/>
+			<default value="sn-batch.vip.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- Title and Description.-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleAndDescription.Primary.1" alias="SDConfig.Index.TitleAndDescription.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleAndDescription" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="sdesc-agg-phx-001.vip.ebay.com"/>
+			<case case="sandbox" value="sbxdesc-agg-phx-001.vip.ebay.com"/>
+			<default value="desc-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9080"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleAndDescription.Backup1.1" alias="SDConfig.Index.TitleAndDescription.Backup.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleAndDescription" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="titledb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="vngnode1.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9045"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="true"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleAndDescriptionPreview.Primary.1" alias="SDConfig.Index.TitleAndDescriptionPreview.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleAndDescriptionPreview" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="descdb.vip.ebay.com"/>
+			<case case="sandbox" value="descdb.vip.ebay.com"/>
+			<default value="descdb.vip.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- CompletedIq Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.CompletedIq.Primary.1" alias="SDConfig.Index.CompletedIq.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.CompletedIq" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="compiq-agg-slc-001.vip.ebay.com"/>
+			<case case="sandbox" value="compiq-agg-slc-001.vip.ebay.com"/>
+			<default value="compiq-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9060"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- Completed Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.Completed.Primary.1" alias="SDConfig.Index.Completed.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.Completed" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="completed-agg-phx-001.vip.ebay.com"/>
+			<case case="sandbox" value="completed-agg-phx-001.vip.ebay.com"/>
+			<default value="comp-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9040"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- There really isn't a backup for completed in production -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.Completed.Backup1.1" alias="SDConfig.Index.Completed.Backup1.1" group="ebay.domain.search.integ.SearchDriverConfig.Completed" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="completed-agg-phx-001.vip.ebay.com"/>
+			<default value="comp-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<default value="9040"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="true"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- Catalog Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.Catalog.Primary.1" alias="SDConfig.Index.Catalog.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.Catalog" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="ctlg-agg-phx-001.vip.ebay.com"/>
+			<case case="sandbox" value="ctlg-agg-phx-001.vip.ebay.com"/>
+			<default value="ctlg-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9030"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="90000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!--Local  Catalog Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.LocalCatalog.Primary.1" alias="SDConfig.Index.LocalCatalog.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.LocalCatalog" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="ctlgt-agg-phx-001.vip.ebay.com"/>
+			<case case="sandbox" value="ctlgt-agg-phx-001.vip.ebay.com"/>
+			<default value="ctlgt-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9050"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="50000"/>
+		<attribute name="HttpRecvTimeout" value="90000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- CatalogPreview Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.CatalogPreview.Primary.1" alias="SDConfig.Index.CatalogPreview.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.CatalogPreview" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="ctlg-agg-phx-001.vip.ebay.com"/>
+			<case case="sandbox" value="ctlg-agg-phx-001.vip.ebay.com"/>
+			<default value="ctlg-agg-phx-001.vip.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- Catalog Cache Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.CatalogCache.Primary.1" alias="SDConfig.Index.CatalogCache.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.CatalogCache" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="ctlg-agg-phx-001.vip.ebay.com"/>
+			<case case="sandbox" value="ctlg-agg-phx-001.vip.ebay.com"/>
+			<default value="ctlg-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9030"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- TitleCache -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleCache.Primary.1" alias="SDConfig.Index.TitleCache.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleCache" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="sn-cache.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="listings-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9010"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- TitleCacheOverflow -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleCacheOverflow.Primary.1" alias="SDConfig.Index.TitleCacheOverflow.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleCacheOverflow" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="sn-cache3.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="listings-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9000"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleCachePreview.Primary.1" alias="SDConfig.Index.TitleCachePreview.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleCachePreview" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="sn-batch.vip.ebay.com"/>
+			<case case="sandbox" value="sn-batch.vip.ebay.com"/>
+			<default value="sn-batch.vip.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- TitleCache.Backup -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleCache.Backup1.1" alias="SDConfig.Index.TitleCache.Backup1.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleCache" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="titledb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="vngnode2.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9046"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="true"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>		
+	</config-category>
+	<!-- LVM -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.LVM.Primary.1" alias="SDConfig.Index.LVM.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.LVM" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="lvmdb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- LVM backup (there isn't a dedicated LVM backup, so we just use Title as the backup) -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.LVM.Backup.1" alias="SDConfig.Index.LVM.Backup.1" group="ebay.domain.search.integ.SearchDriverConfig.LVM" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="titledb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="true"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- Promo index. -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.Promo.Primary.1" alias="SDConfig.Index.Promo.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.Promo" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="promodb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="3000"/>
+		<attribute name="HttpRecvTimeout" value="10000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- Batch Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.Batch.Primary.1" alias="SDConfig.Index.Batch.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.Batch" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="sn-batch.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="120000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- There really isn't a backup for batch in production -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.Batch.Backup1.1" alias="SDConfig.Index.Batch.Backup1.1" group="ebay.domain.search.integ.SearchDriverConfig.Batch" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="sn-batch.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="vngnode1.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9050"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="true"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="120000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- Store Index incomplete-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.Store.Primary.1" alias="SDConfig.Index.Store.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.Store" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="storenamedb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxsname-qry-phx-001.vip.ebay.com"/>
+			<default value="sname-qry-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- 
+       MyEbayItem Index Staging/Production
+-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.MyEbayItem.Primary.1" alias="SDConfig.Index.MyEbayItem.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.MyEbayItem" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="meitemdb.vip.ebay.com"/>
+			<default value="qamatrixvn01.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- 
+       MyEbayItem Index Area51
+-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.MyEbayItemArea51.Primary.1" alias="SDConfig.Index.MyEbayItemArea51.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.MyEbayItemArea51" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="add_correct_ip_address"/>
+			<default value="10.254.224.51"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="add_correct_port"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- 
+       MyEbayItem Index Feature
+-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.MyEbayItemFeature.Primary.1" alias="SDConfig.Index.MyEbayItemFeature.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.MyEbayItemFeature" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="add_correct_ip_address"/>
+			<default value="qamatrix07.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="add_correct_port"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- 
+       MyEbayOffer(bid) Index Staging/Production
+-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.MyEbayOffer.Primary.1" alias="SDConfig.Index.MyEbayOffer.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.MyEbayOffer" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="mebiddb.vip.ebay.com"/>
+			<default value="qamatrixvn02.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<default value="9091"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- 
+       MyEbayOffer(bid) Index Area51
+-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.MyEbayOfferArea51.Primary.1" alias="SDConfig.Index.MyEbayOfferArea51.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.MyEbayOfferArea51" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="add_correct_ip_address"/>
+			<default value="10.254.224.51"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="add_correct_port"/>
+			<default value="9091"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- 
+       MyEbayOffer(bid) Index Feature
+-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.MyEbayOfferFeature.Primary.1" alias="SDConfig.Index.MyEbayOfferFeature.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.MyEbayOfferFeature" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="add_correct_ip_address"/>
+			<default value="qamatrix07.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="add_correct_port"/>
+			<default value="9091"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- 
+       MyEbayTransactions Index Staging/Production
+-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.MyEbayTransaction.Primary.1" alias="SDConfig.Index.MyEbayTransaction.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.MyEbayTransaction" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="metrandb.vip.ebay.com"/>
+			<default value="qamatrixvn02.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- 
+       MyEbayTransactions Index Area51
+-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.MyEbayTransactionArea51.Primary.1" alias="SDConfig.Index.MyEbayTransactionArea51.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.MyEbayTransactionArea51" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="add_correct_ip_address"/>
+			<default value="10.254.224.51"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="add_correct_port"/>
+			<default value="9092"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- 
+       MyEbayTransactions Index Feature
+-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.MyEbayTransactionFeature.Primary.1" alias="SDConfig.Index.MyEbayTransactionFeature.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.MyEbayTransactionFeature" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="add_correct_ip_address"/>
+			<default value="qamatrix07.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="add_correct_port"/>
+			<default value="9092"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- Primers -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitlePrimer.Primary.1" alias="SDConfig.Index.TitlePrimer.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitlePrimer" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="sn-primer.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- Primers.Backup -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitlePrimer.Backup1.1" alias="SDConfig.Index.TitlePrimer.Backup1.1" group="ebay.domain.search.integ.SearchDriverConfig.TitlePrimer" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="titledb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="true"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- Rhino back end. WARNING: this is NOT Speedy. This is only used by the RhinoDriver. -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.Rhino.Primary.1" alias="SDConfig.Index.Rhino.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.Rhino" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="rhino-agg-phx-001.vip.ebay.com"/>
+			<default value="c-rhino01.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="12000"/>
+		<attribute name="HttpRecvTimeout" value="600000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- User Search Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.UserSearch.Primary.1" alias="SDConfig.Index.UserSearch.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.UserSearch" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="user-search.vip.ebay.com"/>
+			<default value="qapardindex01.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="30000"/>
+		<attribute name="HttpRecvTimeout" value="120000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- TitleNonSIF index. -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleNonSIF.Primary.1" alias="SDConfig.Index.TitleNonSIF.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleNonSIF" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="titlensifdb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleNonSIF.Backup1.1" alias="SDConfig.Index.TitleNonSIF.Backup.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleNonSIF" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="descdb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxdesc-agg-phx-001.vip.ebay.com"/>
+			<default value="vngnode2.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9043"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="true"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- TitleSIF Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleSIF.Primary.1" alias="SDConfig.Index.TitleSIF.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleSIF" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="titlesifdb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="vngnode1.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9049"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleSIF.Backup1.1" alias="SDConfig.Index.TitleSIF.Backup.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleSIF" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="descdb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxdesc-agg-phx-001.vip.ebay.com"/>
+			<default value="vngnode2.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9047"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="true"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- TitleAggregator Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleAggregator.Primary.1" alias="SDConfig.Index.TitleAggregator.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleAggregator" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="titledb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleAggregator.Backup1.1" alias="SDConfig.Index.TitleAggregator.Backup.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleAggregator" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="descdb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxdesc-agg-phx-001.vip.ebay.com"/>
+			<default value="vngnode2.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9047"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="true"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- TitleAggregator Index only for cobrand yahoo toolbar api -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleAggregatorYahooToolbar.Primary.1" alias="SDConfig.Index.TitleAggregatorYahooToolbar.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleAggregatorYahooToolbar" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="phxstitledb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="150"/>
+		<attribute name="HttpRecvTimeout" value="150"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- TitleAggregatorCache -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleAggrCache.Primary.1" alias="SDConfig.Index.TitleAggrCache.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleAggrCache" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="qsxtitlecachedb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- TitleAggregatorCache.Backup -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleAggrCache.Backup1.1" alias="SDConfig.Index.TitleAggrCache.Backup1.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleAggrCache" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="qsxtitlecachedb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="vngnode2.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9046"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="true"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- Classifieds Search Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.ClassifiedAdDescription.Primary.1" alias="SDConfig.Index.ClassifiedAdDescription.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.ClassifiedAdDescription" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="denclassydb.vip.ebay.com"/>
+			<default value="vngnode1.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<default value="9045"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="5000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- Magellan Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.Magellan.Primary.1" alias="SDConfig.Index.Magellan.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.Magellan" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="magellan.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="vngnode1.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9052"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.Magellan.Backup1.1" alias="SDConfig.Index.Magellan.Backup.1" group="ebay.domain.search.integ.SearchDriverConfig.Magellan" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="descdb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxdesc-agg-phx-001.vip.ebay.com"/>
+			<default value="vngnode1.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9052"/>
+			<case case="sandbox" value="9052"/>
+			<default value="9052"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="true"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- HalfItem Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.HalfItem.Primary.1" alias="SDConfig.Index.HalfItem.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.HalfItem" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="half-agg-sqw-001.vip.ebay.com"/>
+			<default value="half-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<default value="9085"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="90000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- Reviews and Guides -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.UserContent.Primary.1" alias="SDConfig.Index.UserContent.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.UserContent" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="savalon-qry-qsx-001.vip.ebay.com"/>
+			<case case="sandbox" value="savalon-qry-sqw-001.vip.ebay.com"/>
+			<default value="avalon-qry-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- User Info -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.UserInfo.Primary.1" alias="SDConfig.Index.UserInfo.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.UserInfo" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="uinfodb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxuinfo-qry-phx-001.vip.ebay.com"/>
+			<default value="uinfo-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9020"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- Ulink Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.Ulink.Primary.1" alias="SDConfig.Index.Ulink.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.Ulink" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="qsxalusrch.vip.ebay.com"/>
+			<default value="acclinking-agg-vip.qa.ebay.com"/>
+			<!--			<default value="searchdev04.arch.ebay.com"/> -->
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<default value="9070"/>
+			<!--		<default value="8048"/>-->
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- CompletedAggregator Index do NOT use -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.CompletedAggregator.Primary.1" alias="SDConfig.Index.CompletedAggregator.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.CompletedAggregator" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="titledb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="comp-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9040"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- CompletedSIFAggregator Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.CompletedSIFAggregator.Primary.1" alias="SDConfig.Index.CompletedSIFAggregator.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.CompletedSIFAggregator" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="qsxmprdb.vip.den.ebay.com"/>
+			<case case="sandbox" value="qsxmprdb.vip.den.ebay.com"/>
+			<default value="qasearch01.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="120000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- Want it now Search.-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.WantedItem.Primary.1" alias="SDConfig.Index.WantedItem.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.WantedItem" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="descdb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxdesc-agg-phx-001.vip.ebay.com"/>
+			<default value="desc-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9080"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- Express Sale Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.ExpressSale.Primary.1" alias="SDConfig.Index.ExpressSale.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.ExpressSale" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="qsxexpress.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="finding-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9043"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi" />
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+		<!-- ImageSearchActive Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.ImageSearchActive.Primary.1" alias="SDConfig.Index.ImageSearchActive.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.ImageSearchActive" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="stis-agg-slc-001.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="stis-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9000"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- tag search -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.BioUserInfo.Primary.1" alias="SDConfig.Index.BioUserInfo.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.BioUserInfo" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="sjcuserbio.vip.ebay.com"/>
+			<case case="sandbox" value="sbxuinfo-qry-phx-001.vip.ebay.com"/>
+			<default value="uinfo-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9020"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	
+	<!-- UInfo Search-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.UInfo.Primary.1" alias="SDConfig.Index.UInfo.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.UInfo" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="uinfo-agg-phx-001.vip.ebay.com"/>
+			<case case="sandbox" value="sbxuinfo-qry-phx-001.vip.ebay.com"/>
+			<default value="uinfo-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9020"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	
+	<!-- DSBE Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.DSBE.Primary.1" alias="SDConfig.Index.DSBE.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.DSBE" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="qsxsibedemanddb.vip.ebay.com"/>
+			<case case="sandbox" value="qsxsibedemanddb.vip.ebay.com"/>
+			<default value="dsagg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9080"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- Temporary DSBE-enabled Title Aggregator Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.DSBETitleAggregator.Primary.1" alias="SDConfig.Index.DSBETitleAggregator.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.DSBETitleAggregator" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="qsxstitledb.vip.ebay.com"/>
+			<case case="sandbox" value="qsxstitledb.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- Temporary DSBE-enabled Title and Description Aggregator Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.DSBETitleAndDescription.Primary.1" alias="SDConfig.Index.DSBETitleAndDescription.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.DSBETitleAndDescription" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="dendescdb.vip.ebay.com"/>
+			<case case="sandbox" value="dendescdb.vip.ebay.com"/>
+			<default value="c-agg001.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9010"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!--DSBE-enabled TitleCache -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.DSBETitleCache.Primary.1" alias="SDConfig.Index.DSBETitleCache.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.DSBETitleCache" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="qsx2scachedb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="listings-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9010"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!--DSBE-enabled TitleCacheOverflow -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.DSBETitleCacheOverflow.Primary.1" alias="SDConfig.Index.DSBETitleCacheOverflow.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.DSBETitleCacheOverflow" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="qsx2scachedb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="listings-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9010"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="70000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- DSBE Tag Reco Service (Seller Tagging) -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TagRecoService.Primary.1" alias="SDConfig.Index.TagRecoService.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TagRecoService" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="reco-agg-phx-001.vip.ebay.com"/>
+			<case case="sandbox" value="reco-agg-qsx-001.vip.ebay.com"/>
+			<default value="dsrecoagg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="400"/>
+		<attribute name="HttpRecvTimeout" value="500"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- DSBE Cat Reco Service (Category Tagging) -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.CatRecoService.Primary.1" alias="SDConfig.Index.CatRecoService.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.CatRecoService" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="reco-agg-phx-001.vip.ebay.com"/>
+			<case case="sandbox" value="reco-agg-qsx-001.vip.ebay.com"/>
+			<default value="dsagg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9080"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="400"/>
+		<attribute name="HttpRecvTimeout" value="500"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!--DSA enabled-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.DSA.Primary.1" alias="SDConfig.Index.DSA.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.DSA" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="dsagg-app-qsx-1.vip.ebay.com"/>
+			<case case="sandbox" value="dsaggsandbox-app-srw-1.vip.ebay.com"/>
+			<default value="dsagg.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="8080"/>
+			<case case="sandbox" value="8080"/>
+			<default value="80"/>
+		</attribute-switch>
+		<!-- If DSA is markdown, set Disabled == true -->
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<!--
+			HttpRecvTimeout = Max(
+								TitleAggregator.HttpConnectTimeout + TitleAggregator.HttpRecvTimeout,
+								DSBE.HttpConnectTimeout + DSBE.HttpRecvTimeout)
+		-->
+		<attribute name="HttpRecvTimeout" value="45000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- TitleAggregatorShopping Index created for Shopping API FindItemsAdvanced to solve time out issue. -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleAggregatorShopping.Primary.1" alias="SDConfig.Index.TitleAggregatorShopping.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleAggregatorShopping" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="phxstitledb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi"/>
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>
+	<!-- Express Sale Index in Preview Environment-->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.ExpressSaleInternal.Primary.1" alias="SDConfig.Index.ExpressSaleInternal.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.ExpressSaleInternal" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="qsxlhpreviewdb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="40000"/>
+		<attribute name="PostEnabled" value="false"/>
+		<attribute name="CarpEnabled" value="false"/>
+		<attribute name="CacheKeyParamBlackList" value="Nr,Sk,Fl,Pt,Qi" />
+		<attribute name="AggCacheDisabled" value="false"/>
+	</config-category>	
+	<!-- TitleAggregator Index only for yahoo web site -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.TitleAggregatorYahooWeb.Primary.1" alias="SDConfig.Index.TitleAggregatorYahooWeb.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.TitleAggregatorYahooWeb" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="phxstitledb.vip.ebay.com"/>
+			<case case="sandbox" value="sbxst-agg-phx-001.vip.ebay.com"/>
+			<default value="supertitle-agg-vip.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="150"/>
+		<attribute name="HttpRecvTimeout" value="150"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+	<!-- Half.com Auto-completion Index -->
+	<config-category id="ebay.domain.search.integ.SearchDriverConfig.Index.HalfAutoCompletion.Primary.1" alias="SDConfig.Index.HalfAutoCompletion.Primary.1" group="ebay.domain.search.integ.SearchDriverConfig.HalfAutoCompletion" site-ops-command="true" initializable="false" persist-updates="true">
+		<attribute-switch variable="pooltype" name="Host">
+			<case case="production" value="halfac-qry-phx-001.vip.ebay.com"/>
+			<case case="sandbox" value="halfac-qry-phx-001.vip.ebay.com"/>
+			<default value="qa-halfac02.qa.ebay.com"/>
+		</attribute-switch>
+		<attribute-switch variable="pooltype" name="Port">
+			<case case="production" value="9090"/>
+			<case case="sandbox" value="9090"/>
+			<default value="9090"/>
+		</attribute-switch>
+		<attribute name="Disabled" value="false"/>
+		<attribute name="HttpConnectTimeout" value="5000"/>
+		<attribute name="HttpRecvTimeout" value="90000"/>
+		<attribute name="AllowMarkdown" value="false"/>
+		<attribute name="ErrorCountThreshold" value="-1"/>
+		<attribute name="ErrorIntervalThreshold" value="-1"/>
+	</config-category>
+</ebay:config-category-file>

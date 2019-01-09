@@ -3,11 +3,10 @@ package com.ebay.traffic.chocolate.sparknrt.reporting
 import java.text.SimpleDateFormat
 
 import com.couchbase.client.java.document.JsonArrayDocument
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
 import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
-import com.ebay.traffic.chocolate.sparknrt.couchbase.{CorpCouchbaseClient, CouchbaseClient, CouchbaseClientMock}
+import com.ebay.traffic.chocolate.sparknrt.couchbase.{CorpCouchbaseClient, CouchbaseClientMock}
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.conf.Configuration
@@ -60,7 +59,8 @@ class TestReportingJob extends BaseFunSuite {
       "--mode", "local[8]",
       "--channel", "EPN",
       "--workDir", workDir,
-      "--archiveDir", archiveDir
+      "--archiveDir", archiveDir,
+      "--elasticsearchUrl", "http://10.148.181.34:9200"
     )
 
     val params = Parameter(args)
@@ -147,7 +147,8 @@ class TestReportingJob extends BaseFunSuite {
       "--mode", "local[8]",
       "--channel", "DISPLAY",
       "--workDir", workDir,
-      "--archiveDir", archiveDir
+      "--archiveDir", archiveDir,
+      "--elasticsearchUrl", "http://10.148.181.34:9200"
     )
 
     val params = Parameter(args)
@@ -273,7 +274,7 @@ class TestReportingJob extends BaseFunSuite {
     // prepare data file
     val writer = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-05-01/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema)
+      .withSchema(FilterMessage.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
@@ -327,7 +328,7 @@ class TestReportingJob extends BaseFunSuite {
     // prepare data file
     val writer = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-05-02/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema)
+      .withSchema(FilterMessage.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
