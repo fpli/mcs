@@ -265,7 +265,7 @@ public class BlacklistRulesTest {
     assertEquals(1, rule.test(req));
     rule.clear();
     assertEquals(0, rule.test(req));
-    req.setReferrerDomain("http://www.ebay.com");
+    req.setReferrerDomain("m.ebay.com");
     assertEquals(1,rule.test(req));
   }
 
