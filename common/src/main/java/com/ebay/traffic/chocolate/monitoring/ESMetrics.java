@@ -115,6 +115,7 @@ public class ESMetrics {
    */
   public void close() {
     logger.info("Closing ES Metrics...");
+    flushMetrics();
 
     if (timer != null) {
       timer.cancel();
@@ -418,8 +419,9 @@ public class ESMetrics {
 
     Gson gson = new Gson();
     try {
-      restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
-          new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
+      if (restClient != null)
+        restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
+            new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
     } catch (IOException e) {
       logger.warn(e.toString(), e);
     }
