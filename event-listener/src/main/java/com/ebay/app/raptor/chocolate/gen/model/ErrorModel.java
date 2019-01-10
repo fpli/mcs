@@ -17,55 +17,43 @@ import java.util.Arrays;
 import java.io.Serializable;
 import io.swagger.annotations.*;
 
+import com.ebay.app.raptor.chocolate.gen.model.ErrorData;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.ArrayList;
+import java.util.List;
 import com.fasterxml.jackson.annotation.*;
 
 /**
- * CollectionResponse
+ * One or more error details
  */
 
-
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2018-11-27T15:17:13.811+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "status","message" })
+@ApiModel(description = "One or more error details")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2019-01-02T16:56:26.190+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "errors" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
-public class CollectionResponse implements Serializable {
+public class ErrorModel implements Serializable {
 
 private static final long serialVersionUID = 1L;
 
 
 
-    @JsonProperty("status")
+    @JsonProperty("errors")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String status = null;
-    @JsonProperty("message")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String message = null;
+    private List<ErrorData> errors = null;
 
 /**
-    * Get status
-* @return status
+    * Get errors
+* @return errors
     **/
-    @ApiModelProperty(example = "OK", value = "")
-public String getStatus() {
-    return status;
+    @ApiModelProperty(value = "")
+public List<ErrorData> getErrors() {
+    return errors;
     }
 
-public void setStatus(String status) {
-        this.status = status;
-        }
-/**
-    * Get message
-* @return message
-    **/
-    @ApiModelProperty(example = "No query parameter", value = "")
-public String getMessage() {
-    return message;
-    }
-
-public void setMessage(String message) {
-        this.message = message;
+public void setErrors(List<ErrorData> errors) {
+        this.errors = errors;
         }
     @Override
     public boolean equals(Object o) {
@@ -75,23 +63,21 @@ public void setMessage(String message) {
     if (o == null || getClass() != o.getClass()) {
     return false;
     }
-        CollectionResponse collectionResponse = (CollectionResponse) o;
-        return Objects.equals(this.status, collectionResponse.status) &&
-        Objects.equals(this.message, collectionResponse.message);
+        ErrorModel errorModel = (ErrorModel) o;
+        return Objects.equals(this.errors, errorModel.errors);
     }
 
     @Override
     public int hashCode() {
-    return Objects.hash(status, message);
+    return Objects.hash(errors);
     }
 
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append("class CollectionResponse {\n");
+      sb.append("class ErrorModel {\n");
       
-      sb.append("    status: ").append(toIndentedString(status)).append("\n");
-      sb.append("    message: ").append(toIndentedString(message)).append("\n");
+      sb.append("    errors: ").append(toIndentedString(errors)).append("\n");
       sb.append("}");
       return sb.toString();
     }
