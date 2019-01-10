@@ -397,7 +397,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       return getRuleFlag(rt_rule_flag, 11) | getRuleFlag(rt_rule_flag, 1) |
         getRuleFlag(rt_rule_flag, 10) | getRuleFlag(rt_rule_flag, 5) |
         getRuleFlag(nrt_rule_flag, 1) | getRuleFlag(nrt_rule_flag, 2) | getRuleFlag(nrt_rule_flag, 4) |
-        getRuleFlag(nrt_rule_flag, 5) | getRuleFlag(nrt_rule_flag, 3)
+        getRuleFlag(nrt_rule_flag, 5) | getRuleFlag(nrt_rule_flag, 3) | getRuleFlag(nrt_rule_flag, 6)
     }
     0
   }
