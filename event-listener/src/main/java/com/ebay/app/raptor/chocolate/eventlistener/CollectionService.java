@@ -219,9 +219,8 @@ public class CollectionService {
     kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
 
     // Parse the response
-    ListenerMessage message = parser.parse(request,
-      startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl,
-      referer, rotationId, null);
+    ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
+      .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
 
     try {
       // Ubi tracking

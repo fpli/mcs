@@ -80,7 +80,8 @@ public class CollectionServiceUtil {
   public static void populateDeviceDetectionParams(UserAgentInfo info, IRequestScopeTracker tracker) {
 
     if (info != null) {
-      tracker.addTag("app", getAppIdFromUserAgent(info), String.class);
+      // comment app tag as it's only allowed in tracking team
+      // tracker.addTag("app", getAppIdFromUserAgent(info), String.class);
       if (info.isDesktop()) {
         tracker.addTag("dsktop", true, Boolean.class);
         return;

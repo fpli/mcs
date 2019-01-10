@@ -298,6 +298,12 @@
       <artifactId>raptor-dds-client-starter</artifactId>
     </dependency>
 
+    <!-- for geo -->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-geo-starter</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>
