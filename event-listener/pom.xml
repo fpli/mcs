@@ -112,6 +112,7 @@
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-permutation-starter</artifactId>
+      <version>0.7.0-RELEASE</version>
     </dependency>
 
     <!--global config-->
@@ -302,6 +303,7 @@
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-geo-starter</artifactId>
+      <version>0.8.0-RELEASE</version>
     </dependency>
 
   </dependencies>
