@@ -42,7 +42,6 @@
     <scoverage.plugin.version>1.3.0</scoverage.plugin.version>
     <logback.kafkaAppender.version>0.1.0</logback.kafkaAppender.version>
     <logback.encoder.version>4.11</logback.encoder.version>
-    <geo.component.version>0.8.0-RELEASE</geo.component.version>
   </properties>
 
   <modules>

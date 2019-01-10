@@ -89,23 +89,32 @@ public class ListenerMessageParser {
     record.setUserAgent(endUserContext.getUserAgent());
 
     // parse user prefs
-    try {
+//    try {
+//
+//      // get geo info
+//      UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+//
+//      // language code
+//      record.setLangCd(userPrefsCtx.getLangLocale().toLanguageTag());
+//
+//      // geography identifier
+//      record.setGeoId((long) userPrefsCtx.getGeoContext().getCountryId());
+//
+//      // site id
+//      record.setSiteId((long)userPrefsCtx.getGeoContext().getSiteId());
+//
+//    } catch (Exception e) {
+//      logger.error("Parse geo info error");
+//    }
 
-      // get geo info
-      UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-
-      // language code
-      record.setLangCd(userPrefsCtx.getLangLocale().toLanguageTag());
+    // language code
+      record.setLangCd("");
 
       // geography identifier
-      record.setGeoId((long) userPrefsCtx.getGeoContext().getCountryId());
+      record.setGeoId(0L);
 
       // site id
-      record.setSiteId((long)userPrefsCtx.getGeoContext().getSiteId());
-
-    } catch (Exception e) {
-      logger.error("Parse geo info error");
-    }
+      record.setSiteId(0L);
 
     // udid
     if (endUserContext.getDeviceId() != null) {

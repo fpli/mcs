@@ -300,10 +300,10 @@
     </dependency>
 
     <!-- for geo -->
-    <dependency>
-      <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-geo-starter</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>com.ebay.raptorio.component</groupId>-->
+      <!--<artifactId>raptor-geo-starter</artifactId>-->
+    <!--</dependency>-->
 
   </dependencies>
 
