@@ -9,8 +9,6 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.kernel.util.StringUtils;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
-import com.ebay.raptor.geo.context.UserPrefsCtx;
-import com.ebay.raptor.kernel.util.RaptorConstants;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
