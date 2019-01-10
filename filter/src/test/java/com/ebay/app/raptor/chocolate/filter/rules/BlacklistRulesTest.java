@@ -2,6 +2,7 @@ package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleContent;
 import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
@@ -252,7 +253,10 @@ public class BlacklistRulesTest {
   @Test
   public void testEBayRefererDomainRule() {
     EBayRefererDomainRule rule = new EBayRefererDomainRule(ChannelType.EPN);
-    FilterRequest req = new FilterRequest();
+    ListenerMessage msg = new ListenerMessage();
+    msg.setReferer("www.bbc.co.ukebay");
+    FilterRequest req = new FilterRequest(msg);
+    assertEquals(1, rule.test(req));
     req.setReferrerDomain(null);
     assertEquals(0, rule.test(req));
     req.setReferrerDomain("foo");
@@ -261,7 +265,7 @@ public class BlacklistRulesTest {
     assertEquals(1, rule.test(req));
     rule.clear();
     assertEquals(0, rule.test(req));
-    req.setReferrerDomain("http://www.ebay.com");
+    req.setReferrerDomain("m.ebay.com");
     assertEquals(1,rule.test(req));
   }
 

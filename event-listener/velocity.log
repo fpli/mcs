@@ -1,0 +1,90 @@
+2019-01-10 19:44:23,460 - Log4JLogChute initialized using file 'velocity.log'
+2019-01-10 19:44:23,461 - Starting Apache Velocity v1.5 (compiled: 2007-02-22 08:52:29)
+2019-01-10 19:44:23,461 - Default Properties File: org/apache/velocity/runtime/defaults/velocity.properties
+2019-01-10 19:44:23,461 - Trying to use logger class org.apache.velocity.runtime.log.AvalonLogChute
+2019-01-10 19:44:23,462 - Couldn't find class org.apache.velocity.runtime.log.AvalonLogChute or necessary supporting classes in classpath.
+java.lang.NoClassDefFoundError: org/apache/log/format/Formatter
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at org.apache.velocity.util.ClassUtils.getClass(ClassUtils.java:63)
+	at org.apache.velocity.util.ClassUtils.getNewInstance(ClassUtils.java:95)
+	at org.apache.velocity.runtime.log.LogManager.createLogChute(LogManager.java:147)
+	at org.apache.velocity.runtime.log.LogManager.updateLog(LogManager.java:208)
+	at org.apache.velocity.runtime.RuntimeInstance.initializeLog(RuntimeInstance.java:728)
+	at org.apache.velocity.runtime.RuntimeInstance.init(RuntimeInstance.java:240)
+	at org.apache.velocity.runtime.RuntimeSingleton.init(RuntimeSingleton.java:113)
+	at org.apache.velocity.app.Velocity.init(Velocity.java:83)
+	at org.opensaml.DefaultBootstrap.initializeVelocity(DefaultBootstrap.java:105)
+	at org.opensaml.DefaultBootstrap.bootstrap(DefaultBootstrap.java:69)
+	at com.ebay.iaf.core.idp.saml.OpenSamlLoader.doInit(OpenSamlLoader.java:53)
+	at com.ebay.iaf.core.idp.saml.OpenSamlLoader.init(OpenSamlLoader.java:39)
+	at com.ebay.raptor.auth.autoconfigure.OpenSamlInitializer$1.run(OpenSamlInitializer.java:22)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: java.lang.ClassNotFoundException: org.apache.log.format.Formatter
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:381)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:335)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	... 16 more
+2019-01-10 19:44:23,465 - Trying to use logger class org.apache.velocity.runtime.log.Log4JLogChute
+2019-01-10 19:44:23,465 - Using logger class org.apache.velocity.runtime.log.Log4JLogChute
+2019-01-10 19:44:23,468 - Default ResourceManager initializing. (class org.apache.velocity.runtime.resource.ResourceManagerImpl)
+2019-01-10 19:44:23,472 - ResourceLoader instantiated: org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+2019-01-10 19:44:23,497 - ResourceCache: initialized (class org.apache.velocity.runtime.resource.ResourceCacheImpl)
+2019-01-10 19:44:23,501 - Loaded System Directive: org.apache.velocity.runtime.directive.Literal
+2019-01-10 19:44:23,505 - Loaded System Directive: org.apache.velocity.runtime.directive.Macro
+2019-01-10 19:44:23,508 - Loaded System Directive: org.apache.velocity.runtime.directive.Parse
+2019-01-10 19:44:23,512 - Loaded System Directive: org.apache.velocity.runtime.directive.Include
+2019-01-10 19:44:23,513 - Loaded System Directive: org.apache.velocity.runtime.directive.Foreach
+2019-01-10 19:44:23,558 - Created '20' parsers.
+2019-01-10 19:44:23,573 - Velocimacro : "velocimacro.library" is not set.  Trying default library: VM_global_library.vm
+2019-01-10 19:44:23,575 - Velocimacro : Default library not found.
+2019-01-10 19:44:23,575 - Velocimacro : allowInline = true : VMs can be defined inline in templates
+2019-01-10 19:44:23,575 - Velocimacro : allowInlineToOverride = false : VMs defined inline may NOT replace previous VM definitions
+2019-01-10 19:44:23,575 - Velocimacro : allowInlineLocal = false : VMs defined inline will be global in scope if allowed.
+2019-01-10 19:44:23,575 - Velocimacro : autoload off : VM system will not automatically reload global library macros
+2019-01-10 19:47:07,315 - Log4JLogChute initialized using file 'velocity.log'
+2019-01-10 19:47:07,316 - Starting Apache Velocity v1.5 (compiled: 2007-02-22 08:52:29)
+2019-01-10 19:47:07,316 - Default Properties File: org/apache/velocity/runtime/defaults/velocity.properties
+2019-01-10 19:47:07,316 - Trying to use logger class org.apache.velocity.runtime.log.AvalonLogChute
+2019-01-10 19:47:07,316 - Couldn't find class org.apache.velocity.runtime.log.AvalonLogChute or necessary supporting classes in classpath.
+java.lang.NoClassDefFoundError: org/apache/log/format/Formatter
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at org.apache.velocity.util.ClassUtils.getClass(ClassUtils.java:63)
+	at org.apache.velocity.util.ClassUtils.getNewInstance(ClassUtils.java:95)
+	at org.apache.velocity.runtime.log.LogManager.createLogChute(LogManager.java:147)
+	at org.apache.velocity.runtime.log.LogManager.updateLog(LogManager.java:208)
+	at org.apache.velocity.runtime.RuntimeInstance.initializeLog(RuntimeInstance.java:728)
+	at org.apache.velocity.runtime.RuntimeInstance.init(RuntimeInstance.java:240)
+	at org.apache.velocity.runtime.RuntimeSingleton.init(RuntimeSingleton.java:113)
+	at org.apache.velocity.app.Velocity.init(Velocity.java:83)
+	at org.opensaml.DefaultBootstrap.initializeVelocity(DefaultBootstrap.java:105)
+	at org.opensaml.DefaultBootstrap.bootstrap(DefaultBootstrap.java:69)
+	at com.ebay.iaf.core.idp.saml.OpenSamlLoader.doInit(OpenSamlLoader.java:53)
+	at com.ebay.iaf.core.idp.saml.OpenSamlLoader.init(OpenSamlLoader.java:39)
+	at com.ebay.raptor.auth.autoconfigure.OpenSamlInitializer$1.run(OpenSamlInitializer.java:22)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: java.lang.ClassNotFoundException: org.apache.log.format.Formatter
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:381)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:335)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	... 16 more
+2019-01-10 19:47:07,319 - Trying to use logger class org.apache.velocity.runtime.log.Log4JLogChute
+2019-01-10 19:47:07,319 - Using logger class org.apache.velocity.runtime.log.Log4JLogChute
+2019-01-10 19:47:07,322 - Default ResourceManager initializing. (class org.apache.velocity.runtime.resource.ResourceManagerImpl)
+2019-01-10 19:47:07,325 - ResourceLoader instantiated: org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+2019-01-10 19:47:07,340 - ResourceCache: initialized (class org.apache.velocity.runtime.resource.ResourceCacheImpl)
+2019-01-10 19:47:07,342 - Loaded System Directive: org.apache.velocity.runtime.directive.Literal
+2019-01-10 19:47:07,344 - Loaded System Directive: org.apache.velocity.runtime.directive.Macro
+2019-01-10 19:47:07,348 - Loaded System Directive: org.apache.velocity.runtime.directive.Parse
+2019-01-10 19:47:07,353 - Loaded System Directive: org.apache.velocity.runtime.directive.Include
+2019-01-10 19:47:07,356 - Loaded System Directive: org.apache.velocity.runtime.directive.Foreach
+2019-01-10 19:47:07,411 - Created '20' parsers.
+2019-01-10 19:47:07,433 - Velocimacro : "velocimacro.library" is not set.  Trying default library: VM_global_library.vm
+2019-01-10 19:47:07,437 - Velocimacro : Default library not found.
+2019-01-10 19:47:07,437 - Velocimacro : allowInline = true : VMs can be defined inline in templates
+2019-01-10 19:47:07,437 - Velocimacro : allowInlineToOverride = false : VMs defined inline may NOT replace previous VM definitions
+2019-01-10 19:47:07,438 - Velocimacro : allowInlineLocal = false : VMs defined inline will be global in scope if allowed.
+2019-01-10 19:47:07,438 - Velocimacro : autoload off : VM system will not automatically reload global library macros
