@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
@@ -53,7 +54,9 @@ public class ListenerMessageParser {
     final ChannelType channelType, final ChannelActionEnum action, String userId, IEndUserContext endUserContext,
     String uri, String referer, long rotationId, String snid) {
 
-    ListenerMessage record = new ListenerMessage();
+    // set default values to prevent unable to serialize message exception
+    ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
+      0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
 
     // user id
     record.setUserId(Long.valueOf(userId));
@@ -85,7 +88,7 @@ public class ListenerMessageParser {
     record.setUserAgent(endUserContext.getUserAgent());
 
     // geography identifier
-    record.setGeoId(-1L);
+    record.setGeoId(0L);
 
     // udid
     if (endUserContext.getDeviceId() != null) {
@@ -98,14 +101,14 @@ public class ListenerMessageParser {
     record.setReferer(referer);
 
     // site id
-    record.setSiteId(-1L);
+    record.setSiteId(0L);
 
     // landing page url
     record.setLandingPageUrl(uri);
 
     // source and destination rotation id
-    record.setSrcRotationId(Long.valueOf(rotationId));
-    record.setDstRotationId(Long.valueOf(rotationId));
+    record.setSrcRotationId(rotationId);
+    record.setDstRotationId(rotationId);
 
     record.setUri(uri);
     // Set the channel type + HTTP headers + channel action
@@ -120,7 +123,7 @@ public class ListenerMessageParser {
     // Get snapshotId from request
     Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId(), startTime).getRepresentation();
     record.setSnapshotId(snapshotId);
-    ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId().longValue());
+    ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId());
     record.setShortSnapshotId(shortSnapshotId.getRepresentation());
 
     record.setCampaignId(campaignId);
@@ -132,12 +135,11 @@ public class ListenerMessageParser {
   }
 
   /**
-   * Serialize the headers
+   * Serialize the headers, except Authorization
    *
    * @param clientRequest input request
    * @return headers string
    */
-  // Or we change the result schema. Trade off needs to be considered here.
   private String serializeRequestHeaders(HttpServletRequest clientRequest) {
 
     StringBuilder headersBuilder = new StringBuilder();
