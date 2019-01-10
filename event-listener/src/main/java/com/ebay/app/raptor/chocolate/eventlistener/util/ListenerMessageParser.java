@@ -9,11 +9,15 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.kernel.util.StringUtils;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
+import com.ebay.raptor.geo.context.UserPrefsCtx;
+import com.ebay.raptor.kernel.util.RaptorConstants;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -38,6 +42,7 @@ public class ListenerMessageParser {
    * Convert a HTTP request to a listener message for Kafka.
    *
    * @param clientRequest  raw client request
+   * @param requestContext raptor request context
    * @param startTime      as start time of the request
    * @param campaignId     campaign id
    * @param channelType    channel type
@@ -50,7 +55,7 @@ public class ListenerMessageParser {
    * @return ListenerMessage object
    */
   public ListenerMessage parse(
-    final HttpServletRequest clientRequest, Long startTime, Long campaignId,
+    final HttpServletRequest clientRequest, final ContainerRequestContext requestContext, Long startTime, Long campaignId,
     final ChannelType channelType, final ChannelActionEnum action, String userId, IEndUserContext endUserContext,
     String uri, String referer, long rotationId, String snid) {
 
@@ -78,17 +83,20 @@ public class ListenerMessageParser {
       }
     }
 
+    // get geo info
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+    
     // remote ip
     record.setRemoteIp(endUserContext.getIPAddress());
 
     // language code
-    record.setLangCd("");
+    record.setLangCd(userPrefsCtx.getLangLocale().toLanguageTag());
 
     // user agent
     record.setUserAgent(endUserContext.getUserAgent());
 
     // geography identifier
-    record.setGeoId(0L);
+    record.setGeoId((long)userPrefsCtx.getGeoContext().getCountryId());
 
     // udid
     if (endUserContext.getDeviceId() != null) {
@@ -101,7 +109,7 @@ public class ListenerMessageParser {
     record.setReferer(referer);
 
     // site id
-    record.setSiteId(0L);
+    record.setSiteId((long)userPrefsCtx.getGeoContext().getSiteId());
 
     // landing page url
     record.setLandingPageUrl(uri);
