@@ -12,7 +12,7 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
     val column_list = Array("IMPRSN_CNTNR_ID", "FILE_SCHM_VRSN_NUM", "FILE_ID", "BATCH_ID", "CLICK_ID", "CHNL_ID", "CRLTN_GUID_TXT",
       "GUID_TXT", "USER_ID", "CLNT_RMT_IP", "BRWSR_TYPE_NUM", "BRWSR_NAME", "RFR_URL_NAME", "ENCRYPTD_IND", "PLCMNT_DATA_TXT", "PBLSHR_ID",
       "AMS_PBLSHR_CMPGN_ID", "AMS_TOOL_ID", "CSTM_ID", "LND_PAGE_URL_NAME", "USER_QUERY_TXT", "FLEX_FLD_VRSN_NUM", "FLEX_FLD_1_TXT", "FLEX_FLD_2_TXT",
-      "FLEX_FLD_3_TXT", "FLEX_FLD_4_TXT", "IMPRSN_TS", "CLICK_TS", "LAST_VWD_ITEM_ID", "LAST_VWD_ITEM_TS" , "LAST_ADN_CLICK_ID", "LAST_ADN_CLICK_TS",
+      "FLEX_FLD_3_TXT", "FLEX_FLD_4_TXT", "IMPRSN_TS", "CLICK_TS", "CLICK_DT", "LAST_VWD_ITEM_ID", "LAST_VWD_ITEM_TS" , "LAST_ADN_CLICK_ID", "LAST_ADN_CLICK_TS",
       "FLEX_FLD_5_TXT", "FLEX_FLD_6_TXT", "FLEX_FLD_7_TXT", "FLEX_FLD_8_TXT", "FLEX_FLD_9_TXT", "FLEX_FLD_10_TXT", "FLEX_FLD_11_TXT", "FLEX_FLD_12_TXT",
       "FLEX_FLD_13_TXT", "FLEX_FLD_14_TXT", "FLEX_FLD_15_TXT", "FLEX_FLD_16_TXT", "FLEX_FLD_17_TXT", "FLEX_FLD_18_TXT", "FLEX_FLD_19_TXT", "FLEX_FLD_20_TXT",
       "ICEP_FLEX_FLD_VRSN_ID", "ICEP_FLEX_FLD_1_TXT", "ICEP_FLEX_FLD_2_TXT", "ICEP_FLEX_FLD_3_TXT", "ICEP_FLEX_FLD_4_TXT", "ICEP_FLEX_FLD_5_TXT", "ICEP_FLEX_FLD_6_TXT",
@@ -59,7 +59,7 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
       .withColumn("AMS_PBLSHR_CMPGN_ID", col("campaign_id"))
       .withColumn("AMS_TOOL_ID", common.getToolIdUdf(col("uri")))
       .withColumn("CSTM_ID", common.getCustomIdUdf(col("uri")))
-      .withColumn("LND_PAGE_URL_NAME", common.getValueFromRequestUdf(col("response_headers"), lit("Location")))
+      .withColumn("LND_PAGE_URL_NAME", common.get_lnd_page_url_name_udf(col("response_headers")))
       .withColumn("USER_QUERY_TXT",  common.getUserQueryTextUdf(col("uri")))
       .withColumn("FLEX_FLD_VRSN_NUM",  lit(0))
       .withColumn("FLEX_FLD_1_TXT",  common.getFFValueUdf(col("uri"), lit(1)))
@@ -68,6 +68,7 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
       .withColumn("FLEX_FLD_4_TXT",  lit(""))
       .withColumn("IMPRSN_TS",  lit(""))
       .withColumn("CLICK_TS",  common.getDateTimeUdf(col("timestamp")))
+      .withColumn("CLICK_DT",  common.getDateUdf(col("timestamp")))
       .withColumn("LAST_VWD_ITEM_ID",  lit(""))
       .withColumn("LAST_VWD_ITEM_TS",  lit(""))
       .withColumn("LAST_ADN_CLICK_ID",  lit(""))
@@ -207,9 +208,9 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
       .withColumn("NRT_RULE_FLAG48", lit(0))
       .withColumn("NRT_RULE_FLAG49", lit(0))
       .withColumn("NRT_RULE_FLAG50", lit(0))
-      .withColumn("NRT_RULE_FLAG51", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(4)))
+      .withColumn("NRT_RULE_FLAG51", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(5)))
       .withColumn("NRT_RULE_FLAG52", lit(0))
-      .withColumn("NRT_RULE_FLAG53", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(5)))
+      .withColumn("NRT_RULE_FLAG53", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(6)))
       .withColumn("NRT_RULE_FLAG54", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(3)))
       .withColumn("NRT_RULE_FLAG55", lit(0))
       .withColumn("NRT_RULE_FLAG56", common.get_rule_flag_udf(col("nrt_rule_flags"), lit(4)))

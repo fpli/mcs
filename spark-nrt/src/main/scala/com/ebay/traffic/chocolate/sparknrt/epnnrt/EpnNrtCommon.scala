@@ -151,7 +151,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val getCtxCalledUdf = udf((url: String) => getQueryParam(url, "ctx_called"))
   val getcbkwUdf = udf((url: String) => getQueryParam(url, "cb_kw"))
   val getRefererHostUdf = udf((requestHeaders: String) => getRefererHost(requestHeaders))
-  val getDateTimeUdf = udf((timestamp: Long) => getDateTimeFromTimestamp(timestamp))
+  val getDateTimeUdf = udf((timestamp: Long) => getDateTimeFromTimestamp(timestamp, "yyyy-MM-dd HH:mm:ss.SSS"))
   val getcbcatUdf = udf((url: String) => getQueryParam(url, "cb_cat"))
   val get_ams_prgrm_id_Udf = udf((uri: String) => getPrgrmIdAdvrtsrIdFromAMSClick(getRoverUriInfo(uri, 3)))
   val get_cb_ex_kw_Udf = udf((url: String) => getQueryParam(url, "cb_ex_kw"))
@@ -180,11 +180,35 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_click_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int) => getReasonCode("click", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value))
   val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int) => getReasonCode("impression", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value))
   val get_google_fltr_do_flag_udf = udf((requestHeader: String, publisherId: String) => getGoogleFltrDoFlag(getValueFromRequest(requestHeader, "Referer"), publisherId))
+  val get_lnd_page_url_name_udf = udf((responseHeader: String) => getLndPageUrlName(responseHeader))
+  val getDateUdf = udf((timestamp: Long) => getDateTimeFromTimestamp(timestamp, "yyyy-MM-dd"))
 
 
-  def getDateTimeFromTimestamp(timestamp: Long): String = {
-    val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+  def getDateTimeFromTimestamp(timestamp: Long, format: String): String = {
+    val df = new SimpleDateFormat(format)
     df.format(timestamp)
+  }
+
+  def getLndPageUrlName(responseHeader: String): String = {
+    val location = getValueFromRequest(responseHeader, "Location")
+    if (location.equalsIgnoreCase(""))
+      return ""
+    val url = new URL(location)
+    if (!url.getHost.contains("rover"))
+      return location
+    else {
+      if (url.getHost.contains(".com"))
+        return location
+      else {
+        var res = getQueryParam(location, "mpre")
+        if (res.equalsIgnoreCase(""))
+          res = getQueryParam(location, "loc")
+        if (res.equalsIgnoreCase(""))
+          res = getQueryParam(location, "url")
+        return res
+      }
+    }
+    ""
   }
 
   def getRefererHost(requestHeaders: String): String = {
@@ -469,7 +493,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
  //   ams_flag_map("google_fltr_do_flag") = lookupRefererDomain(referer_domain, isDefinedPublisher(publisherId), publisherId)
  //   roiRuleValues = temp_roi_values + ams_flag_map("google_fltr_do_flag") << 6
-    roiRuleValues = temp_roi_values + google_fltr_do_flag << 6
+    roiRuleValues = temp_roi_values + (google_fltr_do_flag << 6)
     if (roiRuleValues != 0) {
     //  amsFilterRoiValue = 1
       roi_fltr_yn_ind = 1
