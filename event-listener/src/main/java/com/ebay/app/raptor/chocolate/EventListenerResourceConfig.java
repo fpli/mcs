@@ -53,21 +53,22 @@ public class EventListenerResourceConfig extends ResourceConfig {
   @Qualifier("tracking-filter")
   private TrackingServiceFilter trackingFilter;
 
-  @Inject
-  @Qualifier("user-prefs-filter")
-  private ContainerRequestFilter userPrefsFilter;
-
-  @Inject
-  @Qualifier("user-cultural-prefs-filter")
-  private ContainerRequestFilter userCulturalPrefsFilter;
-
-  @Inject
-  @Qualifier("geo-tracking-filter")
-  private ContainerRequestFilter geoTrackingFilter;
-
-  @Inject
-  @Qualifier("user-preferences-filter")
-  private ContainerRequestFilter userPreferenceFilter;
+  // comments geo info feature first, as this requires raptor-io 0.8.x
+//  @Inject
+//  @Qualifier("user-prefs-filter")
+//  private ContainerRequestFilter userPrefsFilter;
+//
+//  @Inject
+//  @Qualifier("user-cultural-prefs-filter")
+//  private ContainerRequestFilter userCulturalPrefsFilter;
+//
+//  @Inject
+//  @Qualifier("geo-tracking-filter")
+//  private ContainerRequestFilter geoTrackingFilter;
+//
+//  @Inject
+//  @Qualifier("user-preferences-filter")
+//  private ContainerRequestFilter userPreferenceFilter;
 
   @PostConstruct
   public void init() {
@@ -79,10 +80,10 @@ public class EventListenerResourceConfig extends ResourceConfig {
     register(domainRequestFilter);
     register(ddsFilter);
     register(trackingFilter);
-    register(userPrefsFilter);
-    register(userCulturalPrefsFilter);
-    register(geoTrackingFilter);
-    register(userPreferenceFilter);
+//    register(userPrefsFilter);
+//    register(userCulturalPrefsFilter);
+//    register(geoTrackingFilter);
+//    register(userPreferenceFilter);
     register(EventListenerResource.class);
   }
 }
