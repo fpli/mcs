@@ -19,7 +19,6 @@ import static com.ebay.traffic.chocolate.common.TestHelper.*;
 public class TestRheosKafkaProducer {
 
   @Test
-  @Ignore
   public void testRheosKafkaProducer() throws Exception {
     final String topic = "marketingtech.ap.tracking-events.filtered-epn";
 
