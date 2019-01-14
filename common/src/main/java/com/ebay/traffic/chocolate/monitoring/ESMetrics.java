@@ -115,6 +115,7 @@ public class ESMetrics {
    */
   public void close() {
     logger.info("Closing ES Metrics...");
+    flushMetrics();
 
     if (timer != null) {
       timer.cancel();
@@ -418,8 +419,9 @@ public class ESMetrics {
 
     Gson gson = new Gson();
     try {
-      restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
-          new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
+      if (restClient != null)
+        restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
+            new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
     } catch (IOException e) {
       logger.warn(e.toString(), e);
     }
@@ -430,7 +432,8 @@ public class ESMetrics {
     final Date date = new Date();
     final String index = INDEX_PREFIX + sdf0.format(date);
     try {
-      restClient.performRequest("GET", "/" + index);
+      if (restClient != null)
+        restClient.performRequest("GET", "/" + index);
     } catch (ResponseException e) {
       // create index if not found
       try {
@@ -452,29 +455,31 @@ public class ESMetrics {
    * @throws IOException
    */
   private void createIndex(String index) throws IOException {
-    restClient.performRequest("PUT", "/" + index, new HashMap<>(),
-        new NStringEntity("{\n" +
-            "  \"mappings\": {\n" +
-            "    \"_doc\": {\n" +
-            "      \"dynamic_templates\": [\n" +
-            "        {\n" +
-            "          \"strings_as_keywords\": {\n" +
-            "            \"match_mapping_type\": \"string\",\n" +
-            "            \"mapping\": {\n" +
-            "              \"type\": \"keyword\"\n" +
-            "            }\n" +
-            "          }\n" +
-            "        }\n" +
-            "      ],\n" +
-            "      \"properties\": {\n" +
-            "        \"date\":   { \"type\": \"date\", \"format\": \"yyyy-MM-dd HH:mm:ss\" },\n" +
-            "        \"key\":    { \"type\": \"keyword\" },\n" +
-            "        \"value\":  { \"type\": \"long\" },\n" +
-            "        \"host\":   { \"type\": \"keyword\" }\n" +
-            "      }\n" +
-            "    }\n" +
-            "  }\n" +
-            "}", ContentType.APPLICATION_JSON));
+    if (restClient != null) {
+      restClient.performRequest("PUT", "/" + index, new HashMap<>(),
+          new NStringEntity("{\n" +
+              "  \"mappings\": {\n" +
+              "    \"_doc\": {\n" +
+              "      \"dynamic_templates\": [\n" +
+              "        {\n" +
+              "          \"strings_as_keywords\": {\n" +
+              "            \"match_mapping_type\": \"string\",\n" +
+              "            \"mapping\": {\n" +
+              "              \"type\": \"keyword\"\n" +
+              "            }\n" +
+              "          }\n" +
+              "        }\n" +
+              "      ],\n" +
+              "      \"properties\": {\n" +
+              "        \"date\":   { \"type\": \"date\", \"format\": \"yyyy-MM-dd HH:mm:ss\" },\n" +
+              "        \"key\":    { \"type\": \"keyword\" },\n" +
+              "        \"value\":  { \"type\": \"long\" },\n" +
+              "        \"host\":   { \"type\": \"keyword\" }\n" +
+              "      }\n" +
+              "    }\n" +
+              "  }\n" +
+              "}", ContentType.APPLICATION_JSON));
+    }
   }
 
   private static String metricsNameByFields(String name, Map<String, Object> additionalFields) throws Exception{
