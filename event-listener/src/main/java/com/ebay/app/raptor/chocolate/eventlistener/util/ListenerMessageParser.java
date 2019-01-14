@@ -9,15 +9,12 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.kernel.util.StringUtils;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
-import com.ebay.raptor.geo.context.UserPrefsCtx;
-import com.ebay.raptor.kernel.util.RaptorConstants;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -83,20 +80,39 @@ public class ListenerMessageParser {
       }
     }
 
-    // get geo info
-    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-    
     // remote ip
     record.setRemoteIp(endUserContext.getIPAddress());
-
-    // language code
-    record.setLangCd(userPrefsCtx.getLangLocale().toLanguageTag());
 
     // user agent
     record.setUserAgent(endUserContext.getUserAgent());
 
-    // geography identifier
-    record.setGeoId((long)userPrefsCtx.getGeoContext().getCountryId());
+    // parse user prefs
+//    try {
+//
+//      // get geo info
+//      UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+//
+//      // language code
+//      record.setLangCd(userPrefsCtx.getLangLocale().toLanguageTag());
+//
+//      // geography identifier
+//      record.setGeoId((long) userPrefsCtx.getGeoContext().getCountryId());
+//
+//      // site id
+//      record.setSiteId((long)userPrefsCtx.getGeoContext().getSiteId());
+//
+//    } catch (Exception e) {
+//      logger.error("Parse geo info error");
+//    }
+
+    // language code
+      record.setLangCd("");
+
+      // geography identifier
+      record.setGeoId(0L);
+
+      // site id
+      record.setSiteId(0L);
 
     // udid
     if (endUserContext.getDeviceId() != null) {
@@ -107,9 +123,6 @@ public class ListenerMessageParser {
 
     // referer
     record.setReferer(referer);
-
-    // site id
-    record.setSiteId((long)userPrefsCtx.getGeoContext().getSiteId());
 
     // landing page url
     record.setLandingPageUrl(uri);
