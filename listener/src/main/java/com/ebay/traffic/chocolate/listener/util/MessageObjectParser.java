@@ -4,6 +4,8 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.kernel.util.DomainIpChecker;
+import com.ebay.kernel.util.RequestUtil;
 import com.ebay.kernel.util.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
@@ -132,18 +134,38 @@ public class MessageObjectParser {
         return referer == null ? "" : referer;
     }
 
+    private boolean isInternalIp(String ip) {
+        if (ip == null || ip.isEmpty()) {
+            return false;
+        }
+
+        DomainIpChecker ipChecker = DomainIpChecker.getInstance();
+        return ipChecker.isHostInNetwork(ip) || ip.startsWith("10.") || ip.startsWith("192.168.");
+    }
+
     /**
      * Get client remote Ip
      */
     private String getRemoteIp(HttpServletRequest request) {
-        String remoteIp = request.getHeader("X-eBay-Client-IP");
-
-        if (remoteIp == null) {
-            String xForwardFor = request.getHeader("X-Forwarded-For");
-            if (xForwardFor != null && !xForwardFor.isEmpty()) {
-                remoteIp = xForwardFor.split(",")[0];
-            }
+//        String remoteIp = request.getHeader("X-eBay-Client-IP");
+//
+//        if (remoteIp == null) {
+//            String xForwardFor = request.getHeader("X-Forwarded-For");
+//            if (xForwardFor != null && !xForwardFor.isEmpty()) {
+//                remoteIp = xForwardFor.split(",")[0];
+//            }
+//        }
+//        return remoteIp == null ? "" : remoteIp;
+        String remoteIp = null;
+        String xForwardFor = request.getHeader("X-Forwarded-For");
+        if (xForwardFor != null && !xForwardFor.isEmpty()) {
+            remoteIp = xForwardFor.split(",")[0];
         }
+
+        if (remoteIp == null || remoteIp.isEmpty()) {
+            remoteIp = RequestUtil.getRemoteAddr(request);
+        }
+
         return remoteIp == null ? "" : remoteIp;
     }
 
