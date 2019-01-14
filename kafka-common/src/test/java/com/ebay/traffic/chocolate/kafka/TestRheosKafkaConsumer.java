@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -19,6 +20,7 @@ import static com.ebay.traffic.chocolate.common.TestHelper.loadProperties;
 public class TestRheosKafkaConsumer {
 
   @Test
+  @Ignore
   public void testRheosKafkaConsumer() throws Exception {
 
     final String topic = "marketingtech.ap.tracking-events.filtered-epn";
