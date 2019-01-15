@@ -13,8 +13,8 @@ import org.apache.avro.message.SchemaStore;
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 9168719832027990370L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"ListenerMessageV2\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"snapshot_id\",\"type\":\"long\"},{\"name\":\"timestamp\",\"type\":\"long\"},{\"name\":\"publisher_id\",\"type\":\"long\"},{\"name\":\"campaign_id\",\"type\":\"long\"},{\"name\":\"request_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"uri\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"response_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"channel_action\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelAction\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CLICK\",\"IMPRESSION\",\"VIEWABLE\",\"SERVE\",\"PAGE_IMP\",\"VIEW_ITEM\",\"VIEW_TIME\",\"APP_FIRST_START\"]}},{\"name\":\"channel_type\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\",\"PAID_SEARCH\",\"SOCIAL_MEDIA\",\"PAID_SOCIAL\"]}},{\"name\":\"http_method\",\"type\":{\"type\":\"enum\",\"name\":\"HttpMethod\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CONNECT\",\"DELETE\",\"GET\",\"HEAD\",\"OPTIONS\",\"PATCH\",\"POST\",\"PUT\",\"TRACE\"]}},{\"name\":\"snid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"is_tracked\",\"type\":\"boolean\",\"default\":false}],\"pk\":[\"snapshot_id\"]}");
+  private static final long serialVersionUID = 541864384777958624L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"ListenerMessageV2\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"snapshot_id\",\"type\":\"long\"},{\"name\":\"short_snapshot_id\",\"type\":\"long\"},{\"name\":\"timestamp\",\"type\":\"long\"},{\"name\":\"user_id\",\"type\":\"long\"},{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"cguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"remote_ip\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"lang_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"user_agent\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"geo_id\",\"type\":\"long\"},{\"name\":\"udid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"referer\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"publisher_id\",\"type\":\"long\"},{\"name\":\"campaign_id\",\"type\":\"long\"},{\"name\":\"site_id\",\"type\":\"long\"},{\"name\":\"landing_page_url\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"src_rotation_id\",\"type\":\"long\"},{\"name\":\"dst_rotation_id\",\"type\":\"long\"},{\"name\":\"request_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"uri\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"response_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"channel_action\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelAction\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CLICK\",\"IMPRESSION\",\"VIEWABLE\",\"SERVE\",\"PAGE_IMP\",\"VIEW_ITEM\",\"VIEW_TIME\",\"APP_FIRST_START\"]}},{\"name\":\"channel_type\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\",\"PAID_SEARCH\",\"SOCIAL_MEDIA\",\"PAID_SOCIAL\"]}},{\"name\":\"http_method\",\"type\":{\"type\":\"enum\",\"name\":\"HttpMethod\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CONNECT\",\"DELETE\",\"GET\",\"HEAD\",\"OPTIONS\",\"PATCH\",\"POST\",\"PUT\",\"TRACE\"]}},{\"name\":\"snid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"is_tracked\",\"type\":\"boolean\",\"default\":false}],\"pk\":[\"snapshot_id\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -51,18 +51,32 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
     return DECODER.decode(b);
   }
 
-  @Deprecated public long snapshot_id;
-  @Deprecated public long timestamp;
-  @Deprecated public long publisher_id;
-  @Deprecated public long campaign_id;
-  @Deprecated public java.lang.String request_headers;
-  @Deprecated public java.lang.String uri;
-  @Deprecated public java.lang.String response_headers;
-  @Deprecated public com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action;
-  @Deprecated public com.ebay.app.raptor.chocolate.avro.ChannelType channel_type;
-  @Deprecated public com.ebay.app.raptor.chocolate.avro.HttpMethod http_method;
-  @Deprecated public java.lang.String snid;
-  @Deprecated public boolean is_tracked;
+   private long snapshot_id;
+   private long short_snapshot_id;
+   private long timestamp;
+   private long user_id;
+   private java.lang.String guid;
+   private java.lang.String cguid;
+   private java.lang.String remote_ip;
+   private java.lang.String lang_cd;
+   private java.lang.String user_agent;
+   private long geo_id;
+   private java.lang.String udid;
+   private java.lang.String referer;
+   private long publisher_id;
+   private long campaign_id;
+   private long site_id;
+   private java.lang.String landing_page_url;
+   private long src_rotation_id;
+   private long dst_rotation_id;
+   private java.lang.String request_headers;
+   private java.lang.String uri;
+   private java.lang.String response_headers;
+   private com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action;
+   private com.ebay.app.raptor.chocolate.avro.ChannelType channel_type;
+   private com.ebay.app.raptor.chocolate.avro.HttpMethod http_method;
+   private java.lang.String snid;
+   private boolean is_tracked;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -74,9 +88,23 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
   /**
    * All-args constructor.
    * @param snapshot_id The new value for snapshot_id
+   * @param short_snapshot_id The new value for short_snapshot_id
    * @param timestamp The new value for timestamp
+   * @param user_id The new value for user_id
+   * @param guid The new value for guid
+   * @param cguid The new value for cguid
+   * @param remote_ip The new value for remote_ip
+   * @param lang_cd The new value for lang_cd
+   * @param user_agent The new value for user_agent
+   * @param geo_id The new value for geo_id
+   * @param udid The new value for udid
+   * @param referer The new value for referer
    * @param publisher_id The new value for publisher_id
    * @param campaign_id The new value for campaign_id
+   * @param site_id The new value for site_id
+   * @param landing_page_url The new value for landing_page_url
+   * @param src_rotation_id The new value for src_rotation_id
+   * @param dst_rotation_id The new value for dst_rotation_id
    * @param request_headers The new value for request_headers
    * @param uri The new value for uri
    * @param response_headers The new value for response_headers
@@ -86,11 +114,25 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
    * @param snid The new value for snid
    * @param is_tracked The new value for is_tracked
    */
-  public ListenerMessageV2(java.lang.Long snapshot_id, java.lang.Long timestamp, java.lang.Long publisher_id, java.lang.Long campaign_id, java.lang.String request_headers, java.lang.String uri, java.lang.String response_headers, com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action, com.ebay.app.raptor.chocolate.avro.ChannelType channel_type, com.ebay.app.raptor.chocolate.avro.HttpMethod http_method, java.lang.String snid, java.lang.Boolean is_tracked) {
+  public ListenerMessageV2(java.lang.Long snapshot_id, java.lang.Long short_snapshot_id, java.lang.Long timestamp, java.lang.Long user_id, java.lang.String guid, java.lang.String cguid, java.lang.String remote_ip, java.lang.String lang_cd, java.lang.String user_agent, java.lang.Long geo_id, java.lang.String udid, java.lang.String referer, java.lang.Long publisher_id, java.lang.Long campaign_id, java.lang.Long site_id, java.lang.String landing_page_url, java.lang.Long src_rotation_id, java.lang.Long dst_rotation_id, java.lang.String request_headers, java.lang.String uri, java.lang.String response_headers, com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action, com.ebay.app.raptor.chocolate.avro.ChannelType channel_type, com.ebay.app.raptor.chocolate.avro.HttpMethod http_method, java.lang.String snid, java.lang.Boolean is_tracked) {
     this.snapshot_id = snapshot_id;
+    this.short_snapshot_id = short_snapshot_id;
     this.timestamp = timestamp;
+    this.user_id = user_id;
+    this.guid = guid;
+    this.cguid = cguid;
+    this.remote_ip = remote_ip;
+    this.lang_cd = lang_cd;
+    this.user_agent = user_agent;
+    this.geo_id = geo_id;
+    this.udid = udid;
+    this.referer = referer;
     this.publisher_id = publisher_id;
     this.campaign_id = campaign_id;
+    this.site_id = site_id;
+    this.landing_page_url = landing_page_url;
+    this.src_rotation_id = src_rotation_id;
+    this.dst_rotation_id = dst_rotation_id;
     this.request_headers = request_headers;
     this.uri = uri;
     this.response_headers = response_headers;
@@ -106,17 +148,31 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
   public java.lang.Object get(int field$) {
     switch (field$) {
     case 0: return snapshot_id;
-    case 1: return timestamp;
-    case 2: return publisher_id;
-    case 3: return campaign_id;
-    case 4: return request_headers;
-    case 5: return uri;
-    case 6: return response_headers;
-    case 7: return channel_action;
-    case 8: return channel_type;
-    case 9: return http_method;
-    case 10: return snid;
-    case 11: return is_tracked;
+    case 1: return short_snapshot_id;
+    case 2: return timestamp;
+    case 3: return user_id;
+    case 4: return guid;
+    case 5: return cguid;
+    case 6: return remote_ip;
+    case 7: return lang_cd;
+    case 8: return user_agent;
+    case 9: return geo_id;
+    case 10: return udid;
+    case 11: return referer;
+    case 12: return publisher_id;
+    case 13: return campaign_id;
+    case 14: return site_id;
+    case 15: return landing_page_url;
+    case 16: return src_rotation_id;
+    case 17: return dst_rotation_id;
+    case 18: return request_headers;
+    case 19: return uri;
+    case 20: return response_headers;
+    case 21: return channel_action;
+    case 22: return channel_type;
+    case 23: return http_method;
+    case 24: return snid;
+    case 25: return is_tracked;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -126,17 +182,31 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
     case 0: snapshot_id = (java.lang.Long)value$; break;
-    case 1: timestamp = (java.lang.Long)value$; break;
-    case 2: publisher_id = (java.lang.Long)value$; break;
-    case 3: campaign_id = (java.lang.Long)value$; break;
-    case 4: request_headers = (java.lang.String)value$; break;
-    case 5: uri = (java.lang.String)value$; break;
-    case 6: response_headers = (java.lang.String)value$; break;
-    case 7: channel_action = (com.ebay.app.raptor.chocolate.avro.ChannelAction)value$; break;
-    case 8: channel_type = (com.ebay.app.raptor.chocolate.avro.ChannelType)value$; break;
-    case 9: http_method = (com.ebay.app.raptor.chocolate.avro.HttpMethod)value$; break;
-    case 10: snid = (java.lang.String)value$; break;
-    case 11: is_tracked = (java.lang.Boolean)value$; break;
+    case 1: short_snapshot_id = (java.lang.Long)value$; break;
+    case 2: timestamp = (java.lang.Long)value$; break;
+    case 3: user_id = (java.lang.Long)value$; break;
+    case 4: guid = (java.lang.String)value$; break;
+    case 5: cguid = (java.lang.String)value$; break;
+    case 6: remote_ip = (java.lang.String)value$; break;
+    case 7: lang_cd = (java.lang.String)value$; break;
+    case 8: user_agent = (java.lang.String)value$; break;
+    case 9: geo_id = (java.lang.Long)value$; break;
+    case 10: udid = (java.lang.String)value$; break;
+    case 11: referer = (java.lang.String)value$; break;
+    case 12: publisher_id = (java.lang.Long)value$; break;
+    case 13: campaign_id = (java.lang.Long)value$; break;
+    case 14: site_id = (java.lang.Long)value$; break;
+    case 15: landing_page_url = (java.lang.String)value$; break;
+    case 16: src_rotation_id = (java.lang.Long)value$; break;
+    case 17: dst_rotation_id = (java.lang.Long)value$; break;
+    case 18: request_headers = (java.lang.String)value$; break;
+    case 19: uri = (java.lang.String)value$; break;
+    case 20: response_headers = (java.lang.String)value$; break;
+    case 21: channel_action = (com.ebay.app.raptor.chocolate.avro.ChannelAction)value$; break;
+    case 22: channel_type = (com.ebay.app.raptor.chocolate.avro.ChannelType)value$; break;
+    case 23: http_method = (com.ebay.app.raptor.chocolate.avro.HttpMethod)value$; break;
+    case 24: snid = (java.lang.String)value$; break;
+    case 25: is_tracked = (java.lang.Boolean)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -158,6 +228,22 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
   }
 
   /**
+   * Gets the value of the 'short_snapshot_id' field.
+   * @return The value of the 'short_snapshot_id' field.
+   */
+  public java.lang.Long getShortSnapshotId() {
+    return short_snapshot_id;
+  }
+
+  /**
+   * Sets the value of the 'short_snapshot_id' field.
+   * @param value the value to set.
+   */
+  public void setShortSnapshotId(java.lang.Long value) {
+    this.short_snapshot_id = value;
+  }
+
+  /**
    * Gets the value of the 'timestamp' field.
    * @return The value of the 'timestamp' field.
    */
@@ -171,6 +257,150 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
    */
   public void setTimestamp(java.lang.Long value) {
     this.timestamp = value;
+  }
+
+  /**
+   * Gets the value of the 'user_id' field.
+   * @return The value of the 'user_id' field.
+   */
+  public java.lang.Long getUserId() {
+    return user_id;
+  }
+
+  /**
+   * Sets the value of the 'user_id' field.
+   * @param value the value to set.
+   */
+  public void setUserId(java.lang.Long value) {
+    this.user_id = value;
+  }
+
+  /**
+   * Gets the value of the 'guid' field.
+   * @return The value of the 'guid' field.
+   */
+  public java.lang.String getGuid() {
+    return guid;
+  }
+
+  /**
+   * Sets the value of the 'guid' field.
+   * @param value the value to set.
+   */
+  public void setGuid(java.lang.String value) {
+    this.guid = value;
+  }
+
+  /**
+   * Gets the value of the 'cguid' field.
+   * @return The value of the 'cguid' field.
+   */
+  public java.lang.String getCguid() {
+    return cguid;
+  }
+
+  /**
+   * Sets the value of the 'cguid' field.
+   * @param value the value to set.
+   */
+  public void setCguid(java.lang.String value) {
+    this.cguid = value;
+  }
+
+  /**
+   * Gets the value of the 'remote_ip' field.
+   * @return The value of the 'remote_ip' field.
+   */
+  public java.lang.String getRemoteIp() {
+    return remote_ip;
+  }
+
+  /**
+   * Sets the value of the 'remote_ip' field.
+   * @param value the value to set.
+   */
+  public void setRemoteIp(java.lang.String value) {
+    this.remote_ip = value;
+  }
+
+  /**
+   * Gets the value of the 'lang_cd' field.
+   * @return The value of the 'lang_cd' field.
+   */
+  public java.lang.String getLangCd() {
+    return lang_cd;
+  }
+
+  /**
+   * Sets the value of the 'lang_cd' field.
+   * @param value the value to set.
+   */
+  public void setLangCd(java.lang.String value) {
+    this.lang_cd = value;
+  }
+
+  /**
+   * Gets the value of the 'user_agent' field.
+   * @return The value of the 'user_agent' field.
+   */
+  public java.lang.String getUserAgent() {
+    return user_agent;
+  }
+
+  /**
+   * Sets the value of the 'user_agent' field.
+   * @param value the value to set.
+   */
+  public void setUserAgent(java.lang.String value) {
+    this.user_agent = value;
+  }
+
+  /**
+   * Gets the value of the 'geo_id' field.
+   * @return The value of the 'geo_id' field.
+   */
+  public java.lang.Long getGeoId() {
+    return geo_id;
+  }
+
+  /**
+   * Sets the value of the 'geo_id' field.
+   * @param value the value to set.
+   */
+  public void setGeoId(java.lang.Long value) {
+    this.geo_id = value;
+  }
+
+  /**
+   * Gets the value of the 'udid' field.
+   * @return The value of the 'udid' field.
+   */
+  public java.lang.String getUdid() {
+    return udid;
+  }
+
+  /**
+   * Sets the value of the 'udid' field.
+   * @param value the value to set.
+   */
+  public void setUdid(java.lang.String value) {
+    this.udid = value;
+  }
+
+  /**
+   * Gets the value of the 'referer' field.
+   * @return The value of the 'referer' field.
+   */
+  public java.lang.String getReferer() {
+    return referer;
+  }
+
+  /**
+   * Sets the value of the 'referer' field.
+   * @param value the value to set.
+   */
+  public void setReferer(java.lang.String value) {
+    this.referer = value;
   }
 
   /**
@@ -203,6 +433,70 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
    */
   public void setCampaignId(java.lang.Long value) {
     this.campaign_id = value;
+  }
+
+  /**
+   * Gets the value of the 'site_id' field.
+   * @return The value of the 'site_id' field.
+   */
+  public java.lang.Long getSiteId() {
+    return site_id;
+  }
+
+  /**
+   * Sets the value of the 'site_id' field.
+   * @param value the value to set.
+   */
+  public void setSiteId(java.lang.Long value) {
+    this.site_id = value;
+  }
+
+  /**
+   * Gets the value of the 'landing_page_url' field.
+   * @return The value of the 'landing_page_url' field.
+   */
+  public java.lang.String getLandingPageUrl() {
+    return landing_page_url;
+  }
+
+  /**
+   * Sets the value of the 'landing_page_url' field.
+   * @param value the value to set.
+   */
+  public void setLandingPageUrl(java.lang.String value) {
+    this.landing_page_url = value;
+  }
+
+  /**
+   * Gets the value of the 'src_rotation_id' field.
+   * @return The value of the 'src_rotation_id' field.
+   */
+  public java.lang.Long getSrcRotationId() {
+    return src_rotation_id;
+  }
+
+  /**
+   * Sets the value of the 'src_rotation_id' field.
+   * @param value the value to set.
+   */
+  public void setSrcRotationId(java.lang.Long value) {
+    this.src_rotation_id = value;
+  }
+
+  /**
+   * Gets the value of the 'dst_rotation_id' field.
+   * @return The value of the 'dst_rotation_id' field.
+   */
+  public java.lang.Long getDstRotationId() {
+    return dst_rotation_id;
+  }
+
+  /**
+   * Sets the value of the 'dst_rotation_id' field.
+   * @param value the value to set.
+   */
+  public void setDstRotationId(java.lang.Long value) {
+    this.dst_rotation_id = value;
   }
 
   /**
@@ -366,9 +660,23 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
     implements org.apache.avro.data.RecordBuilder<ListenerMessageV2> {
 
     private long snapshot_id;
+    private long short_snapshot_id;
     private long timestamp;
+    private long user_id;
+    private java.lang.String guid;
+    private java.lang.String cguid;
+    private java.lang.String remote_ip;
+    private java.lang.String lang_cd;
+    private java.lang.String user_agent;
+    private long geo_id;
+    private java.lang.String udid;
+    private java.lang.String referer;
     private long publisher_id;
     private long campaign_id;
+    private long site_id;
+    private java.lang.String landing_page_url;
+    private long src_rotation_id;
+    private long dst_rotation_id;
     private java.lang.String request_headers;
     private java.lang.String uri;
     private java.lang.String response_headers;
@@ -393,49 +701,105 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
         this.snapshot_id = data().deepCopy(fields()[0].schema(), other.snapshot_id);
         fieldSetFlags()[0] = true;
       }
-      if (isValidValue(fields()[1], other.timestamp)) {
-        this.timestamp = data().deepCopy(fields()[1].schema(), other.timestamp);
+      if (isValidValue(fields()[1], other.short_snapshot_id)) {
+        this.short_snapshot_id = data().deepCopy(fields()[1].schema(), other.short_snapshot_id);
         fieldSetFlags()[1] = true;
       }
-      if (isValidValue(fields()[2], other.publisher_id)) {
-        this.publisher_id = data().deepCopy(fields()[2].schema(), other.publisher_id);
+      if (isValidValue(fields()[2], other.timestamp)) {
+        this.timestamp = data().deepCopy(fields()[2].schema(), other.timestamp);
         fieldSetFlags()[2] = true;
       }
-      if (isValidValue(fields()[3], other.campaign_id)) {
-        this.campaign_id = data().deepCopy(fields()[3].schema(), other.campaign_id);
+      if (isValidValue(fields()[3], other.user_id)) {
+        this.user_id = data().deepCopy(fields()[3].schema(), other.user_id);
         fieldSetFlags()[3] = true;
       }
-      if (isValidValue(fields()[4], other.request_headers)) {
-        this.request_headers = data().deepCopy(fields()[4].schema(), other.request_headers);
+      if (isValidValue(fields()[4], other.guid)) {
+        this.guid = data().deepCopy(fields()[4].schema(), other.guid);
         fieldSetFlags()[4] = true;
       }
-      if (isValidValue(fields()[5], other.uri)) {
-        this.uri = data().deepCopy(fields()[5].schema(), other.uri);
+      if (isValidValue(fields()[5], other.cguid)) {
+        this.cguid = data().deepCopy(fields()[5].schema(), other.cguid);
         fieldSetFlags()[5] = true;
       }
-      if (isValidValue(fields()[6], other.response_headers)) {
-        this.response_headers = data().deepCopy(fields()[6].schema(), other.response_headers);
+      if (isValidValue(fields()[6], other.remote_ip)) {
+        this.remote_ip = data().deepCopy(fields()[6].schema(), other.remote_ip);
         fieldSetFlags()[6] = true;
       }
-      if (isValidValue(fields()[7], other.channel_action)) {
-        this.channel_action = data().deepCopy(fields()[7].schema(), other.channel_action);
+      if (isValidValue(fields()[7], other.lang_cd)) {
+        this.lang_cd = data().deepCopy(fields()[7].schema(), other.lang_cd);
         fieldSetFlags()[7] = true;
       }
-      if (isValidValue(fields()[8], other.channel_type)) {
-        this.channel_type = data().deepCopy(fields()[8].schema(), other.channel_type);
+      if (isValidValue(fields()[8], other.user_agent)) {
+        this.user_agent = data().deepCopy(fields()[8].schema(), other.user_agent);
         fieldSetFlags()[8] = true;
       }
-      if (isValidValue(fields()[9], other.http_method)) {
-        this.http_method = data().deepCopy(fields()[9].schema(), other.http_method);
+      if (isValidValue(fields()[9], other.geo_id)) {
+        this.geo_id = data().deepCopy(fields()[9].schema(), other.geo_id);
         fieldSetFlags()[9] = true;
       }
-      if (isValidValue(fields()[10], other.snid)) {
-        this.snid = data().deepCopy(fields()[10].schema(), other.snid);
+      if (isValidValue(fields()[10], other.udid)) {
+        this.udid = data().deepCopy(fields()[10].schema(), other.udid);
         fieldSetFlags()[10] = true;
       }
-      if (isValidValue(fields()[11], other.is_tracked)) {
-        this.is_tracked = data().deepCopy(fields()[11].schema(), other.is_tracked);
+      if (isValidValue(fields()[11], other.referer)) {
+        this.referer = data().deepCopy(fields()[11].schema(), other.referer);
         fieldSetFlags()[11] = true;
+      }
+      if (isValidValue(fields()[12], other.publisher_id)) {
+        this.publisher_id = data().deepCopy(fields()[12].schema(), other.publisher_id);
+        fieldSetFlags()[12] = true;
+      }
+      if (isValidValue(fields()[13], other.campaign_id)) {
+        this.campaign_id = data().deepCopy(fields()[13].schema(), other.campaign_id);
+        fieldSetFlags()[13] = true;
+      }
+      if (isValidValue(fields()[14], other.site_id)) {
+        this.site_id = data().deepCopy(fields()[14].schema(), other.site_id);
+        fieldSetFlags()[14] = true;
+      }
+      if (isValidValue(fields()[15], other.landing_page_url)) {
+        this.landing_page_url = data().deepCopy(fields()[15].schema(), other.landing_page_url);
+        fieldSetFlags()[15] = true;
+      }
+      if (isValidValue(fields()[16], other.src_rotation_id)) {
+        this.src_rotation_id = data().deepCopy(fields()[16].schema(), other.src_rotation_id);
+        fieldSetFlags()[16] = true;
+      }
+      if (isValidValue(fields()[17], other.dst_rotation_id)) {
+        this.dst_rotation_id = data().deepCopy(fields()[17].schema(), other.dst_rotation_id);
+        fieldSetFlags()[17] = true;
+      }
+      if (isValidValue(fields()[18], other.request_headers)) {
+        this.request_headers = data().deepCopy(fields()[18].schema(), other.request_headers);
+        fieldSetFlags()[18] = true;
+      }
+      if (isValidValue(fields()[19], other.uri)) {
+        this.uri = data().deepCopy(fields()[19].schema(), other.uri);
+        fieldSetFlags()[19] = true;
+      }
+      if (isValidValue(fields()[20], other.response_headers)) {
+        this.response_headers = data().deepCopy(fields()[20].schema(), other.response_headers);
+        fieldSetFlags()[20] = true;
+      }
+      if (isValidValue(fields()[21], other.channel_action)) {
+        this.channel_action = data().deepCopy(fields()[21].schema(), other.channel_action);
+        fieldSetFlags()[21] = true;
+      }
+      if (isValidValue(fields()[22], other.channel_type)) {
+        this.channel_type = data().deepCopy(fields()[22].schema(), other.channel_type);
+        fieldSetFlags()[22] = true;
+      }
+      if (isValidValue(fields()[23], other.http_method)) {
+        this.http_method = data().deepCopy(fields()[23].schema(), other.http_method);
+        fieldSetFlags()[23] = true;
+      }
+      if (isValidValue(fields()[24], other.snid)) {
+        this.snid = data().deepCopy(fields()[24].schema(), other.snid);
+        fieldSetFlags()[24] = true;
+      }
+      if (isValidValue(fields()[25], other.is_tracked)) {
+        this.is_tracked = data().deepCopy(fields()[25].schema(), other.is_tracked);
+        fieldSetFlags()[25] = true;
       }
     }
 
@@ -449,49 +813,105 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
         this.snapshot_id = data().deepCopy(fields()[0].schema(), other.snapshot_id);
         fieldSetFlags()[0] = true;
       }
-      if (isValidValue(fields()[1], other.timestamp)) {
-        this.timestamp = data().deepCopy(fields()[1].schema(), other.timestamp);
+      if (isValidValue(fields()[1], other.short_snapshot_id)) {
+        this.short_snapshot_id = data().deepCopy(fields()[1].schema(), other.short_snapshot_id);
         fieldSetFlags()[1] = true;
       }
-      if (isValidValue(fields()[2], other.publisher_id)) {
-        this.publisher_id = data().deepCopy(fields()[2].schema(), other.publisher_id);
+      if (isValidValue(fields()[2], other.timestamp)) {
+        this.timestamp = data().deepCopy(fields()[2].schema(), other.timestamp);
         fieldSetFlags()[2] = true;
       }
-      if (isValidValue(fields()[3], other.campaign_id)) {
-        this.campaign_id = data().deepCopy(fields()[3].schema(), other.campaign_id);
+      if (isValidValue(fields()[3], other.user_id)) {
+        this.user_id = data().deepCopy(fields()[3].schema(), other.user_id);
         fieldSetFlags()[3] = true;
       }
-      if (isValidValue(fields()[4], other.request_headers)) {
-        this.request_headers = data().deepCopy(fields()[4].schema(), other.request_headers);
+      if (isValidValue(fields()[4], other.guid)) {
+        this.guid = data().deepCopy(fields()[4].schema(), other.guid);
         fieldSetFlags()[4] = true;
       }
-      if (isValidValue(fields()[5], other.uri)) {
-        this.uri = data().deepCopy(fields()[5].schema(), other.uri);
+      if (isValidValue(fields()[5], other.cguid)) {
+        this.cguid = data().deepCopy(fields()[5].schema(), other.cguid);
         fieldSetFlags()[5] = true;
       }
-      if (isValidValue(fields()[6], other.response_headers)) {
-        this.response_headers = data().deepCopy(fields()[6].schema(), other.response_headers);
+      if (isValidValue(fields()[6], other.remote_ip)) {
+        this.remote_ip = data().deepCopy(fields()[6].schema(), other.remote_ip);
         fieldSetFlags()[6] = true;
       }
-      if (isValidValue(fields()[7], other.channel_action)) {
-        this.channel_action = data().deepCopy(fields()[7].schema(), other.channel_action);
+      if (isValidValue(fields()[7], other.lang_cd)) {
+        this.lang_cd = data().deepCopy(fields()[7].schema(), other.lang_cd);
         fieldSetFlags()[7] = true;
       }
-      if (isValidValue(fields()[8], other.channel_type)) {
-        this.channel_type = data().deepCopy(fields()[8].schema(), other.channel_type);
+      if (isValidValue(fields()[8], other.user_agent)) {
+        this.user_agent = data().deepCopy(fields()[8].schema(), other.user_agent);
         fieldSetFlags()[8] = true;
       }
-      if (isValidValue(fields()[9], other.http_method)) {
-        this.http_method = data().deepCopy(fields()[9].schema(), other.http_method);
+      if (isValidValue(fields()[9], other.geo_id)) {
+        this.geo_id = data().deepCopy(fields()[9].schema(), other.geo_id);
         fieldSetFlags()[9] = true;
       }
-      if (isValidValue(fields()[10], other.snid)) {
-        this.snid = data().deepCopy(fields()[10].schema(), other.snid);
+      if (isValidValue(fields()[10], other.udid)) {
+        this.udid = data().deepCopy(fields()[10].schema(), other.udid);
         fieldSetFlags()[10] = true;
       }
-      if (isValidValue(fields()[11], other.is_tracked)) {
-        this.is_tracked = data().deepCopy(fields()[11].schema(), other.is_tracked);
+      if (isValidValue(fields()[11], other.referer)) {
+        this.referer = data().deepCopy(fields()[11].schema(), other.referer);
         fieldSetFlags()[11] = true;
+      }
+      if (isValidValue(fields()[12], other.publisher_id)) {
+        this.publisher_id = data().deepCopy(fields()[12].schema(), other.publisher_id);
+        fieldSetFlags()[12] = true;
+      }
+      if (isValidValue(fields()[13], other.campaign_id)) {
+        this.campaign_id = data().deepCopy(fields()[13].schema(), other.campaign_id);
+        fieldSetFlags()[13] = true;
+      }
+      if (isValidValue(fields()[14], other.site_id)) {
+        this.site_id = data().deepCopy(fields()[14].schema(), other.site_id);
+        fieldSetFlags()[14] = true;
+      }
+      if (isValidValue(fields()[15], other.landing_page_url)) {
+        this.landing_page_url = data().deepCopy(fields()[15].schema(), other.landing_page_url);
+        fieldSetFlags()[15] = true;
+      }
+      if (isValidValue(fields()[16], other.src_rotation_id)) {
+        this.src_rotation_id = data().deepCopy(fields()[16].schema(), other.src_rotation_id);
+        fieldSetFlags()[16] = true;
+      }
+      if (isValidValue(fields()[17], other.dst_rotation_id)) {
+        this.dst_rotation_id = data().deepCopy(fields()[17].schema(), other.dst_rotation_id);
+        fieldSetFlags()[17] = true;
+      }
+      if (isValidValue(fields()[18], other.request_headers)) {
+        this.request_headers = data().deepCopy(fields()[18].schema(), other.request_headers);
+        fieldSetFlags()[18] = true;
+      }
+      if (isValidValue(fields()[19], other.uri)) {
+        this.uri = data().deepCopy(fields()[19].schema(), other.uri);
+        fieldSetFlags()[19] = true;
+      }
+      if (isValidValue(fields()[20], other.response_headers)) {
+        this.response_headers = data().deepCopy(fields()[20].schema(), other.response_headers);
+        fieldSetFlags()[20] = true;
+      }
+      if (isValidValue(fields()[21], other.channel_action)) {
+        this.channel_action = data().deepCopy(fields()[21].schema(), other.channel_action);
+        fieldSetFlags()[21] = true;
+      }
+      if (isValidValue(fields()[22], other.channel_type)) {
+        this.channel_type = data().deepCopy(fields()[22].schema(), other.channel_type);
+        fieldSetFlags()[22] = true;
+      }
+      if (isValidValue(fields()[23], other.http_method)) {
+        this.http_method = data().deepCopy(fields()[23].schema(), other.http_method);
+        fieldSetFlags()[23] = true;
+      }
+      if (isValidValue(fields()[24], other.snid)) {
+        this.snid = data().deepCopy(fields()[24].schema(), other.snid);
+        fieldSetFlags()[24] = true;
+      }
+      if (isValidValue(fields()[25], other.is_tracked)) {
+        this.is_tracked = data().deepCopy(fields()[25].schema(), other.is_tracked);
+        fieldSetFlags()[25] = true;
       }
     }
 
@@ -534,6 +954,44 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
     }
 
     /**
+      * Gets the value of the 'short_snapshot_id' field.
+      * @return The value.
+      */
+    public java.lang.Long getShortSnapshotId() {
+      return short_snapshot_id;
+    }
+
+    /**
+      * Sets the value of the 'short_snapshot_id' field.
+      * @param value The value of 'short_snapshot_id'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setShortSnapshotId(long value) {
+      validate(fields()[1], value);
+      this.short_snapshot_id = value;
+      fieldSetFlags()[1] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'short_snapshot_id' field has been set.
+      * @return True if the 'short_snapshot_id' field has been set, false otherwise.
+      */
+    public boolean hasShortSnapshotId() {
+      return fieldSetFlags()[1];
+    }
+
+
+    /**
+      * Clears the value of the 'short_snapshot_id' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearShortSnapshotId() {
+      fieldSetFlags()[1] = false;
+      return this;
+    }
+
+    /**
       * Gets the value of the 'timestamp' field.
       * @return The value.
       */
@@ -547,9 +1005,9 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setTimestamp(long value) {
-      validate(fields()[1], value);
+      validate(fields()[2], value);
       this.timestamp = value;
-      fieldSetFlags()[1] = true;
+      fieldSetFlags()[2] = true;
       return this;
     }
 
@@ -558,7 +1016,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'timestamp' field has been set, false otherwise.
       */
     public boolean hasTimestamp() {
-      return fieldSetFlags()[1];
+      return fieldSetFlags()[2];
     }
 
 
@@ -567,7 +1025,356 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearTimestamp() {
-      fieldSetFlags()[1] = false;
+      fieldSetFlags()[2] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'user_id' field.
+      * @return The value.
+      */
+    public java.lang.Long getUserId() {
+      return user_id;
+    }
+
+    /**
+      * Sets the value of the 'user_id' field.
+      * @param value The value of 'user_id'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setUserId(long value) {
+      validate(fields()[3], value);
+      this.user_id = value;
+      fieldSetFlags()[3] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'user_id' field has been set.
+      * @return True if the 'user_id' field has been set, false otherwise.
+      */
+    public boolean hasUserId() {
+      return fieldSetFlags()[3];
+    }
+
+
+    /**
+      * Clears the value of the 'user_id' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearUserId() {
+      fieldSetFlags()[3] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'guid' field.
+      * @return The value.
+      */
+    public java.lang.String getGuid() {
+      return guid;
+    }
+
+    /**
+      * Sets the value of the 'guid' field.
+      * @param value The value of 'guid'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setGuid(java.lang.String value) {
+      validate(fields()[4], value);
+      this.guid = value;
+      fieldSetFlags()[4] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'guid' field has been set.
+      * @return True if the 'guid' field has been set, false otherwise.
+      */
+    public boolean hasGuid() {
+      return fieldSetFlags()[4];
+    }
+
+
+    /**
+      * Clears the value of the 'guid' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearGuid() {
+      guid = null;
+      fieldSetFlags()[4] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'cguid' field.
+      * @return The value.
+      */
+    public java.lang.String getCguid() {
+      return cguid;
+    }
+
+    /**
+      * Sets the value of the 'cguid' field.
+      * @param value The value of 'cguid'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setCguid(java.lang.String value) {
+      validate(fields()[5], value);
+      this.cguid = value;
+      fieldSetFlags()[5] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'cguid' field has been set.
+      * @return True if the 'cguid' field has been set, false otherwise.
+      */
+    public boolean hasCguid() {
+      return fieldSetFlags()[5];
+    }
+
+
+    /**
+      * Clears the value of the 'cguid' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearCguid() {
+      cguid = null;
+      fieldSetFlags()[5] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'remote_ip' field.
+      * @return The value.
+      */
+    public java.lang.String getRemoteIp() {
+      return remote_ip;
+    }
+
+    /**
+      * Sets the value of the 'remote_ip' field.
+      * @param value The value of 'remote_ip'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setRemoteIp(java.lang.String value) {
+      validate(fields()[6], value);
+      this.remote_ip = value;
+      fieldSetFlags()[6] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'remote_ip' field has been set.
+      * @return True if the 'remote_ip' field has been set, false otherwise.
+      */
+    public boolean hasRemoteIp() {
+      return fieldSetFlags()[6];
+    }
+
+
+    /**
+      * Clears the value of the 'remote_ip' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearRemoteIp() {
+      remote_ip = null;
+      fieldSetFlags()[6] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'lang_cd' field.
+      * @return The value.
+      */
+    public java.lang.String getLangCd() {
+      return lang_cd;
+    }
+
+    /**
+      * Sets the value of the 'lang_cd' field.
+      * @param value The value of 'lang_cd'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setLangCd(java.lang.String value) {
+      validate(fields()[7], value);
+      this.lang_cd = value;
+      fieldSetFlags()[7] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'lang_cd' field has been set.
+      * @return True if the 'lang_cd' field has been set, false otherwise.
+      */
+    public boolean hasLangCd() {
+      return fieldSetFlags()[7];
+    }
+
+
+    /**
+      * Clears the value of the 'lang_cd' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearLangCd() {
+      lang_cd = null;
+      fieldSetFlags()[7] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'user_agent' field.
+      * @return The value.
+      */
+    public java.lang.String getUserAgent() {
+      return user_agent;
+    }
+
+    /**
+      * Sets the value of the 'user_agent' field.
+      * @param value The value of 'user_agent'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setUserAgent(java.lang.String value) {
+      validate(fields()[8], value);
+      this.user_agent = value;
+      fieldSetFlags()[8] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'user_agent' field has been set.
+      * @return True if the 'user_agent' field has been set, false otherwise.
+      */
+    public boolean hasUserAgent() {
+      return fieldSetFlags()[8];
+    }
+
+
+    /**
+      * Clears the value of the 'user_agent' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearUserAgent() {
+      user_agent = null;
+      fieldSetFlags()[8] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'geo_id' field.
+      * @return The value.
+      */
+    public java.lang.Long getGeoId() {
+      return geo_id;
+    }
+
+    /**
+      * Sets the value of the 'geo_id' field.
+      * @param value The value of 'geo_id'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setGeoId(long value) {
+      validate(fields()[9], value);
+      this.geo_id = value;
+      fieldSetFlags()[9] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'geo_id' field has been set.
+      * @return True if the 'geo_id' field has been set, false otherwise.
+      */
+    public boolean hasGeoId() {
+      return fieldSetFlags()[9];
+    }
+
+
+    /**
+      * Clears the value of the 'geo_id' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearGeoId() {
+      fieldSetFlags()[9] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'udid' field.
+      * @return The value.
+      */
+    public java.lang.String getUdid() {
+      return udid;
+    }
+
+    /**
+      * Sets the value of the 'udid' field.
+      * @param value The value of 'udid'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setUdid(java.lang.String value) {
+      validate(fields()[10], value);
+      this.udid = value;
+      fieldSetFlags()[10] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'udid' field has been set.
+      * @return True if the 'udid' field has been set, false otherwise.
+      */
+    public boolean hasUdid() {
+      return fieldSetFlags()[10];
+    }
+
+
+    /**
+      * Clears the value of the 'udid' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearUdid() {
+      udid = null;
+      fieldSetFlags()[10] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'referer' field.
+      * @return The value.
+      */
+    public java.lang.String getReferer() {
+      return referer;
+    }
+
+    /**
+      * Sets the value of the 'referer' field.
+      * @param value The value of 'referer'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setReferer(java.lang.String value) {
+      validate(fields()[11], value);
+      this.referer = value;
+      fieldSetFlags()[11] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'referer' field has been set.
+      * @return True if the 'referer' field has been set, false otherwise.
+      */
+    public boolean hasReferer() {
+      return fieldSetFlags()[11];
+    }
+
+
+    /**
+      * Clears the value of the 'referer' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearReferer() {
+      referer = null;
+      fieldSetFlags()[11] = false;
       return this;
     }
 
@@ -585,9 +1392,9 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setPublisherId(long value) {
-      validate(fields()[2], value);
+      validate(fields()[12], value);
       this.publisher_id = value;
-      fieldSetFlags()[2] = true;
+      fieldSetFlags()[12] = true;
       return this;
     }
 
@@ -596,7 +1403,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'publisher_id' field has been set, false otherwise.
       */
     public boolean hasPublisherId() {
-      return fieldSetFlags()[2];
+      return fieldSetFlags()[12];
     }
 
 
@@ -605,7 +1412,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearPublisherId() {
-      fieldSetFlags()[2] = false;
+      fieldSetFlags()[12] = false;
       return this;
     }
 
@@ -623,9 +1430,9 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setCampaignId(long value) {
-      validate(fields()[3], value);
+      validate(fields()[13], value);
       this.campaign_id = value;
-      fieldSetFlags()[3] = true;
+      fieldSetFlags()[13] = true;
       return this;
     }
 
@@ -634,7 +1441,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'campaign_id' field has been set, false otherwise.
       */
     public boolean hasCampaignId() {
-      return fieldSetFlags()[3];
+      return fieldSetFlags()[13];
     }
 
 
@@ -643,7 +1450,160 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearCampaignId() {
-      fieldSetFlags()[3] = false;
+      fieldSetFlags()[13] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'site_id' field.
+      * @return The value.
+      */
+    public java.lang.Long getSiteId() {
+      return site_id;
+    }
+
+    /**
+      * Sets the value of the 'site_id' field.
+      * @param value The value of 'site_id'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setSiteId(long value) {
+      validate(fields()[14], value);
+      this.site_id = value;
+      fieldSetFlags()[14] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'site_id' field has been set.
+      * @return True if the 'site_id' field has been set, false otherwise.
+      */
+    public boolean hasSiteId() {
+      return fieldSetFlags()[14];
+    }
+
+
+    /**
+      * Clears the value of the 'site_id' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearSiteId() {
+      fieldSetFlags()[14] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'landing_page_url' field.
+      * @return The value.
+      */
+    public java.lang.String getLandingPageUrl() {
+      return landing_page_url;
+    }
+
+    /**
+      * Sets the value of the 'landing_page_url' field.
+      * @param value The value of 'landing_page_url'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setLandingPageUrl(java.lang.String value) {
+      validate(fields()[15], value);
+      this.landing_page_url = value;
+      fieldSetFlags()[15] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'landing_page_url' field has been set.
+      * @return True if the 'landing_page_url' field has been set, false otherwise.
+      */
+    public boolean hasLandingPageUrl() {
+      return fieldSetFlags()[15];
+    }
+
+
+    /**
+      * Clears the value of the 'landing_page_url' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearLandingPageUrl() {
+      landing_page_url = null;
+      fieldSetFlags()[15] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'src_rotation_id' field.
+      * @return The value.
+      */
+    public java.lang.Long getSrcRotationId() {
+      return src_rotation_id;
+    }
+
+    /**
+      * Sets the value of the 'src_rotation_id' field.
+      * @param value The value of 'src_rotation_id'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setSrcRotationId(long value) {
+      validate(fields()[16], value);
+      this.src_rotation_id = value;
+      fieldSetFlags()[16] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'src_rotation_id' field has been set.
+      * @return True if the 'src_rotation_id' field has been set, false otherwise.
+      */
+    public boolean hasSrcRotationId() {
+      return fieldSetFlags()[16];
+    }
+
+
+    /**
+      * Clears the value of the 'src_rotation_id' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearSrcRotationId() {
+      fieldSetFlags()[16] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'dst_rotation_id' field.
+      * @return The value.
+      */
+    public java.lang.Long getDstRotationId() {
+      return dst_rotation_id;
+    }
+
+    /**
+      * Sets the value of the 'dst_rotation_id' field.
+      * @param value The value of 'dst_rotation_id'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setDstRotationId(long value) {
+      validate(fields()[17], value);
+      this.dst_rotation_id = value;
+      fieldSetFlags()[17] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'dst_rotation_id' field has been set.
+      * @return True if the 'dst_rotation_id' field has been set, false otherwise.
+      */
+    public boolean hasDstRotationId() {
+      return fieldSetFlags()[17];
+    }
+
+
+    /**
+      * Clears the value of the 'dst_rotation_id' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearDstRotationId() {
+      fieldSetFlags()[17] = false;
       return this;
     }
 
@@ -661,9 +1621,9 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setRequestHeaders(java.lang.String value) {
-      validate(fields()[4], value);
+      validate(fields()[18], value);
       this.request_headers = value;
-      fieldSetFlags()[4] = true;
+      fieldSetFlags()[18] = true;
       return this;
     }
 
@@ -672,7 +1632,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'request_headers' field has been set, false otherwise.
       */
     public boolean hasRequestHeaders() {
-      return fieldSetFlags()[4];
+      return fieldSetFlags()[18];
     }
 
 
@@ -682,7 +1642,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearRequestHeaders() {
       request_headers = null;
-      fieldSetFlags()[4] = false;
+      fieldSetFlags()[18] = false;
       return this;
     }
 
@@ -700,9 +1660,9 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setUri(java.lang.String value) {
-      validate(fields()[5], value);
+      validate(fields()[19], value);
       this.uri = value;
-      fieldSetFlags()[5] = true;
+      fieldSetFlags()[19] = true;
       return this;
     }
 
@@ -711,7 +1671,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'uri' field has been set, false otherwise.
       */
     public boolean hasUri() {
-      return fieldSetFlags()[5];
+      return fieldSetFlags()[19];
     }
 
 
@@ -721,7 +1681,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearUri() {
       uri = null;
-      fieldSetFlags()[5] = false;
+      fieldSetFlags()[19] = false;
       return this;
     }
 
@@ -739,9 +1699,9 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setResponseHeaders(java.lang.String value) {
-      validate(fields()[6], value);
+      validate(fields()[20], value);
       this.response_headers = value;
-      fieldSetFlags()[6] = true;
+      fieldSetFlags()[20] = true;
       return this;
     }
 
@@ -750,7 +1710,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'response_headers' field has been set, false otherwise.
       */
     public boolean hasResponseHeaders() {
-      return fieldSetFlags()[6];
+      return fieldSetFlags()[20];
     }
 
 
@@ -760,7 +1720,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearResponseHeaders() {
       response_headers = null;
-      fieldSetFlags()[6] = false;
+      fieldSetFlags()[20] = false;
       return this;
     }
 
@@ -778,9 +1738,9 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setChannelAction(com.ebay.app.raptor.chocolate.avro.ChannelAction value) {
-      validate(fields()[7], value);
+      validate(fields()[21], value);
       this.channel_action = value;
-      fieldSetFlags()[7] = true;
+      fieldSetFlags()[21] = true;
       return this;
     }
 
@@ -789,7 +1749,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'channel_action' field has been set, false otherwise.
       */
     public boolean hasChannelAction() {
-      return fieldSetFlags()[7];
+      return fieldSetFlags()[21];
     }
 
 
@@ -799,7 +1759,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearChannelAction() {
       channel_action = null;
-      fieldSetFlags()[7] = false;
+      fieldSetFlags()[21] = false;
       return this;
     }
 
@@ -817,9 +1777,9 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setChannelType(com.ebay.app.raptor.chocolate.avro.ChannelType value) {
-      validate(fields()[8], value);
+      validate(fields()[22], value);
       this.channel_type = value;
-      fieldSetFlags()[8] = true;
+      fieldSetFlags()[22] = true;
       return this;
     }
 
@@ -828,7 +1788,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'channel_type' field has been set, false otherwise.
       */
     public boolean hasChannelType() {
-      return fieldSetFlags()[8];
+      return fieldSetFlags()[22];
     }
 
 
@@ -838,7 +1798,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearChannelType() {
       channel_type = null;
-      fieldSetFlags()[8] = false;
+      fieldSetFlags()[22] = false;
       return this;
     }
 
@@ -856,9 +1816,9 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setHttpMethod(com.ebay.app.raptor.chocolate.avro.HttpMethod value) {
-      validate(fields()[9], value);
+      validate(fields()[23], value);
       this.http_method = value;
-      fieldSetFlags()[9] = true;
+      fieldSetFlags()[23] = true;
       return this;
     }
 
@@ -867,7 +1827,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'http_method' field has been set, false otherwise.
       */
     public boolean hasHttpMethod() {
-      return fieldSetFlags()[9];
+      return fieldSetFlags()[23];
     }
 
 
@@ -877,7 +1837,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearHttpMethod() {
       http_method = null;
-      fieldSetFlags()[9] = false;
+      fieldSetFlags()[23] = false;
       return this;
     }
 
@@ -895,9 +1855,9 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setSnid(java.lang.String value) {
-      validate(fields()[10], value);
+      validate(fields()[24], value);
       this.snid = value;
-      fieldSetFlags()[10] = true;
+      fieldSetFlags()[24] = true;
       return this;
     }
 
@@ -906,7 +1866,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'snid' field has been set, false otherwise.
       */
     public boolean hasSnid() {
-      return fieldSetFlags()[10];
+      return fieldSetFlags()[24];
     }
 
 
@@ -916,7 +1876,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearSnid() {
       snid = null;
-      fieldSetFlags()[10] = false;
+      fieldSetFlags()[24] = false;
       return this;
     }
 
@@ -934,9 +1894,9 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder setIsTracked(boolean value) {
-      validate(fields()[11], value);
+      validate(fields()[25], value);
       this.is_tracked = value;
-      fieldSetFlags()[11] = true;
+      fieldSetFlags()[25] = true;
       return this;
     }
 
@@ -945,7 +1905,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'is_tracked' field has been set, false otherwise.
       */
     public boolean hasIsTracked() {
-      return fieldSetFlags()[11];
+      return fieldSetFlags()[25];
     }
 
 
@@ -954,7 +1914,7 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV2.Builder clearIsTracked() {
-      fieldSetFlags()[11] = false;
+      fieldSetFlags()[25] = false;
       return this;
     }
 
@@ -964,17 +1924,31 @@ public class ListenerMessageV2 extends org.apache.avro.specific.SpecificRecordBa
       try {
         ListenerMessageV2 record = new ListenerMessageV2();
         record.snapshot_id = fieldSetFlags()[0] ? this.snapshot_id : (java.lang.Long) defaultValue(fields()[0]);
-        record.timestamp = fieldSetFlags()[1] ? this.timestamp : (java.lang.Long) defaultValue(fields()[1]);
-        record.publisher_id = fieldSetFlags()[2] ? this.publisher_id : (java.lang.Long) defaultValue(fields()[2]);
-        record.campaign_id = fieldSetFlags()[3] ? this.campaign_id : (java.lang.Long) defaultValue(fields()[3]);
-        record.request_headers = fieldSetFlags()[4] ? this.request_headers : (java.lang.String) defaultValue(fields()[4]);
-        record.uri = fieldSetFlags()[5] ? this.uri : (java.lang.String) defaultValue(fields()[5]);
-        record.response_headers = fieldSetFlags()[6] ? this.response_headers : (java.lang.String) defaultValue(fields()[6]);
-        record.channel_action = fieldSetFlags()[7] ? this.channel_action : (com.ebay.app.raptor.chocolate.avro.ChannelAction) defaultValue(fields()[7]);
-        record.channel_type = fieldSetFlags()[8] ? this.channel_type : (com.ebay.app.raptor.chocolate.avro.ChannelType) defaultValue(fields()[8]);
-        record.http_method = fieldSetFlags()[9] ? this.http_method : (com.ebay.app.raptor.chocolate.avro.HttpMethod) defaultValue(fields()[9]);
-        record.snid = fieldSetFlags()[10] ? this.snid : (java.lang.String) defaultValue(fields()[10]);
-        record.is_tracked = fieldSetFlags()[11] ? this.is_tracked : (java.lang.Boolean) defaultValue(fields()[11]);
+        record.short_snapshot_id = fieldSetFlags()[1] ? this.short_snapshot_id : (java.lang.Long) defaultValue(fields()[1]);
+        record.timestamp = fieldSetFlags()[2] ? this.timestamp : (java.lang.Long) defaultValue(fields()[2]);
+        record.user_id = fieldSetFlags()[3] ? this.user_id : (java.lang.Long) defaultValue(fields()[3]);
+        record.guid = fieldSetFlags()[4] ? this.guid : (java.lang.String) defaultValue(fields()[4]);
+        record.cguid = fieldSetFlags()[5] ? this.cguid : (java.lang.String) defaultValue(fields()[5]);
+        record.remote_ip = fieldSetFlags()[6] ? this.remote_ip : (java.lang.String) defaultValue(fields()[6]);
+        record.lang_cd = fieldSetFlags()[7] ? this.lang_cd : (java.lang.String) defaultValue(fields()[7]);
+        record.user_agent = fieldSetFlags()[8] ? this.user_agent : (java.lang.String) defaultValue(fields()[8]);
+        record.geo_id = fieldSetFlags()[9] ? this.geo_id : (java.lang.Long) defaultValue(fields()[9]);
+        record.udid = fieldSetFlags()[10] ? this.udid : (java.lang.String) defaultValue(fields()[10]);
+        record.referer = fieldSetFlags()[11] ? this.referer : (java.lang.String) defaultValue(fields()[11]);
+        record.publisher_id = fieldSetFlags()[12] ? this.publisher_id : (java.lang.Long) defaultValue(fields()[12]);
+        record.campaign_id = fieldSetFlags()[13] ? this.campaign_id : (java.lang.Long) defaultValue(fields()[13]);
+        record.site_id = fieldSetFlags()[14] ? this.site_id : (java.lang.Long) defaultValue(fields()[14]);
+        record.landing_page_url = fieldSetFlags()[15] ? this.landing_page_url : (java.lang.String) defaultValue(fields()[15]);
+        record.src_rotation_id = fieldSetFlags()[16] ? this.src_rotation_id : (java.lang.Long) defaultValue(fields()[16]);
+        record.dst_rotation_id = fieldSetFlags()[17] ? this.dst_rotation_id : (java.lang.Long) defaultValue(fields()[17]);
+        record.request_headers = fieldSetFlags()[18] ? this.request_headers : (java.lang.String) defaultValue(fields()[18]);
+        record.uri = fieldSetFlags()[19] ? this.uri : (java.lang.String) defaultValue(fields()[19]);
+        record.response_headers = fieldSetFlags()[20] ? this.response_headers : (java.lang.String) defaultValue(fields()[20]);
+        record.channel_action = fieldSetFlags()[21] ? this.channel_action : (com.ebay.app.raptor.chocolate.avro.ChannelAction) defaultValue(fields()[21]);
+        record.channel_type = fieldSetFlags()[22] ? this.channel_type : (com.ebay.app.raptor.chocolate.avro.ChannelType) defaultValue(fields()[22]);
+        record.http_method = fieldSetFlags()[23] ? this.http_method : (com.ebay.app.raptor.chocolate.avro.HttpMethod) defaultValue(fields()[23]);
+        record.snid = fieldSetFlags()[24] ? this.snid : (java.lang.String) defaultValue(fields()[24]);
+        record.is_tracked = fieldSetFlags()[25] ? this.is_tracked : (java.lang.Boolean) defaultValue(fields()[25]);
         return record;
       } catch (java.lang.Exception e) {
         throw new org.apache.avro.AvroRuntimeException(e);

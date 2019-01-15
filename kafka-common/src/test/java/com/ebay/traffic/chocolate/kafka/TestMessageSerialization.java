@@ -39,6 +39,7 @@ public class TestMessageSerialization {
   }
 
   @Test
+  @Ignore
   public void testListenerMessageSerialization() throws Exception {
     final String topic = "marketingtech.ap.tracking-events.listened-epn";
 

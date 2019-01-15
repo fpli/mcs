@@ -114,6 +114,9 @@ public class ESMetrics {
    * Close the ES client
    */
   public void close() {
+    logger.info("Closing ES Metrics...");
+    flushMetrics();
+
     if (timer != null) {
       timer.cancel();
       timer = null;
@@ -331,51 +334,55 @@ public class ESMetrics {
    */
   public void flushMetrics() {
     synchronized (flushLock) {
-      final String index = createIndexIfNecessary();
+      try {
+        final String index = createIndexIfNecessary();
 
-      // flush meter
-      toFlushMeter.clear();
-      synchronized (this) {
-        if (meterMetrics.size() > 100000)
-          logger.warn("Too many meter metrics in the map, size is: " + meterMetrics.size());
-        Iterator<Map.Entry<String, Long>> iter = meterMetrics.entrySet().iterator();
+        // flush meter
+        toFlushMeter.clear();
+        synchronized (this) {
+          if (meterMetrics.size() > 100000)
+            logger.warn("Too many meter metrics in the map, size is: " + meterMetrics.size());
+          Iterator<Map.Entry<String, Long>> iter = meterMetrics.entrySet().iterator();
+          while (iter.hasNext()) {
+            Map.Entry<String, Long> entry = iter.next();
+            toFlushMeter.put(entry.getKey(), entry.getValue());
+          }
+          meterMetrics.clear();
+        }
+
+        Iterator<Map.Entry<String, Long>> iter = toFlushMeter.entrySet().iterator();
         while (iter.hasNext()) {
           Map.Entry<String, Long> entry = iter.next();
-          toFlushMeter.put(entry.getKey(), entry.getValue());
+          sendMeter(index, entry.getKey(), entry.getValue());
         }
-        meterMetrics.clear();
-      }
 
-      Iterator<Map.Entry<String, Long>> iter = toFlushMeter.entrySet().iterator();
-      while (iter.hasNext()) {
-        Map.Entry<String, Long> entry = iter.next();
-        sendMeter(index, entry.getKey(), entry.getValue());
-      }
+        // flush mean
+        toFlushMean.clear();
+        synchronized (this) {
+          if (meanMetrics.size() > 100000)
+            logger.warn("Too many mean metrics in the map, size is: " + meanMetrics.size());
+          Iterator<Map.Entry<String, Pair<Long, Long>>> mIter = meanMetrics.entrySet().iterator();
+          while (mIter.hasNext()) {
+            Map.Entry<String, Pair<Long, Long>> entry = mIter.next();
+            toFlushMean.put(entry.getKey(), entry.getValue());
+          }
+          meanMetrics.clear();
+        }
 
-      // flush mean
-      toFlushMean.clear();
-      synchronized (this) {
-        if (meanMetrics.size() > 100000)
-          logger.warn("Too many mean metrics in the map, size is: " + meanMetrics.size());
-        Iterator<Map.Entry<String, Pair<Long, Long>>> mIter = meanMetrics.entrySet().iterator();
+        Iterator<Map.Entry<String, Pair<Long, Long>>> mIter = toFlushMean.entrySet().iterator();
         while (mIter.hasNext()) {
           Map.Entry<String, Pair<Long, Long>> entry = mIter.next();
-          toFlushMean.put(entry.getKey(), entry.getValue());
-        }
-        meanMetrics.clear();
-      }
+          long accumulator = entry.getValue().getLeft();
+          long count = entry.getValue().getRight();
 
-      Iterator<Map.Entry<String, Pair<Long, Long>>> mIter = toFlushMean.entrySet().iterator();
-      while (mIter.hasNext()) {
-        Map.Entry<String, Pair<Long, Long>> entry = mIter.next();
-        long accumulator = entry.getValue().getLeft();
-        long count = entry.getValue().getRight();
-
-        long mean = 0l;
-        if (count > 0) {
-          mean = accumulator / count;
+          long mean = 0l;
+          if (count > 0) {
+            mean = accumulator / count;
+          }
+          sendMeter(index, entry.getKey(), mean);
         }
-        sendMeter(index, entry.getKey(), mean);
+      } catch (Exception e) {
+        logger.error(e.toString(), e);
       }
     }
   }
@@ -412,10 +419,11 @@ public class ESMetrics {
 
     Gson gson = new Gson();
     try {
-      restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
-          new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
+      if (restClient != null)
+        restClient.performRequest("PUT", "/" + index + "/" + type + "/" + id, new HashMap<>(),
+            new NStringEntity(gson.toJson(m), ContentType.APPLICATION_JSON));
     } catch (IOException e) {
-      logger.warn(e.toString());
+      logger.warn(e.toString(), e);
     }
     logger.info("meter: " + name + "=" + value);
   }
@@ -424,7 +432,8 @@ public class ESMetrics {
     final Date date = new Date();
     final String index = INDEX_PREFIX + sdf0.format(date);
     try {
-      restClient.performRequest("GET", "/" + index);
+      if (restClient != null)
+        restClient.performRequest("GET", "/" + index);
     } catch (ResponseException e) {
       // create index if not found
       try {
@@ -446,29 +455,31 @@ public class ESMetrics {
    * @throws IOException
    */
   private void createIndex(String index) throws IOException {
-    restClient.performRequest("PUT", "/" + index, new HashMap<>(),
-        new NStringEntity("{\n" +
-            "  \"mappings\": {\n" +
-            "    \"_doc\": {\n" +
-            "      \"dynamic_templates\": [\n" +
-            "        {\n" +
-            "          \"strings_as_keywords\": {\n" +
-            "            \"match_mapping_type\": \"string\",\n" +
-            "            \"mapping\": {\n" +
-            "              \"type\": \"keyword\"\n" +
-            "            }\n" +
-            "          }\n" +
-            "        }\n" +
-            "      ],\n" +
-            "      \"properties\": {\n" +
-            "        \"date\":   { \"type\": \"date\", \"format\": \"yyyy-MM-dd HH:mm:ss\" },\n" +
-            "        \"key\":    { \"type\": \"keyword\" },\n" +
-            "        \"value\":  { \"type\": \"long\" },\n" +
-            "        \"host\":   { \"type\": \"keyword\" }\n" +
-            "      }\n" +
-            "    }\n" +
-            "  }\n" +
-            "}", ContentType.APPLICATION_JSON));
+    if (restClient != null) {
+      restClient.performRequest("PUT", "/" + index, new HashMap<>(),
+          new NStringEntity("{\n" +
+              "  \"mappings\": {\n" +
+              "    \"_doc\": {\n" +
+              "      \"dynamic_templates\": [\n" +
+              "        {\n" +
+              "          \"strings_as_keywords\": {\n" +
+              "            \"match_mapping_type\": \"string\",\n" +
+              "            \"mapping\": {\n" +
+              "              \"type\": \"keyword\"\n" +
+              "            }\n" +
+              "          }\n" +
+              "        }\n" +
+              "      ],\n" +
+              "      \"properties\": {\n" +
+              "        \"date\":   { \"type\": \"date\", \"format\": \"yyyy-MM-dd HH:mm:ss\" },\n" +
+              "        \"key\":    { \"type\": \"keyword\" },\n" +
+              "        \"value\":  { \"type\": \"long\" },\n" +
+              "        \"host\":   { \"type\": \"keyword\" }\n" +
+              "      }\n" +
+              "    }\n" +
+              "  }\n" +
+              "}", ContentType.APPLICATION_JSON));
+    }
   }
 
   private static String metricsNameByFields(String name, Map<String, Object> additionalFields) throws Exception{

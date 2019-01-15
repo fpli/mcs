@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<tasks>
+    <task name="choclate-dedupeAndSink-epn" period="5" inputDir="/apps/tracking-events-workdir/meta/EPN/output/dedupe">
+    </task>
+</tasks>

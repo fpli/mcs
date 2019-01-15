@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  */
 public class EBayRefererDomainRule extends GenericBlacklistRule {
   private static String listName;
-  private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?[\\w-.]+\\.(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE);
+  private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE);
 
   public EBayRefererDomainRule(ChannelType channelType) {
     super(channelType);
@@ -35,6 +35,21 @@ public class EBayRefererDomainRule extends GenericBlacklistRule {
     }
 
     return true;
+  }
+
+  @Override
+  public void readFromString(String blacklist) {
+    this.clear();
+
+    String[] parts = blacklist.split("[\n\r]");
+    for (String part : parts) {
+      String t = part.trim();
+      if (t.isEmpty() || t.startsWith("#")) {
+        continue;
+      }
+
+      this.add(t.startsWith("www.") ? t.substring(4).toLowerCase() : t.toLowerCase());
+    }
   }
 
   @Override

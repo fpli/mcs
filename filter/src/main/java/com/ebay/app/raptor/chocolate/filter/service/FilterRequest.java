@@ -3,11 +3,8 @@ package com.ebay.app.raptor.chocolate.filter.service;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,9 +24,6 @@ public class FilterRequest {
     private long timestamp = 0;
     private String requestCguid = null;
     private long requestCguidTimestamp;
-    private String responseCguid = null;
-    private long responseCguidTimestamp;
-    private String rotationId;
     private long campaignId = 0;
     private long publisherId = 0;
     private HttpMethod protocol = null;
@@ -49,36 +43,28 @@ public class FilterRequest {
     public FilterRequest(ListenerMessage message) {
         HashMap<String, String> requestHeaders = processHeaders(message.getRequestHeaders());
 
-        this.parseUri(message.getUri());
-
         for (Map.Entry<String, String> item : requestHeaders.entrySet()) {
             String key = item.getKey();
-            if (key.equalsIgnoreCase("Referer")) {
-                this.referrerDomain = getDomainName(item.getValue());
-            } else if (key.equalsIgnoreCase("X-Purpose") && item.getValue().equalsIgnoreCase("preview") ||
+            if (key.equalsIgnoreCase("X-Purpose") && item.getValue().equalsIgnoreCase("preview") ||
                     key.equalsIgnoreCase("X-Moz") && item.getValue().equalsIgnoreCase("prefetch")) {
                 this.isPrefetch = true;
-            } else if (key.equalsIgnoreCase("X-EBAY-CLIENT-IP")) {      // This header takes precedence
-                this.sourceIP = item.getValue();
-            } else if (key.equalsIgnoreCase("X-Forwarded-For") && (this.sourceIP == null || this.sourceIP.isEmpty())) {  // This header works only if there is no X-EBAY-CLIENT-IP
-                this.sourceIP = item.getValue();
             } else if (key.equalsIgnoreCase("User-Agent")) {
                 this.userAgent = item.getValue();
             } else if (key.equalsIgnoreCase("Cookie")) {
                 this.requestCguid = parseCguidFromCookie(item.getValue());
                 this.requestCguidTimestamp = parseTimestampFromCguid(this.requestCguid);
+            } else if (key.equalsIgnoreCase("Referer")) {
+                this.referrerDomain = getDomainName(item.getValue());
+            } else if (key.equalsIgnoreCase("X-EBAY-CLIENT-IP")) {
+                this.sourceIP = item.getValue();
+            } else if (key.equalsIgnoreCase("X-Forwarded-For") && (this.sourceIP == null || this.sourceIP.isEmpty())) {
+                this.sourceIP = item.getValue();
             }
         }
 
-        HashMap<String, String> responseHeaders = processHeaders(message.getResponseHeaders());
-        for (Map.Entry<String, String> item : responseHeaders.entrySet()) {
-            String key = item.getKey();
-            if (key.equalsIgnoreCase("Set-Cookie")) {
-                this.responseCguid = parseCguidFromCookie(item.getValue());
-                this.responseCguidTimestamp = parseTimestampFromCguid(this.responseCguid);
-            }
-        }
-
+        this.referrerDomain = (message.getReferer() == null || message.getReferer().isEmpty()) ? this.referrerDomain : getDomainName(message.getReferer());
+        this.sourceIP = (message.getRemoteIp() == null || message.getRemoteIp().isEmpty()) ? this.sourceIP : message.getRemoteIp();
+        this.userAgent = (message.getUserAgent() == null || message.getUserAgent().isEmpty()) ? this.userAgent : message.getUserAgent();
         this.timestamp = message.getTimestamp();
         this.publisherId = message.getPublisherId();
         this.campaignId = message.getCampaignId();
@@ -154,36 +140,12 @@ public class FilterRequest {
         this.requestCguidTimestamp = cguidTimestamp;
     }
 
-    public String getResponseCguid() {
-        return this.responseCguid;
-    }
-
-    public void setResponseCguid(String cguid) {
-        this.responseCguid = cguid;
-    }
-
-    public long getResponseCguidTimestamp() {
-        return this.responseCguidTimestamp;
-    }
-
-    public void setResponseCguidTimestamp(long cguidTimestamp) {
-        this.responseCguidTimestamp = cguidTimestamp;
-    }
-
     public long getCampaignId() {
         return this.campaignId;
     }
 
     public void setCampaignId(long campaignId) {
         this.campaignId = campaignId;
-    }
-
-    public String getRotationID() {
-        return this.rotationId;
-    }
-
-    public void setRotationId(String rotationId) {
-        this.rotationId = rotationId;
     }
 
     public long getPublisherId() {
@@ -233,6 +195,10 @@ public class FilterRequest {
      * @return cropped domain name
      */
     private static String getDomainName(String url) {
+        if (url == null || url.isEmpty()) {
+            return url;
+        }
+
         try {
             String fullUrl = (url.toLowerCase().startsWith("http://") || url.toLowerCase().startsWith("https://")) ? url : "http://" + url;
             URL uri = new URL(fullUrl);
@@ -240,32 +206,6 @@ public class FilterRequest {
             return domain.startsWith("www.") ? domain.substring(4) : domain;
         } catch (MalformedURLException e) {
             return "";
-        }
-    }
-
-    /**
-     * Extract rotation ID and campaign ID from the URI
-     *
-     * @param uri URI
-     */
-    private void parseUri(String uri) {
-        if (uri == null || uri.isEmpty()) {
-            Logger.getLogger(FilterRequest.class).error("Empty URI in request/response");
-            throw new RuntimeException("Empty URI");
-        }
-
-        try {
-            URI url = new URI(uri);
-            String path = url.getPath();
-            String[] pathBits = path.split("/");
-            if (pathBits.length >= 4 && url.getHost().startsWith("rover")) {
-                this.rotationId = pathBits[3];
-            } else if (pathBits.length >= 3) {
-                this.rotationId = pathBits[2];
-            }
-        } catch (Exception e) {
-            Logger.getLogger(FilterRequest.class).error("Malformed URI in request/response");
-            throw new RuntimeException("Unable to parse URI: " + StringUtils.abbreviate(uri, 100), e);
         }
     }
 

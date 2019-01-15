@@ -1,10 +1,21 @@
 package com.ebay.traffic.chocolate.listener;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelAction;
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.avro.HttpMethod;
+import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
+import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.channel.Channel;
 import com.ebay.traffic.chocolate.listener.channel.ChannelFactory;
+import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
+import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Response;
@@ -28,7 +39,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
   private static final long serialVersionUID = 8041506560324325858L;
   private static final String PROXY_FAILURE = "proxyFailure";
   private static final String CLIENT_FAILURE = "clientFailure";
-  public static final String MALFORMED_URL = "malformedURL";
+  private static final String MALFORMED_URL = "malformedURL";
 
   private static final int REQUEST_BUFFER_SIZE = 1024 * 12;
   private static final Logger logger = Logger.getLogger(ListenerProxyServlet.class);
@@ -46,6 +57,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
   private static int inputHttpsPort;
   private ESMetrics esMetrics;
   private Channel channel;
+  private MessageObjectParser parser;
 
   @Override
   public void init() throws ServletException {
@@ -60,6 +72,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
     esMetrics.meter(CLIENT_FAILURE, 0);
     esMetrics.meter(MALFORMED_URL, 0);
     channel = ChannelFactory.createChannel();
+    parser = MessageObjectParser.getInstance();
     super.init();
 
   }
@@ -130,10 +143,30 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
       return setPort(rewrittenURI, portMapping(clientRequest.getLocalPort()));
     } catch (IllegalArgumentException e) {
       esMetrics.meter(MALFORMED_URL);
+      String kafkaMalformedTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
+      Producer<Long, ListenerMessage> producer = KafkaSink.get();
+      ListenerMessage message = new ListenerMessage(-1L, -1L, -1L, -1L, "", "", "", "", "", -1L, "", "",
+              -1L, -1L, -1L, "", -1L, -1L, "", "", "", ChannelAction.IMPRESSION, ChannelType.DEFAULT, HttpMethod.GET, "", false);
+      long timestamp = ((org.eclipse.jetty.server.Request)clientRequest).getTimeStamp();
+      long snapshotId = SnapshotId.getNext(ListenerOptions.getInstance().getDriverId(), timestamp).getRepresentation();
+      ShortSnapshotId shortSnapshotId = new ShortSnapshotId(snapshotId);
+      message.setSnapshotId(snapshotId);
+      message.setShortSnapshotId(shortSnapshotId.getRepresentation());
+      message.setSnid("999998");
+      message.setCampaignId(-1L);
+      message.setTimestamp(timestamp);
+      message.setUri(getRequestURL(clientRequest));
+      message.setHttpMethod(parser.getMethod(clientRequest).getAvro());
+      producer.send(new ProducerRecord<>(kafkaMalformedTopic,
+          message.getSnapshotId(), message), KafkaSink.callback);
       reencodeQuery(clientRequest);
       URI rewrittenURI = URI.create(super.rewriteTarget(clientRequest));
       return setPort(rewrittenURI, portMapping(clientRequest.getLocalPort()));
     }
+  }
+
+  private String getRequestURL(HttpServletRequest request) {
+    return request.getRequestURL().toString() + (request.getQueryString() == null ? "" : "?" + request.getQueryString());
   }
 
   void reencodeQuery(HttpServletRequest clientRequest) {

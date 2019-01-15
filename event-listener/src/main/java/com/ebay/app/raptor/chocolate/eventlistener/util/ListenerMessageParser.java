@@ -1,15 +1,21 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.kernel.util.StringUtils;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Utility class for parsing the POJOs
@@ -32,15 +38,98 @@ public class ListenerMessageParser {
   /**
    * Convert a HTTP request to a listener message for Kafka.
    *
-   * @param clientRequest to use in parsing uri and timestamp
-   * @param startTime     as start time of the request
-   * @return ListenerMessage  as the parse result.
+   * @param clientRequest  raw client request
+   * @param requestContext raptor request context
+   * @param startTime      as start time of the request
+   * @param campaignId     campaign id
+   * @param channelType    channel type
+   * @param action         action
+   * @param endUserContext X-C-EBAY-ENDUSERCTX
+   * @param uri            landing page url
+   * @param referer        ad referer
+   * @param rotationId     rotation id
+   * @param snid           snid
+   * @return ListenerMessage object
    */
   public ListenerMessage parse(
-    final HttpServletRequest clientRequest, Long startTime, Long campaignId,
-    final ChannelType channelType, final ChannelActionEnum action, String uri, String snid) {
+    final HttpServletRequest clientRequest, final ContainerRequestContext requestContext, Long startTime, Long campaignId,
+    final ChannelType channelType, final ChannelActionEnum action, String userId, IEndUserContext endUserContext,
+    String uri, String referer, long rotationId, String snid) {
 
-    ListenerMessage record = new ListenerMessage();
+    // set default values to prevent unable to serialize message exception
+    ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
+      0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
+
+    // user id
+    record.setUserId(Long.valueOf(userId));
+
+    // guid, cguid from tracking header
+    String trackingHeader = clientRequest.getHeader("X-EBAY-C-TRACKING");
+    if (!org.springframework.util.StringUtils.isEmpty(trackingHeader)) {
+      for (String seg : trackingHeader.split(",")
+        ) {
+        String[] keyValue = seg.split("=");
+        if (keyValue.length == 2) {
+          if (keyValue[0].equalsIgnoreCase("guid")) {
+            record.setGuid(keyValue[1]);
+          }
+          if (keyValue[0].equalsIgnoreCase("cguid")) {
+            record.setCguid(keyValue[1]);
+          }
+        }
+      }
+    }
+
+    // remote ip
+    record.setRemoteIp(endUserContext.getIPAddress());
+
+    // user agent
+    record.setUserAgent(endUserContext.getUserAgent());
+
+    // parse user prefs
+//    try {
+//
+//      // get geo info
+//      UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+//
+//      // language code
+//      record.setLangCd(userPrefsCtx.getLangLocale().toLanguageTag());
+//
+//      // geography identifier
+//      record.setGeoId((long) userPrefsCtx.getGeoContext().getCountryId());
+//
+//      // site id
+//      record.setSiteId((long)userPrefsCtx.getGeoContext().getSiteId());
+//
+//    } catch (Exception e) {
+//      logger.error("Parse geo info error");
+//    }
+
+    // language code
+      record.setLangCd("");
+
+      // geography identifier
+      record.setGeoId(0L);
+
+      // site id
+      record.setSiteId(0L);
+
+    // udid
+    if (endUserContext.getDeviceId() != null) {
+      record.setUdid(endUserContext.getDeviceId());
+    } else {
+      record.setUdid("");
+    }
+
+    // referer
+    record.setReferer(referer);
+
+    // landing page url
+    record.setLandingPageUrl(uri);
+
+    // source and destination rotation id
+    record.setSrcRotationId(rotationId);
+    record.setDstRotationId(rotationId);
 
     record.setUri(uri);
     // Set the channel type + HTTP headers + channel action
@@ -55,23 +144,41 @@ public class ListenerMessageParser {
     // Get snapshotId from request
     Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId(), startTime).getRepresentation();
     record.setSnapshotId(snapshotId);
+    ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId());
+    record.setShortSnapshotId(shortSnapshotId.getRepresentation());
 
     record.setCampaignId(campaignId);
     record.setPublisherId(DEFAULT_PUBLISHER_ID);
     record.setSnid((snid != null) ? snid : "");
-    record.setIsTracked(false);     //TODO No messages are Durability-tracked for now
+    record.setIsTracked(false);
 
     return record;
   }
 
+  /**
+   * Serialize the headers, except Authorization
+   *
+   * @param clientRequest input request
+   * @return headers string
+   */
   private String serializeRequestHeaders(HttpServletRequest clientRequest) {
-    StringBuilder requestHeaders = new StringBuilder();
+
+    StringBuilder headersBuilder = new StringBuilder();
+
+    Map<String, String> headers = new HashMap<>();
     for (Enumeration<String> e = clientRequest.getHeaderNames(); e.hasMoreElements(); ) {
       String headerName = e.nextElement();
-      requestHeaders.append("|").append(headerName).append(": ").append(clientRequest.getHeader(headerName));
+      // skip auth header
+      if (headerName.equalsIgnoreCase("Authorization")) {
+        continue;
+      }
+      headers.put(headerName, clientRequest.getHeader(headerName));
+      headersBuilder.append("|").append(headerName).append(": ").append(clientRequest.getHeader(headerName));
     }
-    if (!StringUtils.isEmpty(requestHeaders.toString())) requestHeaders.deleteCharAt(0);
-    return requestHeaders.toString();
+
+    if (!StringUtils.isEmpty(headersBuilder.toString())) headersBuilder.deleteCharAt(0);
+
+    return headersBuilder.toString();
   }
 
   /**

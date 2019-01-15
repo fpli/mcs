@@ -17,7 +17,7 @@ public enum FilterRuleType {
   IP_BLACKLIST("IP_BLACKLIST", "IPBlacklistRule", IPBlacklistRule.class, 6),
   TGUID_STALENESS("TGUID_STALENESS", "CguidStalenessWindowRule", CguidStalenessWindowRule.class, 7),
   CLICKTHROUGH_RATE("CLICKTHROUGH_RATE", "CampaignClickThroughRateRule", CampaignClickThroughRateRule.class, 8),
-  REPEAT_CLICK("CLICKTHROUGH_RATE", "RepeatClickRule", RepeatClickRule.class, 9),
+  //REPEAT_CLICK("CLICKTHROUGH_RATE", "RepeatClickRule", RepeatClickRule.class, 9),
   VALID_PUBLISHER("VALID_PUBLISHER", "PublisherValidRule", PublisherValidRule.class, 10),
   EBAY_BOT_LIST("EBAY_BOT_LIST", "EBayRobotRule", EBayRobotRule.class, 11),
   PROTOCOL("PROTOCOL", "ProtocolRule", ProtocolRule.class, 12),

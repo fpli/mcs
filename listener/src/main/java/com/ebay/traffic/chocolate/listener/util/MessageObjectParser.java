@@ -2,9 +2,9 @@ package com.ebay.traffic.chocolate.listener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.kernel.util.StringUtils;
-import com.ebay.traffic.chocolate.listener.ListenerProxyServlet;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -56,6 +56,43 @@ public class MessageObjectParser {
         }
         record.setUri(requestUrl);
 
+        // user id
+        record.setUserId(-1L);
+
+        // cguid, guid
+        String cookieRequestHeader = clientRequest.getHeader("Cookie");
+        String cookieResponseHeader = proxyResponse.getHeader("Set-Cookie");
+        record.setCguid(getGuid(cookieRequestHeader, cookieResponseHeader, "cguid"));
+        record.setGuid(getGuid(cookieRequestHeader, cookieResponseHeader, "tguid"));
+
+        // client remote IP
+        record.setRemoteIp(getRemoteIp(clientRequest));
+
+        // language code
+        record.setLangCd("");
+
+        // user agent
+        record.setUserAgent(getUserAgent(clientRequest));
+
+        // geography identifier
+        record.setGeoId(-1L);
+
+        // udid
+        record.setUdid("");
+
+        // referer
+        record.setReferer(getReferer(clientRequest));
+
+        // site id
+        record.setSiteId(-1L);
+
+        // landing page url
+        record.setLandingPageUrl("");
+
+        // source and destination rotation id
+        record.setSrcRotationId(-1L);
+        record.setDstRotationId(-1L);
+
         // Set the channel type + HTTP headers + channel action
         record.setChannelType(channelType);
         record.setHttpMethod(this.getMethod(clientRequest).getAvro());
@@ -65,9 +102,11 @@ public class MessageObjectParser {
         record.setResponseHeaders(serializeResponseHeaders(proxyResponse));
         record.setTimestamp(startTime);
 
-        // Get snapshotId from request
+        // Get snapshotId and short snapshotId from request
         Long snapshotId = SnapshotId.getNext(ListenerOptions.getInstance().getDriverId(), startTime).getRepresentation();
         record.setSnapshotId(snapshotId);
+        ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId().longValue());
+        record.setShortSnapshotId(shortSnapshotId.getRepresentation());
 
         record.setCampaignId(campaignId);
         record.setPublisherId(DEFAULT_PUBLISHER_ID);
@@ -78,11 +117,60 @@ public class MessageObjectParser {
     }
 
     /**
+     * Get User Agent
+     */
+    private String getUserAgent(HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        return userAgent == null ? "" : userAgent;
+    }
+
+    /**
+     * Get Referer header
+     */
+    private String getReferer(HttpServletRequest request) {
+        String referer = request.getHeader("Referer");
+        return referer == null ? "" : referer;
+    }
+
+    /**
+     * Get client remote Ip
+     */
+    private String getRemoteIp(HttpServletRequest request) {
+        String remoteIp = request.getHeader("X-eBay-Client-IP");
+
+        if (remoteIp == null) {
+            String xForwardFor = request.getHeader("X-Forwarded-For");
+            if (xForwardFor != null && !xForwardFor.isEmpty()) {
+                remoteIp = xForwardFor.split(",")[0];
+            }
+        }
+        return remoteIp == null ? "" : remoteIp;
+    }
+
+    //parse CGUID from response headers, if null, parse from request headers
+    private String getGuid(String cookieRequestHeader, String cookieResponseHeader, String guid) {
+        String result = null;
+        if (cookieResponseHeader != null && !cookieResponseHeader.isEmpty()) {
+            String[] splits = cookieResponseHeader.split(guid + "/");
+            if (splits.length > 1) {
+                result = splits[1].substring(0, 32);
+            }
+        }
+        if (result == null && cookieRequestHeader != null && !cookieRequestHeader.isEmpty()) {
+            String[] splits = cookieRequestHeader.split(guid + "/");
+            if (splits.length > 1) {
+                result = splits[1].substring(0, 32);
+            }
+        }
+        return result == null ? "" : result;
+    }
+
+    /**
      * Get request method and validate from request
      * @param clientRequest Request
      * @return HttpMethodEnum
      */
-    protected HttpMethodEnum getMethod(HttpServletRequest clientRequest) {
+    public HttpMethodEnum getMethod(HttpServletRequest clientRequest) {
         HttpMethodEnum httpMethod = HttpMethodEnum.parse(clientRequest.getMethod());
         Validate.notNull(httpMethod, "Could not parse HTTP method from HTTP request=" + clientRequest.getMethod());
         return httpMethod;
@@ -209,7 +297,7 @@ public class MessageObjectParser {
         return true;
     }
 
-    private String serializeRequestHeaders(HttpServletRequest clientRequest) {
+    public String serializeRequestHeaders(HttpServletRequest clientRequest) {
         StringBuilder requestHeaders = new StringBuilder();
         for (Enumeration<String> e = clientRequest.getHeaderNames(); e.hasMoreElements();) {
             String headerName = e.nextElement();
