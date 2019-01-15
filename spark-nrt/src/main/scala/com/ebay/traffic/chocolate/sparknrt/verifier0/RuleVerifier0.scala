@@ -96,7 +96,7 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
       inputFormat = params.chocoInputFormat, delimiter = params.chocoInputDelimiter)
       .where($"channel_action" === "CLICK" and $"channel_type" === "EPN")
       .withColumn("today", lit(0))
-      .select($"snapshot_id", $"timestamp", $"publisher_id", parseCGUID(), parseIP(), $"today", $"rt_rule_flags", $"nrt_rule_flags")
+      .select($"snapshot_id", $"timestamp", $"publisher_id", cguid(), ip(), $"today", $"rt_rule_flags", $"nrt_rule_flags")
 
     val path = new Path(workDir + "/chocolate/", today)
     fs.delete(path, true)
@@ -202,7 +202,7 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
       inputFormat = params.chocoInputFormat, delimiter = params.chocoInputDelimiter)
       .where($"channel_action" === "CLICK" and $"channel_type" === "EPN")
       .withColumn("today", lit(1))
-      .select($"snapshot_id", $"timestamp", $"publisher_id", parseCGUID(), parseIP(), $"today", $"rt_rule_flags", $"nrt_rule_flags")
+      .select($"snapshot_id", $"timestamp", $"publisher_id", cguid(), ip(), $"today", $"rt_rule_flags", $"nrt_rule_flags")
 
     val pathToday = new Path(workDir + "/chocolate/today/", (new Path(params.chocoTodayPath).getName))
     fs.delete(pathToday, true)
@@ -270,13 +270,13 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
   )
 
   //parse CGUID from request_headers
-  def parseCGUID(): Column = {
-    split($"response_headers", "cguid/")(1).substr(0, 32).alias("CGUID")
+  def cguid(): Column = {
+    $"cguid".alias("CGUID")
   }
 
   //parse IP from request_headers
-  def parseIP(): Column = {
-    split(split($"request_headers", "X-eBay-Client-IP: ")(1), """\|""")(0).alias("IP")
+  def ip(): Column = {
+    $"remote_ip".alias("IP")
   }
 
   def excludeCGUID(cguid: String, excludes: Set[String]): Boolean = {
