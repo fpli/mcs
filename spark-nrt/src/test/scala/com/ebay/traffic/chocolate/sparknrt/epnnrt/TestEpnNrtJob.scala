@@ -3,7 +3,6 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt
 import java.text.SimpleDateFormat
 import java.util.Properties
 
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
 import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
@@ -87,20 +86,20 @@ class TestEpnNrtJob extends BaseFunSuite{
     // prepare data file
     val writer1 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-05-01/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema)
+      .withSchema(FilterMessage.getClassSchema)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
 
     val writer2 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-05-01/part-00001.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema)
+      .withSchema(FilterMessage.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
 
     val writer3 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-05-02/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema)
+      .withSchema(FilterMessage.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()

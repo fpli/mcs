@@ -105,7 +105,7 @@ class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializa
       .withColumn("UDID", common.get_udid_Udf(col("uri")))
       .withColumn("SDK_NAME", lit(""))
       .withColumn("SDK_VERSION", lit(""))
-      .withColumn("AMS_TRANS_RSN_CD", common.get_impression_reason_code_udf(col("uri"), col("publisher_id"), col("campaign_id"), col("rt_rule_flags"), col("nrt_rule_flags"), col("ams_fltr_roi_value")))
+      .withColumn("AMS_TRANS_RSN_CD", common.get_impression_reason_code_udf(col("uri"), col("publisher_id"), col("campaign_id"), col("rt_rule_flags"), col("nrt_rule_flags"), col("ams_fltr_roi_value"), col("google_fltr_do_flag")))
       .withColumn("TRFC_SRC_CD", col("traffic_source_code"))
       .withColumn("RT_RULE_FLAG1", common.get_rule_flag_udf(col("rt_rule_flags"), lit(11)))
       .withColumn("RT_RULE_FLAG2", common.get_rule_flag_udf(col("rt_rule_flags"), lit(1)))

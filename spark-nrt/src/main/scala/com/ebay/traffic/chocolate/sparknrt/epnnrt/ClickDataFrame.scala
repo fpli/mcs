@@ -101,7 +101,7 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
       .withColumn("AMS_CLICK_FLTR_TYPE_ID", common.get_ams_clk_fltr_type_id_udf(col("publisher_id"), col("uri")))
       .withColumn("IMPRSN_LOOSE_MATCH_IND", lit(0))
       .withColumn("FLTR_YN_IND", common.get_filter_yn_ind_udf(col("rt_rule_flags"), col("nrt_rule_flags"), lit("click")))
-      .withColumn("AMS_TRANS_RSN_CD", common.get_click_reason_code_udf(col("uri"), col("publisher_id"), col("campaign_id"), col("rt_rule_flags"), col("nrt_rule_flags"), col("ams_fltr_roi_value")))
+      .withColumn("AMS_TRANS_RSN_CD", common.get_click_reason_code_udf(col("uri"), col("publisher_id"), col("campaign_id"), col("rt_rule_flags"), col("nrt_rule_flags"), col("ams_fltr_roi_value"), col("google_fltr_do_flag")))
       .withColumn("AMS_PAGE_TYPE_MAP_ID", common.get_page_id_udf(col("response_headers")))
       .withColumn("RFRNG_DMN_NAME", common.getRefererHostUdf(col("request_headers")))
       .withColumn("TFS_RFRNG_DMN_NAME",  lit(""))
