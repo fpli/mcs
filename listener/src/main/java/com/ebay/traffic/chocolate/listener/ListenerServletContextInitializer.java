@@ -4,7 +4,7 @@ import com.ebay.traffic.chocolate.init.JettyServerConfiguration;
 import com.ebay.traffic.chocolate.listener.api.TrackingServlet;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.log4j.Logger;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
