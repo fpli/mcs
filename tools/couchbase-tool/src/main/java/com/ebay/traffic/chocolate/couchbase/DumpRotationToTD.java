@@ -8,7 +8,8 @@ import com.couchbase.client.java.view.ViewRow;
 import com.ebay.app.raptor.chocolate.constant.MPLXClientEnum;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.dukes.CacheClient;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.PropertyConfigurator;
@@ -18,7 +19,10 @@ import rx.Observable;
 import rx.functions.Func1;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.zip.GZIPOutputStream;
 
 public class DumpRotationToTD {
@@ -90,7 +94,7 @@ public class DumpRotationToTD {
 
   public static void dumpFileFromCouchbase(String startKey, String endKey, String outputFilePath) throws IOException {
     ESMetrics.init("batch-metrics-", couchbasePros.getProperty("chocolate.elasticsearch.url"));
-    ESMetrics esMetrics = ESMetrics.getInstance();
+    Metrics esMetrics = ESMetrics.getInstance();
 
     // File Path
     if (outputFilePath == null) {
@@ -154,7 +158,7 @@ public class DumpRotationToTD {
     // sample: 2018-02-22_01_roi_v2.txt
     genEmptyFile(outputFilePath + RotationConstant.FILE_NAME_ROI, compress, RotationConstant.FILE_HEADER_ROI);
 
-    esMetrics.flushMetrics();
+    esMetrics.flush();
   }
 
   private static void close() {
@@ -164,7 +168,7 @@ public class DumpRotationToTD {
     System.exit(0);
   }
 
-  private static void genFileForRotation(String output, boolean compress, List<JsonDocument> result, ESMetrics esMetrics) throws IOException {
+  private static void genFileForRotation(String output, boolean compress, List<JsonDocument> result, Metrics esMetrics) throws IOException {
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_ROTATIONS + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;
@@ -298,7 +302,7 @@ public class DumpRotationToTD {
     logger.info("Successfully dump " + count + " records into " + filePath);
   }
 
-  private static void genFileForCampaign(String output, boolean compress, List<JsonDocument> result, ESMetrics esMetrics) throws IOException {
+  private static void genFileForCampaign(String output, boolean compress, List<JsonDocument> result, Metrics esMetrics) throws IOException {
     OutputStream out = null;
     String filePath = output + RotationConstant.FILE_NAME_CAMPAIGN + RotationConstant.FILE_NAME_SUFFIX_TXT;
     Integer count = 0;

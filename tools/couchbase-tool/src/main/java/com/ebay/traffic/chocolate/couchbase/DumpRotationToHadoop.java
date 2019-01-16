@@ -6,7 +6,8 @@ import com.couchbase.client.java.view.ViewQuery;
 import com.couchbase.client.java.view.ViewRow;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.dukes.CacheClient;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
@@ -114,7 +115,7 @@ public class DumpRotationToHadoop {
 
   public static void dumpFileFromCouchbase(String startKey, String endKey, String outputFilePath) throws IOException {
     ESMetrics.init("batch-metrics-", couchbasePros.getProperty("chocolate.elasticsearch.url"));
-    ESMetrics esMetrics = ESMetrics.getInstance();
+    Metrics esMetrics = ESMetrics.getInstance();
 
     Boolean compress = (couchbasePros.getProperty("job.dumpRotationFiles.compressed") == null) ? Boolean.valueOf(couchbasePros.getProperty("job.dumpRotationFiles.compressed")) : Boolean.FALSE;
 
@@ -171,7 +172,7 @@ public class DumpRotationToHadoop {
       }
     }
     esMetrics.meter("rotation.dump.FromCBToHIVE.success", count);
-    esMetrics.flushMetrics();
+    esMetrics.flush();
     System.out.println("Successfully dump " + count + " records into chocolate file: " + outputFilePath);
   }
 
