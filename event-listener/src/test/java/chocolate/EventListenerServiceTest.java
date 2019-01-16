@@ -109,7 +109,7 @@ public class EventListenerServiceTest {
 
     Event event = new Event();
     event.setReferrer("www.google.com");
-    event.setTargetUrl("https://www.ebay.com?mkevt=1&cid=2");
+    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=2");
 
     String endUserCtxiPhone = "ip=10.148.184.210," +
       "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
@@ -143,7 +143,7 @@ public class EventListenerServiceTest {
       ".com%2Fdisplay%2FtrafficCOE%2FLong%2Bterm%2Bstage1%253A%2BTrack%2Bclick%2Bfrom%2Blanding%2Bpage," +
       "xff=10.249.74.17,uri=%2Fmkttestappweb%2Fi%2FApple-iPhone-8-Plus-256gb-Gold%2F290016063137," +
       "applicationURL=http%3A%2F%2Fmkttestapp.stratus.qa.ebay" +
-      ".com%2Fmkttestappweb%2Fi%2FApple-iPhone-8-Plus-256gb-Gold%2F290016063137%3Fmkevt%3D1%26cid%3D2," +
+      ".com%2Fmkttestappweb%2Fi%2FApple-iPhone-8-Plus-256gb-Gold%2F290016063137%3Fmkevt%3D1%26mkcid%3D2," +
       "physicalLocation=country%3DUS,contextualLocation=country%3DIT,isPiggybacked=false,fullSiteExperience=true," +
       "expectSecureURL=true";
 
@@ -255,7 +255,7 @@ public class EventListenerServiceTest {
     assertEquals(4005, errorMessageV3.getErrors().get(0).getErrorId());
 
     // no mkevt
-    event.setTargetUrl("https://www.ebay.com?cid=2");
+    event.setTargetUrl("https://www.ebay.com?mkcid=2");
     response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
@@ -267,7 +267,7 @@ public class EventListenerServiceTest {
     assertEquals(4006, errorMessageV3.getErrors().get(0).getErrorId());
 
     // invalid mkevt
-    event.setTargetUrl("https://www.ebay.com?cid=2&mkevt=0");
+    event.setTargetUrl("https://www.ebay.com?mkcid=2&mkevt=0");
     response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
@@ -278,7 +278,7 @@ public class EventListenerServiceTest {
     errorMessageV3 = response.readEntity(ErrorMessageV3.class);
     assertEquals(4007, errorMessageV3.getErrors().get(0).getErrorId());
 
-    // no cid
+    // no mkcid
     // service will pass but no message to kafka
     event.setTargetUrl("https://www.ebay.com?mkevt=1");
     response = client.target(svcEndPoint).path(eventsPath)
@@ -289,9 +289,9 @@ public class EventListenerServiceTest {
       .post(Entity.json(event));
     assertEquals(201, response.getStatus());
 
-    // invalid cid
+    // invalid mkcid
     // service will pass but no message to kafka
-    event.setTargetUrl("https://www.ebay.com?cid=99&mkevt=1");
+    event.setTargetUrl("https://www.ebay.com?mkcid=99&mkevt=1");
     response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)

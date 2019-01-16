@@ -134,35 +134,35 @@ public class CollectionService {
       logError(ErrorType.INVALID_MKEVT);
     }
 
-    // parse channel from query cid
-    // no cid, accepted
-    if (!parameters.containsKey(Constants.CID) || parameters.get(Constants.CID).get(0) == null) {
-      logger.error(Errors.ERROR_NO_CID);
-      esMetrics.meter("NoCidParameter");
+    // parse channel from query mkcid
+    // no mkcid, accepted
+    if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
+      logger.error(Errors.ERROR_NO_MKCID);
+      esMetrics.meter("NoMkcidParameter");
       return true;
     }
 
-    // invalid cid, show error and accept
-    channelType = ChannelIdEnum.parse(parameters.get(Constants.CID).get(0));
+    // invalid mkcid, show error and accept
+    channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
     if (channelType == null) {
-      logger.error(Errors.ERROR_INVALID_CID);
-      esMetrics.meter("InvalidCid");
+      logger.error(Errors.ERROR_INVALID_MKCID);
+      esMetrics.meter("InvalidMkcid");
       return true;
     }
 
-    // parse rotation id from query rid
+    // parse rotation id from query mkrid
     long rotationId = -1L;
-    if (parameters.containsKey(Constants.RID) && parameters.get(Constants.RID).get(0) != null) {
+    if (parameters.containsKey(Constants.MKRID) && parameters.get(Constants.MKRID).get(0) != null) {
       try {
-        String rawRotationId = parameters.get(Constants.RID).get(0);
+        String rawRotationId = parameters.get(Constants.MKRID).get(0);
         rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
       } catch (Exception e) {
-        logger.error(Errors.ERROR_INVALID_RID);
-        esMetrics.meter("InvalidRid");
+        logger.error(Errors.ERROR_INVALID_MKRID);
+        esMetrics.meter("InvalidMkrid");
       }
     } else {
-      logger.error(Errors.ERROR_NO_RID);
-      esMetrics.meter("NoRid");
+      logger.error(Errors.ERROR_NO_MKRID);
+      esMetrics.meter("NoMkrid");
     }
 
     try {
