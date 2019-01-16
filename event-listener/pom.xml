@@ -112,6 +112,7 @@
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-permutation-starter</artifactId>
+      <version>0.7.0-RELEASE</version>
     </dependency>
 
     <!--global config-->
@@ -297,6 +298,12 @@
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-dds-client-starter</artifactId>
     </dependency>
+
+    <!-- for geo -->
+    <!--<dependency>-->
+      <!--<groupId>com.ebay.raptorio.component</groupId>-->
+      <!--<artifactId>raptor-geo-starter</artifactId>-->
+    <!--</dependency>-->
 
   </dependencies>
 

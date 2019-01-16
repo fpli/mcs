@@ -25,18 +25,22 @@ class IPPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
   }
 
   //parse IP from request_headers
-  def ip(): Column = {
-    $"remote_ip".alias("IP")
+  def ip(ipColumn: String): Column = {
+    if (ipColumn != null) {
+      col(ipColumn).alias("IP")
+    } else {
+      split(split($"request_headers", "X-eBay-Client-IP: ")(1), """\|""")(0).alias("IP")
+    }
   }
 
   //counting columns
-  def selectCondition(): Array[Column] = {
-    Array(ip(), cols(1))
+  def selectCondition(ipColumn: String): Array[Column] = {
+    Array(ip(ipColumn), cols(1))
   }
 
   //add new column if needed
-  def withColumnCondition(): Column = {
-    when($"channel_action" === "CLICK", ip()).otherwise("NA")
+  def withColumnCondition(ipColumn: String): Column = {
+    when($"channel_action" === "CLICK", ip(ipColumn)).otherwise("NA")
   }
 
   //final join condition
@@ -59,9 +63,11 @@ class IPPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
       val firstRow = head(0)
       val timestamp = dfIPPub.select($"timestamp").first().getLong(0)
 
+      val ipColumn = if (dfIPPub.columns.contains("remote_ip")) "remote_ip" else null
+
       //Step 2: Count by ip and publisher_id in this job, then integrate data to 1 file, and add timestamp to file name.
       //count by ip and publisher_id in the job
-      dfIPPub = dfLoadCappingInJob(dfIPPub, selectCondition())
+      dfIPPub = dfLoadCappingInJob(dfIPPub, selectCondition(ipColumn))
 
       //reduce the number of counting file to 1, and rename file name to include timestamp
       saveCappingInJob(dfIPPub, timestamp)
@@ -69,7 +75,7 @@ class IPPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
       //Step 3: Read a new df for join purpose, just select IP, publisher_id and snapshot_id, and read previous data for counting purpose.
       //df for join
       val selectCols: Array[Column] = $"snapshot_id" +: cols
-      var df = dfForJoin(cols(0), withColumnCondition(), selectCols)
+      var df = dfForJoin(cols(0), withColumnCondition(ipColumn), selectCols)
 
       //read previous data and add to count path
       val ipCountPath = getCappingDataPath(timestamp)

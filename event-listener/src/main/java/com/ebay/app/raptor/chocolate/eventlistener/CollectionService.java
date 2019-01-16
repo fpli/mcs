@@ -26,6 +26,7 @@ import com.ebay.app.raptor.chocolate.gen.model.Event;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -219,9 +220,8 @@ public class CollectionService {
     kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
 
     // Parse the response
-    ListenerMessage message = parser.parse(request,
-      startTime, campaignId, channelType.getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl,
-      referer, rotationId, null);
+    ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
+      .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
 
     try {
       // Ubi tracking
@@ -235,8 +235,8 @@ public class CollectionService {
       requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
 
       // new tags, targeturl and referer independent from client data ones
-      requestTracker.addTag("url_mpre", targetUrl, String.class);
-      requestTracker.addTag("n2referrer", referer, String.class);
+      requestTracker.addTag("url_mpre", URLEncoder.encode(targetUrl, "UTF-8"), String.class);
+      requestTracker.addTag("ref", referer, String.class);
 
       // add rvr id
       requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);

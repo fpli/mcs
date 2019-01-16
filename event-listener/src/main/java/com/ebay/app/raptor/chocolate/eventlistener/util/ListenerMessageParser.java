@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
@@ -11,6 +12,7 @@ import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +39,7 @@ public class ListenerMessageParser {
    * Convert a HTTP request to a listener message for Kafka.
    *
    * @param clientRequest  raw client request
+   * @param requestContext raptor request context
    * @param startTime      as start time of the request
    * @param campaignId     campaign id
    * @param channelType    channel type
@@ -49,11 +52,13 @@ public class ListenerMessageParser {
    * @return ListenerMessage object
    */
   public ListenerMessage parse(
-    final HttpServletRequest clientRequest, Long startTime, Long campaignId,
+    final HttpServletRequest clientRequest, final ContainerRequestContext requestContext, Long startTime, Long campaignId,
     final ChannelType channelType, final ChannelActionEnum action, String userId, IEndUserContext endUserContext,
     String uri, String referer, long rotationId, String snid) {
 
-    ListenerMessage record = new ListenerMessage();
+    // set default values to prevent unable to serialize message exception
+    ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
+      0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
 
     // user id
     record.setUserId(Long.valueOf(userId));
@@ -78,14 +83,36 @@ public class ListenerMessageParser {
     // remote ip
     record.setRemoteIp(endUserContext.getIPAddress());
 
-    // language code
-    record.setLangCd("");
-
     // user agent
     record.setUserAgent(endUserContext.getUserAgent());
 
-    // geography identifier
-    record.setGeoId(-1L);
+    // parse user prefs
+//    try {
+//
+//      // get geo info
+//      UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+//
+//      // language code
+//      record.setLangCd(userPrefsCtx.getLangLocale().toLanguageTag());
+//
+//      // geography identifier
+//      record.setGeoId((long) userPrefsCtx.getGeoContext().getCountryId());
+//
+//      // site id
+//      record.setSiteId((long)userPrefsCtx.getGeoContext().getSiteId());
+//
+//    } catch (Exception e) {
+//      logger.error("Parse geo info error");
+//    }
+
+    // language code
+      record.setLangCd("");
+
+      // geography identifier
+      record.setGeoId(0L);
+
+      // site id
+      record.setSiteId(0L);
 
     // udid
     if (endUserContext.getDeviceId() != null) {
@@ -97,15 +124,12 @@ public class ListenerMessageParser {
     // referer
     record.setReferer(referer);
 
-    // site id
-    record.setSiteId(-1L);
-
     // landing page url
     record.setLandingPageUrl(uri);
 
     // source and destination rotation id
-    record.setSrcRotationId(Long.valueOf(rotationId));
-    record.setDstRotationId(Long.valueOf(rotationId));
+    record.setSrcRotationId(rotationId);
+    record.setDstRotationId(rotationId);
 
     record.setUri(uri);
     // Set the channel type + HTTP headers + channel action
@@ -120,7 +144,7 @@ public class ListenerMessageParser {
     // Get snapshotId from request
     Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId(), startTime).getRepresentation();
     record.setSnapshotId(snapshotId);
-    ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId().longValue());
+    ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId());
     record.setShortSnapshotId(shortSnapshotId.getRepresentation());
 
     record.setCampaignId(campaignId);
@@ -132,12 +156,11 @@ public class ListenerMessageParser {
   }
 
   /**
-   * Serialize the headers
+   * Serialize the headers, except Authorization
    *
    * @param clientRequest input request
    * @return headers string
    */
-  // Or we change the result schema. Trade off needs to be considered here.
   private String serializeRequestHeaders(HttpServletRequest clientRequest) {
 
     StringBuilder headersBuilder = new StringBuilder();

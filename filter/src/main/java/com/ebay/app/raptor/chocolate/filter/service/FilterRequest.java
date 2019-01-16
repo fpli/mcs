@@ -53,11 +53,18 @@ public class FilterRequest {
             } else if (key.equalsIgnoreCase("Cookie")) {
                 this.requestCguid = parseCguidFromCookie(item.getValue());
                 this.requestCguidTimestamp = parseTimestampFromCguid(this.requestCguid);
+            } else if (key.equalsIgnoreCase("Referer")) {
+                this.referrerDomain = getDomainName(item.getValue());
+            } else if (key.equalsIgnoreCase("X-EBAY-CLIENT-IP")) {
+                this.sourceIP = item.getValue();
+            } else if (key.equalsIgnoreCase("X-Forwarded-For") && (this.sourceIP == null || this.sourceIP.isEmpty())) {
+                this.sourceIP = item.getValue();
             }
         }
 
-        this.referrerDomain = getDomainName(message.getReferer());
-        this.sourceIP = message.getRemoteIp();
+        this.referrerDomain = (message.getReferer() == null || message.getReferer().isEmpty()) ? this.referrerDomain : getDomainName(message.getReferer());
+        this.sourceIP = (message.getRemoteIp() == null || message.getRemoteIp().isEmpty()) ? this.sourceIP : message.getRemoteIp();
+        this.userAgent = (message.getUserAgent() == null || message.getUserAgent().isEmpty()) ? this.userAgent : message.getUserAgent();
         this.timestamp = message.getTimestamp();
         this.publisherId = message.getPublisherId();
         this.campaignId = message.getCampaignId();
