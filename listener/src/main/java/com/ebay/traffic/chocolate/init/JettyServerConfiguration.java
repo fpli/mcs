@@ -5,12 +5,14 @@ import org.eclipse.jetty.server.NetworkTrafficServerConnector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
-import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
+import org.springframework.boot.autoconfigure.web.embedded.JettyWebServerFactoryCustomizer;
+import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
+import org.springframework.boot.web.embedded.jetty.JettyServerCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.net.URL;
@@ -19,37 +21,58 @@ import java.net.URL;
 @Configuration
 public class JettyServerConfiguration {
 
-    private static final String LISTENER_OPTIONS = "chocolate-listener.xml";
+  private static final String LISTENER_OPTIONS = "chocolate-listener.xml";
 
-    @Autowired
-    Environment env;
+  @Autowired
+  Environment env;
 
-    @Bean
-    public JettyEmbeddedServletContainerFactory jettyEmbeddedServletContainerFactory() throws IOException {
-        ListenerOptions.init(env.getProperty(LISTENER_OPTIONS, URL.class).openStream());
+//  @Bean
+//  public JettyServerCustomizer jettyServerCustomizer() throws IOException {
+//    ListenerOptions.init(env.getProperty(LISTENER_OPTIONS, URL.class).openStream());
+//
+//    ListenerOptions options = ListenerOptions.getInstance();
+//
+//    ListenerInitializer.init(ListenerOptions.getInstance());
+//
+//    return new JettyServerCustomizer() {
+//
+//      @Override
+//      public void customize(Server server) {
+//        final QueuedThreadPool threadPool = server.getBean(QueuedThreadPool.class);
+//        threadPool.setMaxThreads(options.getMaxThreads());
+//        final NetworkTrafficServerConnector connectorHttps = new NetworkTrafficServerConnector(server);
+//        connectorHttps.setPort(options.getInputHttpsPort());
+//        server.addConnector(connectorHttps);
+//      }
+//    };
+//  }
 
-        ListenerOptions options = ListenerOptions.getInstance();
+  @Bean
+  public JettyServletWebServerFactory jettyEmbeddedServletContainerFactory() throws IOException {
+    ListenerOptions.init(env.getProperty(LISTENER_OPTIONS, URL.class).openStream());
 
-        ListenerInitializer.init(ListenerOptions.getInstance());
+    ListenerOptions options = ListenerOptions.getInstance();
 
-        JettyEmbeddedServletContainerFactory factory = new JettyEmbeddedServletContainerFactory(options.getInputHttpPort());
+    ListenerInitializer.init(ListenerOptions.getInstance());
 
-        factory.addServerCustomizers(new JettyServerCustomizer() {
-            @Override
-            public void customize(Server server) {
-                final QueuedThreadPool threadPool = server.getBean(QueuedThreadPool.class);
-                threadPool.setMaxThreads(options.getMaxThreads());
-                final NetworkTrafficServerConnector connectorHttps = new NetworkTrafficServerConnector(server);
-                connectorHttps.setPort(options.getInputHttpsPort());
-                server.addConnector(connectorHttps);
-            }
-        });
+    JettyServletWebServerFactory factory = new JettyServletWebServerFactory(options.getInputHttpPort());
 
-        return factory;
-    }
+    factory.addServerCustomizers(new JettyServerCustomizer() {
+      @Override
+      public void customize(Server server) {
+        final QueuedThreadPool threadPool = server.getBean(QueuedThreadPool.class);
+        threadPool.setMaxThreads(options.getMaxThreads());
+        final NetworkTrafficServerConnector connectorHttps = new NetworkTrafficServerConnector(server);
+        connectorHttps.setPort(options.getInputHttpsPort());
+        server.addConnector(connectorHttps);
+      }
+    });
 
-    @PreDestroy
-    public void destory() {
-        ListenerInitializer.terminate();
-    }
+    return factory;
+  }
+
+  @PreDestroy
+  public void destory() {
+    ListenerInitializer.terminate();
+  }
 }
