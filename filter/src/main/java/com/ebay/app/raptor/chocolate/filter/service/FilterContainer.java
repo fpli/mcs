@@ -4,7 +4,8 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleContent;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -74,7 +75,7 @@ public class FilterContainer extends HashMap<ChannelType, HashMap<FilterRuleType
       
       int ruleResult = rule.test(internalReq);
       if (ruleResult == 1 && ruleEntry.getKey().getRuleDigitPosition() > 0) {
-        ESMetrics.getInstance().meter(rule.getClass().getSimpleName(), 1, request.getTimestamp(), request.getChannelAction().toString(), request.getChannelType().toString());
+        ESMetrics.getInstance().meter(rule.getClass().getSimpleName(), 1, request.getTimestamp(), Field.of("channelAction", request.getChannelAction().toString()), Field.of("channelType", request.getChannelType().toString()));
         rtRuleResult = rtRuleResult | (1 << ruleEntry.getKey().getRuleDigitPosition() - 1 );
       }
     }

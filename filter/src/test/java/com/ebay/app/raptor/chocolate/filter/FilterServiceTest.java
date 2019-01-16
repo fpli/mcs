@@ -4,7 +4,6 @@ import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
 import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
@@ -26,7 +25,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
-import static com.ebay.traffic.chocolate.common.TestHelper.*;
+import static com.ebay.traffic.chocolate.common.TestHelper.newListenerMessage;
+import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 
 /**
  * Created by yliu29 on 3/3/18.
