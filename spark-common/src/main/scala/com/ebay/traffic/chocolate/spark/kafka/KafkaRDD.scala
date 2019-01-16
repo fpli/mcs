@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.spark.kafka
 import java.util
 import java.util.concurrent.TimeoutException
 
-import com.ebay.traffic.chocolate.monitoring.ESMetrics
+import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.kafka.clients.consumer._
 import org.apache.kafka.common.TopicPartition
 import org.apache.spark.rdd.RDD
@@ -31,7 +31,7 @@ class KafkaRDD[K, V](
     new KafkaConsumer[K, V](kafkaProperties)
   }
 
-  @transient lazy val metrics: ESMetrics = {
+  @transient lazy val esMetrics: Metrics = {
     if (elasticsearchUrl != null && !elasticsearchUrl.isEmpty) {
       ESMetrics.init(METRICS_INDEX_PREFIX, elasticsearchUrl)
       ESMetrics.getInstance()
@@ -62,11 +62,9 @@ class KafkaRDD[K, V](
       val position = consumer.position(tp)
       val until = Math.min(endOffset.getValue, position + maxConsumeSize)
       log.info(s"###topic-partition: ${tp}, position: ${position}, until: ${until}")
-      if (metrics != null) {
+      if (esMetrics != null) {
         // lag metric
-        val additionalFields: util.Map[String, AnyRef] = new util.HashMap[String, AnyRef]
-        additionalFields.put("consumer", Integer.valueOf(tp.partition))
-        metrics.mean("SparkKafkaConsumerLag", endOffset.getValue - position, additionalFields)
+        esMetrics.mean("SparkKafkaConsumerLag", endOffset.getValue - position, Field.of[String, AnyRef]("consumer", Int.box(tp.partition)))
       }
 
       if (until > position) {
@@ -74,8 +72,8 @@ class KafkaRDD[K, V](
       }
     }
     consumer.unsubscribe()
-    if (metrics != null)
-      metrics.flushMetrics()
+    if (esMetrics != null)
+      esMetrics.flush()
 
     untilOffsets
   }
@@ -115,8 +113,8 @@ class KafkaRDD[K, V](
     consumer.assign(util.Arrays.asList(part.tp))
     context.addTaskCompletionListener(context => {
       consumer.close()
-      if (metrics != null)
-        metrics.flushMetrics()
+      if (esMetrics != null)
+        esMetrics.flush()
     })
 
     new KafkaRDDIterator(part, consumer, context)
@@ -151,9 +149,9 @@ class KafkaRDD[K, V](
       s"position: ${offset}, untilOffset: ${part.untilOffset}, index: ${part.index}")
 
     // metrics
-    if (metrics != null) {
-      metrics.trace("Consumer" + topicPartition.partition() + "-offset", offset)
-      metrics.trace("Consumer" + topicPartition.partition() + "-until", part.untilOffset)
+    if (esMetrics != null) {
+      esMetrics.trace("Consumer" + topicPartition.partition() + "-offset", offset)
+      esMetrics.trace("Consumer" + topicPartition.partition() + "-until", part.untilOffset)
     }
 
     var nextRecord: ConsumerRecord[K, V] = null // cache the next record
@@ -180,8 +178,8 @@ class KafkaRDD[K, V](
       }
       val record = nextRecord
       offset = record.offset() + 1 // update offset
-      if (metrics != null) {
-        metrics.meter("KafkaRDD-Input", 1, record.timestamp())
+      if (esMetrics != null) {
+        esMetrics.meter("KafkaRDD-Input", 1, record.timestamp())
       }
 
       nextRecord = null
