@@ -236,7 +236,7 @@ public class CollectionService {
 
       // new tags, targeturl and referer independent from client data ones
       requestTracker.addTag("url_mpre", URLEncoder.encode(targetUrl, "UTF-8"), String.class);
-      requestTracker.addTag("ref", referer, String.class);
+      requestTracker.addTag("ref", URLEncoder.encode(referer, "UTF-8"), String.class);
 
       // add rvr id
       requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
