@@ -91,6 +91,7 @@ class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializa
       .withColumn("CB_KW", common.getcbkwUdf(col("uri")))
       .withColumn("CB_CAT", common.getcbcatUdf(col("uri")))
       .withColumn("CB_EX_KW", common.get_cb_ex_kw_Udf(col("uri")))
+      .withColumn("CB_EX_CAT", common.get_cb_ex_cat_Udf(col("uri")))
       .withColumn("FB_USED", common.get_fb_used_Udf(col("uri")))
       .withColumn("AD_FORMAT", common.get_ad_format_Udf(col("uri")))
       .withColumn("AD_CONTENT_TYPE", common.get_ad_content_type_Udf(col("uri")))

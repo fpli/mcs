@@ -19,6 +19,7 @@ import rx.Observable
 import rx.functions.Func1
 
 import scala.collection.immutable.HashMap
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
@@ -99,24 +100,25 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     map
   }
 
-  lazy val referer_domain_map: HashMap[String, String] = {
-    var map = new HashMap[String, String]
+  lazy val referer_domain_map: HashMap[String, ListBuffer[String]] = {
+    var map = new HashMap[String, ListBuffer[String]]
     val stream = fs.open(new Path(params.resourceDir + "/" + properties.getProperty("epnnrt.refng.pblsh")))
     def readLine = Stream.cons(stream.readLine(), Stream.continually(stream.readLine))
     readLine.takeWhile(_ != null).foreach(line => {
       val parts = line.split("\t")
-      map = map + (parts(2) -> parts(1))
+      if (map.contains(parts(2))) {
+        var list = map(parts(2))
+        list += parts(1)
+        map = map + (parts(2) -> list)
+      }
+      else {
+        var list: mutable.ListBuffer[String] = mutable.ListBuffer[String]()
+        list += parts(1)
+        map = map + (parts(2) -> list)
+      }
     })
     map
   }
-
-  /*var ams_flag_map : mutable.HashMap[String, Int] = {
-    var map = new mutable.HashMap[String, Int]
-    map += ("google_fltr_do_flag" -> 0)
-    map += ("ams_fltr_roi_value" -> 0)
-    map += ("traffic_source_code" -> 0)
-    map
-  }*/
 
   @transient lazy val config_flag_map : HashMap[Int, Int] = {
     var map = new HashMap[Int, Int]
@@ -124,14 +126,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     map += (2 -> 0)
     map
   }
-
- /* @transient lazy val drop_columns: Seq[String] = {
-    val drop_list = Seq("snapshot_id", "timestamp", "publisher_id", "campaign_id", "request_headers",
-    "uri", "response_headers", "rt_rule_flags", "nrt_rule_flags", "channel_action", "channel_type",
-    "http_method", "snid", "is_tracked")
-    drop_list
-  }*/
-
 
   // all udf
   val snapshotIdUdf = udf((snapshotId: String) => {
@@ -150,11 +144,12 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val getCtxUdf = udf((url: String) => getQueryParam(url, "ctx"))
   val getCtxCalledUdf = udf((url: String) => getQueryParam(url, "ctx_called"))
   val getcbkwUdf = udf((url: String) => getQueryParam(url, "cb_kw"))
-  val getRefererHostUdf = udf((requestHeaders: String) => getRefererHost(requestHeaders))
+  val getRefererHostUdf = udf((requestHeaders: String) => getRefererURLAndDomain(requestHeaders, false))
   val getDateTimeUdf = udf((timestamp: Long) => getDateTimeFromTimestamp(timestamp, "yyyy-MM-dd HH:mm:ss.SSS"))
   val getcbcatUdf = udf((url: String) => getQueryParam(url, "cb_cat"))
   val get_ams_prgrm_id_Udf = udf((uri: String) => getPrgrmIdAdvrtsrIdFromAMSClick(getRoverUriInfo(uri, 3)))
   val get_cb_ex_kw_Udf = udf((url: String) => getQueryParam(url, "cb_ex_kw"))
+  val get_cb_ex_cat_Udf = udf((url: String) => getQueryParam(url, "cb_ex_cat"))
   val get_fb_used_Udf = udf((url: String) => getQueryParam(url, "fb_used"))
   val get_ad_format_Udf = udf((url: String) => getQueryParam(url, "ad_format"))
   val get_ad_content_type_Udf = udf((url: String) => getQueryParam(url, "ad_content_type"))
@@ -174,15 +169,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_browser_type_udf = udf((requestHeader: String) => getBrowserType(requestHeader))
   val get_filter_yn_ind_udf = udf((rt_rule_flag: Long, nrt_rule_flag: Long, action: String) => getFilter_Yn_Ind(rt_rule_flag, nrt_rule_flag, action))
   val get_page_id_udf = udf((responseHeaders: String) => getPageIdByLandingPage(responseHeaders))
-  val get_roi_rule_value_udf = udf((uri: String, publisherId: String, requestHeader: String, google_fltr_do_flag: Int, traffic_source_code: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getValueFromRequest(requestHeader, "Referer"), google_fltr_do_flag, traffic_source_code)._1)
-  val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, requestHeader: String, google_fltr_do_flag: Int, traffic_source_code: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getValueFromRequest(requestHeader, "Referer"), google_fltr_do_flag, traffic_source_code)._2)
+  val get_roi_rule_value_udf = udf((uri: String, publisherId: String, requestHeader: String, google_fltr_do_flag: Int, traffic_source_code: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(requestHeader, true), google_fltr_do_flag, traffic_source_code)._1)
+  val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, requestHeader: String, google_fltr_do_flag: Int, traffic_source_code: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(requestHeader, true), google_fltr_do_flag, traffic_source_code)._2)
   val get_ams_clk_fltr_type_id_udf = udf((publisherId: String, uri: String) => getclickFilterTypeId(publisherId, getRoverUriInfo(uri, 3)))
   val get_click_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("click", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
   val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("impression", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
-  val get_google_fltr_do_flag_udf = udf((requestHeader: String, publisherId: String) => getGoogleFltrDoFlag(getValueFromRequest(requestHeader, "Referer"), publisherId))
+  val get_google_fltr_do_flag_udf = udf((requestHeader: String, publisherId: String) => getGoogleFltrDoFlag(getRefererURLAndDomain(requestHeader, true), publisherId))
   val get_lnd_page_url_name_udf = udf((responseHeader: String) => getLndPageUrlName(responseHeader))
-  val getDateUdf = udf((timestamp: Long) => getDateTimeFromTimestamp(timestamp, "yyyy-MM-dd"))
-
 
   def getDateTimeFromTimestamp(timestamp: Long, format: String): String = {
     val df = new SimpleDateFormat(format)
@@ -211,11 +204,17 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     ""
   }
 
-  def getRefererHost(requestHeaders: String): String = {
+  def getRefererURLAndDomain(requestHeaders: String, domain: Boolean): String = {
     val referer = getValueFromRequest(requestHeaders, "Referer")
     if (referer != null && !referer.equals("")) {
       try {
-        return new URL(referer).getHost()
+        val url = new URL(referer)
+        if (domain) {
+          return url.getHost
+        } else {
+          return url.getProtocol + "://" + url.getHost
+        }
+
       } catch {
         case e: MalformedURLException => {
           logger.error("Malformed URL for referer host: " + referer)
@@ -415,11 +414,11 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   def getFilter_Yn_Ind(rt_rule_flag: Long, nrt_rule_flag: Long, action: String): Int = {
     if (action.equalsIgnoreCase("impression")) {
       return getRuleFlag(rt_rule_flag, 11) | getRuleFlag(rt_rule_flag, 1) |
-        getRuleFlag(rt_rule_flag, 10) | getRuleFlag(rt_rule_flag, 5)
+        getRuleFlag(rt_rule_flag, 10) | getRuleFlag(rt_rule_flag, 5) | getRuleFlag(rt_rule_flag, 3)
     }
     if(action.equalsIgnoreCase("click")) {
       return getRuleFlag(rt_rule_flag, 11) | getRuleFlag(rt_rule_flag, 1) |
-        getRuleFlag(rt_rule_flag, 10) | getRuleFlag(rt_rule_flag, 5) |
+        getRuleFlag(rt_rule_flag, 10) | getRuleFlag(rt_rule_flag, 5) | getRuleFlag(rt_rule_flag, 3) |
         getRuleFlag(nrt_rule_flag, 1) | getRuleFlag(nrt_rule_flag, 2) | getRuleFlag(nrt_rule_flag, 4) |
         getRuleFlag(nrt_rule_flag, 5) | getRuleFlag(nrt_rule_flag, 3) | getRuleFlag(nrt_rule_flag, 6)
     }
@@ -491,19 +490,15 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         }
       }
     }
- //   ams_flag_map("google_fltr_do_flag") = lookupRefererDomain(referer_domain, isDefinedPublisher(publisherId), publisherId)
- //   roiRuleValues = temp_roi_values + ams_flag_map("google_fltr_do_flag") << 6
     roiRuleValues = temp_roi_values + (google_fltr_do_flag << 6)
     if (roiRuleValues != 0) {
-    //  amsFilterRoiValue = 1
       roi_fltr_yn_ind = 1
     }
-   // ams_flag_map("ams_fltr_roi_value") = amsFilterRoiValue
     (roiRuleValues, roi_fltr_yn_ind)
   }
 
   def getGoogleFltrDoFlag(referer_domain: String, publisherId: String): Int = {
-    lookupRefererDomain(referer_domain, isDefinedAdvertiserId(publisherId), publisherId)
+    lookupRefererDomain(referer_domain, isDefinedPublisher(publisherId), publisherId)
   }
 
   def lookupRefererDomain(referer_domain: String, is_defined_publisher: Boolean, publisherId: String):Int = {
@@ -553,7 +548,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   def callRoiRuleCommon(publisherId: String, is_rule_enable: Int, is_pblshr_advsr_enable_rule: Int, referer_domain: String, dimensionLookupConstants: String, traffic_source_code: Int): Int = {
     var result = 0
     if (is_rule_enable == 1 && is_pblshr_advsr_enable_rule == 1) {
-    //  if (ams_flag_map("traffic_source_code") == 0 || ams_flag_map("traffic_source_code") == 2) {
       if (traffic_source_code == 0 || traffic_source_code == 2) {
         if (referer_domain.equals(""))
           result = 0
