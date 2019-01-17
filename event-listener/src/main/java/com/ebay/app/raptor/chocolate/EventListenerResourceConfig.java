@@ -1,16 +1,16 @@
 package com.ebay.app.raptor.chocolate;
 
 import com.ebay.tracking.filter.TrackingServiceFilter;
-import org.glassfish.jersey.server.ResourceConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Feature;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Resource config class
@@ -19,37 +19,37 @@ import javax.ws.rs.core.Feature;
  */
 @Configuration
 @ApplicationPath("/marketingtracking")
-public class EventListenerResourceConfig extends ResourceConfig {
+public class EventListenerResourceConfig extends Application {
 
-  @Inject
-  @Named("jersey-operational-feature")
+  @Autowired
+  @Qualifier("jersey-operational-feature")
   private Feature jerseyOperationalFeature;
 
-  @Inject
-  @Named("content-filter")
+  @Autowired
+  @Qualifier("content-filter")
   private ContainerRequestFilter contentFilter;
 
-  @Inject
-  @Named("permutation-filter")
+  @Autowired
+  @Qualifier("permutation-filter")
   private ContainerRequestFilter permutationFilter;
 
-  @Inject
+  @Autowired
   @Qualifier("cos-user-context-filter")
   private ContainerRequestFilter userCtxFilter;
 
-  @Inject
+  @Autowired
   @Qualifier("core-auth-filter")
   private ContainerRequestFilter coreAuthFilter;
 
-  @Inject
+  @Autowired
   @Qualifier("domain-request-filter")
   private ContainerRequestFilter domainRequestFilter;
 
-  @Inject
+  @Autowired
   @Qualifier("dds-filter")
   private ContainerRequestFilter ddsFilter;
 
-  @Inject
+  @Autowired
   @Qualifier("tracking-filter")
   private TrackingServiceFilter trackingFilter;
 
@@ -70,20 +70,46 @@ public class EventListenerResourceConfig extends ResourceConfig {
 //  @Qualifier("user-preferences-filter")
 //  private ContainerRequestFilter userPreferenceFilter;
 
-  @PostConstruct
-  public void init() {
-    register(jerseyOperationalFeature);
-    register(contentFilter);
-    register(permutationFilter);
-    register(coreAuthFilter);
-    register(userCtxFilter);
-    register(domainRequestFilter);
-    register(ddsFilter);
-    register(trackingFilter);
-//    register(userPrefsFilter);
-//    register(userCulturalPrefsFilter);
-//    register(geoTrackingFilter);
-//    register(userPreferenceFilter);
-    register(EventListenerResource.class);
+  @Override
+  public Set<Class<?>> getClasses() {
+    Set<Class<?>> providers = new LinkedHashSet<Class<?>>();
+    providers.add(EventListenerResource.class);
+    return providers;
   }
+
+  @Override
+  public Set<Object> getSingletons() {
+    Set<Object> providers = new LinkedHashSet<Object>();
+    providers.add(jerseyOperationalFeature);
+    providers.add(contentFilter);
+    providers.add(permutationFilter);
+    providers.add(coreAuthFilter);
+    providers.add(userCtxFilter);
+    providers.add(domainRequestFilter);
+    providers.add(ddsFilter);
+    providers.add(trackingFilter);
+//    providers.add(userPrefsFilter);
+//    providers.add(userCulturalPrefsFilter);
+//    providers.add(geoTrackingFilter);
+//    providers.add(userPreferenceFilter);
+
+    return providers;
+  }
+
+//  @PostConstruct
+//  public void init() {
+//    register(jerseyOperationalFeature);
+//    register(contentFilter);
+//    register(permutationFilter);
+//    register(coreAuthFilter);
+//    register(userCtxFilter);
+//    register(domainRequestFilter);
+//    register(ddsFilter);
+//    register(trackingFilter);
+////    register(userPrefsFilter);
+////    register(userCulturalPrefsFilter);
+////    register(geoTrackingFilter);
+////    register(userPreferenceFilter);
+//    register(EventListenerResource.class);
+//  }
 }
