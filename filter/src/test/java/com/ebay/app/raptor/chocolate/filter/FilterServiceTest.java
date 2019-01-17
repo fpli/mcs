@@ -21,6 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -34,8 +35,10 @@ import static com.ebay.traffic.chocolate.common.TestHelper.*;
  * End to End test for Filter Service. This class uses Spring test framework to
  * start the test web service, and uses Mini Kafka and Zookeeper cluster.
  */
-@RunWith(RaptorIOSpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+  properties = { "GingerClient.testService.testClient.endpointUri=http://localhost",
+    "GingerClient.testService.testClient.readTimeout=5000"})
 public class FilterServiceTest {
   private static MiniKafkaCluster kafkaCluster;
   private static MiniZookeeperCluster zookeeperCluster;
