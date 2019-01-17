@@ -4,8 +4,6 @@ import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.kernel.context.RuntimeContext;
-import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
 import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
 import com.ebay.traffic.chocolate.common.MiniZookeeperCluster;
