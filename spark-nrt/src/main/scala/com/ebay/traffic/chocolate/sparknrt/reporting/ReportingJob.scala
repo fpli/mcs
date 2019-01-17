@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.reporting
 import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
-import com.ebay.traffic.chocolate.monitoring.ESReporting
+import com.ebay.traffic.monitoring.{ESReporting, Field, Reporting}
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
@@ -55,7 +55,7 @@ class ReportingJob(params: Parameter)
     }
   }
 
-  @transient lazy val esReporting: ESReporting = {
+  @transient lazy val esReporting: Reporting = {
     if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
       ESReporting.init("chocolate-report-", params.elasticsearchUrl)
       ESReporting.getInstance()
@@ -166,8 +166,16 @@ class ReportingJob(params: Parameter)
   def upsertElasticSearch(row: Row): Unit = {
     retry(3) {
       val docId = row.mkString("-")
-      esReporting.send("CHOCOLATE_REPORT", row.getAs("count").toString.toLong, docId,
-        row.getAs("timestamp").toString.toLong, row.getValuesMap(row.schema.fieldNames).asJava
+
+      val fieldsMap = row.getValuesMap(row.schema.fieldNames)
+      var fields = new Array[Field[String, AnyRef]](0)
+
+      for (field <- fieldsMap) {
+        fields = fields :+ Field.of[String, AnyRef](field._1, field._2)
+      }
+
+      esReporting.send("CHOCOLATE_REPORT_TEST3", row.getAs("count").toString.toLong, docId,
+        row.getAs("timestamp").toString.toLong, fields:_*
       )
     }
   }
