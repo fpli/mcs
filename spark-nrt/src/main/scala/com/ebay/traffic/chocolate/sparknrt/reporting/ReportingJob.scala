@@ -170,9 +170,9 @@ class ReportingJob(params: Parameter)
       val fieldsMap = row.getValuesMap(row.schema.fieldNames)
       var fields = new Array[Field[String, AnyRef]](0)
 
-      for (field <- fieldsMap) {
+      fieldsMap.foreach(field => {
         fields = fields :+ Field.of[String, AnyRef](field._1, field._2)
-      }
+      })
 
       esReporting.send("CHOCOLATE_REPORT_TEST3", row.getAs("count").toString.toLong, docId,
         row.getAs("timestamp").toString.toLong, fields:_*
