@@ -18,7 +18,6 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <CodeCacheSize>512m</CodeCacheSize>
     <encoding>UTF-8</encoding>
-    <java.version>1.8</java.version>
     <scala.version>2.11.8</scala.version>
     <scala.compat.version>2.11</scala.compat.version>
     <slf4j.version>1.7.7</slf4j.version>
@@ -115,18 +114,6 @@
         <version>${curator.version}</version>
       </dependency>
 
-      <!--<dependency>-->
-        <!--<groupId>org.apache.kafka</groupId>-->
-        <!--<artifactId>kafka_2.10</artifactId>-->
-        <!--<version>0.10.2.0</version>-->
-      <!--</dependency>-->
-
-      <!--<dependency>-->
-        <!--<groupId>org.apache.kafka</groupId>-->
-        <!--<artifactId>kafka-clients</artifactId>-->
-        <!--<version>${kafka.version}</version>-->
-      <!--</dependency>-->
-
       <dependency>
         <groupId>com.couchbase.client</groupId>
         <artifactId>java-client</artifactId>
@@ -182,20 +169,6 @@
         <artifactId>logstash-logback-encoder</artifactId>
         <version>${logback.encoder.version}</version>
       </dependency>
-
-<!--
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
--->
 
       <dependency>
         <groupId>log4j</groupId>
@@ -270,20 +243,6 @@
         <version>1.2.6-RELEASE</version>
       </dependency>
 
-      <!-- tracking -->
-
-      <dependency>
-        <groupId>com.ebay.raptorio.component</groupId>
-        <artifactId>raptor-tracking-api</artifactId>
-        <version>0.5.4-RELEASE</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.ebay.raptorio.component</groupId>
-        <artifactId>raptor-tracking-starter</artifactId>
-        <version>0.5.3-RELEASE</version>
-      </dependency>
-
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
@@ -303,11 +262,6 @@
       <groupId>com.github.scopt</groupId>
       <artifactId>scopt_${scala.compat.version}</artifactId>
     </dependency>
-
-    <!--<dependency>-->
-      <!--<groupId>com.google.code.gson</groupId>-->
-      <!--<artifactId>gson</artifactId>-->
-    <!--</dependency>-->
 
     <!-- test -->
     <dependency>
