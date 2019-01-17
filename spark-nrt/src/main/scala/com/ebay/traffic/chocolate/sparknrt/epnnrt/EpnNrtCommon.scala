@@ -64,6 +64,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
   }
 
+  //
   lazy val ams_map: HashMap[Int, Array[String]] = {
     val value = Array(Array("2", "1"), Array("6", "1"), Array("4", "1"), Array("10", "1"), Array("16", "1"), Array("9", "1"), Array("5", "1"),
       Array("15", "1"), Array("3", "1"), Array("14", "1"), Array("17", "2"), Array("12", "1"), Array("11", "1"), Array("8", "1"), Array("13", "1"),
@@ -144,7 +145,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val getCtxUdf = udf((url: String) => getQueryParam(url, "ctx"))
   val getCtxCalledUdf = udf((url: String) => getQueryParam(url, "ctx_called"))
   val getcbkwUdf = udf((url: String) => getQueryParam(url, "cb_kw"))
-  val getRefererHostUdf = udf((requestHeaders: String) => getRefererURLAndDomain(requestHeaders, false))
+  val getRefererHostUdf = udf((requestHeaders: String) => getRefererURLAndDomain(requestHeaders, true))
   val getDateTimeUdf = udf((timestamp: Long) => getDateTimeFromTimestamp(timestamp, "yyyy-MM-dd HH:mm:ss.SSS"))
   val getcbcatUdf = udf((url: String) => getQueryParam(url, "cb_cat"))
   val get_ams_prgrm_id_Udf = udf((uri: String) => getPrgrmIdAdvrtsrIdFromAMSClick(getRoverUriInfo(uri, 3)))
@@ -238,6 +239,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
     ""
   }
+
 
   def getGUIDFromCookie(requestHeader: String, response_headers: String, guid: String) : String = {
     var cookie = ""
