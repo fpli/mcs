@@ -174,7 +174,7 @@ class ReportingJob(params: Parameter)
         fields = fields :+ Field.of[String, AnyRef](field._1, field._2)
       })
 
-      esReporting.send("CHOCOLATE_REPORT_TEST3", row.getAs("count").toString.toLong, docId,
+      esReporting.send("CHOCOLATE_REPORT", row.getAs("count").toString.toLong, docId,
         row.getAs("timestamp").toString.toLong, fields:_*
       )
     }
