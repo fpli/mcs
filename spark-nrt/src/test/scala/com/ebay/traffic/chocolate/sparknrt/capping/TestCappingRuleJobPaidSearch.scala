@@ -1,6 +1,5 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
 import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
@@ -11,12 +10,10 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
-import org.junit.Ignore
 
 /**
   * Created by xiangli4 on 4/8/18.
   */
-@Ignore
 class TestCappingRuleJobPaidSearch extends BaseFunSuite {
   val tmpPath = createTempPath()
   val inputDir = tmpPath + "/inputDir/"
@@ -80,7 +77,7 @@ class TestCappingRuleJobPaidSearch extends BaseFunSuite {
 
     val writer1_0 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
@@ -110,42 +107,42 @@ class TestCappingRuleJobPaidSearch extends BaseFunSuite {
 
     val writer1_1 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00001.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
 
     val writer1_2 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
 
     val writer2_1 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00001.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
 
     val writer2_2 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
 
     val writer3 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
 
     val writer4 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema())
+      .withSchema(FilterMessage.getClassSchema())
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
@@ -193,7 +190,7 @@ class TestCappingRuleJobPaidSearch extends BaseFunSuite {
 
     val df2 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-02/"))
     df2.show()
-    assert(df2.count() == 10)
+    assert(df2.count() == 9)
     assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 1)
 
 
