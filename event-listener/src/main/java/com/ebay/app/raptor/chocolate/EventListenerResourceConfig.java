@@ -53,22 +53,21 @@ public class EventListenerResourceConfig extends Application {
   @Qualifier("tracking-filter")
   private TrackingServiceFilter trackingFilter;
 
-  // comments geo info feature first, as this requires raptor-io 0.8.x
-//  @Inject
-//  @Qualifier("user-prefs-filter")
-//  private ContainerRequestFilter userPrefsFilter;
-//
-//  @Inject
-//  @Qualifier("user-cultural-prefs-filter")
-//  private ContainerRequestFilter userCulturalPrefsFilter;
-//
-//  @Inject
-//  @Qualifier("geo-tracking-filter")
-//  private ContainerRequestFilter geoTrackingFilter;
-//
-//  @Inject
-//  @Qualifier("user-preferences-filter")
-//  private ContainerRequestFilter userPreferenceFilter;
+  @Autowired
+  @Qualifier("user-prefs-filter")
+  private ContainerRequestFilter userPrefsFilter;
+
+  @Autowired
+  @Qualifier("user-cultural-prefs-filter")
+  private ContainerRequestFilter userCulturalPrefsFilter;
+
+  @Autowired
+  @Qualifier("geo-tracking-filter")
+  private ContainerRequestFilter geoTrackingFilter;
+
+  @Autowired
+  @Qualifier("user-preferences-filter")
+  private ContainerRequestFilter userPreferenceFilter;
 
   @Override
   public Set<Class<?>> getClasses() {
@@ -88,28 +87,11 @@ public class EventListenerResourceConfig extends Application {
     providers.add(domainRequestFilter);
     providers.add(ddsFilter);
     providers.add(trackingFilter);
-//    providers.add(userPrefsFilter);
-//    providers.add(userCulturalPrefsFilter);
-//    providers.add(geoTrackingFilter);
-//    providers.add(userPreferenceFilter);
+    providers.add(userPrefsFilter);
+    providers.add(userCulturalPrefsFilter);
+    providers.add(geoTrackingFilter);
+    providers.add(userPreferenceFilter);
 
     return providers;
   }
-
-//  @PostConstruct
-//  public void init() {
-//    register(jerseyOperationalFeature);
-//    register(contentFilter);
-//    register(permutationFilter);
-//    register(coreAuthFilter);
-//    register(userCtxFilter);
-//    register(domainRequestFilter);
-//    register(ddsFilter);
-//    register(trackingFilter);
-////    register(userPrefsFilter);
-////    register(userCulturalPrefsFilter);
-////    register(geoTrackingFilter);
-////    register(userPreferenceFilter);
-//    register(EventListenerResource.class);
-//  }
 }
