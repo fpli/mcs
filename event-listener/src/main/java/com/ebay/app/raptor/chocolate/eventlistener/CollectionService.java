@@ -11,7 +11,9 @@ import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
@@ -43,7 +45,7 @@ import java.util.Map;
 @DependsOn("EventListenerService")
 public class CollectionService {
   private static final Logger logger = Logger.getLogger(CollectionService.class);
-  private ESMetrics esMetrics;
+  private Metrics esMetrics;
   private ListenerMessageParser parser;
   private static CollectionService instance = null;
 
@@ -213,7 +215,9 @@ public class CollectionService {
     additionalFields.put("platform", platform);
     additionalFields.put("landingPageType", landingPageType);
 
-    long startTime = startTimerAndLogData(additionalFields);
+    String[] fieldsValue = {action, type, platform, landingPageType};
+
+    long startTime = startTimerAndLogData(fieldsValue);
 
     producer = KafkaSink.get();
 
@@ -251,7 +255,7 @@ public class CollectionService {
     if (message != null) {
       long eventTime = message.getTimestamp();
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
-      stopTimerAndLogData(startTime, eventTime, additionalFields);
+      stopTimerAndLogData(startTime, eventTime, fieldsValue);
     }
     return true;
   }
@@ -271,15 +275,17 @@ public class CollectionService {
   /**
    * Starts the timer and logs some basic info
    *
-   * @param additionalFields channelAction, channelType, platform, landing page type
+   * @param fieldsValue channelAction, channelType, platform, landing page type
    * @return start time
    */
-  private long startTimerAndLogData(Map<String, Object> additionalFields) {
+  private long startTimerAndLogData(String[] fieldsValue) {
     // the main rover process is already finished at this moment
     // use the timestamp from request as the start time
     long startTime = System.currentTimeMillis();
     logger.debug(String.format("StartTime: %d", startTime));
-    esMetrics.meter("CollectionServiceIncoming", 1, startTime, additionalFields);
+    esMetrics.meter("CollectionServiceIncoming", 1, startTime, Field.of("channelAction", fieldsValue[0]),
+        Field.of("channelType", fieldsValue[1]), Field.of("platform", fieldsValue[2]),
+        Field.of("landingPageType", fieldsValue[3]));
     return startTime;
   }
 
@@ -287,12 +293,14 @@ public class CollectionService {
    * Stops the timer and logs relevant debugging messages
    *
    * @param startTime        the start time, so that latency can be calculated
-   * @param additionalFields channelAction, channelType, platform, landing page type
+   * @param fieldsArray value of channelAction, channelType, platform, landing page type
    */
-  private void stopTimerAndLogData(long startTime, long eventTime, Map<String, Object> additionalFields) {
+  private void stopTimerAndLogData(long startTime, long eventTime, String[] fieldsValue) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    esMetrics.meter("CollectionServiceSuccess", 1, eventTime, additionalFields);
+    esMetrics.meter("CollectionServiceSuccess", 1, eventTime, Field.of("channelAction", fieldsValue[0]),
+        Field.of("channelType", fieldsValue[1]), Field.of("platform", fieldsValue[2]),
+        Field.of("landingPageType", fieldsValue[3]));
     esMetrics.mean("CollectionServiceAverageLatency", endTime - startTime);
   }
 }
