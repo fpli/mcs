@@ -82,7 +82,7 @@ public class TestKafkaWithFallbackProducer {
             LongDeserializer.class, FilterMessageDeserializer.class);
 
     Map<Long, FilterMessage> messages = pollFromKafkaTopic(
-            consumer, Arrays.asList(topic2), 3, 10 * 1000);
+            consumer, Arrays.asList(topic2), 3, 60 * 1000);
     consumer.close();
 
     Assert.assertEquals(messages.size(), 3);
