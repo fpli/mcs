@@ -187,7 +187,6 @@ public class MiniKafkaCluster {
                                           Class<?> valueSerializerClass) {
     Properties props = new Properties();
     props.put("bootstrap.servers", getBootstrapServers());
-//    props.put("bootstrap.servers","127.0.0.1:9092");
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, keySerializerClass.getName());
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, valueSerializerClass.getName());
     props.put("request.timeout.ms", "10000");

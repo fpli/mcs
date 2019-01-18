@@ -10,10 +10,11 @@ import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.builder.Raptor2CacheFactoryBuilder;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.traffic.chocolate.monitoring.ESMetrics;
-import javafx.util.Pair;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 
+import java.util.AbstractMap;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -32,7 +33,7 @@ public class CouchbaseClient {
     /**default publisherID*/
     private static final long DEFAULT_PUBLISHER_ID = -1L;
   /**flush buffer to keep record when couchbase down*/
-  private Queue<Pair<Long,Long>> buffer;
+  private Queue<Map.Entry<Long,Long>> buffer;
   private String datasourceName;
 
   private final ESMetrics esMetrics = ESMetrics.getInstance();
@@ -89,7 +90,7 @@ public class CouchbaseClient {
     try {
       upsert(campaignId, publisherId);
     } catch (Exception e) {
-      buffer.add(new Pair<>(campaignId, publisherId));
+      buffer.add(new AbstractMap.SimpleEntry<>(campaignId, publisherId));
       logger.warn("Couchbase upsert operation exception", e);
     }
   }
@@ -114,7 +115,7 @@ public class CouchbaseClient {
   private void flushBuffer() {
     try {
       while (!buffer.isEmpty()) {
-        Pair<Long, Long> kv = buffer.peek();
+        Map.Entry<Long, Long> kv = buffer.peek();
         upsert(kv.getKey(), kv.getValue());
         buffer.poll();
       }
