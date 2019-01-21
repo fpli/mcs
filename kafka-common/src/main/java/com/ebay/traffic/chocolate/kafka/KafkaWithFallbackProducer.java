@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.kafka;
 
 import org.apache.avro.generic.GenericRecord;
 import org.apache.commons.io.IOUtils;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -9,7 +10,9 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.annotation.InterfaceStability;
+import org.apache.kafka.common.errors.ProducerFencedException;
 import org.apache.kafka.common.errors.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,5 +168,32 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
       producer2.close(timeout, timeUnit);
     } catch (Exception e) {
     }
+  }
+
+  // not support transaction mode for now
+  @Override
+  public void initTransactions() {
+
+  }
+
+  @Override
+  public void beginTransaction() throws ProducerFencedException {
+
+  }
+
+  @Override
+  public void sendOffsetsToTransaction(Map<TopicPartition, OffsetAndMetadata> offsets, String consumerGroupId) throws
+    ProducerFencedException {
+
+  }
+
+  @Override
+  public void commitTransaction() throws ProducerFencedException {
+
+  }
+
+  @Override
+  public void abortTransaction() throws ProducerFencedException {
+
   }
 }

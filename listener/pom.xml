@@ -87,10 +87,6 @@
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <groupId>org.springframework.boot</groupId>
           </exclusion>
-          <!--<exclusion>-->
-            <!--<artifactId>log4j-over-slf4j</artifactId>-->
-            <!--<groupId>org.slf4j</groupId>-->
-          <!--</exclusion>-->
         </exclusions>
       </dependency>
 
@@ -171,6 +167,10 @@
         <artifactId>raptor-io-test-framework</artifactId>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>com.ebay.standards</groupId>
+        <artifactId>standards-annotation-starter</artifactId>
+      </dependency>
 
       <!--logging dependencies-->
       <dependency>
@@ -196,14 +196,12 @@
       <dependency>
         <groupId>org.apache.kafka</groupId>
         <artifactId>kafka_2.11</artifactId>
-        <version>${kafka.version}</version>
         <scope>test</scope>
       </dependency>
 
       <dependency>
         <groupId>org.apache.kafka</groupId>
         <artifactId>kafka-clients</artifactId>
-        <version>${kafka.version}</version>
       </dependency>
     </dependencies>
 
@@ -213,16 +211,6 @@
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>
-<!--           <executions>
-	          <execution>
-		          <goals>
-		          	<goal>repackage</goal>
-		          </goals>
-		          <configuration>
-		          	<classifier>exec</classifier>
-		          </configuration>
-	          </execution>
-          </executions> -->
         </plugin> 
         <!-- raptor.io plugin -->
         <plugin>

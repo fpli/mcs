@@ -191,8 +191,12 @@ public class MiniKafkaCluster {
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, valueSerializerClass.getName());
     props.put("request.timeout.ms", "10000");
     props.put("retry.backoff.ms", "500");
-    props.setProperty("retries", "3");
-
+    props.put("delivery.timeout.ms", 30000);
+    props.put("batch.size", 16384);
+    props.put("linger.ms", 1);
+    props.put("buffer.memory", 33554432);
+    props.put("acks", "all");
+    props.put("retries", 0);
     return props;
   }
 
@@ -245,6 +249,7 @@ public class MiniKafkaCluster {
       properties.put("num.partitions", String.valueOf(DEFAULT_PARTITIONS));
       properties.put("default.replication.factor", String.valueOf(brokers));
       properties.put("auto.create.topics.enable", "true");
+      properties.put("offsets.topic.replication.factor", "1");
 
       List<KafkaConfig> configs = new ArrayList<>(brokers);
       for (int i = 0; i < brokers; i++) {
