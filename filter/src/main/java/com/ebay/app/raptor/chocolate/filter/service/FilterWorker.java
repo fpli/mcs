@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
+import com.ebay.app.raptor.chocolate.filter.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
 import com.ebay.traffic.chocolate.kafka.KafkaConsumerFactory;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -183,6 +184,10 @@ public class FilterWorker extends Thread {
     outMessage.setGeoId(message.getGeoId());
     outMessage.setUdid(message.getUdid());
     outMessage.setReferer(message.getReferer());
+    // set postcode for not EPN Channels
+    if (message.getChannelType() != ChannelType.EPN) {
+      outMessage.setGeoId(LBSClient.getInstance().getPostalCodeByIp(outMessage.getRemoteIp()));
+    }
     // only EPN needs to get publisher id
     if (message.getPublisherId() == DEFAULT_PUBLISHER_ID && message.getChannelType() == ChannelType.EPN) {
       long publisherId = getPublisherId(message.getCampaignId());
