@@ -49,6 +49,11 @@ public class CollectionService {
   private ListenerMessageParser parser;
   private static CollectionService instance = null;
 
+  private static final String CHANNEL_ACTION = "channelAction";
+  private static final String CHANNEL_TYPE = "channelType";
+  private static final String PLATFORM = "platform";
+  private static final String LANDING_PAGE_TYPE = "landingPageType";
+
   @PostConstruct
   public void postInit() {
     this.esMetrics = ESMetrics.getInstance();
@@ -209,15 +214,8 @@ public class CollectionService {
       userId = Long.toString(endUserContext.getOrigUserOracleId());
     }
 
-    Map<String, Object> additionalFields = new HashMap<>();
-    additionalFields.put("channelAction", action);
-    additionalFields.put("channelType", type);
-    additionalFields.put("platform", platform);
-    additionalFields.put("landingPageType", landingPageType);
-
-    String[] fieldsValue = {action, type, platform, landingPageType};
-
-    long startTime = startTimerAndLogData(fieldsValue);
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+        Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     producer = KafkaSink.get();
 
@@ -255,7 +253,8 @@ public class CollectionService {
     if (message != null) {
       long eventTime = message.getTimestamp();
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
-      stopTimerAndLogData(startTime, eventTime, fieldsValue);
+      stopTimerAndLogData(startTime, eventTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+          Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
     }
     return true;
   }
@@ -278,14 +277,12 @@ public class CollectionService {
    * @param fieldsValue channelAction, channelType, platform, landing page type
    * @return start time
    */
-  private long startTimerAndLogData(String[] fieldsValue) {
+  private long startTimerAndLogData(Field<String, Object>... additionalFields) {
     // the main rover process is already finished at this moment
     // use the timestamp from request as the start time
     long startTime = System.currentTimeMillis();
     logger.debug(String.format("StartTime: %d", startTime));
-    esMetrics.meter("CollectionServiceIncoming", 1, startTime, Field.of("channelAction", fieldsValue[0]),
-        Field.of("channelType", fieldsValue[1]), Field.of("platform", fieldsValue[2]),
-        Field.of("landingPageType", fieldsValue[3]));
+    esMetrics.meter("CollectionServiceIncoming", 1, startTime, additionalFields);
     return startTime;
   }
 
@@ -295,12 +292,10 @@ public class CollectionService {
    * @param startTime        the start time, so that latency can be calculated
    * @param fieldsArray value of channelAction, channelType, platform, landing page type
    */
-  private void stopTimerAndLogData(long startTime, long eventTime, String[] fieldsValue) {
+  private void stopTimerAndLogData(long startTime, long eventTime, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    esMetrics.meter("CollectionServiceSuccess", 1, eventTime, Field.of("channelAction", fieldsValue[0]),
-        Field.of("channelType", fieldsValue[1]), Field.of("platform", fieldsValue[2]),
-        Field.of("landingPageType", fieldsValue[3]));
+    esMetrics.meter("CollectionServiceSuccess", 1, eventTime, additionalFields);
     esMetrics.mean("CollectionServiceAverageLatency", endTime - startTime);
   }
 }
