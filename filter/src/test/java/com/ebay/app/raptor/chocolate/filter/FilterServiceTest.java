@@ -4,7 +4,6 @@ import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
 import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
 import com.ebay.traffic.chocolate.common.MiniZookeeperCluster;
@@ -20,13 +19,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
-import static com.ebay.traffic.chocolate.common.TestHelper.newListenerMessage;
-import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
+import static com.ebay.traffic.chocolate.common.TestHelper.*;
 
 /**
  * Created by yliu29 on 3/3/18.
@@ -34,8 +33,10 @@ import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
  * End to End test for Filter Service. This class uses Spring test framework to
  * start the test web service, and uses Mini Kafka and Zookeeper cluster.
  */
-@RunWith(RaptorIOSpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+  properties = { "GingerClient.testService.testClient.endpointUri=http://localhost",
+    "GingerClient.testService.testClient.readTimeout=5000"})
 public class FilterServiceTest {
   private static MiniKafkaCluster kafkaCluster;
   private static MiniZookeeperCluster zookeeperCluster;

@@ -68,6 +68,10 @@
       <artifactId>metrics-common</artifactId>
       <version>${metrics-common.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+    </dependency>
 
     <!-- test -->
     <dependency>

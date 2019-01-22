@@ -9,7 +9,7 @@ import com.ebay.cos.raptor.error.v3.ErrorMessageV3;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
-import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
+import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
 import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -22,9 +22,11 @@ import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.inject.Inject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -43,7 +45,7 @@ import static org.junit.Assert.assertEquals;
  * End to End test for Event Listener Service. This class uses Spring test framework to
  * start the test web service, and uses Mini Kafka.
  */
-@RunWith(RaptorIOSpringRunner.class)
+@RunWith(SpringRunner.class)
 @SpringBootTest(
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
   properties = {
@@ -56,6 +58,9 @@ public class EventListenerServiceTest {
 
   @LocalServerPort
   private int port;
+
+  @Inject
+  private ISecureTokenManager tokenGenerator;
 
   private boolean initialized = false;
 
@@ -106,6 +111,7 @@ public class EventListenerServiceTest {
 
   @Test
   public void testResource() throws Exception {
+    String token = tokenGenerator.getToken().getAccessToken();
 
     Event event = new Event();
     event.setReferrer("www.google.com");
@@ -179,6 +185,7 @@ public class EventListenerServiceTest {
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
       .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(201, response.getStatus());
@@ -188,6 +195,7 @@ public class EventListenerServiceTest {
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxDesktop)
       .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(201, response.getStatus());
@@ -197,6 +205,7 @@ public class EventListenerServiceTest {
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxAndroid)
       .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(201, response.getStatus());
@@ -206,6 +215,7 @@ public class EventListenerServiceTest {
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxMweb)
       .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(201, response.getStatus());
@@ -214,6 +224,7 @@ public class EventListenerServiceTest {
     response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(400, response.getStatus());
@@ -224,6 +235,7 @@ public class EventListenerServiceTest {
     response = client.target(svcEndPoint).path(eventsPath)
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+      .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(400, response.getStatus());
@@ -236,6 +248,7 @@ public class EventListenerServiceTest {
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxNoReferer)
       .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(400, response.getStatus());
@@ -248,6 +261,7 @@ public class EventListenerServiceTest {
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
       .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(400, response.getStatus());
@@ -260,6 +274,7 @@ public class EventListenerServiceTest {
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
       .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(400, response.getStatus());
@@ -272,6 +287,7 @@ public class EventListenerServiceTest {
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
       .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(400, response.getStatus());
@@ -285,6 +301,7 @@ public class EventListenerServiceTest {
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
       .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(201, response.getStatus());
@@ -296,6 +313,7 @@ public class EventListenerServiceTest {
       .request()
       .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
       .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(201, response.getStatus());
