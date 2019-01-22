@@ -46,11 +46,6 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     }
   }
 
- /* @transient lazy val epnNrtCommon: EpnNrtCommon = {
-    val common = new EpnNrtCommon(params, )
-    common
-  }*/
-
   override def run(): Unit = {
     //1. load meta files
     logger.info("load metadata...")

@@ -6,7 +6,6 @@ import java.util.Properties
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.app.raptor.chocolate.avro.ChannelType
-import com.ebay.app.raptor.chocolate.common.ShortSnapshotId
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
@@ -128,15 +127,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     map
   }
 
-  // all udf
-  val snapshotIdUdf = udf((snapshotId: String) => {
-    new ShortSnapshotId(snapshotId.toLong).getRepresentation.toString
-  })
-
   // val getRoverChannelIdUdf = udf((uri: String) => getRoverUriInfo(uri, 4))
   val getRoverUriInfoUdf = udf((uri: String, index: Int) => getRoverUriInfo(uri, index))
 
-  val getGUIDUdf = udf((requestHeader: String, responseHeader:String, guid: String) => getGUIDFromCookie(requestHeader, responseHeader, guid))
+  //val getGUIDUdf = udf((requestHeader: String, responseHeader:String, guid: String) => getGUIDFromCookie(requestHeader, responseHeader, guid))
   val getValueFromRequestUdf = udf((requestHeader: String, key: String) => getValueFromRequest(requestHeader, key))
   val getUserQueryTextUdf = udf((url: String) => getUserQueryTxt(url))
   val getToolIdUdf = udf((url: String) => getQueryParam(url, "toolid"))
@@ -240,7 +234,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     ""
   }
 
-
+/*
   def getGUIDFromCookie(requestHeader: String, response_headers: String, guid: String) : String = {
     var cookie = ""
     if (response_headers != null) {
@@ -262,7 +256,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       }
     }
     ""
-  }
+  }*/
 
   def getValueFromRequest(request: String, key: String): String = {
     if (request != null) {

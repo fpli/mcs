@@ -44,14 +44,14 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
       .withColumn("FILE_SCHM_VRSN_NUM", lit(4))
       .withColumn("FILE_ID", lit(1995))
       .withColumn("BATCH_ID", lit(1994))
-      .withColumn("CLICK_ID", common.snapshotIdUdf(col("snapshot_id")))
+      .withColumn("CLICK_ID", col("short_snapshot_id"))
       .withColumn("CHNL_ID", common.getRoverUriInfoUdf(col("uri"), lit(4).cast(IntegerType)))
-      .withColumn("CRLTN_GUID_TXT", common.getGUIDUdf(col("request_headers"), col("response_headers"), lit("cguid")))
-      .withColumn("GUID_TXT", common.getGUIDUdf(col("request_headers"), col("response_headers"), lit("tguid")))
+      .withColumn("CRLTN_GUID_TXT", col("cguid"))
+      .withColumn("GUID_TXT", col("guid"))
       .withColumn("USER_ID", lit(""))
-      .withColumn("CLNT_RMT_IP", common.getValueFromRequestUdf(col("request_headers"), lit("X-eBay-Client-IP")))
+      .withColumn("CLNT_RMT_IP", col("remote_ip"))
       .withColumn("BRWSR_TYPE_NUM",  common.get_browser_type_udf(col("request_headers")))
-      .withColumn("BRWSR_NAME", common.getValueFromRequestUdf(col("request_headers"), lit("User-Agent")))
+      .withColumn("BRWSR_NAME", col("user_agent"))
       .withColumn("RFR_URL_NAME", common.getValueFromRequestUdf(col("request_headers"), lit("Referer")))
       .withColumn("ENCRYPTD_IND", lit(0))
       .withColumn("PLCMNT_DATA_TXT", common.getRoverUriInfoUdf(col("uri"), lit(3).cast(IntegerType)))
@@ -239,9 +239,6 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
       .withColumn("NRT_RULE_FLAG80", lit(0))
       .cache()
 
-  /*  clickDf = clickDf.select(clickDf.columns.filter(
-      col => !common.drop_columns.contains(col))
-      .map(col => new Column(col)): _*)*/
     clickDf = clickDf.select(click_columns.head, click_columns.tail: _*)
 
     clickDf
