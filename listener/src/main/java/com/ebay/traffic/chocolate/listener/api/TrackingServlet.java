@@ -31,15 +31,15 @@ public class TrackingServlet extends HttpServlet {
   /**
    * Metrics client instance
    */
-  private Metrics esMetrics;
+  private Metrics metrics;
 
   /**
    * Message object parser instance
    */
   private MessageObjectParser parser;
 
-  public TrackingServlet(final Metrics esMetrics, final MessageObjectParser parser) {
-    this.esMetrics = esMetrics;
+  public TrackingServlet(final Metrics metrics, final MessageObjectParser parser) {
+    this.metrics = metrics;
     this.parser = parser;
   }
 
@@ -49,8 +49,8 @@ public class TrackingServlet extends HttpServlet {
 
     if (parser == null)
       parser = MessageObjectParser.getInstance();
-    if (esMetrics == null)
-      esMetrics = ESMetrics.getInstance();
+    if (metrics == null)
+      metrics = ESMetrics.getInstance();
   }
 
   /**
@@ -76,7 +76,7 @@ public class TrackingServlet extends HttpServlet {
   private void doRequest(HttpServletRequest request, HttpServletResponse response) {
     try {
       TrackingEvent event = new TrackingEvent(new URL(request.getRequestURL().toString()), request.getParameterMap());
-      esMetrics.meter("TrackingCount", 1, Field.of(CHANNEL_ACTION, event.getAction().getAvro().toString()),
+      metrics.meter("TrackingCount", 1, Field.of(CHANNEL_ACTION, event.getAction().getAvro().toString()),
           Field.of(CHANNEL_TYPE, event.getChannel().toString()));
       process(request, response, event);
     } catch (Exception e) {
@@ -117,7 +117,7 @@ public class TrackingServlet extends HttpServlet {
 
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
 
-      esMetrics.meter("TrackingSuccess", 1, Field.of(CHANNEL_ACTION, event.getAction().getAvro().toString()),
+      metrics.meter("TrackingSuccess", 1, Field.of(CHANNEL_ACTION, event.getAction().getAvro().toString()),
           Field.of(CHANNEL_TYPE, event.getChannel().toString()));
 
     } catch (Exception e) {

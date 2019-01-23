@@ -115,7 +115,7 @@ public class DumpRotationToHadoop {
 
   public static void dumpFileFromCouchbase(String startKey, String endKey, String outputFilePath) throws IOException {
     ESMetrics.init("batch-metrics-", couchbasePros.getProperty("chocolate.elasticsearch.url"));
-    Metrics esMetrics = ESMetrics.getInstance();
+    Metrics metrics = ESMetrics.getInstance();
 
     Boolean compress = (couchbasePros.getProperty("job.dumpRotationFiles.compressed") == null) ? Boolean.valueOf(couchbasePros.getProperty("job.dumpRotationFiles.compressed")) : Boolean.FALSE;
 
@@ -163,7 +163,7 @@ public class DumpRotationToHadoop {
       }
 
     } catch (IOException e) {
-      esMetrics.meter("rotation.dump.FromCBToHIVE.error");
+      metrics.meter("rotation.dump.FromCBToHIVE.error");
       System.out.println("Error happened when write couchbase data to chocolate file");
       throw e;
     } finally {
@@ -171,8 +171,8 @@ public class DumpRotationToHadoop {
         out.close();
       }
     }
-    esMetrics.meter("rotation.dump.FromCBToHIVE.success", count);
-    esMetrics.flush();
+    metrics.meter("rotation.dump.FromCBToHIVE.success", count);
+    metrics.flush();
     System.out.println("Successfully dump " + count + " records into chocolate file: " + outputFilePath);
   }
 

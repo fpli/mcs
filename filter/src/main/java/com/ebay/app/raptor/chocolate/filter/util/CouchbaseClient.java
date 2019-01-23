@@ -37,7 +37,7 @@ public class CouchbaseClient {
   private Queue<Map.Entry<Long,Long>> buffer;
   private String datasourceName;
 
-  private final Metrics esMetrics = ESMetrics.getInstance();
+  private final Metrics metrics = ESMetrics.getInstance();
 
     /**Singleton */
     private CouchbaseClient() {
@@ -127,27 +127,27 @@ public class CouchbaseClient {
 
   /**Get publisherId by campaignId*/
   public long getPublisherID(long campaignId) throws InterruptedException{
-    esMetrics.meter("FilterCouchbaseQuery");
+    metrics.meter("FilterCouchbaseQuery");
     CacheClient cacheClient = null;
     while (true) {
       try {
         long start = System.currentTimeMillis();
         cacheClient = factory.getClient(datasourceName);
         Document document = getBucket(cacheClient).get(String.valueOf(campaignId), StringDocument.class);
-        esMetrics.mean("FilterCouchbaseLatency", System.currentTimeMillis() - start);
+        metrics.mean("FilterCouchbaseLatency", System.currentTimeMillis() - start);
         if (document == null) {
           logger.warn("No publisherID found for campaign " + campaignId + " in couchbase");
-          esMetrics.meter("ErrorPublishID");
+          metrics.meter("ErrorPublishID");
           return DEFAULT_PUBLISHER_ID;
         }
         return Long.parseLong(document.content().toString());
       } catch (NumberFormatException ne) {
         logger.warn("Error in converting publishID " + getBucket(factory.getClient(datasourceName)).get(String.valueOf(campaignId),
             StringDocument.class).toString() + " to Long", ne);
-        esMetrics.meter("ErrorPublishID");
+        metrics.meter("ErrorPublishID");
         return DEFAULT_PUBLISHER_ID;
       } catch (Exception e) {
-        esMetrics.meter("FilterCouchbaseRetry");
+        metrics.meter("FilterCouchbaseRetry");
         logger.warn("Couchbase query operation timeout, will sleep for 30s to retry", e);
         Thread.sleep(30000);
       } finally {

@@ -26,7 +26,7 @@ public class FilterContainerTest {
   @BeforeClass
   public static void setUp() {
     ESMetrics.init("test", "localhost");
-    Metrics es = ESMetrics.getInstance();
+    Metrics metrics = ESMetrics.getInstance();
   }
 
   @Test

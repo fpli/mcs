@@ -69,7 +69,7 @@ public class RotationXDCR {
 
   public static void upsertData() {
     ESMetrics.init("batch-metrics-", couchbasePros.getProperty("chocolate.elasticsearch.url"));
-    Metrics esMetrics = ESMetrics.getInstance();
+    Metrics metrics = ESMetrics.getInstance();
 
     String choco_n1qlQueryString = couchbasePros.getProperty("job.dumpRotationFiles.n1ql");
     logger.info("couchbase n1qlQueryString = " + choco_n1qlQueryString);
@@ -99,8 +99,8 @@ public class RotationXDCR {
     }
     logger.info( "updated rotation info in corp couchbase: " + updateCnt);
 
-    esMetrics.meter("rotation.dump.xdcr.total", updateCnt);
-    esMetrics.flush();
+    metrics.meter("rotation.dump.xdcr.total", updateCnt);
+    metrics.flush();
     corp_cb_client.returnClient(cacheClient);
   }
 

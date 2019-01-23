@@ -45,7 +45,7 @@ import java.util.Map;
 @DependsOn("EventListenerService")
 public class CollectionService {
   private static final Logger logger = Logger.getLogger(CollectionService.class);
-  private Metrics esMetrics;
+  private Metrics metrics;
   private ListenerMessageParser parser;
   private static CollectionService instance = null;
 
@@ -56,7 +56,7 @@ public class CollectionService {
 
   @PostConstruct
   public void postInit() {
-    this.esMetrics = ESMetrics.getInstance();
+    this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
   }
 
@@ -145,7 +145,7 @@ public class CollectionService {
     // no mkcid, accepted
     if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
       logger.error(Errors.ERROR_NO_MKCID);
-      esMetrics.meter("NoMkcidParameter");
+      metrics.meter("NoMkcidParameter");
       return true;
     }
 
@@ -153,7 +153,7 @@ public class CollectionService {
     channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
     if (channelType == null) {
       logger.error(Errors.ERROR_INVALID_MKCID);
-      esMetrics.meter("InvalidMkcid");
+      metrics.meter("InvalidMkcid");
       return true;
     }
 
@@ -165,11 +165,11 @@ public class CollectionService {
         rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
       } catch (Exception e) {
         logger.error(Errors.ERROR_INVALID_MKRID);
-        esMetrics.meter("InvalidMkrid");
+        metrics.meter("InvalidMkrid");
       }
     } else {
       logger.error(Errors.ERROR_NO_MKRID);
-      esMetrics.meter("NoMkrid");
+      metrics.meter("NoMkrid");
     }
 
     try {
@@ -247,7 +247,7 @@ public class CollectionService {
       CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
     } catch (Exception ex) {
       logger.error("Error when tracking ubi: " + ex.toString());
-      esMetrics.meter("ErrorTrackUbi");
+      metrics.meter("ErrorTrackUbi");
     }
 
     if (message != null) {
@@ -267,7 +267,7 @@ public class CollectionService {
    */
   private void logError(ErrorType errorType) throws Exception {
     logger.error(errorType.getErrorMessage());
-    esMetrics.meter(errorType.getErrorKey());
+    metrics.meter(errorType.getErrorKey());
     throw new Exception(errorType.getErrorKey());
   }
 
@@ -282,7 +282,7 @@ public class CollectionService {
     // use the timestamp from request as the start time
     long startTime = System.currentTimeMillis();
     logger.debug(String.format("StartTime: %d", startTime));
-    esMetrics.meter("CollectionServiceIncoming", 1, startTime, additionalFields);
+    metrics.meter("CollectionServiceIncoming", 1, startTime, additionalFields);
     return startTime;
   }
 
@@ -295,7 +295,7 @@ public class CollectionService {
   private void stopTimerAndLogData(long startTime, long eventTime, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    esMetrics.meter("CollectionServiceSuccess", 1, eventTime, additionalFields);
-    esMetrics.mean("CollectionServiceAverageLatency", endTime - startTime);
+    metrics.meter("CollectionServiceSuccess", 1, eventTime, additionalFields);
+    metrics.mean("CollectionServiceAverageLatency", endTime - startTime);
   }
 }
