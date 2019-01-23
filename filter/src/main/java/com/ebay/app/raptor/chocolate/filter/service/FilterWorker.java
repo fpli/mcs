@@ -93,18 +93,24 @@ public class FilterWorker extends Thread {
         while (iterator.hasNext()) {
           ConsumerRecord<Long, ListenerMessage> record = iterator.next();
           ListenerMessage message = record.value();
-          esMetrics.meter("FilterInputCount", 1, message.getTimestamp(), Field.of(CHANNEL_ACTION, message.getChannelAction().toString()), Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
+          esMetrics.meter("FilterInputCount", 1, message.getTimestamp(),
+              Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+              Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
           long latency = System.currentTimeMillis() - message.getTimestamp();
           esMetrics.mean("FilterLatency", latency);
 
           ++count;
-          esMetrics.meter("FilterThroughput", 1, message.getTimestamp(), Field.of(CHANNEL_ACTION, message.getChannelAction().toString()), Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
+          esMetrics.meter("FilterThroughput", 1, message.getTimestamp(),
+              Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+              Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
 
           FilterMessage outMessage = processMessage(message);
 
           if (outMessage.getRtRuleFlags() == 0) {
             ++passed;
-            esMetrics.meter("FilterPassedCount", 1, outMessage.getTimestamp(), Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()), Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
+            esMetrics.meter("FilterPassedCount", 1, outMessage.getTimestamp(),
+                Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
+                Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
           }
 
           // cache current offset for partition*
@@ -138,7 +144,8 @@ public class FilterWorker extends Thread {
             long endOffset = entry.getValue();
             if (offsets.containsKey(tp.partition())) {
               long offset = offsets.get(tp.partition());
-              esMetrics.mean("FilterKafkaConsumerLag", endOffset - offset, Field.of(CHANNEL_TYPE, channelType.toString()), Field.of("consumer", tp.partition()));
+              esMetrics.mean("FilterKafkaConsumerLag", endOffset - offset, Field.of(CHANNEL_TYPE, channelType.toString()),
+                  Field.of("consumer", tp.partition()));
             }
           }
 

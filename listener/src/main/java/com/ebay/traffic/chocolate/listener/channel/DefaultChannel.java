@@ -186,7 +186,8 @@ public class DefaultChannel implements Channel {
         campaignId = Long.parseLong(request.getParameter(campaign));
       } catch (NumberFormatException e) {
         logger.warn("Invalid campaign: " + request.getParameter(campaign));
-        esMetrics.meter("InvalidCampaign", 1, eventTime, Field.of(CHANNEL_ACTION, channelAction), Field.of(CHANNEL_TYPE, channelType));
+        esMetrics.meter("InvalidCampaign", 1, eventTime, Field.of(CHANNEL_ACTION, channelAction),
+            Field.of(CHANNEL_TYPE, channelType));
       }
     }
 
@@ -204,7 +205,8 @@ public class DefaultChannel implements Channel {
   private void stopTimerAndLogData(long startTime, long eventTime, String channelAction, String channelType) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    esMetrics.meter("SuccessCount", 1, eventTime, Field.of(CHANNEL_ACTION, channelAction), Field.of(CHANNEL_TYPE, channelType));
+    esMetrics.meter("SuccessCount", 1, eventTime, Field.of(CHANNEL_ACTION, channelAction),
+        Field.of(CHANNEL_TYPE, channelType));
     esMetrics.mean("AverageLatency", endTime - startTime);
   }
 
@@ -236,17 +238,20 @@ public class DefaultChannel implements Channel {
       logger.warn("Cannot get request start time, use system time instead. ", e);
     }
     logger.debug(String.format("StartTime: %d", startTime));
-    esMetrics.meter("ProxyIncomingCount", 1, startTime, Field.of(CHANNEL_ACTION, channelAction), Field.of(CHANNEL_TYPE, channelType));
+    esMetrics.meter("ProxyIncomingCount", 1, startTime, Field.of(CHANNEL_ACTION, channelAction),
+        Field.of(CHANNEL_TYPE, channelType));
     return startTime;
   }
 
-  private void invalidRequestParam(HttpServletRequest request, long campaignId, String invalid, long eventTime, String channelAction, String channelType, String requestUrl) {
+  private void invalidRequestParam(HttpServletRequest request, long campaignId, String invalid, long eventTime,
+                                   String channelAction, String channelType, String requestUrl) {
     StringBuffer sb = new StringBuffer();
     sb.append(invalid);
     sb = deriveWarningMessage(sb, request);
     logger.warn(sb.toString());
     logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
-    esMetrics.meter("un-managed", 1, eventTime, Field.of(CHANNEL_ACTION, channelAction), Field.of(CHANNEL_TYPE, channelType));
+    esMetrics.meter("un-managed", 1, eventTime, Field.of(CHANNEL_ACTION, channelAction),
+        Field.of(CHANNEL_TYPE, channelType));
     esMetrics.meter(MALFORMED_Tracking_URL);
     sendMalformedURLToKafka(request, eventTime, campaignId, requestUrl);
   }
