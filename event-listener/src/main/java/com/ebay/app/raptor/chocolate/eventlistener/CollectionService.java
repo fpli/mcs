@@ -29,9 +29,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URLEncoder;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author xiangli4
@@ -274,7 +272,7 @@ public class CollectionService {
   /**
    * Starts the timer and logs some basic info
    *
-   * @param fieldsValue channelAction, channelType, platform, landing page type
+   * @param additionalFields channelAction, channelType, platform, landing page type
    * @return start time
    */
   private long startTimerAndLogData(Field<String, Object>... additionalFields) {
@@ -290,7 +288,7 @@ public class CollectionService {
    * Stops the timer and logs relevant debugging messages
    *
    * @param startTime        the start time, so that latency can be calculated
-   * @param fieldsArray value of channelAction, channelType, platform, landing page type
+   * @param additionalFields channelAction, channelType, platform, landing page type
    */
   private void stopTimerAndLogData(long startTime, long eventTime, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
