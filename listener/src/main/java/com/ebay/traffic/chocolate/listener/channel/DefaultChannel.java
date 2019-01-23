@@ -75,7 +75,8 @@ public class DefaultChannel implements Channel {
     try {
       requestUrl = parser.appendURLWithChocolateTag(new ServletServerHttpRequest(request).getURI().toString());
     } catch (Exception e) {
-      metrics.meter("AppendNewTagError", 1, startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      metrics.meter("AppendNewTagError", 1, startTime, Field.of(CHANNEL_ACTION, action),
+          Field.of(CHANNEL_TYPE, type));
       logger.error("Append url with new tag error");
     }
 
@@ -111,24 +112,29 @@ public class DefaultChannel implements Channel {
       channelType = ChannelIdEnum.parse(result[4]);
       if (channelType == null) {
         invalidRequestParam(request, campaignId,"No pattern matched;", startTime, action, type, requestUrl);
-        metrics.meter("NoPatternMatched", 1, startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+        metrics.meter("NoPatternMatched", 1, startTime, Field.of(CHANNEL_ACTION, action),
+            Field.of(CHANNEL_TYPE, type));
         return;
       }
       channelAction = ChannelActionEnum.parse(channelType, result[1]);
       if (!channelType.getLogicalChannel().isValidRoverAction(channelAction)) {
-        invalidRequestParam(request, campaignId,"Invalid tracking action given a channel;", startTime, action, type, requestUrl);
-        metrics.meter("InvalidAction", 1, startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+        invalidRequestParam(request, campaignId,"Invalid tracking action given a channel;", startTime, action,
+            type, requestUrl);
+        metrics.meter("InvalidAction", 1, startTime, Field.of(CHANNEL_ACTION, action),
+            Field.of(CHANNEL_TYPE, type));
         return;
       }
       if (channelType.isTestChannel()) {
         invalidRequestParam(request, campaignId,"Test channel;", startTime, action, type, requestUrl);
-        metrics.meter("TestChannel", 1, startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+        metrics.meter("TestChannel", 1, startTime, Field.of(CHANNEL_ACTION, action),
+            Field.of(CHANNEL_TYPE, type));
         return;
       }
 
       if (campaignId < 0 && channelType.equals(ChannelIdEnum.EPN)) {
         invalidRequestParam(request, campaignId, "Invalid campaign id;", startTime, action, type, requestUrl);
-        metrics.meter("InvalidCampaign", 1, startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+        metrics.meter("InvalidCampaign", 1, startTime, Field.of(CHANNEL_ACTION, action),
+            Field.of(CHANNEL_TYPE, type));
         return;
       }
 

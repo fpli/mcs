@@ -103,7 +103,9 @@ class DedupeAndSink(params: Parameter)
       while (iter.hasNext) {
         val message = iter.next().value()
         if (metrics != null) {
-          metrics.meter("DedupeInputCount", 1, message.getTimestamp, Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString), Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
+          metrics.meter("DedupeInputCount", 1, message.getTimestamp,
+            Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
+            Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
         }
         val date = DATE_COL + "=" + getDateString(message.getTimestamp) // get the event date
         var writer = writers.get(date)
@@ -224,7 +226,9 @@ class DedupeAndSink(params: Parameter)
   def writeMessage(writer: ParquetWriter[GenericRecord], message: FilterMessage)  = {
     writer.write(message)
     if (metrics != null) {
-      metrics.meter("Dedupe-Temp-Output", 1, message.getTimestamp, Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString), Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
+      metrics.meter("Dedupe-Temp-Output", 1, message.getTimestamp,
+        Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
+        Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
     }
   }
 }
