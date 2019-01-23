@@ -2,7 +2,7 @@ package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.log4j.Logger;
 import org.springframework.context.annotation.Configuration;
 

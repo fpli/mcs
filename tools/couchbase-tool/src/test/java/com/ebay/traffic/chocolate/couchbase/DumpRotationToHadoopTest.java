@@ -10,7 +10,7 @@ import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
 import com.google.gson.Gson;
 import org.junit.*;
 import org.mockito.Mockito;

@@ -8,7 +8,7 @@ import java.util.{Date, Properties}
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
-import com.ebay.traffic.chocolate.monitoring.ESMetrics
+import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import com.ebay.traffic.chocolate.spark.kafka.KafkaRDD
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
@@ -62,6 +62,8 @@ class DedupeAndSink(params: Parameter)
   lazy val couchbaseTTL = params.couchbaseTTL
   lazy val DEDUPE_KEY_PREFIX = "DEDUPE_"
   lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
+  lazy val CHANNEL_ACTION = "channelAction"
+  lazy val CHANNEL_TYPE = "channelType"
 
   @transient lazy val metadata = {
     Metadata(params.workDir, params.channel, MetadataEnum.dedupe)
@@ -69,7 +71,7 @@ class DedupeAndSink(params: Parameter)
 
   val SNAPSHOT_ID_COL = "snapshot_id"
 
-  @transient lazy val metrics: ESMetrics = {
+  @transient lazy val metrics: Metrics = {
     if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
       ESMetrics.init(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
       ESMetrics.getInstance()
@@ -101,7 +103,9 @@ class DedupeAndSink(params: Parameter)
       while (iter.hasNext) {
         val message = iter.next().value()
         if (metrics != null) {
-          metrics.meter("DedupeInputCount", 1, message.getTimestamp, message.getChannelAction.toString, message.getChannelType.toString)
+          metrics.meter("DedupeInputCount", 1, message.getTimestamp,
+            Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
+            Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
         }
         val date = DATE_COL + "=" + getDateString(message.getTimestamp) // get the event date
         var writer = writers.get(date)
@@ -142,7 +146,7 @@ class DedupeAndSink(params: Parameter)
         }
       }
       if (metrics != null)
-        metrics.flushMetrics()
+        metrics.flush()
 
       // 1. close the parquet writers
       // 2. rename tmp files to final files
@@ -222,7 +226,9 @@ class DedupeAndSink(params: Parameter)
   def writeMessage(writer: ParquetWriter[GenericRecord], message: FilterMessage)  = {
     writer.write(message)
     if (metrics != null) {
-      metrics.meter("Dedupe-Temp-Output", 1, message.getTimestamp, message.getChannelAction.toString, message.getChannelType.toString)
+      metrics.meter("Dedupe-Temp-Output", 1, message.getTimestamp,
+        Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
+        Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
     }
   }
 }
