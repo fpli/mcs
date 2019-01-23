@@ -10,7 +10,6 @@
     </parent>
     <groupId>com.ebay.traffic</groupId>
     <artifactId>chocolate-filter</artifactId>
-    <packaging>war</packaging>
     <name>chocolate filter</name>
     <description>Chocolate Filter on Raptor IO</description>
 
