@@ -4,7 +4,6 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.filter.service.FilterContainer;
 import com.ebay.app.raptor.chocolate.filter.service.FilterWorker;
 import com.ebay.app.raptor.chocolate.filter.util.CouchbaseClient;
-import com.ebay.app.raptor.chocolate.filter.util.FilterZookeeperClient;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
