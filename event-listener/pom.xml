@@ -25,7 +25,7 @@
     </dependency>
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-initializer-api</artifactId>
+      <artifactId>raptor-initializer-starter</artifactId>
     </dependency>
     <!--eBay Core-->
     <dependency>
@@ -279,10 +279,6 @@
     </dependency>
 
     <!-- tracking -->
-    <dependency>
-      <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-tracking-api</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>

@@ -55,7 +55,7 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res;
       try {
-        boolean result = collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
+        collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
         return res;
