@@ -25,14 +25,14 @@ public class TestKafkaExample {
   }
 
   @AfterClass
-  public static void tearDown() throws IOException {
+  public static void tearDown() throws Exception {
     KafkaTestHelper.shutdown();
   }
 
   @Test
   public void testKafka() throws Exception {
     Producer<String, String> producer = kafkaCluster.createProducer(
-            StringSerializer.class, StringSerializer.class);
+      StringSerializer.class, StringSerializer.class);
 
     Callback callback = new Callback() {
       @Override
@@ -48,7 +48,7 @@ public class TestKafkaExample {
     producer.close();
 
     Consumer<String, String> consumer = kafkaCluster.createConsumer(
-            StringDeserializer.class, StringDeserializer.class);
+      StringDeserializer.class, StringDeserializer.class);
     consumer.subscribe(Arrays.asList("test"));
 
     int count = 0;

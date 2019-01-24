@@ -1,7 +1,9 @@
 package com.ebay.traffic.chocolate.couchbase;
 
 import com.couchbase.client.java.Bucket;
+import com.couchbase.client.java.document.JsonDocument;
 import com.couchbase.client.java.document.StringDocument;
+import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.view.DefaultView;
 import com.couchbase.client.java.view.DesignDocument;
 import com.ebay.app.raptor.chocolate.constant.MPLXChannelEnum;
@@ -48,8 +50,7 @@ public class DumpRotationToTDTest {
 
     // Insert document to mocked couchbase
     RotationInfo rotationInfo = getTestRotationInfo();
-    bucket.insert(StringDocument.create(rotationInfo.getRotation_string(), new Gson().toJson(rotationInfo)));
-
+    bucket.insert(JsonDocument.create(rotationInfo.getRotation_string(), JsonObject.fromJson(new Gson().toJson(rotationInfo))));
     // Create a view for mocked couchbase bucket
     DesignDocument designDoc = DesignDocument.create(
         DESIGNED_DOC_NAME,

@@ -53,7 +53,7 @@ public class ShortSnapshotId implements Serializable, Comparable<ShortSnapshotId
       long epochMilliseconds = sId.getTimeMillis();
       int sequenceNum = sId.getSequenceId();
       if(epochMilliseconds > MAX_TIMESTAMP) epochMilliseconds = MAX_TIMESTAMP & epochMilliseconds;
-      if(sequenceNum > MAX_SEQ_NUM) epochMilliseconds = MAX_SEQ_NUM & sequenceNum;
+      if(sequenceNum > MAX_SEQ_NUM) sequenceNum = MAX_SEQ_NUM & sequenceNum;
       this.representation = (epochMilliseconds << MAX_DS_BITS) | (sId.getDriverId() << MAX_SEQ_NUM_BITS) | sequenceNum;
     }else{
       this.representation = representation;

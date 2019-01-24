@@ -63,6 +63,24 @@ class TestCGUIDCappingRule extends BaseFunSuite {
     message
   }
 
+  def writeFilterMessageV1(channelType: ChannelType, channelAction: ChannelAction, snapshotId: Long, publisherId: Long, campaignId: Long, cguid: String, timestamp: Long, writer: ParquetWriter[GenericRecord]): FilterMessageV1 = {
+    val message = TestHelper.newFilterMessageV1(channelType, channelAction, snapshotId, publisherId, campaignId, cguid, timestamp)
+    writer.write(message)
+    message
+  }
+
+  def writeFilterMessage1(channelType: ChannelType, channelAction: ChannelAction, snapshotId: Long, publisherId: Long, campaignId: Long, cguid: String, timestamp: Long, writer: ParquetWriter[GenericRecord]): FilterMessage = {
+    val message = TestHelper.newFilterMessage(channelType, channelAction, snapshotId, publisherId, cguid, campaignId, timestamp)
+    writer.write(message)
+    message
+  }
+
+  def writeFilterMessage2(channelType: ChannelType, channelAction: ChannelAction, snapshotId: Long, publisherId: Long, campaignId: Long, cguid_req: String, cguid_res: String, timestamp: Long, writer: ParquetWriter[GenericRecord]): FilterMessage = {
+    val message = TestHelper.newFilterMessage(channelType, channelAction, snapshotId, publisherId, campaignId, cguid_req, cguid_res, timestamp)
+    writer.write(message)
+    message
+  }
+
   import sparkJob.spark.implicits._
 
   ignore("test cguid capping rule") {
@@ -80,20 +98,33 @@ class TestCGUIDCappingRule extends BaseFunSuite {
     val timestamp4 = getTimestamp("2018-01-03")
     val timestampBefore24h = timestamp1 - 1
 
+    val cguid0 = "5552b695werlkl4763d4a844f4bfff00"
     val cguid1 = "3dc2b6951630aa4763d4a844f4b212f8"
     val cguid2 = "d30ebafe1580a93d128516d5ffef202f"
     val cguid3 = "8782800f1630a6882fc1341630aa1381"
 
     val writer1_0 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 1L, 11L, 111L, cguid3, timestampBefore24h, writer1_0)
     writer1_0.close()
-    val dateFiles_0 = new DateFiles("date=2018-01-01", Array(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
+
+    val writer1_0_v1 = AvroParquetWriter.
+      builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00000_v1.snappy.parquet"))
+      .withSchema(FilterMessageV1.getClassSchema())
+      .withConf(hadoopConf)
+      .withCompressionCodec(CompressionCodecName.SNAPPY)
+      .build()
+
+    writeFilterMessageV1(ChannelType.EPN, ChannelAction.CLICK, 100L, 11L, 111L, cguid0, timestampBefore24h, writer1_0_v1)
+    writer1_0_v1.close()
+
+    val dateFiles_0 = new DateFiles("date=2018-01-01",
+      Array(inputDir + "/date=2018-01-01/part-00000.snappy.parquet", inputDir + "/date=2018-01-01/part-00000_v1.snappy.parquet"))
 
     val job_01 = new CGUIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_S), dateFiles_0, sparkJob, windowShort)
     val job_02 = new CGUIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_L), dateFiles_0, sparkJob, windowLong)
@@ -121,42 +152,42 @@ class TestCGUIDCappingRule extends BaseFunSuite {
 
     val writer1_1 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00001.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer1_2 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer2_1 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00001.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer2_2 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer3 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer4 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
@@ -167,8 +198,8 @@ class TestCGUIDCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 5L, 11L, 111L, cguid2, timestamp2, writer1_2)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6L, 11L, 111L, cguid1, timestamp2, writer2_1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 7L, 11L, 111L, cguid2, timestamp2, writer2_1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 8L, 11L, 111L, cguid2, timestamp2, writer2_2)
+    writeFilterMessage1(ChannelType.EPN, ChannelAction.CLICK, 7L, 11L, 111L, cguid2, timestamp2, writer2_1)
+    writeFilterMessage2(ChannelType.EPN, ChannelAction.CLICK, 8L, 11L, 111L, cguid1, cguid2, timestamp2, writer2_2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 9L, 11L, 111L, cguid3, timestamp2, writer2_2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 10L, 11L, 111L, cguid3, timestamp2, writer2_2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 11L, 11L, 111L, cguid3, timestamp2, writer2_2)

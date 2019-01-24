@@ -1,0 +1,4 @@
+type=command
+command=bash CheckFile.sh
+failure.emails=lxiong1@ebay.com, xiangli4@ebay.com, jialili1@ebay.com, fechen@ebay.com, yliu29@ebay.com, huiclu@ebay.com, yimeng@ebay.com, shuangxu@ebay.com, yiryuan@ebay.com, ganghuang@ebay.com
+success.emails=lxiong1@ebay.com, xiangli4@ebay.com

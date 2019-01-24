@@ -2,20 +2,21 @@ package com.ebay.app.raptor.chocolate.filter.util;
 
 import com.ebay.app.raptor.chocolate.avro.PublisherCacheEntry;
 import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
-import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.traffic.chocolate.common.MiniZookeeperCluster;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
-import org.junit.*;
+import com.ebay.traffic.monitoring.ESMetrics;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

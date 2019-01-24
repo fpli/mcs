@@ -1,14 +1,12 @@
 package com.ebay.traffic.chocolate.init;
 
-import com.ebay.cratchit.server.Clerk;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import static org.junit.Assert.assertNotNull;

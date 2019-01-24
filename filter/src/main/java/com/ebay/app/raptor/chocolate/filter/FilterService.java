@@ -4,11 +4,10 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.filter.service.FilterContainer;
 import com.ebay.app.raptor.chocolate.filter.service.FilterWorker;
 import com.ebay.app.raptor.chocolate.filter.util.CouchbaseClient;
-import com.ebay.app.raptor.chocolate.filter.util.FilterZookeeperClient;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -61,7 +60,8 @@ public class FilterService {
     ApplicationOptions.init();
     ESMetrics.init(ApplicationOptions.getInstance().getByNameString(METRICS_INDEX_PREFIX), ApplicationOptions.getInstance().getByNameString(ELASTICSEARCH_URL));
     ApplicationOptions options = ApplicationOptions.getInstance();
-    FilterZookeeperClient.init(options);
+    //currently we need not use zookeeper watch to adding new campaign publisher pair into couchbase, so disable zookeeper here
+   // FilterZookeeperClient.init(options);
 
     //Initial Rule Configuration Map
     ApplicationOptions.initFilterRuleConfig(RULE_CONFIG_FILENAME);
