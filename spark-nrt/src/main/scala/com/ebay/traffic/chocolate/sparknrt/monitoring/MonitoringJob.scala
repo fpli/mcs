@@ -90,6 +90,8 @@ class MonitoringJob(params: Parameter)
                 "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
 
               //Display nrt rules
+              metrics.meter("IPCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
+                "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
               metrics.meter("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S,
                 "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
               metrics.meter("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L,
