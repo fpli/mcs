@@ -72,7 +72,7 @@ class TestMonitoringJob extends BaseFunSuite {
     // writer0 has no data
     val writer0 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-11-01/part-00000.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema)
+      .withSchema(FilterMessage.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
@@ -81,14 +81,14 @@ class TestMonitoringJob extends BaseFunSuite {
 
     val writer1 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-11-01/part-00001.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema)
+      .withSchema(FilterMessage.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
 
     val writer2 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-11-01/part-00002.snappy.parquet"))
-      .withSchema(FilterMessageV1.getClassSchema)
+      .withSchema(FilterMessage.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
