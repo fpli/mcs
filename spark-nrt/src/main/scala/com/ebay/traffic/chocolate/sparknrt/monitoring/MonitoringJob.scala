@@ -73,6 +73,8 @@ class MonitoringJob(params: Parameter)
               metrics.meter("CappingCount", capping, eventTime)
 
               //EPN nrt rules
+              metrics.meter("IPCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
+                "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
               metrics.meter("IPPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_S,
                 "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
               metrics.meter("IPPubLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_L,
