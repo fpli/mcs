@@ -4,6 +4,7 @@ import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.util.DomainIpChecker;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -17,12 +18,12 @@ public class LBSClient {
     private static final Logger logger = Logger.getLogger(LBSClient.class);
 
     private static LBSClient instance;
-    private final ESMetrics esMetrics;
+    private final Metrics metrics;
     private static Client client;
     private static final String targetPattern = "%s?queryId=chocolate_geotargeting_ip_1&ipAddress=%s";
 
     private LBSClient() {
-        this.esMetrics = ESMetrics.getInstance();
+        this.metrics = ESMetrics.getInstance();
     }
 
     /**
@@ -70,7 +71,7 @@ public class LBSClient {
                 }
             } catch (Exception e) {
                 logger.error("Failed to parse LBS response postalcode.", e);
-                esMetrics.meter("LBSPaserCodeException");
+                metrics.meter("LBSPaserCodeException");
             }
         }
         return result;
@@ -110,11 +111,11 @@ public class LBSClient {
             } else {
                 String msg = lbsResponse.readEntity(String.class);
                 logger.error("LBS service returns: " + msg);
-                esMetrics.meter("LBSexception");
+                metrics.meter("LBSexception");
             }
         } catch (Exception ex) {
 //            logger.error("Failed to call LBS service.", ex);
-            esMetrics.meter("LBSexception");
+            metrics.meter("LBSexception");
         }
 
         return queryResult;
