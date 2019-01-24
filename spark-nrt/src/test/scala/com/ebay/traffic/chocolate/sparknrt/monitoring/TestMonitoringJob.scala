@@ -45,7 +45,7 @@ class TestMonitoringJob extends BaseFunSuite {
 
   val params = Parameter(args)
   val job = new MonitoringJob(params)
-  val timestamp1 = getTimestamp("2018-11-01")
+  val timestamp1 = getTimestamp("2019-01-01")
   val timestamp2 = timestamp1 + 3600000
 
   def getTimestamp(date: String): Long = {
@@ -100,8 +100,8 @@ class TestMonitoringJob extends BaseFunSuite {
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 5L, timestamp2, 1, 32, writer2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6L, timestamp2, 0, 64, writer2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 7L, timestamp2, 1, 128, writer2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 8L, timestamp2, 0, 256, writer2)
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.CLICK, 7L, timestamp2, 1, 129, writer2)
+    writeFilterMessage(ChannelType.PAID_SEARCH, ChannelAction.CLICK, 8L, timestamp2, 0, 257, writer2)
 
     writer1.close()
     writer2.close()
