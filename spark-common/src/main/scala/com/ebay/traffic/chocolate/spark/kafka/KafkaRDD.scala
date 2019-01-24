@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.spark.kafka
 import java.util
 import java.util.concurrent.TimeoutException
 
-import com.ebay.traffic.chocolate.monitoring.ESMetrics
+import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.kafka.clients.consumer._
 import org.apache.kafka.common.TopicPartition
 import org.apache.spark.rdd.RDD
@@ -31,7 +31,7 @@ class KafkaRDD[K, V](
     new KafkaConsumer[K, V](kafkaProperties)
   }
 
-  @transient lazy val metrics: ESMetrics = {
+  @transient lazy val metrics: Metrics = {
     if (elasticsearchUrl != null && !elasticsearchUrl.isEmpty) {
       ESMetrics.init(METRICS_INDEX_PREFIX, elasticsearchUrl)
       ESMetrics.getInstance()
@@ -64,9 +64,7 @@ class KafkaRDD[K, V](
       log.info(s"###topic-partition: ${tp}, position: ${position}, until: ${until}")
       if (metrics != null) {
         // lag metric
-        val additionalFields: util.Map[String, AnyRef] = new util.HashMap[String, AnyRef]
-        additionalFields.put("consumer", Integer.valueOf(tp.partition))
-        metrics.mean("SparkKafkaConsumerLag", endOffset.getValue - position, additionalFields)
+        metrics.mean("SparkKafkaConsumerLag", endOffset.getValue - position, Field.of[String, AnyRef]("consumer", Int.box(tp.partition)))
       }
 
       if (until > position) {
@@ -75,7 +73,7 @@ class KafkaRDD[K, V](
     }
     consumer.unsubscribe()
     if (metrics != null)
-      metrics.flushMetrics()
+      metrics.flush()
 
     untilOffsets
   }
@@ -116,7 +114,7 @@ class KafkaRDD[K, V](
     context.addTaskCompletionListener(context => {
       consumer.close()
       if (metrics != null)
-        metrics.flushMetrics()
+        metrics.flush()
     })
 
     new KafkaRDDIterator(part, consumer, context)

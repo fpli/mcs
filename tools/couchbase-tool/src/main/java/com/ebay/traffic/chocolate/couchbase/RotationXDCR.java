@@ -4,7 +4,6 @@ import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.CouchbaseCluster;
 import com.couchbase.client.java.document.JsonDocument;
-import com.couchbase.client.java.document.StringDocument;
 import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.env.CouchbaseEnvironment;
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
@@ -13,8 +12,8 @@ import com.couchbase.client.java.query.N1qlQueryResult;
 import com.couchbase.client.java.query.N1qlQueryRow;
 import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.dukes.CacheClient;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
-import com.google.gson.Gson;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +69,7 @@ public class RotationXDCR {
 
   public static void upsertData() {
     ESMetrics.init("batch-metrics-", couchbasePros.getProperty("chocolate.elasticsearch.url"));
-    ESMetrics esMetrics = ESMetrics.getInstance();
+    Metrics metrics = ESMetrics.getInstance();
 
     String choco_n1qlQueryString = couchbasePros.getProperty("job.dumpRotationFiles.n1ql");
     logger.info("couchbase n1qlQueryString = " + choco_n1qlQueryString);
@@ -100,8 +99,8 @@ public class RotationXDCR {
     }
     logger.info( "updated rotation info in corp couchbase: " + updateCnt);
 
-    esMetrics.meter("rotation.dump.xdcr.total", updateCnt);
-    esMetrics.flushMetrics();
+    metrics.meter("rotation.dump.xdcr.total", updateCnt);
+    metrics.flush();
     corp_cb_client.returnClient(cacheClient);
   }
 

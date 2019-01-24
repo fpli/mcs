@@ -8,7 +8,9 @@ import com.ebay.app.raptor.chocolate.filter.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
 import com.ebay.traffic.chocolate.kafka.KafkaConsumerFactory;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -29,7 +31,10 @@ public class FilterWorker extends Thread {
   private static final long POLL_STEP_MS = 100;
   private static final long DEFAULT_PUBLISHER_ID = -1L;
 
-  private final ESMetrics esMetrics;
+  private static final String CHANNEL_ACTION = "channelAction";
+  private static final String CHANNEL_TYPE = "channelType";
+
+  private final Metrics metrics;
   private final FilterContainer filters;
   private final ChannelType channelType;
   private final String inputTopic;
@@ -44,7 +49,7 @@ public class FilterWorker extends Thread {
   public FilterWorker(ChannelType channelType, String inputTopic,
                       Properties properties, String outputTopic,
                       FilterContainer filters) {
-    this.esMetrics = ESMetrics.getInstance();
+    this.metrics = ESMetrics.getInstance();
     this.filters = filters;
     this.channelType = channelType;
     this.inputTopic = inputTopic;
@@ -68,9 +73,9 @@ public class FilterWorker extends Thread {
             ", input topic " + inputTopic + ", output topic " + outputTopic);
 
     // Init the metrics that we don't use often
-    this.esMetrics.meter("FilterError", 0);
-    this.esMetrics.meter("messageParseFailure", 0);
-    this.esMetrics.mean("FilterPassedPPM", 0);
+    this.metrics.meter("FilterError", 0);
+    this.metrics.meter("messageParseFailure", 0);
+    this.metrics.mean("FilterPassedPPM", 0);
 
     try {
       consumer.subscribe(Arrays.asList(inputTopic));
@@ -89,18 +94,24 @@ public class FilterWorker extends Thread {
         while (iterator.hasNext()) {
           ConsumerRecord<Long, ListenerMessage> record = iterator.next();
           ListenerMessage message = record.value();
-          esMetrics.meter("FilterInputCount", 1, message.getTimestamp(), message.getChannelAction().toString(), message.getChannelType().toString());
+          metrics.meter("FilterInputCount", 1, message.getTimestamp(),
+              Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+              Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
           long latency = System.currentTimeMillis() - message.getTimestamp();
-          esMetrics.mean("FilterLatency", latency);
+          metrics.mean("FilterLatency", latency);
 
           ++count;
-          esMetrics.meter("FilterThroughput", 1, message.getTimestamp(), message.getChannelAction().toString(), message.getChannelType().toString());
+          metrics.meter("FilterThroughput", 1, message.getTimestamp(),
+              Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+              Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
 
           FilterMessage outMessage = processMessage(message);
 
           if (outMessage.getRtRuleFlags() == 0) {
             ++passed;
-            esMetrics.meter("FilterPassedCount", 1, outMessage.getTimestamp(), outMessage.getChannelAction().toString(), outMessage.getChannelType().toString());
+            metrics.meter("FilterPassedCount", 1, outMessage.getTimestamp(),
+                Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
+                Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
           }
 
           // cache current offset for partition*
@@ -134,10 +145,8 @@ public class FilterWorker extends Thread {
             long endOffset = entry.getValue();
             if (offsets.containsKey(tp.partition())) {
               long offset = offsets.get(tp.partition());
-              Map<String, Object> additionalFields = new HashMap<>();
-              additionalFields.put("channelType", channelType.toString());
-              additionalFields.put("consumer", tp.partition());
-              esMetrics.mean("FilterKafkaConsumerLag", endOffset - offset, additionalFields);
+              metrics.mean("FilterKafkaConsumerLag", endOffset - offset, Field.of(CHANNEL_TYPE, channelType.toString()),
+                  Field.of("consumer", tp.partition()));
             }
           }
 
@@ -145,24 +154,24 @@ public class FilterWorker extends Thread {
         }
 
         if (count == 0) {
-          esMetrics.mean("FilterIdle");
+          metrics.mean("FilterIdle");
           Thread.sleep(POLL_STEP_MS);
         } else {
-          esMetrics.mean("FilterPassedPPM", 1000000L * passed / count);
+          metrics.mean("FilterPassedPPM", 1000000L * passed / count);
           long timeSpent = System.currentTimeMillis() - startTime;
-          esMetrics.mean("FilterProcessingTime", timeSpent);
+          metrics.mean("FilterProcessingTime", timeSpent);
 
           if (timeSpent >= POLL_STEP_MS) {
-            this.esMetrics.mean("FilterIdle", 0);
+            this.metrics.mean("FilterIdle", 0);
           } else {
-            this.esMetrics.mean("FilterIdle");
+            this.metrics.mean("FilterIdle");
             Thread.sleep(POLL_STEP_MS);
           }
         }
       }
     } catch (Exception e) {
       LOG.warn("Exception in worker thread: ", e);
-      this.esMetrics.meter("FilterError");
+      this.metrics.meter("FilterError");
     } finally {
       consumer.close();
     }
