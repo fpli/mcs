@@ -3,17 +3,15 @@ package com.ebay.app.raptor.chocolate.filter.lbs;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.util.DomainIpChecker;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.StringTokenizer;
 
 public class LBSClient {
     private static final Logger logger = Logger.getLogger(LBSClient.class);
@@ -66,7 +64,10 @@ public class LBSClient {
         long result = 0;
         if(!isPostalCodeEmpty(response)) {
             try {
-                result = Long.parseLong(response.getPostalCode());
+                String postalCode = response.getPostalCode();
+                if (StringUtils.isNumeric(postalCode)) {
+                    result = Long.parseLong(postalCode);
+                }
             } catch (Exception e) {
                 logger.error("Failed to parse LBS response postalcode.", e);
                 esMetrics.meter("LBSPaserCodeException");
@@ -112,7 +113,7 @@ public class LBSClient {
                 esMetrics.meter("LBSexception");
             }
         } catch (Exception ex) {
-            logger.error("Failed to call LBS service.", ex);
+//            logger.error("Failed to call LBS service.", ex);
             esMetrics.meter("LBSexception");
         }
 

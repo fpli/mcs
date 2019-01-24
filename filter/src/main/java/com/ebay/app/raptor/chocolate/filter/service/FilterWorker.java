@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.filter.service;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
@@ -194,7 +195,8 @@ public class FilterWorker extends Thread {
     outMessage.setUdid(message.getUdid());
     outMessage.setReferer(message.getReferer());
     // set postcode for not EPN Channels
-    if (message.getChannelType() != ChannelType.EPN) {
+    // checked imk history data, only click has geoid
+    if (message.getChannelType() != ChannelType.EPN && message.getChannelAction() == ChannelAction.CLICK) {
       outMessage.setGeoId(LBSClient.getInstance().getPostalCodeByIp(outMessage.getRemoteIp()));
     }
     // only EPN needs to get publisher id
