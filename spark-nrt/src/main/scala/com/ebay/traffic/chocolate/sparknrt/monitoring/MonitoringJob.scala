@@ -73,7 +73,7 @@ class MonitoringJob(params: Parameter)
               metrics.meter("CappingCount", capping, eventTime)
 
               //EPN nrt rules
-              metrics.meter("IPCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
+              metrics.meter("IPLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
                 "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
               metrics.meter("IPPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_S,
                 "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
@@ -93,7 +93,7 @@ class MonitoringJob(params: Parameter)
                 "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
 
               //Display nrt rules
-              metrics.meter("IPCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
+              metrics.meter("IPLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
                 "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
               metrics.meter("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S,
                 "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
@@ -101,7 +101,7 @@ class MonitoringJob(params: Parameter)
                 "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
 
               //Paid Search nrt rules
-              metrics.meter("IPCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
+              metrics.meter("IPLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
                 "CLICK", "PAID_SEARCH"), eventTime, fieldClick, fieldPaidSearch)
               metrics.flush()
             }
