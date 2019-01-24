@@ -101,7 +101,7 @@ class TestMonitoringJob extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 5L, timestamp2, 1, 32, writer2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6L, timestamp2, 0, 64, writer2)
     writeFilterMessage(ChannelType.DISPLAY, ChannelAction.CLICK, 7L, timestamp2, 1, 129, writer2)
-    writeFilterMessage(ChannelType.PAID_SEARCH, ChannelAction.CLICK, 8L, timestamp2, 0, 257, writer2)
+    writeFilterMessage(ChannelType.DISPLAY, ChannelAction.CLICK, 8L, timestamp2, 0, 257, writer2)
 
     writer1.close()
     writer2.close()
