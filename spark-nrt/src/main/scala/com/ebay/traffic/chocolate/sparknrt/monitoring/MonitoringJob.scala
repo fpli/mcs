@@ -67,6 +67,7 @@ class MonitoringJob(params: Parameter)
             val fieldClick = Field.of[String, AnyRef]("channelAction", "CLICK")
             val fieldEpn = Field.of[String, AnyRef]("channelType", "EPN")
             val fieldDisplay = Field.of[String, AnyRef]("channelType", "DISPLAY")
+            val fieldPaidSearch = Field.of[String, AnyRef]("channelType", "PAID_SEARCH")
 
             if (metrics != null) {
               metrics.meter("CappingCount", capping, eventTime)
@@ -96,6 +97,10 @@ class MonitoringJob(params: Parameter)
                 "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
               metrics.meter("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L,
                 "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
+
+              //Paid Search nrt rules
+              metrics.meter("IPCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
+                "CLICK", "PAID_SEARCH"), eventTime, fieldClick, fieldPaidSearch)
               metrics.flush()
             }
           }
