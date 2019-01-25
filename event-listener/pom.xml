@@ -344,10 +344,10 @@
         <groupId>com.spotify</groupId>
         <artifactId>docker-maven-plugin</artifactId>
       </plugin>
-      <plugin>
-        <groupId>com.ebay.raptor.build</groupId>
-        <artifactId>maven-content-plugin</artifactId>
-      </plugin>
+      <!--<plugin>-->
+        <!--<groupId>com.ebay.raptor.build</groupId>-->
+        <!--<artifactId>maven-content-plugin</artifactId>-->
+      <!--</plugin>-->
       <!--<plugin>-->
       <!--<groupId>com.ebay.cos</groupId>-->
       <!--<artifactId>compliance-evaluator-io-maven-plugin</artifactId>-->
