@@ -48,9 +48,9 @@ class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializa
       .withColumn("CLNT_RMT_IP", col("remote_ip"))
       .withColumn("BRWSR_TYPE_NUM", common.get_browser_type_udf(col("request_headers")))
       .withColumn("BRWSR_NAME", col("user_agent"))
-      .withColumn("RFR_URL_NAME", common.getValueFromRequestUdf(col("request_headers"), lit("Referer")))
+      .withColumn("RFR_URL_NAME", col("referer"))
       .withColumn("PRVS_RFR_DMN_NAME", lit(""))
-      .withColumn("USER_QUERY_TXT", common.getUserQueryTextUdf(col("uri")))
+      .withColumn("USER_QUERY_TXT", common.getUserQueryTextUdf(col("uri"), lit("impression")))
       .withColumn("PLCMNT_DATA_TXT", common.getRoverUriInfoUdf(col("uri"), lit(3).cast(IntegerType)))
       .withColumn("PBLSHR_ID", col("publisher_id"))
       .withColumn("AMS_PBLSHR_CMPGN_ID", col("campaign_id"))
@@ -196,11 +196,17 @@ class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializa
       .withColumn("NRT_RULE_FLAG62", lit(0))
       .withColumn("NRT_RULE_FLAG63", lit(0))
       .withColumn("NRT_RULE_FLAG64", lit(0))
+      .withColumn("NRT_RULE_FLAG65", lit(0))
+      .withColumn("NRT_RULE_FLAG66", lit(0))
+      .withColumn("NRT_RULE_FLAG67", lit(0))
+      .withColumn("NRT_RULE_FLAG68", lit(0))
+      .withColumn("NRT_RULE_FLAG69", lit(0))
+      .withColumn("NRT_RULE_FLAG70", lit(0))
+      .withColumn("NRT_RULE_FLAG71", lit(0))
+      .withColumn("NRT_RULE_FLAG72", lit(0))
+      .withColumn("NRT_RULE_FLAG73", lit(0))
+      .withColumn("NRT_RULE_FLAG74", lit(0))
       .cache()
-
-   /* impressionDf = impressionDf.select(impressionDf.columns.filter(
-      col => !common.drop_columns.contains(col))
-      .map(col => new Column(col)): _*)*/
 
     impressionDf = impressionDf.select(impression_columns.head, impression_columns.tail: _*)
     impressionDf

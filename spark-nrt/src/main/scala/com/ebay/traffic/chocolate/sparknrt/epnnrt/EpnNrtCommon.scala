@@ -132,7 +132,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   //val getGUIDUdf = udf((requestHeader: String, responseHeader:String, guid: String) => getGUIDFromCookie(requestHeader, responseHeader, guid))
   val getValueFromRequestUdf = udf((requestHeader: String, key: String) => getValueFromRequest(requestHeader, key))
-  val getUserQueryTextUdf = udf((url: String) => getUserQueryTxt(url))
+  val getUserQueryTextUdf = udf((url: String, action: String) => getUserQueryTxt(url, action))
   val getToolIdUdf = udf((url: String) => getQueryParam(url, "toolid"))
   val getCustomIdUdf = udf((url: String) => getQueryParam(url, "customid"))
   val getFFValueUdf = udf((url: String, index: String) => getFFValue(url, index))
@@ -273,13 +273,15 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     ""
   }
 
-  def getUserQueryTxt(uri: String): String = {
+  def getUserQueryTxt(uri: String, action: String): String = {
     var value = getQueryParam(uri, "item")
     if (value != null && !value.equals(""))
       return value
     value = getQueryParam(uri, "uq")
     if (value != null && !value.equals(""))
       return value
+    if (action.equalsIgnoreCase("impression"))
+      return ""
     value = getQueryParam(uri, "ext")
     if (value != null && !value.equals(""))
       return value
