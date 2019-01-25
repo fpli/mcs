@@ -22,7 +22,6 @@ class TestImkDumpJob extends BaseFunSuite{
   private val tmpPath = createTempDir()
   private val workDir = tmpPath + "/workDir/"
   private val outPutDir = tmpPath + "/outPutDir/"
-  private val imkWorkDir = tmpPath + "/imkWorkDir/"
 
   private val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
@@ -46,7 +45,7 @@ class TestImkDumpJob extends BaseFunSuite{
       "--channel", "PAID_SEARCH",
       "--workDir", workDir,
       "--outPutDir", outPutDir,
-      "--imkWorkDir", imkWorkDir,
+      "--partitions", "1",
       "--elasticsearchUrl", "http://10.148.181.34:9200"
     )
     val params = Parameter(args)
@@ -57,7 +56,7 @@ class TestImkDumpJob extends BaseFunSuite{
 
     assert (fs.exists(dedupeMetaPath))
     job.run()
-    val outputFolder = new File(outPutDir + "/PAID_SEARCH/")
+    val outputFolder = new File(outPutDir + "/PAID_SEARCH/imkDump/date=2018-05-01")
     assert(outputFolder.listFiles().length > 0)
     outputFolder.listFiles().foreach(file => {
       assert(file.toPath.toString.contains("imk_rvr_trckng_"))

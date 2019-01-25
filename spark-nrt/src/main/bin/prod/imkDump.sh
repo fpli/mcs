@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - imkDump
 
-usage="Usage: imkDump.sh [channel] [workDir] [outPutDir] [imkWorkDir] [elasticsearchUrl]"
+usage="Usage: imkDump.sh [channel] [workDir] [outPutDir] [elasticsearchUrl]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
@@ -17,8 +17,7 @@ bin=`cd "$bin">/dev/null; pwd`
 CHANNEL=$1
 WORK_DIR=$2
 OUTPUT_DIR=$3
-IMKWORK_DIR=$4
-ES_URL=$5
+ES_URL=$4
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
@@ -52,5 +51,4 @@ ${SPARK_HOME}/bin/spark-submit \
       --channel ${CHANNEL} \
       --workDir "${WORK_DIR}" \
       --outPutDir "${OUTPUT_DIR}" \
-      --imkWorkDir "${IMKWORK_DIR}" \
       --elasticsearchUrl ${ES_URL}

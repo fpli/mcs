@@ -3,10 +3,10 @@ package com.ebay.traffic.chocolate.sparknrt.imkDump
 import java.net.InetAddress
 import java.util.Properties
 
-import com.ebay.traffic.chocolate.monitoring.ESMetrics
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.imkDump.Tools.keywordParams
-import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
+import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
+import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.DataFrame
@@ -29,9 +29,9 @@ object ImkDumpJob extends App {
 }
 
 class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, params.mode){
-  lazy val outputDir: String = params.outPutDir + "/" + params.channel + "/"
+  lazy val outputDir: String = params.outPutDir + "/" + params.channel + "/imkDump/"
 
-  lazy val imkWorkDir: String = params.imkWorkDir + "/" + params.channel + "/"
+  lazy val sparkDir: String = params.workDir + "/" + params.channel + "/spark/"
 
   lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
 
@@ -46,63 +46,67 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     Metadata(params.workDir, params.channel, usage)
   }
 
-  @transient lazy val batchSize: Int = {
-    val batchSize = properties.getProperty("imkdump.metafile.batchsize")
-    if (StringUtils.isNumeric(batchSize)) {
-      Integer.parseInt(batchSize)
-    } else {
-      10 // default to 10 metafiles
-    }
+  @transient lazy val outputMetadata: Metadata = {
+    Metadata(params.workDir, params.channel, MetadataEnum.imkDump)
   }
 
-  @transient lazy val metrics: ESMetrics = {
+  @transient lazy val metrics: Metrics = {
     if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
       ESMetrics.init(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
       ESMetrics.getInstance()
     } else null
   }
 
-  @transient lazy val outPutFileVersion: String = {
-    val fileVersion = properties.getProperty("imkdump.output.file.version")
-    if (StringUtils.isNotEmpty(fileVersion)) {
-      fileVersion
-    } else {
-      "4"
-    }
-  }
 
   /**
     * :: DeveloperApi ::
     * Implemented by subclasses to run the spark job.
     */
   override def run(): Unit = {
+    // max number of metafiles at one job
+    val batchSize: Int = {
+      val batchSize = properties.getProperty("imkdump.metafile.batchsize")
+      if (StringUtils.isNumeric(batchSize)) {
+        Integer.parseInt(batchSize)
+      } else {
+        10 // default to 10 metafiles
+      }
+    }
+
+    // metafiles for output data
+    val suffix = properties.getProperty("imkdump.meta.output.suffix")
+    var suffixArray: Array[String] = Array()
+    if (StringUtils.isNotEmpty(suffix)) {
+      suffixArray = suffix.split(",")
+    }
+
     var dedupeOutputMeta = inputMetadata.readDedupeOutputMeta(".imk")
     if (dedupeOutputMeta.length > batchSize) {
       dedupeOutputMeta = dedupeOutputMeta.slice(0, batchSize)
     }
-    val imkWorkDirPath = new Path(imkWorkDir)
-    if (!fs.exists(imkWorkDirPath)) {
-      fs.mkdirs(imkWorkDirPath)
-    }
 
     dedupeOutputMeta.foreach(metaIter => {
-      val file = metaIter._1
-      val datesFiles = metaIter._2
-      datesFiles.foreach(datesFile => {
-        val date = getDate(datesFile._1)
-        val df = readFilesAsDFEx(datesFile._2)
-        logger.info("load DataFrame, date=" + date +", with files=" + datesFile._2.mkString(","))
+      val metaFile = metaIter._1
+      val dataFiles = metaIter._2
+      val outputMetas = dataFiles.map(dataFile => {
+        val date = dataFile._1
+        val df = readFilesAsDFEx(dataFile._2)
+        logger.info("load DataFrame, " + date + ", with files=" + dataFile._2.mkString(","))
 
-        val imkDf = imkDumpCore(df)
+        val imkDf = imkDumpCore(df).repartition(params.partitions)
 
-        saveDFToFiles(imkDf, imkWorkDir, "gzip", "csv", "bel")
-        renameFile("imk_rvr_trckng_")
+        saveDFToFiles(imkDf, sparkDir, "gzip", "csv", "bel")
 
-        inputMetadata.deleteDedupeOutputMeta(file)
-      })
-      metrics.meter("imk.dump.spark.out", datesFiles.size)
+        val files = renameFiles(outputDir, sparkDir, date)
+        DateFiles(date, files)
+      }).toArray
+
+      outputMetadata.writeDedupeOutputMeta(MetaFiles(outputMetas), suffixArray)
+      inputMetadata.deleteDedupeOutputMeta(metaFile)
+
+      metrics.meter("imk.dump.spark.out", dataFiles.size)
     })
-    metrics.flushMetrics()
+    metrics.flush()
     metrics.close()
   }
 
@@ -153,30 +157,32 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getCmndTypeUdf: UserDefinedFunction = udf((channelType: String) => Tools.getCommandType(channelType))
   val getBatchIdUdf: UserDefinedFunction = udf(() => Tools.getBatchId)
 
-  def renameFile(prefix: String):Unit = {
+  /**
+    * override renameFiles to have special output file name for TD
+    * @param outputDir final destination
+    * @param workDir temp output
+    * @param date current handled date
+    * @return files array handled
+    */
+  override def renameFiles(outputDir: String, workDir: String, date: String): Array[String] = {
     // rename result to output dir
-    val outputDirPath = new Path(outputDir)
-    if (!fs.exists(outputDirPath)) {
-      fs.mkdirs(outputDirPath)
+    val dateOutputPath = new Path(outputDir + "/" + date)
+    if (!fs.exists(dateOutputPath)) {
+      fs.mkdirs(dateOutputPath)
     }
-
     val hostName = InetAddress.getLocalHost.getHostName
 
-    val fileStatus = fs.listStatus(new Path(imkWorkDir))
-    fileStatus.filter(status => status.getPath.getName != "_SUCCESS").foreach(fileStatus => {
-      val src = fileStatus.getPath
-//      imk_rvr_trckng_????????_??????.V4.*dat.gz
-      val target = new Path(outputDir, prefix + Tools.getOutPutFileDate + ".V" + outPutFileVersion + "." + hostName + "." + params.channel + ".dat.gz")
-      logger.info("Rename from: " + src.toString + " to: " + target.toString)
-      fs.rename(src, target)
-    })
-
-  }
-
-  def getDate(date: String): String = {
-    val splitted = date.split("=")
-    if (splitted != null && splitted.nonEmpty) splitted(1)
-    else throw new Exception("Invalid date field in metafile.")
+    val fileStatus = fs.listStatus(new Path(workDir))
+    val files = fileStatus.filter(status => status.getPath.getName != "_SUCCESS")
+      .map(swi => {
+        val src = swi.getPath
+//        imk_rvr_trckng_????????_??????.V4.*dat.gz
+        val target = new Path(dateOutputPath, "imk_rvr_trckng_" + Tools.getOutPutFileDate + ".V4." + hostName + "." + params.channel + ".dat.gz")
+        logger.info("Rename from: " + src.toString + " to: " + target.toString)
+        fs.rename(src, target)
+        target.toString
+      })
+    files
   }
 
 }
