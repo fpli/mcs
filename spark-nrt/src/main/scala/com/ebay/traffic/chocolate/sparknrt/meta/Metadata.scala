@@ -34,7 +34,7 @@ class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
   }
 
   /**
-    * Dedupe output meta
+    * Dedupe output metaaddShutdownHook
     */
   def readDedupeOutputMeta(suffix: String = ""): Array[(String, Map[String, Array[String]])] = {
     val status = fs.listStatus(new Path(DEDUPE_OUTPUT_META_DIR))

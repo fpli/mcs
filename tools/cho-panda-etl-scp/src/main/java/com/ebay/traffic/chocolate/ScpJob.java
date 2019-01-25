@@ -1,15 +1,19 @@
 package com.ebay.traffic.chocolate;
 
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
-import com.google.common.io.Files;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.apache.commons.io.IOUtils;
+import org.apache.curator.shaded.com.google.common.io.Files;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.conf.Configuration;
 
 import java.io.*;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -21,7 +25,9 @@ public class ScpJob {
 
     private static FileSystem fs;
 
-    private static ESMetrics esMetrics;
+    private static Metrics metrics;
+
+    private static Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
     public static void main(String args[]) throws Exception {
         assert args != null;
@@ -74,41 +80,62 @@ public class ScpJob {
         fs = FileSystem.get(URI.create(properties.getProperty("imkscp.hdfs.uri")), conf);
 
         ESMetrics.init(properties.getProperty("imkscp.es.prefix"), properties.getProperty("imkscp.es.url"));
-        esMetrics = ESMetrics.getInstance();
+        metrics = ESMetrics.getInstance();
         System.out.println("init success");
     }
 
     /**
      * shutdown job
      */
-    private static void shutdown() {
-        if (esMetrics != null) {
-            esMetrics.flushMetrics();
-            esMetrics.close();
+    private static void shutdown() throws IOException {
+        if (metrics != null) {
+            metrics.flush();
+            metrics.close();
         }
+        fs.close();
         System.out.println("shutdown success");
     }
 
     /**
-     * list all data files in chocolate hdfs.
-     * each time:
-     * 1. get one data file from hdfs, sava the data file to local and touch one done file,
-     * 2. scp one local data file and one local done file to ETL
-     * 3. delete one local data file and done file
-     * 4. archive the data file in chocolate hdfs
+     * 1. get data file from hdfs by read meta file, sava the data file to local and touch one done file,
+     * 2. scp local data file and local done file to ETL
+     * 3. delete local data file and done file
+     * 4. delete meta file in hdfs
      * @throws Exception fast fail if any exception
      */
     private static void runJob() throws Exception {
-        RemoteIterator<LocatedFileStatus> ite = fs.listFiles(new Path(properties.getProperty("imkscp.hdfs.outputDir")), true);
+        RemoteIterator<LocatedFileStatus> ite = fs.listFiles(new Path(properties.getProperty("imkscp.hdfs.metaDir")), true);
         while (ite.hasNext()) {
             LocatedFileStatus status = ite.next();
-            if (status.isFile() && status.getPath().getName().startsWith(properties.getProperty("imkscp.hdfs.fileprefix"))) {
-                getFileInHdfs(status.getPath().toString(), status.getPath().getName());
-                scpToETL(status.getPath().getName());
-                deleteLocalFile(status.getPath().getName());
-                archiveFileInHdfs(status.getPath().toString(), status.getPath().getName());
+            if (status.isFile() && status.getPath().getName().endsWith("meta.etl")) {
+                List<String> dataFiles = readMetaFile(status.getPath().toString());
+                for (String dataFile : dataFiles) {
+                    String fileName = dataFile.substring(dataFile.lastIndexOf("/") + 1, dataFile.length());
+                    getFileInHdfs(dataFile, fileName);
+                    scpToETL(fileName);
+                    deleteLocalFile(fileName);
+                }
+                fs.delete(new Path(status.getPath().toString()), true);
             }
         }
+    }
+
+    /**
+     * read meta file in chocolate hdfs
+     * @param path full path of meta file
+     * @return list of data files
+     * @throws IOException IOException
+     */
+    private static List<String> readMetaFile(String path) throws IOException {
+        List<String> dataFiles = new ArrayList<>();
+        FSDataInputStream inputStream = fs.open(new Path(path));
+        String out= IOUtils.toString(inputStream, "UTF-8");
+        inputStream.close();
+        MetaFiles metaFiles = gson.fromJson(out, MetaFiles.class);
+        for (DateFiles dateFiles : metaFiles.getMetaFiles()) {
+            dataFiles.addAll(Arrays.asList(dateFiles.getFiles()));
+        }
+        return dataFiles;
     }
 
     /**
@@ -121,9 +148,9 @@ public class ScpJob {
         try {
             fs.copyToLocalFile(new Path(filePath), new Path(properties.getProperty("imkscp.local.workDir") + "/" + fileName));
             Files.touch(new File(properties.getProperty("imkscp.local.workDir") + "/" + fileName + ".done"));
-            esMetrics.meter("imk.dump.count.getHdfs");
+            metrics.meter("imk.dump.count.getHdfs");
         } catch (Exception e) {
-            esMetrics.meter("imk.dump.error.getHdfs");
+            metrics.meter("imk.dump.error.getHdfs");
             System.out.println("failed get file from hdfs: " + fileName);
             e.printStackTrace();
             throw new Exception(e);
@@ -150,9 +177,9 @@ public class ScpJob {
             if (scpDoneProcess.waitFor() != 0) {
                 throw new Exception("scpCmdException");
             }
-            esMetrics.meter("imk.dump.count.scpToEtl");
+            metrics.meter("imk.dump.count.scpToEtl");
         } catch (Exception e) {
-            esMetrics.meter("imk.dump.error.scpToEtl");
+            metrics.meter("imk.dump.error.scpToEtl");
             System.out.println("failed scp file to etl: " + fileName);
             e.printStackTrace();
             throw new Exception(e);
@@ -161,10 +188,9 @@ public class ScpJob {
 
     /**
      * delete local data and done file if scp success
-     * not fast fail, ok when failed delete local tmp file
      * @param fileName the file name
      */
-    private static void deleteLocalFile(String fileName) {
+    private static void deleteLocalFile(String fileName) throws Exception {
         String localDataFilePath = properties.getProperty("imkscp.local.workDir") + "/" + fileName;
         String localDoneFilePath = properties.getProperty("imkscp.local.workDir") + "/" + fileName + ".done";
 
@@ -176,43 +202,13 @@ public class ScpJob {
             if (removeDataProcess.waitFor() != 0 || removeDoneProcess.waitFor() != 0) {
                 throw new Exception("rmCmdException");
             }
-            esMetrics.meter("imk.dump.count.deleteLocal");
+            metrics.meter("imk.dump.count.deleteLocal");
         } catch (Exception e) {
-            esMetrics.meter("imk.dump.error.deleteLocal");
+            metrics.meter("imk.dump.error.deleteLocal");
             System.out.println("failed delete local file: " + fileName);
             e.printStackTrace();
+            throw new Exception(e);
         }
-    }
-
-    /**
-     * archive one data file in chocolate hdfs
-     * not fast fail, ok when failed delete data file in hdfs
-     * @param filePath full path of file in hdfs
-     * @param fileName filename
-     */
-    private static void archiveFileInHdfs(String filePath, String fileName) {
-        try {
-            Path dateOutputPath =new Path(properties.getProperty("imkscp.hdfs.archiveDir") + "/date=" + getDateFromDataFileName(fileName));
-            if (!fs.exists(dateOutputPath)) {
-                fs.mkdirs(dateOutputPath);
-            }
-            fs.rename(new Path(filePath), new Path(dateOutputPath, fileName));
-            esMetrics.meter("imk.dump.count.archiveHdfs");
-        } catch (IOException e) {
-            esMetrics.meter("imk.dump.error.archiveHdfs");
-            System.out.println("failed archive file in Hdfs: " + filePath);
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * get date string from data file name
-     * @param fileName filename, eg:imk_rvr_trckng_20181229_100542.V4.LM-SHC-16502886.PAID_SEARCH.dat.gz
-     * @return date string, eg: 20181229
-     */
-    private static String getDateFromDataFileName(String fileName) {
-        String filePrefix = properties.getProperty("imkscp.hdfs.fileprefix");
-        return fileName.substring(fileName.indexOf(filePrefix) + filePrefix.length()).substring(0, 8);
     }
 
 }
