@@ -11,7 +11,9 @@ import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
@@ -27,9 +29,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URLEncoder;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author xiangli4
@@ -43,13 +43,18 @@ import java.util.Map;
 @DependsOn("EventListenerService")
 public class CollectionService {
   private static final Logger logger = Logger.getLogger(CollectionService.class);
-  private ESMetrics esMetrics;
+  private Metrics metrics;
   private ListenerMessageParser parser;
   private static CollectionService instance = null;
 
+  private static final String CHANNEL_ACTION = "channelAction";
+  private static final String CHANNEL_TYPE = "channelType";
+  private static final String PLATFORM = "platform";
+  private static final String LANDING_PAGE_TYPE = "landingPageType";
+
   @PostConstruct
   public void postInit() {
-    this.esMetrics = ESMetrics.getInstance();
+    this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
   }
 
@@ -134,35 +139,35 @@ public class CollectionService {
       logError(ErrorType.INVALID_MKEVT);
     }
 
-    // parse channel from query cid
-    // no cid, accepted
-    if (!parameters.containsKey(Constants.CID) || parameters.get(Constants.CID).get(0) == null) {
-      logger.error(Errors.ERROR_NO_CID);
-      esMetrics.meter("NoCidParameter");
+    // parse channel from query mkcid
+    // no mkcid, accepted
+    if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
+      logger.error(Errors.ERROR_NO_MKCID);
+      metrics.meter("NoMkcidParameter");
       return true;
     }
 
-    // invalid cid, show error and accept
-    channelType = ChannelIdEnum.parse(parameters.get(Constants.CID).get(0));
+    // invalid mkcid, show error and accept
+    channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
     if (channelType == null) {
-      logger.error(Errors.ERROR_INVALID_CID);
-      esMetrics.meter("InvalidCid");
+      logger.error(Errors.ERROR_INVALID_MKCID);
+      metrics.meter("InvalidMkcid");
       return true;
     }
 
-    // parse rotation id from query rid
+    // parse rotation id from query mkrid
     long rotationId = -1L;
-    if (parameters.containsKey(Constants.RID) && parameters.get(Constants.RID).get(0) != null) {
+    if (parameters.containsKey(Constants.MKRID) && parameters.get(Constants.MKRID).get(0) != null) {
       try {
-        String rawRotationId = parameters.get(Constants.RID).get(0);
+        String rawRotationId = parameters.get(Constants.MKRID).get(0);
         rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
       } catch (Exception e) {
-        logger.error(Errors.ERROR_INVALID_RID);
-        esMetrics.meter("InvalidRid");
+        logger.error(Errors.ERROR_INVALID_MKRID);
+        metrics.meter("InvalidMkrid");
       }
     } else {
-      logger.error(Errors.ERROR_NO_RID);
-      esMetrics.meter("NoRid");
+      logger.error(Errors.ERROR_NO_MKRID);
+      metrics.meter("NoMkrid");
     }
 
     try {
@@ -207,13 +212,8 @@ public class CollectionService {
       userId = Long.toString(endUserContext.getOrigUserOracleId());
     }
 
-    Map<String, Object> additionalFields = new HashMap<>();
-    additionalFields.put("channelAction", action);
-    additionalFields.put("channelType", type);
-    additionalFields.put("platform", platform);
-    additionalFields.put("landingPageType", landingPageType);
-
-    long startTime = startTimerAndLogData(additionalFields);
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+        Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     producer = KafkaSink.get();
 
@@ -245,13 +245,14 @@ public class CollectionService {
       CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
     } catch (Exception ex) {
       logger.error("Error when tracking ubi: " + ex.toString());
-      esMetrics.meter("ErrorTrackUbi");
+      metrics.meter("ErrorTrackUbi");
     }
 
     if (message != null) {
       long eventTime = message.getTimestamp();
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
-      stopTimerAndLogData(startTime, eventTime, additionalFields);
+      stopTimerAndLogData(startTime, eventTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+          Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
     }
     return true;
   }
@@ -264,7 +265,7 @@ public class CollectionService {
    */
   private void logError(ErrorType errorType) throws Exception {
     logger.error(errorType.getErrorMessage());
-    esMetrics.meter(errorType.getErrorKey());
+    metrics.meter(errorType.getErrorKey());
     throw new Exception(errorType.getErrorKey());
   }
 
@@ -274,12 +275,12 @@ public class CollectionService {
    * @param additionalFields channelAction, channelType, platform, landing page type
    * @return start time
    */
-  private long startTimerAndLogData(Map<String, Object> additionalFields) {
+  private long startTimerAndLogData(Field<String, Object>... additionalFields) {
     // the main rover process is already finished at this moment
     // use the timestamp from request as the start time
     long startTime = System.currentTimeMillis();
     logger.debug(String.format("StartTime: %d", startTime));
-    esMetrics.meter("CollectionServiceIncoming", 1, startTime, additionalFields);
+    metrics.meter("CollectionServiceIncoming", 1, startTime, additionalFields);
     return startTime;
   }
 
@@ -289,10 +290,10 @@ public class CollectionService {
    * @param startTime        the start time, so that latency can be calculated
    * @param additionalFields channelAction, channelType, platform, landing page type
    */
-  private void stopTimerAndLogData(long startTime, long eventTime, Map<String, Object> additionalFields) {
+  private void stopTimerAndLogData(long startTime, long eventTime, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    esMetrics.meter("CollectionServiceSuccess", 1, eventTime, additionalFields);
-    esMetrics.mean("CollectionServiceAverageLatency", endTime - startTime);
+    metrics.meter("CollectionServiceSuccess", 1, eventTime, additionalFields);
+    metrics.mean("CollectionServiceAverageLatency", endTime - startTime);
   }
 }
