@@ -3,7 +3,8 @@ package com.ebay.app.raptor.chocolate.eventlistener;
 import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
@@ -20,7 +21,7 @@ import java.io.IOException;
 @Configuration("EventListenerService")
 @Singleton
 public class EventListenerService {
-  private static final Logger logger = Logger.getLogger(EventListenerService.class);
+  private static final Logger logger = LoggerFactory.getLogger(EventListenerService.class);
 
   private static final String ELASTICSEARCH_URL = "chocolate.event-listener.elasticsearch.url";
   private static final String METRICS_INDEX_PREFIX = "chocolate.event-listener.elasticsearch.index.prefix";
@@ -43,7 +44,7 @@ public class EventListenerService {
     try {
       KafkaSink.close();
     } catch (IOException e) {
-      logger.error(e);
+      logger.error(e.getMessage(), e);
     }
   }
 }
