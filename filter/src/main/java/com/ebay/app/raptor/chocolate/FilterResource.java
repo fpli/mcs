@@ -1,9 +1,16 @@
 package com.ebay.app.raptor.chocolate;
 
+import com.ebay.cos.raptor.service.annotations.ApiRef;
+import org.springframework.stereotype.Component;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-@Path("/v1")
+//ApiRef must match at least one @Api defined in your @Service annotated interface.
+@ApiRef( api="samplesvc", version="1" )
+
+@Component
+@Path("/sample")
 public class FilterResource {
 
   @GET

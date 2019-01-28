@@ -13,10 +13,10 @@ public class Errors {
   public static final String ERROR_NO_QUERY_PARAMETER = "No query parameter.";
   public static final String ERROR_NO_MKEVT = "No mkevt.";
   public static final String ERROR_INVALID_MKEVT = "Invalid mkevt value.";
-  public static final String ERROR_NO_CID = "No cid";
-  public static final String ERROR_INVALID_CID = "Invalid cid.";
-  public static final String ERROR_NO_RID = "No rid.";
-  public static final String ERROR_INVALID_RID = "Invalid rid.";
+  public static final String ERROR_NO_MKCID = "No mkcid";
+  public static final String ERROR_INVALID_MKCID = "Invalid mkcid.";
+  public static final String ERROR_NO_MKRID = "No mkrid.";
+  public static final String ERROR_INVALID_MKRID = "Invalid mkrid.";
   public static final String ERROR_INTERNAL_SERVICE = "Internal Service Error.";
 
   public static final String ERROR_CONTENT = "mktCollectionSvcErrorContent";
