@@ -30,7 +30,7 @@ class TestRuleVerifier extends BaseFunSuite {
     df2.show(false)
 
     job.saveDFToFiles(df1, srcPath)
-    job.saveDFToFiles(df2, targetPath, outputFormat = "csv", delimiter = "comma", compressFormat = "uncompressed")
+    job.saveDFToFiles(df2, targetPath, outputFormat = "csv", delimiter = "bel", compressFormat = "uncompressed")
   }
 
   test("Test RuleVerifier") {
