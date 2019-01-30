@@ -82,9 +82,11 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
 
     val removeParamsUdf = udf(removeParams(_: String))
     var df1 = readFilesAsDF(params.srcPath)
-      .where($"channel_action" === "CLICK" and $"channel_type" === "EPN" and $"cguid" === "")
+      .where($"channel_action" === "CLICK" and $"channel_type" === "EPN")
       .withColumn("new_uri", removeParamsUdf($"uri"))
-      .select("new_uri", "cguid", "request_headers", "response_headers")
+      .drop("uri")
+      .select($"new_uri", $"cguid", $"rt_rule_flags", $"nrt_rule_flags")
+      .dropDuplicates("new_uri", "cguid")
 
     val path1 = new Path(workDir + "/chocolate/", (new Path(params.srcPath).getName))
     fs.delete(path1, true)
@@ -108,7 +110,8 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     // assume df2 only has columns that we want!
     var df2 = readFilesAsDF(params.targetPath, inputFormat = "csv", schema = amsClickSchema, delimiter = "bel")
       .withColumn("rover_url", normalizeUrlUdf(col("rover_url_txt")))
-      .select("rover_url", "crltn_guid_txt")
+      .drop("rover_url_txt")
+      .dropDuplicates("rover_url", "crltn_guid_txt")
 
     val path2 = new Path(workDir + "/epn/", (new Path(params.targetPath).getName))
     fs.delete(path2, true)
@@ -127,191 +130,180 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     val verifyByBitUdf1 = udf(verifyByBit(_: Int, _: Long, _: String))
     val verifyByBitUdf2 = udf(verifyByBit(_: Int, _: Long, _: String, _: String))
 
-    var df = df1.join(df2, $"new_uri" === $"rover_url", "inner")
-      .select("rover_url", "cguid", "crltn_guid_txt", "request_headers", "response_headers")
-      .repartition(1)
-//      .withColumn("IPPubS", verifyByBitUdf1(lit(1), $"nrt_rule_flags", $"nrt_rule_flag39"))
-//      .withColumn("IPPubL", verifyByBitUdf1(lit(2), $"nrt_rule_flags", $"nrt_rule_flag43"))
-//      .withColumn("CGuidS", verifyByBitUdf1(lit(5), $"nrt_rule_flags", $"nrt_rule_flag51"))
-//      .withColumn("CGuidL", verifyByBitUdf1(lit(6), $"nrt_rule_flags", $"nrt_rule_flag53"))
-//      .withColumn("CGuidPubS", verifyByBitUdf1(lit(3), $"nrt_rule_flags", $"nrt_rule_flag54"))
-//      .withColumn("CGuidPubL", verifyByBitUdf1(lit(4), $"nrt_rule_flags", $"nrt_rule_flag56"))
-//      .withColumn("SnidS", verifyByBitUdf1(lit(7), $"nrt_rule_flags", $"rt_rule_flag12"))
-//      .withColumn("SnidL", verifyByBitUdf1(lit(8), $"nrt_rule_flags", $"rt_rule_flag13"))
-//      .withColumn("Prefetch", verifyByBitUdf1(lit(1), $"rt_rule_flags", $"rt_rule_flag2"))
-//      .withColumn("IABBot", verifyByBitUdf2(lit(3), $"rt_rule_flags", $"rt_rule_flag3", $"rt_rule_flag4"))
-//      .withColumn("Internal", verifyByBitUdf1(lit(2), $"rt_rule_flags", $"rt_rule_flag7"))
-//      .withColumn("MissingReferrer", verifyByBitUdf1(lit(12), $"rt_rule_flags", $"rt_rule_flag8"))
-//      .withColumn("Protocol", verifyByBitUdf1(lit(11), $"rt_rule_flags", $"rt_rule_flag1"))
-//      .withColumn("CGuidStaleness", verifyByBitUdf1(lit(6), $"rt_rule_flags", $"rt_rule_flag10"))
-//      .withColumn("EpnDomainBlacklist", verifyByBitUdf1(lit(4), $"rt_rule_flags", $"rt_rule_flag15"))
-//      .withColumn("IPBlacklist", verifyByBitUdf1(lit(5), $"rt_rule_flags", $"rt_rule_flag6"))
-//      .withColumn("EbayBot", verifyByBitUdf1(lit(10), $"rt_rule_flags", $"rt_rule_flag5"))
-//      .drop("new_uri")
+    var df = df1.join(df2, $"new_uri" === $"rover_url" and $"cguid" === $"crltn_guid_txt", "inner")
+      .withColumn("IPPubS", verifyByBitUdf1(lit(1), $"nrt_rule_flags", $"nrt_rule_flag39"))
+      .withColumn("IPPubL", verifyByBitUdf1(lit(2), $"nrt_rule_flags", $"nrt_rule_flag43"))
+      .withColumn("CGuidS", verifyByBitUdf1(lit(5), $"nrt_rule_flags", $"nrt_rule_flag51"))
+      .withColumn("CGuidL", verifyByBitUdf1(lit(6), $"nrt_rule_flags", $"nrt_rule_flag53"))
+      .withColumn("CGuidPubS", verifyByBitUdf1(lit(3), $"nrt_rule_flags", $"nrt_rule_flag54"))
+      .withColumn("CGuidPubL", verifyByBitUdf1(lit(4), $"nrt_rule_flags", $"nrt_rule_flag56"))
+      .withColumn("SnidS", verifyByBitUdf1(lit(7), $"nrt_rule_flags", $"rt_rule_flag12"))
+      .withColumn("SnidL", verifyByBitUdf1(lit(8), $"nrt_rule_flags", $"rt_rule_flag13"))
+      .withColumn("Prefetch", verifyByBitUdf1(lit(1), $"rt_rule_flags", $"rt_rule_flag2"))
+      .withColumn("IABBot", verifyByBitUdf2(lit(3), $"rt_rule_flags", $"rt_rule_flag3", $"rt_rule_flag4"))
+      .withColumn("Internal", verifyByBitUdf1(lit(2), $"rt_rule_flags", $"rt_rule_flag7"))
+      .withColumn("MissingReferrer", verifyByBitUdf1(lit(12), $"rt_rule_flags", $"rt_rule_flag8"))
+      .withColumn("Protocol", verifyByBitUdf1(lit(11), $"rt_rule_flags", $"rt_rule_flag1"))
+      .withColumn("CGuidStaleness", verifyByBitUdf1(lit(6), $"rt_rule_flags", $"rt_rule_flag10"))
+      .withColumn("EpnDomainBlacklist", verifyByBitUdf1(lit(4), $"rt_rule_flags", $"rt_rule_flag15"))
+      .withColumn("IPBlacklist", verifyByBitUdf1(lit(5), $"rt_rule_flags", $"rt_rule_flag6"))
+      .withColumn("EbayBot", verifyByBitUdf1(lit(10), $"rt_rule_flags", $"rt_rule_flag5"))
+      .drop("new_uri")
 
-//    val path = new Path(workDir + "/join/", (new Path(params.srcPath).getName))
-//    fs.delete(path, true)
-//    saveDFToFiles(df, path.toString)
-    val today = new Path(params.srcPath).getName
-    val output = params.outputPath + "/chocolate/nullCguid/" + today
-    fs.delete(new Path(output), true)
-    saveDFToFiles(df = df, outputPath = output, compressFormat = null,
-      outputFormat = "csv", delimiter = "tab")
+    val path = new Path(workDir + "/join/", (new Path(params.srcPath).getName))
+    fs.delete(path, true)
+    saveDFToFiles(df, path.toString)
+    df = readFilesAsDF(path.toString)
+    val total = df.count()
 
-//    df = readFilesAsDF(path.toString)
-//    val total = df.count()
-//
-//    val ipMatch = df.where($"IP" === $"clnt_rmt_ip").count()
-//
-//    println("sampling 10 records:")
-//    df.show(numRows = 10, truncate = false)
-//
-//    val ipPubS = df.where($"IPPubS" === false).count()
-//    val ipPubL = df.where($"IPPubL" === false).count()
-//    val cGuidS = df.where($"CGuidS" === false).count()
-//    val cGuidL = df.where($"CGuidL" === false).count()
-//    val cGuidPubS = df.where($"CGuidPubS" === false).count()
-//    val cGuidPubL = df.where($"CGuidPubL" === false).count()
-//    val snidS = df.where($"SnidS" === false).count()
-//    val snidL = df.where($"SnidL" === false).count()
-//
-//    val prefetch = df.where($"Prefetch" === false).count()
-//    val iabBot = df.where($"IABBot" === false).count()
-//    val internal = df.where($"Internal" === false).count()
-//    val missingReferrer = df.where($"MissingReferrer" === false).count()
-//    val protocol = df.where($"Protocol" === false).count()
-//    val cGuidStaleness = df.where($"CGuidStaleness" === false).count()
-//    val epnDomainBlacklist = df.where($"EpnDomainBlacklist" === false).count()
-//    val ipBlacklist = df.where($"IPBlacklist" === false).count()
-//    val ebayBot = df.where($"EbayBot" === false).count()
-//
-//    // 4. Write out result to file on hdfs
-//    var outputStream: FSDataOutputStream = null
-//    try {
-//      outputStream = fs.create(new Path(params.outputPath))
-//      //outputStream.writeChars(s"Chocolate Total - Nodeupe: $count1Nodedupe \n")
-//      outputStream.writeChars(s"Chocolate Total: $count1 \n")
-//      //outputStream.writeChars(s"Chocolate DashenId: $countDashenId \n")
-//      //outputStream.writeChars(s"Chocolate dashenCntAbove1: $countDashenCntAbove1 \n")
-//      //outputStream.writeChars(s"EPN Total - Nodedupe: $count2Nodedupe \n")
-//      outputStream.writeChars(s"EPN Total: $count2 \n")
-//      outputStream.writeChars(s"Join Total: $total \n")
-//      outputStream.writeChars(s"Chocolate join ratio: ${((total.toFloat/count1)*100).toInt}% \n")
-//      outputStream.writeChars(s"EPN join ratio: ${((total.toFloat/count2)*100).toInt}% \n")
-//      outputStream.writeChars(s"IP match: $ipMatch \n")
-//
-//      outputStream.writeChars("-----------------------join diff---------------------------------" + "\n")
-//      outputStream.writeChars("IPPubS inconsistent: " + ipPubS.toFloat/total + "\n")
-//      outputStream.writeChars("IPPubL inconsistent: " + ipPubL.toFloat/total + "\n")
-//      outputStream.writeChars("CGuidS inconsistent: " + cGuidS.toFloat/total + "\n")
-//      outputStream.writeChars("CGuidL inconsistent: " + cGuidL.toFloat/total + "\n")
-//      outputStream.writeChars("CGuidPubS inconsistent: " + cGuidPubS.toFloat/total + "\n")
-//      outputStream.writeChars("CGuidPubL inconsistent: " + cGuidPubL.toFloat/total + "\n")
-//      outputStream.writeChars("SnidS inconsistent: " + snidS.toFloat/total + "\n")
-//      outputStream.writeChars("SnidL inconsistent: " + snidL.toFloat/total + "\n")
-//
-//      outputStream.writeChars("Prefetch inconsistent: " + prefetch.toFloat/total + "\n")
-//      outputStream.writeChars("IABBot inconsistent: " + iabBot.toFloat/total + "\n")
-//      outputStream.writeChars("Internal inconsistent: " + internal.toFloat/total + "\n")
-//      outputStream.writeChars("MissingReferrer inconsistent: " + missingReferrer.toFloat/total + "\n")
-//      outputStream.writeChars("Protocol inconsistent: " + protocol.toFloat/total + "\n")
-//      outputStream.writeChars("CGuidStaleness inconsistent: " + cGuidStaleness.toFloat/total + "\n")
-//      outputStream.writeChars("EpnDomainBlacklist inconsistent: " + epnDomainBlacklist.toFloat/total + "\n")
-//      outputStream.writeChars("IPBlacklist inconsistent: " + ipBlacklist.toFloat/total + "\n")
-//      outputStream.writeChars("EbayBot inconsistent: " + ebayBot.toFloat/total + "\n")
-//
-//      outputStream.flush()
-//    } finally {
-//      if (outputStream != null) {
-//        outputStream.close()
-//      }
-//    }
-//
-//    if (params.selfCheck) {
-//      val ipPubS_choco = df1.where($"nrt_rule_flags".bitwiseAND(2) =!= 0).count()
-//      val ipPubL_choco = df1.where($"nrt_rule_flags".bitwiseAND(4) =!= 0).count()
-//      val cGuidS_choco = df1.where($"nrt_rule_flags".bitwiseAND(32) =!= 0).count()
-//      val cGuidL_choco = df1.where($"nrt_rule_flags".bitwiseAND(64) =!= 0).count()
-//      val cGuidPubS_choco = df1.where($"nrt_rule_flags".bitwiseAND(8) =!= 0).count()
-//      val cGuidPubL_choco = df1.where($"nrt_rule_flags".bitwiseAND(16) =!= 0).count()
-//      val snidS_choco = df1.where($"nrt_rule_flags".bitwiseAND(128) =!= 0).count()
-//      val snidL_choco = df1.where($"nrt_rule_flags".bitwiseAND(256) =!= 0).count()
-//
-//      val prefetch_choco = df1.where($"rt_rule_flags".bitwiseAND(2) =!= 0).count()
-//      val iabBot_choco = df1.where($"rt_rule_flags".bitwiseAND(8) =!= 0).count()
-//      val internal_choco = df1.where($"rt_rule_flags".bitwiseAND(4) =!= 0).count()
-//      val missingReferrer_choco = df1.where($"rt_rule_flags".bitwiseAND(4096) =!= 0).count()
-//      val protocol_choco = df1.where($"rt_rule_flags".bitwiseAND(2048) =!= 0).count()
-//      val tGuidStaleness_choco = df1.where($"rt_rule_flags".bitwiseAND(64) =!= 0).count()
-//      val epnDomainBlacklist_choco = df1.where($"rt_rule_flags".bitwiseAND(16) =!= 0).count()
-//      val ipBlacklist_choco = df1.where($"rt_rule_flags".bitwiseAND(32) =!= 0).count()
-//      val ebayBot_choco = df1.where($"rt_rule_flags".bitwiseAND(1024) =!= 0).count()
-//
-//      val ipPubS_epn = df2.where($"nrt_rule_flag39" === 1).count()
-//      val ipPubL_epn = df2.where($"nrt_rule_flag43" === 1).count()
-//      val cGuidS_epn = df2.where($"nrt_rule_flag51" === 1).count()
-//      val cGuidL_epn = df2.where($"nrt_rule_flag53" === 1).count()
-//      val cGuidPubS_epn = df2.where($"nrt_rule_flag54" === 1).count()
-//      val cGuidPubL_epn = df2.where($"nrt_rule_flag56" === 1).count()
-//      val snidS_epn = df2.where($"rt_rule_flag12" === 1).count()
-//      val snidL_epn = df2.where($"rt_rule_flag13" === 1).count()
-//
-//      val prefetch_epn = df2.where($"rt_rule_flag2" === 1).count()
-//      val iabBot_epn = df2.where($"rt_rule_flag3" === 1 or $"rt_rule_flag4" === 1).count()
-//      val internal_epn = df2.where($"rt_rule_flag7" === 1).count()
-//      val missingReferrer_epn = df2.where($"rt_rule_flag8" === 1).count()
-//      val protocol_epn = df2.where($"rt_rule_flag1" === 1).count()
-//      val tGuidStaleness_epn = df2.where($"rt_rule_flag10" === 1).count()
-//      val epnDomainBlacklist_epn = df2.where($"rt_rule_flag15" === 1).count()
-//      val ipBlacklist_epn = df2.where($"rt_rule_flag6" === 1).count()
-//      val ebayBot_epn = df2.where($"rt_rule_flag5" === 1).count()
-//
-//
-//      try {
-//        outputStream = fs.append(new Path(params.outputPath))
-//
-//        outputStream.writeChars("-----------------------count diff--------------------------" + "\n")
-//        outputStream.writeChars(s"ipPubS_choco: $ipPubS_choco, ipPubS_epn: $ipPubS_epn, " +
-//          s"IPPubS inconsistent: " + (ipPubS_choco - ipPubS_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"ipPubL_choco: $ipPubL_choco, ipPubL_epn: $ipPubL_epn, " +
-//          s"IPPubL inconsistent: " + (ipPubL_choco - ipPubL_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"cGuidS_choco: $cGuidS_choco, cGuidS_epn: $cGuidS_epn, " +
-//          s"CGuidS inconsistent: " + (cGuidS_choco - cGuidS_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"cGuidL_choco: $cGuidL_choco, cGuidL_epn: $cGuidL_epn, " +
-//          s"CGuidL inconsistent: " + (cGuidL_choco - cGuidL_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"cGuidPubS_choco: $cGuidPubS_choco, cGuidPubS_epn: $cGuidPubS_epn, " +
-//          s"CGuidPubS inconsistent: " + (cGuidPubS_choco - cGuidPubS_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"cGuidPubL_choco: $cGuidPubL_choco, cGuidPubL_epn: $cGuidPubL_epn, " +
-//          s"CGuidPubL inconsistent: " + (cGuidPubL_choco - cGuidPubL_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"snidS_choco: $snidS_choco, snidS_epn: $snidS_epn, " +
-//          s"SnidS inconsistent: " + (snidS_choco - snidS_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"snidL_choco: $snidL_choco, snidL_epn: $snidL_epn, " +
-//          s"SnidL inconsistent: " + (snidL_choco - snidL_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"prefetch_choco: $prefetch_choco, prefetch_epn: $prefetch_epn, " +
-//          s"Prefetch inconsistent: " + (prefetch_choco - prefetch_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"iabBot_choco: $iabBot_choco, iabBot_epn: $iabBot_epn, " +
-//          s"IABBot inconsistent: " + (iabBot_choco - iabBot_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"internal_choco: $internal_choco, internal_epn: $internal_epn, " +
-//          s"Internal inconsistent: " + (internal_choco - internal_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"missingReferrer_choco: $missingReferrer_choco, missingReferrer_epn: $missingReferrer_epn, " +
-//          s"MissingReferrer inconsistent: " + (missingReferrer_choco - missingReferrer_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"protocol_choco: $protocol_choco, protocol_epn: $protocol_epn, " +
-//          s"Protocol inconsistent: " + (protocol_choco - protocol_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"tGuidStaleness_choco: $tGuidStaleness_choco, tGuidStaleness_epn: $tGuidStaleness_epn, " +
-//          s"CGuidStaleness inconsistent: " + (tGuidStaleness_choco - tGuidStaleness_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"epnDomainBlacklist_choco: $epnDomainBlacklist_choco, epnDomainBlacklist_epn: $epnDomainBlacklist_epn, " +
-//          s"EpnDomainBlacklist inconsistent: " + (epnDomainBlacklist_choco - epnDomainBlacklist_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"ipBlacklist_choco: $ipBlacklist_choco, ipBlacklist_epn: $ipBlacklist_epn, " +
-//          s"IPBlacklist inconsistent: " + (ipBlacklist_choco - ipBlacklist_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.writeChars(s"ebayBot_choco: $ebayBot_choco, ebayBot_epn: $ebayBot_epn, " +
-//          s"EbayBot inconsistent: " + (ebayBot_choco - ebayBot_epn).toFloat / count1Nodedupe + "\n")
-//        outputStream.flush()
-//      } finally {
-//        if (outputStream != null) {
-//          outputStream.close()
-//        }
-//      }
-//    }
+    println("sampling 10 records:")
+    df.show(numRows = 10, truncate = false)
+
+    val ipPubS = df.where($"IPPubS" === false).count()
+    val ipPubL = df.where($"IPPubL" === false).count()
+    val cGuidS = df.where($"CGuidS" === false).count()
+    val cGuidL = df.where($"CGuidL" === false).count()
+    val cGuidPubS = df.where($"CGuidPubS" === false).count()
+    val cGuidPubL = df.where($"CGuidPubL" === false).count()
+    val snidS = df.where($"SnidS" === false).count()
+    val snidL = df.where($"SnidL" === false).count()
+
+    val prefetch = df.where($"Prefetch" === false).count()
+    val iabBot = df.where($"IABBot" === false).count()
+    val internal = df.where($"Internal" === false).count()
+    val missingReferrer = df.where($"MissingReferrer" === false).count()
+    val protocol = df.where($"Protocol" === false).count()
+    val cGuidStaleness = df.where($"CGuidStaleness" === false).count()
+    val epnDomainBlacklist = df.where($"EpnDomainBlacklist" === false).count()
+    val ipBlacklist = df.where($"IPBlacklist" === false).count()
+    val ebayBot = df.where($"EbayBot" === false).count()
+
+    // 4. Write out result to file on hdfs
+    var outputStream: FSDataOutputStream = null
+    try {
+      outputStream = fs.create(new Path(params.outputPath))
+      outputStream.writeChars(s"Chocolate Total - Nodeupe: $count1Nodedupe \n")
+      outputStream.writeChars(s"Chocolate Total: $count1 \n")
+      //outputStream.writeChars(s"Chocolate DashenId: $countDashenId \n")
+      //outputStream.writeChars(s"Chocolate dashenCntAbove1: $countDashenCntAbove1 \n")
+      outputStream.writeChars(s"EPN Total - Nodedupe: $count2Nodedupe \n")
+      outputStream.writeChars(s"EPN Total: $count2 \n")
+      outputStream.writeChars(s"Join Total: $total \n")
+      outputStream.writeChars(s"Chocolate join ratio: ${((total.toFloat/count1)*100).toInt}% \n")
+      outputStream.writeChars(s"EPN join ratio: ${((total.toFloat/count2)*100).toInt}% \n")
+
+      outputStream.writeChars("-----------------------join diff---------------------------------" + "\n")
+      outputStream.writeChars("IPPubS inconsistent: " + ipPubS.toFloat/total + "\n")
+      outputStream.writeChars("IPPubL inconsistent: " + ipPubL.toFloat/total + "\n")
+      outputStream.writeChars("CGuidS inconsistent: " + cGuidS.toFloat/total + "\n")
+      outputStream.writeChars("CGuidL inconsistent: " + cGuidL.toFloat/total + "\n")
+      outputStream.writeChars("CGuidPubS inconsistent: " + cGuidPubS.toFloat/total + "\n")
+      outputStream.writeChars("CGuidPubL inconsistent: " + cGuidPubL.toFloat/total + "\n")
+      outputStream.writeChars("SnidS inconsistent: " + snidS.toFloat/total + "\n")
+      outputStream.writeChars("SnidL inconsistent: " + snidL.toFloat/total + "\n")
+
+      outputStream.writeChars("Prefetch inconsistent: " + prefetch.toFloat/total + "\n")
+      outputStream.writeChars("IABBot inconsistent: " + iabBot.toFloat/total + "\n")
+      outputStream.writeChars("Internal inconsistent: " + internal.toFloat/total + "\n")
+      outputStream.writeChars("MissingReferrer inconsistent: " + missingReferrer.toFloat/total + "\n")
+      outputStream.writeChars("Protocol inconsistent: " + protocol.toFloat/total + "\n")
+      outputStream.writeChars("CGuidStaleness inconsistent: " + cGuidStaleness.toFloat/total + "\n")
+      outputStream.writeChars("EpnDomainBlacklist inconsistent: " + epnDomainBlacklist.toFloat/total + "\n")
+      outputStream.writeChars("IPBlacklist inconsistent: " + ipBlacklist.toFloat/total + "\n")
+      outputStream.writeChars("EbayBot inconsistent: " + ebayBot.toFloat/total + "\n")
+
+      outputStream.flush()
+    } finally {
+      if (outputStream != null) {
+        outputStream.close()
+      }
+    }
+
+    if (params.selfCheck) {
+      val ipPubS_choco = df1.where($"nrt_rule_flags".bitwiseAND(2) =!= 0).count()
+      val ipPubL_choco = df1.where($"nrt_rule_flags".bitwiseAND(4) =!= 0).count()
+      val cGuidS_choco = df1.where($"nrt_rule_flags".bitwiseAND(32) =!= 0).count()
+      val cGuidL_choco = df1.where($"nrt_rule_flags".bitwiseAND(64) =!= 0).count()
+      val cGuidPubS_choco = df1.where($"nrt_rule_flags".bitwiseAND(8) =!= 0).count()
+      val cGuidPubL_choco = df1.where($"nrt_rule_flags".bitwiseAND(16) =!= 0).count()
+      val snidS_choco = df1.where($"nrt_rule_flags".bitwiseAND(128) =!= 0).count()
+      val snidL_choco = df1.where($"nrt_rule_flags".bitwiseAND(256) =!= 0).count()
+
+      val prefetch_choco = df1.where($"rt_rule_flags".bitwiseAND(2) =!= 0).count()
+      val iabBot_choco = df1.where($"rt_rule_flags".bitwiseAND(8) =!= 0).count()
+      val internal_choco = df1.where($"rt_rule_flags".bitwiseAND(4) =!= 0).count()
+      val missingReferrer_choco = df1.where($"rt_rule_flags".bitwiseAND(4096) =!= 0).count()
+      val protocol_choco = df1.where($"rt_rule_flags".bitwiseAND(2048) =!= 0).count()
+      val tGuidStaleness_choco = df1.where($"rt_rule_flags".bitwiseAND(64) =!= 0).count()
+      val epnDomainBlacklist_choco = df1.where($"rt_rule_flags".bitwiseAND(16) =!= 0).count()
+      val ipBlacklist_choco = df1.where($"rt_rule_flags".bitwiseAND(32) =!= 0).count()
+      val ebayBot_choco = df1.where($"rt_rule_flags".bitwiseAND(1024) =!= 0).count()
+
+      val ipPubS_epn = df2.where($"nrt_rule_flag39" === 1).count()
+      val ipPubL_epn = df2.where($"nrt_rule_flag43" === 1).count()
+      val cGuidS_epn = df2.where($"nrt_rule_flag51" === 1).count()
+      val cGuidL_epn = df2.where($"nrt_rule_flag53" === 1).count()
+      val cGuidPubS_epn = df2.where($"nrt_rule_flag54" === 1).count()
+      val cGuidPubL_epn = df2.where($"nrt_rule_flag56" === 1).count()
+      val snidS_epn = df2.where($"rt_rule_flag12" === 1).count()
+      val snidL_epn = df2.where($"rt_rule_flag13" === 1).count()
+
+      val prefetch_epn = df2.where($"rt_rule_flag2" === 1).count()
+      val iabBot_epn = df2.where($"rt_rule_flag3" === 1 or $"rt_rule_flag4" === 1).count()
+      val internal_epn = df2.where($"rt_rule_flag7" === 1).count()
+      val missingReferrer_epn = df2.where($"rt_rule_flag8" === 1).count()
+      val protocol_epn = df2.where($"rt_rule_flag1" === 1).count()
+      val tGuidStaleness_epn = df2.where($"rt_rule_flag10" === 1).count()
+      val epnDomainBlacklist_epn = df2.where($"rt_rule_flag15" === 1).count()
+      val ipBlacklist_epn = df2.where($"rt_rule_flag6" === 1).count()
+      val ebayBot_epn = df2.where($"rt_rule_flag5" === 1).count()
+
+
+      try {
+        outputStream = fs.append(new Path(params.outputPath))
+
+        outputStream.writeChars("-----------------------count diff--------------------------" + "\n")
+        outputStream.writeChars(s"ipPubS_choco: $ipPubS_choco, ipPubS_epn: $ipPubS_epn, " +
+          s"IPPubS inconsistent: " + (ipPubS_choco - ipPubS_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"ipPubL_choco: $ipPubL_choco, ipPubL_epn: $ipPubL_epn, " +
+          s"IPPubL inconsistent: " + (ipPubL_choco - ipPubL_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"cGuidS_choco: $cGuidS_choco, cGuidS_epn: $cGuidS_epn, " +
+          s"CGuidS inconsistent: " + (cGuidS_choco - cGuidS_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"cGuidL_choco: $cGuidL_choco, cGuidL_epn: $cGuidL_epn, " +
+          s"CGuidL inconsistent: " + (cGuidL_choco - cGuidL_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"cGuidPubS_choco: $cGuidPubS_choco, cGuidPubS_epn: $cGuidPubS_epn, " +
+          s"CGuidPubS inconsistent: " + (cGuidPubS_choco - cGuidPubS_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"cGuidPubL_choco: $cGuidPubL_choco, cGuidPubL_epn: $cGuidPubL_epn, " +
+          s"CGuidPubL inconsistent: " + (cGuidPubL_choco - cGuidPubL_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"snidS_choco: $snidS_choco, snidS_epn: $snidS_epn, " +
+          s"SnidS inconsistent: " + (snidS_choco - snidS_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"snidL_choco: $snidL_choco, snidL_epn: $snidL_epn, " +
+          s"SnidL inconsistent: " + (snidL_choco - snidL_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"prefetch_choco: $prefetch_choco, prefetch_epn: $prefetch_epn, " +
+          s"Prefetch inconsistent: " + (prefetch_choco - prefetch_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"iabBot_choco: $iabBot_choco, iabBot_epn: $iabBot_epn, " +
+          s"IABBot inconsistent: " + (iabBot_choco - iabBot_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"internal_choco: $internal_choco, internal_epn: $internal_epn, " +
+          s"Internal inconsistent: " + (internal_choco - internal_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"missingReferrer_choco: $missingReferrer_choco, missingReferrer_epn: $missingReferrer_epn, " +
+          s"MissingReferrer inconsistent: " + (missingReferrer_choco - missingReferrer_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"protocol_choco: $protocol_choco, protocol_epn: $protocol_epn, " +
+          s"Protocol inconsistent: " + (protocol_choco - protocol_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"tGuidStaleness_choco: $tGuidStaleness_choco, tGuidStaleness_epn: $tGuidStaleness_epn, " +
+          s"CGuidStaleness inconsistent: " + (tGuidStaleness_choco - tGuidStaleness_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"epnDomainBlacklist_choco: $epnDomainBlacklist_choco, epnDomainBlacklist_epn: $epnDomainBlacklist_epn, " +
+          s"EpnDomainBlacklist inconsistent: " + (epnDomainBlacklist_choco - epnDomainBlacklist_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"ipBlacklist_choco: $ipBlacklist_choco, ipBlacklist_epn: $ipBlacklist_epn, " +
+          s"IPBlacklist inconsistent: " + (ipBlacklist_choco - ipBlacklist_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"ebayBot_choco: $ebayBot_choco, ebayBot_epn: $ebayBot_epn, " +
+          s"EbayBot inconsistent: " + (ebayBot_choco - ebayBot_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.flush()
+      } finally {
+        if (outputStream != null) {
+          outputStream.close()
+        }
+      }
+    }
   }
 
   /**
@@ -374,17 +366,5 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     } else {
       mask == 0
     }
-  }
-
-  //parse IP from request_headers
-  def parseIP(): Column = {
-    split(split($"request_headers", "X-eBay-Client-IP: ")(1), """\|""")(0).alias("IP")
-  }
-
-  //parse CGUID from response_headers, if null, parse from request_headers
-  def parseCGUID(): Column = {
-    val CGUID_Response = split($"response_headers", "cguid/")(1).substr(0, 32)
-    val CGUID_Request = split($"request_headers", "cguid/")(1).substr(0, 32)
-    when(CGUID_Response.isNotNull, CGUID_Response).otherwise(CGUID_Request).alias("CGUID")
   }
 }
