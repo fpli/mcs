@@ -29,8 +29,7 @@ public class ProtocolRule extends BaseFilterRule {
     if (event.getProtocol() == null)
       return 1;
     String method = event.getProtocol().toString();
-    if (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("POST") ||
-        method.equalsIgnoreCase("HEAD")) {
+    if (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("POST")) {
       return 0;
     }
     else
