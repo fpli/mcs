@@ -220,16 +220,6 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
     }
   }
 
-  def countNullEpn(df: DataFrame, output: String, col: Column) = {
-    val dfNull = df.select(col)
-      .where(col === "")
-      .repartition(1)
-
-    fs.delete(new Path(output), true)
-    saveDFToFiles(df = dfNull, outputPath = output, compressFormat = null,
-      outputFormat = "csv", delimiter = "tab")
-  }
-
   def verifyEpnQuick(df: DataFrame, outputPath: String) = {
 
     val today = new Path(params.epnTodayPath).getName
