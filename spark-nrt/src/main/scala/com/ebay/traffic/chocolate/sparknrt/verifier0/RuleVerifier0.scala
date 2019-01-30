@@ -67,10 +67,23 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
 
     val today = new Path(params.chocoTodayPath).getName
 
-    groupyByCount(df, outputPath + "/quick/cguid/" + today, $"CGUID")
-    groupyByCount(df, outputPath + "/quick/cguidpub/" + today, $"CGUID", $"publisher_id")
-    groupyByCount(df, outputPath + "/quick/ip/" + today, $"IP")
-    groupyByCount(df, outputPath + "/quick/ippub/" + today, $"IP", $"publisher_id")
+    countNullChoco(df, outputPath + "/quick/null/cguid/" + today, $"CGUID")
+    countNullChoco(df, outputPath + "/quick/null/guid/" + today, $"guid")
+
+//    groupyByCount(df, outputPath + "/quick/cguid/" + today, $"CGUID")
+//    groupyByCount(df, outputPath + "/quick/cguidpub/" + today, $"CGUID", $"publisher_id")
+//    groupyByCount(df, outputPath + "/quick/ip/" + today, $"IP")
+//    groupyByCount(df, outputPath + "/quick/ippub/" + today, $"IP", $"publisher_id")
+  }
+
+  def countNullChoco(df: DataFrame, output: String, col: Column) = {
+    val dfNull = df.select(col, $"request_headers", $"response_headers")
+      .where(col === "")
+      .repartition(1)
+
+    fs.delete(new Path(output), true)
+    saveDFToFiles(df = dfNull, outputPath = output, compressFormat = null,
+      outputFormat = "csv", delimiter = "tab")
   }
 
   def groupyByCount(df: DataFrame, output: String, cols: Column*) = {
@@ -97,7 +110,7 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
       inputFormat = params.chocoInputFormat, delimiter = params.chocoInputDelimiter)
       .where($"channel_action" === "CLICK" and $"channel_type" === "EPN")
       .withColumn("today", lit(0))
-      .select($"snapshot_id", $"timestamp", $"publisher_id", cguid(), ip(), $"today", $"rt_rule_flags", $"nrt_rule_flags")
+      .select($"snapshot_id", $"timestamp", $"publisher_id", $"guid", cguid(), ip(), $"today", $"rt_rule_flags", $"nrt_rule_flags")
 
     val path = new Path(workDir + "/chocolate/", today)
     fs.delete(path, true)
@@ -203,7 +216,7 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
       inputFormat = params.chocoInputFormat, delimiter = params.chocoInputDelimiter)
       .where($"channel_action" === "CLICK" and $"channel_type" === "EPN")
       .withColumn("today", lit(1))
-      .select($"snapshot_id", $"timestamp", $"publisher_id", cguid(), ip(), $"today", $"rt_rule_flags", $"nrt_rule_flags")
+      .select($"snapshot_id", $"timestamp", $"publisher_id", $"guid", cguid(), ip(), $"request_headers", $"response_headers", $"today", $"rt_rule_flags", $"nrt_rule_flags")
 
     val pathToday = new Path(workDir + "/chocolate/today/", (new Path(params.chocoTodayPath).getName))
     fs.delete(pathToday, true)
@@ -220,14 +233,27 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
     }
   }
 
+  def countNullEpn(df: DataFrame, output: String, col: Column) = {
+    val dfNull = df.select(col)
+      .where(col === "")
+      .repartition(1)
+
+    fs.delete(new Path(output), true)
+    saveDFToFiles(df = dfNull, outputPath = output, compressFormat = null,
+      outputFormat = "csv", delimiter = "tab")
+  }
+
   def verifyEpnQuick(df: DataFrame, outputPath: String) = {
 
     val today = new Path(params.epnTodayPath).getName
 
-    groupyByCount(df, outputPath + "/quick/cguid/" + today, $"crltn_guid_txt")
-    groupyByCount(df, outputPath + "/quick/cguidpub/" + today, $"crltn_guid_txt", $"pblshr_id")
-    groupyByCount(df, outputPath + "/quick/ip/" + today, $"clnt_rmt_ip")
-    groupyByCount(df, outputPath + "/quick/ippub/" + today, $"clnt_rmt_ip", $"pblshr_id")
+    countNullChoco(df, outputPath + "/quick/null/cguid/" + today, $"crltn_guid_txt")
+    countNullChoco(df, outputPath + "/quick/null/guid/" + today, $"guid_txt")
+
+//    groupyByCount(df, outputPath + "/quick/cguid/" + today, $"crltn_guid_txt")
+//    groupyByCount(df, outputPath + "/quick/cguidpub/" + today, $"crltn_guid_txt", $"pblshr_id")
+//    groupyByCount(df, outputPath + "/quick/ip/" + today, $"clnt_rmt_ip")
+//    groupyByCount(df, outputPath + "/quick/ippub/" + today, $"clnt_rmt_ip", $"pblshr_id")
 
   }
 
@@ -243,7 +269,6 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
     val dfToday = readFilesAsDF(inputPath = params.epnTodayPath,
       inputFormat = params.epnInputFormat, schema = amsClickSchema, delimiter = params.epnInputDelimiter)
       .withColumn("today", lit(1))
-      .drop($"rover_url_txt")
 
     if (params.epnQuickCheck) {
       verifyEpnQuick(dfToday, params.outputPath + "/epn/")
