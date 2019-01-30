@@ -23,6 +23,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
   // Here lists all fields in order in ams_click that are required for verification.
   val amsClickSchema: StructType = StructType(
     Seq(
+      StructField("click_ts", StringType, nullable = true),
       StructField("click_id", StringType, nullable = true),
       StructField("crltn_guid_txt", StringType, nullable = true),
       StructField("guid_txt", StringType, nullable = true),
@@ -59,11 +60,11 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     // 1. Load chocolate data
     logger.info("load data for inputpath1: " + params.srcPath)
 
-//    val count1Nodedupe = readFilesAsDF(params.srcPath)
-//      .where($"channel_action" === "CLICK" and $"channel_type" === "EPN")
-//      .count()
-//
-//    println("number of records in df1 nodedupe: " + count1Nodedupe)
+    val count1Nodedupe = readFilesAsDF(params.srcPath)
+      .where($"channel_action" === "CLICK" and $"channel_type" === "EPN")
+      .count()
+
+    println("number of records in df1 nodedupe: " + count1Nodedupe)
 
     /*
     val containsDashenIdUdf = udf(containsDashenId(_: String))
@@ -81,10 +82,9 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
 
     val removeParamsUdf = udf(removeParams(_: String))
     var df1 = readFilesAsDF(params.srcPath)
-      .where($"channel_action" === "CLICK" and $"channel_type" === "EPN")
+      .where($"channel_action" === "CLICK" and $"channel_type" === "EPN" and $"cguid" === "")
       .withColumn("new_uri", removeParamsUdf($"uri"))
-      .drop("uri")
-      .select(concat_ws(",", $"new_uri", $"publisher_id").as("uri_pub_choco"), parseIP())
+      .select("new_uri", "cguid", "request_headers", "response_headers")
 
     val path1 = new Path(workDir + "/chocolate/", (new Path(params.srcPath).getName))
     fs.delete(path1, true)
@@ -99,17 +99,16 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     // 2. Load EPN data fetched from ams_click
     logger.info("load data for inputpath2: " + params.targetPath)
 
-//    val count2Nodedupe = readFilesAsDF(params.targetPath, inputFormat = "csv", schema = amsClickSchema, delimiter = "bel")
-//      .count()
-//
-//    println("number of records in df2 nodedupe: " + count2Nodedupe)
+    val count2Nodedupe = readFilesAsDF(params.targetPath, inputFormat = "csv", schema = amsClickSchema, delimiter = "bel")
+      .count()
+
+    println("number of records in df2 nodedupe: " + count2Nodedupe)
 
     val normalizeUrlUdf = udf((roverUrl: String) => normalizeUrl(roverUrl))
     // assume df2 only has columns that we want!
     var df2 = readFilesAsDF(params.targetPath, inputFormat = "csv", schema = amsClickSchema, delimiter = "bel")
       .withColumn("rover_url", normalizeUrlUdf(col("rover_url_txt")))
-      .drop("rover_url_txt")
-      .select(concat_ws(",", $"rover_url", $"pblshr_id").as("uri_pub_epn"), $"clnt_rmt_ip")
+      .select("rover_url", "crltn_guid_txt")
 
     val path2 = new Path(workDir + "/epn/", (new Path(params.targetPath).getName))
     fs.delete(path2, true)
@@ -128,7 +127,9 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     val verifyByBitUdf1 = udf(verifyByBit(_: Int, _: Long, _: String))
     val verifyByBitUdf2 = udf(verifyByBit(_: Int, _: Long, _: String, _: String))
 
-//    var df = df1.join(df2, $"new_uri" === $"rover_url", "inner")
+    var df = df1.join(df2, $"new_uri" === $"rover_url", "inner")
+      .select("rover_url", "cguid", "crltn_guid_txt", "request_headers", "response_headers")
+      .repartition(1)
 //      .withColumn("IPPubS", verifyByBitUdf1(lit(1), $"nrt_rule_flags", $"nrt_rule_flag39"))
 //      .withColumn("IPPubL", verifyByBitUdf1(lit(2), $"nrt_rule_flags", $"nrt_rule_flag43"))
 //      .withColumn("CGuidS", verifyByBitUdf1(lit(5), $"nrt_rule_flags", $"nrt_rule_flag51"))
@@ -148,19 +149,23 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
 //      .withColumn("EbayBot", verifyByBitUdf1(lit(10), $"rt_rule_flags", $"rt_rule_flag5"))
 //      .drop("new_uri")
 
-    var df = df1.join(df2, $"uri_pub_choco" === $"uri_pub_epn", "inner")
+//    val path = new Path(workDir + "/join/", (new Path(params.srcPath).getName))
+//    fs.delete(path, true)
+//    saveDFToFiles(df, path.toString)
+    val today = new Path(params.srcPath).getName
+    val output = params.outputPath + "/chocolate/nullCguid/" + today
+    fs.delete(new Path(output), true)
+    saveDFToFiles(df = df, outputPath = output, compressFormat = null,
+      outputFormat = "csv", delimiter = "tab")
 
-    val path = new Path(workDir + "/join/", (new Path(params.srcPath).getName))
-    fs.delete(path, true)
-    saveDFToFiles(df, path.toString)
-    df = readFilesAsDF(path.toString)
-    val total = df.count()
-
-    val ipMatch = df.where($"IP" === $"clnt_rmt_ip").count()
-
-    println("sampling 10 records:")
-    df.show(numRows = 10, truncate = false)
-
+//    df = readFilesAsDF(path.toString)
+//    val total = df.count()
+//
+//    val ipMatch = df.where($"IP" === $"clnt_rmt_ip").count()
+//
+//    println("sampling 10 records:")
+//    df.show(numRows = 10, truncate = false)
+//
 //    val ipPubS = df.where($"IPPubS" === false).count()
 //    val ipPubL = df.where($"IPPubL" === false).count()
 //    val cGuidS = df.where($"CGuidS" === false).count()
@@ -179,22 +184,22 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
 //    val epnDomainBlacklist = df.where($"EpnDomainBlacklist" === false).count()
 //    val ipBlacklist = df.where($"IPBlacklist" === false).count()
 //    val ebayBot = df.where($"EbayBot" === false).count()
-
-    // 4. Write out result to file on hdfs
-    var outputStream: FSDataOutputStream = null
-    try {
-      outputStream = fs.create(new Path(params.outputPath))
-      //outputStream.writeChars(s"Chocolate Total - Nodeupe: $count1Nodedupe \n")
-      outputStream.writeChars(s"Chocolate Total: $count1 \n")
-      //outputStream.writeChars(s"Chocolate DashenId: $countDashenId \n")
-      //outputStream.writeChars(s"Chocolate dashenCntAbove1: $countDashenCntAbove1 \n")
-      //outputStream.writeChars(s"EPN Total - Nodedupe: $count2Nodedupe \n")
-      outputStream.writeChars(s"EPN Total: $count2 \n")
-      outputStream.writeChars(s"Join Total: $total \n")
-      outputStream.writeChars(s"Chocolate join ratio: ${((total.toFloat/count1)*100).toInt}% \n")
-      outputStream.writeChars(s"EPN join ratio: ${((total.toFloat/count2)*100).toInt}% \n")
-      outputStream.writeChars(s"IP match: $ipMatch \n")
-
+//
+//    // 4. Write out result to file on hdfs
+//    var outputStream: FSDataOutputStream = null
+//    try {
+//      outputStream = fs.create(new Path(params.outputPath))
+//      //outputStream.writeChars(s"Chocolate Total - Nodeupe: $count1Nodedupe \n")
+//      outputStream.writeChars(s"Chocolate Total: $count1 \n")
+//      //outputStream.writeChars(s"Chocolate DashenId: $countDashenId \n")
+//      //outputStream.writeChars(s"Chocolate dashenCntAbove1: $countDashenCntAbove1 \n")
+//      //outputStream.writeChars(s"EPN Total - Nodedupe: $count2Nodedupe \n")
+//      outputStream.writeChars(s"EPN Total: $count2 \n")
+//      outputStream.writeChars(s"Join Total: $total \n")
+//      outputStream.writeChars(s"Chocolate join ratio: ${((total.toFloat/count1)*100).toInt}% \n")
+//      outputStream.writeChars(s"EPN join ratio: ${((total.toFloat/count2)*100).toInt}% \n")
+//      outputStream.writeChars(s"IP match: $ipMatch \n")
+//
 //      outputStream.writeChars("-----------------------join diff---------------------------------" + "\n")
 //      outputStream.writeChars("IPPubS inconsistent: " + ipPubS.toFloat/total + "\n")
 //      outputStream.writeChars("IPPubL inconsistent: " + ipPubL.toFloat/total + "\n")
@@ -214,14 +219,14 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
 //      outputStream.writeChars("EpnDomainBlacklist inconsistent: " + epnDomainBlacklist.toFloat/total + "\n")
 //      outputStream.writeChars("IPBlacklist inconsistent: " + ipBlacklist.toFloat/total + "\n")
 //      outputStream.writeChars("EbayBot inconsistent: " + ebayBot.toFloat/total + "\n")
-
-      outputStream.flush()
-    } finally {
-      if (outputStream != null) {
-        outputStream.close()
-      }
-    }
-
+//
+//      outputStream.flush()
+//    } finally {
+//      if (outputStream != null) {
+//        outputStream.close()
+//      }
+//    }
+//
 //    if (params.selfCheck) {
 //      val ipPubS_choco = df1.where($"nrt_rule_flags".bitwiseAND(2) =!= 0).count()
 //      val ipPubL_choco = df1.where($"nrt_rule_flags".bitwiseAND(4) =!= 0).count()
