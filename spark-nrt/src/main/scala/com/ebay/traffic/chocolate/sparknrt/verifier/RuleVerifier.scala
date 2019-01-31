@@ -311,7 +311,14 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     */
   def removeParams(url: String): String = {
     val splitter = url.split("&").filter(item => !item.startsWith("dashenId") && !item.startsWith("dashenCnt"))
-    splitter.mkString("&")
+    var result = splitter.mkString("&")
+    if (result.startsWith("http://")) {
+      result = result.substring(7)
+    } else if (result.startsWith("https://")) {
+      result = result.substring(8)
+    }
+
+    result
   }
 
   def containsDashenId(url: String): String = {
@@ -345,6 +352,11 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     val lastChar = result.charAt(result.length - 1)
     if (lastChar == '&' || lastChar == '?') {
       result = result.substring(0, result.length - 1)
+    }
+    if (result.startsWith("http://")) {
+      result = result.substring(7)
+    } else if (result.startsWith("https://")) {
+      result = result.substring(8)
     }
     result
   }
