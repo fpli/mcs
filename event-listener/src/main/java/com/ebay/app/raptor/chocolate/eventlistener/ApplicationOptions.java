@@ -6,7 +6,8 @@ import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -26,7 +27,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   /**
    * Private logging instance
    */
-  private static final Logger logger = Logger.getLogger(ApplicationOptions.class);
+  private static final Logger logger = LoggerFactory.getLogger(ApplicationOptions.class);
 
   /**
    * Singleton instance
