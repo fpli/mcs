@@ -31,7 +31,7 @@
     <couchbase.client.version>2.5.9</couchbase.client.version>
     <dukes.version>1.4.13.raptor2</dukes.version>
     <rheos.version>0.0.7-SNAPSHOT</rheos.version>
-    <metrics.version>1.0.5-RELEASE</metrics.version>
+    <metrics.version>1.0.6-RELEASE</metrics.version>
     <jackson.version>2.9.5</jackson.version>
     <jacoco.dump.skip>true</jacoco.dump.skip>
     <scoverage.plugin.version>1.3.0</scoverage.plugin.version>
