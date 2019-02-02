@@ -11,7 +11,8 @@ import com.ebay.kernel.util.StringUtils;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -29,7 +30,7 @@ public class ListenerMessageParser {
   /**
    * Logging instance
    */
-  private static final Logger logger = Logger.getLogger(ListenerMessageParser.class);
+  private static final Logger logger = LoggerFactory.getLogger(ListenerMessageParser.class);
   private static ListenerMessageParser INSTANCE;
   private static final long DEFAULT_PUBLISHER_ID = -1L;
 

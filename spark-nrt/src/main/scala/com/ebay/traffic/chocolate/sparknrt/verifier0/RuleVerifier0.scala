@@ -28,6 +28,7 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
 
   val amsClickSchema: StructType = StructType(
     Seq(
+      StructField("click_ts", StringType, nullable = true),
       StructField("click_id", StringType, nullable = true),
       StructField("crltn_guid_txt", StringType, nullable = true),
       StructField("guid_txt", StringType, nullable = true),
@@ -242,7 +243,6 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
     val dfToday = readFilesAsDF(inputPath = params.epnTodayPath,
       inputFormat = params.epnInputFormat, schema = amsClickSchema, delimiter = params.epnInputDelimiter)
       .withColumn("today", lit(1))
-      .drop($"rover_url_txt")
 
     if (params.epnQuickCheck) {
       verifyEpnQuick(dfToday, params.outputPath + "/epn/")

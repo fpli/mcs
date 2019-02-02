@@ -11,6 +11,8 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -29,7 +31,7 @@ import javax.ws.rs.core.Response;
 @Path("/v1")
 @Consumes(MediaType.APPLICATION_JSON)
 public class EventListenerResource implements EventsApi {
-
+  private static final Logger logger = LoggerFactory.getLogger(CollectionService.class);
   @Autowired
   private CollectionService collectionService;
 
@@ -60,6 +62,7 @@ public class EventListenerResource implements EventsApi {
         Tags.STATUS.set(span, "0");
         return res;
       } catch (Exception e) {
+        logger.error(e.getMessage(), e);
         Tags.STATUS.set(span, e.getClass().getSimpleName());
         throw errorFactoryV3.makeException(e.getMessage());
       }
