@@ -9,6 +9,7 @@ import com.ebay.traffic.chocolate.listener.util.HttpMethodEnum;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -37,7 +38,7 @@ import static org.mockito.Mockito.*;
 public class DefaultChannelTest {
   private MockHttpServletRequest mockClientRequest;
   private MessageObjectParser mockMessageParser;
-  private ESMetrics mockESMetrics;
+  private Metrics mockMetrics;
   private MockHttpServletResponse mockProxyResponse;
   private Producer mockProducer;
   private DefaultChannel channel;
@@ -57,9 +58,9 @@ public class DefaultChannelTest {
    mockProducer = mock(KafkaProducer.class);
    PowerMockito.mockStatic(KafkaSink.class);
    PowerMockito.when(KafkaSink.get()).thenReturn(mockProducer);
-   mockESMetrics = mock(ESMetrics.class);
+   mockMetrics = mock(Metrics.class);
    PowerMockito.mockStatic(ESMetrics.class);
-   PowerMockito.when(ESMetrics.getInstance()).thenReturn(mockESMetrics);
+   PowerMockito.when(ESMetrics.getInstance()).thenReturn(mockMetrics);
    mockMessageParser = mock(MessageObjectParser.class);
    PowerMockito.mockStatic(MessageObjectParser.class);
    PowerMockito.when(MessageObjectParser.getInstance()).thenReturn(mockMessageParser);
