@@ -130,11 +130,18 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("user_query", getUserQueryUdf(col("uri")))
       .withColumn("rule_bit_flag_strng", col("rt_rule_flags"))
       .withColumn("event_ts", getDateTimeUdf(col("timestamp")))
+      .withColumn("perf_track_name_value", getUserQueryUdf(col("uri")))
       .withColumn("keyword", getKeywordUdf(col("uri")))
       .withColumn("mt_id", getDefaultNullNumParamValueFromUrlUdf(col("uri"), lit("mt_id")))
       .withColumn("crlp", getParamFromQueryUdf(col("uri"), lit("crlp")))
       .withColumn("user_map_ind", getUserMapIndUdf(col("user_id")))
       .withColumn("item_id", getItemIdUdf(col("uri")))
+
+    for (i <- 1 to 20) {
+      val columnName = "flex_field_" + i
+      val paramName = "ff" + i
+      imkDf = imkDf.withColumn(columnName, getParamFromQueryUdf(col(paramName)))
+    }
 
     val schema_imk_table = TableSchema("df_imk.json")
     schema_imk_table.filterNotColumns(imkDf.columns).foreach(e => {
