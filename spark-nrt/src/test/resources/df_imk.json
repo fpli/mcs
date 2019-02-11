@@ -351,6 +351,11 @@
       "name": "mgvaluereason",
       "dataType": "string",
       "default": ""
+    },
+    {
+      "name": "delimeter",
+      "dataType": "string",
+      "default": ""
     }
   ]
 }

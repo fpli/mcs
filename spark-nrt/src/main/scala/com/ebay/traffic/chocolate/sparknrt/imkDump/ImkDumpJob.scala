@@ -147,7 +147,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     schema_imk_table.filterNotColumns(imkDf.columns).foreach(e => {
       imkDf = imkDf.withColumn(e, lit(schema_imk_table.defaultValues(e)))
     })
-    imkDf.select(schema_imk_table.columnNames.head, schema_imk_table.columnNames.tail: _*).withColumn("delimeter", lit(""))
+    imkDf.select(schema_imk_table.dfColumns: _*)
   }
 
   val getUserQueryUdf: UserDefinedFunction = udf((uri: String) => Tools.getQueryString(uri))
