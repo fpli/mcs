@@ -37,7 +37,7 @@ class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializa
     var impressionDf = df
       .withColumn("google_fltr_do_flag", common.get_google_fltr_do_flag_udf(col("request_headers"), col("publisher_id")))
       .withColumn("traffic_source_code", common.get_trfc_src_cd_impression_udf(col("rt_rule_flags")))
-      .withColumn("ams_fltr_roi_value", common.get_roi_fltr_yn_ind_udf(col("uri"), col("publisher_id"), col("request_headers"), col("google_fltr_do_flag"), col("traffic_source_code")))
+      .withColumn("ams_fltr_roi_value", common.get_roi_fltr_yn_ind_udf(col("uri"), col("publisher_id"), col("request_headers"), col("google_fltr_do_flag"), col("traffic_source_code"), col("rt_rule_flags")))
       .withColumn("IMPRSN_CNTNR_ID", col("short_snapshot_id"))
       .withColumn("FILE_SCHM_VRSN_NUM", lit(4))
       .withColumn("FILE_ID", lit(1995))
@@ -117,7 +117,7 @@ class ImpressionDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializa
       .withColumn("RT_RULE_FLAG6", common.get_rule_flag_udf(col("rt_rule_flags"), lit(5)))
       .withColumn("RT_RULE_FLAG7", common.get_rule_flag_udf(col("rt_rule_flags"), lit(2)))
       .withColumn("RT_RULE_FLAG8", common.get_rule_flag_udf(col("rt_rule_flags"), lit(12)))
-      .withColumn("RT_RULE_FLAG9", lit(0))
+      .withColumn("RT_RULE_FLAG9", common.get_rule_flag_udf(col("rt_rule_flags"), lit(13)))
       .withColumn("RT_RULE_FLAG10", common.get_rule_flag_udf(col("rt_rule_flags"), lit(6)))
       .withColumn("RT_RULE_FLAG11", lit(0))
       .withColumn("RT_RULE_FLAG12", lit(0))
