@@ -16,7 +16,8 @@ import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
@@ -42,7 +43,7 @@ import java.util.List;
 @Component
 @DependsOn("EventListenerService")
 public class CollectionService {
-  private static final Logger logger = Logger.getLogger(CollectionService.class);
+  private static final Logger logger = LoggerFactory.getLogger(CollectionService.class);
   private Metrics metrics;
   private ListenerMessageParser parser;
   private static CollectionService instance = null;
@@ -244,7 +245,7 @@ public class CollectionService {
       // populate device info
       CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
     } catch (Exception ex) {
-      logger.error("Error when tracking ubi: " + ex.toString());
+      logger.error("Error when tracking ubi", ex);
       metrics.meter("ErrorTrackUbi");
     }
 

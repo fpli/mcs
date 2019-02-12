@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
-import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import com.ebay.traffic.chocolate.sparknrt.capping.rules._
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.spark.sql.functions.coalesce
@@ -56,13 +55,6 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
         new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj)
     )
   )
-
-  @transient lazy val metrics: Metrics = {
-    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
-      ESMetrics.init(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
-      ESMetrics.getInstance()
-    } else null
-  }
 
   def preTest() = {
     val channelRules = channelsRules.get(ChannelType.valueOf(params.channel)).iterator
@@ -119,45 +111,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
         .drop("snapshot_id_tmp")
         .drop("nrt_rule_flags_tmp")
 
-    //metrics
-    if (params.cappingMetrics) {
-      val dfMetrics = dfResult.filter($"nrt_rule_flags" =!= 0)
-      val head = dfResult.take(1)
-      if (head.length == 0) {
-        dfResult
-      } else {
-        val firstEvent = head(0)
-        val eventTime = firstEvent.getLong(firstEvent.fieldIndex("timestamp"))
-        val capping = dfMetrics.count()
-        if (metrics != null) {
-          metrics.meter("CappingCount", capping, eventTime)
-          metrics.meter("IPPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_S, "CLICK", "EPN"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "EPN"))
-          metrics.meter("IPPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_S, "CLICK", "DISPLAY"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "DISPLAY"))
-          metrics.meter("IPPubLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_L, "CLICK", "EPN"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "EPN"))
-          metrics.meter("IPPubLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_L, "CLICK", "DISPLAY"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "DISPLAY"))
-          metrics.meter("CGUIDShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDCappingRule_S, "CLICK", "EPN"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "EPN"))
-          metrics.meter("CGUIDShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDCappingRule_S, "CLICK", "DISPLAY"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "DISPLAY"))
-          metrics.meter("CGUIDLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDCappingRule_L, "CLICK", "EPN"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "EPN"))
-          metrics.meter("CGUIDLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDCappingRule_L, "CLICK", "DISPLAY"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "DISPLAY"))
-          metrics.meter("CGUIDPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDPubCappingRule_S, "CLICK", "EPN"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "EPN"))
-          metrics.meter("CGUIDPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDPubCappingRule_S, "CLICK", "DISPLAY"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "DISPLAY"))
-          metrics.meter("CGUIDPubLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDPubCappingRule_L, "CLICK", "EPN"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "EPN"))
-          metrics.meter("CGUIDPubLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDPubCappingRule_L, "CLICK", "DISPLAY"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "DISPLAY"))
-          metrics.meter("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S, "CLICK", "EPN"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "EPN"))
-          metrics.meter("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S, "CLICK", "DISPLAY"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "DISPLAY"))
-          metrics.meter("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L, "CLICK", "EPN"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "EPN"))
-          metrics.meter("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L, "CLICK", "DISPLAY"), eventTime, Field.of[String, AnyRef]("channelAction", "CLICK"), Field.of[String, AnyRef]("channelType", "DISPLAY"))
-          metrics.flush()
-        }
-      }
-    }
-
     dfResult
-  }
-
-  def CappingCount(df: DataFrame, value: CappingRuleEnum.Value, channelAction: String, channelType: String): Long = {
-    df.filter($"channel_action" === channelAction and $"channel_type" === channelType)
-        .filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(value)).=!=(0)).count()
   }
 
   def postTest() = {

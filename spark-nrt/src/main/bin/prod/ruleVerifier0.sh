@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - Reporting
 
-usage="Usage: ruleVerifier.sh [workPath] [srcPath] [targetPath] [outputPath] [selfCheck]"
+usage="Usage: ruleVerifier0.sh [workPath] [chocoTodayPath] [chocoYesterdayPath] [chocoQuickCheck] [epnTodayPath] [epnYesterdayPath] [epnQuickCheck] [outputPath]"
 
 # if no args specified, show usage
 if [ $# -le 3 ]; then
@@ -15,22 +15,24 @@ bin=`cd "$bin">/dev/null; pwd`
 . ${bin}/../chocolate-env.sh
 
 WORK_PATH=$1
-SRC_PATH=$2
-TARGET_PATH=$3
-OUTPUT_PATH=$4
-SELF_CHECK=$5
+CHOCO_TODAY_PATH=$2
+CHOCO_YESTERDAY_PATH=$3
+CHOCO_QUICK_CHECK=$4
+EPN_TODAY_PATH=$5
+EPN_YESTERDAY_PATH=$6
+EPN_QUICK_CHECK=$7
+OUTPUT_PATH=$8
 
 DRIVER_MEMORY=10g
 EXECUTOR_NUMBER=30
 EXECUTOR_MEMORY=16g
 EXECUTOR_CORES=4
 
-SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/chocolate/logs/verifier
-HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
-JOB_NAME="RuleVerifier"
+SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/verifier
+JOB_NAME="RuleVerifier0"
 
 ${SPARK_HOME}/bin/spark-submit \
-    --class com.ebay.traffic.chocolate.sparknrt.verifier.RuleVerifier \
+    --class com.ebay.traffic.chocolate.sparknrt.verifier0.RuleVerifier0 \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
@@ -41,12 +43,14 @@ ${SPARK_HOME}/bin/spark-submit \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=8192 \
     --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
-    --conf spark.yarn.historyServer.address=${HISTORY_SERVER} \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
       --workPath ${WORK_PATH} \
-      --srcPath ${SRC_PATH} \
-      --targetPath ${TARGET_PATH} \
-      --outputPath ${OUTPUT_PATH} \
-      --selfCheck ${SELF_CHECK}
+      --chocoTodayPath ${CHOCO_TODAY_PATH} \
+      --chocoYesterdayPath ${CHOCO_YESTERDAY_PATH} \
+      --chocoQuickCheck ${CHOCO_QUICK_CHECK} \
+      --epnTodayPath ${EPN_TODAY_PATH} \
+      --epnYesterdayPath ${EPN_YESTERDAY_PATH} \
+      --epnQuickCheck ${EPN_QUICK_CHECK} \
+      --outputPath ${OUTPUT_PATH}

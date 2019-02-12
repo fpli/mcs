@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 @PrepareForTest({ListenerOptions.class, KafkaSink.class})
 public class TrackingServletTest {
 
-  private Metrics mockESMetrics;
+  private Metrics mockMetrics;
   private Producer mockProducer;
   private TrackingServlet servlet;
   private MessageObjectParser mockParser;
@@ -42,7 +42,7 @@ public class TrackingServletTest {
 
   @Before
   public void setUp() {
-    mockESMetrics = mock(ESMetrics.class);
+    mockMetrics = mock(Metrics.class);
     mockParser = mock(MessageObjectParser.class);
 
     ListenerOptions mockOptions = mock(ListenerOptions.class);
@@ -58,7 +58,7 @@ public class TrackingServletTest {
     PowerMockito.mockStatic(KafkaSink.class);
     PowerMockito.when(KafkaSink.get()).thenReturn(mockProducer);
 
-    servlet = new TrackingServlet(mockESMetrics, mockParser);
+    servlet = new TrackingServlet(mockMetrics, mockParser);
     servlet.init();
   }
 

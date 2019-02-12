@@ -1,10 +1,10 @@
 #!/bin/bash
-# run spark job on YARN - CappingRule
+# run spark job on YARN - Monitoring
 
-usage="Usage: cappingRule.sh [channel] [workDir] [outputDir] [archiveDir] [ipThreshold] [elasticsearchUrl]"
+usage="Usage: monitoring.sh [channel] [workDir] [elasticsearchUrl]"
 
 # if no args specified, show usage
-if [ $# -le 3 ]; then
+if [ $# -le 1 ]; then
   echo $usage
   exit 1
 fi
@@ -16,19 +16,16 @@ bin=`cd "$bin">/dev/null; pwd`
 
 CHANNEL=$1
 WORK_DIR=$2
-OUTPUT_DIR=$3
-ARCHIVE_DIR=$4
-IP_THRESHOLD=$5
-ES_URL=$6
+ES_URL=$3
 
-DRIVER_MEMORY=10g
+DRIVER_MEMORY=8g
 EXECUTOR_NUMBER=30
-EXECUTOR_MEMORY=16g
+EXECUTOR_MEMORY=8g
 EXECUTOR_CORES=4
 
-SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/capping
+SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/monitoring
 
-JOB_NAME="cappingRule"
+JOB_NAME="Monitoring"
 
 for f in $(find $bin/../../conf/prod -name '*.*');
 do
@@ -37,7 +34,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.sparknrt.capping.CappingRuleJob \
+    --class com.ebay.traffic.chocolate.sparknrt.monitoring.MonitoringJob \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
@@ -53,7 +50,4 @@ ${SPARK_HOME}/bin/spark-submit \
       --mode yarn \
       --channel ${CHANNEL} \
       --workDir "${WORK_DIR}" \
-      --outputDir ${OUTPUT_DIR} \
-      --archiveDir ${ARCHIVE_DIR} \
-      --ipThreshold ${IP_THRESHOLD} \
       --elasticsearchUrl ${ES_URL}

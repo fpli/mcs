@@ -621,6 +621,43 @@ public class TestHelper {
     message.setSnid("");
     return message;
   }
+
+  public static FilterMessage newFilterMessage(long snapshotId,
+                                               long timestamp,
+                                               ChannelType channelType,
+                                               ChannelAction channelAction,
+                                               long rtRuleFlags,
+                                               long nrtRuleFlags) {
+    FilterMessage message = new FilterMessage();
+    message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
+    message.setTimestamp(timestamp);
+    message.setUserId(1L);
+    message.setCguid("");
+    message.setGuid("");
+    message.setRemoteIp("127.0.0.1");
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setGeoId(1L);
+    message.setUdid("");
+    message.setReferer("");
+    message.setCampaignId(1L);
+    message.setPublisherId(11L);
+    message.setSiteId(1L);
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setRequestHeaders("");
+    message.setUri("");
+    message.setResponseHeaders("");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setRtRuleFlags(rtRuleFlags);
+    message.setNrtRuleFlags(nrtRuleFlags);
+    message.setSnid("");
+    return message;
+  }
   
   /**
    * Create listener message
