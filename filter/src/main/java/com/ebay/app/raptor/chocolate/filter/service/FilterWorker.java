@@ -21,6 +21,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -46,6 +47,12 @@ public class FilterWorker extends Thread {
 
   // Shutdown signal.
   private final AtomicBoolean shutdownRequested = new AtomicBoolean(false);
+
+  private final int maxThreadNum = 10;
+  private final Executor executor = Executors.newFixedThreadPool(maxThreadNum);
+  private final CompletionService<FilterMessage> completionService =
+    new ExecutorCompletionService<>(executor);
+
 
   public FilterWorker(ChannelType channelType, String inputTopic,
                       Properties properties, String outputTopic,
@@ -93,32 +100,45 @@ public class FilterWorker extends Thread {
         int passed = 0;
         long startTime = System.currentTimeMillis();
         while (iterator.hasNext()) {
-          ConsumerRecord<Long, ListenerMessage> record = iterator.next();
-          ListenerMessage message = record.value();
-          metrics.meter("FilterInputCount", 1, message.getTimestamp(),
+          int threadNum = 0;
+          for(int i = 0; i < maxThreadNum && iterator.hasNext(); i++) {
+            ConsumerRecord<Long, ListenerMessage> record = iterator.next();
+
+            ListenerMessage message = record.value();
+            metrics.meter("FilterInputCount", 1, message.getTimestamp(),
               Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
               Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
-          long latency = System.currentTimeMillis() - message.getTimestamp();
-          metrics.mean("FilterLatency", latency);
+            long latency = System.currentTimeMillis() - message.getTimestamp();
+            metrics.mean("FilterLatency", latency);
 
-          ++count;
-          metrics.meter("FilterThroughput", 1, message.getTimestamp(),
+            ++count;
+            metrics.meter("FilterThroughput", 1, message.getTimestamp(),
               Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
               Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
 
-          FilterMessage outMessage = processMessage(message);
+            // cache current offset for partition*
+            offsets.put(record.partition(), record.offset());
 
-          if (outMessage.getRtRuleFlags() == 0) {
-            ++passed;
-            metrics.meter("FilterPassedCount", 1, outMessage.getTimestamp(),
-                Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
-                Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
+            completionService.submit(() -> processMessage(record.value()));
+            threadNum++;
           }
 
-          // cache current offset for partition*
-          offsets.put(record.partition(), record.offset());
+          // wait
+          int received = 0;
+          while (received < threadNum) {
+            Future<FilterMessage> resultFuture = completionService.take();
+            FilterMessage outMessage = resultFuture.get();
+            received++;
+            if (outMessage.getRtRuleFlags() == 0) {
+              ++passed;
+              metrics.meter("FilterPassedCount", 1, outMessage.getTimestamp(),
+                Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
+                Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
+            }
 
-          producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
+            producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
+
+          }
         }
 
         // flush logic
