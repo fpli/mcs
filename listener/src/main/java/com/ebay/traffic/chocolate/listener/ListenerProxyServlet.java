@@ -9,10 +9,10 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.channel.Channel;
 import com.ebay.traffic.chocolate.listener.channel.ChannelFactory;
-import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -55,7 +55,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
   private static String outputHttpsPort;
   private static int inputHttpPort;
   private static int inputHttpsPort;
-  private ESMetrics esMetrics;
+  private Metrics metrics;
   private Channel channel;
   private MessageObjectParser parser;
 
@@ -67,10 +67,10 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
     outputHttpsPort = config.getInitParameter(ListenerOptions.OUTPUT_HTTPS_PORT);
     inputHttpPort = Integer.parseInt(config.getInitParameter(ListenerOptions.INPUT_HTTP_PORT));
     inputHttpsPort = Integer.parseInt(config.getInitParameter(ListenerOptions.INPUT_HTTPS_PORT));
-    esMetrics = ESMetrics.getInstance();
-    esMetrics.meter(PROXY_FAILURE, 0);
-    esMetrics.meter(CLIENT_FAILURE, 0);
-    esMetrics.meter(MALFORMED_URL, 0);
+    metrics = ESMetrics.getInstance();
+    metrics.meter(PROXY_FAILURE, 0);
+    metrics.meter(CLIENT_FAILURE, 0);
+    metrics.meter(MALFORMED_URL, 0);
     channel = ChannelFactory.createChannel();
     parser = MessageObjectParser.getInstance();
     super.init();
@@ -114,7 +114,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
    */
   @Override
   protected void onProxyResponseFailure(HttpServletRequest clientRequest, HttpServletResponse proxyResponse, Response serverResponse, Throwable failure) {
-    esMetrics.meter(PROXY_FAILURE);
+    metrics.meter(PROXY_FAILURE);
     logger.warn(failure);
     super.onProxyResponseFailure(clientRequest, proxyResponse, serverResponse, failure);
   }
@@ -125,7 +125,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
    */
   @Override
   protected void onClientRequestFailure(HttpServletRequest clientRequest, org.eclipse.jetty.client.api.Request proxyRequest, HttpServletResponse proxyResponse, Throwable failure) {
-    esMetrics.meter(CLIENT_FAILURE);
+    metrics.meter(CLIENT_FAILURE);
     logger.warn(failure);
     super.onClientRequestFailure(clientRequest, proxyRequest, proxyResponse, failure);
   }
@@ -142,7 +142,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
       URI rewrittenURI = URI.create(super.rewriteTarget(clientRequest));
       return setPort(rewrittenURI, portMapping(clientRequest.getLocalPort()));
     } catch (IllegalArgumentException e) {
-      esMetrics.meter(MALFORMED_URL);
+      metrics.meter(MALFORMED_URL);
       String kafkaMalformedTopic = ListenerOptions.getInstance().getListenerFilteredTopic();
       Producer<Long, ListenerMessage> producer = KafkaSink.get();
       ListenerMessage message = new ListenerMessage(-1L, -1L, -1L, -1L, "", "", "", "", "", -1L, "", "",

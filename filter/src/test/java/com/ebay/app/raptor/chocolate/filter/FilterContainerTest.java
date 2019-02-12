@@ -4,8 +4,11 @@ import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
-import com.ebay.app.raptor.chocolate.filter.service.*;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.app.raptor.chocolate.filter.service.FilterContainer;
+import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
+import com.ebay.app.raptor.chocolate.filter.service.FilterRule;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -23,7 +26,7 @@ public class FilterContainerTest {
   @BeforeClass
   public static void setUp() {
     ESMetrics.init("test", "localhost");
-    ESMetrics es = ESMetrics.getInstance();
+    Metrics metrics = ESMetrics.getInstance();
   }
 
   @Test

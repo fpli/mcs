@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.kafka;
 
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;

@@ -4,7 +4,7 @@ import java.util.Date
 
 import com.ebay.traffic.chocolate.conf.CheckTask
 import com.ebay.traffic.chocolate.hdfs.{FileSystemReader, FileSystemWriter}
-import com.ebay.traffic.chocolate.monitoring.ESMetrics
+import com.ebay.traffic.monitoring.Metrics
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.slf4j.LoggerFactory
 
@@ -20,7 +20,7 @@ object TaskManger {
     *
     * @param tasks
     */
-  def runTasks(tasks: List[CheckTask], esMetrics: ESMetrics, spark: SparkSession) = {
+  def runTasks(tasks: List[CheckTask], esMetrics: Metrics, spark: SparkSession) = {
     for (task <- tasks) {
       runTask(task, esMetrics, spark)
     }
@@ -31,7 +31,7 @@ object TaskManger {
     *
     * @param checkTask
     */
-  def runTask(checkTask: CheckTask, esMetrics: ESMetrics, spark: SparkSession) = {
+  def runTask(checkTask: CheckTask, esMetrics: Metrics, spark: SparkSession) = {
     if (isRunnableTask(checkTask) && checkTask.period != 0) {
       //for many time one day
       //step 1.read last count from hdfs (c1);

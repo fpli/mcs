@@ -3,8 +3,8 @@
     <type>Service</type>
     <public>false</public>
     <!-- Mandatory field -->
-    <description>Chocolate Event Listener</description>
-    <name>chocoeventlis</name>
+    <description>Marketing Collection Service</description>
+    <name>mktcollectionsvc</name>
     <lifecycleState>Deployed</lifecycleState>
     <page-Map>
         <page>
@@ -21,9 +21,9 @@
         <webService>
             <description>Sample web service</description>
             <lifecycleState>Deployed</lifecycleState>
-            <name>eventlistener.sampleResource.v1</name>
+            <name>mktcollectionsvc.sampleResource.v1</name>
             <svcMapping-List>
-                <svcMapping>/eventlistener/v1/</svcMapping>
+                <svcMapping>/mktcollectionsvc/v1/</svcMapping>
             </svcMapping-List>
         </webService>
     </webService-List>

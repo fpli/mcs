@@ -4,7 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.log4j.Logger;
 

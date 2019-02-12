@@ -63,7 +63,7 @@ class TestSwordJob extends BaseFunSuite {
       classOf[org.apache.kafka.common.serialization.ByteArrayDeserializer])
     consumer.subscribe(util.Arrays.asList(topic))
 
-    val records = consumer.poll(1000)
+    val records = consumer.poll(10000)
     assert (records.count() === 4)
     assert (!fs.exists(dedupeMetaPath))
     consumer.close()

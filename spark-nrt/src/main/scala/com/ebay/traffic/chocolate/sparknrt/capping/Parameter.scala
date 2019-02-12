@@ -13,8 +13,7 @@ case class Parameter(appName: String = "CappingRule",
                      archiveDir: String = "",
                      partitions: Int = 3,
                      ipThreshold: Int = 1000,
-                     elasticsearchUrl: String = "",
-                     cappingMetrics: Boolean = false)
+                     elasticsearchUrl: String = "")
 
 object Parameter {
 
@@ -65,11 +64,6 @@ object Parameter {
         .optional
         .valueName("elasticsearchUrl")
         .action((cont, param) => param.copy(elasticsearchUrl = cont))
-
-    opt[Boolean]("cappingMetrics")
-        .optional
-        .valueName("cappingMetrics")
-        .action((cont, param) => param.copy(cappingMetrics = cont))
   }
 
   def apply(args: Array[String]): Parameter = parser.parse(args, Parameter()) match {

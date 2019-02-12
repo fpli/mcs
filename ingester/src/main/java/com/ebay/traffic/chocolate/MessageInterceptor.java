@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate;
 
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.flume.Context;
