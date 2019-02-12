@@ -193,10 +193,6 @@
             <artifactId>raptor-dal-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.ebay.raptorio.component</groupId>
-            <artifactId>raptor-environment-starter</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4</artifactId>
             <version>1.6.3</version>
@@ -292,10 +288,6 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>com.ebay.raptor.build</groupId>
-                <artifactId>maven-content-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
