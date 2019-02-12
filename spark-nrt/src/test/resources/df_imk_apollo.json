@@ -1,5 +1,5 @@
 {
-  "table": "df_imk",
+  "table": "df_imk_apollo",
   "description": "",
   "columns": [
     {
@@ -20,7 +20,7 @@
     {
       "name": "rvr_id",
       "dataType": "long",
-      "default": 0
+      "default": null
     },
     {
       "name": "event_dt",
@@ -35,12 +35,12 @@
     {
       "name": "rvr_cmnd_type_cd",
       "dataType": "integer",
-      "default": 0
+      "default": null
     },
     {
       "name": "rvr_chnl_type_cd",
       "dataType": "integer",
-      "default": 0
+      "default": null
     },
     {
       "name": "cntry_cd",
@@ -80,7 +80,7 @@
     {
       "name": "brwsr_type_id",
       "dataType": "integer",
-      "default": 0
+      "default": null
     },
     {
       "name": "brwsr_name",
@@ -103,24 +103,9 @@
       "default": 0
     },
     {
-      "name": "src_rotation_id",
-      "dataType": "long",
-      "default": 0
-    },
-    {
-      "name": "dst_rotation_id",
-      "dataType": "long",
-      "default": 0
-    },
-    {
-      "name": "dst_client_id",
-      "dataType": "integer",
-      "default": 0
-    },
-    {
       "name": "pblshr_id",
-      "dataType": "integer",
-      "default": 0
+      "dataType": "string",
+      "default": ""
     },
     {
       "name": "lndng_page_dmn_name",
@@ -143,111 +128,6 @@
       "default": ""
     },
     {
-      "name": "flex_field_vrsn_num",
-      "dataType": "integer",
-      "default": 0
-    },
-    {
-      "name": "flex_field_1",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_2",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_3",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_4",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_5",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_6",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_7",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_8",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_9",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_10",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_11",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_12",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_13",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_14",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_15",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_16",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_17",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_18",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_19",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "flex_field_20",
-      "dataType": "string",
-      "default": ""
-    },
-    {
       "name": "event_ts",
       "dataType": "string",
       "default": ""
@@ -258,39 +138,24 @@
       "default": 0
     },
     {
-      "name": "perf_track_name_value",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "keyword",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "mt_id",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "geo_id",
+      "name": "src_rotation_id",
       "dataType": "long",
       "default": 0
     },
     {
-      "name": "crlp",
-      "dataType": "string",
-      "default": ""
-    },
-    {
-      "name": "mfe_name",
-      "dataType": "string",
-      "default": ""
+      "name": "dst_rotation_id",
+      "dataType": "long",
+      "default": 0
     },
     {
       "name": "user_map_ind",
       "dataType": "string",
       "default": ""
+    },
+    {
+      "name": "dst_client_id",
+      "dataType": "integer",
+      "default": 0
     },
     {
       "name": "creative_id",
@@ -303,12 +168,32 @@
       "default": 0
     },
     {
-      "name": "transaction_type",
+      "name": "mfe_id",
+      "dataType": "integer",
+      "default": -999
+    },
+    {
+      "name": "kw_id",
+      "dataType": "long",
+      "default": -999
+    },
+    {
+      "name": "keyword",
       "dataType": "string",
       "default": ""
     },
     {
-      "name": "transaction_id",
+      "name": "mt_id",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "crlp",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "geo_id",
       "dataType": "string",
       "default": ""
     },
@@ -318,7 +203,12 @@
       "default": ""
     },
     {
-      "name": "roi_item_id",
+      "name": "transaction_type",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "transaction_id",
       "dataType": "string",
       "default": ""
     },
@@ -343,17 +233,22 @@
       "default": ""
     },
     {
-      "name": "mgvalue",
+      "name": "cre_date",
       "dataType": "string",
       "default": ""
     },
     {
-      "name": "mgvaluereason",
+      "name": "cre_user",
       "dataType": "string",
       "default": ""
     },
     {
-      "name": "delimeter",
+      "name": "upd_date",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "upd_user",
       "dataType": "string",
       "default": ""
     }
