@@ -289,10 +289,6 @@
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
             </plugin>
-            <plugin>
-                <groupId>com.ebay.raptor.build</groupId>
-                <artifactId>maven-content-plugin</artifactId>
-            </plugin>
         </plugins>
     </build>
 </project>
