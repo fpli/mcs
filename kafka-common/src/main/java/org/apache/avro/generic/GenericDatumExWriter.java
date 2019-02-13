@@ -37,20 +37,20 @@ import org.apache.avro.io.Encoder;
 /** adapt from org.apache.avro 1.8.2, and fix a "writeEnum" bug **/
 
 /** {@link DatumWriter} for generic Java objects. */
-public class GenericDatumWriter<D> implements DatumWriter<D> {
+public class GenericDatumExWriter<D> implements DatumWriter<D> {
   private final GenericData data;
   private Schema root;
 
-  public GenericDatumWriter() { this(GenericData.get()); }
+  public GenericDatumExWriter() { this(GenericData.get()); }
 
-  protected GenericDatumWriter(GenericData data) { this.data = data; }
+  protected GenericDatumExWriter(GenericData data) { this.data = data; }
 
-  public GenericDatumWriter(Schema root) {
+  public GenericDatumExWriter(Schema root) {
     this();
     setSchema(root);
   }
 
-  public GenericDatumWriter(Schema root, GenericData data) {
+  public GenericDatumExWriter(Schema root, GenericData data) {
     this(data);
     setSchema(root);
   }

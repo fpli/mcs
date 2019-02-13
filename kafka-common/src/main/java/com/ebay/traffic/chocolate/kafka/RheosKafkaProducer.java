@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.kafka;
 
 import io.ebay.rheos.kafka.client.StreamConnectorConfig;
-import io.ebay.rheos.schema.avro.RheosEventSerializer;
 import io.ebay.rheos.schema.avro.SchemaRegistryAwareAvroSerializerHelper;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.Schema;
@@ -42,7 +41,7 @@ public class RheosKafkaProducer<K, V extends GenericRecord> implements Producer<
   private final String producerName;
 
   public RheosKafkaProducer(Properties properties) {
-    properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, RheosEventSerializer.class.getName());
+    properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, RheosEventExSerializer.class.getName());
     producer = new KafkaProducer<>(properties);
 
     Map<String, Object> map = new HashMap<>();
