@@ -29,7 +29,7 @@
     <zookeeper.version>3.4.6</zookeeper.version>
     <curator.version>4.0.1</curator.version>
     <couchbase.client.version>2.5.9</couchbase.client.version>
-    <dukes.version>1.4.13.raptor2</dukes.version>
+    <dukes.version>1.5.0.raptorio</dukes.version>
     <rheos.version>0.0.7-SNAPSHOT</rheos.version>
     <metrics.version>1.0.6-RELEASE</metrics.version>
     <jackson.version>2.9.5</jackson.version>
