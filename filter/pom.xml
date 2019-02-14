@@ -184,6 +184,11 @@
             <artifactId>java-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.couchbase.client</groupId>
+            <artifactId>couchbase-client</artifactId>
+            <version>1.4.13</version>
+        </dependency>
+        <dependency>
             <groupId>com.ebay.dukes</groupId>
             <artifactId>dukes</artifactId>
             <version>${dukes.version}</version>
@@ -288,10 +293,6 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>com.ebay.raptor.build</groupId>
-                <artifactId>maven-content-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
