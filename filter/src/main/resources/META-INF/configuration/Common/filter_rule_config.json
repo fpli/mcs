@@ -45,5 +45,11 @@
         "ruleName": "IPBlacklistRule",
         "blacklistName": "IP_Blacklist_EPN.txt"}
     ]
+  },
+  {
+    "channelType": "PAID_SEARCH",
+    "filterRules": [
+      {}
+    ]
   }
 ]
