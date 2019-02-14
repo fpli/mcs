@@ -13,21 +13,40 @@ import scala.collection.immutable.HashMap
   * some utilities of dump job
   */
 
-object Tools extends Serializable{
+object Utils extends Serializable{
 
   lazy val keywordParams: Array[String] = Array("_nkw")
 
-  lazy val user_agent_map: HashMap[String, Int] = {
-    var map = new HashMap[String, Int]
-    val agent = Array("msie", "firefox", "chrome", "safari", "opera", "netscape", "navigator", "aol", "mac", "msntv", "webtv",
-      "trident", "bingbot", "adsbot-google", "ucweb", "facebookexternalhit", "dvlvik", "ahc", "tubidy", "roku", "ymobile",
-      "pycurl", "dailyme", "ebayandroid", "ebayiphone", "ebayipad", "ebaywinphocore", "NULL_USERAGENT", "UNKNOWN_USERAGENT")
-    val agentEnum = Array(2, 5, 11, 4, 7, 1, 1, 3, 8, 9, 6, 2, 12, 19, 25, 20, 26, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 10, -99)
-    for(i <- agent.indices) {
-      map = map + (agent(i) -> agentEnum(i))
-    }
-    map
-  }
+  lazy val user_agent_map: Map[String, Int] = Map(
+    "msie" -> 2,
+    "firefox" -> 5,
+    "chrome" -> 11,
+    "safari" -> 4,
+    "opera" -> 7,
+    "netscape" -> 1,
+    "navigator" -> 1,
+    "aol" -> 3,
+    "mac" -> 8,
+    "msntv" -> 9,
+    "webtv" -> 6,
+    "trident" -> 2,
+    "bingbot" -> 12,
+    "adsbot-google" -> 19,
+    "ucweb" -> 25,
+    "facebookexternalhit" -> 20,
+    "dvlvik" -> 26,
+    "ahc" -> 13,
+    "tubidy" -> 14,
+    "roku" -> 15,
+    "ymobile" -> 16,
+    "pycurl" -> 17,
+    "dailyme" -> 18,
+    "ebayandroid" -> 21,
+    "ebayiphone" -> 22,
+    "ebayipad" -> 23,
+    "ebaywinphocore" -> 24,
+    "NULL_USERAGENT" -> 10,
+    "UNKNOWN_USERAGENT" -> -99)
 
   def getDateTimeFromTimestamp(timestamp: Long): String = {
     val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")

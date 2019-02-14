@@ -4,7 +4,7 @@ import java.net.InetAddress
 import java.util.Properties
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import com.ebay.traffic.chocolate.sparknrt.imkDump.Tools.keywordParams
+import com.ebay.traffic.chocolate.sparknrt.imkDump.Utils.keywordParams
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import org.apache.commons.lang3.StringUtils
@@ -31,7 +31,7 @@ object ImkDumpJob extends App {
 class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, params.mode){
   lazy val outputDir: String = params.outPutDir + "/" + params.channel + "/imkDump/"
 
-  lazy val sparkDir: String = params.workDir + "/" + params.channel + "/spark/"
+  lazy val sparkDir: String = params.workDir + "/imkDump/" + params.channel + "/spark/"
 
   lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
 
@@ -50,13 +50,14 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     Metadata(params.workDir, params.channel, MetadataEnum.imkDump)
   }
 
+  @transient lazy val schema_imk_table = TableSchema("df_imk.json")
+
   @transient lazy val metrics: Metrics = {
     if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
       ESMetrics.init(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
       ESMetrics.getInstance()
     } else null
   }
-
 
   /**
     * :: DeveloperApi ::
@@ -143,26 +144,25 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       imkDf = imkDf.withColumn(columnName, getParamFromQueryUdf(col(paramName)))
     }
 
-    val schema_imk_table = TableSchema("df_imk.json")
     schema_imk_table.filterNotColumns(imkDf.columns).foreach(e => {
       imkDf = imkDf.withColumn(e, lit(schema_imk_table.defaultValues(e)))
     })
     imkDf.select(schema_imk_table.dfColumns: _*)
   }
 
-  val getUserQueryUdf: UserDefinedFunction = udf((uri: String) => Tools.getQueryString(uri))
-  val getDefaultNullNumParamValueFromUrlUdf: UserDefinedFunction = udf((header: String, key: String) => Tools.getDefaultNullNumParamValueFromUrl(header, key))
-  val getDateTimeUdf: UserDefinedFunction = udf((timestamp: Long) => Tools.getDateTimeFromTimestamp(timestamp))
-  val getDateUdf: UserDefinedFunction = udf((timestamp: Long) => Tools.getDateFromTimestamp(timestamp))
-  val getClientIdUdf: UserDefinedFunction = udf((uri: String) => Tools.getClientIdFromRotationId(Tools.getParamValueFromUrl(uri, "rid")))
-  val getItemIdUdf: UserDefinedFunction = udf((uri: String) => Tools.getItemIdFromUri(uri))
-  val getKeywordUdf: UserDefinedFunction = udf((uri: String) => Tools.getParamFromQuery(uri, keywordParams))
-  val getLandingPageDomainUdf: UserDefinedFunction = udf((uri: String) => Tools.getDomain(uri))
-  val getUserMapIndUdf: UserDefinedFunction = udf((userId: String) => Tools.getUserMapInd(userId))
-  val getParamFromQueryUdf: UserDefinedFunction = udf((uri: String, key: String) => Tools.getParamValueFromUrl(uri, key))
-  val getBrowserTypeUdf: UserDefinedFunction = udf((userAgent: String) => Tools.getBrowserType(userAgent))
-  val getCmndTypeUdf: UserDefinedFunction = udf((channelType: String) => Tools.getCommandType(channelType))
-  val getBatchIdUdf: UserDefinedFunction = udf(() => Tools.getBatchId)
+  val getUserQueryUdf: UserDefinedFunction = udf((uri: String) => Utils.getQueryString(uri))
+  val getDefaultNullNumParamValueFromUrlUdf: UserDefinedFunction = udf((header: String, key: String) => Utils.getDefaultNullNumParamValueFromUrl(header, key))
+  val getDateTimeUdf: UserDefinedFunction = udf((timestamp: Long) => Utils.getDateTimeFromTimestamp(timestamp))
+  val getDateUdf: UserDefinedFunction = udf((timestamp: Long) => Utils.getDateFromTimestamp(timestamp))
+  val getClientIdUdf: UserDefinedFunction = udf((uri: String) => Utils.getClientIdFromRotationId(Utils.getParamValueFromUrl(uri, "rid")))
+  val getItemIdUdf: UserDefinedFunction = udf((uri: String) => Utils.getItemIdFromUri(uri))
+  val getKeywordUdf: UserDefinedFunction = udf((uri: String) => Utils.getParamFromQuery(uri, keywordParams))
+  val getLandingPageDomainUdf: UserDefinedFunction = udf((uri: String) => Utils.getDomain(uri))
+  val getUserMapIndUdf: UserDefinedFunction = udf((userId: String) => Utils.getUserMapInd(userId))
+  val getParamFromQueryUdf: UserDefinedFunction = udf((uri: String, key: String) => Utils.getParamValueFromUrl(uri, key))
+  val getBrowserTypeUdf: UserDefinedFunction = udf((userAgent: String) => Utils.getBrowserType(userAgent))
+  val getCmndTypeUdf: UserDefinedFunction = udf((channelType: String) => Utils.getCommandType(channelType))
+  val getBatchIdUdf: UserDefinedFunction = udf(() => Utils.getBatchId)
 
   /**
     * override renameFiles to have special output file name for TD
@@ -180,11 +180,14 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     val hostName = InetAddress.getLocalHost.getHostName
 
     val fileStatus = fs.listStatus(new Path(workDir))
-    val files = fileStatus.filter(status => status.getPath.getName != "_SUCCESS")
+    val files = fileStatus
+      .filter(status => status.getPath.getName != "_SUCCESS")
+      .zipWithIndex
       .map(swi => {
-        val src = swi.getPath
-//        imk_rvr_trckng_????????_??????.V4.*dat.gz
-        val target = new Path(dateOutputPath, "imk_rvr_trckng_" + Tools.getOutPutFileDate + ".V4." + hostName + "." + params.channel + ".dat.gz")
+        val src = swi._1.getPath
+        val seq = ("%4d" format swi._2).replace(" ", "0")
+        //        imk_rvr_trckng_????????_??????.V4.*dat.gz
+        val target = new Path(dateOutputPath, "imk_rvr_trckng_" + Utils.getOutPutFileDate + ".V4." + hostName + "." + params.channel + seq + ".dat.gz")
         logger.info("Rename from: " + src.toString + " to: " + target.toString)
         fs.rename(src, target)
         target.toString
