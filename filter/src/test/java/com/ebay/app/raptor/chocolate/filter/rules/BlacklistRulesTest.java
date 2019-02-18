@@ -2,6 +2,7 @@ package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleContent;
 import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
@@ -45,6 +46,8 @@ public class BlacklistRulesTest {
         (EPNDomainBlacklistRule.class.getSimpleName(), "EPN_domains_Blacklist.txt"));
     filterRules.get(ChannelType.EPN).put(EBayRobotRule.class.getSimpleName(), new FilterRuleContent
         (EBayRobotRule.class.getSimpleName(), "eBay_Spiders_and_Robots_EPN.txt"));
+    filterRules.get(ChannelType.EPN).put(EBayRefererDomainRule.class.getSimpleName(), new FilterRuleContent
+        (EBayRefererDomainRule.class.getSimpleName(), "eBay_Referral_Domain.txt"));
 
     //Testing Data for DAP channel
     if (filterRules.get(ChannelType.DISPLAY) == null) {
@@ -245,6 +248,25 @@ public class BlacklistRulesTest {
     assertEquals(1, rule.test(req));
     rule.clear();
     assertEquals(0, rule.test(req));
+  }
+
+  @Test
+  public void testEBayRefererDomainRule() {
+    EBayRefererDomainRule rule = new EBayRefererDomainRule(ChannelType.EPN);
+    ListenerMessage msg = new ListenerMessage();
+    msg.setReferer("www.bbc.co.ukebay");
+    FilterRequest req = new FilterRequest(msg);
+    assertEquals(1, rule.test(req));
+    req.setReferrerDomain(null);
+    assertEquals(0, rule.test(req));
+    req.setReferrerDomain("foo");
+    assertEquals(0, rule.test(req));
+    rule.add("FOO");
+    assertEquals(1, rule.test(req));
+    rule.clear();
+    assertEquals(0, rule.test(req));
+    req.setReferrerDomain("m.ebay.com");
+    assertEquals(1,rule.test(req));
   }
 
   private class TestBlacklistRule extends GenericBlacklistRule {

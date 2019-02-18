@@ -5,9 +5,11 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.TestHelper;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
+import com.ebay.traffic.chocolate.listener.util.HttpMethodEnum;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -27,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.*;
 
@@ -35,7 +38,7 @@ import static org.mockito.Mockito.*;
 public class DefaultChannelTest {
   private MockHttpServletRequest mockClientRequest;
   private MessageObjectParser mockMessageParser;
-  private ESMetrics mockESMetrics;
+  private Metrics mockMetrics;
   private MockHttpServletResponse mockProxyResponse;
   private Producer mockProducer;
   private DefaultChannel channel;
@@ -55,9 +58,9 @@ public class DefaultChannelTest {
    mockProducer = mock(KafkaProducer.class);
    PowerMockito.mockStatic(KafkaSink.class);
    PowerMockito.when(KafkaSink.get()).thenReturn(mockProducer);
-   mockESMetrics = mock(ESMetrics.class);
+   mockMetrics = mock(Metrics.class);
    PowerMockito.mockStatic(ESMetrics.class);
-   PowerMockito.when(ESMetrics.getInstance()).thenReturn(mockESMetrics);
+   PowerMockito.when(ESMetrics.getInstance()).thenReturn(mockMetrics);
    mockMessageParser = mock(MessageObjectParser.class);
    PowerMockito.mockStatic(MessageObjectParser.class);
    PowerMockito.when(MessageObjectParser.getInstance()).thenReturn(mockMessageParser);
@@ -186,28 +189,34 @@ public class DefaultChannelTest {
   public void processShouldNotSendMessageToKafkaOrJournalIfItCouldNotBeParsed() {
     ListenerMessage mockMessage = mock(ListenerMessage.class);
     when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), anyLong(),
-        eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), eq(""), eq(null)))
+        eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), anyString(), anyString()))
         .thenReturn(mockMessage);
+    when(mockMessageParser.getMethod(mockClientRequest)).thenReturn(HttpMethodEnum.PUT);
     channel.process(mockClientRequest, mockProxyResponse);
-    verify(mockProducer, never()).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
+    verify(mockProducer, times(1)).send(new ProducerRecord<>("listened-filtered", anyLong(), anyObject()), KafkaSink.callback);
   }
 
   @Test
   public void processShouldNotSendMessageToKafkaOrJournalIfInvalidCampaign() {
+    ListenerMessage mockMessage = mock(ListenerMessage.class);
+    when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), anyLong(),
+        eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), anyString(), anyString()))
+        .thenReturn(mockMessage);
+    when(mockMessageParser.getMethod(mockClientRequest)).thenReturn(HttpMethodEnum.PUT);
     // with negative number
     mockClientRequest.setParameter("campid",String.valueOf(-1234L));
     channel.process(mockClientRequest, mockProxyResponse);
-    verify(mockProducer, never()).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
+    verify(mockProducer, times(1)).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
 
     // with string
     mockClientRequest.setParameter("campid","12345abcde");
     channel.process(mockClientRequest, mockProxyResponse);
-    verify(mockProducer, never()).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
+    verify(mockProducer, times(2)).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
 
     // without campid tag
     mockClientRequest.setParameter("campxid","12345");
     channel.process(mockClientRequest, mockProxyResponse);
-    verify(mockProducer, never()).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
+    verify(mockProducer, times(3)).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
   }
 
 }

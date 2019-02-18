@@ -1,7 +1,8 @@
 package com.ebay.traffic.chocolate.couchbase;
 
 import com.couchbase.client.java.Bucket;
-import com.couchbase.client.java.document.StringDocument;
+import com.couchbase.client.java.document.JsonDocument;
+import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.view.DefaultView;
 import com.couchbase.client.java.view.DesignDocument;
 import com.ebay.app.raptor.chocolate.constant.MPLXChannelEnum;
@@ -9,17 +10,14 @@ import com.ebay.app.raptor.chocolate.constant.RotationConstant;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.ESMetrics;
 import com.google.gson.Gson;
-import com.google.gson.JsonParser;
 import org.junit.*;
 import org.mockito.Mockito;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -49,8 +47,7 @@ public class DumpRotationToHadoopTest {
 
     // Insert document to mocked couchbase
     RotationInfo rotationInfo = getTestRotationInfo();
-    bucket.insert(StringDocument.create(rotationInfo.getRotation_string(), new Gson().toJson(rotationInfo)));
-
+    bucket.insert(JsonDocument.create(rotationInfo.getRotation_string(), JsonObject.fromJson(new Gson().toJson(rotationInfo))));
     // Create a view for mocked couchbase bucket
     DesignDocument designDoc = DesignDocument.create(
         DESIGNED_DOC_NAME,
@@ -100,7 +97,50 @@ public class DumpRotationToHadoopTest {
   }
 
   @Test
-  public void testDumpFileFromCouchbase() throws IOException {
+  public void testDumpHourlyFileFromCouchbase() throws IOException {
+    // set initialed cb related info
+    DumpRotationToHadoop.setBucket(bucket);
+    Properties couchbasePros = new Properties();
+    couchbasePros.put("couchbase.corp.rotation.designName", DESIGNED_DOC_NAME);
+    couchbasePros.put("couchbase.corp.rotation.viewName", VIEW_NAME);
+    couchbasePros.put("chocolate.elasticsearch.url", "http://10.148.181.34:9200");
+    ESMetrics.init("batch-metrics-", couchbasePros.getProperty("chocolate.elasticsearch.url"));
+    DumpRotationToHadoop.setCouchbasePros(couchbasePros);
+
+    // run dump job
+    createFolder();
+    DumpRotationToHadoop.dumpFileFromCouchbase("1287554384000", "1603173584000", TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
+
+    // assertions
+    File[] files = new File(TEMP_FILE_FOLDER).listFiles();
+    RotationInfo rotationInfo = getTestRotationInfo();
+    Gson gson = new Gson();
+    boolean isFileExist = false;
+    String expectedFileName = TEMP_FILE_PREFIX + "rotation-20101020135944.txt";
+    for (File file : files) {
+      if (file.isFile() && expectedFileName.equals(file.getName())) {
+        isFileExist = true;
+        FileInputStream fis = new FileInputStream(new File(TEMP_FILE_FOLDER + file.getName()));
+        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+        String line;
+        int i = 0;
+        boolean jsonEqual;
+        while ((line = br.readLine()) != null) {
+          i++;
+          jsonEqual = JsonUtils.areEqual(gson.toJson(rotationInfo), line);
+          Assert.assertTrue(jsonEqual);
+        }
+        Assert.assertEquals(1, i);
+        br.close();
+
+        file.deleteOnExit();
+      }
+    }
+    Assert.assertTrue("Hourly file not generated", isFileExist);
+  }
+
+  @Test
+  public void testDumpDailySnapshotFromCouchbase() throws IOException {
     // set initialed cb related info
     DumpRotationToHadoop.setBucket(bucket);
     Properties couchbasePros = new Properties();
@@ -112,16 +152,20 @@ public class DumpRotationToHadoopTest {
 
     // run dump job
     createFolder();
-    DumpRotationToHadoop.dumpFileFromCouchbase("1287554384000", "1603173584000", TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
+    DumpRotationToHadoop.dumpFileFromCouchbase(null, null, TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
 
     // assertions
     File[] files = new File(TEMP_FILE_FOLDER).listFiles();
     RotationInfo rotationInfo = getTestRotationInfo();
-    JsonParser parser = new JsonParser();
     Gson gson = new Gson();
+
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+
+    boolean isFileExist = false;
+    String expectedFileName = TEMP_FILE_PREFIX + "rotation-snapshot-" + sdf.format(new Date()) + ".txt";
     for (File file : files) {
-      if (file.isFile()) {
-        Assert.assertEquals(TEMP_FILE_PREFIX+ "rotation-20101020135944.txt", file.getName());
+      if (file.isFile() && expectedFileName.equals(file.getName())) {
+        isFileExist = true;
 
         FileInputStream fis = new FileInputStream(new File(TEMP_FILE_FOLDER + file.getName()));
         BufferedReader br = new BufferedReader(new InputStreamReader(fis));
@@ -139,6 +183,7 @@ public class DumpRotationToHadoopTest {
         file.deleteOnExit();
       }
     }
+    Assert.assertTrue("Daily file not generated", isFileExist);
   }
 
   private void createFolder() {

@@ -7,13 +7,15 @@ import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
-import com.ebay.dukes.builder.Raptor2CacheFactoryBuilder;
+import com.ebay.dukes.builder.DefaultCacheFactoryBuilder;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
-import com.ebay.traffic.chocolate.monitoring.ESMetrics;
-import javafx.util.Pair;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 
+import java.util.AbstractMap;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -32,16 +34,16 @@ public class CouchbaseClient {
     /**default publisherID*/
     private static final long DEFAULT_PUBLISHER_ID = -1L;
   /**flush buffer to keep record when couchbase down*/
-  private Queue<Pair<Long,Long>> buffer;
+  private Queue<Map.Entry<Long,Long>> buffer;
   private String datasourceName;
 
-  private final ESMetrics esMetrics = ESMetrics.getInstance();
+  private final Metrics metrics = ESMetrics.getInstance();
 
     /**Singleton */
     private CouchbaseClient() {
       this.datasourceName = ApplicationOptions.getInstance().getCouchbaseDatasource();
       try {
-        factory = Raptor2CacheFactoryBuilder
+        factory = DefaultCacheFactoryBuilder
           .newBuilder()
           .cache(datasourceName)
           .build();
@@ -89,7 +91,7 @@ public class CouchbaseClient {
     try {
       upsert(campaignId, publisherId);
     } catch (Exception e) {
-      buffer.add(new Pair<>(campaignId, publisherId));
+      buffer.add(new AbstractMap.SimpleEntry<>(campaignId, publisherId));
       logger.warn("Couchbase upsert operation exception", e);
     }
   }
@@ -114,7 +116,7 @@ public class CouchbaseClient {
   private void flushBuffer() {
     try {
       while (!buffer.isEmpty()) {
-        Pair<Long, Long> kv = buffer.peek();
+        Map.Entry<Long, Long> kv = buffer.peek();
         upsert(kv.getKey(), kv.getValue());
         buffer.poll();
       }
@@ -125,27 +127,27 @@ public class CouchbaseClient {
 
   /**Get publisherId by campaignId*/
   public long getPublisherID(long campaignId) throws InterruptedException{
-    esMetrics.meter("FilterCouchbaseQuery");
+    metrics.meter("FilterCouchbaseQuery");
     CacheClient cacheClient = null;
     while (true) {
       try {
         long start = System.currentTimeMillis();
         cacheClient = factory.getClient(datasourceName);
         Document document = getBucket(cacheClient).get(String.valueOf(campaignId), StringDocument.class);
-        esMetrics.mean("FilterCouchbaseLatency", System.currentTimeMillis() - start);
+        metrics.mean("FilterCouchbaseLatency", System.currentTimeMillis() - start);
         if (document == null) {
           logger.warn("No publisherID found for campaign " + campaignId + " in couchbase");
-          esMetrics.meter("ErrorPublishID");
+          metrics.meter("ErrorPublishID");
           return DEFAULT_PUBLISHER_ID;
         }
         return Long.parseLong(document.content().toString());
       } catch (NumberFormatException ne) {
         logger.warn("Error in converting publishID " + getBucket(factory.getClient(datasourceName)).get(String.valueOf(campaignId),
             StringDocument.class).toString() + " to Long", ne);
-        esMetrics.meter("ErrorPublishID");
+        metrics.meter("ErrorPublishID");
         return DEFAULT_PUBLISHER_ID;
       } catch (Exception e) {
-        esMetrics.meter("FilterCouchbaseRetry");
+        metrics.meter("FilterCouchbaseRetry");
         logger.warn("Couchbase query operation timeout, will sleep for 30s to retry", e);
         Thread.sleep(30000);
       } finally {

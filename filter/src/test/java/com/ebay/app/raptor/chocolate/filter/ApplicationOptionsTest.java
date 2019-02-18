@@ -110,7 +110,8 @@ public class ApplicationOptionsTest {
     assertNull(defaultRule.get("EPNDomainBlacklistRule"));
     assertEquals("IP_Blacklist_EPN.txt", epnRule.get("IPBlacklistRule").getBlacklistName());
     assertEquals("IAB_ABC_International_List_of_Valid_Browsers.txt", epnRule.get("TwoPassIABRule").getWhitelistName());
-    assertEquals("3000", epnRule.get("TGUIDStalenessWindowRule").getWindowStart().toString());
+    assertEquals("3000", epnRule.get("CguidStalenessWindowRule").getWindowStart().toString());
+    assertEquals("eBay_Referral_Domain.txt", epnRule.get("EBayRefererDomainRule").getBlacklistName());
 
     Map<String, FilterRuleContent> dapRule = ApplicationOptions.filterRuleConfigMap.get(ChannelType.DISPLAY);
     assertEquals("TwoPassIABRule", dapRule.get("TwoPassIABRule").getRuleName());

@@ -1,15 +1,17 @@
 package com.ebay.traffic.chocolate.kafka;
 
 import io.ebay.rheos.kafka.client.StreamConnectorConfig;
-import io.ebay.rheos.schema.avro.RheosEventSerializer;
 import io.ebay.rheos.schema.avro.SchemaRegistryAwareAvroSerializerHelper;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.ProducerFencedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +41,7 @@ public class RheosKafkaProducer<K, V extends GenericRecord> implements Producer<
   private final String producerName;
 
   public RheosKafkaProducer(Properties properties) {
-    properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, RheosEventSerializer.class.getName());
+    properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, RheosEventExSerializer.class.getName());
     producer = new KafkaProducer<>(properties);
 
     Map<String, Object> map = new HashMap<>();
@@ -99,6 +101,7 @@ public class RheosKafkaProducer<K, V extends GenericRecord> implements Producer<
     return rheosEvent;
   }
 
+
   @Override
   public void flush() {
     producer.flush();
@@ -122,5 +125,32 @@ public class RheosKafkaProducer<K, V extends GenericRecord> implements Producer<
   @Override
   public void close(long l, TimeUnit timeUnit) {
     producer.close(l, timeUnit);
+  }
+
+  // not support transaction mode for now
+  @Override
+  public void initTransactions() {
+
+  }
+
+  @Override
+  public void beginTransaction() throws ProducerFencedException {
+
+  }
+
+  @Override
+  public void sendOffsetsToTransaction(Map<TopicPartition, OffsetAndMetadata> offsets, String consumerGroupId) throws
+    ProducerFencedException {
+
+  }
+
+  @Override
+  public void commitTransaction() throws ProducerFencedException {
+
+  }
+
+  @Override
+  public void abortTransaction() throws ProducerFencedException {
+
   }
 }

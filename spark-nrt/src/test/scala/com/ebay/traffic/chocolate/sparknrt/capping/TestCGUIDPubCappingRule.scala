@@ -2,7 +2,6 @@ package com.ebay.traffic.chocolate.sparknrt.capping
 
 import java.text.SimpleDateFormat
 
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV1
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
 import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
@@ -63,6 +62,18 @@ class TestCGUIDPubCappingRule extends BaseFunSuite {
     message
   }
 
+  def writeFilterMessage1(channelType: ChannelType, channelAction: ChannelAction, snapshotId: Long, publisherId: Long, campaignId: Long, cguid: String, timestamp: Long, writer: ParquetWriter[GenericRecord]): FilterMessage = {
+    val message = TestHelper.newFilterMessage(channelType, channelAction, snapshotId, publisherId, cguid, campaignId, timestamp)
+    writer.write(message)
+    message
+  }
+
+  def writeFilterMessage2(channelType: ChannelType, channelAction: ChannelAction, snapshotId: Long, publisherId: Long, campaignId: Long, cguid_req: String, cguid_res: String, timestamp: Long, writer: ParquetWriter[GenericRecord]): FilterMessage = {
+    val message = TestHelper.newFilterMessage(channelType, channelAction, snapshotId, publisherId, campaignId, cguid_req, cguid_res, timestamp)
+    writer.write(message)
+    message
+  }
+
   import sparkJob.spark.implicits._
 
   ignore("test cguid-pub capping rule") {
@@ -86,7 +97,7 @@ class TestCGUIDPubCappingRule extends BaseFunSuite {
 
     val writer1_0 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
@@ -121,42 +132,42 @@ class TestCGUIDPubCappingRule extends BaseFunSuite {
 
     val writer1_1 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00001.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer1_2 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer2_1 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00001.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer2_2 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer3 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
 
     val writer4 = AvroParquetWriter.
         builder[GenericRecord](new Path(inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
-        .withSchema(FilterMessageV1.getClassSchema())
+        .withSchema(FilterMessage.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .build()
@@ -167,8 +178,8 @@ class TestCGUIDPubCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 5L, 11L, 111L, cguid2, timestamp2, writer1_2)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6L, 11L, 111L, cguid1, timestamp2, writer2_1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 7L, 11L, 111L, cguid2, timestamp2, writer2_1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 8L, 11L, 111L, cguid2, timestamp2, writer2_2)
+    writeFilterMessage1(ChannelType.EPN, ChannelAction.CLICK, 7L, 11L, 111L, cguid2, timestamp2, writer2_1)
+    writeFilterMessage2(ChannelType.EPN, ChannelAction.CLICK, 8L, 11L, 111L, cguid1, cguid2, timestamp2, writer2_2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 9L, 11L, 111L, cguid3, timestamp2, writer2_2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 10L, 11L, 111L, cguid3, timestamp2, writer2_2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 11L, 11L, 111L, cguid3, timestamp2, writer2_2)

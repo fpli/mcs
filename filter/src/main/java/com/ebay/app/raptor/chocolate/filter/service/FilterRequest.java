@@ -3,11 +3,8 @@ package com.ebay.app.raptor.chocolate.filter.service;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,11 +24,6 @@ public class FilterRequest {
     private long timestamp = 0;
     private String requestCguid = null;
     private long requestCguidTimestamp;
-    private String requestTguid = null;
-    private long requestTguidTimestamp;
-    private String responseCguid = null;
-    private long responseCguidTimestamp;
-    private String rotationId;
     private long campaignId = 0;
     private long publisherId = 0;
     private HttpMethod protocol = null;
@@ -51,38 +43,28 @@ public class FilterRequest {
     public FilterRequest(ListenerMessage message) {
         HashMap<String, String> requestHeaders = processHeaders(message.getRequestHeaders());
 
-        this.parseUri(message.getUri());
-
         for (Map.Entry<String, String> item : requestHeaders.entrySet()) {
             String key = item.getKey();
-            if (key.equalsIgnoreCase("Referer")) {
-                this.referrerDomain = getDomainName(item.getValue());
-            } else if (key.equalsIgnoreCase("X-Purpose") && item.getValue().equalsIgnoreCase("preview") ||
+            if (key.equalsIgnoreCase("X-Purpose") && item.getValue().equalsIgnoreCase("preview") ||
                     key.equalsIgnoreCase("X-Moz") && item.getValue().equalsIgnoreCase("prefetch")) {
                 this.isPrefetch = true;
-            } else if (key.equalsIgnoreCase("X-EBAY-CLIENT-IP")) {      // This header takes precedence
-                this.sourceIP = item.getValue();
-            } else if (key.equalsIgnoreCase("X-Forwarded-For") && (this.sourceIP == null || this.sourceIP.isEmpty())) {  // This header works only if there is no X-EBAY-CLIENT-IP
-                this.sourceIP = item.getValue();
             } else if (key.equalsIgnoreCase("User-Agent")) {
                 this.userAgent = item.getValue();
             } else if (key.equalsIgnoreCase("Cookie")) {
-                this.requestCguid = parseGuidFromCookie(item.getValue(), "cguid");
-                this.requestCguidTimestamp = parseTimestampFromGuid(this.requestCguid);
-                this.requestTguid = parseGuidFromCookie(item.getValue(), "tguid");
-                this.requestTguidTimestamp = parseTimestampFromGuid(this.requestTguid);
+                this.requestCguid = parseCguidFromCookie(item.getValue());
+                this.requestCguidTimestamp = parseTimestampFromCguid(this.requestCguid);
+            } else if (key.equalsIgnoreCase("Referer")) {
+                this.referrerDomain = getDomainName(item.getValue());
+            } else if (key.equalsIgnoreCase("X-EBAY-CLIENT-IP")) {
+                this.sourceIP = item.getValue();
+            } else if (key.equalsIgnoreCase("X-Forwarded-For") && (this.sourceIP == null || this.sourceIP.isEmpty())) {
+                this.sourceIP = item.getValue();
             }
         }
 
-        HashMap<String, String> responseHeaders = processHeaders(message.getResponseHeaders());
-        for (Map.Entry<String, String> item : responseHeaders.entrySet()) {
-            String key = item.getKey();
-            if (key.equalsIgnoreCase("Set-Cookie")) {
-                this.responseCguid = parseGuidFromCookie(item.getValue(), "cguid");
-                this.responseCguidTimestamp = parseTimestampFromGuid(this.responseCguid);
-            }
-        }
-
+        this.referrerDomain = (message.getReferer() == null || message.getReferer().isEmpty()) ? this.referrerDomain : getDomainName(message.getReferer());
+        this.sourceIP = (message.getRemoteIp() == null || message.getRemoteIp().isEmpty()) ? this.sourceIP : message.getRemoteIp();
+        this.userAgent = (message.getUserAgent() == null || message.getUserAgent().isEmpty()) ? this.userAgent : message.getUserAgent();
         this.timestamp = message.getTimestamp();
         this.publisherId = message.getPublisherId();
         this.campaignId = message.getCampaignId();
@@ -142,52 +124,20 @@ public class FilterRequest {
         this.channelAction = action;
     }
 
-    public String getRequestCGUID() {
+    public String getRequestCguid() {
         return this.requestCguid;
     }
 
-    public void setRequestCGUID(String cguid) {
+    public void setRequestCguid(String cguid) {
         this.requestCguid = cguid;
     }
 
-    public long getRequestCGUIDTimestamp() {
+    public long getRequestCguidTimestamp() {
         return this.requestCguidTimestamp;
     }
 
-    public void setRequestCGUIDTimestamp(long cguidTimestamp) {
+    public void setRequestCguidTimestamp(long cguidTimestamp) {
         this.requestCguidTimestamp = cguidTimestamp;
-    }
-
-    public String getResponseCGUID() {
-        return this.responseCguid;
-    }
-
-    public void setResponseCGUID(String cguid) {
-        this.responseCguid = cguid;
-    }
-
-    public long getResponseCGUIDTimestamp() {
-        return this.responseCguidTimestamp;
-    }
-
-    public void setResponseCGUIDTimestamp(long cguidTimestamp) {
-        this.responseCguidTimestamp = cguidTimestamp;
-    }
-
-    public String getRequestTguid() {
-        return this.requestTguid;
-    }
-
-    public void setRequestTguid(String tguid) {
-        this.requestTguid = tguid;
-    }
-
-    public long getRequestTguidTimestamp() {
-        return this.requestTguidTimestamp;
-    }
-
-    public void setRequestTguidTimestamp(long tguidTimestamp) {
-        this.requestTguidTimestamp = tguidTimestamp;
     }
 
     public long getCampaignId() {
@@ -196,14 +146,6 @@ public class FilterRequest {
 
     public void setCampaignId(long campaignId) {
         this.campaignId = campaignId;
-    }
-
-    public String getRotationID() {
-        return this.rotationId;
-    }
-
-    public void setRotationId(String rotationId) {
-        this.rotationId = rotationId;
     }
 
     public long getPublisherId() {
@@ -253,6 +195,10 @@ public class FilterRequest {
      * @return cropped domain name
      */
     private static String getDomainName(String url) {
+        if (url == null || url.isEmpty()) {
+            return url;
+        }
+
         try {
             String fullUrl = (url.toLowerCase().startsWith("http://") || url.toLowerCase().startsWith("https://")) ? url : "http://" + url;
             URL uri = new URL(fullUrl);
@@ -263,47 +209,20 @@ public class FilterRequest {
         }
     }
 
-    /**
-     * Extract rotation ID and campaign ID from the URI
-     *
-     * @param uri URI
-     */
-    private void parseUri(String uri) {
-        if (uri == null || uri.isEmpty()) {
-            Logger.getLogger(FilterRequest.class).error("Empty URI in request/response");
-            throw new RuntimeException("Empty URI");
-        }
-
-        try {
-            URI url = new URI(uri);
-            String path = url.getPath();
-            String[] pathBits = path.split("/");
-            if (pathBits.length >= 4 && url.getHost().startsWith("rover")) {
-                this.rotationId = pathBits[3];
-            } else if (pathBits.length >= 3) {
-                this.rotationId = pathBits[2];
-            }
-        } catch (Exception e) {
-            Logger.getLogger(FilterRequest.class).error("Malformed URI in request/response");
-            throw new RuntimeException("Unable to parse URI: " + StringUtils.abbreviate(uri, 100), e);
-        }
-    }
-
-    private String parseGuidFromCookie(String cookieStr, String guidType) {
-        String index = guidType + "/";
-        int guidPos = cookieStr.indexOf(index);
-        if (guidPos < 0) {
+    private String parseCguidFromCookie(String cookieStr) {
+        int cguidPos = cookieStr.indexOf("cguid/");
+        if (cguidPos < 0) {
             return null;
         }
-        return cookieStr.substring(guidPos + 6, guidPos + 38);
+        return cookieStr.substring(cguidPos + 6, cguidPos + 38);
     }
 
-    private long parseTimestampFromGuid(String guid) {
-        if (guid == null) {
+    private long parseTimestampFromCguid(String cguid) {
+        if (cguid == null) {
             return 0;
         }
 
-        String milliStr = guid.substring(8, 11) + guid.substring(0, 8);
+        String milliStr = cguid.substring(8, 11) + cguid.substring(0, 8);
         return Long.parseLong(milliStr, 16);
     }
 }

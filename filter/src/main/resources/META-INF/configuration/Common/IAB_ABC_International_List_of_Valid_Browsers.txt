@@ -1,6 +1,6 @@
 #
-#	IAB_ABC_International_List_of_Valid_Browsers_201810_22-104604
-#	October 22, 2018
+#	IAB_ABC_International_List_of_Valid_Browsers_201811_14-161604
+#	November 14, 2018
 #
 # **********COMMENTS SECTION***************************************************
 #
@@ -192,6 +192,7 @@ MapQuest-Mobile|1|0
 MapQuest/|1|1
 MassiveAdClient|1|1
 Meebo/|1|1
+Megaphone-Tracking-Url-Service/|1|1
 Micromax|1|1
 Microsoft Internet Explorer|1|1
 Microsoft+Internet+Explorer|1|1
@@ -239,6 +240,7 @@ QtWebKit|1|1
 Qtek|1|1
 RMA/|1|1
 Radio@Netscape|1|1
+Radioplayer|1|1
 ResponseTap|1|0
 Rhythm|1|1
 Roku|1|0
@@ -311,6 +313,7 @@ UP.Link|1|0
 UP/|1|0
 UnlimitedSMS|1|1
 Uzbl|1|1
+VLC|1|1
 Videofy.me|1|1
 Vodafone|1|1
 Vungle|1|0
@@ -574,3 +577,4 @@ xbox|1|1
 # August 2018 - added "marktjagd", added "barcoo", added "wunderkauf", added "offeristafr", added "profital"
 # September 2018 - added "Aftonbladet/", added "Sportbladet/", added "QYPlayer/iOS/", added "Cupid/", added "SkyD_STB", added "SkyQ_STB/", added "ott_dt_stb"
 # October 2018 - added "wogibtswas"
+# November 2018 - added "Megaphone-Tracking-Url-Service/", added "Radioplayer", added "VLC"

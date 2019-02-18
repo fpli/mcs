@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.ebay.traffic</groupId>
     <artifactId>chocolate</artifactId>
-    <version>3.3.1-RELEASE</version>
+    <version>3.4.2-RELEASE</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>chocolate-common</artifactId>
@@ -22,7 +22,6 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>18.0</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -65,13 +64,13 @@
       <version>${curator.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.elasticsearch.client</groupId>
-      <artifactId>elasticsearch-rest-client</artifactId>
+      <groupId>com.ebay.traffic</groupId>
+      <artifactId>metrics-common</artifactId>
+      <version>${metrics.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>${gson.version}</version>
     </dependency>
 
     <!-- test -->
