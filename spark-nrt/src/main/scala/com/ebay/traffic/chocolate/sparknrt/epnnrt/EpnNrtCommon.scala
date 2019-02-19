@@ -136,6 +136,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val getToolIdUdf = udf((url: String) => getQueryParam(url, "toolid"))
   val getCustomIdUdf = udf((url: String) => getQueryParam(url, "customid"))
   val getFFValueUdf = udf((url: String, index: String) => getFFValue(url, index))
+  val getFFValueNotEmptyUdf = udf((url: String, index: String) => getFFValueNotEmpty(url, index))
   val getCtxUdf = udf((url: String) => getQueryParam(url, "ctx"))
   val getCtxCalledUdf = udf((url: String) => getQueryParam(url, "ctx_called"))
   val getcbkwUdf = udf((url: String) => getQueryParam(url, "cb_kw"))
@@ -171,6 +172,26 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("impression", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
   val get_google_fltr_do_flag_udf = udf((requestHeader: String, publisherId: String) => getGoogleFltrDoFlag(getRefererURLAndDomain(requestHeader, true), publisherId))
   val get_lnd_page_url_name_udf = udf((responseHeader: String) => getLndPageUrlName(responseHeader))
+  val get_IcepFlexFldVrsnId_udf = udf((uri:String) => getIcepFlexFldVrsnId(uri))
+  val get_Geo_Trgtd_Ind_udf = udf((uri:String) => getValueFromQueryURL(uri, "isgeo"))
+  val get_Pblshr_Acptd_Prgrm_Ind_udf = udf((uri:String) => getValueFromQueryURL(uri, "isprogAccepted"))
+  val get_Prgrm_Excptn_List_udf = udf((uri:String) => getValueFromQueryURL(uri, "in_exp_list"))
+
+
+
+  def getValueFromQueryURL(uri: String, key: String): String = {
+    val value = getQueryParam(uri, key)
+    if (value.trim.equalsIgnoreCase("1"))
+      return "1"
+    "0"
+  }
+
+  def getIcepFlexFldVrsnId(uri: String): String = {
+    val value = getQueryParam(uri, "icep_ffv")
+    if (value.equalsIgnoreCase(""))
+      return "0"
+    "1"
+  }
 
   def getDateTimeFromTimestamp(timestamp: Long, format: String): String = {
     val df = new SimpleDateFormat(format)
@@ -182,19 +203,19 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if (location.equalsIgnoreCase(""))
       return ""
     val url = new URL(location)
-    if (!url.getHost.contains("rover"))
+    if (url.getHost.contains("rover.ebay.com") || url.getHost.contains("r.ebay.com"))
       return location
     else {
-      if (url.getHost.contains(".com"))
-        return location
-      else {
+   //   if (url.getHost.contains(".com"))
+   //     return location
+    //  else {
         var res = getQueryParam(location, "mpre")
         if (res.equalsIgnoreCase(""))
           res = getQueryParam(location, "loc")
         if (res.equalsIgnoreCase(""))
           res = getQueryParam(location, "url")
         return res
-      }
+      //}
     }
     ""
   }
@@ -224,6 +245,15 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     getQueryParam(uri, key)
   }
 
+  def getFFValueNotEmpty(uri: String, index: String): String = {
+    val icep_key = "icep_ff" + index
+    val value = getQueryParam(uri, icep_key)
+    if (!value.equalsIgnoreCase(""))
+      return value
+    val key = "ff" + index
+    getQueryParam(uri, key)
+  }
+
   def getRoverUriInfo(uri: String, index: Int): String = {
     val path = new URL(uri).getPath()
     if (path != null && path != "" && index >= 0 && index <= 4) {
@@ -233,30 +263,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
     ""
   }
-
-/*
-  def getGUIDFromCookie(requestHeader: String, response_headers: String, guid: String) : String = {
-    var cookie = ""
-    if (response_headers != null) {
-      cookie = getValueFromRequest(response_headers, "Set-Cookie")
-    }
-    if(cookie.equals("") && requestHeader != null) {
-      cookie = getValueFromRequest(requestHeader, "Cookie")
-    }
-    try {
-      if (cookie != null && !cookie.equals("")) {
-        val index = cookie.toLowerCase.indexOf(guid)
-        if (index != -1)
-          return cookie.substring(index + 6, index + 38)
-      }
-    } catch {
-      case e: StringIndexOutOfBoundsException => {
-        logger.error("Error in get GUID from cookie " + cookie + e)
-        return ""
-      }
-    }
-    ""
-  }*/
 
   def getValueFromRequest(request: String, key: String): String = {
     if (request != null) {
@@ -360,12 +366,12 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     accept
   }
 
-  def getToolLvlOptn(uri: String): Int = {
+  def getToolLvlOptn(uri: String): String = {
     val value = getQueryParam(uri, "lgeo")
     if (value != null && !value.equals(""))
       if (value.equals("1") || value.equals("0"))
-        return 1
-    0
+        return value
+    "1"
   }
 
   def getItemId(uri: String): String = {
