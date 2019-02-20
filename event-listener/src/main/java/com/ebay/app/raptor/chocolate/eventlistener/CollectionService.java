@@ -275,6 +275,8 @@ public class CollectionService {
         logger.error("Error when tracking ubi", ex);
         metrics.meter("ErrorTrackUbi");
       }
+    } else {
+      metrics.meter("InternalDomainRef");
     }
 
     if (message != null) {
