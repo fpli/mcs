@@ -164,7 +164,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_trfc_src_cd_impression_udf = udf((ruleFlag: Long) => get_TRFC_SRC_CD(ruleFlag, "impression"))
   val get_browser_type_udf = udf((requestHeader: String) => getBrowserType(requestHeader))
   val get_filter_yn_ind_udf = udf((rt_rule_flag: Long, nrt_rule_flag: Long, action: String) => getFilter_Yn_Ind(rt_rule_flag, nrt_rule_flag, action))
-  val get_page_id_udf = udf((responseHeaders: String) => getPageIdByLandingPage(responseHeaders))
+  val get_page_id_udf = udf((landingPage: String) => getPageIdByLandingPage(landingPage))
   val get_roi_rule_value_udf = udf((uri: String, publisherId: String, requestHeader: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(requestHeader, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13))._1)
   val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, requestHeader: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(requestHeader, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13))._2)
   val get_ams_clk_fltr_type_id_udf = udf((publisherId: String, uri: String) => getclickFilterTypeId(publisherId, getRoverUriInfo(uri, 3)))
@@ -172,11 +172,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("impression", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
   val get_google_fltr_do_flag_udf = udf((requestHeader: String, publisherId: String) => getGoogleFltrDoFlag(getRefererURLAndDomain(requestHeader, true), publisherId))
   val get_lnd_page_url_name_udf = udf((responseHeader: String) => getLndPageUrlName(responseHeader))
-  val get_IcepFlexFldVrsnId_udf = udf((uri:String) => getIcepFlexFldVrsnId(uri))
+  val get_IcepFlexFld_udf = udf((uri:String, key:String) => getIcepFlexFld(uri, key))
   val get_Geo_Trgtd_Ind_udf = udf((uri:String) => getValueFromQueryURL(uri, "isgeo"))
   val get_Pblshr_Acptd_Prgrm_Ind_udf = udf((uri:String) => getValueFromQueryURL(uri, "isprogAccepted"))
   val get_Prgrm_Excptn_List_udf = udf((uri:String) => getValueFromQueryURL(uri, "in_exp_list"))
-
 
 
   def getValueFromQueryURL(uri: String, key: String): String = {
@@ -186,12 +185,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     "0"
   }
 
-  def getIcepFlexFldVrsnId(uri: String): String = {
-    val value = getQueryParam(uri, "icep_ffv")
+  def getIcepFlexFld(uri: String, key: String): String = {
+    val value = getQueryParam(uri, "icep_" + key)
     if (value.equalsIgnoreCase(""))
       return "0"
     "1"
   }
+
 
   def getDateTimeFromTimestamp(timestamp: Long, format: String): String = {
     val df = new SimpleDateFormat(format)
@@ -429,11 +429,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     0
   }
 
-  def getPageIdByLandingPage(responseHeader: String): String = {
-    val location = getValueFromRequest(responseHeader, "Location")
-    if (location == null || location.equals(""))
+  def getPageIdByLandingPage(landingPage: String): String = {
+    if (landingPage == null || landingPage.equals(""))
       return ""
-    val splits = location.trim.split("/")
+    val splits = landingPage.trim.split("/")
     try {
       if (splits(2).startsWith("cgi6") && landing_page_pageId_map.contains("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewStoreV4&name=")) {
         return landing_page_pageId_map("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewStoreV4&name=")
@@ -451,7 +450,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       }
     } catch {
       case e: ArrayIndexOutOfBoundsException => {
-        logger.error("Error while getting PageId for location = " + location + " in the request", e)
+        logger.error("Error while getting PageId for location = " + landingPage + " in the request", e)
         return ""
       }
     }
