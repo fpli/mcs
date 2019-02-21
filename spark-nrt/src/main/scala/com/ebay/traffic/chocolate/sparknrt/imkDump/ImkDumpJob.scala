@@ -74,6 +74,10 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       }
     }
 
+    // clean temp folder
+    fs.delete(new Path(sparkDir), true)
+    fs.mkdirs(new Path(sparkDir))
+
     // metafiles for output data
     val suffix = properties.getProperty("imkdump.meta.output.suffix")
     var suffixArray: Array[String] = Array()
@@ -128,7 +132,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("dst_client_id", getClientIdUdf(col("uri")))
       .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(col("uri")))
       .withColumn("lndng_page_url", col("uri"))
-      .withColumn("user_query", getUserQueryUdf(col("uri")))
+      .withColumn("user_query", getUserQueryUdf(col("referer"), col("uri")))
       .withColumn("rule_bit_flag_strng", col("rt_rule_flags"))
       .withColumn("event_ts", getDateTimeUdf(col("timestamp")))
       .withColumn("perf_track_name_value", getUserQueryUdf(col("uri")))
@@ -150,7 +154,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     imkDf.select(schema_imk_table.dfColumns: _*)
   }
 
-  val getUserQueryUdf: UserDefinedFunction = udf((uri: String) => Utils.getQueryString(uri))
+  val getUserQueryUdf: UserDefinedFunction = udf((referer: String, uri: String) => Utils.getUserQuery(referer, uri))
   val getDefaultNullNumParamValueFromUrlUdf: UserDefinedFunction = udf((header: String, key: String) => Utils.getDefaultNullNumParamValueFromUrl(header, key))
   val getDateTimeUdf: UserDefinedFunction = udf((timestamp: Long) => Utils.getDateTimeFromTimestamp(timestamp))
   val getDateUdf: UserDefinedFunction = udf((timestamp: Long) => Utils.getDateFromTimestamp(timestamp))

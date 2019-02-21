@@ -46,7 +46,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --appName ${JOB_NAME} \
       --mode yarn \
       --channel ${CHANNEL} \
-      --transformedPrefix chocolate- \
+      --transformedPrefix chocolate_ \
       --workDir ${WORK_DIR} \
       --outputDir ${OUTPUT_DIR} \
       --compressOutPut true

@@ -15,7 +15,11 @@ import scala.collection.immutable.HashMap
 
 object Utils extends Serializable{
 
-  lazy val keywordParams: Array[String] = Array("_nkw")
+  lazy val keywordParams: Array[String] = Array("_nkw", "keyword", "kw")
+
+  lazy val userQueryParamsOfReferrer: Array[String] = Array("q")
+
+  lazy val userQueryParamsOfLandingUrl: Array[String] = Array("uq", "satitle", "keyword", "item", "store")
 
   lazy val user_agent_map: Map[String, Int] = Map(
     "msie" -> 2,
@@ -220,6 +224,25 @@ object Utils extends Serializable{
   def getDomain(link: String): String = {
     if (StringUtils.isNotEmpty(link)) {
       new URL(link).getHost
+    } else {
+      ""
+    }
+  }
+
+  /**
+    * get user query from referrer or uri
+    * @param referrer referrer
+    * @param uri uri
+    * @return user query
+    */
+  def getUserQuery(referrer: String, uri: String): String = {
+    if (StringUtils.isNotEmpty(referrer)) {
+      val userQueryFromReferrer = getParamFromQuery(referrer.toLowerCase, userQueryParamsOfReferrer)
+      if (StringUtils.isNotEmpty(userQueryFromReferrer)) {
+        userQueryFromReferrer
+      } else {
+        getParamFromQuery(uri.toLowerCase, userQueryParamsOfLandingUrl)
+      }
     } else {
       ""
     }

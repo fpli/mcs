@@ -62,6 +62,7 @@ class ImkTransformJob(params: Parameter)
       val file = metaIter._1
       val datesFiles = metaIter._2
       datesFiles.foreach(datesFile => {
+        val date = datesFile._1
         var commonDf = readFilesAsDFEx(datesFile._2, schema_tfs.dfSchema, "csv", "bel")
           .withColumn("item_id", getItemIdUdf(col("roi_item_id"), col("item_id")))
           .na.fill(schema_tfs.defaultValues).cache()
@@ -98,9 +99,9 @@ class ImkTransformJob(params: Parameter)
           .repartition(1)
           .saveAsSequenceFile(mgTempDir, compressCodec)
 
-        renameFiles(imkTempDir, imkOutputDir)
-        renameFiles(dtlTempDir, dtlOutputDir)
-        renameFiles(mgTempDir, mgOutputDir)
+        simpleRenameFiles(imkTempDir, imkOutputDir, date)
+        simpleRenameFiles(dtlTempDir, dtlOutputDir, date)
+        simpleRenameFiles(mgTempDir, mgOutputDir, date)
 
         fs.delete(new Path(imkTempDir), true)
         fs.delete(new Path(dtlTempDir), true)
@@ -134,7 +135,7 @@ class ImkTransformJob(params: Parameter)
   /**
     * rename save files to data folder
     */
-  def renameFiles(workDir: String, outputDir: String): Unit = {
+  def simpleRenameFiles(workDir: String, outputDir: String, date: String): Unit = {
     val status = fs.listStatus(new Path(workDir))
     status
       .filter(path => path.getPath.getName != "_SUCCESS")
@@ -142,7 +143,8 @@ class ImkTransformJob(params: Parameter)
       .map(swi => {
         val src = swi._1.getPath
         val seq = ("%5d" format swi._2).replace(" ", "0")
-        fs.rename(new Path(src.toString), new Path(outputDir + params.transformedPrefix + sc.applicationId + "_" + seq))
+        // chocolate_xxxxxxxx_appid_seq
+        fs.rename(new Path(src.toString), new Path(outputDir + params.transformedPrefix + date + "_" + sc.applicationId + "_" + seq))
       })
   }
 
