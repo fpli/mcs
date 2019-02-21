@@ -89,7 +89,7 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
       .withColumn("FLEX_FLD_19_TXT",  common.getFFValueUdf(col("uri"), lit(19)))
       .withColumn("FLEX_FLD_20_TXT",  common.getFFValueUdf(col("uri"), lit(20)))
       .withColumn("ICEP_FLEX_FLD_VRSN_ID",  common.get_IcepFlexFld_udf(col("uri"), lit("ffv")))
-      .withColumn("ICEP_FLEX_FLD_1_TXT", common.get_IcepFlexFld_udf(col("uri"), lit("ff1")))
+      .withColumn("ICEP_FLEX_FLD_1_TXT", common.get_IcepFlexFld1_udf(col("uri"), lit("ff1")))
       .withColumn("ICEP_FLEX_FLD_2_TXT",  lit(""))
       .withColumn("ICEP_FLEX_FLD_3_TXT",  lit(""))
       .withColumn("ICEP_FLEX_FLD_4_TXT",  lit(""))

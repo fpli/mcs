@@ -176,6 +176,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_Geo_Trgtd_Ind_udf = udf((uri:String) => getValueFromQueryURL(uri, "isgeo"))
   val get_Pblshr_Acptd_Prgrm_Ind_udf = udf((uri:String) => getValueFromQueryURL(uri, "isprogAccepted"))
   val get_Prgrm_Excptn_List_udf = udf((uri:String) => getValueFromQueryURL(uri, "in_exp_list"))
+  val get_IcepFlexFld1_udf = udf((uri:String, key:String) => getIcepFlexFld1(uri, key))
+
 
 
   def getValueFromQueryURL(uri: String, key: String): String = {
@@ -191,6 +193,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       return "0"
     "1"
   }
+
+  def getIcepFlexFld1(uri: String, key: String): String = {
+    val value = getQueryParam(uri, "icep_" + key)
+    if (!value.equalsIgnoreCase(""))
+      return value
+    ""
+  }
+
 
 
   def getDateTimeFromTimestamp(timestamp: Long, format: String): String = {
