@@ -9,6 +9,8 @@ import org.apache.spark.sql.functions._
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.io.compress.GzipCodec
 
+import scala.io.Source
+
 object ImkTransformJob extends App {
   override def main(args: Array[String]): Unit = {
     val params = Parameter(args)
@@ -29,6 +31,10 @@ class ImkTransformJob(params: Parameter)
   @transient lazy val schema_apollo = TableSchema("df_imk_apollo.json")
   @transient lazy val schema_apollo_dtl = TableSchema("df_imk_apollo_dtl.json")
   @transient lazy val schema_apollo_mg = TableSchema("df_imk_apollo_mg.json")
+  @transient lazy val mfe_name_id_map: Map[String, String] = {
+    val mapData = Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("mfe_name_id_map.txt")).getLines
+    mapData.map(line => line.split("\\|")(0) -> line.split("\\|")(1)).toMap
+  }
 
   lazy val imkTempDir: String = params.outputDir + "/imkTemp/"
   lazy val dtlTempDir: String = params.outputDir + "/dtlTemp/"
@@ -65,6 +71,7 @@ class ImkTransformJob(params: Parameter)
         val date = datesFile._1
         var commonDf = readFilesAsDFEx(datesFile._2, schema_tfs.dfSchema, "csv", "bel")
           .withColumn("item_id", getItemIdUdf(col("roi_item_id"), col("item_id")))
+          .withColumn("mfe_id", getMfeIdUdf(col("mfe_name")))
           .na.fill(schema_tfs.defaultValues).cache()
         // set default values for some columns
         schema_apollo.filterNotColumns(commonDf.columns).foreach(e => {
@@ -115,6 +122,7 @@ class ImkTransformJob(params: Parameter)
   }
 
   val getItemIdUdf: UserDefinedFunction = udf((roi_item_id: String, item_id: String) => getItemId(roi_item_id, item_id))
+  val getMfeIdUdf: UserDefinedFunction = udf((mfe_name: String) => getMfeIdByMfeName(mfe_name))
 
   /**
     * set apollo item_id filed by tfs item_id and roi_item_id
@@ -129,6 +137,19 @@ class ImkTransformJob(params: Parameter)
       item_id
     } else{
       ""
+    }
+  }
+
+  /**
+    * get mfe id by mfe name
+    * @param mfeName mfe name
+    * @return
+    */
+  def getMfeIdByMfeName(mfeName: String): String = {
+    if (StringUtils.isNotEmpty(mfeName)) {
+      mfe_name_id_map.getOrElse(mfeName, "-999")
+    } else {
+      "-999"
     }
   }
 

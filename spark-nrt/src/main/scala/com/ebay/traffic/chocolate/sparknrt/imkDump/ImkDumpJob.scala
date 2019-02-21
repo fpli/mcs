@@ -135,7 +135,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("user_query", getUserQueryUdf(col("referer"), col("uri")))
       .withColumn("rule_bit_flag_strng", col("rt_rule_flags"))
       .withColumn("event_ts", getDateTimeUdf(col("timestamp")))
-      .withColumn("perf_track_name_value", getUserQueryUdf(col("uri")))
+      .withColumn("perf_track_name_value", getQueryParamsUdf(col("uri")))
       .withColumn("keyword", getKeywordUdf(col("uri")))
       .withColumn("mt_id", getDefaultNullNumParamValueFromUrlUdf(col("uri"), lit("mt_id")))
       .withColumn("crlp", getParamFromQueryUdf(col("uri"), lit("crlp")))
@@ -145,7 +145,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     for (i <- 1 to 20) {
       val columnName = "flex_field_" + i
       val paramName = "ff" + i
-      imkDf = imkDf.withColumn(columnName, getParamFromQueryUdf(col(paramName)))
+      imkDf = imkDf.withColumn(columnName, getParamFromQueryUdf(col("uri"), lit(paramName)))
     }
 
     schema_imk_table.filterNotColumns(imkDf.columns).foreach(e => {
@@ -155,6 +155,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   }
 
   val getUserQueryUdf: UserDefinedFunction = udf((referer: String, uri: String) => Utils.getUserQuery(referer, uri))
+  val getQueryParamsUdf: UserDefinedFunction = udf((uri: String) => Utils.getQueryString(uri))
   val getDefaultNullNumParamValueFromUrlUdf: UserDefinedFunction = udf((header: String, key: String) => Utils.getDefaultNullNumParamValueFromUrl(header, key))
   val getDateTimeUdf: UserDefinedFunction = udf((timestamp: Long) => Utils.getDateTimeFromTimestamp(timestamp))
   val getDateUdf: UserDefinedFunction = udf((timestamp: Long) => Utils.getDateFromTimestamp(timestamp))
