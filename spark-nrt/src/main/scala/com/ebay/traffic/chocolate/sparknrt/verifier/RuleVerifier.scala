@@ -30,6 +30,8 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       StructField("user_id", StringType, nullable = true),
       StructField("clnt_rmt_ip", StringType, nullable = true),
       StructField("pblshr_id", StringType, nullable = true),
+      StructField("rfr_url_name", StringType, nullable = true),
+      StructField("ams_trans_rsn_cd", StringType, nullable = true),
       StructField("rover_url_txt", StringType, nullable = true),
       StructField("rt_rule_flag1", StringType, nullable = true),
       StructField("rt_rule_flag2", StringType, nullable = true),
@@ -92,8 +94,8 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
 
     println("number of records in df1: " + count1)
 
-    var dfNullCguid = df1.where($"cguid" === "").drop("guid").repartition(1)
-    var dfNullGuid = df1.where($"guid" === "").drop("cguid").repartition(1)
+    var dfNullCguid = df1.where($"cguid" === "").drop("guid")
+//    var dfNullGuid = df1.where($"guid" === "").drop("cguid").repartition(1)
 
     val pathNullCguid = new Path(workDir + "/chocolate/nullCguid/", (new Path(params.srcPath).getName))
     fs.delete(pathNullCguid, true)
@@ -101,11 +103,11 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     dfNullCguid = readFilesAsDF(pathNullCguid.toString)
     val countNullCguid = dfNullCguid.count()
 
-    val pathNullGuid = new Path(workDir + "/chocolate/nullGuid/", (new Path(params.srcPath).getName))
-    fs.delete(pathNullGuid, true)
-    saveDFToFiles(dfNullGuid, pathNullGuid.toString)
-    dfNullGuid = readFilesAsDF(pathNullGuid.toString)
-    val countNullGuid = dfNullGuid.count()
+//    val pathNullGuid = new Path(workDir + "/chocolate/nullGuid/", (new Path(params.srcPath).getName))
+//    fs.delete(pathNullGuid, true)
+//    saveDFToFiles(dfNullGuid, pathNullGuid.toString)
+//    dfNullGuid = readFilesAsDF(pathNullGuid.toString)
+//    val countNullGuid = dfNullGuid.count()
 
     // 2. Load EPN data fetched from ams_click
     logger.info("load data for inputpath2: " + params.targetPath)
@@ -138,21 +140,31 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       .select("request_headers", "response_headers", "new_uri", "crltn_guid_txt")
       .repartition(1)
     val joinNullCguid = dfCguid.count()
+    val joinValidNullCguid = dfCguid.select("request_headers").dropDuplicates().count()
+
+    val dfCguidInLocation = dfCguid.where(cguidInLocation() === $"crltn_guid_txt").repartition(1)
+    val nullCguidInLocation = dfCguidInLocation.count()
+    val nullCguidNowhere = countNullCguid - nullCguidInLocation
 
     val pathCguid = new Path(workDir + "/join/nullCguid/", (new Path(params.srcPath).getName))
     fs.delete(pathCguid, true)
     saveDFToFiles(df = dfCguid, outputPath = pathCguid.toString, compressFormat = null,
       outputFormat = "csv", delimiter = "tab")
 
-    var dfGuid = dfNullGuid.join(df2, $"new_uri" === $"rover_url", "inner")
-      .select("request_headers", "response_headers", "new_uri", "guid_txt")
-      .repartition(1)
-    val joinNullGuid = dfGuid.count()
-
-    val pathGuid = new Path(workDir + "/join/nullGuid/", (new Path(params.srcPath).getName))
-    fs.delete(pathGuid, true)
-    saveDFToFiles(df = dfGuid, outputPath = pathGuid.toString, compressFormat = null,
+    val pathCguidInLocation = new Path(workDir + "/join/nullCguidInLocation/", (new Path(params.srcPath).getName))
+    fs.delete(pathCguidInLocation, true)
+    saveDFToFiles(df = dfCguidInLocation, outputPath = pathCguidInLocation.toString, compressFormat = null,
       outputFormat = "csv", delimiter = "tab")
+
+//    var dfGuid = dfNullGuid.join(df2, $"new_uri" === $"rover_url", "inner")
+//      .select("request_headers", "response_headers", "new_uri", "guid_txt")
+//      .repartition(1)
+//    val joinNullGuid = dfGuid.count()
+//
+//    val pathGuid = new Path(workDir + "/join/nullGuid/", (new Path(params.srcPath).getName))
+//    fs.delete(pathGuid, true)
+//    saveDFToFiles(df = dfGuid, outputPath = pathGuid.toString, compressFormat = null,
+//      outputFormat = "csv", delimiter = "tab")
 
     // 4. Write out result to file on hdfs
     var outputStream: FSDataOutputStream = null
@@ -160,8 +172,11 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       outputStream = fs.create(new Path(params.outputPath))
       outputStream.writeChars(s"Null cguid: $countNullCguid \n")
       outputStream.writeChars(s"Null cguid after join: $joinNullCguid \n")
-      outputStream.writeChars(s"Null guid: $countNullGuid \n")
-      outputStream.writeChars(s"Null guid after join: $joinNullGuid \n")
+      outputStream.writeChars(s"Valid Null cguid after join: $joinValidNullCguid \n")
+      outputStream.writeChars(s"Null cguid in Location: $nullCguidInLocation \n")
+      outputStream.writeChars(s"Null cguid nowhere: $nullCguidNowhere \n")
+//      outputStream.writeChars(s"Null guid: $countNullGuid \n")
+//      outputStream.writeChars(s"Null guid after join: $joinNullGuid \n")
 
       outputStream.flush()
     } finally {
@@ -243,5 +258,10 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     } else {
       mask == 0
     }
+  }
+
+  // parse CGUID from response_headers' Location param
+  def cguidInLocation(): Column = {
+    split($"response_headers", "cguid=")(1).substr(0, 32).alias("cguidInLocation")
   }
 }
