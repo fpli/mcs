@@ -216,16 +216,16 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if (url.getHost.contains("rover.ebay.com") || url.getHost.contains("r.ebay.com"))
       return location
     else {
-   //   if (url.getHost.contains(".com"))
-   //     return location
-    //  else {
         var res = getQueryParam(location, "mpre")
         if (res.equalsIgnoreCase(""))
           res = getQueryParam(location, "loc")
         if (res.equalsIgnoreCase(""))
           res = getQueryParam(location, "url")
-        return res
-      //}
+
+        if (res.equalsIgnoreCase(""))
+          return location
+        else
+          return res
     }
     ""
   }
@@ -325,11 +325,15 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         }
       } catch {
         case e: ArrayIndexOutOfBoundsException => {
-          logger.error("Error query parameters " + uri + e)
+          logger.error("Error query parameters " + uri + " param=" + param + e)
           return ""
         }
         case e: NullPointerException => {
-          logger.error("Error query parameters " + uri + e)
+          logger.error("Error query parameters " + uri + " param=" + param + e)
+          return ""
+        }
+        case e: IllegalArgumentException => {
+          logger.error("Error URLDecoder param " + uri + " param=" + param + e)
           return ""
         }
       }
