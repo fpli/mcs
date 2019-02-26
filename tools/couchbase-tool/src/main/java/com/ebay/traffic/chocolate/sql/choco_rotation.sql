@@ -91,9 +91,6 @@ CREATE TABLE choco_data.choco_rotation_info
   update_date timestamp,
   create_user STRING,
   update_user STRING
-)
-Clustered by (rotation_id) into 4 buckets
-STORED AS ORC
-TBLPROPERTIES ('transactional'='true','orc.compress'='SNAPPY');
+)STORED AS TEXTFILE;
 
 insert into table choco_data.choco_rotation_info select * from choco_data.choco_rotation_info_temp;
