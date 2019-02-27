@@ -87,5 +87,9 @@ class UtilsTest extends FunSuite {
     assert(Utils.getDomain("") == "")
   }
 
-
+  test("test judgeNotEbaySites") {
+    assert(!Utils.judgeNotEbaySites("http://www.ebay.com"))
+    assert(!Utils.judgeNotEbaySites("www.ebay.com"))
+    assert(Utils.judgeNotEbaySites("http://www.google.com"))
+  }
 }

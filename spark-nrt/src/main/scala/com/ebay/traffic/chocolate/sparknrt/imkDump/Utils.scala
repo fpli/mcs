@@ -3,10 +3,10 @@ package com.ebay.traffic.chocolate.sparknrt.imkDump
 import java.net.URL
 import java.text.{DecimalFormat, SimpleDateFormat}
 import java.util.Date
+import java.util.regex.Pattern
 
 import org.apache.commons.lang3.StringUtils
 
-import scala.collection.immutable.HashMap
 
 /**
   * Created by ganghuang on 12/3/18.
@@ -20,6 +20,8 @@ object Utils extends Serializable{
   lazy val userQueryParamsOfReferrer: Array[String] = Array("q")
 
   lazy val userQueryParamsOfLandingUrl: Array[String] = Array("uq", "satitle", "keyword", "item", "store")
+
+  lazy val ebaySites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE)
 
   lazy val user_agent_map: Map[String, Int] = Map(
     "msie" -> 2,
@@ -245,6 +247,20 @@ object Utils extends Serializable{
       }
     } else {
       ""
+    }
+  }
+
+  /**
+    * judge traffic is from ebay sites
+    * @param referrer referrer
+    * @return is or not
+    */
+  def judgeNotEbaySites(referrer: String): Boolean = {
+    val matcher = ebaySites.matcher(referrer)
+    if (matcher.find()) {
+      false
+    } else {
+      true
     }
   }
 
