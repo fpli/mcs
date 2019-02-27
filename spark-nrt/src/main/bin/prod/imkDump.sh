@@ -51,4 +51,5 @@ ${SPARK_HOME}/bin/spark-submit \
       --channel ${CHANNEL} \
       --workDir "${WORK_DIR}" \
       --outPutDir "${OUTPUT_DIR}" \
+      --partitions 3 \
       --elasticsearchUrl ${ES_URL}

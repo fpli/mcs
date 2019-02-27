@@ -85,7 +85,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       suffixArray = suffix.split(",")
     }
 
-    var dedupeOutputMeta = inputMetadata.readDedupeOutputMeta(".imk")
+    var dedupeOutputMeta = inputMetadata.readDedupeOutputMeta(".epnnrt")
     if (dedupeOutputMeta.length > batchSize) {
       dedupeOutputMeta = dedupeOutputMeta.slice(0, batchSize)
     }
@@ -121,7 +121,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("rvr_id", col("short_snapshot_id"))
       .withColumn("event_dt", getDateUdf(col("timestamp")))
       .withColumn("rvr_cmnd_type_cd", getCmndTypeUdf(col("channel_action")))
-      .withColumn("rvr_chnl_type_cd", getParamFromQueryUdf(col("uri"), lit("cid")))
+      .withColumn("rvr_chnl_type_cd", col("channel_type"))
       .withColumn("clnt_remote_ip", col("remote_ip"))
       .withColumn("brwsr_type_id", getBrowserTypeUdf(col("user_agent")))
       .withColumn("brwsr_name", col("user_agent"))
@@ -141,6 +141,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("crlp", getParamFromQueryUdf(col("uri"), lit("crlp")))
       .withColumn("user_map_ind", getUserMapIndUdf(col("user_id")))
       .withColumn("item_id", getItemIdUdf(col("uri")))
+      .filter(judegNotEbaySitesUdf(col("referer")))
 
     for (i <- 1 to 20) {
       val columnName = "flex_field_" + i
@@ -168,7 +169,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getBrowserTypeUdf: UserDefinedFunction = udf((userAgent: String) => Utils.getBrowserType(userAgent))
   val getCmndTypeUdf: UserDefinedFunction = udf((channelType: String) => Utils.getCommandType(channelType))
   val getBatchIdUdf: UserDefinedFunction = udf(() => Utils.getBatchId)
-
+  val judegNotEbaySitesUdf: UserDefinedFunction = udf((referer: String) => Utils.judgeNotEbaySites(referer))
   /**
     * override renameFiles to have special output file name for TD
     * @param outputDir final destination
