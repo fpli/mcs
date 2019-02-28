@@ -4,7 +4,7 @@ import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
+import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.functions.col
@@ -65,7 +65,6 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         val df = readFilesAsDFEx(datesFile._2)
         val epnNrtCommon = new EpnNrtCommon(params, df)
         logger.info("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
-        println("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
 
         val df_click = df.filter(col("channel_action") === "CLICK")
         val df_impression = df.filter(col("channel_action") === "IMPRESSION")
@@ -80,10 +79,16 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
         clickDf = clickDf.repartition(params.partitions)
         saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
-        renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
+      //  renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
+
+        val files = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
 
         // 5.delete the finished meta files
         metadata.deleteDedupeOutputMeta(file)
+
+        //6. write the epn-nrt meta output file to hdfs
+        val metaFile = new MetaFiles(Array(DateFiles(date, files)))
+        metadata.writeOutputMeta(metaFile, properties.getProperty("epnnrt.result.meta.outputdir"), Array(".epnnrt"))
       })
     })
   }

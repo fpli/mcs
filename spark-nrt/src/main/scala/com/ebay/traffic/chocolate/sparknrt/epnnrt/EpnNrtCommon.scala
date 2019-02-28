@@ -214,24 +214,21 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       return ""
     val url = new URL(location)
     if (url.getHost.contains("rover.ebay.com") || url.getHost.contains("r.ebay.com"))
-      return location
+       location
     else {
         var res = getQueryParam(location, "mpre")
         if (res.equalsIgnoreCase(""))
           res = getQueryParam(location, "loc")
         if (res.equalsIgnoreCase(""))
           res = getQueryParam(location, "url")
-
         if (res.equalsIgnoreCase(""))
-          return location
+           location
         else
-          return res
+           res
     }
-    ""
   }
 
   def getRefererURLAndDomain(referer: String, domain: Boolean): String = {
-    //val referer = getValueFromRequest(requestHeaders, "Referer")
     if (referer != null && !referer.equals("")) {
       try {
         val url = new URL(referer)
