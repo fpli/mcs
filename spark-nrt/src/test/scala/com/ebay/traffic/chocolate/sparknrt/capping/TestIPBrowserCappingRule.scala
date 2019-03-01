@@ -16,6 +16,7 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 
 class TestIPBrowserCappingRule extends BaseFunSuite {
   lazy val windowLong = "long"
+  lazy val windowMedium = "medium"
   lazy val windowShort = "short"
 
   val tmpPath = createTempPath()
@@ -86,16 +87,21 @@ class TestIPBrowserCappingRule extends BaseFunSuite {
     val dateFiles_0 = new DateFiles("date=2018-01-01", Array(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
 
     val job_01 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_S), dateFiles_0, sparkJob, windowShort)
-    val job_02 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L), dateFiles_0, sparkJob, windowLong)
+    val job_02 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_M), dateFiles_0, sparkJob, windowMedium)
+    val job_03 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L), dateFiles_0, sparkJob, windowLong)
     // handle 1st meta containing 1 meta 1 date 1 file
     val df_01 = job_01.test()
     val df_02 = job_02.test()
+    val df_03 = job_03.test()
     df_01.show()
     df_02.show()
+    df_03.show()
     assert(df_01.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_S)).=!=(0)).count() == 0)
-    assert(df_02.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L)).=!=(0)).count() == 0)
+    assert(df_02.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_M)).=!=(0)).count() == 0)
+    assert(df_03.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L)).=!=(0)).count() == 0)
     job_01.postTest()
     job_02.postTest()
+    job_03.postTest()
 
     val dateFiles1 = new DateFiles("date=2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
     val dateFiles2 = new DateFiles("date=2018-01-02", Array("file://" + inputDir + "/date=2018-01-02/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
@@ -181,55 +187,75 @@ class TestIPBrowserCappingRule extends BaseFunSuite {
     val dateFiles_1 = new DateFiles("date=2018-01-01", Array(inputDir + "/date=2018-01-01/part-00001.snappy.parquet",
       inputDir + "/date=2018-01-01/part-00002.snappy.parquet"))
     val job_11 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_S), dateFiles_1, sparkJob, windowShort)
-    val job_12 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L), dateFiles_1, sparkJob, windowLong)
+    val job_12 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_M), dateFiles_1, sparkJob, windowMedium)
+    val job_13 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L), dateFiles_1, sparkJob, windowLong)
     val df_11 = job_11.test()
     val df_12 = job_12.test()
+    val df_13 = job_13.test()
     df_11.show()
     df_12.show()
+    df_13.show()
     assert(df_11.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_S)).=!=(0)).count() == 0)
-    assert(df_12.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L)).=!=(0)).count() == 0)
+    assert(df_12.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_M)).=!=(0)).count() == 0)
+    assert(df_13.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L)).=!=(0)).count() == 0)
     job_11.postTest()
     job_12.postTest()
+    job_13.postTest()
 
     // handle 3rd meta containing 1 meta 2 date 1 file
     val dateFiles_2 = new DateFiles("date=2018-01-02", Array(inputDir + "/date=2018-01-02/part-00001.snappy.parquet",
       inputDir + "/date=2018-01-02/part-00002.snappy.parquet"))
     val job_21 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_S), dateFiles_2, sparkJob, windowShort)
-    val job_22 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L), dateFiles_2, sparkJob, windowLong)
+    val job_22 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_M), dateFiles_2, sparkJob, windowMedium)
+    val job_23 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L), dateFiles_2, sparkJob, windowLong)
     val df_21 = job_21.test()
     val df_22 = job_22.test()
+    val df_23 = job_23.test()
     df_21.show()
     df_22.show()
+    df_23.show()
     assert(df_21.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_S)).=!=(0)).count() == 2)
-    assert(df_22.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L)).=!=(0)).count() == 2)
+    assert(df_22.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_M)).=!=(0)).count() == 2)
+    assert(df_23.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L)).=!=(0)).count() == 2)
     job_21.postTest()
     job_22.postTest()
+    job_23.postTest()
 
     // handle 3rd meta containing 1 meta 1 date 1 file
     val dateFiles_3 = new DateFiles("date=2018-01-02", Array(inputDir + "/date=2018-01-02/part-00003.snappy.parquet"))
     val job_31 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_S), dateFiles_3, sparkJob, windowShort)
-    val job_32 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L), dateFiles_3, sparkJob, windowLong)
+    val job_32 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_M), dateFiles_3, sparkJob, windowMedium)
+    val job_33 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L), dateFiles_3, sparkJob, windowLong)
     val df_31 = job_31.test()
     val df_32 = job_32.test()
+    val df_33 = job_33.test()
     df_31.show()
     df_32.show()
+    df_33.show()
     assert(df_31.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_S)).=!=(0)).count() == 0)
-    assert(df_32.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L)).=!=(0)).count() == 0)
+    assert(df_32.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_M)).=!=(0)).count() == 0)
+    assert(df_33.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L)).=!=(0)).count() == 0)
     job_31.postTest()
     job_32.postTest()
+    job_33.postTest()
 
     // handle 4th meta containing 1 meta 1 date 1 file, no events
     val dateFiles_4 = new DateFiles("date=2018-01-03", Array(inputDir + "/date=2018-01-03/part-00001.snappy.parquet"))
     val job_41 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_S), dateFiles_4, sparkJob, windowShort)
-    val job_42 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L), dateFiles_4, sparkJob, windowLong)
+    val job_42 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_M), dateFiles_4, sparkJob, windowMedium)
+    val job_43 = new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L), dateFiles_4, sparkJob, windowLong)
     val df_41 = job_41.test()
     val df_42 = job_42.test()
+    val df_43 = job_43.test()
     df_41.show()
     df_42.show()
+    df_43.show()
     assert(df_41.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_S)).=!=(0)).count() == 0)
-    assert(df_42.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L)).=!=(0)).count() == 0)
+    assert(df_42.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_M)).=!=(0)).count() == 0)
+    assert(df_43.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L)).=!=(0)).count() == 0)
     job_41.postTest()
     job_42.postTest()
+    job_43.postTest()
   }
 
 }
