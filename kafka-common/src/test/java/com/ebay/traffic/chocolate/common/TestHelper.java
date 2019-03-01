@@ -284,6 +284,55 @@ public class TestHelper {
   }
 
   /**
+   * Create filter message
+   *
+   * @param channelType channel type
+   * @param channelAction channel action
+   * @param snapshotId the snapshot ID
+   * @param timestamp the timestamp
+   * @param ip the ip addresss
+   * @param userAgent the user agent
+   * @return filter message
+   */
+  public static FilterMessage newFilterMessage(ChannelType channelType,
+                                               ChannelAction channelAction,
+                                               long snapshotId,
+                                               long timestamp,
+                                               String ip,
+                                               String userAgent) {
+    FilterMessage message = new FilterMessage();
+    message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
+    message.setTimestamp(timestamp);
+    message.setUserId(1L);
+    message.setCguid("");
+    message.setGuid("");
+    message.setRemoteIp(ip);
+    message.setLangCd("");
+    message.setUserAgent(userAgent);
+    message.setGeoId(1L);
+    message.setUdid("");
+    message.setReferer("");
+    message.setCampaignId(1L);
+    message.setPublisherId(1L);
+    message.setSiteId(1L);
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-eBay-Client-IP: " + ip +
+        "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
+    message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
+    message.setResponseHeaders("");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setRtRuleFlags(0L);
+    message.setNrtRuleFlags(0L);
+    message.setSnid("testsnid");
+    return message;
+  }
+
+  /**
    * Create filter message v1
    *
    * @param channelType channel type
