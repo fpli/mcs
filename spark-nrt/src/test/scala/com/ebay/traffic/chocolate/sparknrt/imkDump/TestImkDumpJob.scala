@@ -37,6 +37,8 @@ class TestImkDumpJob extends BaseFunSuite{
 
   override def beforeAll(): Unit = {
     createTestDataForPS()
+    fs.mkdirs(new Path(workDir))
+    fs.mkdirs(new Path(outPutDir))
   }
 
   test("test imk dump job for paid search") {
@@ -51,7 +53,7 @@ class TestImkDumpJob extends BaseFunSuite{
     val params = Parameter(args)
     val job = new ImkDumpJob(params)
     val metadata1 = Metadata(workDir, "PAID_SEARCH", MetadataEnum.capping)
-    val dedupeMeta = metadata1.readDedupeOutputMeta(".imk")
+    val dedupeMeta = metadata1.readDedupeOutputMeta(".epnnrt")
     val dedupeMetaPath = new Path(dedupeMeta(0)._1)
 
     assert (fs.exists(dedupeMetaPath))
@@ -69,7 +71,7 @@ class TestImkDumpJob extends BaseFunSuite{
     val metadata = Metadata(workDir, "PAID_SEARCH", MetadataEnum.capping)
     val dateFiles = DateFiles("date=2018-05-01", Array("file://" + tmpPath + "/date=2018-05-01/part-00000.snappy.parquet"))
     val meta: MetaFiles = MetaFiles(Array(dateFiles))
-    metadata.writeDedupeOutputMeta(meta, Array(".imk"))
+    metadata.writeDedupeOutputMeta(meta, Array(".epnnrt"))
 
     // prepare data file
     val writer = AvroParquetWriter.
