@@ -48,6 +48,11 @@ public class BlacklistRulesTest {
         (EBayRobotRule.class.getSimpleName(), "eBay_Spiders_and_Robots_EPN.txt"));
     filterRules.get(ChannelType.EPN).put(EBayRefererDomainRule.class.getSimpleName(), new FilterRuleContent
         (EBayRefererDomainRule.class.getSimpleName(), "eBay_Referral_Domain.txt"));
+    filterRules.get(ChannelType.EPN).put(ValidBrowserRule.class.getSimpleName(), new FilterRuleContent
+        (ValidBrowserRule.class.getSimpleName(), "IAB_ABC_International_List_of_Valid_Browsers.txt", null));
+    filterRules.get(ChannelType.EPN).put(IABRobotRule.class.getSimpleName(), new FilterRuleContent
+        (IABRobotRule.class.getSimpleName(), "IAB_ABC_International_Spiders_and_Robots.txt"));
+
 
     //Testing Data for DAP channel
     if (filterRules.get(ChannelType.DISPLAY) == null) {
@@ -184,6 +189,36 @@ public class BlacklistRulesTest {
     rule = TwoPassIABRule.createForTest(ChannelType.DISPLAY);
     rule.readFromStrings(wlStr, blStr);
     req.setUserAgent("iPhone SohuEnNews");
+    assertEquals(0, rule.test(req));
+  }
+
+  @Test
+  public void testValidBrowserRule() {
+    ValidBrowserRule rule = ValidBrowserRule.createForTest(ChannelType.EPN);
+    FilterRequest req = new FilterRequest();
+    assertEquals(1, rule.test(req));
+    req.setUserAgent("bar");
+    assertEquals(1, rule.test(req));
+    rule.addWhitelistEntry("bar|1|1");
+    assertEquals(0, rule.test(req));
+    req.setUserAgent("AU-MIC");
+    assertEquals(0, rule.test(req));
+    rule.clear();
+    assertEquals(1, rule.test(req));
+  }
+
+  @Test
+  public void testIABRobotRule() {
+    IABRobotRule rule = IABRobotRule.createForTest(ChannelType.EPN);
+    FilterRequest req = new FilterRequest();
+    assertEquals(1, rule.test(req));
+    req.setUserAgent("bar");
+    assertEquals(0, rule.test(req));
+    rule.addBlacklistEntry("bar|1||0|2|0");
+    assertEquals(1, rule.test(req));
+    req.setUserAgent("internetseer");
+    assertEquals(1, rule.test(req));
+    rule.clear();
     assertEquals(0, rule.test(req));
   }
 

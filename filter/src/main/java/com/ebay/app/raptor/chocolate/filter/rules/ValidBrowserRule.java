@@ -13,15 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Blacklist-type rule for eBay robots detection.
+ * Whitelist-type rule for IAB valid browser detection
  *
- * Created by jialili1 on 4/23/18.
+ * Created by jialili1 on 2/27/19
  */
-public class EBayRobotRule extends BaseFilterRule {
-  private List<TwoParamsListEntry> blacklist = new ArrayList<TwoParamsListEntry>();
-  private String blacklistName;
+public class ValidBrowserRule extends BaseFilterRule {
+  private List<TwoParamsListEntry> whitelist = new ArrayList<TwoParamsListEntry>();
+  private String whitelistName;
 
-  public EBayRobotRule(ChannelType channelType) {
+  public ValidBrowserRule(ChannelType channelType) {
     super(channelType);
     this.readFromLocalFiles();
   }
@@ -31,60 +31,62 @@ public class EBayRobotRule extends BaseFilterRule {
    *
    * @return new empty instance
    */
-  public static EBayRobotRule createForTest(ChannelType channelType) {
-    return new EBayRobotRule(channelType);
+  public static ValidBrowserRule createForTest(ChannelType channelType) {
+    return new ValidBrowserRule(channelType);
   }
 
   /**
    * For unit test purposes: clear the lists
    */
   public void clear() {
-    this.blacklist.clear();
+    this.whitelist.clear();
   }
 
   /**
-   * Add a blacklist entry
+   * Add a whitelist entry
    *
-   * @param blacklistEntry eBay robot format blacklist string
+   * @param whitelistEntry IAB-format whitelist string
    */
-  public void addBlacklistEntry(String blacklistEntry) {
-    this.blacklist.add(new TwoParamsListEntry(blacklistEntry));
+  public void addWhitelistEntry(String whitelistEntry) {
+    this.whitelist.add(new TwoParamsListEntry(whitelistEntry));
   }
 
   /**
-   * Reset the lists from the strings of the eBay robot file format:
+   * Reset the lists from the strings of the IAB file format:
+   * - multiline
+   * - # comments
    *
-   * @param blacklist
+   * @param whitelist
    */
-  public void readFromStrings(String blacklist) {
+  public void readFromStrings(String whitelist) {
     this.clear();
 
-    String[] parts = blacklist.split("\n");
+    String[] parts = whitelist.split("\n");
     for (String part : parts) {
       String t = part.trim();
       if (t.isEmpty() || t.startsWith("#")) {
         continue;
       }
 
-      this.addBlacklistEntry(t);
+      this.addWhitelistEntry(t);
     }
   }
 
   /**
-   * Match user agent string against the blacklist
+   * Match user agent string in the whitelist
    *
    * @param uaString user agent string to match
    * @return true if the user agent string passes the test
    */
   private boolean isUserAgentValid(String uaString) {
-    boolean result = true;
+    boolean result = false;
 
     if (uaString == null)
       return false;
 
-    for (TwoParamsListEntry entry : this.blacklist) {
+    for (TwoParamsListEntry entry : this.whitelist) {
       if (entry.match(uaString)) {
-        result = false;
+        result = true;
         break;
       }
     }
@@ -93,7 +95,7 @@ public class EBayRobotRule extends BaseFilterRule {
   }
 
   /**
-   * Test the user agent from the request using the EBayRobotRule
+   * Test the user agent from the request using the IAB whitelist
    *
    * @param event event (impression/click) to test
    * @return a bit, 0 for pass, 1 for fail
@@ -105,12 +107,13 @@ public class EBayRobotRule extends BaseFilterRule {
 
   private void readFromLocalFiles() {
     try {
-      blacklistName = this.filterRuleContent.getBlacklistName();
-      String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
-      this.readFromStrings(blString);
+      whitelistName = this.filterRuleContent.getWhitelistName();
+      String wlString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + whitelistName)));
+      this.readFromStrings(wlString);
     } catch (Exception e) {
-      Logger.getLogger(EBayRobotRule.class).error("Failed to get eBay Spiders and Robots lists", e);
-      throw new Error("eBay Spiders and Robots Lists not found", e);
+      Logger.getLogger(ValidBrowserRule.class).error("Failed to get IAB Valid Browsers list", e);
+      throw new Error("IAB Valid Browsers list not found", e);
     }
   }
+
 }
