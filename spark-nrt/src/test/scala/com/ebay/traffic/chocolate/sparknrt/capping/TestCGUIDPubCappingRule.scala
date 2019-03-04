@@ -13,12 +13,10 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
-import org.junit.Ignore
 
 /**
   * Created by jialili1 on 5/29/18.
   */
-@Ignore
 class TestCGUIDPubCappingRule extends BaseFunSuite {
   lazy val windowLong = "long"
   lazy val windowShort = "short"
@@ -76,7 +74,7 @@ class TestCGUIDPubCappingRule extends BaseFunSuite {
 
   import sparkJob.spark.implicits._
 
-  ignore("test cguid-pub capping rule") {
+  test("test cguid-pub capping rule") {
     val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
 
     val dateFiles0 = new DateFiles("date=2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
