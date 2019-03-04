@@ -132,9 +132,10 @@ public class FilterContainerTest {
   @Test
   public void filterRequestTransformImpression() {
     ListenerMessage lm = new ListenerMessage();
+    String userAgent = "foo";
     String remoteIp = "127.0.0.1";
     String referer = "https://www.google.com/";
-    lm.setRequestHeaders("User-Agent: foo|X-Forwarded-For: " + remoteIp + "|Referer: " + referer + "|X-Purpose:preview||");
+    lm.setRequestHeaders("User-Agent: " + userAgent + "|X-Forwarded-For: " + remoteIp + "|Referer: " + referer + "|X-Purpose:preview||");
     lm.setChannelAction(ChannelAction.IMPRESSION);
     lm.setResponseHeaders("");
     lm.setSnapshotId(12345L);
@@ -145,7 +146,7 @@ public class FilterContainerTest {
     lm.setGuid("");
     lm.setCguid("");
     lm.setLangCd("");
-    lm.setUserAgent("");
+    lm.setUserAgent(userAgent);
     lm.setGeoId(1L);
     lm.setUdid("");
     lm.setReferer(referer);
@@ -155,7 +156,7 @@ public class FilterContainerTest {
     lm.setDstRotationId(2L);
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     FilterRequest req = new FilterRequest(lm);
-    assertEquals("foo", req.getUserAgent());
+    assertEquals(userAgent, req.getUserAgent());
     assertEquals(remoteIp, req.getSourceIP());
     assertEquals("google.com", req.getReferrerDomain());
     assertEquals(true, req.isPrefetch());
@@ -188,7 +189,7 @@ public class FilterContainerTest {
     lm.setDstRotationId(2L);
     lm.setUri("http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=4&pub=5575136753&toolid=10001&campid=5337739034");
     FilterRequest req = new FilterRequest(lm);
-    assertNull(req.getUserAgent());
+    assertEquals("", req.getUserAgent());
     assertEquals("10.11.12.13", req.getSourceIP());
     assertEquals("100partnerprogramme.de", req.getReferrerDomain());
     assertEquals(false, req.isPrefetch());
