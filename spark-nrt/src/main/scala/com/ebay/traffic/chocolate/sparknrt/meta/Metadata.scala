@@ -34,7 +34,7 @@ class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
   }
 
   /**
-    * Dedupe output meta
+    * Dedupe output metaaddShutdownHook
     */
   def readDedupeOutputMeta(suffix: String = ""): Array[(String, Map[String, Array[String]])] = {
     val status = fs.listStatus(new Path(DEDUPE_OUTPUT_META_DIR))
@@ -140,12 +140,15 @@ object MetadataEnum extends Enumeration {
   val unknown = Value(-1)
   val dedupe = Value(0)
   val capping = Value(1)
+  val imkDump = Value(3)
 
   def convertToMetadataEnum(value: String): MetadataEnum.Value = {
     if (value == dedupe.toString) {
       dedupe
     } else if (value == capping.toString) {
       capping
+    } else if (value == imkDump.toString) {
+      imkDump
     } else {
       unknown
     }

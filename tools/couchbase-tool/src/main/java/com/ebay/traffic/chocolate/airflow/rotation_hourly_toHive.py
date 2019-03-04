@@ -7,7 +7,7 @@ rotation_hive_hourly_args = {
     'owner': 'rotation',
     'depends_on_past': False,
     'start_date': airflow.utils.dates.days_ago(1),
-    'email': ['DL-eBay-Chocolate-GC@ebay.com'],
+    'email': ['fechen@ebay.com','ganghuang@ebay.com','jialili1@ebay.com','xiangli4@ebay.com','yliu29@ebay.com','huiclu@ebay.com','yimeng@ebay.com','shuangxu@ebay.com','yiryuan@ebay.com','zhofan@ebay.com'],
     'email_on_failure': True,
     'email_on_retry': True,
     'retries': 1,
