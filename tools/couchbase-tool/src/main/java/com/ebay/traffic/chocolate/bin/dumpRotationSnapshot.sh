@@ -8,8 +8,8 @@ bin=`cd "$bin">/dev/null; pwd`
 
 echo `date`
 
-DT_YMD=$(date +%Y%m%d -d "`date`")
-DT=$(date +%Y-%m-%d -d "`date`")
+DT_YMD=$(date +%Y%m%d -d "`date` - 1 hour")
+DT=$(date +%Y-%m-%d -d "`date` - 1 hour")
 echo $D_YM
 
 ROTATION_CONFIG_FILE=${bin}/../conf/
@@ -47,23 +47,39 @@ else
    echo "=====================================================dumpRotationSnapshot is completed======================================================" | tee -a ${log_file}
 fi
 
-kinit -kt /apache/b_marketing_tracking_APD.keytab b_marketing_tracking@APD.EBAY.COM
+ridFiles=`wc -l ${OUTPUT_PATH}rotation*`
+ridCnt=$(awk -F' '  '{print $1}'<<<${ridFiles})
+retryCnt=0
+while [ $ridCnt -le 300000 ]
+do
+  if [[ ${retryCnt} > 3 ]]; then
+     echo "========Exceed Max RetryTimes(3) ===============" | tee -a ${log_file}
+     exit 1
+  fi
+  echo "========dumpNumber=${retryCnt} Retry dumpRotationSnapshot ===============" | tee -a ${log_file}
+  java -cp ${bin}/../lib/couchbase-tool-*.jar com.ebay.traffic.chocolate.couchbase.DumpRotationToHadoop ${ROTATION_CONFIG_FILE} ${OUTPUT_PATH}
+  ridFiles=`wc -l ${OUTPUT_PATH}rotation*`
+  ridCnt=$(awk -F' '  '{print $1}'<<<${ridFiles})
+  retryCnt=retryCnt+1
+done
 
-echo `date`"=====================================================Apollo -- LoadData started======================================================" | tee -a ${log_file}
-echo `date`"------ Apollo -- LoadData started~~~" | tee -a ${log_file}
-APOLLO_HDP=hdfs://apollo-phx-nn-ha/apps/b_marketing_tracking/chocolate/rotation
-/apache/hadoop/bin/hadoop fs -rm -r -skipTrash ${APOLLO_HDP}/dt=${DT}
-/apache/hadoop/bin/hadoop fs -put ${OUTPUT_PATH} ${APOLLO_HDP}
-/apache/hadoop/bin/hadoop fs -ls ${APOLLO_HDP}/dt=${DT} | tee -a ${log_file}
-echo `date`"=====================================================Apollo -- LoadData Ended======================================================" | tee -a ${log_file}
+
+/datashare/mkttracking/tools/keytab-tool/kinit/kinit_byhost.sh
+HDP=/apps/b_marketing_tracking/chocolate/rotation
+
+echo `date`"=====================================================Apollo_rno -- LoadData started======================================================" | tee -a ${log_file}
+echo `date`"------ Apollo_rno -- LoadData started~~~" | tee -a ${log_file}
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -rm -r -skipTrash ${HDP}/dt=${DT}
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -put ${OUTPUT_PATH} ${HDP}
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -ls ${HDP}/dt=${DT} | tee -a ${log_file}
+echo `date`"=====================================================Apollo_rno -- LoadData Ended======================================================" | tee -a ${log_file}
 
 
 echo `date`"=====================================================Ares -- LoadData Started======================================================" | tee -a ${log_file}
 echo `date`"------ Ares -- LoadData started~~~" | tee -a ${log_file}
-ARES_HDP=hdfs://ares-lvs-nn-ha/apps/b_marketing_tracking/chocolate/rotation
-/apache/hadoop_ares/bin/hadoop fs -rm -r -skipTrash ${ARES_HDP}/dt=${DT}
-/apache/hadoop_ares/bin/hadoop fs -put ${OUTPUT_PATH} ${ARES_HDP}
-/apache/hadoop_ares/bin/hadoop fs -ls ${ARES_HDP}/dt=${DT} | tee -a ${log_file}
+/datashare/mkttracking/tools/apache/hadoop_ares/bin/hadoop fs -rm -r -skipTrash ${HDP}/dt=${DT}
+/datashare/mkttracking/tools/apache/hadoop_ares/bin/hadoop fs -put ${OUTPUT_PATH} ${HDP}
+/datashare/mkttracking/tools/apache/hadoop_ares/bin/hadoop fs -ls ${HDP}/dt=${DT} | tee -a ${log_file}
 echo `date`"=====================================================Ares -- LoadData Ended======================================================" | tee -a ${log_file}
 
 echo `date`" =============== Job End ===========" | tee -a ${log_file}

@@ -1,0 +1,46 @@
+{
+  "table": "df_imk_apollo_mgvalue",
+  "description": "",
+  "columns": [
+    {
+      "name": "rvr_id",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "event_dt",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "mgvalue",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "mgvalue_rsn_cd",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "cre_date",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "cre_user",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "upd_date",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "upd_user",
+      "dataType": "string",
+      "default": ""
+    }
+  ]
+}
