@@ -4,7 +4,7 @@ import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import com.ebay.traffic.chocolate.sparknrt.capping.Parameter
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.spark.sql.{Column, DataFrame}
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.{col, when}
 
 class IPBrowserCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingRuleJobObj: BaseSparkJob, window: String)
   extends GenericCountRule(params: Parameter, bit: Long, dateFiles: DateFiles,  cappingRuleJobObj: BaseSparkJob, window: String) {
@@ -14,11 +14,26 @@ class IPBrowserCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
   //workdir
   override lazy val fileName = "/IPBrowser_" + window + "/"
   //specific columns for IPBrowser Capping Rule
-  override val cols = Array(col("remote_ip"), col("user_agent"))
+  override val cols = Array(col("IP"), col("user_agent"))
 
   //filter condition for counting df
   def filterCondition(): Column = {
     $"user_agent" =!= "" and $"channel_action" === "CLICK"
+  }
+
+  //get IP
+  def ip(): Column = {
+    $"remote_ip".alias("IP")
+  }
+
+  //counting columns
+  def selectCondition(): Array[Column] = {
+    Array(ip(), cols(1))
+  }
+
+  //add new column if needed
+  def withColumnCondition(): Column = {
+    when($"channel_action" === "CLICK", ip()).otherwise("NA")
   }
 
   //final join condition
@@ -43,7 +58,7 @@ class IPBrowserCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
 
       //Step 2: Count by ip and user_agent in this job, then integrate data to 1 file, and add timestamp to file name.
       //count by ip and user_agent in the job
-      dfIPBrwsr = dfLoadCappingInJob(dfIPBrwsr, cols)
+      dfIPBrwsr = dfLoadCappingInJob(dfIPBrwsr, selectCondition())
 
       //reduce the number of counting file to 1, and rename file name to include timestamp
       saveCappingInJob(dfIPBrwsr, timestamp)
@@ -51,7 +66,7 @@ class IPBrowserCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
       //Step 3: Read a new df for join purpose, just select IP, user_agent and snapshot_id, and read previous data for counting purpose.
       //df for join
       val selectCols: Array[Column] = $"snapshot_id" +: cols
-      var df = dfForJoin(null, null, selectCols)
+      var df = dfForJoin(cols(0), withColumnCondition(), selectCols)
 
       //read previous data and add to count path
       val ipBrwsrCountPath = getCappingDataPath(timestamp)
