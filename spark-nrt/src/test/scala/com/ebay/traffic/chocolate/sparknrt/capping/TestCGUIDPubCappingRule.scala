@@ -185,11 +185,12 @@ class TestCGUIDPubCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 11L, 11L, 111L, cguid3, timestamp2, writer2_2)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 12L, 11L, 111L, cguid3, timestamp3, writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 13L, 11L, 111L, cguid3, timestamp3, writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 14L, 22L, 111L, cguid3, timestamp3, writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 15L, -1L, 111L, cguid3, timestamp3, writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 13L, 11L, 111L, cguid3, timestamp3, writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 14L, 11L, 111L, cguid3, timestamp3, writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 15L, 22L, 111L, cguid3, timestamp3, writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 16L, -1L, 111L, cguid3, timestamp3, writer3)
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 16L, 11L, 111L, cguid2, timestamp4, writer4)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 17L, 11L, 111L, cguid2, timestamp4, writer4)
 
     writer1_1.close()
     writer1_2.close()
@@ -235,7 +236,7 @@ class TestCGUIDPubCappingRule extends BaseFunSuite {
     df_31.show()
     df_32.show()
     assert(df_31.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDPubCappingRule_S)).=!=(0)).count() == 0)
-    assert(df_32.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDPubCappingRule_L)).=!=(0)).count() == 0)
+    assert(df_32.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDPubCappingRule_L)).=!=(0)).count() == 2)
     job_31.postTest()
     job_32.postTest()
 
