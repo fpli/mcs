@@ -17,6 +17,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
 
   lazy val windowLong = "long"
   lazy val windowShort = "short"
+  lazy val windowMedium = "medium"
   lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-";
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
@@ -37,6 +38,12 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
           new CGUIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_S), dateFiles, sparkJobObj, windowShort),
       CappingRuleEnum.CGUIDCappingRule_L ->
           new CGUIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDCappingRule_L), dateFiles, sparkJobObj, windowLong),
+      CappingRuleEnum.IPBrowserCappingRule_S ->
+        new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_S), dateFiles, sparkJobObj, windowShort),
+      CappingRuleEnum.IPBrowserCappingRule_M ->
+        new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_M), dateFiles, sparkJobObj, windowMedium),
+      CappingRuleEnum.IPBrowserCappingRule_L ->
+        new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L), dateFiles, sparkJobObj, windowLong),
       // Snid capping rule is special. 2 rules are implemented in 1 single rule for better performance
       // Use SnidCappingRule_L as hashmap key. Actually it doesn't affect what it is
       CappingRuleEnum.SnidCappingRule_L ->

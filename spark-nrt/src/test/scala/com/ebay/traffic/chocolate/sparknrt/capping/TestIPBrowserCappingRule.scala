@@ -75,6 +75,9 @@ class TestIPBrowserCappingRule extends BaseFunSuite {
     val timestamp4 = getTimestamp("2018-01-03")
     val timestampBefore24h = timestamp1 - 1
 
+    val userAgent1 = "Mozilla"
+    val userAgent2 = "iPhone"
+
     val writer1_0 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
       .withSchema(FilterMessage.getClassSchema())
@@ -157,25 +160,25 @@ class TestIPBrowserCappingRule extends BaseFunSuite {
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 2L, timestamp1, "1.1.1.1", "a", writer1_1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 3L, timestamp1, "1.1.1.2", "a", writer1_1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 4L, timestamp1, "1.1.1.2", "a", writer1_2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 5L, timestamp2, "1.1.1.2", "a", writer1_2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 2L, timestamp1, "1.1.1.1", userAgent1, writer1_1)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 3L, timestamp1, "1.1.1.2", userAgent1, writer1_1)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 4L, timestamp1, "1.1.1.2", userAgent1, writer1_2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 5L, timestamp2, "1.1.1.2", userAgent1, writer1_2)
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6L, timestamp2, "1.1.1.1", "a", writer2_1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 7L, timestamp2, "1.1.1.2", "a", writer2_1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 8L, timestamp2, "1.1.1.2", "a", writer2_2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 9L, timestamp2, "1.1.1.3", "a", writer2_2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 10L, timestamp2, "1.1.1.3", "a", writer2_2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 11L, timestamp2, "1.1.1.3", "a", writer2_2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6L, timestamp2, "1.1.1.1", userAgent1, writer2_1)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 7L, timestamp2, "1.1.1.2", userAgent1, writer2_1)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 8L, timestamp2, "1.1.1.2", userAgent1, writer2_2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 9L, timestamp2, "1.1.1.3", userAgent1, writer2_2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 10L, timestamp2, "1.1.1.3", userAgent1, writer2_2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 11L, timestamp2, "1.1.1.3", userAgent1, writer2_2)
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 12L, timestamp3, "1.1.1.3", "a", writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 13L, timestamp3, "1.1.1.3", "a", writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 14L, timestamp3, "1.1.1.3", "a", writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 15L, timestamp3, "1.1.1.3", "b", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 12L, timestamp3, "1.1.1.3", userAgent1, writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 13L, timestamp3, "1.1.1.3", userAgent1, writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 14L, timestamp3, "1.1.1.3", userAgent1, writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 15L, timestamp3, "1.1.1.3", userAgent2, writer3)
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 16L, timestamp3, "1.1.1.3", "", writer3)
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 17L, timestamp4, "1.1.1.2", "a", writer4)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 17L, timestamp4, "1.1.1.2", userAgent1, writer4)
 
     writer1_1.close()
     writer1_2.close()
