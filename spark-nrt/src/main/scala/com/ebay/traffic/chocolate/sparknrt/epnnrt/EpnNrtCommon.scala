@@ -89,13 +89,31 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     map
   }
 
-  lazy val landing_page_pageId_map: HashMap[String, String] = {
-    var map = new HashMap[String, String]
+//  //landing page id map  (landing_page_url -> page_id)
+//  lazy val landing_page_pageId_map: HashMap[String, String] = {
+//    var map = new HashMap[String, String]
+//    val stream = fs.open(new Path(params.resourceDir + "/" + properties.getProperty("epnnrt.landingpage.type")))
+//    def readLine = Stream.cons(stream.readLine(), Stream.continually(stream.readLine))
+//    readLine.takeWhile(_ != null).foreach(line => {
+//      val parts = line.split("\t")
+//      map = map + (parts(4) -> parts(1))
+//    })
+//    map
+//  }
+
+  //landing page id map  (landing_page_url -> page_id)
+  lazy val landing_page_pageId_map: mutable.HashMap[String, mutable.Set[LandingPageMapInfo]] = {
+    val map = new mutable.HashMap[String, mutable.Set[LandingPageMapInfo]] with mutable.MultiMap[String, LandingPageMapInfo]
     val stream = fs.open(new Path(params.resourceDir + "/" + properties.getProperty("epnnrt.landingpage.type")))
+    //val stream = fs.open(new Path("/Users/huiclu/funk/ams_landing_page_type_lookup.csv"))
     def readLine = Stream.cons(stream.readLine(), Stream.continually(stream.readLine))
     readLine.takeWhile(_ != null).foreach(line => {
       val parts = line.split("\t")
-      map = map + (parts(4) -> parts(1))
+      val landingPageMapInfo = new LandingPageMapInfo
+      landingPageMapInfo.setAMS_PAGE_TYPE_MAP_ID(parts(1))
+      landingPageMapInfo.setAMS_PRGRM_ID(parts(3))
+      landingPageMapInfo.setLNDNG_PAGE_URL_TXT(parts(4))
+      map.addBinding(findDomainInUrl(parts(4)), landingPageMapInfo)
     })
     map
   }
@@ -160,11 +178,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_cat_id_udf = udf((uri: String) => getQueryParam(uri, "catId"))
   val get_kw_udf = udf((uri: String) => getQueryParam(uri, "kw"))
   val get_seller_udf = udf((uri: String) => getQueryParam(uri, "icep_sellerId"))
-  val get_trfc_src_cd_click_udf = udf((ruleFlag: Long) => get_TRFC_SRC_CD(ruleFlag, "click"))
-  val get_trfc_src_cd_impression_udf = udf((ruleFlag: Long) => get_TRFC_SRC_CD(ruleFlag, "impression"))
   val get_browser_type_udf = udf((requestHeader: String) => getBrowserType(requestHeader))
   val get_filter_yn_ind_udf = udf((rt_rule_flag: Long, nrt_rule_flag: Long, action: String) => getFilter_Yn_Ind(rt_rule_flag, nrt_rule_flag, action))
-  val get_page_id_udf = udf((landingPage: String) => getPageIdByLandingPage(landingPage))
+  val get_page_id_udf = udf((landingPage: String, uri: String) => getPageIdByLandingPage2(landingPage, getRoverUriInfo(uri, 3)))
   val get_roi_rule_value_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13))._1)
   val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13))._2)
   val get_ams_clk_fltr_type_id_udf = udf((publisherId: String, uri: String) => getclickFilterTypeId(publisherId, getRoverUriInfo(uri, 3)))
@@ -177,7 +193,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_Pblshr_Acptd_Prgrm_Ind_udf = udf((uri:String) => getValueFromQueryURL(uri, "isprogAccepted"))
   val get_Prgrm_Excptn_List_udf = udf((uri:String) => getValueFromQueryURL(uri, "in_exp_list"))
   val get_IcepFlexFld1_udf = udf((uri:String, key:String) => getIcepFlexFld1(uri, key))
-
+  val get_trfc_src_cd_click_udf = udf((browser: String) => get_TRFC_SRC_CD(browser, "click"))
+  val get_trfc_src_cd_impression_udf = udf((browser: String) => get_TRFC_SRC_CD(browser, "impression"))
 
 
   def getValueFromQueryURL(uri: String, key: String): String = {
@@ -400,15 +417,15 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     ""
   }
 
-  def get_TRFC_SRC_CD(flag: Long, action: String): Int = {
+  def get_TRFC_SRC_CD(browser: String, action: String): Int = {
+    val mobile = Array("eBay", "Mobile", "Android", "Nexus", "Nokia", "Playbook", "webos", "bntv", "blackberry", "silk",
+      "cloud9", "tablet", "Symbian", "Opera Mini", "Samsung", "Ericsson")
     if (action.equalsIgnoreCase("click")) {
-      val res = getRuleFlag(flag, 10)
-      if (res == 0)
-        return 0
-      else {
-       // ams_flag_map("traffic_source_code") = 2
-        return 2
+      for (i <- mobile.indices) {
+        if (browser.contains(mobile(i)))
+          return 2
       }
+      return 0
     }
     if (action.equalsIgnoreCase("impression")) {
       return 0
@@ -433,13 +450,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   def getFilter_Yn_Ind(rt_rule_flag: Long, nrt_rule_flag: Long, action: String): Int = {
     if (action.equalsIgnoreCase("impression")) {
       return getRuleFlag(rt_rule_flag, 11) | getRuleFlag(rt_rule_flag, 1) |
-        getRuleFlag(rt_rule_flag, 10) | getRuleFlag(rt_rule_flag, 5) | getRuleFlag(rt_rule_flag, 3)
+        getRuleFlag(rt_rule_flag, 10) | getRuleFlag(rt_rule_flag, 5) | getRuleFlag(rt_rule_flag, 15)
     }
     if(action.equalsIgnoreCase("click")) {
       return getRuleFlag(rt_rule_flag, 11) | getRuleFlag(rt_rule_flag, 1) |
-        getRuleFlag(rt_rule_flag, 10) | getRuleFlag(rt_rule_flag, 5) | getRuleFlag(rt_rule_flag, 3) |
+        getRuleFlag(rt_rule_flag, 10) | getRuleFlag(rt_rule_flag, 5) | getRuleFlag(rt_rule_flag, 15) |
         getRuleFlag(nrt_rule_flag, 1) | getRuleFlag(nrt_rule_flag, 2) | getRuleFlag(nrt_rule_flag, 4) |
-        getRuleFlag(nrt_rule_flag, 5) | getRuleFlag(nrt_rule_flag, 3) | getRuleFlag(nrt_rule_flag, 6)
+        getRuleFlag(nrt_rule_flag, 5) | getRuleFlag(nrt_rule_flag, 3) | getRuleFlag(nrt_rule_flag, 6) |
+        getRuleFlag(nrt_rule_flag, 9) | getRuleFlag(nrt_rule_flag, 10) | getRuleFlag(nrt_rule_flag, 11)
     }
     0
   }
@@ -448,7 +466,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if (landingPage == null || landingPage.equals(""))
       return ""
     val splits = landingPage.trim.split("/")
-    try {
+    /*try {
       if (splits(2).startsWith("cgi6") && landing_page_pageId_map.contains("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewStoreV4&name=")) {
         return landing_page_pageId_map("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewStoreV4&name=")
       } else if (splits(2).startsWith("cgi") && landing_page_pageId_map.contains("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewItem")) {
@@ -468,11 +486,53 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         logger.error("Error while getting PageId for location = " + landingPage + " in the request", e)
         return ""
       }
-    }
+    }*/
+    landing_page_pageId_map
     ""
   }
 
-  def getclickFilterTypeId(publisherId: String, rotationId: String): String = {
+  def getPageIdByLandingPage2(landingPage: String, rotationId: String): String = {
+    var pageId = "-999"
+    val programId = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(0)
+    if (landingPage == null || landingPage.length == 0 || programId == "")
+      return pageId
+    val domainUrl = findDomainInUrl(landingPage)
+    if (landing_page_pageId_map.contains(domainUrl)) {
+      val list = landing_page_pageId_map.get(domainUrl)
+      if (list == null || list.isEmpty)
+        return pageId
+      var lastMathUrlLen = -1
+
+      list.head.foreach( e => {
+        val url_text = e.getLNDNG_PAGE_URL_TXT
+        val pid = e.getAMS_PRGRM_ID
+        val tid = e.getAMS_PAGE_TYPE_MAP_ID
+        if (pid.equals(programId) && landingPage.contains(url_text) && url_text.length > lastMathUrlLen) {
+          pageId = tid
+          lastMathUrlLen = url_text.length
+        }
+      })
+    }
+    pageId
+  }
+
+  def findDomainInUrl(url: String): String = {
+    var count = 0
+    var i = 0
+    var loop = true
+    for (c <- url) {
+      if (loop) {
+        if (count == 3)
+          loop = false
+        if(c.equals('/'))
+          count = count + 1
+        i = i + 1
+      }
+    }
+    url.substring(0, i)
+  }
+
+  def getclickFilterTypeId(publisherId: String, rotationId: String) = {
     var clickFilterTypeId = "3"
     val advrtsrId = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1)
     var list = getAdvClickFilterMap(publisherId)
