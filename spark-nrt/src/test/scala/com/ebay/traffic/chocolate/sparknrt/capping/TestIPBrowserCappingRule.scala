@@ -170,11 +170,12 @@ class TestIPBrowserCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 11L, timestamp2, "1.1.1.3", "a", writer2_2)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 12L, timestamp3, "1.1.1.3", "a", writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 13L, timestamp3, "1.1.1.3", "a", writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 14L, timestamp3, "1.1.1.3", "b", writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 15L, timestamp3, "1.1.1.3", "", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 13L, timestamp3, "1.1.1.3", "a", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 14L, timestamp3, "1.1.1.3", "a", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 15L, timestamp3, "1.1.1.3", "b", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 16L, timestamp3, "1.1.1.3", "", writer3)
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 16L, timestamp4, "1.1.1.2", "a", writer4)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 17L, timestamp4, "1.1.1.2", "a", writer4)
 
     writer1_1.close()
     writer1_2.close()
@@ -234,7 +235,7 @@ class TestIPBrowserCappingRule extends BaseFunSuite {
     df_33.show()
     assert(df_31.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_S)).=!=(0)).count() == 0)
     assert(df_32.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_M)).=!=(0)).count() == 0)
-    assert(df_33.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L)).=!=(0)).count() == 0)
+    assert(df_33.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L)).=!=(0)).count() == 2)
     job_31.postTest()
     job_32.postTest()
     job_33.postTest()
