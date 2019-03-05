@@ -75,7 +75,7 @@ class TestIPBrowserCappingRule extends BaseFunSuite {
     val timestamp4 = getTimestamp("2018-01-03")
     val timestampBefore24h = timestamp1 - 1
 
-    val userAgent1 = "Mozilla"
+    val userAgent1 = "Mozill'a"
     val userAgent2 = "iPhone"
 
     val writer1_0 = AvroParquetWriter.

@@ -4,7 +4,7 @@ import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import com.ebay.traffic.chocolate.sparknrt.capping.Parameter
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.spark.sql.{Column, DataFrame}
-import org.apache.spark.sql.functions.{col, when}
+import org.apache.spark.sql.functions.{col, when, regexp_replace}
 
 class IPBrowserCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingRuleJobObj: BaseSparkJob, window: String)
   extends GenericCountRule(params: Parameter, bit: Long, dateFiles: DateFiles,  cappingRuleJobObj: BaseSparkJob, window: String) {
@@ -14,7 +14,7 @@ class IPBrowserCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
   //workdir
   override lazy val fileName = "/IPBrowser_" + window + "/"
   //specific columns for IPBrowser Capping Rule
-  override val cols = Array(col("IP"), col("user_agent"))
+  override val cols = Array(col("IP"), col("Browser"))
 
   //filter condition for counting df
   def filterCondition(): Column = {
@@ -26,14 +26,24 @@ class IPBrowserCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
     $"remote_ip".alias("IP")
   }
 
-  //counting columns
-  def selectCondition(): Array[Column] = {
-    Array(ip(), cols(1))
+  //To escape single quote in browser name
+  def userAgent(): Column = {
+    regexp_replace($"user_agent", "'", "''").alias("Browser")
   }
 
-  //add new column if needed
-  def withColumnCondition(): Column = {
+  //counting columns
+  def selectCondition(): Array[Column] = {
+    Array(ip(), userAgent())
+  }
+
+  //add IP column
+  def withColumnCondition1(): Column = {
     when($"channel_action" === "CLICK", ip()).otherwise("NA")
+  }
+
+  //add Browser column
+  def withColumnCondition2(): Column = {
+    when($"channel_action" === "CLICK", userAgent()).otherwise("NA")
   }
 
   //final join condition
@@ -66,7 +76,7 @@ class IPBrowserCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
       //Step 3: Read a new df for join purpose, just select IP, user_agent and snapshot_id, and read previous data for counting purpose.
       //df for join
       val selectCols: Array[Column] = $"snapshot_id" +: cols
-      var df = dfForJoin(cols(0), withColumnCondition(), selectCols)
+      var df = dfForJoin2(cols(0), withColumnCondition1(), cols(1), withColumnCondition2(), selectCols)
 
       //read previous data and add to count path
       val ipBrowserCountPath = getCappingDataPath(timestamp)

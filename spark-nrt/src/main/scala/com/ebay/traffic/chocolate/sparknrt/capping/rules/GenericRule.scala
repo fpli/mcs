@@ -155,6 +155,20 @@ abstract class GenericRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
     }
   }
 
+  // for capping rule which need to add two columns
+  def dfForJoin2(addCol1: Column, withColumnCol1: Column, addCol2: Column, withColumnCol2: Column,
+                 selectCols: Array[Column]): DataFrame = {
+    if (addCol1 != null && withColumnCol1 != null && addCol2 != null && withColumnCol2 != null) {
+      cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
+        .withColumn(addCol1.toString(), withColumnCol1)
+        .withColumn(addCol2.toString(), withColumnCol2)
+        .select(selectCols: _*)
+    }
+    else {
+      cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).select(selectCols: _*)
+    }
+  }
+
   // 5. Apply capping rule using df in 4, get capping failed records df
   def dfCappingInJob(dfJoin: DataFrame, cappingPath: List[String]): DataFrame
 
