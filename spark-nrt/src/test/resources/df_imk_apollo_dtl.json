@@ -1,0 +1,151 @@
+{
+  "table": "df_imk_apollo_dtl",
+  "description": "",
+  "columns": [
+    {
+      "name": "rvr_id",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "event_dt",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "event_ts",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_vrsn_num",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "flex_field_1",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_2",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_3",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_4",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_5",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_6",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_7",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_8",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_9",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_10",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_11",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_12",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_13",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_14",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_15",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_16",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_17",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_18",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_19",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_20",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "perf_track_name_value",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "cre_date",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "cre_user",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "upd_date",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "upd_user",
+      "dataType": "string",
+      "default": ""
+    }
+  ]
+}

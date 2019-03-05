@@ -29,8 +29,9 @@ import com.ebay.app.raptor.chocolate.gen.model.Event;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
-import java.net.URLEncoder;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author xiangli4
@@ -52,6 +53,7 @@ public class CollectionService {
   private static final String CHANNEL_TYPE = "channelType";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
+  private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE);
 
   @PostConstruct
   public void postInit() {
@@ -224,29 +226,57 @@ public class CollectionService {
     ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
       .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
 
-    try {
-      // Ubi tracking
-      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker
-        .NAME);
+    // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(m.find() == false) {
+      try {
+        // Ubi tracking
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker
+          .NAME);
 
-      // page id
-      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
-      // event action and event family
-      requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
-      requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
+        // page id
+        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
 
-      // new tags, targeturl and referer independent from client data ones
-      requestTracker.addTag("url_mpre", URLEncoder.encode(targetUrl, "UTF-8"), String.class);
-      requestTracker.addTag("ref", URLEncoder.encode(referer, "UTF-8"), String.class);
+        // event action and event family
+        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
 
-      // add rvr id
-      requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
+        // target url
+        requestTracker.addTag("url_mpre", targetUrl, String.class);
 
-      // populate device info
-      CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
-    } catch (Exception ex) {
-      logger.error("Error when tracking ubi", ex);
-      metrics.meter("ErrorTrackUbi");
+        // referer
+        requestTracker.addTag("ref", referer, String.class);
+
+        // rotation id
+        requestTracker.addTag("rotid", String.valueOf(rotationId), String.class);
+
+        // keyword
+        String searchKeyword = "";
+        if (parameters.containsKey(Constants.SEARCH_KEYWORD) && parameters.get(Constants.SEARCH_KEYWORD).get(0) != null) {
+
+          searchKeyword = parameters.get(Constants.SEARCH_KEYWORD).get(0);
+        }
+        requestTracker.addTag("keyword", searchKeyword, String.class);
+
+        // rvr id
+        requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
+
+        // gclid
+        String gclid = "";
+        if (parameters.containsKey(Constants.GCLID) && parameters.get(Constants.GCLID).get(0) != null) {
+
+          gclid = parameters.get(Constants.GCLID).get(0);
+        }
+        requestTracker.addTag("gclid", gclid, String.class);
+
+        // populate device info
+        CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
+      } catch (Exception ex) {
+        logger.error("Error when tracking ubi", ex);
+        metrics.meter("ErrorTrackUbi");
+      }
+    } else {
+      metrics.meter("InternalDomainRef");
     }
 
     if (message != null) {

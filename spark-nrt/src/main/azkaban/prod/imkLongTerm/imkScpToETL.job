@@ -1,3 +1,4 @@
 type=command
-command=bash CappingRule_Paid_Search.sh
+dependencies=imkDump_Paid_Search
+command=bash imkScp.sh
 failure.emails=jialili1@ebay.com, fechen@ebay.com, weibdai@ebay.com, xiangli4@ebay.com, yliu29@ebay.com, huiclu@ebay.com, yimeng@ebay.com, shuangxu@ebay.com, yiryuan@ebay.com, lxiong1@ebay.com, ganghuang@ebay.com
