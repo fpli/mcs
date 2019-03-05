@@ -28,13 +28,7 @@ HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
 
 JOB_NAME="Monitoring"
 
-for f in $(find $bin/../../conf/prod -name '*.*');
-do
-  FILES=${FILES},file://$f;
-done
-
 ${SPARK_HOME}/bin/spark-submit \
-    --files ${FILES} \
     --class com.ebay.traffic.chocolate.sparknrt.monitoring.MonitoringJob \
     --name ${JOB_NAME} \
     --master yarn \
