@@ -18,7 +18,7 @@ class IPBrowserCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
 
   //filter condition for counting df
   def filterCondition(): Column = {
-    $"user_agent" =!= "" and $"channel_action" === "CLICK"
+    $"channel_action" === "CLICK"
   }
 
   //get IP
