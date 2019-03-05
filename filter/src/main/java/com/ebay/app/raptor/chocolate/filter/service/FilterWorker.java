@@ -82,8 +82,10 @@ public class FilterWorker extends Thread {
       long flushThreshold = 0;
 
       final long kafkaLagMetricInterval = 30000; // 30s
+      final long kafkaCommitInterval = 15000; // 15s
       Map<Integer, Long> offsets = new HashMap<>();
       long kafkaLagMetricStart = System.currentTimeMillis();
+      long kafkaCommitTime = System.currentTimeMillis();
       while (!shutdownRequested.get()) {
         ConsumerRecords<Long, ListenerMessage> records = consumer.poll(POLL_STEP_MS);
         Iterator<ConsumerRecord<Long, ListenerMessage>> iterator = records.iterator();
@@ -119,10 +121,12 @@ public class FilterWorker extends Thread {
           producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
         }
 
+        long now = System.currentTimeMillis();
+
         // flush logic
         flushThreshold += count;
 
-        if (flushThreshold > 1000) {
+        if (flushThreshold > 1000 || now - kafkaCommitTime > kafkaCommitInterval) {
           // producer flush
           producer.flush();
 
@@ -131,10 +135,12 @@ public class FilterWorker extends Thread {
 
           // reset threshold
           flushThreshold = 0;
+
+          // reset commit time
+          kafkaCommitTime = now;
         }
 
         // kafka lag metrics logic
-        long now = System.currentTimeMillis();
         if (now - kafkaLagMetricStart > kafkaLagMetricInterval) {
           Map<TopicPartition, Long> endOffsets = consumer.endOffsets(records.partitions());
           Iterator<Map.Entry<TopicPartition, Long>> iter = endOffsets.entrySet().iterator();
