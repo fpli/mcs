@@ -156,8 +156,8 @@ abstract class GenericRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
   }
 
   // for capping rule which need to add two columns
-  def dfForJoin2(addCol1: Column, withColumnCol1: Column, addCol2: Column, withColumnCol2: Column,
-                 selectCols: Array[Column]): DataFrame = {
+  def dfForJoin(addCol1: Column, withColumnCol1: Column, addCol2: Column, withColumnCol2: Column,
+                selectCols: Array[Column]): DataFrame = {
     if (addCol1 != null && withColumnCol1 != null && addCol2 != null && withColumnCol2 != null) {
       cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
         .withColumn(addCol1.toString(), withColumnCol1)
