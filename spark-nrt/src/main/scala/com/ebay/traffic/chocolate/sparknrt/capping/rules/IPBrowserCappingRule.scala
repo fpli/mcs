@@ -36,14 +36,9 @@ class IPBrowserCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
     Array(ip(), userAgent())
   }
 
-  //add IP column
-  def withColumnCondition1(): Column = {
-    when($"channel_action" === "CLICK", ip()).otherwise("NA")
-  }
-
-  //add Browser column
-  def withColumnCondition2(): Column = {
-    when($"channel_action" === "CLICK", userAgent()).otherwise("NA")
+  // add column
+  def withColumnCondition(f: () => Column): Column = {
+    when($"channel_action" === "CLICK", f()).otherwise("NA")
   }
 
   //final join condition
@@ -76,7 +71,7 @@ class IPBrowserCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
       //Step 3: Read a new df for join purpose, just select IP, user_agent and snapshot_id, and read previous data for counting purpose.
       //df for join
       val selectCols: Array[Column] = $"snapshot_id" +: cols
-      var df = dfForJoin(cols(0), withColumnCondition1(), cols(1), withColumnCondition2(), selectCols)
+      var df = dfForJoin(cols(0), withColumnCondition(ip), cols(1), withColumnCondition(userAgent), selectCols)
 
       //read previous data and add to count path
       val ipBrowserCountPath = getCappingDataPath(timestamp)
