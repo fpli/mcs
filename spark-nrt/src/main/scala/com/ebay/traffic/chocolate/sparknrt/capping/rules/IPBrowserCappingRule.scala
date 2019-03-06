@@ -54,7 +54,7 @@ class IPBrowserCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
   override def test(): DataFrame = {
 
     //Step 1: Prepare counting data. If this job has no events, return snapshot_id and capping = 0.
-    //filter click only, and user_agent != -1
+    //filter click only
     var dfIPBrowser = dfFilterInJob(filterCondition())
 
     //if job has no events, then return df with capping column directly
