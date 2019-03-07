@@ -45,12 +45,8 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
   lazy val cappingBit = bit
 
   //parse IP from request_headers
-  def ip(ipColumn: String, alias: String): Column = {
-    if (ipColumn != null) {
-      col(ipColumn).alias(alias)
-    } else {
-      split(split($"request_headers", "X-eBay-Client-IP: ")(1), """\|""")(0).alias(alias)
-    }
+  def ip(alias: String): Column = {
+    $"remote_ip".alias(alias)
   }
 
   override def test(): DataFrame = {
@@ -68,9 +64,7 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
       val firstRow = head(0)
       val timestamp = firstRow.getLong(firstRow.fieldIndex("timestamp"));
 
-      val ipColumn = if (dfIP.columns.contains("remote_ip")) "remote_ip" else null
-
-      dfIP = dfIP.select(ip(ipColumn, "IP"))
+      dfIP = dfIP.select(ip("IP"))
         .groupBy($"IP").agg(count(lit(1)).alias("count"))
 
       // reduce the number of ip count file to 1
@@ -86,7 +80,7 @@ class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingR
 
       // IP rule
       var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).filter($"channel_action" === "CLICK")
-        .select(ip(ipColumn, "IP_1"), $"snapshot_id")
+        .select(ip("IP_1"), $"snapshot_id")
 
       val ipCountTempPathToday = baseTempDir + dateFiles.date
       val ipCountPathToday = baseDir + dateFiles.date
