@@ -22,14 +22,14 @@ ES_URL=$5
 PARTITIONS=$6
 CB_DEDUPE=$7
 
-DRIVER_MEMORY=10g
-EXECUTOR_NUMBER=30
-EXECUTOR_MEMORY=16g
-EXECUTOR_CORES=4
+DRIVER_MEMORY=4g
+EXECUTOR_NUMBER=20
+EXECUTOR_MEMORY=4g
+EXECUTOR_CORES=1
 
 JOB_NAME="DedupeAndSink"
 
-SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/dedupe
+SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
 
 for f in $(find $bin/../../conf/prod -name '*.*');
 do
