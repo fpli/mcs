@@ -50,9 +50,7 @@ public class CollectionServiceUtil {
    */
   public static String getAppIdFromUserAgent(UserAgentInfo uaInfo) {
     String appId = "";
-
     if (uaInfo != null) {
-
       if (uaInfo.requestedFromSmallDevice() && uaInfo.requestIsWeb()) {
         //mweb
         appId = MOBILE_WEB_APPID;
@@ -66,7 +64,6 @@ public class CollectionServiceUtil {
         //android
         appId = ANDROID_APPID;
       }
-    } else {
     }
     return appId;
   }
@@ -80,33 +77,7 @@ public class CollectionServiceUtil {
   public static void populateDeviceDetectionParams(UserAgentInfo info, IRequestScopeTracker tracker) {
 
     if (info != null) {
-      // comment app tag as it's only allowed in tracking team
-      // tracker.addTag("app", getAppIdFromUserAgent(info), String.class);
-      if (info.isDesktop()) {
-        tracker.addTag("dsktop", true, Boolean.class);
-        return;
-      } else if (info.isTablet()) {
-        tracker.addTag("tablet", true, Boolean.class);
-      } else if (info.isMobile()) {
-        tracker.addTag("mobile", true, Boolean.class);
-      } else if (info.isNativeApp()) {
-        tracker.addTag("nativeApp", true, Boolean.class);
-        //comment metadataAppNameVersion waiting for tracking team's confirmation
-        //String appNameVersion = info.getAppInfo().getAppName() + "/" + info.getAppInfo().getAppVersion();
-        //tracker.addTag("metadataAppNameVersion", appNameVersion, String.class);
-      }
-      if (info.getAppInfo() != null) {
-        tracker.addTag("an", info.getAppInfo().getAppName(), String.class);
-        tracker.addTag("mav", info.getAppInfo().getAppVersion(), String.class);
-      }
-      if (info.getDeviceInfo() != null) {
-        tracker.addTag("mos", info.getDeviceInfo().getDeviceOS(), String.class);
-        tracker.addTag("osv", info.getDeviceInfo().getDeviceOSVersion(), String.class);
-        tracker.addTag("res", info.getDeviceInfo().getDisplayHeight() + "x" + info.getDeviceInfo().getDisplayWidth(),
-          String.class);
-        tracker.addTag("dn", info.getDeviceInfo().getModel(), String.class);
-        tracker.addTag("dm", info.getDeviceInfo().getManufacturer(), String.class);
-      }
+      tracker.addTag("app", getAppIdFromUserAgent(info), String.class);
     }
   }
 }
