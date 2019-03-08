@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
-import java.net.{MalformedURLException, URL, URLDecoder}
+import java.net.{MalformedURLException, URISyntaxException, URL, URLDecoder}
 import java.text.SimpleDateFormat
 import java.util.Properties
 
@@ -113,7 +113,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       landingPageMapInfo.setAMS_PAGE_TYPE_MAP_ID(parts(1))
       landingPageMapInfo.setAMS_PRGRM_ID(parts(3))
       landingPageMapInfo.setLNDNG_PAGE_URL_TXT(parts(4))
-      map.addBinding(findDomainInUrl(parts(4)), landingPageMapInfo)
+      map.addBinding(utils.findDomainInUrl(parts(4)), landingPageMapInfo)
     })
     map
   }
@@ -180,7 +180,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_seller_udf = udf((uri: String) => getQueryParam(uri, "icep_sellerId"))
   val get_browser_type_udf = udf((requestHeader: String) => getBrowserType(requestHeader))
   val get_filter_yn_ind_udf = udf((rt_rule_flag: Long, nrt_rule_flag: Long, action: String) => getFilter_Yn_Ind(rt_rule_flag, nrt_rule_flag, action))
-  val get_page_id_udf = udf((landingPage: String, uri: String) => getPageIdByLandingPage2(landingPage, getRoverUriInfo(uri, 3)))
+  val get_page_id_udf = udf((landingPage: String, uri: String) => getPageIdByLandingPage(landingPage, getRoverUriInfo(uri, 3)))
   val get_roi_rule_value_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13))._1)
   val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13))._2)
   val get_ams_clk_fltr_type_id_udf = udf((publisherId: String, uri: String) => getclickFilterTypeId(publisherId, getRoverUriInfo(uri, 3)))
@@ -230,8 +230,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if (location.equalsIgnoreCase(""))
       return ""
     val url = new URL(location)
-    if (url.getHost.contains("rover.ebay.com") || url.getHost.contains("r.ebay.com"))
-       location
+    if (url.getHost.equalsIgnoreCase("rover.ebay.com") || url.getHost.equalsIgnoreCase("r.ebay.com"))
+      removeParams(location)
     else {
         var res = getQueryParam(location, "mpre")
         if (res.equalsIgnoreCase(""))
@@ -239,10 +239,29 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         if (res.equalsIgnoreCase(""))
           res = getQueryParam(location, "url")
         if (res.equalsIgnoreCase(""))
-           location
+          removeParams(location)
         else
-           res
+          removeParams(res)
     }
+  }
+
+  def removeParams(location: String): String = {
+    var url = location
+    try {
+      url = utils.removeQueryParameter(url, "dashenId")
+      url = utils.removeQueryParameter(url, "dashenCnt")
+      url = utils.removeQueryParameter(url, "ul_ref")
+      url = utils.removeQueryParameter(url, "cguid")
+      url = utils.removeQueryParameter(url, "rvrrefts")
+      url = utils.removeQueryParameter(url, "pub")
+      url = utils.removeQueryParameter(url, "ipn")
+    } catch {
+      case e: URISyntaxException => {
+        logger.error("Illegal landing page URL: " + location + e)
+        return location
+      }
+    }
+    url
   }
 
   def getRefererURLAndDomain(referer: String, domain: Boolean): String = {
@@ -257,7 +276,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
       } catch {
         case e: MalformedURLException => {
-          logger.error("Malformed URL for referer host: " + referer)
+          logger.error("Malformed URL for referer host: " + referer + e)
         }
       }
     }
@@ -462,11 +481,11 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     0
   }
 
-  def getPageIdByLandingPage(landingPage: String): String = {
+  /*def getPageIdByLandingPage(landingPage: String): String = {
     if (landingPage == null || landingPage.equals(""))
       return ""
     val splits = landingPage.trim.split("/")
-    /*try {
+    try {
       if (splits(2).startsWith("cgi6") && landing_page_pageId_map.contains("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewStoreV4&name=")) {
         return landing_page_pageId_map("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewStoreV4&name=")
       } else if (splits(2).startsWith("cgi") && landing_page_pageId_map.contains("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewItem")) {
@@ -486,17 +505,27 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         logger.error("Error while getting PageId for location = " + landingPage + " in the request", e)
         return ""
       }
-    }*/
+    }
     landing_page_pageId_map
     ""
-  }
+  }*/
 
-  def getPageIdByLandingPage2(landingPage: String, rotationId: String): String = {
+  def getPageIdByLandingPage(landingPage: String, rotationId: String): String = {
     var pageId = "-999"
     val programId = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(0)
     if (landingPage == null || landingPage.length == 0 || programId == "")
       return pageId
-    val domainUrl = findDomainInUrl(landingPage)
+    var domainUrl = landingPage
+
+    try {
+      domainUrl = utils.findDomainInUrl(landingPage)
+    } catch {
+      case e: MalformedURLException => {
+        logger.error("MalformedURL Error landing page: " + landingPage + e)
+        return pageId
+      }
+    }
+
     if (landing_page_pageId_map.contains(domainUrl)) {
       val list = landing_page_pageId_map.get(domainUrl)
       if (list == null || list.isEmpty)
@@ -516,21 +545,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     pageId
   }
 
-  def findDomainInUrl(url: String): String = {
-    var count = 0
-    var i = 0
-    var loop = true
-    for (c <- url) {
-      if (loop) {
-        if (count == 3)
-          loop = false
-        if(c.equals('/'))
-          count = count + 1
-        i = i + 1
-      }
-    }
-    url.substring(0, i)
-  }
+ /* def findDomainInUrl(url: String): String = {
+    val domain = new URL(url)
+    domain.getProtocol + "://" + domain.getHost
+  }*/
 
   def getclickFilterTypeId(publisherId: String, rotationId: String) = {
     var clickFilterTypeId = "3"

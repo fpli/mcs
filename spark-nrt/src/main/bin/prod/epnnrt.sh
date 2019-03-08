@@ -17,13 +17,13 @@ bin=`cd "$bin">/dev/null; pwd`
 WORK_DIR=$1
 RESOURCE_DIR=$2
 
-DRIVER_MEMORY=10g
-EXECUTOR_NUMBER=30
-EXECUTOR_MEMORY=16g
-EXECUTOR_CORES=4
+DRIVER_MEMORY=4g
+EXECUTOR_NUMBER=20
+EXECUTOR_MEMORY=4g
+EXECUTOR_CORES=1
 
 JOB_NAME="EPN_Nrt"
-SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/epnnrt
+SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
 
 for f in $(find $bin/../../conf/prod -name '*.*');
 do
