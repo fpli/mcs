@@ -16,8 +16,14 @@ public enum ChannelIdEnum {
     /** Channel one -- production ePN */
     EPN("1", LogicalChannelEnum.EPN, false),
 
+    /** Channel two -- production Paid Search */
+    PSEARCH("2", LogicalChannelEnum.PAID_SEARCH, false),
+
     /** Channel four -- production DAP */
     DAP("4", LogicalChannelEnum.DISPLAY, false),
+
+    /** Channel two -- production Paid Social */
+    PSOCIAL("20", LogicalChannelEnum.PAID_SOCIAL, false),
 
     /** Channel nine -- test ePN */
     NINE("9", LogicalChannelEnum.EPN, true);

@@ -35,7 +35,10 @@ public enum ChannelActionEnum {
     VIEW_TIME(ChannelAction.VIEW_TIME, "1d"),
 
     /** Mobile App first start */
-    APP_FIRST_START(ChannelAction.APP_FIRST_START, "1m");
+    APP_FIRST_START(ChannelAction.APP_FIRST_START, "1m"),
+
+    /** 3rd Party Pixel */
+    PIXEL_3RD_PARTY(ChannelAction.PIXEL_3RD_PARTY, "1p3");
 
     /** The human-readable action name */
     private final String [] actions;
