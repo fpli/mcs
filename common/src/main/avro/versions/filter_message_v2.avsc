@@ -128,7 +128,8 @@
           "DISPLAY",
           "PAID_SEARCH",
           "SOCIAL_MEDIA",
-          "PAID_SOCIAL"
+          "PAID_SOCIAL",
+          "UNKNOWN"
         ]
       }
     },

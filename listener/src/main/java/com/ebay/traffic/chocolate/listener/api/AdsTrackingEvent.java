@@ -73,16 +73,13 @@ public class AdsTrackingEvent {
         case 4:
           action = ChannelActionEnum.SERVE;
           break;
-        case 5:
-          action = ChannelActionEnum.PIXEL_3RD_PARTY;
-          break;
         default:
           Validate.isTrue(false, "Unknown action encountered - " + type);
       }
     }
 
-    channelID = params.get(EventConstant.MK_CHANNEL_ID) != null ? Integer.valueOf(params.get(EventConstant.MK_CHANNEL_ID)[0]) : null;
-    collectionID = params.get(EventConstant.MK_ROTATION_ID) != null ? params.get(EventConstant.MK_ROTATION_ID)[0] : null;
+    channelID = params.get(EventConstant.MK_CHANNEL_ID) != null && params.get(EventConstant.MK_CHANNEL_ID)[0] != null ? Integer.valueOf(params.get(EventConstant.MK_CHANNEL_ID)[0]) : 999;
+    collectionID = params.get(EventConstant.MK_ROTATION_ID) != null && params.get(EventConstant.MK_ROTATION_ID)[0] != null ? params.get(EventConstant.MK_ROTATION_ID)[0] : null;
     campaignID = params.get(EventConstant.CAMPAIGN_ID) != null && params.get(EventConstant.CAMPAIGN_ID)[0] != null ? Long.valueOf(params.get(EventConstant.CAMPAIGN_ID)[0]) : -1;
     channel = getChannelType(String.valueOf(channelID));
   }

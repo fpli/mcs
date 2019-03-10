@@ -21,8 +21,11 @@ public enum LogicalChannelEnum {
     /** PAID SEARCH channel - valid Rover clicks */
     PAID_SEARCH(ChannelType.PAID_SEARCH, ChannelActionEnum.CLICK, ChannelActionEnum.PAGE_IMP, ChannelActionEnum.SERVE, ChannelActionEnum.IMPRESSION, ChannelActionEnum.VIMP),
 
-    /** Natural SEARCH channel - valid Rover clicks */
-    PAID_SOCIAL(ChannelType.PAID_SOCIAL, ChannelActionEnum.CLICK, ChannelActionEnum.PAGE_IMP, ChannelActionEnum.SERVE, ChannelActionEnum.IMPRESSION, ChannelActionEnum.VIMP);
+    /** PAID SOCIAL channel - valid Rover clicks */
+    PAID_SOCIAL(ChannelType.PAID_SOCIAL, ChannelActionEnum.CLICK, ChannelActionEnum.PAGE_IMP, ChannelActionEnum.SERVE, ChannelActionEnum.IMPRESSION, ChannelActionEnum.VIMP),
+
+    /** UNKNOWN channel - invalid Rover clicks */
+    UNKNOWN(ChannelType.UNKNOWN, ChannelActionEnum.CLICK, ChannelActionEnum.PAGE_IMP, ChannelActionEnum.SERVE, ChannelActionEnum.IMPRESSION, ChannelActionEnum.VIMP);
 
     /** Construct of valid Rover actions for this logical channel */
     private final ChannelActionEnum [] roverActions;

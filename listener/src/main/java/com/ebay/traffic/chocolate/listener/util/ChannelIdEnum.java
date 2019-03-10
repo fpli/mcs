@@ -26,7 +26,10 @@ public enum ChannelIdEnum {
     PSOCIAL("20", LogicalChannelEnum.PAID_SOCIAL, false),
 
     /** Channel nine -- test ePN */
-    NINE("9", LogicalChannelEnum.EPN, true);
+    NINE("9", LogicalChannelEnum.EPN, true),
+
+    /** Channel two -- production Paid Social */
+    UNKNOWN("999", LogicalChannelEnum.UNKNOWN, false);
 
     /** The human-parsable channel name. */
     private final String channelValue;
