@@ -141,7 +141,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       .withColumn("SnidS", verifyByBitUdf1(lit(7), $"nrt_rule_flags", $"rt_rule_flag12"))
       .withColumn("SnidL", verifyByBitUdf1(lit(8), $"nrt_rule_flags", $"rt_rule_flag13"))
       .withColumn("Prefetch", verifyByBitUdf1(lit(1), $"rt_rule_flags", $"rt_rule_flag2"))
-      .withColumn("IABBot", verifyByBitUdf2(lit(3), $"rt_rule_flags", $"rt_rule_flag3", $"rt_rule_flag4"))
+      .withColumn("TwoPass", verifyByBitUdf2(lit(3), $"rt_rule_flags", $"rt_rule_flag3", $"rt_rule_flag4"))
       .withColumn("Internal", verifyByBitUdf1(lit(2), $"rt_rule_flags", $"rt_rule_flag7"))
       .withColumn("MissingReferrer", verifyByBitUdf1(lit(12), $"rt_rule_flags", $"rt_rule_flag8"))
       .withColumn("Protocol", verifyByBitUdf1(lit(11), $"rt_rule_flags", $"rt_rule_flag1"))
@@ -171,7 +171,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     val snidL = df.where($"SnidL" === false).count()
 
     val prefetch = df.where($"Prefetch" === false).count()
-    val iabBot = df.where($"IABBot" === false).count()
+    val twoPass = df.where($"TwoPass" === false).count()
     val internal = df.where($"Internal" === false).count()
     val missingReferrer = df.where($"MissingReferrer" === false).count()
     val protocol = df.where($"Protocol" === false).count()
@@ -206,7 +206,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       outputStream.writeChars("SnidL inconsistent: " + snidL.toFloat/total + "\n")
 
       outputStream.writeChars("Prefetch inconsistent: " + prefetch.toFloat/total + "\n")
-      outputStream.writeChars("IABBot inconsistent: " + iabBot.toFloat/total + "\n")
+      outputStream.writeChars("TwoPass inconsistent: " + twoPass.toFloat/total + "\n")
       outputStream.writeChars("Internal inconsistent: " + internal.toFloat/total + "\n")
       outputStream.writeChars("MissingReferrer inconsistent: " + missingReferrer.toFloat/total + "\n")
       outputStream.writeChars("Protocol inconsistent: " + protocol.toFloat/total + "\n")
@@ -234,7 +234,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       val snidL_choco = df1.where($"nrt_rule_flags".bitwiseAND(256) =!= 0).count()
 
       val prefetch_choco = df1.where($"rt_rule_flags".bitwiseAND(2) =!= 0).count()
-      val iabBot_choco = df1.where($"rt_rule_flags".bitwiseAND(8) =!= 0).count()
+      val twoPass_choco = df1.where($"rt_rule_flags".bitwiseAND(8) =!= 0).count()
       val internal_choco = df1.where($"rt_rule_flags".bitwiseAND(4) =!= 0).count()
       val missingReferrer_choco = df1.where($"rt_rule_flags".bitwiseAND(4096) =!= 0).count()
       val protocol_choco = df1.where($"rt_rule_flags".bitwiseAND(2048) =!= 0).count()
@@ -254,7 +254,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       val snidL_epn = df2.where($"rt_rule_flag13" === 1).count()
 
       val prefetch_epn = df2.where($"rt_rule_flag2" === 1).count()
-      val iabBot_epn = df2.where($"rt_rule_flag3" === 1 or $"rt_rule_flag4" === 1).count()
+      val twoPass_epn = df2.where($"rt_rule_flag3" === 1 or $"rt_rule_flag4" === 1).count()
       val internal_epn = df2.where($"rt_rule_flag7" === 1).count()
       val missingReferrer_epn = df2.where($"rt_rule_flag8" === 1).count()
       val protocol_epn = df2.where($"rt_rule_flag1" === 1).count()
@@ -287,8 +287,8 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
           s"SnidL inconsistent: " + (snidL_choco - snidL_epn).toFloat / count1Nodedupe + "\n")
         outputStream.writeChars(s"prefetch_choco: $prefetch_choco, prefetch_epn: $prefetch_epn, " +
           s"Prefetch inconsistent: " + (prefetch_choco - prefetch_epn).toFloat / count1Nodedupe + "\n")
-        outputStream.writeChars(s"iabBot_choco: $iabBot_choco, iabBot_epn: $iabBot_epn, " +
-          s"IABBot inconsistent: " + (iabBot_choco - iabBot_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"twoPass_choco: $twoPass_choco, twoPass_epn: $twoPass_epn, " +
+          s"TwoPass inconsistent: " + (twoPass_choco - twoPass_epn).toFloat / count1Nodedupe + "\n")
         outputStream.writeChars(s"internal_choco: $internal_choco, internal_epn: $internal_epn, " +
           s"Internal inconsistent: " + (internal_choco - internal_epn).toFloat / count1Nodedupe + "\n")
         outputStream.writeChars(s"missingReferrer_choco: $missingReferrer_choco, missingReferrer_epn: $missingReferrer_epn, " +
