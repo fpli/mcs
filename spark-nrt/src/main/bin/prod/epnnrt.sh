@@ -16,9 +16,10 @@ bin=`cd "$bin">/dev/null; pwd`
 
 WORK_DIR=$1
 RESOURCE_DIR=$2
+FILTER_TIME=$3
 
 DRIVER_MEMORY=4g
-EXECUTOR_NUMBER=20
+EXECUTOR_NUMBER=30
 EXECUTOR_MEMORY=4g
 EXECUTOR_CORES=1
 
@@ -46,5 +47,6 @@ ${SPARK_HOME}/bin/spark-submit \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
-      --workDir "${WORK_DIR}" \
-      --resourceDir ${RESOURCE_DIR}
+      --workDir ${WORK_DIR} \
+      --resourceDir ${RESOURCE_DIR} \
+      --filterTime ${FILTER_TIME}

@@ -7,7 +7,8 @@ case class Parameter(appName: String = "epnnrt",
                      mode: String = "yarn",
                      partitions: Int = 3,
                      workDir: String = "",
-                     resourceDir: String = "")
+                     resourceDir: String = "",
+                     filterTime: String = "")
 
 object Parameter {
   private lazy val parser = new OptionParser[Parameter]("epnnrt") {
@@ -37,6 +38,11 @@ object Parameter {
       .required
       .valueName("resourceDir")
       .action((cont, param) => param.copy(resourceDir = cont))
+
+    opt[String]("filterTime")
+      .optional
+      .valueName("filterTime")
+      .action((cont, param) => param.copy(filterTime = cont))
   }
 
   def apply(args: Array[String]): Parameter = parser.parse(args, Parameter()) match {

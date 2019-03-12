@@ -390,9 +390,9 @@ public class TestHelper {
                                                String cguid,
                                                long timestamp) {
     FilterMessage message = new FilterMessage();
-    message.setSnapshotId(6479941472325791788L);
-    message.setShortSnapshotId(123L);
-    message.setTimestamp(1544938438494L);
+    message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(snapshotId);
+    message.setTimestamp(timestamp);
     message.setUserId(1L);
     message.setCguid(cguid);
     message.setGuid("");
@@ -402,8 +402,8 @@ public class TestHelper {
     message.setGeoId(1L);
     message.setUdid("");
     message.setReferer("");
-    message.setCampaignId(435453647L);
-    message.setPublisherId(5574665384L);
+    message.setCampaignId(campaignId);
+    message.setPublisherId(publisherId);
     message.setRequestHeaders("Referer:http://translate.google.com.mx|X-Purpose:preview|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/92d9dfe51670a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/47a11c671620a93c91006917fffa2a915d116016^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:10.108.159.177|User-Agent:Shuang-UP.Browser-baiduspider-ebaywinphocore");
     message.setUri("http://rover.qa.ebay.com/rover/1/5282-53481-19255-0/1?icep_ff3=9&toolid=12345&customid=24342&icep_uq=flashlight&icep_sellerId=&icep_ex_kw=&icep_sortBy=12&icep_catId=&icep_minPrice=&icep_maxPrice=&ipn=psmain&icep_vectorid=229508&kwid=902099&mtid=824&kw=lg&item=&uq=2&ext=4365&satitle=23435&FF2=https%3A%2F%2Fm.gsmarena.com%2Fsamsung_galaxy_s9-8966.php&ff3=");
     message.setResponseHeaders("Cache-Control:private,no-cache,no-store|location:http://www.ebay.co.uk/");
@@ -411,8 +411,8 @@ public class TestHelper {
     message.setLandingPageUrl("");
     message.setSrcRotationId(1L);
     message.setDstRotationId(2L);
-    message.setChannelAction(ChannelAction.CLICK);
-    message.setChannelType(ChannelType.EPN);
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
     message.setHttpMethod(HttpMethod.GET);
     message.setRtRuleFlags(0L);
     message.setNrtRuleFlags(0L);

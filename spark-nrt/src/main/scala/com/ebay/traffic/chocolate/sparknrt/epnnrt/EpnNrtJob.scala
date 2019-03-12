@@ -66,8 +66,25 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         val epnNrtCommon = new EpnNrtCommon(params, df)
         logger.info("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
 
-        val df_click = df.filter(col("channel_action") === "CLICK")
-        val df_impression = df.filter(col("channel_action") === "IMPRESSION")
+        // filter click and impression data, and if there is filterTime, filter the data older than filter time
+        var df_click = df.filter(col("channel_action") === "CLICK")
+        var df_impression = df.filter(col("channel_action") === "IMPRESSION")
+
+        try {
+          if (!params.filterTime.equalsIgnoreCase("")) {
+            df_click = df_click.filter( r=> {
+              r.getLong(2) > params.filterTime.toLong
+            })
+
+            df_impression = df_impression.filter( r=> {
+              r.getLong(2) > params.filterTime.toLong
+            })
+          }
+        } catch {
+          case e: NumberFormatException => {
+            logger.error("Illegal filter timestamp: " + params.filterTime + e)
+          }
+        }
 
         //3. build impression dataframe  save dataframe to files and rename files
         var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()

@@ -22,7 +22,8 @@ class TestEpnNrtCommon extends BaseFunSuite{
   val args = Array(
     "--mode", "local[8]",
     "--workDir", workDir,
-    "--resourceDir", resourceDir
+    "--resourceDir", resourceDir,
+    "--filterTime", "1552382488000"
   )
   val params = Parameter(args)
 
@@ -260,7 +261,13 @@ class TestEpnNrtCommon extends BaseFunSuite{
   test("Test get landing page url name") {
     val df = createTestChocolateData()
     val epnNrtCommon = new EpnNrtCommon(params, df)
+  }
 
+  test("Test filter By Timestamp") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val res = epnNrtCommon.filterByTimestamp("1548137796000")
+    assert(res.equals(false))
   }
 
 
