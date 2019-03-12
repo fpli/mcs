@@ -89,23 +89,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     map
   }
 
-//  //landing page id map  (landing_page_url -> page_id)
-//  lazy val landing_page_pageId_map: HashMap[String, String] = {
-//    var map = new HashMap[String, String]
-//    val stream = fs.open(new Path(params.resourceDir + "/" + properties.getProperty("epnnrt.landingpage.type")))
-//    def readLine = Stream.cons(stream.readLine(), Stream.continually(stream.readLine))
-//    readLine.takeWhile(_ != null).foreach(line => {
-//      val parts = line.split("\t")
-//      map = map + (parts(4) -> parts(1))
-//    })
-//    map
-//  }
-
-  //landing page id map  (landing_page_url -> page_id)
+  //landing page id map  (landing_page_url -> page_id) here is MultiMap!
   lazy val landing_page_pageId_map: mutable.HashMap[String, mutable.Set[LandingPageMapInfo]] = {
     val map = new mutable.HashMap[String, mutable.Set[LandingPageMapInfo]] with mutable.MultiMap[String, LandingPageMapInfo]
     val stream = fs.open(new Path(params.resourceDir + "/" + properties.getProperty("epnnrt.landingpage.type")))
-    //val stream = fs.open(new Path("/Users/huiclu/funk/ams_landing_page_type_lookup.csv"))
     def readLine = Stream.cons(stream.readLine(), Stream.continually(stream.readLine))
     readLine.takeWhile(_ != null).foreach(line => {
       val parts = line.split("\t")
@@ -118,6 +105,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     map
   }
 
+  //referer domain map
   lazy val referer_domain_map: HashMap[String, ListBuffer[String]] = {
     var map = new HashMap[String, ListBuffer[String]]
     val stream = fs.open(new Path(params.resourceDir + "/" + properties.getProperty("epnnrt.refng.pblsh")))
@@ -178,7 +166,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_cat_id_udf = udf((uri: String) => getQueryParam(uri, "catId"))
   val get_kw_udf = udf((uri: String) => getQueryParam(uri, "kw"))
   val get_seller_udf = udf((uri: String) => getQueryParam(uri, "icep_sellerId"))
-  val get_browser_type_udf = udf((requestHeader: String) => getBrowserType(requestHeader))
+  val get_browser_type_udf = udf((user_agent: String) => getBrowserType(user_agent))
   val get_filter_yn_ind_udf = udf((rt_rule_flag: Long, nrt_rule_flag: Long, action: String) => getFilter_Yn_Ind(rt_rule_flag, nrt_rule_flag, action))
   val get_page_id_udf = udf((landingPage: String, uri: String) => getPageIdByLandingPage(landingPage, getRoverUriInfo(uri, 3)))
   val get_roi_rule_value_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13))._1)
@@ -217,7 +205,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       return value
     ""
   }
-
 
 
   def getDateTimeFromTimestamp(timestamp: Long, format: String): String = {
@@ -452,11 +439,11 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     0
   }
 
-  def getBrowserType(requestHeader: String): Int = {
-    val userAgentStr = getValueFromRequest(requestHeader, "User-Agent")
-    if (userAgentStr == null | userAgentStr.equals(""))
+  def getBrowserType(user_agent: String): Int = {
+  //  val userAgentStr = getValueFromRequest(requestHeader, "User-Agent")
+    if (user_agent == null | user_agent.equals(""))
       return user_agent_map("NULL_USERAGENT")
-    val agentStr = userAgentStr.toLowerCase()
+    val agentStr = user_agent.toLowerCase()
     for ((k, v) <- user_agent_map) {
       if (agentStr.contains(k))
         return v
