@@ -45,7 +45,7 @@ class TestCompare extends BaseFunSuite{
       "--workDir", work_dir
     )
     val params = Parameter(args)
-    val job = new CompareJob(params)
+    val job = new TestCompareJob(params)
 
     job.run()
     job.stop()
