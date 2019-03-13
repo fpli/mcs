@@ -61,14 +61,14 @@ public class ScpJob {
      * @throws IOException fast fail
      */
     private static void init(String env) throws IOException {
-        System.out.println("start init");
         // load priperties
         if(properties == null) {
             properties = new Properties();
+            System.out.println("start read props");
             InputStream in = Object.class.getResourceAsStream("/" + env + "/imkscp.properties");
             properties.load(in);
+            System.out.println("finish read props");
         }
-
         // init hdfs filesystem
         Configuration conf = new Configuration();
         conf.set("fs.hdfs.impl",org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
@@ -104,6 +104,7 @@ public class ScpJob {
      * @throws Exception fast fail if any exception
      */
     private static void runJob() throws Exception {
+        System.out.println("start run job");
         RemoteIterator<LocatedFileStatus> ite = fs.listFiles(new Path(properties.getProperty("imkscp.hdfs.metaDir")), true);
         while (ite.hasNext()) {
             LocatedFileStatus status = ite.next();

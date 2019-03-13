@@ -19,12 +19,12 @@ WORK_DIR=$2
 OUTPUT_DIR=$3
 ES_URL=$4
 
-DRIVER_MEMORY=10g
-EXECUTOR_NUMBER=30
-EXECUTOR_MEMORY=12g
-EXECUTOR_CORES=4
+DRIVER_MEMORY=4g
+EXECUTOR_NUMBER=5
+EXECUTOR_MEMORY=4g
+EXECUTOR_CORES=2
 
-SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/imkDump
+SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
 JOB_NAME="imkDump"
 
 for f in $(find $bin/../../conf/prod -name '*.*');
