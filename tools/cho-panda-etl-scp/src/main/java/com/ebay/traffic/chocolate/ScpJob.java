@@ -149,9 +149,8 @@ public class ScpJob {
         try {
             fs.copyToLocalFile(new Path(filePath), new Path(properties.getProperty("imkscp.local.workDir") + "/" + fileName));
             Files.touch(new File(properties.getProperty("imkscp.local.workDir") + "/" + fileName + ".done"));
-            metrics.meter("imk.dump.count.getHdfs");
+            metrics.meter("imk.scp.count.getHdfs");
         } catch (Exception e) {
-            metrics.meter("imk.dump.error.getHdfs");
             System.out.println("failed get file from hdfs: " + fileName);
             e.printStackTrace();
             throw new Exception(e);
@@ -178,9 +177,8 @@ public class ScpJob {
             if (scpDoneProcess.waitFor() != 0) {
                 throw new Exception("scpCmdException");
             }
-            metrics.meter("imk.dump.count.scpToEtl");
+            metrics.meter("imk.scp.count.scpToEtl");
         } catch (Exception e) {
-            metrics.meter("imk.dump.error.scpToEtl");
             System.out.println("failed scp file to etl: " + fileName);
             e.printStackTrace();
             throw new Exception(e);
@@ -203,9 +201,8 @@ public class ScpJob {
             if (removeDataProcess.waitFor() != 0 || removeDoneProcess.waitFor() != 0) {
                 throw new Exception("rmCmdException");
             }
-            metrics.meter("imk.dump.count.deleteLocal");
+            metrics.meter("imk.scp.count.deleteLocal");
         } catch (Exception e) {
-            metrics.meter("imk.dump.error.deleteLocal");
             System.out.println("failed delete local file: " + fileName);
             e.printStackTrace();
             throw new Exception(e);

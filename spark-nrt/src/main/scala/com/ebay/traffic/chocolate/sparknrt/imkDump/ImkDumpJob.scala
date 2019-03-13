@@ -99,6 +99,9 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
 
         val imkDf = imkDumpCore(df).repartition(params.partitions)
 
+        if(metrics != null) {
+          metrics.meter("imk.dump.out", imkDf.count())
+        }
         saveDFToFiles(imkDf, sparkDir, "gzip", "csv", "bel")
 
         val files = renameFiles(outputDir, sparkDir, date)
@@ -108,9 +111,6 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       outputMetadata.writeDedupeOutputMeta(MetaFiles(outputMetas), suffixArray)
       inputMetadata.deleteDedupeOutputMeta(metaFile)
 
-      if(metrics != null) {
-        metrics.meter("imk.dump.spark.out", dataFiles.size)
-      }
     })
 
     if (metrics != null) {
@@ -155,7 +155,6 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       val paramName = "ff" + i
       imkDf = imkDf.withColumn(columnName, getParamFromQueryUdf(col("temp_uri_query"), lit(paramName)))
     }
-    imkDf = imkDf.drop("temp_uri_query")
 
     schema_imk_table.filterNotColumns(imkDf.columns).foreach(e => {
       imkDf = imkDf.withColumn(e, lit(schema_imk_table.defaultValues(e)))

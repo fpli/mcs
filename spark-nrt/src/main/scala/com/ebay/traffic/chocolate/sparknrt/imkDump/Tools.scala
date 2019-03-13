@@ -85,7 +85,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       }catch {
         case e: Exception => {
           if(metrics != null) {
-            metrics.meter("MalformedUrl", 1)
+            metrics.meter("imk.dump.malformed", 1)
           }
           logger.warn("MalformedUrl", e)
         }
@@ -188,7 +188,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     }catch {
       case e: Exception => {
         if(metrics != null) {
-          metrics.meter("MalformedUrl", 1)
+          metrics.meter("imk.dump.malformed", 1)
         }
         logger.warn("MalformedUrl", e)
       }
@@ -298,7 +298,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       } catch {
         case e: Exception => {
           if(metrics != null) {
-            metrics.meter("MalformedUrl", 1)
+            metrics.meter("imk.dump.malformed", 1)
           }
           logger.warn("MalformedUrl", e)
         }
