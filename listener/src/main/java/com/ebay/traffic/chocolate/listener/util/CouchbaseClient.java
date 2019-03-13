@@ -47,7 +47,7 @@ public class CouchbaseClient {
         factory.returnClient(factory.getClient(datasourceName));
       } catch (Exception e) {
         logger.error("Couchbase init error", e);
-        //throw e;
+        throw e;
       }
     }
 
