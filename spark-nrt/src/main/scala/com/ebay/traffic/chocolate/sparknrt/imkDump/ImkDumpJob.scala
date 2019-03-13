@@ -1,16 +1,22 @@
 package com.ebay.traffic.chocolate.sparknrt.imkDump
 
 import java.net.{InetAddress, URL}
+import java.util
 import java.util.Properties
 
+import com.couchbase.client.java.document.JsonDocument
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
+import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
+import com.google.gson.{Gson, GsonBuilder}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
+import rx.Observable
+import rx.functions.Func1
 
 /**
   * Created by ganghuang on 12/3/18.
@@ -58,6 +64,10 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     } else null
   }
 
+  var guidCguidMap: util.HashMap[String, String] = {
+    CorpCouchbaseClient.dataSource = properties.getProperty("imkdump.couchbase.datasource")
+    null
+  }
   /**
     * :: DeveloperApi ::
     * Implemented by subclasses to run the spark job.
@@ -97,13 +107,21 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
         val df = readFilesAsDFEx(dataFile._2)
         logger.info("load DataFrame, " + date + ", with files=" + dataFile._2.mkString(","))
 
+        val guidList = df
+          .filter(needQueryCBToGetCguidUdf(col("cguid"), col("guid")))
+          .select("guid")
+          .distinct
+          .collect()
+          .map(row => row.get(0).toString)
+        if (!guidList.isEmpty) {
+          guidCguidMap = batchGetCguids(guidList)
+        }
+
         val imkDf = imkDumpCore(df).repartition(params.partitions)
 
-        if(metrics != null) {
-          metrics.meter("imk.dump.out", imkDf.count())
-        }
-        saveDFToFiles(imkDf, sparkDir, "gzip", "csv", "bel")
+        metrics.meter("imk.dump.out", imkDf.count())
 
+        saveDFToFiles(imkDf, sparkDir, "gzip", "csv", "bel")
         val files = renameFiles(outputDir, sparkDir, date)
         DateFiles(date, files)
       }).toArray
@@ -147,6 +165,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("item_id", getItemIdUdf(col("uri")))
       .withColumn("rvr_url", col("uri"))
       .withColumn("mfe_name", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
+      .withColumn("cguid", getCguidUdf(col("cguid"), col("guid")))
       .drop("lang_cd")
       .filter(judegNotEbaySitesUdf(col("referer")))
 
@@ -180,7 +199,8 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getUserMapIndUdf: UserDefinedFunction = udf((userId: String) => tools.getUserMapInd(userId))
   val getItemIdUdf: UserDefinedFunction = udf((uri: String) => tools.getItemIdFromUri(uri))
   val judegNotEbaySitesUdf: UserDefinedFunction = udf((referer: String) => tools.judgeNotEbaySites(referer))
-
+  val needQueryCBToGetCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => StringUtils.isEmpty(cguid) && StringUtils.isNotEmpty(guid))
+  val getCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => getCguid(cguid, guid))
   /**
     * override renameFiles to have special output file name for TD
     * @param outputDir final destination
@@ -210,6 +230,65 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
         target.toString
       })
     files
+  }
+
+  /**
+    * get cguid
+    * @param cguid cguid
+    * @param guid guid
+    * @return
+    */
+  def getCguid(cguid: String, guid: String): String = {
+    if (StringUtils.isNotEmpty(cguid)) {
+      cguid
+    } else {
+      metrics.meter("imk.dump.tryCguidByGuid", 1)
+      if (guidCguidMap != null) {
+        val result = guidCguidMap.getOrDefault(guid, "")
+        if (StringUtils.isNotEmpty(result)) {
+          metrics.meter("imk.dump.gotCguidByGuid", 1)
+        }
+        result
+      } else {
+        ""
+      }
+    }
+  }
+
+  /**
+    * async get cguid by guid list
+    * @param list guid list
+    * @return
+    */
+  def batchGetCguids(list: Array[String]): util.HashMap[String, String] = {
+    val res = new util.HashMap[String, String]
+    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+    try {
+      val jsonDocuments = Observable
+        .from(list)
+        .flatMap(new Func1[String, Observable[JsonDocument]]() {
+          override def call(key: String): Observable[JsonDocument] = {
+            bucket.async.get(key, classOf[JsonDocument])
+          }
+        }).toList.toBlocking.single
+      val gson = new Gson()
+      for(i <- 0 until jsonDocuments.size()) {
+        val element = jsonDocuments.get(i)
+        val cguidObject = gson.fromJson(String.valueOf(element.content()), classOf[Cguid])
+        if (cguidObject != null) {
+          res.put(element.id(), cguidObject.getCguid)
+        }
+      }
+    } catch {
+      case e: Exception => {
+        logger.error("Corp Couchbase error while getting cguid by guid list" +  e)
+        metrics.meter("imk.dump.error.cbquery", 1)
+        // should we throw the exception and make the job fail?
+        throw new Exception(e)
+      }
+    }
+    CorpCouchbaseClient.returnClient(cacheClient)
+    res
   }
 
 }
