@@ -24,10 +24,9 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
   val amsClickSchema: StructType = StructType(
     Seq(
       StructField("click_ts", StringType, nullable = true),
-      StructField("click_id", StringType, nullable = true),
       StructField("crltn_guid_txt", StringType, nullable = true),
       StructField("guid_txt", StringType, nullable = true),
-      StructField("user_id", StringType, nullable = true),
+      StructField("brwsr_name", StringType, nullable = true),
       StructField("clnt_rmt_ip", StringType, nullable = true),
       StructField("pblshr_id", StringType, nullable = true),
       StructField("rover_url_txt", StringType, nullable = true),
