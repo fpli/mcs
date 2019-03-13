@@ -19,12 +19,12 @@ WORK_DIR=$2
 ARCHIVE_DIR=$3
 ES_URL=$4
 
-DRIVER_MEMORY=10g
-EXECUTOR_NUMBER=30
-EXECUTOR_MEMORY=16g
-EXECUTOR_CORES=4
+DRIVER_MEMORY=4g
+EXECUTOR_NUMBER=20
+EXECUTOR_MEMORY=6g
+EXECUTOR_CORES=1
 
-SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/reporting
+SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
 JOB_NAME="Reporting"
 
 for f in $(find $bin/../../conf/prod -name '*.*');

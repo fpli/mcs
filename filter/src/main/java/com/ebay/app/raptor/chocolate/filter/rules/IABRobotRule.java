@@ -1,7 +1,7 @@
 package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.filter.rules.uamatch.TwoParamsListEntry;
+import com.ebay.app.raptor.chocolate.filter.rules.uamatch.FourParamsListEntry;
 import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 import com.ebay.kernel.context.RuntimeContext;
@@ -13,15 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Blacklist-type rule for eBay robots detection.
+ * Blacklist-type rule for IAB robot detection
  *
- * Created by jialili1 on 4/23/18.
+ * Created by jialili1 on 2/27/19
  */
-public class EBayRobotRule extends BaseFilterRule {
-  private List<TwoParamsListEntry> blacklist = new ArrayList<TwoParamsListEntry>();
+public class IABRobotRule extends BaseFilterRule {
+  private List<FourParamsListEntry> blacklist = new ArrayList<FourParamsListEntry>();
   private String blacklistName;
 
-  public EBayRobotRule(ChannelType channelType) {
+  public IABRobotRule(ChannelType channelType) {
     super(channelType);
     this.readFromLocalFiles();
   }
@@ -31,8 +31,8 @@ public class EBayRobotRule extends BaseFilterRule {
    *
    * @return new empty instance
    */
-  public static EBayRobotRule createForTest(ChannelType channelType) {
-    return new EBayRobotRule(channelType);
+  public static IABRobotRule createForTest(ChannelType channelType) {
+    return new IABRobotRule(channelType);
   }
 
   /**
@@ -45,14 +45,16 @@ public class EBayRobotRule extends BaseFilterRule {
   /**
    * Add a blacklist entry
    *
-   * @param blacklistEntry eBay robot format blacklist string
+   * @param blacklistEntry IAB-format blacklist string
    */
   public void addBlacklistEntry(String blacklistEntry) {
-    this.blacklist.add(new TwoParamsListEntry(blacklistEntry));
+    this.blacklist.add(new FourParamsListEntry(blacklistEntry));
   }
 
   /**
-   * Reset the lists from the strings of the eBay robot file format:
+   * Reset the lists from the strings of the IAB file format:
+   * - multiline
+   * - # comments
    *
    * @param blacklist
    */
@@ -82,7 +84,7 @@ public class EBayRobotRule extends BaseFilterRule {
     if (uaString == null)
       return false;
 
-    for (TwoParamsListEntry entry : this.blacklist) {
+    for (FourParamsListEntry entry : this.blacklist) {
       if (entry.match(uaString)) {
         result = false;
         break;
@@ -93,7 +95,7 @@ public class EBayRobotRule extends BaseFilterRule {
   }
 
   /**
-   * Test the user agent from the request using the EBayRobotRule
+   * Test the user agent from the request using the IAB blacklist
    *
    * @param event event (impression/click) to test
    * @return a bit, 0 for pass, 1 for fail
@@ -109,8 +111,8 @@ public class EBayRobotRule extends BaseFilterRule {
       String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
       this.readFromStrings(blString);
     } catch (Exception e) {
-      Logger.getLogger(EBayRobotRule.class).error("Failed to get eBay Spiders and Robots lists", e);
-      throw new Error("eBay Spiders and Robots Lists not found", e);
+      Logger.getLogger(IABRobotRule.class).error("Failed to get IAB Spiders and Robots list", e);
+      throw new Error("IAB Spiders and Robots List not found", e);
     }
   }
 }

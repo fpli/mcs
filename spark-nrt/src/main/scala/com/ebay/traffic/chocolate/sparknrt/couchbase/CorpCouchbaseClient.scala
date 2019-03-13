@@ -23,7 +23,7 @@ object CorpCouchbaseClient {
   @transient private lazy val dataSource: String = properties.getProperty("chocolate.corp.couchbase.dataSource")
 
   @transient private lazy val factory =
-    com.ebay.dukes.builder.GenericCacheFactoryBuilder.newBuilder()
+    com.ebay.dukes.builder.FountCacheFactoryBuilder.newBuilder()
       .cache(dataSource)
       .dbEnv(properties.getProperty("chocolate.corp.couchbase.dbEnv"))
       .deploymentSlot(properties.getProperty("chocolate.corp.couchbase.deploymentSlot"))

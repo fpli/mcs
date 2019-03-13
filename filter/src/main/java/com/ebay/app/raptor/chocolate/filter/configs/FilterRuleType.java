@@ -22,7 +22,9 @@ public enum FilterRuleType {
   EBAY_BOT_LIST("EBAY_BOT_LIST", "EBayRobotRule", EBayRobotRule.class, 11),
   PROTOCOL("PROTOCOL", "ProtocolRule", ProtocolRule.class, 12),
   MISSINGREFERER("MISSINGREFERER", "MissingRefererRule", MissingRefererRule.class, 13),
-  EBAY_REFERER_DOMAIN("EBAY_REFERER_DOMAIN", "EBayRefererDomainRule", EBayRefererDomainRule.class, 14);
+  EBAY_REFERER_DOMAIN("EBAY_REFERER_DOMAIN", "EBayRefererDomainRule", EBayRefererDomainRule.class, 14),
+  VALID_BROWSER("VALID_BROWSER", "ValidBrowserRule", ValidBrowserRule.class, 15),
+  IAB_ROBOT("IAB_ROBOT", "IABRobotRule", IABRobotRule.class, 16);
 
   private String ruleType;
   private String ruleName;
