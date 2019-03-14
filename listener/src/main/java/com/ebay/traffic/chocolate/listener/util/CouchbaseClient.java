@@ -22,64 +22,84 @@ import java.util.Map;
  * @author huiclu
  */
 public class CouchbaseClient {
-    /**Global logging instance*/
-    private static final Logger logger = Logger.getLogger(CouchbaseClient.class);
-    /**Singleton instance*/
-    private volatile static CouchbaseClient INSTANCE = null;
-    /**Dukes cacheFactory*/
-    private CacheFactory factory;
-    private static final String SYNC_COMMAND = "syncCommand";
-
-  /**flush buffer to keep record when couchbase down*/
+  /**
+   * Global logging instance
+   */
+  private static final Logger logger = Logger.getLogger(CouchbaseClient.class);
+  /**
+   * Singleton instance
+   */
+  private volatile static CouchbaseClient INSTANCE = null;
+  /**
+   * Dukes cacheFactory
+   */
+  private CacheFactory factory;
+  /**
+   * Metric for roversync
+   */
+  private static final String SYNC_COMMAND = "syncCommand";
+  /**
+   * Corp couchbase data source
+   */
   private String datasourceName;
 
   private final Metrics metrics = ESMetrics.getInstance();
 
-    /**Singleton */
-    private CouchbaseClient() {
-      this.datasourceName = ListenerOptions.getInstance().getCouchbaseDatasource();
-      try {
-        factory = DefaultCacheFactoryBuilder
-          .newBuilder()
-          .cache(datasourceName)
-          .build();
-        // Throws an Exception if Datasource for CACHE_NAME could not be found.
-        factory.returnClient(factory.getClient(datasourceName));
-      } catch (Exception e) {
-        logger.error("Couchbase init error", e);
-        throw e;
+  /**
+   * Singleton
+   */
+  private CouchbaseClient() {
+    this.datasourceName = ListenerOptions.getInstance().getCouchbaseDatasource();
+    try {
+      factory = DefaultCacheFactoryBuilder
+        .newBuilder()
+        .cache(datasourceName)
+        .build();
+      // Throws an Exception if Datasource for CACHE_NAME could not be found.
+      factory.returnClient(factory.getClient(datasourceName));
+    } catch (Exception e) {
+      logger.error("Couchbase init error", e);
+      throw e;
+    }
+  }
+
+  public CouchbaseClient(CacheFactory factory) {
+    this.factory = factory;
+  }
+
+  /**
+   * init the instance
+   */
+  private static void init() {
+    Validate.isTrue(INSTANCE == null, "Instance should be initialized only once");
+    INSTANCE = new CouchbaseClient();
+    logger.info("Initial Couchbase cluster");
+  }
+
+  /**
+   * For unit test
+   */
+  public static void init(CouchbaseClient client) {
+    Validate.isTrue(INSTANCE == null, "Instance should be initialized only once");
+    INSTANCE = client;
+  }
+
+  /**
+   * Singleton
+   */
+  public static CouchbaseClient getInstance() {
+    if (INSTANCE == null) {
+      synchronized (CouchbaseClient.class) {
+        if (INSTANCE == null)
+          init();
       }
     }
+    return INSTANCE;
+  }
 
-    public CouchbaseClient(CacheFactory factory) {
-      this.factory = factory;
-    }
-
-    /**init the instance*/
-    private static void init() {
-        Validate.isTrue(INSTANCE == null, "Instance should be initialized only once");
-        INSTANCE = new CouchbaseClient();
-        logger.info("Initial Couchbase cluster");
-    }
-
-    /**For unit test*/
-    public static void init(CouchbaseClient client) {
-        Validate.isTrue(INSTANCE == null, "Instance should be initialized only once");
-        INSTANCE = client;
-    }
-
-    /**Singleton */
-    public static CouchbaseClient getInstance() {
-        if (INSTANCE == null) {
-            synchronized (CouchbaseClient.class) {
-                if (INSTANCE == null)
-                    init();
-            }
-        }
-        return INSTANCE;
-    }
-
-  /**add mapping pair into couchbase */
+  /**
+   * add mapping pair into couchbase
+   */
   public void addMappingRecord(String guid, String cguid) {
     // in listener we don't want to hang if we have exception in CB
     //flushBuffer();
@@ -109,13 +129,15 @@ public class CouchbaseClient {
     }
   }
 
-  /**Couchbase upsert operation, make sure return client to factory when exception*/
-  private void upsert(String guid, String cguid ) throws Exception{
+  /**
+   * Couchbase upsert operation, make sure return client to factory when exception
+   */
+  private void upsert(String guid, String cguid) throws Exception {
     CacheClient cacheClient = null;
     try {
       cacheClient = factory.getClient(datasourceName);
       if (!getBucket(cacheClient).exists(guid)) {
-        Map<String, String>  cguidMap = new HashMap<>();
+        Map<String, String> cguidMap = new HashMap<>();
         cguidMap.put("cguid", cguid);
         getBucket(cacheClient).upsert(JsonDocument.create(guid, 3 * 24 * 60 * 60, JsonObject.from(cguidMap)));
         logger.debug("Adding new mapping. guid=" + guid + " cguid=" + cguid);
@@ -137,7 +159,9 @@ public class CouchbaseClient {
     return couchbase2CacheClient.getCouchbaseClient();
   }
 
-  /**Close the cluster*/
+  /**
+   * Close the cluster
+   */
   public static void close() {
     if (INSTANCE == null) {
       return;
