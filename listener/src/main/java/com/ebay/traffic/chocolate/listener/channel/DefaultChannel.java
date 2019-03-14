@@ -58,7 +58,7 @@ public class DefaultChannel implements Channel {
       channelAction = ChannelActionEnum.parse(null, result[1]);
 
     // handle rover sync separately
-    if(channelAction.equals(ChannelActionEnum.SYNC)) {
+    if(channelAction != null && channelAction.equals(ChannelActionEnum.SYNC)) {
       String cookieResponseHeader = response.getHeader("Set-Cookie");
       String cguid = parser.getGuid(null, cookieResponseHeader, "cguid");
       String guid = parser.getGuid(null, cookieResponseHeader, "tguid");
