@@ -61,7 +61,7 @@ public class EventListenerResource implements EventsApi {
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
-        logger.error(e.getMessage(), e);
+        logger.warn(e.getMessage(), e);
         Tags.STATUS.set(span, e.getClass().getSimpleName());
         res = errorFactoryV3.makeErrorResponse(e.getMessage());
       } finally {
