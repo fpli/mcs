@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.channel.Channel;
 import com.ebay.traffic.chocolate.listener.channel.ChannelFactory;
+import com.ebay.traffic.chocolate.listener.util.CouchbaseClient;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -73,6 +74,8 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
     metrics.meter(MALFORMED_URL, 0);
     channel = ChannelFactory.createChannel();
     parser = MessageObjectParser.getInstance();
+    // init couchbase client at startup
+    CouchbaseClient.getInstance();
     super.init();
 
   }
