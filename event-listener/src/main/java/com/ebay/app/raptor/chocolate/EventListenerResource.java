@@ -55,16 +55,17 @@ public class EventListenerResource implements EventsApi {
     Tracer tracer = GlobalTracer.get();
     try(Scope scope = tracer.buildSpan("mktCollectionSvc").withTag(Tags.TYPE.getKey(), "URL").startActive(true)) {
       Span span = scope.span();
-      Response res;
+      Response res = null;
       try {
         collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
-        return res;
       } catch (Exception e) {
-        logger.error(e.getMessage(), e);
+        logger.warn(e.getMessage(), e);
         Tags.STATUS.set(span, e.getClass().getSimpleName());
-        throw errorFactoryV3.makeException(e.getMessage());
+        res = errorFactoryV3.makeErrorResponse(e.getMessage());
+      } finally {
+        return res;
       }
     }
   }
