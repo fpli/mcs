@@ -44,4 +44,8 @@ public class LocalizedErrorFactoryV3 {
     Response response = factory.makeResponse(errorName);
     return factory.makeException(response);
   }
+
+  public Response makeErrorResponse(String errorName) {
+    return factory.makeResponse(errorName);
+  }
 }
