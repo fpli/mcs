@@ -53,7 +53,7 @@ public class EventListenerResource implements EventsApi {
   @Override
   public Response event(Event body) {
     Tracer tracer = GlobalTracer.get();
-    try(Scope scope = tracer.buildSpan("mktCollectionSvc").withTag(Tags.TYPE.getKey(), "URL").startActive(true)) {
+    try(Scope scope = tracer.buildSpan("mktCollectionSvc").withTag(Tags.TYPE.getKey(), "mktcollectionsvc").startActive(true)) {
       Span span = scope.span();
       Response res = null;
       try {
