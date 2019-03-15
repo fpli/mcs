@@ -63,7 +63,7 @@ public class EventListenerResource implements EventsApi {
       } catch (Exception e) {
         logger.warn(e.getMessage(), e);
         Tags.STATUS.set(span, e.getClass().getSimpleName());
-        res = errorFactoryV3.makeErrorResponse(e.getMessage());
+        res = errorFactoryV3.makeWarnResponse(e.getMessage());
       } finally {
         return res;
       }
