@@ -31,7 +31,7 @@ import javax.ws.rs.core.Response;
 @Path("/v1")
 @Consumes(MediaType.APPLICATION_JSON)
 public class EventListenerResource implements EventsApi {
-  private static final Logger logger = LoggerFactory.getLogger(CollectionService.class);
+  private static final Logger logger = LoggerFactory.getLogger(EventListenerResource.class);
   @Autowired
   private CollectionService collectionService;
 
@@ -62,7 +62,7 @@ public class EventListenerResource implements EventsApi {
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
         logger.warn(e.getMessage(), e);
-        Tags.STATUS.set(span, e.getClass().getSimpleName());
+        Tags.STATUS.set(span, e.getMessage());
         res = errorFactoryV3.makeWarnResponse(e.getMessage());
       } finally {
         return res;
