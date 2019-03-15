@@ -6,7 +6,6 @@ import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
-import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.raptor.opentracing.Tags;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -64,8 +63,6 @@ public class EventListenerResource implements EventsApi {
       } catch (Exception e) {
         logger.warn(e.getMessage());
         Tags.STATUS.set(span, e.getMessage());
-        // show warning in cal
-        SpanEventHelper.writeEvent("Warning", e.getMessage(), "0", null);
         res = errorFactoryV3.makeWarnResponse(e.getMessage());
       } finally {
         return res;
