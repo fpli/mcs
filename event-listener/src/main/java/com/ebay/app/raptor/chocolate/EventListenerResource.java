@@ -65,7 +65,7 @@ public class EventListenerResource implements EventsApi {
         logger.warn(e.getMessage(), e);
         Tags.STATUS.set(span, e.getMessage());
         // show warning in cal
-        SpanEventHelper.writeEvent("Warning", e.getMessage(), "invalid", "");
+        SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
         res = errorFactoryV3.makeWarnResponse(e.getMessage());
       } finally {
         return res;
