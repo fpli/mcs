@@ -7,6 +7,7 @@ import java.util.Properties
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
+import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.conf.Configuration
@@ -41,6 +42,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     val fs = FileSystem.get(hadoopConf)
     sys.addShutdownHook(fs.close())
     fs
+  }
+
+  @transient lazy val metrics: Metrics = {
+    val esUrl = properties.getProperty("epnnrt.elasticsearchUrl")
+    if (esUrl != null && !esUrl.isEmpty) {
+      ESMetrics.init(METRICS_INDEX_PREFIX, esUrl)
+      ESMetrics.getInstance()
+    } else null
   }
 
   var properties: Properties = {
@@ -382,6 +391,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     empty
   }
 
+  // flag = 9(1001) index = 0 return 1
   def getRuleFlag(flag: Long, index: Int): Int = {
     if ((flag & 1L << index) == (1L << index))
       return 1
@@ -434,6 +444,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       return 0
     }
     if (action.equalsIgnoreCase("impression")) {
+      for (i <- mobile.indices) {
+        if (browser.contains(mobile(i)))
+          return 2
+      }
       return 0
     }
     0
@@ -894,6 +908,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting publisher status " +  e)
+        metrics.meter("CouchbaseError", 1)
+        if (metrics != null)
+          metrics.flush()
       }
     }
     CouchbaseClient.returnClient(cacheClient)
@@ -928,6 +945,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting campaign status " +  e)
+        metrics.meter("CouchbaseError", 1)
+        if (metrics != null)
+          metrics.flush()
       }
     }
     CouchbaseClient.returnClient(cacheClient)
@@ -961,6 +981,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting progmap status " +  e)
+        metrics.meter("CouchbaseError", 1)
+        if (metrics != null)
+          metrics.flush()
       }
     }
     CouchbaseClient.returnClient(cacheClient)
@@ -996,6 +1019,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting advClickFilterMap" +  e)
+        metrics.meter("CouchbaseError", 1)
+        if (metrics != null)
+          metrics.flush()
       }
     }
     CouchbaseClient.returnClient(cacheClient)
@@ -1031,6 +1057,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting pubDomainMap " +  e)
+        metrics.meter("CouchbaseError", 1)
+        if (metrics != null)
+          metrics.flush()
       }
     }
     CouchbaseClient.returnClient(cacheClient)

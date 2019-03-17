@@ -1,23 +1,16 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
-import java.text.SimpleDateFormat
+import java.io.PrintWriter
 
-import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
-import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
-import org.apache.avro.generic.GenericRecord
-import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 class TestEpnNrtCommon extends BaseFunSuite{
 
   private val tmpPath = createTempPath()
-  private val inputDir = tmpPath + "/inputDir/"
   private val workDir = tmpPath + "/workDir/"
   private val resourceDir = tmpPath
-
-  private val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
   val args = Array(
     "--mode", "local[8]",
@@ -26,7 +19,6 @@ class TestEpnNrtCommon extends BaseFunSuite{
     "--filterTime", "1552382488000"
   )
   val params = Parameter(args)
-
 
   @transient lazy val spark = {
     val builder = SparkSession.builder().appName("Unit Test")
@@ -76,117 +68,6 @@ class TestEpnNrtCommon extends BaseFunSuite{
   )
 
 
-  override def beforeAll(): Unit = {
-  //  createTestDataForEPN()
-  /*  val args = Array(
-      "--mode", "local[8]",
-      "--workDir", workDir,
-      "--resourceDir", resourceDir
-    )
-    val params = Parameter(args)
-    val df = createTestChocolateData()*/
-
-  }
-
-  def createTestDataForEPN(): Unit = {
-  /*  val metadata = Metadata(workDir, "EPN", MetadataEnum.capping)
-    val dateFiles1 = DateFiles("date=2018-05-01", Array("file://" + inputDir + "/date=2018-05-01/part-00000.snappy.parquet",
-      "file://" + inputDir + "/date=2018-05-01/part-00001.snappy.parquet"))
-    val dateFiles2 = DateFiles("date=2018-05-02", Array("file://" + inputDir + "/date=2018-05-02/part-00000.snappy.parquet"))
-
-    val meta: MetaFiles = MetaFiles(Array(dateFiles1,dateFiles2))
-    metadata.writeDedupeOutputMeta(meta, Array(".epnnrt"))
-
-    // prepare data file
-    val writer1 = AvroParquetWriter.
-      builder[GenericRecord](new Path(inputDir + "/date=2018-05-01/part-00000.snappy.parquet"))
-      .withSchema(FilterMessage.getClassSchema)
-      .withCompressionCodec(CompressionCodecName.SNAPPY)
-      .build()
-
-    val writer2 = AvroParquetWriter.
-      builder[GenericRecord](new Path(inputDir + "/date=2018-05-01/part-00001.snappy.parquet"))
-      .withSchema(FilterMessage.getClassSchema)
-      .withConf(hadoopConf)
-      .withCompressionCodec(CompressionCodecName.SNAPPY)
-      .build()
-
-    val writer3 = AvroParquetWriter.
-      builder[GenericRecord](new Path(inputDir + "/date=2018-05-02/part-00000.snappy.parquet"))
-      .withSchema(FilterMessage.getClassSchema)
-      .withConf(hadoopConf)
-      .withCompressionCodec(CompressionCodecName.SNAPPY)
-      .build()
-
-    val timestamp = getTimestamp("2018-05-01")
-
-    // Desktop
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429247L, 56826256L, 9000081120L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", timestamp - 12, writer1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 1109090984045429247L, 7000001727L, 9000028992L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 12, writer1)
-
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7817281212121239247L, 7000001564L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", timestamp - 8, writer1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 2902129817128329247L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 7,  writer1)
-    writer1.close()
-
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429247L, 7000001711L, -1L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", timestamp - 12, writer2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.SERVE, 1109090984045429247L, 7000001262L, -1L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 12, writer2)
-
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7817281212121239247L, 7000001556L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", timestamp - 8, writer2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 2902129817128329247L, 7000001538L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 7,  writer2)
-    writer2.close()
-
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429247L, 7000001262L, -1L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", timestamp - 12, writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 1109090984045429247L, 7000001531L, -1L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 12, writer3)
-
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7817281212121239247L, 7000001285L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", timestamp - 8, writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 2902129817128329247L, 7000001727L, 9000052575L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 7,  writer3)
-    writer3.close()
-
-
-
-    //create ams_landing_page_type_lookup.csv file
-    import java.io.PrintWriter
-    var printWriter = new PrintWriter(resourceDir + "/" + "ams_rfrng_dmn_pblshr_map.csv")
-    printWriter.println("471\ttranslate.google.com.mx\t5574665384\t1\t2/18/13\tYAJI_DBA")
-    printWriter.println("248\tmaps.google.de\t5574737746\t1\t2/18/13\tYAJI_DBA ")
-    printWriter.println("6038\twww.google.si\t5574643520\t1\t3/26/14\tSHIDLEKAR_DBA ")
-    printWriter.println("3691\twww.google.com.ng\t5574630834\t1\t3/26/14\tSHIDLEKAR_DBA")
-    printWriter.println("2957\twww.google.kz\t5574674899\t1\t2/18/13\tYAJI_DBA")
-    printWriter.println("5243\twww.google.jo\t5575042380\t1\t3/26/14\tSHIDLEKAR_DBA")
-    printWriter.println("1594\twww.google.com.bh\t5574636783\t1\t2/18/13\tYAJI_DBA")
-    printWriter.close()
-
-    printWriter = new PrintWriter(resourceDir + "/" + "ams_landing_page_type_lookup.csv")
-    printWriter.println("Search Results\t539000\t2\t2\thttp://local-services.shop.ebay.ie/items/\t3099180\t1\t2/25/10\tSKHADER")
-    printWriter.println("Search Results\t658500\t2\t15\thttp://motors.shop.ebay.co.uk/\t3003200\t1\t2/25/10\tSKHADER")
-    printWriter.println("Item Page\t23500\t4\t4\thttp://cgi.ebay.com.au/\t4015015\t1\t2/25/10\tSKHADER")
-    printWriter.println("Seller/Store Results\t794500\t3\t12\thttp://cgi6.ebay.it/ws/eBayISAPI.dll?ViewStoreV4&name=\t2101020\t1\t2/25/10\tSKHADER")
-    printWriter.close()*/
-  }
-
-  def writeFilterMessage(channelType: ChannelType,
-                         channelAction: ChannelAction,
-                         snapshotId: Long,
-                         publisherId: Long,
-                         campaignId: Long,
-                         cguid: String,
-                         timestamp: Long,
-                         writer: ParquetWriter[GenericRecord]): FilterMessage = {
-    val message = TestHelper.newFilterMessage(channelType,
-      channelAction,
-      snapshotId,
-      publisherId,
-      campaignId,
-      cguid,
-      timestamp)
-    writer.write(message)
-    message
-  }
-
-  def getTimestamp(date: String): Long = {
-    sdf.parse(date).getTime
-  }
-
   def createTestChocolateData(): DataFrame = {
     val rdd = sc.parallelize(
       Seq(
@@ -229,46 +110,246 @@ class TestEpnNrtCommon extends BaseFunSuite{
 
   }
 
-
   test("Test get value from query URL(0 or 1)") {
     val df = createTestChocolateData()
     val epnNrtCommon = new EpnNrtCommon(params, df)
     val value = epnNrtCommon.getValueFromQueryURL("http://www.ebay.com/1?isgeo=1&foo=bar", "isgeo")
-    assert(value.equalsIgnoreCase("1"))
+    assert(value.equals("1"))
   }
 
   test("Test get ICEP Flex field(ffv 0 or 1)") {
     val df = createTestChocolateData()
     val epnNrtCommon = new EpnNrtCommon(params, df)
     val value = epnNrtCommon.getIcepFlexFld("http://www.ebay.com/1?isgeo=1&icep_ffv=test", "2")
-    assert(value.equalsIgnoreCase("0"))
+    assert(value.equals("0"))
   }
 
   test("Test get ICEP Flex field()") {
     val df = createTestChocolateData()
     val epnNrtCommon = new EpnNrtCommon(params, df)
     val value = epnNrtCommon.getIcepFlexFld1("http://www.ebay.com/1?isgeo=1&icep_ff1=test", "ff1")
-    assert(value.equalsIgnoreCase("test"))
+    assert(value.equals("test"))
   }
 
   test("Test get date time from timestamp") {
     val df = createTestChocolateData()
     val epnNrtCommon = new EpnNrtCommon(params, df)
     val value = epnNrtCommon.getDateTimeFromTimestamp(1552328971000L, "yyyy-MM-dd")
-    assert(value.equalsIgnoreCase("2019-03-12"))
+    assert(value.equals("2019-03-12"))
   }
 
   test("Test get landing page url name") {
     val df = createTestChocolateData()
     val epnNrtCommon = new EpnNrtCommon(params, df)
+    val responseHeader = "Referer:http://translate.google.com.mx|X-Purpose:preview|Location:http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&dashenId=10044|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/92d9dfe51670a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/47a11c671620a93c91006917fffa2a915d116016^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:10.108.159.177|User-Agent:Shuang-UP.Browser-baiduspider-ebaywinphocore"
+    val res = epnNrtCommon.getLndPageUrlName(responseHeader)
+    assert(res.equals("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2"))
   }
 
-  test("Test filter By Timestamp") {
+  test("Test get value from request") {
     val df = createTestChocolateData()
     val epnNrtCommon = new EpnNrtCommon(params, df)
-    val res = epnNrtCommon.filterByTimestamp("1548137796000")
-    assert(res.equals(false))
+    val requestHeader = "Referer:http://translate.google.com.mx|X-Purpose:preview|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/92d9dfe51670a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/47a11c671620a93c91006917fffa2a915d116016^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:10.108.159.177|User-Agent:Shuang-UP.Browser-baiduspider-ebaywinphocore"
+    val res = epnNrtCommon.getValueFromRequest(requestHeader, "accept-language")
+    assert(res.equals("en-US,en;q=0.8"))
   }
 
+  test("Test remove params") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val location = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&dashenId=10044&dashenCnt=2&xxx=4&pub=2"
+    val res = epnNrtCommon.removeParams(location)
+    assert(res.equals("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&xxx=4"))
+  }
 
+  test("Test get FFx value") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&dashenId=10044&dashenCnt=2&xxx=4&pub=2"
+    val res = epnNrtCommon.getFFValue(uri, "3")
+    assert(res.equals("2"))
+  }
+
+  test("Test get FFValue Not Empty") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_ff2=10044&dashenCnt=2&xxx=4&pub=2"
+    val res = epnNrtCommon.getFFValueNotEmpty(uri, "2")
+    assert(res.equals("10044"))
+  }
+
+  test("test get Rover URI info") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_ff2=10044&dashenCnt=2&xxx=4&pub=2"
+    val rotation = epnNrtCommon.getRoverUriInfo(uri, 3)
+    assert(rotation.equals("711-53200-19255-0"))
+  }
+
+  test("test get value from request") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val responseHeader = "Referer:http://translate.google.com.mx|X-Purpose:preview|Location:http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&dashenId=10044&mpre=http://www.amazon.com|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/92d9dfe51670a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/47a11c671620a93c91006917fffa2a915d116016^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:10.108.159.177|User-Agent:Shuang-UP.Browser-baiduspider-ebaywinphocore"
+    val value = epnNrtCommon.getValueFromRequest(responseHeader, "location")
+    assert(value.equals("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&dashenId=10044&mpre=http://www.amazon.com"))
+  }
+
+  test("test get user query text") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_ff2=10044&uq=2&xxx=4&pub=2"
+    val res = epnNrtCommon.getUserQueryTxt(uri, "uq")
+    assert(res.equals("2"))
+  }
+
+  test("test get error query param") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val uri = "http://www.ebay.com/itm/2323"
+    val res = epnNrtCommon.getQueryParam(uri, "udid")
+    assert(res.equals(""))
+  }
+
+  test("test get programId advertisedId from ams click") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val rotation = "5282-53200-19255-0"
+    val res = epnNrtCommon.getPrgrmIdAdvrtsrIdFromAMSClick(rotation)
+    assert(res(0).equals("2"))
+    assert(res(1).equals("1"))
+  }
+
+  test("test get rule flag") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val rule = 9
+    val index1 = epnNrtCommon.getRuleFlag(rule, 0)
+    val index4 = epnNrtCommon.getRuleFlag(rule, 3)
+    assert(index1 == 1)
+    assert(index4 == 1)
+  }
+
+  test("test get country locale from header") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val requestHeader = "Referer:http://translate.google.com.mx|X-Purpose:preview|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/92d9dfe51670a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/47a11c671620a93c91006917fffa2a915d116016^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:10.108.159.177|User-Agent:Shuang-UP.Browser-baiduspider-ebaywinphocore"
+    val res = epnNrtCommon.getCountryLocaleFromHeader(requestHeader)
+    assert(res.equals("US"))
+  }
+
+  test("test tool lvoptn") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&lego=1&uq=2&xxx=4&pub=2"
+    val res = epnNrtCommon.getToolLvlOptn(uri)
+    assert(res.equals("1"))
+  }
+
+  test("test get Item Id") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_item_id=111&uq=2&xxx=4&pub=2"
+    val res = epnNrtCommon.getItemId(uri)
+    assert(res.equals("111"))
+  }
+
+  test("test get traffic source code") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val browser = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"
+    val res = epnNrtCommon.get_TRFC_SRC_CD(browser, "click")
+    assert(res == 0)
+  }
+
+  test("test get browser type") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val browser = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"
+    val res = epnNrtCommon.getBrowserType(browser)
+    assert(res == 8)
+  }
+
+  test("test filter YN ind") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val rt_rule = 1024
+    val nrt_rule = 129
+    val res = epnNrtCommon.getFilter_Yn_Ind(rt_rule, nrt_rule, "click")
+    assert(res == 1)
+  }
+
+  test("test get page map Id by landing page") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+
+    //create ams_landing_page_type_lookup.csv file
+    import java.io.PrintWriter
+
+    val printWriter = new PrintWriter(resourceDir + "/" + "ams_landing_page_type_lookup.csv")
+    printWriter.println("Search Results\t362000\t2\t11\thttp://reise.shop.ebay.de/\t3077331\t1\t2/25/10\tSKHADER")
+    printWriter.println("Search Results\t658500\t2\t15\thttp://motors.shop.ebay.co.uk/\t3003200\t1\t2/25/10\tSKHADER")
+    printWriter.println("Item Page\t23500\t4\t4\thttp://cgi.ebay.com.au/\t4015015\t1\t2/25/10\tSKHADER")
+    printWriter.println("Seller/Store Results\t794500\t3\t12\thttp://cgi6.ebay.it/ws/eBayISAPI.dll?ViewStoreV4&name=\t2101020\t1\t2/25/10\tSKHADER")
+    printWriter.close()
+    val url = "http://reise.shop.ebay.de/1?dw=3&ded=4"
+    val rotation = "707-53200-19255-0"
+    val res = epnNrtCommon.getPageIdByLandingPage(url, rotation)
+    assert(res.equals("362000"))
+  }
+
+  test("test lookup referer domain") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+
+    val printWriter = new PrintWriter(resourceDir + "/" + "ams_rfrng_dmn_pblshr_map.csv")
+    printWriter.println("877\twww.google.al\t5574633013\t1\t2/18/13\tYAJI_DBA")
+    printWriter.println("4692\twww.google.fi\t5574737088\t1\t3/26/14\tSHIDLEKAR_DBA")
+    printWriter.close()
+
+    val url = "www.google.fi"
+    val res = epnNrtCommon.lookupRefererDomain(url, true, "5574737088")
+    assert(res == 1)
+  }
+
+  test("test call roi sdk rule") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val res = epnNrtCommon.callRoiSdkRule(1, 1, 0)
+    assert(res == 1)
+  }
+
+  test("test call roi ebay referrer rule") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val res = epnNrtCommon.callRoiEbayReferrerRule(1, 1, 0)
+    assert(res == 0)
+  }
+
+  test("test call roi Nq blacklist rule") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val res = epnNrtCommon.callRoiNqBlacklistRule(1, 1, 1)
+    assert(res == 1)
+  }
+
+  test("test call roi missing referrer url rule") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val res = epnNrtCommon.callRoiMissingReferrerUrlRule(1, 1, "")
+    assert(res == 1)
+  }
+
+  test("test is Defined AdvertiserId") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val res = epnNrtCommon.isDefinedAdvertiserId("711-121-121-121")
+    assert(res)
+  }
+
+  test("test is defined publisher") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val res = epnNrtCommon.isDefinedPublisher("5574737088")
+    assert(res)
+  }
 }

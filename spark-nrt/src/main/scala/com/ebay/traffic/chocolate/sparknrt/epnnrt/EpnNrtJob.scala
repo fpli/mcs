@@ -5,6 +5,7 @@ import java.util.Properties
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
+import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.functions.col
@@ -25,6 +26,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   lazy val outputDir = properties.getProperty("epnnrt.outputdir")
 
   lazy val epnNrtTempDir = outputDir + "/tmp/"
+  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
 
   @transient lazy val properties: Properties = {
     val properties = new Properties()
@@ -44,6 +46,14 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     } else {
       10 // default to 10 metafiles
     }
+  }
+
+  @transient lazy val metrics: Metrics = {
+    val esUrl = properties.getProperty("epnnrt.elasticsearchUrl")
+    if (esUrl != null && !esUrl.isEmpty) {
+      ESMetrics.init(METRICS_INDEX_PREFIX, esUrl)
+      ESMetrics.getInstance()
+    } else null
   }
 
   override def run(): Unit = {
@@ -70,6 +80,10 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         var df_click = df.filter(col("channel_action") === "CLICK")
         var df_impression = df.filter(col("channel_action") === "IMPRESSION")
 
+        val df_click_count_before_filter = df_click.count()
+        val df_impression_count_before_filter = df_impression.count()
+
+
         try {
           if (!params.filterTime.equalsIgnoreCase("")) {
             df_click = df_click.filter( r=> {
@@ -86,11 +100,19 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           }
         }
 
+        val df_click_count_after_filter = df_click.count()
+        val df_impression_count_after_filter = df_impression.count()
+
+        metrics.meter("ClickFilterCount", df_click_count_before_filter - df_click_count_after_filter)
+        metrics.meter("ImpressionFilterCount", df_impression_count_before_filter - df_impression_count_after_filter)
+
+
         //3. build impression dataframe  save dataframe to files and rename files
         var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
         impressionDf = impressionDf.repartition(params.partitions)
         saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
         renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
+        metrics.meter("ImpressionSuccessfulCount", impressionDf.count())
 
         //4. build click dataframe  save dataframe to files and rename files
         var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
@@ -99,9 +121,13 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       //  renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
 
         val files = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
+        metrics.meter("ClickSuccessfulCount", clickDf.count())
 
         // 5.delete the finished meta files
         metadata.deleteDedupeOutputMeta(file)
+
+        if (metrics != null)
+          metrics.flush()
 
         //6. write the epn-nrt meta output file to hdfs
         val metaFile = new MetaFiles(Array(DateFiles(date, files)))
