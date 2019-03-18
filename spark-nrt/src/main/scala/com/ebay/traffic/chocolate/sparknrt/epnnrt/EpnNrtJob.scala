@@ -4,6 +4,7 @@ import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
+import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import org.apache.commons.lang3.StringUtils
@@ -66,6 +67,9 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       cappingMeta = cappingMeta.slice(0, batchSize)
     }
 
+    //init couchbase datasource
+    CorpCouchbaseClient.dataSource = properties.getProperty("epnnrt.datasource")
+
     cappingMeta.foreach(metaIter => {
       val file = metaIter._1
       val datesFiles = metaIter._2
@@ -87,11 +91,11 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         try {
           if (!params.filterTime.equalsIgnoreCase("")) {
             df_click = df_click.filter( r=> {
-              r.getLong(2) > params.filterTime.toLong
+              r.getAs[Long]("timestamp") >= params.filterTime.toLong
             })
 
             df_impression = df_impression.filter( r=> {
-              r.getLong(2) > params.filterTime.toLong
+              r.getAs[Long]("timestamp") >= params.filterTime.toLong
             })
           }
         } catch {

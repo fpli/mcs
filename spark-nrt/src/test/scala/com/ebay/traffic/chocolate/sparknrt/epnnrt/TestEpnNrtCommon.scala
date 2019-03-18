@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt
 import java.io.PrintWriter
 
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
+import com.ebay.traffic.chocolate.sparknrt.couchbase.{CorpCouchbaseClient, CouchbaseClientMock}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
@@ -66,6 +67,16 @@ class TestEpnNrtCommon extends BaseFunSuite{
       StructField("is_tracked", BooleanType, nullable = true)
     )
   )
+
+  override def beforeAll(): Unit = {
+   /* df = createTestChocolateData()
+    epnNrtCommon = new EpnNrtCommon(params, df)*/
+    CouchbaseClientMock.startCouchbaseMock()
+    CorpCouchbaseClient.getBucketFunc = () => {
+      (None, CouchbaseClientMock.connect().openBucket("default"))
+    }
+  }
+
 
 
   def createTestChocolateData(): DataFrame = {
@@ -318,38 +329,4 @@ class TestEpnNrtCommon extends BaseFunSuite{
     assert(res == 1)
   }
 
-  test("test call roi ebay referrer rule") {
-    val df = createTestChocolateData()
-    val epnNrtCommon = new EpnNrtCommon(params, df)
-    val res = epnNrtCommon.callRoiEbayReferrerRule(1, 1, 0)
-    assert(res == 0)
-  }
-
-  test("test call roi Nq blacklist rule") {
-    val df = createTestChocolateData()
-    val epnNrtCommon = new EpnNrtCommon(params, df)
-    val res = epnNrtCommon.callRoiNqBlacklistRule(1, 1, 1)
-    assert(res == 1)
-  }
-
-  test("test call roi missing referrer url rule") {
-    val df = createTestChocolateData()
-    val epnNrtCommon = new EpnNrtCommon(params, df)
-    val res = epnNrtCommon.callRoiMissingReferrerUrlRule(1, 1, "")
-    assert(res == 1)
-  }
-
-  test("test is Defined AdvertiserId") {
-    val df = createTestChocolateData()
-    val epnNrtCommon = new EpnNrtCommon(params, df)
-    val res = epnNrtCommon.isDefinedAdvertiserId("711-121-121-121")
-    assert(res)
-  }
-
-  test("test is defined publisher") {
-    val df = createTestChocolateData()
-    val epnNrtCommon = new EpnNrtCommon(params, df)
-    val res = epnNrtCommon.isDefinedPublisher("5574737088")
-    assert(res)
-  }
 }

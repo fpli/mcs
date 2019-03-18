@@ -6,6 +6,7 @@ import java.util.Properties
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.app.raptor.chocolate.avro.ChannelType
+import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.Gson
@@ -885,7 +886,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def batchGetPublisherStatus(list: Array[String]): HashMap[String, String] = {
     var res = new HashMap[String, String]
-    val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
+    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
     try {
       val jsonDocuments = Observable
         .from(list)
@@ -915,13 +916,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           metrics.flush()
       }
     }
-    CouchbaseClient.returnClient(cacheClient)
+    CorpCouchbaseClient.returnClient(cacheClient)
     res
   }
 
   def batchGetCampaignStatus(list: Array[String]): HashMap[String, String] = {
     var res = new HashMap[String, String]
-    val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
+    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
     try {
       val jsonDocuments = Observable
         .from(list)
@@ -952,13 +953,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           metrics.flush()
       }
     }
-    CouchbaseClient.returnClient(cacheClient)
+    CorpCouchbaseClient.returnClient(cacheClient)
     res
   }
 
   def batchGetProgMapStatus(list: Array[String]): HashMap[String, String] = {
     var res = new HashMap[String, String]
-    val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
+    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
     try {
       val jsonDocuments = Observable
         .from(list)
@@ -988,14 +989,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           metrics.flush()
       }
     }
-    CouchbaseClient.returnClient(cacheClient)
+    CorpCouchbaseClient.returnClient(cacheClient)
     res
   }
 
 
   def batchGetAdvClickFilterMap(list: Array[String]): HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]] = {
     var res = new HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]]
-    val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
+    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
     try {
       val jsonArrayDocuments = Observable
         .from(list)
@@ -1026,13 +1027,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           metrics.flush()
       }
     }
-    CouchbaseClient.returnClient(cacheClient)
+    CorpCouchbaseClient.returnClient(cacheClient)
     res
   }
 
   def batchGetPubDomainMap(list: Array[String]): HashMap[String, ListBuffer[PubDomainInfo]] = {
     var res = new HashMap[String, ListBuffer[PubDomainInfo]]
-    val (cacheClient, bucket) = CouchbaseClient.getBucketFunc()
+    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
     try {
       val jsonArrayDocuments = Observable
         .from(list)
@@ -1064,7 +1065,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           metrics.flush()
       }
     }
-    CouchbaseClient.returnClient(cacheClient)
+    CorpCouchbaseClient.returnClient(cacheClient)
     res
   }
 }

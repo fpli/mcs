@@ -20,7 +20,7 @@ object CorpCouchbaseClient {
     properties
   }
 
-  @transient private lazy val dataSource: String = properties.getProperty("chocolate.corp.couchbase.dataSource")
+  @transient var dataSource: String = properties.getProperty("chocolate.corp.couchbase.dataSource")
 
   @transient private lazy val factory =
     com.ebay.dukes.builder.FountCacheFactoryBuilder.newBuilder()
