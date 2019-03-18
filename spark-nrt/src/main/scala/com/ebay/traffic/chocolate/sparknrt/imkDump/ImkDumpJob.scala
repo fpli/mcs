@@ -261,6 +261,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     * @return
     */
   def batchGetCguids(list: Array[String]): util.HashMap[String, String] = {
+    val startTime = System.currentTimeMillis
     val res = new util.HashMap[String, String]
     val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
     try {
@@ -288,6 +289,8 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
+    val endTime = System.currentTimeMillis
+    metrics.mean("imk.dump.cb.latency", endTime - startTime)
     res
   }
 
