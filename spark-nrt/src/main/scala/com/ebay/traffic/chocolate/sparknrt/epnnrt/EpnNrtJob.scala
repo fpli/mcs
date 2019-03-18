@@ -93,7 +93,6 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
             df_click = df_click.filter( r=> {
               r.getAs[Long]("timestamp") >= params.filterTime.toLong
             })
-
             df_impression = df_impression.filter( r=> {
               r.getAs[Long]("timestamp") >= params.filterTime.toLong
             })

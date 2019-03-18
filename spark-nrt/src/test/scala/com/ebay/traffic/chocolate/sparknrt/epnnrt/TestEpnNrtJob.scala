@@ -15,8 +15,8 @@ import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 
 class TestEpnNrtJob extends BaseFunSuite{
-  //private val tmpPath = createTempPath()
-  private val tmpPath = "/Users/huiclu/tmp_2/tmp"
+  private val tmpPath = createTempPath()
+ // private val tmpPath = "/Users/huiclu/tmp_2/tmp"
 
   private val inputDir = tmpPath + "/inputDir/"
   private val workDir = tmpPath + "/workDir/"
@@ -42,8 +42,8 @@ class TestEpnNrtJob extends BaseFunSuite{
   }
 
   override def beforeAll(): Unit = {
-  //  createTestDataForEPN()
-    createTmpMetaFile()
+    createTestDataForEPN()
+   // createTmpMetaFile()
   }
 
   test("Test EPN Nrt job") {

@@ -16,6 +16,7 @@ bin=`cd "$bin">/dev/null; pwd`
 
 WORK_DIR=$1
 RESOURCE_DIR=$2
+FILTER_TIME=$3
 
 DRIVER_MEMORY=1g
 EXECUTOR_NUMBER=3
@@ -45,4 +46,5 @@ ${SPARK_HOME}/bin/spark-submit \
       --appName ${JOB_NAME} \
       --mode yarn \
       --workDir "${WORK_DIR}" \
-      --resourceDir ${RESOURCE_DIR}
+      --resourceDir ${RESOURCE_DIR}\
+      --filterTime ${FILTER_TIME}
