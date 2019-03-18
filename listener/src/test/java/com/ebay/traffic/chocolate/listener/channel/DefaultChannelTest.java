@@ -2,21 +2,24 @@ package com.ebay.traffic.chocolate.listener.channel;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.dukes.CacheFactory;
+import com.ebay.dukes.base.BaseDelegatingCacheClient;
+import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.TestHelper;
-import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
-import com.ebay.traffic.chocolate.listener.util.HttpMethodEnum;
-import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
-import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
+import com.ebay.traffic.chocolate.listener.util.*;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -34,6 +37,7 @@ import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
+@PowerMockIgnore({ "javax.net.ssl.*", "javax.security.*" })
 @PrepareForTest({ListenerOptions.class, ESMetrics.class, MessageObjectParser.class, KafkaSink.class})
 public class DefaultChannelTest {
   private MockHttpServletRequest mockClientRequest;
@@ -42,31 +46,48 @@ public class DefaultChannelTest {
   private MockHttpServletResponse mockProxyResponse;
   private Producer mockProducer;
   private DefaultChannel channel;
+  private static CouchbaseClient couchbaseClient;
 
+  @BeforeClass
+  public static void beforeClass() throws Exception{
+    CouchbaseClientMock.createClient();
+    ESMetrics.init("test", "localhost");
+
+    CacheFactory cacheFactory = Mockito.mock(CacheFactory.class);
+    BaseDelegatingCacheClient baseDelegatingCacheClient = Mockito.mock(BaseDelegatingCacheClient.class);
+    Couchbase2CacheClient couchbase2CacheClient = Mockito.mock(Couchbase2CacheClient.class);
+    when(couchbase2CacheClient.getCouchbaseClient()).thenReturn(CouchbaseClientMock.getBucket());
+    when(baseDelegatingCacheClient.getCacheClient()).thenReturn(couchbase2CacheClient);
+    when(cacheFactory.getClient(any())).thenReturn(baseDelegatingCacheClient);
+
+    couchbaseClient = new CouchbaseClient(cacheFactory);
+    CouchbaseClient.init(couchbaseClient);
+  }
 
   @Before
-  public void setUp() {
-   ListenerOptions mockOptions = mock(ListenerOptions.class);
-   PowerMockito.mockStatic(ListenerOptions.class);
-   PowerMockito.when(ListenerOptions.getInstance()).thenReturn(mockOptions);
+  public void setUp() throws Exception {
+    ListenerOptions mockOptions = mock(ListenerOptions.class);
+    PowerMockito.mockStatic(ListenerOptions.class);
+    PowerMockito.when(ListenerOptions.getInstance()).thenReturn(mockOptions);
 
-   Map<ChannelType, String> channelTopics = new HashMap<>();
-   channelTopics.put(ChannelType.EPN, "epn");
-   channelTopics.put(ChannelType.DISPLAY, "display");
-   PowerMockito.when(mockOptions.getSinkKafkaConfigs()).thenReturn(channelTopics);
-   when(mockOptions.getListenerFilteredTopic()).thenReturn("listened-filtered");
-   mockProducer = mock(KafkaProducer.class);
-   PowerMockito.mockStatic(KafkaSink.class);
-   PowerMockito.when(KafkaSink.get()).thenReturn(mockProducer);
-   mockMetrics = mock(Metrics.class);
-   PowerMockito.mockStatic(ESMetrics.class);
-   PowerMockito.when(ESMetrics.getInstance()).thenReturn(mockMetrics);
-   mockMessageParser = mock(MessageObjectParser.class);
-   PowerMockito.mockStatic(MessageObjectParser.class);
-   PowerMockito.when(MessageObjectParser.getInstance()).thenReturn(mockMessageParser);
-   mockClientRequest = new MockHttpServletRequest();
-   mockProxyResponse = new MockHttpServletResponse();
-   channel = new DefaultChannel();
+    Map<ChannelType, String> channelTopics = new HashMap<>();
+    channelTopics.put(ChannelType.EPN, "epn");
+    channelTopics.put(ChannelType.DISPLAY, "display");
+    PowerMockito.when(mockOptions.getSinkKafkaConfigs()).thenReturn(channelTopics);
+    when(mockOptions.getListenerFilteredTopic()).thenReturn("listened-filtered");
+    mockProducer = mock(KafkaProducer.class);
+    PowerMockito.mockStatic(KafkaSink.class);
+    PowerMockito.when(KafkaSink.get()).thenReturn(mockProducer);
+    mockMetrics = mock(Metrics.class);
+    PowerMockito.mockStatic(ESMetrics.class);
+    PowerMockito.when(ESMetrics.getInstance()).thenReturn(mockMetrics);
+    mockMessageParser = mock(MessageObjectParser.class);
+    PowerMockito.mockStatic(MessageObjectParser.class);
+    PowerMockito.when(MessageObjectParser.getInstance()).thenReturn(mockMessageParser);
+    mockClientRequest = new MockHttpServletRequest();
+    mockProxyResponse = new MockHttpServletResponse();
+
+    channel = new DefaultChannel();
   }
 
 
@@ -217,6 +238,18 @@ public class DefaultChannelTest {
     mockClientRequest.setParameter("campxid","12345");
     channel.process(mockClientRequest, mockProxyResponse);
     verify(mockProducer, times(3)).send(new ProducerRecord<>("epn", anyLong(), anyObject()), KafkaSink.callback);
+  }
+
+  @Test
+  public void processRoverSyncCommand() throws Exception{
+    String setCookie = "npii=btguid/75866c251690ab6af110f0bffffdb2535e69c89c^cguid/758674e91690a99b9634d24de79bcaad5e69c89c^;Domain=.ebay.co.uk;Expires=Thu, 12-Mar-2020 05:29:00 GMT;Path=/";
+    mockClientRequest.setRequestURI("rover.ebay.co.uk/roversync/?site=3&stg=1&cguid=758674e91690a99b9634d24de79bcaad&mpt=1552454939881");
+    mockProxyResponse.setHeader("Set-Cookie", setCookie);
+    when(mockMessageParser.getGuid(any(), eq(setCookie), eq("cguid"))).thenReturn("758674e91690a99b9634d24de79bcaad");
+    when(mockMessageParser.getGuid(any(), eq(setCookie), eq("tguid"))).thenReturn("75866c251690ab6af110f0bffffdb253");
+    channel.process(mockClientRequest, mockProxyResponse);
+    Thread.sleep(3000);
+    assertEquals("758674e91690a99b9634d24de79bcaad", CouchbaseClient.getInstance().getCguid("75866c251690ab6af110f0bffffdb253"));
   }
 
 }

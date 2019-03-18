@@ -59,6 +59,8 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
     public static final String OUTPUT_HTTPS_PORT = "lb.https.port";
     public static final String PROXY = "proxyTo";
 
+    public static final String COUCHBASE_DATASOURCE = "chocolate.listener.couchbase.datasource";
+
     public static final String MAX_THREADS = "max.threads";
     public static final String PID_FILE = "chocolate.listener.pidfile";
 
@@ -271,4 +273,8 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
     }
 
     public File getPidFile() throws IOException { return ApplicationOptionsParser.getFile(properties, PID_FILE, false, null, false); }
+
+    public String getCouchbaseDatasource() {
+        return ApplicationOptionsParser.getStringProperty(properties, COUCHBASE_DATASOURCE);
+    }
 }
