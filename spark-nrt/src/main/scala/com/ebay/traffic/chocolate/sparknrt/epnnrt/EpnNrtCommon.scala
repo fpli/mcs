@@ -26,6 +26,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
+  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
+
   val cbData = asyncCouchbaseGet(df)
 
   /**
