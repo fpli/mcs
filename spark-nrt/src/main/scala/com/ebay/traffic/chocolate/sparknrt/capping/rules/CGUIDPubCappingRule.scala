@@ -24,25 +24,19 @@ class CGUIDPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, ca
     $"publisher_id" =!= -1 and $"channel_action" === "CLICK"
   }
 
-  // parse CGUID from response_headers, if null, parse from request_headers
-  def cguid(cguidColumn: String): Column = {
-    if (cguidColumn != null) {
-      col(cguidColumn).alias("CGUID")
-    } else {
-      val CGUID_Response = split($"response_headers", "cguid/")(1).substr(0, 32)
-      val CGUID_Request = split($"request_headers", "cguid/")(1).substr(0, 32)
-      when(CGUID_Response.isNotNull, CGUID_Response).otherwise(CGUID_Request).alias("CGUID")
-    }
+  // get CGUID
+  def cguid(): Column = {
+    $"cguid".alias("CGUID")
   }
 
   //counting columns
-  def selectCondition(cguidColumn: String): Array[Column] = {
-    Array(cguid(cguidColumn), cols(1))
+  def selectCondition(): Array[Column] = {
+    Array(cguid(), cols(1))
   }
 
   //add new column if needed
-  def withColumnCondition(cguidColumn: String): Column = {
-    when($"channel_action" === "CLICK", cguid(cguidColumn)).otherwise("NA")
+  def withColumnCondition(): Column = {
+    when($"channel_action" === "CLICK", cguid()).otherwise("NA")
   }
 
   //final join condition
@@ -65,11 +59,9 @@ class CGUIDPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, ca
       val firstRow = head(0)
       val timestamp = dfCGUIDPub.select($"timestamp").first().getLong(0)
 
-      val cguidColumn = if (dfCGUIDPub.columns.contains("cguid")) "cguid" else null
-
       //Step 2: Count by CGUID and publisher_id in this job, then integrate data to 1 file, and add timestamp to file name.
       //count by CGUID and publisher_id in the job
-      dfCGUIDPub = dfLoadCappingInJob(dfCGUIDPub, selectCondition(cguidColumn))
+      dfCGUIDPub = dfLoadCappingInJob(dfCGUIDPub, selectCondition())
 
       //reduce the number of counting file to 1, and rename file name to include timestamp
       saveCappingInJob(dfCGUIDPub, timestamp)
@@ -77,7 +69,7 @@ class CGUIDPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, ca
       //Step 3: Read a new df for join purpose, just select CGUID, publisher_id and snapshot_id, and read previous data for counting purpose.
       //df for join
       val selectCols: Array[Column] = $"snapshot_id" +: cols
-      var df = dfForJoin(cols(0), withColumnCondition(cguidColumn), selectCols)
+      var df = dfForJoin(cols(0), withColumnCondition(), selectCols)
 
       //read previous data and add to count path
       val cguidPubCountPath = getCappingDataPath(timestamp)

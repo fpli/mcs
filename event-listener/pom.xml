@@ -302,7 +302,6 @@
       <artifactId>raptor-configresource-starter</artifactId>
     </dependency>
 
-    <!-- for tracking app tag -->
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-dds-client-starter</artifactId>

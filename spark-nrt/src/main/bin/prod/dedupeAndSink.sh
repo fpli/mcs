@@ -19,16 +19,17 @@ KAFKA_TOPIC=$2
 WORK_DIR=$3
 OUTPUT_DIR=$4
 ES_URL=$5
-CB_DEDUPE=$6
+PARTITIONS=$6
+CB_DEDUPE=$7
 
-DRIVER_MEMORY=10g
-EXECUTOR_NUMBER=30
-EXECUTOR_MEMORY=16g
-EXECUTOR_CORES=4
+DRIVER_MEMORY=4g
+EXECUTOR_NUMBER=20
+EXECUTOR_MEMORY=4g
+EXECUTOR_CORES=1
 
 JOB_NAME="DedupeAndSink"
 
-SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/dedupe
+SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
 
 for f in $(find $bin/../../conf/prod -name '*.*');
 do
@@ -56,4 +57,5 @@ ${SPARK_HOME}/bin/spark-submit \
       --workDir "${WORK_DIR}" \
       --outputDir ${OUTPUT_DIR} \
       --elasticsearchUrl ${ES_URL} \
+      --partitions ${PARTITIONS} \
       --couchbaseDedupe ${CB_DEDUPE}

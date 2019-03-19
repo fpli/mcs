@@ -7,7 +7,7 @@ import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
-import com.ebay.dukes.builder.Raptor2CacheFactoryBuilder;
+import com.ebay.dukes.builder.DefaultCacheFactoryBuilder;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
@@ -43,7 +43,7 @@ public class CouchbaseClient {
     private CouchbaseClient() {
       this.datasourceName = ApplicationOptions.getInstance().getCouchbaseDatasource();
       try {
-        factory = Raptor2CacheFactoryBuilder
+        factory = DefaultCacheFactoryBuilder
           .newBuilder()
           .cache(datasourceName)
           .build();

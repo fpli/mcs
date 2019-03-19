@@ -184,6 +184,11 @@
             <artifactId>java-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.couchbase.client</groupId>
+            <artifactId>couchbase-client</artifactId>
+            <version>1.4.13</version>
+        </dependency>
+        <dependency>
             <groupId>com.ebay.dukes</groupId>
             <artifactId>dukes</artifactId>
             <version>${dukes.version}</version>

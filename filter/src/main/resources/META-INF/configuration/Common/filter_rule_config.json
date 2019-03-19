@@ -35,7 +35,13 @@
         "blacklistName": "eBay_Spiders_and_Robots_EPN.txt"},
       {
         "ruleName": "EBayRefererDomainRule",
-        "blacklistName": "eBay_Referral_Domain.txt"}
+        "blacklistName": "eBay_Referral_Domain.txt"},
+      {
+        "ruleName": "ValidBrowserRule",
+        "whitelistName": "IAB_ABC_International_List_of_Valid_Browsers.txt"},
+      {
+        "ruleName": "IABRobotRule",
+        "blacklistName": "IAB_ABC_International_Spiders_and_Robots.txt"}
     ]
   },
   {
@@ -44,6 +50,12 @@
       {
         "ruleName": "IPBlacklistRule",
         "blacklistName": "IP_Blacklist_EPN.txt"}
+    ]
+  },
+  {
+    "channelType": "PAID_SEARCH",
+    "filterRules": [
+      
     ]
   }
 ]

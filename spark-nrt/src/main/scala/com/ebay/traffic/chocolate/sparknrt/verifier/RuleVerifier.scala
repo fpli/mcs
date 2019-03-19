@@ -39,6 +39,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       StructField("rt_rule_flag6", StringType, nullable = true),
       StructField("rt_rule_flag7", StringType, nullable = true),
       StructField("rt_rule_flag8", StringType, nullable = true),
+      StructField("rt_rule_flag9", StringType, nullable = true),
       StructField("rt_rule_flag10", StringType, nullable = true),
       StructField("rt_rule_flag12", StringType, nullable = true),
       StructField("rt_rule_flag13", StringType, nullable = true),
@@ -148,6 +149,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       .withColumn("EpnDomainBlacklist", verifyByBitUdf1(lit(4), $"rt_rule_flags", $"rt_rule_flag15"))
       .withColumn("IPBlacklist", verifyByBitUdf1(lit(5), $"rt_rule_flags", $"rt_rule_flag6"))
       .withColumn("EbayBot", verifyByBitUdf1(lit(10), $"rt_rule_flags", $"rt_rule_flag5"))
+      .withColumn("EbayRefererDomain", verifyByBitUdf1(lit(13), $"rt_rule_flags", $"rt_rule_flag9"))
       .drop("new_uri")
 
     val path = new Path(workDir + "/join/", (new Path(params.srcPath).getName))
@@ -177,6 +179,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     val epnDomainBlacklist = df.where($"EpnDomainBlacklist" === false).count()
     val ipBlacklist = df.where($"IPBlacklist" === false).count()
     val ebayBot = df.where($"EbayBot" === false).count()
+    val ebayRefererDomain = df.where($"EbayRefererDomain" === false).count()
 
     // 4. Write out result to file on hdfs
     var outputStream: FSDataOutputStream = null
@@ -211,6 +214,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       outputStream.writeChars("EpnDomainBlacklist inconsistent: " + epnDomainBlacklist.toFloat/total + "\n")
       outputStream.writeChars("IPBlacklist inconsistent: " + ipBlacklist.toFloat/total + "\n")
       outputStream.writeChars("EbayBot inconsistent: " + ebayBot.toFloat/total + "\n")
+      outputStream.writeChars("EbayRefererDomain inconsistent: " + ebayRefererDomain.toFloat/total + "\n")
 
       outputStream.flush()
     } finally {
@@ -238,6 +242,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       val epnDomainBlacklist_choco = df1.where($"rt_rule_flags".bitwiseAND(16) =!= 0).count()
       val ipBlacklist_choco = df1.where($"rt_rule_flags".bitwiseAND(32) =!= 0).count()
       val ebayBot_choco = df1.where($"rt_rule_flags".bitwiseAND(1024) =!= 0).count()
+      val ebayRefererDomain_choco = df1.where($"rt_rule_flags".bitwiseAND(8192) =!= 0).count()
 
       val ipPubS_epn = df2.where($"nrt_rule_flag39" === 1).count()
       val ipPubL_epn = df2.where($"nrt_rule_flag43" === 1).count()
@@ -257,6 +262,7 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       val epnDomainBlacklist_epn = df2.where($"rt_rule_flag15" === 1).count()
       val ipBlacklist_epn = df2.where($"rt_rule_flag6" === 1).count()
       val ebayBot_epn = df2.where($"rt_rule_flag5" === 1).count()
+      val ebayRefererDomain_epn = df2.where($"rt_rule_flag9" === 1).count()
 
 
       try {
@@ -297,6 +303,8 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
           s"IPBlacklist inconsistent: " + (ipBlacklist_choco - ipBlacklist_epn).toFloat / count1Nodedupe + "\n")
         outputStream.writeChars(s"ebayBot_choco: $ebayBot_choco, ebayBot_epn: $ebayBot_epn, " +
           s"EbayBot inconsistent: " + (ebayBot_choco - ebayBot_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"ebayRefererDomain_choco: $ebayRefererDomain_choco, ebayRefererDomain_epn: $ebayRefererDomain_epn, " +
+          s"EbayRefererDomain inconsistent: " + (ebayRefererDomain_choco - ebayRefererDomain_epn).toFloat / count1Nodedupe + "\n")
         outputStream.flush()
       } finally {
         if (outputStream != null) {
