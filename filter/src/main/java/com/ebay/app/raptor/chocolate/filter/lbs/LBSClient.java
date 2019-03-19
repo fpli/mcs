@@ -117,7 +117,7 @@ public class LBSClient {
         metrics.meter("LBSexception");
       }
     } catch (Exception ex) {
-//            logger.error("Failed to call LBS service.", ex);
+      logger.error("Failed to call LBS service.", ex);
       metrics.meter("LBSexception");
     }
     metrics.mean("LBSLatency", System.currentTimeMillis() - startTime);
