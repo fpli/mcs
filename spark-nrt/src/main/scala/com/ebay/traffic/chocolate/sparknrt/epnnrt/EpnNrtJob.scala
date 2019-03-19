@@ -84,9 +84,13 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         var df_click = df.filter(col("channel_action") === "CLICK")
         var df_impression = df.filter(col("channel_action") === "IMPRESSION")
 
-        val df_click_count_before_filter = df_click.count()
-        val df_impression_count_before_filter = df_impression.count()
+        var df_click_count_before_filter = 0L
+        var df_impression_count_before_filter = 0L
 
+        if (logger.isDebugEnabled) {
+          df_click_count_before_filter = df_click.count()
+          df_impression_count_before_filter = df_impression.count()
+        }
 
         try {
           if (!params.filterTime.equalsIgnoreCase("")) {
@@ -103,28 +107,32 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           }
         }
 
-        val df_click_count_after_filter = df_click.count()
-        val df_impression_count_after_filter = df_impression.count()
-
-        metrics.meter("ClickFilterCount", df_click_count_before_filter - df_click_count_after_filter)
-        metrics.meter("ImpressionFilterCount", df_impression_count_before_filter - df_impression_count_after_filter)
-
+        var df_click_count_after_filter = 0L
+        var df_impression_count_after_filter = 0L
+        if (logger.isDebugEnabled) {
+          df_click_count_after_filter = df_click.count()
+          df_impression_count_after_filter = df_impression.count()
+          metrics.meter("ClickFilterCount", df_click_count_before_filter - df_click_count_after_filter)
+          metrics.meter("ImpressionFilterCount", df_impression_count_before_filter - df_impression_count_after_filter)
+        }
 
         //3. build impression dataframe  save dataframe to files and rename files
         var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
         impressionDf = impressionDf.repartition(params.partitions)
         saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
         renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
-        metrics.meter("ImpressionSuccessfulCount", impressionDf.count())
+
+        if(logger.isDebugEnabled)
+          metrics.meter("ImpressionSuccessfulCount", impressionDf.count())
 
         //4. build click dataframe  save dataframe to files and rename files
         var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
         clickDf = clickDf.repartition(params.partitions)
         saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
-      //  renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
 
         val files = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
-        metrics.meter("ClickSuccessfulCount", clickDf.count())
+        if(logger.isDebugEnabled)
+          metrics.meter("ClickSuccessfulCount", clickDf.count())
 
         // 5.delete the finished meta files
         metadata.deleteDedupeOutputMeta(file)

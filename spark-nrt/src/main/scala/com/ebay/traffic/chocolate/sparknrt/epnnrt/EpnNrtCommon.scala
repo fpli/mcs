@@ -76,74 +76,118 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   //
-  lazy val ams_map: HashMap[Int, Array[String]] = {
-    val value = Array(Array("2", "1"), Array("6", "1"), Array("4", "1"), Array("10", "1"), Array("16", "1"), Array("9", "1"), Array("5", "1"),
-      Array("15", "1"), Array("3", "1"), Array("14", "1"), Array("17", "2"), Array("12", "1"), Array("11", "1"), Array("8", "1"), Array("13", "1"),
-      Array("1", "1"), Array("7", "1"))
-    val key = Array(5282, 4686, 705, 709, 1346, 3422, 1553, 710, 5221, 5222, 8971, 724, 707, 3423, 1185, 711, 706)
-    var map = new HashMap[Int, Array[String]]
+  lazy val ams_map: Map[Int, Array[String]] = Map(
+    5282 -> Array("2", "1"),
+    4686 -> Array("6", "1"),
+    705 -> Array("4", "1"),
+    709 -> Array("10", "1"),
+    1346 -> Array("16", "1"),
+    3422 -> Array("9", "1"),
+    1553 -> Array("5", "1"),
+    710 -> Array("15", "1"),
+    5221 -> Array("3", "1"),
+    5222 -> Array("14", "1"),
+    8971 -> Array("17", "2"),
+    724 -> Array("12", "1"),
+    707 -> Array("11", "1"),
+    3423 -> Array("8", "1"),
+    1185 -> Array("13", "1"),
+    711 -> Array("1", "1"),
+    706 -> Array("7", "1")
+  )
 
-    for(i <- key.indices) {
-      map = map + (key(i) -> value(i))
-    }
-    map
-  }
-
-  lazy val user_agent_map: HashMap[String, Int] = {
-    var map = new HashMap[String, Int]
-    val agent = Array("msie", "firefox", "chrome", "safari", "opera", "netscape", "navigator", "aol", "mac", "msntv", "webtv",
-      "trident", "bingbot", "adsbot-google", "ucweb", "facebookexternalhit", "dvlvik", "ahc", "tubidy", "roku", "ymobile",
-      "pycurl", "dailyme", "ebayandroid", "ebayiphone", "ebayipad", "ebaywinphocore", "NULL_USERAGENT", "UNKNOWN_USERAGENT")
-    val agentEnum = Array(2, 5, 11, 4, 7, 1, 1, 3, 8, 9, 6, 2, 12, 19, 25, 20, 26, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 10, -99)
-    for(i <- agent.indices) {
-      map = map + (agent(i) -> agentEnum(i))
-    }
-    map
-  }
+  lazy val user_agent_map: Map[String, Int] = Map(
+    "msie" -> 2,
+    "firefox" -> 5,
+    "chrome" -> 11,
+    "safari" -> 4,
+    "opera" -> 7,
+    "netscape" -> 1,
+    "navigator" -> 1,
+    "aol" -> 3,
+    "mac" -> 8,
+    "msntv" -> 9,
+    "webtv" -> 6,
+    "trident" -> 2,
+    "bingbot" -> 12,
+    "adsbot-google" -> 19,
+    "ucweb" -> 25,
+    "facebookexternalhit" -> 20,
+    "dvlvik" -> 26,
+    "ahc" -> 13,
+    "tubidy" -> 14,
+    "roku" -> 15,
+    "ymobile" -> 16,
+    "pycurl" -> 17,
+    "dailyme" -> 18,
+    "ebayandroid" -> 21,
+    "ebayiphone" -> 22,
+    "ebayipad" -> 23,
+    "ebaywinphocore" -> 24,
+    "NULL_USERAGENT" -> 10,
+    "UNKNOWN_USERAGENT" -> -99
+  )
 
   //landing page id map  (landing_page_url -> page_id) here is MultiMap!
   lazy val landing_page_pageId_map: mutable.HashMap[String, mutable.Set[LandingPageMapInfo]] = {
     val map = new mutable.HashMap[String, mutable.Set[LandingPageMapInfo]] with mutable.MultiMap[String, LandingPageMapInfo]
     val stream = fs.open(new Path(params.resourceDir + "/" + properties.getProperty("epnnrt.landingpage.type")))
-    def readLine = Stream.cons(stream.readLine(), Stream.continually(stream.readLine))
-    readLine.takeWhile(_ != null).foreach(line => {
-      val parts = line.split("\t")
-      val landingPageMapInfo = new LandingPageMapInfo
-      landingPageMapInfo.setAMS_PAGE_TYPE_MAP_ID(parts(1))
-      landingPageMapInfo.setAMS_PRGRM_ID(parts(3))
-      landingPageMapInfo.setLNDNG_PAGE_URL_TXT(parts(4))
-      map.addBinding(utils.findDomainInUrl(parts(4)), landingPageMapInfo)
-    })
-    map
+    try {
+      def readLine = Stream.cons(stream.readLine(), Stream.continually(stream.readLine))
+      readLine.takeWhile(_ != null).foreach(line => {
+        val parts = line.split("\t")
+        val landingPageMapInfo = new LandingPageMapInfo
+        landingPageMapInfo.setAMS_PAGE_TYPE_MAP_ID(parts(1))
+        landingPageMapInfo.setAMS_PRGRM_ID(parts(3))
+        landingPageMapInfo.setLNDNG_PAGE_URL_TXT(parts(4))
+        map.addBinding(utils.findDomainInUrl(parts(4)), landingPageMapInfo)
+      })
+      map
+    } catch {
+      case e: Exception => {
+        logger.error("Error while reading landing page map file " + e)
+        map
+      }
+    } finally{
+      stream.close()
+    }
   }
 
   //referer domain map
   lazy val referer_domain_map: HashMap[String, ListBuffer[String]] = {
     var map = new HashMap[String, ListBuffer[String]]
     val stream = fs.open(new Path(params.resourceDir + "/" + properties.getProperty("epnnrt.refng.pblsh")))
-    def readLine = Stream.cons(stream.readLine(), Stream.continually(stream.readLine))
-    readLine.takeWhile(_ != null).foreach(line => {
-      val parts = line.split("\t")
-      if (map.contains(parts(2))) {
-        var list = map(parts(2))
-        list += parts(1)
-        map = map + (parts(2) -> list)
+    try {
+      def readLine = Stream.cons(stream.readLine(), Stream.continually(stream.readLine))
+      readLine.takeWhile(_ != null).foreach(line => {
+        val parts = line.split("\t")
+        if (map.contains(parts(2))) {
+          var list = map(parts(2))
+          list += parts(1)
+          map = map + (parts(2) -> list)
+        }
+        else {
+          var list: mutable.ListBuffer[String] = mutable.ListBuffer[String]()
+          list += parts(1)
+          map = map + (parts(2) -> list)
+        }
+      })
+      map
+    } catch {
+      case e: Exception => {
+        logger.error("Error while reading referer domain map file " + e)
+        map
       }
-      else {
-        var list: mutable.ListBuffer[String] = mutable.ListBuffer[String]()
-        list += parts(1)
-        map = map + (parts(2) -> list)
-      }
-    })
-    map
+    } finally{
+      stream.close()
+    }
   }
 
-  @transient lazy val config_flag_map : HashMap[Int, Int] = {
-    var map = new HashMap[Int, Int]
-    map += (1 -> 3)
-    map += (2 -> 0)
-    map
-  }
+  lazy val config_flag_map: Map[Int, Int] = Map(
+    1 -> 3,
+    2 -> 0
+  )
+
 
   // val getRoverChannelIdUdf = udf((uri: String) => getRoverUriInfo(uri, 4))
   val getRoverUriInfoUdf = udf((uri: String, index: Int) => getRoverUriInfo(uri, index))
@@ -457,7 +501,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getBrowserType(user_agent: String): Int = {
-  //  val userAgentStr = getValueFromRequest(requestHeader, "User-Agent")
     if (user_agent == null | user_agent.equals(""))
       return user_agent_map("NULL_USERAGENT")
     val agentStr = user_agent.toLowerCase()
@@ -484,35 +527,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
     0
   }
-
-  /*def getPageIdByLandingPage(landingPage: String): String = {
-    if (landingPage == null || landingPage.equals(""))
-      return ""
-    val splits = landingPage.trim.split("/")
-    try {
-      if (splits(2).startsWith("cgi6") && landing_page_pageId_map.contains("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewStoreV4&name=")) {
-        return landing_page_pageId_map("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewStoreV4&name=")
-      } else if (splits(2).startsWith("cgi") && landing_page_pageId_map.contains("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewItem")) {
-        return landing_page_pageId_map("http://" + splits(2) + "/ws/eBayISAPI.dll?ViewItem")
-      }
-      if (splits.length == 3) {
-        if (landing_page_pageId_map.contains("http://" + splits(2) + "/")){
-          return landing_page_pageId_map("http://" + splits(2) + "/")
-        }
-      } else if (splits.length > 3) {
-        if (landing_page_pageId_map.contains("http://" + splits(2) + "/" + splits(3) + "/")) {
-          return landing_page_pageId_map("http://" + splits(2) + "/" + splits(3) + "/")
-        }
-      }
-    } catch {
-      case e: ArrayIndexOutOfBoundsException => {
-        logger.error("Error while getting PageId for location = " + landingPage + " in the request", e)
-        return ""
-      }
-    }
-    landing_page_pageId_map
-    ""
-  }*/
 
   def getPageIdByLandingPage(landingPage: String, rotationId: String): String = {
     var pageId = "-999"
@@ -912,8 +926,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting publisher status " +  e)
         metrics.meter("CouchbaseError", 1)
-        if (metrics != null)
-          metrics.flush()
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
@@ -949,8 +961,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting campaign status " +  e)
         metrics.meter("CouchbaseError", 1)
-        if (metrics != null)
-          metrics.flush()
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
@@ -985,8 +995,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting progmap status " +  e)
         metrics.meter("CouchbaseError", 1)
-        if (metrics != null)
-          metrics.flush()
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
@@ -1023,8 +1031,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting advClickFilterMap" +  e)
         metrics.meter("CouchbaseError", 1)
-        if (metrics != null)
-          metrics.flush()
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
@@ -1061,8 +1067,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting pubDomainMap " +  e)
         metrics.meter("CouchbaseError", 1)
-        if (metrics != null)
-          metrics.flush()
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)

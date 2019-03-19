@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt;
 
 import java.io.Serializable;
 
+// copy from old EPN code
 public class LandingPageMapInfo implements Serializable {
   private String AMS_PAGE_TYPE_MAP_ID;
   private String AMS_PRGRM_ID;

@@ -153,4 +153,11 @@ class TestUtils extends BaseFunSuite{
     assert(res)
   }
 
+  test("test call roi sdk rule") {
+    val df = createTestChocolateData()
+    val epnNrtCommon = new EpnNrtCommon(params, df)
+    val res = epnNrtCommon.callRoiSdkRule(1, 1, 0)
+    assert(res == 1)
+  }
+
 }

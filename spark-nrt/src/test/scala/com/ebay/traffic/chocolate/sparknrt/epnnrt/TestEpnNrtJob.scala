@@ -65,7 +65,6 @@ class TestEpnNrtJob extends BaseFunSuite{
 
     job.run()
     job.stop()
-
   }
 
   def createTmpMetaFile(): Unit = {

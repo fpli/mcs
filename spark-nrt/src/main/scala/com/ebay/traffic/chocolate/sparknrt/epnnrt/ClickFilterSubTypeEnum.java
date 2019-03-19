@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 @SuppressWarnings("serial")
+// copy from old EPN code
 public class ClickFilterSubTypeEnum extends BaseEnum {
   public static final ClickFilterSubTypeEnum NOT_ON_NQ_WHITELIST =
       new ClickFilterSubTypeEnum("NOT_ON_NQ_WHITELIST", 4);

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 @SuppressWarnings("serial")
+// copy from old EPN code
 public class ClickFilterTypeEnum extends BaseEnum {
   public static final ClickFilterTypeEnum ENCRYPTION =
       new ClickFilterTypeEnum("ENCRYPTION", 1, ClickFilterSubTypeEnum.FILTER);
