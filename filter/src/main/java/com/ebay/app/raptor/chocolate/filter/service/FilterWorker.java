@@ -49,7 +49,7 @@ public class FilterWorker extends Thread {
   private final AtomicBoolean shutdownRequested = new AtomicBoolean(false);
 
   private final int maxThreadNum = 10;
-  private final Executor executor = Executors.newFixedThreadPool(maxThreadNum);
+  private final ExecutorService executor = Executors.newFixedThreadPool(maxThreadNum);
   private final CompletionService<FilterMessage> completionService =
     new ExecutorCompletionService<>(executor);
 
@@ -73,6 +73,7 @@ public class FilterWorker extends Thread {
   public void shutdown() {
     LOG.info("Calling shutdown in FilterWorker.");
     shutdownRequested.set(true);
+    executor.shutdown();
   }
 
   @Override
@@ -103,6 +104,7 @@ public class FilterWorker extends Thread {
         long startTime = System.currentTimeMillis();
         while (iterator.hasNext()) {
           int threadNum = 0;
+          long theadPoolstartTime = System.currentTimeMillis();
           for(int i = 0; i < maxThreadNum && iterator.hasNext(); i++) {
             ConsumerRecord<Long, ListenerMessage> record = iterator.next();
 
@@ -141,6 +143,7 @@ public class FilterWorker extends Thread {
             producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
 
           }
+          metrics.mean("FilterThreadPoolLatency", System.currentTimeMillis() - theadPoolstartTime);
         }
 
         long now = System.currentTimeMillis();
@@ -223,7 +226,12 @@ public class FilterWorker extends Thread {
     // set postcode for not EPN Channels
     // checked imk history data, only click has geoid
     if (message.getChannelType() != ChannelType.EPN && message.getChannelAction() == ChannelAction.CLICK) {
-      outMessage.setGeoId(LBSClient.getInstance().getPostalCodeByIp(outMessage.getRemoteIp()));
+      try {
+        outMessage.setGeoId(LBSClient.getInstance().getPostalCodeByIp(outMessage.getRemoteIp()));
+      } catch (Exception e) {
+        LOG.warn("Exception in call GEO service: ", e);
+        this.metrics.meter("FilterGEOError");
+      }
     }
     // only EPN needs to get publisher id
     if (message.getPublisherId() == DEFAULT_PUBLISHER_ID && message.getChannelType() == ChannelType.EPN) {

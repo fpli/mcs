@@ -33,13 +33,13 @@ public class LBSResults {
   }
   */
 
-    private List<LBSHttpResult> allResults = new ArrayList<LBSHttpResult>();
+  private List<LBSHttpResult> allResults = new ArrayList<LBSHttpResult>();
 
-    public List<LBSHttpResult> getAllResults() {
-        return allResults;
-    }
+  public List<LBSHttpResult> getAllResults() {
+    return allResults;
+  }
 
-    public void setAllResults(List<LBSHttpResult> allResults) {
-        this.allResults = allResults;
-    }
+  public void setAllResults(List<LBSHttpResult> allResults) {
+    this.allResults = allResults;
+  }
 }
