@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<projects>
+    <project name="chocolate-metrics" filter="FilterInputCount,ProxyIncomingCount"></project>
+</projects>
