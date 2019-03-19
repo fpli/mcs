@@ -50,9 +50,9 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   }
 
   @transient lazy val metrics: Metrics = {
-    val esUrl = properties.getProperty("epnnrt.elasticsearchUrl")
-    if (esUrl != null && !esUrl.isEmpty) {
-      ESMetrics.init(METRICS_INDEX_PREFIX, esUrl)
+    val url  = properties.getProperty("epnnrt.elasticsearchUrl")
+    if (url != null && url.nonEmpty) {
+      ESMetrics.init(METRICS_INDEX_PREFIX, url)
       ESMetrics.getInstance()
     } else null
   }

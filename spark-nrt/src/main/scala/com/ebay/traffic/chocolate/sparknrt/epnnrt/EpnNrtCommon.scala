@@ -47,19 +47,20 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     fs
   }
 
-  @transient lazy val metrics: Metrics = {
-    val esUrl = properties.getProperty("epnnrt.elasticsearchUrl")
-    if (esUrl != null && !esUrl.isEmpty) {
-      ESMetrics.init(METRICS_INDEX_PREFIX, esUrl)
-      ESMetrics.getInstance()
-    } else null
-  }
-
-  var properties: Properties = {
+  @transient lazy val properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
     properties
   }
+
+   @transient lazy val metrics: Metrics = {
+     val url  = properties.getProperty("epnnrt.elasticsearchUrl")
+     if (url != null && url.nonEmpty) {
+      ESMetrics.init(METRICS_INDEX_PREFIX, url)
+      ESMetrics.getInstance()
+     } else null
+   }
+
 
   @transient lazy val metadata: Metadata = {
     val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
@@ -71,7 +72,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if (StringUtils.isNumeric(batchSize)) {
       Integer.parseInt(batchSize)
     } else {
-      10 // default to 10 metafiles
+      1 // default to 1 metafiles
     }
   }
 
@@ -886,12 +887,16 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     campaign_list = campaign_list.distinct
     progmap_list = progmap_list.distinct
 
+    val start = System.currentTimeMillis
 
     publisher_map = batchGetPublisherStatus(publisher_list)
     campaign_map = batchGetCampaignStatus(campaign_list)
     prog_map = batchGetProgMapStatus(progmap_list)
     clickFilter_map = batchGetAdvClickFilterMap(publisher_list)
     pubDomain_map = batchGetPubDomainMap(publisher_list)
+
+    metrics.mean("NrtCouchbaseLatency", System.currentTimeMillis() - start)
+
 
     (publisher_map, campaign_map, prog_map, clickFilter_map, pubDomain_map)
   }
@@ -925,7 +930,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting publisher status " +  e)
-        metrics.meter("CouchbaseError", 1)
+        metrics.meter("CouchbaseError")
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
@@ -943,7 +948,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
             bucket.async.get("EPN_pubcmpn_" + key, classOf[JsonDocument])
           }
         }).toList.toBlocking.single()
-
       for (i <- 0 until jsonDocuments.size()) {
         val campaign_sts = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherCampaignInfo])
         if (campaign_sts != null)
@@ -960,7 +964,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting campaign status " +  e)
-        metrics.meter("CouchbaseError", 1)
+        metrics.meter("CouchbaseError")
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
@@ -994,7 +998,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting progmap status " +  e)
-        metrics.meter("CouchbaseError", 1)
+        metrics.meter("CouchbaseError")
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
@@ -1030,7 +1034,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting advClickFilterMap" +  e)
-        metrics.meter("CouchbaseError", 1)
+        metrics.meter("CouchbaseError")
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
@@ -1048,7 +1052,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
             bucket.async.get("EPN_amspubdomain_" + key, classOf[JsonArrayDocument])
           }
         }).toList.toBlocking.single()
-
       for (i <- 0 until jsonArrayDocuments.size()) {
         var objectList: ListBuffer[PubDomainInfo] = ListBuffer.empty[PubDomainInfo]
         for (j <-0 until jsonArrayDocuments.get(i).content().size()) {
@@ -1066,7 +1069,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting pubDomainMap " +  e)
-        metrics.meter("CouchbaseError", 1)
+        metrics.meter("CouchbaseError")
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)

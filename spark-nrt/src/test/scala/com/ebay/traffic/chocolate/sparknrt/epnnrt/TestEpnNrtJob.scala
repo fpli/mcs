@@ -52,7 +52,7 @@ class TestEpnNrtJob extends BaseFunSuite{
       "--mode", "local[8]",
       "--workDir", workDir,
       "--resourceDir", resourceDir,
-      "--filterTime", "1544938438491"
+      "--filterTime", "0"
     )
     val params = Parameter(args)
     val job = new EpnNrtJob(params)

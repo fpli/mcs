@@ -17,7 +17,7 @@ class TestEpnNrtCommon extends BaseFunSuite{
     "--mode", "local[8]",
     "--workDir", workDir,
     "--resourceDir", resourceDir,
-    "--filterTime", "1552382488000"
+    "--filterTime", "0"
   )
   val params = Parameter(args)
 
