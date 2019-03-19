@@ -79,7 +79,7 @@ public class ListenerServletContextInitializer implements ServletContextInitiali
         logger.info("start adsTrackingServlet");
         ServletRegistration.Dynamic adTrackingServlet = servletContext.addServlet("ListenerAdsTrackingServlet",
             new AdsTrackingServlet(ESMetrics.getInstance(), MessageObjectParser.getInstance()));
-        adTrackingServlet.addMapping("/*");
+        adTrackingServlet.addMapping("/adTracking/*");
         adTrackingServlet.setLoadOnStartup(4);
         
         logger.info("all loaded!");

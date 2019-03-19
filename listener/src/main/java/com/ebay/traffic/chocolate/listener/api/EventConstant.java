@@ -18,6 +18,7 @@ public class EventConstant {
   public static final String MK_LND_PAGE = "mklndp";
   public static final String SITE_ID = "siteId";
   public static final String CAMPAIGN_ID = "campid";
+  public static final String UNKNOWN = "unknown";
 
   public static final String ITEM = "item";
   public static final String PRODUCT = "product";

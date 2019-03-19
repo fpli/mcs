@@ -9,7 +9,9 @@ public enum MPLXChannelEnum {
   NATUAL_SEARCH(3,"Natural Search",3),
   EPN(6,"Affiliate",1),
   SOCIAL_MEDIA(13,"Social Media",16),
-  PAID_SOCIAL(33,"Paid Social",20);
+  PAID_SOCIAL(33,"Paid Social",20),
+  PAID_SOCIAL_BRAND(25, "Paid Social Brand", 25),
+  PAID_SOCIAL_PROSPECT(35, "Paid Social Prospecting", 35);
 
 
   private Integer mplxChannelId;

@@ -61,7 +61,7 @@ public class AdsTrackingServletTest {
 
   @Test
   public void testServletShouldQueryRequestURL() throws IOException {
-    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/v1?mkevt=1&mkcid=1&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068");
+    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/adTracking/v1?mkevt=1&mkcid=1&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068");
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
     ListenerMessage mockObject = mock(ListenerMessage.class);
@@ -86,7 +86,7 @@ public class AdsTrackingServletTest {
 
   @Test
   public void testServletInvalidChannel() throws IOException {
-    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068&snid=foo");
+    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/adTracking/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068&snid=foo");
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
     ListenerMessage mockObject = mock(ListenerMessage.class);
@@ -105,7 +105,7 @@ public class AdsTrackingServletTest {
 
   @Test
   public void testServletInvalidCollectionId() throws IOException {
-    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068");
+    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/adTracking/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068");
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
     ListenerMessage mockObject = mock(ListenerMessage.class);
@@ -124,7 +124,7 @@ public class AdsTrackingServletTest {
 
   @Test
   public void testServletInvalidMessage() throws IOException {
-    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068");
+    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/adTracking/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068");
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
     ListenerMessage mockObject = mock(ListenerMessage.class);
@@ -140,7 +140,7 @@ public class AdsTrackingServletTest {
 
   @Test
   public void testServletInvalidJson() throws IOException {
-    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068");
+    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/adTracking/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068");
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
     ListenerMessage mockObject = mock(ListenerMessage.class);
@@ -174,7 +174,7 @@ public class AdsTrackingServletTest {
 
   @Test
   public void testDoPostSuccessfullyWithEPNImpression() throws IOException {
-    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/v1?mkevt=2&mkcid=4&mkrid=711-1245-1245-235&campid=7876756567&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068&testkey=testval");
+    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/adTracking/v1?mkevt=2&mkcid=4&mkrid=711-1245-1245-235&campid=7876756567&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068&testkey=testval");
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
     ListenerMessage mockObject = mock(ListenerMessage.class);
@@ -201,7 +201,7 @@ public class AdsTrackingServletTest {
 
   @Test
   public void testDoPostSuccessfullyWithDAPClick() throws IOException {
-    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&campid=7876756567&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068&testkey=testval");
+    StringBuffer clickURL = new StringBuffer("https://www.ebayadservices.com/adTracking/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&campid=7876756567&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068&testkey=testval");
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
     ListenerMessage mockObject = mock(ListenerMessage.class);

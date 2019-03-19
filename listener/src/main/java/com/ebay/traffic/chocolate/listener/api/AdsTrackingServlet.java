@@ -17,6 +17,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URL;
 
+/**
+ * Handle all request from marketing
+ * ex: https://www.ebayadservices.com/adTracking/v1?mkevt=2&mktcid=1&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&[other channel parameters]
+ */
 public class AdsTrackingServlet extends HttpServlet {
   private static final Logger logger = Logger.getLogger(AdsTrackingServlet.class);
 
@@ -96,6 +100,7 @@ public class AdsTrackingServlet extends HttpServlet {
       message = parser.parseHeader(request, response, System.currentTimeMillis(), event.getCampaignID(), event.getChannel(), event.getAction(), snid, requestUrl);
       if (message == null) {
         logger.error("Could not create Avro message for url=" + request.getRequestURL());
+        metrics.meter("TrackingFail", 1);
         return;
       }
 
@@ -105,6 +110,7 @@ public class AdsTrackingServlet extends HttpServlet {
 
     } catch (Exception e) {
       logger.error("Couldn't respond to tracking event for " + request.getRequestURL(), e);
+      metrics.meter("TrackingFail", 1);
     }
   }
 }

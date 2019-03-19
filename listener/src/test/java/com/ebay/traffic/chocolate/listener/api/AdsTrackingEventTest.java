@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.listener.api;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
 import com.ebay.traffic.chocolate.listener.util.LogicalChannelEnum;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.junit.BeforeClass;
@@ -23,11 +24,12 @@ import static org.mockito.Mockito.*;
 
 public class AdsTrackingEventTest {
   /* valid data */
-  private static String clickURL = "https://www.ebayadservices.com/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068&testkey=testval";
+  private static String clickURL = "https://www.ebayadservices.com/adTracking/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068&testkey=testval";
   private static MockHttpServletRequest mockClientRequest;
-  private String vimpURL = "https://www.ebayadservices.com/v1?mkevt=3&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068&testkey=testval";
-  private String impURL = "https://www.ebayadservices.com/v1?mkevt=2&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068&testkey=testval";
+  private String vimpURL = "https://www.ebayadservices.com/adTracking/v1?mkevt=3&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068&testkey=testval";
+  private String impURL = "https://www.ebayadservices.com/adTracking/v1?mkevt=2&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068&testkey=testval";
   private String page = "http://www.ebay.com/itm/The-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-/380963112068";
+  private Metrics mockMetrics = mock(Metrics.class);;
 
   @BeforeClass
   public static void setUp() throws UnsupportedEncodingException {
@@ -88,13 +90,13 @@ public class AdsTrackingEventTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testCreatingNewEventShouldThrowExceptionWhenVersionIncorrectlySpecified() throws Exception {
-    String invalidVersion = "https://www.ebayadservices.com/vv?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068";
+    String invalidVersion = "https://www.ebayadservices.com/adTracking/vv?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068";
     new AdsTrackingEvent(new URL(invalidVersion), null);
   }
 
   @Test(expected = NumberFormatException.class)
   public void testCreatingNewEventShouldThrowExceptionWhenInvalidItem() throws Exception {
-    String invalidItem = "https://www.ebayadservices.com/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=38096311abdew8";
+    String invalidItem = "https://www.ebayadservices.com/adTracking/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=38096311abdew8";
     String[] splitClick = invalidItem.split("\\?");
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.setRequestURI(invalidItem);
@@ -104,12 +106,12 @@ public class AdsTrackingEventTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testCreatingNewEventShouldThrowExceptionWhenEventIncorrectlySpecified() throws Exception {
-    String invalidEvent = "https://www.ebayadservices.com/v1?mkevt=99&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068";
+    String invalidEvent = "https://www.ebayadservices.com/adTracking/v1?mkevt=99&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=380963112068";
     String[] splitClick = invalidEvent.split("\\?");
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.setRequestURI(invalidEvent);
     request.setParameters(parsePayload(splitClick[1]));
-    new AdsTrackingEvent(new URL(invalidEvent), request.getParameterMap());
+    new AdsTrackingEvent(new URL(invalidEvent), request.getParameterMap(), mockMetrics);
   }
 
   @Test
@@ -160,12 +162,12 @@ public class AdsTrackingEventTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testPayloadShouldThrowExceptionWhenItemIDIsNotANumber() throws Exception {
-    String invalidItem = "https://www.ebayadservices.com/v1?mkevt=99&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=3ABC80963112068";
+    String invalidItem = "https://www.ebayadservices.com/adTracking/v1?mkevt=99&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.ebay.com%2Fitm%2FThe-Way-of-Kings-by-Brandon-Sanderson-Hardcover-Book-English-%2F380963112068&item=3ABC80963112068";
     String[] splitClick = invalidItem.split("\\?");
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.setRequestURI(invalidItem);
     request.setParameters(parsePayload(splitClick[1]));
-    new AdsTrackingEvent(new URL(invalidItem), request.getParameterMap());
+    new AdsTrackingEvent(new URL(invalidItem), request.getParameterMap(), mockMetrics);
   }
 
   @Test
@@ -185,7 +187,7 @@ public class AdsTrackingEventTest {
     HttpServletResponse response = mock(HttpServletResponse.class);
     when(response.encodeRedirectURL("http://www.ebay.com")).thenReturn("http://www.ebay.com");
 
-    String url = "https://www.ebayadservices.com/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.hackme.com";
+    String url = "https://www.ebayadservices.com/adTracking/v1?mkevt=1&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&mklndp=http%3A%2F%2Fwww.hackme.com";
 
     String[] splitClick = url.split("\\?");
     MockHttpServletRequest request = new MockHttpServletRequest();
@@ -204,7 +206,7 @@ public class AdsTrackingEventTest {
     ServletOutputStream output = mock(ServletOutputStream.class);
     when(response.getOutputStream()).thenReturn(output);
 
-    String impressionURL = "https://www.ebayadservices.com/v1?mkevt=2&mkcid=4&mkrid=711-2";
+    String impressionURL = "https://www.ebayadservices.com/adTracking/v1?mkevt=2&mkcid=4&mkrid=711-2";
 
     String[] split = impressionURL.split("\\?");
     MockHttpServletRequest request = new MockHttpServletRequest();

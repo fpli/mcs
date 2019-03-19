@@ -3,6 +3,9 @@ package com.ebay.traffic.chocolate.listener.api;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
 import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.Validate;
 
 import javax.servlet.http.HttpServletResponse;
@@ -14,6 +17,16 @@ import java.util.Map;
 
 /**
  * The event format for the traffic from "www.ebayadservices.com"
+ * ex: https://www.ebayadservices.com/adTracking/v1?mkevt=2&mktcid=1&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&siteid=1&[other channel parameters]
+ *
+ * Mandatory Fields: <br/>
+ * mkevt  -- event id
+ * mktcid -- channel id
+ * mkrid -- rotation id
+ * mksid -- session id
+ *
+ * without the mandatory fields, request won't be tracked in tracking system
+ *
  */
 public class AdsTrackingEvent {
 
@@ -26,8 +39,25 @@ public class AdsTrackingEvent {
   private Map<String, Object> payload;
   private ChannelType channel;
   private Long campaignID;
+  private Metrics metrics;
+
+  /**
+   * For Unit Testing
+   * @param url
+   * @param params
+   * @param metrics
+   * @throws NumberFormatException
+   */
+  public AdsTrackingEvent(URL url, Map<String, String[]> params, Metrics metrics) throws NumberFormatException {
+    this.metrics = metrics;
+    payload = new HashMap<>();
+    parsePath(url.getPath());
+    setTrackingCommonParams(params);
+    validateParams(params);
+  }
 
   public AdsTrackingEvent(URL url, Map<String, String[]> params) throws NumberFormatException {
+    if (metrics == null) metrics = ESMetrics.getInstance();
     payload = new HashMap<>();
     parsePath(url.getPath());
     setTrackingCommonParams(params);
@@ -52,7 +82,7 @@ public class AdsTrackingEvent {
    */
   private void parsePath(String path) {
     String[] parts = path.split("/");
-    setVersion(parts[1]); // parts[0] will be empty string because path starts with a "/"
+    setVersion(parts[2]); // parts[0] will be empty string because path starts with a "/"
   }
 
   private void setTrackingCommonParams(Map<String, String[]> params) {
@@ -74,6 +104,7 @@ public class AdsTrackingEvent {
           action = ChannelActionEnum.SERVE;
           break;
         default:
+          metrics.meter("TrackingFail", 1, Field.of(EventConstant.CHANNEL_ACTION, EventConstant.UNKNOWN));
           Validate.isTrue(false, "Unknown action encountered - " + type);
       }
     }
