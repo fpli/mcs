@@ -12,7 +12,8 @@ import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.{Gson, GsonBuilder}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
+import org.apache.spark.sql.{DataFrame, Encoder, Encoders, Row}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import rx.Observable
@@ -34,6 +35,7 @@ object ImkDumpJob extends App {
 }
 
 class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, params.mode){
+
   lazy val outputDir: String = params.outPutDir + "/" + params.channel + "/imkDump/"
 
   lazy val sparkDir: String = params.workDir + "/imkDump/" + params.channel + "/spark/"
@@ -73,6 +75,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     * Implemented by subclasses to run the spark job.
     */
   override def run(): Unit = {
+
     // max number of metafiles at one job
     val batchSize: Int = {
       val batchSize = properties.getProperty("imkdump.metafile.batchsize")
@@ -116,13 +119,22 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
         if (!guidList.isEmpty) {
           guidCguidMap = batchGetCguids(guidList)
         }
+        val coreDf = imkDumpCore(df)
 
-        val imkDf = imkDumpCore(df).repartition(params.partitions)
+        import org.apache.spark.sql.catalyst.encoders.RowEncoder
+        implicit val encoder: ExpressionEncoder[Row] = RowEncoder(coreDf.schema)
+        val imkDf = coreDf.mapPartitions((iter: Iterator[Row]) => {
+          if (metrics != null) {
+            metrics.flush()
+          }
+          iter
+        }).repartition(params.partitions)
 
         metrics.meter("imk.dump.out", imkDf.count())
 
         saveDFToFiles(imkDf, sparkDir, "gzip", "csv", "bel")
         val files = renameFiles(outputDir, sparkDir, date)
+
         DateFiles(date, files)
       }).toArray
 
@@ -133,7 +145,6 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
 
     if (metrics != null) {
       metrics.flush()
-      metrics.close()
     }
   }
 
