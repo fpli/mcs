@@ -84,10 +84,12 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         var df_click = df.filter(col("channel_action") === "CLICK")
         var df_impression = df.filter(col("channel_action") === "IMPRESSION")
 
+        val debug = properties.getProperty("epnnrt.debug").toBoolean
+
         var df_click_count_before_filter = 0L
         var df_impression_count_before_filter = 0L
 
-        if (logger.isDebugEnabled) {
+        if (debug) {
           df_click_count_before_filter = df_click.count()
           df_impression_count_before_filter = df_impression.count()
         }
@@ -109,7 +111,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
         var df_click_count_after_filter = 0L
         var df_impression_count_after_filter = 0L
-        if (logger.isDebugEnabled) {
+        if (debug) {
           df_click_count_after_filter = df_click.count()
           df_impression_count_after_filter = df_impression.count()
           metrics.meter("ClickFilterCount", df_click_count_before_filter - df_click_count_after_filter)
@@ -122,7 +124,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
         renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
 
-        if(logger.isDebugEnabled)
+        if(debug)
           metrics.meter("ImpressionSuccessfulCount", impressionDf.count())
 
         //4. build click dataframe  save dataframe to files and rename files
