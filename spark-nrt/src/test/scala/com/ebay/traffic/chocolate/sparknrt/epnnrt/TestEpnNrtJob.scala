@@ -16,12 +16,10 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 
 class TestEpnNrtJob extends BaseFunSuite{
   private val tmpPath = createTempPath()
- // private val tmpPath = "/Users/huiclu/tmp_2/tmp"
 
   private val inputDir = tmpPath + "/inputDir/"
   private val workDir = tmpPath + "/workDir/"
   private val resourceDir = tmpPath
-  private val outputDir = tmpPath + "/outputDir/"
 
   private val sdf = new SimpleDateFormat("yyyy-MM-dd")
 

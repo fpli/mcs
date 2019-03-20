@@ -144,7 +144,13 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
         //6. write the epn-nrt meta output file to hdfs
         val metaFile = new MetaFiles(Array(DateFiles(date, files)))
-        metadata.writeOutputMeta(metaFile, properties.getProperty("epnnrt.result.meta.outputdir"), Array(".epnnrt"))
+        try {
+          metadata.writeOutputMeta(metaFile, properties.getProperty("epnnrt.result.meta.outputdir"), Array(".epnnrt"))
+        } catch {
+          case e: Exception => {
+            logger.error("Error while writing output meta files" + e)
+          }
+        }
       })
     })
   }

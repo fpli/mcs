@@ -351,7 +351,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     ""
   }
 
-  def getValueFromRequest(request: String, key: String): String = {
+  /*def getValueFromRequest(request: String, key: String): String = {
     if (request != null) {
       val parts = request.split("\\|")
       for (i <- 0 until parts.length) {
@@ -368,7 +368,22 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       }
     }
     ""
+  }*/
+
+  def getValueFromRequest(request: String, key: String): String = {
+    if (request != null) {
+      val parts = request.split("\\|")
+      for (i <- 0 until parts.length) {
+        val part = parts(i)
+        val splits = part.split(":")
+        if (splits.length >= 2)
+          if(splits(0).trim.equalsIgnoreCase(key))
+            return part.substring(part.indexOf(":") + 1)
+      }
+    }
+    ""
   }
+
 
   def getUserQueryTxt(uri: String, action: String): String = {
     var value = getQueryParam(uri, "item")
