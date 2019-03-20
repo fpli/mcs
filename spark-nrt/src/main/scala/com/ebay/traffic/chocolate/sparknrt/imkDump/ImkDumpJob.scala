@@ -168,6 +168,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("cguid", getCguidUdf(col("cguid"), col("guid")))
       .drop("lang_cd")
       .filter(judegNotEbaySitesUdf(col("referer")))
+      .filter(judgeCGuidNotNullUdf(col("cguid")))
 
     for (i <- 1 to 20) {
       val columnName = "flex_field_" + i
@@ -201,6 +202,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val judegNotEbaySitesUdf: UserDefinedFunction = udf((referer: String) => tools.judgeNotEbaySites(referer))
   val needQueryCBToGetCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => StringUtils.isEmpty(cguid) && StringUtils.isNotEmpty(guid))
   val getCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => getCguid(cguid, guid))
+  val judgeCGuidNotNullUdf: UserDefinedFunction = udf((cguid: String) => judgeCGuidNotNull(cguid))
   /**
     * override renameFiles to have special output file name for TD
     * @param outputDir final destination
@@ -230,6 +232,20 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
         target.toString
       })
     files
+  }
+
+  /**
+    * filder empty cguid traffic
+    * @param cguid cguid
+    * @return
+    */
+  def judgeCGuidNotNull(cguid: String): Boolean = {
+    if (StringUtils.isEmpty(cguid)) {
+      metrics.meter("imk.dump.nullCguid", 1)
+      false
+    }  else {
+      true
+    }
   }
 
   /**
