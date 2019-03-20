@@ -98,8 +98,12 @@ public class CollectionService {
       referer = endUserContext.getReferer();
     }
 
+    // TODO: return 201 for now for the no referer case. Need investigation further.
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
-      logError(ErrorType.NO_REFERER);
+      //logError(ErrorType.NO_REFERER);
+      logger.warn(ErrorType.NO_REFERER.getErrorMessage());
+      metrics.meter(ErrorType.NO_REFERER.getErrorKey());
+      referer = "";
     }
 
     String userAgent = endUserContext.getUserAgent();
@@ -145,7 +149,7 @@ public class CollectionService {
     // parse channel from query mkcid
     // no mkcid, accepted
     if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
-      logger.error(Errors.ERROR_NO_MKCID);
+      logger.warn(Errors.ERROR_NO_MKCID);
       metrics.meter("NoMkcidParameter");
       return true;
     }
@@ -153,7 +157,7 @@ public class CollectionService {
     // invalid mkcid, show error and accept
     channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
     if (channelType == null) {
-      logger.error(Errors.ERROR_INVALID_MKCID);
+      logger.warn(Errors.ERROR_INVALID_MKCID);
       metrics.meter("InvalidMkcid");
       return true;
     }
@@ -165,11 +169,11 @@ public class CollectionService {
         String rawRotationId = parameters.get(Constants.MKRID).get(0);
         rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
       } catch (Exception e) {
-        logger.error(Errors.ERROR_INVALID_MKRID);
+        logger.warn(Errors.ERROR_INVALID_MKRID);
         metrics.meter("InvalidMkrid");
       }
     } else {
-      logger.error(Errors.ERROR_NO_MKRID);
+      logger.warn(Errors.ERROR_NO_MKRID);
       metrics.meter("NoMkrid");
     }
 
@@ -272,7 +276,7 @@ public class CollectionService {
         // populate device info
         CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
       } catch (Exception ex) {
-        logger.error("Error when tracking ubi", ex);
+        logger.warn("Error when tracking ubi", ex);
         metrics.meter("ErrorTrackUbi");
       }
     } else {
@@ -295,7 +299,7 @@ public class CollectionService {
    * @throws Exception exception with error key
    */
   private void logError(ErrorType errorType) throws Exception {
-    logger.error(errorType.getErrorMessage());
+    logger.warn(errorType.getErrorMessage());
     metrics.meter(errorType.getErrorKey());
     throw new Exception(errorType.getErrorKey());
   }

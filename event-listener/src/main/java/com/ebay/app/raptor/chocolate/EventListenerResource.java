@@ -6,6 +6,7 @@ import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
+import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.raptor.opentracing.Tags;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -31,7 +32,7 @@ import javax.ws.rs.core.Response;
 @Path("/v1")
 @Consumes(MediaType.APPLICATION_JSON)
 public class EventListenerResource implements EventsApi {
-  private static final Logger logger = LoggerFactory.getLogger(CollectionService.class);
+  private static final Logger logger = LoggerFactory.getLogger(EventListenerResource.class);
   @Autowired
   private CollectionService collectionService;
 
@@ -53,18 +54,21 @@ public class EventListenerResource implements EventsApi {
   @Override
   public Response event(Event body) {
     Tracer tracer = GlobalTracer.get();
-    try(Scope scope = tracer.buildSpan("mktCollectionSvc").withTag(Tags.TYPE.getKey(), "URL").startActive(true)) {
+    try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "event").startActive(true)) {
       Span span = scope.span();
-      Response res;
+      Response res = null;
       try {
         collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
-        return res;
       } catch (Exception e) {
-        logger.error(e.getMessage(), e);
-        Tags.STATUS.set(span, e.getClass().getSimpleName());
-        throw errorFactoryV3.makeException(e.getMessage());
+        logger.warn(e.getMessage(), e);
+        Tags.STATUS.set(span, e.getMessage());
+        // show warning in cal
+        SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
+        res = errorFactoryV3.makeWarnResponse(e.getMessage());
+      } finally {
+        return res;
       }
     }
   }

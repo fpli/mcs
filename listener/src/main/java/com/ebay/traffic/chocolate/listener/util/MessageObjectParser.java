@@ -171,7 +171,7 @@ public class MessageObjectParser {
     }
 
     //parse cguid and tguid from response headers; if null, parse from request headers; if cguid is still null; parse from location
-    private String getGuid(String cookieRequestHeader, String cookieResponseHeader, String location, String guid) {
+    public String getGuid(String cookieRequestHeader, String cookieResponseHeader, String location, String guid) {
         String result = null;
         if (cookieResponseHeader != null && !cookieResponseHeader.isEmpty()) {
             String[] splits = cookieResponseHeader.split(guid + "/");

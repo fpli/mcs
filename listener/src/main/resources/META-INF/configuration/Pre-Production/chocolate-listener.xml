@@ -122,4 +122,10 @@
     <description>Pid file path.</description>
   </property>
 
+  <property>
+    <name>chocolate.listener.couchbase.datasource</name>
+    <value>appdldevicescbdbhost</value>
+    <description>Couchbase data source</description>
+  </property>
+
 </configuration>
