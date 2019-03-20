@@ -64,8 +64,9 @@ public class MessageObjectParser {
         // cguid, guid
         String cookieRequestHeader = clientRequest.getHeader("Cookie");
         String cookieResponseHeader = proxyResponse.getHeader("Set-Cookie");
-        record.setCguid(getGuid(cookieRequestHeader, cookieResponseHeader, "cguid"));
-        record.setGuid(getGuid(cookieRequestHeader, cookieResponseHeader, "tguid"));
+        String location = proxyResponse.getHeader("Location");
+        record.setCguid(getGuid(cookieRequestHeader, cookieResponseHeader, location, "cguid"));
+        record.setGuid(getGuid(cookieRequestHeader, cookieResponseHeader, null, "tguid"));
 
         // client remote IP
         record.setRemoteIp(getRemoteIp(clientRequest));
@@ -169,8 +170,8 @@ public class MessageObjectParser {
         return remoteIp == null ? "" : remoteIp;
     }
 
-    //parse CGUID from response headers, if null, parse from request headers
-    private String getGuid(String cookieRequestHeader, String cookieResponseHeader, String guid) {
+    //parse cguid and tguid from response headers; if null, parse from request headers; if cguid is still null; parse from location
+    private String getGuid(String cookieRequestHeader, String cookieResponseHeader, String location, String guid) {
         String result = null;
         if (cookieResponseHeader != null && !cookieResponseHeader.isEmpty()) {
             String[] splits = cookieResponseHeader.split(guid + "/");
@@ -180,6 +181,12 @@ public class MessageObjectParser {
         }
         if (result == null && cookieRequestHeader != null && !cookieRequestHeader.isEmpty()) {
             String[] splits = cookieRequestHeader.split(guid + "/");
+            if (splits.length > 1) {
+                result = splits[1].substring(0, 32);
+            }
+        }
+        if (result == null && location != null && !location.isEmpty() && guid == "cguid") {
+            String[] splits = location.split(guid + "=");
             if (splits.length > 1) {
                 result = splits[1].substring(0, 32);
             }
