@@ -20,7 +20,7 @@
     {
       "name": "rvr_id",
       "dataType": "long",
-      "default": null
+      "default": 0
     },
     {
       "name": "event_dt",
@@ -35,12 +35,12 @@
     {
       "name": "rvr_cmnd_type_cd",
       "dataType": "integer",
-      "default": null
+      "default": 0
     },
     {
       "name": "rvr_chnl_type_cd",
       "dataType": "integer",
-      "default": null
+      "default": 0
     },
     {
       "name": "cntry_cd",
@@ -80,7 +80,7 @@
     {
       "name": "brwsr_type_id",
       "dataType": "integer",
-      "default": null
+      "default": 0
     },
     {
       "name": "brwsr_name",
