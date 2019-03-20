@@ -98,8 +98,10 @@ public class CollectionService {
       referer = endUserContext.getReferer();
     }
 
+    // TODO: return 201 for now for the no referer case. Need investigation further.
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
-      logError(ErrorType.NO_REFERER);
+      //logError(ErrorType.NO_REFERER);
+      referer = "";
     }
 
     String userAgent = endUserContext.getUserAgent();
