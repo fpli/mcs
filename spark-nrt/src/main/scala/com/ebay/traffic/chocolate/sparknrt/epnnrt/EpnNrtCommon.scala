@@ -351,25 +351,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     ""
   }
 
-  /*def getValueFromRequest(request: String, key: String): String = {
-    if (request != null) {
-      val parts = request.split("\\|")
-      for (i <- 0 until parts.length) {
-        val part = parts(i)
-        val splits = part.split(":")
-        if (splits.length == 2 && splits(0).trim.equalsIgnoreCase(key))
-          return splits(1)
-          // in case |location:http://www.ebay.com|
-        else if (splits.length == 3 && splits(0).trim.equalsIgnoreCase(key))
-          return splits(1).concat(":").concat(splits(2))
-          // in case |location:http://www.ebay.com&mpre=http://www.amazon.com|
-        else if(splits.length == 4 && splits(0).trim.equalsIgnoreCase(key))
-          return splits(1).concat(":").concat(splits(2)).concat(":").concat(splits(3))
-      }
-    }
-    ""
-  }*/
-
   def getValueFromRequest(request: String, key: String): String = {
     if (request != null) {
       val parts = request.split("\\|")
