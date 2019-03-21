@@ -73,6 +73,13 @@ class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
     })
   }
 
+  def writeOutputMeta(outputMeta: MetaFiles, outputMetaDir: String, suffixArray: Array[String] = Array()):Unit = {
+    val time = System.currentTimeMillis()
+    suffixArray.foreach(suffix => {
+      writeMetaFiles(outputMeta, outputMetaDir + time + ".meta" + suffix)
+    })
+  }
+
   def deleteDedupeOutputMeta(metaFile: String) = {
     fs.delete(new Path(metaFile), true)
   }
