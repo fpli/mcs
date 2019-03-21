@@ -264,6 +264,20 @@
             <artifactId>kafka-clients</artifactId>
         </dependency>
 
+        <!--for auth-->
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-core-auth-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-cos-token-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-cos-usercontext-starter</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
