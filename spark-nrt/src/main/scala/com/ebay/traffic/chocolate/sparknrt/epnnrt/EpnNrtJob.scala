@@ -104,9 +104,8 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
             })
           }
         } catch {
-          case e: NumberFormatException => {
+          case e: NumberFormatException =>
             logger.error("Illegal filter timestamp: " + params.filterTime + e)
-          }
         }
 
         var df_click_count_after_filter = 0L
@@ -133,7 +132,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
 
         val files = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
-        if(logger.isDebugEnabled)
+        if(debug)
           metrics.meter("ClickSuccessfulCount", clickDf.count())
 
         // 5.delete the finished meta files
@@ -146,11 +145,13 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         val metaFile = new MetaFiles(Array(DateFiles(date, files)))
         try {
           metadata.writeOutputMeta(metaFile, properties.getProperty("epnnrt.result.meta.outputdir"), Array(".epnnrt"))
+          logger.info("successfully write output meta to HDFS, job finished")
         } catch {
           case e: Exception => {
             logger.error("Error while writing output meta files" + e)
           }
         }
+
       })
     })
   }

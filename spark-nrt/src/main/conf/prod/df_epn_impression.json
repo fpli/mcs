@@ -252,7 +252,7 @@
     {
       "name": "MPLX_TIMEOUT_FLAG",
       "dataType": "string",
-      "default": "0"
+      "default": ""
     },
     {
       "name": "CB_KW",
@@ -306,12 +306,12 @@
     {
       "name": "APP_NAME",
       "dataType": "string",
-      "default": "0"
+      "default": ""
     },
     {
       "name": "APP_VERSION",
       "dataType": "string",
-      "default": "0"
+      "default": ""
     },
     {
       "name": "DEVICE_NAME",
@@ -340,7 +340,7 @@
     {
       "name": "SDK_VERSION",
       "dataType": "string",
-      "default": "0"
+      "default": ""
     },
     {
       "name": "AMS_TRANS_RSN_CD",
