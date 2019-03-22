@@ -284,6 +284,55 @@ public class TestHelper {
   }
 
   /**
+   * Create filter message
+   *
+   * @param channelType channel type
+   * @param channelAction channel action
+   * @param snapshotId the snapshot ID
+   * @param timestamp the timestamp
+   * @param ip the ip addresss
+   * @param userAgent the user agent
+   * @return filter message
+   */
+  public static FilterMessage newFilterMessage(ChannelType channelType,
+                                               ChannelAction channelAction,
+                                               long snapshotId,
+                                               long timestamp,
+                                               String ip,
+                                               String userAgent) {
+    FilterMessage message = new FilterMessage();
+    message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
+    message.setTimestamp(timestamp);
+    message.setUserId(1L);
+    message.setCguid("");
+    message.setGuid("");
+    message.setRemoteIp(ip);
+    message.setLangCd("");
+    message.setUserAgent(userAgent);
+    message.setGeoId(1L);
+    message.setUdid("");
+    message.setReferer("");
+    message.setCampaignId(1L);
+    message.setPublisherId(1L);
+    message.setSiteId(1L);
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-eBay-Client-IP: " + ip +
+        "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
+    message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
+    message.setResponseHeaders("");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setRtRuleFlags(0L);
+    message.setNrtRuleFlags(0L);
+    message.setSnid("testsnid");
+    return message;
+  }
+
+  /**
    * Create filter message v1
    *
    * @param channelType channel type
@@ -342,7 +391,7 @@ public class TestHelper {
                                                long timestamp) {
     FilterMessage message = new FilterMessage();
     message.setSnapshotId(snapshotId);
-    message.setShortSnapshotId(123L);
+    message.setShortSnapshotId(snapshotId);
     message.setTimestamp(timestamp);
     message.setUserId(1L);
     message.setCguid(cguid);
@@ -355,18 +404,16 @@ public class TestHelper {
     message.setReferer("");
     message.setCampaignId(campaignId);
     message.setPublisherId(publisherId);
+    message.setRequestHeaders("Referer:http://translate.google.com.mx|X-Purpose:preview|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/92d9dfe51670a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/47a11c671620a93c91006917fffa2a915d116016^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:10.108.159.177|User-Agent:Shuang-UP.Browser-baiduspider-ebaywinphocore");
+    message.setUri("http://rover.qa.ebay.com/rover/1/5282-53481-19255-0/1?icep_ff3=9&toolid=12345&customid=24342&icep_uq=flashlight&icep_sellerId=&icep_ex_kw=&icep_sortBy=12&icep_catId=&icep_minPrice=&icep_maxPrice=&ipn=psmain&icep_vectorid=229508&kwid=902099&mtid=824&kw=lg&item=&uq=2&ext=4365&satitle=23435&FF2=https%3A%2F%2Fm.gsmarena.com%2Fsamsung_galaxy_s9-8966.php&ff3=");
+    message.setResponseHeaders("Cache-Control:private,no-cache,no-store|location:https://rover.ebay.com.sg/rover/1/3423-53474-19255-0/1?lgeo=1&toolid=10044&customid=&item=253635703200&ff3=2&campid=5336871800&mpre=https%3A%2F%2Fwww.ebay.com.sg&cguid=279af33e1690a88ba1141e17df25744e&rvrrefts=279af3661690a88ba1132b79ffe2070c&dashenId=6505984835508625408&dashenCnt=0");
     message.setSiteId(1L);
     message.setLandingPageUrl("");
     message.setSrcRotationId(1L);
     message.setDstRotationId(2L);
-    message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|" +
-      "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
-    message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
-    message.setResponseHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|Set-Cookie: cguid/" + cguid +
-      "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
     message.setChannelAction(channelAction);
     message.setChannelType(channelType);
-    message.setHttpMethod(HttpMethod.POST);
+    message.setHttpMethod(HttpMethod.GET);
     message.setRtRuleFlags(0L);
     message.setNrtRuleFlags(0L);
     message.setSnid("snidtest");
@@ -525,6 +572,62 @@ public class TestHelper {
     message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
     message.setResponseHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-eBay-Client-IP: " + ip + "|Cookie: cguid/" + cguid +
       "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setRtRuleFlags(0L);
+    message.setNrtRuleFlags(0L);
+    message.setSnid("snidtest");
+    return message;
+  }
+
+  /**
+   * Create filter message
+   *
+   * @param channelType channel type
+   * @param channelAction channel action
+   * @param snapshotId the snapshot ID
+   * @param publisherId the publisher ID
+   * @param campaignId the campaign ID
+   * @param timestamp the timestamp
+   * @param ip the ip addresss
+   * @param cguid the CGUID in cookie
+   * @param userAgent the user agent in the request header
+   * @return filter message
+   */
+  public static FilterMessage newFilterMessage(ChannelType channelType,
+                                               ChannelAction channelAction,
+                                               long snapshotId,
+                                               long publisherId,
+                                               long campaignId,
+                                               long timestamp,
+                                               String ip,
+                                               String cguid,
+                                               String userAgent) {
+    FilterMessage message = new FilterMessage();
+    message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
+    message.setTimestamp(timestamp);
+    message.setUserId(1L);
+    message.setCguid(cguid);
+    message.setGuid("");
+    message.setRemoteIp(ip);
+    message.setLangCd("");
+    message.setUserAgent(userAgent);
+    message.setGeoId(1L);
+    message.setUdid("");
+    message.setReferer("");
+    message.setCampaignId(campaignId);
+    message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setRequestHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-eBay-Client-IP: " + ip +
+        "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
+    message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
+    message.setResponseHeaders("test_case_tag: filterAutomation|test_case_id: 1505705453524|X-eBay-Client-IP: " + ip + "|Cookie: cguid/" + cguid +
+        "|Accept: application/json|User-Agent: Mozilla+Compatible|Host: rover.qa.ebay.com|Proxy-Connection: keep-alive");
     message.setChannelAction(channelAction);
     message.setChannelType(channelType);
     message.setHttpMethod(HttpMethod.POST);

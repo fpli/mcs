@@ -62,7 +62,7 @@ class TestIPPubCappingRule extends BaseFunSuite {
 
   import sparkJob.spark.implicits._
 
-  ignore("test ip-pub capping rule") {
+  test("test ip-pub capping rule") {
     val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
 
     val dateFiles0 = new DateFiles("date=2018-01-01", Array("file://" + inputDir + "/date=2018-01-01/part-00000.snappy.parquet"))
@@ -167,11 +167,12 @@ class TestIPPubCappingRule extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 11L, 11L, 111L, timestamp2, "1.1.1.3", writer2_2)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 12L, 11L, 111L, timestamp3, "1.1.1.3", writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 13L, 11L, 111L, timestamp3, "1.1.1.3", writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 14L, 22L, 111L, timestamp3, "1.1.1.3", writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 15L, -1L, 111L, timestamp3, "1.1.1.3", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 13L, 11L, 111L, timestamp3, "1.1.1.3", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 14L, 11L, 111L, timestamp3, "1.1.1.3", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 15L, 22L, 111L, timestamp3, "1.1.1.3", writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 16L, -1L, 111L, timestamp3, "1.1.1.3", writer3)
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 16L, 11L, 111L, timestamp4, "1.1.1.2", writer4)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 17L, 11L, 111L, timestamp4, "1.1.1.2", writer4)
 
     writer1_1.close()
     writer1_2.close()
@@ -217,7 +218,7 @@ class TestIPPubCappingRule extends BaseFunSuite {
     df_31.show()
     df_32.show()
     assert(df_31.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S)).=!=(0)).count() == 0)
-    assert(df_32.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L)).=!=(0)).count() == 0)
+    assert(df_32.filter($"capping".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L)).=!=(0)).count() == 2)
     job_31.postTest()
     job_32.postTest()
 

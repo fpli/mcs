@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate;
 
+import com.ebay.raptor.dds.jaxrs.DDSTrackingFilter;
 import com.ebay.tracking.filter.TrackingServiceFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -50,6 +51,10 @@ public class EventListenerResourceConfig extends Application {
   private ContainerRequestFilter ddsFilter;
 
   @Autowired
+  @Qualifier("dds-tracking-filter")
+  private DDSTrackingFilter ddsTrackingFilter;
+
+  @Autowired
   @Qualifier("tracking-filter")
   private TrackingServiceFilter trackingFilter;
 
@@ -86,6 +91,7 @@ public class EventListenerResourceConfig extends Application {
     providers.add(userCtxFilter);
     providers.add(domainRequestFilter);
     providers.add(ddsFilter);
+    providers.add(ddsTrackingFilter);
     providers.add(trackingFilter);
     providers.add(userPrefsFilter);
     providers.add(userCulturalPrefsFilter);

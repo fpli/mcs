@@ -183,6 +183,25 @@
         <artifactId>logstash-logback-encoder</artifactId>
       </dependency>
 
+      <dependency>
+        <groupId>com.couchbase.client</groupId>
+        <artifactId>java-client</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.couchbase.client</groupId>
+        <artifactId>couchbase-client</artifactId>
+        <version>1.4.13</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.dukes</groupId>
+        <artifactId>dukes</artifactId>
+        <version>${dukes.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-dal-starter</artifactId>
+      </dependency>
+
       <!-- test -->
       <dependency>
         <groupId>com.ebay.traffic</groupId>
@@ -196,6 +215,13 @@
       <dependency>
         <groupId>org.apache.kafka</groupId>
         <artifactId>kafka_2.11</artifactId>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.couchbase.mock</groupId>
+        <artifactId>CouchbaseMock</artifactId>
+        <version>1.5.12</version>
         <scope>test</scope>
       </dependency>
 

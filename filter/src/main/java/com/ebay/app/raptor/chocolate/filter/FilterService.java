@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.filter;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.filter.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.filter.service.FilterContainer;
 import com.ebay.app.raptor.chocolate.filter.service.FilterWorker;
 import com.ebay.app.raptor.chocolate.filter.util.CouchbaseClient;
@@ -59,6 +60,7 @@ public class FilterService {
 
     ApplicationOptions.init();
     ESMetrics.init(ApplicationOptions.getInstance().getByNameString(METRICS_INDEX_PREFIX), ApplicationOptions.getInstance().getByNameString(ELASTICSEARCH_URL));
+    LBSClient.init();
     ApplicationOptions options = ApplicationOptions.getInstance();
     //currently we need not use zookeeper watch to adding new campaign publisher pair into couchbase, so disable zookeeper here
    // FilterZookeeperClient.init(options);

@@ -73,7 +73,7 @@ public class EBayRobotRule extends BaseFilterRule {
   /**
    * Match user agent string against the blacklist
    *
-   * @param uaString uaer agent string to match
+   * @param uaString user agent string to match
    * @return true if the user agent string passes the test
    */
   private boolean isUserAgentValid(String uaString) {

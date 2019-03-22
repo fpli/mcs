@@ -48,6 +48,7 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- dukes couchbase client need couchbase client version 2.5.5-->
         <dependency>
             <groupId>com.couchbase.client</groupId>
             <artifactId>java-client</artifactId>
@@ -165,7 +166,7 @@
         <dependency>
             <groupId>com.ebay.dukes</groupId>
             <artifactId>dukes</artifactId>
-            <version>develop_2.0.10-SNAPSHOT</version>
+            <version>${dukes.version}</version>
         </dependency>
 
     </dependencies>

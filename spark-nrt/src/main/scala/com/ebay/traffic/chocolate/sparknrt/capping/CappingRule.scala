@@ -38,4 +38,7 @@ object CappingRuleEnum extends Enumeration {
   val CGUIDCappingRule_L = Value(6)
   val SnidCappingRule_S = Value(7)
   val SnidCappingRule_L = Value(8)
+  val IPBrowserCappingRule_S = Value(9)
+  val IPBrowserCappingRule_M = Value(10)
+  val IPBrowserCappingRule_L = Value(11)
 }

@@ -24,10 +24,9 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
   val amsClickSchema: StructType = StructType(
     Seq(
       StructField("click_ts", StringType, nullable = true),
-      StructField("click_id", StringType, nullable = true),
       StructField("crltn_guid_txt", StringType, nullable = true),
       StructField("guid_txt", StringType, nullable = true),
-      StructField("user_id", StringType, nullable = true),
+      StructField("brwsr_name", StringType, nullable = true),
       StructField("clnt_rmt_ip", StringType, nullable = true),
       StructField("pblshr_id", StringType, nullable = true),
       StructField("rover_url_txt", StringType, nullable = true),
@@ -49,7 +48,10 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       StructField("nrt_rule_flag51", StringType, nullable = true),
       StructField("nrt_rule_flag53", StringType, nullable = true),
       StructField("nrt_rule_flag54", StringType, nullable = true),
-      StructField("nrt_rule_flag56", StringType, nullable = true)
+      StructField("nrt_rule_flag56", StringType, nullable = true),
+      StructField("nrt_rule_flag72", StringType, nullable = true),
+      StructField("nrt_rule_flag73", StringType, nullable = true),
+      StructField("nrt_rule_flag74", StringType, nullable = true)
     )
   )
 
@@ -138,10 +140,15 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       .withColumn("CGuidL", verifyByBitUdf1(lit(6), $"nrt_rule_flags", $"nrt_rule_flag53"))
       .withColumn("CGuidPubS", verifyByBitUdf1(lit(3), $"nrt_rule_flags", $"nrt_rule_flag54"))
       .withColumn("CGuidPubL", verifyByBitUdf1(lit(4), $"nrt_rule_flags", $"nrt_rule_flag56"))
+      .withColumn("IPBrowserS", verifyByBitUdf1(lit(9), $"nrt_rule_flags", $"nrt_rule_flag72"))
+      .withColumn("IPBrowserM", verifyByBitUdf1(lit(10), $"nrt_rule_flags", $"nrt_rule_flag73"))
+      .withColumn("IPBrowserL", verifyByBitUdf1(lit(11), $"nrt_rule_flags", $"nrt_rule_flag74"))
       .withColumn("SnidS", verifyByBitUdf1(lit(7), $"nrt_rule_flags", $"rt_rule_flag12"))
       .withColumn("SnidL", verifyByBitUdf1(lit(8), $"nrt_rule_flags", $"rt_rule_flag13"))
       .withColumn("Prefetch", verifyByBitUdf1(lit(1), $"rt_rule_flags", $"rt_rule_flag2"))
-      .withColumn("IABBot", verifyByBitUdf2(lit(3), $"rt_rule_flags", $"rt_rule_flag3", $"rt_rule_flag4"))
+      .withColumn("TwoPass", verifyByBitUdf2(lit(3), $"rt_rule_flags", $"rt_rule_flag3", $"rt_rule_flag4"))
+      .withColumn("ValidBrowser", verifyByBitUdf1(lit(14), $"rt_rule_flags", $"rt_rule_flag3"))
+      .withColumn("IABRobot", verifyByBitUdf1(lit(15), $"rt_rule_flags", $"rt_rule_flag4"))
       .withColumn("Internal", verifyByBitUdf1(lit(2), $"rt_rule_flags", $"rt_rule_flag7"))
       .withColumn("MissingReferrer", verifyByBitUdf1(lit(12), $"rt_rule_flags", $"rt_rule_flag8"))
       .withColumn("Protocol", verifyByBitUdf1(lit(11), $"rt_rule_flags", $"rt_rule_flag1"))
@@ -167,11 +174,16 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     val cGuidL = df.where($"CGuidL" === false).count()
     val cGuidPubS = df.where($"CGuidPubS" === false).count()
     val cGuidPubL = df.where($"CGuidPubL" === false).count()
+    val ipBrowserS = df.where($"IPBrowserS" === false).count()
+    val ipBrowserM = df.where($"IPBrowserM" === false).count()
+    val ipBrowserL = df.where($"IPBrowserL" === false).count()
     val snidS = df.where($"SnidS" === false).count()
     val snidL = df.where($"SnidL" === false).count()
 
     val prefetch = df.where($"Prefetch" === false).count()
-    val iabBot = df.where($"IABBot" === false).count()
+    val twoPass = df.where($"TwoPass" === false).count()
+    val validBrowser = df.where($"ValidBrowser" === false).count()
+    val iabRobot = df.where($"IABRobot" === false).count()
     val internal = df.where($"Internal" === false).count()
     val missingReferrer = df.where($"MissingReferrer" === false).count()
     val protocol = df.where($"Protocol" === false).count()
@@ -202,11 +214,16 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       outputStream.writeChars("CGuidL inconsistent: " + cGuidL.toFloat/total + "\n")
       outputStream.writeChars("CGuidPubS inconsistent: " + cGuidPubS.toFloat/total + "\n")
       outputStream.writeChars("CGuidPubL inconsistent: " + cGuidPubL.toFloat/total + "\n")
+      outputStream.writeChars("IPBrowserS inconsistent: " + ipBrowserS.toFloat/total + "\n")
+      outputStream.writeChars("IPBrowserM inconsistent: " + ipBrowserM.toFloat/total + "\n")
+      outputStream.writeChars("IPBrowserL inconsistent: " + ipBrowserL.toFloat/total + "\n")
       outputStream.writeChars("SnidS inconsistent: " + snidS.toFloat/total + "\n")
       outputStream.writeChars("SnidL inconsistent: " + snidL.toFloat/total + "\n")
 
       outputStream.writeChars("Prefetch inconsistent: " + prefetch.toFloat/total + "\n")
-      outputStream.writeChars("IABBot inconsistent: " + iabBot.toFloat/total + "\n")
+      outputStream.writeChars("TwoPass inconsistent: " + twoPass.toFloat/total + "\n")
+      outputStream.writeChars("ValidBrowser inconsistent: " + validBrowser.toFloat/total + "\n")
+      outputStream.writeChars("IABRobot inconsistent: " + iabRobot.toFloat/total + "\n")
       outputStream.writeChars("Internal inconsistent: " + internal.toFloat/total + "\n")
       outputStream.writeChars("MissingReferrer inconsistent: " + missingReferrer.toFloat/total + "\n")
       outputStream.writeChars("Protocol inconsistent: " + protocol.toFloat/total + "\n")
@@ -230,11 +247,16 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       val cGuidL_choco = df1.where($"nrt_rule_flags".bitwiseAND(64) =!= 0).count()
       val cGuidPubS_choco = df1.where($"nrt_rule_flags".bitwiseAND(8) =!= 0).count()
       val cGuidPubL_choco = df1.where($"nrt_rule_flags".bitwiseAND(16) =!= 0).count()
+      val ipBrowserS_choco = df1.where($"nrt_rule_flags".bitwiseAND(512) =!= 0).count()
+      val ipBrowserM_choco = df1.where($"nrt_rule_flags".bitwiseAND(1024) =!= 0).count()
+      val ipBrowserL_choco = df1.where($"nrt_rule_flags".bitwiseAND(2048) =!= 0).count()
       val snidS_choco = df1.where($"nrt_rule_flags".bitwiseAND(128) =!= 0).count()
       val snidL_choco = df1.where($"nrt_rule_flags".bitwiseAND(256) =!= 0).count()
 
       val prefetch_choco = df1.where($"rt_rule_flags".bitwiseAND(2) =!= 0).count()
-      val iabBot_choco = df1.where($"rt_rule_flags".bitwiseAND(8) =!= 0).count()
+      val twoPass_choco = df1.where($"rt_rule_flags".bitwiseAND(8) =!= 0).count()
+      val validBrowser_choco = df1.where($"rt_rule_flags".bitwiseAND(16384) =!= 0).count()
+      val iabRobot_choco = df1.where($"rt_rule_flags".bitwiseAND(32768) =!= 0).count()
       val internal_choco = df1.where($"rt_rule_flags".bitwiseAND(4) =!= 0).count()
       val missingReferrer_choco = df1.where($"rt_rule_flags".bitwiseAND(4096) =!= 0).count()
       val protocol_choco = df1.where($"rt_rule_flags".bitwiseAND(2048) =!= 0).count()
@@ -250,11 +272,16 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
       val cGuidL_epn = df2.where($"nrt_rule_flag53" === 1).count()
       val cGuidPubS_epn = df2.where($"nrt_rule_flag54" === 1).count()
       val cGuidPubL_epn = df2.where($"nrt_rule_flag56" === 1).count()
+      val ipBrowserS_epn = df2.where($"nrt_rule_flag72" === 1).count()
+      val ipBrowserM_epn = df2.where($"nrt_rule_flag73" === 1).count()
+      val ipBrowserL_epn = df2.where($"nrt_rule_flag74" === 1).count()
       val snidS_epn = df2.where($"rt_rule_flag12" === 1).count()
       val snidL_epn = df2.where($"rt_rule_flag13" === 1).count()
 
       val prefetch_epn = df2.where($"rt_rule_flag2" === 1).count()
-      val iabBot_epn = df2.where($"rt_rule_flag3" === 1 or $"rt_rule_flag4" === 1).count()
+      val twoPass_epn = df2.where($"rt_rule_flag3" === 1 or $"rt_rule_flag4" === 1).count()
+      val validBrowser_epn = df2.where($"rt_rule_flag3" === 1).count()
+      val iabRobot_epn = df2.where($"rt_rule_flag4" === 1).count()
       val internal_epn = df2.where($"rt_rule_flag7" === 1).count()
       val missingReferrer_epn = df2.where($"rt_rule_flag8" === 1).count()
       val protocol_epn = df2.where($"rt_rule_flag1" === 1).count()
@@ -281,14 +308,24 @@ class RuleVerifier(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
           s"CGuidPubS inconsistent: " + (cGuidPubS_choco - cGuidPubS_epn).toFloat / count1Nodedupe + "\n")
         outputStream.writeChars(s"cGuidPubL_choco: $cGuidPubL_choco, cGuidPubL_epn: $cGuidPubL_epn, " +
           s"CGuidPubL inconsistent: " + (cGuidPubL_choco - cGuidPubL_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"ipBrowserS_choco: $ipBrowserS_choco, ipBrowserS_epn: $ipBrowserS_epn, " +
+          s"IPBrowserS inconsistent: " + (ipBrowserS_choco - ipBrowserS_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"ipBrowserM_choco: $ipBrowserM_choco, ipBrowserM_epn: $ipBrowserM_epn, " +
+          s"IPBrowserM inconsistent: " + (ipBrowserM_choco - ipBrowserM_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"ipBrowserL_choco: $ipBrowserL_choco, ipBrowserL_epn: $ipBrowserL_epn, " +
+          s"IPBrowserL inconsistent: " + (ipBrowserL_choco - ipBrowserL_epn).toFloat / count1Nodedupe + "\n")
         outputStream.writeChars(s"snidS_choco: $snidS_choco, snidS_epn: $snidS_epn, " +
           s"SnidS inconsistent: " + (snidS_choco - snidS_epn).toFloat / count1Nodedupe + "\n")
         outputStream.writeChars(s"snidL_choco: $snidL_choco, snidL_epn: $snidL_epn, " +
           s"SnidL inconsistent: " + (snidL_choco - snidL_epn).toFloat / count1Nodedupe + "\n")
         outputStream.writeChars(s"prefetch_choco: $prefetch_choco, prefetch_epn: $prefetch_epn, " +
           s"Prefetch inconsistent: " + (prefetch_choco - prefetch_epn).toFloat / count1Nodedupe + "\n")
-        outputStream.writeChars(s"iabBot_choco: $iabBot_choco, iabBot_epn: $iabBot_epn, " +
-          s"IABBot inconsistent: " + (iabBot_choco - iabBot_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"twoPass_choco: $twoPass_choco, twoPass_epn: $twoPass_epn, " +
+          s"TwoPass inconsistent: " + (twoPass_choco - twoPass_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"validBrowser_choco: $validBrowser_choco, validBrowser_epn: $validBrowser_epn, " +
+          s"ValidBrowser inconsistent: " + (validBrowser_choco - validBrowser_epn).toFloat / count1Nodedupe + "\n")
+        outputStream.writeChars(s"iabRobot_choco: $iabRobot_choco, iabRobot_epn: $iabRobot_epn, " +
+          s"IABRobot inconsistent: " + (iabRobot_choco - iabRobot_epn).toFloat / count1Nodedupe + "\n")
         outputStream.writeChars(s"internal_choco: $internal_choco, internal_epn: $internal_epn, " +
           s"Internal inconsistent: " + (internal_choco - internal_epn).toFloat / count1Nodedupe + "\n")
         outputStream.writeChars(s"missingReferrer_choco: $missingReferrer_choco, missingReferrer_epn: $missingReferrer_epn, " +
