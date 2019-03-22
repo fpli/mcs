@@ -359,7 +359,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         val splits = part.split(":")
         if (splits.length >= 2)
           if(splits(0).trim.equalsIgnoreCase(key))
-            return part.substring(part.indexOf(":") + 1)
+            return part.substring(part.indexOf(":") + 1).trim
       }
     }
     ""
