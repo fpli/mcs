@@ -40,7 +40,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
 
   lazy val sparkDir: String = params.workDir + "/imkDump/" + params.channel + "/spark/"
 
-  lazy val METRICS_INDEX_PREFIX = "imkdump-metrics-"
+  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
 
   @transient var properties: Properties = {
     val properties = new Properties()
@@ -179,7 +179,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("cguid", getCguidUdf(col("cguid"), col("guid")))
       .drop("lang_cd")
       .filter(judegNotEbaySitesUdf(col("referer")))
-      .filter(judgeCGuidNotNullUdf(col("cguid")))
+//      .filter(judgeCGuidNotNullUdf(col("cguid")))
 
     for (i <- 1 to 20) {
       val columnName = "flex_field_" + i
@@ -274,10 +274,12 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
         val result = guidCguidMap.getOrDefault(guid, "")
         if (StringUtils.isNotEmpty(result)) {
           metrics.meter("imk.dump.gotCguidByGuid", 1)
+          result
+        } else {
+          guid
         }
-        result
       } else {
-        ""
+        guid
       }
     }
   }

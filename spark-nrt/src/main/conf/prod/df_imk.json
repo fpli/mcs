@@ -20,7 +20,7 @@
     {
       "name": "rvr_id",
       "dataType": "long",
-      "default": 0
+      "default": ""
     },
     {
       "name": "event_dt",
@@ -34,13 +34,13 @@
     },
     {
       "name": "rvr_cmnd_type_cd",
-      "dataType": "integer",
-      "default": 0
+      "dataType": "string",
+      "default": ""
     },
     {
       "name": "rvr_chnl_type_cd",
-      "dataType": "integer",
-      "default": 0
+      "dataType": "string",
+      "default": ""
     },
     {
       "name": "cntry_cd",
@@ -80,7 +80,7 @@
     {
       "name": "brwsr_type_id",
       "dataType": "integer",
-      "default": 0
+      "default": -99
     },
     {
       "name": "brwsr_name",
@@ -119,8 +119,8 @@
     },
     {
       "name": "pblshr_id",
-      "dataType": "integer",
-      "default": 0
+      "dataType": "string",
+      "default": ""
     },
     {
       "name": "lndng_page_dmn_name",
