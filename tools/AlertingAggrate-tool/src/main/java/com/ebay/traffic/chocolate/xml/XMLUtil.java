@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.xml;
 
-import com.ebay.traffic.chocolate.channel.elasticsearch.ESReport;
-import org.dom4j.Attribute;
+import com.ebay.traffic.chocolate.pojo.Metric;
+import com.ebay.traffic.chocolate.pojo.Project;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -10,9 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * @author lxiong1
@@ -21,8 +19,8 @@ public class XMLUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(XMLUtil.class);
 
-  public static HashMap<String, ArrayList<String>> read(String fileName) {
-    HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
+  public static LinkedList<Project> read(String fileName) {
+    LinkedList<Project> projectList = new LinkedList<Project>();
 
     SAXReader reader = new SAXReader();
     try {
@@ -30,31 +28,39 @@ public class XMLUtil {
       Element projects = document.getRootElement();
       Iterator it = projects.elementIterator();
       while (it.hasNext()) {
+        ArrayList<Metric> list = new ArrayList<Metric>();
         Element project = (Element) it.next();
-        String name = project.attribute("name").getValue();
-        String filterMetrics= project.attribute("filter").getValue();
-
-        map.put(name, getFilterMerticList(filterMetrics));
+        String project_name = project.attribute("name").getValue();
+        String source = project.attribute("source").getValue();
+        List<Element> metrics= project.elements("metric");
+        for(Element elem: metrics){
+          Metric metric = new Metric();
+          metric.setProject_name(project_name);
+          metric.setName(elem.attribute("name").getValue());
+          metric.setValue(elem.attribute("value").getValue());
+          metric.setCondition(getCondition(elem.attribute("condition").getValue()));
+          metric.setThreshold(Long.parseLong(elem.attribute("threadHold").getValue()));
+          list.add(metric);
+        }
+        Project pro = new Project();
+        pro.setName(project_name);
+        pro.setSource(source);
+        pro.setList(list);
+       projectList.add(pro);
       }
     } catch (DocumentException e) {
       e.printStackTrace();
     }
 
-    return map;
+    return projectList;
   }
 
-  private static ArrayList<String> getFilterMerticList(String filterMetrics) {
-    ArrayList<String> filterMerticList = new ArrayList<String>();
-    if(filterMetrics == null || filterMetrics.length() < 1){
-      return filterMerticList;
+  private static String getCondition(String condition) {
+    if(condition == null){
+      return "";
+    }else {
+      return condition;
     }
-
-    String[] filterMetricArr = filterMetrics.split(",");
-    for (String filterMetric:filterMetricArr){
-      filterMerticList.add(filterMetric);
-    }
-
-    return filterMerticList;
   }
 
 }

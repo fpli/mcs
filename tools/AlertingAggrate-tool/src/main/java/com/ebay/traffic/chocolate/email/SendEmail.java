@@ -1,6 +1,8 @@
 package com.ebay.traffic.chocolate.email;
 
+import com.ebay.traffic.chocolate.pojo.Metric;
 import com.ebay.traffic.chocolate.pojo.MetricCount;
+import com.ebay.traffic.chocolate.util.HTMLParse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +38,19 @@ public class SendEmail {
     return sendEmail;
   }
 
-  public void send(ArrayList<MetricCount> list, HashMap<String, ArrayList<String>> map) {
+  public void send(HashMap<String, ArrayList<MetricCount>> map) {
+    if(toEmail == null || toEmail.length() < 1){
+      return;
+    }
+
+    String[] users = toEmail.split(",");
+    for (String user: users) {
+      send(map, user);
+    }
+
+  }
+
+  public void send(HashMap<String, ArrayList<MetricCount>> map, String emailAccount) {
 
     // 发件人电子邮箱
     String from = "lxiong1@ebay.com";
@@ -59,13 +73,13 @@ public class SendEmail {
 
       // Set To: 头部头字段
       message.addRecipient(Message.RecipientType.TO,
-              new InternetAddress(toEmail));
+              new InternetAddress(emailAccount));
 
       // Set Subject: 头部头字段
       message.setSubject("Chocolate Alerting Aggregation!");
 
       // 设置消息体
-      message.setText(parseData(list));
+      message.setContent(HTMLParse.parse(map), "text/html");
 
       // 发送消息
       Transport.send(message);
@@ -73,17 +87,6 @@ public class SendEmail {
     }catch (MessagingException mex) {
       mex.printStackTrace();
     }
-  }
-
-  private String parseData(ArrayList<MetricCount> list) {
-
-    String text = "";
-
-    for (MetricCount metricCount: list){
-      text = text + metricCount.getName() + ": " + metricCount.getValue() + "\n";
-    }
-
-    return text;
   }
 
 }

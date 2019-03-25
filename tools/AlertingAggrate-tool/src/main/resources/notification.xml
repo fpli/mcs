@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8" ?>
+http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200/chocolate-metrics-2019.01.31/_search?pretty -H 'Content-Type: application/json' -d'{"query": {"bool": {"must": [{"match": {"key": "ProxyIncomingCount"}}, {"match": {"channelType": "display"}}]}},"aggs": {"sum_value": {"sum": {"field": "value"}}},"size": 0}'
