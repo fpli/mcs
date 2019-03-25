@@ -274,8 +274,8 @@
     },
     {
       "name": "geo_id",
-      "dataType": "long",
-      "default": 0
+      "dataType": "string",
+      "default": ""
     },
     {
       "name": "crlp",
