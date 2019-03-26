@@ -37,6 +37,8 @@ class TestEpnNrtJob extends BaseFunSuite{
   @transient var properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
+    properties.setProperty("epnnrt.outputdir", outputDir)
+    properties.setProperty("epnnrt.result.meta.outputdir", outputDir + "/meta/EPN/output/epnnrt/")
     properties
   }
 
@@ -61,9 +63,6 @@ class TestEpnNrtJob extends BaseFunSuite{
     val dedupeMetaPath = new Path(dedupeMeta(0)._1)
 
     assert (fs.exists(dedupeMetaPath))
-
-    properties.setProperty("epnnrt.outputdir", outputDir)
-    properties.setProperty("epnnrt.result.meta.outputdir", outputDir + "/meta/EPN/output/epnnrt/")
 
     job.run()
     job.stop()

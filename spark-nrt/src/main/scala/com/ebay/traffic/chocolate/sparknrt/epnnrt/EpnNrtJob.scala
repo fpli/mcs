@@ -6,6 +6,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
+import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
@@ -28,6 +29,10 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
   lazy val epnNrtTempDir = outputDir + "/tmp/"
   lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
+
+  @transient lazy val schema_epn_click_table = TableSchema("df_epn_click.json")
+
+  @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression.json")
 
   @transient lazy val properties: Properties = {
     val properties = new Properties()
@@ -121,18 +126,25 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
         impressionDf = impressionDf.repartition(params.partitions)
         saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
+
+        val countImpDf = readFilesAsDF(epnNrtTempDir + "/impression/", schema_epn_impression_table.dfSchema, "gzip", "tab", false)
+
+        metrics.meter("SuccessfulCount", countImpDf.count(),  Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
+
         renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
 
-        metrics.meter("SuccessfulCount", impressionDf.count(),  Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 
         //4. build click dataframe  save dataframe to files and rename files
         var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
         clickDf = clickDf.repartition(params.partitions)
         saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
 
+        val countClickDf = readFilesAsDF(epnNrtTempDir + "/click/", schema_epn_click_table.dfSchema, "gzip", "tab", false)
+
+        metrics.meter("SuccessfulCount", countClickDf.count(),  Field.of[String, AnyRef]("channelAction", "CLICK"))
+
         val files = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
 
-        metrics.meter("SuccessfulCount", clickDf.count(),  Field.of[String, AnyRef]("channelAction", "CLICK"))
 
         // 5.delete the finished meta files
         metadata.deleteDedupeOutputMeta(file)
