@@ -127,6 +127,9 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
           if (metrics != null) {
             metrics.flush()
           }
+          if (tools.metrics != null) {
+            tools.metrics.flush()
+          }
           iter
         }).repartition(params.partitions)
 
@@ -145,6 +148,9 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
 
     if (metrics != null) {
       metrics.flush()
+    }
+    if (tools.metrics != null) {
+      tools.metrics.flush()
     }
   }
 
