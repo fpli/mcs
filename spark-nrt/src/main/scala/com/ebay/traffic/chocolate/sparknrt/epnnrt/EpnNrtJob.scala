@@ -6,7 +6,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
-import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
+import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.functions.col
@@ -123,8 +123,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
         renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
 
-        if(debug)
-          metrics.meter("ImpressionSuccessfulCount", impressionDf.count())
+        metrics.meter("SuccessfulCount", impressionDf.count(),  Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 
         //4. build click dataframe  save dataframe to files and rename files
         var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
@@ -132,8 +131,8 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
 
         val files = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
-        if(debug)
-          metrics.meter("ClickSuccessfulCount", clickDf.count())
+
+        metrics.meter("SuccessfulCount", clickDf.count(),  Field.of[String, AnyRef]("channelAction", "CLICK"))
 
         // 5.delete the finished meta files
         metadata.deleteDedupeOutputMeta(file)

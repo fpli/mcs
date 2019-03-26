@@ -19,6 +19,7 @@ class TestEpnNrtJob extends BaseFunSuite{
 
   private val inputDir = tmpPath + "/inputDir/"
   private val workDir = tmpPath + "/workDir/"
+  private val outputDir = tmpPath + "/outputDir/"
   private val resourceDir = tmpPath
 
   private val sdf = new SimpleDateFormat("yyyy-MM-dd")
@@ -60,6 +61,9 @@ class TestEpnNrtJob extends BaseFunSuite{
     val dedupeMetaPath = new Path(dedupeMeta(0)._1)
 
     assert (fs.exists(dedupeMetaPath))
+
+    properties.setProperty("epnnrt.outputdir", outputDir)
+    properties.setProperty("epnnrt.result.meta.outputdir", outputDir + "/meta/EPN/output/epnnrt/")
 
     job.run()
     job.stop()
