@@ -28,7 +28,7 @@ public class InternalTrafficRule extends BaseFilterRule {
   
   @Override
   public int test(FilterRequest event) {
-    boolean ipInternal = this.checker.isHostInNetwork(event.getSourceIP());
+    boolean ipInternal = !event.getSourceIP().isEmpty() && this.checker.isHostInNetwork(event.getSourceIP());
     boolean domainInternal = !event.getReferrerDomain().isEmpty() && this.checker.isHostInNetwork(event.getReferrerDomain());
     
     return (ipInternal || domainInternal) ? 1 : 0;

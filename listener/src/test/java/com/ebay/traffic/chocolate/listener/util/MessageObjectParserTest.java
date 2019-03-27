@@ -99,12 +99,16 @@ public class MessageObjectParserTest {
         mockClientRequest.setServerPort(80);
         mockClientRequest.addHeader("a", "b");
         mockProxyResponse.setStatus(301);
-        mockProxyResponse.setHeader("Location", "https://www.ebay.co.uk/1/2/9?a=b&chocolateSauce=http%3A%2F%2Frover.ebay.com%2Fa%2Fb%2Fc");
+        mockProxyResponse.setHeader("Location", "http://rover.ebay.de/rover/1/707-53477-19255-0/1?" +
+            "kw=lg&kwid=902099&toolid=11111&customid=&icep_item=264159832675&icep_ff3=2&mtid=824&" +
+            "campid=5338273189&icep_vectorid=229487&mpre=http%3A%2F%2Fwww.ebay.de%2Fitm%2Flike%2F264159832675&" +
+            "pub=5575378759&ipn=psmain&cguid=65df17ec1680a16d64e44a85fbec5649&rvrrefts=7c2acce61680aa469cd0273ffff7a5c4");
         record = parser.parseHeader(mockClientRequest, mockProxyResponse, startTime, wrongCampaingId, logicalChannel.getAvro(), action, null, null);
 
         assertEquals(wrongCampaingId, record.getCampaignId());
         assertEquals("http://rover.ebay.com/a/b/c", record.getUri());
         assertEquals("Some: Header|a: b", record.getRequestHeaders());
+        assertEquals("65df17ec1680a16d64e44a85fbec5649", record.getCguid());
         assertEquals(Long.valueOf(-1L), record.getPublisherId());
         assertEquals("", record.getSnid());
         String result = record.writeToJSON();
