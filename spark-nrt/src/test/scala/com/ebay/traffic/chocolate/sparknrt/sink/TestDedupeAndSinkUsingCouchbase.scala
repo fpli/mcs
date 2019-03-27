@@ -6,6 +6,7 @@ import com.ebay.traffic.chocolate.kafka.{FilterMessageDeserializer, FilterMessag
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.couchbase.{CorpCouchbaseClient, CouchbaseClientMock}
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
+import org.apache.hadoop.fs.Path
 import org.apache.kafka.clients.producer.{Callback, Producer, ProducerRecord}
 import org.apache.kafka.common.serialization.{LongDeserializer, LongSerializer}
 
@@ -89,6 +90,7 @@ class TestDedupeAndSinkUsingCouchbase extends BaseFunSuite {
 
     job.run()
 
+    assert(job.fs.exists(new Path(workDir + "lag/EPN/0")).equals(true))
     assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "1").equals(true))
     assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "2").equals(true))
     assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "3").equals(true))
