@@ -26,19 +26,24 @@ else
    echo "================== sendToNrtBatchHost Completed ${INPUT_FILE} ==================="  | tee -a ${log_file}
 fi
 
-sftp -i /datashare/mkttracking/tools/rsa_token/id_rsa lvsnrt2batch-1761265 <<EOSSH
+ssh -i /datashare/mkttracking/tools/rsa_token/id_rsa lvsnrt2batch-1761265 <<EOSSH
 sftp yimeng@phxdpeetl009.phx.ebay.com:/dw/etl/home/prod/land/dw_ams/nrt
 put ${NRT_PATH}${DT}${INPUT_FILE}
-exit
+rc=$?
+if [[ $rc != 0 ]]; then
+   echo "================NRT sendToETLHost ERROR!!=================" | tee -a ${log_file}
+   exit $rc
+else
+   echo "===============NRT sendToETLHost is completed!!============"  | tee -a ${log_file}
+   exit 0
+fi
 EOSSH
 
 rc=$?
 if [[ $rc != 0 ]]; then
-   echo "=====================================================sendToETLHost ERROR!!======================================================"
-   echo "=====================================================sendToETLHost ERROR!!======================================================"  >> ${log_file}
+   echo "=====================================================sendToETLHost ERROR!!======================================================" | tee -a ${log_file}
    exit $rc
 else
-   echo "=====================================================sendToETLHost is completed-======================================================"
-   echo "=====================================================sendToETLHost is completed-======================================================"  >> ${log_file}
+   echo "=====================================================sendToETLHost is completed-======================================================"  | tee -a ${log_file}
    exit 0
 fi

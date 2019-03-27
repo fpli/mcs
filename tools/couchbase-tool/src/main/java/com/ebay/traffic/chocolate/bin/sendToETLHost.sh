@@ -27,26 +27,28 @@ put ${INPUT_PATH}/${DT_HOUR}*
 EOSFTP
 rc=$?
 if [[ $rc != 0 ]]; then
-   echo "=====================================================sendToNrtBatchHost ERROR!!======================================================"
-   echo "=====================================================sendToNrtBatchHost ERROR!!======================================================"  >> ${log_file}
+   echo "=====================================================sendToNrtBatchHost ERROR!!======================================================"  | tee -a ${log_file}
    exit $rc
 else
-   echo "=====================================================sendToNrtBatchHost is completed-======================================================"
-   echo "=====================================================sendToNrtBatchHost is completed-======================================================"  >> ${log_file}
+   echo "=====================================================sendToNrtBatchHost is completed-======================================================"  | tee -a ${log_file}
 fi
 
 ssh -i /home/stack/.ssh/id_rsa_nrt yimeng@lvsnrt2batch-2236360.stratus.lvs.ebay.com <<EOSSH
 sftp -i /home/yimeng/.ssh/id_rsa_etl yimeng@phxdpeetl011.phx.ebay.com:/dw/etl/home/prod/land/dw_coreimk/rotation
 put /home/yimeng/chocolate/rotation/teradata/dt=${DT}/${DT_HOUR}*
+if [[ $rc != 0 ]]; then
+   echo "===================== NRT sendToNrtBatchHost ERROR!! ========================"  | tee -a ${log_file}
+   exit $rc
+else
+   echo "===================== NRT sendToNrtBatchHost is completed !!! ==============="  | tee -a ${log_file}
+fi
 EOSSH
 
 rc=$?
 if [[ $rc != 0 ]]; then
-   echo "=====================================================sendToETLHost ERROR!!======================================================"
-   echo "=====================================================sendToETLHost ERROR!!======================================================"  >> ${log_file}
+   echo "=====================================================sendToETLHost ERROR!!======================================================"  | tee -a ${log_file}
    exit $rc
 else
-   echo "=====================================================sendToETLHost is completed-======================================================"
-   echo "=====================================================sendToETLHost is completed-======================================================"  >> ${log_file}
+   echo "=====================================================sendToETLHost is completed-======================================================"  | tee -a ${log_file}
    exit 0
 fi
