@@ -191,10 +191,7 @@ class DedupeAndSink(params: Parameter)
 
       dates.iterator
     }).distinct().collect()
-
-
-
-
+    
     logger.info("dedupe output date: " + dates.mkString(","))
 
     // delete the tmp dir
