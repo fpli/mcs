@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.sink
 
+import java.io.PrintWriter
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util
@@ -18,6 +19,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
+import org.apache.spark.TaskContext
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -98,6 +100,7 @@ class DedupeAndSink(params: Parameter)
     kafkaRDD.mapPartitions(iter => {
       val files = new util.HashMap[String, String]()
       val writers = new util.HashMap[String, ParquetWriter[GenericRecord]]()
+      var hasWrittenLag = false
 
       // output messages to files
       while (iter.hasNext) {
@@ -106,6 +109,25 @@ class DedupeAndSink(params: Parameter)
           metrics.meter("DedupeInputCount", 1, message.getTimestamp,
             Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
             Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
+        }
+        // write message lag to file with first message in this partition
+        if(!hasWrittenLag) {
+          val lag = System.currentTimeMillis() - message.getTimestamp
+          try {
+            // write lag to hdfs file
+            val output = fs.create(new Path(params.workDir + "/message_lag/" + params.channel + "/" + TaskContext.get.partitionId()), true)
+            val writer = new PrintWriter(output)
+            try {
+              writer.write(lag.toString)
+            }
+            finally {
+              writer.close()
+            }
+          } catch {
+            case e: Exception =>
+              logger.error("Exception when writing message lag to couchbase", e)
+          }
+          hasWrittenLag = true
         }
         val date = DATE_COL + "=" + getDateString(message.getTimestamp) // get the event date
         var writer = writers.get(date)
@@ -168,6 +190,9 @@ class DedupeAndSink(params: Parameter)
 
       dates.iterator
     }).distinct().collect()
+
+
+
 
     logger.info("dedupe output date: " + dates.mkString(","))
 
