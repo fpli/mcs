@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
+import java.text.SimpleDateFormat
 import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
@@ -85,6 +86,8 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         val epnNrtCommon = new EpnNrtCommon(params, df)
         logger.info("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
 
+        val timestamp = df.first().getAs[Long]("timestamp")
+
         // filter click and impression data, and if there is filterTime, filter the data older than filter time
         var df_click = df.filter(col("channel_action") === "CLICK")
         var df_impression = df.filter(col("channel_action") === "IMPRESSION")
@@ -127,9 +130,9 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         impressionDf = impressionDf.repartition(params.partitions)
         saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
 
-        val countImpDf = readFilesAsDF(epnNrtTempDir + "/impression/", schema_epn_impression_table.dfSchema, "gzip", "tab", false)
+        val countImpDf = readFilesAsDF(epnNrtTempDir + "/impression/", schema_epn_impression_table.dfSchema, "csv", "tab", false)
 
-        metrics.meter("SuccessfulCount", countImpDf.count(),  Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
+        metrics.meter("SuccessfulCount", countImpDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 
         renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
 
@@ -139,9 +142,9 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         clickDf = clickDf.repartition(params.partitions)
         saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
 
-        val countClickDf = readFilesAsDF(epnNrtTempDir + "/click/", schema_epn_click_table.dfSchema, "gzip", "tab", false)
+        val countClickDf = readFilesAsDF(epnNrtTempDir + "/click/", schema_epn_click_table.dfSchema, "csv", "tab", false)
 
-        metrics.meter("SuccessfulCount", countClickDf.count(),  Field.of[String, AnyRef]("channelAction", "CLICK"))
+        metrics.meter("SuccessfulCount", countClickDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "CLICK"))
 
         val files = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
 
