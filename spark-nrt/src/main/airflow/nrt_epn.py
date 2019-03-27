@@ -32,4 +32,4 @@ nrt_epn_task_2 = BashOperator(
     execution_timeout=timedelta(minutes=5),
     dag=nrt_epn_dag)
 
-nrt_epn_task_1.set_upstream(nrt_epn_task_2)
+nrt_epn_task_2.set_upstream(nrt_epn_task_1)

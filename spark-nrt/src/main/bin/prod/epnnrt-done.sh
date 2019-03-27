@@ -1,4 +1,16 @@
-DT=$(date +%Y-%m-%d)
+######################################### Check the file of today has been generate ################################
+DT_TODAY=$(date +%Y-%m-%d)
+LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/date=${DT_TODAY}   #Local file path which contains the epnnrt click result files
+clickFileCnt=`ls ${LOCAL_PATH}/dw_ams.ams_clicks_cs_* |wc -l`
+impFileCnt=`ls ${LOCAL_PATH}/dw_ams.ams_imprsn_cntnr_cs_*|wc -l`
+
+if [[ clickFileCnt -le 1 || impFileCnt -le 1 ]]; then
+     echo "chocolate-ePN ${DT}'s NRT not generated!!!!" | mail -s "NRT delayed!!!!" DL-eBay-Chocolate-GC@ebay.com
+     exit 1
+fi
+
+######################################### Check the file of yesterday has been completed ################################
+DT=$(date +%Y-%m-%d -d "`date` - 1 day")
 HDP_CLICK=/apps/epn-nrt/click/date=${DT}/                   #chocolate hdfs files
 LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/date=${DT}   #Local file path which contains the epnnrt click result files
 HDP_IMP=/apps/epn-nrt/impression/date=${DT}                 #Local file path which contains the epnnrt impression result files
