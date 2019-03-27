@@ -6,4 +6,6 @@ cd /home/chocolate/chocolate-sparknrt/bin/prod
 pwd
 export HADOOP_USER_NAME=chocolate
 echo $HADOOP_USER_NAME
-./monitoring.sh EPN hdfs://elvisha/apps/tracking-events-workdir http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
+export hdfs=hdfs://elvisha
+echo $hdfs
+./monitoring.sh EPN $hdfs/apps/tracking-events-workdir http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
