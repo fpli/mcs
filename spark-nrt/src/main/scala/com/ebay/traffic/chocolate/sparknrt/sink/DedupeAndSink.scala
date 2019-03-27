@@ -57,6 +57,7 @@ class DedupeAndSink(params: Parameter)
   }
 
   lazy val baseDir = params.workDir + "/dedupe/" + params.channel + "/"
+  lazy val lagDir = params.workDir + "/lag/" + params.channel + "/"
   lazy val baseTempDir = baseDir + "/tmp/"
   lazy val sparkDir = baseDir + "/spark/"
   lazy val outputDir = params.outputDir + "/" + params.channel + "/dedupe/"
@@ -115,7 +116,7 @@ class DedupeAndSink(params: Parameter)
           val lag = System.currentTimeMillis() - message.getTimestamp
           try {
             // write lag to hdfs file
-            val output = fs.create(new Path(params.workDir + "/message_lag/" + params.channel + "/" + TaskContext.get.partitionId()), true)
+            val output = fs.create(new Path(lagDir + TaskContext.get.partitionId()), true)
             val writer = new PrintWriter(output)
             try {
               writer.write(lag.toString)
