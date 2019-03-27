@@ -1,6 +1,6 @@
 #!/bin/bash
 whoami
-ssh -T -i /usr/azkaban/id_rsa_es jialili1@slcchocolatequeue-2168406.stratus.slc.ebay.com <<EOSSH
+ssh -T -i /usr/azkaban/id_rsa_es stack@slcchocolatequeue-2168406.stratus.slc.ebay.com <<EOSSH
 hostname
 cd /home/chocolate/chocolate-sparknrt/bin/prod
 pwd
