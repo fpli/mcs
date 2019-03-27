@@ -1,6 +1,5 @@
 package com.ebay.traffic.chocolate.sparknrt.sink;
 
-import com.couchbase.client.java.document.StringDocument
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
 import com.ebay.traffic.chocolate.common.{KafkaTestHelper, MiniKafkaCluster, TestHelper}
 import com.ebay.traffic.chocolate.kafka.{FilterMessageDeserializer, FilterMessageSerializer}
@@ -22,7 +21,6 @@ class TestDedupeAndSinkUsingCouchbase extends BaseFunSuite {
 
   val topic = "test-kafka-topic"
 
-  val MESSAGE_LAG_KEY_PREFIX = "LAG_"
   val DEDUPE_KEY_PREFIX = "DEDUPE_"
 
   val channel = "EPN"
@@ -91,7 +89,6 @@ class TestDedupeAndSinkUsingCouchbase extends BaseFunSuite {
 
     job.run()
 
-    // check lag of partition
     assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "1").equals(true))
     assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "2").equals(true))
     assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "3").equals(true))

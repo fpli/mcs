@@ -126,7 +126,7 @@ class DedupeAndSink(params: Parameter)
             }
           } catch {
             case e: Exception =>
-              logger.error("Exception when writing message lag to couchbase", e)
+              logger.error("Exception when writing message lag to file", e)
           }
           hasWrittenLag = true
         }
@@ -191,7 +191,7 @@ class DedupeAndSink(params: Parameter)
 
       dates.iterator
     }).distinct().collect()
-    
+
     logger.info("dedupe output date: " + dates.mkString(","))
 
     // delete the tmp dir
