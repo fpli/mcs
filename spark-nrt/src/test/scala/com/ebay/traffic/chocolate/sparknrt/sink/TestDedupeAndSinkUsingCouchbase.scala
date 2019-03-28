@@ -90,7 +90,7 @@ class TestDedupeAndSinkUsingCouchbase extends BaseFunSuite {
 
     job.run()
 
-    assert(job.fs.exists(new Path(workDir + "lag/EPN/0")).equals(true))
+    assert(job.fs.exists(new Path(workDir + "last_ts/EPN/0")).equals(true))
     assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "1").equals(true))
     assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "2").equals(true))
     assert(CorpCouchbaseClient.getBucketFunc()._2.exists(DEDUPE_KEY_PREFIX + "3").equals(true))
