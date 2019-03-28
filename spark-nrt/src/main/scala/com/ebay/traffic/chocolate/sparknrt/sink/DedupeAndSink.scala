@@ -101,7 +101,7 @@ class DedupeAndSink(params: Parameter)
     kafkaRDD.mapPartitions(iter => {
       val files = new util.HashMap[String, String]()
       val writers = new util.HashMap[String, ParquetWriter[GenericRecord]]()
-      var hasWrittenLag = false
+      var hasWrittenTimestamp = false
 
       // output messages to files
       while (iter.hasNext) {
@@ -112,7 +112,7 @@ class DedupeAndSink(params: Parameter)
             Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
         }
         // write message lag to file with first message in this partition
-        if(!hasWrittenLag) {
+        if(!hasWrittenTimestamp) {
           val timestampOfPartition = message.getTimestamp
           try {
             // write lag to hdfs file
@@ -128,7 +128,7 @@ class DedupeAndSink(params: Parameter)
             case e: Exception =>
               logger.error("Exception when writing message lag to file", e)
           }
-          hasWrittenLag = true
+          hasWrittenTimestamp = true
         }
         val date = DATE_COL + "=" + getDateString(message.getTimestamp) // get the event date
         var writer = writers.get(date)
