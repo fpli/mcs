@@ -1,6 +1,5 @@
 package com.ebay.traffic.chocolate.sparknrt.sink
 
-import java.io.PrintWriter
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util
@@ -117,13 +116,8 @@ class DedupeAndSink(params: Parameter)
           try {
             // write lag to hdfs file
             val output = fs.create(new Path(lagDir + TaskContext.get.partitionId()), true)
-            val writer = new PrintWriter(output)
-            try {
-              writer.write(timestampOfPartition.toString)
-            }
-            finally {
-              writer.close()
-            }
+            output.writeBytes(String.valueOf(timestampOfPartition))
+            output.close()
           } catch {
             case e: Exception =>
               logger.error("Exception when writing message lag to file", e)
