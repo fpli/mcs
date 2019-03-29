@@ -23,7 +23,7 @@ echo "timestamp of now: "${now_ts} | tee -a ${log_file}
 message_lag=$(($now_ts-$last_ts))
 echo "lag of message: "${message_lag} | tee -a ${log_file}
 if [[ message_lag -gt ${LAG_THRESHOLD} ]]; then
-     echo "chocolate-ePN ${DT}'s NRT not generated because of message lag!!!!" | mail -s "NRT delayed!!!!" xiangli4@ebay.com | tee -a ${log_file}
+     echo "chocolate-ePN ${DT}'s NRT not generated because of message lag!!!!" | mail -s "NRT delayed!!!!" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
      exit 1
 fi
 
