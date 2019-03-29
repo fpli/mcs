@@ -1,0 +1,87 @@
+HOUR=$(date +%H)
+if [[ ${HOUR} -lt 1 ]]; then
+  DT=$(date +%Y-%m-%d -d "`date` - 1 hour")
+else
+  DT=$(date +%Y-%m-%d)
+fi
+
+log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
+log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/send_${log_dt}.log"
+
+##################### Send Job Parameters ##################
+HDP_CLICK=/apps/epn-nrt/click/date=${DT}/                  #chocolate hdfs files
+LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/date=${DT}   #Local file path which contains the epnnrt click result files
+HDP_IMP=/apps/epn-nrt/impression/date=${DT}                 #Local file path which contains the epnnrt impression result files
+FILE_LIST=${LOCAL_PATH}/files.txt                           #file list which contains all file names in local machine path
+NRT_PATH=/home/stack/epn-nrt/${DT}                          #the file path on epnnrt vm: lvsnrt2batch-1761265
+HDP=/apps/b_marketing_tracking/chocolate/epnnrt             #the click file path on apollo_rno
+
+ssh -i /datashare/mkttracking/tools/rsa_token/id_rsa lvsnrt2batch-1761265 <<EOSSH
+if [ ! -d ${NRT_PATH} ]; then
+mkdir ${NRT_PATH}
+chmod 777 ${NRT_PATH}
+fi
+EOSSH
+
+if [[ ! -d "${LOCAL_PATH}" ]]; then
+  mkdir -p ${LOCAL_PATH}
+  chmod -R 777 ${LOCAL_PATH}
+fi
+
+echo "HDP_CLICK="${HDP_CLICK} | tee -a ${log_file}
+echo "LOCAL_PATH="${LOCAL_PATH} | tee -a ${log_file}
+echo "HDP_IMP="${HDP_IMP} | tee -a ${log_file}
+echo "FILE_LIST="${FILE_LIST} | tee -a ${log_file}
+echo "NRT_PATH="${NRT_PATH} | tee -a ${log_file}
+
+export HADOOP_USER_NAME=chocolat
+
+##################### Send Clicks ##################
+
+hdfs dfs -ls -C ${HDP_CLICK} > ${FILE_LIST}
+
+while read p; do
+  idx=${#HDP_CLICK}
+  fileName=${p:$idx+1}
+
+  cd ${LOCAL_PATH}
+  if [ ! -f "${fileName}.processed" ]; then
+	  hadoop fs -get ${HDP_CLICK}${fileName}
+
+	  ##################### Send To ETL Sever ##################
+	  /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendToETLHost.sh  ${NRT_PATH} ${fileName} ${log_file}
+    ##################### Send To Apollo_RNO ##################
+	  /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendToApolloRno.sh  ${HDP}/click/date=${DT}  ${LOCAL_PATH}/${fileName} ${log_file}
+
+	  rc=$?
+	  if [[ $rc == 0 ]]; then
+	    mv ${LOCAL_PATH}/${fileName} ${LOCAL_PATH}/${fileName}.processed
+	  fi
+  fi
+
+done < ${FILE_LIST}
+
+##################### Send Impressions ##################
+hdfs dfs -ls -C ${HDP_IMP} > ${FILE_LIST}
+
+while read p; do
+  idx=${#HDP_IMP}
+  fileName=${p:$idx}
+
+  cd ${LOCAL_PATH}
+  if [[ ! -f "${fileName}.processed" ]]; then
+	  hadoop fs -get ${HDP_IMP}${fileName}
+
+	  ##################### Send To ETL Sever ##################
+	  /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendToETLHost.sh  ${NRT_PATH} ${fileName} ${log_file}
+	  ##################### Send To Apollo_RNO ##################
+	  /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendToApolloRno.sh  ${HDP}/imp/date=${DT}  ${LOCAL_PATH}/${fileName} ${log_file}
+
+	  rc=$?
+	  if [[ $rc == 0 ]]; then
+	    mv ${LOCAL_PATH}/${fileName} ${LOCAL_PATH}/${fileName}.processed
+	  fi
+  fi
+done < ${FILE_LIST}
+
+
