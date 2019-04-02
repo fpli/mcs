@@ -1,4 +1,4 @@
-i#!/bin/bash
+#!/usr/bin/env bash
 # run job to format ePN nrt data
 echo `date`
 usage="Usage: epn-nrt.sh"

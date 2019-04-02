@@ -1,3 +1,11 @@
+#!/usr/bin/env bash
+####################################################################################################################
+# epnnrt done file generation script. Unless we meet all the criteria below, epnnrt is not done
+# 1. Today's data are being generated
+# 2. Message timestamp are newer than now-1h
+# 3. Check yesterday's data were handled
+# 4. Check yesterday's data are fully sent
+####################################################################################################################
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
 log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/done_${log_dt}.log"
 
