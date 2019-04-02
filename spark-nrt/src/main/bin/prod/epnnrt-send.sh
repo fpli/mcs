@@ -1,3 +1,9 @@
+#!/usr/bin/env bash
+####################################################################################
+# Send epn nrt result file to ETL and Apollo-RNO. Runs every 5 mins.
+# Here is the contract: if it's not 1AM today yet, send yesterday's data.
+# Otherwise, consider yesterday's job is done. Send today's data.
+####################################################################################
 HOUR=$(date +%H)
 if [[ ${HOUR} -lt 1 ]]; then
   DT=$(date +%Y-%m-%d -d "`date` - 1 hour")
@@ -34,14 +40,18 @@ echo "HDP_IMP="${HDP_IMP} | tee -a ${log_file}
 echo "FILE_LIST="${FILE_LIST} | tee -a ${log_file}
 echo "NRT_PATH="${NRT_PATH} | tee -a ${log_file}
 
-export HADOOP_USER_NAME=chocolat
+export HADOOP_USER_NAME=chocolate
 
 ##################### Send Clicks ##################
+# Every time the job runs, dump latest file list from hadoop to FILE_LIST.
+# Check local dir file names with processed as extension. They are treated as files already sent.
+# Hadoop get those files local dir does not contain. Send them and rename them to be *.processed.
+# .processed files are later used in epnnrt-done.sh to check if all the files from hadoop are sent.
 
 hdfs dfs -ls -C ${HDP_CLICK} > ${FILE_LIST}
 
+idx=${#HDP_CLICK}
 while read p; do
-  idx=${#HDP_CLICK}
   fileName=${p:$idx+1}
 
   cd ${LOCAL_PATH}
@@ -64,8 +74,8 @@ done < ${FILE_LIST}
 ##################### Send Impressions ##################
 hdfs dfs -ls -C ${HDP_IMP} > ${FILE_LIST}
 
+idx=${#HDP_IMP}
 while read p; do
-  idx=${#HDP_IMP}
   fileName=${p:$idx}
 
   cd ${LOCAL_PATH}
