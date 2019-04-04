@@ -60,8 +60,8 @@ public class DefaultChannel implements Channel {
     // handle rover sync separately
     if(channelAction != null && channelAction.equals(ChannelActionEnum.SYNC)) {
       String cookieResponseHeader = response.getHeader("Set-Cookie");
-      String cguid = parser.getGuid(null, cookieResponseHeader, "cguid");
-      String guid = parser.getGuid(null, cookieResponseHeader, "tguid");
+      String cguid = parser.getGuid(null, cookieResponseHeader, null, "cguid");
+      String guid = parser.getGuid(null, cookieResponseHeader, null, "tguid");
       if(guid.length() > 0) {
         CouchbaseClient.getInstance().addMappingRecord(guid, cguid);
       }
