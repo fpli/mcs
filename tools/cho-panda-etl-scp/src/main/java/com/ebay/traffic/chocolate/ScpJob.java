@@ -147,6 +147,13 @@ public class ScpJob {
      */
     private static void getFileInHdfs(String filePath, String fileName) throws Exception {
         try {
+            String removeDataCmd = "rm -f " + properties.getProperty("imkscp.local.workDir") + "/" + fileName;
+            String removeDoneCmd = "rm -f " + properties.getProperty("imkscp.local.workDir") + "/" + fileName + ".done";
+            Process removeDataProcess = Runtime.getRuntime().exec(removeDataCmd);
+            Process removeDoneProcess = Runtime.getRuntime().exec(removeDoneCmd);
+            if (removeDataProcess.waitFor() != 0 || removeDoneProcess.waitFor() != 0) {
+                throw new Exception("rmCmdException");
+            }
             fs.copyToLocalFile(new Path(filePath), new Path(properties.getProperty("imkscp.local.workDir") + "/" + fileName));
             Files.touch(new File(properties.getProperty("imkscp.local.workDir") + "/" + fileName + ".done"));
             metrics.meter("imk.scp.count.getHdfs");
@@ -194,8 +201,8 @@ public class ScpJob {
         String localDoneFilePath = properties.getProperty("imkscp.local.workDir") + "/" + fileName + ".done";
 
         try {
-            String removeDataCmd = "rm " + localDataFilePath;
-            String removeDoneCmd = "rm " + localDoneFilePath;
+            String removeDataCmd = "rm -f " + localDataFilePath;
+            String removeDoneCmd = "rm -f " + localDoneFilePath;
             Process removeDataProcess = Runtime.getRuntime().exec(removeDataCmd);
             Process removeDoneProcess = Runtime.getRuntime().exec(removeDoneCmd);
             if (removeDataProcess.waitFor() != 0 || removeDoneProcess.waitFor() != 0) {
