@@ -26,10 +26,10 @@ object CompareJob extends App {
 class CompareJob(params: Parameter) extends BaseSparkNrtJob(params.appName, params.mode) {
   override def run(): Unit = {
     logger.info("Comparing click and impression data...")
-    val clickJob = new ClickCompare(params)
+/*    val clickJob = new ClickCompare(params)
     clickJob.run()
-    clickJob.stop()
-    /*if (params.click_run) {
+    clickJob.stop()*/
+    if (params.click_run) {
       val clickJob = new ClickCompare(params)
       clickJob.run()
       clickJob.stop()
@@ -38,7 +38,7 @@ class CompareJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       val impressionJob = new ImpressionCompare(params)
       impressionJob.run()
       impressionJob.stop()
-    }*/
+    }
    /*// val clickJob = new ClickCompare(params)
     val impressionJob = new ImpressionCompare(params)
    // clickJob.run()

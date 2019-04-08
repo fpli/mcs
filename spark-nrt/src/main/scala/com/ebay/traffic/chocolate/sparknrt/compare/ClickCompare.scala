@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.compare
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import com.ebay.traffic.chocolate.sparknrt.common.schema.TableSchema
+import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import org.apache.hadoop.fs.{FSDataOutputStream, Path}
 import org.apache.spark.sql.functions.{col, udf}
 

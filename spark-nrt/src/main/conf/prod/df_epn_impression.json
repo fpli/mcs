@@ -252,11 +252,7 @@
     {
       "name": "MPLX_TIMEOUT_FLAG",
       "dataType": "string",
-<<<<<<< HEAD
       "default": ""
-=======
-      "default": "0"
->>>>>>> 961ad569... compare tool
     },
     {
       "name": "CB_KW",
@@ -310,20 +306,12 @@
     {
       "name": "APP_NAME",
       "dataType": "string",
-<<<<<<< HEAD
       "default": ""
-=======
-      "default": "0"
->>>>>>> 961ad569... compare tool
     },
     {
       "name": "APP_VERSION",
       "dataType": "string",
-<<<<<<< HEAD
       "default": ""
-=======
-      "default": "0"
->>>>>>> 961ad569... compare tool
     },
     {
       "name": "DEVICE_NAME",
@@ -352,11 +340,7 @@
     {
       "name": "SDK_VERSION",
       "dataType": "string",
-<<<<<<< HEAD
       "default": ""
-=======
-      "default": "0"
->>>>>>> 961ad569... compare tool
     },
     {
       "name": "AMS_TRANS_RSN_CD",
