@@ -21,6 +21,10 @@
     <module>CheckRecover-tool</module>
   </modules>
 
+  <properties>
+    <elasticsearch.version>6.3.0</elasticsearch.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.ebay.traffic</groupId>

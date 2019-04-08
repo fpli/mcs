@@ -12,26 +12,41 @@ import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
 import org.apache.log4j.PropertyConfigurator;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.functions.Func1;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
 public class DumpRotationToTD {
   static Logger logger = LoggerFactory.getLogger(DumpRotationToTD.class);
-  private static CorpRotationCouchbaseClient client;
 
+  //rotation couchbase client
+  private static CorpRotationCouchbaseClient client;
   private static Bucket bucket;
 
+  //rotation es rest high level client
+  private static RotationESClient rotationESClient;
+  private static RestHighLevelClient esRestHighLevelClient;
+
   private static Properties couchbasePros;
+
+  private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+  private static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
 
   public static void main(String args[]) throws Exception {
     boolean hasParams = true;
@@ -61,11 +76,18 @@ public class DumpRotationToTD {
     initLog4j(configFilePath);
 
     try {
+      //couchbase client
       client = new CorpRotationCouchbaseClient(couchbasePros);
       CacheClient cacheClient = client.getCacheClient();
       bucket = client.getBuctet(cacheClient);
+
+      //es rest high level client
+      rotationESClient = new RotationESClient(couchbasePros);
+      esRestHighLevelClient = rotationESClient.getESClient();
+
       dumpFileFromCouchbase(updateTimeStartKey, updateTimeEndKey, outputFilePath);
       client.returnClient(cacheClient);
+      rotationESClient.closeESClient(esRestHighLevelClient);
     } catch (Exception e) {
       logger.error(e.getMessage());
       throw e;
@@ -130,6 +152,20 @@ public class DumpRotationToTD {
           .toList()
           .toBlocking()
           .single();
+    }
+
+    //get new-create rotation count and update rotation count from es
+    String esSearchStartTime = sdf.format(new Date(Long.parseLong(startKey)));
+    String esSearchEndTime = sdf.format(new Date(Long.parseLong(endKey)));
+    Integer newCreateRotationCount = getChangeRotationCount(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
+    Integer updateRotationCount = getChangeRotationCount(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
+    Integer changeRotationCountFromES = newCreateRotationCount + updateRotationCount;
+
+    //compare rotation change count from es and rotation change dump from couchbase
+    //if rotation change count from es >0 but rotation dump from couchbase =0, throw couchbase dump exception
+    if (changeRotationCountFromES > 0 && size == 0) {
+      logger.error("couchbase dump rotation data count = 0, throw exception!");
+      throw new IOException("couchbase dump rotation data count = 0");
     }
 
     metrics.meter("rotation.dump.FromCBToTD.total", size);
@@ -385,6 +421,29 @@ public class DumpRotationToTD {
     }
   }
 
+  //get new-create rotation count and update rotation count, depends on es search key
+  public static Integer getChangeRotationCount(String esSearchStartTime, String esSearchEndTime, String esRotationKey) throws IOException {
+    SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+    BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+    boolQueryBuilder.must(QueryBuilders.matchQuery(RotationConstant.ES_SEARCH_KEY, esRotationKey));
+    boolQueryBuilder.filter(QueryBuilders.rangeQuery(RotationConstant.ES_SEARCH_DATE).gte(esSearchStartTime).lte(esSearchEndTime).format(DATE_FORMAT));
+    searchSourceBuilder.query(boolQueryBuilder);
+
+    SearchRequest searchRequest = new SearchRequest();
+    searchRequest.source(searchSourceBuilder);
+    SearchResponse searchResponse = esRestHighLevelClient.search(searchRequest, new Header[0]);
+    SearchHits hits = searchResponse.getHits();
+    SearchHit[] searchHits = hits.getHits();
+
+    Integer totalChangeRotationCount = 0;
+    for (SearchHit hit : searchHits) {
+      Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+      Integer count = (Integer) sourceAsMap.get("value");
+      totalChangeRotationCount = totalChangeRotationCount + count;
+    }
+    return totalChangeRotationCount;
+  }
+
   /**
    * Set Mocked Couchbase Bucket for Unit Testing
    * @param bucket mocked couchbase bucket
@@ -399,6 +458,10 @@ public class DumpRotationToTD {
    */
   public static void setCouchbasePros(Properties couchbasePros) {
     DumpRotationToTD.couchbasePros = couchbasePros;
+  }
+
+  public static void setEsRestHighLevelClient(RestHighLevelClient restHighLevelClient) {
+    DumpRotationToTD.esRestHighLevelClient = restHighLevelClient;
   }
 
   private static void writeString(OutputStream out, Object content) throws IOException {
