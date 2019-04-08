@@ -10,7 +10,9 @@ class TestCompare extends BaseFunSuite{
   private val click_dest = "/Users/huiclu/epn-nrt/compare-test/your-data"
   private val click_outputPath = "/Users/huiclu/epn-nrt/tmp/test6/compare-click.txt"
 
-  private val imp_source = "/Users/huiclu/epn-nrt/compare-test/my-impre-data"
+  //private val imp_source = "/Users/huiclu/epn-nrt/compare-test/my-impre-data"
+  private val imp_source = "/Users/huiclu/tmp_2/my-data"
+
   private val imp_dest = "/Users/huiclu/epn-nrt/compare-test/your-impre-data"
   private val imp_outputPath = "/Users/huiclu/epn-nrt/tmp/test6/compare-impression.txt"
 
@@ -45,7 +47,7 @@ class TestCompare extends BaseFunSuite{
       "--workDir", work_dir
     )
     val params = Parameter(args)
-    val job = new TestCompareJob(params)
+    val job = new CompareJob(params)
 
     job.run()
     job.stop()

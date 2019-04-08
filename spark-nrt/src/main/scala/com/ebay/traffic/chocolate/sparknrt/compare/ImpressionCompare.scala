@@ -14,10 +14,20 @@ class ImpressionCompare(params: Parameter) extends BaseSparkNrtJob(params.appNam
 
     val removeParamsUdf = udf(removeParams(_: String))
     val normalizeUrlUdf = udf((roverUrl: String) => normalizeUrl(roverUrl))
-
+/*
     val ourDf = readFilesAsDF(params.impression_source, our_schema.dfSchema, "csv", "tab", false)
       .withColumn("my_uri", removeParamsUdf($"ROVER_URL_TXT"))
-      .dropDuplicates("my_uri", "CRLTN_GUID_TXT")
+      .dropDuplicates("my_uri", "CRLTN_GUID_TXT")*/
+
+    var ourDf = readFilesAsDF(params.impression_source, our_schema.dfSchema, "csv", "tab", false)
+      .withColumn("my_uri", removeParamsUdf($"ROVER_URL_TXT"))
+      //.dropDuplicates("my_uri", "CRLTN_GUID_TXT")
+
+    val before = ourDf.count()
+    ourDf = ourDf.dropDuplicates("my_uri", "CRLTN_GUID_TXT")
+    val after = ourDf.count()
+
+
     val yourDf = readFilesAsDF(params.impression_dest, your_schema.dfSchema, "csv", "tab", false)
       .withColumn("your_uri", normalizeUrlUdf(col("y_ROVER_URL_TXT")))
       .dropDuplicates("your_uri", "y_CRLTN_GUID_TXT")

@@ -34,7 +34,7 @@ class TestCompareJob(params: Parameter) extends BaseSparkNrtJob(params.appName, 
     val removeParamsUdf = udf(removeParams(_: String))
     val normalizeUrlUdf = udf((roverUrl: String) => normalizeUrl(roverUrl))
 
-    val testDf = readFilesAsDF("/Users/huiclu/tmp_1/page1.csv", amsClickSchema, "csv", "tab", false)
+    //val testDf = readFilesAsDF("/Users/huiclu/tmp_1/page1.csv", amsClickSchema, "csv", "tab", false)
 
     val ourDf = readFilesAsDF(params.click_source, schema.dfSchema, "csv", "tab", false)
       .withColumn("my_uri", removeParamsUdf($"ROVER_URL"))

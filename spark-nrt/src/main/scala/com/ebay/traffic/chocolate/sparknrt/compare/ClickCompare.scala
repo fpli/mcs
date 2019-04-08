@@ -20,13 +20,17 @@ class ClickCompare(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
   var ourDf = readFilesAsDF(params.click_source, schema.dfSchema, "csv", "tab", false)
     .withColumn("my_uri", removeParamsUdf($"ROVER_URL"))
 
+    //ourDf = ourDf.coalesce(20)
+
     val ourBeforeDedupeCount = ourDf.count()
     ourDf = ourDf.dropDuplicates("my_uri", "CRLTN_GUID_TXT")
     val ourAfterDedupeCount = ourDf.count()
 
+
   var yourDf = readFilesAsDF(params.click_dest, your_schema.dfSchema, "csv", "tab", false)
     .withColumn("your_uri", normalizeUrlUdf(col("y_ROVER_URL")))
 
+    //yourDf = yourDf.coalesce(20)
 
     val epnBeforeDedupeCount = yourDf.count()
     yourDf = yourDf.dropDuplicates("your_uri", "y_CRLTN_GUID_TXT")
@@ -34,8 +38,8 @@ class ClickCompare(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
 
 
   val verifyResultUdf = udf(verifyResult(_: String, _: String))
-    val verifyResultUdf2 = udf(verifyResult2(_: String, _: String, _: String))
   val verifyClick_TSResultUdf = udf(verifyClick_TSResult(_: String, _: String))
+    val verifyLastViewItemUdf = udf(verifyLastViewItemResult(_: String, _: String))
 
 
   var df = ourDf.join(yourDf, $"my_uri" === $"your_uri" && $"CRLTN_GUID_TXT" === $"y_CRLTN_GUID_TXT", "inner")
@@ -68,7 +72,7 @@ class ClickCompare(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     .withColumn("c_IMPRSN_TS", verifyResultUdf($"IMPRSN_TS", $"y_IMPRSN_TS")).drop("IMPRSN_TS").drop("y_IMPRSN_TS")
     .withColumn("c_CLICK_TS", verifyClick_TSResultUdf($"CLICK_TS", $"y_CLICK_TS")).drop("CLICK_TS").drop("y_CLICK_TS")
     .withColumn("c_LAST_VWD_ITEM_ID", verifyResultUdf($"LAST_VWD_ITEM_ID", $"y_LAST_VWD_ITEM_ID")).drop("LAST_VWD_ITEM_ID").drop("y_LAST_VWD_ITEM_ID")
-    .withColumn("c_LAST_VWD_ITEM_TS", verifyResultUdf($"LAST_VWD_ITEM_TS", $"y_LAST_VWD_ITEM_TS")).drop("LAST_VWD_ITEM_TS").drop("y_LAST_VWD_ITEM_TS")
+    .withColumn("c_LAST_VWD_ITEM_TS", verifyLastViewItemUdf($"LAST_VWD_ITEM_TS", $"y_LAST_VWD_ITEM_TS")).drop("LAST_VWD_ITEM_TS").drop("y_LAST_VWD_ITEM_TS")
     .withColumn("c_LAST_ADN_CLICK_ID", verifyResultUdf($"LAST_ADN_CLICK_ID", $"y_LAST_ADN_CLICK_ID")).drop("LAST_ADN_CLICK_ID").drop("y_LAST_ADN_CLICK_ID")
     .withColumn("c_LAST_ADN_CLICK_TS", verifyResultUdf($"LAST_ADN_CLICK_TS", $"y_LAST_ADN_CLICK_TS")).drop("LAST_ADN_CLICK_TS").drop("y_LAST_ADN_CLICK_TS")
     .withColumn("c_FLEX_FLD_5_TXT", verifyResultUdf($"FLEX_FLD_5_TXT", $"y_FLEX_FLD_5_TXT")).drop("FLEX_FLD_5_TXT").drop("y_FLEX_FLD_5_TXT")
@@ -241,6 +245,7 @@ class ClickCompare(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
 
     val path = new Path(params.workDir, new Path(params.click_outputPath).getName)
     fs.delete(path, true)
+   // df.coalesce(20)
     saveDFToFiles(df, path.toString)
     df = readFilesAsDF(path.toString)
     val total = df.count()
@@ -695,6 +700,18 @@ class ClickCompare(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     if (my != null && your != null) {
       val my_ts = my.split(" ")
       val your_ts = my.split(" ")
+      if (my_ts(0).equalsIgnoreCase(your_ts(0)))
+        return true
+    }
+    false
+  }
+
+  def verifyLastViewItemResult(my: String, your: String): Boolean = {
+    if (my == null && your == null)
+      return true
+    if (my != null && your != null) {
+      val my_ts = my.split(".")
+      val your_ts = my.split(".")
       if (my_ts(0).equalsIgnoreCase(your_ts(0)))
         return true
     }
