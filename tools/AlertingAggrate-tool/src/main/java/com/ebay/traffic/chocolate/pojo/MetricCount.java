@@ -9,6 +9,15 @@ public class MetricCount {
   private String condition;
   private long threshold;
   private String flag;
+  private String alert;
+
+  public String getProject_name() {
+    return project_name;
+  }
+
+  public void setProject_name(String project_name) {
+    this.project_name = project_name;
+  }
 
   public String getName() {
     return name;
@@ -32,14 +41,6 @@ public class MetricCount {
 
   public void setDate(String date) {
     this.date = date;
-  }
-
-  public String getProject_name() {
-    return project_name;
-  }
-
-  public void setProject_name(String project_name) {
-    this.project_name = project_name;
   }
 
   public String getCondition() {
@@ -66,4 +67,11 @@ public class MetricCount {
     this.flag = flag;
   }
 
+  public String getAlert() {
+    return alert;
+  }
+
+  public void setAlert(String alert) {
+    this.alert = alert;
+  }
 }

@@ -6,7 +6,11 @@ import com.ebay.traffic.chocolate.pojo.MetricCount;
 public class NumUtil {
 
   public static long parseLong(String num){
-    if(num.endsWith("E8")){
+    if(num.endsWith("E9")){
+      String lonStr = num.substring(0, num.length()-2);
+      float a = Float.parseFloat(lonStr);
+      return (long) (a * 1000000000);
+    }else if(num.endsWith("E8")){
       String lonStr = num.substring(0, num.length()-2);
       float a = Float.parseFloat(lonStr);
       return (long) (a * 100000000);

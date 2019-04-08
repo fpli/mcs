@@ -5,8 +5,11 @@ public class Metric {
   private String project_name;
   private String name;
   private String value;
+  private String source;
   private String condition;
   private long threshold;
+  private String computeType;
+  private String alert;
 
   public String getProject_name() {
     return project_name;
@@ -32,6 +35,13 @@ public class Metric {
     this.value = value;
   }
 
+  public String getSource() {
+    return source;
+  }
+
+  public void setSource(String source) {
+    this.source = source;
+  }
 
   public String getCondition() {
     return condition;
@@ -45,8 +55,24 @@ public class Metric {
     return threshold;
   }
 
-  public void setThreshold(long threadHold) {
+  public void setThreshold(long threshold) {
     this.threshold = threshold;
+  }
+
+  public String getComputeType() {
+    return computeType;
+  }
+
+  public void setComputeType(String computeType) {
+    this.computeType = computeType;
+  }
+
+  public String getAlert() {
+    return alert;
+  }
+
+  public void setAlert(String alert) {
+    this.alert = alert;
   }
 
 }

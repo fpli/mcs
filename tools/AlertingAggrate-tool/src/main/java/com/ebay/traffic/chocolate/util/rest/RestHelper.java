@@ -15,7 +15,7 @@ import javax.ws.rs.core.Response;
 public class RestHelper {
 
   private static Logger logger = LoggerFactory.getLogger(RestHelper.class);
-  private static Client client = ClientBuilder.newClient( new ClientConfig().register( LoggingFilter.class ) );
+  private static Client client = ClientBuilder.newClient(new ClientConfig().register(LoggingFilter.class));
 
   public static String post(String endPoint, String reqJson) {
     if (endPoint == null || endPoint.length() == 0) {
@@ -24,7 +24,7 @@ public class RestHelper {
     logger.info("Rest url: " + endPoint);
     WebTarget webTarget = client.target(endPoint);
 
-    Invocation.Builder invocationBuilder =  webTarget.request(MediaType.APPLICATION_JSON_TYPE);
+    Invocation.Builder invocationBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
     Response response = invocationBuilder.post(Entity.entity(reqJson, MediaType.APPLICATION_JSON_TYPE));
 
     String resp = response.readEntity(String.class);
@@ -40,7 +40,7 @@ public class RestHelper {
     logger.info("Rest url: " + endPoint);
     WebTarget webTarget = client.target(endPoint);
 
-    Invocation.Builder invocationBuilder =  webTarget.request(MediaType.APPLICATION_JSON_TYPE);
+    Invocation.Builder invocationBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
     Response response = invocationBuilder.get();
 
     String resp = response.readEntity(String.class);
@@ -56,7 +56,7 @@ public class RestHelper {
     logger.info("Rest url: " + endPoint);
     WebTarget webTarget = client.target(endPoint);
 
-    Invocation.Builder invocationBuilder =  webTarget.request(MediaType.APPLICATION_JSON_TYPE);
+    Invocation.Builder invocationBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
     Response response = invocationBuilder.put(Entity.entity(reqJson, MediaType.APPLICATION_JSON_TYPE));
 
     String resp = response.readEntity(String.class);

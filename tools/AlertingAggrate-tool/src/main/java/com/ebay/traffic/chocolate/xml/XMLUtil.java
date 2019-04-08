@@ -31,22 +31,25 @@ public class XMLUtil {
         ArrayList<Metric> list = new ArrayList<Metric>();
         Element project = (Element) it.next();
         String project_name = project.attribute("name").getValue();
-        String source = project.attribute("source").getValue();
-        List<Element> metrics= project.elements("metric");
-        for(Element elem: metrics){
+        Integer id = Integer.parseInt(project.attribute("id").getValue());
+        List<Element> metrics = project.elements("metric");
+        for (Element elem : metrics) {
           Metric metric = new Metric();
           metric.setProject_name(project_name);
           metric.setName(elem.attribute("name").getValue());
           metric.setValue(elem.attribute("value").getValue());
+          metric.setSource(elem.attribute("source").getValue());
           metric.setCondition(getCondition(elem.attribute("condition").getValue()));
-          metric.setThreshold(Long.parseLong(elem.attribute("threadHold").getValue()));
+          metric.setThreshold(Long.parseLong(elem.attribute("threshold").getValue()));
+          metric.setComputeType(elem.attribute("computeType").getValue());
+          metric.setAlert(elem.attribute("alert").getValue());
           list.add(metric);
         }
         Project pro = new Project();
         pro.setName(project_name);
-        pro.setSource(source);
+        pro.setId(id);
         pro.setList(list);
-       projectList.add(pro);
+        projectList.add(pro);
       }
     } catch (DocumentException e) {
       e.printStackTrace();
@@ -56,9 +59,9 @@ public class XMLUtil {
   }
 
   private static String getCondition(String condition) {
-    if(condition == null){
+    if (condition == null) {
       return "";
-    }else {
+    } else {
       return condition;
     }
   }

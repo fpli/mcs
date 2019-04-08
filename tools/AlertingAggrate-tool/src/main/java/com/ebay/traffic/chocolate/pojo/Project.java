@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class Project {
 
   private String name;
-  private String source;
+  private int id;
   private ArrayList<Metric> list;
 
   public String getName() {
@@ -16,12 +16,12 @@ public class Project {
     this.name = name;
   }
 
-  public String getSource() {
-    return source;
+  public int getId() {
+    return id;
   }
 
-  public void setSource(String source) {
-    this.source = source;
+  public void setId(int id) {
+    this.id = id;
   }
 
   public ArrayList<Metric> getList() {
