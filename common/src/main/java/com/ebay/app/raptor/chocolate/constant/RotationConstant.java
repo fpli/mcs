@@ -163,7 +163,7 @@ public class RotationConstant {
   public static final String FIELD_ROT_CR_ID = "rot_cr_id";
   public static final String FIELD_ROT_CR_STATUS = "rot_cr_status";
 
-  //elastic search to get new-create rotation count and update rotation count
+  //elastic search to get new-create rotation quantity and update rotation quantity per hour
   public static final String ES_SEARCH_KEY = "key";
   public static final String ES_SEARCH_DATE = "date";
   public static final String ES_CREATE_ROTATION_KEY = "RotationCreateSuccess";

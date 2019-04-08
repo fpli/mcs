@@ -151,11 +151,11 @@ public class DumpRotationToTDTest {
     String esSearchEndTime = "2019-03-29 23:59:59";
     DumpRotationToTD.setEsRestHighLevelClient(restHighLevelClient);
     //test new create rotation count
-    Integer newCreateRotationCount = DumpRotationToTD.getChangeRotationCount(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
+    Integer newCreateRotationCount = DumpRotationToTD.getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
     Assert.assertEquals("2", newCreateRotationCount.toString());
 
     //test update rotation count
-    Integer updateRotationCount = DumpRotationToTD.getChangeRotationCount(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
+    Integer updateRotationCount = DumpRotationToTD.getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
     Assert.assertEquals("3", updateRotationCount.toString());
   }
 

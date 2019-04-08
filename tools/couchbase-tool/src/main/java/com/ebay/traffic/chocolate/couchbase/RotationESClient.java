@@ -37,7 +37,7 @@ public class RotationESClient {
         return client;
     }
 
-    //close restHighLevelClient after each search operation
+    //close restHighLevelClient after every search operation
     public void closeESClient(RestHighLevelClient restHighLevelClient) throws IOException {
         try {
             restHighLevelClient.close();

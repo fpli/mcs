@@ -39,7 +39,7 @@ public class DumpRotationToTD {
   private static CorpRotationCouchbaseClient client;
   private static Bucket bucket;
 
-  //rotation es rest high level client
+  //rotation es client
   private static RotationESClient rotationESClient;
   private static RestHighLevelClient esRestHighLevelClient;
 
@@ -81,7 +81,7 @@ public class DumpRotationToTD {
       CacheClient cacheClient = client.getCacheClient();
       bucket = client.getBuctet(cacheClient);
 
-      //es rest high level client
+      //es client
       rotationESClient = new RotationESClient(couchbasePros);
       esRestHighLevelClient = rotationESClient.getESClient();
 
@@ -154,16 +154,16 @@ public class DumpRotationToTD {
           .single();
     }
 
-    //get new-create rotation count and update rotation count from es
+    //get new-create rotation quantity and update rotation quantity from es per hour
     String esSearchStartTime = sdf.format(new Date(Long.parseLong(startKey)));
     String esSearchEndTime = sdf.format(new Date(Long.parseLong(endKey)));
-    Integer newCreateRotationCount = getChangeRotationCount(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
-    Integer updateRotationCount = getChangeRotationCount(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
-    Integer changeRotationCountFromES = newCreateRotationCount + updateRotationCount;
+    Integer newCreateRotationQuantity = getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
+    Integer updateRotationQuantity = getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
+    Integer changeRotationQuantity = newCreateRotationQuantity + updateRotationQuantity;
 
-    //compare rotation change count from es and rotation change dump from couchbase
-    //if rotation change count from es >0 but rotation dump from couchbase =0, throw couchbase dump exception
-    if (changeRotationCountFromES > 0 && size == 0) {
+    //compare rotation change quantity from es and rotation change quantity dump from couchbase
+    //if rotation change quantity from es >0 but rotation dump from couchbase =0, throw couchbase dump exception
+    if (changeRotationQuantity > 0 && size == 0) {
       logger.error("couchbase dump rotation data count = 0, throw exception!");
       throw new IOException("couchbase dump rotation data count = 0");
     }
@@ -421,8 +421,8 @@ public class DumpRotationToTD {
     }
   }
 
-  //get new-create rotation count and update rotation count, depends on es search key
-  public static Integer getChangeRotationCount(String esSearchStartTime, String esSearchEndTime, String esRotationKey) throws IOException {
+  //get new-create rotation quantity and update rotation quantity per hour, depends on es search key
+  public static Integer getChangeRotationQuantity(String esSearchStartTime, String esSearchEndTime, String esRotationKey) throws IOException {
     SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
     BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
     boolQueryBuilder.must(QueryBuilders.matchQuery(RotationConstant.ES_SEARCH_KEY, esRotationKey));
