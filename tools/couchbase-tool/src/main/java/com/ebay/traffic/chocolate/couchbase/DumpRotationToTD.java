@@ -460,6 +460,10 @@ public class DumpRotationToTD {
     DumpRotationToTD.couchbasePros = couchbasePros;
   }
 
+  /**
+   * Set Mocked ES RestHighLevelClient for Unit Testing
+   * @param restHighLevelClient ES RestHighLevelClient
+   */
   public static void setEsRestHighLevelClient(RestHighLevelClient restHighLevelClient) {
     DumpRotationToTD.esRestHighLevelClient = restHighLevelClient;
   }

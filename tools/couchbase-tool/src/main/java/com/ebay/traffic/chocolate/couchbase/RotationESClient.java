@@ -31,7 +31,7 @@ public class RotationESClient {
         logger.info("Initialize ES client builder successfully.");
     }
 
-    //generate es rest high level client for es search
+    //generate rest high level client for every search operation
     public RestHighLevelClient getESClient() {
         RestHighLevelClient client = new RestHighLevelClient(restClientBuilder);
         return client;
