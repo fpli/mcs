@@ -30,7 +30,7 @@ public class XMLUtil {
       while (it.hasNext()) {
         ArrayList<Metric> list = new ArrayList<Metric>();
         Element project = (Element) it.next();
-        String project_name = project.attribute("name").getValue();
+        String project_name = project.attribute("name").getValue() + "_" + project.attribute("id").getValue();
         Integer id = Integer.parseInt(project.attribute("id").getValue());
         List<Element> metrics = project.elements("metric");
         for (Element elem : metrics) {

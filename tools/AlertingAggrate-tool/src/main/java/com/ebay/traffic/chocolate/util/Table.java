@@ -24,22 +24,22 @@ public class Table {
   }
 
   private static String getBodyLine(MetricCount metricCount) {
-    String bodyLine = "<tr><td>" + metricCount.getName() + "</td><td>" + metricCount.getCondition() + "</td><td>" + metricCount.getDate() + "</td><td>" + metricCount.getValue() + "</td><td>" + metricCount.getThreshold() + "</td>" + renderFlag(metricCount.getFlag(), metricCount.getAlert()) + "</tr>";
+    String bodyLine = "<tr><td>" + metricCount.getName() + "</td><td>" + metricCount.getDate() + "</td><td>" + metricCount.getValue() + "</td><td>" + metricCount.getThreshold() + "</td>" + renderFlag(metricCount.getFlag(), metricCount.getAlert()) + "</tr>";
     return bodyLine;
   }
 
   private static String renderFlag(String flag, String alert) {
     if (flag.equalsIgnoreCase("DOWN") && alert.equalsIgnoreCase("true")) {
-      return "<td bgcolor=\"#ff0000\">" + flag + "</td>";
+      return "<td bgcolor=\"#ff0000\">" + "Warning" + "" + "</td>";
     } else if(flag.equalsIgnoreCase("UP") && alert.equalsIgnoreCase("false")) {
-      return "<td bgcolor=\"#ff0000\">" + flag + "</td>";
+      return "<td bgcolor=\"#ff0000\">" + "Warning" + "</td>";
     }else {
-      return "<td>" + flag + "</td>";
+      return "<td>" + "OK" + "" + "</td>";
     }
   }
 
   private static String getHeader() {
-    String header = "<table border='1'><tr width=\"350\" bgcolor=\"#8A8A8A\"><th width=\"300\">metric</th><th width=\"300\">condition</th><th width=\"300\">date</th><th width=\"300\">value</th><th width=\"300\">threshold</th><th width=\"300\">state</th></tr>";
+    String header = "<table border='1'><tr width=\"350\" bgcolor=\"#8A8A8A\"><th width=\"300\">metric</th><th width=\"300\">date</th><th width=\"300\">value</th><th width=\"300\">threshold</th><th width=\"300\">state</th></tr>";
 
     return header;
   }
