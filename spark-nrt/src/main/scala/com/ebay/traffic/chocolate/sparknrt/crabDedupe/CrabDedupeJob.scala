@@ -38,6 +38,14 @@ class CrabDedupeJob(params: Parameter)
       "uncompressed"
     }
   }
+  lazy val dataFileSuffix: String = {
+    if(params.snappyCompression) {
+      "snappy"
+    } else {
+      "csv"
+    }
+  }
+
 
   var couchbaseDedupe: Boolean = {
     params.couchbaseDedupe
@@ -167,7 +175,7 @@ class CrabDedupeJob(params: Parameter)
       .map(swi => {
         val src = swi._1.getPath
         val seq = ("%5d" format max + 1 + swi._2).replace(" ", "0")
-        val target = new Path(dateOutputPath, s"part-${seq}.snappy")
+        val target = new Path(dateOutputPath, s"part-$seq.$dataFileSuffix")
         logger.info("Rename from: " + src.toString + " to: " + target.toString)
         fs.rename(src, target)
         target.toString

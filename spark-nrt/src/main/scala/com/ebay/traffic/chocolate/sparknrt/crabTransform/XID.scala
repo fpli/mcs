@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.crabTransform
 
+import spray.json.DefaultJsonProtocol
+
 /**
   * Created by yimhuang on 1/10/17.
   */

@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.crabDedupe
 import java.io.File
 
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
+import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
@@ -43,6 +44,20 @@ class TestCrabDedupeJob extends BaseFunSuite{
     val params = Parameter(args)
     val job = new CrabDedupeJob(params)
     job.run()
+    val metadata = Metadata(workDir, "crabDedupe", MetadataEnum.dedupe)
+    val dom = metadata.readDedupeOutputMeta()
+    assert (dom.length == 1)
+    assert (dom(0)._2.contains("date=2019-03-27"))
+    assert (dom(0)._2.contains("date=2019-03-28"))
+
+    val df1 = job.readFilesAsDFEx(dom(0)._2("date=2019-03-27"), job.schema_tfs.dfSchema, "csv", "bel")
+    df1.show()
+    assert (df1.count() == 7)
+
+    val df2 = job.readFilesAsDFEx(dom(0)._2("date=2019-03-28"), job.schema_tfs.dfSchema, "csv", "bel")
+    df2.show()
+    assert (df2.count() == 1)
+
   }
 
 }

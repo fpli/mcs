@@ -12,7 +12,10 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.compress.GzipCodec
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, lit, udf, _}
+import org.apache.spark.sql.functions.{col, lit, udf}
+import org.apache.spark.sql.functions._
+import scalaj.http.Http
+import spray.json._
 
 import scala.io.Source
 
@@ -28,7 +31,7 @@ object CrabTransformJob extends App {
 }
 
 class CrabTransformJob(params: Parameter)
-  extends BaseSparkNrtJob(params.appName, params.mode, false){
+  extends BaseSparkNrtJob(params.appName, params.mode){
 
   @transient lazy val metadata: Metadata = {
     if (params.metaFile == "imkDump") {
@@ -106,7 +109,7 @@ class CrabTransformJob(params: Parameter)
       crabTransformMeta = crabTransformMeta.slice(0, params.maxMetaFiles)
     }
 
-//    val kwLKPDf = spark.sql("select kw_id, kw from default.dw_kwdm_kw_lkp")
+    //    val kwLKPDf = spark.sql("select kw_id, kw from default.dw_kwdm_kw_lkp")
     val kwLKPDf = readFilesAsDF(params.kwDataDir)
     val partitions = crabTransformMeta.length
 
@@ -136,8 +139,8 @@ class CrabTransformJob(params: Parameter)
       val smallJoinDf = coreDf.select("keyword").filter(kwIsNotEmptyUdf(col("keyword"))).distinct()
       val heavyJoinResultDf = kwLKPDf
         .join(broadcast(smallJoinDf), $"keyword" === $"kw", "right_outer")
-//        .groupBy("keyword")
-//        .agg(min("kw_id") as "kw_id")
+        //        .groupBy("keyword")
+        //        .agg(min("kw_id") as "kw_id")
         .withColumnRenamed("keyword", "temp_kw")
 
       coreDf.join(heavyJoinResultDf, $"keyword" === $"temp_kw", "left_outer")
@@ -331,10 +334,10 @@ class CrabTransformJob(params: Parameter)
     * @param date date
     */
   def simpleRenameFiles(workDir: String, outputDir: String, date: String): Unit = {
-//    val outputPath = outputDir + "/" + date
-//    if (!fs.exists(new Path(outputPath))) {
-//      fs.mkdirs(new Path(outputPath))
-//    }
+    //    val outputPath = outputDir + "/" + date
+    //    if (!fs.exists(new Path(outputPath))) {
+    //      fs.mkdirs(new Path(outputPath))
+    //    }
 
     val status = fs.listStatus(new Path(workDir))
     status
