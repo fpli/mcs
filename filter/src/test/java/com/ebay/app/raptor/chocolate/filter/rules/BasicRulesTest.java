@@ -282,10 +282,16 @@ public class BasicRulesTest {
     req.setSourceIP("204.79.197.200");
     req.setReferrerDomain("www.bing.com");
     assertEquals(0, rule.test(req));
+    req.setSourceIP("");
+    req.setReferrerDomain("www.bing.com");
+    assertEquals(0, rule.test(req));
 
     rule = new InternalTrafficRule(ChannelType.DISPLAY);
     req = new FilterRequest();
     req.setSourceIP("204.79.197.200");
+    req.setReferrerDomain("www.bing.com");
+    assertEquals(0, rule.test(req));
+    req.setSourceIP("");
     req.setReferrerDomain("www.bing.com");
     assertEquals(0, rule.test(req));
   }

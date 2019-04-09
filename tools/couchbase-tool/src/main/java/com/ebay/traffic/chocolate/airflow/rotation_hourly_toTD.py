@@ -18,7 +18,7 @@ rotation_td_hourly_dag = DAG(
     'rotation_td_hourly_dag',
     default_args=rotation_td_hourly_args,
     description='hourly dump rotation info from CB to TD',
-    schedule_interval='@hourly')
+    schedule_interval='20 * ? * *')
 
 rotation_td_hourly_task_1 = BashOperator(
     task_id='task_dumpRotationToTD',

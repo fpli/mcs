@@ -45,6 +45,7 @@ fi
 DT_HOUR_FORMAT=$(date +%Y-%m-%d_%H_ -d "$DT_HOUR")
 OUTPUT_PATH=${OUTPUT_PATH}${DT_HOUR_FORMAT}
 echo "OUTPUT_PATH="${OUTPUT_PATH} | tee -a ${log_file}
+rm ${OUTPUT_PATH}*
 
 echo `date`" =============== Job Start ===========" | tee -a ${log_file}
 
