@@ -42,7 +42,6 @@ object BullseyeUtils {
   def getData(cguid:String):Option[HttpResponse[String]] = {
     try {
       logger.debug(s"Bullseye sending, cguid=$cguid")
-      val start = System.currentTimeMillis
       val response = Http(properties.getProperty("epnnrt.bullseyeUrl")).method("GET")
         .header("Authorization",s"Bearer $token")
         .param("cguid", cguid)
@@ -50,9 +49,6 @@ object BullseyeUtils {
         .param("count", properties.getProperty("epnnrt.lastviewitemnum"))
         .param("linkvtou", false.toString)
         .asString
-      val end = System.currentTimeMillis
-
-      metrics.mean("BullsEyeTokenLatency", end - start)
 
       if(response.isNotError)
         Some(response)
@@ -123,15 +119,12 @@ object BullseyeUtils {
             getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
           if (list.size() > 0) {
             for (i <- 0 until list.size()) {
-              if(list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong) {
-                var item_id = list.get(i).getAsJsonObject.get("item_id").toString
-                if (item_id.equalsIgnoreCase("null"))
-                  item_id = ""
-                else
+              var item_id = list.get(i).getAsJsonObject.get("item_id").toString
+              if(!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong){
                   item_id = item_id.replace("\"","")
-                val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
-                metrics.meter("SuccessfulGet", 1)
-                return (item_id, date)
+                  val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
+                  metrics.meter("SuccessfulGet", 1)
+                  return (item_id, date)
               }
             }
           }
