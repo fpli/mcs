@@ -1,0 +1,51 @@
+{
+  "table": "df_reporting",
+  "description": "",
+  "columns": [
+    {
+      "name": "id",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "event_dt",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "is_mob",
+      "dataType": "string",
+      "default": "false"
+    },
+    {
+      "name": "is_filtered",
+      "dataType": "string",
+      "default": "false"
+    },
+    {
+      "name": "publisher_id",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "campaign_id",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "rotation_id",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "channel",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "channel_action",
+      "dataType": "string",
+      "default": ""
+    }
+  ]
+}
