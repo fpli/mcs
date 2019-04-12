@@ -1,6 +1,6 @@
 #!/bin/bash
 
-usage="Usage: scpImkToReno.sh [srcDir] [renoDir] [tmpDir]"
+usage="Usage: scpImkToReno.sh [srcDir] [renoMiddleDir] [renoDestDir] [localTmpDir]"
 
 if [ $# -le 1 ]; then
   echo $usage
@@ -13,13 +13,14 @@ HOST_NAME=`hostname -f`
 kinit -kt /datashare/mkttracking/tools/keytab-tool/keytab/b_marketing_tracking.${HOST_NAME}.keytab  b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM
 
 SRC_DIR=$1
-RENO_DIR=$2
-TMP_DIR=$3
+RENO_MID_DIR=$2
+RENO_DEST_DIR=$3
+LOCAL_TMP_DIR=$4
 
-cd ${TMP_DIR}
+cd ${LOCAL_TMP_DIR}
 
+#get file list from chocolate hdfs
 tmp_file=imk_to_reno.txt
-
 hdfs dfs -ls -R ${SRC_DIR} | grep -v "^$" | awk '{print $NF}' | grep "chocolate_" > ${tmp_file}
 
 files_size=`cat ${tmp_file} | wc -l`
@@ -30,9 +31,10 @@ for one_file in ${all_files}
 do
     file_name=$(basename "$one_file")
     rm -f ${file_name}
+#   get one data file from chocolate hdfs
     hdfs dfs -get ${one_file}
     rcode=$?
-    if [ $rcode -ne 0 ]
+    if [ ${rcode} -ne 0 ]
     then
         echo "Fail to get from HDFS, please check!!!"
         exit ${rcode}
@@ -40,26 +42,40 @@ do
 
     orgDate=${file_name:15:10}
     date=${orgDate//-/}
-    destFolder=${RENO_DIR}/dt=${date}
-
+    destFolder=${RENO_DEST_DIR}/dt=${date}
+#    create dest folder if not exists
     /apache/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${destFolder}
     if [[ -s ${file_name} ]];
     then
-        /apache/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -put -f ${file_name} ${destFolder}/
-        rcode=$?
-        if [ $rcode -ne 0 ]
+#        max 3 times put data to reno middle and mv data to reno dest folder
+        retry=1
+        rcode=1
+        until [[ ${retry} -gt 3 ]]
+        do
+            /apache/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -put -f ${file_name} ${RENO_MID_DIR}/ && /apache/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mv ${RENO_MID_DIR}/${file_name} ${destFolder}/
+            rcode=$?
+            if [ ${rcode} -eq 0 ]
+            then
+                break
+            else
+                echo "Faild to upload to Reno, retrying ${retry}"
+                retry=`expr ${retry} + 1`
+             fi
+        done
+        if [ ${rcode} -ne 0 ]
         then
             echo "Fail to upload to Reno, please check!!!"
             exit ${rcode}
         fi
     else
+#        not put empty data file to RENO
         echo "empty data file"
     fi
-
+#    remove local and chocolate hdfs data file
     rm -f ${file_name}
     hdfs dfs -rm ${one_file}
     rcode=$?
-    if [ $rcode -ne 0 ]
+    if [ ${rcode} -ne 0 ]
     then
         echo "Fail to remove from HDFS, please check!!!"
         exit ${rcode}
