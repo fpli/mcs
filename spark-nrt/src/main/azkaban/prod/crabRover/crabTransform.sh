@@ -2,8 +2,8 @@
 whoami
 ssh -T -i /usr/azkaban/id_rsa_spark stack@slcchocolatepits-1154246.stratus.slc.ebay.com <<EOSSH
 hostname
-cd /home/chocolate/chocolate-sparknrt-crab/bin/prod
+cd /datashare/mkttracking/jobs/chocolate-sparknrt/bin/prod
 pwd
 export HADOOP_USER_NAME=chocolate
 echo $HADOOP_USER_NAME
-./crabTransformNew.sh hdfs://slickha/apps/tracking-events-workdir hdfs://slickha/apps/tracking-events/crabTransform
+./crabTransform.sh hdfs://slickha/apps/tracking-events-workdir hdfs://slickha/apps/tracking-events/crabTransform

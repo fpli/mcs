@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - crabsink
 
-usage="Usage: crabSinkKafka.sh [workDir] [outPutDir]"
+usage="Usage: crabTransform.sh [workDir] [outPutDir]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
@@ -18,7 +18,7 @@ WORK_DIR=$1
 OUTPUT_DIR=$2
 ES_URL=http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
 
-KW_LK_FOLDER=hdfs://slickha/apps/kw_lkp/2019-03-04/
+KW_LK_FOLDER=hdfs://slickha/apps/kw_lkp/2019-04-14/
 
 DRIVER_MEMORY=8g
 EXECUTOR_NUMBER=60
@@ -53,7 +53,7 @@ ${SPARK_HOME}/bin/spark-submit \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
-      --channel crabSink \
+      --channel crabDedupe \
       --transformedPrefix chocolate_ \
       --workDir "${WORK_DIR}" \
       --kwDataDir "${KW_LK_FOLDER}" \
