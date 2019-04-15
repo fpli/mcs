@@ -63,13 +63,13 @@ class MonitoringJob(params: Parameter)
             val eventTime = firstEvent.getLong(firstEvent.fieldIndex("timestamp"))
 
             logger.info("Start counting...")
-            val capping = dfMetrics.count()
             val fieldClick = Field.of[String, AnyRef]("channelAction", "CLICK")
             val fieldEpn = Field.of[String, AnyRef]("channelType", "EPN")
             val fieldDisplay = Field.of[String, AnyRef]("channelType", "DISPLAY")
 
             if (metrics != null) {
-              metrics.meter("CappingCount", capping, eventTime)
+              metrics.meter("CappingCount", CappingTotalCount(dfMetrics, "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
+              metrics.meter("CappingCount", CappingTotalCount(dfMetrics, "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
 
               //EPN nrt rules
               metrics.meter("IPLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
@@ -85,6 +85,12 @@ class MonitoringJob(params: Parameter)
               metrics.meter("CGUIDPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDPubCappingRule_S,
                 "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
               metrics.meter("CGUIDPubLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDPubCappingRule_L,
+                "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
+              metrics.meter("IPBrowserShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPBrowserCappingRule_S,
+                "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
+              metrics.meter("IPBrowserMediumCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPBrowserCappingRule_M,
+                "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
+              metrics.meter("IPBrowserLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPBrowserCappingRule_L,
                 "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
               metrics.meter("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S,
                 "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
@@ -112,6 +118,11 @@ class MonitoringJob(params: Parameter)
     val splitted = date.split("=")
     if (splitted != null && splitted.nonEmpty) splitted(1)
     else throw new Exception("Invalid date field in metafile.")
+  }
+
+  def CappingTotalCount(df: DataFrame, channelAction: String, channelType: String): Long = {
+    df.filter($"channel_action" === channelAction and $"channel_type" === channelType)
+      .filter($"nrt_rule_flags" =!= 0).count()
   }
 
   def CappingCount(df: DataFrame, value: CappingRuleEnum.Value, channelAction: String, channelType: String): Long = {

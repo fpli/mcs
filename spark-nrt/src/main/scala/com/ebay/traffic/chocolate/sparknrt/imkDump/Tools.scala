@@ -5,15 +5,24 @@ import java.text.{DecimalFormat, SimpleDateFormat}
 import java.util.Date
 import java.util.regex.Pattern
 
+import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import org.apache.commons.lang3.StringUtils
-
+import org.slf4j.{Logger, LoggerFactory}
 
 /**
   * Created by ganghuang on 12/3/18.
-  * some utilities of dump job
+  * some tools of dump job
   */
 
-object Utils extends Serializable{
+class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializable{
+  @transient lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
+  @transient lazy val metrics: Metrics = {
+    if (StringUtils.isNotEmpty(metricsPrefix) && StringUtils.isNotEmpty(elasticsearchUrl)) {
+      ESMetrics.init(metricsPrefix, elasticsearchUrl)
+      ESMetrics.getInstance()
+    } else null
+  }
 
   lazy val keywordParams: Array[String] = Array("_nkw", "keyword", "kw")
 
@@ -66,13 +75,41 @@ object Utils extends Serializable{
     * @return query string
     */
   def getQueryString(uri: String): String = {
-    // do we need catch malformed url? illegal url are filtered in event-listener
-    val query = new URL(uri).getQuery
-    if(StringUtils.isEmpty(query)) {
-      ""
-    } else {
-      query
+    var query = ""
+    if (StringUtils.isNotEmpty(uri)) {
+      try {
+        query = new URL(uri).getQuery
+        if (StringUtils.isEmpty(query)) {
+          query = ""
+        }
+      }catch {
+        case e: Exception => {
+          if(metrics != null) {
+            metrics.meter("imk.dump.malformed", 1)
+          }
+          logger.warn("MalformedUrl", e)
+        }
+      }
     }
+    query
+  }
+
+  /**
+    * get perf_track_name_value from query string
+    * @param query query
+    * @return perf_track_name_value
+    */
+  def getPerfTrackNameValue(query: String): String = {
+    val buf = StringBuilder.newBuilder
+    if (StringUtils.isNotEmpty(query)) {
+      query.split("&").foreach(paramMapString => {
+        val paramStringArray = paramMapString.split("=")
+        if (paramStringArray.length == 2) {
+          buf.append("^" + paramMapString)
+        }
+      })
+    }
+    buf.toString()
   }
 
   def getDateFromTimestamp(timestamp: Long): String = {
@@ -86,13 +123,12 @@ object Utils extends Serializable{
   }
 
   /**
-    * get one param from the url string
-    * @param uri url string
+    * get one param from the url query string
+    * @param query url query string
     * @param key param name
     * @return param value
     */
-  def getParamValueFromUrl(uri: String, key: String): String = {
-    val query = new URL(uri).getQuery
+  def getParamValueFromQuery(query: String, key: String): String = {
     if (StringUtils.isNotEmpty(query)) {
       query.split("&").foreach(paramMapString => {
         val paramStringArray = paramMapString.split("=")
@@ -104,8 +140,13 @@ object Utils extends Serializable{
     ""
   }
 
-  def getDefaultNullNumParamValueFromUrl(uri: String, key: String): String = {
-    val query = new URL(uri).getQuery
+  /**
+    * get number param value from url, default value is null string
+    * @param query query
+    * @param key param key
+    * @return
+    */
+  def getDefaultNullNumParamValueFromQuery(query: String, key: String): String = {
     if (StringUtils.isNotEmpty(query)) {
       query.split("&").foreach(paramMapString => {
         val paramStringArray = paramMapString.split("=")
@@ -141,7 +182,17 @@ object Utils extends Serializable{
     * @return item id
     */
   def getItemIdFromUri(uri: String): String = {
-    val path = new URL(uri).getPath
+    var path = ""
+    try {
+      path = new URL(uri).getPath
+    }catch {
+      case e: Exception => {
+        if(metrics != null) {
+          metrics.meter("imk.dump.malformed", 1)
+        }
+        logger.warn("MalformedUrl", e)
+      }
+    }
     if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))){
       val itemId = path.substring(path.lastIndexOf("/") + 1)
       if (StringUtils.isNumeric(itemId)) {
@@ -169,12 +220,11 @@ object Utils extends Serializable{
 
   /**
     * get one value from a list of param names
-    * @param uri url string
+    * @param query url query string
     * @param keys param name list
     * @return param value
     */
-  def getParamFromQuery(uri: String, keys: Array[String]): String = {
-    val query = new URL(uri).getQuery
+  def getParamFromQuery(query: String, keys: Array[String]): String = {
     if(StringUtils.isNotEmpty(query)) {
       query.split("&").foreach(paramMapString => {
         val paramMapStringArray = paramMapString.split("=")
@@ -198,6 +248,22 @@ object Utils extends Serializable{
     commandType match {
       case "IMPRESSION" => "4"
       case _ => "1"
+    }
+  }
+
+  /**
+    * get channel id from channel type
+    * @param channelType channel type
+    * @return channel id
+    */
+  def getChannelType(channelType: String): String = {
+    channelType match {
+      case "EPN" => "1"
+      case "DISPLAY" => "4"
+      case "PAID_SEARCH" => "2"
+      case "SOCIAL_MEDIA" => "16"
+      case "PAID_SOCIAL" => "20"
+      case _ => "0"
     }
   }
 
@@ -225,26 +291,35 @@ object Utils extends Serializable{
     * @return domain
     */
   def getDomain(link: String): String = {
+    var result = ""
     if (StringUtils.isNotEmpty(link)) {
-      new URL(link).getHost
-    } else {
-      ""
+      try {
+        result = new URL(link).getHost
+      } catch {
+        case e: Exception => {
+          if(metrics != null) {
+            metrics.meter("imk.dump.malformed", 1)
+          }
+          logger.warn("MalformedUrl", e)
+        }
+      }
     }
+    result
   }
 
   /**
     * get user query from referrer or uri
     * @param referrer referrer
-    * @param uri uri
+    * @param query uri
     * @return user query
     */
-  def getUserQuery(referrer: String, uri: String): String = {
+  def getUserQuery(referrer: String, query: String): String = {
     if (StringUtils.isNotEmpty(referrer)) {
-      val userQueryFromReferrer = getParamFromQuery(referrer.toLowerCase, userQueryParamsOfReferrer)
+      val userQueryFromReferrer = getParamFromQuery(getQueryString(referrer.toLowerCase), userQueryParamsOfReferrer)
       if (StringUtils.isNotEmpty(userQueryFromReferrer)) {
         userQueryFromReferrer
       } else {
-        getParamFromQuery(uri.toLowerCase, userQueryParamsOfLandingUrl)
+        getParamFromQuery(query.toLowerCase, userQueryParamsOfLandingUrl)
       }
     } else {
       ""
@@ -259,6 +334,7 @@ object Utils extends Serializable{
   def judgeNotEbaySites(referrer: String): Boolean = {
     val matcher = ebaySites.matcher(referrer)
     if (matcher.find()) {
+      metrics.meter("imk.dump.internalReferer")
       false
     } else {
       true

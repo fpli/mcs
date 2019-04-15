@@ -45,7 +45,13 @@ public class LocalizedErrorFactoryV3 {
     return factory.makeException(response);
   }
 
-  public Response makeErrorResponse(String errorName) {
-    return factory.makeResponse(errorName);
+  /**
+   * We don't return bad request even the incoming is invalid.
+   * As bot callings are all with null referer, we will get lots of ERROR in CAL in domain pages.
+   * @param errorName
+   * @return
+   */
+  public Response makeWarnResponse(String errorName) {
+    return Response.status(Response.Status.OK).entity(factory.makeMessage(errorName)).build();
   }
 }

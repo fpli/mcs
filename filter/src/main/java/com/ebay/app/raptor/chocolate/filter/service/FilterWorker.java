@@ -1,9 +1,11 @@
 package com.ebay.app.raptor.chocolate.filter.service;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
+import com.ebay.app.raptor.chocolate.filter.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
 import com.ebay.traffic.chocolate.kafka.KafkaConsumerFactory;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -19,6 +21,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -45,6 +48,12 @@ public class FilterWorker extends Thread {
   // Shutdown signal.
   private final AtomicBoolean shutdownRequested = new AtomicBoolean(false);
 
+  private final int maxThreadNum = 10;
+  private final ExecutorService executor = Executors.newFixedThreadPool(maxThreadNum);
+  private final CompletionService<FilterMessage> completionService =
+    new ExecutorCompletionService<>(executor);
+
+
   public FilterWorker(ChannelType channelType, String inputTopic,
                       Properties properties, String outputTopic,
                       FilterContainer filters) {
@@ -64,6 +73,7 @@ public class FilterWorker extends Thread {
   public void shutdown() {
     LOG.info("Calling shutdown in FilterWorker.");
     shutdownRequested.set(true);
+    executor.shutdown();
   }
 
   @Override
@@ -93,32 +103,47 @@ public class FilterWorker extends Thread {
         int passed = 0;
         long startTime = System.currentTimeMillis();
         while (iterator.hasNext()) {
-          ConsumerRecord<Long, ListenerMessage> record = iterator.next();
-          ListenerMessage message = record.value();
-          metrics.meter("FilterInputCount", 1, message.getTimestamp(),
+          int threadNum = 0;
+          long theadPoolstartTime = System.currentTimeMillis();
+          for(int i = 0; i < maxThreadNum && iterator.hasNext(); i++) {
+            ConsumerRecord<Long, ListenerMessage> record = iterator.next();
+
+            ListenerMessage message = record.value();
+            metrics.meter("FilterInputCount", 1, message.getTimestamp(),
               Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
               Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
-          long latency = System.currentTimeMillis() - message.getTimestamp();
-          metrics.mean("FilterLatency", latency);
+            long latency = System.currentTimeMillis() - message.getTimestamp();
+            metrics.mean("FilterLatency", latency);
 
-          ++count;
-          metrics.meter("FilterThroughput", 1, message.getTimestamp(),
+            ++count;
+            metrics.meter("FilterThroughput", 1, message.getTimestamp(),
               Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
               Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
 
-          FilterMessage outMessage = processMessage(message);
+            // cache current offset for partition*
+            offsets.put(record.partition(), record.offset());
 
-          if (outMessage.getRtRuleFlags() == 0) {
-            ++passed;
-            metrics.meter("FilterPassedCount", 1, outMessage.getTimestamp(),
-                Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
-                Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
+            completionService.submit(() -> processMessage(record.value()));
+            threadNum++;
           }
 
-          // cache current offset for partition*
-          offsets.put(record.partition(), record.offset());
+          // wait
+          int received = 0;
+          while (received < threadNum) {
+            Future<FilterMessage> resultFuture = completionService.take();
+            FilterMessage outMessage = resultFuture.get();
+            received++;
+            if (outMessage.getRtRuleFlags() == 0) {
+              ++passed;
+              metrics.meter("FilterPassedCount", 1, outMessage.getTimestamp(),
+                Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
+                Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
+            }
 
-          producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
+            producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
+
+          }
+          metrics.mean("FilterThreadPoolLatency", System.currentTimeMillis() - theadPoolstartTime);
         }
 
         long now = System.currentTimeMillis();
@@ -198,6 +223,16 @@ public class FilterWorker extends Thread {
     outMessage.setGeoId(message.getGeoId());
     outMessage.setUdid(message.getUdid());
     outMessage.setReferer(message.getReferer());
+    // set postcode for not EPN Channels
+    // checked imk history data, only click has geoid
+    if (message.getChannelType() != ChannelType.EPN && message.getChannelAction() == ChannelAction.CLICK) {
+      try {
+        outMessage.setGeoId(LBSClient.getInstance().getPostalCodeByIp(outMessage.getRemoteIp()));
+      } catch (Exception e) {
+        LOG.warn("Exception in call GEO service: ", e);
+        this.metrics.meter("FilterGEOError");
+      }
+    }
     // only EPN needs to get publisher id
     if (message.getPublisherId() == DEFAULT_PUBLISHER_ID && message.getChannelType() == ChannelType.EPN) {
       long publisherId = getPublisherId(message.getCampaignId());

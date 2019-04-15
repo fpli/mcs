@@ -18,6 +18,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
+import org.apache.spark.TaskContext
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -55,6 +56,7 @@ class DedupeAndSink(params: Parameter)
   }
 
   lazy val baseDir = params.workDir + "/dedupe/" + params.channel + "/"
+  lazy val lagDir = params.workDir + "/last_ts/" + params.channel + "/"
   lazy val baseTempDir = baseDir + "/tmp/"
   lazy val sparkDir = baseDir + "/spark/"
   lazy val outputDir = params.outputDir + "/" + params.channel + "/dedupe/"
@@ -98,6 +100,7 @@ class DedupeAndSink(params: Parameter)
     kafkaRDD.mapPartitions(iter => {
       val files = new util.HashMap[String, String]()
       val writers = new util.HashMap[String, ParquetWriter[GenericRecord]]()
+      var hasWrittenTimestamp = false
 
       // output messages to files
       while (iter.hasNext) {
@@ -106,6 +109,20 @@ class DedupeAndSink(params: Parameter)
           metrics.meter("DedupeInputCount", 1, message.getTimestamp,
             Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
             Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
+        }
+        // write message lag to file with first message in this partition
+        if(!hasWrittenTimestamp) {
+          val timestampOfPartition = message.getTimestamp
+          try {
+            // write lag to hdfs file
+            val output = fs.create(new Path(lagDir + TaskContext.get.partitionId()), true)
+            output.writeBytes(String.valueOf(timestampOfPartition))
+            output.close()
+          } catch {
+            case e: Exception =>
+              logger.error("Exception when writing message lag to file", e)
+          }
+          hasWrittenTimestamp = true
         }
         val date = DATE_COL + "=" + getDateString(message.getTimestamp) // get the event date
         var writer = writers.get(date)
