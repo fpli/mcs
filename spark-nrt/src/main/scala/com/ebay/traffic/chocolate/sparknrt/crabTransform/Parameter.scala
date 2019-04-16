@@ -1,19 +1,25 @@
-package com.ebay.traffic.chocolate.sparknrt.imkTransform
+package com.ebay.traffic.chocolate.sparknrt.crabTransform
 
 import scopt.OptionParser
 
-case class Parameter(appName: String = "crabTransform",
+case class Parameter(appName: String = "crabSinkTransform",
                      mode: String = "yarn",
                      channel: String = "",
                      transformedPrefix: String = "",
                      workDir: String = "",
                      outputDir: String = "",
-                     compressOutPut: Boolean = false)
+                     kwDataDir: String = "",
+                     compressOutPut: Boolean = false,
+                     maxMetaFiles: Int = 6,
+                     elasticsearchUrl: String = "",
+                     metaFile: String = "",
+                     hdfsUri: String = "",
+                     xidParallelNum: Int = 40)
 
 object Parameter {
 
-  private lazy val parser = new OptionParser[Parameter]("crabTransform") {
-    head("crabTransform")
+  private lazy val parser = new OptionParser[Parameter]("crabSinkTransform") {
+    head("crabSinkTransform")
 
     opt[String]("appName")
       .optional
@@ -40,6 +46,11 @@ object Parameter {
       .valueName("workDir")
       .action((cont, param) => param.copy(workDir = cont))
 
+    opt[String]("kwDataDir")
+      .required
+      .valueName("kwDataDir")
+      .action((cont, param) => param.copy(kwDataDir = cont))
+
     opt[String]("outputDir")
       .required
       .valueName("outputDir")
@@ -49,6 +60,31 @@ object Parameter {
       .required
       .valueName("compressOutPut")
       .action((cont, param) => param.copy(compressOutPut = cont))
+
+    opt[Int]("maxMetaFiles")
+      .optional
+      .valueName("maxMetaFiles")
+      .action((cont, param) => param.copy(maxMetaFiles = cont))
+
+    opt[String]("elasticsearchUrl")
+      .optional
+      .valueName("elasticsearchUrl")
+      .action((cont, param) => param.copy(elasticsearchUrl = cont))
+
+    opt[String]("metaFile")
+      .optional
+      .valueName("metaFile")
+      .action((cont, param) => param.copy(metaFile = cont))
+
+    opt[String]("hdfsUri")
+      .optional
+      .valueName("hdfsUri")
+      .action((cont, param) => param.copy(hdfsUri = cont))
+
+    opt[Int]("xidParallelNum")
+      .optional
+      .valueName("xidParallelNum")
+      .action((cont, param) => param.copy(xidParallelNum = cont))
   }
 
   def apply(args: Array[String]): Parameter = parser.parse(args, Parameter()) match {
