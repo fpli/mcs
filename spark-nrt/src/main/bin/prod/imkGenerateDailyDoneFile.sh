@@ -8,7 +8,7 @@ if [ $# -le 1 ]; then
   exit 1
 fi
 
-FILE_SIZE_THRESHOLD=5
+FILE_SIZE_THRESHOLD=18
 
 DONE_FILE_RNO_PATH=$1
 IMK_RNO_PATH=$2
