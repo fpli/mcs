@@ -148,8 +148,8 @@ object MetadataEnum extends Enumeration {
   val unknown = Value(-1)
   val dedupe = Value(0)
   val capping = Value(1)
-  val epnclick = Value(2)
-  val epnimpression = Value(3)
+  val epnnrt_click = Value(2)
+  val epnnrt_imp = Value(3)
   val imkDump = Value(4)
 
   def convertToMetadataEnum(value: String): MetadataEnum.Value = {
@@ -157,10 +157,10 @@ object MetadataEnum extends Enumeration {
       dedupe
     } else if (value == capping.toString) {
       capping
-    } else if (value == epnclick.toString) {
-      epnclick
-    } else if (value == epnimpression.toString) {
-      epnimpression
+    } else if (value == epnnrt_click.toString) {
+      epnnrt_click
+    } else if (value == epnnrt_imp.toString) {
+      epnnrt_imp
     } else if (value == imkDump.toString) {
       imkDump
     } else {

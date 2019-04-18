@@ -27,9 +27,6 @@ object EPNReportingJob extends App {
 class EPNReportingJob (params: EPNParameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
-  @transient lazy val clickMetadata: Metadata = Metadata(params.workDir, "EPN", MetadataEnum.epnclick)
-  @transient lazy val impressionMetadata: Metadata = Metadata(params.workDir, "EPN", MetadataEnum.epnimpression)
-
   @transient lazy val esReporting: Reporting = {
     if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
       ESReporting.init("chocolate-report-", params.elasticsearchUrl)
@@ -47,13 +44,17 @@ class EPNReportingJob (params: EPNParameter)
   //import spark.implicits._
 
   override def run(): Unit = {
-    logger.info("start generate report for EPN click")
-    generateReportForEPN(clickMetadata, "click")
-    logger.info("finish generate report for EPN click")
-
-    logger.info("start generate report for EPN impression")
-    generateReportForEPN(impressionMetadata, "impression")
-    logger.info("finish generate report for EPN impression")
+    if (params.action.equals("click")) {
+      logger.info("start generate report for EPN click")
+      val clickMetadata: Metadata = Metadata(params.workDir, "EPN", MetadataEnum.epnnrt_click)
+      generateReportForEPN(clickMetadata, "click")
+      logger.info("finish generate report for EPN click")
+    } else {
+      logger.info("start generate report for EPN impression")
+      val impressionMetadata: Metadata = Metadata(params.workDir, "EPN", MetadataEnum.epnnrt_imp)
+      generateReportForEPN(impressionMetadata, "impression")
+      logger.info("finish generate report for EPN impression")
+    }
   }
 
   def generateReportForEPN(metaData: Metadata, action: String): Unit = {
@@ -66,13 +67,20 @@ class EPNReportingJob (params: EPNParameter)
     dedupeOutputMeta.foreach(metaIter => {
       val file = metaIter._1
       val datesFiles = metaIter._2
-
       datesFiles.foreach(datesFile => {
+        val dataFiles = datesFile._2
+        val absoluteDataFiles = dataFiles.map(file => {
+          if(file.startsWith("hdfs")){
+            file
+          } else {
+            params.hdfsUri + file
+          }
+        })
         val df = {
           if (action.equals("click")) {
-            getClickDf(datesFile._2)
+            getClickDf(absoluteDataFiles)
           } else {
-            getImpressionDf(datesFile._2)
+            getImpressionDf(absoluteDataFiles)
           }
         }
         val resultDf = df.groupBy("event_dt", "is_mob", "is_filtered", "publisher_id", "campaign_id")
@@ -85,7 +93,6 @@ class EPNReportingJob (params: EPNParameter)
           }
         })
       })
-
       // 5. archive metafile that is processed for replay
       logger.info(s"archive metafile=$file")
       archiveMetafile(file, archiveDir)

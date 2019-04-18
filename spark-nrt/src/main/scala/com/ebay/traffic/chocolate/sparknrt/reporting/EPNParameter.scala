@@ -8,7 +8,8 @@ case class EPNParameter(appName: String = "Reporting",
                         workDir: String = "",
                         archiveDir: String = "",
                         elasticsearchUrl: String = "",
-                        batchSize: Int = 10)
+                        batchSize: Int = 10,
+                        hdfsUri: String = "")
 
 object EPNParameter {
 
@@ -49,6 +50,11 @@ object EPNParameter {
       .optional
       .valueName("batchSize")
       .action((cont, param) => param.copy(batchSize = cont))
+
+    opt[String]("hdfsUri")
+      .optional
+      .valueName("hdfsUri")
+      .action((cont, param) => param.copy(hdfsUri = cont))
 
   }
 
