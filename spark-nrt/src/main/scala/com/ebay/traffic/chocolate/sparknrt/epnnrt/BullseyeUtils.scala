@@ -39,15 +39,14 @@ object BullseyeUtils {
 
 
   //may be retry here
-  def getData(cguid:String):Option[HttpResponse[String]] = {
+  def getData(cguid:String, modelId: String, count: String, bullseyeUrl: String):Option[HttpResponse[String]] = {
     try {
       logger.debug(s"Bullseye sending, cguid=$cguid")
-      val response = Http(properties.getProperty("epnnrt.bullseyeUrl")).method("GET")
+      val response = Http(bullseyeUrl).method("GET")
         .header("Authorization",s"Bearer $token")
         .param("cguid", cguid)
-        .param("modelid", properties.getProperty("epnnrt.modelId"))
-        .param("count", properties.getProperty("epnnrt.lastviewitemnum"))
-        .param("linkvtou", false.toString)
+        .param("modelid", modelId)
+        .param("count", count)
         .asString
 
       if(response.isNotError)
@@ -68,46 +67,9 @@ object BullseyeUtils {
     }
   }
 
-/*  def getLastViewItem(cguid: String, timestamp: String): (String, String)= {
-    retry(2) {
-      val start = System.currentTimeMillis
-      val result = getData(cguid)
-      metrics.mean("BullsEyeLatency", System.currentTimeMillis - start)
-      try {
-        val responseBody = result.get.body
-        responseBody match {
-          case null | "" => ("", "")
-          case _ =>
-            val list = new JsonParser().parse(responseBody).getAsJsonArray.get(0).getAsJsonObject.get("results").
-              getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
-            if (list.size() > 0) {
-              for (i <- 0 until list.size()) {
-                if(list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong) {
-                  var item_id = list.get(i).getAsJsonObject.get("item_id").toString
-                  if (item_id.equalsIgnoreCase("null"))
-                    item_id = ""
-                  else
-                    item_id = item_id.replace("\"","")
-                  val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
-                  metrics.meter("SuccessfulGet", 1)
-                  return (item_id, date)
-                }
-              }
-            }
-            metrics.meter("BullsEyeHit", 1)
-            ("", "")
-        }
-      } catch {
-        case _: Exception =>
-          logger.error("error when parse last view item : CGUID:" + cguid + " response: " + result.toString)
-          ("", "")
-      }
-    }
-  }*/
-
-  def getLastViewItem(cguid: String, timestamp: String): (String, String)= {
+  /*def getLastViewItem(cguid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String)= {
     val start = System.currentTimeMillis
-    val result = getData(cguid)
+    val result = getData(cguid, modelId, count, bullseyeUrl)
     metrics.mean("BullsEyeLatency", System.currentTimeMillis - start)
 
     try {
@@ -134,6 +96,110 @@ object BullseyeUtils {
     } catch {
       case _: Exception =>
         logger.error("error when parse last view item : CGUID:" + cguid + " response: " + result.toString)
+        ("", "")
+    }
+  }
+*/
+
+
+  def getLastViewItem(cguid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String)= {
+    val start = System.currentTimeMillis
+    val result = getData(cguid, modelId, count, bullseyeUrl)
+    metrics.mean("BullsEyeLatency", System.currentTimeMillis - start)
+
+    try {
+      val responseBody = result.get.body
+      responseBody match {
+        case null | "" => ("", "")
+        case _ =>
+          val result_list = new JsonParser().parse(responseBody).getAsJsonArray
+          if(result_list.size() == 1) {
+            //normally there is one result
+            val list = new JsonParser().parse(responseBody).getAsJsonArray.get(0).getAsJsonObject.get("results").
+              getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
+            if (list.size() > 0) {
+              for (i <- 0 until list.size()) {
+                var item_id = list.get(i).getAsJsonObject.get("item_id").toString
+                if(!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong){
+                  item_id = item_id.replace("\"","")
+                  val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
+                  metrics.meter("SuccessfulGet", 1)
+                  return (item_id, date)
+                }
+              }
+            }
+          } else {
+            //for multiple response results
+            for (i <- 0 until result_list.size()) {
+              val list = new JsonParser().parse(responseBody).getAsJsonArray.get(i).getAsJsonObject.get("results").
+                getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
+              if (list.size() > 0) {
+                for (i <- 0 until list.size()) {
+                  var item_id = list.get(i).getAsJsonObject.get("item_id").toString
+                  if(!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong){
+                    item_id = item_id.replace("\"","")
+                    val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
+                    metrics.meter("SuccessfulGet", 1)
+                    return (item_id, date)
+                  }
+                }
+              }
+            }
+          }
+          metrics.meter("BullsEyeHit", 1)
+          ("", "")
+      }
+    } catch {
+      case _: Exception =>
+        logger.error("error when parse last view item : CGUID:" + cguid + " response: " + result.toString)
+        ("", "")
+    }
+  }
+
+
+  // for unit test
+  def getLastViewItemByResponse(timestamp: String, result: HttpResponse[String]): (String, String)= {
+    try {
+      val responseBody = Some(result).get.body
+      responseBody match {
+        case null | "" => ("", "")
+        case _ =>
+          val result_list = new JsonParser().parse(responseBody).getAsJsonArray
+          if(result_list.size() == 1) {
+            val list = new JsonParser().parse(responseBody).getAsJsonArray.get(0).getAsJsonObject.get("results").
+              getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
+            if (list.size() > 0) {
+              for (i <- 0 until list.size()) {
+                var item_id = list.get(i).getAsJsonObject.get("item_id").toString
+                if(!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong){
+                  item_id = item_id.replace("\"","")
+                  val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
+                  metrics.meter("SuccessfulGet", 1)
+                  return (item_id, date)
+                }
+              }
+            }
+          } else {
+            for (i <-0 until result_list.size()) {
+              val list = new JsonParser().parse(responseBody).getAsJsonArray.get(i).getAsJsonObject.get("results").
+                getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
+              if (list.size() > 0) {
+                for (i <- 0 until list.size()) {
+                  var item_id = list.get(i).getAsJsonObject.get("item_id").toString
+                  if(!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong){
+                    item_id = item_id.replace("\"","")
+                    val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
+                    metrics.meter("SuccessfulGet", 1)
+                    return (item_id, date)
+                  }
+                }
+              }
+            }
+          }
+          ("", "")
+      }
+    } catch {
+      case _: Exception =>
         ("", "")
     }
   }
