@@ -39,7 +39,7 @@ fi
 DT=$(date +%Y-%m-%d -d "`date` - 1 day")
 HDP_CLICK=/apps/epn-nrt/click/date=${DT}/                   #chocolate hdfs files
 LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/date=${DT}   #Local file path which contains the epnnrt click result files
-HDP_IMP=/apps/epn-nrt/impression/date=${DT}                 #Local file path which contains the epnnrt impression result files
+HDP_IMP=/apps/epn-nrt/impression/date=${DT}/                #Local file path which contains the epnnrt impression result files
 NRT_PATH=/home/stack/epn-nrt/${DT}                          #the file path on epnnrt vm: lvsnrt2batch-1761265
 
 echo "HDP_CLICK="${HDP_CLICK} | tee -a ${log_file}
@@ -67,9 +67,8 @@ sort all_click_files.txt > sorted_all_click_files.txt
 sort all_click_processed.txt > sorted_all_click_processed.txt
 
 diff_click_line=`diff sorted_all_click_files.txt sorted_all_click_processed.txt |wc -l`
-if [[ ${diff_click_line} -ge 1 ]]; then
+if [[ ${diff_click_line} -lt 1 ]]; then
     echo "chocolate-ePN ${DT}'s NRT completed." | mail -s "NRT completed" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
-    exit 0
 else
     echo "chocolate-ePN ${DT}'s NRT delayed!!!!" | mail -s "NRT delayed!!!!" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
     exit 1
@@ -89,7 +88,7 @@ sort all_imp_files.txt > sorted_all_imp_files.txt
 sort all_imp_processed.txt > sorted_all_imp_processed.txt
 
 diff_imp_line=`diff sorted_all_imp_files.txt sorted_all_imp_processed.txt |wc -l`
-if [[ ${diff_imp_line} -ge 1 ]]; then
+if [[ ${diff_imp_line} -lt 1 ]]; then
     echo "chocolate-ePN ${DT}'s NRT completed." | mail -s "NRT completed" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
     exit 0
 else

@@ -20,6 +20,7 @@
     <module>cho-panda-etl-scp</module>
     <module>CheckRecover-tool</module>
     <module>AlertingAggrate-tool</module>
+    <module>scp-crab-to-hdfs</module>
   </modules>
 
   <dependencies>
