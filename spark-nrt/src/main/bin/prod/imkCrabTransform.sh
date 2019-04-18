@@ -18,14 +18,16 @@ WORK_DIR=$1
 OUTPUT_DIR=$2
 ES_URL=http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
 
-DRIVER_MEMORY=10g
-EXECUTOR_NUMBER=30
-EXECUTOR_MEMORY=12g
+KW_LK_FOLDER=hdfs://slickha/apps/kw_lkp/2019-04-14/
+
+DRIVER_MEMORY=8g
+EXECUTOR_NUMBER=60
+EXECUTOR_MEMORY=4g
 EXECUTOR_CORES=4
 
 JOB_NAME="imkCrabTransform"
 
-SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/chocolate
+SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/chocolate/logs
 HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
 
 for f in $(find $bin/../../conf/prod -name '*.*');
@@ -53,7 +55,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --mode yarn \
       --channel PAID_SEARCH \
       --transformedPrefix chocolate_ \
-      --kwDataDir hdfs://slickha/apps/kw_lkp/2019-03-04/ \
+      --kwDataDir "${KW_LK_FOLDER}" \
       --workDir "${WORK_DIR}" \
       --outputDir "${OUTPUT_DIR}" \
       --compressOutPut true \

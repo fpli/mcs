@@ -4,6 +4,5 @@ ssh -T -i /usr/azkaban/id_rsa_spark stack@slcchocolatepits-1154246.stratus.slc.e
 hostname
 cd /datashare/mkttracking/jobs/chocolate-sparknrt/bin/prod
 pwd
-export HADOOP_USER_NAME=chocolate
-echo $HADOOP_USER_NAME
-./imkCrabTransform.sh hdfs://elvisha/apps/tracking-events-workdir hdfs://slickha/apps/tracking-events/imkTransform
+
+./imkGenerateDailyDoneFile.sh /apps/b_marketing_tracking/imk_tracking/daily_done_files /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event imk_rvr_trckng_event

@@ -6,4 +6,5 @@ cd /datashare/mkttracking/jobs/chocolate-sparknrt/bin/prod
 pwd
 export HADOOP_USER_NAME=chocolate
 echo $HADOOP_USER_NAME
-./imkCrabTransform.sh hdfs://elvisha/apps/tracking-events-workdir hdfs://slickha/apps/tracking-events/imkTransform
+
+./imkCopiedToRNO.sh /apps/tracking-events/crabTransform/imkOutput /apps/tracking-events/imkTransform/imkOutput /apps/tracking-events/crabTransform/dtlOutput /apps/tracking-events/imkTransform/dtlOutput

@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.sparknrt.meta
 
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
+import java.net.URI
 
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -28,7 +29,7 @@ class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
   }
 
   lazy val fs = {
-    val fs = FileSystem.get(hadoopConf)
+    val fs = FileSystem.get(URI.create(workDir), hadoopConf)
     sys.addShutdownHook(fs.close())
     fs
   }

@@ -87,6 +87,7 @@ class CrabDedupeJob(params: Parameter)
 
     val df = readFilesAsDFEx(inputFiles, schema_tfs.dfSchema, "csv", "bel")
       .dropDuplicates("rvr_id")
+      .cache()
     val dates = df.select("event_dt").distinct().collect().map(row => {
       val eventDt = row.get(0)
       if (eventDt == null) {
@@ -99,7 +100,7 @@ class CrabDedupeJob(params: Parameter)
     val outputMetas = dates.map(date => {
       val oneDayDf = df
         .filter($"event_dt" === date)
-        .filter(dedupeRvrIdByCBUdf(col("rvr_id")))
+        .filter(dedupeRvrIdByCBUdf(col("rvr_id"), col("rvr_cmnd_type_cd")))
         .repartition(params.partitions)
       val tempOutFolder = dedupeOutTempDir + "/date=" + date
       saveDFToFiles(oneDayDf, tempOutFolder, compression, "csv", "bel")
@@ -117,16 +118,16 @@ class CrabDedupeJob(params: Parameter)
     }
   }
 
-  val dedupeRvrIdByCBUdf: UserDefinedFunction = udf((rvrId: String) => dedupeRvrIdByCB(rvrId) )
+  val dedupeRvrIdByCBUdf: UserDefinedFunction = udf((rvrId: String, cmndType: String) => dedupeRvrIdByCB(rvrId, cmndType) )
 
   /**
     * use couchbase to dedupe rvr id
     * @param rvrId rvr id
     * @return
     */
-  def dedupeRvrIdByCB(rvrId: String): Boolean = {
+  def dedupeRvrIdByCB(rvrId: String, cmndType: String): Boolean = {
     var result = true
-    if (couchbaseDedupe) {
+    if (couchbaseDedupe && !cmndType.equals("4")) {
       try {
         val (cacheClient, bucket) = couchbase.getBucketFunc()
         val key = DEDUPE_KEY_PREFIX + rvrId
@@ -140,7 +141,7 @@ class CrabDedupeJob(params: Parameter)
         case e: Exception =>
           logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
           metrics.meter("crab.dedupe.CBError")
-          couchbaseDedupe = false
+//          couchbaseDedupe = false
       }
     }
     result

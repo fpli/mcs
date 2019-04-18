@@ -38,7 +38,7 @@ class TestEpnNrtJob extends BaseFunSuite{
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
     properties.setProperty("epnnrt.outputdir", outputDir)
-    properties.setProperty("epnnrt.result.meta.outputdir", outputDir + "/meta/EPN/output/epnnrt/")
+    properties.setProperty("epnnrt.result.meta.click.outputdir", outputDir + "/meta/EPN/output/epnnrt/")
     properties
   }
 

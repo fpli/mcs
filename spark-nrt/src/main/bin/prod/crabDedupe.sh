@@ -27,7 +27,7 @@ EXECUTOR_CORES=2
 
 JOB_NAME="crabDedupe"
 
-SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/chocolate
+SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/chocolate/logs
 HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
 
 for f in $(find $bin/../../conf/prod -name '*.*');
@@ -49,7 +49,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.yarn.executor.memoryOverhead=8192 \
     --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
     --conf spark.yarn.historyServer.address=${HISTORY_SERVER} \
-    ${bin}/../../lib/crab-dedupe-chocolate-spark-nrt-*.jar \
+    ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
       --workDir "${WORK_DIR}" \
