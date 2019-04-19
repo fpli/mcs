@@ -24,7 +24,7 @@ fi
 LAG_THRESHOLD=3600000
 echo "the threshold of kafka message: "${LAG_THRESHOLD} | tee -a ${log_file}
 LAST_TS_PATH=/apps/tracking-events-workdir/last_ts/EPN/*
-last_ts=`hdfs dfs -cat ${LAST_TS_PATH} | sort -n | tail -1`
+last_ts=`hdfs dfs -cat ${LAST_TS_PATH} | sort -n | head -1`
 echo "timestamp of last message: "${last_ts} | tee -a ${log_file}
 now_ts=$(($(date +%s%N)/1000000))
 echo "timestamp of now: "${now_ts} | tee -a ${log_file}
@@ -95,3 +95,11 @@ else
     echo "chocolate-ePN ${DT}'s NRT delayed!!!!" | mail -s "NRT delayed!!!!" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
     exit 1
 fi
+
+################ Generate Done file and send it to nrt2batch host ################################
+DONE_FILE="epn_$(date +%Y%m%d).done"
+touch "$DONE_FILE"
+
+NRT_PATH_DONE=/home/stack/epn-nrt/${DT_TODAY}
+/datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendToETLHost.sh  ${NRT_PATH_DONE} ${DONE_FILE} ${log_file}
+
