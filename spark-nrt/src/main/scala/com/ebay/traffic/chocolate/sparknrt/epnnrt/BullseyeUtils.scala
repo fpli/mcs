@@ -67,41 +67,6 @@ object BullseyeUtils {
     }
   }
 
-  /*def getLastViewItem(cguid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String)= {
-    val start = System.currentTimeMillis
-    val result = getData(cguid, modelId, count, bullseyeUrl)
-    metrics.mean("BullsEyeLatency", System.currentTimeMillis - start)
-
-    try {
-      val responseBody = result.get.body
-      responseBody match {
-        case null | "" => ("", "")
-        case _ =>
-          val list = new JsonParser().parse(responseBody).getAsJsonArray.get(0).getAsJsonObject.get("results").
-            getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
-          if (list.size() > 0) {
-            for (i <- 0 until list.size()) {
-              var item_id = list.get(i).getAsJsonObject.get("item_id").toString
-              if(!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong){
-                  item_id = item_id.replace("\"","")
-                  val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
-                  metrics.meter("SuccessfulGet", 1)
-                  return (item_id, date)
-              }
-            }
-          }
-          metrics.meter("BullsEyeHit", 1)
-          ("", "")
-      }
-    } catch {
-      case _: Exception =>
-        logger.error("error when parse last view item : CGUID:" + cguid + " response: " + result.toString)
-        ("", "")
-    }
-  }
-*/
-
-
   def getLastViewItem(cguid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String)= {
     val start = System.currentTimeMillis
     val result = getData(cguid, modelId, count, bullseyeUrl)
@@ -130,20 +95,27 @@ object BullseyeUtils {
             }
           } else {
             //for multiple response results
-            for (i <- 0 until result_list.size()) {
+            var maxLastViwTime = Long.MinValue
+            var itemId = ""
+            for (i <-0 until result_list.size()) {
               val list = new JsonParser().parse(responseBody).getAsJsonArray.get(i).getAsJsonObject.get("results").
                 getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
               if (list.size() > 0) {
                 for (i <- 0 until list.size()) {
-                  var item_id = list.get(i).getAsJsonObject.get("item_id").toString
-                  if(!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong){
-                    item_id = item_id.replace("\"","")
-                    val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
-                    metrics.meter("SuccessfulGet", 1)
-                    return (item_id, date)
+                  var find = false
+                  val item_Id = list.get(i).getAsJsonObject.get("item_id").toString
+                  val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
+                  if(!item_Id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong && lastViewTime > maxLastViwTime && !find){
+                    itemId = item_Id.replace("\"","")
+                    maxLastViwTime = lastViewTime
+                    find = true
                   }
                 }
               }
+            }
+            if(maxLastViwTime > 0) {
+              metrics.meter("SuccessfulGet", 1)
+              return (itemId, new Timestamp(maxLastViwTime).toString)
             }
           }
           metrics.meter("BullsEyeHit", 1)
@@ -174,26 +146,31 @@ object BullseyeUtils {
                 if(!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong){
                   item_id = item_id.replace("\"","")
                   val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
-                  metrics.meter("SuccessfulGet", 1)
                   return (item_id, date)
                 }
               }
             }
           } else {
-            for (i <-0 until result_list.size()) {
+            var maxLastViwTime = Long.MinValue
+            var itemId = ""
+              for (i <-0 until result_list.size()) {
               val list = new JsonParser().parse(responseBody).getAsJsonArray.get(i).getAsJsonObject.get("results").
                 getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
               if (list.size() > 0) {
                 for (i <- 0 until list.size()) {
-                  var item_id = list.get(i).getAsJsonObject.get("item_id").toString
-                  if(!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong){
-                    item_id = item_id.replace("\"","")
-                    val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
-                    metrics.meter("SuccessfulGet", 1)
-                    return (item_id, date)
+                  var find = false
+                  val item_Id = list.get(i).getAsJsonObject.get("item_id").toString
+                  val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
+                  if(!item_Id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong && lastViewTime > maxLastViwTime && !find){
+                    itemId = item_Id.replace("\"","")
+                    maxLastViwTime = lastViewTime
+                    find = true
                   }
                 }
               }
+            }
+            if(maxLastViwTime > 0) {
+              return (itemId, new Timestamp(maxLastViwTime).toString)
             }
           }
           ("", "")

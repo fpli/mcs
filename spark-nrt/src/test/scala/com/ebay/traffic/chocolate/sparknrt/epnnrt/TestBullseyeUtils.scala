@@ -50,12 +50,12 @@ class TestBullseyeUtils extends FlatSpec with Matchers{
     val response = "[{\"results\":{\"response\": { \"view_item_list\":[" +
       "{\"item_id\": null,\"timestamp\": 1555292269030}," +
       "{\"item_id\": \"102\",\"timestamp\": 1555292249110}," +
-      "{\"item_id\": \"103\",\"timestamp\": 1555292191250}," +
-      "{\"item_id\": null,\"timestamp\": 1555292153680}]}," +
+      "{\"item_id\": \"103\",\"timestamp\": 1555290059210}," +
+      "{\"item_id\": null,\"timestamp\": 1555280059208}]}," +
       " \"accountType\": \"CGUID\", \"userLinkCreationTime\": 0," +
       "\"userLinkLastModifiedDay\": 0,\"maskUserInfo\": \"d2ad\",\"userLink\": false},\"error\": null}," +
       "{\"results\":{\"response\": { \"view_item_list\":[" +
-        "{\"item_id\": null,\"timestamp\": 1555291959220}," +
+        "{\"item_id\": null,\"timestamp\": 1555292269032}," +
       "{\"item_id\": \"104\",\"timestamp\": 1555290059220}," +
       "{\"item_id\": null,\"timestamp\": 1555281900220}," +
         "{\"item_id\": null,\"timestamp\": 1555271769030}]}," +
