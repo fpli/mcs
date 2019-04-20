@@ -29,7 +29,7 @@ then
     exit 0
 fi
 
-tmp_file=imk_daily_done_check.txt
+tmp_file=imk_daily_done_check_${TABLE_NAME}.txt
 /apache/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls -R ${IMK_RNO_PATH}/${dts} | grep -v "^$" | awk '{print $NF}' | grep "chocolate_" > ${tmp_file}
 files_size=`cat ${tmp_file} | wc -l`
 rm -f ${tmp_file}
