@@ -8,11 +8,6 @@
       "default": 0
     },
     {
-      "name": "event_dt",
-      "dataType": "string",
-      "default": ""
-    },
-    {
       "name": "is_mob",
       "dataType": "string",
       "default": "false"
@@ -44,6 +39,11 @@
     },
     {
       "name": "channel_action",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "timestamp",
       "dataType": "string",
       "default": ""
     }
