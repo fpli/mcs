@@ -22,7 +22,6 @@ epnCnt=$(awk -F' '  '{print $1}'<<<${epnFiles})
 
 if [[ ${epnCnt} -eq 0 ]]; then
     /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -mkdir -p ${HDP}
-fi
 
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -copyFromLocal ${INPUT_FILE} ${HDP}
 echo `date`"=====================================================Apollo_rno -- LoadData Ended======================================================" | tee -a ${log_file}

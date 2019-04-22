@@ -74,10 +74,10 @@ class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
     })
   }
 
-  def writeOutputMeta(outputMeta: MetaFiles, outputMetaDir: String, suffixArray: Array[String] = Array()):Unit = {
+  def writeOutputMeta(outputMeta: MetaFiles, outputMetaDir: String, usage: String, suffixArray: Array[String] = Array()):Unit = {
     val time = System.currentTimeMillis()
     suffixArray.foreach(suffix => {
-      writeMetaFiles(outputMeta, outputMetaDir + time + ".meta" + suffix)
+      writeMetaFiles(outputMeta, outputMetaDir + usage + "_output_" + time + ".meta" + suffix)
     })
   }
 
