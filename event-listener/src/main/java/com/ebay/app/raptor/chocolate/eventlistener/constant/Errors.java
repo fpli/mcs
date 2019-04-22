@@ -15,10 +15,11 @@ public class Errors {
   public static final String ERROR_INVALID_MKEVT = "Invalid mkevt value.";
   public static final String ERROR_NO_MKCID = "No mkcid";
   public static final String ERROR_INVALID_MKCID = "Invalid mkcid.";
-  public static final String ERROR_INVALID_ROVER_CID = "Invalid rover cid.";
   public static final String ERROR_NO_MKRID = "No mkrid.";
   public static final String ERROR_INVALID_MKRID = "Invalid mkrid.";
   public static final String ERROR_INTERNAL_SERVICE = "Internal Service Error.";
+
+  public static final String ERROR_FOWARD_ROVER = "Forward to rover failed.";
 
   public static final String ERROR_CONTENT = "mktCollectionSvcErrorContent";
   public static final String ERROR_DOMAIN = "marketingTrackingDomain";

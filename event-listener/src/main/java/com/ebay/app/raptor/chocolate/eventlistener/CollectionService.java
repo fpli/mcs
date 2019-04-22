@@ -14,11 +14,17 @@ import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
@@ -29,6 +35,8 @@ import com.ebay.app.raptor.chocolate.gen.model.Event;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
+import java.io.IOException;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,17 +57,51 @@ public class CollectionService {
   private ListenerMessageParser parser;
   private static CollectionService instance = null;
 
+  @Autowired
+  private RoverClient roverClient;
+
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
-  private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE);
-  private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?(rover)([\\w-.]+\\.)?(ebay)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE);
+  private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE);
+  private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?(rover\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
 
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
+
+  }
+
+  @Async
+  public void fowardRequestToRover(String noRedirectRoverUrl, HttpServletRequest request) {
+    // ask rover not to redirect
+    try {
+      HttpClient client = new DefaultHttpClient();
+      HttpGet httpGet = new HttpGet(noRedirectRoverUrl);
+
+      final Enumeration<String> headers = request.getHeaderNames();
+      while (headers.hasMoreElements()) {
+        final String header = headers.nextElement();
+        final Enumeration<String> values = request.getHeaders(header);
+        while (values.hasMoreElements()) {
+          final String value = values.nextElement();
+          httpGet.addHeader(header, value);
+        }
+      }
+
+      HttpResponse response = client.execute(httpGet);
+      if (response.getStatusLine().getStatusCode() != 200) {
+        logger.warn(Errors.ERROR_FOWARD_ROVER);
+        metrics.meter("ForwardRoverFail");
+      } else {
+        metrics.meter("ForwardRoverSuccess");
+      }
+    } catch (IOException ex) {
+      logger.warn("Forward rover exception", ex);
+      metrics.meter("ForwardRoverException");
+    }
   }
 
   /**
@@ -72,7 +114,7 @@ public class CollectionService {
    * @return OK or Error message
    */
   public boolean collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
-    raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
+          raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
 
     if (request.getHeader("X-EBAY-C-TRACKING") == null) {
       logError(ErrorType.NO_TRACKING);
@@ -108,17 +150,36 @@ public class CollectionService {
     }
 
     String userAgent = endUserContext.getUserAgent();
-
-
     if (null == userAgent) {
       logError(ErrorType.NO_USER_AGENT);
+    }
+
+    // legacy rover deeplink case. Forward it to rover. We control this at our backend in case mobile app miss it
+    Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
+    if (roverSitesMatcher.find()) {
+      final String noRedirectRoverUrl = referer + "&nrd=1";
+
+      HttpClient client = new DefaultHttpClient();
+      HttpGet httpGet = new HttpGet(noRedirectRoverUrl);
+
+      final Enumeration<String> headers = request.getHeaderNames();
+      while (headers.hasMoreElements()) {
+        final String header = headers.nextElement();
+        final Enumeration<String> values = request.getHeaders(header);
+        while (values.hasMoreElements()) {
+          final String value = values.nextElement();
+          httpGet.addHeader(header, value);
+        }
+      }
+
+      roverClient.fowardRequestToRover(client, httpGet);
+      return true;
     }
 
     String kafkaTopic;
     Producer<Long, ListenerMessage> producer;
     ChannelActionEnum channelAction;
     ChannelIdEnum channelType;
-    long rotationId = -1L;
     long campaignId = -1L;
 
     // targetUrl is from post body
@@ -126,16 +187,83 @@ public class CollectionService {
 
     // parse channel from uri
     // illegal url, rejected
-    UriComponents targetUriComponents;
-    targetUriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    if (targetUriComponents == null) {
+    UriComponents uriComponents;
+    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+    if (uriComponents == null) {
       logError(ErrorType.ILLEGAL_URL);
     }
 
-    // user agent
+    // no query parameter, rejected
+    MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
+    if (parameters.size() == 0) {
+      logError(ErrorType.NO_QUERY_PARAMETER);
+    }
+
+    // no mkevt, rejected
+    if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
+      logError(ErrorType.NO_MKEVT);
+    }
+
+    // mkevt != 1, rejected
+    String mkevt = parameters.get(Constants.MKEVT).get(0);
+    if (!mkevt.equals(Constants.VALID_MKEVT)) {
+      logError(ErrorType.INVALID_MKEVT);
+    }
+
+    // parse channel from query mkcid
+    // no mkcid, accepted
+    if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
+      logger.warn(Errors.ERROR_NO_MKCID);
+      metrics.meter("NoMkcidParameter");
+      return true;
+    }
+
+    // invalid mkcid, show error and accept
+    channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
+    if (channelType == null) {
+      logger.warn(Errors.ERROR_INVALID_MKCID);
+      metrics.meter("InvalidMkcid");
+      return true;
+    }
+
+    // parse rotation id from query mkrid
+    long rotationId = -1L;
+    if (parameters.containsKey(Constants.MKRID) && parameters.get(Constants.MKRID).get(0) != null) {
+      try {
+        String rawRotationId = parameters.get(Constants.MKRID).get(0);
+        rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
+      } catch (Exception e) {
+        logger.warn(Errors.ERROR_INVALID_MKRID);
+        metrics.meter("InvalidMkrid");
+      }
+    } else {
+      logger.warn(Errors.ERROR_NO_MKRID);
+      metrics.meter("NoMkrid");
+    }
+
+    try {
+      campaignId = Long.parseLong(parameters.get(Constants.CAMPID).get(0));
+    } catch (Exception e) {
+      logger.debug("No campaign id");
+    }
+
+    channelAction = ChannelActionEnum.CLICK;
+
+    String action = ChannelActionEnum.CLICK.toString();
+
+    String type = channelType.getLogicalChannel().getAvro().toString();
+
+    String landingPageType;
+    List<String> pathSegments = uriComponents.getPathSegments();
+    if (pathSegments == null || pathSegments.size() == 0) {
+      landingPageType = "home";
+    } else {
+      landingPageType = pathSegments.get(0);
+    }
+
+    // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext
             .getProperty(UserAgentInfo.NAME);
-    // platform check by user agent
     String platform = Constants.PLATFORM_UNKNOWN;
     if (agentInfo.isDesktop()) {
       platform = Constants.PLATFORM_DESKTOP;
@@ -147,116 +275,6 @@ public class CollectionService {
       platform = Constants.PLATFORM_NATIVE_APP;
     }
 
-    // no query parameter, rejected
-    MultiValueMap<String, String> targetUrlParameters = targetUriComponents.getQueryParams();
-
-    // mkevt = 1 and referer is not ebay means it's a long term marketing event
-    boolean isMkevtEvent = targetUrlParameters.size() > 0
-            && targetUrlParameters.containsKey(Constants.MKEVT)
-            && targetUrlParameters.get(Constants.MKEVT).get(0) == null
-            && targetUrlParameters.get(Constants.MKEVT).get(0).equals(Constants.VALID_MKEVT);
-    Matcher ebaySitesMatcher = ebaysites.matcher(referer.toLowerCase());
-    isMkevtEvent = isMkevtEvent & (!ebaySitesMatcher.find());
-
-    // referer is rover and user agent is native app, means it's a legacy rover deeplink event. It's also a marketing event
-    Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
-    boolean isRoverDeepLink = roverSitesMatcher.find();
-    isRoverDeepLink = isRoverDeepLink & platform.equals(Constants.PLATFORM_NATIVE_APP);
-
-    // no mkevt or referer is ebay means it's organic
-    // organic case only write to UBI, don't send to downstream kafka
-    if((!isMkevtEvent) && (!isRoverDeepLink)) {
-      metrics.meter("NotMarketingEvent");
-      try {
-        // Ubi tracking
-        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker
-                .NAME);
-
-        // page id
-        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
-
-        // target url
-        requestTracker.addTag("url_mpre", targetUrl, String.class);
-
-        // referer
-        requestTracker.addTag("ref", referer, String.class);
-
-        // populate device info
-        CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
-      } catch (Exception ex) {
-        logger.warn("Error when tracking ubi", ex);
-        metrics.meter("ErrorTrackUbi");
-      }
-      return true;
-    }
-
-    // long term mkevt
-    if (isMkevtEvent) {
-      metrics.meter("ValidMkevt");
-
-      // parse channel from query mkcid
-      // no mkcid, accepted
-      if (!targetUrlParameters.containsKey(Constants.MKCID) || targetUrlParameters.get(Constants.MKCID).get(0) == null) {
-        logger.warn(Errors.ERROR_NO_MKCID);
-        metrics.meter("NoMkcidParameter");
-        return true;
-      }
-
-      // invalid mkcid, show error and accept
-      channelType = ChannelIdEnum.parse(targetUrlParameters.get(Constants.MKCID).get(0));
-      if (channelType == null) {
-        logger.warn(Errors.ERROR_INVALID_MKCID);
-        metrics.meter("InvalidMkcid");
-        return true;
-      }
-
-      // parse rotation id from query mkrid
-      if (targetUrlParameters.containsKey(Constants.MKRID) && targetUrlParameters.get(Constants.MKRID).get(0) != null) {
-        try {
-          String rawRotationId = targetUrlParameters.get(Constants.MKRID).get(0);
-          rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
-        } catch (Exception e) {
-          logger.warn(Errors.ERROR_INVALID_MKRID);
-          metrics.meter("InvalidMkrid");
-        }
-      } else {
-        logger.warn(Errors.ERROR_NO_MKRID);
-        metrics.meter("NoMkrid");
-      }
-    }
-    // rover deeplink
-    else {
-      metrics.meter("RoverDeepLink");
-      UriComponents refererUriComponents;
-      refererUriComponents = UriComponentsBuilder.fromUriString(referer).build();
-      // parse channel id
-      channelType = ChannelIdEnum.parse(refererUriComponents.getPathSegments().get(3));
-      if (channelType == null) {
-        logger.warn(Errors.ERROR_INVALID_ROVER_CID);
-        metrics.meter("InvalidRoverCid");
-        return true;
-      }
-      // parse rotation id from rover referer
-      String rawRotationId = refererUriComponents.getPathSegments().get(2);
-      rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
-      campaignId = Long.parseLong(refererUriComponents.getQueryParams().get(Constants.CAMPID).get(0));
-    }
-
-
-    channelAction = ChannelActionEnum.CLICK;
-
-    String action = ChannelActionEnum.CLICK.toString();
-
-    String type = channelType.getLogicalChannel().getAvro().toString();
-
-    String landingPageType;
-    List<String> pathSegments = targetUriComponents.getPathSegments();
-    if (pathSegments == null || pathSegments.size() == 0) {
-      landingPageType = "home";
-    } else {
-      landingPageType = pathSegments.get(0);
-    }
-
     // get user id from auth token if it's user token, else we get from end user ctx
     String userId;
     if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
@@ -266,7 +284,7 @@ public class CollectionService {
     }
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+            Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     producer = KafkaSink.get();
 
@@ -276,51 +294,57 @@ public class CollectionService {
     ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
             .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
 
-    try {
-      // Ubi tracking
-      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker
-              .NAME);
+    // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(m.find() == false) {
+      try {
+        // Ubi tracking
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker
+                .NAME);
 
-      // page id
-      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
+        // page id
+        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
 
-      // event action and event family
-      requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
-      requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
+        // event action and event family
+        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
 
-      // target url
-      requestTracker.addTag("url_mpre", targetUrl, String.class);
+        // target url
+        requestTracker.addTag("url_mpre", targetUrl, String.class);
 
-      // referer
-      requestTracker.addTag("ref", referer, String.class);
+        // referer
+        requestTracker.addTag("ref", referer, String.class);
 
-      // rotation id
-      requestTracker.addTag("rotid", String.valueOf(rotationId), String.class);
+        // rotation id
+        requestTracker.addTag("rotid", String.valueOf(rotationId), String.class);
 
-      // keyword
-      String searchKeyword = "";
-      if (targetUrlParameters.containsKey(Constants.SEARCH_KEYWORD) && targetUrlParameters.get(Constants.SEARCH_KEYWORD).get(0) != null) {
+        // keyword
+        String searchKeyword = "";
+        if (parameters.containsKey(Constants.SEARCH_KEYWORD) && parameters.get(Constants.SEARCH_KEYWORD).get(0) != null) {
 
-        searchKeyword = targetUrlParameters.get(Constants.SEARCH_KEYWORD).get(0);
+          searchKeyword = parameters.get(Constants.SEARCH_KEYWORD).get(0);
+        }
+        requestTracker.addTag("keyword", searchKeyword, String.class);
+
+        // rvr id
+        requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
+
+        // gclid
+        String gclid = "";
+        if (parameters.containsKey(Constants.GCLID) && parameters.get(Constants.GCLID).get(0) != null) {
+
+          gclid = parameters.get(Constants.GCLID).get(0);
+        }
+        requestTracker.addTag("gclid", gclid, String.class);
+
+        // populate device info
+        CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
+      } catch (Exception ex) {
+        logger.warn("Error when tracking ubi", ex);
+        metrics.meter("ErrorTrackUbi");
       }
-      requestTracker.addTag("keyword", searchKeyword, String.class);
-
-      // rvr id
-      requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
-
-      // gclid
-      String gclid = "";
-      if (targetUrlParameters.containsKey(Constants.GCLID) && targetUrlParameters.get(Constants.GCLID).get(0) != null) {
-
-        gclid = targetUrlParameters.get(Constants.GCLID).get(0);
-      }
-      requestTracker.addTag("gclid", gclid, String.class);
-
-      // populate device info
-      CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
-    } catch (Exception ex) {
-      logger.warn("Error when tracking ubi", ex);
-      metrics.meter("ErrorTrackUbi");
+    } else {
+      metrics.meter("InternalDomainRef");
     }
 
     if (message != null) {

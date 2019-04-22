@@ -4,7 +4,10 @@ import com.ebay.raptor.dds.jaxrs.DDSTrackingFilter;
 import com.ebay.tracking.filter.TrackingServiceFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -12,6 +15,7 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Feature;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 /**
  * Resource config class
@@ -19,8 +23,15 @@ import java.util.Set;
  * @author xiangli4
  */
 @Configuration
+@EnableAsync
 @ApplicationPath("/marketingtracking")
 public class EventListenerResourceConfig extends Application {
+
+  @Bean
+  public Executor asyncExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    return executor;
+  }
 
   @Autowired
   @Qualifier("jersey-operational-feature")

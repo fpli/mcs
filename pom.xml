@@ -39,6 +39,7 @@
     <logback.encoder.version>4.11</logback.encoder.version>
     <docker.image.prefix>hub.tess.io/raptorontess</docker.image.prefix>
     <tracking.component.version>0.9.0-RELEASE</tracking.component.version>
+    <ddsclient.component.version>0.9.1-RELEASE</ddsclient.component.version>
   </properties>
 
   <modules>
