@@ -14,7 +14,6 @@ import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -24,18 +23,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
-
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -72,36 +68,6 @@ public class CollectionService {
     this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
 
-  }
-
-  @Async
-  public void fowardRequestToRover(String noRedirectRoverUrl, HttpServletRequest request) {
-    // ask rover not to redirect
-    try {
-      HttpClient client = new DefaultHttpClient();
-      HttpGet httpGet = new HttpGet(noRedirectRoverUrl);
-
-      final Enumeration<String> headers = request.getHeaderNames();
-      while (headers.hasMoreElements()) {
-        final String header = headers.nextElement();
-        final Enumeration<String> values = request.getHeaders(header);
-        while (values.hasMoreElements()) {
-          final String value = values.nextElement();
-          httpGet.addHeader(header, value);
-        }
-      }
-
-      HttpResponse response = client.execute(httpGet);
-      if (response.getStatusLine().getStatusCode() != 200) {
-        logger.warn(Errors.ERROR_FOWARD_ROVER);
-        metrics.meter("ForwardRoverFail");
-      } else {
-        metrics.meter("ForwardRoverSuccess");
-      }
-    } catch (IOException ex) {
-      logger.warn("Forward rover exception", ex);
-      metrics.meter("ForwardRoverException");
-    }
   }
 
   /**
@@ -157,6 +123,7 @@ public class CollectionService {
     // legacy rover deeplink case. Forward it to rover. We control this at our backend in case mobile app miss it
     Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
     if (roverSitesMatcher.find()) {
+      // add nrd=1 to stop rover redirect
       final String noRedirectRoverUrl = referer + "&nrd=1";
 
       HttpClient client = new DefaultHttpClient();

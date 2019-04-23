@@ -16,6 +16,9 @@ import java.io.IOException;
 
 /**
  * @author xiangli4
+ * Async call rover client. It's used for forwarding roverized deeplink to rover.
+ * This is short term fix for native app missing clicks. In the long run, the roverized deeplink should be completely
+ * replace by universal link.
  */
 @Component
 public class RoverClient {
