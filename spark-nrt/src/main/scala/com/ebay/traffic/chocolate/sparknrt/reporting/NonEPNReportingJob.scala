@@ -47,7 +47,7 @@ class NonEPNReportingJob (params: NonEPNParameter)
 
   @transient lazy val metadata: Metadata = Metadata(params.workDir, params.channel, MetadataEnum.capping)
 
-  lazy val archiveDir: String = params.archiveDir + "/EPN/reporting/" + params.channel
+  lazy val archiveDir: String = params.archiveDir + "/" + params.channel + "/reporting"
   lazy private val knownRoverCommand = Set("rover", "roverimp", "ar")
 
   //import spark.implicits._
@@ -62,16 +62,26 @@ class NonEPNReportingJob (params: NonEPNParameter)
       val file = metaIter._1
       val datesFiles = metaIter._2
       datesFiles.foreach(datesFile => {
-        val df = readFilesAsDFEx(datesFile._2)
+        val dateFiles = datesFile._2.map(file => {
+          if (file.startsWith("hdfs")){
+            file
+          } else {
+            params.hdfsUri + file
+          }
+        })
+        val df = readFilesAsDFEx(dateFiles)
           .withColumn("id", col("snapshot_id"))
           .withColumn("timestamp", col("timestamp"))
           .withColumn("is_mob", isMobUdf(col("request_headers")))
           .withColumn("is_filtered", isFilteredUdf(col("rt_rule_flags")))
+          .withColumn("publisher_id", lit(""))
+          .withColumn("campaign_id", lit(""))
           .withColumn("rotation_id", getRotationIdUdf(col("uri")))
+          .withColumn("channel", lit(params.channel))
           .withColumn("channel_action", getChannelActionUdf(col("channel_action")))
           .select(schema_reporting.dfColumns: _*)
 
-        val resultDf = df.groupBy( "channel_action", "", "is_mob", "is_filtered", "rotation_id")
+        val resultDf = df.groupBy( "channel_action", "is_mob", "is_filtered", "rotation_id")
           .agg(count("id").alias("count"), min("timestamp").alias("timestamp"))
           .withColumn("channel", lit(params.channel))
 

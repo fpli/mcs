@@ -77,11 +77,18 @@ class EPNReportingJob (params: EPNParameter)
       val datesFiles = metaIter._2
 
       datesFiles.foreach(datesFile => {
+        val dateFiles = datesFile._2.map(file => {
+          if (file.startsWith("hdfs")){
+            file
+          } else {
+            params.hdfsUri + file
+          }
+        })
         val df = {
           if (action.equals("click")) {
-            getClickDf(datesFile._2)
+            getClickDf(dateFiles)
           } else {
-            getImpressionDf(datesFile._2)
+            getImpressionDf(dateFiles)
           }
         }
         val resultDf = df.groupBy( "is_mob", "is_filtered", "publisher_id", "campaign_id")
@@ -118,6 +125,9 @@ class EPNReportingJob (params: EPNParameter)
       .withColumn("is_filtered", isFilteredUdf(col("FLTR_YN_IND")))
       .withColumn("publisher_id", col("PBLSHR_ID"))
       .withColumn("campaign_id", col("AMS_PBLSHR_CMPGN_ID"))
+      .withColumn("rotation_id", lit(""))
+      .withColumn("channel", lit("EPN"))
+      .withColumn("channel_action", lit(params.action))
       .select(schema_reporting.dfColumns: _*)
   }
 
@@ -136,6 +146,9 @@ class EPNReportingJob (params: EPNParameter)
       .withColumn("is_filtered", isFilteredUdf(col("FILTER_YN_IND")))
       .withColumn("publisher_id", col("PBLSHR_ID"))
       .withColumn("campaign_id", col("AMS_PBLSHR_CMPGN_ID"))
+      .withColumn("rotation_id", lit(""))
+      .withColumn("channel", lit("EPN"))
+      .withColumn("channel_action", lit(params.action))
       .select(schema_reporting.dfColumns: _*)
   }
 

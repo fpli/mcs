@@ -1,0 +1,3 @@
+type=command
+command=bash DAPReporting.sh
+failure.emails=ganghuang@ebay.com
