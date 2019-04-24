@@ -1,11 +1,11 @@
-package com.ebay.app.raptor.chocolate.eventlistener;
+package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -21,8 +21,8 @@ import java.io.IOException;
  * replace by universal link.
  */
 @Component
-public class RoverClient {
-  private static final Logger logger = LoggerFactory.getLogger(RoverClient.class);
+public class HttpRoverClient {
+  private static final Logger logger = LoggerFactory.getLogger(HttpRoverClient.class);
   private Metrics metrics;
 
   @PostConstruct
@@ -31,16 +31,17 @@ public class RoverClient {
   }
 
   @Async
-  public void fowardRequestToRover(HttpClient client, HttpGet httpGet) {
+  public void fowardRequestToRover(CloseableHttpClient client, HttpGet httpGet) {
     // ask rover not to redirect
     try {
-      HttpResponse response = client.execute(httpGet);
+      CloseableHttpResponse response = client.execute(httpGet);
       if (response.getStatusLine().getStatusCode() != 200) {
         logger.warn(Errors.ERROR_FOWARD_ROVER);
         metrics.meter("ForwardRoverFail");
       } else {
         metrics.meter("ForwardRoverSuccess");
       }
+      response.close();
     } catch (IOException ex) {
       logger.warn("Forward rover exception", ex);
       metrics.meter("ForwardRoverException");

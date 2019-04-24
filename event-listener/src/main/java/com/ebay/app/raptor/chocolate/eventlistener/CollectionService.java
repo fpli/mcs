@@ -14,9 +14,8 @@ import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -54,7 +53,10 @@ public class CollectionService {
   private static CollectionService instance = null;
 
   @Autowired
-  private RoverClient roverClient;
+  private HttpRoverClient roverClient;
+
+  @Autowired
+  private HttpClientConnectionManager httpClientConnectionManager;
 
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
@@ -126,7 +128,7 @@ public class CollectionService {
       // add nrd=1 to stop rover redirect
       final String noRedirectRoverUrl = referer + "&nrd=1";
 
-      HttpClient client = new DefaultHttpClient();
+      CloseableHttpClient client = httpClientConnectionManager.getHttpClient();
       HttpGet httpGet = new HttpGet(noRedirectRoverUrl);
 
       final Enumeration<String> headers = request.getHeaderNames();
