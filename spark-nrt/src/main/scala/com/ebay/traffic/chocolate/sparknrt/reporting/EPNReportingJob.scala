@@ -108,7 +108,7 @@ class EPNReportingJob (params: EPNParameter)
   val isMobUdf: UserDefinedFunction = udf((browserName: String) => StringUtils.isNotEmpty(browserName) && browserName.contains("Mobi"))
   val isFilteredUdf: UserDefinedFunction = udf((fltrYnInd: String) => StringUtils.isNotEmpty(fltrYnInd) && !fltrYnInd.equals("0"))
   val getLongTsFromStringUdf: UserDefinedFunction = udf((ts: String) => getTimestampFromTS(ts))
-  val isTimestampNotEmptyUdf: UserDefinedFunction = udf((timestamp: String) => StringUtils.isNotEmpty(timestamp) && timestamp.length > 10)
+  val isTimestampNotEmptyUdf: UserDefinedFunction = udf((timestamp: String) => StringUtils.isNotEmpty(timestamp))
 
   /**
     * get click dataframe
@@ -117,10 +117,11 @@ class EPNReportingJob (params: EPNParameter)
     */
   def getClickDf(dataFiles: Array[String]): DataFrame = {
     val df = readFilesAsDFEx(dataFiles, schema_epn_click.dfSchema, "csv", "tab")
-        .filter(isTimestampNotEmptyUdf(col("CLICK_TS")))
+      .withColumn("timestamp", getLongTsFromStringUdf(col("CLICK_TS")))
+      .filter(isTimestampNotEmptyUdf(col("timestamp")))
 
     df.withColumn("id", col("CLICK_ID"))
-      .withColumn("timestamp", getLongTsFromStringUdf(col("CLICK_TS")))
+      .withColumn("timestamp", col("timestamp"))
       .withColumn("is_mob", isMobUdf(col("BRWSR_NAME")))
       .withColumn("is_filtered", isFilteredUdf(col("FLTR_YN_IND")))
       .withColumn("publisher_id", col("PBLSHR_ID"))
@@ -138,10 +139,11 @@ class EPNReportingJob (params: EPNParameter)
     */
   def getImpressionDf(dataFiles: Array[String]): DataFrame = {
     val df = readFilesAsDFEx(dataFiles, schema_epn_impression.dfSchema, "csv", "tab")
-      .filter(isTimestampNotEmptyUdf(col("IMPRSN_TS")))
+      .withColumn("timestamp", getLongTsFromStringUdf(col("IMPRSN_TS")))
+      .filter(isTimestampNotEmptyUdf(col("timestamp")))
 
     df.withColumn("id", col("IMPRSN_CNTNR_ID"))
-      .withColumn("timestamp", getLongTsFromStringUdf(col("IMPRSN_TS")))
+      .withColumn("timestamp", col("timestamp"))
       .withColumn("is_mob", isMobUdf(col("BRWSR_NAME")))
       .withColumn("is_filtered", isFilteredUdf(col("FILTER_YN_IND")))
       .withColumn("publisher_id", col("PBLSHR_ID"))
@@ -179,8 +181,19 @@ class EPNReportingJob (params: EPNParameter)
     * @param ts sring ts
     * @return
     */
-  def getTimestampFromTS(ts: String): Long = {
-    format.parse(ts).getTime
+  def getTimestampFromTS(ts: String): String = {
+    if(StringUtils.isNotEmpty(ts) && ts.length > 10) {
+      try{
+        format.parse(ts).getTime.toString
+      } catch {
+        case e: Exception => {
+          e.printStackTrace()
+          ""
+        }
+      }
+    } else {
+      ""
+    }
   }
 
   def retry[T](n: Int)(fn: => T): T = {
