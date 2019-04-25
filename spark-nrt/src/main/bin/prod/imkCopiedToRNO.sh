@@ -2,6 +2,7 @@
 
 usage="Usage: imkCopiedToRNO.sh [HDFS_PATH_1] [HDFS_PATH_2] ... [[HDFS_PATH_N]"
 
+REMAINING_FILE_SIZE_THREADHOLD=10
 # if no args specified, show usage
 if [ $# -le 0 ]; then
   echo ${usage}
@@ -15,7 +16,7 @@ for i in $@; do
     files_size=`cat ${tmp_file} | wc -l`
     rm -f ${tmp_file}
 
-    if [ ${files_size} -gt 4 ];
+    if [ ${files_size} -gt ${REMAINING_FILE_SIZE_THREADHOLD} ];
     then
         echo "too many data files remaining in ${HDFS_PATH}: ${files_size}"
         exit 2
