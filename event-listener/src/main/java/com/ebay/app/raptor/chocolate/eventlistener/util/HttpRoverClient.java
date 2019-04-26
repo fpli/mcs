@@ -8,6 +8,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,7 @@ import java.io.IOException;
  * replace by universal link.
  */
 @Component
+@DependsOn("EventListenerService")
 public class HttpRoverClient {
   private static final Logger logger = LoggerFactory.getLogger(HttpRoverClient.class);
   private Metrics metrics;

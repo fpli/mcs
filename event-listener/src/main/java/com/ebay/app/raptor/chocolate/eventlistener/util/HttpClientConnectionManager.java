@@ -5,6 +5,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -14,6 +15,7 @@ import javax.annotation.PostConstruct;
  * Connection manager
  */
 @Component
+@DependsOn("EventListenerService")
 public class HttpClientConnectionManager {
   private static final Logger logger = LoggerFactory.getLogger(HttpClientConnectionManager.class);
   private PoolingHttpClientConnectionManager pool;
