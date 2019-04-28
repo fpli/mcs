@@ -26,7 +26,7 @@ public class HttpClientConnectionManager {
     pool = new PoolingHttpClientConnectionManager();
     pool.setDefaultMaxPerRoute(20);
     pool.setMaxTotal(20);
-    closeableHttpClient = HttpClients.custom().setConnectionManager(pool).build();
+    closeableHttpClient = HttpClients.custom().setConnectionManager(pool).disableRedirectHandling().build();
   }
 
   public CloseableHttpClient getHttpClient() {

@@ -125,7 +125,7 @@ public class CollectionService {
     // legacy rover deeplink case. Forward it to rover. We control this at our backend in case mobile app miss it
     Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
     if (roverSitesMatcher.find()) {
-      // add nrd=1 to stop rover redirect
+      // add nrd=1 to stop rover redirect and use http
       final String noRedirectRoverUrl = referer + "&nrd=1";
 
       CloseableHttpClient client = httpClientConnectionManager.getHttpClient();
