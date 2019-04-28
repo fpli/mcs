@@ -126,7 +126,7 @@ public class CollectionService {
     Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
     if (roverSitesMatcher.find()) {
       // add nrd=1 to stop rover redirect and use http
-      final String noRedirectRoverUrl = referer.replace("https://", "http://") + "&nrd=1";
+      final String noRedirectRoverUrl = referer + "&nrd=1";
 
       CloseableHttpClient client = httpClientConnectionManager.getHttpClient();
       HttpGet httpGet = new HttpGet(noRedirectRoverUrl);
