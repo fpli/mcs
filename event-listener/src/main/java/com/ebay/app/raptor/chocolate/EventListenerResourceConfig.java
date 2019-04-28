@@ -26,15 +26,8 @@ import java.util.concurrent.Executor;
  * @author xiangli4
  */
 @Configuration
-@EnableAsync
 @ApplicationPath("/marketingtracking")
 public class EventListenerResourceConfig extends Application {
-
-  @Bean
-  public Executor asyncExecutor() {
-    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-    return executor;
-  }
 
   @Autowired
   @Qualifier("jersey-operational-feature")
