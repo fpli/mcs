@@ -3,13 +3,14 @@ package com.ebay.traffic.chocolate.sparknrt.reporting
 import scopt.OptionParser
 
 case class NonEPNParameter(appName: String = "NonEPNReporting",
-                        mode: String = "yarn",
-                        channel: String = "",
-                        workDir: String = "",
-                        archiveDir: String = "",
-                        elasticsearchUrl: String = "",
-                        batchSize: Int = 10,
-                        hdfsUri: String = "")
+                           mode: String = "yarn",
+                           channel: String = "",
+                           filterAction: String = "all",
+                           workDir: String = "",
+                           archiveDir: String = "",
+                           elasticsearchUrl: String = "",
+                           batchSize: Int = 10,
+                           hdfsUri: String = "")
 
 object NonEPNParameter {
 
@@ -30,6 +31,11 @@ object NonEPNParameter {
       .required
       .valueName("channel")
       .action((cont, param) => param.copy(channel = cont))
+
+    opt[String]("filterAction")
+      .required
+      .valueName("filterAction")
+      .action((cont, param) => param.copy(filterAction = cont))
 
     opt[String]("workDir")
       .required

@@ -6,4 +6,4 @@ cd /home/chocolate/chocolate-sparknrt-crab/bin/prod
 pwd
 export HADOOP_USER_NAME=chocolate
 echo $HADOOP_USER_NAME
-./nonEpnReporting.sh hdfs://elvisha/apps/tracking-events-workdir hdfs://elvisha/apps/tracking-events-archiveDir DISPLAY all
+./nonEpnReporting.sh hdfs://elvisha/apps/tracking-events-workdir hdfs://elvisha/apps/tracking-events-archiveDir EPN VIEWABLE

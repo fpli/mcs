@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - epnReporting
 
-usage="Usage: nonEpnReporting.sh [workDir] [archiveDir] [channel]"
+usage="Usage: nonEpnReporting.sh [workDir] [archiveDir] [channel] [filterAction]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
@@ -17,12 +17,13 @@ bin=`cd "$bin">/dev/null; pwd`
 WORK_DIR=$1
 ARCHIVE_DIR=$2
 CHANNEL=$3
+FILTER_ACTION=$4
 
 ES_URL=http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
 
 DRIVER_MEMORY=4g
 EXECUTOR_NUMBER=5
-EXECUTOR_MEMORY=4g
+EXECUTOR_MEMORY=6g
 EXECUTOR_CORES=1
 
 SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/spark/logs
@@ -52,6 +53,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --appName ${JOB_NAME} \
       --mode yarn \
       --channel ${CHANNEL} \
+      --filterAction ${FILTER_ACTION} \
       --workDir "${WORK_DIR}" \
       --archiveDir ${ARCHIVE_DIR} \
       --elasticsearchUrl ${ES_URL} \

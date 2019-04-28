@@ -70,24 +70,36 @@ class NonEPNReportingJob (params: NonEPNParameter)
           }
         })
         val df = readFilesAsDFEx(dateFiles)
+          .filter(filterActionUdf(col("channel_action"), lit(params.filterAction)))
           .withColumn("id", col("snapshot_id"))
           .withColumn("timestamp", col("timestamp"))
           .withColumn("is_mob", isMobUdf(col("request_headers")))
           .withColumn("is_filtered", isFilteredUdf(col("rt_rule_flags")))
-          .withColumn("publisher_id", lit(""))
-          .withColumn("campaign_id", lit(""))
+          .withColumn("publisher_id", col("publisher_id"))
+          .withColumn("campaign_id", col("campaign_id"))
           .withColumn("rotation_id", getRotationIdUdf(col("uri")))
           .withColumn("channel", lit(params.channel))
           .withColumn("channel_action", getChannelActionUdf(col("channel_action")))
           .select(schema_reporting.dfColumns: _*)
 
-        val resultDf = df.groupBy( "channel_action", "is_mob", "is_filtered", "rotation_id")
-          .agg(count("id").alias("count"), min("timestamp").alias("timestamp"))
-          .withColumn("channel", lit(params.channel))
+        if (params.channel.equals("EPN")) {
+          val resultDf = df.groupBy( "channel_action", "is_mob", "is_filtered", "publisher_id", "campaign_id")
+            .agg(count("id").alias("count"), min("timestamp").alias("timestamp"))
+            .withColumn("channel", lit(params.channel))
 
-        resultDf.foreach(row => {
-          upsertElasticSearch(row)
-        })
+          resultDf.foreach(row => {
+            upsertElasticSearch(row)
+          })
+        } else {
+          val resultDf = df.groupBy( "channel_action", "is_mob", "is_filtered", "rotation_id")
+            .agg(count("id").alias("count"), min("timestamp").alias("timestamp"))
+            .withColumn("channel", lit(params.channel))
+
+          resultDf.foreach(row => {
+            upsertElasticSearch(row)
+          })
+        }
+
       })
 
       // 5. archive metafile that is processed for replay
@@ -101,6 +113,7 @@ class NonEPNReportingJob (params: NonEPNParameter)
   val isFilteredUdf: UserDefinedFunction = udf((rtFlag: String) => !rtFlag.equals("0"))
   val getRotationIdUdf: UserDefinedFunction = udf((uri: String) => getRotationId(uri))
   val getChannelActionUdf: UserDefinedFunction = udf((channelAction: String) => channelAction.toLowerCase)
+  val filterActionUdf: UserDefinedFunction = udf((channelAction: String, filterAction: String) => isFilterAction(channelAction, filterAction))
   /**
     * upsert record to ES
     * @param row record
@@ -129,6 +142,20 @@ class NonEPNReportingJob (params: NonEPNParameter)
       case e:Exception =>
         if (n > 1) retry(n - 1)(fn)
         else throw e
+    }
+  }
+
+  /**
+    * only get wanted action type
+    * @param channelAction real action
+    * @param filterAction action from param
+    * @return
+    */
+  def isFilterAction(channelAction: String, filterAction: String): Boolean ={
+    if (filterAction.equals("all")) {
+      true
+    } else {
+      channelAction.toLowerCase.equals(filterAction.toLowerCase)
     }
   }
 
