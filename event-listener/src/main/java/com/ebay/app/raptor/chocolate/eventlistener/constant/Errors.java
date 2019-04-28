@@ -19,6 +19,8 @@ public class Errors {
   public static final String ERROR_INVALID_MKRID = "Invalid mkrid.";
   public static final String ERROR_INTERNAL_SERVICE = "Internal Service Error.";
 
+  public static final String ERROR_FOWARD_ROVER = "Forward to rover failed.";
+
   public static final String ERROR_CONTENT = "mktCollectionSvcErrorContent";
   public static final String ERROR_DOMAIN = "marketingTrackingDomain";
 }

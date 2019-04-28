@@ -5,12 +5,10 @@ import java.text.SimpleDateFormat
 import java.util.Properties
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
-import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
-import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
+import com.ebay.traffic.chocolate.sparknrt.epnnrt.BullseyeUtils.properties
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.Gson
-import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.DataFrame
@@ -62,7 +60,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
    }
 
 
-  @transient lazy val metadata: Metadata = {
+ /* @transient lazy val metadata: Metadata = {
     val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
     Metadata(params.workDir, ChannelType.EPN.toString, usage)
   }
@@ -74,7 +72,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } else {
       1 // default to 1 metafiles
     }
-  }
+  }*/
 
   //
   lazy val ams_map: Map[Int, Array[String]] = Map(
@@ -241,6 +239,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_trfc_src_cd_click_udf = udf((browser: String) => get_TRFC_SRC_CD(browser, "click"))
   val get_trfc_src_cd_impression_udf = udf((browser: String) => get_TRFC_SRC_CD(browser, "impression"))
 
+  val get_last_view_item_info_udf = udf((cguid: String, timestamp: String) => getLastViewItemInfo(cguid, timestamp))
+
+
+  def getLastViewItemInfo(cguid: String, timestamp: String): Array[String] = {
+    val res = BullseyeUtils.getLastViewItem(cguid, timestamp, properties.getProperty("epnnrt.modelId"), properties.getProperty("epnnrt.lastviewitemnum"), properties.getProperty("epnnrt.bullseyeUrl"))
+    Array(res._1, res._2)
+  }
 
   def getValueFromQueryURL(uri: String, key: String): String = {
     val value = getQueryParam(uri, key)
@@ -359,7 +364,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         val splits = part.split(":")
         if (splits.length >= 2)
           if(splits(0).trim.equalsIgnoreCase(key))
-            return part.substring(part.indexOf(":") + 1)
+            return part.substring(part.indexOf(":") + 1).trim
       }
     }
     ""
@@ -1071,4 +1076,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     CorpCouchbaseClient.returnClient(cacheClient)
     res
   }
+
+
+
 }

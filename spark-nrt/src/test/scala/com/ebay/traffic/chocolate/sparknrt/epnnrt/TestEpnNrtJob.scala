@@ -19,6 +19,7 @@ class TestEpnNrtJob extends BaseFunSuite{
 
   private val inputDir = tmpPath + "/inputDir/"
   private val workDir = tmpPath + "/workDir/"
+  private val outputDir = tmpPath + "/outputDir/"
   private val resourceDir = tmpPath
 
   private val sdf = new SimpleDateFormat("yyyy-MM-dd")
@@ -36,6 +37,8 @@ class TestEpnNrtJob extends BaseFunSuite{
   @transient var properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
+    properties.setProperty("epnnrt.outputdir", outputDir)
+    properties.setProperty("epnnrt.result.meta.click.outputdir", outputDir + "/meta/EPN/output/epnnrt/")
     properties
   }
 

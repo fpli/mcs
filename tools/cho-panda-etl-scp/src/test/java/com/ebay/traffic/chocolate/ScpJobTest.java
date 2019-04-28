@@ -58,6 +58,7 @@ public class ScpJobTest {
 
     @Test
     public void testJob() throws Exception {
+
         String testDataFileName = "testData.dat.gz";
 
         fileSystem.copyFromLocalFile(new Path(new File("src/test/resources/ut.meta.etl").getAbsolutePath()),

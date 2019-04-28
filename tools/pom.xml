@@ -19,6 +19,7 @@
     <module>zookeeper-tool</module>
     <module>cho-panda-etl-scp</module>
     <module>CheckRecover-tool</module>
+    <module>scp-crab-to-hdfs</module>
   </modules>
 
   <properties>

@@ -11,9 +11,11 @@ import java.util.Properties;
 public class CorpRotationCouchbaseClient {
     private CacheFactory factory;
     private Properties properties;
+    private String dataSource;
 
     public CorpRotationCouchbaseClient(Properties properties) {
         this.properties = properties;
+        this.dataSource = properties.getProperty("couchbase.corp.rotation.dataSource");
         init();
     }
 
@@ -23,20 +25,19 @@ public class CorpRotationCouchbaseClient {
 
     private void init() {
         factory =
-          com.ebay.dukes.builder.GenericCacheFactoryBuilder.newBuilder()
-            .cache(properties.getProperty("couchbase.corp.rotation.dataSource"))
-            .identityFileDirectoryLocation(properties.getProperty("couchbase.corp.rotation.identitiesLoc"))
-            .dbEnv(properties.getProperty("couchbase.corp.rotation.dbEnv"))
-            .deploymentSlot(properties.getProperty("couchbase.corp.rotation.deploymentSlot"))
-            .dnsRegion(properties.getProperty("couchbase.corp.rotation.dnsRegion"))
-            .pool(properties.getProperty("couchbase.corp.rotation.pool"))
-            .poolType(properties.getProperty("couchbase.corp.rotation.poolType"))
-            .appName(properties.getProperty("couchbase.corp.rotation.appName"))
-            .build();
+            com.ebay.dukes.builder.FountCacheFactoryBuilder.newBuilder()
+                .cache(dataSource)
+                .dbEnv(properties.getProperty("couchbase.corp.rotation.dbEnv"))
+                .deploymentSlot(properties.getProperty("couchbase.corp.rotation.deploymentSlot"))
+                .dnsRegion(properties.getProperty("couchbase.corp.rotation.dnsRegion"))
+                .pool(properties.getProperty("couchbase.corp.rotation.pool"))
+                .poolType(properties.getProperty("couchbase.corp.rotation.poolType"))
+                .appName(properties.getProperty("couchbase.corp.rotation.appName"))
+                .build();
     }
 
     public CacheClient getCacheClient() {
-        return factory.getClient(properties.getProperty("couchbase.corp.rotation.dataSource"));
+        return factory.getClient(dataSource);
     }
 
     public Bucket getBuctet(CacheClient cacheClient) {

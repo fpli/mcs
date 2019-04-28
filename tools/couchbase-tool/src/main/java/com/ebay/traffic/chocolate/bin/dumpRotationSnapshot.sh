@@ -47,6 +47,16 @@ else
    echo "=====================================================dumpRotationSnapshot is completed======================================================" | tee -a ${log_file}
 fi
 
+for file in ${OUTPUT_PATH}rotation* ; do
+    if [[ -f $file ]]; then
+        ridFiles=`wc -l ${OUTPUT_PATH}rotation*`
+        ridCnt=$(awk -F' '  '{print $1}'<<<${ridFiles})
+    else
+        ridCnt=0
+    fi
+done
+
+
 ridFiles=`wc -l ${OUTPUT_PATH}rotation*`
 ridCnt=$(awk -F' '  '{print $1}'<<<${ridFiles})
 retryCnt=0
@@ -58,8 +68,15 @@ do
   fi
   echo "========dumpNumber=${retryCnt} Retry dumpRotationSnapshot ===============" | tee -a ${log_file}
   java -cp ${bin}/../lib/couchbase-tool-*.jar com.ebay.traffic.chocolate.couchbase.DumpRotationToHadoop ${ROTATION_CONFIG_FILE} ${OUTPUT_PATH}
-  ridFiles=`wc -l ${OUTPUT_PATH}rotation*`
-  ridCnt=$(awk -F' '  '{print $1}'<<<${ridFiles})
+
+  for file in ${OUTPUT_PATH}rotation* ; do
+    if [[ -f $file ]]; then
+        ridFiles=`wc -l ${OUTPUT_PATH}rotation*`
+        ridCnt=$(awk -F' '  '{print $1}'<<<${ridFiles})
+    else
+        ridCnt=0
+    fi
+  done
   retryCnt=retryCnt+1
 done
 

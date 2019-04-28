@@ -62,11 +62,17 @@ public class EventListenerResource implements EventsApi {
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
-        logger.warn(e.getMessage(), e);
+        // do not write log here for short term. As current native app sends seo deeplinking which leads log blast.
+        //logger.warn(e.getMessage(), e);
         Tags.STATUS.set(span, e.getMessage());
         // show warning in cal
         SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
-        res = errorFactoryV3.makeWarnResponse(e.getMessage());
+        try {
+          res = errorFactoryV3.makeWarnResponse(e.getMessage());
+        } catch (Exception ex) {
+          logger.warn(e.getMessage(), request.toString(), body);
+          logger.warn(ex.getMessage(), ex);
+        }
       } finally {
         return res;
       }

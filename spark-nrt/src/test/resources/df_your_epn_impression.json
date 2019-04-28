@@ -1,0 +1,834 @@
+{
+  "table": "df_epn_impression",
+  "description": "",
+  "columns": [
+    {
+      "name": "y_IMPRSN_CNTNR_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FILE_SCHM_VRSN_NUM",
+      "dataType": "string",
+      "default": "4"
+    },
+    {
+      "name": "y_FILE_ID",
+      "dataType": "string",
+      "default": "1995"
+    },
+    {
+      "name": "y_BATCH_ID",
+      "dataType": "string",
+      "default": "1994"
+    },
+    {
+      "name": "y_CHNL_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_CRLTN_GUID_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_GUID_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_USER_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_CLNT_RMT_IP",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_BRWSR_TYPE_NUM",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_BRWSR_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_RFR_URL_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_PRVS_RFR_DMN_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_USER_QUERY_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_PLCMNT_DATA_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_PBLSHR_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_AMS_PBLSHR_CMPGN_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_AMS_TOOL_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_CSTM_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_VRSN_NUM",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_FLEX_FLD_1_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_2_TXT",
+      "dataType": "string",
+      "default": "4"
+    },
+    {
+      "name": "y_FLEX_FLD_3_TXT",
+      "dataType": "string",
+      "default": "4"
+    },
+    {
+      "name": "y_FLEX_FLD_4_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_5_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_6_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_7_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_8_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_9_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_10_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_11_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_12_TXT",
+      "dataType": "string",
+      "default": ""
+    }, {
+      "name": "y_FLEX_FLD_13_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_14_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_15_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_16_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_17_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_18_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_19_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FLEX_FLD_20_TXT",
+      "dataType": "string",
+      "default": ""
+    }, {
+      "name": "y_CTX_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_CTX_CLD_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_CTX_RSLT_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_RFR_DMN_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_IMPRSN_TS",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_AMS_PRGRM_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_ADVRTSR_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_AMS_CLICK_FLTR_TYPE_ID",
+      "dataType": "string",
+      "default": "3"
+    }, {
+      "name": "y_FILTER_YN_IND",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_ROVER_URL_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_MPLX_TIMEOUT_FLAG",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_CB_KW",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_CB_CAT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_CB_EX_KW",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_CB_EX_CAT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_FB_USED",
+      "dataType": "string",
+      "default": ""
+    }, {
+      "name": "y_AD_FORMAT",
+      "dataType": "string",
+      "default": "7"
+    },
+    {
+      "name": "y_AD_CONTENT_TYPE",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_LOAD_TIME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_APP_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_APP_PACKAGE_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_APP_NAME",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_APP_VERSION",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_DEVICE_NAME",
+      "dataType": "string",
+      "default": ""
+    }, {
+      "name": "y_OS_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_OS_VERSION",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_UDID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_SDK_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_SDK_VERSION",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_AMS_TRANS_RSN_CD",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_TRFC_SRC_CD",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "y_RT_RULE_FLAG1",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG2",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG3",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG4",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG5",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG6",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG7",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG8",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG9",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG10",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG11",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG12",
+      "dataType": "string",
+      "default": "0"
+    },{
+      "name": "y_RT_RULE_FLAG13",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG14",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG15",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG16",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG17",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG18",
+      "dataType": "string",
+      "default": "0"
+    },{
+      "name": "y_RT_RULE_FLAG19",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG20",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG21",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG22",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG23",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_RT_RULE_FLAG24",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG1",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG2",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG3",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG4",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG5",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG6",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG7",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG8",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG9",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG10",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG11",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG12",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG13",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG14",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG15",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG16",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG17",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG18",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG19",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG20",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG21",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG22",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG23",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG24",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG25",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG26",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG27",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG28",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG29",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG30",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG31",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG32",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG33",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG34",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG35",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG36",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG37",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG38",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG39",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG40",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG41",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG42",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG43",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG44",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG45",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG46",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG47",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG48",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG49",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG50",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG51",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG52",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG53",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG54",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG55",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG56",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG57",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG58",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG59",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG60",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG61",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG62",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG63",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG64",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG65",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG66",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG67",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG68",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG69",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG70",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG71",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "y_NRT_RULE_FLAG72",
+      "dataType": "string",
+      "default": "0"
+    }
+  ]
+}

@@ -16,7 +16,7 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 
 /**
   * Created by jialili1 on 11/15/18
- */
+  */
 class TestMonitoringJob extends BaseFunSuite {
   private val tmpPath = createTempPath()
   private val inputDir = tmpPath + "/inputDir/"
@@ -45,7 +45,7 @@ class TestMonitoringJob extends BaseFunSuite {
 
   val params = Parameter(args)
   val job = new MonitoringJob(params)
-  val timestamp1 = getTimestamp("2019-01-01")
+  val timestamp1 = getTimestamp("2019-02-01")
   val timestamp2 = timestamp1 + 3600000
 
   def getTimestamp(date: String): Long = {
@@ -60,18 +60,18 @@ class TestMonitoringJob extends BaseFunSuite {
 
   test("test monitoring") {
     val metadata = Metadata(workDir, "EPN", MetadataEnum.capping)
-    val dateFiles0 = DateFiles("date=2018-11-01", Array("file://" + inputDir + "/date=2018-11-01/part-00000.snappy.parquet"))
+    val dateFiles0 = DateFiles("date=2019-02-01", Array("file://" + inputDir + "/date=2019-02-01/part-00000.snappy.parquet"))
     var meta = new MetaFiles(Array(dateFiles0))
     metadata.writeDedupeOutputMeta(meta, Array(".monitoring"))
 
-    val dateFiles1 = DateFiles("date=2018-11-01", Array("file://" + inputDir + "/date=2018-11-01/part-00001.snappy.parquet", "file://" + inputDir + "/date=2018-11-01/part-00002.snappy.parquet"))
+    val dateFiles1 = DateFiles("date=2019-02-01", Array("file://" + inputDir + "/date=2019-02-01/part-00001.snappy.parquet", "file://" + inputDir + "/date=2019-02-01/part-00002.snappy.parquet"))
     meta = new MetaFiles(Array(dateFiles1))
     metadata.writeDedupeOutputMeta(meta, Array(".monitoring"))
 
     // prepare data file
     // writer0 has no data
     val writer0 = AvroParquetWriter.
-      builder[GenericRecord](new Path(inputDir + "/date=2018-11-01/part-00000.snappy.parquet"))
+      builder[GenericRecord](new Path(inputDir + "/date=2019-02-01/part-00000.snappy.parquet"))
       .withSchema(FilterMessage.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
@@ -80,14 +80,14 @@ class TestMonitoringJob extends BaseFunSuite {
     writer0.close()
 
     val writer1 = AvroParquetWriter.
-      builder[GenericRecord](new Path(inputDir + "/date=2018-11-01/part-00001.snappy.parquet"))
+      builder[GenericRecord](new Path(inputDir + "/date=2019-02-01/part-00001.snappy.parquet"))
       .withSchema(FilterMessage.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .build()
 
     val writer2 = AvroParquetWriter.
-      builder[GenericRecord](new Path(inputDir + "/date=2018-11-01/part-00002.snappy.parquet"))
+      builder[GenericRecord](new Path(inputDir + "/date=2019-02-01/part-00002.snappy.parquet"))
       .withSchema(FilterMessage.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
@@ -102,6 +102,9 @@ class TestMonitoringJob extends BaseFunSuite {
     writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6L, timestamp2, 0, 64, writer2)
     writeFilterMessage(ChannelType.DISPLAY, ChannelAction.CLICK, 7L, timestamp2, 1, 129, writer2)
     writeFilterMessage(ChannelType.DISPLAY, ChannelAction.CLICK, 8L, timestamp2, 0, 257, writer2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 9L, timestamp2, 1, 512, writer2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 10L, timestamp2, 0, 1024, writer2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 11L, timestamp2, 1, 2048, writer2)
 
     writer1.close()
     writer2.close()
