@@ -6,4 +6,4 @@ cd /datashare/mkttracking/jobs/chocolate-sparknrt/bin/prod
 pwd
 export HADOOP_USER_NAME=chocolate
 echo $HADOOP_USER_NAME
-./crabDedupe.sh hdfs://slickha/apps/tracking-events-workdir hdfs://slickha/apps/tracking-events-workdir/crabScp/dest /apps/tracking-events
+./crabDedupe.sh hdfs://slickha/apps/tracking-events-workdir hdfs://elvisha/apps/tracking-events-workdir/crabScp/dest hdfs://slickha/apps/tracking-events
