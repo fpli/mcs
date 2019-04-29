@@ -135,7 +135,7 @@ public class CollectionService {
       while (headers.hasMoreElements()) {
         final String header = headers.nextElement();
         // filter out Auth header and Connection header. There are some Connection headers with [TE, keep-alive] as value.
-        // which is invalid. 
+        // which is invalid.
         if(header.equalsIgnoreCase("Authorization") || header.equalsIgnoreCase("Connection")) {
           continue;
         }

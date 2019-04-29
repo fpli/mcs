@@ -41,6 +41,11 @@ public class HttpRoverClient {
       if (response.getStatusLine().getStatusCode() != 200) {
         logger.warn(Errors.ERROR_FOWARD_ROVER);
         metrics.meter("ForwardRoverFail");
+        String headers = "";
+        for (Header header : httpGet.getAllHeaders()) {
+          headers = headers + header.toString() + ",";
+        }
+        logger.warn("ForwardRoverFail req. URI: " + httpGet.getURI() + ", headers: " + headers);
       } else {
         metrics.meter("ForwardRoverSuccess");
       }
