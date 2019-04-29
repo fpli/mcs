@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
+import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -46,7 +47,11 @@ public class HttpRoverClient {
       response.close();
     } catch (Exception ex) {
       logger.warn("Forward rover exception", ex);
-      logger.warn("ForwardException req", httpGet.getURI(), httpGet.getAllHeaders());
+      String headers = "";
+      for (Header header : httpGet.getAllHeaders()) {
+        headers = headers + header.toString() + ",";
+      }
+      logger.warn("ForwardException req %s %s", httpGet.getURI(), headers);
       metrics.meter("ForwardRoverException");
     }
   }
