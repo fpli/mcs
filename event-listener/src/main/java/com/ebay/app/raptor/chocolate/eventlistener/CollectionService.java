@@ -134,12 +134,17 @@ public class CollectionService {
       final Enumeration<String> headers = request.getHeaderNames();
       while (headers.hasMoreElements()) {
         final String header = headers.nextElement();
+        if(header.equalsIgnoreCase("Authorization")) {
+          continue;
+        }
         final Enumeration<String> values = request.getHeaders(header);
         while (values.hasMoreElements()) {
           final String value = values.nextElement();
+
           httpGet.addHeader(header, value);
         }
       }
+
 
       roverClient.fowardRequestToRover(client, httpGet);
       return true;
