@@ -14,10 +14,13 @@ import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
@@ -25,10 +28,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
-
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,16 +52,24 @@ public class CollectionService {
   private ListenerMessageParser parser;
   private static CollectionService instance = null;
 
+  @Autowired
+  private HttpRoverClient roverClient;
+
+  @Autowired
+  private HttpClientConnectionManager httpClientConnectionManager;
+
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE);
+  private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?(rover\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
 
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
+
   }
 
   /**
@@ -71,7 +82,7 @@ public class CollectionService {
    * @return OK or Error message
    */
   public boolean collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
-    raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
+          raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
 
     if (request.getHeader("X-EBAY-C-TRACKING") == null) {
       logError(ErrorType.NO_TRACKING);
@@ -107,9 +118,31 @@ public class CollectionService {
     }
 
     String userAgent = endUserContext.getUserAgent();
-
     if (null == userAgent) {
       logError(ErrorType.NO_USER_AGENT);
+    }
+
+    // legacy rover deeplink case. Forward it to rover. We control this at our backend in case mobile app miss it
+    Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
+    if (roverSitesMatcher.find()) {
+      // add nrd=1 to stop rover redirect and use http
+      final String noRedirectRoverUrl = referer + "&nrd=1";
+
+      CloseableHttpClient client = httpClientConnectionManager.getHttpClient();
+      HttpGet httpGet = new HttpGet(noRedirectRoverUrl);
+
+      final Enumeration<String> headers = request.getHeaderNames();
+      while (headers.hasMoreElements()) {
+        final String header = headers.nextElement();
+        final Enumeration<String> values = request.getHeaders(header);
+        while (values.hasMoreElements()) {
+          final String value = values.nextElement();
+          httpGet.addHeader(header, value);
+        }
+      }
+
+      roverClient.fowardRequestToRover(client, httpGet);
+      return true;
     }
 
     String kafkaTopic;
@@ -199,7 +232,7 @@ public class CollectionService {
 
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext
-      .getProperty(UserAgentInfo.NAME);
+            .getProperty(UserAgentInfo.NAME);
     String platform = Constants.PLATFORM_UNKNOWN;
     if (agentInfo.isDesktop()) {
       platform = Constants.PLATFORM_DESKTOP;
@@ -220,7 +253,7 @@ public class CollectionService {
     }
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+            Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     producer = KafkaSink.get();
 
@@ -228,7 +261,7 @@ public class CollectionService {
 
     // Parse the response
     ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
-      .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
+            .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
 
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
@@ -236,7 +269,7 @@ public class CollectionService {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker
-          .NAME);
+                .NAME);
 
         // page id
         requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
@@ -287,7 +320,7 @@ public class CollectionService {
       long eventTime = message.getTimestamp();
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       stopTimerAndLogData(startTime, eventTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-          Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+              Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
     }
     return true;
   }

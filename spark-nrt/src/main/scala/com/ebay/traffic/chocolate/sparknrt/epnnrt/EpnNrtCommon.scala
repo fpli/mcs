@@ -6,6 +6,7 @@ import java.util.Properties
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
+import com.ebay.traffic.chocolate.sparknrt.epnnrt.BullseyeUtils.properties
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.Gson
 import org.apache.hadoop.conf.Configuration
@@ -242,7 +243,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
 
   def getLastViewItemInfo(cguid: String, timestamp: String): Array[String] = {
-    val res = BullseyeUtils.getLastViewItem(cguid, timestamp)
+    val res = BullseyeUtils.getLastViewItem(cguid, timestamp, properties.getProperty("epnnrt.modelId"), properties.getProperty("epnnrt.lastviewitemnum"), properties.getProperty("epnnrt.bullseyeUrl"))
     Array(res._1, res._2)
   }
 

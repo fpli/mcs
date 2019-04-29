@@ -141,7 +141,7 @@ class CrabDedupeJob(params: Parameter)
         case e: Exception =>
           logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
           metrics.meter("crab.dedupe.CBError")
-          couchbaseDedupe = false
+//          couchbaseDedupe = false
       }
     }
     result

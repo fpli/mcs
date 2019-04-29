@@ -60,11 +60,13 @@ while read p; do
 
 	  ##################### Send To ETL Sever ##################
 	  /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendToETLHost.sh  ${NRT_PATH} ${fileName} ${log_file}
+      ret_clk_etl=$?
+
     ##################### Send To Apollo_RNO ##################
 	  /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendToApolloRno.sh  ${HDP}/click/date=${DT}  ${LOCAL_PATH}/${fileName} ${log_file}
 
-	  rc=$?
-	  if [[ $rc == 0 ]]; then
+	  ret_clk_rno=$?
+	  if [[ ret_clk_etl ==0 && ret_clk_rno == 0 ]]; then
 	    mv ${LOCAL_PATH}/${fileName} ${LOCAL_PATH}/${fileName}.processed
 	  fi
   fi
@@ -85,12 +87,12 @@ while read p; do
 	  ##################### Send To ETL Sever ##################
 	  /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendToETLHost.sh  ${NRT_PATH} ${fileName} ${log_file}
 
-	  ret_etl=$?
+	  ret_imp_etl=$?
 	  ##################### Send To Apollo_RNO ##################
 	  /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendToApolloRno.sh  ${HDP}/imp/date=${DT}  ${LOCAL_PATH}/${fileName} ${log_file}
 
-	  ret_rno=$?
-	  if [[ $ret_etl && $ret_rno == 0 ]]; then
+	  ret_imp_rno=$?
+	  if [[ ret_imp_etl ==0 && ret_imp_rno == 0 ]]; then
 	    mv ${LOCAL_PATH}/${fileName} ${LOCAL_PATH}/${fileName}.processed
 	  fi
   fi
