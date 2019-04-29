@@ -134,7 +134,9 @@ public class CollectionService {
       final Enumeration<String> headers = request.getHeaderNames();
       while (headers.hasMoreElements()) {
         final String header = headers.nextElement();
-        if(header.equalsIgnoreCase("Authorization")) {
+        // filter out Auth header and Connection header. There are some Connection headers with [TE, keep-alive] as value.
+        // which is invalid. 
+        if(header.equalsIgnoreCase("Authorization") || header.equalsIgnoreCase("Connection")) {
           continue;
         }
         final Enumeration<String> values = request.getHeaders(header);
