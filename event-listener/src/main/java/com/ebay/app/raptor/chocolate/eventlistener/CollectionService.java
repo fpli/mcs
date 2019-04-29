@@ -138,11 +138,8 @@ public class CollectionService {
           continue;
         }
         final Enumeration<String> values = request.getHeaders(header);
-        while (values.hasMoreElements()) {
-          final String value = values.nextElement();
-
-          httpGet.addHeader(header, value);
-        }
+        //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
+        httpGet.addHeader(header, values.nextElement());
       }
 
 
