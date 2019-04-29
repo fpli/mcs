@@ -20,7 +20,7 @@ then
     start_job "lvschocolatepits-1585074.stratus.lvs.ebay.com"
 else
     echo "lvschocolatepits-1585074.stratus.lvs.ebay.com is DOWN, please check!!!"
-    echo "change to lvschocolatepits-1448901.stratus.lvs.ebay.com"
+    echo "change to lvschocolatepits-1583703.stratus.lvs.ebay.com"
 
-    start_job "lvschocolatepits-1448901.stratus.lvs.ebay.com"
+    start_job "lvschocolatepits-1583703.stratus.lvs.ebay.com"
 fi
