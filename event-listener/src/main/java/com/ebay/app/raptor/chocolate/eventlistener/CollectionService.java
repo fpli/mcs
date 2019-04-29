@@ -14,8 +14,11 @@ import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
+import org.apache.http.Header;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BufferedHeader;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -138,11 +141,8 @@ public class CollectionService {
           continue;
         }
         final Enumeration<String> values = request.getHeaders(header);
-        while (values.hasMoreElements()) {
-          final String value = values.nextElement();
-
-          httpGet.addHeader(header, value);
-        }
+        //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
+        httpGet.addHeader(header, values.nextElement());
       }
 
 
