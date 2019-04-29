@@ -44,7 +44,7 @@ public class HttpRoverClient {
         metrics.meter("ForwardRoverSuccess");
       }
       response.close();
-    } catch (IOException ex) {
+    } catch (Exception ex) {
       logger.warn("Forward rover exception", ex);
       logger.warn("ForwardException req", httpGet.getURI(), httpGet.getAllHeaders());
       metrics.meter("ForwardRoverException");
