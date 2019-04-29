@@ -51,7 +51,7 @@ public class HttpRoverClient {
       for (Header header : httpGet.getAllHeaders()) {
         headers = headers + header.toString() + ",";
       }
-      logger.warn("ForwardException req %s %s", httpGet.getURI(), headers);
+      logger.warn("ForwardException req. URI: " + httpGet.getURI() + ", headers: " + headers);
       metrics.meter("ForwardRoverException");
     }
   }
