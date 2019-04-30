@@ -5,7 +5,7 @@ function start_job(){
     host=$1
     ssh -T -i /usr/azkaban/id_rsa_spark stack@${host} <<EOSSH
     hostname
-    cd /datashare/mkttracking/jobs/tracking/sparknrt/bin/prod
+    cd /datashare/mkttracking/jobs/chocolate-sparknrt/bin/prod
     pwd
     export HADOOP_USER_NAME=chocolate
     echo $HADOOP_USER_NAME
