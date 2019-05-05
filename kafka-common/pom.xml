@@ -21,6 +21,12 @@
     </dependency>
 
     <dependency>
+      <groupId>io.ebay.rheos</groupId>
+      <artifactId>rheos-iaf-raptorio</artifactId>
+      <version>${rheos.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>com.ebay.traffic</groupId>
       <artifactId>chocolate-common</artifactId>
       <version>${project.version}</version>
@@ -36,6 +42,7 @@
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
+      <version>${kafka.version}</version>
     </dependency>
 
   </dependencies>
