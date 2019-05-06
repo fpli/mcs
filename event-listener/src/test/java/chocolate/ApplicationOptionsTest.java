@@ -54,8 +54,8 @@ public class ApplicationOptionsTest {
   public void testListenerOptions() throws Exception {
     ApplicationOptions.init();
     ApplicationOptions options = ApplicationOptions.getInstance();
-    assertEquals("rheos,kafka", options.getSinkKafkaCluster());
-    assertEquals("misc.crossdcs.tracking.listened-paid-search,dev_listened-paid-search", options.getSinkKafkaConfigs().get(ChannelType.PAID_SEARCH));
+    assertEquals("kafka", options.getSinkKafkaCluster());
+    assertEquals("dev_listened-paid-search", options.getSinkKafkaConfigs().get(ChannelType.PAID_SEARCH));
     assertEquals("com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer", options.getSinkKafkaProperties
       (KafkaCluster.KAFKA).getProperty("value.serializer"));
   }
