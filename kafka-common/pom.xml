@@ -17,13 +17,11 @@
     <dependency>
       <groupId>io.ebay.rheos</groupId>
       <artifactId>rheos-client</artifactId>
-      <version>${rheos.version}</version>
     </dependency>
 
     <dependency>
       <groupId>io.ebay.rheos</groupId>
       <artifactId>rheos-iaf-raptorio</artifactId>
-      <version>${rheos.version}</version>
     </dependency>
 
     <dependency>
@@ -42,7 +40,6 @@
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
-      <version>${kafka.version}</version>
     </dependency>
 
   </dependencies>

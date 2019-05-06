@@ -147,6 +147,33 @@
         <version>${metrics.version}</version>
       </dependency>
 
+      <!-- Rheos -->
+      <dependency>
+        <groupId>io.ebay.rheos</groupId>
+        <artifactId>rheos-client</artifactId>
+        <version>${rheos.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.ebay.rheos</groupId>
+        <artifactId>rheos-iaf-raptorio</artifactId>
+        <version>${rheos.version}</version>
+      </dependency>
+
+      <!-- Test -->
+      <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka_2.11</artifactId>
+        <version>${kafka.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-clients</artifactId>
+        <version>${kafka.version}</version>
+      </dependency>
+
       <!--logging dependencies-->
       <dependency>
         <groupId>com.github.danielwegener</groupId>
