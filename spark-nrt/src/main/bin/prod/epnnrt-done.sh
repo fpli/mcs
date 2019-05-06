@@ -97,9 +97,9 @@ else
 fi
 
 ################ Generate Done file and send it to nrt2batch host ################################
-DONE_FILE="epn_$(date +%Y%m%d).done"
+DONE_FILE="epn_$(date +%Y%m%d -d "`date` - 1 day").done"
 touch "$DONE_FILE"
 
-NRT_PATH_DONE=/home/stack/epn-nrt/${DT_TODAY}
+NRT_PATH_DONE=/home/stack/epn-nrt/${DT}
 /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendToETLHost.sh  ${NRT_PATH_DONE} ${DONE_FILE} ${log_file}
 
