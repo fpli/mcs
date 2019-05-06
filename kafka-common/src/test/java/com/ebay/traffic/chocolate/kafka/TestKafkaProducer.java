@@ -38,7 +38,7 @@ public class TestKafkaProducer {
   @Test
   public void testKafkaProducer() throws Exception {
 
-    final String topic = "marketingtech.ap.tracking-events.filtered-epn";
+    final String topic = "misc.crossdcs.tracking.filtered-epn";
 
     Producer<Long, FilterMessage> producer = kafkaCluster.createProducer(
             LongSerializer.class, FilterMessageSerializer.class);
