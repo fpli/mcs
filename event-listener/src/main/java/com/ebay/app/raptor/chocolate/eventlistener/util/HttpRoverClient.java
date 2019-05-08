@@ -14,7 +14,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 
 /**
  * @author xiangli4
@@ -38,7 +37,7 @@ public class HttpRoverClient {
     // ask rover not to redirect
     try {
       CloseableHttpResponse response = client.execute(httpGet);
-      if (response.getStatusLine().getStatusCode() != 200) {
+      if (response.getStatusLine().getStatusCode() != 200 && response.getStatusLine().getStatusCode() != 301) {
         logger.warn(Errors.ERROR_FOWARD_ROVER);
         metrics.meter("ForwardRoverFail");
         String headers = "";
