@@ -4,4 +4,4 @@ ssh -T -i /usr/azkaban/id_rsa_spark stack@lvschocolatepits-1585074.stratus.lvs.e
 hostname
 export HADOOP_USER_NAME=chocolate
 echo $HADOOP_USER_NAME
-/datashare/mkttracking/jobs/tracking/sparknrt/bin/prod/dedupeAndSink.sh EPN marketingtech.ap.tracking-events.filtered-epn /apps/tracking-events-workdir /apps/tracking-events http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200 1 true
+/datashare/mkttracking/jobs/tracking/sparknrt/bin/prod/dedupeAndSink.sh EPN marketing.tracking.filtered-epn /apps/tracking-events-workdir /apps/tracking-events http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200 1 true
