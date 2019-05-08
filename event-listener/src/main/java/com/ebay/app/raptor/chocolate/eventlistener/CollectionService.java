@@ -122,28 +122,17 @@ public class CollectionService {
       logError(ErrorType.NO_USER_AGENT);
     }
 
+    if(referer.startsWith("https://apisd.ebay.com")) {
+      metrics.meter("APISD");
+    }
     // legacy rover deeplink case. Forward it to rover. We control this at our backend in case mobile app miss it
     Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
     if (roverSitesMatcher.find()) {
       // add nrd=1 to stop rover redirect and use http
-      final String noRedirectRoverUrl = referer + "&nrd=1";
+      final String noRedirectRoverUrl = referer + "&nrd=1&mcs=1";
 
       CloseableHttpClient client = httpClientConnectionManager.getHttpClient();
       HttpGet httpGet = new HttpGet(noRedirectRoverUrl);
-
-      final Enumeration<String> headers = request.getHeaderNames();
-      while (headers.hasMoreElements()) {
-        final String header = headers.nextElement();
-        // filter out Auth header and Connection header. There are some Connection headers with [TE, keep-alive] as value.
-        // which is invalid.
-        if(header.equalsIgnoreCase("Authorization") || header.equalsIgnoreCase("Connection")) {
-          continue;
-        }
-        final Enumeration<String> values = request.getHeaders(header);
-        //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
-        httpGet.addHeader(header, values.nextElement());
-      }
-
 
       roverClient.fowardRequestToRover(client, httpGet);
       return true;
