@@ -14,7 +14,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 
 /**
  * @author xiangli4
@@ -38,16 +37,22 @@ public class HttpRoverClient {
     // ask rover not to redirect
     try {
       CloseableHttpResponse response = client.execute(httpGet);
-      if (response.getStatusLine().getStatusCode() != 200) {
-        logger.warn(Errors.ERROR_FOWARD_ROVER);
+      if (response.getStatusLine().getStatusCode() == 301 ) {
+        metrics.meter("ForwardRoverRedirect");
+        String headers = "";
+        for (Header header : httpGet.getAllHeaders()) {
+          headers = headers + header.toString() + ",";
+        }
+        logger.warn("ForwardRoverRedirect req. URI: " + httpGet.getURI() + ", headers: " + headers);
+      } else if (response.getStatusLine().getStatusCode() == 200 ) {
+        metrics.meter("ForwardRoverSuccess");
+      } else {
         metrics.meter("ForwardRoverFail");
         String headers = "";
         for (Header header : httpGet.getAllHeaders()) {
           headers = headers + header.toString() + ",";
         }
         logger.warn("ForwardRoverFail req. URI: " + httpGet.getURI() + ", headers: " + headers);
-      } else {
-        metrics.meter("ForwardRoverSuccess");
       }
       response.close();
     } catch (Exception ex) {
