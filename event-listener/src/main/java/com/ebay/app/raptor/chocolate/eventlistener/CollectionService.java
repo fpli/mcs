@@ -145,8 +145,7 @@ public class CollectionService {
           httpGet.addHeader(header, values.nextElement());
         }
       }
-
-
+      
       roverClient.fowardRequestToRover(client, httpGet);
       return true;
     }
