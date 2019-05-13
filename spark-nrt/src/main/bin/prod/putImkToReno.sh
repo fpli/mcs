@@ -1,6 +1,15 @@
 #!/bin/bash
 
-usage="Usage: scpImkToReno.sh [srcDir] [renoMiddleDir] [renoDestDir] [localTmpDir]"
+# Put files from chocolate hadoop to Apollo RNO. The source file will be deleted.
+# Input:    /apps/tracking-events/crabTransform/imkOutput
+#           /apps/tracking-events/imkTransform/imkOutput
+#           /apps/tracking-events/crabTransform/dtlOutput
+#           /apps/tracking-events/imkTransform/dtlOutput
+# Output:   /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event
+#           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl
+# Schedule: /3 * ? * *
+
+usage="Usage: putImkToReno.sh [srcDir] [renoMiddleDir] [renoDestDir] [localTmpDir]"
 
 if [ $# -le 1 ]; then
   echo $usage

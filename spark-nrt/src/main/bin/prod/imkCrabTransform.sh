@@ -1,7 +1,11 @@
 #!/bin/bash
-# run spark job on YARN - crabsink
+# run spark job on YARN
+# Run the same job in UC4 job to join tables and generate final tables
+# Input: IMK dump job result. Data in LVS.
+# Output: imk_rvr_trckng_event, imk_rvr_trckng_event_dtl, imk_rvr_trckng_mgvalue. To SLC.
+# Schedule: * * ? * *
 
-usage="Usage: crabSinkKafka.sh [workDir] [outPutDir]"
+usage="Usage: imkCrabTransform.sh [workDir] [outPutDir]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then

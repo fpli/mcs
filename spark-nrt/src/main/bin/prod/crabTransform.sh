@@ -1,5 +1,9 @@
 #!/bin/bash
-# run spark job on YARN - crabsink
+# run spark job on YARN
+# Run the same job in UC4 job to join tables and generate final tables
+# Input: Crab dedupe job result. Data in SLC.
+# Output: imk_rvr_trckng_event, imk_rvr_trckng_event_dtl, imk_rvr_trckng_mgvalue. To SLC.
+# Schedule: * * ? * *
 
 usage="Usage: crabTransform.sh [workDir] [outPutDir]"
 
@@ -55,8 +59,8 @@ ${SPARK_HOME}/bin/spark-submit \
       --mode yarn \
       --channel crabDedupe \
       --transformedPrefix chocolate_ \
-      --workDir "${WORK_DIR}" \
       --kwDataDir "${KW_LK_FOLDER}" \
+      --workDir "${WORK_DIR}" \
       --outputDir "${OUTPUT_DIR}" \
       --compressOutPut true \
       --maxMetaFiles 20 \
