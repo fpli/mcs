@@ -1,8 +1,10 @@
 #!/bin/bash
 # run spark job on YARN
-# Run the same job in UC4 job to join tables and generate final tables
-# Input: Crab dedupe job result. Data in SLC.
-# Output: imk_rvr_trckng_event, imk_rvr_trckng_event_dtl, imk_rvr_trckng_mgvalue. To SLC.
+# Run the same job in UC4 job to join tables and generate final tables. Source is legacy imk dedupe result.
+# Input:    SLC HDFS
+#           /apps/tracking-events/crabDedupe
+# Output:   SLC Hadoop
+#           /apps/tracking-events/imkTransform
 # Schedule: * * ? * *
 
 usage="Usage: crabTransform.sh [workDir] [outPutDir]"

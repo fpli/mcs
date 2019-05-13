@@ -1,6 +1,6 @@
 #!/bin/bash
 # run spark job on YARN
-# Run the same job in UC4 job to join tables and generate final tables
+# Run the same job in UC4 job to join tables and generate final tables. Source is long term imk dump result.
 # Input:    LVS Hadoop
 #           /apps/tracking-events/channel/imkDump
 # Output:   SLC Hadoop
