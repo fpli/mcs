@@ -1,5 +1,11 @@
 #!/bin/bash
-# run spark job on YARN - crabsink
+# run spark job on YARN
+# Dump and dedupe rover IMK data from crab result(crab transform jobs are running in LVS VMs) to IMK format.
+# Input:    LVS HDFS
+#           /apps/tracking-events-workdir/crabScp/dest
+# Output:   SLC HDFS
+#           /apps/tracking-events/crabDedupe
+# Schedule: /5 * ? * *
 
 usage="Usage: crabDedupe.sh [workDir] [inputDir] [outPutDir]"
 

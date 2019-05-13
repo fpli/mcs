@@ -1,11 +1,13 @@
 #!/bin/bash
 
-# Put files from chocolate hadoop to Apollo RNO. The source file will be deleted.
-# Input:    /apps/tracking-events/crabTransform/imkOutput
+# Put files from chocolate hadoop to Apollo RNO. The input files will be deleted.
+# Input:    SLC Hadoop
+#           /apps/tracking-events/crabTransform/imkOutput
 #           /apps/tracking-events/imkTransform/imkOutput
 #           /apps/tracking-events/crabTransform/dtlOutput
 #           /apps/tracking-events/imkTransform/dtlOutput
-# Output:   /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event
+# Output:   Apollo RNO
+#           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event
 #           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl
 # Schedule: /3 * ? * *
 

@@ -1,8 +1,10 @@
 #!/bin/bash
 # run spark job on YARN
 # Run the same job in UC4 job to join tables and generate final tables
-# Input: IMK dump job result. Data in LVS.
-# Output: imk_rvr_trckng_event, imk_rvr_trckng_event_dtl, imk_rvr_trckng_mgvalue. To SLC.
+# Input:    LVS Hadoop
+#           /apps/tracking-events/channel/imkDump
+# Output:   SLC Hadoop
+#           /apps/tracking-events/imkTransform
 # Schedule: * * ? * *
 
 usage="Usage: imkCrabTransform.sh [workDir] [outPutDir]"

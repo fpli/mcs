@@ -1,9 +1,11 @@
 #!/bin/bash
 
 # Generate hadoop done file in ApolloRNO
-# Input:    /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event
+# Input:    Apollo RNO
+#           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event
 #           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl
-# Output:   /apps/b_marketing_tracking/imk_tracking/daily_done_files/imk_rvr_trckng_event.date
+# Output:   Apollo RNO
+#           /apps/b_marketing_tracking/imk_tracking/daily_done_files/imk_rvr_trckng_event.date
 #           /apps/b_marketing_tracking/imk_tracking/daily_done_files/imk_rvr_trckng_event.date
 # Schedule: 23 1-23 ? * *
 #           21 1-23 ? * *
