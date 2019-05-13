@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.crabDedupe
 
+import java.net.URI
+
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
@@ -7,7 +9,7 @@ import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.imkDump.TableSchema
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 
@@ -46,9 +48,20 @@ class CrabDedupeJob(params: Parameter)
     }
   }
 
-
   var couchbaseDedupe: Boolean = {
     params.couchbaseDedupe
+  }
+
+  @transient lazy val lvsFs: FileSystem = {
+    val fs = FileSystem.get(URI.create(params.inputDir), hadoopConf)
+    sys.addShutdownHook(fs.close())
+    fs
+  }
+
+  @transient override lazy val fs: FileSystem = {
+    val fs = FileSystem.get(URI.create(params.workDir), hadoopConf)
+    sys.addShutdownHook(fs.close())
+    fs
   }
 
   @transient lazy val schema_tfs = TableSchema("df_imk.json")
@@ -109,7 +122,7 @@ class CrabDedupeJob(params: Parameter)
     })
     outputMetadata.writeDedupeOutputMeta(MetaFiles(outputMetas))
     inputFiles.foreach(file => {
-      fs.delete(new Path(file), true)
+      lvsFs.delete(new Path(file), true)
     })
     metrics.meter("crab.dedupe.processedFiles", inputFiles.length)
     if(metrics != null) {
@@ -190,7 +203,7 @@ class CrabDedupeJob(params: Parameter)
     * @return
     */
   def getInputFiles(inputDir: String): Array[String] = {
-    val status = fs.listStatus(new Path(inputDir))
+    val status = lvsFs.listStatus(new Path(inputDir))
     status.filter(path => path.getPath.getName.startsWith("imk_rvr_trckng"))
       .map(path => path.getPath.toString)
   }
