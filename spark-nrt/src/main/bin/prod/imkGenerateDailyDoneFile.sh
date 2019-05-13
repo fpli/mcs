@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Generate hadoop done file in ApolloRNO
+# Input:    Apollo RNO
+#           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event
+#           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl
+# Output:   Apollo RNO
+#           /apps/b_marketing_tracking/imk_tracking/daily_done_files/imk_rvr_trckng_event.date
+#           /apps/b_marketing_tracking/imk_tracking/daily_done_files/imk_rvr_trckng_event.date
+# Schedule: 23 1-23 ? * *
+#           21 1-23 ? * *
+
 usage="Usage: imkGenerateDailyDoneFile.sh [DONE_FILE_RNO_PATH] [IMK_RNO_PATH] [TABLE_NAME]"
 
 # if no args specified, show usage

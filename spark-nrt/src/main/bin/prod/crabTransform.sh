@@ -1,5 +1,11 @@
 #!/bin/bash
-# run spark job on YARN - crabsink
+# run spark job on YARN
+# Run the same job in UC4 job to join tables and generate final tables. Source is legacy imk dedupe result.
+# Input:    SLC HDFS
+#           /apps/tracking-events/crabDedupe
+# Output:   SLC Hadoop
+#           /apps/tracking-events/imkTransform
+# Schedule: * * ? * *
 
 usage="Usage: crabTransform.sh [workDir] [outPutDir]"
 
@@ -55,8 +61,8 @@ ${SPARK_HOME}/bin/spark-submit \
       --mode yarn \
       --channel crabDedupe \
       --transformedPrefix chocolate_ \
-      --workDir "${WORK_DIR}" \
       --kwDataDir "${KW_LK_FOLDER}" \
+      --workDir "${WORK_DIR}" \
       --outputDir "${OUTPUT_DIR}" \
       --compressOutPut true \
       --maxMetaFiles 20 \
