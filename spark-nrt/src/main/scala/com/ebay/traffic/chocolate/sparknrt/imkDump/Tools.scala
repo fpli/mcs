@@ -132,7 +132,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     if (StringUtils.isNotEmpty(query)) {
       query.split("&").foreach(paramMapString => {
         val paramStringArray = paramMapString.split("=")
-        if (paramStringArray(0).trim.equalsIgnoreCase(key) && paramStringArray.length == 2) {
+        if (paramStringArray.nonEmpty && paramStringArray(0).trim.equalsIgnoreCase(key) && paramStringArray.length == 2) {
           return paramStringArray(1).trim
         }
       })

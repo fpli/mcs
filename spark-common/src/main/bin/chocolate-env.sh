@@ -10,7 +10,7 @@ if [ -z "${HADOOP_CONF_DIR}" ]; then
 fi
 
 if [ -z "${SPARK_HOME}" ]; then
-  export SPARK_HOME=/apache/spark/
+  export SPARK_HOME=/datashare/mkttracking/tools/apache/spark
 fi
 
 if [ -z "${SPARK_CONF_DIR}" ]; then
