@@ -2,14 +2,14 @@
 
 function start_job(){
     host=$1
-    folder=$3
+    folder=$2
     ssh -T -i /usr/azkaban/id_rsa_spark stack@${host} <<EOSSH
     hostname
     cd /datashare/mkttracking/jobs/tracking/${folder}/bin/prod
     pwd
     export HADOOP_USER_NAME=chocolate
     echo $HADOOP_USER_NAME
-    $2
+    $3
 EOSSH
 }
 
@@ -48,6 +48,6 @@ then
     submit_job_in_SLC $2 $3
 else
     echo "please choose one correct cluster to run job"
-    echo "USAGE: SubmitJob.sh [CLUSTER_RUN_SPARK] [COMMAND] [SPARK_JOB_TYPE(sparknrt|epnnrt)]"
+    echo "USAGE: SubmitJob.sh [CLUSTER_RUN_SPARK] [SPARK_JOB_TYPE(sparknrt|epnnrt)] [COMMAND] "
     echo 1
 fi
