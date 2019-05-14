@@ -1,7 +1,13 @@
 #!/bin/bash
-# run spark job on YARN - crabsink
+# run spark job on YARN
+# Run the same job in UC4 job to join tables and generate final tables. Source is long term imk dump result.
+# Input:    LVS Hadoop
+#           /apps/tracking-events/channel/imkDump
+# Output:   SLC Hadoop
+#           /apps/tracking-events/imkTransform
+# Schedule: * * ? * *
 
-usage="Usage: crabSinkKafka.sh [workDir] [outPutDir]"
+usage="Usage: imkCrabTransform.sh [workDir] [outPutDir]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then

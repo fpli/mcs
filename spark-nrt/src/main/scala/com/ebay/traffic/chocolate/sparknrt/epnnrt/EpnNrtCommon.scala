@@ -193,7 +193,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   //val getGUIDUdf = udf((requestHeader: String, responseHeader:String, guid: String) => getGUIDFromCookie(requestHeader, responseHeader, guid))
   val getValueFromRequestUdf = udf((requestHeader: String, key: String) => getValueFromRequest(requestHeader, key))
   val getUserQueryTextUdf = udf((url: String, action: String) => getUserQueryTxt(url, action))
-  val getToolIdUdf = udf((url: String) => getQueryParam(url, "toolid"))
+  val getToolIdUdf = udf((url: String) => getAms_tool_id(url))
   val getCustomIdUdf = udf((url: String) => getQueryParam(url, "customid"))
   val getFFValueUdf = udf((url: String, index: String) => getFFValue(url, index))
   val getFFValueNotEmptyUdf = udf((url: String, index: String) => getFFValueNotEmpty(url, index))
@@ -242,7 +242,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
 
   def getLastViewItemInfo(cguid: String, timestamp: String): Array[String] = {
-    val res = BullseyeUtils.getLastViewItem(cguid, timestamp)
+    val res = BullseyeUtils.getLastViewItem(cguid, timestamp, properties.getProperty("epnnrt.modelId"), properties.getProperty("epnnrt.lastviewitemnum"), properties.getProperty("epnnrt.bullseyeUrl"))
     Array(res._1, res._2)
   }
 
@@ -388,6 +388,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     ""
   }
 
+  def getAms_tool_id(uri: String): String = {
+    var res = getQueryParam(uri, "toolid")
+    if(res.equalsIgnoreCase(""))
+      res = "0"
+    res
+  }
+
   def getQueryParam(uri: String, param: String): String = {
     if (uri != null) {
       try {
@@ -419,7 +426,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getPrgrmIdAdvrtsrIdFromAMSClick(rotationId: String): Array[String] = {
-    val empty = Array("","")
+    //det default program id and advrtsr id to -999
+    val empty = Array("-999","-999")
     if (rotationId == null || rotationId.equals(""))
       return empty
     val parts = rotationId.split("-")

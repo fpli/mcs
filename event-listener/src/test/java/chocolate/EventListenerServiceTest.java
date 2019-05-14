@@ -257,7 +257,19 @@ public class EventListenerServiceTest {
 //    errorMessageV3 = response.readEntity(ErrorMessageV3.class);
 //    assertEquals(4003, errorMessageV3.getErrors().get(0).getErrorId());
 
+    // rover as referer
+    event.setReferrer("https://rover.ebay.com/rover/1/709-41886-4896-0/2?mpre=https%3A%2F%2Fwww.ebay.fr%2Fulk%2Fsch%2F%3F_nkw%3Dcamescope%2520jvc%26mkevt%3D1%26mkrid%3D709-41886-4896-0%26mkcid%3D2%26keyword%3Dcamescope%2520jvc%26crlp%3D285602751787_%26MT_ID%3D58%26geo_id%3D32296%26rlsatarget%3Dkwd-119986605%26adpos%3D6o2%26device%3Dc%26loc%3D9056144%26poi%3D%26abcId%3D463856%26cmpgn%3D189547424%26sitelnk%3D&keyword=camescope%20jvc&crlp=285602751787_&MT_ID=58&geo_id=32296&rlsatarget=kwd-119986605&adpos=6o2&device=c&loc=9056144&poi=&abcId=463856&cmpgn=189547424&sitelnk=&gclid=Cj0KCQjwtMvlBRDmARIsAEoQ8zSmXHKLMq9rnAokRQtw5FQcGflfnJiPbRndTX1OvNzgImj7sGgkemsaAtw9EALw_wcB");
+    response = client.target(svcEndPoint).path(eventsPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxNoReferer)
+            .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(event));
+    assertEquals(201, response.getStatus());
+
     // no query parameter
+    event.setReferrer("https://www.google.com");
     event.setTargetUrl("https://www.ebay.com");
     response = client.target(svcEndPoint).path(eventsPath)
       .request()
