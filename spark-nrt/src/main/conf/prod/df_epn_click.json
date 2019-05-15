@@ -30,7 +30,7 @@
     {
       "name": "CHNL_ID",
       "dataType": "string",
-      "default": ""
+      "default": "1"
     },
     {
       "name": "CRLTN_GUID_TXT",
@@ -55,7 +55,7 @@
     {
       "name": "BRWSR_TYPE_NUM",
       "dataType": "string",
-      "default": ""
+      "default": "0"
     },
     {
       "name": "BRWSR_NAME",

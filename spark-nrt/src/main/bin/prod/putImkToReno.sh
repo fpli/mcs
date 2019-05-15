@@ -1,6 +1,17 @@
 #!/bin/bash
 
-usage="Usage: scpImkToReno.sh [srcDir] [renoMiddleDir] [renoDestDir] [localTmpDir]"
+# Put files from chocolate hadoop to Apollo RNO. The input files will be deleted.
+# Input:    SLC Hadoop
+#           /apps/tracking-events/crabTransform/imkOutput
+#           /apps/tracking-events/imkTransform/imkOutput
+#           /apps/tracking-events/crabTransform/dtlOutput
+#           /apps/tracking-events/imkTransform/dtlOutput
+# Output:   Apollo RNO
+#           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event
+#           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl
+# Schedule: /3 * ? * *
+
+usage="Usage: putImkToReno.sh [srcDir] [renoMiddleDir] [renoDestDir] [localTmpDir]"
 
 if [ $# -le 1 ]; then
   echo $usage
@@ -44,7 +55,7 @@ do
     date=${orgDate//-/}
     destFolder=${RENO_DEST_DIR}/dt=${date}
 #    create dest folder if not exists
-    /apache/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${destFolder}
+    /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${destFolder}
     if [[ -s ${file_name} ]];
     then
 #        max 3 times put data to reno middle and mv data to reno dest folder
@@ -52,7 +63,7 @@ do
         rcode=1
         until [[ ${retry} -gt 3 ]]
         do
-            /apache/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -put -f ${file_name} ${RENO_MID_DIR}/ && /apache/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mv ${RENO_MID_DIR}/${file_name} ${destFolder}/
+            /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -put -f ${file_name} ${RENO_MID_DIR}/ && /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mv ${RENO_MID_DIR}/${file_name} ${destFolder}/
             rcode=$?
             if [ ${rcode} -eq 0 ]
             then
