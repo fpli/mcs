@@ -39,7 +39,11 @@ public class ConsumerListener<K, V> implements ConsumerRebalanceListener {
     Map<TopicPartition, OffsetAndMetadata> revoked = new HashMap<>();
 
     for (TopicPartition partition : partitions) {
-      revoked.put(partition, new OffsetAndMetadata(offsets.get(partition)));
+      long offset = offsets.get(partition);
+      long lastCommittedOffset = lastCommittedOffsets.get(partition);
+      if (offset > lastCommittedOffset) {
+        revoked.put(partition, new OffsetAndMetadata(offset));
+      }
       offsets.remove(partition);
       lastCommittedOffsets.remove(partition);
     }
