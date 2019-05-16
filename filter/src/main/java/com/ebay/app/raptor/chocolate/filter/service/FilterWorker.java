@@ -87,9 +87,9 @@ public class FilterWorker extends Thread {
             ", input topic " + inputTopic + ", output topic " + outputTopic);
 
     // Init the metrics that we don't use often
-    this.metrics.meter("FilterError", 0);
-    this.metrics.meter("messageParseFailure", 0);
-    this.metrics.mean("FilterPassedPPM", 0);
+    metrics.meter("FilterError", 0);
+    metrics.meter("messageParseFailure", 0);
+    metrics.mean("FilterPassedPPM", 0);
 
     try {
       consumer.subscribe(Arrays.asList(inputTopic), consumerListener);
@@ -123,9 +123,6 @@ public class FilterWorker extends Thread {
             metrics.meter("FilterThroughput", 1, message.getTimestamp(),
               Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
               Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
-
-            consumerListener.updatePartitionOffset(
-                    new TopicPartition(record.topic(), record.partition()), record.offset());
 
             completionService.submit(() -> processMessage(record.value()));
             threadNum++;
@@ -177,8 +174,9 @@ public class FilterWorker extends Thread {
             Map.Entry<TopicPartition, Long> entry = iter.next();
             TopicPartition tp = entry.getKey();
             long endOffset = entry.getValue();
-            long offset = consumerListener.getPartitionOffset(tp);
-            metrics.mean("FilterKafkaConsumerLag", endOffset - offset, Field.of(CHANNEL_TYPE, channelType.toString()),
+            long offset = consumer.position(tp);
+            metrics.mean("FilterKafkaConsumerLag", endOffset - offset,
+                    Field.of("topic", tp.topic()),
                     Field.of("consumer", tp.partition()));
           }
 
