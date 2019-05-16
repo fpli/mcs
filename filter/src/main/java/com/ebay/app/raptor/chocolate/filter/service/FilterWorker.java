@@ -124,9 +124,6 @@ public class FilterWorker extends Thread {
               Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
               Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
 
-            consumerListener.updatePartitionOffset(
-                    new TopicPartition(record.topic(), record.partition()), record.offset());
-
             completionService.submit(() -> processMessage(record.value()));
             threadNum++;
           }
@@ -177,7 +174,7 @@ public class FilterWorker extends Thread {
             Map.Entry<TopicPartition, Long> entry = iter.next();
             TopicPartition tp = entry.getKey();
             long endOffset = entry.getValue();
-            long offset = consumerListener.getPartitionOffset(tp);
+            long offset = consumer.position(tp);
             metrics.mean("FilterKafkaConsumerLag", endOffset - offset,
                     Field.of("topic", tp.topic()),
                     Field.of("consumer", tp.partition()));
