@@ -41,7 +41,7 @@ do
     fi
 done
 if [ ${rcode} -ne 0 ]; then
-    echo "Fail to upload NRT Data to Reno, please check!!!"
+    echo "Fail to upload EPN NRT Data to Reno, please check!!!" | mail -s "Send EPN NRT To Reno ERROR!!!!" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
     exit ${rcode}
 fi
 
