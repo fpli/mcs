@@ -154,7 +154,7 @@ class KafkaRDD[K, V](
     if (metrics != null) {
       metrics.trace2("SparkKafkaConsumerOffset", offset,
         Field.of[String, AnyRef]("topic", topicPartition.topic()),
-        Field.of[String, AnyRef]("consumer", topicPartition.partition()))
+        Field.of[String, AnyRef]("consumer", Int.box(topicPartition.partition())))
     }
 
     var nextRecord: ConsumerRecord[K, V] = null // cache the next record
