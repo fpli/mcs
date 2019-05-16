@@ -21,7 +21,7 @@ class KafkaRDD[K, V](
                       val topic: String,
                       val kafkaProperties: util.Properties,
                       val elasticsearchUrl: String = "",
-                      val maxConsumeSize: Long = 1000000l // maximum number of events can be consumed in one task: 100M
+                      val maxConsumeSize: Long = 100000l // maximum number of events can be consumed in one task: 100M
                     ) extends RDD[ConsumerRecord[K, V]](sc, Nil) {
   val POLL_STEP_MS = 30000
   lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
@@ -64,7 +64,9 @@ class KafkaRDD[K, V](
       log.info(s"###topic-partition: ${tp}, position: ${position}, until: ${until}")
       if (metrics != null) {
         // lag metric
-        metrics.mean("SparkKafkaConsumerLag", endOffset.getValue - position, Field.of[String, AnyRef]("consumer", Int.box(tp.partition)))
+        metrics.mean("SparkKafkaConsumerLag", endOffset.getValue - position,
+          Field.of[String, AnyRef]("topic", tp.topic()),
+          Field.of[String, AnyRef]("consumer", Int.box(tp.partition)))
       }
 
       if (until > position) {
@@ -150,8 +152,9 @@ class KafkaRDD[K, V](
 
     // metrics
     if (metrics != null) {
-      metrics.trace("Consumer" + topicPartition.partition() + "-offset", offset)
-      metrics.trace("Consumer" + topicPartition.partition() + "-until", part.untilOffset)
+      metrics.trace2("SparkKafkaConsumerOffset", offset,
+        Field.of[String, AnyRef]("topic", topicPartition.topic()),
+        Field.of[String, AnyRef]("consumer", topicPartition.partition()))
     }
 
     var nextRecord: ConsumerRecord[K, V] = null // cache the next record

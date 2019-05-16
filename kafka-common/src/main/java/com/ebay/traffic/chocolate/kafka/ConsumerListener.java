@@ -1,5 +1,8 @@
 package com.ebay.traffic.chocolate.kafka;
 
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -14,12 +17,15 @@ import java.util.Map;
  */
 public class ConsumerListener<K, V> implements ConsumerRebalanceListener {
 
+  private final Metrics metrics;
+
   private final Consumer<K, V> consumer;
   private final Map<TopicPartition, Long> offsets = new HashMap<>();
   private final Map<TopicPartition, Long> lastCommittedOffsets = new HashMap<>();
 
   public ConsumerListener(Consumer<K, V> consumer) {
     this.consumer = consumer;
+    this.metrics = ESMetrics.getInstance();
   }
 
   @Override
@@ -43,6 +49,9 @@ public class ConsumerListener<K, V> implements ConsumerRebalanceListener {
       long lastCommittedOffset = lastCommittedOffsets.get(partition);
       if (offset > lastCommittedOffset) {
         revoked.put(partition, new OffsetAndMetadata(offset));
+        metrics.trace2("KafkaConsumerOffset", offset,
+                Field.of("topic", partition.topic()),
+                Field.of("consumer", partition.partition()));
       }
       offsets.remove(partition);
       lastCommittedOffsets.remove(partition);
@@ -82,6 +91,9 @@ public class ConsumerListener<K, V> implements ConsumerRebalanceListener {
       long lastCommittedOffset = lastCommittedOffsets.get(partition);
       if (offset > lastCommittedOffset) {
         toCommitOffsets.put(partition, new OffsetAndMetadata(offset));
+        metrics.trace2("KafkaConsumerOffset", offset,
+                Field.of("topic", partition.topic()),
+                Field.of("consumer", partition.partition()));
       }
     }
 
