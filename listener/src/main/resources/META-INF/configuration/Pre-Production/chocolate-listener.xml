@@ -9,17 +9,17 @@
   </property>
   <property>
     <name>chocolate.listener.kafka.topic_filtered</name>
-    <value>marketing.tracking.listened-filtered-preprod,preprod_listener_filtered</value>
+    <value>marketing.tracking.pp.listened-filtered-preprod,preprod_listener_filtered</value>
     <description>Kafka topic for messages filtered in listener.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.EPN</name>
-    <value>marketing.tracking.listened-epn-preprod,preprod_listener</value>
+    <value>marketing.tracking.pp.listened-epn-preprod,preprod_listener</value>
     <description>Kafka topic for epn channel to publish.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.DISPLAY</name>
-    <value>marketing.tracking.listened-display-preprod,listened-display-preprod</value>
+    <value>marketing.tracking.pp.listened-display-preprod,listened-display-preprod</value>
     <description>Kafka topic for display channel to publish.</description>
   </property>
   <!-- Kafka producer end -->
