@@ -43,19 +43,19 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
       CappingRuleEnum.IPBrowserCappingRule_M ->
         new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_M), dateFiles, sparkJobObj, windowMedium),
       CappingRuleEnum.IPBrowserCappingRule_L ->
-        new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L), dateFiles, sparkJobObj, windowLong),
+        new IPBrowserCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPBrowserCappingRule_L), dateFiles, sparkJobObj, windowLong)
       // Snid capping rule is special. 2 rules are implemented in 1 single rule for better performance
       // Use SnidCappingRule_L as hashmap key. Actually it doesn't affect what it is
-      CappingRuleEnum.SnidCappingRule_L ->
-          new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
-            CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles, sparkJobObj, windowLong)
+//      CappingRuleEnum.SnidCappingRule_L ->
+//          new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
+//            CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles, sparkJobObj, windowLong)
     ),
     ChannelType.DISPLAY -> mutable.HashMap(
       CappingRuleEnum.IPCappingRule ->
-        new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj),
-      CappingRuleEnum.SnidCappingRule_L ->
-        new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
-          CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles, sparkJobObj, windowLong)
+        new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj)
+//      CappingRuleEnum.SnidCappingRule_L ->
+//        new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
+//          CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles, sparkJobObj, windowLong)
     ),
     ChannelType.PAID_SEARCH -> mutable.HashMap(
       CappingRuleEnum.IPCappingRule ->
