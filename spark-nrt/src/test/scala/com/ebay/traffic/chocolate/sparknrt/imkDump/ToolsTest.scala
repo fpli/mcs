@@ -6,7 +6,7 @@ import org.scalatest.FunSuite
   * Created by ganghuang on 12/3/18.
   */
 class ToolsTest extends FunSuite {
-  val tools = new Tools(null, null)
+  val tools = new Tools("ut", "http://10.148.181.34:9200")
   
   test("test getDateTimeFromTimestamp") {
     assert(tools.getDateFromTimestamp(1531377313068L) == "2018-07-12")
