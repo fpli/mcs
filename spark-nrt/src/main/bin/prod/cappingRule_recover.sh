@@ -1,7 +1,8 @@
 #!/bin/bash
 # run spark job on YARN - CappingRule
+# Recover mode adjusts the partitions to 30 corresponding to 1 day delay. Adjust it by situation.
 
-usage="Usage: cappingRule.sh [channel] [workDir] [outputDir] [archiveDir] [ipThreshold] [elasticsearchUrl]"
+usage="Usage: cappingRule.sh [channel] [workDir] [outputDir] [archiveDir] [partitions] [ipThreshold] [elasticsearchUrl]"
 
 # if no args specified, show usage
 if [ $# -le 3 ]; then
@@ -23,7 +24,7 @@ ES_URL=$6
 
 DRIVER_MEMORY=4g
 EXECUTOR_NUMBER=20
-EXECUTOR_MEMORY=15g
+EXECUTOR_MEMORY=40g
 EXECUTOR_CORES=1
 
 SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
@@ -55,5 +56,6 @@ ${SPARK_HOME}/bin/spark-submit \
       --workDir "${WORK_DIR}" \
       --outputDir ${OUTPUT_DIR} \
       --archiveDir ${ARCHIVE_DIR} \
+      --partitions 30 \
       --ipThreshold ${IP_THRESHOLD} \
       --elasticsearchUrl ${ES_URL}
