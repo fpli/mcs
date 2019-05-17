@@ -17,7 +17,11 @@
     <dependency>
       <groupId>io.ebay.rheos</groupId>
       <artifactId>rheos-client</artifactId>
-      <version>${rheos.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.ebay.rheos</groupId>
+      <artifactId>rheos-iaf-raptorio</artifactId>
     </dependency>
 
     <dependency>

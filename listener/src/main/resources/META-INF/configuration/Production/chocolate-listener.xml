@@ -4,22 +4,22 @@
   <!-- Kafka producer start -->
   <property>
     <name>chocolate.listener.kafka.cluster</name>
-    <value>kafka</value>
+    <value>rheos,kafka</value>
     <description>The kafka cluster, can be "rheos", "kafka", "rheos,kafka", "kafka,rheos".</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic_filtered</name>
-    <value>listened-filtered</value>
+    <value>marketing.tracking.listened-filtered,listened-filtered</value>
     <description>Kafka topic for messages filtered in listener.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.EPN</name>
-    <value>listened-epn</value>
+    <value>marketing.tracking.listened-epn,listened-epn</value>
     <description>Kafka topic for epn channel to publish.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.DISPLAY</name>
-    <value>listened-display</value>
+    <value>marketing.tracking.listened-display,listened-display</value>
     <description>Kafka topic for display channel to publish.</description>
   </property>
 

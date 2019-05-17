@@ -20,7 +20,7 @@ public class TestRheosKafkaProducer {
 
   @Test
   public void testRheosKafkaProducer() throws Exception {
-    final String topic = "marketingtech.ap.tracking-events.filtered-epn";
+    final String topic = "marketing.tracking.staging.filtered-epn";
 
     Producer<Long, FilterMessage> producer =
             new RheosKafkaProducer<>(loadProperties("rheos-kafka-filter-producer.properties"));
