@@ -7,10 +7,7 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
-import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
-import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
-import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
+import com.ebay.traffic.chocolate.listener.util.*;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
@@ -59,6 +56,17 @@ public class DefaultChannel implements Channel {
     String[] result = request.getRequestURI().split("/");
     if (result.length >= 2)
       channelAction = ChannelActionEnum.parse(null, result[1]);
+
+    // handle rover sync separately
+    if(channelAction != null && channelAction.equals(ChannelActionEnum.SYNC)) {
+      String cookieResponseHeader = response.getHeader("Set-Cookie");
+      String cguid = parser.getGuid(null, cookieResponseHeader, null, "cguid");
+      String guid = parser.getGuid(null, cookieResponseHeader, null, "tguid");
+      if(guid.length() > 0) {
+        CouchbaseClient.getInstance().addMappingRecord(guid, cguid);
+      }
+      return;
+    }
     if (result.length == 5)
       channelType = ChannelIdEnum.parse(result[4]);
 

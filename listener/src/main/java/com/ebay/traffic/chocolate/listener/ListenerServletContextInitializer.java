@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.listener;
 
 import com.ebay.traffic.chocolate.init.JettyServerConfiguration;
+import com.ebay.traffic.chocolate.listener.api.AdsTrackingServlet;
 import com.ebay.traffic.chocolate.listener.api.TrackingServlet;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
@@ -73,7 +74,16 @@ public class ListenerServletContextInitializer implements ServletContextInitiali
         serviceServlet.setInitParameter("preserveHost", "true");
         serviceServlet.setAsyncSupported(true);
         serviceServlet.setLoadOnStartup(3);
+
+        // Add ads tracking servlet
+        logger.info("start adsTrackingServlet");
+        ServletRegistration.Dynamic adTrackingServlet = servletContext.addServlet("ListenerAdsTrackingServlet",
+            new AdsTrackingServlet(ESMetrics.getInstance(), MessageObjectParser.getInstance()));
+        adTrackingServlet.addMapping("/adTracking/*");
+        adTrackingServlet.setLoadOnStartup(4);
         
         logger.info("all loaded!");
+
+
     }
 }

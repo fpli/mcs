@@ -4,22 +4,22 @@
   <!-- Kafka producer start -->
   <property>
     <name>chocolate.listener.kafka.cluster</name>
-    <value>kafka</value>
+    <value>rheos,kafka</value>
     <description>The kafka cluster, can be "rheos", "kafka", "rheos,kafka", "kafka,rheos".</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic_filtered</name>
-    <value>preprod_listener_filtered</value>
+    <value>marketing.tracking.pp.listened-filtered-preprod,preprod_listener_filtered</value>
     <description>Kafka topic for messages filtered in listener.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.EPN</name>
-    <value>preprod_listener</value>
+    <value>marketing.tracking.pp.listened-epn-preprod,preprod_listener</value>
     <description>Kafka topic for epn channel to publish.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.DISPLAY</name>
-    <value>listened-display-preprod</value>
+    <value>marketing.tracking.pp.listened-display-preprod,listened-display-preprod</value>
     <description>Kafka topic for display channel to publish.</description>
   </property>
   <!-- Kafka producer end -->
@@ -120,6 +120,12 @@
     <name>chocolate.listener.pidfile</name>
     <value>/tmp/chocolate-listener.pid</value>
     <description>Pid file path.</description>
+  </property>
+
+  <property>
+    <name>chocolate.listener.couchbase.datasource</name>
+    <value>appdldevicescbdbhost</value>
+    <description>Couchbase data source</description>
   </property>
 
 </configuration>
