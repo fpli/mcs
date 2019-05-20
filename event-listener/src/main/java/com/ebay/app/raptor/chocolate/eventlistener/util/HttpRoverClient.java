@@ -1,6 +1,5 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
-import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.http.Header;
@@ -33,7 +32,7 @@ public class HttpRoverClient {
   }
 
   @Async
-  public void fowardRequestToRover(CloseableHttpClient client, HttpGet httpGet) {
+  public void forwardRequestToRover(CloseableHttpClient client, HttpGet httpGet) {
     // ask rover not to redirect
     try {
       CloseableHttpResponse response = client.execute(httpGet);

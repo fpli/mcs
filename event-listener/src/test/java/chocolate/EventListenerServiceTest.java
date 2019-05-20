@@ -268,6 +268,17 @@ public class EventListenerServiceTest {
             .post(Entity.json(event));
     assertEquals(201, response.getStatus());
 
+    // rover as referer but encoded
+    event.setReferrer("https%3A%2F%2Frover.ebay.com%2Frover%2F1%2F711-117182-37290-0%2F2%3Fmpre%3Dhttps%253A%252F%252Fwww.ebay.com%252Fi%252F153018234148%253Fchn%253Dps%2526var%253D452828802628%26itemid%3D452828802628_153018234148%26targetid%3D477790169505%26device%3Dc%26adtype%3Dpla%26googleloc%3D9060230%26poi%3D%26campaignid%3D1746988278%26adgroupid%3D71277061587%26rlsatarget%3Dpla-477790169505%26abcId%3D1139306%26merchantid%3D6296724%26gclid%3DCj0KCQjwkoDmBRCcARIsAG3xzl8lXd3bcaLMaJ8-zY1zD-COSGJrZj-CVOht-VqgWiCtPBy_hrl38HgaAu2AEALw_wcB%26srcrot%3D711-117182-37290-0%26rvr_id%3D1973157993841%26rvr_ts%3Dc1c229cc16a0aa42c5d2b84affc9e842");
+    response = client.target(svcEndPoint).path(eventsPath)
+      .request()
+      .header("X-EBAY-C-ENDUSERCTX", endUserCtxNoReferer)
+      .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
+      .accept(MediaType.APPLICATION_JSON_TYPE)
+      .post(Entity.json(event));
+    assertEquals(201, response.getStatus());
+
     // no query parameter
     event.setReferrer("https://www.google.com");
     event.setTargetUrl("https://www.ebay.com");
