@@ -102,6 +102,9 @@ class TestRuleVerifier extends BaseFunSuite {
                            nrt_rule_flag53: String,
                            nrt_rule_flag54: String,
                            nrt_rule_flag56: String,
+                           nrt_rule_flag72: String,
+                           nrt_rule_flag73: String,
+                           nrt_rule_flag74: String,
                            rt_rule_flag12: String,
                            rt_rule_flag13: String): Long = {
     var ams_rule_bitmap = 0L
@@ -124,6 +127,15 @@ class TestRuleVerifier extends BaseFunSuite {
     if (StringUtils.isNotEmpty(nrt_rule_flag56) && nrt_rule_flag56.equals("1")) {
       ams_rule_bitmap = ams_rule_bitmap | 1L << 4
     }
+    if (StringUtils.isNotEmpty(nrt_rule_flag72) && nrt_rule_flag72.equals("1")) {
+      ams_rule_bitmap = ams_rule_bitmap | 1L << 9
+    }
+    if (StringUtils.isNotEmpty(nrt_rule_flag73) && nrt_rule_flag73.equals("1")) {
+      ams_rule_bitmap = ams_rule_bitmap | 1L << 10
+    }
+    if (StringUtils.isNotEmpty(nrt_rule_flag74) && nrt_rule_flag74.equals("1")) {
+      ams_rule_bitmap = ams_rule_bitmap | 1L << 11
+    }
     if (StringUtils.isNotEmpty(rt_rule_flag12) && rt_rule_flag12.equals("1")) {
       ams_rule_bitmap = ams_rule_bitmap | 1L << 7
     }
@@ -142,7 +154,7 @@ class TestRuleVerifier extends BaseFunSuite {
           "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338107049&item=132355040461&vectorid=229466&lgeo=1&dashenId=6432328199681789952&dashenCnt=0",
           "123", "",
           generateRtRuleFlags("1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"),
-          generateNrtRuleFlags("1", "1", "1", "1", "1", "1", "1", "1"),
+          generateNrtRuleFlags("1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"),
           "CLICK", "EPN", "", "", false
         ),
         Row(
@@ -150,7 +162,7 @@ class TestRuleVerifier extends BaseFunSuite {
           "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338107049&item=132355040461&vectorid=229466&lgeo=1&dashenId=6432328199681789952&dashenCnt=0",
           "123", "",
           generateRtRuleFlags("1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"),
-          generateNrtRuleFlags("1", "1", "1", "1", "1", "1", "1", "1"),
+          generateNrtRuleFlags("1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"),
           "CLICK", "EPN", "", "", false
         ),
         Row(
@@ -158,7 +170,7 @@ class TestRuleVerifier extends BaseFunSuite {
           "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5337666873&customid=&lgeo=1&vectorid=229466&item=222853652218&dashenId=6432328199681789952&dashenCnt=0",
           "123", "",
           generateRtRuleFlags("1", "0", "1", "0", "1", "0", "1", "0", "1", "0", "1"),
-          generateNrtRuleFlags("1", "0", "1", "0", "1", "0", "1", "0"),
+          generateNrtRuleFlags("1", "0", "1", "0", "1", "0", "1", "0", "1", "0", "1"),
           "CLICK", "EPN", "", "", false
         ),
         Row(
@@ -166,7 +178,7 @@ class TestRuleVerifier extends BaseFunSuite {
           "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5337666873&customid=&lgeo=1&vectorid=229466&item=222853652218&dashenId=6432328199681789952&dashenCnt=0",
           "123", "",
           generateRtRuleFlags("1", "0", "1", "0", "1", "0", "1", "0", "1", "0", "1"),
-          generateNrtRuleFlags("1", "0", "1", "0", "1", "0", "1", "0"),
+          generateNrtRuleFlags("1", "0", "1", "0", "1", "0", "1", "0", "1", "0", "1"),
           "CLICK", "EPN", "", "", false
         )
       )
@@ -200,29 +212,29 @@ class TestRuleVerifier extends BaseFunSuite {
     val rdd = job.sc.parallelize(
       Seq(
         Row(
-          "", "1", "1", "1", "1", "1", "1",
+          "", "1", "1", "1", "1", "1",
           "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338107049&item=132355040461&vectorid=229466&lgeo=1&raptor=1",
-          "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"
+          "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"
         ),
         Row(
-          "", "1", "1", "1", "1", "1", "1",
+          "", "1", "1", "1", "1", "1",
           "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338107049&item=132355040461&vectorid=229466&lgeo=1&raptor=1",
-          "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"
+          "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"
         ),
         Row( // mismatch
-          "", "1", "1", "1", "1", "1", "1",
+          "", "1", "1", "1", "1", "1",
           "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5337666873&customid=&lgeo=1&vectorid=229466&item=222853652218&raptor=1",
-          "0", "1", "0", "1", "0", "1", "0", "1", "1", "1", "1", "0", "1", "0", "1", "0", "1", "0", "1"
+          "0", "1", "0", "1", "0", "1", "0", "1", "1", "1", "1", "0", "1", "0", "1", "0", "1", "0", "1", "0", "1", "0"
         ),
         Row( // mismatch
-          "", "1", "1", "1", "1", "1", "1",
+          "", "1", "1", "1", "1", "1",
           "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5337666873&customid=&lgeo=1&vectorid=229466&item=222853652218&raptor=1",
-          "0", "1", "0", "1", "0", "1", "0", "1", "1", "1", "1", "0", "1", "0", "1", "0", "1", "0", "1"
+          "0", "1", "0", "1", "0", "1", "0", "1", "1", "1", "1", "0", "1", "0", "1", "0", "1", "0", "1", "0", "1", "0"
         ),
         Row( // dummy one, won't appear in result of inner join
-          "", "1", "1", "1", "1", "1", "1",
+          "", "1", "1", "1", "1", "1",
           "http://rover.ebay.com",
-          "1", "0", "1", "0", "0", "0", "0", "0", "1", "0", "1", "0", "0", "0", "0", "0", "0", "0", "1"
+          "1", "0", "1", "0", "0", "0", "0", "0", "1", "0", "1", "0", "0", "0", "0", "0", "0", "0", "1", "0", "1", "0"
         )
       ))
 

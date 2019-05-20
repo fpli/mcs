@@ -5,6 +5,7 @@ import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.Schema;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.log4j.Logger;
 
 import java.util.Map;
 
@@ -16,6 +17,7 @@ import java.util.Map;
  * skips rheos header, and deserialize the remaining data to a filter message.
  */
 public class RheosFilterMessageDeserializer implements Deserializer<FilterMessage> {
+  private static final Logger logger = Logger.getLogger(RheosFilterMessageDeserializer.class);
   private final static Schema rheosHeaderSchema =
           RheosEvent.BASE_SCHEMA.getField(RheosEvent.RHEOS_HEADER).schema();
 
@@ -31,6 +33,7 @@ public class RheosFilterMessageDeserializer implements Deserializer<FilterMessag
     try {
       return FilterMessage.decodeRheos(rheosHeaderSchema, data);
     } catch (Exception e) {
+      logger.warn("Unable to serialize message");
       throw new SerializationException("Unable to serialize message", e);
     }
   }

@@ -1,5 +1,12 @@
 #!/bin/bash
 # run spark job on YARN - imkDump
+# Dump long term IMK data from capping result to IMK format. The format is the same as Crab dedupe job's output.
+# Input:    LVS HDFS
+#           /apps/tracking-events-workdir
+#           /apps/tracking-events
+# Output:   LVS HDFS
+#           /apps/tracking-events/channel/imkDump
+# Schedule: /5 * ? * *
 
 usage="Usage: imkDump.sh [channel] [workDir] [outPutDir] [elasticsearchUrl]"
 
@@ -19,12 +26,12 @@ WORK_DIR=$2
 OUTPUT_DIR=$3
 ES_URL=$4
 
-DRIVER_MEMORY=10g
-EXECUTOR_NUMBER=30
-EXECUTOR_MEMORY=12g
-EXECUTOR_CORES=4
+DRIVER_MEMORY=4g
+EXECUTOR_NUMBER=5
+EXECUTOR_MEMORY=4g
+EXECUTOR_CORES=2
 
-SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/imkDump
+SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
 JOB_NAME="imkDump"
 
 for f in $(find $bin/../../conf/prod -name '*.*');

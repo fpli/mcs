@@ -14,7 +14,7 @@ public class TestMessageSerialization {
 
   @Test
   public void testFilterMessageSerialization() throws Exception {
-    final String topic = "marketingtech.ap.tracking-events.filtered-epn";
+    final String topic = "marketing.tracking.staging.filtered-epn";
 
     RheosKafkaProducer<Long, FilterMessage> producer =
             new RheosKafkaProducer<>(loadProperties("rheos-kafka-filter-producer.properties"));
@@ -40,7 +40,7 @@ public class TestMessageSerialization {
   @Test
   @Ignore
   public void testListenerMessageSerialization() throws Exception {
-    final String topic = "marketingtech.ap.tracking-events.listened-epn";
+    final String topic = "marketing.tracking.staging.listened-epn";
 
     RheosKafkaProducer<Long, ListenerMessage> producer =
             new RheosKafkaProducer<>(loadProperties("rheos-kafka-listener-producer.properties"));

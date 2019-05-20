@@ -1,9 +1,17 @@
 #!/bin/bash
-# this job will move to EPN nrt2batch machine, pending choosing machine
-#whoami
-#ssh -T -i /usr/azkaban/id_rsa_panda panda@10.182.75.42 <<EOSSH
-#cd /ebay/rovertracking/longterm/prod
-#pwd
-#export HADOOP_USER_NAME=chocolate
-#echo $HADOOP_USER_NAME
-#java -classpath cho-panda-etl-scp-*.jar com.ebay.traffic.chocolate.ScpJob prod
+whoami
+
+ssh -T -i /usr/azkaban/id_rsa_spark stack@lvschocolatepits-1583720.stratus.lvs.ebay.com <<EOSSH
+java -Xmx2048m -classpath /datashare/mkttracking/jobs/tracking/imktoETL/lib/cho-panda-etl-scp-*.jar com.ebay.traffic.chocolate.ScpJob prod
+EOSSH
+
+if [ $? -eq 0 ]; then
+    echo "job success"
+else
+    echo "job failed, retry another machine"
+    ssh -T -i /usr/azkaban/id_rsa_spark stack@lvschocolatepits-1583707.stratus.lvs.ebay.com <<EOSSH
+    java -Xmx2048m -classpath /datashare/mkttracking/jobs/tracking/imktoETL/lib/cho-panda-etl-scp-*.jar com.ebay.traffic.chocolate.ScpJob prod
+EOSSH
+fi
+
+
