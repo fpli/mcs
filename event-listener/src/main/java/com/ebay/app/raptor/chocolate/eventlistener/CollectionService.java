@@ -222,7 +222,7 @@ public class CollectionService {
     // no mkevt, rejected
     if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
       //logError(ErrorType.NO_MKEVT);
-      metrics.meter("NoMkevt");
+      metrics.meter(ErrorType.NO_MKEVT.getErrorKey());
     }
 
     // mkevt != 1, rejected
