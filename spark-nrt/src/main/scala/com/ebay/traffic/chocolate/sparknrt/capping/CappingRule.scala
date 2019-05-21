@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
 import org.apache.spark.sql.DataFrame
+import scala.language.implicitConversions
 
 /**
   * Created by xiangli4 on 4/8/18.

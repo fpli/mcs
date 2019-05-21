@@ -14,7 +14,9 @@ import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -31,8 +33,8 @@ import com.ebay.app.raptor.chocolate.gen.model.Event;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
-import java.util.Enumeration;
-import java.util.List;
+import java.net.URLDecoder;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -117,6 +119,11 @@ public class CollectionService {
       referer = "";
     }
 
+    // decode referer if necessary. Currently, android is sending rover url encoded.
+    if(referer.startsWith("https%3A%2F%2") || referer.startsWith("http%3A%2F%2")) {
+      referer = URLDecoder.decode( referer, "UTF-8" );
+    }
+
     String userAgent = endUserContext.getUserAgent();
     if (null == userAgent) {
       logError(ErrorType.NO_USER_AGENT);
@@ -128,11 +135,50 @@ public class CollectionService {
     // legacy rover deeplink case. Forward it to rover. We control this at our backend in case mobile app miss it
     Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
     if (roverSitesMatcher.find()) {
-      // add nrd=1 to stop rover redirect and use http
-      final String noRedirectRoverUrl = referer + "&nrd=1&mcs=1";
+
+      URIBuilder uriBuilder = new URIBuilder(referer);
+      List<NameValuePair> queryParameters = uriBuilder.getQueryParams();
+      Set<String> queryNames = new HashSet<>();
+      for (Iterator<NameValuePair> queryParameterItr = queryParameters.iterator(); queryParameterItr.hasNext();) {
+        NameValuePair queryParameter = queryParameterItr.next();
+        //remove mpre if necessary. When there is mpre, rover won't overwrite guid by udid
+        if (queryParameter.getName().equals("mpre")) {
+          queryParameterItr.remove();
+        }
+        queryNames.add(queryParameter.getName());
+      }
+      uriBuilder.setParameters(queryParameters);
+
+      // add udid parameter from tracking header's guid if udid is not in rover url. The udid will be set as guid by rover later
+      if (!queryNames.contains("udid")) {
+        String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
+        String guid = "";
+        for (String seg : trackingHeader.split(",")
+          ) {
+          String[] keyValue = seg.split("=");
+          if (keyValue.length == 2) {
+            if (keyValue[0].equalsIgnoreCase("guid")) {
+              guid = keyValue[1];
+            }
+          }
+        }
+        if (!guid.isEmpty()) {
+          uriBuilder.addParameter("udid", guid);
+        }
+      }
+
+      // add nrd=1 if not exist
+      if(!queryNames.contains("nrd")) {
+        uriBuilder.addParameter("nrd", "1");
+      }
+
+      // add mcs=1 for marking mcs forwarding
+      uriBuilder.addParameter("mcs", "1");
+
+      final String rebuiltRoverUrl = uriBuilder.build().toString();
 
       CloseableHttpClient client = httpClientConnectionManager.getHttpClient();
-      HttpGet httpGet = new HttpGet(noRedirectRoverUrl);
+      HttpGet httpGet = new HttpGet(rebuiltRoverUrl);
 
       final Enumeration<String> headers = request.getHeaderNames();
       while (headers.hasMoreElements()) {
@@ -146,7 +192,7 @@ public class CollectionService {
         }
       }
       
-      roverClient.fowardRequestToRover(client, httpGet);
+      roverClient.forwardRequestToRover(client, httpGet);
       return true;
     }
 

@@ -334,7 +334,8 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
   def judgeNotEbaySites(referrer: String): Boolean = {
     val matcher = ebaySites.matcher(referrer)
     if (matcher.find()) {
-      metrics.meter("imk.dump.internalReferer")
+      if(metrics != null)
+        metrics.meter("imk.dump.internalReferer")
       false
     } else {
       true
