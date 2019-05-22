@@ -18,7 +18,6 @@
     <module>couchbase-tool</module>
     <module>zookeeper-tool</module>
     <module>CheckRecover-tool</module>
-    <module>cho-epn-scp</module>
   </modules>
 
   <dependencies>

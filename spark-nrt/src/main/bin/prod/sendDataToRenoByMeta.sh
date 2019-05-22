@@ -7,7 +7,8 @@ CHANNEL=$2
 ACTION=$3
 META_FILE_SUFFIX=$4
 RENO_DIR=$5
-LOG_FILE=$6
+EVENT_TYPE=$6
+LOG_FILE=$7
 
 function process_one_meta(){
     /datashare/mkttracking/tools/keytab-tool/kinit/kinit_byhost.sh
@@ -36,7 +37,7 @@ function process_one_meta(){
         data_file_name=$(basename "$data_file")
         rm -f data_file_name
         hdfs dfs -get ${data_file}
-        reno_path=${RENO_DIR}'/'${action}'/'${date}
+        reno_path=${RENO_DIR}'/'${EVENT_TYPE}'/'${date}
 
         /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${reno_path}
         if [ $? -ne 0 ]; then

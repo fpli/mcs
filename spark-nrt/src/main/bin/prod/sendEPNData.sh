@@ -10,14 +10,25 @@ log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/send_EPN_Data${log_dt}.l
 
 echo `date`"=====================================================Send EPN Data started======================================================" | tee -a ${log_file}
 
+echo `date`"=====================================================Send EPN Data to ETL ======================================================" | tee -a ${log_file}
 
-./sendDataToRenoByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_reno ${RENO_DIR} ${log_file}
+./scpDataToETLByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_etl ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO | tee -a ${log_file}
+
+if [ $? -eq 0 ];
+then
+    echo "Successfully send EPN data to ETL" | tee -a ${log_file}
+else
+    echo "Create reno folder for date ${date}"
+fi
+
+
+./sendDataToRenoByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_reno ${RENO_DIR} click ${log_file} | tee -a ${log_file}
 rcode_click=$?
 
 echo `date`"=====================================================Send EPN Click To Reno Finished! ======================================================" | tee -a ${log_file}
 
 
-./sendDataToRenoByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_reno ${RENO_DIR} ${log_file}
+./sendDataToRenoByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_reno ${RENO_DIR} imp ${log_file} | tee -a ${log_file}
 rcode_imp=$?
 
 echo `date`"=====================================================Send EPN Impression To Reno Finished! ======================================================" | tee -a ${log_file}
