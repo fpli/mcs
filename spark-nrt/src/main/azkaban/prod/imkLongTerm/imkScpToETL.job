@@ -1,4 +1,4 @@
 type=command
 dependencies=imkDump_Paid_Search
-command=bash ../SubmitJob.sh "LVS" "/datashare/mkttracking/jobs/tracking/chocolate-sparknrt-imk/bin/prod" "./scpDataToETLByMeta.sh /apps/tracking-events-workdir PAID_SEARCH imkDump meta.etl /datashare/mkttracking/rsa/panda_id_rsa etl_panda_push@lvsdpeetl012.lvs.ebay.com:/dw/etl/home/prod/land/dw_dfe/rvr_test YES"
+command=bash imkScpToETL.sh
 failure.emails=jialili1@ebay.com, fechen@ebay.com, xiangli4@ebay.com, yliu29@ebay.com, huiclu@ebay.com, yimeng@ebay.com, shuangxu@ebay.com, yiryuan@ebay.com, lxiong1@ebay.com, ganghuang@ebay.com
