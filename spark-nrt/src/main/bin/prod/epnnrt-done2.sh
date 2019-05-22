@@ -7,14 +7,13 @@
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
 log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/done_${log_dt}.log"
 
-######################################### Check the file of today has been processed ################################
+######################################### Check the file of today is processing ################################
 DT_TODAY=$(date +%Y-%m-%d)
-LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/process/date=${DT_TODAY}
+LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/process/${DT_TODAY}
 
-today_click=`ls ${LOCAL_PATH}.click.processed | wc -l`
-today_imp=`ls ${LOCAL_PATH}.imp.processed | wc -l`
+today_processed=`ls ${LOCAL_PATH}'.processed' | wc -l`
 
-if [[ clickFileCnt -ne 1 || impFileCnt -ne 1 ]]; then
+if [[ today_processed -ne 1 ]]; then
      echo -e "chocolate-ePN ${DT}'s NRT not generated!!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT delayed!!!!(Today's Files not generated)" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
      exit 1
 fi
@@ -39,5 +38,13 @@ fi
 DONE_FILE="epn_$(date +%Y%m%d -d "`date` - 1 day").done"
 touch "$DONE_FILE"
 
-/datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendToETL.sh ${DONE_FILE} ${log_file}
+/datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendDoneFile.sh ${DONE_FILE} ${log_file}
+
+if [ $? -ne 0 ]; then
+    echo -e "chocolate EPN NRT ${DT}'s data delayed due to sending done file error!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT} delayed!!!" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+    exit 1
+else
+    echo -e "Congrats, chocolate EPN NRT ${DT}'s data completed" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT} completed" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+    exit 0
+fi
 

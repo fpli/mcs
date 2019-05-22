@@ -8,7 +8,8 @@ ACTION=$3
 META_FILE_SUFFIX=$4
 RENO_DIR=$5
 EVENT_TYPE=$6
-LOG_FILE=$7
+TOUCH_PROCESS_FILE=$7
+LOG_FILE=$8
 
 function process_one_meta(){
     /datashare/mkttracking/tools/keytab-tool/kinit/kinit_byhost.sh
@@ -38,6 +39,11 @@ function process_one_meta(){
         rm -f data_file_name
         hdfs dfs -get ${data_file}
         reno_path=${RENO_DIR}'/'${EVENT_TYPE}'/'${date}
+
+        if [ $2 = "YES" ]
+        then
+            touch "/datashare/mkttracking/data/epn-nrt/process/${date}.processed"
+        fi
 
         /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${reno_path}
         if [ $? -ne 0 ]; then
@@ -95,7 +101,7 @@ echo "start process meta files size:"${files_size}
 all_files=`cat ${all_meta_files} | tr "\n" " "`
 for one_meta in ${all_files}
 do
-    process_one_meta ${one_meta} ${SCP_DONE_FILE}
+    process_one_meta ${one_meta} ${TOUCH_PROCESS_FILE}
     rcode=$?
     if [ ${rcode} -ne 0 ]
     then
