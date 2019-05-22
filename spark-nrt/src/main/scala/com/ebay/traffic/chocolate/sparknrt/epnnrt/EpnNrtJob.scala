@@ -147,7 +147,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         try {
           metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.result.meta.imp.outputdir"), "epnnrt_imp", Array(".epnnrt"))
           //write meta file for EPN SCP job to copy result to ETL and reno
-          metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), "epnnrt", Array(".epnnrt"))
+          metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), "epnnrt_imp_scp", Array(".epnnrt_etl", ".epnnrt_reno"))
 
           logger.info("successfully write EPN NRT impression output meta to HDFS")
           metrics.meter("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
@@ -199,7 +199,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         try {
           metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta.click.outputdir"), "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
           //write meta file for EPN SCP job to copy result to ETL and reno
-          metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta.click.outputdir"), "epnnrt", Array(".epnnrt"))
+          metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta.click.outputdir"), "epnnrt_click_scp", Array(".epnnrt_etl", ".epnnrt_reno"))
           metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
           logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
         } catch {
