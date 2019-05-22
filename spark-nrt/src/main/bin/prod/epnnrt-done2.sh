@@ -6,9 +6,16 @@
 ####################################################################################################################
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
 log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/done_${log_dt}.log"
+done_file_dir=/datashare/mkttracking/data/epn-nrt/done
+DT_TODAY=$(date +%Y-%m-%d)
+DONE_FILE="epn_$(date +%Y%m%d -d "`date` - 1 day").done"
+
+echo "check if done file has been generated" | tee -a ${log_file}
+if [ ! -f ${done_file_dir}'/'${DONE_FILE} ]; then
+    exit 0
+fi
 
 ######################################### Check the file of today is processing ################################
-DT_TODAY=$(date +%Y-%m-%d)
 LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/process/${DT_TODAY}
 
 today_processed=`ls ${LOCAL_PATH}'.processed' | wc -l`
@@ -35,7 +42,7 @@ if [[ message_lag -gt ${LAG_THRESHOLD} ]]; then
 fi
 
 ################ Generate Done file and send it to ETL ################################
-DONE_FILE="epn_$(date +%Y%m%d -d "`date` - 1 day").done"
+#DONE_FILE="epn_$(date +%Y%m%d -d "`date` - 1 day").done"
 touch "$DONE_FILE"
 
 /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendDoneFile.sh ${DONE_FILE} ${log_file}
@@ -45,6 +52,7 @@ if [ $? -ne 0 ]; then
     exit 1
 else
     echo -e "Congrats, chocolate EPN NRT ${DT}'s data completed" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT} completed" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+    touch "${done_file_dir}'/'${DONE_FILE}"
     exit 0
 fi
 
