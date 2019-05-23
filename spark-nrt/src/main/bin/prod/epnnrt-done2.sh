@@ -6,12 +6,13 @@
 ####################################################################################################################
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
 log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/done_${log_dt}.log"
-done_file_dir=/datashare/mkttracking/data/epn-nrt/done
+done_file_dir="/datashare/mkttracking/data/epn-nrt/done"
 DT_TODAY=$(date +%Y-%m-%d)
 DONE_FILE="epn_$(date +%Y%m%d -d "`date` - 1 day").done"
 
 echo "check if done file has been generated" | tee -a ${log_file}
-if [ ! -f ${done_file_dir}'/'${DONE_FILE} ]; then
+if [ -f "${done_file_dir}/${DONE_FILE}" ]; then
+    echo "${DONE_FILE} Done file has been already generated!" | tee -a ${log_file}
     exit 0
 fi
 
@@ -27,6 +28,7 @@ fi
 
 ######################################### Check message lag from SinkAndDedupe job ################################
 # 15 min
+export HADOOP_USER_NAME=chocolate
 LAG_THRESHOLD=900000
 echo "the threshold of kafka message: "${LAG_THRESHOLD} | tee -a ${log_file}
 LAST_TS_PATH=/apps/tracking-events-workdir/last_ts/EPN/*
@@ -52,7 +54,7 @@ if [ $? -ne 0 ]; then
     exit 1
 else
     echo -e "Congrats, chocolate EPN NRT ${DT}'s data completed" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT} completed" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
-    touch "${done_file_dir}'/'${DONE_FILE}"
+    touch "${done_file_dir}/${DONE_FILE}"
     exit 0
 fi
 

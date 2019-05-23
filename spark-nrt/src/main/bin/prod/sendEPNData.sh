@@ -11,7 +11,7 @@ DT_TODAY=$(date +%Y-%m-%d)
 
 echo `date`"=====================================================Start sending EPN Data to ETL ======================================================" | tee -a ${log_file}
 
-./scpDataToETLByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_etl ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO | tee -a ${log_file}
+./scpDataToETLByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_etl ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO
 rcode_send_etl_click=$?
 
 if [ $rcode_send_etl_click -eq 0 ];
@@ -22,7 +22,7 @@ else
     exit $rcode_send_etl_click
 fi
 
-./scpDataToETLByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_etl ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO | tee -a ${log_file}
+./scpDataToETLByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_etl ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO
 rcode_send_etl_imp=$?
 
 if [ $rcode_send_etl_imp -eq 0 ];
@@ -38,7 +38,7 @@ echo `date`"=====================================================Successfully se
 echo `date`"=====================================================Start sending EPN Data to Apollo Reno ======================================================" | tee -a ${log_file}
 
 
-./sendDataToRenoByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_reno ${RENO_DIR} click YES ${log_file} | tee -a ${log_file}
+./sendDataToRenoByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_reno ${RENO_DIR} click YES ${log_file}
 rcode_click=$?
 
 if [ $rcode_click -eq 0 ];
@@ -49,7 +49,7 @@ else
     exit $rcode_click
 fi
 
-./sendDataToRenoByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_reno ${RENO_DIR} imp YES ${log_file} | tee -a ${log_file}
+./sendDataToRenoByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_reno ${RENO_DIR} imp YES ${log_file}
 rcode_imp=$?
 
 if [ $rcode_imp -eq 0 ];

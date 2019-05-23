@@ -12,8 +12,6 @@ TOUCH_PROCESS_FILE=$7
 LOG_FILE=$8
 
 function process_one_meta(){
-    /datashare/mkttracking/tools/keytab-tool/kinit/kinit_byhost.sh
-
     meta_file=$1
     output_file=output_file.txt
     meta_file_name=$(basename "$meta_file")
@@ -85,6 +83,8 @@ function process_one_meta(){
 }
 
 export HADOOP_USER_NAME=chocolate
+/datashare/mkttracking/tools/keytab-tool/kinit/kinit_byhost.sh
+
 
 meta_dir=${WORK_DIR}'/meta/'${CHANNEL}'/output/'${ACTION}
 tmp_dir='tmp_scp_to_reno_'${CHANNEL}'_'${ACTION}

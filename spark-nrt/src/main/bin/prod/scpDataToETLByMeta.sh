@@ -46,7 +46,7 @@ function process_one_meta(){
         rcode=1
         until [[ ${retry} -gt 3 ]]
         do
-            `${command_1}` && `${command_2}`
+            ${command_1} && ${command_2}
             rcode=$?
             if [ ${rcode} -eq 0 ]
             then
