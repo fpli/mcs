@@ -79,127 +79,138 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       val file = metaIter._1
       val datesFiles = metaIter._2
       datesFiles.foreach(datesFile => {
-        //2. load DataFrame
-        val date = getDate(datesFile._1)
-        var df = readFilesAsDFEx(datesFile._2)
-        df = df.repartition(properties.getProperty("epnnrt.repartition").toInt)
-        val epnNrtCommon = new EpnNrtCommon(params, df)
-        logger.info("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
+        import util.control.Breaks._
+        breakable {
+          //2. load DataFrame
+          val date = getDate(datesFile._1)
+          var df = readFilesAsDFEx(datesFile._2)
+          //if the dataframe is empty, just continue
+          if (df.take(1).isEmpty)
+            break
+          df = df.repartition(properties.getProperty("epnnrt.repartition").toInt)
+          val epnNrtCommon = new EpnNrtCommon(params, df)
+          logger.info("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
 
-        val timestamp = df.first().getAs[Long]("timestamp")
+          val timestamp = df.first().getAs[Long]("timestamp")
 
-        // filter click and impression data, and if there is filterTime, filter the data older than filter time
-        var df_click = df.filter(col("channel_action") === "CLICK")
-        var df_impression = df.filter(col("channel_action") === "IMPRESSION")
+          // filter click and impression data, and if there is filterTime, filter the data older than filter time
+          var df_click = df.filter(col("channel_action") === "CLICK")
+          var df_impression = df.filter(col("channel_action") === "IMPRESSION")
 
-        val debug = properties.getProperty("epnnrt.debug").toBoolean
+          val debug = properties.getProperty("epnnrt.debug").toBoolean
 
-        var df_click_count_before_filter = 0L
-        var df_impression_count_before_filter = 0L
+          var df_click_count_before_filter = 0L
+          var df_impression_count_before_filter = 0L
 
-        if (debug) {
-          df_click_count_before_filter = df_click.count()
-          df_impression_count_before_filter = df_impression.count()
-        }
+          if (debug) {
+            df_click_count_before_filter = df_click.count()
+            df_impression_count_before_filter = df_impression.count()
+          }
 
-        logger.info("Current filter timestamp is: " + params.filterTime)
-        var filtered = false
-        if (!params.filterTime.equalsIgnoreCase("") && !params.filterTime.equalsIgnoreCase("0"))
-          filtered = true
+          logger.info("Current filter timestamp is: " + params.filterTime)
+          var filtered = false
+          if (!params.filterTime.equalsIgnoreCase("") && !params.filterTime.equalsIgnoreCase("0"))
+            filtered = true
 
-        if (filtered) {
-          try {
+          if (filtered) {
+            try {
               df_click = df_click.filter( r=> {
                 r.getAs[Long]("timestamp") >= params.filterTime.toLong
               })
               df_impression = df_impression.filter( r=> {
                 r.getAs[Long]("timestamp") >= params.filterTime.toLong
               })
-          } catch {
-            case e: Exception =>
-              logger.error("Illegal filter timestamp: " + params.filterTime + e)
-          }
-        }
-
-
-        var df_click_count_after_filter = 0L
-        var df_impression_count_after_filter = 0L
-        if (debug) {
-          df_click_count_after_filter = df_click.count()
-          df_impression_count_after_filter = df_impression.count()
-          metrics.meter("ClickFilterCount", df_click_count_before_filter - df_click_count_after_filter)
-          metrics.meter("ImpressionFilterCount", df_impression_count_before_filter - df_impression_count_after_filter)
-        }
-
-        //3. build impression dataframe  save dataframe to files and rename files
-        var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
-        impressionDf = impressionDf.repartition(params.partitions)
-        saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
-
-        val countImpDf = readFilesAsDF(epnNrtTempDir + "/impression/", schema_epn_impression_table.dfSchema, "csv", "tab", false)
-
-        metrics.meter("SuccessfulCount", countImpDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
-
-        //write to EPN NRT output meta files
-        val imp_files = renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
-        val imp_metaFile = new MetaFiles(Array(DateFiles(date, imp_files)))
-
-        try {
-          metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.result.meta.imp.outputdir"), "epnnrt_imp", Array(".epnnrt"))
-          logger.info("successfully write EPN NRT impression output meta to HDFS")
-          metrics.meter("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
-
-        } catch {
-          case e: Exception => {
-            logger.error("Error while writing EPN NRT impression output meta files" + e)
-          }
-        }
-
-        //4. build click dataframe  save dataframe to files and rename files
-        var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
-        clickDf = clickDf.repartition(params.partitions)
-
-       // val enableLastViewItem = properties.getProperty("epnnrt.enablelastviewitem").toBoolean
-
-
-        /*if(enableLastViewItem) {
-          try {
-            val executor: ExecutorService = Executors.newFixedThreadPool(maxThreadNum)
-            val completionService: CompletionService[(String, String)] = new ExecutorCompletionService(executor)
-             //clickDf = clickDf.mapPartitions(lastViewItemFunc(completionService))
-            clickDf.rdd.mapPartitions(lastViewItemFunc(completionService))
-          } catch {
-            case e: Exception => {
-              logger.error("Exception while getting last view item info from bullseye" + e)
-              metrics.meter("BullsEyeError",1,timestamp)
+            } catch {
+              case e: Exception =>
+                logger.error("Illegal filter timestamp: " + params.filterTime + e)
             }
           }
-        }*/
-
-        saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
-
-        val countClickDf = readFilesAsDF(epnNrtTempDir + "/click/", schema_epn_click_table.dfSchema, "csv", "tab", false)
-
-        metrics.meter("SuccessfulCount", countClickDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "CLICK"))
-
-        val clickFiles = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
 
 
-        // 5.delete the finished meta files
-        metadata.deleteDedupeOutputMeta(file)
+          var df_click_count_after_filter = 0L
+          var df_impression_count_after_filter = 0L
+          if (debug) {
+            df_click_count_after_filter = df_click.count()
+            df_impression_count_after_filter = df_impression.count()
+            metrics.meter("ClickFilterCount", df_click_count_before_filter - df_click_count_after_filter)
+            metrics.meter("ImpressionFilterCount", df_impression_count_before_filter - df_impression_count_after_filter)
+          }
 
-        if (metrics != null)
-          metrics.flush()
+          //3. build impression dataframe  save dataframe to files and rename files
+          var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
+          impressionDf = impressionDf.repartition(params.partitions)
+          saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
 
-        //6. write the epn-nrt meta output file to hdfs
-        val click_metaFile = new MetaFiles(Array(DateFiles(date, clickFiles)))
-        try {
-          metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta.click.outputdir"), "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
-          metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
-          logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
-        } catch {
-          case e: Exception => {
-            logger.error("Error while writing EPN NRT Click output meta files" + e)
+          val countImpDf = readFilesAsDF(epnNrtTempDir + "/impression/", schema_epn_impression_table.dfSchema, "csv", "tab", false)
+
+          metrics.meter("SuccessfulCount", countImpDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
+
+          //write to EPN NRT output meta files
+          val imp_files = renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
+          val imp_metaFile = new MetaFiles(Array(DateFiles(date, imp_files)))
+
+          try {
+            metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.result.meta.imp.outputdir"), "epnnrt_imp", Array(".epnnrt"))
+            //write meta file for EPN SCP job to copy result to ETL and reno
+            metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), "epnnrt_imp_scp", Array(".epnnrt_etl", ".epnnrt_reno"))
+
+            logger.info("successfully write EPN NRT impression output meta to HDFS")
+            metrics.meter("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
+
+          } catch {
+            case e: Exception => {
+              logger.error("Error while writing EPN NRT impression output meta files" + e)
+            }
+          }
+
+          //4. build click dataframe  save dataframe to files and rename files
+          var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
+          clickDf = clickDf.repartition(params.partitions)
+
+          // val enableLastViewItem = properties.getProperty("epnnrt.enablelastviewitem").toBoolean
+
+
+          /*if(enableLastViewItem) {
+            try {
+              val executor: ExecutorService = Executors.newFixedThreadPool(maxThreadNum)
+              val completionService: CompletionService[(String, String)] = new ExecutorCompletionService(executor)
+               //clickDf = clickDf.mapPartitions(lastViewItemFunc(completionService))
+              clickDf.rdd.mapPartitions(lastViewItemFunc(completionService))
+            } catch {
+              case e: Exception => {
+                logger.error("Exception while getting last view item info from bullseye" + e)
+                metrics.meter("BullsEyeError",1,timestamp)
+              }
+            }
+          }*/
+
+          saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
+
+          val countClickDf = readFilesAsDF(epnNrtTempDir + "/click/", schema_epn_click_table.dfSchema, "csv", "tab", false)
+
+          metrics.meter("SuccessfulCount", countClickDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "CLICK"))
+
+          val clickFiles = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
+
+
+          // 5.delete the finished meta files
+          metadata.deleteDedupeOutputMeta(file)
+
+          if (metrics != null)
+            metrics.flush()
+
+          //6. write the epn-nrt meta output file to hdfs
+          val click_metaFile = new MetaFiles(Array(DateFiles(date, clickFiles)))
+          try {
+            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta.click.outputdir"), "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
+            //write meta file for EPN SCP job to copy result to ETL and reno
+            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta.click.outputdir"), "epnnrt_click_scp", Array(".epnnrt_etl", ".epnnrt_reno"))
+            metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
+            logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
+          } catch {
+            case e: Exception => {
+              logger.error("Error while writing EPN NRT Click output meta files" + e)
+            }
           }
         }
       })
