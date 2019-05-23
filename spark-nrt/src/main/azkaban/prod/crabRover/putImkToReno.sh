@@ -10,10 +10,10 @@ function start_job(){
     pwd
     export HADOOP_USER_NAME=chocolate
     echo $HADOOP_USER_NAME
-    ./scpImkToReno.sh /apps/tracking-events/crabTransform/imkOutput /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /datashare/mkttracking/work/imkToReno/crab/imkTemp &&
-    ./scpImkToReno.sh /apps/tracking-events/imkTransform/imkOutput /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /datashare/mkttracking/work/imkToReno/imk/imkTemp &&
-    ./scpImkToReno.sh /apps/tracking-events/crabTransform/dtlOutput /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl /datashare/mkttracking/work/imkToReno/crab/dtlTemp &&
-    ./scpImkToReno.sh /apps/tracking-events/imkTransform/dtlOutput /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl /datashare/mkttracking/work/imkToReno/imk/dtlTemp
+    ./putImkToReno.sh /apps/tracking-events/crabTransform/imkOutput /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /datashare/mkttracking/work/imkToReno/crab/imkTemp &&
+    ./putImkToReno.sh /apps/tracking-events/imkTransform/imkOutput /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /datashare/mkttracking/work/imkToReno/imk/imkTemp &&
+    ./putImkToReno.sh /apps/tracking-events/crabTransform/dtlOutput /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl /datashare/mkttracking/work/imkToReno/crab/dtlTemp &&
+    ./putImkToReno.sh /apps/tracking-events/imkTransform/dtlOutput /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl /datashare/mkttracking/work/imkToReno/imk/dtlTemp
 EOSSH
 }
 
