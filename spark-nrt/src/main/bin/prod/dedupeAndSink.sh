@@ -58,4 +58,5 @@ ${SPARK_HOME}/bin/spark-submit \
       --outputDir ${OUTPUT_DIR} \
       --elasticsearchUrl ${ES_URL} \
       --partitions ${PARTITIONS} \
+      --maxConsumeSize 60000 \
       --couchbaseDedupe ${CB_DEDUPE}

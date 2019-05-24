@@ -1,5 +1,12 @@
 #!/bin/bash
 # run spark job on YARN - imkDump
+# Dump long term IMK data from capping result to IMK format. The format is the same as Crab dedupe job's output.
+# Input:    LVS HDFS
+#           /apps/tracking-events-workdir
+#           /apps/tracking-events
+# Output:   LVS HDFS
+#           /apps/tracking-events/channel/imkDump
+# Schedule: /5 * ? * *
 
 usage="Usage: imkDump.sh [channel] [workDir] [outPutDir] [elasticsearchUrl]"
 
@@ -51,5 +58,5 @@ ${SPARK_HOME}/bin/spark-submit \
       --channel ${CHANNEL} \
       --workDir "${WORK_DIR}" \
       --outPutDir "${OUTPUT_DIR}" \
-      --partitions 3 \
+      --partitions 1 \
       --elasticsearchUrl ${ES_URL}

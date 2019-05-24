@@ -6,7 +6,6 @@ import java.util.Properties
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
-import com.ebay.traffic.chocolate.sparknrt.epnnrt.BullseyeUtils.properties
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.Gson
 import org.apache.hadoop.conf.Configuration
@@ -194,7 +193,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   //val getGUIDUdf = udf((requestHeader: String, responseHeader:String, guid: String) => getGUIDFromCookie(requestHeader, responseHeader, guid))
   val getValueFromRequestUdf = udf((requestHeader: String, key: String) => getValueFromRequest(requestHeader, key))
   val getUserQueryTextUdf = udf((url: String, action: String) => getUserQueryTxt(url, action))
-  val getToolIdUdf = udf((url: String) => getQueryParam(url, "toolid"))
+  val getToolIdUdf = udf((url: String) => getAms_tool_id(url))
   val getCustomIdUdf = udf((url: String) => getQueryParam(url, "customid"))
   val getFFValueUdf = udf((url: String, index: String) => getFFValue(url, index))
   val getFFValueNotEmptyUdf = udf((url: String, index: String) => getFFValueNotEmpty(url, index))
@@ -389,6 +388,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     ""
   }
 
+  def getAms_tool_id(uri: String): String = {
+    var res = getQueryParam(uri, "toolid")
+    if(res.equalsIgnoreCase(""))
+      res = "0"
+    res
+  }
+
   def getQueryParam(uri: String, param: String): String = {
     if (uri != null) {
       try {
@@ -420,7 +426,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getPrgrmIdAdvrtsrIdFromAMSClick(rotationId: String): Array[String] = {
-    val empty = Array("","")
+    //det default program id and advrtsr id to -999
+    val empty = Array("-999","-999")
     if (rotationId == null || rotationId.equals(""))
       return empty
     val parts = rotationId.split("-")

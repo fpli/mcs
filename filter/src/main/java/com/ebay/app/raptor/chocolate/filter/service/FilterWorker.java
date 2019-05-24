@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.filter.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
 import com.ebay.traffic.chocolate.kafka.KafkaConsumerFactory;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
+import com.ebay.traffic.chocolate.kafka.ConsumerListener;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
@@ -45,6 +46,8 @@ public class FilterWorker extends Thread {
   private final Consumer<Long, ListenerMessage> consumer; // in
   private final Producer<Long, FilterMessage> producer; // out
 
+  private final ConsumerListener<Long, ListenerMessage> consumerListener;
+
   // Shutdown signal.
   private final AtomicBoolean shutdownRequested = new AtomicBoolean(false);
 
@@ -65,6 +68,8 @@ public class FilterWorker extends Thread {
 
     this.consumer = KafkaConsumerFactory.create(properties);
     this.producer = KafkaSink.get();
+
+    this.consumerListener = new ConsumerListener<>(consumer);
   }
 
   /**
@@ -82,18 +87,17 @@ public class FilterWorker extends Thread {
             ", input topic " + inputTopic + ", output topic " + outputTopic);
 
     // Init the metrics that we don't use often
-    this.metrics.meter("FilterError", 0);
-    this.metrics.meter("messageParseFailure", 0);
-    this.metrics.mean("FilterPassedPPM", 0);
+    metrics.meter("FilterError", 0);
+    metrics.meter("messageParseFailure", 0);
+    metrics.mean("FilterPassedPPM", 0);
 
     try {
-      consumer.subscribe(Arrays.asList(inputTopic));
+      consumer.subscribe(Arrays.asList(inputTopic), consumerListener);
 
       long flushThreshold = 0;
 
       final long kafkaLagMetricInterval = 30000; // 30s
       final long kafkaCommitInterval = 15000; // 15s
-      Map<Integer, Long> offsets = new HashMap<>();
       long kafkaLagMetricStart = System.currentTimeMillis();
       long kafkaCommitTime = System.currentTimeMillis();
       while (!shutdownRequested.get()) {
@@ -119,9 +123,6 @@ public class FilterWorker extends Thread {
             metrics.meter("FilterThroughput", 1, message.getTimestamp(),
               Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
               Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
-
-            // cache current offset for partition*
-            offsets.put(record.partition(), record.offset());
 
             completionService.submit(() -> processMessage(record.value()));
             threadNum++;
@@ -156,7 +157,7 @@ public class FilterWorker extends Thread {
           producer.flush();
 
           // update consumer offset
-          consumer.commitSync();
+          consumerListener.commitSync();
 
           // reset threshold
           flushThreshold = 0;
@@ -173,11 +174,10 @@ public class FilterWorker extends Thread {
             Map.Entry<TopicPartition, Long> entry = iter.next();
             TopicPartition tp = entry.getKey();
             long endOffset = entry.getValue();
-            if (offsets.containsKey(tp.partition())) {
-              long offset = offsets.get(tp.partition());
-              metrics.mean("FilterKafkaConsumerLag", endOffset - offset, Field.of(CHANNEL_TYPE, channelType.toString()),
-                  Field.of("consumer", tp.partition()));
-            }
+            long offset = consumer.position(tp);
+            metrics.mean("FilterKafkaConsumerLag", endOffset - offset,
+                    Field.of("topic", tp.topic()),
+                    Field.of("consumer", tp.partition()));
           }
 
           kafkaLagMetricStart = now;

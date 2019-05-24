@@ -1,8 +1,8 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
-import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
+import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -13,7 +13,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 
 /**
  * @author xiangli4
@@ -33,20 +32,35 @@ public class HttpRoverClient {
   }
 
   @Async
-  public void fowardRequestToRover(CloseableHttpClient client, HttpGet httpGet) {
+  public void forwardRequestToRover(CloseableHttpClient client, HttpGet httpGet) {
     // ask rover not to redirect
     try {
       CloseableHttpResponse response = client.execute(httpGet);
-      if (response.getStatusLine().getStatusCode() != 200) {
-        logger.warn(Errors.ERROR_FOWARD_ROVER);
-        metrics.meter("ForwardRoverFail");
-      } else {
+      if (response.getStatusLine().getStatusCode() == 301 ) {
+        metrics.meter("ForwardRoverRedirect");
+        String headers = "";
+        for (Header header : httpGet.getAllHeaders()) {
+          headers = headers + header.toString() + ",";
+        }
+        logger.warn("ForwardRoverRedirect req. URI: " + httpGet.getURI() + ", headers: " + headers);
+      } else if (response.getStatusLine().getStatusCode() == 200 ) {
         metrics.meter("ForwardRoverSuccess");
+      } else {
+        metrics.meter("ForwardRoverFail");
+        String headers = "";
+        for (Header header : httpGet.getAllHeaders()) {
+          headers = headers + header.toString() + ",";
+        }
+        logger.warn("ForwardRoverFail req. URI: " + httpGet.getURI() + ", headers: " + headers);
       }
       response.close();
     } catch (Exception ex) {
       logger.warn("Forward rover exception", ex);
-      logger.warn("ForwardException req", httpGet.getURI(), httpGet.getAllHeaders());
+      String headers = "";
+      for (Header header : httpGet.getAllHeaders()) {
+        headers = headers + header.toString() + ",";
+      }
+      logger.warn("ForwardException req. URI: " + httpGet.getURI() + ", headers: " + headers);
       metrics.meter("ForwardRoverException");
     }
   }
