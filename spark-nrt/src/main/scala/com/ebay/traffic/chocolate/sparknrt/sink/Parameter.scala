@@ -13,7 +13,7 @@ case class Parameter(appName: String = "DedupeAndSink",
                      outputDir: String = "",
                      partitions: Int = 3,
                      elasticsearchUrl: String = "",
-                     maxConsumeSize: Long = 1000000l,
+                     maxConsumeSize: Long = 100000l,
                      couchbaseDedupe: Boolean = false,
                      couchbaseTTL: Int = 3 * 24 * 60 * 60)
 

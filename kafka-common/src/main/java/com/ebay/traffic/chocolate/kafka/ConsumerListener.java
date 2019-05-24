@@ -7,6 +7,7 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.log4j.Logger;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.Set;
  * Created by yliu29 on 3/15/19.
  */
 public class ConsumerListener<K, V> implements ConsumerRebalanceListener {
+  private static final Logger LOG = Logger.getLogger(ConsumerListener.class);
 
   private final Metrics metrics;
 
@@ -50,7 +52,12 @@ public class ConsumerListener<K, V> implements ConsumerRebalanceListener {
               Field.of("consumer", partition.partition()));
     }
 
-    consumer.commitSync(revoked);
+    try {
+      consumer.commitSync(revoked);
+    } catch (Exception e) {
+      LOG.warn("Commit offset failed!", e);
+      metrics.meter("CommitOffsetFailed");
+    }
   }
 
   /**
@@ -64,6 +71,11 @@ public class ConsumerListener<K, V> implements ConsumerRebalanceListener {
               Field.of("consumer", tp.partition()));
     }
 
-    consumer.commitSync();
+    try {
+      consumer.commitSync();
+    } catch (Exception e) {
+      LOG.warn("Commit offset failed!", e);
+      metrics.meter("CommitOffsetFailed");
+    }
   }
 }
