@@ -42,13 +42,14 @@ function process_one_meta(){
         /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${dest_dir}
 
         command_1="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -put -f ${data_file_name} ${rno_middle_dir}/"
-        command_2="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mv ${rno_middle_dir}/${data_file_name} ${dest_dir}/"
+        command_2="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -f ${dest_dir}/${data_file_name}"
+        command_3="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mv ${rno_middle_dir}/${data_file_name} ${dest_dir}/"
 
         retry=1
         rcode=1
         until [[ ${retry} -gt 3 ]]
         do
-            ${command_1} && ${command_2}
+            ${command_1} && ${command_2} && ${command_3}
             rcode=$?
             if [ ${rcode} -eq 0 ]
             then
