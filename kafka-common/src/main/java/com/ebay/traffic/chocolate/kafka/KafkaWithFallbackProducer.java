@@ -103,12 +103,13 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
 
     Callback cb = (recordMetadata, e) -> {
 
+      LOG.warn("Send timeout", e);
+
       if (e != null && e instanceof TimeoutException) {
         // Currently TimeoutException happens in two cases: 1. Failed to update metadata after "max.block.ms", 2.
         // Block "buffer.memory" is full and can't get space in "max.block.ms". Both these two cases will block
         // current thread.
         // wait for "max.block.ms", if there is timeout for current producer, then switch to another producer
-        LOG.warn("Send timeout", e);
 
         Producer<K, V> fallback = doSwitch(producer);
         if (fallback != null) {
