@@ -77,7 +77,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     //init couchbase datasource
     CorpCouchbaseClient.dataSource = properties.getProperty("epnnrt.datasource")
 
-    var timestamp = 1464058335000L
+    var timestamp = -1L
 
     cappingMeta.foreach(metaIter => {
       val file = metaIter._1
