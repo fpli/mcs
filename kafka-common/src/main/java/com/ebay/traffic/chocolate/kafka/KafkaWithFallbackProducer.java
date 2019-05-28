@@ -103,7 +103,7 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
 
     Callback cb = (recordMetadata, e) -> {
 
-      LOG.warn("Send timeout", e);
+      LOG.warn(e.getMessage(), e);
 
       if (e != null && e instanceof TimeoutException) {
         // Currently TimeoutException happens in two cases: 1. Failed to update metadata after "max.block.ms", 2.
