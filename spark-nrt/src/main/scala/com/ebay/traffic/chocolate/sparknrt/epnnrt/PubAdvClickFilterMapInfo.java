@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt;
 import java.io.Serializable;
 
 public class PubAdvClickFilterMapInfo implements Serializable {
-  private String ams_pub_adv_clk_fltr_map_id;
+//  private String ams_pub_adv_clk_fltr_map_id;
   private String ams_publisher_id;
   private String ams_advertiser_id;
   private String ams_clk_fltr_type_id;
@@ -14,13 +14,13 @@ public class PubAdvClickFilterMapInfo implements Serializable {
     ams_clk_fltr_type_id = "";
   }
 
-  public String getAms_pub_adv_clk_fltr_map_id() {
+/*  public String getAms_pub_adv_clk_fltr_map_id() {
     return ams_pub_adv_clk_fltr_map_id;
   }
 
   public void setAms_pub_adv_clk_fltr_map_id(String ams_pub_adv_clk_fltr_map_id) {
     this.ams_pub_adv_clk_fltr_map_id = ams_pub_adv_clk_fltr_map_id;
-  }
+  }*/
 
   public String getStatus_enum() {
     return status_enum;

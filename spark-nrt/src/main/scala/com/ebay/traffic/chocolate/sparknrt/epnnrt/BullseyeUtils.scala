@@ -101,14 +101,16 @@ object BullseyeUtils {
               val list = new JsonParser().parse(responseBody).getAsJsonArray.get(i).getAsJsonObject.get("results").
                 getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
               if (list.size() > 0) {
-                for (i <- 0 until list.size()) {
-                  var find = false
-                  val item_Id = list.get(i).getAsJsonObject.get("item_id").toString
-                  val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
-                  if (!item_Id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong && lastViewTime > maxLastViwTime && !find) {
-                    itemId = item_Id.replace("\"", "")
-                    maxLastViwTime = lastViewTime
-                    find = true
+                import util.control.Breaks._
+                breakable {
+                  for (i <- 0 until list.size()) {
+                    val item_Id = list.get(i).getAsJsonObject.get("item_id").toString
+                    val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
+                    if (!item_Id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong && lastViewTime > maxLastViwTime) {
+                      itemId = item_Id.replace("\"", "")
+                      maxLastViwTime = lastViewTime
+                      break()
+                    }
                   }
                 }
               }
@@ -157,14 +159,16 @@ object BullseyeUtils {
               val list = new JsonParser().parse(responseBody).getAsJsonArray.get(i).getAsJsonObject.get("results").
                 getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
               if (list.size() > 0) {
-                for (i <- 0 until list.size()) {
-                  var find = false
-                  val item_Id = list.get(i).getAsJsonObject.get("item_id").toString
-                  val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
-                  if (!item_Id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong && lastViewTime > maxLastViwTime && !find) {
-                    itemId = item_Id.replace("\"", "")
-                    maxLastViwTime = lastViewTime
-                    find = true
+                import util.control.Breaks._
+                breakable {
+                  for (i <- 0 until list.size()) {
+                    val item_Id = list.get(i).getAsJsonObject.get("item_id").toString
+                    val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
+                    if (!item_Id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong && lastViewTime > maxLastViwTime) {
+                      itemId = item_Id.replace("\"", "")
+                      maxLastViwTime = lastViewTime
+                      break()
+                    }
                   }
                 }
               }

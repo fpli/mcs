@@ -5,10 +5,10 @@ import java.io.Serializable;
 public class PublisherInfo implements Serializable {
   private String ams_publisher_id;
   private String application_status_enum;
-  private String biztype_enum;
+ /* private String biztype_enum;
   private String ams_publisher_bizmodel_id;
   private String ams_currency_id;
-  private String ams_country_id;
+  private String ams_country_id;*/
 
   public PublisherInfo() {
     application_status_enum = "";
@@ -30,7 +30,7 @@ public class PublisherInfo implements Serializable {
     this.application_status_enum = application_status_enum;
   }
 
-  public String getBiztype_enum() {
+  /*public String getBiztype_enum() {
     return biztype_enum;
   }
 
@@ -60,6 +60,6 @@ public class PublisherInfo implements Serializable {
 
   public void setAms_country_id(String ams_country_id) {
     this.ams_country_id = ams_country_id;
-  }
+  }*/
 }
 
