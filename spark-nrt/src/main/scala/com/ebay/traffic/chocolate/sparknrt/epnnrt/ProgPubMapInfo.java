@@ -6,7 +6,7 @@ public class ProgPubMapInfo implements Serializable {
   private String ams_program_id;
   private String ams_publisher_id;
   private String status_enum;
-  private String reject_reason_enum;
+  //private String reject_reason_enum;
 
   public ProgPubMapInfo() {
     status_enum = "";
@@ -37,11 +37,11 @@ public class ProgPubMapInfo implements Serializable {
     this.status_enum = status_enum;
   }
 
-  public String getReject_reason_enum() {
+/*  public String getReject_reason_enum() {
     return reject_reason_enum;
   }
 
   public void setReject_reason_enum(String reject_reason_enum) {
     this.reject_reason_enum = reject_reason_enum;
-  }
+  }*/
 }

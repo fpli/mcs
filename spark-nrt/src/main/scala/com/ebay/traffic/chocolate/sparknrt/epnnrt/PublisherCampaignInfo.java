@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 public class PublisherCampaignInfo implements Serializable {
   private String ams_publisher_campaign_id;
-  private String ams_publisher_id;
-  private String publisher_campaign_name;
+  /*private String ams_publisher_id;
+  private String publisher_campaign_name;*/
   private String status_enum;
 
   public PublisherCampaignInfo(){
@@ -20,7 +20,7 @@ public class PublisherCampaignInfo implements Serializable {
     this.ams_publisher_campaign_id = ams_publisher_campaign_id;
   }
 
-  public String getAms_publisher_id() {
+  /*public String getAms_publisher_id() {
     return ams_publisher_id;
   }
 
@@ -34,7 +34,7 @@ public class PublisherCampaignInfo implements Serializable {
 
   public void setPublisher_campaign_name(String publisher_campaign_name) {
     this.publisher_campaign_name = publisher_campaign_name;
-  }
+  }*/
 
   public String getStatus_enum() {
     return status_enum;

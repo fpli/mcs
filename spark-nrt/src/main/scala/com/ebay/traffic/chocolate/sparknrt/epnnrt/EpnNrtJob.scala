@@ -29,6 +29,8 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   lazy val outputDir = properties.getProperty("epnnrt.outputdir")
   lazy val epnNrtTempDir = outputDir + "/tmp/"
   lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
+  lazy val archiveDir = properties.getProperty("epnnrt.archiveDir")
+
 
   @transient lazy val schema_epn_click_table = TableSchema("df_epn_click.json")
 
@@ -75,6 +77,8 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     //init couchbase datasource
     CorpCouchbaseClient.dataSource = properties.getProperty("epnnrt.datasource")
 
+    var timestamp = -1L
+
     cappingMeta.foreach(metaIter => {
       val file = metaIter._1
       val datesFiles = metaIter._2
@@ -84,6 +88,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           //2. load DataFrame
           val date = getDate(datesFile._1)
           var df = readFilesAsDFEx(datesFile._2)
+          val size = datesFile._2.length
           //if the dataframe is empty, just continue
           if (df.take(1).isEmpty)
             break
@@ -91,7 +96,11 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           val epnNrtCommon = new EpnNrtCommon(params, df)
           logger.info("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
 
-          val timestamp = df.first().getAs[Long]("timestamp")
+          timestamp = df.first().getAs[Long]("timestamp")
+
+          logger.info("Processing " + size + " datesFile in metaFile " + file)
+          metrics.meter("DateFileCount", size, timestamp)
+          metrics.meter("InComingCount", df.count(), timestamp)
 
           // filter click and impression data, and if there is filterTime, filter the data older than filter time
           var df_click = df.filter(col("channel_action") === "CLICK")
@@ -193,13 +202,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           val clickFiles = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
 
 
-          // 5.delete the finished meta files
-          metadata.deleteDedupeOutputMeta(file)
-
-          if (metrics != null)
-            metrics.flush()
-
-          //6. write the epn-nrt meta output file to hdfs
+          //5. write the epn-nrt meta output file to hdfs
           val click_metaFile = new MetaFiles(Array(DateFiles(date, clickFiles)))
           try {
             metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta.click.outputdir"), "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
@@ -214,6 +217,20 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           }
         }
       })
+
+      // 6. archive the meta file
+      logger.info(s"archive metafile=$file")
+      archiveMetafile(file, archiveDir)
+
+      // 7.delete the finished meta files
+      logger.info(s"delete metafile=$file")
+      metadata.deleteDedupeOutputMeta(file)
+
+      logger.info("Successfully processed the meta file: + " + file)
+      metrics.meter("MetaFileCount", 1, timestamp)
+
+      if (metrics != null)
+        metrics.flush()
     })
   }
 
