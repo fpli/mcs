@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate.eventlistener;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.common.AbstractApplicationOptions;
 import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
+import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -22,7 +23,7 @@ import static com.ebay.traffic.chocolate.kafka.KafkaCluster.DELIMITER;
  *
  * @author xiangli4
  */
-public class ApplicationOptions extends AbstractApplicationOptions implements KafkaSink.KafkaConfigurable {
+public class ApplicationOptions extends AbstractApplicationOptions implements KafkaSink.KafkaConfigurable, KafkaSink.KafkaGlobalConfig {
 
   /**
    * Private logging instance
@@ -55,6 +56,11 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   // for display: chocolate.event-listener.kafka.consumer.topic.DISPLAY
   // for paid search: chocolate.event-listener.kafka.consumer.topic.PAID_SEARCH
   public static final String KAFKA_OUT_TOPIC_PREFIX = "chocolate.event-listener.kafka.producer.topic.";
+
+  /**
+   * couchbase data source
+   */
+  public static final String COUCHBASE_DATASOURCE = "chocolate.event-listener.couchbase.datasource";
 
   /**
    * Static driver ID
@@ -192,5 +198,18 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    */
   public int getDriverId() {
     return DRIVER_ID;
+  }
+
+  @Override
+  public int getKafkaGlobalConfig() {
+    try {
+      return CouchbaseClient.getInstance().getKafkaGlobalConfig();
+    } catch (Exception e) {
+    }
+    return 0;
+  }
+
+  public String getCouchbaseDatasource() {
+    return ApplicationOptionsParser.getStringProperty(properties, COUCHBASE_DATASOURCE);
   }
 }
