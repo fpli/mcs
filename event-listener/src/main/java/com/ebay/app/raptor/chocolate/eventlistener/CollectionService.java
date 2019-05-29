@@ -116,7 +116,7 @@ public class CollectionService {
     // TODO: return 201 for now for the no referer case. Need investigation further.
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
       //logError(ErrorType.NO_REFERER);
-      //logger.warn(ErrorType.NO_REFERER.getErrorMessage());
+      logger.warn(ErrorType.NO_REFERER.getErrorMessage());
       metrics.meter(ErrorType.NO_REFERER.getErrorKey());
       referer = "";
     }
@@ -225,7 +225,6 @@ public class CollectionService {
     // no mkevt, rejected
     if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
       logError(ErrorType.NO_MKEVT);
-      metrics.meter(ErrorType.NO_MKEVT.getErrorKey());
     }
 
     // mkevt != 1, rejected
