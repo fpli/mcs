@@ -193,6 +193,7 @@ public class CollectionService {
       }
       
       roverClient.forwardRequestToRover(client, httpGet);
+      client.close();
       return true;
     }
 
