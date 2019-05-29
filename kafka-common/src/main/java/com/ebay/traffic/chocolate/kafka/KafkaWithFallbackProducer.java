@@ -50,6 +50,10 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
 
   private Timer timer;
 
+  public KafkaWithFallbackProducer(Producer<K, V> producer1, Producer<K, V> producer2) {
+    this(producer1, producer2, null);
+  }
+
   public KafkaWithFallbackProducer(Producer<K, V> producer1, Producer<K, V> producer2,
                                    final KafkaSink.KafkaGlobalConfig config) {
     assert producer1 != null;
@@ -58,13 +62,15 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
     this.current = producer1;
     this.metrics = ESMetrics.getInstance();
 
-    timer = new Timer(true);
-    timer.scheduleAtFixedRate(new TimerTask() {
-      @Override
-      public void run() {
-        globalConfig = config.getKafkaGlobalConfig();
-      }
-    }, 30000, 30000); // flush every 30s
+    if (config != null) {
+      timer = new Timer(true);
+      timer.scheduleAtFixedRate(new TimerTask() {
+        @Override
+        public void run() {
+          globalConfig = config.getKafkaGlobalConfig();
+        }
+      }, 30000, 30000); // flush every 30s
+    }
   }
 
   private synchronized Producer<K, V> getCurrent() {
