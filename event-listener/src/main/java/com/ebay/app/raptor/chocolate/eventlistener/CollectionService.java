@@ -16,8 +16,10 @@ import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.HttpContext;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -178,6 +180,7 @@ public class CollectionService {
       final String rebuiltRoverUrl = uriBuilder.build().toString();
 
       CloseableHttpClient client = httpClientConnectionManager.getHttpClient();
+      HttpContext context = HttpClientContext.create();
       HttpGet httpGet = new HttpGet(rebuiltRoverUrl);
 
       final Enumeration<String> headers = request.getHeaderNames();
@@ -192,8 +195,7 @@ public class CollectionService {
         }
       }
       
-      roverClient.forwardRequestToRover(client, httpGet);
-      client.close();
+      roverClient.forwardRequestToRover(client, httpGet, context);
       return true;
     }
 
@@ -222,7 +224,7 @@ public class CollectionService {
 
     // no mkevt, rejected
     if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
-      //logError(ErrorType.NO_MKEVT);
+      logError(ErrorType.NO_MKEVT);
       metrics.meter(ErrorType.NO_MKEVT.getErrorKey());
     }
 
