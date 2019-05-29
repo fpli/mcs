@@ -110,8 +110,8 @@ public class DefaultChannel implements Channel {
       message.setTimestamp(startTime);
       message.setCampaignId(campaignId);
       message.setHttpMethod(parser.getMethod(request).getAvro());
-//      producer.send(new ProducerRecord<>(kafkaMalformedTopic,
-//          message.getSnapshotId(), message), KafkaSink.callback);
+      producer.send(new ProducerRecord<>(kafkaMalformedTopic,
+          message.getSnapshotId(), message), KafkaSink.callback);
     }
 
     String snid = request.getParameter(SNID_PATTERN);
@@ -167,8 +167,8 @@ public class DefaultChannel implements Channel {
       }
       // Other site url are sent to another kafka topic
       else {
-//        producer.send(new ProducerRecord<>(listenerFilteredKafkaTopic,
-//          message.getSnapshotId(), message), KafkaSink.callback);
+        producer.send(new ProducerRecord<>(listenerFilteredKafkaTopic,
+          message.getSnapshotId(), message), KafkaSink.callback);
         metrics.meter("SendIntlKafkaCount", 1, eventTime);
       }
     } else {
@@ -285,7 +285,7 @@ public class DefaultChannel implements Channel {
     message.setUri(requestUrl);
     message.setHttpMethod(parser.getMethod(request).getAvro());
 
-//    producer.send(new ProducerRecord<>(kafkaMalformedTopic,
-//        message.getSnapshotId(), message), KafkaSink.callback);
+    producer.send(new ProducerRecord<>(kafkaMalformedTopic,
+        message.getSnapshotId(), message), KafkaSink.callback);
   }
 }

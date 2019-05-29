@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.kafka;
 
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -14,6 +16,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.annotation.InterfaceStability;
 import org.apache.kafka.common.errors.ProducerFencedException;
 import org.apache.kafka.common.errors.TimeoutException;
+import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,11 +43,14 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
   private final long interval = 3 * 60 * 60 * 1000; // 3 hours
   private long time = 0;
 
+  private final Metrics metrics;
+
   public KafkaWithFallbackProducer(Producer<K, V> producer1, Producer<K, V> producer2) {
     assert producer1 != null;
     this.producer1 = producer1;
     this.producer2 = producer2;
     this.current = producer1;
+    this.metrics = ESMetrics.getInstance();
   }
 
   private synchronized Producer<K, V> getCurrent() {
@@ -104,12 +110,15 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
     Callback cb = (recordMetadata, e) -> {
 
       LOG.warn(e.getMessage(), e);
+      metrics.meter("KafkaSendingFailed");
 
-      if (e != null && e instanceof TimeoutException) {
+      if (e != null && (e instanceof TimeoutException || e instanceof TopicAuthorizationException)) {
         // Currently TimeoutException happens in two cases: 1. Failed to update metadata after "max.block.ms", 2.
         // Block "buffer.memory" is full and can't get space in "max.block.ms". Both these two cases will block
         // current thread.
         // wait for "max.block.ms", if there is timeout for current producer, then switch to another producer
+
+        LOG.warn("Send to topic failed.", e);
 
         Producer<K, V> fallback = doSwitch(producer);
         if (fallback != null) {

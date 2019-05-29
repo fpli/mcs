@@ -160,8 +160,8 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
       message.setTimestamp(timestamp);
       message.setUri(getRequestURL(clientRequest));
       message.setHttpMethod(parser.getMethod(clientRequest).getAvro());
-//      producer.send(new ProducerRecord<>(kafkaMalformedTopic,
-//          message.getSnapshotId(), message), KafkaSink.callback);
+      producer.send(new ProducerRecord<>(kafkaMalformedTopic,
+          message.getSnapshotId(), message), KafkaSink.callback);
       reencodeQuery(clientRequest);
       URI rewrittenURI = URI.create(super.rewriteTarget(clientRequest));
       return setPort(rewrittenURI, portMapping(clientRequest.getLocalPort()));
