@@ -1,14 +1,16 @@
 #!/bin/bash
 
-# read output meta files by channel and action, scp data files to ETL server
+# read output meta files by channel and action, put data files to Apollo Rno
 
 WORK_DIR=$1
 CHANNEL=$2
 ACTION=$3
 META_FILE_SUFFIX=$4
-KEY_LOCATION=$5
-ETL_ACCOUNT_LOCATION=$6
-SCP_DONE_FILE=$7
+RNO_WORK_DIR=$5
+RNO_DATA_DIR=$6
+
+rno_middle_dir=${RNO_WORK_DIR}/${CHANNEL}/${ACTION}
+rno_output_dir=${RNO_DATA_DIR}/${CHANNEL}/${ACTION}
 
 function process_one_meta(){
     meta_file=$1
@@ -26,52 +28,56 @@ function process_one_meta(){
         exit ${rcode}
     fi
     files_size=`cat ${output_file} | wc -l`
-    echo "start scp files size:"${files_size}
+    echo "start put files size:"${files_size}
 
     data_files=`cat ${output_file} | tr "\n" " "`
     while read -r date_file; do
+        file_date=`echo ${date_file} | cut -d" " -f1`
         data_file=`echo ${date_file} | cut -d" " -f2`
         data_file_name=$(basename "$data_file")
         rm -f data_file_name
         hdfs dfs -get ${data_file}
-        touch ${data_file_name}'.done'
 
-        command_1="scp -i ${KEY_LOCATION} ${data_file_name} ${ETL_ACCOUNT_LOCATION}/${data_file_name}"
-        command_2="echo 1"
-        if [ $2 = "YES" ]
-        then
-            command_2="scp -i ${KEY_LOCATION} ${data_file_name}.done ${ETL_ACCOUNT_LOCATION}/${data_file_name}.done"
-        fi
+        dest_dir=${rno_output_dir}/${file_date}
+        /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${dest_dir}
+
+        command_1="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -put -f ${data_file_name} ${rno_middle_dir}/"
+        command_2="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -f ${dest_dir}/${data_file_name}"
+        command_3="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mv ${rno_middle_dir}/${data_file_name} ${dest_dir}/"
+
         retry=1
         rcode=1
         until [[ ${retry} -gt 3 ]]
         do
-            ${command_1} && ${command_2}
+            ${command_1} && ${command_2} && ${command_3}
             rcode=$?
             if [ ${rcode} -eq 0 ]
             then
-                echo "success scp to ETL: "${data_file_name}
+                echo "success put to RNO: "${data_file_name}
                 break
             else
-                echo "Faild to scp to ETL, retrying ${retry}"
+                echo "Faild to put to RNO, retrying ${retry}"
                 retry=`expr ${retry} + 1`
              fi
         done
         rm -f ${data_file_name}
         if [ ${rcode} -ne 0 ]
         then
-            echo "Fail to scp to ETL, please check!!!"
+            echo "Fail to put to RNO, please check!!!"
             exit ${rcode}
         fi
     done < "$output_file"
     rm -f ${output_file}
-    echo "finish scp files size:"${files_size}
+    echo "finish put files size:"${files_size}
 }
 
 export HADOOP_USER_NAME=chocolate
+HOST_NAME=`hostname -f`
+kinit -kt /datashare/mkttracking/tools/keytab-tool/keytab/b_marketing_tracking.${HOST_NAME}.keytab  b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM
 
 meta_dir=${WORK_DIR}'/meta/'${CHANNEL}'/output/'${ACTION}
-tmp_dir='tmp_scp_to_etl_'${CHANNEL}'_'${ACTION}
+tmp_dir='tmp_put_to_rno_'${CHANNEL}'_'${ACTION}
+
 mkdir -p ${tmp_dir}
 cd ${tmp_dir}
 
@@ -85,7 +91,7 @@ echo "start process meta files size:"${files_size}
 all_files=`cat ${all_meta_files} | tr "\n" " "`
 for one_meta in ${all_files}
 do
-    process_one_meta ${one_meta} ${SCP_DONE_FILE}
+    process_one_meta ${one_meta}
     rcode=$?
     if [ ${rcode} -ne 0 ]
     then

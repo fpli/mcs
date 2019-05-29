@@ -45,6 +45,8 @@ public class CouchbaseClient {
 
   private final Metrics metrics = ESMetrics.getInstance();
 
+  private static final String KAFKA_GLOBAL_CONFIG = "KafkaGlobalConfig";
+
   /**
    * Singleton
    */
@@ -126,6 +128,26 @@ public class CouchbaseClient {
     } finally {
       factory.returnClient(cacheClient);
       return cguid;
+    }
+  }
+
+  /**
+   *  get kafka global config
+   */
+  public int getKafkaGlobalConfig() {
+    CacheClient cacheClient = null;
+    int globalConfig = 0;
+    try {
+      cacheClient = factory.getClient(datasourceName);
+      JsonDocument document = getBucket(cacheClient).get(KAFKA_GLOBAL_CONFIG, JsonDocument.class);
+      if (document != null) {
+        globalConfig = Integer.parseInt(document.content().get("globalConfig").toString());
+      }
+    } catch (Exception e) {
+      logger.warn("Couchbase get operation exception", e);
+    } finally {
+      factory.returnClient(cacheClient);
+      return globalConfig;
     }
   }
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - DedupeAndSink
 
-usage="Usage: dedupeAndSink.sh [channel] [kafkaTopic] [workDir] [outputDir] [elasticsearchUrl] [couchbaseDedupe]"
+usage="Usage: dedupeAndSink.sh [channel] [kafkaTopic] [workDir] [outputDir] [elasticsearchUrl] [partitions] [couchbaseDedupe]"
 
 # if no args specified, show usage
 if [ $# -le 3 ]; then
@@ -58,4 +58,5 @@ ${SPARK_HOME}/bin/spark-submit \
       --outputDir ${OUTPUT_DIR} \
       --elasticsearchUrl ${ES_URL} \
       --partitions ${PARTITIONS} \
+      --maxConsumeSize 60000 \
       --couchbaseDedupe ${CB_DEDUPE}
