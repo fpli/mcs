@@ -34,7 +34,7 @@ public class HttpRoverClient {
   public void forwardRequestToRover(CloseableHttpClient client, HttpGet httpGet, HttpContext httpContext) {
     // ask rover not to redirect
     try {
-      CloseableHttpResponse response = client.execute(httpGet);
+      CloseableHttpResponse response = client.execute(httpGet, httpContext);
       if (response.getStatusLine().getStatusCode() == 301 ) {
         metrics.meter("ForwardRoverRedirect");
         String headers = "";

@@ -187,8 +187,7 @@ public class CollectionService {
       while (headers.hasMoreElements()) {
         final String header = headers.nextElement();
         if (header.equalsIgnoreCase("x-forwarded-for") ||
-              header.equalsIgnoreCase("user-agent") ||
-              header.equalsIgnoreCase("x-ebay-client-ip")) {
+              header.equalsIgnoreCase("user-agent") ) {
           final Enumeration<String> values = request.getHeaders(header);
           //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
           httpGet.addHeader(header, values.nextElement());
