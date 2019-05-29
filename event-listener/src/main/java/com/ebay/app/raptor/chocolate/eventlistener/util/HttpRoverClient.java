@@ -6,10 +6,10 @@ import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -31,8 +31,7 @@ public class HttpRoverClient {
     this.metrics = ESMetrics.getInstance();
   }
 
-  @Async
-  public void forwardRequestToRover(CloseableHttpClient client, HttpGet httpGet) {
+  public void forwardRequestToRover(CloseableHttpClient client, HttpGet httpGet, HttpContext httpContext) {
     // ask rover not to redirect
     try {
       CloseableHttpResponse response = client.execute(httpGet);
