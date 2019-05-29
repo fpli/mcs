@@ -151,10 +151,11 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
     ProducerRecord<K, V> pr = new ProducerRecord<>(topic, record.key(), record.value());
 
     Callback cb = (recordMetadata, e) -> {
-
-      LOG.warn(e.getMessage(), e);
-      if (metrics != null)
-        metrics.meter("KafkaSendingFailed");
+      if (e != null) {
+        LOG.warn(e.getMessage(), e);
+        if (metrics != null)
+          metrics.meter("KafkaSendingFailed");
+      }
 
       if (e != null && (globalConfig == 0) && (e instanceof TimeoutException || e instanceof TopicAuthorizationException)) {
         // Currently TimeoutException happens in two cases: 1. Failed to update metadata after "max.block.ms", 2.
