@@ -10,12 +10,9 @@ import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
  * Created by spugach on 12/14/16.
  */
 public class PrefetchRule extends BaseFilterRule {
+
   public PrefetchRule(ChannelType channelType) {
     super(channelType);
-  }
-  
-  public static PrefetchRule getInstance(ChannelType channelType) {
-    return new PrefetchRule(channelType);
   }
   
   /**
