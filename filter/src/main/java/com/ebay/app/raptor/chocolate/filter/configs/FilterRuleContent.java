@@ -55,20 +55,40 @@ public class FilterRuleContent {
   public Long getWindowStart() {
     return windowStart;
   }
-  
+
+  public void setWindowStart(Long windowStart) {
+    this.windowStart = windowStart;
+  }
+
   public Float getRateLimit() {
     return rateLimit;
   }
-  
+
+  public void setRateLimit(Float rateLimit) {
+    this.rateLimit = rateLimit;
+  }
+
   public String getRuleName() {
     return ruleName;
+  }
+
+  public void setRuleName(String ruleName) {
+    this.ruleName = ruleName;
   }
 
   public String getWhitelistName() {
     return whitelistName;
   }
 
+  public void setWhitelistName(String whitelistName) {
+    this.whitelistName = whitelistName;
+  }
+
   public String getBlacklistName() {
     return blacklistName;
+  }
+
+  public void setBlacklistName(String blacklistName) {
+    this.blacklistName = blacklistName;
   }
 }
