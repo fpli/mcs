@@ -1,8 +1,9 @@
-package com.ebay.traffic.chocolate.listener.util;
+package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.document.JsonDocument;
 import com.couchbase.client.java.document.json.JsonObject;
+import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
@@ -51,7 +52,7 @@ public class CouchbaseClient {
    * Singleton
    */
   private CouchbaseClient() {
-    this.datasourceName = ListenerOptions.getInstance().getCouchbaseDatasource();
+    this.datasourceName = ApplicationOptions.getInstance().getCouchbaseDatasource();
     try {
       factory = DefaultCacheFactoryBuilder
         .newBuilder()

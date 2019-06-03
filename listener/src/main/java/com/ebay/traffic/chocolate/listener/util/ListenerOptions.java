@@ -23,7 +23,8 @@ import static com.ebay.traffic.chocolate.kafka.KafkaCluster.DELIMITER;
  * - additional validation of option values
  * - grouping of constants for particular use cases (e.g. kafka)
  */
-public class ListenerOptions extends AbstractApplicationOptions implements KafkaSink.KafkaConfigurable {
+public class ListenerOptions extends AbstractApplicationOptions implements
+        KafkaSink.KafkaConfigurable, KafkaSink.KafkaGlobalConfig {
     /** Private logging instance */
     private static final Logger logger = Logger
             .getLogger(ListenerOptions.class);
@@ -111,6 +112,15 @@ public class ListenerOptions extends AbstractApplicationOptions implements Kafka
         } else {
             return rheosKafkaProperties;
         }
+    }
+
+    @Override
+    public int getKafkaGlobalConfig() {
+        try {
+            return CouchbaseClient.getInstance().getKafkaGlobalConfig();
+        } catch (Exception e) {
+        }
+        return 0;
     }
 
     private static Properties loadProperties(String file) throws IOException {

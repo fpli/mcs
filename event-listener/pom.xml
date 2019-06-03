@@ -159,6 +159,12 @@
       <artifactId>httpclient</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes</artifactId>
+      <version>${dukes.version}</version>
+    </dependency>
+
     <!--Chocolate dependencies-->
     <dependency>
       <groupId>com.ebay.traffic</groupId>

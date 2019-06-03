@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - DedupeAndSink
 
-usage="Usage: dedupeAndSink.sh [channel] [kafkaTopic] [workDir] [outputDir] [elasticsearchUrl] [couchbaseDedupe]"
+usage="Usage: dedupeAndSink.sh [channel] [kafkaTopic] [workDir] [outputDir] [elasticsearchUrl] [partitions] [couchbaseDedupe]"
 
 # if no args specified, show usage
 if [ $# -le 3 ]; then
