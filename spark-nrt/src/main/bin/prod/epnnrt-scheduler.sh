@@ -9,7 +9,7 @@ bin=`cd "$bin">/dev/null; pwd`
 #./epnnrt.sh /apps/tracking-events-workdir /apps/tracking-resources 0
 WORK_DIR=/apps/tracking-events-workdir
 RESOURCE_DIR=/apps/tracking-resources
-FILTER_HOUR=1
+FILTER_HOUR=1     # 1:00am
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
 log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/scheduler_${log_dt}.log"
 
@@ -19,7 +19,7 @@ echo "FILTER_HOUR="${FILTER_HOUR} | tee -a ${log_file}
 
 ##################### Generate FILTER_TIME ##################
 DT=$(date +%Y-%m-%d)
-HOUR=$(date +%H)
+HOUR=$(date +%_H)
 
 if [[ $# -eq 1 ]]; then
   DT_HOUR=$(date +%Y-%m-%d' '$1:00:00)
@@ -35,7 +35,11 @@ else
   FILTER_TIME=0
 fi
 
+echo "DT_HOUR="${DT_HOUR} | tee -a ${log_file}
+echo "FILTER_TIME="${FILTER_TIME} | tee -a ${log_file}
+
 ##################### Spark Submit ##################
 export HADOOP_USER_NAME=chocolate
-echo $HADOOP_USER_NAME
-/datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/epnnrt.sh ${WORK_DIR} ${RESOURCE_DIR} ${FILTER_TIME}
+echo "HADOOP_USER_NAME="${HADOOP_USER_NAME} | tee -a ${log_file}
+
+/datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/epnnrt.sh ${WORK_DIR} ${RESOURCE_DIR} "0"

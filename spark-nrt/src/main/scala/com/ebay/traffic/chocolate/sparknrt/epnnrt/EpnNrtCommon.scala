@@ -5,12 +5,9 @@ import java.text.SimpleDateFormat
 import java.util.Properties
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
-import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
-import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
-import com.google.gson.Gson
-import org.apache.commons.lang3.StringUtils
+import com.google.gson.{Gson, JsonObject, JsonParser}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.DataFrame
@@ -62,7 +59,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
    }
 
 
-  @transient lazy val metadata: Metadata = {
+ /* @transient lazy val metadata: Metadata = {
     val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
     Metadata(params.workDir, ChannelType.EPN.toString, usage)
   }
@@ -74,7 +71,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } else {
       1 // default to 1 metafiles
     }
-  }
+  }*/
 
   //
   lazy val ams_map: Map[Int, Array[String]] = Map(
@@ -196,7 +193,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   //val getGUIDUdf = udf((requestHeader: String, responseHeader:String, guid: String) => getGUIDFromCookie(requestHeader, responseHeader, guid))
   val getValueFromRequestUdf = udf((requestHeader: String, key: String) => getValueFromRequest(requestHeader, key))
   val getUserQueryTextUdf = udf((url: String, action: String) => getUserQueryTxt(url, action))
-  val getToolIdUdf = udf((url: String) => getQueryParam(url, "toolid"))
+  val getToolIdUdf = udf((url: String) => getAms_tool_id(url))
   val getCustomIdUdf = udf((url: String) => getQueryParam(url, "customid"))
   val getFFValueUdf = udf((url: String, index: String) => getFFValue(url, index))
   val getFFValueNotEmptyUdf = udf((url: String, index: String) => getFFValueNotEmpty(url, index))
@@ -241,6 +238,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_trfc_src_cd_click_udf = udf((browser: String) => get_TRFC_SRC_CD(browser, "click"))
   val get_trfc_src_cd_impression_udf = udf((browser: String) => get_TRFC_SRC_CD(browser, "impression"))
 
+  val get_last_view_item_info_udf = udf((cguid: String, timestamp: String) => getLastViewItemInfo(cguid, timestamp))
+
+
+  def getLastViewItemInfo(cguid: String, timestamp: String): Array[String] = {
+    val res = BullseyeUtils.getLastViewItem(cguid, timestamp, properties.getProperty("epnnrt.modelId"), properties.getProperty("epnnrt.lastviewitemnum"), properties.getProperty("epnnrt.bullseyeUrl"))
+    Array(res._1, res._2)
+  }
 
   def getValueFromQueryURL(uri: String, key: String): String = {
     val value = getQueryParam(uri, key)
@@ -384,6 +388,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     ""
   }
 
+  def getAms_tool_id(uri: String): String = {
+    var res = getQueryParam(uri, "toolid")
+    if(res.equalsIgnoreCase(""))
+      res = "0"
+    res
+  }
+
   def getQueryParam(uri: String, param: String): String = {
     if (uri != null) {
       try {
@@ -415,7 +426,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getPrgrmIdAdvrtsrIdFromAMSClick(rotationId: String): Array[String] = {
-    val empty = Array("","")
+    //det default program id and advrtsr id to -999
+    val empty = Array("-999","-999")
     if (rotationId == null || rotationId.equals(""))
       return empty
     val parts = rotationId.split("-")
@@ -911,7 +923,12 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           }
         }).toList.toBlocking.single
       for (i <- 0 until jsonDocuments.size()) {
-        val publisherInfo = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherInfo])
+        val jsonString = String.valueOf(
+          "{\"ams_publisher_id\":\"" + jsonDocuments.get(i).content().get("ams_publisher_id") + "\"," +
+            "\"application_status_enum\":" + "\"" + jsonDocuments.get(i).content().get("application_status_enum") + "\"" + "}")
+        val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
+       // val publisherInfo = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherInfo])
+        val publisherInfo = new Gson().fromJson(jsonObj, classOf[PublisherInfo])
         if (publisherInfo != null)
           res = res + (publisherInfo.getAms_publisher_id -> publisherInfo.getApplication_status_enum)
         else
@@ -945,7 +962,12 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           }
         }).toList.toBlocking.single()
       for (i <- 0 until jsonDocuments.size()) {
-        val campaign_sts = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherCampaignInfo])
+        //val campaign_sts = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherCampaignInfo])
+        val jsonString = String.valueOf(
+          "{\"ams_publisher_campaign_id\":\"" + jsonDocuments.get(i).content().get("ams_publisher_campaign_id") + "\"," +
+            "\"status_enum\":" + "\"" + jsonDocuments.get(i).content().get("status_enum") + "\"" + "}")
+        val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
+        val campaign_sts = new Gson().fromJson(jsonObj, classOf[PublisherCampaignInfo])
         if (campaign_sts != null)
           res = res + (campaign_sts.getAms_publisher_campaign_id -> campaign_sts.getStatus_enum)
         else
@@ -979,7 +1001,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           }
         }).toList.toBlocking.single()
       for (i <- 0 until jsonDocuments.size()) {
-        val progPubMap = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[ProgPubMapInfo])
+       // val progPubMap = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[ProgPubMapInfo])
+        val jsonString = String.valueOf(
+         "{\"ams_program_id\":\"" + jsonDocuments.get(i).content().get("ams_program_id") + "\"," +
+           "\"ams_publisher_id\":\"" + jsonDocuments.get(i).content().get("ams_publisher_id") + "\"," +
+           "\"status_enum\":" + "\"" + jsonDocuments.get(i).content().get("status_enum") + "\"" + "}")
+        val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
+        val progPubMap = new Gson().fromJson(jsonObj, classOf[ProgPubMapInfo])
+
         if (progPubMap != null)
           res = res + ((progPubMap.getAms_publisher_id + "_" + progPubMap.getAms_program_id) -> progPubMap.getStatus_enum)
         else
@@ -1016,7 +1045,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       for (i <- 0 until jsonArrayDocuments.size()) {
         var objectList: ListBuffer[PubAdvClickFilterMapInfo] = ListBuffer.empty[PubAdvClickFilterMapInfo]
         for (j <-0 until jsonArrayDocuments.get(i).content().size()) {
-          objectList += new Gson().fromJson(String.valueOf(jsonArrayDocuments.get(i).content().get(j)), classOf[PubAdvClickFilterMapInfo])
+          val jsonString = String.valueOf(
+            "{\"ams_publisher_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_publisher_id") + "\"," +
+              "\"ams_advertiser_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_advertiser_id") + "\"," +
+              "\"ams_clk_fltr_type_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_clk_fltr_type_id") + "\"," +
+              "\"status_enum\":" + "\"" + jsonArrayDocuments.get(i).content().getObject(j).get("status_enum") + "\"" + "}")
+          val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
+         // objectList += new Gson().fromJson(String.valueOf(jsonArrayDocuments.get(i).content().get(j)), classOf[PubAdvClickFilterMapInfo])
+          objectList += new Gson().fromJson(jsonObj, classOf[PubAdvClickFilterMapInfo])
         }
         if (objectList.nonEmpty)
           res = res + (objectList.head.getAms_publisher_id -> objectList)
@@ -1051,7 +1087,15 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       for (i <- 0 until jsonArrayDocuments.size()) {
         var objectList: ListBuffer[PubDomainInfo] = ListBuffer.empty[PubDomainInfo]
         for (j <-0 until jsonArrayDocuments.get(i).content().size()) {
-          objectList += new Gson().fromJson(String.valueOf(jsonArrayDocuments.get(i).content().get(j)), classOf[PubDomainInfo])
+         // objectList += new Gson().fromJson(String.valueOf(jsonArrayDocuments.get(i).content().get(j)), classOf[PubDomainInfo])
+          val jsonString = String.valueOf(
+            "{\"ams_publisher_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_publisher_id") + "\"," +
+              "\"url_domain\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("url_domain") + "\"," +
+              "\"whitelist_status_enum\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("whitelist_status_enum") + "\"," +
+              "\"domain_status_enum\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("domain_status_enum") + "\"," +
+              "\"is_registered\":" + "\"" + jsonArrayDocuments.get(i).content().getObject(j).get("is_registered") + "\"" + "}")
+          val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
+          objectList += new Gson().fromJson(String.valueOf(jsonObj), classOf[PubDomainInfo])
         }
         if (objectList.nonEmpty)
           res = res + (objectList.head.getAms_publisher_id -> objectList)

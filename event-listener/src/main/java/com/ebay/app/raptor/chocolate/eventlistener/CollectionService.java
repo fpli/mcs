@@ -14,10 +14,17 @@ import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.HttpContext;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
@@ -25,11 +32,11 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
-
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
-import java.util.List;
+import java.net.URLDecoder;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,16 +56,24 @@ public class CollectionService {
   private ListenerMessageParser parser;
   private static CollectionService instance = null;
 
+  @Autowired
+  private HttpRoverClient roverClient;
+
+  @Autowired
+  private HttpClientConnectionManager httpClientConnectionManager;
+
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE);
+  private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?(rover\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
 
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
+
   }
 
   /**
@@ -71,7 +86,7 @@ public class CollectionService {
    * @return OK or Error message
    */
   public boolean collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
-    raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
+          raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
 
     if (request.getHeader("X-EBAY-C-TRACKING") == null) {
       logError(ErrorType.NO_TRACKING);
@@ -106,10 +121,81 @@ public class CollectionService {
       referer = "";
     }
 
-    String userAgent = endUserContext.getUserAgent();
+    // decode referer if necessary. Currently, android is sending rover url encoded.
+    if(referer.startsWith("https%3A%2F%2") || referer.startsWith("http%3A%2F%2")) {
+      referer = URLDecoder.decode( referer, "UTF-8" );
+    }
 
+    String userAgent = endUserContext.getUserAgent();
     if (null == userAgent) {
       logError(ErrorType.NO_USER_AGENT);
+    }
+
+    if(referer.startsWith("https://apisd.ebay.com")) {
+      metrics.meter("APISD");
+    }
+    // legacy rover deeplink case. Forward it to rover. We control this at our backend in case mobile app miss it
+    Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
+    if (roverSitesMatcher.find()) {
+
+      URIBuilder uriBuilder = new URIBuilder(referer);
+      List<NameValuePair> queryParameters = uriBuilder.getQueryParams();
+      Set<String> queryNames = new HashSet<>();
+      for (Iterator<NameValuePair> queryParameterItr = queryParameters.iterator(); queryParameterItr.hasNext();) {
+        NameValuePair queryParameter = queryParameterItr.next();
+        //remove mpre if necessary. When there is mpre, rover won't overwrite guid by udid
+        if (queryParameter.getName().equals("mpre")) {
+          queryParameterItr.remove();
+        }
+        queryNames.add(queryParameter.getName());
+      }
+      uriBuilder.setParameters(queryParameters);
+
+      // add udid parameter from tracking header's guid if udid is not in rover url. The udid will be set as guid by rover later
+      if (!queryNames.contains("udid")) {
+        String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
+        String guid = "";
+        for (String seg : trackingHeader.split(",")
+          ) {
+          String[] keyValue = seg.split("=");
+          if (keyValue.length == 2) {
+            if (keyValue[0].equalsIgnoreCase("guid")) {
+              guid = keyValue[1];
+            }
+          }
+        }
+        if (!guid.isEmpty()) {
+          uriBuilder.addParameter("udid", guid);
+        }
+      }
+
+      // add nrd=1 if not exist
+      if(!queryNames.contains("nrd")) {
+        uriBuilder.addParameter("nrd", "1");
+      }
+
+      // add mcs=1 for marking mcs forwarding
+      uriBuilder.addParameter("mcs", "1");
+
+      final String rebuiltRoverUrl = uriBuilder.build().toString();
+
+      CloseableHttpClient client = httpClientConnectionManager.getHttpClient();
+      HttpContext context = HttpClientContext.create();
+      HttpGet httpGet = new HttpGet(rebuiltRoverUrl);
+
+      final Enumeration<String> headers = request.getHeaderNames();
+      while (headers.hasMoreElements()) {
+        final String header = headers.nextElement();
+        if (header.equalsIgnoreCase("x-forwarded-for") ||
+              header.equalsIgnoreCase("user-agent") ) {
+          final Enumeration<String> values = request.getHeaders(header);
+          //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
+          httpGet.addHeader(header, values.nextElement());
+        }
+      }
+      
+      roverClient.forwardRequestToRover(client, httpGet, context);
+      return true;
     }
 
     String kafkaTopic;
@@ -199,7 +285,7 @@ public class CollectionService {
 
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext
-      .getProperty(UserAgentInfo.NAME);
+            .getProperty(UserAgentInfo.NAME);
     String platform = Constants.PLATFORM_UNKNOWN;
     if (agentInfo.isDesktop()) {
       platform = Constants.PLATFORM_DESKTOP;
@@ -220,7 +306,7 @@ public class CollectionService {
     }
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+            Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     producer = KafkaSink.get();
 
@@ -228,7 +314,7 @@ public class CollectionService {
 
     // Parse the response
     ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
-      .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
+            .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
 
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
@@ -236,7 +322,7 @@ public class CollectionService {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker
-          .NAME);
+                .NAME);
 
         // page id
         requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
@@ -287,7 +373,7 @@ public class CollectionService {
       long eventTime = message.getTimestamp();
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       stopTimerAndLogData(startTime, eventTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-          Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+              Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
     }
     return true;
   }

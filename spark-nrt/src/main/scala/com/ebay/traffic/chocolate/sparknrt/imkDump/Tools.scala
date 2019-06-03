@@ -132,7 +132,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     if (StringUtils.isNotEmpty(query)) {
       query.split("&").foreach(paramMapString => {
         val paramStringArray = paramMapString.split("=")
-        if (paramStringArray(0).trim.equalsIgnoreCase(key) && paramStringArray.length == 2) {
+        if (paramStringArray.nonEmpty && paramStringArray(0).trim.equalsIgnoreCase(key) && paramStringArray.length == 2) {
           return paramStringArray(1).trim
         }
       })
@@ -334,7 +334,8 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
   def judgeNotEbaySites(referrer: String): Boolean = {
     val matcher = ebaySites.matcher(referrer)
     if (matcher.find()) {
-      metrics.meter("imk.dump.internalReferer")
+      if(metrics != null)
+        metrics.meter("imk.dump.internalReferer")
       false
     } else {
       true

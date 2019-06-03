@@ -1,0 +1,3 @@
+type=command
+command=bash ../SubmitJob.sh "SLC" "/datashare/mkttracking/jobs/chocolate-sparknrt/bin/prod" "./imkGenerateDailyDoneFile.sh /apps/b_marketing_tracking/imk_tracking/daily_done_files /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event imk_rvr_trckng_event"
+failure.emails=marketing-tracking-email@ebay-cpt.pagerduty.com, jialili1@ebay.com, fechen@ebay.com, xiangli4@ebay.com, yliu29@ebay.com, huiclu@ebay.com, shuangxu@ebay.com, lxiong1@ebay.com, ganghuang@ebay.com, zhofan@ebay.com

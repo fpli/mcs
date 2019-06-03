@@ -92,18 +92,18 @@ class MonitoringJob(params: Parameter)
                 "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
               metrics.meter("IPBrowserLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPBrowserCappingRule_L,
                 "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
-              metrics.meter("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S,
-                "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
-              metrics.meter("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L,
-                "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
+//              metrics.meter("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S,
+//                "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
+//              metrics.meter("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L,
+//                "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
 
               //Display nrt rules
               metrics.meter("IPLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
                 "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
-              metrics.meter("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S,
-                "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
-              metrics.meter("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L,
-                "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
+//              metrics.meter("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S,
+//                "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
+//              metrics.meter("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L,
+//                "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
 
               metrics.flush()
             }

@@ -25,7 +25,7 @@ public class KafkaSink {
   /**
    * Kafka Configurable Interface.
    */
-  public static interface KafkaConfigurable {
+  public interface KafkaConfigurable {
 
     /**
      * Get the kafka cluster to sink. Refer to <code>KafkaCluster</code>
@@ -44,7 +44,27 @@ public class KafkaSink {
     Properties getSinkKafkaProperties(KafkaCluster sinkCluster) throws IOException;
   }
 
+  /**
+   * Kafka Global Config Interface
+   */
+  public interface KafkaGlobalConfig {
+
+    /**
+     * Get the kafka global config.
+     * 0: auto
+     * 1: primary
+     * 2: fallback
+     *
+     * @return Kafka global config.
+     */
+    int getKafkaGlobalConfig();
+  }
+
   private KafkaSink() {
+  }
+
+  public static synchronized void initialize(KafkaConfigurable conf) {
+    initialize(conf, null);
   }
 
   /**
@@ -53,7 +73,7 @@ public class KafkaSink {
    *
    * @param conf the kafka configurable
    */
-  public static synchronized void initialize(KafkaConfigurable conf) {
+  public static synchronized void initialize(KafkaConfigurable conf, KafkaGlobalConfig globalConfig) {
     if (producer != null) {
       throw new IllegalStateException("Can only initialize once.");
     }
@@ -69,12 +89,14 @@ public class KafkaSink {
         case "rheos" + KafkaCluster.DELIMITER + "kafka":
           producer = new KafkaWithFallbackProducer(
                   new RheosKafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.RHEOS)),
-                  new KafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.KAFKA)));
+                  new KafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.KAFKA)),
+                  globalConfig);
           break;
         case "kafka" + KafkaCluster.DELIMITER + "rheos":
           producer = new KafkaWithFallbackProducer(
                   new KafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.KAFKA)),
-                  new RheosKafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.RHEOS)));
+                  new RheosKafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.RHEOS)),
+                  globalConfig);
           break;
         default:
           throw new IllegalArgumentException("Illegal kafka cluster");

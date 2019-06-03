@@ -35,7 +35,7 @@ public class EventListenerService {
       .getInstance().getByNameString(ELASTICSEARCH_URL));
     ApplicationOptions options = ApplicationOptions.getInstance();
 
-    KafkaSink.initialize(options);
+    KafkaSink.initialize(options, options);
     ListenerMessageParser.init();
   }
 

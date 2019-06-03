@@ -257,7 +257,30 @@ public class EventListenerServiceTest {
 //    errorMessageV3 = response.readEntity(ErrorMessageV3.class);
 //    assertEquals(4003, errorMessageV3.getErrors().get(0).getErrorId());
 
+    // rover as referer
+    event.setReferrer("https://rover.ebay.com/rover/1/709-41886-4896-0/2?mpre=https%3A%2F%2Fwww.ebay.fr%2Fulk%2Fsch%2F%3F_nkw%3Dcamescope%2520jvc%26mkevt%3D1%26mkrid%3D709-41886-4896-0%26mkcid%3D2%26keyword%3Dcamescope%2520jvc%26crlp%3D285602751787_%26MT_ID%3D58%26geo_id%3D32296%26rlsatarget%3Dkwd-119986605%26adpos%3D6o2%26device%3Dc%26loc%3D9056144%26poi%3D%26abcId%3D463856%26cmpgn%3D189547424%26sitelnk%3D&keyword=camescope%20jvc&crlp=285602751787_&MT_ID=58&geo_id=32296&rlsatarget=kwd-119986605&adpos=6o2&device=c&loc=9056144&poi=&abcId=463856&cmpgn=189547424&sitelnk=&gclid=Cj0KCQjwtMvlBRDmARIsAEoQ8zSmXHKLMq9rnAokRQtw5FQcGflfnJiPbRndTX1OvNzgImj7sGgkemsaAtw9EALw_wcB");
+    response = client.target(svcEndPoint).path(eventsPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxNoReferer)
+            .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(event));
+    assertEquals(201, response.getStatus());
+
+    // rover as referer but encoded
+    event.setReferrer("https%3A%2F%2Frover.ebay.com%2Frover%2F1%2F711-117182-37290-0%2F2%3Fmpre%3Dhttps%253A%252F%252Fwww.ebay.com%252Fi%252F153018234148%253Fchn%253Dps%2526var%253D452828802628%26itemid%3D452828802628_153018234148%26targetid%3D477790169505%26device%3Dc%26adtype%3Dpla%26googleloc%3D9060230%26poi%3D%26campaignid%3D1746988278%26adgroupid%3D71277061587%26rlsatarget%3Dpla-477790169505%26abcId%3D1139306%26merchantid%3D6296724%26gclid%3DCj0KCQjwkoDmBRCcARIsAG3xzl8lXd3bcaLMaJ8-zY1zD-COSGJrZj-CVOht-VqgWiCtPBy_hrl38HgaAu2AEALw_wcB%26srcrot%3D711-117182-37290-0%26rvr_id%3D1973157993841%26rvr_ts%3Dc1c229cc16a0aa42c5d2b84affc9e842");
+    response = client.target(svcEndPoint).path(eventsPath)
+      .request()
+      .header("X-EBAY-C-ENDUSERCTX", endUserCtxNoReferer)
+      .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
+      .accept(MediaType.APPLICATION_JSON_TYPE)
+      .post(Entity.json(event));
+    assertEquals(201, response.getStatus());
+
     // no query parameter
+    event.setReferrer("https://www.google.com");
     event.setTargetUrl("https://www.ebay.com");
     response = client.target(svcEndPoint).path(eventsPath)
       .request()

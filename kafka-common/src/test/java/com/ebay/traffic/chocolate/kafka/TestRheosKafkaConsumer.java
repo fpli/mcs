@@ -23,7 +23,7 @@ public class TestRheosKafkaConsumer {
   @Ignore
   public void testRheosKafkaConsumer() throws Exception {
 
-    final String topic = "marketingtech.ap.tracking-events.filtered-epn";
+    final String topic = "marketing.tracking.staging.filtered-epn";
 
     Consumer<Long, FilterMessage> consumer =
             new KafkaConsumer<>(loadProperties("rheos-kafka-filter-consumer.properties"));

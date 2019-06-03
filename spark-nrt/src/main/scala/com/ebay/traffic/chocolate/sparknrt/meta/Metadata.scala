@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.sparknrt.meta
 
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
+import java.net.URI
 
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -28,7 +29,7 @@ class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
   }
 
   lazy val fs = {
-    val fs = FileSystem.get(hadoopConf)
+    val fs = FileSystem.get(URI.create(workDir), hadoopConf)
     sys.addShutdownHook(fs.close())
     fs
   }
@@ -73,10 +74,10 @@ class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
     })
   }
 
-  def writeOutputMeta(outputMeta: MetaFiles, outputMetaDir: String, suffixArray: Array[String] = Array()):Unit = {
+  def writeOutputMeta(outputMeta: MetaFiles, outputMetaDir: String, usage: String, suffixArray: Array[String] = Array()):Unit = {
     val time = System.currentTimeMillis()
     suffixArray.foreach(suffix => {
-      writeMetaFiles(outputMeta, outputMetaDir + time + ".meta" + suffix)
+      writeMetaFiles(outputMeta, outputMetaDir + usage + "_output_" + time + ".meta" + suffix)
     })
   }
 
@@ -147,13 +148,19 @@ object MetadataEnum extends Enumeration {
   val unknown = Value(-1)
   val dedupe = Value(0)
   val capping = Value(1)
-  val imkDump = Value(3)
+  val epnnrt_click = Value(2)
+  val epnnrt_imp = Value(3)
+  val imkDump = Value(4)
 
   def convertToMetadataEnum(value: String): MetadataEnum.Value = {
     if (value == dedupe.toString) {
       dedupe
     } else if (value == capping.toString) {
       capping
+    } else if (value == epnnrt_click.toString) {
+      epnnrt_click
+    } else if (value == epnnrt_imp.toString) {
+      epnnrt_imp
     } else if (value == imkDump.toString) {
       imkDump
     } else {

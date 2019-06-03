@@ -38,7 +38,7 @@ class TestEpnNrtJob extends BaseFunSuite{
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
     properties.setProperty("epnnrt.outputdir", outputDir)
-    properties.setProperty("epnnrt.result.meta.outputdir", outputDir + "/meta/EPN/output/epnnrt/")
+    properties.setProperty("epnnrt.result.meta.click.outputdir", outputDir + "/meta/EPN/output/epnnrt/")
     properties
   }
 
@@ -113,8 +113,8 @@ class TestEpnNrtJob extends BaseFunSuite{
     val timestamp = getTimestamp("2018-05-01")
 
     // Desktop
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429247L, 56826256L, 9000081120L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489151020000L, writer1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 1109090984045429247L, 7000001727L, 9000028992L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489166020000L, writer1)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429247L, 87642552L, 435453655L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489151020000L, writer1)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 1109090984045429247L, 87642552L, 435453655L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489166020000L, writer1)
 
     writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7817281212121239247L, 7000001564L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", 1489189020000L, writer1)
     writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 2902129817128329247L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  writer1)

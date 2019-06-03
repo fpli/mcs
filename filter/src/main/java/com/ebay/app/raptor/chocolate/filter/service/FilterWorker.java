@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.filter.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
 import com.ebay.traffic.chocolate.kafka.KafkaConsumerFactory;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
+import com.ebay.traffic.chocolate.kafka.ConsumerListener;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
@@ -45,6 +46,8 @@ public class FilterWorker extends Thread {
   private final Consumer<Long, ListenerMessage> consumer; // in
   private final Producer<Long, FilterMessage> producer; // out
 
+  private final ConsumerListener<Long, ListenerMessage> consumerListener;
+
   // Shutdown signal.
   private final AtomicBoolean shutdownRequested = new AtomicBoolean(false);
 
@@ -65,6 +68,8 @@ public class FilterWorker extends Thread {
 
     this.consumer = KafkaConsumerFactory.create(properties);
     this.producer = KafkaSink.get();
+
+    this.consumerListener = new ConsumerListener<>(consumer);
   }
 
   /**
@@ -82,126 +87,126 @@ public class FilterWorker extends Thread {
             ", input topic " + inputTopic + ", output topic " + outputTopic);
 
     // Init the metrics that we don't use often
-    this.metrics.meter("FilterError", 0);
-    this.metrics.meter("messageParseFailure", 0);
-    this.metrics.mean("FilterPassedPPM", 0);
+    metrics.meter("FilterError", 0);
+    metrics.meter("messageParseFailure", 0);
+    metrics.mean("FilterPassedPPM", 0);
 
     try {
-      consumer.subscribe(Arrays.asList(inputTopic));
+      consumer.subscribe(Arrays.asList(inputTopic), consumerListener);
 
       long flushThreshold = 0;
 
       final long kafkaLagMetricInterval = 30000; // 30s
       final long kafkaCommitInterval = 15000; // 15s
-      Map<Integer, Long> offsets = new HashMap<>();
       long kafkaLagMetricStart = System.currentTimeMillis();
       long kafkaCommitTime = System.currentTimeMillis();
       while (!shutdownRequested.get()) {
-        ConsumerRecords<Long, ListenerMessage> records = consumer.poll(POLL_STEP_MS);
-        Iterator<ConsumerRecord<Long, ListenerMessage>> iterator = records.iterator();
-        int count = 0;
-        int passed = 0;
-        long startTime = System.currentTimeMillis();
-        while (iterator.hasNext()) {
-          int threadNum = 0;
-          long theadPoolstartTime = System.currentTimeMillis();
-          for(int i = 0; i < maxThreadNum && iterator.hasNext(); i++) {
-            ConsumerRecord<Long, ListenerMessage> record = iterator.next();
+        try {
+          ConsumerRecords<Long, ListenerMessage> records = consumer.poll(POLL_STEP_MS);
+          Iterator<ConsumerRecord<Long, ListenerMessage>> iterator = records.iterator();
+          int count = 0;
+          int passed = 0;
+          long startTime = System.currentTimeMillis();
+          while (iterator.hasNext()) {
+            int threadNum = 0;
+            long theadPoolstartTime = System.currentTimeMillis();
+            for(int i = 0; i < maxThreadNum && iterator.hasNext(); i++) {
+              ConsumerRecord<Long, ListenerMessage> record = iterator.next();
 
-            ListenerMessage message = record.value();
-            metrics.meter("FilterInputCount", 1, message.getTimestamp(),
-              Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
-              Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
-            long latency = System.currentTimeMillis() - message.getTimestamp();
-            metrics.mean("FilterLatency", latency);
+              ListenerMessage message = record.value();
+              metrics.meter("FilterInputCount", 1, message.getTimestamp(),
+                      Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+                      Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
+              long latency = System.currentTimeMillis() - message.getTimestamp();
+              metrics.mean("FilterLatency", latency);
 
-            ++count;
-            metrics.meter("FilterThroughput", 1, message.getTimestamp(),
-              Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
-              Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
+              ++count;
+              metrics.meter("FilterThroughput", 1, message.getTimestamp(),
+                      Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+                      Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
 
-            // cache current offset for partition*
-            offsets.put(record.partition(), record.offset());
-
-            completionService.submit(() -> processMessage(record.value()));
-            threadNum++;
-          }
-
-          // wait
-          int received = 0;
-          while (received < threadNum) {
-            Future<FilterMessage> resultFuture = completionService.take();
-            FilterMessage outMessage = resultFuture.get();
-            received++;
-            if (outMessage.getRtRuleFlags() == 0) {
-              ++passed;
-              metrics.meter("FilterPassedCount", 1, outMessage.getTimestamp(),
-                Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
-                Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
+              completionService.submit(() -> processMessage(record.value()));
+              threadNum++;
             }
 
-            producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
+            // wait
+            int received = 0;
+            while (received < threadNum) {
+              Future<FilterMessage> resultFuture = completionService.take();
+              FilterMessage outMessage = resultFuture.get();
+              received++;
+              if (outMessage.getRtRuleFlags() == 0) {
+                ++passed;
+                metrics.meter("FilterPassedCount", 1, outMessage.getTimestamp(),
+                        Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
+                        Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
+              }
 
-          }
-          metrics.mean("FilterThreadPoolLatency", System.currentTimeMillis() - theadPoolstartTime);
-        }
+              producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
 
-        long now = System.currentTimeMillis();
-
-        // flush logic
-        flushThreshold += count;
-
-        if (flushThreshold > 1000 || now - kafkaCommitTime > kafkaCommitInterval) {
-          // producer flush
-          producer.flush();
-
-          // update consumer offset
-          consumer.commitSync();
-
-          // reset threshold
-          flushThreshold = 0;
-
-          // reset commit time
-          kafkaCommitTime = now;
-        }
-
-        // kafka lag metrics logic
-        if (now - kafkaLagMetricStart > kafkaLagMetricInterval) {
-          Map<TopicPartition, Long> endOffsets = consumer.endOffsets(records.partitions());
-          Iterator<Map.Entry<TopicPartition, Long>> iter = endOffsets.entrySet().iterator();
-          while (iter.hasNext()) {
-            Map.Entry<TopicPartition, Long> entry = iter.next();
-            TopicPartition tp = entry.getKey();
-            long endOffset = entry.getValue();
-            if (offsets.containsKey(tp.partition())) {
-              long offset = offsets.get(tp.partition());
-              metrics.mean("FilterKafkaConsumerLag", endOffset - offset, Field.of(CHANNEL_TYPE, channelType.toString()),
-                  Field.of("consumer", tp.partition()));
             }
+            metrics.mean("FilterThreadPoolLatency", System.currentTimeMillis() - theadPoolstartTime);
           }
 
-          kafkaLagMetricStart = now;
-        }
+          long now = System.currentTimeMillis();
 
-        if (count == 0) {
-          metrics.mean("FilterIdle");
-          Thread.sleep(POLL_STEP_MS);
-        } else {
-          metrics.mean("FilterPassedPPM", 1000000L * passed / count);
-          long timeSpent = System.currentTimeMillis() - startTime;
-          metrics.mean("FilterProcessingTime", timeSpent);
+          // flush logic
+          flushThreshold += count;
 
-          if (timeSpent >= POLL_STEP_MS) {
-            this.metrics.mean("FilterIdle", 0);
-          } else {
-            this.metrics.mean("FilterIdle");
+          if (flushThreshold > 1000 || now - kafkaCommitTime > kafkaCommitInterval) {
+            // producer flush
+            producer.flush();
+
+            // update consumer offset
+            consumerListener.commitSync();
+
+            // reset threshold
+            flushThreshold = 0;
+
+            // reset commit time
+            kafkaCommitTime = now;
+          }
+
+          // kafka lag metrics logic
+          if (now - kafkaLagMetricStart > kafkaLagMetricInterval) {
+            Map<TopicPartition, Long> endOffsets = consumer.endOffsets(records.partitions());
+            Iterator<Map.Entry<TopicPartition, Long>> iter = endOffsets.entrySet().iterator();
+            while (iter.hasNext()) {
+              Map.Entry<TopicPartition, Long> entry = iter.next();
+              TopicPartition tp = entry.getKey();
+              long endOffset = entry.getValue();
+              long offset = consumer.position(tp);
+              metrics.mean("FilterKafkaConsumerLag", endOffset - offset,
+                      Field.of("topic", tp.topic()),
+                      Field.of("consumer", tp.partition()));
+            }
+
+            kafkaLagMetricStart = now;
+          }
+
+          if (count == 0) {
+            metrics.mean("FilterIdle");
             Thread.sleep(POLL_STEP_MS);
+          } else {
+            metrics.mean("FilterPassedPPM", 1000000L * passed / count);
+            long timeSpent = System.currentTimeMillis() - startTime;
+            metrics.mean("FilterProcessingTime", timeSpent);
+
+            if (timeSpent >= POLL_STEP_MS) {
+              this.metrics.mean("FilterIdle", 0);
+            } else {
+              this.metrics.mean("FilterIdle");
+              Thread.sleep(POLL_STEP_MS);
+            }
           }
+        } catch (Exception e) {
+          LOG.warn("Exception in worker thread: ", e);
+          this.metrics.meter("FilterError");
         }
       }
     } catch (Exception e) {
       LOG.warn("Exception in worker thread: ", e);
-      this.metrics.meter("FilterError");
+      this.metrics.meter("FilterSubscribeError");
     } finally {
       consumer.close();
     }
