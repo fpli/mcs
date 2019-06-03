@@ -50,7 +50,7 @@ object BullseyeUtils {
     case e: Exception => {
       logger.error("Error when generate Bullseye token from bullseye, get token from HDFS file" + e)
       metrics.meter("BullseyeTokenError", 1)
-      None
+      null
     }
   }
 
@@ -100,7 +100,7 @@ object BullseyeUtils {
 
   def getLastViewItem(fs: FileSystem, cguid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String) = {
     val start = System.currentTimeMillis
-    val result = getData(cguid, modelId, count, bullseyeUrl)
+    val result = getData(fs,cguid, modelId, count, bullseyeUrl)
     metrics.mean("BullsEyeLatency", System.currentTimeMillis - start)
 
     try {
