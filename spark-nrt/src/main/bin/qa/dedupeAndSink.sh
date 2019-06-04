@@ -53,7 +53,6 @@ ${SPARK_HOME}/bin/spark-submit \
       --kafkaTopic ${KAFKA_TOPIC} \
       --workDir "${WORK_DIR}" \
       --outputDir ${OUTPUT_DIR} \
-      --partitions 3 \
       --maxConsumeSize 10000 \
       --elasticsearchUrl ${ES_URL} \
       --partitions ${PARTITIONS} \

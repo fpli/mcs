@@ -16,8 +16,10 @@ import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.HttpContext;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -114,7 +116,7 @@ public class CollectionService {
     // TODO: return 201 for now for the no referer case. Need investigation further.
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
       //logError(ErrorType.NO_REFERER);
-      //logger.warn(ErrorType.NO_REFERER.getErrorMessage());
+      logger.warn(ErrorType.NO_REFERER.getErrorMessage());
       metrics.meter(ErrorType.NO_REFERER.getErrorKey());
       referer = "";
     }
@@ -178,21 +180,21 @@ public class CollectionService {
       final String rebuiltRoverUrl = uriBuilder.build().toString();
 
       CloseableHttpClient client = httpClientConnectionManager.getHttpClient();
+      HttpContext context = HttpClientContext.create();
       HttpGet httpGet = new HttpGet(rebuiltRoverUrl);
 
       final Enumeration<String> headers = request.getHeaderNames();
       while (headers.hasMoreElements()) {
         final String header = headers.nextElement();
         if (header.equalsIgnoreCase("x-forwarded-for") ||
-              header.equalsIgnoreCase("user-agent") ||
-              header.equalsIgnoreCase("x-ebay-client-ip")) {
+              header.equalsIgnoreCase("user-agent") ) {
           final Enumeration<String> values = request.getHeaders(header);
           //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
           httpGet.addHeader(header, values.nextElement());
         }
       }
       
-      roverClient.forwardRequestToRover(client, httpGet);
+      roverClient.forwardRequestToRover(client, httpGet, context);
       return true;
     }
 
@@ -221,8 +223,7 @@ public class CollectionService {
 
     // no mkevt, rejected
     if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
-      //logError(ErrorType.NO_MKEVT);
-      metrics.meter(ErrorType.NO_MKEVT.getErrorKey());
+      logError(ErrorType.NO_MKEVT);
     }
 
     // mkevt != 1, rejected

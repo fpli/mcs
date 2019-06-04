@@ -19,17 +19,16 @@ import javax.annotation.PostConstruct;
 public class HttpClientConnectionManager {
   private static final Logger logger = LoggerFactory.getLogger(HttpClientConnectionManager.class);
   private PoolingHttpClientConnectionManager pool;
-  private CloseableHttpClient closeableHttpClient;
 
   @PostConstruct
   public void postInit() {
     pool = new PoolingHttpClientConnectionManager();
-    pool.setDefaultMaxPerRoute(20);
-    pool.setMaxTotal(20);
-    closeableHttpClient = HttpClients.custom().setConnectionManager(pool).disableRedirectHandling().build();
+    pool.setDefaultMaxPerRoute(32);
+    pool.setMaxTotal(200);
   }
 
   public CloseableHttpClient getHttpClient() {
-    return closeableHttpClient;
+
+    return HttpClients.custom().setConnectionManager(pool).disableRedirectHandling().build();
   }
 }
