@@ -1,9 +1,18 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <projects>
-    <project name="Chocolate-data"  id="1">
+    <project name="Chocolate-data" id="1">
         <metric name="Listener Latency" value="AverageLatency" source="chocolate-metrics" condition="" threshold="300" computeType="avg" alert="false"/>
         <metric name="Filter Latency" value="FilterLatency" source="chocolate-metrics" condition="" threshold="1000" computeType="avg" alert="false"/>
         <metric name="Filter Kafka Lag" value="FilterKafkaConsumerLag" source="chocolate-metrics" condition="" threshold="100" computeType="avg" alert="false"/>
         <metric name="Dedupe kafka lag" value="SparkKafkaConsumerLag" source="chocolate-metrics" condition="" threshold="5000" computeType="avg" alert="false"/>
+    </project>
+    <project name="Crab-to-rno" id="2">
+        <metric name="crab dedupe processedFiles" value="crab.dedupe.processedFiles" source="crab-metrics" condition="" threshold="1" computeType="sum" alert="true"/>
+        <metric name="crab transform messageLag" value="imk.transform.messageLag" source="crab-metrics" condition="" threshold="10800000" computeType="avg" alert="false"/>
+        <metric name="crab transform processedMeta" value="imk.transform.processedMete" source="crab-metrics" condition="" threshold="5" computeType="sum" alert="true"/>
+    </project>
+    <project name="Imk-to-rno" id="3">
+        <metric name="imk transform messageLag" value="imk.transform.messageLag" source="imk-metrics" condition="" threshold="3600000" computeType="avg" alert="false"/>
+        <metric name="imk transform processedMeta" value="imk.transform.processedMete" source="imk-metrics" condition="" threshold="5" computeType="sum" alert="true"/>
     </project>
 </projects>

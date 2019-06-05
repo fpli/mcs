@@ -29,13 +29,23 @@ public class Table {
   }
 
   private static String renderFlag(String flag, String alert) {
-    if (flag.equalsIgnoreCase("DOWN") && alert.equalsIgnoreCase("true")) {
-      return "<td bgcolor=\"#ff0000\">" + "Warning" + "" + "</td>";
-    } else if(flag.equalsIgnoreCase("UP") && alert.equalsIgnoreCase("false")) {
-      return "<td bgcolor=\"#ff0000\">" + "Warning" + "</td>";
-    }else {
-      return "<td>" + "OK" + "" + "</td>";
+    String render = "";
+    switch (Integer.parseInt(flag)) {
+      case 0:
+        render = "<td bgcolor=\"#FFFFFF\">" + "OK" + "" + "</td>";
+        break;
+      case 1:
+        render = "<td bgcolor=\"#ffcc00\">" + "Warning" + "" + "</td>";
+        break;
+      case 2:
+        render = "<td bgcolor=\"#ff0000\">" + "Critical" + "" + "</td>";
+        break;
+      default:
+        render = "<td bgcolor=\"#FFFFFF\">" + "" + "" + "</td>";
+        break;
     }
+
+    return render;
   }
 
   private static String getHeader() {

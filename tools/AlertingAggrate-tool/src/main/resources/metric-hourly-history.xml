@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <projects>
     <project name="Rover-data" id="1">
         <metric name="Rover imk events success" value="rover.imk.events.success" source="rover-metrics" condition="" threshold="0" computeType="sum" alert="true"/>

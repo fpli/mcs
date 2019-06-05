@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <projects>
     <project name="Chocolate-data" id="1">
         <metric name="Rover Sync" value="syncCommand" source="chocolate-metrics" condition="" threshold="13000000" computeType="sum" alert="true"/>
@@ -23,8 +23,6 @@
     </project>
     <project name="IMK-data" id="5">
         <metric name="Imk Dump Out Num" value="imk.dump.out" source="chocolate-metrics" condition="" threshold="250" computeType="sum" alert="true"/>
-        <metric name="Scp Copy to ETL Files" value="imk.scp.count.scpToEtl" source="chocolate-metrics" condition="" threshold="200" computeType="sum" alert="true"/>
-        <metric name="Rover imk events success" value="rover.imk.events.success" source="rover-metrics" condition="" threshold="10800000" computeType="sum" alert="true"/>
     </project>
     <project name="Rotation-data" id="6">
         <metric name="Rotation create fail" value="RotationCreateFail" source="mkttracksvc-metrics" condition="" threshold="0" computeType="sum" alert="false"/>
@@ -46,6 +44,6 @@
         <metric name="Norb" value="MMPSuccessNorb" source="appdl-metrics" condition="" threshold="5000" computeType="sum" alert="true"/>
         <metric name="Api Kafka Failed" value="ApiKafkaFailed" source="appdl-metrics" condition="" threshold="0" computeType="sum" alert="true"/>
         <metric name="Rheos Kafka Failed" value="KafkaFailed" source="appdl-metrics" condition="" threshold="0" computeType="sum" alert="true"/>
-        <metric name="MMP Fail" value="MMPFail" source="appdl-metrics" condition="" threshold="1000000" computeType="sum" alert="false"/>
+        <metric name="MMP Fail" value="MMPFail" source="appdl-metrics" condition="" threshold="4000000" computeType="sum" alert="false"/>
     </project>
 </projects>
