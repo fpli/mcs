@@ -13,6 +13,9 @@ import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.google.gson.Gson;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.*;
 import org.mockito.Mockito;
 
@@ -32,6 +35,8 @@ public class DumpRotationToTDTest {
   private static final String TEMP_FILE_PREFIX = "rotation_test_";
   private static CorpRotationCouchbaseClient couchbaseClient;
   private static Bucket bucket;
+  private static RotationESClient rotationESClient;
+  private static RestHighLevelClient restHighLevelClient;
   private Map<String, String> fileNamesMap;
 
   @BeforeClass
@@ -48,6 +53,9 @@ public class DumpRotationToTDTest {
     couchbaseClient = new CorpRotationCouchbaseClient(cacheFactory);
     bucket = CouchbaseClientMock.getBucket();
 
+    rotationESClient = Mockito.mock(RotationESClient.class);
+    restHighLevelClient = new RestHighLevelClient(RestClient.builder(HttpHost.create("http://10.148.181.34:9200")));
+
     // Insert document to mocked couchbase
     RotationInfo rotationInfo = getTestRotationInfo();
     bucket.insert(JsonDocument.create(rotationInfo.getRotation_string(), JsonObject.fromJson(new Gson().toJson(rotationInfo))));
@@ -62,8 +70,9 @@ public class DumpRotationToTDTest {
   }
 
   @AfterClass
-  public static void tearDown() {
+  public static void tearDown() throws IOException {
     CouchbaseClientMock.tearDown();
+    rotationESClient.closeESClient(restHighLevelClient);
   }
 
   private static RotationInfo getTestRotationInfo() {
@@ -110,6 +119,9 @@ public class DumpRotationToTDTest {
     couchbasePros.put("chocolate.elasticsearch.url","http://10.148.181.34:9200");
     DumpRotationToTD.setCouchbasePros(couchbasePros);
 
+    // set initialed es rest high level client
+    DumpRotationToTD.setEsRestHighLevelClient(restHighLevelClient);
+
     // run dump job
     createFolder();
     DumpRotationToTD.dumpFileFromCouchbase("1287554384000", "1603173584000", TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
@@ -131,6 +143,44 @@ public class DumpRotationToTDTest {
     }
 
 
+  }
+
+  @Test
+  public void testGetChangeRotationCount() throws IOException {
+    String esSearchStartTime = "2019-03-29 00:00:00";
+    String esSearchEndTime = "2019-03-29 23:59:59";
+    DumpRotationToTD.setEsRestHighLevelClient(restHighLevelClient);
+    //test new create rotation count
+    Integer newCreateRotationCount = DumpRotationToTD.getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
+    Assert.assertEquals("2", newCreateRotationCount.toString());
+
+    //test update rotation count
+    Integer updateRotationCount = DumpRotationToTD.getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
+    Assert.assertEquals("3", updateRotationCount.toString());
+  }
+
+  @Test
+  public void testThrowException() {
+    // set initialed cb related info
+    DumpRotationToTD.setBucket(bucket);
+    Properties couchbasePros = new Properties();
+    couchbasePros.put("couchbase.corp.rotation.designName", DESIGNED_DOC_NAME);
+    couchbasePros.put("couchbase.corp.rotation.viewName", VIEW_NAME);
+    couchbasePros.put("chocolate.elasticsearch.url","http://10.148.181.34:9200");
+    DumpRotationToTD.setCouchbasePros(couchbasePros);
+
+    // set initialed es rest high level client
+    DumpRotationToTD.setEsRestHighLevelClient(restHighLevelClient);
+
+    // run dump job
+    createFolder();
+    Boolean throwException = false;
+    try {
+        DumpRotationToTD.dumpFileFromCouchbase("1553734936000", "1553907736000", TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
+    } catch (IOException e) {
+      throwException = true;
+    }
+    Assert.assertEquals(true, throwException);
   }
 
   private void createFolder() {
