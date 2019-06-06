@@ -125,7 +125,8 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
         current = producer2; // switch to fallback producer
         time = System.currentTimeMillis(); // mark the time we start to use fallback producer
         LOG.info("Switch to fallback producer.");
-        metrics.meter("KafkaFallback");
+        if (metrics != null)
+          metrics.meter("KafkaFallback");
       } else {
         current = producer1; // switch to primary producer
         LOG.info("Switch to primary producer.");
