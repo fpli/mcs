@@ -2,7 +2,6 @@ package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
-import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -89,11 +88,11 @@ public class CollectionService {
           raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
 
     if (request.getHeader("X-EBAY-C-TRACKING") == null) {
-      logError(ErrorType.NO_TRACKING);
+      logError(Errors.ERROR_NO_TRACKING);
     }
 
     if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
-      logError(ErrorType.NO_ENDUSERCTX);
+      logError(Errors.ERROR_NO_ENDUSERCTX);
     }
 
     /* referer is from post body (mobile) and from header (NodeJs and handler)
@@ -116,8 +115,8 @@ public class CollectionService {
     // TODO: return 201 for now for the no referer case. Need investigation further.
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
       //logError(ErrorType.NO_REFERER);
-      logger.warn(ErrorType.NO_REFERER.getErrorMessage());
-      metrics.meter(ErrorType.NO_REFERER.getErrorKey());
+      logger.warn(Errors.ERROR_NO_REFERER);
+      metrics.meter(Errors.ERROR_NO_REFERER);
       referer = "";
     }
 
@@ -128,12 +127,9 @@ public class CollectionService {
 
     String userAgent = endUserContext.getUserAgent();
     if (null == userAgent) {
-      logError(ErrorType.NO_USER_AGENT);
+      logError(Errors.ERROR_NO_USER_AGENT);
     }
 
-    if(referer.startsWith("https://apisd.ebay.com")) {
-      metrics.meter("APISD");
-    }
     // legacy rover deeplink case. Forward it to rover. We control this at our backend in case mobile app miss it
     Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
     if (roverSitesMatcher.find()) {
@@ -212,24 +208,24 @@ public class CollectionService {
     UriComponents uriComponents;
     uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
     if (uriComponents == null) {
-      logError(ErrorType.ILLEGAL_URL);
+      logError(Errors.ERROR_ILLEGAL_URL);
     }
 
     // no query parameter, rejected
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
     if (parameters.size() == 0) {
-      logError(ErrorType.NO_QUERY_PARAMETER);
+      logError(Errors.ERROR_NO_QUERY_PARAMETER);
     }
 
     // no mkevt, rejected
     if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
-      logError(ErrorType.NO_MKEVT);
+      logError(Errors.ERROR_NO_MKEVT);
     }
 
     // mkevt != 1, rejected
     String mkevt = parameters.get(Constants.MKEVT).get(0);
     if (!mkevt.equals(Constants.VALID_MKEVT)) {
-      logError(ErrorType.INVALID_MKEVT);
+      logError(Errors.ERROR_INVALID_MKEVT);
     }
 
     // parse channel from query mkcid
@@ -381,13 +377,13 @@ public class CollectionService {
   /**
    * log error, log metric and throw error with error key
    *
-   * @param errorType error type
+   * @param  error error type
    * @throws Exception exception with error key
    */
-  private void logError(ErrorType errorType) throws Exception {
-    logger.warn(errorType.getErrorMessage());
-    metrics.meter(errorType.getErrorKey());
-    throw new Exception(errorType.getErrorKey());
+  private void logError(String error) throws Exception {
+    logger.warn(error);
+    metrics.meter(error);
+    throw new Exception(error);
   }
 
   /**
