@@ -3,9 +3,9 @@ package chocolate;
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
-import com.ebay.cos.raptor.error.v3.ErrorMessageV3;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
@@ -228,8 +228,8 @@ public class EventListenerServiceTest {
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(200, response.getStatus());
-    ErrorMessageV3 errorMessageV3 = response.readEntity(ErrorMessageV3.class);
-    assertEquals(4001, errorMessageV3.getErrors().get(0).getErrorId());
+    ErrorType errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4001, errorMessage.getErrorCode());
 
     // no X-EBAY-C-TRACKING
     response = client.target(svcEndPoint).path(eventsPath)
@@ -239,8 +239,8 @@ public class EventListenerServiceTest {
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(200, response.getStatus());
-    errorMessageV3 = response.readEntity(ErrorMessageV3.class);
-    assertEquals(4002, errorMessageV3.getErrors().get(0).getErrorId());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4002, errorMessage.getErrorCode());
 
     // no referer
     event.setReferrer(null);
@@ -290,8 +290,8 @@ public class EventListenerServiceTest {
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(200, response.getStatus());
-    errorMessageV3 = response.readEntity(ErrorMessageV3.class);
-    assertEquals(4005, errorMessageV3.getErrors().get(0).getErrorId());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4005, errorMessage.getErrorCode());
 
     // no mkevt
     event.setTargetUrl("https://www.ebay.com?mkcid=2");
@@ -303,8 +303,8 @@ public class EventListenerServiceTest {
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(200, response.getStatus());
-    errorMessageV3 = response.readEntity(ErrorMessageV3.class);
-    assertEquals(4006, errorMessageV3.getErrors().get(0).getErrorId());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4006, errorMessage.getErrorCode());
 
     // invalid mkevt
     event.setTargetUrl("https://www.ebay.com?mkcid=2&mkevt=0");
@@ -316,8 +316,8 @@ public class EventListenerServiceTest {
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
     assertEquals(200, response.getStatus());
-    errorMessageV3 = response.readEntity(ErrorMessageV3.class);
-    assertEquals(4007, errorMessageV3.getErrors().get(0).getErrorId());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4007, errorMessage.getErrorCode());
 
     // no mkcid
     // service will pass but no message to kafka
