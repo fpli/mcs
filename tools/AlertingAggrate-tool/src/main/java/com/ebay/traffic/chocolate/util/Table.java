@@ -24,7 +24,12 @@ public class Table {
   }
 
   private static String getBodyLine(MetricCount metricCount) {
-    String bodyLine = "<tr><td>" + metricCount.getName() + "</td><td>" + metricCount.getDate() + "</td><td>" + metricCount.getValue() + "</td><td>" + metricCount.getThreshold() + "</td>" + renderFlag(metricCount.getFlag(), metricCount.getAlert()) + "</tr>";
+    String bodyLine = "<tr><td>" + metricCount.getName()
+            + "</td><td>" + metricCount.getDate() + "</td><td>"
+            + metricCount.getValue() + "</td><td>"
+            + metricCount.getThreshold() + "</td><td>"
+            + metricCount.getThresholdFactor() + "</td>"
+            + renderFlag(metricCount.getFlag(), metricCount.getAlert()) + "</tr>";
     return bodyLine;
   }
 
@@ -49,7 +54,7 @@ public class Table {
   }
 
   private static String getHeader() {
-    String header = "<table border='1'><tr width=\"350\" bgcolor=\"#8A8A8A\"><th width=\"300\">metric</th><th width=\"300\">date</th><th width=\"300\">value</th><th width=\"300\">threshold</th><th width=\"300\">state</th></tr>";
+    String header = "<table border='1'><tr width=\"350\" bgcolor=\"#8A8A8A\"><th width=\"300\">metric</th><th width=\"300\">date</th><th width=\"300\">value</th><th width=\"300\">threshold</th><th width=\"300\">thresholdFactor</th><th width=\"300\">state</th></tr>";
 
     return header;
   }

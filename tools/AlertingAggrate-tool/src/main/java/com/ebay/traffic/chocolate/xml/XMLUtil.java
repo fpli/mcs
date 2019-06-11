@@ -41,6 +41,7 @@ public class XMLUtil {
           metric.setSource(elem.attribute("source").getValue());
           metric.setCondition(getCondition(elem.attribute("condition").getValue()));
           metric.setThreshold(Long.parseLong(elem.attribute("threshold").getValue()));
+          metric.setThresholdFactor(Double.parseDouble(elem.attribute("thresholdFactor").getValue()));
           metric.setComputeType(elem.attribute("computeType").getValue());
           metric.setAlert(elem.attribute("alert").getValue());
           list.add(metric);

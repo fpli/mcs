@@ -113,6 +113,7 @@ public class ESReport {
     metricCount.setValue(NumUtil.parseLong(sum));
     metricCount.setCondition(metric.getCondition());
     metricCount.setThreshold(metric.getThreshold());
+    metricCount.setThresholdFactor(metric.getThresholdFactor());
     metricCount.setFlag(NumUtil.getState(metricCount, metric));
     metricCount.setAlert(metric.getAlert());
 
@@ -145,6 +146,7 @@ public class ESReport {
       metricCount.setValue(NumUtil.parseLong(sum));
       metricCount.setCondition(metric.getCondition());
       metricCount.setThreshold(metric.getThreshold());
+      metricCount.setThresholdFactor(metric.getThresholdFactor());
       metricCount.setFlag(NumUtil.getState(metricCount, metric));
       metricCount.setAlert(metric.getAlert());
 
@@ -179,6 +181,7 @@ public class ESReport {
       metricCount.setValue(NumUtil.parseLong(sum));
       metricCount.setCondition(metric.getCondition());
       metricCount.setThreshold(metric.getThreshold());
+      metricCount.setThresholdFactor(metric.getThresholdFactor());
       metricCount.setFlag(NumUtil.getState(metricCount, metric));
       metricCount.setAlert(metric.getAlert());
 
@@ -204,7 +207,8 @@ public class ESReport {
     Collections.sort(filteredList, new ComparatorImp());
 
     ArrayList<MetricCount> lastestTenData = new ArrayList<MetricCount>();
-    for (int i = 0; i < 10; i++) {
+    int min = Math.min(10, filteredList.size());
+    for (int i = 0; i < min; i++) {
       lastestTenData.add(filteredList.get(i));
       logger.info("lastestTenData:" + filteredList.get(i).getDate());
     }

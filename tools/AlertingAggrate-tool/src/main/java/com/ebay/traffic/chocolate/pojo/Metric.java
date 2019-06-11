@@ -8,6 +8,7 @@ public class Metric {
   private String source;
   private String condition;
   private long threshold;
+  private double thresholdFactor;
   private String computeType;
   private String alert;
 
@@ -57,6 +58,14 @@ public class Metric {
 
   public void setThreshold(long threshold) {
     this.threshold = threshold;
+  }
+
+  public double getThresholdFactor() {
+    return thresholdFactor;
+  }
+
+  public void setThresholdFactor(double thresholdFactor) {
+    this.thresholdFactor = thresholdFactor;
   }
 
   public String getComputeType() {
