@@ -164,6 +164,10 @@
       <artifactId>dukes</artifactId>
       <version>${dukes.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-dal-starter</artifactId>
+    </dependency>
 
     <!--Chocolate dependencies-->
     <dependency>

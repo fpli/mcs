@@ -200,8 +200,14 @@ public class FilterWorker extends Thread {
             }
           }
         } catch (Exception e) {
-          LOG.warn("Exception in worker thread: ", e);
-          this.metrics.meter("FilterError");
+          if (e instanceof IllegalStateException &&
+                  e.getMessage().startsWith("Coordinator selected invalid")) {
+            metrics.meter("CoordinatorSelectedError");
+            Thread.sleep(30000); // sleep for 30s
+          } else {
+            LOG.warn("Exception in worker thread: ", e);
+            metrics.meter("FilterError");
+          }
         }
       }
     } catch (Exception e) {
