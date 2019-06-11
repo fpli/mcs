@@ -205,8 +205,7 @@ public class FilterWorker extends Thread {
                   e.getMessage().startsWith("Coordinator selected invalid")) {
             metrics.meter("CoordinatorSelectedError");
             Thread.sleep(30000); // sleep for 30s
-          } else if (e instanceof SchemaException &&
-                  e.getMessage().startsWith("Error reading field")) {
+          } else if (e instanceof SchemaException) {
             metrics.meter("SchemaReadError");
             Thread.sleep(30000);
           } else {
