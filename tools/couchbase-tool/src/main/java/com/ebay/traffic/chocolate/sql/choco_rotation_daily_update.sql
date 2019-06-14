@@ -54,7 +54,6 @@ get_json_object(rotation_info, '$.create_user') as create_user,
 get_json_object(rotation_info, '$.update_user') as update_user
 from choco_data.choco_rotation_latest;
 
-
 insert overwrite table choco_data.test_rotation_temp_one
 select a.rotation_id,
        a.rotation_string,
