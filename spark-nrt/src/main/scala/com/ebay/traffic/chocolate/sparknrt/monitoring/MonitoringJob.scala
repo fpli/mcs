@@ -64,10 +64,18 @@ class MonitoringJob(params: Parameter)
 
             logger.info("Start counting...")
             val fieldClick = Field.of[String, AnyRef]("channelAction", "CLICK")
+            val fieldImp = Field.of[String, AnyRef]("channelAction", "IMPRESSION")
             val fieldEpn = Field.of[String, AnyRef]("channelType", "EPN")
             val fieldDisplay = Field.of[String, AnyRef]("channelType", "DISPLAY")
 
             if (metrics != null) {
+              //Capping output total
+              metrics.meter("CappingOutput", CappingTotalCount(df, "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
+              metrics.meter("CappingOutput", CappingTotalCount(df, "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
+              metrics.meter("CappingOutput", CappingTotalCount(df, "IMPRESSION", "EPN"), eventTime, fieldImp, fieldEpn)
+              metrics.meter("CappingOutput", CappingTotalCount(df, "IMPRESSION", "DISPLAY"), eventTime, fieldImp, fieldDisplay)
+
+              //Capping fail total
               metrics.meter("CappingCount", CappingTotalCount(dfMetrics, "CLICK", "EPN"), eventTime, fieldClick, fieldEpn)
               metrics.meter("CappingCount", CappingTotalCount(dfMetrics, "CLICK", "DISPLAY"), eventTime, fieldClick, fieldDisplay)
 
@@ -121,8 +129,7 @@ class MonitoringJob(params: Parameter)
   }
 
   def CappingTotalCount(df: DataFrame, channelAction: String, channelType: String): Long = {
-    df.filter($"channel_action" === channelAction and $"channel_type" === channelType)
-      .filter($"nrt_rule_flags" =!= 0).count()
+    df.filter($"channel_action" === channelAction and $"channel_type" === channelType).count()
   }
 
   def CappingCount(df: DataFrame, value: CappingRuleEnum.Value, channelAction: String, channelType: String): Long = {
