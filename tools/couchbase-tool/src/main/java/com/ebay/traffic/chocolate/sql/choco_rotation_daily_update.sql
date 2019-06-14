@@ -93,5 +93,4 @@ insert into table choco_data.test_rotation_temp_two
 select *
 from choco_data.test_rotation_temp_one;
 
-
 insert overwrite table choco_data.choco_rotation_info select * from choco_data.test_rotation_temp_two;
