@@ -184,7 +184,7 @@ public class FilterRequest {
      * Crop an URL to get just the domain name
      *
      * @param url full URL
-     * @return cropped domain name
+     * @return domain name
      */
     private static String getDomainName(String url) {
         if (url == null || url.isEmpty()) {
@@ -195,7 +195,7 @@ public class FilterRequest {
             String fullUrl = (url.toLowerCase().startsWith("http://") || url.toLowerCase().startsWith("https://")) ? url : "http://" + url;
             URL uri = new URL(fullUrl);
             String domain = uri.getHost();
-            return domain.startsWith("www.") ? domain.substring(4) : domain;
+            return domain;
         } catch (MalformedURLException e) {
             return "";
         }
