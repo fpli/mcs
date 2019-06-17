@@ -100,6 +100,8 @@ public class ApplicationOptionsTest {
     Map<String, FilterRuleContent> defaultRule = ApplicationOptions.filterRuleConfigMap.get(ChannelType.DEFAULT);
     assertEquals("PrefetchRule", defaultRule.get("PrefetchRule").getRuleName());
     assertNotNull(defaultRule.get("PrefetchRule"));
+    defaultRule.get("ProtocolRule").setRuleName("PR");
+    assertEquals("PR", defaultRule.get("ProtocolRule").getRuleName());
     assertEquals("IAB_ABC_International_List_of_Valid_Browsers.txt", defaultRule.get("TwoPassIABRule").getWhitelistName());
     assertEquals("IAB_ABC_International_Spiders_and_Robots.txt", defaultRule.get("TwoPassIABRule").getBlacklistName());
 
@@ -110,14 +112,20 @@ public class ApplicationOptionsTest {
     assertNull(defaultRule.get("EPNDomainBlacklistRule"));
     assertEquals("IP_Blacklist_EPN.txt", epnRule.get("IPBlacklistRule").getBlacklistName());
     assertEquals("IAB_ABC_International_List_of_Valid_Browsers.txt", epnRule.get("TwoPassIABRule").getWhitelistName());
-    assertEquals("3000", epnRule.get("CguidStalenessWindowRule").getWindowStart().toString());
+    assertEquals(3000, epnRule.get("CguidStalenessWindowRule").getWindowStart(), 0);
     assertEquals("eBay_Referral_Domain.txt", epnRule.get("EBayRefererDomainRule").getBlacklistName());
+    epnRule.get("CguidStalenessWindowRule").setWindowStart(2000L);
+    assertEquals(2000, epnRule.get("CguidStalenessWindowRule").getWindowStart(), 0);
 
     Map<String, FilterRuleContent> dapRule = ApplicationOptions.filterRuleConfigMap.get(ChannelType.DISPLAY);
     assertEquals("TwoPassIABRule", dapRule.get("TwoPassIABRule").getRuleName());
     assertNotNull(defaultRule.get("TwoPassIABRule"));
     assertEquals("IPBlacklistRule", dapRule.get("IPBlacklistRule").getRuleName());
     assertEquals("IAB_ABC_International_List_of_Valid_Browsers.txt", dapRule.get("TwoPassIABRule").getWhitelistName());
+    defaultRule.get("TwoPassIABRule").setWhitelistName("IAB_W.txt");
+    defaultRule.get("TwoPassIABRule").setBlacklistName("IAB_B.txt");
+    assertEquals("IAB_W.txt", defaultRule.get("TwoPassIABRule").getWhitelistName());
+    assertEquals("IAB_B.txt", defaultRule.get("TwoPassIABRule").getBlacklistName());
 
   }
 }

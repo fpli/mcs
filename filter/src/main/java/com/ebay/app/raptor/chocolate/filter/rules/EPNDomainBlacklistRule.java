@@ -1,8 +1,6 @@
 package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.common.ZooKeeperConnection;
-import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 import com.ebay.kernel.context.RuntimeContext;
 import org.apache.log4j.Logger;
@@ -25,7 +23,7 @@ public class EPNDomainBlacklistRule extends GenericBlacklistRule {
   
   public EPNDomainBlacklistRule(ChannelType channelType) {
     super(channelType);
-    this.createFromOptions();
+    this.readFromLocalFile();
   }
   
   /**
@@ -33,37 +31,15 @@ public class EPNDomainBlacklistRule extends GenericBlacklistRule {
    */
   public static EPNDomainBlacklistRule createForTest(ChannelType channelType) { return new EPNDomainBlacklistRule(channelType); }
   
-  /**
-   * Create from blacklist stored in ZK
-   *
-   * @return new instance
-   */
-  public void createFromOptions() {
-    if (!this.readFromLocalFile()) {
-      ZooKeeperConnection connection = new ZooKeeperConnection();
-      try {
-        connection.connect(ApplicationOptions.getInstance().getZookeeperString());
-        String blacklistString = connection.getStringData(ApplicationOptions.getInstance().getByNameString(FILTERING_EPN_DOMAIN_LIST_ZK_PATH));
-        this.readFromString(blacklistString);
-        connection.close();
-      } catch (Exception e) {
-        Logger.getLogger(EPNDomainBlacklistRule.class).error("Failed to get domain blacklist", e);
-        throw new Error("Domain blackist not found", e);
-      }
-    }
-  }
-  
-  private boolean readFromLocalFile() {
+  private void readFromLocalFile() {
     try {
       blacklistName = this.filterRuleContent.getBlacklistName();
       String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
       this.readFromString(blString);
     } catch (Exception e) {
       Logger.getLogger(EPNDomainBlacklistRule.class).error("Failed to get domain blacklist in local file", e);
-      return false;
+      throw new Error("EPN domain blacklist not found", e);
     }
-    
-    return true;
   }
   
   @Override
