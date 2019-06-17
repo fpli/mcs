@@ -12,7 +12,6 @@ public class FilterRuleContent {
   private String blacklistName;
   private Float rateLimit = 0f;
   private Long windowStart;
-  private Integer timeoutMS = 500;
   
   public FilterRuleContent() {}
   
@@ -44,42 +43,33 @@ public class FilterRuleContent {
     this.blacklistName = blacklistName;
   }
 
-  public FilterRuleContent(String ruleName, String blacklistName, Float rateLimit, Long windowStart, Integer timeoutMS) {
+  public FilterRuleContent(String ruleName, String blacklistName, Float rateLimit, Long windowStart) {
     this.ruleName = ruleName;
     this.blacklistName = blacklistName;
     this.rateLimit = rateLimit;
     this.windowStart = windowStart;
-    this.timeoutMS = timeoutMS;
-  }
-  
-  public Integer getTimeoutMS() {
-    return timeoutMS;
-  }
-  
-  public void setTimeoutMS(Integer timeoutMS) {
-    this.timeoutMS = timeoutMS;
   }
   
   public Long getWindowStart() {
     return windowStart;
   }
-  
+
   public void setWindowStart(Long windowStart) {
     this.windowStart = windowStart;
   }
-  
+
   public Float getRateLimit() {
     return rateLimit;
   }
-  
+
   public void setRateLimit(Float rateLimit) {
     this.rateLimit = rateLimit;
   }
-  
+
   public String getRuleName() {
     return ruleName;
   }
-  
+
   public void setRuleName(String ruleName) {
     this.ruleName = ruleName;
   }

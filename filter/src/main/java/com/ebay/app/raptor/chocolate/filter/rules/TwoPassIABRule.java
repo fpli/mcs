@@ -1,8 +1,6 @@
 package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.common.ZooKeeperConnection;
-import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.filter.rules.uamatch.FourParamsListEntry;
 import com.ebay.app.raptor.chocolate.filter.rules.uamatch.TwoParamsListEntry;
 import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
@@ -32,7 +30,7 @@ public class TwoPassIABRule extends BaseFilterRule {
   
   public TwoPassIABRule(ChannelType channelType) {
     super(channelType);
-    this.createFromOptions();
+    this.readFromLocalFiles();
   }
   
   /**
@@ -140,29 +138,8 @@ public class TwoPassIABRule extends BaseFilterRule {
   @Override
   public int test(FilterRequest event) { return isUserAgentValid(event.getUserAgent()) ? 0 : 1;
   }
-  
-  /**
-   * Create a rule instance, and fill it with blacklist/whitelist entries based on the options
-   *
-   * @return new instance
-   */
-  public void createFromOptions() {
-    if (!this.readFromLocalFiles()) {
-      ZooKeeperConnection connection = new ZooKeeperConnection();
-      try {
-        connection.connect(ApplicationOptions.getInstance().getZookeeperString());
-        String wlString = connection.getStringData(ApplicationOptions.getInstance().getByNameString(FILTERING_IAB_WHITELIST_ZK_PATH));
-        String blString = connection.getStringData(ApplicationOptions.getInstance().getByNameString(FILTERING_IAB_BLACKLIST_ZK_PATH));
-        this.readFromStrings(wlString, blString);
-        connection.close();
-      } catch (Exception e) {
-        Logger.getLogger(TwoPassIABRule.class).error("Failed to get IAB lists", e);
-        throw new Error("IAB Lists not found", e);
-      }
-    }
-  }
 
-  private boolean readFromLocalFiles() {
+  private void readFromLocalFiles() {
     try {
       whitelistName = this.filterRuleContent.getWhitelistName();
       blacklistName = this.filterRuleContent.getBlacklistName();
@@ -170,8 +147,8 @@ public class TwoPassIABRule extends BaseFilterRule {
       String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
       this.readFromStrings(wlString, blString);
     } catch (Exception e) {
-      return false;
+      Logger.getLogger(TwoPassIABRule.class).error("Failed to get IAB lists", e);
+      throw new Error("IAB Lists not found", e);
     }
-    return true;
   }
 }

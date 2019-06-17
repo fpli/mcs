@@ -1,6 +1,5 @@
 package com.ebay.app.raptor.chocolate.filter.rules;
 
-import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.filter.service.BaseFilterRule;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
@@ -15,15 +14,6 @@ public class InternalTrafficRule extends BaseFilterRule {
   public InternalTrafficRule(ChannelType channelType) {
     super(channelType);
     this.checker = DomainIpChecker.getInstance();
-  }
-  
-  @Override
-  public boolean isChannelActionApplicable(ChannelAction action) {
-    if (action == ChannelAction.APP_FIRST_START) {  // Most rules don't apply to AppDL events
-      return false;
-    }
-    
-    return true;
   }
   
   @Override
