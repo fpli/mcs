@@ -10,12 +10,9 @@ import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
  * Created by jialili1 on 4/23/18.
  */
 public class ProtocolRule extends BaseFilterRule {
+
   public ProtocolRule(ChannelType channelType) {
     super(channelType);
-  }
-
-  public static ProtocolRule getInstance(ChannelType channelType) {
-    return new ProtocolRule(channelType);
   }
 
   /**

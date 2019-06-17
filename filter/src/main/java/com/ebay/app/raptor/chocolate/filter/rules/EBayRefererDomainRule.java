@@ -24,17 +24,15 @@ public class EBayRefererDomainRule extends GenericBlacklistRule {
     this.readFromLocalFile();
   }
 
-  private boolean readFromLocalFile() {
+  private void readFromLocalFile() {
     try {
       listName = this.filterRuleContent.getBlacklistName();
       String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + listName)));
       this.readFromString(blString);
     } catch (Exception e) {
       Logger.getLogger(EBayRefererDomainRule.class).error("Failed to get eBay referer domain list in local file", e);
-      return false;
+      throw new Error("eBay referer domain list not found", e);
     }
-
-    return true;
   }
 
   @Override

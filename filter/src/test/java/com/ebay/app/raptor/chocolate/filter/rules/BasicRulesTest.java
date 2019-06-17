@@ -33,9 +33,9 @@ public class BasicRulesTest {
   public void addTestRules() throws IOException {
     Map<ChannelType, Map<String, FilterRuleContent>> filterRules = ApplicationOptions.filterRuleConfigMap;
     filterRules.get(ChannelType.EPN).put(CguidStalenessWindowRule.class.getSimpleName(), new FilterRuleContent
-        (CguidStalenessWindowRule.class.getSimpleName(), null, null, 500l, null));
+        (CguidStalenessWindowRule.class.getSimpleName(), null, null, 500l));
     filterRules.get(ChannelType.EPN).put(CampaignClickThroughRateRule.class.getSimpleName(), new FilterRuleContent
-        (CampaignClickThroughRateRule.class.getSimpleName(), null, 0.01f, null, null));
+        (CampaignClickThroughRateRule.class.getSimpleName(), null, 0.01f, null));
     filterRules.get(ChannelType.EPN).put(ProtocolRule.class.getSimpleName(), new FilterRuleContent
         (ProtocolRule.class.getSimpleName()));
     filterRules.get(ChannelType.EPN).put(MissingRefererRule.class.getSimpleName(), new FilterRuleContent
