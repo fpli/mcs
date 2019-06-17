@@ -46,7 +46,7 @@ public class EBayRefererDomainRule extends GenericBlacklistRule {
         continue;
       }
 
-      this.add(t.startsWith("www.") ? t.substring(4).toLowerCase() : t.toLowerCase());
+      this.add(t.toLowerCase());
     }
   }
 
