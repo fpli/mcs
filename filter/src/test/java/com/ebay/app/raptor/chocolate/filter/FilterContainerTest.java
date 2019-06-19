@@ -158,7 +158,7 @@ public class FilterContainerTest {
     FilterRequest req = new FilterRequest(lm);
     assertEquals(userAgent, req.getUserAgent());
     assertEquals(remoteIp, req.getSourceIP());
-    assertEquals("google.com", req.getReferrerDomain());
+    assertEquals("www.google.com", req.getReferrerDomain());
     assertEquals(true, req.isPrefetch());
     assertEquals(ChannelAction.IMPRESSION, req.getChannelAction());
   }
