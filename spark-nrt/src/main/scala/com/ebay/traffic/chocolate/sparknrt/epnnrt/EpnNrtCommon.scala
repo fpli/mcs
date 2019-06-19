@@ -223,8 +223,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_browser_type_udf = udf((user_agent: String) => getBrowserType(user_agent))
   val get_filter_yn_ind_udf = udf((rt_rule_flag: Long, nrt_rule_flag: Long, action: String) => getFilter_Yn_Ind(rt_rule_flag, nrt_rule_flag, action))
   val get_page_id_udf = udf((landingPage: String, uri: String) => getPageIdByLandingPage(landingPage, getRoverUriInfo(uri, 3)))
-  val get_roi_rule_value_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13))._1)
-  val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13))._2)
+  val get_roi_rule_value_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13), getRuleFlag(rt_rule_flags, 4))._1)
+  val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13), getRuleFlag(rt_rule_flags, 4))._2)
   val get_ams_clk_fltr_type_id_udf = udf((publisherId: String, uri: String) => getclickFilterTypeId(publisherId, getRoverUriInfo(uri, 3)))
   val get_click_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("click", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
   val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("impression", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
@@ -592,7 +592,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     clickFilterTypeId
   }
 
-  def getRoiRuleValue(rotationId: String, publisherId: String, referer_domain: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_9: Int): (Int, Int) = {
+  def getRoiRuleValue(rotationId: String, publisherId: String, referer_domain: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_9: Int, rt_rule_15: Int): (Int, Int) = {
     var temp_roi_values = 0
     var roiRuleValues = 0
   //  var amsFilterRoiValue = 0
@@ -603,7 +603,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         val roiRuleList = lookupAdvClickFilterMapAndROI(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1), traffic_source_code)
         roiRuleList(0).setRule_result(callRoiSdkRule(roiRuleList(0).getIs_rule_enable, roiRuleList(0).getIs_pblshr_advsr_enable_rule, 0))
         roiRuleList(1).setRule_result(callRoiEbayReferrerRule(roiRuleList(1).getIs_rule_enable, roiRuleList(1).getIs_pblshr_advsr_enable_rule, rt_rule_9))
-        roiRuleList(2).setRule_result(callRoiNqBlacklistRule(roiRuleList(2).getIs_rule_enable, roiRuleList(2).getIs_pblshr_advsr_enable_rule, 0))
+        roiRuleList(2).setRule_result(callRoiNqBlacklistRule(roiRuleList(2).getIs_rule_enable, roiRuleList(2).getIs_pblshr_advsr_enable_rule, rt_rule_15))
         roiRuleList(3).setRule_result(callRoiNqWhitelistRule(publisherId, roiRuleList(3).getIs_rule_enable, roiRuleList(3).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
         roiRuleList(4).setRule_result(callRoiMissingReferrerUrlRule(roiRuleList(4).getIs_rule_enable, roiRuleList(4).getIs_pblshr_advsr_enable_rule, referer_domain))
         roiRuleList(5).setRule_result(callRoiNotRegisteredRule(publisherId, roiRuleList(5).getIs_rule_enable, roiRuleList(5).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
