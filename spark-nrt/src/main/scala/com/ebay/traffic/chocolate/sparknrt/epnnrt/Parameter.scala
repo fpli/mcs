@@ -5,7 +5,7 @@ import scopt.OptionParser
 
 case class Parameter(appName: String = "epnnrt",
                      mode: String = "yarn",
-                     partitions: Int = 3,
+                     partitions: Int = 1,
                      workDir: String = "",
                      resourceDir: String = "",
                      filterTime: String = "")

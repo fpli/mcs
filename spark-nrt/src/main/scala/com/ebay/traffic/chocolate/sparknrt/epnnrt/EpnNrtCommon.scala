@@ -11,7 +11,7 @@ import com.google.gson.{Gson, JsonObject, JsonParser}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.functions.{col, udf}
 import org.slf4j.LoggerFactory
 import rx.Observable
 import rx.functions.Func1
@@ -239,6 +239,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_trfc_src_cd_impression_udf = udf((browser: String) => get_TRFC_SRC_CD(browser, "impression"))
 
   val get_last_view_item_info_udf = udf((cguid: String, timestamp: String) => getLastViewItemInfo(cguid, timestamp))
+
+  val filter_specific_pub_udf = udf((referer: String, publisher: String) => filter_specific_pub(referer, publisher))
+
+  def filter_specific_pub(referer: String, publisher: String): Int = {
+    if (publisher.equals("5574651234") && getRefererURLAndDomain(referer, true).endsWith(".bid"))
+      return 1
+    0
+  }
 
 
   def getLastViewItemInfo(cguid: String, timestamp: String): Array[String] = {

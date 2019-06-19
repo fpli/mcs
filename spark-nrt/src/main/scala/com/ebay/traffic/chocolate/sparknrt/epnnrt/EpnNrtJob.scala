@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
+import java.net.{MalformedURLException, URL}
 import java.text.SimpleDateFormat
 import java.util.Properties
 
@@ -11,7 +12,7 @@ import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.{col, udf}
 
 object EpnNrtJob extends App {
   override def main(args: Array[String]): Unit = {
@@ -101,6 +102,10 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           logger.info("Processing " + size + " datesFile in metaFile " + file)
           metrics.meter("DateFileCount", size, timestamp)
           metrics.meter("InComingCount", df.count(), timestamp)
+
+          // filter publisher 5574651234
+          df = df.withColumn("publisher_filter", epnNrtCommon.filter_specific_pub_udf(col("referer"), col("publisher_id")))
+          df = df.filter(col("publisher_filter") === "0")
 
           // filter click and impression data, and if there is filterTime, filter the data older than filter time
           var df_click = df.filter(col("channel_action") === "CLICK")
