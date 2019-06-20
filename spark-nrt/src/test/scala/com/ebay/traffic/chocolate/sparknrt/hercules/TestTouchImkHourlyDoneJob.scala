@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.hercules
 
 import java.io.File
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
@@ -42,12 +42,12 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
   }
 
   test("testGetDoneDir") {
-    val time = LocalDateTime.of(2019, 6, 19, 0, 0, 0)
+    val time = ZonedDateTime.of(2019, 6, 19, 0, 0, 0, 0, job.defaultZoneId)
     assert(job.getDoneDir(time).split("/").last.equals("2019-06-19"))
   }
 
   test("testGetDoneFileName") {
-    val time = LocalDateTime.of(2019, 6, 19, 1, 0, 0)
+    val time = ZonedDateTime.of(2019, 6, 19, 1, 0, 0, 0, job.defaultZoneId)
     assert(job.getDoneFileName(time).split("/").last.equals("imk_rvr_trckng_event_hourly.done.201906190100000000"))
   }
 
@@ -58,7 +58,7 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
     fs.copyFromLocalFile(new Path(file2.getAbsolutePath), new Path(doneDir + "/imk_rvr_trckng_event_hourly.done.201906192000000000"))
 
     val actual = job.getLastDoneFileDatetime(fs.listStatus(new Path(doneDir)))
-    val expect = LocalDateTime.of(2019, 6, 19, 20, 0, 0).truncatedTo(ChronoUnit.HOURS)
+    val expect = ZonedDateTime.of(2019, 6, 19, 20, 0, 0, 0, job.defaultZoneId).truncatedTo(ChronoUnit.HOURS)
     assert(actual.equals(expect))
   }
 
@@ -69,7 +69,7 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
     fs.copyFromLocalFile(new Path(file2.getAbsolutePath), new Path(lagDir + "/1"))
 
     val actual = job.getEventWatermark
-    val expect = LocalDateTime.of(2019, 6, 18, 20, 10, 57, 2000000)
+    val expect = ZonedDateTime.of(2019, 6, 18, 20, 10, 57, 2000000, job.defaultZoneId)
     assert(actual.equals(expect))
   }
 

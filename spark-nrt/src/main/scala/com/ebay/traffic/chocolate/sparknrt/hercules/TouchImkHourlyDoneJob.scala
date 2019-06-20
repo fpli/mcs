@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.hercules
 import java.io.ByteArrayOutputStream
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.time.{Instant, LocalDateTime}
+import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.util.TimeZone
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
@@ -30,8 +30,11 @@ object TouchImkHourlyDoneJob extends App {
 class TouchImkHourlyDoneJob(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
-  lazy val dayFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-  lazy val doneFileDatetimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHH")
+  // TODO set default zoneId
+  lazy val defaultZoneId: ZoneId = ZoneId.of("Asia/Shanghai")
+
+  lazy val dayFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(defaultZoneId)
+  lazy val doneFileDatetimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHH").withZone(defaultZoneId)
 
   lazy val doneFilePrefix = "imk_rvr_trckng_event_hourly.done."
   lazy val doneFilePostfix = "00000000"
@@ -40,26 +43,26 @@ class TouchImkHourlyDoneJob(params: Parameter)
 
   lazy val lagDir: String = params.lagDir
 
+  implicit def dateTimeOrdering: Ordering[ZonedDateTime] = Ordering.fromLessThan(_ isBefore  _)
+
   override def run(): Unit = {
-    val time = LocalDateTime.now()
+    val currentDateHour = ZonedDateTime.now(defaultZoneId).truncatedTo(ChronoUnit.HOURS)
 
-    val now = time.truncatedTo(ChronoUnit.HOURS)
-
-    val todayDoneDir = new Path(getDoneDir(now))
-    val yesterdayDoneDir = new Path(getDoneDir(now.minusDays(1)))
+    val todayDoneDir = new Path(getDoneDir(currentDateHour))
+    val yesterdayDoneDir = new Path(getDoneDir(currentDateHour.minusDays(1)))
 
     var delays = 0L
 
     if (fs.exists(todayDoneDir) && fs.listStatus(todayDoneDir).length != 0) {
       val todayLastDoneFileDatetime = getLastDoneFileDatetime(fs.listStatus(todayDoneDir))
-      delays = ChronoUnit.HOURS.between(todayLastDoneFileDatetime, now)
+      delays = ChronoUnit.HOURS.between(todayLastDoneFileDatetime, currentDateHour)
     } else {
       fs.mkdirs(todayDoneDir)
       val yesterdayLastDoneFileDatetime = getLastDoneFileDatetime(fs.listStatus(yesterdayDoneDir))
-      delays = ChronoUnit.HOURS.between(yesterdayLastDoneFileDatetime, now)
+      delays = ChronoUnit.HOURS.between(yesterdayLastDoneFileDatetime, currentDateHour)
     }
 
-    val times: immutable.Seq[LocalDateTime] = (0L until delays).map(delay => now.minusHours(delay))
+    val times: immutable.Seq[ZonedDateTime] = (0L until delays).map(delay => currentDateHour.minusHours(delay))
 
     val watermark = getEventWatermark
 
@@ -70,17 +73,16 @@ class TouchImkHourlyDoneJob(params: Parameter)
     })
   }
 
-  def getDoneDir(dateTime: LocalDateTime): String = {
+  def getDoneDir(dateTime: ZonedDateTime): String = {
     doneDir + "/" + dateTime.format(dayFormatter)
   }
 
-  def getLastDoneFileDatetime(fileStatus: Array[FileStatus]): LocalDateTime = {
-    implicit def dateTimeOrdering: Ordering[LocalDateTime] = Ordering.fromLessThan(_ isBefore  _)
+  def getLastDoneFileDatetime(fileStatus: Array[FileStatus]): ZonedDateTime = {
     fileStatus
       .map(status => status.getPath.getName)
       .map(fileName =>  {
         val str = fileName.substring(doneFilePrefix.length, fileName.length - doneFilePostfix.length)
-        LocalDateTime.parse(str, doneFileDatetimeFormatter)
+        ZonedDateTime.parse(str, doneFileDatetimeFormatter)
       })
       .max(dateTimeOrdering)
   }
@@ -89,12 +91,11 @@ class TouchImkHourlyDoneJob(params: Parameter)
     * The watermark means that there should be no more events with timestamps older or equal to the watermark
     * @return watermark
     */
-  def getEventWatermark: LocalDateTime = {
-    implicit def dateTimeOrdering: Ordering[LocalDateTime] = Ordering.fromLessThan(_ isBefore  _)
+  def getEventWatermark: ZonedDateTime = {
     fs.listStatus(new Path(lagDir))
       .map(status => status.getPath)
       .map(path => readFileContent(path).toLong)
-      .map(ts => LocalDateTime.ofInstant(Instant.ofEpochMilli(ts), TimeZone.getDefault.toZoneId))
+      .map(ts => ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts), TimeZone.getDefault.toZoneId))
       .min(dateTimeOrdering)
   }
 
@@ -103,7 +104,7 @@ class TouchImkHourlyDoneJob(params: Parameter)
     * @param doneFileDatetime done file datetime
     * @return done file name eg. imk_rvr_trckng_event_hourly.done.201904251100000000
     */
-  def getDoneFileName(doneFileDatetime: LocalDateTime): String = {
+  def getDoneFileName(doneFileDatetime: ZonedDateTime): String = {
     getDoneDir(doneFileDatetime) + "/" + doneFilePrefix + doneFileDatetime.format(doneFileDatetimeFormatter) + doneFilePostfix
   }
 
