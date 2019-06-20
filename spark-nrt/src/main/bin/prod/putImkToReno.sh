@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Put files from chocolate hadoop to Apollo RNO. The input files will be deleted.
+# Put files from chocolate hadoop to Apollo RNO and Hercules. The input files will be deleted.
 # Input:    SLC Hadoop
 #           /apps/tracking-events/crabTransform/imkOutput
 #           /apps/tracking-events/imkTransform/imkOutput
@@ -9,6 +9,9 @@
 # Output:   Apollo RNO
 #           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event
 #           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl
+#           Hercules
+#           /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event
+#           /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event_dtl
 # Schedule: /3 * ? * *
 
 usage="Usage: putImkToReno.sh [srcDir] [renoMiddleDir] [renoDestDir] [localTmpDir]"
@@ -27,6 +30,7 @@ SRC_DIR=$1
 RENO_MID_DIR=$2
 RENO_DEST_DIR=$3
 LOCAL_TMP_DIR=$4
+HERCULES_DEST_DIR=$5
 
 cd ${LOCAL_TMP_DIR}
 
@@ -54,7 +58,8 @@ do
     orgDate=${file_name:15:10}
     date=${orgDate//-/}
     destFolder=${RENO_DEST_DIR}/dt=${date}
-#    create dest folder if not exists
+    herculesFolder=${HERCULES_DEST_DIR}/dt=${date}
+#    create dest folder if not exists, folder in hercules should be created in advance
     /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${destFolder}
     if [[ -s ${file_name} ]];
     then
@@ -66,23 +71,24 @@ do
             command_1="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -put -f ${file_name} ${RENO_MID_DIR}/"
             command_2="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -f ${destFolder}/${file_name}"
             command_3="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mv ${RENO_MID_DIR}/${file_name} ${destFolder}/"
-            ${command_1} && ${command_2} && ${command_3}
+            command_4="/datashare/mkttracking/tools/cake/bin/distcp.sh viewfs://apollo-rno${destFolder}/${file_name} hdfs://hercules${herculesFolder}/ putImkToHercules"
+            ${command_1} && ${command_2} && ${command_3} && ${command_4}
             rcode=$?
             if [ ${rcode} -eq 0 ]
             then
                 break
             else
-                echo "Faild to upload to Reno, retrying ${retry}"
+                echo "Faild to upload to Reno and Hercules, retrying ${retry}"
                 retry=`expr ${retry} + 1`
              fi
         done
         if [ ${rcode} -ne 0 ]
         then
-            echo "Fail to upload to Reno, please check!!!"
+            echo "Fail to upload to Reno and Hercules, please check!!!"
             exit ${rcode}
         fi
     else
-#        not put empty data file to RENO
+#        not put empty data file to RENO and Hercules
         echo "empty data file"
     fi
 #    remove local and chocolate hdfs data file
