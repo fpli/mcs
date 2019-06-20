@@ -62,9 +62,8 @@ do
 #   copy new done file
     /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -test -e ${destFolder}/${file_name}
     fileExist=$?
-    if [[ ${fileExist} -ne 0 ]];
-    then
-#        max 3 times put done file to reno and hercules
+    if [[ ${fileExist} -ne 0 ]]; then
+#       max 3 times put done file to reno and hercules
         retry=1
         rcode=1
         until [[ ${retry} -gt 3 ]]

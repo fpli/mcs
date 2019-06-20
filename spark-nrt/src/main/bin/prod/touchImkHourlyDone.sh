@@ -33,8 +33,7 @@ kinit -kt /datashare/mkttracking/tools/keytab-tool/keytab/b_marketing_tracking.$
 done_file=${DONE_DIR}/${dt}/imk_rvr_trckng_event_hourly.done.${dt_hour}00000000
 hdfs dfs -test -e ${done_file}
 done_file_exists=$?
-if [ ${done_file_exists} -eq 0 ]
-then
+if [ ${done_file_exists} -eq 0 ]; then
     echo "done file exists: ${done_file}"
     exit 0
 fi
