@@ -7,7 +7,6 @@ RENO_DIR=/apps/b_marketing_tracking/chocolate/epnnrt
 HERCULES_DIR=/apps/b_marketing_tracking/AMS
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
 log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/send_EPN_Data${log_dt}.log"
-local_done_date="/datashare/mkttracking/chocolate/epn-nrt/local_done_date.txt"
 DT_TODAY=$(date +%Y-%m-%d)
 
 
@@ -61,23 +60,21 @@ rcode_check=$?
 
 if [$rcode_check -eq 1 ];
 then
-    echo "Hourly data is ready" | tee -a ${log_file}
+    echo "Hourly data is ready"
 else
-    echo "Hourly data is not ready" | tee -a ${log_file}
+    echo "Hourly data is not ready"
+fi
 
 ./sendDataToRenoThenToHercules.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_reno ${RENO_DIR} ${HERCULES_DIR} click ${log_file}
 rcode_click=$?
 
 if [ $rcode_click -eq 0 ];
 then
-    echo "Successfully send EPN NRT click data from Apollo Reno to Hercules" | tee -a ${log_file}
+    echo "Successfully send EPN NRT click data from Apollo Reno to Hercules"
     if [$rcode_check -eq 1];
     then
-        DONE_FILE="ams_click_hourly.done.$(date +%Y%m%d%H -d "`date` - 1 hour")00000000"
-        touch "$DONE_FILE"
-        ./sendToHerculers.sh ${DONE_FILE} ${log_file}
-        echo $(date +%Y%m%d%H -d "`date` - 1 hour") | tee -a ${local_done_date}
-        echo "Generate hourly done file Successfully!" | tee -a ${log_file}
+        done_file="ams_click_hourly.done.$(date +%Y%m%d%H -d "`date` - 1 hour")00000000"
+        ./generateHourlyDoneFile ${done_file}
     else
         exit $rcode_check
     fi
