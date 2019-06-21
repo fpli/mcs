@@ -98,7 +98,7 @@ function process_one_meta(){
         rcode_hercules=1
         until [[ ${retry} -gt 3 ]]
         do
-            ./distcp.sh ${reno_file_name} ${hercules_dir_full} epn-nrt
+            ./distcp.sh ${reno_file_name} ${hercules_dir_full} epnnrt_data
             rcode_hercules=$?
             if [ ${rcode_hercules} -eq 0 ]
             then
