@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.{Instant, ZoneId, ZoneOffset, ZonedDateTime}
-import java.util.TimeZone
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import org.apache.hadoop.fs.{FileStatus, Path}
