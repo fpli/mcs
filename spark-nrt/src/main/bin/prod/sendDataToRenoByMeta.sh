@@ -7,9 +7,10 @@ CHANNEL=$2
 ACTION=$3
 META_FILE_SUFFIX=$4
 RENO_DIR=$5
-EVENT_TYPE=$6
-TOUCH_PROCESS_FILE=$7
-LOG_FILE=$8
+HERCULES_DIR=$6
+EVENT_TYPE=$7
+TOUCH_PROCESS_FILE=$8
+LOG_FILE=$9
 
 function process_one_meta(){
     meta_file=$1
@@ -17,7 +18,7 @@ function process_one_meta(){
     meta_file_name=$(basename "$meta_file")
     rm -f ${meta_file_name}
 
-#    get one meta file from chocolate hdfs and parse it
+    ## get one meta file from chocolate hdfs and parse it
     hdfs dfs -get ${meta_file}
     python ../readMetaFile.py ${meta_file_name} ${output_file}
     rcode=$?
@@ -27,7 +28,7 @@ function process_one_meta(){
         exit ${rcode}
     fi
     files_size=`cat ${output_file} | wc -l`
-    echo "start upload files size:"${files_size}
+    echo "Start upload files size:"${files_size}
 
     data_files=`cat ${output_file} | tr "\n" " "`
     while read -r date_file; do
@@ -38,6 +39,7 @@ function process_one_meta(){
         hdfs dfs -get ${data_file}
         reno_path=${RENO_DIR}'/'${EVENT_TYPE}'/'${date}
 
+########################################### Generate epn nrt processed file ###########################################
         if [ $2 = "YES" ]
         then
             touch "/datashare/mkttracking/data/epn-nrt/process/${date}.processed"
@@ -49,13 +51,15 @@ function process_one_meta(){
             /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -mkdir -p ${reno_path}
         fi
 
+############################################## Send data to Apollo Reno ##############################################
+        echo "Start upload "${data_file}" to "${reno_path}
         retry=1
-        rcode=1
+        rcode_rno=1
         until [[ ${retry} -gt 3 ]]
         do
             /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -copyFromLocal ${data_file_name} ${reno_path}
-            rcode=$?
-            if [ ${rcode} -eq 0 ]
+            rcode_rno=$?
+            if [ ${rcode_rno} -eq 0 ]
             then
                 echo "successful sending to Reno: "${data_file_name}
                 break
@@ -63,7 +67,7 @@ function process_one_meta(){
                 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${reno_path}'/'${data_file_name}
                 if [ $? -eq 0 ]; then
                     echo "${data_file_name} already exists!!"
-                    rcode=0
+                    rcode_rno=0
                     break
                 else
                     echo "Faild to send to Reno, retrying ${retry}"
@@ -72,10 +76,43 @@ function process_one_meta(){
              fi
         done
         rm -f ${data_file_name}
-        if [ ${rcode} -ne 0 ]
+        if [ ${rcode_rno} -ne 0 ]
         then
             echo -e "Fail to send file: ${data_file_name} to Apollo Reno!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT Error!!!!(Failed to send file to Apollo Reno)" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${LOG_FILE}
-            exit ${rcode}
+            exit ${rcode_rno}
+        fi
+
+################################################ Send data to Hercules ################################################
+        reno_file_name='viewfs://apollo-rno'${reno_path}'/'${data_file_name}
+        if [ ${EVENT_TYPE} -eq 'click']
+        then
+            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_click/'${date}
+        elif [ ${EVENT_TYPE} -eq 'imp']
+        then
+            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_impression/'${date}
+        else
+            ehco "No such events type!"
+        fi
+        echo "Start upload "${reno_file_name}" to "${hercules_dir_full}
+        retry=1
+        rcode_hercules=1
+        until [[ ${retry} -gt 3 ]]
+        do
+            ./distcp.sh ${reno_file_name} ${hercules_dir_full} epn-nrt
+            rcode_hercules=$?
+            if [ ${rcode_hercules} -eq 0 ]
+            then
+                echo "Successfully send to Hercules: "${reno_file_name}
+                break
+            else
+                echo "Faild to send to Reno, retrying ${retry}"
+                retry=`expr ${retry} + 1`
+            fi
+        done
+        if [ ${rcode_hercules} -ne 0 ]
+        then
+            echo -e "Fail to send file: ${reno_file_name} to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT Error!!!!(Failed to send file to Hercules)" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${LOG_FILE}
+            exit ${rcode_hercules}
         fi
     done < "$output_file"
     rm -f ${output_file}
