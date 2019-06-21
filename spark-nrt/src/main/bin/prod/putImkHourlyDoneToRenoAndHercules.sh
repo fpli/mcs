@@ -59,7 +59,7 @@ do
     herculesFolder=${HERCULES_DEST_DIR}/${date}
 #    create dest folder if not exists, folder in hercules should be created in advance
     /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${destFolder}
-#   copy new done file
+#   check if done file exists
     /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -test -e ${destFolder}/${file_name}
     fileExist=$?
     if [[ ${fileExist} -ne 0 ]]; then
@@ -86,7 +86,6 @@ do
             exit ${rcode}
         fi
     else
-#        not put empty data file to RENO and Hercules
         echo "${file_name} done file existed"
     fi
 #    remove local done file
