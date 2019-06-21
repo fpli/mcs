@@ -5,7 +5,7 @@
 #           /apps/tracking-events-workdir/last_ts/PAID_SEARCH
 # Output:   SLC Done HDFS
 #           /apps/tracking-events/watch
-# Schedule: /5 * ? * *
+# Schedule: /3 * ? * *
 
 usage="Usage: touchImkHourlyDone.sh [workDir] [lagDir] [doneDir]"
 

@@ -7,7 +7,7 @@
 #           /apps/b_marketing_tracking/watch
 #           Hercules
 #           /apps/b_marketing_tracking/watch
-# Schedule: /10 * ? * *
+# Schedule: /3 * ? * *
 
 usage="Usage: putImkHourlyDoneToRenoAndHercules.sh [srcDir] [renoDestDir] [herculesDestDir] [localTmpDir]"
 
