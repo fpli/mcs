@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.hercules
 import java.io.ByteArrayOutputStream
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.time.{Instant, ZoneId, ZonedDateTime}
+import java.time.{Instant, ZoneId, ZoneOffset, ZonedDateTime}
 import java.util.TimeZone
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
@@ -30,8 +30,8 @@ object TouchImkHourlyDoneJob extends App {
 class TouchImkHourlyDoneJob(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
-  // TODO set default zoneId
-  lazy val defaultZoneId: ZoneId = ZoneId.of("Asia/Shanghai")
+  // TODO how to handle daylight savings time?
+  lazy val defaultZoneId: ZoneId = ZoneOffset.ofHours(-7)
 
   lazy val dayFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(defaultZoneId)
   lazy val doneFileDatetimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHH").withZone(defaultZoneId)
@@ -95,7 +95,7 @@ class TouchImkHourlyDoneJob(params: Parameter)
     fs.listStatus(new Path(lagDir))
       .map(status => status.getPath)
       .map(path => readFileContent(path).toLong)
-      .map(ts => ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts), TimeZone.getDefault.toZoneId))
+      .map(ts => ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts), defaultZoneId))
       .min(dateTimeOrdering)
   }
 

@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.hercules
 
 import java.io.File
-import java.time.ZonedDateTime
+import java.time.{Instant, ZonedDateTime}
 import java.time.temporal.ChronoUnit
 
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
@@ -69,7 +69,7 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
     fs.copyFromLocalFile(new Path(file2.getAbsolutePath), new Path(lagDir + "/1"))
 
     val actual = job.getEventWatermark
-    val expect = ZonedDateTime.of(2019, 6, 18, 20, 10, 57, 2000000, job.defaultZoneId)
+    val expect = ZonedDateTime.ofInstant(Instant.ofEpochMilli(1560859857002L), job.defaultZoneId)
     assert(actual.equals(expect))
   }
 
