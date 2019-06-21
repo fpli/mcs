@@ -29,8 +29,7 @@ object TouchImkHourlyDoneJob extends App {
 class TouchImkHourlyDoneJob(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
-  // TODO how to handle daylight savings time?
-  lazy val defaultZoneId: ZoneId = ZoneOffset.ofHours(-7)
+  lazy val defaultZoneId: ZoneId = ZoneId.systemDefault()
 
   lazy val dayFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(defaultZoneId)
   lazy val doneFileDatetimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHH").withZone(defaultZoneId)
