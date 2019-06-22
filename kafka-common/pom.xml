@@ -16,12 +16,12 @@
     <!-- Rheos -->
     <dependency>
       <groupId>io.ebay.rheos</groupId>
-      <artifactId>rheos-client</artifactId>
+      <artifactId>rheos-client_JDK-1.8</artifactId>
     </dependency>
 
     <dependency>
       <groupId>io.ebay.rheos</groupId>
-      <artifactId>rheos-iaf-raptorio</artifactId>
+      <artifactId>rheos-iaf-raptorio_JDK-1.8</artifactId>
     </dependency>
 
     <dependency>
