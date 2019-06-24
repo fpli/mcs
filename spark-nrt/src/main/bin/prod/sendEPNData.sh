@@ -55,7 +55,7 @@ echo `date +%Y-%m-%d-%H` "=========== Successfully sending EPN Impression Data t
 
 echo `date +%Y-%m-%d-%H` "=============== Start sending EPN Click Data to Apollo Reno then to Hercules and generate hourly done file ===============" | tee -a ${log_file}
 
-./checkAmsHourlyDone.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_reno
+./checkAmsHourlyDone.sh /apps/tracking-events-workdir EPN epnnrt_scp_click .epnnrt_reno
 rcode_check=$?
 
 if [$rcode_check -eq 1 ];
