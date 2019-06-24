@@ -39,7 +39,7 @@ echo `date +%Y-%m-%d-%H` "============================= Successfully sending EPN
 
 echo `date +%Y-%m-%d-%H` "============== Start sending EPN Impression Data to Apollo Reno then to Hecules ==============" | tee -a ${log_file}
 
-./sendDataToRenoThenToHecules.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_reno ${RENO_DIR} ${HERCULES_DIR} imp YES ${log_file}
+./sendDataToRenoThenToHeculesByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_reno ${RENO_DIR} ${HERCULES_DIR} imp YES ${log_file}
 rcode_imp=$?
 
 if [ $rcode_imp -eq 0 ];
@@ -65,7 +65,7 @@ else
     echo "Hourly data is not ready"
 fi
 
-./sendDataToRenoThenToHercules.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_reno ${RENO_DIR} ${HERCULES_DIR} click ${log_file}
+./sendDataToRenoThenToHerculesByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_reno ${RENO_DIR} ${HERCULES_DIR} click ${log_file}
 rcode_click=$?
 
 if [ $rcode_click -eq 0 ];
