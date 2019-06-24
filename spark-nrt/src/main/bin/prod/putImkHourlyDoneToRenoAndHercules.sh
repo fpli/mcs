@@ -9,6 +9,8 @@
 #           /apps/b_marketing_tracking/watch
 # Schedule: /3 * ? * *
 
+set -x
+
 usage="Usage: putImkHourlyDoneToRenoAndHercules.sh [srcDir] [renoDestDir] [herculesDestDir] [localTmpDir]"
 
 if [ $# -le 1 ]; then
@@ -33,8 +35,10 @@ yesterday=$(date -d "yesterday" +%Y%m%d)
 
 #get all done files in last two days
 tmp_done_file=imk_to_reno_and_hercules_done.txt
-hdfs dfs -ls -R ${SRC_DIR}/${yesterday} > ${tmp_done_file}
-hdfs dfs -ls -R ${SRC_DIR}/${today} >> ${tmp_done_file}
+rm -f ${tmp_done_file}
+
+hdfs dfs -ls -R ${SRC_DIR}/${yesterday} | grep -v "^$" | awk '{print $NF}' > ${tmp_done_file}
+hdfs dfs -ls -R ${SRC_DIR}/${today} | grep -v "^$" | awk '{print $NF}' >> ${tmp_done_file}
 
 files_size=`cat ${tmp_done_file} | wc -l`
 echo "start copy done files size:"${files_size}
@@ -69,7 +73,7 @@ do
         until [[ ${retry} -gt 3 ]]
         do
             command_1="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -put -f ${file_name} ${destFolder}/"
-            command_2="/datashare/mkttracking/tools/cake/bin/distcp.sh viewfs://apollo-rno${destFolder}/${file_name} hdfs://hercules${herculesFolder}/ putImkDoneToHercules"
+            command_2="/datashare/mkttracking/tools/cake/bin/distcp_by_optimus.sh viewfs://apollo-rno${destFolder}/${file_name} hdfs://hercules${herculesFolder}/ putImkDoneToHercules"
             ${command_1} && ${command_2}
             rcode=$?
             if [ ${rcode} -eq 0 ]

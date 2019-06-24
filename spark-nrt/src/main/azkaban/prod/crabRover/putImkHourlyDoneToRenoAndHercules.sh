@@ -8,7 +8,7 @@ function start_job(){
     pwd
     export HADOOP_USER_NAME=chocolate
     echo $HADOOP_USER_NAME
-    ./putImkHourlyDoneToRenoAndHercules.sh /apps/tracking-events/watch /apps/b_marketing_tracking/watch /apps/b_marketing_tracking/watch /datashare/mkttracking/work/imkToReno/imk/imkTemp
+    ./putImkHourlyDoneToRenoAndHercules.sh /apps/tracking-events/watch /apps/b_marketing_tracking/watch /apps/b_marketing_tracking/watch /datashare/mkttracking/jobs/chocolate-sparknrt/bin/prod/temp_put_imk_hourly_done_to_reno_and_hercules
 EOSSH
 }
 
