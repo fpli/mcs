@@ -14,7 +14,7 @@
 #           /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event_dtl
 # Schedule: /3 * ? * *
 
-usage="Usage: putImkToRenoAndHercules.sh [srcDir] [renoMiddleDir] [renoDestDir] [localTmpDir]"
+usage="Usage: putImkToRenoAndHercules.sh [srcDir] [renoMiddleDir] [renoDestDir] [localTmpDir] [herculesDestDir]"
 
 if [ $# -le 1 ]; then
   echo $usage
