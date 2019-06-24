@@ -41,6 +41,38 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
     job = new TouchImkHourlyDoneJob(params)
   }
 
+  test("testRun") {
+    val now = ZonedDateTime.now(job.defaultZoneId)
+    val currentDateHour = now.truncatedTo(ChronoUnit.HOURS)
+
+    val yesterdayDoneDir = new Path(job.getDoneDir(currentDateHour.minusDays(1)))
+
+    fs.mkdirs(yesterdayDoneDir)
+
+    // last done was generated yesterday 12 am
+    val lastDoneDateTime = currentDateHour.minusDays(1).withHour(12)
+    val doneOut = fs.create(new Path(yesterdayDoneDir + "/" + "imk_rvr_trckng_event_hourly.done." + lastDoneDateTime.format(job.doneFileDatetimeFormatter) + "00000000"), true)
+    doneOut.close()
+
+    // lag ts is today 12:10
+    fs.mkdirs(new Path(lagDir))
+    val lagOut = fs.create(new Path(lagDir + "/" + "0"), true)
+    lagOut.writeBytes(String.valueOf(currentDateHour.withHour(12).withMinute(10).toInstant.toEpochMilli))
+    lagOut.close()
+
+    job.run()
+
+    for (i <- 1 to 24)  {
+      val time = lastDoneDateTime.plusHours(i)
+      val file = job.getDoneDir(time) + "/" + "imk_rvr_trckng_event_hourly.done." + time.format(job.doneFileDatetimeFormatter) + "00000000"
+      val bool = fs.exists(new Path(file))
+      assert(bool)
+    }
+
+    fs.delete(new Path(lagDir), true)
+    fs.delete(new Path(doneDir), true)
+  }
+
   test("testGetDoneDir") {
     val time = ZonedDateTime.of(2019, 6, 19, 0, 0, 0, 0, job.defaultZoneId)
     assert(job.getDoneDir(time).split("/").last.equals("2019-06-19"))
@@ -60,6 +92,9 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
     val actual = job.getLastDoneFileDatetime(fs.listStatus(new Path(doneDir)))
     val expect = ZonedDateTime.of(2019, 6, 19, 20, 0, 0, 0, job.defaultZoneId).truncatedTo(ChronoUnit.HOURS)
     assert(actual.equals(expect))
+
+    fs.delete(new Path(lagDir), true)
+    fs.delete(new Path(doneDir), true)
   }
 
   test("testGetEventWatermark") {
@@ -71,16 +106,17 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
     val actual = job.getEventWatermark
     val expect = ZonedDateTime.ofInstant(Instant.ofEpochMilli(1560859857002L), job.defaultZoneId)
     assert(actual.equals(expect))
+
+    fs.delete(new Path(lagDir), true)
+    fs.delete(new Path(doneDir), true)
   }
 
   test("testReadFileContent") {
     val file = new File("src/test/resources/touchImkHourlyDone.data/lag/0")
     fs.copyFromLocalFile(new Path(file.getAbsolutePath), new Path(lagDir + "/0"))
     assert(job.readFileContent(new Path(lagDir + "/0")).equals("1560946257001"))
+
+    fs.delete(new Path(lagDir), true)
+    fs.delete(new Path(doneDir), true)
   }
-
-  test("testDoneFilePostfix") {
-
-  }
-
 }

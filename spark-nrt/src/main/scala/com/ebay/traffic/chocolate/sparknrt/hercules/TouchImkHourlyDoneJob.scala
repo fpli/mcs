@@ -60,11 +60,11 @@ class TouchImkHourlyDoneJob(params: Parameter)
       delays = ChronoUnit.HOURS.between(yesterdayLastDoneFileDatetime, currentDateHour)
     }
 
-    val times: immutable.Seq[ZonedDateTime] = (0L until delays).map(delay => currentDateHour.minusHours(delay))
-
     val watermark = getEventWatermark
 
-    times.filter(dateTime => dateTime.isBefore(watermark)).foreach(dateTime => {
+    val times: immutable.Seq[ZonedDateTime] = (0L until delays).map(delay => currentDateHour.minusHours(delay)).reverse.filter(dateTime => dateTime.isBefore(watermark))
+
+    times.foreach(dateTime => {
       val file = getDoneFileName(dateTime)
       val out = fs.create(new Path(file), true)
       out.close()
