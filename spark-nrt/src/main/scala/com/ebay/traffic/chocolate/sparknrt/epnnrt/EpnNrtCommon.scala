@@ -7,11 +7,11 @@ import java.util.Properties
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
-import com.google.gson.{Gson, JsonObject, JsonParser}
+import com.google.gson.{Gson, JsonParser}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.functions.udf
 import org.slf4j.LoggerFactory
 import rx.Observable
 import rx.functions.Func1
@@ -125,6 +125,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     "NULL_USERAGENT" -> 10,
     "UNKNOWN_USERAGENT" -> -99
   )
+
+  lazy val ams_clk_fltr_type_map: Map[Int, Int] = Map(
+    12 -> 0,
+    13 -> 2,
+    14 -> 0,
+    15 -> 2
+  )
+
 
   //landing page id map  (landing_page_url -> page_id) here is MultiMap!
   lazy val landing_page_pageId_map: mutable.HashMap[String, mutable.Set[LandingPageMapInfo]] = {
@@ -600,7 +608,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     clickFilterTypeId
   }
 
-  def getRoiRuleValue(rotationId: String, publisherId: String, referer_domain: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_9: Int, rt_rule_15: Int): (Int, Int) = {
+  /*def getRoiRuleValue(rotationId: String, publisherId: String, referer_domain: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_9: Int, rt_rule_15: Int): (Int, Int) = {
     var temp_roi_values = 0
     var roiRuleValues = 0
   //  var amsFilterRoiValue = 0
@@ -625,6 +633,53 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if (roiRuleValues != 0) {
       roi_fltr_yn_ind = 1
     }
+    (roiRuleValues, roi_fltr_yn_ind)
+  }*/
+
+  def getRoiRuleValue(rotationId: String, publisherId: String, referer_domain: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_9: Int, rt_rule_15: Int): (Int, Int) = {
+    var temp_roi_values = 0
+    var roiRuleValues = 0
+    //  var amsFilterRoiValue = 0
+    var roi_fltr_yn_ind = 0
+
+    if (isDefinedPublisher(publisherId) && isDefinedAdvertiserId(rotationId)) {
+      if(callRoiRulesSwitch(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1)).equals("2")) {
+        val roiRuleList = lookupAdvClickFilterMapAndROI(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1), traffic_source_code)
+        roiRuleList(0).setRule_result(callRoiSdkRule(roiRuleList(0).getIs_rule_enable, roiRuleList(0).getIs_pblshr_advsr_enable_rule, 0))
+        roiRuleList(1).setRule_result(callRoiEbayReferrerRule(roiRuleList(1).getIs_rule_enable, roiRuleList(1).getIs_pblshr_advsr_enable_rule, rt_rule_9))
+        roiRuleList(2).setRule_result(callRoiNqBlacklistRule(roiRuleList(2).getIs_rule_enable, roiRuleList(2).getIs_pblshr_advsr_enable_rule, rt_rule_15))
+        roiRuleList(3).setRule_result(callRoiNqWhitelistRule(publisherId, roiRuleList(3).getIs_rule_enable, roiRuleList(3).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
+        roiRuleList(4).setRule_result(callRoiMissingReferrerUrlRule(roiRuleList(4).getIs_rule_enable, roiRuleList(4).getIs_pblshr_advsr_enable_rule, referer_domain))
+        roiRuleList(5).setRule_result(callRoiNotRegisteredRule(publisherId, roiRuleList(5).getIs_rule_enable, roiRuleList(5).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
+
+        for (i <- roiRuleList.indices) {
+          temp_roi_values = temp_roi_values + (roiRuleList(i).getRule_result << i)
+        }
+      }
+    }
+    roiRuleValues = temp_roi_values + (google_fltr_do_flag << 6)
+    if (roiRuleValues != 0) {
+      roi_fltr_yn_ind = 1
+    }
+
+    val advrtsrId = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1)
+    // add UC4 logical rt_rule_9 here
+    if (roi_fltr_yn_ind == 0 && rt_rule_9 == 1 && (traffic_source_code == ams_clk_fltr_type_map(12) || traffic_source_code == ams_clk_fltr_type_map(13))) {
+      var list = getAdvClickFilterMap(publisherId)
+      list = list.filter(e => e.getAms_advertiser_id.equalsIgnoreCase(advrtsrId) &&
+        (e.getAms_clk_fltr_type_id.equalsIgnoreCase("12") || e.getAms_clk_fltr_type_id.equalsIgnoreCase("13")))
+      if (list.size > 0)
+        roi_fltr_yn_ind = 1
+    }
+    // add UC4 logical rt_rule_15 here
+    if (roi_fltr_yn_ind == 0 && rt_rule_15 == 1 && (traffic_source_code == ams_clk_fltr_type_map(14) || traffic_source_code == ams_clk_fltr_type_map(15))) {
+      var list = getAdvClickFilterMap(publisherId)
+      list = list.filter(e => e.getAms_advertiser_id.equalsIgnoreCase(advrtsrId) &&
+        (e.getAms_clk_fltr_type_id.equalsIgnoreCase("14") || e.getAms_clk_fltr_type_id.equalsIgnoreCase("15")))
+      if (list.size > 0)
+        roi_fltr_yn_ind = 1
+    }
+
     (roiRuleValues, roi_fltr_yn_ind)
   }
 

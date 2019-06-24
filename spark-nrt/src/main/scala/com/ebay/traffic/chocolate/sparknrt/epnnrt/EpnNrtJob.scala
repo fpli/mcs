@@ -1,6 +1,5 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
-import java.net.{MalformedURLException, URL}
 import java.text.SimpleDateFormat
 import java.util.Properties
 
@@ -12,7 +11,7 @@ import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
-import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.functions.col
 
 object EpnNrtJob extends App {
   override def main(args: Array[String]): Unit = {
