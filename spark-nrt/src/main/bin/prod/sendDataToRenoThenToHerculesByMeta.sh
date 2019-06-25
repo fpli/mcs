@@ -4,11 +4,11 @@
 
 WORK_DIR=$1
 CHANNEL=$2
-ACTION=$3
+USAGE=$3
 META_SUFFIX=$4
 RENO_DIR=$5
 HERCULES_DIR=$6
-EVENT_TYPE=$7
+ACTION=$7
 TOUCH_PROCESS_FILE=$8
 
 function process_one_meta(){
@@ -36,7 +36,7 @@ function process_one_meta(){
         data_file_name=$(basename "$data_file")
         rm -f data_file_name
         hdfs dfs -get ${data_file}
-        reno_path=${RENO_DIR}'/'${EVENT_TYPE}'/'${date}
+        reno_path=${RENO_DIR}'/'${ACTION}'/'${date}
 
 
         ####################################### Generate epn nrt processed file #######################################
@@ -89,10 +89,10 @@ function process_one_meta(){
         ############################################ Send data to Hercules ############################################
 
         reno_file_name='viewfs://apollo-rno'${reno_path}'/'${data_file_name}
-        if [ ${EVENT_TYPE} -eq 'click']
+        if [ ${ACTION} -eq 'click']
         then
             hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_click/'${date}
-        elif [ ${EVENT_TYPE} -eq 'imp']
+        elif [ ${ACTION} -eq 'imp']
         then
             hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_impression/'${date}
         else
@@ -130,8 +130,8 @@ export HADOOP_USER_NAME=chocolate
 /datashare/mkttracking/tools/keytab-tool/kinit/kinit_byhost.sh
 
 
-meta_dir=${WORK_DIR}'/meta/'${CHANNEL}'/output/'${ACTION}
-tmp_dir='tmp_scp_to_reno_'${CHANNEL}'_'${ACTION}
+meta_dir=${WORK_DIR}'/meta/'${CHANNEL}'/output/'${USAGE}
+tmp_dir='tmp_scp_to_reno_'${CHANNEL}'_'${USAGE}
 mkdir -p ${tmp_dir}
 cd ${tmp_dir}
 
