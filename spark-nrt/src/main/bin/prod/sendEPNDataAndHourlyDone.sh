@@ -37,22 +37,6 @@ else
 fi
 
 
-############################### Send EPN Impression Data to Apollo Reno then to Hecules ###############################
-
-echo "============== Send EPN Impression Data to Apollo Reno then to Hecules =============="
-
-./sendDataToRenoThenToHeculesByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_reno ${RENO_DIR} ${HERCULES_DIR} imp YES
-rcode_imp=$?
-
-if [ $rcode_imp -eq 0 ];
-then
-    echo "Successfully send EPN NRT Impression data to Apollo Reno"
-else
-    echo -e "Send EPN NRT Impression Data To Apollo Reno Error!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data to Apollo Reno!" -v DL-eBay-Chocolate-GC@ebay.com
-    exit $rcode_imp
-fi
-
-
 ################## Send EPN Click Data to Apollo Reno then to Hercules and generate hourly done file ##################
 
 echo "============== Send EPN Click Data to Apollo Reno then to Hercules and generate hourly done file =============="
@@ -83,4 +67,20 @@ then
 else
     echo -e "Send EPN NRT click Data from Apollo Reno to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data from Apollo Reno to Hercules!" -v DL-eBay-Chocolate-GC@ebay.com
     exit $rcode_click
+fi
+
+
+############################### Send EPN Impression Data to Apollo Reno then to Hecules ###############################
+
+echo "============== Send EPN Impression Data to Apollo Reno then to Hecules =============="
+
+./sendDataToRenoThenToHeculesByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_reno ${RENO_DIR} ${HERCULES_DIR} imp YES
+rcode_imp=$?
+
+if [ $rcode_imp -eq 0 ];
+then
+    echo "Successfully send EPN NRT Impression data to Apollo Reno"
+else
+    echo -e "Send EPN NRT Impression Data To Apollo Reno Error!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data to Apollo Reno!" -v DL-eBay-Chocolate-GC@ebay.com
+    exit $rcode_imp
 fi
