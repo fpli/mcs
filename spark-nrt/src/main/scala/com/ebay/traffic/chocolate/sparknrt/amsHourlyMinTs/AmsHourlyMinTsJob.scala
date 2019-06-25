@@ -37,7 +37,7 @@ class AmsHourlyMinTsJob(params: Parameter) extends
 
     var minTsArray : Array[Long] = new Array[Long](0)
 
-    // get minimum timestamp
+    // get minimum timestamps from all files
     epnnrtResult.foreach(metaIter => {
       val file = metaIter._1
       val datesFiles = metaIter._2
@@ -46,21 +46,17 @@ class AmsHourlyMinTsJob(params: Parameter) extends
         val df = readFilesAsDFEx(datesFile._2, schema_epn_click.dfSchema, "csv", "tab", false)
           .select("CLICK_TS")
 
-        df.show(false)
-
         val head = df.take(1)
         if (head.length == 0) {
           logger.info("No data!")
         } else {
-          val minTsInThisFile = sdf.parse(df.agg(min(df.col("CLICK_TS"))).head().getString(0)).getTime
-          System.out.println(minTsInThisFile)
-          minTsArray :+ minTsInThisFile
+          val minTsInThisFile = getTimestamp(df.agg(min(df.col("CLICK_TS"))).head().getString(0))
+          minTsArray :+= minTsInThisFile
         }
       })
     })
 
-    System.out.println(minTsArray.min)
-    // write minimum timestamp to hdfs file
+    // write the minimum timestamp to hdfs file
     var outputStream: FSDataOutputStream = null
     try {
       outputStream = fs.create(new Path(params.outputDir))
@@ -71,6 +67,10 @@ class AmsHourlyMinTsJob(params: Parameter) extends
         outputStream.close()
       }
     }
+  }
+
+  def getTimestamp(date: String): Long = {
+    sdf.parse(date).getTime
   }
 
 }
