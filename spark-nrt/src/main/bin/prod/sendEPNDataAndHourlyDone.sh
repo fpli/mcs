@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 
+WORK_DIR=/apps/tracking-events-workdir
+CHANNEL=EPN
+USAGE_CLICK=epnnrt_scp_click
+USAGE_IMP=epnnrt_scp_imp
+META_SUFFIX_ETL=.epnnrt_etl
+META_SUFFIX_RNO=.epnnrt_reno
+
 ETL_HOST=etl_epn_nrt_push@lvsdpeetl015.lvs.ebay.com
 ETL_PATH=/dw/etl/home/prod/land/dw_ams/nrt_test
 ETL_TOKEN=/datashare/mkttracking/tools/rsa_token/nrt_etl_key
 RENO_DIR=/apps/b_marketing_tracking/chocolate/epnnrt
 HERCULES_DIR=/apps/b_marketing_tracking/AMS
+
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
 log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/send_EPN_Data${log_dt}.log"
 DT_TODAY=$(date +%Y-%m-%d)
@@ -14,7 +22,7 @@ DT_TODAY=$(date +%Y-%m-%d)
 
 echo "============== Send EPN Data to ETL =============="
 
-./scpDataToETLByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_etl ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO
+./scpDataToETLByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX_ETL} ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO
 rcode_send_etl_click=$?
 
 if [ $rcode_send_etl_click -eq 0 ];
@@ -25,7 +33,7 @@ else
     exit $rcode_send_etl_click
 fi
 
-./scpDataToETLByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_etl ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO
+./scpDataToETLByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX_ETL} ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO
 rcode_send_etl_imp=$?
 
 if [ $rcode_send_etl_imp -eq 0 ];
@@ -41,7 +49,7 @@ fi
 
 echo "============== Send EPN Click Data to Apollo Reno then to Hercules and generate hourly done file =============="
 
-./checkAmsHourlyDone.sh /apps/tracking-events-workdir EPN epnnrt_scp_click .epnnrt_reno
+./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX_RNO}
 rcode_check=$?
 
 if [$rcode_check -eq 1 ];
@@ -51,7 +59,7 @@ else
     echo "Hourly data is not ready"
 fi
 
-./sendDataToRenoThenToHerculesByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_reno ${RENO_DIR} ${HERCULES_DIR} click
+./sendDataToRenoThenToHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX_RNO} ${RENO_DIR} ${HERCULES_DIR} click YES
 rcode_click=$?
 
 if [ $rcode_click -eq 0 ];
@@ -74,7 +82,7 @@ fi
 
 echo "============== Send EPN Impression Data to Apollo Reno then to Hecules =============="
 
-./sendDataToRenoThenToHeculesByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_reno ${RENO_DIR} ${HERCULES_DIR} imp YES
+./sendDataToRenoThenToHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX_RNO} ${RENO_DIR} ${HERCULES_DIR} imp YES
 rcode_imp=$?
 
 if [ $rcode_imp -eq 0 ];
