@@ -2,20 +2,14 @@ package com.ebay.traffic.chocolate.sparknrt.amsHourlyMinTs
 
 import java.text.SimpleDateFormat
 
-import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
-import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
-import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.parquet.avro.AvroParquetWriter
-import org.apache.parquet.hadoop.ParquetWriter
-import org.apache.parquet.hadoop.metadata.CompressionCodecName
+import org.apache.hadoop.fs.FileSystem
 
 class TestAmsHourlyMinTs extends BaseFunSuite{
   private val tmpPath = createTempPath()
-  private val inputDir = getTestResourcePath("amsSample.csv")
+  private val inputDir = getTestResourcePath("amsSample.dat.gz")
   private val workDir = tmpPath + "/workDir/"
   private val outputDir = tmpPath + "/outputDir/"
   private val channel = "EPN"
