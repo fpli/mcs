@@ -5,7 +5,7 @@ DONE_FILE_DIR=/apps/b_marketing_tracking/watch/
 
 done_date=${DONE_FILE:22:8}
 done_file_full_name=${DONE_FILE_DIR}${done_date}'/'${DONE_FILE}
-local_done_date_file="/datashare/mkttracking/chocolate/epn-nrt/local_done_date.txt"
+local_done_date_file="/datashare/mkttracking/data/epn-nrt/local_done_date.txt"
 
 #################################### Generate hourly done file on Apollo Rno ####################################
 echo "=============== Start generating hourly done file on rno ==============="

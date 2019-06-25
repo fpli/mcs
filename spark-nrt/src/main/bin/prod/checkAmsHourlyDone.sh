@@ -15,7 +15,7 @@ META_SUFFIX=$4
 
 echo "====================== Search for last hourly done date to define current check hour ======================"
 
-local_done_date="/datashare/mkttracking/chocolate/epn-nrt/local_done_date.txt"
+local_done_date="/datashare/mkttracking/data/epn-nrt/local_done_date.txt"
 check_last_time=${local_done_date:0:4}'-'${local_done_date:4:2}'-'${local_done_date:6:2}' '${local_done_date:8}':00:00'
 check_last_timestamp=$(date -d ${check_time}" +%s)000
 let check_now_timestamp=${check_last_timestamp}+7200000
