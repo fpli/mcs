@@ -15,7 +15,7 @@ case class Parameter(appName: String = "AMSHourlyMinTs",
 
 object Parameter {
 
-  private lazy val parser = new OptionParser[Parameter]("Monitoring") {
+  private lazy val parser = new OptionParser[Parameter]("AMSHourlyMinTs") {
     head("AMSHourlyMinTs")
 
     opt[String]("appName")
@@ -36,22 +36,22 @@ object Parameter {
     opt[String]("channel")
       .required
       .valueName("channel")
-      .action((cont, param) => param.copy(workDir = cont))
+      .action((cont, param) => param.copy(channel = cont))
 
     opt[String]("usage")
       .required
       .valueName("usage")
-      .action((cont, param) => param.copy(workDir = cont))
+      .action((cont, param) => param.copy(usage = cont))
 
     opt[String]("metaSuffix")
       .required
       .valueName("metaSuffix")
-      .action((cont, param) => param.copy(workDir = cont))
+      .action((cont, param) => param.copy(metaSuffix = cont))
 
-    opt[String]("minTsFile")
+    opt[String]("outputDir")
       .required
-      .valueName("minTsFile")
-      .action((cont, param) => param.copy(workDir = cont))
+      .valueName("outputDir")
+      .action((cont, param) => param.copy(outputDir = cont))
 
   }
 
