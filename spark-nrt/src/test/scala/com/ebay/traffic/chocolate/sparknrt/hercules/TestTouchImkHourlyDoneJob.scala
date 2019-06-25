@@ -42,6 +42,7 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
   }
 
   test("testRun") {
+    // create temp done file, last done was generated yesterday 12 am
     val now = ZonedDateTime.now(job.defaultZoneId)
     val currentDateHour = now.truncatedTo(ChronoUnit.HOURS)
 
@@ -49,12 +50,11 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
 
     fs.mkdirs(yesterdayDoneDir)
 
-    // last done was generated yesterday 12 am
     val lastDoneDateTime = currentDateHour.minusDays(1).withHour(12)
     val doneOut = fs.create(new Path(yesterdayDoneDir + "/" + "imk_rvr_trckng_event_hourly.done." + lastDoneDateTime.format(job.doneFileDatetimeFormatter) + "00000000"), true)
     doneOut.close()
 
-    // lag ts is today 12:10
+    // create temp lag file, lag ts is today 12:10
     fs.mkdirs(new Path(lagDir))
     val lagOut = fs.create(new Path(lagDir + "/" + "0"), true)
     lagOut.writeBytes(String.valueOf(currentDateHour.withHour(12).withMinute(10).toInstant.toEpochMilli))
