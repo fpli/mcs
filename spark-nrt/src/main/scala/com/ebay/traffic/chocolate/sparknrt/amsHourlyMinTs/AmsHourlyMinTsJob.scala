@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.amsHourlyMinTs
 
+import java.text.SimpleDateFormat
+
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
@@ -9,18 +11,20 @@ import org.apache.spark.sql.functions._
 /**
   * Created by jialili1 on 06/21/19.
   */
-object AMSHourlyMinTsJob extends App {
+object AmsHourlyMinTsJob extends App {
   override def main(args: Array[String]): Unit = {
     val params = Parameter(args)
-    val job = new AMSHourlyMinTsJob(params)
+    val job = new AmsHourlyMinTsJob(params)
 
     job.run()
     job.stop()
   }
 }
 
-class AMSHourlyMinTsJob(params: Parameter) extends
+class AmsHourlyMinTsJob(params: Parameter) extends
   BaseSparkNrtJob(params.appName, params.mode) {
+
+  @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
 
   @transient lazy val metadata = {
     Metadata(params.workDir, params.channel, MetadataEnum.convertToMetadataEnum(params.usage))
@@ -42,16 +46,20 @@ class AMSHourlyMinTsJob(params: Parameter) extends
         val df = readFilesAsDFEx(datesFile._2, schema_epn_click.dfSchema, "csv", "tab", false)
           .select("CLICK_TS")
 
+        df.show(false)
+
         val head = df.take(1)
         if (head.length == 0) {
           logger.info("No data!")
         } else {
-          var minTsInThisFile = df.agg(min(df.col("CLICK_TS"))).head().getLong(0)
+          val minTsInThisFile = sdf.parse(df.agg(min(df.col("CLICK_TS"))).head().getString(0)).getTime
+          System.out.println(minTsInThisFile)
           minTsArray :+ minTsInThisFile
         }
       })
     })
 
+    System.out.println(minTsArray.min)
     // write minimum timestamp to hdfs file
     var outputStream: FSDataOutputStream = null
     try {
