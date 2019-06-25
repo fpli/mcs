@@ -11,8 +11,6 @@ CHANNEL=$2
 USAGE=$3
 META_SUFFIX=$4
 
-export HADOOP_USER_NAME=chocolate
-
 ############################################### Define Check Hour ###############################################
 
 echo "====================== Search for last hourly done date to define current check hour ======================"

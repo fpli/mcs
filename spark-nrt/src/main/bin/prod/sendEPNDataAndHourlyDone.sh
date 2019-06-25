@@ -52,19 +52,12 @@ echo "============== Send EPN Click Data to Apollo Reno then to Hercules and gen
 ./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX_RNO}
 rcode_check=$?
 
-if [$rcode_check -eq 1 ];
-then
-    echo "Hourly data is ready"
-else
-    echo "Hourly data is not ready"
-fi
-
 ./sendDataToRenoThenToHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX_RNO} ${RENO_DIR} ${HERCULES_DIR} click YES
 rcode_click=$?
 
 if [ $rcode_click -eq 0 ];
 then
-    echo "Successfully send EPN NRT click data from Apollo Reno to Hercules"
+    echo "Successfully send EPN NRT Click Data from Apollo Reno to Hercules"
     if [$rcode_check -eq 1];
     then
         done_file="ams_click_hourly.done.$(date +%Y%m%d%H -d "`date` - 1 hour")00000000"
@@ -73,7 +66,7 @@ then
         exit $rcode_check
     fi
 else
-    echo -e "Send EPN NRT click Data from Apollo Reno to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data from Apollo Reno to Hercules!" -v DL-eBay-Chocolate-GC@ebay.com
+    echo -e "Send EPN NRT Click Data from Apollo Reno to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data from Apollo Reno to Hercules!" -v DL-eBay-Chocolate-GC@ebay.com
     exit $rcode_click
 fi
 
@@ -87,8 +80,8 @@ rcode_imp=$?
 
 if [ $rcode_imp -eq 0 ];
 then
-    echo "Successfully send EPN NRT Impression data to Apollo Reno"
+    echo "Successfully send EPN NRT Impression data from Apollo Reno to Hercules"
 else
-    echo -e "Send EPN NRT Impression Data To Apollo Reno Error!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data to Apollo Reno!" -v DL-eBay-Chocolate-GC@ebay.com
+    echo -e "Send EPN NRT Impression Data from Apollo Reno to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data to Apollo Reno!" -v DL-eBay-Chocolate-GC@ebay.com
     exit $rcode_imp
 fi
