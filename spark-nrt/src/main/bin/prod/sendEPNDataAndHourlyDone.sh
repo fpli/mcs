@@ -10,7 +10,9 @@ log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/send_EPN_Data${log_dt}.l
 DT_TODAY=$(date +%Y-%m-%d)
 
 
-echo `date +%Y-%m-%d-%H` "================================ Start sending EPN Data to ETL ================================" | tee -a ${log_file}
+################################################ Send EPN Data to ETL ################################################
+
+echo "============== Send EPN Data to ETL =============="
 
 ./scpDataToETLByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_etl ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO
 rcode_send_etl_click=$?
@@ -34,26 +36,26 @@ else
     exit $rcode_send_etl_imp
 fi
 
-echo `date +%Y-%m-%d-%H` "============================= Successfully sending EPN Data to ETL =============================" | tee -a ${log_file}
 
+############################### Send EPN Impression Data to Apollo Reno then to Hecules ###############################
 
-echo `date +%Y-%m-%d-%H` "============== Start sending EPN Impression Data to Apollo Reno then to Hecules ==============" | tee -a ${log_file}
+echo "============== Send EPN Impression Data to Apollo Reno then to Hecules =============="
 
-./sendDataToRenoThenToHeculesByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_reno ${RENO_DIR} ${HERCULES_DIR} imp YES ${log_file}
+./sendDataToRenoThenToHeculesByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_imp meta.epnnrt_reno ${RENO_DIR} ${HERCULES_DIR} imp YES
 rcode_imp=$?
 
 if [ $rcode_imp -eq 0 ];
 then
-    echo "Successfully send EPN NRT Impression data to Apollo Reno" | tee -a ${log_file}
+    echo "Successfully send EPN NRT Impression data to Apollo Reno"
 else
-    echo -e "Send EPN NRT Impression Data To Apollo Reno Error!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data to Apollo Reno!" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+    echo -e "Send EPN NRT Impression Data To Apollo Reno Error!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data to Apollo Reno!" -v DL-eBay-Chocolate-GC@ebay.com
     exit $rcode_imp
 fi
 
-echo `date +%Y-%m-%d-%H` "=========== Successfully sending EPN Impression Data to Apollo Reno then to Hercules ===========" | tee -a ${log_file}
 
+################## Send EPN Click Data to Apollo Reno then to Hercules and generate hourly done file ##################
 
-echo `date +%Y-%m-%d-%H` "=============== Start sending EPN Click Data to Apollo Reno then to Hercules and generate hourly done file ===============" | tee -a ${log_file}
+echo "============== Send EPN Click Data to Apollo Reno then to Hercules and generate hourly done file =============="
 
 ./checkAmsHourlyDone.sh /apps/tracking-events-workdir EPN epnnrt_scp_click .epnnrt_reno
 rcode_check=$?
@@ -65,7 +67,7 @@ else
     echo "Hourly data is not ready"
 fi
 
-./sendDataToRenoThenToHerculesByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_reno ${RENO_DIR} ${HERCULES_DIR} click ${log_file}
+./sendDataToRenoThenToHerculesByMeta.sh /apps/tracking-events-workdir EPN epnnrt_scp_click meta.epnnrt_reno ${RENO_DIR} ${HERCULES_DIR} click
 rcode_click=$?
 
 if [ $rcode_click -eq 0 ];
@@ -79,8 +81,6 @@ then
         exit $rcode_check
     fi
 else
-    echo -e "Send EPN NRT click Data from Apollo Reno to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data from Apollo Reno to Hercules!" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+    echo -e "Send EPN NRT click Data from Apollo Reno to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data from Apollo Reno to Hercules!" -v DL-eBay-Chocolate-GC@ebay.com
     exit $rcode_click
 fi
-
-echo `date +%Y-%m-%d-%H` "============ Successfully sending EPN Click Data to Apollo Reno then to Hercules and generate hourly done file ============" | tee -a ${log_file}
