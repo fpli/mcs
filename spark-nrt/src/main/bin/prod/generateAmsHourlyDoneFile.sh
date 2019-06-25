@@ -8,7 +8,7 @@ done_file_full_name=${DONE_FILE_DIR}${done_date}'/'${DONE_FILE}
 local_done_date_file="/datashare/mkttracking/chocolate/epn-nrt/local_done_date.txt"
 
 #################################### Generate hourly done file on Apollo Rno ####################################
-echo "Start generating hourly done file on rno"
+echo "=============== Start generating hourly done file on rno ==============="
 
 HOST_NAME=`hostname -f`
 kinit -kt /datashare/mkttracking/tools/keytab-tool/keytab/b_marketing_tracking.${HOST_NAME}.keytab  b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM
@@ -39,7 +39,7 @@ done
 
 
 #################################### Generate hourly done file on Hercules ####################################
-echo "Start generating hourly done file on hercules"
+echo "=============== Start generating hourly done file on hercules ==============="
 
 reno_done_file_full_name='viewfs://apollo-rno'${done_file_full_name}
 hercules_done_file_full_name='hdfs://hercules'${done_file_full_name}
