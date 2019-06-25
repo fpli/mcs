@@ -27,25 +27,8 @@ class TestAmsHourlyMinTs extends BaseFunSuite{
     "--outputDir", outputDir
   )
 
-  @transient lazy val hadoopConf = {
-    new Configuration()
-  }
-
-  lazy val fs = {
-    val fs = FileSystem.get(hadoopConf)
-    sys.addShutdownHook(fs.close())
-    fs
-  }
-
   val params = Parameter(args)
   val job = new AmsHourlyMinTsJob(params)
-  val timestamp1 = getTimestamp("2019-06-01")
-  val timestamp2 = timestamp1 + 3600000
-  val timestamp3 = timestamp1 + 7200000
-
-  def getTimestamp(date: String): Long = {
-    sdf.parse(date).getTime
-  }
 
   test("test AmsHourlyMinTs Job") {
     val metadata = Metadata(workDir, channel, MetadataEnum.epnnrt_scp_click)
