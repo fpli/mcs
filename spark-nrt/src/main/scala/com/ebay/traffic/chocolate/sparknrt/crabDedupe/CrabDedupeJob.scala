@@ -105,7 +105,7 @@ class CrabDedupeJob(params: Parameter)
 
     val lag =  df.agg(min(df.col("event_ts"))).head().getString(0)
 
-    val output = fs.create(new Path(LAG_FILE), true)
+    val output = lvsFs.create(new Path(LAG_FILE), true)
     output.writeBytes(lag)
     output.close()
 

@@ -1,12 +1,13 @@
 package com.ebay.traffic.chocolate.sparknrt.hercules
 
 import java.io.ByteArrayOutputStream
+import java.net.URI
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.{Instant, ZoneId, ZonedDateTime}
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import org.apache.hadoop.fs.{FileStatus, Path}
+import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
 
 import scala.collection.immutable
 
@@ -28,6 +29,18 @@ object TouchImkHourlyDoneJob extends App {
 
 class TouchImkHourlyDoneJob(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
+
+  @transient lazy val lvsFs: FileSystem = {
+    val fs = FileSystem.get(URI.create(params.lagDir), hadoopConf)
+    sys.addShutdownHook(fs.close())
+    fs
+  }
+
+  @transient override lazy val fs: FileSystem = {
+    val fs = FileSystem.get(URI.create(params.workDir), hadoopConf)
+    sys.addShutdownHook(fs.close())
+    fs
+  }
 
   lazy val defaultZoneId: ZoneId = ZoneId.systemDefault()
 
@@ -90,7 +103,7 @@ class TouchImkHourlyDoneJob(params: Parameter)
     * @return watermark
     */
   def getEventWatermark: ZonedDateTime = {
-    fs.listStatus(new Path(lagDir))
+    lvsFs.listStatus(new Path(lagDir))
       .map(status => status.getPath)
       .map(path => readFileContent(path).toLong)
       .map(ts => ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts), defaultZoneId))
@@ -112,7 +125,7 @@ class TouchImkHourlyDoneJob(params: Parameter)
     * @return file content
     */
   def readFileContent(path: Path): String = {
-    val in = fs.open(path)
+    val in = lvsFs.open(path)
     val out = new ByteArrayOutputStream()
     val buffer = new Array[Byte](1024)
     var n = 0
