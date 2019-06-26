@@ -11,13 +11,16 @@ CHANNEL=$2
 USAGE=$3
 META_SUFFIX=$4
 
+export HADOOP_USER_NAME=chocolate
+
 ############################################### Define Check Hour ###############################################
 
 echo "====================== Search for last hourly done date to define current check hour ======================"
 
 local_done_date="/datashare/mkttracking/data/epn-nrt/local_done_date.txt"
 check_last_time=${local_done_date:0:4}'-'${local_done_date:4:2}'-'${local_done_date:6:2}' '${local_done_date:8}':00:00'
-check_last_timestamp=$(date -d ${check_time}" +%s)000
+echo "Last done: "${check_last_time}
+check_last_timestamp=$(date -d "${check_last_time}" +%s)000
 let check_now_timestamp=${check_last_timestamp}+7200000
 
 
@@ -26,10 +29,10 @@ let check_now_timestamp=${check_last_timestamp}+7200000
 echo "====================== Start checking dedupe lags ======================"
 
 flag_lag=0
-LAST_TS_PATH=/apps/tracking-events-workdir/last_ts/EPN/*
+last_ts_path=/apps/tracking-events-workdir/last_ts/EPN/*
 
-earliest_ts=`hdfs dfs -cat ${LAST_TS_PATH} | sort -n | head -1`
-echo "Timestamp of earliest message: "${last_ts}
+earliest_ts=`hdfs dfs -cat ${last_ts_path} | sort -n | head -1`
+echo "Timestamp of earliest dedupe lag: "${earliest_ts}
 if [ ${earliest_ts} -ge ${check_now_timestamp} ]
 then
      echo "Dedupe lags are all in current hour"
@@ -42,10 +45,11 @@ fi
 echo "====================== Start checking data timestamp ======================"
 
 flag_ts=0
-data_min_ts_file="/apps/epn-nrt/min_ts.txt"
+data_min_ts_file=/apps/epn-nrt/min_ts.txt
 
 ./AmsHourlyMinTs.sh ${WORK_DIR} ${CHANNEL} ${USAGE} ${META_SUFFIX} ${data_min_ts_file}
-data_min_ts=`hdfs dfs -cat ${data_min_ts_dir}`
+let data_min_ts=`hdfs dfs -cat ${data_min_ts_file}`
+echo "Timestamp of earliest epn nrt data: "${data_min_ts}
 if [ ${data_min_ts} -ge ${check_now_timestamp} ]
 then
     echo "Data timestamp are all in current hour"
@@ -54,7 +58,7 @@ fi
 
 
 ################################################### Final Check ###################################################
-if [[ ${flag1} -eq 1 && ${flag2} -eq 1 ]]
+if [[ ${flag_lag} -eq 1 && ${flag_ts} -eq 1 ]]
 then
     echo "Hourly data is ready"
     exit 1
