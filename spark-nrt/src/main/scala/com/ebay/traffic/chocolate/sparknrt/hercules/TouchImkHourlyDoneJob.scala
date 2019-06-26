@@ -44,7 +44,7 @@ class TouchImkHourlyDoneJob(params: Parameter)
 
   lazy val defaultZoneId: ZoneId = ZoneId.systemDefault()
 
-  lazy val dayFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(defaultZoneId)
+  lazy val dayFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd").withZone(defaultZoneId)
   lazy val doneFileDatetimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHH").withZone(defaultZoneId)
 
   lazy val doneFilePrefix = "imk_rvr_trckng_event_hourly.done."

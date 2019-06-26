@@ -75,7 +75,7 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
 
   test("testGetDoneDir") {
     val time = ZonedDateTime.of(2019, 6, 19, 0, 0, 0, 0, job.defaultZoneId)
-    assert(job.getDoneDir(time).split("/").last.equals("2019-06-19"))
+    assert(job.getDoneDir(time).split("/").last.equals("20190619"))
   }
 
   test("testGetDoneFileName") {
