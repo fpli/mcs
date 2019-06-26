@@ -645,7 +645,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if (isDefinedPublisher(publisherId) && isDefinedAdvertiserId(rotationId)) {
       if(callRoiRulesSwitch(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1)).equals("2")) {
         val roiRuleList = lookupAdvClickFilterMapAndROI(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1), traffic_source_code)
-        roiRuleList(0).setRule_result(callRoiSdkRule(roiRuleList(0).getIs_rule_enable, roiRuleList(0).getIs_pblshr_advsr_enable_rule, 0))
+        roiRuleList.head.setRule_result(callRoiSdkRule(roiRuleList.head.getIs_rule_enable, roiRuleList.head.getIs_pblshr_advsr_enable_rule, 0))
         roiRuleList(1).setRule_result(callRoiEbayReferrerRule(roiRuleList(1).getIs_rule_enable, roiRuleList(1).getIs_pblshr_advsr_enable_rule, rt_rule_9))
         roiRuleList(2).setRule_result(callRoiNqBlacklistRule(roiRuleList(2).getIs_rule_enable, roiRuleList(2).getIs_pblshr_advsr_enable_rule, rt_rule_15))
         roiRuleList(3).setRule_result(callRoiNqWhitelistRule(publisherId, roiRuleList(3).getIs_rule_enable, roiRuleList(3).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
@@ -668,7 +668,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       var list = getAdvClickFilterMap(publisherId)
       list = list.filter(e => e.getAms_advertiser_id.equalsIgnoreCase(advrtsrId) &&
         (e.getAms_clk_fltr_type_id.equalsIgnoreCase("12") || e.getAms_clk_fltr_type_id.equalsIgnoreCase("13")))
-      if (list.size > 0)
+      if (list.nonEmpty)
         roi_fltr_yn_ind = 1
     }
     // add UC4 logical rt_rule_15 here
@@ -676,7 +676,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       var list = getAdvClickFilterMap(publisherId)
       list = list.filter(e => e.getAms_advertiser_id.equalsIgnoreCase(advrtsrId) &&
         (e.getAms_clk_fltr_type_id.equalsIgnoreCase("14") || e.getAms_clk_fltr_type_id.equalsIgnoreCase("15")))
-      if (list.size > 0)
+      if (list.nonEmpty)
         roi_fltr_yn_ind = 1
     }
 
