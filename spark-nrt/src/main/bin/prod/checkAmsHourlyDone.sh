@@ -47,7 +47,7 @@ echo "====================== Start checking data timestamp =====================
 flag_ts=0
 data_min_ts_file=/apps/epn-nrt/min_ts.txt
 
-./AmsHourlyMinTs.sh ${WORK_DIR} ${CHANNEL} ${USAGE} ${META_SUFFIX} ${data_min_ts_file}
+./amsHourlyMinTs.sh ${WORK_DIR} ${CHANNEL} ${USAGE} ${META_SUFFIX} ${data_min_ts_file}
 let data_min_ts=`hdfs dfs -cat ${data_min_ts_file}`
 echo "Timestamp of earliest epn nrt data: "${data_min_ts}
 if [ ${data_min_ts} -ge ${check_now_timestamp} ]
@@ -58,7 +58,7 @@ fi
 
 
 ################################################### Final Check ###################################################
-if [[ ${flag_lag} -eq 1 && ${flag_ts} -eq 1 ]]
+if [ ${flag_lag} -eq 1 && ${flag_ts} -eq 1 ]
 then
     echo "Hourly data is ready"
     exit 1

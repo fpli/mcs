@@ -64,7 +64,7 @@ function process_one_meta(){
             rcode_rno=$?
             if [ ${rcode_rno} -eq 0 ]
             then
-                echo "successful sending to Reno: "${data_file_name}
+                echo "Successfully send to Reno: "${data_file_name}
                 break
             else
                 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${reno_path}'/'${data_file_name}
@@ -96,7 +96,7 @@ function process_one_meta(){
         then
             hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_impression/'${date}
         else
-            ehco "No such events type!"
+            ehco "Wrong channel action!"
         fi
 
         echo "===================== Start upload ${reno_file_name} to ${hercules_dir_full} ====================="

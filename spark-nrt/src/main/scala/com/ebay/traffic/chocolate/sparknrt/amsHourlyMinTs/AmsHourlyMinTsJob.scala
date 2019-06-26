@@ -45,7 +45,7 @@ class AmsHourlyMinTsJob(params: Parameter) extends
         datesFiles.foreach(datesFile => {
           val df = readFilesAsDFEx(datesFile._2, schema_epn_click.dfSchema, "csv", "tab", false)
             .select("CLICK_TS")
-          
+
           val head = df.take(1)
           if (head.length == 0) {
             logger.info("No data!")

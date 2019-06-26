@@ -4,7 +4,7 @@
 usage="Usage: checkAmsMinTs.sh [workDir] [channel] [usage] [metaSuffix] [outputDir]"
 
 # if no args specified, show usage
-if [ $# -le 5 ]; then
+if [ $# -le 4 ]; then
   echo $usage
   exit 1
 fi
