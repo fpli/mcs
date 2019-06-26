@@ -1,5 +1,5 @@
 #!/bin/bash
-# Runs every 10 minutes to check file copied to RNO. The input will be deleted by putImkToReno job.
+# Runs every 10 minutes to check file copied to RNO. The input will be deleted by putImkToRenoAndHercules job.
 # Input:    SLC Hadoop
 #           /apps/tracking-events/crabTransform/imkOutput
 #           /apps/tracking-events/imkTransform/imkOutput
