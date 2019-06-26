@@ -136,6 +136,6 @@ class TouchImkHourlyDoneJob(params: Parameter)
       }
     }
     in.close()
-    out.toString
+    out.toString.trim
   }
 }
