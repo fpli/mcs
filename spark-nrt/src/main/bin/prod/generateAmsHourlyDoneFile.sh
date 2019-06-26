@@ -62,4 +62,4 @@ done
 
 
 ######################################### Save done time to local file #########################################
-echo ${DONE_FILE:22:10} | tee -a ${local_done_date_file}
+echo ${DONE_FILE:22:10} > ${local_done_date_file}
