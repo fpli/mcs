@@ -38,33 +38,34 @@ class AmsHourlyMinTsJob(params: Parameter) extends
     var minTsArray : Array[Long] = new Array[Long](0)
 
     // get minimum timestamps from all files
-    epnnrtResult.foreach(metaIter => {
-      val file = metaIter._1
-      val datesFiles = metaIter._2
+    if (epnnrtResult.length > 0) {
+      epnnrtResult.foreach(metaIter => {
+        val datesFiles = metaIter._2
 
-      datesFiles.foreach(datesFile => {
-        val df = readFilesAsDFEx(datesFile._2, schema_epn_click.dfSchema, "csv", "tab", false)
-          .select("CLICK_TS")
-
-        val head = df.take(1)
-        if (head.length == 0) {
-          logger.info("No data!")
-        } else {
-          val minTsInThisFile = getTimestamp(df.agg(min(df.col("CLICK_TS"))).head().getString(0))
-          minTsArray :+= minTsInThisFile
-        }
+        datesFiles.foreach(datesFile => {
+          val df = readFilesAsDFEx(datesFile._2, schema_epn_click.dfSchema, "csv", "tab", false)
+            .select("CLICK_TS")
+          
+          val head = df.take(1)
+          if (head.length == 0) {
+            logger.info("No data!")
+          } else {
+            val minTsInThisFile = getTimestamp(df.agg(min(df.col("CLICK_TS"))).head().getString(0))
+            minTsArray :+= minTsInThisFile
+          }
+        })
       })
-    })
 
-    // write the minimum timestamp to hdfs file
-    var outputStream: FSDataOutputStream = null
-    try {
-      outputStream = fs.create(new Path(params.outputDir))
-      outputStream.writeLong(minTsArray.min)
-      outputStream.flush()
-    } finally {
-      if (outputStream != null) {
-        outputStream.close()
+      // write the minimum timestamp to hdfs file
+      var outputStream: FSDataOutputStream = null
+      try {
+        outputStream = fs.create(new Path(params.outputDir))
+        outputStream.writeLong(minTsArray.min)
+        outputStream.flush()
+      } finally {
+        if (outputStream != null) {
+          outputStream.close()
+        }
       }
     }
   }
