@@ -62,23 +62,30 @@ class TouchImkHourlyDoneJob(params: Parameter)
     val todayDoneDir = new Path(getDoneDir(currentDateHour))
     val yesterdayDoneDir = new Path(getDoneDir(currentDateHour.minusDays(1)))
 
+    logger.info("currentDateHour {}, todayDoneDir {}, yesterdayDoneDir {}", currentDateHour, todayDoneDir, yesterdayDoneDir)
+
     var delays = 0L
 
     if (fs.exists(todayDoneDir) && fs.listStatus(todayDoneDir).length != 0) {
       val todayLastDoneFileDatetime = getLastDoneFileDatetime(fs.listStatus(todayDoneDir))
       delays = ChronoUnit.HOURS.between(todayLastDoneFileDatetime, currentDateHour)
+      logger.info("todayLastDoneFileDatetime {}", todayLastDoneFileDatetime)
     } else {
       fs.mkdirs(todayDoneDir)
       val yesterdayLastDoneFileDatetime = getLastDoneFileDatetime(fs.listStatus(yesterdayDoneDir))
       delays = ChronoUnit.HOURS.between(yesterdayLastDoneFileDatetime, currentDateHour)
+      logger.info("yesterdayLastDoneFileDatetime {}", yesterdayLastDoneFileDatetime)
     }
 
     val watermark = getEventWatermark
+
+    logger.info("delays {}, watermark {}", delays, watermark)
 
     val times: immutable.Seq[ZonedDateTime] = (0L until delays).map(delay => currentDateHour.minusHours(delay)).reverse.filter(dateTime => dateTime.isBefore(watermark))
 
     times.foreach(dateTime => {
       val file = getDoneFileName(dateTime)
+      logger.info("touch done file {}", file)
       val out = fs.create(new Path(file), true)
       out.close()
     })
