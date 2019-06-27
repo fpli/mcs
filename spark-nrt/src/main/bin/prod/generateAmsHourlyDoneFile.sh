@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
 DONE_FILE=$1
+LOCAL_DONE_DATE_FILE=$2
+
 DONE_FILE_DIR=/apps/b_marketing_tracking/watch/
 
 done_date=${DONE_FILE:22:8}
 done_file_full_dir=${DONE_FILE_DIR}${done_date}
 done_file_full_name=${done_file_full_dir}'/'${DONE_FILE}
-local_done_date_file="/datashare/mkttracking/data/epn-nrt/local_done_date.txt"
 
 #################################### Generate hourly done file on Apollo Rno ####################################
 
@@ -74,4 +75,4 @@ done
 
 ######################################### Save done time to local file #########################################
 
-echo ${DONE_FILE:22:10} > ${local_done_date_file}
+echo ${DONE_FILE:22:10} > ${LOCAL_DONE_DATE_FILE}

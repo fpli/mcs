@@ -10,6 +10,7 @@ WORK_DIR=$1
 CHANNEL=$2
 USAGE=$3
 META_SUFFIX=$4
+LOCAL_DONE_DATE_FILE=$5
 
 export HADOOP_USER_NAME=chocolate
 
@@ -17,7 +18,7 @@ export HADOOP_USER_NAME=chocolate
 
 echo "====================== Search for last hourly done date to define current check hour ======================"
 
-local_done_date="/datashare/mkttracking/data/epn-nrt/local_done_date.txt"
+local_done_date=`cat ${LOCAL_DONE_DATE_FILE}`
 check_last_time=${local_done_date:0:4}'-'${local_done_date:4:2}'-'${local_done_date:6:2}' '${local_done_date:8}':00:00'
 echo "Last done: "${check_last_time}
 check_last_timestamp=$(date -d "${check_last_time}" +%s)000

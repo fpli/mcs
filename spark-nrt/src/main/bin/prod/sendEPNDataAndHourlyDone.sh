@@ -13,6 +13,8 @@ ETL_TOKEN=/datashare/mkttracking/tools/rsa_token/nrt_etl_key
 RENO_DIR=/apps/b_marketing_tracking/chocolate/epnnrt
 HERCULES_DIR=/apps/b_marketing_tracking/AMS
 
+LOCAL_DONE_DATE_FILE=/datashare/mkttracking/data/epn-nrt/local_done_date.txt
+
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
 log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/send_EPN_Data${log_dt}.log"
 DT_TODAY=$(date +%Y-%m-%d)
@@ -49,7 +51,7 @@ fi
 
 echo "============== Send EPN Click Data to Apollo Reno then to Hercules and generate hourly done file =============="
 
-./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX_RNO}
+./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX_RNO} ${LOCAL_DONE_DATE_FILE}
 rcode_check=$?
 
 ./sendDataToRenoThenToHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX_RNO} ${RENO_DIR} ${HERCULES_DIR} click YES
@@ -60,8 +62,16 @@ then
     echo "Successfully send EPN NRT Click Data from Apollo Reno to Hercules"
     if [$rcode_check -eq 1];
     then
-        done_file="ams_click_hourly.done.$(date +%Y%m%d%H -d "`date` - 1 hour")00000000"
-        ./generateHourlyDoneFile ${done_file}
+        ## Check done hour
+        last_done=`cat ${LOCAL_DONE_DATE_FILE}`
+        echo "last done: "${last_done}
+        last_ts=`date -d "${last_done:0:8} ${last_done:8}" +%s`
+        let current_ts=${last_ts}+3600
+        current_done=`date -d @${current_ts} "+%Y%m%d%H"`
+        echo "current done: "${current_done}
+        done_file="ams_click_hourly.done.${current_done}00000000"
+        echo "============== Start generating hourly done file: ${done_file} =============="
+        ./generateHourlyDoneFile ${done_file} ${LOCAL_DONE_DATE_FILE}
     fi
 else
     echo -e "Send EPN NRT Click Data from Apollo Reno to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data from Apollo Reno to Hercules!" -v DL-eBay-Chocolate-GC@ebay.com
