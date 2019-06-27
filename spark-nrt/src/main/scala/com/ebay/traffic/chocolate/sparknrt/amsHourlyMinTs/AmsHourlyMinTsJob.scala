@@ -33,7 +33,7 @@ class AmsHourlyMinTsJob(params: Parameter) extends
   @transient lazy val schema_epn_click = TableSchema("df_epn_click.json")
 
   override def run(): Unit = {
-    var epnnrtResult = metadata.readDedupeOutputMeta(params.metaSuffix)
+    val epnnrtResult = metadata.readDedupeOutputMeta(params.metaSuffix)
 
     var minTsArray : Array[Long] = new Array[Long](0)
 
@@ -57,14 +57,16 @@ class AmsHourlyMinTsJob(params: Parameter) extends
       })
 
       // write the minimum timestamp to hdfs file
-      var outputStream: FSDataOutputStream = null
-      try {
-        outputStream = fs.create(new Path(params.outputDir))
-        outputStream.writeLong(minTsArray.min)
-        outputStream.flush()
-      } finally {
-        if (outputStream != null) {
-          outputStream.close()
+      if (minTsArray.length > 0) {
+        var outputStream: FSDataOutputStream = null
+        try {
+          outputStream = fs.create(new Path(params.outputDir))
+          outputStream.writeLong(minTsArray.min)
+          outputStream.flush()
+        } finally {
+          if (outputStream != null) {
+            outputStream.close()
+          }
         }
       }
     }

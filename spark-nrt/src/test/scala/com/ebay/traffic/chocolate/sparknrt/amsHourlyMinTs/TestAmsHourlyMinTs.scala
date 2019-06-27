@@ -1,11 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.amsHourlyMinTs
 
-import java.text.SimpleDateFormat
-
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
 
 class TestAmsHourlyMinTs extends BaseFunSuite{
   private val tmpPath = createTempPath()
@@ -15,8 +11,6 @@ class TestAmsHourlyMinTs extends BaseFunSuite{
   private val channel = "EPN"
   private val usage = "epnnrt_scp_click"
   private val metaSuffix = ".epnnrt_reno"
-
-  private val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
   val args = Array(
     "--mode", "local[8]",
@@ -33,7 +27,7 @@ class TestAmsHourlyMinTs extends BaseFunSuite{
   test("test AmsHourlyMinTs Job") {
     val metadata = Metadata(workDir, channel, MetadataEnum.epnnrt_scp_click)
     val dateFiles = DateFiles("date=2019-06-23", Array(inputDir))
-    var meta = new MetaFiles(Array(dateFiles))
+    val meta = new MetaFiles(Array(dateFiles))
     val outputMetaDir = workDir + "meta/EPN/output/epnnrt_scp_click/"
     metadata.writeOutputMeta(meta, outputMetaDir, usage, Array(metaSuffix))
 
