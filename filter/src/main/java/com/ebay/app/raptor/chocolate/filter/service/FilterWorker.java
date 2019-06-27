@@ -19,7 +19,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.protocol.types.SchemaException;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -55,7 +54,7 @@ public class FilterWorker extends Thread {
   private final int maxThreadNum = 10;
   private final ExecutorService executor = Executors.newFixedThreadPool(maxThreadNum);
   private final CompletionService<FilterMessage> completionService =
-    new ExecutorCompletionService<>(executor);
+      new ExecutorCompletionService<>(executor);
 
 
   public FilterWorker(ChannelType channelType, String inputTopic,
@@ -85,7 +84,7 @@ public class FilterWorker extends Thread {
   @Override
   public void run() {
     LOG.info("Start filter worker, channel " + channelType +
-            ", input topic " + inputTopic + ", output topic " + outputTopic);
+        ", input topic " + inputTopic + ", output topic " + outputTopic);
 
     // Init the metrics that we don't use often
     metrics.meter("FilterError", 0);
@@ -111,20 +110,20 @@ public class FilterWorker extends Thread {
           while (iterator.hasNext()) {
             int threadNum = 0;
             long theadPoolstartTime = System.currentTimeMillis();
-            for(int i = 0; i < maxThreadNum && iterator.hasNext(); i++) {
+            for (int i = 0; i < maxThreadNum && iterator.hasNext(); i++) {
               ConsumerRecord<Long, ListenerMessage> record = iterator.next();
 
               ListenerMessage message = record.value();
               metrics.meter("FilterInputCount", 1, message.getTimestamp(),
-                      Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
-                      Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
+                  Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+                  Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
               long latency = System.currentTimeMillis() - message.getTimestamp();
               metrics.mean("FilterLatency", latency);
 
               ++count;
               metrics.meter("FilterThroughput", 1, message.getTimestamp(),
-                      Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
-                      Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
+                  Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+                  Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
 
               completionService.submit(() -> processMessage(record.value()));
               threadNum++;
@@ -139,8 +138,8 @@ public class FilterWorker extends Thread {
               if (outMessage.getRtRuleFlags() == 0) {
                 ++passed;
                 metrics.meter("FilterPassedCount", 1, outMessage.getTimestamp(),
-                        Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
-                        Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
+                    Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
+                    Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
               }
 
               producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
@@ -178,8 +177,8 @@ public class FilterWorker extends Thread {
               long endOffset = entry.getValue();
               long offset = consumer.position(tp);
               metrics.mean("FilterKafkaConsumerLag", endOffset - offset,
-                      Field.of("topic", tp.topic()),
-                      Field.of("consumer", tp.partition()));
+                  Field.of("topic", tp.topic()),
+                  Field.of("consumer", tp.partition()));
             }
 
             kafkaLagMetricStart = now;
@@ -201,17 +200,8 @@ public class FilterWorker extends Thread {
             }
           }
         } catch (Exception e) {
-          if (e instanceof IllegalStateException &&
-              e.getMessage().startsWith("Coordinator selected invalid")) {
-            metrics.meter("CoordinatorSelectedError");
-            Thread.sleep(30000); // sleep for 30s
-          } else if (e instanceof SchemaException) {
-            metrics.meter("SchemaReadError");
-            Thread.sleep(30000);
-          } else {
-            LOG.warn("Exception in worker thread: ", e);
-            metrics.meter("FilterError");
-          }
+          LOG.warn("Exception in worker thread: ", e);
+          metrics.meter("FilterError");
         }
       }
     } catch (Exception e) {
@@ -253,8 +243,7 @@ public class FilterWorker extends Thread {
       long publisherId = getPublisherId(message.getCampaignId());
       outMessage.setPublisherId(publisherId);
       message.setPublisherId(publisherId);
-    }
-    else {
+    } else {
       outMessage.setPublisherId(message.getPublisherId());
     }
     outMessage.setCampaignId(message.getCampaignId());
