@@ -27,24 +27,6 @@
         </encoder>
     </appender>
 
-    <appender name="FILE-DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>log/aero-rheos.log</file>
-        <triggeringPolicy
-            class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>100MB</maxFileSize>
-        </triggeringPolicy>
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>log/aero-rheos%i.log</fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>9</maxIndex>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%date %level [%thread] %logger{36} %msg%n</pattern>
-            <!-- this improves logging throughput -->
-            <immediateFlush>false</immediateFlush>
-        </encoder>
-    </appender>
-
     <appender name="KafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
         <encoder class="com.github.danielwegener.logback.kafka.encoding.LayoutKafkaMessageEncoder">
             <layout class="net.logstash.logback.layout.LogstashLayout" >
@@ -77,9 +59,5 @@
         <appender-ref ref="KafkaAppender" />
         <appender-ref ref="CAL" />
     </root>
-
-    <logger name="io.ebay.rheos" level="debug" additivity="false">
-        <appender-ref ref="FILE-DEBUG"/>
-    </logger>
 
 </configuration>
