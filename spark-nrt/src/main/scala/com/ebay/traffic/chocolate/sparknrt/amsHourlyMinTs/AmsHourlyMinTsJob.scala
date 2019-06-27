@@ -61,7 +61,7 @@ class AmsHourlyMinTsJob(params: Parameter) extends
         var outputStream: FSDataOutputStream = null
         try {
           outputStream = fs.create(new Path(params.outputDir))
-          outputStream.writeLong(minTsArray.min)
+          outputStream.writeChars(minTsArray.min.toString)
           outputStream.flush()
         } finally {
           if (outputStream != null) {

@@ -4,7 +4,7 @@
 usage="Usage: checkAmsMinTs.sh [workDir] [channel] [usage] [metaSuffix] [outputDir]"
 
 # if no args specified, show usage
-if [ $# -le 5 ]; then
+if [ $# -le 4 ]; then
   echo $usage
   exit 1
 fi
@@ -29,7 +29,13 @@ SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/
 
 JOB_NAME="AMSHourlyMinTsJob"
 
+for f in $(find $bin/../../conf/prod -name '*.*');
+do
+  FILES=${FILES},file://$f;
+done
+
 ${SPARK_HOME}/bin/spark-submit \
+    --files ${FILES} \
     --class com.ebay.traffic.chocolate.sparknrt.amsHourlyMinTs.AmsHourlyMinTsJob \
     --name ${JOB_NAME} \
     --master yarn \
