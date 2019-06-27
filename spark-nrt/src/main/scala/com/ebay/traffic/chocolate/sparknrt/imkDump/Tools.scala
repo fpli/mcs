@@ -101,13 +101,22 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     */
   def getPerfTrackNameValue(query: String): String = {
     val buf = StringBuilder.newBuilder
-    if (StringUtils.isNotEmpty(query)) {
-      query.split("&").foreach(paramMapString => {
-        val paramStringArray = paramMapString.split("=")
-        if (paramStringArray.length == 2) {
-          buf.append("^" + paramMapString)
+    try {
+      if (StringUtils.isNotEmpty(query)) {
+        query.split("&").foreach(paramMapString => {
+          val paramStringArray = paramMapString.split("=")
+          if (paramStringArray.length == 2) {
+            buf.append("^" + paramMapString)
+          }
+        })
+      }
+    } catch {
+      case e: Exception => {
+        if(metrics != null) {
+          metrics.meter("imk.dump.error.getPerfTrackNameValue", 1)
         }
-      })
+        logger.warn("MalformedUrl", e)
+      }
     }
     buf.toString()
   }
@@ -129,15 +138,25 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     * @return param value
     */
   def getParamValueFromQuery(query: String, key: String): String = {
-    if (StringUtils.isNotEmpty(query)) {
-      query.split("&").foreach(paramMapString => {
-        val paramStringArray = paramMapString.split("=")
-        if (paramStringArray.nonEmpty && paramStringArray(0).trim.equalsIgnoreCase(key) && paramStringArray.length == 2) {
-          return paramStringArray(1).trim
+    var result = ""
+    try {
+      if (StringUtils.isNotEmpty(query)) {
+        query.split("&").foreach(paramMapString => {
+          val paramStringArray = paramMapString.split("=")
+          if (paramStringArray.nonEmpty && paramStringArray(0).trim.equalsIgnoreCase(key) && paramStringArray.length == 2) {
+            result = paramStringArray(1).trim
+          }
+        })
+      }
+    } catch {
+      case e: Exception => {
+        if(metrics != null) {
+          metrics.meter("imk.dump.error.getParamValueFromQuery", 1)
         }
-      })
+        logger.warn("MalformedUrl", e)
+      }
     }
-    ""
+    return result
   }
 
   /**
@@ -147,17 +166,28 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     * @return
     */
   def getDefaultNullNumParamValueFromQuery(query: String, key: String): String = {
-    if (StringUtils.isNotEmpty(query)) {
-      query.split("&").foreach(paramMapString => {
-        val paramStringArray = paramMapString.split("=")
-        if (paramStringArray(0).trim.equalsIgnoreCase(key) && paramStringArray.length == 2) {
-          if (StringUtils.isNumeric(paramStringArray(1).trim)){
-            return paramStringArray(1).trim
+    var result = ""
+    try {
+      if (StringUtils.isNotEmpty(query)) {
+        query.split("&").foreach(paramMapString => {
+          val paramStringArray = paramMapString.split("=")
+          if (paramStringArray(0).trim.equalsIgnoreCase(key) && paramStringArray.length == 2) {
+            if (StringUtils.isNumeric(paramStringArray(1).trim)) {
+              result = paramStringArray(1).trim
+            }
           }
+        })
+      }
+    }catch {
+      case e: Exception => {
+        if(metrics != null) {
+          metrics.meter("imk.dump.parsemtid.error", 1)
         }
-      })
+        logger.warn("ParseMtidError", e)
+        logger.warn("ParseMtidError query: ", query)
+      }
     }
-    ""
+    result
   }
 
   /**
@@ -166,14 +196,18 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     * @return client id
     */
   def getClientIdFromRotationId(rotationId: String): String = {
-    if (StringUtils.isNotEmpty(rotationId)
-      && rotationId.length <= 25
-      && StringUtils.isNumeric(rotationId.replace("-", ""))
-      && rotationId.contains("-")) {
-      rotationId.substring(0, rotationId.indexOf("-"))
-    } else {
-      ""
+    var result = ""
+    try {
+      if (StringUtils.isNotEmpty(rotationId)
+        && rotationId.length <= 25
+        && StringUtils.isNumeric(rotationId.replace("-", ""))
+        && rotationId.contains("-")) {
+        result = rotationId.substring(0, rotationId.indexOf("-"))
+      } else {
+        result = ""
+      }
     }
+    result
   }
 
   /**
@@ -185,18 +219,19 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     var path = ""
     try {
       path = new URL(uri).getPath
-    }catch {
+
+      if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
+        val itemId = path.substring(path.lastIndexOf("/") + 1)
+        if (StringUtils.isNumeric(itemId)) {
+          return itemId
+        }
+      }
+    } catch {
       case e: Exception => {
-        if(metrics != null) {
+        if (metrics != null) {
           metrics.meter("imk.dump.malformed", 1)
         }
         logger.warn("MalformedUrl", e)
-      }
-    }
-    if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))){
-      val itemId = path.substring(path.lastIndexOf("/") + 1)
-      if (StringUtils.isNumeric(itemId)) {
-        return itemId
       }
     }
     ""
@@ -225,16 +260,25 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     * @return param value
     */
   def getParamFromQuery(query: String, keys: Array[String]): String = {
-    if(StringUtils.isNotEmpty(query)) {
-      query.split("&").foreach(paramMapString => {
-        val paramMapStringArray = paramMapString.split("=")
-        val param = paramMapStringArray(0)
-        for (key <- keys) {
-          if(key.equalsIgnoreCase(param) && paramMapStringArray.size == 2) {
-            return paramMapStringArray(1)
+    try {
+      if (StringUtils.isNotEmpty(query)) {
+        query.split("&").foreach(paramMapString => {
+          val paramMapStringArray = paramMapString.split("=")
+          val param = paramMapStringArray(0)
+          for (key <- keys) {
+            if (key.equalsIgnoreCase(param) && paramMapStringArray.size == 2) {
+              return paramMapStringArray(1)
+            }
           }
+        })
+      }
+    }catch {
+      case e: Exception => {
+        if (metrics != null) {
+          metrics.meter("imk.dump.error.getParamFromQuery", 1)
         }
-      })
+        logger.warn("MalformedUrl", e)
+      }
     }
     ""
   }
@@ -314,16 +358,27 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     * @return user query
     */
   def getUserQuery(referrer: String, query: String): String = {
-    if (StringUtils.isNotEmpty(referrer)) {
-      val userQueryFromReferrer = getParamFromQuery(getQueryString(referrer.toLowerCase), userQueryParamsOfReferrer)
-      if (StringUtils.isNotEmpty(userQueryFromReferrer)) {
-        userQueryFromReferrer
+    var result = ""
+    try {
+      if (StringUtils.isNotEmpty(referrer)) {
+        val userQueryFromReferrer = getParamFromQuery(getQueryString(referrer.toLowerCase), userQueryParamsOfReferrer)
+        if (StringUtils.isNotEmpty(userQueryFromReferrer)) {
+          result = userQueryFromReferrer
+        } else {
+          result = getParamFromQuery(query.toLowerCase, userQueryParamsOfLandingUrl)
+        }
       } else {
-        getParamFromQuery(query.toLowerCase, userQueryParamsOfLandingUrl)
+        result = ""
       }
-    } else {
-      ""
+    } catch {
+      case e: Exception => {
+        if(metrics != null) {
+          metrics.meter("imk.dump.errorGetQuery", 1)
+        }
+        logger.warn("ErrorGetQuery", e)
+      }
     }
+    result
   }
 
   /**

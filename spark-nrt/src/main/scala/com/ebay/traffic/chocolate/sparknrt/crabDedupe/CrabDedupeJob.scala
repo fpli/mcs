@@ -33,6 +33,7 @@ class CrabDedupeJob(params: Parameter)
   lazy val DEDUPE_KEY_PREFIX: String = params.appName + "_"
   lazy val couchbaseTTL: Int = params.couchbaseTTL
   lazy val METRICS_INDEX_PREFIX: String = "crab-metrics-"
+  lazy val LAG_FILE: String = "hdfs://elvisha/apps/tracking-events-workdir/last_ts/PAID_SEARCH/crab_min_ts"
   lazy val compression: String = {
     if(params.snappyCompression) {
       "snappy"
@@ -101,6 +102,13 @@ class CrabDedupeJob(params: Parameter)
     val df = readFilesAsDFEx(inputFiles, schema_tfs.dfSchema, "csv", "bel")
       .dropDuplicates("rvr_id")
       .cache()
+
+    val lag =  df.agg(min(df.col("event_ts"))).head().getString(0)
+
+    val output = fs.create(new Path(LAG_FILE), true)
+    output.writeBytes(lag)
+    output.close()
+
     val dates = df.select("event_dt").distinct().collect().map(row => {
       val eventDt = row.get(0)
       if (eventDt == null) {
