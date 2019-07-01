@@ -59,7 +59,7 @@ fi
 
 
 ################################################### Final Check ###################################################
-if [ ${flag_lag} -eq 1 && ${flag_ts} -eq 1 ]
+if [[ ${flag_lag} -eq 1 && ${flag_ts} -eq 1 ]]
 then
     echo "Hourly data is ready"
     exit 1

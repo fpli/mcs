@@ -32,29 +32,30 @@ function process_one_meta(){
     data_files=`cat ${output_file} | tr "\n" " "`
     while read -r date_file; do
         date=`echo ${date_file} | cut -d" " -f1`
+        date_dir="date="${date}
         data_file=`echo ${date_file} | cut -d" " -f2`
         data_file_name=$(basename "$data_file")
         rm -f data_file_name
         hdfs dfs -get ${data_file}
-        reno_path=${RENO_DIR}'/'${ACTION}'/'${date}
+        reno_path=${RENO_DIR}'/'${ACTION}'/'${date_dir}
 
 
         ####################################### Generate epn nrt processed file #######################################
         if [ $2 = "YES" ]
         then
-            touch "/datashare/mkttracking/data/epn-nrt/process/${date}.processed"
-        fi
-
-        /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${reno_path}
-        if [ $? -ne 0 ]; then
-            echo "Create reno folder for date ${date}"
-            /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -mkdir -p ${reno_path}
+            touch "/datashare/mkttracking/data/epn-nrt/process/${date_dir}.processed"
         fi
 
 
         ########################################## Send data to Apollo Reno ##########################################
 
         echo "===================== Start upload ${data_file} to ${reno_path} ====================="
+
+        /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${reno_path}
+        if [ $? -ne 0 ]; then
+            echo "Create reno folder for ${date_dir}"
+            /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -mkdir -p ${reno_path}
+        fi
 
         retry=1
         rcode_rno=1
@@ -89,12 +90,12 @@ function process_one_meta(){
         ############################################ Send data to Hercules ############################################
 
         reno_file_name='viewfs://apollo-rno'${reno_path}'/'${data_file_name}
-        if [ ${ACTION} -eq 'click']
+        if [ "${ACTION}" == "click" ]
         then
-            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_click/'${date}
-        elif [ ${ACTION} -eq 'imp']
+            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_click/'${date_dir}
+        elif [ "${ACTION}" == "imp" ]
         then
-            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_impression/'${date}
+            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_impression/'${date_dir}
         else
             ehco "Wrong channel action!"
         fi

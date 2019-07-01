@@ -60,7 +60,7 @@ rcode_click=$?
 if [ $rcode_click -eq 0 ];
 then
     echo "Successfully send EPN NRT Click Data from Apollo Reno to Hercules"
-    if [$rcode_check -eq 1];
+    if [ $rcode_check -eq 1 ];
     then
         ## Check done hour
         last_done=`cat ${LOCAL_DONE_DATE_FILE}`
@@ -71,7 +71,7 @@ then
         echo "current done: "${current_done}
         done_file="ams_click_hourly.done.${current_done}00000000"
         echo "============== Start generating hourly done file: ${done_file} =============="
-        ./generateHourlyDoneFile ${done_file} ${LOCAL_DONE_DATE_FILE}
+        ./generateAmsHourlyDoneFile.sh ${done_file} ${LOCAL_DONE_DATE_FILE}
     fi
 else
     echo -e "Send EPN NRT Click Data from Apollo Reno to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data from Apollo Reno to Hercules!" -v DL-eBay-Chocolate-GC@ebay.com

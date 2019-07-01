@@ -54,13 +54,13 @@ fi
 echo "=============== Start generating hourly done file on hercules ==============="
 
 reno_done_file_full_name='viewfs://apollo-rno'${done_file_full_name}
-hercules_done_file_full_name='hdfs://hercules'${done_file_full_name}
+hercules_done_file_full_dir='hdfs://hercules'${done_file_full_dir}
 
 retry=1
 rcode_rno=1
 until [[ ${retry} -gt 3 ]]
 do
-    /datashare/mkttracking/tools/cake/bin/distcp_by_optimus.sh ${reno_done_file_full_name} ${hercules_done_file_full_name} epnnrt_done
+    /datashare/mkttracking/tools/cake/bin/distcp_by_optimus.sh ${reno_done_file_full_name} ${hercules_done_file_full_dir} epnnrt_done
     rcode_hercules=$?
     if [ ${rcode_hercules} -eq 0 ]
     then
