@@ -19,7 +19,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.protocol.types.SchemaException;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -201,19 +200,10 @@ public class FilterWorker extends Thread {
             }
           }
         } catch (Exception e) {
-          if (e instanceof IllegalStateException &&
-              e.getMessage().startsWith("Coordinator selected invalid")) {
-            metrics.meter("CoordinatorSelectedError");
-            Thread.sleep(30000); // sleep for 30s
-          } else if (e instanceof SchemaException) {
-            metrics.meter("SchemaReadError");
-            Thread.sleep(30000);
-          } else {
             LOG.warn("Exception in worker thread: ", e);
             metrics.meter("FilterError");
           }
         }
-      }
     } catch (Exception e) {
       LOG.warn("Exception in worker thread: ", e);
       this.metrics.meter("FilterSubscribeError");
