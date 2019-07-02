@@ -123,8 +123,7 @@ public class RoverRheosTopicFilterTask extends Thread {
   }
 
   /**
-   * step1: classify by the osName;
-   * step2: classify by the pageId;
+   * Filter missing clicks and publish to filter kafka
    *
    * @param rheosConsumer Rheos used to consume
    * @param producer      Kafka producer

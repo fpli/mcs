@@ -16,7 +16,7 @@ import java.util.Properties;
 /**
  * Wrapper class for RheosConsumer to consume what we miss from LB
  *
- *  * @author xiangli4
+ * @author xiangli4
  */
 public class RheosConsumerWrapper {
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RheosConsumerWrapper.class);
