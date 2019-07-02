@@ -200,10 +200,10 @@ public class FilterWorker extends Thread {
             }
           }
         } catch (Exception e) {
-          LOG.warn("Exception in worker thread: ", e);
-          metrics.meter("FilterError");
+            LOG.warn("Exception in worker thread: ", e);
+            metrics.meter("FilterError");
+          }
         }
-      }
     } catch (Exception e) {
       LOG.warn("Exception in worker thread: ", e);
       this.metrics.meter("FilterSubscribeError");
