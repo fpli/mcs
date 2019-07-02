@@ -129,10 +129,9 @@ public class RoverRheosTopicFilterTask extends Thread {
    *
    * @param rheosConsumer Rheos used to consume
    * @param producer      Kafka producer
-   * @throws UnsupportedEncodingException the exception in the URLDecoder.decode()
    */
   public void processRecords(RheosConsumerWrapper rheosConsumer, Producer<Long, ListenerMessage> producer, String
-    kafkaTopic) throws UnsupportedEncodingException {
+    kafkaTopic) {
 
     ConsumerRecords<byte[], RheosEvent> consumerRecords;
     consumerRecords = rheosConsumer.getConsumer().poll(interval);
