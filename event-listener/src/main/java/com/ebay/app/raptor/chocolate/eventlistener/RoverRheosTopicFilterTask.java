@@ -39,6 +39,7 @@ public class RoverRheosTopicFilterTask extends Thread {
 
   protected static final String INCOMING = "Incoming";
   protected static final String INCOMING_PAGE_ROVER = "IncomingPageRover";
+  protected static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
   private static Pattern missingRoverClicksPattern = Pattern.compile("^\\/rover\\/.*\\/.*\\/1\\?.*rvrhostname=.*",
@@ -151,6 +152,7 @@ public class RoverRheosTopicFilterTask extends Thread {
         Matcher roverSitesMatcher = missingRoverClicksPattern.matcher(urlQueryString.toLowerCase());
         // match the missing clicks type, forward to filter
         if (roverSitesMatcher.find()) {
+          ESMetrics.getInstance().meter(INCOMING_MISSING_CLICKS);
           ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
             0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
 
