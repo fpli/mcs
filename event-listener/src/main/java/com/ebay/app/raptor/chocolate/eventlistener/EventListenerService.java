@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
+import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import org.slf4j.Logger;
@@ -37,6 +38,10 @@ public class EventListenerService {
 
     KafkaSink.initialize(options, options);
     ListenerMessageParser.init();
+
+    RheosConsumerWrapper.init(ApplicationOptions.getInstance().getConsumeRheosKafkaProperties());
+    RoverRheosTopicFilterTask.init(1000);
+    RoverRheosTopicFilterTask.getInstance().start();
   }
 
   @PreDestroy
