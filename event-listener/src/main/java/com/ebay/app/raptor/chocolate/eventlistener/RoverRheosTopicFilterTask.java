@@ -164,7 +164,7 @@ public class RoverRheosTopicFilterTask extends Thread {
           record.setCguid(coalesce(applicationPayload.get(new Utf8("n")), empty).toString());
 
           // remote ip
-          record.setRemoteIp(coalesce(applicationPayload.get(new Utf8("RemoteIP")), empty).toString());
+          record.setRemoteIp(coalesce(applicationPayload.get(new Utf8("ForwardedFor")), empty).toString());
 
           // user agent
           record.setUserAgent(coalesce(applicationPayload.get(new Utf8("Agent")), empty).toString());
