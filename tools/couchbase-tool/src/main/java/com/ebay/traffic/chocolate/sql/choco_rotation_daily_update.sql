@@ -54,7 +54,7 @@ get_json_object(rotation_info, '$.create_user') as create_user,
 get_json_object(rotation_info, '$.update_user') as update_user
 from choco_data.choco_rotation_latest;
 
-insert overwrite table choco_data.test_rotation_temp_one
+insert overwrite table choco_data.choco_rotation_info_temp_one
 select a.rotation_id,
        a.rotation_string,
        a.rotation_name,
@@ -76,20 +76,20 @@ select a.rotation_id,
        a.update_date,
        a.create_user,
        a.update_user
-from choco_data.test_rotation_temp a left outer join choco_data.dw_mpx_rotations b
+from choco_data.choco_rotation_info_temp a left outer join choco_data.dw_mpx_rotations b
 on a.rotation_id = b.rotation_id;
 
 
-insert overwrite table choco_data.test_rotation_temp_two
+insert overwrite table choco_data.choco_rotation_info_temp_two
 SELECT A.*
-FROM choco_data.test_rotation_info A
-LEFT OUTER JOIN choco_data.test_rotation_temp_one B
+FROM choco_data.choco_rotation_info_temp A
+LEFT OUTER JOIN choco_data.choco_rotation_info_temp_one B
 ON (B.rotation_id = A.rotation_id)
 WHERE B.rotation_id IS null;
 
 
-insert into table choco_data.test_rotation_temp_two
+insert into table choco_data.choco_rotation_info_temp_two
 select *
-from choco_data.test_rotation_temp_one;
+from choco_data.choco_rotation_info_temp_one;
 
-insert overwrite table choco_data.choco_rotation_info select * from choco_data.test_rotation_temp_two;
+insert overwrite table choco_data.choco_rotation_info select * from choco_data.choco_rotation_info_temp_two;
