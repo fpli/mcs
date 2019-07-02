@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -45,6 +44,8 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static Pattern missingRoverClicksPattern = Pattern.compile("^\\/rover\\/.*\\/.*\\/1\\?.*rvrhostname=.*",
     Pattern.CASE_INSENSITIVE);
   protected static final Utf8 empty = new Utf8("");
+  protected static final Utf8 zero = new Utf8("0");
+
   protected static Map<String, String> defaultApplicationPayload = new HashMap<>();
   private static Long interval = 0L;
   private static RoverRheosTopicFilterTask task = null;
@@ -127,10 +128,9 @@ public class RoverRheosTopicFilterTask extends Thread {
    *
    * @param rheosConsumer Rheos used to consume
    * @param producer      Kafka producer
-   * @throws UnsupportedEncodingException the exception in the URLDecoder.decode()
    */
   public void processRecords(RheosConsumerWrapper rheosConsumer, Producer<Long, ListenerMessage> producer, String
-    kafkaTopic) throws UnsupportedEncodingException {
+    kafkaTopic) {
 
     ConsumerRecords<byte[], RheosEvent> consumerRecords;
     consumerRecords = rheosConsumer.getConsumer().poll(interval);
@@ -147,7 +147,8 @@ public class RoverRheosTopicFilterTask extends Thread {
 
       if (pageId == 3084) {
         ESMetrics.getInstance().meter(INCOMING_PAGE_ROVER);
-        String urlQueryString = getField(genericRecord, "urlQueryString", "");
+        HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
+        String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
         Matcher roverSitesMatcher = missingRoverClicksPattern.matcher(urlQueryString.toLowerCase());
         // match the missing clicks type, forward to filter
         if (roverSitesMatcher.find()) {
@@ -155,37 +156,35 @@ public class RoverRheosTopicFilterTask extends Thread {
           ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
             0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
 
-          HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
-
           // user id
-          record.setUserId(Long.valueOf(getField(genericRecord, "userId", "")));
+          record.setUserId(Long.valueOf(getField(genericRecord, "userId", "0")));
 
           // guid, cguid
-          record.setGuid(getField(genericRecord, "guid", ""));
-          record.setCguid(getField(genericRecord, "cguid", ""));
+          record.setGuid(coalesce(applicationPayload.get(new Utf8("g")), empty).toString());
+          record.setCguid(coalesce(applicationPayload.get(new Utf8("n")), empty).toString());
 
           // remote ip
-          record.setRemoteIp(getField(genericRecord, "remoteIP", ""));
+          record.setRemoteIp(coalesce(applicationPayload.get(new Utf8("RemoteIP")), empty).toString());
 
           // user agent
-          record.setUserAgent(getField(genericRecord, "agentInfo", ""));
+          record.setUserAgent(coalesce(applicationPayload.get(new Utf8("Agent")), empty).toString());
 
 
           // language code
           record.setLangCd(coalesce(applicationPayload.get(new Utf8("ul")), empty).toString());
 
           // geography identifier
-          record.setGeoId(Long.valueOf(coalesce(applicationPayload.get(new Utf8("uc")), empty).toString()));
+          record.setGeoId(Long.valueOf(coalesce(applicationPayload.get(new Utf8("uc")), zero).toString()));
 
           // site id
-          record.setSiteId(Long.valueOf(getField(genericRecord, "siteId", "")));
+          record.setSiteId(Long.valueOf(getField(genericRecord, "siteId", "0")));
 
 
-          record.setUdid(getField(genericRecord, "udid", ""));
+          record.setUdid(coalesce(applicationPayload.get(new Utf8("udid")), empty).toString());
 
           //TODO: no referer in rheos
           // referer
-          record.setReferer("");
+          record.setReferer(coalesce(applicationPayload.get(new Utf8("Referer")), empty).toString());
 
           //TODO: landing page url
           // landing page url
@@ -204,7 +203,7 @@ public class RoverRheosTopicFilterTask extends Thread {
           // Format record
           record.setRequestHeaders("");
           record.setResponseHeaders("");
-          long timestamp = Long.valueOf(getField(genericRecord, "eventTimestamp", ""));
+          long timestamp = Long.valueOf(coalesce(applicationPayload.get(new Utf8("timestamp")), empty).toString());
           record.setTimestamp(timestamp);
 
           // Get snapshotId from request
