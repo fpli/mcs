@@ -11,7 +11,7 @@ ETL_HOST=etl_epn_nrt_push@lvsdpeetl015.lvs.ebay.com
 ETL_PATH=/dw/etl/home/prod/land/dw_ams/nrt_test
 ETL_TOKEN=/datashare/mkttracking/tools/rsa_token/nrt_etl_key
 RENO_DIR=/apps/b_marketing_tracking/chocolate/epnnrt
-HERCULES_DIR=/apps/b_marketing_tracking/AMS
+HERCULES_DIR=/sys/edw/imk/im_tracking/epn
 
 LOCAL_DONE_DATE_FILE=/datashare/mkttracking/data/epn-nrt/local_done_date.txt
 

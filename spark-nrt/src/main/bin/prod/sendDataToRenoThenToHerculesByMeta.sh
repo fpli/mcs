@@ -32,7 +32,7 @@ function process_one_meta(){
     data_files=`cat ${output_file} | tr "\n" " "`
     while read -r date_file; do
         date=`echo ${date_file} | cut -d" " -f1`
-        date_dir="date="${date}
+        date_dir="CLICK_DT="${date}
         data_file=`echo ${date_file} | cut -d" " -f2`
         data_file_name=$(basename "$data_file")
         rm -f data_file_name
@@ -43,7 +43,7 @@ function process_one_meta(){
         ####################################### Generate epn nrt processed file #######################################
         if [ $2 = "YES" ]
         then
-            touch "/datashare/mkttracking/data/epn-nrt/process/${date_dir}.processed"
+            touch "/datashare/mkttracking/data/epn-nrt/process/date=${date}.processed"
         fi
 
 
@@ -92,10 +92,10 @@ function process_one_meta(){
         reno_file_name='viewfs://apollo-rno'${reno_path}'/'${data_file_name}
         if [ "${ACTION}" == "click" ]
         then
-            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_click/'${date_dir}
+            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_click/snapshot/'${date_dir}
         elif [ "${ACTION}" == "imp" ]
         then
-            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_impression/'${date_dir}
+            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_impression/snapshot/'${date_dir}
         else
             ehco "Wrong channel action!"
         fi
