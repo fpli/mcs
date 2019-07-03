@@ -278,7 +278,8 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     var newUri = ""
     if (StringUtils.isNotEmpty(uri)) {
       try {
-        newUri = uri.replace("mkgroupid", "adgroupid").replace("mktype", "adtype")
+        newUri = uri.replace("mkgroupid", "adgroupid")
+          .replace("mktype", "adtype")
       } catch {
         case e: Exception => {
           if(metrics != null) {
