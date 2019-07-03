@@ -9,7 +9,16 @@ import com.ebay.dukes.CacheClient;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
 import org.apache.log4j.PropertyConfigurator;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
@@ -30,6 +39,12 @@ public class DumpRotationToHadoop {
   private static Logger logger = LoggerFactory.getLogger(DumpRotationToHadoop.class);
 
   private static final String FILENAME_SURFIX = ".txt";
+  private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+  private static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+
+  //rotation es client
+  private static RotationESClient rotationESClient;
+  private static RestHighLevelClient esRestHighLevelClient;
 
   /**
    * Main Executor
@@ -50,9 +65,15 @@ public class DumpRotationToHadoop {
     initLog4j(configFilePath);
 
     try {
+      //couchbase client
       client = new CorpRotationCouchbaseClient(couchbasePros);
       CacheClient cacheClient = client.getCacheClient();
       bucket = client.getBuctet(cacheClient);
+
+      //es client
+      rotationESClient = new RotationESClient(couchbasePros);
+      esRestHighLevelClient = rotationESClient.getESClient();
+
       dumpFileFromCouchbase(queryStartTimestamp, queryEndTimestamp, outputFilePath);
       client.returnClient(cacheClient);
     } finally {
@@ -131,14 +152,31 @@ public class DumpRotationToHadoop {
       ViewQuery query = ViewQuery.from(couchbasePros.getProperty("couchbase.corp.rotation.designName"),
           couchbasePros.getProperty("couchbase.corp.rotation.viewName"));
 
-      if (StringUtils.isNotEmpty(startKey)) {
+      if (StringUtils.isNotEmpty(startKey) && Long.valueOf(startKey) > -1 ) {
         query.startKey(Long.valueOf(startKey));
       }
-      if (StringUtils.isNotEmpty(endKey)) {
+      if (StringUtils.isNotEmpty(endKey) && Long.valueOf(endKey) > -1) {
         query.endKey(Long.valueOf(endKey));
       }
 
       List<ViewRow> viewResult = bucket.query(query).allRows();
+
+      int size = 0;
+      if(viewResult != null) size = viewResult.size();
+
+      //get new-create rotation quantity and update rotation quantity from es per hour
+      String esSearchStartTime = sdf.format(new Date(Long.parseLong(startKey)));
+      String esSearchEndTime = sdf.format(new Date(Long.parseLong(endKey)));
+      Integer newCreateRotationQuantity = getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
+      Integer updateRotationQuantity = getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
+      Integer changeRotationQuantity = newCreateRotationQuantity + updateRotationQuantity;
+
+      //compare rotation change quantity from es and rotation change quantity dump from couchbase
+      //if rotation change quantity from es >0 but rotation dump from couchbase =0, throw couchbase dump exception
+      if (changeRotationQuantity > 0 && size == 0) {
+        logger.error("couchbase dump rotation data count = 0, rotation change quantity from es = " + changeRotationQuantity + ", throw exception!");
+        throw new IOException("couchbase dump rotation data count = 0");
+      }
 
       List<String> keys = new ArrayList<>();
 
@@ -176,6 +214,29 @@ public class DumpRotationToHadoop {
     System.out.println("Successfully dump " + count + " records into chocolate file: " + outputFilePath);
   }
 
+  //get new-create rotation quantity and update rotation quantity per hour, depends on es search key
+  public static Integer getChangeRotationQuantity(String esSearchStartTime, String esSearchEndTime, String esRotationKey) throws IOException {
+    SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+    BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+    boolQueryBuilder.must(QueryBuilders.matchQuery(RotationConstant.ES_SEARCH_KEY, esRotationKey));
+    boolQueryBuilder.filter(QueryBuilders.rangeQuery(RotationConstant.ES_SEARCH_DATE).gte(esSearchStartTime).lte(esSearchEndTime).format(DATE_FORMAT));
+    searchSourceBuilder.query(boolQueryBuilder);
+
+    SearchRequest searchRequest = new SearchRequest();
+    searchRequest.source(searchSourceBuilder);
+    SearchResponse searchResponse = esRestHighLevelClient.search(searchRequest, new Header[0]);
+    SearchHits hits = searchResponse.getHits();
+    SearchHit[] searchHits = hits.getHits();
+
+    Integer totalChangeRotationCount = 0;
+    for (SearchHit hit : searchHits) {
+      Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+      Integer count = (Integer) sourceAsMap.get("value");
+      totalChangeRotationCount = totalChangeRotationCount + count;
+    }
+    return totalChangeRotationCount;
+  }
+
   private static void close() {
     if (client != null) {
       client.shutdown();
@@ -189,5 +250,13 @@ public class DumpRotationToHadoop {
 
   public static void setCouchbasePros(Properties couchbasePros) {
     DumpRotationToHadoop.couchbasePros = couchbasePros;
+  }
+
+  /**
+   * Set Mocked ES RestHighLevelClient for Unit Testing
+   * @param restHighLevelClient ES RestHighLevelClient
+   */
+  public static void setEsRestHighLevelClient(RestHighLevelClient restHighLevelClient) {
+    DumpRotationToHadoop.esRestHighLevelClient = restHighLevelClient;
   }
 }
