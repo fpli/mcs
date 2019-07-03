@@ -82,7 +82,7 @@ on a.rotation_id = b.rotation_id;
 
 insert overwrite table choco_data.choco_rotation_info_temp_two
 SELECT A.*
-FROM choco_data.choco_rotation_info_temp A
+FROM choco_data.dw_mpx_rotations A
 LEFT OUTER JOIN choco_data.choco_rotation_info_temp_one B
 ON (B.rotation_id = A.rotation_id)
 WHERE B.rotation_id IS null;
