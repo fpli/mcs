@@ -32,12 +32,11 @@ function process_one_meta(){
     data_files=`cat ${output_file} | tr "\n" " "`
     while read -r date_file; do
         date=`echo ${date_file} | cut -d" " -f1`
-        date_dir="CLICK_DT="${date}
         data_file=`echo ${date_file} | cut -d" " -f2`
         data_file_name=$(basename "$data_file")
         rm -f data_file_name
         hdfs dfs -get ${data_file}
-        reno_path=${RENO_DIR}'/'${ACTION}'/'${date_dir}
+        reno_path=${RENO_DIR}'/'${ACTION}'/date='${date}
 
 
         ####################################### Generate epn nrt processed file #######################################
@@ -53,7 +52,7 @@ function process_one_meta(){
 
         /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${reno_path}
         if [ $? -ne 0 ]; then
-            echo "Create reno folder for ${date_dir}"
+            echo "Create reno folder for ${date}"
             /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -mkdir -p ${reno_path}
         fi
 
@@ -92,10 +91,10 @@ function process_one_meta(){
         reno_file_name='viewfs://apollo-rno'${reno_path}'/'${data_file_name}
         if [ "${ACTION}" == "click" ]
         then
-            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_click/snapshot/'${date_dir}
+            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_click/snapshot/click_dt='${date}
         elif [ "${ACTION}" == "imp" ]
         then
-            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_impression/snapshot/'${date_dir}
+            hercules_dir_full='hdfs://hercules'${HERCULES_DIR}'/ams_impression/snapshot/imprsn_dt='${date}
         else
             ehco "Wrong channel action!"
         fi
