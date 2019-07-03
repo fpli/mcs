@@ -12,6 +12,9 @@ import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.google.gson.Gson;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.*;
 import org.mockito.Mockito;
 
@@ -29,6 +32,8 @@ public class DumpRotationToHadoopTest {
   private static final String TEMP_FILE_PREFIX = "rotation_test_";
   private static CorpRotationCouchbaseClient couchbaseClient;
   private static Bucket bucket;
+  private static RotationESClient rotationESClient;
+  private static RestHighLevelClient restHighLevelClient;
   private Map<String, String> fileNamesMap;
 
   @BeforeClass
@@ -44,6 +49,9 @@ public class DumpRotationToHadoopTest {
 
     couchbaseClient = new CorpRotationCouchbaseClient(cacheFactory);
     bucket = CouchbaseClientMock.getBucket();
+
+    rotationESClient = Mockito.mock(RotationESClient.class);
+    restHighLevelClient = new RestHighLevelClient(RestClient.builder(HttpHost.create("http://10.148.181.34:9200")));
 
     // Insert document to mocked couchbase
     RotationInfo rotationInfo = getTestRotationInfo();
@@ -84,7 +92,7 @@ public class DumpRotationToHadoopTest {
     rotationTag.put(RotationConstant.FIELD_PLACEMENT_ID, "1234567890");
     rotationTag.put(RotationConstant.FIELD_ROTATION_CLICK_THRU_URL, "http://clickthrough.com");
     rotationInfo.setRotation_tag(rotationTag);
-    rotationInfo.setLast_update_time(1540143551289l);
+    rotationInfo.setLast_update_time(1459807000000L);
     rotationInfo.setUpdate_user("yimeng");
     rotationInfo.setCreate_date("2018-10-18 16:15:32");
     rotationInfo.setCreate_user("chocolate");
@@ -106,6 +114,9 @@ public class DumpRotationToHadoopTest {
     couchbasePros.put("chocolate.elasticsearch.url", "http://10.148.181.34:9200");
     ESMetrics.init("batch-metrics-", couchbasePros.getProperty("chocolate.elasticsearch.url"));
     DumpRotationToHadoop.setCouchbasePros(couchbasePros);
+
+    // set initialed es rest high level client
+    DumpRotationToHadoop.setEsRestHighLevelClient(restHighLevelClient);
 
     // run dump job
     createFolder();
@@ -140,51 +151,92 @@ public class DumpRotationToHadoopTest {
   }
 
   @Test
-  public void testDumpDailySnapshotFromCouchbase() throws IOException {
+  public void testGetChangeRotationCount() throws IOException {
+    String esSearchStartTime = "2019-06-06 02:00:00";
+    String esSearchEndTime = "2019-06-06 23:59:59";
+    DumpRotationToHadoop.setEsRestHighLevelClient(restHighLevelClient);
+    //test new create rotation count
+    Integer newCreateRotationCount = DumpRotationToHadoop.getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
+    Assert.assertEquals("2", newCreateRotationCount.toString());
+
+    //test update rotation count
+    Integer updateRotationCount = DumpRotationToHadoop.getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
+    Assert.assertEquals("1", updateRotationCount.toString());
+  }
+
+  @Test
+  public void testThrowException() {
     // set initialed cb related info
     DumpRotationToHadoop.setBucket(bucket);
     Properties couchbasePros = new Properties();
     couchbasePros.put("couchbase.corp.rotation.designName", DESIGNED_DOC_NAME);
     couchbasePros.put("couchbase.corp.rotation.viewName", VIEW_NAME);
     couchbasePros.put("chocolate.elasticsearch.url","http://10.148.181.34:9200");
-    ESMetrics.init("batch-metrics-", couchbasePros.getProperty("chocolate.elasticsearch.url"));
     DumpRotationToHadoop.setCouchbasePros(couchbasePros);
+
+    // set initialed es rest high level client
+    DumpRotationToHadoop.setEsRestHighLevelClient(restHighLevelClient);
 
     // run dump job
     createFolder();
-    DumpRotationToHadoop.dumpFileFromCouchbase(null, null, TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
-
-    // assertions
-    File[] files = new File(TEMP_FILE_FOLDER).listFiles();
-    RotationInfo rotationInfo = getTestRotationInfo();
-    Gson gson = new Gson();
-
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-
-    boolean isFileExist = false;
-    String expectedFileName = TEMP_FILE_PREFIX + "rotation-snapshot-" + sdf.format(new Date()) + ".txt";
-    for (File file : files) {
-      if (file.isFile() && expectedFileName.equals(file.getName())) {
-        isFileExist = true;
-
-        FileInputStream fis = new FileInputStream(new File(TEMP_FILE_FOLDER + file.getName()));
-        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-        String line = null;
-        int i = 0;
-        boolean jsonEqual = false;
-        while ((line = br.readLine()) != null) {
-          i++;
-          jsonEqual = JsonUtils.areEqual(gson.toJson(rotationInfo), line);
-          Assert.assertTrue(jsonEqual);
-        }
-        Assert.assertEquals(1, i);
-        br.close();
-
-        file.deleteOnExit();
-      }
+    Boolean throwException = false;
+    try {
+      DumpRotationToHadoop.dumpFileFromCouchbase("1459808000000", "1559865599000", TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
+    } catch (IOException e) {
+      throwException = true;
     }
-    Assert.assertTrue("Daily file not generated", isFileExist);
+    Assert.assertEquals(true, throwException);
   }
+
+//  @Test
+//  public void testDumpDailySnapshotFromCouchbase() throws IOException {
+//    // set initialed cb related info
+//    DumpRotationToHadoop.setBucket(bucket);
+//    Properties couchbasePros = new Properties();
+//    couchbasePros.put("couchbase.corp.rotation.designName", DESIGNED_DOC_NAME);
+//    couchbasePros.put("couchbase.corp.rotation.viewName", VIEW_NAME);
+//    couchbasePros.put("chocolate.elasticsearch.url","http://10.148.181.34:9200");
+//    ESMetrics.init("batch-metrics-", couchbasePros.getProperty("chocolate.elasticsearch.url"));
+//    DumpRotationToHadoop.setCouchbasePros(couchbasePros);
+//
+//    // set initialed es rest high level client
+//    DumpRotationToHadoop.setEsRestHighLevelClient(restHighLevelClient);
+//
+//    // run dump job
+//    createFolder();
+//    DumpRotationToHadoop.dumpFileFromCouchbase(null, null, TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
+//
+//    // assertions
+//    File[] files = new File(TEMP_FILE_FOLDER).listFiles();
+//    RotationInfo rotationInfo = getTestRotationInfo();
+//    Gson gson = new Gson();
+//
+//    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+//
+//    boolean isFileExist = false;
+//    String expectedFileName = TEMP_FILE_PREFIX + "rotation-snapshot-" + sdf.format(new Date()) + ".txt";
+//    for (File file : files) {
+//      if (file.isFile() && expectedFileName.equals(file.getName())) {
+//        isFileExist = true;
+//
+//        FileInputStream fis = new FileInputStream(new File(TEMP_FILE_FOLDER + file.getName()));
+//        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+//        String line = null;
+//        int i = 0;
+//        boolean jsonEqual = false;
+//        while ((line = br.readLine()) != null) {
+//          i++;
+//          jsonEqual = JsonUtils.areEqual(gson.toJson(rotationInfo), line);
+//          Assert.assertTrue(jsonEqual);
+//        }
+//        Assert.assertEquals(1, i);
+//        br.close();
+//
+//        file.deleteOnExit();
+//      }
+//    }
+//    Assert.assertTrue("Daily file not generated", isFileExist);
+//  }
 
   private void createFolder() {
     File directory = new File(TEMP_FILE_FOLDER);
