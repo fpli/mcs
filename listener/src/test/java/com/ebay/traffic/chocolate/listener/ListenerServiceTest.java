@@ -158,6 +158,15 @@ public class ListenerServiceTest {
     mockProxyResponse.setHeader("Location", "https://www.ebay.co.uk/1/2/9?a=b&chocolateSauce=http%3A%2F%2Frover.ebay.com%2Fa%2Fb%2Fc");
     assertTrue(parser.isCoreSite(mockClientRequest));
 
+    mockClientRequest.setScheme("http");
+    mockClientRequest.setServerName("internal.rover.vip.ebay.com");
+    mockClientRequest.setRequestURI("/a/b/c");
+    mockClientRequest.setServerPort(80);
+    mockClientRequest.addHeader("a", "b");
+    mockProxyResponse.setStatus(301);
+    mockProxyResponse.setHeader("Location", "https://www.ebay.co.uk/1/2/9?a=b&chocolateSauce=http%3A%2F%2Frover.ebay.com%2Fa%2Fb%2Fc");
+    assertTrue(parser.isCoreSite(mockClientRequest));
+
     mockClientRequest.setServerName("rover.ebay.co.uk");
     assertFalse(parser.isCoreSite(mockClientRequest));
   }

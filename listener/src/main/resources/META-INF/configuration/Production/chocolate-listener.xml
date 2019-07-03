@@ -121,7 +121,7 @@
   <!-- jetty config end -->
   <property>
     <name>rover.core.sites</name>
-    <value>rover.ebay.com,r.ebay.com</value>
+    <value>rover.ebay.com,r.ebay.com,internal.rover.vip.ebay.com</value>
     <description>rover core site hosts</description>
   </property>
   <property>

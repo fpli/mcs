@@ -19,6 +19,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.protocol.types.SchemaException;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -110,7 +111,7 @@ public class FilterWorker extends Thread {
           while (iterator.hasNext()) {
             int threadNum = 0;
             long theadPoolstartTime = System.currentTimeMillis();
-            for(int i = 0; i < maxThreadNum && iterator.hasNext(); i++) {
+            for (int i = 0; i < maxThreadNum && iterator.hasNext(); i++) {
               ConsumerRecord<Long, ListenerMessage> record = iterator.next();
 
               ListenerMessage message = record.value();
@@ -200,10 +201,21 @@ public class FilterWorker extends Thread {
             }
           }
         } catch (Exception e) {
+          if (e instanceof IllegalStateException &&
+              e.getMessage().startsWith("Coordinator selected invalid")) {
+            LOG.warn("Exception in worker thread: ", e);
+            metrics.meter("CoordinatorSelectedError");
+            Thread.sleep(30000); // sleep for 30s
+          } else if (e instanceof SchemaException) {
+            LOG.warn("Exception in worker thread: ", e);
+            metrics.meter("SchemaReadError");
+            Thread.sleep(30000);
+          } else {
             LOG.warn("Exception in worker thread: ", e);
             metrics.meter("FilterError");
           }
         }
+      }
     } catch (Exception e) {
       LOG.warn("Exception in worker thread: ", e);
       this.metrics.meter("FilterSubscribeError");
