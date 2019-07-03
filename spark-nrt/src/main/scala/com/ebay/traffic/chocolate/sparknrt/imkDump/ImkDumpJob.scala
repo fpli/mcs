@@ -171,7 +171,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("dst_rotation_id", col("dst_rotation_id"))
       .withColumn("dst_client_id", getClientIdUdf(col("temp_uri_query"), lit("mkrid")))
       .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(col("uri")))
-      .withColumn("lndng_page_url", col("uri"))
+      .withColumn("lndng_page_url", replaceMkgroupidMktypeUdf(col("uri")))
       .withColumn("user_query", getUserQueryUdf(col("referer"), col("temp_uri_query")))
       .withColumn("event_ts", getDateTimeUdf(col("timestamp")))
       .withColumn("perf_track_name_value", getPerfTrackNameValueUdf(col("temp_uri_query")))
@@ -180,7 +180,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("crlp", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("user_map_ind", getUserMapIndUdf(col("user_id")))
       .withColumn("item_id", getItemIdUdf(col("uri")))
-      .withColumn("rvr_url", col("uri"))
+      .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("uri")))
       .withColumn("mfe_name", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("cguid", getCguidUdf(col("cguid"), col("guid")))
       .drop("lang_cd")
@@ -209,6 +209,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getLandingPageDomainUdf: UserDefinedFunction = udf((uri: String) => tools.getDomain(uri))
   val getClientIdUdf: UserDefinedFunction = udf((query: String, ridParamName: String) => tools.getClientIdFromRotationId(tools.getParamValueFromQuery(query, ridParamName)))
   val getUserQueryUdf: UserDefinedFunction = udf((referer: String, query: String) => tools.getUserQuery(referer, query))
+  val replaceMkgroupidMktypeUdf: UserDefinedFunction = udf((uri: String) => replaceMkgroupidMktype(uri))
   val getDateTimeUdf: UserDefinedFunction = udf((timestamp: Long) => tools.getDateTimeFromTimestamp(timestamp))
   val getPerfTrackNameValueUdf: UserDefinedFunction = udf((query: String) => tools.getPerfTrackNameValue(query))
   val getKeywordUdf: UserDefinedFunction = udf((query: String) => tools.getParamFromQuery(query, tools.keywordParams))
@@ -263,6 +264,18 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     }  else {
       true
     }
+  }
+
+  /**
+    * Campaign Manager changes the url template for all PLA accounts, replace adtype=pla and*adgroupid=65058347419* with
+    * new parameter mkgroupid={adgroupid} and mktype={adtype}. Tracking’s MCS data pipeline job replace back to adtype
+    * and adgroupid and persist into IMK so there wont be impact to downstream like data and science.
+    * See <a href="https://jirap.corp.ebay.com/browse/XC-1464">replace landing page url and rvr_url's mktype and mkgroupid</a>
+    * @param uri tracking url
+    * @return new tracking url
+    */
+  def replaceMkgroupidMktype(uri: String): String = {
+    uri.replace("mkgroupid", "adgroupid").replace("mktype", "adtype")
   }
 
   /**
