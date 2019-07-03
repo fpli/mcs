@@ -275,7 +275,20 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     * @return new tracking url
     */
   def replaceMkgroupidMktype(uri: String): String = {
-    uri.replace("mkgroupid", "adgroupid").replace("mktype", "adtype")
+    var newUri = ""
+    if (StringUtils.isNotEmpty(uri)) {
+      try {
+        newUri = uri.replace("mkgroupid", "adgroupid").replace("mktype", "adtype")
+      } catch {
+        case e: Exception => {
+          if(metrics != null) {
+            metrics.meter("imk.dump.malformed", 1)
+          }
+          logger.warn("MalformedUrl", e)
+        }
+      }
+    }
+    newUri
   }
 
   /**
