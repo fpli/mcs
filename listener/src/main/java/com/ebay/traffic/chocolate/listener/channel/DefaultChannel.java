@@ -197,7 +197,7 @@ public class DefaultChannel implements Channel {
 
     if (campaign != null && !request.getParameter(campaign).isEmpty()) {
       try {
-        campaignId = Long.parseLong(request.getParameter(campaign));
+        campaignId = Long.parseLong(request.getParameter(campaign).trim());
       } catch (NumberFormatException e) {
         logger.warn("Invalid campaign: " + request.getParameter(campaign));
         metrics.meter("InvalidCampaign", 1, eventTime, Field.of(CHANNEL_ACTION, channelAction),
