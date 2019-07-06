@@ -35,6 +35,13 @@ hdfs dfs -mkdir -p ${destFolder}
 
 srcFolder="viewfs://apollo-rno${RENO_SRC_DIR}/${today}_00-00-00"
 
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -test -d ${srcFolder}
+rcode=$?
+if [[ ${rcode} ne 0 ]]; then
+    echo "${srcFolder} not exist"
+    exit ${rcode}
+fi
+
 # get all done files in last two days
 tmp_index_file=reno_kw_to_slc_index.txt
 rm -f ${tmp_index_file}
