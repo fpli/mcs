@@ -24,7 +24,9 @@ WORK_DIR=$1
 OUTPUT_DIR=$2
 ES_URL=http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
 
-KW_LK_FOLDER=hdfs://slickha/apps/kw_lkp/2019-04-14/
+KW_LKP_LATEST_PATH=hdfs://slickha/apps/kw_lkp/latest_path
+
+KW_LKP_FOLDER=$(hdfs dfs -text ${KW_LKP_LATEST_PATH})
 
 DRIVER_MEMORY=8g
 EXECUTOR_NUMBER=60
@@ -61,7 +63,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --mode yarn \
       --channel crabDedupe \
       --transformedPrefix chocolate_ \
-      --kwDataDir "${KW_LK_FOLDER}" \
+      --kwDataDir "${KW_LKP_FOLDER}" \
       --workDir "${WORK_DIR}" \
       --outputDir "${OUTPUT_DIR}" \
       --compressOutPut true \
