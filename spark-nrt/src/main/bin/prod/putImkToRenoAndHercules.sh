@@ -56,9 +56,8 @@ do
     fi
 
     orgDate=${file_name:15:10}
-    date=${orgDate//-/}
-    destFolder=${RENO_DEST_DIR}/dt=${date}
-    herculesFolder=${HERCULES_DEST_DIR}/dt=${date}
+    destFolder=${RENO_DEST_DIR}/event_dt=${orgDate}
+    herculesFolder=${HERCULES_DEST_DIR}/event_dt=${orgDate}
 #    create dest folder if not exists, folder in hercules should be created in advance
     /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${destFolder}
     if [[ -s ${file_name} ]];
