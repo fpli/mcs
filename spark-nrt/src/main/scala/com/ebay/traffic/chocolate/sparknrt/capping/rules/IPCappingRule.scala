@@ -1,131 +1,85 @@
 package com.ebay.traffic.chocolate.sparknrt.capping.rules
 
-import java.text.SimpleDateFormat
-import java.util.Calendar
-
 import com.ebay.traffic.chocolate.spark.BaseSparkJob
-import com.ebay.traffic.chocolate.sparknrt.capping.{CappingRule, Parameter}
+import com.ebay.traffic.chocolate.sparknrt.capping.Parameter
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.sql.functions._
-import org.slf4j.LoggerFactory
 
 /**
   * Created by xiangli4 on 4/8/18.
   */
-class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingRuleJobObj: BaseSparkJob) extends CappingRule {
-
-  @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
-
-  @transient lazy val hadoopConf = {
-    new Configuration()
-  }
-
-  @transient lazy val fs = {
-    val fs = FileSystem.get(hadoopConf)
-    sys.addShutdownHook(fs.close())
-    fs
-  }
-
-  @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
-  lazy val DATE_COL = "date"
-
-  lazy val baseDir = params.workDir + "/capping/" + params.channel + "/ip/"
-  lazy val baseTempDir = baseDir + "/tmp/"
+class IPCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappingRuleJobObj: BaseSparkJob, window: String)
+  extends GenericCountRule(params: Parameter, bit: Long, dateFiles: DateFiles,  cappingRuleJobObj: BaseSparkJob, window: String) {
 
   import cappingRuleJobObj.spark.implicits._
 
-  override def preTest() = {
-    fs.delete(new Path(baseTempDir), true)
-    fs.mkdirs(new Path(baseTempDir))
+  //workdir
+  override lazy val fileName = "/ip_" + window + "/"
+  //specific columns for IP Capping Rule
+  override val cols = Array(col("IP"))
+
+  //filter condition for counting df
+  def filterCondition(): Column = {
+    $"channel_action" === "CLICK"
   }
 
-  lazy val cappingBit = bit
+  //get IP
+  def ip(): Column = {
+    $"remote_ip".alias("IP")
+  }
 
-  //parse IP from request_headers
-  def ip(alias: String): Column = {
-    $"remote_ip".alias(alias)
+  //counting columns
+  def selectCondition(): Array[Column] = {
+    Array(ip())
+  }
+
+  //add new column if needed
+  def withColumnCondition(): Column = {
+    when($"channel_action" === "CLICK", ip()).otherwise("NA")
+  }
+
+  //final join condition
+  def joinCondition(df: DataFrame, dfCount: DataFrame): Column = {
+    df.col(cols(0).toString()) === dfCount.col(cols(0).toString())
   }
 
   override def test(): DataFrame = {
 
-    // filter click only, count ip and save to tmp file
-    var dfIP = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).filter($"channel_action" === "CLICK")
+    //Step 1: Prepare counting data. If this job has no events, return snapshot_id and capping = 0.
+    //filter click only
+    var dfIP = dfFilterInJob(filterCondition())
+
+    //if job has no events, then return df with capping column directly
     val head = dfIP.take(1)
-    if(head.length == 0) {
-      var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files)
-          .withColumn("capping", lit(0l))
-          .select($"snapshot_id", $"capping")
-      df
+    if (head.length == 0) {
+      dfNoEvents()
     }
     else {
-      val firstRow = head(0)
-      val timestamp = firstRow.getLong(firstRow.fieldIndex("timestamp"));
+      val timestamp = dfIP.select($"timestamp").first().getLong(0)
 
-      dfIP = dfIP.select(ip("IP"))
-        .groupBy($"IP").agg(count(lit(1)).alias("count"))
+      //Step 2: Count by IP in this job, then integrate data to 1 file, and add timestamp to file name.
+      //count by IP and in the job
+      dfIP = dfLoadCappingInJob(dfIP, selectCondition())
 
-      // reduce the number of ip count file to 1
-      dfIP = dfIP.repartition(1)
-      val tempPath = baseTempDir + dateFiles.date
-      cappingRuleJobObj.saveDFToFiles(dfIP, tempPath)
+      //reduce the number of counting file to 1, and rename file name to include timestamp
+      saveCappingInJob(dfIP, timestamp)
 
-      // rename file name to include timestamp
-      val fileStatus = fs.listStatus(new Path(tempPath))
-      val src = fileStatus.filter(status => status.getPath.getName != "_SUCCESS")(0).getPath
-      val target = new Path(tempPath, s"part-${timestamp}.snappy.parquet")
-      fs.rename(src, target)
+      //Step 3: Read a new df for join purpose, just select IP and snapshot_id, and read previous data for counting purpose.
+      //df for join
+      val selectCols: Array[Column] = $"snapshot_id" +: cols
+      var df = dfForJoin(cols(0), withColumnCondition(), selectCols)
 
-      // IP rule
-      var df = cappingRuleJobObj.readFilesAsDFEx(dateFiles.files).filter($"channel_action" === "CLICK")
-        .select(ip("IP_1"), $"snapshot_id")
+      //read previous data and add to count path
+      val ipCountPath = getCappingDataPath(timestamp)
 
-      val ipCountTempPathToday = baseTempDir + dateFiles.date
-      val ipCountPathToday = baseDir + dateFiles.date
-      val cal = Calendar.getInstance
-      cal.setTime(sdf.parse((dateFiles.date.asInstanceOf[String]).substring(DATE_COL.length + 1)))
-      cal.add(Calendar.DATE, -1)
-      val dateBefore1Day = cal.getTime
-      val ipCountTempPathYesterday = baseTempDir + DATE_COL + "=" + sdf.format(dateBefore1Day)
-      val ipCountPathYesterday = baseDir + DATE_COL + "=" + sdf.format(dateBefore1Day)
-      var ipCountPath: List[String] = List()
-      ipCountPath = ipCountPath :+ ipCountTempPathToday
-      if (fs.exists(new Path(ipCountPathToday))) {
-        ipCountPath = ipCountPath :+ ipCountPathToday
-      }
-      // read only 24 hours data
-      if (fs.exists(new Path(ipCountPathYesterday))) {
-        val fileStatus = fs.listStatus(new Path(ipCountPathYesterday))
-          .filter(status => String.valueOf(status.getPath.getName.substring(DATE_COL.length + 1, status.getPath.getName.indexOf("."))) >= (timestamp - 86400000).toString)
-          .map(status => ipCountPath = ipCountPath :+ status.getPath.toString)
-      }
+      //Step 4: Count all data, including previous data and data in this job, then join the result with the new df, return only snapshot_id and capping.
+      //count through whole timeWindow and filter those over threshold
+      dfIP = dfCappingInJob(null, ipCountPath)
 
-      dfIP = cappingRuleJobObj.readFilesAsDFEx(ipCountPath.toArray).groupBy($"IP").agg(sum($"count") as "amnt").filter($"amnt" >= params.ipThreshold)
-        .withColumn("capping", lit(cappingBit)).drop($"count").drop($"amnt")
-
-      df = df.join(dfIP, $"IP_1" === $"IP", "left_outer")
-        .select($"snapshot_id", $"capping")
+      //join origin df and counting df
+      df = dfJoin(df, dfIP, joinCondition(df, dfIP))
       df
-    }
-  }
-
-  override def postTest() = {
-    // rename tmp files to final files
-    val dateOutputPath = new Path(baseDir + dateFiles.date)
-    if (!fs.exists(dateOutputPath)) {
-      fs.mkdirs(dateOutputPath)
-    }
-    if(fs.exists(new Path(baseTempDir + dateFiles.date))) {
-      val fileStatus = fs.listStatus(new Path(baseTempDir + dateFiles.date))
-      val src = fileStatus.filter(status => status.getPath.getName != "_SUCCESS").toList(0).getPath
-      val fileName = src.getName
-      val dest = new Path(dateOutputPath, fileName)
-      fs.rename(src, dest)
-
-      // delete the tmp dir
-      fs.delete(new Path(baseTempDir), true)
     }
   }
 }
