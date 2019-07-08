@@ -103,7 +103,7 @@ echo "finish copy files size:"${files_size}
 
 KW_LKP_LATEST_PATH=hdfs://slickha/apps/kw_lkp/latest_path
 
-tmp_path_file=slc_kw_latest_path.txt
+tmp_path_file=latest_path
 rm -f ${tmp_path_file}
 
 echo "${destFolder}" > ${tmp_path_file}

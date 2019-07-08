@@ -29,6 +29,11 @@ KW_LKP_LATEST_PATH=hdfs://slickha/apps/kw_lkp/latest_path
 
 KW_LKP_FOLDER=$(hdfs dfs -text ${KW_LKP_LATEST_PATH})
 
+if [[ $? -ne 0 ]]; then
+   echo "get latest path failed"
+   exit 1
+fi
+
 DRIVER_MEMORY=8g
 EXECUTOR_NUMBER=60
 EXECUTOR_MEMORY=4g
