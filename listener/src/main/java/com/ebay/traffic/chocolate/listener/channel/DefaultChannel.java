@@ -197,16 +197,41 @@ public class DefaultChannel implements Channel {
 
     if (campaign != null && !request.getParameter(campaign).isEmpty()) {
       try {
+        String test = request.getParameter(campaign);
+        String test2 = test.trim();
         campaignId = Long.parseLong(request.getParameter(campaign).trim());
       } catch (NumberFormatException e) {
         logger.warn("Invalid campaign: " + request.getParameter(campaign));
         metrics.meter("InvalidCampaign", 1, eventTime, Field.of(CHANNEL_ACTION, channelAction),
             Field.of(CHANNEL_TYPE, channelType));
+        campaignId = extractValidLongData(request.getParameter(campaign));
       }
     }
 
     logger.debug(String.format("PartitionKey: %d", campaignId));
     return campaignId;
+  }
+
+  /**
+   * Extract campaign id
+   * @param strParamValue
+   * @return
+   */
+  private long extractValidLongData(String strParamValue) {
+
+    if (strParamValue != null) {
+      char[] charParamValue = strParamValue.toCharArray();
+      int pos = 0;
+      while (pos < charParamValue.length && Character.isDigit(charParamValue[pos]))
+        pos++;
+      try { // just in case...putting it in a try/catch block
+        return Long.parseLong(strParamValue.substring(0, pos));
+      } catch (NumberFormatException nfe) {
+        return -1L;
+      }
+    }
+    return -1L;
+
   }
 
   /**
