@@ -56,7 +56,6 @@ class IPPubCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, cappi
       dfNoEvents()
     }
     else {
-      val firstRow = head(0)
       val timestamp = dfIPPub.select($"timestamp").first().getLong(0)
 
       //Step 2: Count by ip and publisher_id in this job, then integrate data to 1 file, and add timestamp to file name.
