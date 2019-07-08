@@ -37,7 +37,7 @@ srcFolder="viewfs://apollo-rno${RENO_SRC_DIR}/${today}_00-00-00"
 
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -test -d ${srcFolder}
 rcode=$?
-if [[ ${rcode} ne 0 ]]; then
+if [ ${rcode} -ne 0 ]; then
     echo "${srcFolder} not exist"
     exit ${rcode}
 fi
