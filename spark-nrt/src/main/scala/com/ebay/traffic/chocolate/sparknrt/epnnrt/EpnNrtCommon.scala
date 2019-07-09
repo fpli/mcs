@@ -7,7 +7,7 @@ import java.util.Properties
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
-import com.google.gson.{Gson, JsonObject, JsonParser}
+import com.google.gson.{Gson, JsonParser}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.DataFrame
@@ -126,6 +126,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     "UNKNOWN_USERAGENT" -> -99
   )
 
+  lazy val ams_clk_fltr_type_map: Map[Int, Int] = Map(
+    12 -> 0,
+    13 -> 2,
+    14 -> 0,
+    15 -> 2
+  )
+
+
   //landing page id map  (landing_page_url -> page_id) here is MultiMap!
   lazy val landing_page_pageId_map: mutable.HashMap[String, mutable.Set[LandingPageMapInfo]] = {
     val map = new mutable.HashMap[String, mutable.Set[LandingPageMapInfo]] with mutable.MultiMap[String, LandingPageMapInfo]
@@ -223,8 +231,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_browser_type_udf = udf((user_agent: String) => getBrowserType(user_agent))
   val get_filter_yn_ind_udf = udf((rt_rule_flag: Long, nrt_rule_flag: Long, action: String) => getFilter_Yn_Ind(rt_rule_flag, nrt_rule_flag, action))
   val get_page_id_udf = udf((landingPage: String, uri: String) => getPageIdByLandingPage(landingPage, getRoverUriInfo(uri, 3)))
-  val get_roi_rule_value_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13))._1)
-  val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13))._2)
+  val get_roi_rule_value_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13), getRuleFlag(rt_rule_flags, 4))._1)
+  val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13), getRuleFlag(rt_rule_flags, 4))._2)
   val get_ams_clk_fltr_type_id_udf = udf((publisherId: String, uri: String) => getclickFilterTypeId(publisherId, getRoverUriInfo(uri, 3)))
   val get_click_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("click", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
   val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("impression", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
@@ -239,6 +247,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_trfc_src_cd_impression_udf = udf((browser: String) => get_TRFC_SRC_CD(browser, "impression"))
 
   val get_last_view_item_info_udf = udf((cguid: String, timestamp: String) => getLastViewItemInfo(cguid, timestamp))
+
+  val filter_specific_pub_udf = udf((referer: String, publisher: String) => filter_specific_pub(referer, publisher))
+
+  def filter_specific_pub(referer: String, publisher: String): Int = {
+    if (publisher.equals("5574651234") && getRefererURLAndDomain(referer, true).endsWith(".bid"))
+      return 1
+    0
+  }
 
 
   def getLastViewItemInfo(cguid: String, timestamp: String): Array[String] = {
@@ -592,7 +608,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     clickFilterTypeId
   }
 
-  def getRoiRuleValue(rotationId: String, publisherId: String, referer_domain: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_9: Int): (Int, Int) = {
+  /*def getRoiRuleValue(rotationId: String, publisherId: String, referer_domain: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_9: Int, rt_rule_15: Int): (Int, Int) = {
     var temp_roi_values = 0
     var roiRuleValues = 0
   //  var amsFilterRoiValue = 0
@@ -603,7 +619,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         val roiRuleList = lookupAdvClickFilterMapAndROI(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1), traffic_source_code)
         roiRuleList(0).setRule_result(callRoiSdkRule(roiRuleList(0).getIs_rule_enable, roiRuleList(0).getIs_pblshr_advsr_enable_rule, 0))
         roiRuleList(1).setRule_result(callRoiEbayReferrerRule(roiRuleList(1).getIs_rule_enable, roiRuleList(1).getIs_pblshr_advsr_enable_rule, rt_rule_9))
-        roiRuleList(2).setRule_result(callRoiNqBlacklistRule(roiRuleList(2).getIs_rule_enable, roiRuleList(2).getIs_pblshr_advsr_enable_rule, 0))
+        roiRuleList(2).setRule_result(callRoiNqBlacklistRule(roiRuleList(2).getIs_rule_enable, roiRuleList(2).getIs_pblshr_advsr_enable_rule, rt_rule_15))
         roiRuleList(3).setRule_result(callRoiNqWhitelistRule(publisherId, roiRuleList(3).getIs_rule_enable, roiRuleList(3).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
         roiRuleList(4).setRule_result(callRoiMissingReferrerUrlRule(roiRuleList(4).getIs_rule_enable, roiRuleList(4).getIs_pblshr_advsr_enable_rule, referer_domain))
         roiRuleList(5).setRule_result(callRoiNotRegisteredRule(publisherId, roiRuleList(5).getIs_rule_enable, roiRuleList(5).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
@@ -617,6 +633,53 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if (roiRuleValues != 0) {
       roi_fltr_yn_ind = 1
     }
+    (roiRuleValues, roi_fltr_yn_ind)
+  }*/
+
+  def getRoiRuleValue(rotationId: String, publisherId: String, referer_domain: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_9: Int, rt_rule_15: Int): (Int, Int) = {
+    var temp_roi_values = 0
+    var roiRuleValues = 0
+    //  var amsFilterRoiValue = 0
+    var roi_fltr_yn_ind = 0
+
+    if (isDefinedPublisher(publisherId) && isDefinedAdvertiserId(rotationId)) {
+      if(callRoiRulesSwitch(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1)).equals("2")) {
+        val roiRuleList = lookupAdvClickFilterMapAndROI(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1), traffic_source_code)
+        roiRuleList.head.setRule_result(callRoiSdkRule(roiRuleList.head.getIs_rule_enable, roiRuleList.head.getIs_pblshr_advsr_enable_rule, 0))
+        roiRuleList(1).setRule_result(callRoiEbayReferrerRule(roiRuleList(1).getIs_rule_enable, roiRuleList(1).getIs_pblshr_advsr_enable_rule, rt_rule_9))
+        roiRuleList(2).setRule_result(callRoiNqBlacklistRule(roiRuleList(2).getIs_rule_enable, roiRuleList(2).getIs_pblshr_advsr_enable_rule, rt_rule_15))
+        roiRuleList(3).setRule_result(callRoiNqWhitelistRule(publisherId, roiRuleList(3).getIs_rule_enable, roiRuleList(3).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
+        roiRuleList(4).setRule_result(callRoiMissingReferrerUrlRule(roiRuleList(4).getIs_rule_enable, roiRuleList(4).getIs_pblshr_advsr_enable_rule, referer_domain))
+        roiRuleList(5).setRule_result(callRoiNotRegisteredRule(publisherId, roiRuleList(5).getIs_rule_enable, roiRuleList(5).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
+
+        for (i <- roiRuleList.indices) {
+          temp_roi_values = temp_roi_values + (roiRuleList(i).getRule_result << i)
+        }
+      }
+    }
+    roiRuleValues = temp_roi_values + (google_fltr_do_flag << 6)
+    if (roiRuleValues != 0) {
+      roi_fltr_yn_ind = 1
+    }
+
+    val advrtsrId = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1)
+    // add UC4 logical rt_rule_9 here
+    if (roi_fltr_yn_ind == 0 && rt_rule_9 == 1 && (traffic_source_code == ams_clk_fltr_type_map(12) || traffic_source_code == ams_clk_fltr_type_map(13))) {
+      var list = getAdvClickFilterMap(publisherId)
+      list = list.filter(e => e.getAms_advertiser_id.equalsIgnoreCase(advrtsrId) &&
+        (e.getAms_clk_fltr_type_id.equalsIgnoreCase("12") || e.getAms_clk_fltr_type_id.equalsIgnoreCase("13")))
+      if (list.nonEmpty)
+        roi_fltr_yn_ind = 1
+    }
+    // add UC4 logical rt_rule_15 here
+    if (roi_fltr_yn_ind == 0 && rt_rule_15 == 1 && (traffic_source_code == ams_clk_fltr_type_map(14) || traffic_source_code == ams_clk_fltr_type_map(15))) {
+      var list = getAdvClickFilterMap(publisherId)
+      list = list.filter(e => e.getAms_advertiser_id.equalsIgnoreCase(advrtsrId) &&
+        (e.getAms_clk_fltr_type_id.equalsIgnoreCase("14") || e.getAms_clk_fltr_type_id.equalsIgnoreCase("15")))
+      if (list.nonEmpty)
+        roi_fltr_yn_ind = 1
+    }
+
     (roiRuleValues, roi_fltr_yn_ind)
   }
 

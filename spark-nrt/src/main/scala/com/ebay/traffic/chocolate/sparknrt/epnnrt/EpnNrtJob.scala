@@ -102,6 +102,10 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           metrics.meter("DateFileCount", size, timestamp)
           metrics.meter("InComingCount", df.count(), timestamp)
 
+          // filter publisher 5574651234
+          df = df.withColumn("publisher_filter", epnNrtCommon.filter_specific_pub_udf(col("referer"), col("publisher_id")))
+          df = df.filter(col("publisher_filter") === "0")
+
           // filter click and impression data, and if there is filterTime, filter the data older than filter time
           var df_click = df.filter(col("channel_action") === "CLICK")
           var df_impression = df.filter(col("channel_action") === "IMPRESSION")
@@ -161,7 +165,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           try {
             metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.result.meta.imp.outputdir"), "epnnrt_imp", Array(".epnnrt"))
             //write meta file for EPN SCP job to copy result to ETL and reno
-            metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), "epnnrt_imp_scp", Array(".epnnrt_etl", ".epnnrt_reno"))
+            metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno"))
 
             logger.info("successfully write EPN NRT impression output meta to HDFS")
             metrics.meter("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
@@ -207,7 +211,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           try {
             metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta.click.outputdir"), "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
             //write meta file for EPN SCP job to copy result to ETL and reno
-            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta.click.outputdir"), "epnnrt_click_scp", Array(".epnnrt_etl", ".epnnrt_reno"))
+            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta.click.outputdir"), "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno"))
             metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
             logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
           } catch {
