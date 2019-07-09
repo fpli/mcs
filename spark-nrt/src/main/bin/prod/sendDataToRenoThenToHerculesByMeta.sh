@@ -32,6 +32,7 @@ function process_one_meta(){
     data_files=`cat ${output_file} | tr "\n" " "`
     while read -r date_file; do
         date=`echo ${date_file} | cut -d" " -f1`
+        date="date="${date}
         data_file=`echo ${date_file} | cut -d" " -f2`
         data_file_name=$(basename "$data_file")
         rm -f data_file_name

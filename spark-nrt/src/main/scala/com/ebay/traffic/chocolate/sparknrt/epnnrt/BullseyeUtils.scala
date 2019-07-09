@@ -5,12 +5,15 @@ import java.util.Properties
 
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.JsonParser
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.slf4j.LoggerFactory
 import scalaj.http.{Http, HttpResponse}
 import spray.json._
 
 object BullseyeUtils {
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
+
+  lazy val bullseyeTokenFile = properties.getProperty("epnnrt.bullseye.token")
 
   @transient lazy val properties: Properties = {
     val properties = new Properties()
@@ -35,11 +38,26 @@ object BullseyeUtils {
     .asString
     .body.parseJson
 
-  var token: JsValue = generateToken
+  def generateToken2: JsValue = try {
+    Http(properties.getProperty("epnnrt.oauthUrl")).method("GET")
+      .param("client_id", properties.getProperty("epnnrt.clientId"))
+      .param("client_secret", properties.getProperty("epnnrt.clientsecret"))
+      .param("grant_type", "client_credentials")
+      .param("scope", "https://api.ebay.com/oauth/scope/@public")
+      .asString
+      .body.parseJson
+  } catch {
+    case e: Exception => {
+      logger.error("Error when generate Bullseye token from bullseye, get token from HDFS file" + e)
+      metrics.meter("BullseyeTokenError", 1)
+      null
+    }
+  }
 
+  var token: JsValue = generateToken2
 
   //may be retry here
-  def getData(cguid: String, modelId: String, count: String, bullseyeUrl: String): Option[HttpResponse[String]] = {
+  def getData(fs: FileSystem, cguid: String, modelId: String, count: String, bullseyeUrl: String): Option[HttpResponse[String]] = {
     try {
       logger.debug(s"Bullseye sending, cguid=$cguid")
       val response = Http(bullseyeUrl).method("GET")
@@ -53,7 +71,20 @@ object BullseyeUtils {
         Some(response)
       else {
         logger.error(s"bullseye response for cguid $cguid with error: $response")
-        token = generateToken
+        token = generateToken2
+        if (token != null) {
+          val output = fs.create(new Path(bullseyeTokenFile), true)
+          try {
+            output.writeBytes(token.toString())
+            output.writeBytes(System.getProperty("line.separator"))
+          } catch {
+            case e: Exception =>{
+              logger.warn("Error when writing bullseye token to HDFS")
+            }
+          } finally {
+            output.close()
+          }
+        }
         logger.warn(s"get new token: $token")
         metrics.meter("BullsEyeError", 1)
         None
@@ -61,15 +92,15 @@ object BullseyeUtils {
     } catch {
       case e: Exception => {
         logger.error("error when parse last view item : CGUID:" + cguid + " response: " + e)
-        metrics.meter("BullsEyeError", 1)
+       // metrics.meter("BullsEyeError", 1)
         None
       }
     }
   }
 
-  def getLastViewItem(cguid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String) = {
+  def getLastViewItem(fs: FileSystem, cguid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String) = {
     val start = System.currentTimeMillis
-    val result = getData(cguid, modelId, count, bullseyeUrl)
+    val result = getData(fs,cguid, modelId, count, bullseyeUrl)
     metrics.mean("BullsEyeLatency", System.currentTimeMillis - start)
 
     try {

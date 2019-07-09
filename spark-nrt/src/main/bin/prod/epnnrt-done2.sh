@@ -17,12 +17,12 @@ if [ -f "${done_file_dir}/${DONE_FILE}" ]; then
 fi
 
 ######################################### Check the file of today is processing ################################
-LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/process/${DT_TODAY}
+LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/process/"date="${DT_TODAY}
 
 today_processed=`ls ${LOCAL_PATH}'.processed' | wc -l`
 
 if [[ today_processed -ne 1 ]]; then
-     echo -e "chocolate-ePN ${DT}'s NRT not generated!!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT delayed!!!!(Today's Files not generated)" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+     echo -e "chocolate-ePN ${DT_TODAY}'s NRT not generated!!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT delayed!!!!(Today's Files not generated)" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
      exit 1
 fi
 
@@ -39,7 +39,7 @@ echo "timestamp of now: "${now_ts} | tee -a ${log_file}
 message_lag=$(($now_ts-$last_ts))
 echo "lag of message: "${message_lag} | tee -a ${log_file}
 if [[ message_lag -gt ${LAG_THRESHOLD} ]]; then
-     echo -e "chocolate-ePN ${DT}'s NRT not generated because of message lag!!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT delayed!!!!(Message lag)" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+     echo -e "chocolate-ePN ${DT_TODAY}'s NRT not generated because of message lag!!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT delayed!!!!(Message lag)" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
      exit 1
 fi
 
@@ -50,10 +50,10 @@ touch "$DONE_FILE"
 /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendDoneFile.sh ${DONE_FILE} ${log_file}
 
 if [ $? -ne 0 ]; then
-    echo -e "chocolate EPN NRT ${DT}'s data delayed due to sending done file error!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT} delayed!!!" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+    echo -e "chocolate EPN NRT ${DT_TODAY}'s data delayed due to sending done file error!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT_TODAY} delayed!!!" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
     exit 1
 else
-    echo -e "Congrats, chocolate EPN NRT ${DT}'s data completed" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT} completed" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+    echo -e "Congrats, chocolate EPN NRT ${DT_TODAY}'s data completed" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT_TODAY} completed" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
     touch "${done_file_dir}/${DONE_FILE}"
     exit 0
 fi
