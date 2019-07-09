@@ -5,7 +5,7 @@
 WORK_DIR=$1
 CHANNEL=$2
 ACTION=$3
-META_FILE_SUFFIX=$4
+META_SUFFIX=$4
 KEY_LOCATION=$5
 ETL_ACCOUNT_LOCATION=$6
 SCP_DONE_FILE=$7
@@ -76,8 +76,7 @@ mkdir -p ${tmp_dir}
 cd ${tmp_dir}
 
 all_meta_files=all_meta_files.txt
-meta_suffix='\.'${META_FILE_SUFFIX}'$'
-hdfs dfs -ls ${meta_dir} | grep -v "^$" | awk '{print $NF}' | grep ${meta_suffix} > ${all_meta_files}
+hdfs dfs -ls ${meta_dir} | grep -v "^$" | awk '{print $NF}' | grep ${META_SUFFIX} > ${all_meta_files}
 
 files_size=`cat ${all_meta_files} | wc -l`
 echo "start process meta files size:"${files_size}

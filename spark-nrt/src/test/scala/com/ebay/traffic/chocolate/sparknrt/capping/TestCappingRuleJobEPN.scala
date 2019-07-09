@@ -20,7 +20,6 @@ class TestCappingRuleJobEPN extends BaseFunSuite {
   val workDir = tmpPath + "/workDir/"
   val outputDir = tmpPath + "/outputDir/"
   val archiveDir = tmpPath + "/archiveDir/"
-  val ipThreshold = "6"
   val channel = "EPN"
 
   val args = Array(
@@ -28,8 +27,7 @@ class TestCappingRuleJobEPN extends BaseFunSuite {
     "--channel", channel,
     "--workDir", workDir,
     "--outputDir", outputDir,
-    "--archiveDir", archiveDir,
-    "--ipThreshold", ipThreshold
+    "--archiveDir", archiveDir
   )
 
   @transient lazy val hadoopConf = {
@@ -211,7 +209,7 @@ class TestCappingRuleJobEPN extends BaseFunSuite {
     val df2 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-02/"))
     df2.show()
     assert(df2.count() == 10)
-    assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 1)
+    assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 8)
     assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S)).=!=(0)).count() == 4)
     assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_L)).=!=(0)).count() == 3)
     assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.CGUIDPubCappingRule_S)).=!=(0)).count() == 4)

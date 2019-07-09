@@ -58,7 +58,6 @@ class IPBrowserCappingRule(params: Parameter, bit: Long, dateFiles: DateFiles, c
       dfNoEvents()
     }
     else {
-      val firstRow = head(0)
       val timestamp = dfIPBrowser.select($"timestamp").first().getLong(0)
 
       //Step 2: Count by ip and user_agent in this job, then integrate data to 1 file, and add timestamp to file name.

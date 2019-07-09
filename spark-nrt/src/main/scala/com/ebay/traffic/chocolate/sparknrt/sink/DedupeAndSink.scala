@@ -117,7 +117,7 @@ class DedupeAndSink(params: Parameter)
             // write lag to hdfs file
             val output = fs.create(new Path(lagDir + TaskContext.get.partitionId()), true)
             output.writeBytes(String.valueOf(timestampOfPartition))
-            output.writeBytes(System.getProperty("line.separator"));
+            output.writeBytes(System.getProperty("line.separator"))
             output.close()
           } catch {
             case e: Exception =>
