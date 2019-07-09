@@ -57,23 +57,24 @@ class TouchImkHourlyDoneJob(params: Parameter)
   implicit def dateTimeOrdering: Ordering[ZonedDateTime] = Ordering.fromLessThan(_ isBefore  _)
 
   override def run(): Unit = {
-    val currentDateHour = ZonedDateTime.now(defaultZoneId).truncatedTo(ChronoUnit.HOURS)
+    // if current time is 6 o'clock, try to generate 5 o'clock done
+    val doneDateHour = ZonedDateTime.now(defaultZoneId).truncatedTo(ChronoUnit.HOURS).minusHours(1)
 
-    val todayDoneDir = new Path(getDoneDir(currentDateHour))
-    val yesterdayDoneDir = new Path(getDoneDir(currentDateHour.minusDays(1)))
+    val todayDoneDir = new Path(getDoneDir(doneDateHour))
+    val yesterdayDoneDir = new Path(getDoneDir(doneDateHour.minusDays(1)))
 
-    logger.info("currentDateHour {}, todayDoneDir {}, yesterdayDoneDir {}", currentDateHour, todayDoneDir, yesterdayDoneDir)
+    logger.info("doneDateHour {}, todayDoneDir {}, yesterdayDoneDir {}", doneDateHour, todayDoneDir, yesterdayDoneDir)
 
     var delays = 0L
 
     if (fs.exists(todayDoneDir) && fs.listStatus(todayDoneDir).length != 0) {
       val todayLastDoneFileDatetime = getLastDoneFileDatetime(fs.listStatus(todayDoneDir))
-      delays = ChronoUnit.HOURS.between(todayLastDoneFileDatetime, currentDateHour)
+      delays = ChronoUnit.HOURS.between(todayLastDoneFileDatetime, doneDateHour)
       logger.info("todayLastDoneFileDatetime {}", todayLastDoneFileDatetime)
     } else {
       fs.mkdirs(todayDoneDir)
       val yesterdayLastDoneFileDatetime = getLastDoneFileDatetime(fs.listStatus(yesterdayDoneDir))
-      delays = ChronoUnit.HOURS.between(yesterdayLastDoneFileDatetime, currentDateHour)
+      delays = ChronoUnit.HOURS.between(yesterdayLastDoneFileDatetime, doneDateHour)
       logger.info("yesterdayLastDoneFileDatetime {}", yesterdayLastDoneFileDatetime)
     }
 
@@ -81,7 +82,7 @@ class TouchImkHourlyDoneJob(params: Parameter)
 
     logger.info("delays {}, watermark {}", delays, watermark)
 
-    val times: immutable.Seq[ZonedDateTime] = (0L until delays).map(delay => currentDateHour.minusHours(delay)).reverse.filter(dateTime => dateTime.isBefore(watermark))
+    val times: immutable.Seq[ZonedDateTime] = (0L until delays).map(delay => doneDateHour.minusHours(delay)).reverse.filter(dateTime => dateTime.plusHours(1).isBefore(watermark))
 
     times.foreach(dateTime => {
       val file = getDoneFileName(dateTime)

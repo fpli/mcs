@@ -24,8 +24,8 @@ WORK_DIR=$1
 LAG_DIR=$2
 DONE_DIR=$3
 
-dt=$(date +%Y%m%d)
-dt_hour=$(date +%Y%m%d%H)
+dt_hour=$(date -d '1 hour ago' +%Y%m%d%H)
+dt=${dt_hour:0:8}
 
 HOST_NAME=`hostname -f`
 kinit -kt /datashare/mkttracking/tools/keytab-tool/keytab/b_marketing_tracking.${HOST_NAME}.keytab  b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM
