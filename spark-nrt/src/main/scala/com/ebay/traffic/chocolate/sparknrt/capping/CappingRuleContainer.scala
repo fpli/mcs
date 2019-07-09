@@ -25,7 +25,7 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
   @transient lazy val channelsRules = mutable.HashMap(
     ChannelType.EPN -> mutable.HashMap(
       CappingRuleEnum.IPCappingRule ->
-          new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj),
+          new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj, windowLong),
       CappingRuleEnum.IPPubCappingRule_S ->
           new IPPubCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPPubCappingRule_S), dateFiles, sparkJobObj, windowShort),
       CappingRuleEnum.IPPubCappingRule_L ->
@@ -52,14 +52,14 @@ class CappingRuleContainer(params: Parameter, dateFiles: DateFiles, sparkJobObj:
     ),
     ChannelType.DISPLAY -> mutable.HashMap(
       CappingRuleEnum.IPCappingRule ->
-        new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj)
+        new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj, windowLong)
 //      CappingRuleEnum.SnidCappingRule_L ->
 //        new SNIDCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_L),
 //          CappingRuleEnum.getBitValue(CappingRuleEnum.SnidCappingRule_S), dateFiles, sparkJobObj, windowLong)
     ),
     ChannelType.PAID_SEARCH -> mutable.HashMap(
       CappingRuleEnum.IPCappingRule ->
-        new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj)
+        new IPCappingRule(params, CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule), dateFiles, sparkJobObj, windowLong)
     )
   )
 
