@@ -121,7 +121,7 @@
   </property>
   <property>
     <name>proxyTo</name>
-    <value>http://rover-app-1-envf7jokk59vh.stratus.phx.qa.ebay.com</value>
+    <value>http://rover-app.vip.qa.ebay.com</value>
     <description>Proxy between listener and rover clusters</description>
   </property>
   <property>
