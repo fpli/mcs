@@ -7,6 +7,8 @@
 #           /apps/tracking-events/watch
 # Schedule: /3 * ? * *
 
+set -x
+
 usage="Usage: touchImkHourlyDone.sh [workDir] [lagDir] [doneDir]"
 
 # if no args specified, show usage
