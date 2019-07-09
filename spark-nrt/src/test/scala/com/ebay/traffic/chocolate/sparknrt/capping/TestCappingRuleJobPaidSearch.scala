@@ -20,7 +20,6 @@ class TestCappingRuleJobPaidSearch extends BaseFunSuite {
   val workDir = tmpPath + "/workDir/"
   val outputDir = tmpPath + "/outputDir/"
   val archiveDir = tmpPath + "/archiveDir/"
-  val ipThreshold = "6"
   val channel = "PAID_SEARCH"
 
   val args = Array(
@@ -28,8 +27,7 @@ class TestCappingRuleJobPaidSearch extends BaseFunSuite {
     "--channel", channel,
     "--workDir", workDir,
     "--outputDir", outputDir,
-    "--archiveDir", archiveDir,
-    "--ipThreshold", ipThreshold
+    "--archiveDir", archiveDir
   )
 
   @transient lazy val hadoopConf = {
@@ -190,8 +188,8 @@ class TestCappingRuleJobPaidSearch extends BaseFunSuite {
 
     val df2 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-02/"))
     df2.show()
-    assert(df2.count() == 9)
-    assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 1)
+    assert(df2.count() == 10)
+    assert(df2.filter($"nrt_rule_flags".bitwiseAND(CappingRuleEnum.getBitValue(CappingRuleEnum.IPCappingRule)).=!=(0)).count() == 8)
 
 
     val df3 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-03/"))
