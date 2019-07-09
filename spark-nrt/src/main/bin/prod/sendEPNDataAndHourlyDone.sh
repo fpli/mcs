@@ -21,7 +21,7 @@ DT_TODAY=$(date +%Y-%m-%d)
 
 
 ################################################ Send EPN Data to ETL ################################################
-
+: << !
 echo "============== Send EPN Data to ETL =============="
 
 ./scpDataToETLByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX_ETL} ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO
@@ -45,7 +45,7 @@ else
     echo -e "Send EPN NRT Impression Data To ETL Error!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data to ETL!" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
     exit $rcode_send_etl_imp
 fi
-
+!
 
 ################## Send EPN Click Data to Apollo Reno then to Hercules and generate hourly done file ##################
 
