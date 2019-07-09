@@ -6,12 +6,16 @@
 #           /apps/tracking-events/imkTransform/imkOutput
 #           /apps/tracking-events/crabTransform/dtlOutput
 #           /apps/tracking-events/imkTransform/dtlOutput
+#           /apps/tracking-events/crabTransform/mgOutput
+#           /apps/tracking-events/imkTransform/mgOutput
 # Output:   Apollo RNO
 #           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event
 #           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl
+#           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_mg
 #           Hercules
 #           /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event
 #           /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event_dtl
+#           /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event_mg
 # Schedule: /3 * ? * *
 
 usage="Usage: putImkToRenoAndHercules.sh [srcDir] [renoMiddleDir] [renoDestDir] [localTmpDir] [herculesDestDir]"
