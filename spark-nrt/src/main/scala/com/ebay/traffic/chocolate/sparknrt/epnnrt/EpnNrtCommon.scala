@@ -220,7 +220,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_load_time_udf = udf((url: String) => getQueryParam(url, "load_time"))
   val get_udid_Udf = udf((url: String) => getQueryParam(url, "udid"))
   val get_rule_flag_udf = udf((ruleFlag: Long, index: Int) => getRuleFlag(ruleFlag, index))
-  val get_country_locale_udf = udf((requestHeader: String) => getCountryLocaleFromHeader(requestHeader))
+  val get_country_locale_udf = udf((requestHeader: String, lang_cd: String) => getCountryLocaleFromHeader(requestHeader, lang_cd))
   val get_lego_udf = udf((uri: String) => getToolLvlOptn(uri))
   val get_icep_vectorid_udf = udf((uri: String) => getQueryParam(uri, "icep_vectorid"))
   val get_icep_store_udf = udf((uri: String) => getQueryParam(uri, "icep_store"))
@@ -470,7 +470,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     0
   }
 
-  def getCountryLocaleFromHeader(requestHeader: String): String = {
+  def getCountryLocaleFromHeader(requestHeader: String, lang_cd: String): String = {
     var accept = getValueFromRequest(requestHeader, "accept-language")
     try {
       if (accept != null && !accept.equals(""))
@@ -483,6 +483,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         return ""
       }
     }
+    if (accept == null || accept.equals(""))
+      accept = lang_cd
     accept
   }
 

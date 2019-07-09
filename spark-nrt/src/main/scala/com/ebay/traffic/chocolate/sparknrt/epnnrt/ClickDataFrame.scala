@@ -67,7 +67,7 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
       .withColumn("AMS_PAGE_TYPE_MAP_ID", common.get_page_id_udf(col("LND_PAGE_URL_NAME"), col("uri")))
       .withColumn("RFRNG_DMN_NAME", common.getRefererHostUdf(col("referer")))
       .withColumn("SRC_PLCMNT_DATA_TXT", common.getRoverUriInfoUdf(col("uri"), lit(3).cast(IntegerType)))
-      .withColumn("GEO_TRGTD_CNTRY_CD", col("lang_cd"))
+      .withColumn("GEO_TRGTD_CNTRY_CD", common.get_country_locale_udf(col("request_headers")), col("lang_cd"))
       .withColumn("TOOL_LVL_OPTN_IND", common.get_lego_udf(col("uri")))
       .withColumn("GEO_TRGTD_IND", common.get_Geo_Trgtd_Ind_udf(col("uri")))
       .withColumn("PBLSHR_ACPTD_PRGRM_IND", common.get_Pblshr_Acptd_Prgrm_Ind_udf(col("uri")))
