@@ -17,6 +17,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -215,9 +217,17 @@ public class RoverRheosTopicFilterTask extends Thread {
 
           UriComponents uriComponents;
           uriComponents = UriComponentsBuilder.fromUriString(uri).build();
+
+          //get lowercase parameter in case some publishers may put different case of characters
+          MultiValueMap<String, String> lowerCaseParams = new LinkedMultiValueMap<>();
+          MultiValueMap<String, String> params = uriComponents.getQueryParams();
+          for (String key: params.keySet()) {
+            lowerCaseParams.put(key.toLowerCase(), params.get(key));
+          }
+
           long campaignId = -1L;
           try{
-            campaignId = Long.valueOf(uriComponents.getQueryParams().get("campid").get(0));
+            campaignId = Long.valueOf(lowerCaseParams.get("campid").get(0));
           } catch (Exception e) {
             logger.error("Parse campaign id error");
           }
