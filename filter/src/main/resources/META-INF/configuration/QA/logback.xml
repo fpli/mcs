@@ -49,7 +49,7 @@
         <file>log/aero-kafka.log</file>
         <triggeringPolicy
             class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>100MB</maxFileSize>
+            <maxFileSize>300MB</maxFileSize>
         </triggeringPolicy>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
             <fileNamePattern>log/aero-kafka%i.log</fileNamePattern>
