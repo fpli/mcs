@@ -56,7 +56,7 @@ fi
 
 
 #################################### Generate hourly done file on Hercules ####################################
-
+: << !
 echo "=============== Start generating hourly done file on hercules ==============="
 
 reno_done_file_full_name='viewfs://apollo-rno'${done_file_full_name}
@@ -82,7 +82,7 @@ if [ ${rcode_hercules} -ne 0 ]
         echo -e "Fail to send hourly done file: ${done_file_full_name} to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT Error!!!(Hourly done file to Hercules)" -v DL-eBay-Chocolate-GC@ebay.com
         exit ${rcode_hercules}
 fi
-
+!
 
 ######################################### Save done time to local file #########################################
 

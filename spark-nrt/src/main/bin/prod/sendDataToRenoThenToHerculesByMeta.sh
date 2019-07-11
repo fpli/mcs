@@ -87,7 +87,7 @@ function process_one_meta(){
 
 
         ############################################ Send data to Hercules ############################################
-
+        : << !
         reno_file_name='viewfs://apollo-rno'${reno_path}'/'${data_file_name}
         if [ "${ACTION}" == "click" ]
         then
@@ -121,6 +121,8 @@ function process_one_meta(){
             echo -e "Fail to send file: ${reno_file_name} to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT Error!!!!(Send file to Hercules)" -v DL-eBay-Chocolate-GC@ebay.com
             exit ${rcode_hercules}
         fi
+        !
+
     done < "$output_file"
     rm -f ${output_file}
     echo "finish scp files size:"${files_size}
