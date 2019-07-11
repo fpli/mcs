@@ -27,7 +27,7 @@
         </encoder>
     </appender>
 
-    <appender name="FILE-DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="FILE-RHEOS" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>log/aero-rheos.log</file>
         <triggeringPolicy
             class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
@@ -35,6 +35,24 @@
         </triggeringPolicy>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
             <fileNamePattern>log/aero-rheos%i.log</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>9</maxIndex>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date %level [%thread] %logger{36} %msg%n</pattern>
+            <!-- this improves logging throughput -->
+            <immediateFlush>false</immediateFlush>
+        </encoder>
+    </appender>
+
+    <appender name="FILE-KAFKA" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>log/aero-kafka.log</file>
+        <triggeringPolicy
+            class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>100MB</maxFileSize>
+        </triggeringPolicy>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>log/aero-kafka%i.log</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>9</maxIndex>
         </rollingPolicy>
@@ -79,7 +97,10 @@
     </root>
 
     <logger name="io.ebay.rheos" level="debug" additivity="false">
-        <appender-ref ref="FILE-DEBUG"/>
+        <appender-ref ref="FILE-RHEOS"/>
+    </logger>
+    <logger name="org.apache.kafka" level="debug" additivity="false">
+        <appender-ref ref="FILE-KAFKA"/>
     </logger>
 
 </configuration>
