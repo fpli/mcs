@@ -81,7 +81,7 @@ function process_one_meta(){
         rm -f ${data_file_name}
         if [ ${rcode_rno} -ne 0 ]
         then
-            echo -e "Fail to send file: ${data_file_name} to Apollo Reno!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT Error!!!!(Failed to send file to Apollo Reno)" -v DL-eBay-Chocolate-GC@ebay.com
+            echo -e "Fail to send file: ${data_file_name} to Apollo Reno!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT Error!!!!(Send file to Apollo Reno)" -v DL-eBay-Chocolate-GC@ebay.com
             exit ${rcode_rno}
         fi
 
@@ -118,7 +118,7 @@ function process_one_meta(){
         done
         if [ ${rcode_hercules} -ne 0 ]
         then
-            echo -e "Fail to send file: ${reno_file_name} to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT Error!!!!(Failed to send file to Hercules)" -v DL-eBay-Chocolate-GC@ebay.com
+            echo -e "Fail to send file: ${reno_file_name} to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT Error!!!!(Send file to Hercules)" -v DL-eBay-Chocolate-GC@ebay.com
             exit ${rcode_hercules}
         fi
     done < "$output_file"

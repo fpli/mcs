@@ -25,14 +25,15 @@ then
 fi
 
 ## Touch done file, retry 3 times
+rcode_rno=1
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -test -e ${done_file_full_name}
 done_file_exists=$?
 if [ ${done_file_exists} -eq 0 ]
 then
     echo "done file exists: ${done_file}"
+    rcode_rno=0
 else
     retry=1
-    rcode_rno=1
     until [[ ${retry} -gt 3 ]]
     do
         /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -touchz ${done_file_full_name}
@@ -47,6 +48,11 @@ else
         fi
     done
 fi
+if [ ${rcode_rno} -ne 0 ]
+    then
+        echo -e "Fail to send hourly done file: ${done_file_full_name} to Apollo Reno!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT Error!!!(Hourly done file to Apollo Reno)" -v DL-eBay-Chocolate-GC@ebay.com
+        exit ${rcode_rno}
+fi
 
 
 #################################### Generate hourly done file on Hercules ####################################
@@ -56,8 +62,8 @@ echo "=============== Start generating hourly done file on hercules ============
 reno_done_file_full_name='viewfs://apollo-rno'${done_file_full_name}
 hercules_done_file_full_dir='hdfs://hercules'${done_file_full_dir}
 
+rcode_hercules=1
 retry=1
-rcode_rno=1
 until [[ ${retry} -gt 3 ]]
 do
     /datashare/mkttracking/tools/cake/bin/distcp_by_optimus.sh ${reno_done_file_full_name} ${hercules_done_file_full_dir} epnnrt_done
@@ -67,10 +73,15 @@ do
          echo "Successfully generated done file on Hercules: ${done_file_full_name}"
          break
     else
-         echo "Faild to generate done file on Apollo Rno: "${done_file_full_name}", retrying ${retry}"
+         echo "Faild to generate done file on Hercules: "${done_file_full_name}", retrying ${retry}"
          retry=`expr ${retry} + 1`
     fi
 done
+if [ ${rcode_hercules} -ne 0 ]
+    then
+        echo -e "Fail to send hourly done file: ${done_file_full_name} to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT Error!!!(Hourly done file to Hercules)" -v DL-eBay-Chocolate-GC@ebay.com
+        exit ${rcode_hercules}
+fi
 
 
 ######################################### Save done time to local file #########################################

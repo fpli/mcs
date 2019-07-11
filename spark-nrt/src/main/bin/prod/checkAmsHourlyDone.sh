@@ -48,13 +48,22 @@ echo "====================== Start checking data timestamp =====================
 flag_ts=0
 data_min_ts_file=/apps/epn-nrt/min_ts.txt
 
-./amsHourlyMinTs.sh ${WORK_DIR} ${CHANNEL} ${USAGE} ${META_SUFFIX} ${data_min_ts_file}
-let data_min_ts=`hdfs dfs -cat ${data_min_ts_file}`
-echo "Timestamp of earliest epn nrt data: "${data_min_ts}
-if [ ${data_min_ts} -ge ${check_now_timestamp} ]
+## Check if there is any meta to check
+let meta_num=`hdfs dfs -ls ${WORK_DIR}'/meta/'${CHANNEL}'/output/'${USAGE} | grep ${META_SUFFIX} | wc -l`
+
+if [ ${meta_num} -gt 0 ]
 then
-    echo "Data timestamp are all in current hour"
-    flag_ts=1
+    echo "There are ${meta_num} metas."
+    ./amsHourlyMinTs.sh ${WORK_DIR} ${CHANNEL} ${USAGE} ${META_SUFFIX} ${data_min_ts_file}
+    let data_min_ts=`hdfs dfs -cat ${data_min_ts_file}`
+    echo "Timestamp of earliest epn nrt data: "${data_min_ts}
+    if [ ${data_min_ts} -ge ${check_now_timestamp} ]
+    then
+        echo "Data timestamp are all in current hour"
+        flag_ts=1
+    fi
+else
+    echo "No click meta!"
 fi
 
 
