@@ -54,10 +54,11 @@ function process_one_meta(){
 
             echo "===================== Start upload ${data_file} to ${dest_full_dir} ====================="
 
+            ## Create date dir in reno if it doesn't exist
             /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${dest_full_dir}
             if [ $? -ne 0 ]; then
                 echo "Create reno folder for ${date}"
-                /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -mkdir -p ${dest_full_dir}
+                /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -mkdir ${dest_full_dir}
             fi
 
             retry=1
@@ -94,6 +95,13 @@ function process_one_meta(){
             ############################################ Send data to Hercules ############################################
 
             echo "===================== Start upload ${data_file_name} to ${dest_full_dir} ====================="
+
+            ## Create date dir in hercules if it doesn't exist
+            /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -test -e ${dest_full_dir}
+            if [ $? -ne 0 ]; then
+                echo "Create hercules folder for ${date}"
+                /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -mkdir ${dest_full_dir}
+            fi
 
             retry=1
             rcode_hercules=1
