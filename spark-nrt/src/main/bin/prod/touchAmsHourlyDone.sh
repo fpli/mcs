@@ -11,6 +11,19 @@ done_file_full_dir=${DONE_FILE_DIR}${done_date}
 done_file_full_name=${done_file_full_dir}'/'${DONE_FILE}
 
 
+################################### Add partition to Hive on Reno and Hercules ###################################
+
+if [ "${done_hour}" == "00" ]
+then
+    echo "===================== Add partition to Hive on Reno and Hercules ====================="
+    
+    /datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table choco_ams_click;"
+    /datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table choco_ams_imprsn;"
+    /datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table im_tracking.choco_ams_click;"
+    /datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table im_tracking.choco_ams_imprsn;"
+fi
+
+
 ######################################## Generate hourly done file on Hercules ########################################
 
 echo "===================== Start generating hourly done file on hercules ====================="
