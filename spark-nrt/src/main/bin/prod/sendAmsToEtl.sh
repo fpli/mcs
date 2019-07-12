@@ -15,7 +15,7 @@ ETL_TOKEN=/datashare/mkttracking/tools/rsa_token/nrt_etl_key
 
 echo "================ Send EPN Click Data to ETL ================"
 
-./scpAmsToETLByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO
+./scpDataToETLByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO
 rcode_click=$?
 
 if [ $rcode_click -eq 0 ];
@@ -31,7 +31,7 @@ fi
 
 echo "================ Send EPN Impression Data to ETL ================"
 
-./scpAmsToETLByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO
+./scpDataToETLByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO
 rcode_imp=$?
 
 if [ $rcode_send_etl_imp -eq 0 ];
