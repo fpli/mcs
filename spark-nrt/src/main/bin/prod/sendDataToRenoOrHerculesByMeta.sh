@@ -65,7 +65,7 @@ function process_one_meta(){
             rcode_rno=1
             until [[ ${retry} -gt 3 ]]
             do
-                /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -copyFromLocal ${data_file_name} ${dest_full_dir}
+                /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -put ${data_file_name} ${dest_full_dir}
                 rcode_rno=$?
                 if [ ${rcode_rno} -eq 0 ]
                 then
@@ -107,7 +107,7 @@ function process_one_meta(){
             rcode_hercules=1
             until [[ ${retry} -gt 3 ]]
             do
-                /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -copyFromLocal ${data_file_name} ${dest_full_dir} epnnrt_data
+                /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -put ${data_file_name} ${dest_full_dir}
                 rcode_hercules=$?
                 if [ ${rcode_hercules} -eq 0 ]
                 then

@@ -15,11 +15,11 @@ LOCAL_DONE_DATE_FILE=/datashare/mkttracking/data/epn-nrt/local_done_date.txt
 
 echo "================ Send EPN Click Data to Hercules and generate hourly done file ================"
 
-./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX_RNO} ${LOCAL_DONE_DATE_FILE}
+./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${LOCAL_DONE_DATE_FILE}
 rcode_check=$?
 
 hercules_click_dir=${HERCULES_DIR}'/ams_click/snapshot/click_dt='
-./sendAmsToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${hercules_full_dir} hercules NO
+./sendDataToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${hercules_click_dir} hercules NO
 rcode_click=$?
 
 if [ $rcode_click -eq 0 ];
@@ -50,7 +50,7 @@ fi
 echo "================ Send EPN Impression Data to Hecules ================"
 
 hercules_imp_dir=${HERCULES_DIR}'/ams_impression/snapshot/imprsn_dt='
-./sendAmsToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${hercules_imp_dir} hercules NO
+./sendDataToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${hercules_imp_dir} hercules NO
 rcode_imp=$?
 
 if [ $rcode_imp -eq 0 ];
