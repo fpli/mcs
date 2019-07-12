@@ -27,7 +27,7 @@
         </encoder>
     </appender>
 
-    <appender name="FILE-DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="FILE-RHEOS" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>log/aero-rheos.log</file>
         <triggeringPolicy
             class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
@@ -79,7 +79,7 @@
     </root>
 
     <logger name="io.ebay.rheos" level="debug" additivity="false">
-        <appender-ref ref="FILE-DEBUG"/>
+        <appender-ref ref="FILE-RHEOS"/>
     </logger>
 
 </configuration>
