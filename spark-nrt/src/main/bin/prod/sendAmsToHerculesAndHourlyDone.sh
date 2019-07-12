@@ -40,7 +40,7 @@ then
         ./touchAmsHourlyDone.sh ${done_file} ${LOCAL_DONE_DATE_FILE}
     fi
 else
-    echo -e "Send EPN NRT Click Data to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data to Hercules!" -v DL-eBay-Chocolate-GC@ebay.com
+    echo -e "Send EPN NRT Click Data to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Send click file to Hercules Failed!" -v DL-eBay-Chocolate-GC@ebay.com
     exit $rcode_click
 fi
 
@@ -57,6 +57,6 @@ if [ $rcode_imp -eq 0 ];
 then
     echo "Successfully send EPN NRT Impression data to Hercules"
 else
-    echo -e "Send EPN NRT Impression Data to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data to Hercules!" -v DL-eBay-Chocolate-GC@ebay.com
+    echo -e "Send EPN NRT Impression Data to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Send impression file to Hercules Failed!" -v DL-eBay-Chocolate-GC@ebay.com
     exit $rcode_imp
 fi

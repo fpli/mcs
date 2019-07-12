@@ -21,7 +21,7 @@ if [ $rcode_click -eq 0 ];
 then
     echo "Successfully send AMS Click data to Apollo Reno"
 else
-    echo -e "Send EPN NRT Click Data from Apollo Reno to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data from Apollo Reno to Hercules!" -v DL-eBay-Chocolate-GC@ebay.com
+    echo -e "Send EPN NRT Click Data to Apollo Reno failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Send click file to Apollo Reno!" -v DL-eBay-Chocolate-GC@ebay.com
     exit $rcode_click
 fi
 
@@ -38,6 +38,6 @@ if [ $rcode_imp -eq 0 ];
 then
     echo "Successfully send AMS Impression data to Hercules"
 else
-    echo -e "Send EPN NRT Impression Data from Apollo Reno to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data to Apollo Reno!" -v DL-eBay-Chocolate-GC@ebay.com
+    echo -e "Send EPN NRT Impression Data to Apollo Reno failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Send impression file to Apollo Reno!" -v DL-eBay-Chocolate-GC@ebay.com
     exit $rcode_imp
 fi
