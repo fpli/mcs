@@ -13,7 +13,8 @@ RENO_DIR=/apps/b_marketing_tracking/chocolate/epnnrt
 
 echo "================ Send EPN Click Data to Apollo Reno ================"
 
-./sendAmsToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${RENO_DIR} click YES
+reno_click_dir=${RENO_DIR}'/click/click_dt='
+./sendAmsToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${reno_click_dir} reno YES
 rcode_click=$?
 
 if [ $rcode_click -eq 0 ];
@@ -29,7 +30,8 @@ fi
 
 echo "================ Send EPN Impression Data to Apollo Reno ================"
 
-./sendAmsToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${RENO_DIR} imp YES
+reno_imp_dir=${RENO_DIR}'imp/imprsn_dt='
+./sendAmsToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${reno_imp_dir} reno NO
 rcode_imp=$?
 
 if [ $rcode_imp -eq 0 ];

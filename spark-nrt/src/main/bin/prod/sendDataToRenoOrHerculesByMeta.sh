@@ -1,6 +1,9 @@
 #!/bin/bash
 
-# read output meta files by channel and action, scp data files to ETL server
+# Common script to send data from c3 to reno or hercules.
+# Meta file is needed.
+# Date partition, so DEST_DIR must contains date column's name, eg: /sys/edw/imk/im_tracking/epn/ams_click/snapshot/click_dt=
+
 
 WORK_DIR=$1
 CHANNEL=$2
@@ -8,8 +11,7 @@ USAGE=$3
 META_SUFFIX=$4
 DEST_DIR=$5
 DEST_DC=$6
-ACTION=$7
-TOUCH_PROCESS_FILE=$8
+TOUCH_PROCESS_FILE=$7
 
 function process_one_meta(){
     meta_file=$1
@@ -36,7 +38,7 @@ function process_one_meta(){
         data_file_name=$(basename "$data_file")
         rm -f data_file_name
         hdfs dfs -get ${data_file}
-        reno_dir=${DEST_DIR}'/'${ACTION}'/date='${date}
+        dest_full_dir=${DEST_DIR}${date}
 
 
         ####################################### Generate epn nrt processed file #######################################
@@ -50,26 +52,26 @@ function process_one_meta(){
         then
             ########################################## Send data to Apollo Reno ##########################################
 
-            echo "===================== Start upload ${data_file} to ${reno_dir} ====================="
+            echo "===================== Start upload ${data_file} to ${dest_full_dir} ====================="
 
-            /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${reno_dir}
+            /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${dest_full_dir}
             if [ $? -ne 0 ]; then
                 echo "Create reno folder for ${date}"
-                /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -mkdir -p ${reno_dir}
+                /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -mkdir -p ${dest_full_dir}
             fi
 
             retry=1
             rcode_rno=1
             until [[ ${retry} -gt 3 ]]
             do
-                /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -copyFromLocal ${data_file_name} ${reno_dir}
+                /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -copyFromLocal ${data_file_name} ${dest_full_dir}
                 rcode_rno=$?
                 if [ ${rcode_rno} -eq 0 ]
                 then
                     echo "Successfully send to Reno: "${data_file_name}
                     break
                 else
-                    /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${reno_dir}'/'${data_file_name}
+                    /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${dest_full_dir}'/'${data_file_name}
                     if [ $? -eq 0 ]; then
                         echo "${data_file_name} already exists!!"
                         rcode_rno=0
@@ -91,24 +93,13 @@ function process_one_meta(){
         then
             ############################################ Send data to Hercules ############################################
 
-            if [ "${ACTION}" == "click" ]
-            then
-                hercules_dir='hdfs://hercules'${DEST_DIR}'/ams_click/snapshot/click_dt='${date}
-            elif [ "${ACTION}" == "imp" ]
-            then
-                hercules_dir='hdfs://hercules'${DEST_DIR}'/ams_impression/snapshot/imprsn_dt='${date}
-            else
-                ehco "Wrong channel action!"
-                exit 1
-            fi
-
-            echo "===================== Start upload ${data_file_name} to ${hercules_dir} ====================="
+            echo "===================== Start upload ${data_file_name} to ${dest_full_dir} ====================="
 
             retry=1
             rcode_hercules=1
             until [[ ${retry} -gt 3 ]]
             do
-                /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -copyFromLocal ${data_file_name} ${hercules_dir} epnnrt_data
+                /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -copyFromLocal ${data_file_name} ${dest_full_dir} epnnrt_data
                 rcode_hercules=$?
                 if [ ${rcode_hercules} -eq 0 ]
                 then
