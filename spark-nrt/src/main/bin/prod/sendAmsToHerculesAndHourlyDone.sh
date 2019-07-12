@@ -18,7 +18,7 @@ echo "================ Send EPN Click Data to Hercules and generate hourly done 
 ./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX_RNO} ${LOCAL_DONE_DATE_FILE}
 rcode_check=$?
 
-./sendDataToRenoThenToHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${HERCULES_DIR} click YES
+./sendAmsToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${HERCULES_DIR} click YES
 rcode_click=$?
 
 if [ $rcode_click -eq 0 ];
@@ -36,7 +36,7 @@ then
         done_file="ams_click_hourly.done.${current_done}00000000"
 
         echo "============== Start generating hourly done file: ${done_file} =============="
-        ./generateAmsHourlyDoneFile.sh ${done_file} ${LOCAL_DONE_DATE_FILE}
+        ./touchAmsHourlyDone.sh ${done_file} ${LOCAL_DONE_DATE_FILE}
     fi
 else
     echo -e "Send EPN NRT Click Data to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Error in sending impression data to Hercules!" -v DL-eBay-Chocolate-GC@ebay.com
@@ -48,7 +48,7 @@ fi
 
 echo "================ Send EPN Impression Data to Hecules ================"
 
-./sendDataToRenoThenToHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${HERCULES_DIR} imp YES
+./sendAmsToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${HERCULES_DIR} imp YES
 rcode_imp=$?
 
 if [ $rcode_imp -eq 0 ];
