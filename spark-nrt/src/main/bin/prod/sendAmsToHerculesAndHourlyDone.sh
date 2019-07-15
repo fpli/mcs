@@ -13,7 +13,7 @@ LOCAL_DONE_DATE_FILE=/datashare/mkttracking/data/epn-nrt/local_done_date.txt
 
 ########################### Send EPN Click Data to Hercules and generate hourly done file ###########################
 
-echo "================ Send EPN Click Data to Hercules and generate hourly done file ================"
+echo "================ Send EPN click data to Hercules and touch hourly done file ================"
 
 ./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${LOCAL_DONE_DATE_FILE}
 rcode_check=$?
@@ -40,14 +40,14 @@ then
         ./touchAmsHourlyDone.sh ${done_file} ${LOCAL_DONE_DATE_FILE}
     fi
 else
-    echo -e "Send EPN NRT Click Data to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Send click file to Hercules Failed!" -v DL-eBay-Chocolate-GC@ebay.com
+    echo -e "Failed to send EPN NRT click data to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending click data to Hercules!!!" -v DL-eBay-Chocolate-GC@ebay.com
     exit $rcode_click
 fi
 
 
 ######################################## Send EPN Impression Data to Hecules ########################################
 
-echo "================ Send EPN Impression Data to Hecules ================"
+echo "=========================== Send EPN impression data to Hercules ==========================="
 
 hercules_imp_dir=${HERCULES_DIR}'/ams_impression/snapshot/imprsn_dt='
 ./sendDataToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${hercules_imp_dir} hercules NO
@@ -57,6 +57,6 @@ if [ $rcode_imp -eq 0 ];
 then
     echo "Successfully send EPN NRT Impression data to Hercules"
 else
-    echo -e "Send EPN NRT Impression Data to Hercules failed!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[EPN NRT ERROR] Send impression file to Hercules Failed!" -v DL-eBay-Chocolate-GC@ebay.com
+    echo -e "Failed to send EPN NRT impression data to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending impression data to Hercules!!!" -v DL-eBay-Chocolate-GC@ebay.com
     exit $rcode_imp
 fi

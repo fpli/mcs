@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-############################################ Hourly done conditions ############################################
+############################################### Hourly done conditions ###############################################
 # ams must meet all condition to generate hourly done file
 # 1. Dedupe lags are all in the new hour;
 # 2. Message timestamp are all in the new hour;
-################################################################################################################
+######################################################################################################################
 
 WORK_DIR=$1
 CHANNEL=$2
@@ -14,9 +14,9 @@ LOCAL_DONE_DATE_FILE=$5
 
 export HADOOP_USER_NAME=chocolate
 
-############################################### Define Check Hour ###############################################
+################################################## Define Check Hour ##################################################
 
-echo "====================== Search for last hourly done date to define current check hour ======================"
+echo "============== Search for last hourly done date to define current check hour =============="
 
 local_done_date=`cat ${LOCAL_DONE_DATE_FILE}`
 check_last_time=${local_done_date:0:4}'-'${local_done_date:4:2}'-'${local_done_date:6:2}' '${local_done_date:8}':00:00'
@@ -25,9 +25,9 @@ check_last_timestamp=$(date -d "${check_last_time}" +%s)000
 let check_now_timestamp=${check_last_timestamp}+7200000
 
 
-############################################### Check dedupe lag ###############################################
+################################################## Check dedupe lag ##################################################
 
-echo "====================== Start checking dedupe lags ======================"
+echo "================================ Start checking dedupe lags ================================"
 
 flag_lag=0
 last_ts_path=/apps/tracking-events-workdir/last_ts/EPN/*
@@ -41,9 +41,9 @@ then
 fi
 
 
-############################################## Check data timestamp ##############################################
+################################################# Check data timestamp #################################################
 
-echo "====================== Start checking data timestamp ======================"
+echo "============================== Start checking data timestamp =============================="
 
 flag_ts=0
 data_min_ts_file=/apps/epn-nrt/min_ts.txt
@@ -63,11 +63,11 @@ then
         flag_ts=1
     fi
 else
-    echo "No click meta!"
+    echo "No click meta! No need to check!"
 fi
 
 
-################################################### Final Check ###################################################
+##################################################### Final Check #####################################################
 if [[ ${flag_lag} -eq 1 && ${flag_ts} -eq 1 ]]
 then
     echo "Hourly data is ready"
