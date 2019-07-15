@@ -2,6 +2,8 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
 import java.util.Properties
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
 import org.scalatest.{FlatSpec, Matchers}
 import scalaj.http.HttpResponse
 
@@ -11,6 +13,16 @@ class TestBullseyeUtils extends FlatSpec with Matchers{
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
     properties
+  }
+
+  @transient private lazy val hadoopConf = {
+    new Configuration()
+  }
+
+  private lazy val fs = {
+    val fs = FileSystem.get(hadoopConf)
+    sys.addShutdownHook(fs.close())
+    fs
   }
 
   "can parse response correctly" must "work" in {
@@ -70,12 +82,12 @@ class TestBullseyeUtils extends FlatSpec with Matchers{
 
   //cguid
   "BullseyeUtilBasedCguid" must "work" in {
-    val result = BullseyeUtils.getData("b3f1325515e0a93fd3d7ac27fffdd2ad", "910" , "200", properties.getProperty("epnnrt.bullseyeUrl"))
+    val result = BullseyeUtils.getData(fs,"b3f1325515e0a93fd3d7ac27fffdd2ad", "910" , "200", properties.getProperty("epnnrt.bullseyeUrl"))
     println(result)
   }
 
   it must "can parse response correctly with cguid" in {
-    val result = BullseyeUtils.getLastViewItem("b3f1325515e0a93fd3d7ac27fffdd2ad", "1555292249112","910" , "200", properties.getProperty("epnnrt.bullseyeUrl"))
+    val result = BullseyeUtils.getLastViewItem(fs,"b3f1325515e0a93fd3d7ac27fffdd2ad", "1555292249112","910" , "200", properties.getProperty("epnnrt.bullseyeUrl"))
     assert(result._1 == "350011047735")
     assert(result._2 == "2019-04-15 09:37:29.11")
   }

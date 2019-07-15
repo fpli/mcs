@@ -12,7 +12,6 @@ case class Parameter(appName: String = "CappingRule",
                      outputDir: String = "",
                      archiveDir: String = "",
                      partitions: Int = 3,
-                     ipThreshold: Int = 1000,
                      elasticsearchUrl: String = "")
 
 object Parameter {
@@ -54,11 +53,6 @@ object Parameter {
       .optional
       .valueName("partitions")
       .action((cont, param) => param.copy(partitions = cont))
-
-    opt[Int]("ipThreshold")
-      .optional
-      .valueName("ipThreshold")
-      .action((cont, param) => param.copy(ipThreshold = cont))
 
     opt[String]("elasticsearchUrl")
         .optional

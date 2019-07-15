@@ -2,7 +2,7 @@
 # run spark job on YARN - CappingRule
 # Recover mode adjusts the partitions to 30 corresponding to 1 day delay. Adjust it by situation.
 
-usage="Usage: cappingRule.sh [channel] [workDir] [outputDir] [archiveDir] [partitions] [ipThreshold] [elasticsearchUrl]"
+usage="Usage: cappingRule.sh [channel] [workDir] [outputDir] [archiveDir] [partitions] [elasticsearchUrl]"
 
 # if no args specified, show usage
 if [ $# -le 3 ]; then
@@ -19,8 +19,7 @@ CHANNEL=$1
 WORK_DIR=$2
 OUTPUT_DIR=$3
 ARCHIVE_DIR=$4
-IP_THRESHOLD=$5
-ES_URL=$6
+ES_URL=$5
 
 DRIVER_MEMORY=4g
 EXECUTOR_NUMBER=20
@@ -57,5 +56,4 @@ ${SPARK_HOME}/bin/spark-submit \
       --outputDir ${OUTPUT_DIR} \
       --archiveDir ${ARCHIVE_DIR} \
       --partitions 30 \
-      --ipThreshold ${IP_THRESHOLD} \
       --elasticsearchUrl ${ES_URL}

@@ -104,7 +104,7 @@ public class DefaultChannelTest {
 
   @Test
   public void campaignIdShouldRaiseExceptionWhenCampIdInvalid() {
-    long expected = -1L;
+    long expected = 5331L;
     Map<String, String[]> params = new HashMap<>();
     params.put("campid", new String[] {"5331AQWAA765"});
     params.put("a", new String[] {"b"});

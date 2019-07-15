@@ -39,6 +39,10 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
   public static final String EVENT_LISTENER_PROPERTIES_FILE = "event-listener.properties";
 
+  public static final String CONSUME_RHEOS_KAFKA_PROPERTIES_FILE = "event-listener-rheos-consumer.properties";
+
+  public static final String CONSUME_RHEOS_KAFKA_SERVICE_URL = "chocolate.event-listener.kafka.consumer.services.urls";
+
   public static final String SINK_KAFKA_PROPERTIES_FILE = "event-listener-kafka-producer.properties";
 
   public static final String SINK_RHEOS_KAFKA_PROPERTIES_FILE = "event-listener-rheos-producer.properties";
@@ -49,12 +53,12 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   public static final String KAFKA_OUT_CLUSTER = "chocolate.event-listener.kafka.out";
 
   /**
+   * prefix for rover rheos topic
+   */
+  public static final String RHEOS_INPUT_TOPIC_PREFIX = "chocolate.event-listener.kafka.consumer.topic";
+  /**
    * prefix of out Kafka topic for channels.
    */
-  // refer to com.ebay.app.raptor.chocolate.avro.ChannelType for channels.
-  // for ePN:  chocolate.event-listener.kafka.consumer.topic.EPN
-  // for display: chocolate.event-listener.kafka.consumer.topic.DISPLAY
-  // for paid search: chocolate.event-listener.kafka.consumer.topic.PAID_SEARCH
   public static final String KAFKA_OUT_TOPIC_PREFIX = "chocolate.event-listener.kafka.producer.topic.";
 
   /**
@@ -70,6 +74,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   /**
    * kafka related
    **/
+  private static Properties consumeRheosKafkaProperties;
   private static Properties sinkKafkaProperties;
   private static Properties sinkRheosKafkaProperties;
 
@@ -83,7 +88,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    */
   public static void init() throws IOException {
     instance.initInstance(loadProperties(EVENT_LISTENER_PROPERTIES_FILE));
-
+    consumeRheosKafkaProperties = loadProperties(CONSUME_RHEOS_KAFKA_PROPERTIES_FILE);
     if (sinkKafkaProperties == null) {
       sinkKafkaProperties = loadProperties(SINK_KAFKA_PROPERTIES_FILE);
     }
@@ -153,6 +158,25 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   }
 
   /**
+   * Get consume rheos properties
+   */
+  public Properties getConsumeRheosKafkaProperties() {
+    return consumeRheosKafkaProperties;
+  }
+
+  /**
+   * Get consume rheos topic
+   *
+   */
+  public String getConsumeRheosTopic() {
+    return ApplicationOptionsParser.getStringProperty(properties, RHEOS_INPUT_TOPIC_PREFIX);
+  }
+
+  public String getConsumeRheosKafkaServiceUrl() {
+    return ApplicationOptionsParser.getStringProperty(properties, CONSUME_RHEOS_KAFKA_SERVICE_URL);
+  }
+
+  /**
    * Get sink channel kafka topic map
    *
    * @return sink channel kafka topic map
@@ -165,7 +189,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    * Kafka topic configs
    */
   private void initKafkaConfigs() {
-
 
     outKafkaCluster = ApplicationOptionsParser.getStringProperty(properties, KAFKA_OUT_CLUSTER);
     String[] outKafkaClusters = outKafkaCluster.split(DELIMITER);

@@ -58,7 +58,7 @@ public class DumpRotationToTDTest {
 
     // Insert document to mocked couchbase
     RotationInfo rotationInfo = getTestRotationInfo();
-    bucket.insert(JsonDocument.create(rotationInfo.getRotation_string(), JsonObject.fromJson(new Gson().toJson(rotationInfo))));
+    bucket.upsert(JsonDocument.create(rotationInfo.getRotation_string(), JsonObject.fromJson(new Gson().toJson(rotationInfo))));
     // Create a view for mocked couchbase bucket
     DesignDocument designDoc = DesignDocument.create(
         DESIGNED_DOC_NAME,
@@ -97,7 +97,7 @@ public class DumpRotationToTDTest {
     rotationTag.put(RotationConstant.FIELD_ROTATION_CLICK_THRU_URL, "http://clickthrough.com");
     rotationInfo.setRotation_tag(rotationTag);
     long currentTime = System.currentTimeMillis();
-    rotationInfo.setLast_update_time(currentTime);
+    rotationInfo.setLast_update_time(1459807000000L);
     rotationInfo.setUpdate_user("yimeng");
     rotationInfo.setCreate_date("2018-10-18 16:15:32");
     rotationInfo.setCreate_user("chocolate");
@@ -147,8 +147,8 @@ public class DumpRotationToTDTest {
 
   @Test
   public void testGetChangeRotationCount() throws IOException {
-    String esSearchStartTime = "2019-03-29 00:00:00";
-    String esSearchEndTime = "2019-03-29 23:59:59";
+    String esSearchStartTime = "2019-06-06 02:00:00";
+    String esSearchEndTime = "2019-06-06 23:59:59";
     DumpRotationToTD.setEsRestHighLevelClient(restHighLevelClient);
     //test new create rotation count
     Integer newCreateRotationCount = DumpRotationToTD.getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
@@ -156,7 +156,7 @@ public class DumpRotationToTDTest {
 
     //test update rotation count
     Integer updateRotationCount = DumpRotationToTD.getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
-    Assert.assertEquals("3", updateRotationCount.toString());
+    Assert.assertEquals("1", updateRotationCount.toString());
   }
 
   @Test
@@ -176,7 +176,7 @@ public class DumpRotationToTDTest {
     createFolder();
     Boolean throwException = false;
     try {
-        DumpRotationToTD.dumpFileFromCouchbase("1553734936000", "1553907736000", TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
+        DumpRotationToTD.dumpFileFromCouchbase("1459808000000", "1559865599000", TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
     } catch (IOException e) {
       throwException = true;
     }
