@@ -11,6 +11,14 @@ HERCULES_DIR=/sys/edw/imk/im_tracking/epn
 LOCAL_DONE_DATE_FILE_CLICK=/datashare/mkttracking/data/epn-nrt/local_done_date_click.txt
 LOCAL_DONE_DATE_FILE_IMP=/datashare/mkttracking/data/epn-nrt/local_done_date_imp.txt
 
+function get_current_done(){
+    last_done=`cat $1`
+    last_ts=`date -d "${last_done:0:8} ${last_done:8}" +%s`
+    let current_ts=${last_ts}+3600
+    current_done=`date -d @${current_ts} "+%Y%m%d%H"`
+    echo ${current_done}
+}
+
 
 ########################### Send EPN Click Data to Hercules and generate hourly done file ###########################
 
@@ -28,13 +36,7 @@ then
     echo "Successfully send EPN NRT click data to Hercules"
     if [ $rcode_check_click -eq 1 ];
     then
-        ## Check click done hour
-        last_done_click=`cat ${LOCAL_DONE_DATE_FILE_CLICK}`
-        echo "Last click done: "${last_done_click}
-        last_ts_click=`date -d "${last_done_click:0:8} ${last_done_click:8}" +%s`
-        let current_ts_click=${last_ts_click}+3600
-        current_done_click=`date -d @${current_ts_click} "+%Y%m%d%H"`
-        echo "Current click done: "${current_done_click}
+        current_done_click=$(get_current_done ${LOCAL_DONE_DATE_FILE_CLICK})
         done_file_click="ams_click_hourly.done.${current_done_click}00000000"
 
         echo "=================== Start touching click hourly done file: ${done_file_click} ==================="
@@ -62,13 +64,7 @@ then
     echo "Successfully send EPN NRT impression data to Hercules"
     if [ $rcode_check_imp -eq 1 ];
     then
-        ## Check impression done hour
-        last_done_imp=`cat ${LOCAL_DONE_DATE_FILE_IMP}`
-        echo "Last impression done: "${last_done_imp}
-        last_ts_imp=`date -d "${last_done_imp:0:8} ${last_done_imp:8}" +%s`
-        let current_ts_imp=${last_ts_imp}+3600
-        current_done_imp=`date -d @${current_ts_imp} "+%Y%m%d%H"`
-        echo "Current impression done: "${current_done_imp}
+        current_done_imp=$(get_current_done ${LOCAL_DONE_DATE_FILE_IMP})
         done_file_imp="ams_imprsn_hourly.done.${current_done_imp}00000000"
 
         echo "================= Start touching impression hourly done file: ${done_file_imp} ================="
