@@ -483,7 +483,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         return ""
       }
     }
-    if (accept == null || accept.equals(""))
+    if ((accept == null || accept.equals("")) && lang_cd != null)
       accept = lang_cd
     accept
   }
