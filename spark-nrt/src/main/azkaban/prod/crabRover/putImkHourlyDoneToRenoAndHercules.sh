@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 function start_job(){
     host=$1
     ssh -T -i /usr/azkaban/id_rsa_spark stack@${host} <<EOSSH
@@ -8,7 +10,7 @@ function start_job(){
     pwd
     export HADOOP_USER_NAME=chocolate
     echo $HADOOP_USER_NAME
-    ./putImkHourlyDoneToRenoAndHercules.sh /apps/tracking-events/watch /apps/b_marketing_tracking/watch /apps/b_marketing_tracking/watch /datashare/mkttracking/jobs/chocolate-sparknrt/bin/prod/temp_put_imk_hourly_done_to_reno_and_hercules
+    ./putImkHourlyDoneToRenoAndHercules.sh /apps/tracking-events/watch /datashare/mkttracking/jobs/chocolate-sparknrt/bin/prod/temp_put_imk_hourly_done_to_reno_and_hercules /apps/b_marketing_tracking/watch /apps/b_marketing_tracking/watch
 EOSSH
 }
 

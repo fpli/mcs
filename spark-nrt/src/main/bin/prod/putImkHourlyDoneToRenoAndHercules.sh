@@ -11,7 +11,7 @@
 
 set -x
 
-usage="Usage: putImkHourlyDoneToRenoAndHercules.sh [srcDir] [renoDestDir] [herculesDestDir] [localTmpDir]"
+usage="Usage: putImkHourlyDoneToRenoAndHercules.sh [srcDir] [localTmpDir] [renoDestDir] [herculesDestDir]"
 
 if [ $# -le 1 ]; then
   echo $usage
@@ -24,30 +24,70 @@ HOST_NAME=`hostname -f`
 kinit -kt /datashare/mkttracking/tools/keytab-tool/keytab/b_marketing_tracking.${HOST_NAME}.keytab  b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM
 
 SRC_DIR=$1
-RENO_DEST_DIR=$2
-HERCULES_DEST_DIR=$3
-LOCAL_TMP_DIR=$4
+LOCAL_TMP_DIR=$2
+RENO_DEST_DIR=$3
+HERCULES_DEST_DIR=$4
 
 cd ${LOCAL_TMP_DIR}
 
-today=$(date +%Y%m%d)
-yesterday=$(date -d "yesterday" +%Y%m%d)
+dt_hour=$(date -d '1 hour ago' +%Y%m%d%H)
+dt=${dt_hour:0:8}
+done_file=${RENO_DEST_DIR}/${dt}/imk_rvr_trckng_event_hourly.done.${dt_hour}00000000
+
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -test -e ${done_file}
+
+done_file_exists=$?
+if [ ${done_file_exists} -eq 0 ]; then
+    echo "done file exists: ${done_file}"
+    exit 0
+fi
+
+today=${dt}
+yesterday=$(date --date="${today} -1days" +%Y%m%d)
 
 #get all done files in last two days
-tmp_done_file=imk_to_reno_and_hercules_done.txt
+tmp_done_file=imk_to_reno_and_hercules_touched_done.txt
 rm -f ${tmp_done_file}
 
 hdfs dfs -ls -R ${SRC_DIR}/${yesterday} | grep -v "^$" | awk '{print $NF}' > ${tmp_done_file}
 hdfs dfs -ls -R ${SRC_DIR}/${today} | grep -v "^$" | awk '{print $NF}' >> ${tmp_done_file}
 
-files_size=`cat ${tmp_done_file} | wc -l`
-echo "start copy done files size:"${files_size}
+already_touched_done_size=`cat ${tmp_done_file} | wc -l`
+echo "already touched done files size:${already_touched_done_size}"
 
-all_files=`cat ${tmp_done_file} | tr "\n" " "`
-for one_file in ${all_files}
+already_touched_done_files=`cat ${tmp_done_file} | tr "\n" " "`
+
+# get all copied done files in last two days
+tmp_copied_done_file=imk_to_reno_and_hercules_copied_done.txt
+rm -f ${tmp_copied_done_file}
+
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls -R ${RENO_DEST_DIR}/${yesterday} | grep -v "^$" | awk '{{n=split ($NF,array,/\//);print array[n]}}' > ${tmp_copied_done_file}
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls -R ${RENO_DEST_DIR}/${today} | grep -v "^$" | awk '{{n=split ($NF,array,/\//);print array[n]}}' >> ${tmp_copied_done_file}
+
+already_copied_done_size=`cat ${tmp_copied_done_file} | wc -l`
+echo "already copied done files size:${already_copied_done_size}"
+
+already_copied_done_files=`cat ${tmp_copied_done_file} | tr "\n" " "`
+
+for one_file in ${already_touched_done_files}
 do
 #   eg. imk_rvr_trckng_event_hourly.done.201904251100000000
     file_name=$(basename "$one_file")
+
+    already_copied=1
+    for VAR in ${already_copied_done_files} ; do
+      if [[ "${VAR}" = ${file_name} ]]; then
+        already_copied=0
+        break;
+      fi
+    done
+
+    if [[ "${already_copied}" -eq 0 ]] ;then
+        continue
+    fi
+
+    echo "start copy file:"${file_name}
+
     rm -f ${file_name}
 #   get one data file from chocolate hdfs
     hdfs dfs -get ${one_file}
@@ -59,12 +99,13 @@ do
     fi
 
     date=${file_name:33:8}
-    destFolder=${RENO_DEST_DIR}/${date}
-    herculesFolder=${HERCULES_DEST_DIR}/${date}
-#    create dest folder if not exists, folder in hercules should be created in advance
-    /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${destFolder}
+    renoDestFolder=${RENO_DEST_DIR}/${date}
+    herculesDestFolder=${HERCULES_DEST_DIR}/${date}
+#    create dest folder if not exists
+    /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${renoDestFolder}
+    /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -mkdir -p ${herculesDestFolder}
 #   check if done file exists
-    /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -test -e ${destFolder}/${file_name}
+    /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -test -e ${renoDestFolder}/${file_name}
     fileExist=$?
     if [[ ${fileExist} -ne 0 ]]; then
 #       max 3 times put done file to reno and hercules
@@ -72,8 +113,8 @@ do
         rcode=1
         until [[ ${retry} -gt 3 ]]
         do
-            command_1="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -put -f ${file_name} ${destFolder}/"
-            command_2="/datashare/mkttracking/tools/cake/bin/distcp_by_optimus.sh viewfs://apollo-rno${destFolder}/${file_name} hdfs://hercules${herculesFolder}/ putImkDoneToHercules"
+            command_1="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -put -f ${file_name} ${renoDestFolder}/"
+            command_2="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -put -f ${file_name} ${herculesDestFolder}/"
             ${command_1} && ${command_2}
             rcode=$?
             if [ ${rcode} -eq 0 ]
@@ -97,4 +138,5 @@ do
     echo "finish copy file:"${file_name}
 done
 rm -f ${tmp_done_file}
-echo "finish copy files size:"${files_size}
+rm -f ${tmp_copied_done_file}
+echo "finish copy files size:"${already_touched_done_size}

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 function start_job(){
     host=$1
     folder=$2
