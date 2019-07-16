@@ -63,7 +63,7 @@ then
         flag_ts=1
     fi
 else
-    echo "No click meta! No need to check!"
+    echo "No meta! No need to check!"
 fi
 
 
