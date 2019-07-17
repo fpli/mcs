@@ -49,7 +49,6 @@ then
         echo -e "Failed to add today's partition on hive!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in adding hive partition!!!" -v DL-eBay-Chocolate-GC@ebay.com
         exit ${rcode_repair}
     fi
-
 fi
 
 
