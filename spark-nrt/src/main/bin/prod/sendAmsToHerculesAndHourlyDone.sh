@@ -11,6 +11,9 @@ HERCULES_DIR=/sys/edw/imk/im_tracking/epn
 LOCAL_DONE_DATE_FILE_CLICK=/datashare/mkttracking/data/epn-nrt/local_done_date_click.txt
 LOCAL_DONE_DATE_FILE_IMP=/datashare/mkttracking/data/epn-nrt/local_done_date_imp.txt
 
+MIN_TS_FILE_CLICK=/apps/epn-nrt/min_ts_click.txt
+MIN_TS_FILE_IMP=/apps/epn-nrt/min_ts_imp.txt
+
 function get_current_done(){
     last_done=`cat $1`
     last_ts=`date -d "${last_done:0:8} ${last_done:8}" +%s`
@@ -24,7 +27,7 @@ function get_current_done(){
 
 echo "================ Send EPN click data to Hercules and touch hourly done file ================"
 
-./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${LOCAL_DONE_DATE_FILE_CLICK}
+./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${LOCAL_DONE_DATE_FILE_CLICK} ${MIN_TS_FILE_CLICK}
 rcode_check_click=$?
 
 hercules_click_dir=${HERCULES_DIR}'/ams_click/snapshot/click_dt='
@@ -51,7 +54,7 @@ fi
 
 echo "============= Send EPN impression data to Hercules and touch hourly done file ============="
 
-./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${LOCAL_DONE_DATE_FILE_IMP}
+./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${LOCAL_DONE_DATE_FILE_IMP} ${MIN_TS_FILE_IMP}
 rcode_check_imp=$?
 
 hercules_imp_dir=${HERCULES_DIR}'/ams_impression/snapshot/imprsn_dt='
