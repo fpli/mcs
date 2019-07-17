@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 # not use SubmitJob shell, this scp job is one high IO job, not want do this job in spark submit hosts
 
 function start_job(){
@@ -10,10 +12,10 @@ function start_job(){
     pwd
     export HADOOP_USER_NAME=chocolate
     echo $HADOOP_USER_NAME
-    ./putImkToRenoAndHercules.sh /apps/tracking-events/crabTransform/imkOutput /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /datashare/mkttracking/work/imkToReno/crab/imkTemp /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event &&
-    ./putImkToRenoAndHercules.sh /apps/tracking-events/imkTransform/imkOutput /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /datashare/mkttracking/work/imkToReno/imk/imkTemp /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event &&
-    ./putImkToRenoAndHercules.sh /apps/tracking-events/crabTransform/dtlOutput /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl /datashare/mkttracking/work/imkToReno/crab/dtlTemp /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event_dtl &&
-    ./putImkToRenoAndHercules.sh /apps/tracking-events/imkTransform/dtlOutput /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl /datashare/mkttracking/work/imkToReno/imk/dtlTemp /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event_dtl
+    ./putImkToRenoAndHercules.sh /apps/tracking-events/crabTransform/imkOutput /datashare/mkttracking/work/imkToReno/crab/imkTemp /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_scp_middle/imk_rvr_trckng_event /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event/snapshot &&
+    ./putImkToRenoAndHercules.sh /apps/tracking-events/imkTransform/imkOutput /datashare/mkttracking/work/imkToReno/imk/imkTemp /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_scp_middle/imk_rvr_trckng_event /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event/snapshot &&
+    ./putImkToRenoAndHercules.sh /apps/tracking-events/crabTransform/dtlOutput /datashare/mkttracking/work/imkToReno/crab/dtlTemp /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_scp_middle/imk_rvr_trckng_event_dtl /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event_dtl/snapshot &&
+    ./putImkToRenoAndHercules.sh /apps/tracking-events/imkTransform/dtlOutput /datashare/mkttracking/work/imkToReno/imk/dtlTemp /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl  /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_scp_middle/imk_rvr_trckng_event_dtl /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event_dtl/snapshot
 EOSSH
 }
 

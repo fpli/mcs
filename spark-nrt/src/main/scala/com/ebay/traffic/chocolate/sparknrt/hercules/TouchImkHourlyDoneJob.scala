@@ -1,12 +1,13 @@
 package com.ebay.traffic.chocolate.sparknrt.hercules
 
 import java.io.ByteArrayOutputStream
+import java.net.URI
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.{Instant, ZoneId, ZonedDateTime}
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import org.apache.hadoop.fs.{FileStatus, Path}
+import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
 
 import scala.collection.immutable
 
@@ -29,9 +30,21 @@ object TouchImkHourlyDoneJob extends App {
 class TouchImkHourlyDoneJob(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
+  @transient lazy val lvsFs: FileSystem = {
+    val fs = FileSystem.get(URI.create(params.lagDir), hadoopConf)
+    sys.addShutdownHook(fs.close())
+    fs
+  }
+
+  @transient override lazy val fs: FileSystem = {
+    val fs = FileSystem.get(URI.create(params.workDir), hadoopConf)
+    sys.addShutdownHook(fs.close())
+    fs
+  }
+
   lazy val defaultZoneId: ZoneId = ZoneId.systemDefault()
 
-  lazy val dayFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(defaultZoneId)
+  lazy val dayFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd").withZone(defaultZoneId)
   lazy val doneFileDatetimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHH").withZone(defaultZoneId)
 
   lazy val doneFilePrefix = "imk_rvr_trckng_event_hourly.done."
@@ -44,28 +57,36 @@ class TouchImkHourlyDoneJob(params: Parameter)
   implicit def dateTimeOrdering: Ordering[ZonedDateTime] = Ordering.fromLessThan(_ isBefore  _)
 
   override def run(): Unit = {
-    val currentDateHour = ZonedDateTime.now(defaultZoneId).truncatedTo(ChronoUnit.HOURS)
+    // if current time is 6 o'clock, try to generate 5 o'clock done
+    val doneDateHour = ZonedDateTime.now(defaultZoneId).truncatedTo(ChronoUnit.HOURS).minusHours(1)
 
-    val todayDoneDir = new Path(getDoneDir(currentDateHour))
-    val yesterdayDoneDir = new Path(getDoneDir(currentDateHour.minusDays(1)))
+    val todayDoneDir = new Path(getDoneDir(doneDateHour))
+    val yesterdayDoneDir = new Path(getDoneDir(doneDateHour.minusDays(1)))
+
+    logger.info("doneDateHour {}, todayDoneDir {}, yesterdayDoneDir {}", doneDateHour, todayDoneDir, yesterdayDoneDir)
 
     var delays = 0L
 
     if (fs.exists(todayDoneDir) && fs.listStatus(todayDoneDir).length != 0) {
       val todayLastDoneFileDatetime = getLastDoneFileDatetime(fs.listStatus(todayDoneDir))
-      delays = ChronoUnit.HOURS.between(todayLastDoneFileDatetime, currentDateHour)
+      delays = ChronoUnit.HOURS.between(todayLastDoneFileDatetime, doneDateHour)
+      logger.info("todayLastDoneFileDatetime {}", todayLastDoneFileDatetime)
     } else {
       fs.mkdirs(todayDoneDir)
       val yesterdayLastDoneFileDatetime = getLastDoneFileDatetime(fs.listStatus(yesterdayDoneDir))
-      delays = ChronoUnit.HOURS.between(yesterdayLastDoneFileDatetime, currentDateHour)
+      delays = ChronoUnit.HOURS.between(yesterdayLastDoneFileDatetime, doneDateHour)
+      logger.info("yesterdayLastDoneFileDatetime {}", yesterdayLastDoneFileDatetime)
     }
 
     val watermark = getEventWatermark
 
-    val times: immutable.Seq[ZonedDateTime] = (0L until delays).map(delay => currentDateHour.minusHours(delay)).reverse.filter(dateTime => dateTime.isBefore(watermark))
+    logger.info("delays {}, watermark {}", delays, watermark)
+
+    val times: immutable.Seq[ZonedDateTime] = (0L until delays).map(delay => doneDateHour.minusHours(delay)).reverse.filter(dateTime => dateTime.plusHours(1).isBefore(watermark))
 
     times.foreach(dateTime => {
       val file = getDoneFileName(dateTime)
+      logger.info("touch done file {}", file)
       val out = fs.create(new Path(file), true)
       out.close()
     })
@@ -90,7 +111,7 @@ class TouchImkHourlyDoneJob(params: Parameter)
     * @return watermark
     */
   def getEventWatermark: ZonedDateTime = {
-    fs.listStatus(new Path(lagDir))
+    lvsFs.listStatus(new Path(lagDir))
       .map(status => status.getPath)
       .map(path => readFileContent(path).toLong)
       .map(ts => ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts), defaultZoneId))
@@ -112,7 +133,7 @@ class TouchImkHourlyDoneJob(params: Parameter)
     * @return file content
     */
   def readFileContent(path: Path): String = {
-    val in = fs.open(path)
+    val in = lvsFs.open(path)
     val out = new ByteArrayOutputStream()
     val buffer = new Array[Byte](1024)
     var n = 0
@@ -123,6 +144,6 @@ class TouchImkHourlyDoneJob(params: Parameter)
       }
     }
     in.close()
-    out.toString
+    out.toString.trim
   }
 }

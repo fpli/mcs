@@ -44,25 +44,25 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
   test("testRun") {
     // create temp done file, last done was generated yesterday 12 am
     val now = ZonedDateTime.now(job.defaultZoneId)
-    val currentDateHour = now.truncatedTo(ChronoUnit.HOURS)
+    val doneDateHour = now.truncatedTo(ChronoUnit.HOURS).minusHours(1)
 
-    val yesterdayDoneDir = new Path(job.getDoneDir(currentDateHour.minusDays(1)))
+    val yesterdayDoneDir = new Path(job.getDoneDir(doneDateHour.minusDays(1)))
 
     fs.mkdirs(yesterdayDoneDir)
 
-    val lastDoneDateTime = currentDateHour.minusDays(1).withHour(12)
+    val lastDoneDateTime = doneDateHour.minusDays(1).withHour(12)
     val doneOut = fs.create(new Path(yesterdayDoneDir + "/" + "imk_rvr_trckng_event_hourly.done." + lastDoneDateTime.format(job.doneFileDatetimeFormatter) + "00000000"), true)
     doneOut.close()
 
     // create temp lag file, lag ts is today 12:10
     fs.mkdirs(new Path(lagDir))
     val lagOut = fs.create(new Path(lagDir + "/" + "0"), true)
-    lagOut.writeBytes(String.valueOf(currentDateHour.withHour(12).withMinute(10).toInstant.toEpochMilli))
+    lagOut.writeBytes(String.valueOf(doneDateHour.withHour(12).withMinute(10).toInstant.toEpochMilli))
     lagOut.close()
 
     job.run()
 
-    for (i <- 1 to 24)  {
+    for (i <- 1 until 24)  {
       val time = lastDoneDateTime.plusHours(i)
       val file = job.getDoneDir(time) + "/" + "imk_rvr_trckng_event_hourly.done." + time.format(job.doneFileDatetimeFormatter) + "00000000"
       val bool = fs.exists(new Path(file))
@@ -75,7 +75,7 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
 
   test("testGetDoneDir") {
     val time = ZonedDateTime.of(2019, 6, 19, 0, 0, 0, 0, job.defaultZoneId)
-    assert(job.getDoneDir(time).split("/").last.equals("2019-06-19"))
+    assert(job.getDoneDir(time).split("/").last.equals("20190619"))
   }
 
   test("testGetDoneFileName") {

@@ -14,7 +14,9 @@
 #           /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event_dtl
 # Schedule: /3 * ? * *
 
-usage="Usage: putImkToRenoAndHercules.sh [srcDir] [renoMiddleDir] [renoDestDir] [localTmpDir] [herculesDestDir]"
+set -x
+
+usage="Usage: putImkToRenoAndHercules.sh [srcDir] [localTmpDir] [renoMiddleDir] [renoDestDir] [herculesMiddleDir] [herculesDestDir]"
 
 if [ $# -le 1 ]; then
   echo $usage
@@ -23,14 +25,12 @@ fi
 
 export HADOOP_USER_NAME=chocolate
 
-HOST_NAME=`hostname -f`
-kinit -kt /datashare/mkttracking/tools/keytab-tool/keytab/b_marketing_tracking.${HOST_NAME}.keytab  b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM
-
 SRC_DIR=$1
-RENO_MID_DIR=$2
-RENO_DEST_DIR=$3
-LOCAL_TMP_DIR=$4
-HERCULES_DEST_DIR=$5
+LOCAL_TMP_DIR=$2
+RENO_MID_DIR=$3
+RENO_DEST_DIR=$4
+HERCULES_MID_DIR=$5
+HERCULES_DEST_DIR=$6
 
 cd ${LOCAL_TMP_DIR}
 
@@ -57,10 +57,11 @@ do
 
     orgDate=${file_name:15:10}
     date=${orgDate//-/}
-    destFolder=${RENO_DEST_DIR}/dt=${date}
-    herculesFolder=${HERCULES_DEST_DIR}/dt=${date}
-#    create dest folder if not exists, folder in hercules should be created in advance
-    /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${destFolder}
+    renoDestFolder=${RENO_DEST_DIR}/dt=${date}
+    herculesDestFolder=${HERCULES_DEST_DIR}/dt=${date}
+#    create dest folder if not exists
+    /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${renoDestFolder}
+    /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -mkdir -p ${herculesDestFolder}
     if [[ -s ${file_name} ]];
     then
 #        max 3 times put data to reno middle and mv data to reno dest folder
@@ -68,11 +69,15 @@ do
         rcode=1
         until [[ ${retry} -gt 3 ]]
         do
+#           to Rno
             command_1="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -put -f ${file_name} ${RENO_MID_DIR}/"
-            command_2="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -f ${destFolder}/${file_name}"
-            command_3="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mv ${RENO_MID_DIR}/${file_name} ${destFolder}/"
-            command_4="/datashare/mkttracking/tools/cake/bin/distcp_by_optimus.sh viewfs://apollo-rno${destFolder}/${file_name} hdfs://hercules${herculesFolder}/ putImkToHercules"
-            ${command_1} && ${command_2} && ${command_3} && ${command_4}
+            command_2="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -f ${renoDestFolder}/${file_name}"
+            command_3="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mv ${RENO_MID_DIR}/${file_name} ${renoDestFolder}/"
+#           to Hercules
+            command_4="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -put -f ${file_name} ${HERCULES_MID_DIR}/"
+            command_5="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -rm -f ${herculesDestFolder}/${file_name}"
+            command_6="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -mv ${HERCULES_MID_DIR}/${file_name} ${herculesDestFolder}/"
+            ${command_1} && ${command_2} && ${command_3} && ${command_4} && ${command_5} && ${command_6}
             rcode=$?
             if [ ${rcode} -eq 0 ]
             then
@@ -104,3 +109,9 @@ do
 done
 rm -f ${tmp_file}
 echo "finish copy files size:"${files_size}
+
+/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table choco_data.imk_rvr_trckng_event";
+/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table choco_data.imk_rvr_trckng_event_dtl";
+
+/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table im_tracking.imk_rvr_trckng_event";
+/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table im_tracking.imk_rvr_trckng_event_dtl";
