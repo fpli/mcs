@@ -1,14 +1,24 @@
 #!/usr/bin/env bash
 
-DONE_FILE=$1
+DONE_TIME=$1
 LOCAL_DONE_DATE_FILE=$2
+ACTION=$3
 
 DONE_FILE_DIR=/apps/b_marketing_tracking/watch/
 
-done_date=${DONE_FILE:22:8}
-done_hour=${DONE_FILE:30:2}
+done_date=${DONE_TIME:0:8}
+done_hour=${DONE_TIME:8:2}
 done_file_full_dir=${DONE_FILE_DIR}${done_date}
-done_file_full_name=${done_file_full_dir}'/'${DONE_FILE}
+
+if [ "${ACTION}" == "click" ]
+then
+    done_file_full_name="${done_file_full_dir}/ams_click_hourly.done.${DONE_TIME}00000000"
+elif [ "${ACTION}" == "imp" ]
+then
+    done_file_full_name="${done_file_full_dir}/ams_imprsn_hourly.done.${DONE_TIME}00000000"
+else
+    echo "Wrong action to touch hourly done!"
+fi
 
 
 ################################ Add partition to Hive on Reno and Hercules once a day ################################
@@ -54,6 +64,7 @@ echo "======================= Start touching hourly done file on hercules ======
 done_dir_exists=$?
 if [ ${done_dir_exists} -ne 0 ]
 then
+    echo "Create hercules folder ${done_file_full_dir}"
     /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -mkdir ${done_file_full_dir}
 fi
 
@@ -92,4 +103,4 @@ fi
 
 echo "=============================== Save done time to local file ==============================="
 
-echo ${DONE_FILE:22:10} > ${LOCAL_DONE_DATE_FILE}
+echo ${DONE_TIME} > ${LOCAL_DONE_DATE_FILE}

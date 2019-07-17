@@ -37,10 +37,9 @@ then
     if [ $rcode_check_click -eq 1 ];
     then
         current_done_click=$(get_current_done ${LOCAL_DONE_DATE_FILE_CLICK})
-        done_file_click="ams_click_hourly.done.${current_done_click}00000000"
 
         echo "=================== Start touching click hourly done file: ${done_file_click} ==================="
-        ./touchAmsHourlyDone.sh ${done_file_click} ${LOCAL_DONE_DATE_FILE_CLICK}
+        ./touchAmsHourlyDone.sh ${current_done_click} ${LOCAL_DONE_DATE_FILE_CLICK} click
     fi
 else
     echo -e "Failed to send EPN NRT click data to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending click data to Hercules!!!" -v DL-eBay-Chocolate-GC@ebay.com
@@ -65,10 +64,9 @@ then
     if [ $rcode_check_imp -eq 1 ];
     then
         current_done_imp=$(get_current_done ${LOCAL_DONE_DATE_FILE_IMP})
-        done_file_imp="ams_imprsn_hourly.done.${current_done_imp}00000000"
 
         echo "================= Start touching impression hourly done file: ${done_file_imp} ================="
-        ./touchAmsHourlyDone.sh ${done_file_imp} ${LOCAL_DONE_DATE_FILE_IMP}
+        ./touchAmsHourlyDone.sh ${current_done_imp} ${LOCAL_DONE_DATE_FILE_IMP} imp
     fi
 else
     echo -e "Failed to send EPN NRT impression data to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending impression data to Hercules!!!" -v DL-eBay-Chocolate-GC@ebay.com
