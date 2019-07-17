@@ -4,7 +4,6 @@
 # Meta file is needed.
 # Date partition, so DEST_DIR must contains date column's name, eg: /sys/edw/imk/im_tracking/epn/ams_click/snapshot/click_dt=
 
-
 WORK_DIR=$1
 CHANNEL=$2
 USAGE=$3
@@ -12,6 +11,9 @@ META_SUFFIX=$4
 DEST_DIR=$5
 DEST_DC=$6
 TOUCH_PROCESS_FILE=$7
+
+RENO_MID_DIR=/apps/b_marketing_tracking/chocolate/epnnrt/ams_scp_middle
+HERCULES_MID_DIR=/apps/b_marketing_tracking/AMS/ams_scp_middle
 
 function process_one_meta(){
     meta_file=$1
@@ -61,27 +63,24 @@ function process_one_meta(){
                 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -mkdir ${dest_full_dir}
             fi
 
-            retry=1
+            command_1="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -put -f ${data_file_name} ${RENO_MID_DIR}"
+            command_2="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -f ${dest_full_dir}/${data_file_name}"
+            command_3="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mv ${RENO_MID_DIR}/${data_file_name} ${dest_full_dir}"
+
+            retry_rno=1
             rcode_rno=1
-            until [[ ${retry} -gt 3 ]]
+            until [[ ${retry_rno} -gt 3 ]]
             do
-                /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -put ${data_file_name} ${dest_full_dir}
+                ${command_1} && ${command_2} && ${command_3}
                 rcode_rno=$?
                 if [ ${rcode_rno} -eq 0 ]
                 then
                     echo "Successfully send to Reno: "${data_file_name}
                     break
                 else
-                    /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${dest_full_dir}'/'${data_file_name}
-                    if [ $? -eq 0 ]; then
-                        echo "${data_file_name} already exists!!"
-                        rcode_rno=0
-                        break
-                    else
-                        echo "Faild to send to Reno, retrying ${retry}"
-                        retry=`expr ${retry} + 1`
-                    fi
-                fi
+                    echo "Failed to send to Reno, retrying ${retry_rno}"
+                    retry_rno=`expr ${retry_rno} + 1`
+                 fi
             done
             rm -f ${data_file_name}
             if [ ${rcode_rno} -ne 0 ]
@@ -103,21 +102,26 @@ function process_one_meta(){
                 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -mkdir ${dest_full_dir}
             fi
 
-            retry=1
+            command_4="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -put -f ${data_file_name} ${HERCULES_MID_DIR}"
+            command_5="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -rm -f ${dest_full_dir}/${data_file_name}"
+            command_6="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -mv ${HERCULES_MID_DIR}/${data_file_name} ${dest_full_dir}"
+
+            retry_hercules=1
             rcode_hercules=1
-            until [[ ${retry} -gt 3 ]]
+            until [[ ${retry_hercules} -gt 3 ]]
             do
-                /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -put ${data_file_name} ${dest_full_dir}
+                ${command_4} && ${command_5} && ${command_6}
                 rcode_hercules=$?
                 if [ ${rcode_hercules} -eq 0 ]
                 then
                     echo "Successfully send to Hercules: "${data_file_name}
                     break
                 else
-                    echo "Faild to send to Reno, retrying ${retry}"
-                    retry=`expr ${retry} + 1`
+                    echo "Faild to send to Hercules, retrying ${retry_hercules}"
+                    retry_hercules=`expr ${retry_hercules} + 1`
                 fi
             done
+            rm -f ${data_file_name}
             if [ ${rcode_hercules} -ne 0 ]
             then
                 echo -e "Failed to send file: ${data_file_name} to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending data to Hercules!!!" -v DL-eBay-Chocolate-GC@ebay.com
@@ -135,8 +139,6 @@ function process_one_meta(){
 }
 
 export HADOOP_USER_NAME=chocolate
-/datashare/mkttracking/tools/keytab-tool/kinit/kinit_byhost.sh
-
 
 meta_dir=${WORK_DIR}'/meta/'${CHANNEL}'/output/'${USAGE}
 tmp_dir='tmp_scp_to_'${DEST_DC}'_'${CHANNEL}'_'${USAGE}
