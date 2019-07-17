@@ -29,9 +29,6 @@ DONE_DIR=$3
 dt_hour=$(date -d '1 hour ago' +%Y%m%d%H)
 dt=${dt_hour:0:8}
 
-HOST_NAME=`hostname -f`
-kinit -kt /datashare/mkttracking/tools/keytab-tool/keytab/b_marketing_tracking.${HOST_NAME}.keytab  b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM
-
 done_file=${DONE_DIR}/${dt}/imk_rvr_trckng_event_hourly.done.${dt_hour}00000000
 hdfs dfs -test -e ${done_file}
 done_file_exists=$?

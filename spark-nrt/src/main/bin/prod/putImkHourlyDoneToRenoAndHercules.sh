@@ -20,9 +20,6 @@ fi
 
 export HADOOP_USER_NAME=chocolate
 
-HOST_NAME=`hostname -f`
-kinit -kt /datashare/mkttracking/tools/keytab-tool/keytab/b_marketing_tracking.${HOST_NAME}.keytab  b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM
-
 SRC_DIR=$1
 LOCAL_TMP_DIR=$2
 RENO_DEST_DIR=$3
