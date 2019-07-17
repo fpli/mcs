@@ -111,7 +111,7 @@ function process_one_meta(){
                 rcode_hercules=$?
                 if [ ${rcode_hercules} -eq 0 ]
                 then
-                    echo "Successfully send to Hercules: "${reno_file_name}
+                    echo "Successfully send to Hercules: "${data_file_name}
                     break
                 else
                     echo "Faild to send to Reno, retrying ${retry}"

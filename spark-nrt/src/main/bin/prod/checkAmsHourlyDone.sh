@@ -11,6 +11,7 @@ CHANNEL=$2
 USAGE=$3
 META_SUFFIX=$4
 LOCAL_DONE_DATE_FILE=$5
+MIN_TS_FILE=$6
 
 export HADOOP_USER_NAME=chocolate
 
@@ -46,7 +47,6 @@ fi
 echo "============================== Start checking data timestamp =============================="
 
 flag_ts=0
-data_min_ts_file=/apps/epn-nrt/min_ts.txt
 
 ## Check if there is any meta to check
 let meta_num=`hdfs dfs -ls ${WORK_DIR}'/meta/'${CHANNEL}'/output/'${USAGE} | grep ${META_SUFFIX} | wc -l`
@@ -54,8 +54,8 @@ let meta_num=`hdfs dfs -ls ${WORK_DIR}'/meta/'${CHANNEL}'/output/'${USAGE} | gre
 if [ ${meta_num} -gt 0 ]
 then
     echo "There are ${meta_num} metas."
-    ./amsHourlyMinTs.sh ${WORK_DIR} ${CHANNEL} ${USAGE} ${META_SUFFIX} ${data_min_ts_file}
-    let data_min_ts=`hdfs dfs -cat ${data_min_ts_file}`
+    ./amsHourlyMinTs.sh ${WORK_DIR} ${CHANNEL} ${USAGE} ${META_SUFFIX} ${MIN_TS_FILE}
+    let data_min_ts=`hdfs dfs -cat ${MIN_TS_FILE}`
     echo "Timestamp of earliest epn nrt data: "${data_min_ts}
     if [ ${data_min_ts} -ge ${check_now_timestamp} ]
     then
@@ -63,7 +63,7 @@ then
         flag_ts=1
     fi
 else
-    echo "No click meta! No need to check!"
+    echo "No meta! No need to check!"
 fi
 
 
