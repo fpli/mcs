@@ -27,23 +27,21 @@ if [ "${done_hour}" == "00" ]
 then
     echo "======================== Add partition to Hive on Reno and Hercules ========================"
 
-    command_1="/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table choco_data.ams_click;""
-    command_2="/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table choco_data.ams_imprsn;""
-    command_3="/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table im_tracking.ams_click;""
-    command_4="/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table im_tracking.ams_imprsn;""
-
     retry_repair=1
     rcode_repair=1
     until [[ ${retry_repair} -gt 3 ]]
     do
-        ${command_1} && ${command_2} && ${command_3} && ${command_4}
+        /datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table choco_data.ams_click;" &&
+        /datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table choco_data.ams_imprsn;" &&
+        /datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table im_tracking.ams_click;" &&
+        /datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table im_tracking.ams_imprsn;"
         rcode_repair=$?
         if [ ${rcode_repair} -eq 0 ]
         then
             break
         else
             echo "Failed to add today's partition to hive."
-            retry=`expr ${retry_repair} + 1`
+            retry_repair=`expr ${retry_repair} + 1`
         fi
     done
     if [ ${rcode_repair} -ne 0 ]
