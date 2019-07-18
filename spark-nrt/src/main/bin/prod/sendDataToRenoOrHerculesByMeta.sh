@@ -9,17 +9,16 @@ CHANNEL=$2
 USAGE=$3
 META_SUFFIX=$4
 DEST_DIR=$5
-DEST_CLUSTER=$6
-TOUCH_PROCESS_FILE=$7
+MID_DIR=$6
+DEST_CLUSTER=$7
+TOUCH_PROCESS_FILE=$8
 
 if [ "${DEST_CLUSTER}" == "reno" ]
 then
     command_hadoop="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs"
-    MID_DIR=/apps/b_marketing_tracking/chocolate/epnnrt/ams_scp_middle
 elif [ "${DEST_CLUSTER}" == "hercules" ]
 then
     command_hadoop="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs"
-    MID_DIR=/apps/b_marketing_tracking/AMS/ams_scp_middle
 else
     echo "Wrong cluster to send date!"
     exit 1

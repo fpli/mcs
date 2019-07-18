@@ -101,7 +101,7 @@ else
             echo "Successfully touch done file on ${DONE_CLUSTER}: "${done_file_full_name}
             break
         else
-            echo "Faild to touch done file on ${DONE_CLUSTER}: "${done_file_full_name}", retrying ${retry}"
+            echo "Failed to touch done file on ${DONE_CLUSTER}: "${done_file_full_name}", retrying ${retry}"
             retry=`expr ${retry} + 1`
         fi
     done
