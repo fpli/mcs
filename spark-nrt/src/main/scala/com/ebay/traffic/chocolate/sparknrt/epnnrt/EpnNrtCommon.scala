@@ -8,6 +8,7 @@ import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.{Gson, JsonParser}
+import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.DataFrame
@@ -211,7 +212,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val getRefererHostUdf = udf((referer: String) => getRefererURLAndDomain(referer, true))
   val getDateTimeUdf = udf((timestamp: Long) => getDateTimeFromTimestamp(timestamp, "yyyy-MM-dd HH:mm:ss.SSS"))
   val getcbcatUdf = udf((url: String) => getQueryParam(url, "cb_cat"))
-  val get_ams_prgrm_id_Udf = udf((uri: String) => getPrgrmIdAdvrtsrIdFromAMSClick(getRoverUriInfo(uri, 3)))
+  val get_ams_advertise_id_Udf = udf((uri: String) => getPrgrmIdAdvrtsrIdFromAMSClick(getRoverUriInfo(uri, 3)))
+  val get_ams_prgrm_id_Udf = udf((uri: String) => getAMSProgramId(uri))
   val get_cb_ex_kw_Udf = udf((url: String) => getQueryParam(url, "cb_ex_kw"))
   val get_cb_ex_cat_Udf = udf((url: String) => getQueryParam(url, "cb_ex_cat"))
   val get_fb_used_Udf = udf((url: String) => getQueryParam(url, "fb_used"))
@@ -256,6 +258,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     0
   }
 
+  def getAMSProgramId(uri: String): Int = {
+    val pair = getPrgrmIdAdvrtsrIdFromAMSClick(getRoverUriInfo(uri, 3))
+    if (pair(0).equals("-999")) {
+      logger.error("Error in parsing the ams_program_id from URL: " + uri)
+      return 0
+    }
+    pair(0).toInt
+  }
 
   def getLastViewItemInfo(cguid: String, timestamp: String): Array[String] = {
     val res = BullseyeUtils.getLastViewItem(fs,cguid, timestamp, properties.getProperty("epnnrt.modelId"), properties.getProperty("epnnrt.lastviewitemnum"), properties.getProperty("epnnrt.bullseyeUrl"))
@@ -406,9 +416,12 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def getAms_tool_id(uri: String): String = {
     var res = getQueryParam(uri, "toolid")
-    if (res.equalsIgnoreCase(""))
+    if(res.equalsIgnoreCase(""))
       res = "0"
-    res
+    if (StringUtils.isNumeric(res))
+      return res
+    logger.error("Error in parsing the item id: " + res)
+    extractValidId(res)
   }
 
   def getQueryParam(uri: String, param: String): String = {
@@ -485,6 +498,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
     if ((accept == null || accept.equals("")) && lang_cd != null)
       accept = lang_cd
+    if (accept.length > 2)
+      return ""
     accept
   }
 
@@ -501,11 +516,37 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     for (i <- 0 until array.length) {
       val value = getQueryParam(uri, array(i))
       if (!value.equals("")) {
-        return value
+        if (StringUtils.isNumeric(value))
+          return value
+        logger.error("Error in parsing the item id: " + value)
+        return extractValidId(value)
       }
     }
     ""
   }
+
+  def extractValidId(id: String): String = {
+    if (id != null || !id.equals("")) {
+      val arr = id.toCharArray
+      var pos = 0
+      var flag = true
+      for (i <- 0 until arr.length) {
+        if (!Character.isDigit(arr(i)))
+          flag = false
+        if (Character.isDigit(arr(i)) && flag)
+          pos = pos + 1
+      }
+      try {
+        return id.substring(0, pos)
+      } catch {
+        case e: Exception => {
+          return ""
+        }
+      }
+    }
+    ""
+  }
+
 
   def get_TRFC_SRC_CD(browser: String, action: String): Int = {
     val mobile = Array("eBay", "Mobile", "Android", "Nexus", "Nokia", "Playbook", "webos", "bntv", "blackberry", "silk",

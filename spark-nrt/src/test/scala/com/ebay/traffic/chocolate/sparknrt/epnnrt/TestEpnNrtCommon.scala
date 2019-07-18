@@ -231,6 +231,25 @@ class TestEpnNrtCommon extends BaseFunSuite{
     assert(res.equals("111"))
   }
 
+  test("test get Item Id while invalid item Id") {
+    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_item_id=112/&uq=2&xxx=4&pub=2"
+    val res = epnNrtCommon.getItemId(uri)
+    assert(res.equals("112"))
+  }
+
+  test("test get tool Id while invalid tool Id") {
+    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_item_id=112/&toolid=20008/index.php/product/yongnuo-yn24ex-ttl-macro-ring-flash-led-macro-flash-speedlite-with-2-pcs-flash-head-and-4-pcs-adapter-rings-for-canon/&xxx=4&pub=2"
+    val res = epnNrtCommon.getAms_tool_id(uri)
+    assert(res.equals("20008"))
+  }
+
+  test("test get ams program id while invalid rotation id") {
+    val uri = "http://rover.ebay.com/rover/1/null/1?ff3=2&icep_item_id=112/&toolid=20008/index.php/product/yongnuo-yn24ex-ttl-macro-ring-flash-led-macro-flash-speedlite-with-2-pcs-flash-head-and-4-pcs-adapter-rings-for-canon/&xxx=4&pub=2"
+    val res = epnNrtCommon.getAMSProgramId(uri)
+    assert(res.equals(0))
+  }
+
+
   test("test get traffic source code") {
     val browser = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"
     val res = epnNrtCommon.get_TRFC_SRC_CD(browser, "click")
