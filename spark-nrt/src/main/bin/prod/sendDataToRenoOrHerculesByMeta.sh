@@ -4,14 +4,25 @@
 # Meta file is needed.
 # Date partition, so DEST_DIR must contains date column's name, eg: /sys/edw/imk/im_tracking/epn/ams_click/snapshot/click_dt=
 
-
 WORK_DIR=$1
 CHANNEL=$2
 USAGE=$3
 META_SUFFIX=$4
 DEST_DIR=$5
-DEST_DC=$6
-TOUCH_PROCESS_FILE=$7
+MID_DIR=$6
+DEST_CLUSTER=$7
+TOUCH_PROCESS_FILE=$8
+
+if [ "${DEST_CLUSTER}" == "reno" ]
+then
+    command_hadoop="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs"
+elif [ "${DEST_CLUSTER}" == "hercules" ]
+then
+    command_hadoop="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs"
+else
+    echo "Wrong cluster to send date!"
+    exit 1
+fi
 
 function process_one_meta(){
     meta_file=$1
@@ -48,85 +59,41 @@ function process_one_meta(){
         fi
 
 
-        if [ "${DEST_DC}" == "reno" ]
-        then
-            ########################################## Send data to Apollo Reno ##########################################
+        ########################################## Send data to ${DEST_CLUSTER} ##########################################
 
-            echo "====================== Start sending ${data_file} to ${dest_full_dir} ======================"
+        echo "====================== Start sending ${data_file} to ${dest_full_dir} ======================"
 
-            ## Create date dir in reno if it doesn't exist
-            /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${dest_full_dir}
-            if [ $? -ne 0 ]; then
-                echo "Create reno folder for ${date}"
-                /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -mkdir ${dest_full_dir}
-            fi
+        ## Create date dir if it doesn't exist
+        ${command_hadoop} -test -e ${dest_full_dir}
+        if [ $? -ne 0 ]; then
+            echo "Create ${DEST_CLUSTER} folder for ${date}"
+            ${command_hadoop} -mkdir ${dest_full_dir}
+        fi
 
-            retry=1
-            rcode_rno=1
-            until [[ ${retry} -gt 3 ]]
-            do
-                /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -put ${data_file_name} ${dest_full_dir}
-                rcode_rno=$?
-                if [ ${rcode_rno} -eq 0 ]
-                then
-                    echo "Successfully send to Reno: "${data_file_name}
-                    break
-                else
-                    /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${dest_full_dir}'/'${data_file_name}
-                    if [ $? -eq 0 ]; then
-                        echo "${data_file_name} already exists!!"
-                        rcode_rno=0
-                        break
-                    else
-                        echo "Faild to send to Reno, retrying ${retry}"
-                        retry=`expr ${retry} + 1`
-                    fi
-                fi
-            done
-            rm -f ${data_file_name}
-            if [ ${rcode_rno} -ne 0 ]
+        command_1="${command_hadoop} -put -f ${data_file_name} ${MID_DIR}"
+        command_2="${command_hadoop} -rm -f ${dest_full_dir}/${data_file_name}"
+        command_3="${command_hadoop} -mv ${MID_DIR}/${data_file_name} ${dest_full_dir}"
+
+        retry=1
+        rcode=1
+        until [[ ${retry} -gt 3 ]]
+        do
+            ${command_1} && ${command_2} && ${command_3}
+            rcode=$?
+            if [ ${rcode} -eq 0 ]
             then
-                echo -e "Failed to send file: ${data_file_name} to Apollo Reno!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending data to Apollo Reno!!!" -v DL-eBay-Chocolate-GC@ebay.com
-                exit ${rcode_rno}
+                echo "Successfully send to ${DEST_CLUSTER}: "${data_file_name}
+                break
+            else
+                echo "Failed to send to ${DEST_CLUSTER}, retrying ${retry}"
+                retry=`expr ${retry} + 1`
             fi
-
-        elif [ "${DEST_DC}" == "hercules" ]
+        done
+        rm -f ${data_file_name}
+        if [ ${rcode} -ne 0 ]
         then
-            ############################################ Send data to Hercules ############################################
-
-            echo "=================== Start sending ${data_file_name} to ${dest_full_dir} ==================="
-
-            ## Create date dir in hercules if it doesn't exist
-            /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -test -e ${dest_full_dir}
-            if [ $? -ne 0 ]; then
-                echo "Create hercules folder for ${date}"
-                /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -mkdir ${dest_full_dir}
-            fi
-
-            retry=1
-            rcode_hercules=1
-            until [[ ${retry} -gt 3 ]]
-            do
-                /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -put ${data_file_name} ${dest_full_dir}
-                rcode_hercules=$?
-                if [ ${rcode_hercules} -eq 0 ]
-                then
-                    echo "Successfully send to Hercules: "${data_file_name}
-                    break
-                else
-                    echo "Faild to send to Reno, retrying ${retry}"
-                    retry=`expr ${retry} + 1`
-                fi
-            done
-            if [ ${rcode_hercules} -ne 0 ]
-            then
-                echo -e "Failed to send file: ${data_file_name} to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending data to Hercules!!!" -v DL-eBay-Chocolate-GC@ebay.com
-                exit ${rcode_hercules}
-            fi
-
-        else
-            echo "Wrong dest dc!"
-            exit 1
+            echo -e "Failed to send file: ${data_file_name} to ${DEST_CLUSTER}!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending data to ${DEST_CLUSTER}!!!" -v DL-eBay-Chocolate-GC@ebay.com
+            exit ${rcode}
         fi
 
     done < "$output_file"
@@ -135,11 +102,9 @@ function process_one_meta(){
 }
 
 export HADOOP_USER_NAME=chocolate
-/datashare/mkttracking/tools/keytab-tool/kinit/kinit_byhost.sh
-
 
 meta_dir=${WORK_DIR}'/meta/'${CHANNEL}'/output/'${USAGE}
-tmp_dir='tmp_scp_to_'${DEST_DC}'_'${CHANNEL}'_'${USAGE}
+tmp_dir='tmp_scp_to_'${DEST_CLUSTER}'_'${CHANNEL}'_'${USAGE}
 mkdir -p ${tmp_dir}
 cd ${tmp_dir}
 
