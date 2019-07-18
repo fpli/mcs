@@ -79,12 +79,12 @@ done_dir_exists=$?
 if [ ${done_dir_exists} -ne 0 ]
 then
     echo "Create ${DONE_CLUSTER} folder ${done_file_full_dir}"
-    ${command_hadoop} fs -mkdir ${done_file_full_dir}
+    ${command_hadoop} -mkdir ${done_file_full_dir}
 fi
 
 ## Touch done file, retry 3 times
 rcode=1
-${command_hadoop} fs -test -e ${done_file_full_name}
+${command_hadoop} -test -e ${done_file_full_name}
 done_file_exists=$?
 if [ ${done_file_exists} -eq 0 ]
 then
@@ -94,7 +94,7 @@ else
     retry=1
     until [[ ${retry} -gt 3 ]]
     do
-        ${command_hadoop} fs -touchz ${done_file_full_name}
+        ${command_hadoop} -touchz ${done_file_full_name}
         rcode=$?
         if [ ${rcode} -eq 0 ]
         then
