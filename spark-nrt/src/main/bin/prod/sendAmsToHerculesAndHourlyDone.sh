@@ -30,6 +30,10 @@ echo "================ Send EPN click data to Hercules and touch hourly done fil
 
 ./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${LOCAL_DONE_DATE_FILE_CLICK} ${MIN_TS_FILE_CLICK}
 rcode_check_click=$?
+if [ ${rcode_check_click} -eq 2 ]
+then
+    exit ${rcode_check_click}
+fi
 
 hercules_click_dir=${HERCULES_DIR}'/ams_click/snapshot/click_dt='
 ./sendDataToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${hercules_click_dir} ${MID_DIR} hercules NO
@@ -57,6 +61,10 @@ echo "============= Send EPN impression data to Hercules and touch hourly done f
 
 ./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${LOCAL_DONE_DATE_FILE_IMP} ${MIN_TS_FILE_IMP}
 rcode_check_imp=$?
+if [ ${rcode_check_imp} -eq 2 ]
+then
+    exit ${rcode_check_imp}
+fi
 
 hercules_imp_dir=${HERCULES_DIR}'/ams_impression/snapshot/imprsn_dt='
 ./sendDataToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${hercules_imp_dir} ${MID_DIR} hercules NO

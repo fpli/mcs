@@ -55,6 +55,12 @@ if [ ${meta_num} -gt 0 ]
 then
     echo "There are ${meta_num} metas."
     ./amsHourlyMinTs.sh ${WORK_DIR} ${CHANNEL} ${USAGE} ${META_SUFFIX} ${MIN_TS_FILE}
+    rcode_job=$?
+    if [ ${rcode_job} -ne 0 ]
+    then
+        echo "Spark job to check data timestamp fail!"
+        exit 2
+    fi
     let data_min_ts=`hdfs dfs -cat ${MIN_TS_FILE}`
     echo "Timestamp of earliest epn nrt data: "${data_min_ts}
     if [ ${data_min_ts} -ge ${check_now_timestamp} ]
