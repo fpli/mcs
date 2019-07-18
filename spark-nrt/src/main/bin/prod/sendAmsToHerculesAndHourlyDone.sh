@@ -8,11 +8,11 @@ META_SUFFIX=.epnnrt_hercules
 
 HERCULES_DIR=/sys/edw/imk/im_tracking/epn
 
-LOCAL_DONE_DATE_FILE_CLICK=/datashare/mkttracking/data/epn-nrt/local_done_date_click.txt
-LOCAL_DONE_DATE_FILE_IMP=/datashare/mkttracking/data/epn-nrt/local_done_date_imp.txt
+LOCAL_DONE_DATE_FILE_CLICK=/datashare/mkttracking/data/epn-nrt/local_done_date_hercules_click.txt
+LOCAL_DONE_DATE_FILE_IMP=/datashare/mkttracking/data/epn-nrt/local_done_date_hercules_imp.txt
 
-MIN_TS_FILE_CLICK=/apps/epn-nrt/min_ts_click.txt
-MIN_TS_FILE_IMP=/apps/epn-nrt/min_ts_imp.txt
+MIN_TS_FILE_CLICK=/apps/epn-nrt/min_ts_hercules_click.txt
+MIN_TS_FILE_IMP=/apps/epn-nrt/min_ts_hercules_imp.txt
 
 function get_current_done(){
     last_done=`cat $1`
@@ -36,13 +36,13 @@ rcode_click=$?
 
 if [ $rcode_click -eq 0 ];
 then
-    echo "Successfully send EPN NRT click data to Hercules"
+    echo "Successfully send AMS click data to Hercules"
     if [ $rcode_check_click -eq 1 ];
     then
         current_done_click=$(get_current_done ${LOCAL_DONE_DATE_FILE_CLICK})
 
         echo "=================== Start touching click hourly done file: ${done_file_click} ==================="
-        ./touchAmsHourlyDone.sh ${current_done_click} ${LOCAL_DONE_DATE_FILE_CLICK} click
+        ./touchAmsHourlyDone.sh ${current_done_click} ${LOCAL_DONE_DATE_FILE_CLICK} click hercules
     fi
 else
     echo -e "Failed to send EPN NRT click data to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending click data to Hercules!!!" -v DL-eBay-Chocolate-GC@ebay.com
@@ -63,13 +63,13 @@ rcode_imp=$?
 
 if [ $rcode_imp -eq 0 ];
 then
-    echo "Successfully send EPN NRT impression data to Hercules"
+    echo "Successfully send AMS impression data to Hercules"
     if [ $rcode_check_imp -eq 1 ];
     then
         current_done_imp=$(get_current_done ${LOCAL_DONE_DATE_FILE_IMP})
 
         echo "================= Start touching impression hourly done file: ${done_file_imp} ================="
-        ./touchAmsHourlyDone.sh ${current_done_imp} ${LOCAL_DONE_DATE_FILE_IMP} imp
+        ./touchAmsHourlyDone.sh ${current_done_imp} ${LOCAL_DONE_DATE_FILE_IMP} imp hercules
     fi
 else
     echo -e "Failed to send EPN NRT impression data to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending impression data to Hercules!!!" -v DL-eBay-Chocolate-GC@ebay.com

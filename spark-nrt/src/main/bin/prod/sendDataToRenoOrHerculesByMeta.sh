@@ -9,11 +9,21 @@ CHANNEL=$2
 USAGE=$3
 META_SUFFIX=$4
 DEST_DIR=$5
-DEST_DC=$6
+DEST_CLUSTER=$6
 TOUCH_PROCESS_FILE=$7
 
-RENO_MID_DIR=/apps/b_marketing_tracking/chocolate/epnnrt/ams_scp_middle
-HERCULES_MID_DIR=/apps/b_marketing_tracking/AMS/ams_scp_middle
+if [ "${DEST_CLUSTER}" == "reno" ]
+then
+    command_hadoop="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs"
+    MID_DIR=/apps/b_marketing_tracking/chocolate/epnnrt/ams_scp_middle
+elif [ "${DEST_CLUSTER}" == "hercules" ]
+then
+    command_hadoop="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs"
+    MID_DIR=/apps/b_marketing_tracking/AMS/ams_scp_middle
+else
+    echo "Wrong cluster to send date!"
+    exit 1
+fi
 
 function process_one_meta(){
     meta_file=$1
@@ -50,87 +60,41 @@ function process_one_meta(){
         fi
 
 
-        if [ "${DEST_DC}" == "reno" ]
-        then
-            ########################################## Send data to Apollo Reno ##########################################
+        ########################################## Send data to ${DEST_CLUSTER} ##########################################
 
-            echo "====================== Start sending ${data_file} to ${dest_full_dir} ======================"
+        echo "====================== Start sending ${data_file} to ${dest_full_dir} ======================"
 
-            ## Create date dir in reno if it doesn't exist
-            /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -test -e ${dest_full_dir}
-            if [ $? -ne 0 ]; then
-                echo "Create reno folder for ${date}"
-                /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -mkdir ${dest_full_dir}
-            fi
+        ## Create date dir if it doesn't exist
+        ${command_hadoop} -test -e ${dest_full_dir}
+        if [ $? -ne 0 ]; then
+            echo "Create ${DEST_CLUSTER} folder for ${date}"
+            ${command_hadoop} -mkdir ${dest_full_dir}
+        fi
 
-            command_1="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -put -f ${data_file_name} ${RENO_MID_DIR}"
-            command_2="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -f ${dest_full_dir}/${data_file_name}"
-            command_3="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mv ${RENO_MID_DIR}/${data_file_name} ${dest_full_dir}"
+        command_1="${command_hadoop} -put -f ${data_file_name} ${MID_DIR}"
+        command_2="${command_hadoop} -rm -f ${dest_full_dir}/${data_file_name}"
+        command_3="${command_hadoop} -mv ${MID_DIR}/${data_file_name} ${dest_full_dir}"
 
-            retry_rno=1
-            rcode_rno=1
-            until [[ ${retry_rno} -gt 3 ]]
-            do
-                ${command_1} && ${command_2} && ${command_3}
-                rcode_rno=$?
-                if [ ${rcode_rno} -eq 0 ]
-                then
-                    echo "Successfully send to Reno: "${data_file_name}
-                    break
-                else
-                    echo "Failed to send to Reno, retrying ${retry_rno}"
-                    retry_rno=`expr ${retry_rno} + 1`
-                 fi
-            done
-            rm -f ${data_file_name}
-            if [ ${rcode_rno} -ne 0 ]
+        retry=1
+        rcode=1
+        until [[ ${retry} -gt 3 ]]
+        do
+            ${command_1} && ${command_2} && ${command_3}
+            rcode=$?
+            if [ ${rcode} -eq 0 ]
             then
-                echo -e "Failed to send file: ${data_file_name} to Apollo Reno!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending data to Apollo Reno!!!" -v DL-eBay-Chocolate-GC@ebay.com
-                exit ${rcode_rno}
+                echo "Successfully send to ${DEST_CLUSTER}: "${data_file_name}
+                break
+            else
+                echo "Failed to send to ${DEST_CLUSTER}, retrying ${retry}"
+                retry=`expr ${retry} + 1`
             fi
-
-        elif [ "${DEST_DC}" == "hercules" ]
+        done
+        rm -f ${data_file_name}
+        if [ ${rcode} -ne 0 ]
         then
-            ############################################ Send data to Hercules ############################################
-
-            echo "=================== Start sending ${data_file_name} to ${dest_full_dir} ==================="
-
-            ## Create date dir in hercules if it doesn't exist
-            /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -test -e ${dest_full_dir}
-            if [ $? -ne 0 ]; then
-                echo "Create hercules folder for ${date}"
-                /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -mkdir ${dest_full_dir}
-            fi
-
-            command_4="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -put -f ${data_file_name} ${HERCULES_MID_DIR}"
-            command_5="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -rm -f ${dest_full_dir}/${data_file_name}"
-            command_6="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -mv ${HERCULES_MID_DIR}/${data_file_name} ${dest_full_dir}"
-
-            retry_hercules=1
-            rcode_hercules=1
-            until [[ ${retry_hercules} -gt 3 ]]
-            do
-                ${command_4} && ${command_5} && ${command_6}
-                rcode_hercules=$?
-                if [ ${rcode_hercules} -eq 0 ]
-                then
-                    echo "Successfully send to Hercules: "${data_file_name}
-                    break
-                else
-                    echo "Faild to send to Hercules, retrying ${retry_hercules}"
-                    retry_hercules=`expr ${retry_hercules} + 1`
-                fi
-            done
-            rm -f ${data_file_name}
-            if [ ${rcode_hercules} -ne 0 ]
-            then
-                echo -e "Failed to send file: ${data_file_name} to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending data to Hercules!!!" -v DL-eBay-Chocolate-GC@ebay.com
-                exit ${rcode_hercules}
-            fi
-
-        else
-            echo "Wrong dest dc!"
-            exit 1
+            echo -e "Failed to send file: ${data_file_name} to ${DEST_CLUSTER}!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending data to ${DEST_CLUSTER}!!!" -v DL-eBay-Chocolate-GC@ebay.com
+            exit ${rcode}
         fi
 
     done < "$output_file"
@@ -141,7 +105,7 @@ function process_one_meta(){
 export HADOOP_USER_NAME=chocolate
 
 meta_dir=${WORK_DIR}'/meta/'${CHANNEL}'/output/'${USAGE}
-tmp_dir='tmp_scp_to_'${DEST_DC}'_'${CHANNEL}'_'${USAGE}
+tmp_dir='tmp_scp_to_'${DEST_CLUSTER}'_'${CHANNEL}'_'${USAGE}
 mkdir -p ${tmp_dir}
 cd ${tmp_dir}
 
