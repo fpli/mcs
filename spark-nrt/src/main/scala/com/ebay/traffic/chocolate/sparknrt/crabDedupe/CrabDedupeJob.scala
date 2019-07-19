@@ -1,9 +1,12 @@
 package com.ebay.traffic.chocolate.sparknrt.crabDedupe
 
 import java.net.URI
+import java.time.{ZoneId, ZonedDateTime}
+import java.time.format.DateTimeFormatter
 
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
+import com.ebay.kernel.util.StringUtils
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.imkDump.TableSchema
@@ -105,9 +108,12 @@ class CrabDedupeJob(params: Parameter)
 
     val lag =  df.agg(min(df.col("event_ts"))).head().getString(0)
 
-    val output = fs.create(new Path(LAG_FILE), true)
-    output.writeBytes(lag)
-    output.close()
+    if (!StringUtils.isEmpty(lag)) {
+      val time = ZonedDateTime.parse(lag, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault()))
+      val output = lvsFs.create(new Path(LAG_FILE), true)
+      output.writeBytes(time.toInstant.toEpochMilli.toString)
+      output.close()
+    }
 
     val dates = df.select("event_dt").distinct().collect().map(row => {
       val eventDt = row.get(0)
