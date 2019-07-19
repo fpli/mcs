@@ -55,6 +55,11 @@ if [ ${meta_num} -gt 0 ]
 then
     echo "There are ${meta_num} metas."
     ./amsHourlyMinTs.sh ${WORK_DIR} ${CHANNEL} ${USAGE} ${META_SUFFIX} ${MIN_TS_FILE}
+    rcode_job=$?
+    if [ ${rcode_job} -ne 0 ]
+    then
+        echo -e "Failed to check data minimum timestamp!!! It's just for dirty data warning, no need to take action." | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT WARNING] Error in checking data timestamp!!!" -v DL-eBay-Chocolate-GC@ebay.com
+    fi
     let data_min_ts=`hdfs dfs -cat ${MIN_TS_FILE}`
     echo "Timestamp of earliest epn nrt data: "${data_min_ts}
     if [ ${data_min_ts} -ge ${check_now_timestamp} ]
