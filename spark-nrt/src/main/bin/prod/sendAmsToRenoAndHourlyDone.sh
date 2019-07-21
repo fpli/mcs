@@ -32,7 +32,7 @@ echo "============================ Send EPN Click Data to Apollo Reno ==========
 rcode_check_click=$?
 
 reno_click_dir=${RENO_DIR}'/click/click_dt='
-./sendDataToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${reno_click_dir} ${MID_DIR} reno YES
+./sendDataToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${reno_click_dir} ${MID_DIR} reno NO
 rcode_click=$?
 
 if [ ${rcode_click} -eq 0 ];
