@@ -32,7 +32,7 @@ echo "============================ Send EPN Click Data to Apollo Reno ==========
 rcode_check_click=$?
 
 reno_click_dir=${RENO_DIR}'/click/click_dt='
-./sendDataToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${reno_click_dir} ${MID_DIR} reno YES
+./sendDataToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${reno_click_dir} ${MID_DIR} reno
 rcode_click=$?
 
 if [ ${rcode_click} -eq 0 ];
@@ -59,7 +59,7 @@ echo "========================= Send EPN Impression Data to Apollo Reno ========
 rcode_check_imp=$?
 
 reno_imp_dir=${RENO_DIR}'/imp/imprsn_dt='
-./sendDataToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${reno_imp_dir} ${MID_DIR} reno NO
+./sendDataToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${reno_imp_dir} ${MID_DIR} reno
 rcode_imp=$?
 
 if [ ${rcode_imp} -eq 0 ];

@@ -11,7 +11,6 @@ META_SUFFIX=$4
 DEST_DIR=$5
 MID_DIR=$6
 DEST_CLUSTER=$7
-TOUCH_PROCESS_FILE=$8
 
 if [ "${DEST_CLUSTER}" == "reno" ]
 then
@@ -20,7 +19,7 @@ elif [ "${DEST_CLUSTER}" == "hercules" ]
 then
     command_hadoop="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs"
 else
-    echo "Wrong cluster to send date!"
+    echo "Wrong cluster to send data!"
     exit 1
 fi
 
@@ -50,13 +49,6 @@ function process_one_meta(){
         rm -f data_file_name
         hdfs dfs -get ${data_file}
         dest_full_dir=${DEST_DIR}${date}
-
-
-        ####################################### Generate epn nrt processed file #######################################
-        if [ $2 = "YES" ]
-        then
-            touch "/datashare/mkttracking/data/epn-nrt/process/date=${date}.processed"
-        fi
 
 
         ########################################## Send data to ${DEST_CLUSTER} ##########################################
@@ -117,7 +109,7 @@ echo "start process meta files size:"${files_size}
 all_files=`cat ${all_meta_files} | tr "\n" " "`
 for one_meta in ${all_files}
 do
-    process_one_meta ${one_meta} ${TOUCH_PROCESS_FILE}
+    process_one_meta ${one_meta}
     rcode=$?
     if [ ${rcode} -ne 0 ]
     then
