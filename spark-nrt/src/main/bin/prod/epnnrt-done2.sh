@@ -17,7 +17,7 @@ if [ -f "${done_file_dir}/${DONE_FILE}" ]; then
 fi
 
 ######################################### Check the file of today is processing ################################
-LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/process/"date="${DT_TODAY}
+LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/etl/"date="${DT_TODAY}
 
 today_processed=`ls ${LOCAL_PATH}'.processed' | wc -l`
 
