@@ -2,7 +2,7 @@
 <configuration>
 
     <appender name="STARTUP"
-              class="com.ebay.kernel.logging.autoconfigure.logback.appender.ServerStartupConsoleAppender">
+              class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
             </pattern>
