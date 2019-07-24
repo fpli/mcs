@@ -18,6 +18,7 @@
     <module>couchbase-tool</module>
     <module>zookeeper-tool</module>
     <module>CheckRecover-tool</module>
+    <module>AlertingAggrate-tool</module>
   </modules>
 
   <properties>
