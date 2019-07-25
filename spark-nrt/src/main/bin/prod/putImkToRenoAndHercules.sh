@@ -56,7 +56,7 @@ do
     fi
 
     orgDate=${file_name:15:10}
-    date=${orgDate//-/}
+    date=${orgDate}
     renoDestFolder=${RENO_DEST_DIR}/dt=${date}
     herculesDestFolder=${HERCULES_DEST_DIR}/dt=${date}
 #    create dest folder if not exists
