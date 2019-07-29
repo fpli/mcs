@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<projects>
+    <project name="Rover-data" id="1">
+        <metric name="Rover imk events success" value="rover.imk.events.success" source="rover-metrics" condition="" threshold="0" thresholdFactor="0.5" computeType="sum" alert="true"/>
+        <metric name="Rover imk events files" value="rover.imk.events.files" source="rover-metrics" condition="" threshold="0" thresholdFactor="0.5" computeType="sum" alert="true"/>
+    </project>
+</projects>

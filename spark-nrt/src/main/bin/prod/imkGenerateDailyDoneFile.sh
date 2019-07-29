@@ -27,7 +27,7 @@ TABLE_NAME=$3
 HOST_NAME=`hostname -f`
 kinit -kt /datashare/mkttracking/tools/keytab-tool/keytab/b_marketing_tracking.${HOST_NAME}.keytab  b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM
 
-dt=$(date +%Y%m%d)
+dt=$(date +%Y-%m-%d)
 dts="dt=${dt}"
 
 done_file=${DONE_FILE_RNO_PATH}/${TABLE_NAME}_$(date -d '-1 day' '+%Y%m%d').done
