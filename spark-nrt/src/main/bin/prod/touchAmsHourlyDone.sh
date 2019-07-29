@@ -8,6 +8,7 @@ DONE_CLUSTER=$4
 DONE_FILE_DIR=/apps/b_marketing_tracking/watch/
 
 done_date=${DONE_TIME:0:8}
+repair_date=${done_date:0:4}-${done_date:4:2}-${done_date:6}
 done_hour=${DONE_TIME:8:2}
 done_file_full_dir=${DONE_FILE_DIR}${done_date}
 
@@ -40,18 +41,18 @@ else
 fi
 
 
-################################# Add partition to Hive on Reno or Hercules once a day #################################
+###################### Add partition to Hive on Reno or Hercules before touching 0:00 done file ######################
 
 if [ "${done_hour}" == "00" ]
 then
-    echo "======================== Add partition to Hive on Reno or Hercules ========================"
+    echo "======================== Add partition to Hive on ${DONE_CLUSTER} ========================"
 
     retry_repair=1
     rcode_repair=1
     until [[ ${retry_repair} -gt 3 ]]
     do
-        ${command_hive} -e "set hive.msck.path.validation=ignore; MSCK repair table ${table_click};" &&
-        ${command_hive} -e "set hive.msck.path.validation=ignore; MSCK repair table ${table_imp};"
+        ${command_hive} -e "set hive.msck.path.validation=ignore; ALTER TABLE ${table_click} ADD IF NOT EXISTS PARTITION (click_dt='${repair_date}')" &&
+        ${command_hive} -e "set hive.msck.path.validation=ignore; ALTER TABLE ${table_imp} ADD IF NOT EXISTS PARTITION (imprsn_dt='${repair_date}')"
         rcode_repair=$?
         if [ ${rcode_repair} -eq 0 ]
         then
@@ -69,7 +70,7 @@ then
 fi
 
 
-###################################### Touch hourly done file on ${DONE_CLUSTER} ######################################
+##################################### Touch hourly done file on Reno or Hercules #####################################
 
 echo "==================== Start touching hourly done file on ${DONE_CLUSTER} ===================="
 
@@ -82,7 +83,7 @@ then
     ${command_hadoop} -mkdir ${done_file_full_dir}
 fi
 
-## Touch done file, retry 3 times
+## Touch hourly done file, retry 3 times
 rcode=1
 ${command_hadoop} -test -e ${done_file_full_name}
 done_file_exists=$?
