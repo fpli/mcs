@@ -529,7 +529,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def extractValidId(id: String): String = {
-    if (id != null || !id.equals("")) {
+    /*if (id != null || !id.equals("")) {
       val arr = id.toCharArray
       var pos = 0
       var flag = true
@@ -547,6 +547,50 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         }
       }
     }
+    ""*/
+    getValidParam(id)
+  }
+
+  def getValidParam(id: String): String = {
+    if (id != null || !id.equals("")) {
+      val arr = id.toCharArray
+      var pos = 0
+      var flag = true
+      var break = false
+
+      var i = 0
+      var j = arr.length - 1
+      var res = ""
+
+      while (flag) {
+        while (!Character.isDigit(arr(i))) {
+          i = i + 1
+        }
+        while (!Character.isDigit(arr(j))) {
+          j = j - 1
+        }
+        res = id.substring(i, j + 1)
+        flag = false
+      }
+
+      val resArr = res.toCharArray
+
+      for (i <- resArr.indices) {
+        if (!Character.isDigit(resArr(i)))
+          break = true
+        if (Character.isDigit(resArr(i)) && !break)
+          pos = pos + 1
+      }
+
+      try {
+        return res.substring(0, pos)
+      } catch {
+        case e: Exception => {
+          return ""
+        }
+      }
+    }
+
     ""
   }
 
