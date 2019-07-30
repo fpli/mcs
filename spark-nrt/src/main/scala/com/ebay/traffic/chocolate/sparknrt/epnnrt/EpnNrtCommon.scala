@@ -563,14 +563,20 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       var res = ""
 
       while (flag) {
-        while (!Character.isDigit(arr(i))) {
+        while (i < arr.length && !Character.isDigit(arr(i))) {
           i = i + 1
         }
-        while (!Character.isDigit(arr(j))) {
+        while (j >= 0 && !Character.isDigit(arr(j))) {
           j = j - 1
         }
-        res = id.substring(i, j + 1)
-        flag = false
+        try{
+          res = id.substring(i, j + 1)
+          flag = false
+        }catch {
+          case e: Exception => {
+            return ""
+          }
+        }
       }
 
       val resArr = res.toCharArray

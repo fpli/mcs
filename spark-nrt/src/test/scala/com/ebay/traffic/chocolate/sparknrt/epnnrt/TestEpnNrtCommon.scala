@@ -232,7 +232,7 @@ class TestEpnNrtCommon extends BaseFunSuite{
   }
 
   test("test get Item Id while invalid item Id") {
-    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_item_id=112/&uq=2&xxx=4&pub=2"
+    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_item_id=QW112/&uq=2&xxx=4&pub=2"
     val res = epnNrtCommon.getItemId(uri)
     assert(res.equals("112"))
   }
@@ -277,6 +277,12 @@ class TestEpnNrtCommon extends BaseFunSuite{
     val test = "%1001"
     val res = epnNrtCommon.getValidParam(test)
     assert(res.equals("1001"))
+  }
+
+  test("test get valid param5") {
+    val test = "ACDE"
+    val res = epnNrtCommon.getValidParam(test)
+    assert(res.equals(""))
   }
 
 
