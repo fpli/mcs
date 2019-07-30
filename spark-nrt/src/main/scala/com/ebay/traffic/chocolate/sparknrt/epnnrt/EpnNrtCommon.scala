@@ -421,7 +421,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if (StringUtils.isNumeric(res))
       return res
     logger.error("Error in parsing the item id: " + res)
-    extractValidId(res)
+    res = extractValidId(res)
+    if (res.equals(""))
+      res = "0"
+    res
   }
 
   def getQueryParam(uri: String, param: String): String = {

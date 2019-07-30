@@ -243,6 +243,12 @@ class TestEpnNrtCommon extends BaseFunSuite{
     assert(res.equals("20008"))
   }
 
+  test("test get tool Id while invalid prefix tool Id") {
+    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_item_id=112/&toolid=F10001&xxx=4&pub=2"
+    val res = epnNrtCommon.getAms_tool_id(uri)
+    assert(res.equals("0"))
+  }
+
   test("test get ams program id while invalid rotation id") {
     val uri = "http://rover.ebay.com/rover/1/null/1?ff3=2&icep_item_id=112/&toolid=20008/index.php/product/yongnuo-yn24ex-ttl-macro-ring-flash-led-macro-flash-speedlite-with-2-pcs-flash-head-and-4-pcs-adapter-rings-for-canon/&xxx=4&pub=2"
     val res = epnNrtCommon.getAMSProgramId(uri)
