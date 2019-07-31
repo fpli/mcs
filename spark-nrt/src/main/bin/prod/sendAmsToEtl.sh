@@ -31,10 +31,10 @@ fi
 
 echo "============================= Send EPN Impression Data to ETL ============================="
 
-./scpDataToETLByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO NO
+./scpDataToETLByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO YES
 rcode_imp=$?
 
-if [ $rcode_send_etl_imp -eq 0 ];
+if [ $rcode_imp -eq 0 ];
 then
     echo "Successfully send EPN NRT Impression data to ETL"
 else
