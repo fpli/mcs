@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.imkDump
 
-import java.net.{InetAddress, URL}
+import java.net.InetAddress
 import java.util
 import java.util.Properties
 
@@ -9,11 +9,11 @@ import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
-import com.google.gson.{Gson, GsonBuilder}
+import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
-import org.apache.spark.sql.{DataFrame, Encoder, Encoders, Row}
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import rx.Observable
