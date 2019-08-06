@@ -183,6 +183,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("uri")))
       .withColumn("mfe_name", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("cguid", getCguidUdf(col("cguid"), col("guid")))
+      .withColumn("")
       .drop("lang_cd")
       .filter(judegNotEbaySitesUdf(col("referer")))
 //      .filter(judgeCGuidNotNullUdf(col("cguid")))
