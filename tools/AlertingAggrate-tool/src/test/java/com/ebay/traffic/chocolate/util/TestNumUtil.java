@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.util;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class NumUtilTest {
+public class TestNumUtil {
 
   @Test
   public void testParseLong() {

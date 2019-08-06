@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 DIFF=1
 DATE=`date --date=$DIFF" days ago" +%Y.%m.%d`
 
