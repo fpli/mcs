@@ -89,7 +89,7 @@ public class EPNSendEmail {
 				new InternetAddress(emailAccount));
 
 			// Set Subject: 头部头字段
-			message.setSubject("Hourly report for ams_click! ");
+			message.setSubject("Daily report for ams_click!");
 
 			// 设置消息体
 			message.setContent(EPNHTMLParse.parse(dailyClickTrend, dailyDomainTrend), "text/html");
@@ -128,7 +128,7 @@ public class EPNSendEmail {
 				new InternetAddress(emailAccount));
 
 			// Set Subject: 头部头字段
-			message.setSubject("click_trend_report");
+			message.setSubject("Hourly report for ams_click! ");
 
 			// 设置消息体
 			message.setContent(EPNHTMLParse.parse(hourlyClickCount), "text/html");
