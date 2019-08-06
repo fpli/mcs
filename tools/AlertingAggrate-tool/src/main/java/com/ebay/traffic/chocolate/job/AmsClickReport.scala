@@ -155,13 +155,13 @@ class AmsClickReport(val inputdir: String, val outputdir: String, val jobtask: S
     val epnClick2 = epnClick
       .withColumn("click_hour2", col("click_hour"))
       .drop(col("click_hour"))
-      .filter($"ams_trans_rsn_cd" =!= "0")
+      .filter($"ams_trans_rsn_cd" === "0")
       .groupBy("click_hour2")
       .agg(count($"ams_trans_rsn_cd").as("rsn_cd"))
     val epnClick3 = epnClick
       .withColumn("click_hour3", col("click_hour"))
       .drop(col("click_hour"))
-      .filter($"roi_fltr_yn_ind" =!= "0")
+      .filter($"roi_fltr_yn_ind" === "0")
       .groupBy("click_hour3")
       .agg(count($"roi_fltr_yn_ind").as("roi_fltr_yn_ind"))
 
@@ -189,13 +189,13 @@ class AmsClickReport(val inputdir: String, val outputdir: String, val jobtask: S
     val epnClick2 = epnClick
       .withColumn("click_dt2", col("click_dt"))
       .drop(col("click_dt"))
-      .filter($"ams_trans_rsn_cd" =!= "0")
+      .filter($"ams_trans_rsn_cd" === "0")
       .groupBy("click_dt2")
       .agg(count($"ams_trans_rsn_cd").as("rsn_cd"))
     val epnClick3 = epnClick
       .withColumn("click_dt3", col("click_dt"))
       .drop(col("click_dt"))
-      .filter($"roi_fltr_yn_ind" =!= "0")
+      .filter($"roi_fltr_yn_ind" === "0")
       .groupBy("click_dt3")
       .agg(count($"roi_fltr_yn_ind").as("roi_fltr_yn_ind"))
     val epnClick4 = epnClick1.join(epnClick2, col("click_dt") === col("click_dt2"), "full")
