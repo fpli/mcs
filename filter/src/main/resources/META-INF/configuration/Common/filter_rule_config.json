@@ -57,5 +57,11 @@
     "filterRules": [
       
     ]
+  },
+  {
+    "channelType": "ROI",
+    "filterRules": [
+
+    ]
   }
 ]
