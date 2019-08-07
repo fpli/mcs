@@ -23,7 +23,6 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -171,6 +170,9 @@ public class RoverRheosTopicFilterTask extends Thread {
     record.setSrcRotationId(-1L);
     record.setDstRotationId(-1L);
 
+    record.setSnid("");
+    record.setIsTracked(false);
+
     // Format record
     record.setRequestHeaders("");
     record.setResponseHeaders("");
@@ -247,8 +249,7 @@ public class RoverRheosTopicFilterTask extends Thread {
           }
           record.setCampaignId(campaignId);
           record.setPublisherId(-1L);
-          record.setSnid("");
-          record.setIsTracked(false);
+
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
       } else if(pageId == 3086) {
@@ -269,8 +270,6 @@ public class RoverRheosTopicFilterTask extends Thread {
 
         record.setCampaignId(-1L);
         record.setPublisherId(-1L);
-        record.setSnid("");
-        record.setIsTracked(false);
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
       }
     }
