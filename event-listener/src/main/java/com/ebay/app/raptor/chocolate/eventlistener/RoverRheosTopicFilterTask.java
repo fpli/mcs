@@ -39,19 +39,19 @@ import java.util.regex.Pattern;
  */
 public class RoverRheosTopicFilterTask extends Thread {
 
-  protected static final String APPLICATION_PAYLOAD = "applicationPayload";
+  private static final String APPLICATION_PAYLOAD = "applicationPayload";
 
-  protected static final String INCOMING = "Incoming";
-  protected static final String INCOMING_PAGE_ROVER = "IncomingPageRover";
-  protected static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
+  private static final String INCOMING = "Incoming";
+  private static final String INCOMING_PAGE_ROVER = "IncomingPageRover";
+  private static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
+  private static final String INCOMING_PAGE_ROI = "IncomingPageRoi";
+
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
   private static Pattern missingRoverClicksPattern = Pattern.compile("^\\/rover\\/.*\\/.*\\/1\\?.*rvrhostname=.*",
     Pattern.CASE_INSENSITIVE);
-  protected static final Utf8 empty = new Utf8("");
-  protected static final Utf8 zero = new Utf8("0");
-
-  protected static Map<String, String> defaultApplicationPayload = new HashMap<>();
+  private static final Utf8 empty = new Utf8("");
+  private static final Utf8 zero = new Utf8("0");
   private static Long interval = 0L;
   private static RoverRheosTopicFilterTask task = null;
   private static Boolean runFlag = true;
@@ -252,8 +252,8 @@ public class RoverRheosTopicFilterTask extends Thread {
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
       } else if(pageId == 3086) {
-        ESMetrics.getInstance().meter(INCOMING_PAGE_ROVER);
-        String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.DEFAULT);
+        ESMetrics.getInstance().meter(INCOMING_PAGE_ROI);
+        String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.ROI);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
         String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
 
