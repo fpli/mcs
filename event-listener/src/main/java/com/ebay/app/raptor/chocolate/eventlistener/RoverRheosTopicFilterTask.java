@@ -166,10 +166,6 @@ public class RoverRheosTopicFilterTask extends Thread {
     // landing page url
     record.setLandingPageUrl("");
 
-    // source and destination rotation id
-    record.setSrcRotationId(-1L);
-    record.setDstRotationId(-1L);
-
     record.setSnid("");
     record.setIsTracked(false);
 
@@ -241,6 +237,10 @@ public class RoverRheosTopicFilterTask extends Thread {
             lowerCaseParams.put(key.toLowerCase(), params.get(key));
           }
 
+          // source and destination rotation id are parsed later in epn nrt
+          record.setSrcRotationId(-1L);
+          record.setDstRotationId(-1L);
+
           long campaignId = -1L;
           try{
             campaignId = Long.valueOf(lowerCaseParams.get("campid").get(0));
@@ -267,6 +267,11 @@ public class RoverRheosTopicFilterTask extends Thread {
         record.setUri(uri);
 
         record.setHttpMethod(HttpMethod.GET);
+
+        // source and destination rotation id parse for roi
+        Long rotationId = urlQueryString.split("/").length>3 ? Long.valueOf(urlQueryString.split("/")[2]): 0l;
+        record.setSrcRotationId(rotationId);
+        record.setDstRotationId(rotationId);
 
         record.setCampaignId(-1L);
         record.setPublisherId(-1L);
