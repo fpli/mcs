@@ -48,11 +48,11 @@ class ToolsTest extends FunSuite {
   }
 
   test("test getItemIdFromUri") {
-    assert(tools.getItemIdFromUri("http://www.ebay.com/itm/aaa/123") == "123")
-    assert(tools.getItemIdFromUri("http://www.ebay.com/itm/123") == "123")
-    assert(tools.getItemIdFromUri("http://www.ebay.com/itm/aaa/123a") == "")
-    assert(tools.getItemIdFromUri("http://www.ebay.com/i/aaa/123") == "123")
-    assert(tools.getItemIdFromUri("http://www.ebay.com/item/aaa/123") == "")
+    assert(tools.getItemIdFromUri("http://www.ebay.com/itm/aaa/123", "") == "123")
+    assert(tools.getItemIdFromUri("http://www.ebay.com/itm/123", "") == "123")
+    assert(tools.getItemIdFromUri("http://www.ebay.com/itm/aaa/123a", "") == "")
+    assert(tools.getItemIdFromUri("http://www.ebay.com/i/aaa/123", "") == "123")
+    assert(tools.getItemIdFromUri("http://www.ebay.com/item/aaa/123", "") == "")
   }
 
   test("test getBrowserType") {

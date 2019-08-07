@@ -179,13 +179,15 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("mt_id", getDefaultNullNumParamValueFromUrlUdf(col("temp_uri_query"), lit("mt_id")))
       .withColumn("crlp", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("user_map_ind", getUserMapIndUdf(col("user_id")))
-      .withColumn("item_id", getItemIdUdf(col("uri")))
+      .withColumn("item_id", getItemIdUdf(col("uri"), col("channel_type")))
       .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("uri")))
       .withColumn("mfe_name", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("cguid", getCguidUdf(col("cguid"), col("guid")))
-      .withColumn("")
+      .withColumn("transaction_id", getRoiIdsUdf(lit(2), col("temp_uri_query")))
+      .withColumn("transaction_type", getParamFromQueryUdf(col("temp_uri_query"), lit("tranType")))
+      .withColumn("cart_id", getRoiIdsUdf(lit(3), col("temp_uri_query")))
       .drop("lang_cd")
-      .filter(judegNotEbaySitesUdf(col("referer")))
+      .filter(judegNotEbaySitesUdf(col("referer"), col("channel_type")))
 //      .filter(judgeCGuidNotNullUdf(col("cguid")))
 
     for (i <- 1 to 20) {
@@ -217,11 +219,12 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getDefaultNullNumParamValueFromUrlUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getDefaultNullNumParamValueFromQuery(query, key))
   val getParamFromQueryUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getParamValueFromQuery(query, key))
   val getUserMapIndUdf: UserDefinedFunction = udf((userId: String) => tools.getUserMapInd(userId))
-  val getItemIdUdf: UserDefinedFunction = udf((uri: String) => tools.getItemIdFromUri(uri))
-  val judegNotEbaySitesUdf: UserDefinedFunction = udf((referer: String) => tools.judgeNotEbaySites(referer))
+  val getItemIdUdf: UserDefinedFunction = udf((uri: String, channelType: String) => tools.getItemIdFromUri(uri, channelType))
+  val judegNotEbaySitesUdf: UserDefinedFunction = udf((referer: String, channelType: String) => tools.judgeNotEbaySites(referer, channelType))
   val needQueryCBToGetCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => StringUtils.isEmpty(cguid) && StringUtils.isNotEmpty(guid))
   val getCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => getCguid(cguid, guid))
   val judgeCGuidNotNullUdf: UserDefinedFunction = udf((cguid: String) => judgeCGuidNotNull(cguid))
+  val getRoiIdsUdf: UserDefinedFunction = udf((index: Int, uri: String) => tools.getRoiIdFromUri(index, uri))
   /**
     * override renameFiles to have special output file name for TD
     * @param outputDir final destination
