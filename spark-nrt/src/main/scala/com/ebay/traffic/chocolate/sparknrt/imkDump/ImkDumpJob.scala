@@ -44,12 +44,12 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
 
   @transient var properties: Properties = {
     val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("imk_dump.properties"))
+    properties.load(getClass.getClassLoader.getResourceAsStream("imk_dump." + params.channel + ".properties"))
     properties
   }
 
   @transient lazy val inputMetadata: Metadata = {
-    val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("imkdump.upstream.ps"))
+    val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("imkdump.upstream"))
     Metadata(params.workDir, params.channel, usage)
   }
 
