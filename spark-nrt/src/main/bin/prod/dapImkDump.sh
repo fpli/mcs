@@ -1,5 +1,12 @@
 #!/bin/bash
-# run DISPLAY spark job on YARN - dapImkDump.sh
+# run spark job on YARN - dapImkDump
+# Dump long term IMK data from capping result to IMK format. The format is the same as Crab dedupe job's output.
+# Input:    LVS HDFS
+#           /apps/tracking-events-workdir
+#           /apps/tracking-events
+# Output:   LVS HDFS
+#           /apps/tracking-events/channel/imkDump
+# Schedule: /5 * ? * *
 
 usage="Usage: dapImkDump.sh [channel] [workDir] [outPutDir] [elasticsearchUrl]"
 
@@ -12,21 +19,22 @@ fi
 bin=`dirname "$0"`
 bin=`cd "$bin">/dev/null; pwd`
 
-. ${bin}/../chocolate-env-qa.sh
+. ${bin}/../chocolate-env.sh
 
 CHANNEL=$1
 WORK_DIR=$2
 OUTPUT_DIR=$3
 ES_URL=$4
 
-DRIVER_MEMORY=1g
-EXECUTOR_NUMBER=3
-EXECUTOR_MEMORY=1g
-EXECUTOR_CORES=1
+DRIVER_MEMORY=4g
+EXECUTOR_NUMBER=5
+EXECUTOR_MEMORY=4g
+EXECUTOR_CORES=2
 
+SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
 JOB_NAME="imkDump"
 
-for f in $(find $bin/../../conf/qa -name '*.*');
+for f in $(find $bin/../../conf/prod -name '*.*');
 do
   FILES=${FILES},file://$f;
 done
@@ -42,12 +50,13 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
-    --conf spark.yarn.executor.memoryOverhead=1024 \
+    --conf spark.yarn.executor.memoryOverhead=8192 \
+    --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
       --channel ${CHANNEL} \
       --workDir "${WORK_DIR}" \
       --outPutDir "${OUTPUT_DIR}" \
-      --partitions 3 \
+      --partitions 1 \
       --elasticsearchUrl ${ES_URL}
