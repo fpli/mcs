@@ -181,6 +181,12 @@
             <version>${dukes.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-dawg-dictionary</artifactId>
+            <version>0.4.0-RELEASE</version>
+        </dependency>
+
     </dependencies>
 
     <build>
