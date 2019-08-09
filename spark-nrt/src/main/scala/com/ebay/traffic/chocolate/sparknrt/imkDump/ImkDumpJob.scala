@@ -22,6 +22,7 @@ import rx.functions.Func1
 /**
   * Created by ganghuang on 12/3/18.
   * read capping result and generate files for imk table
+  * Base class of ImkDump for different channels. It's for paid search at the beginning.
   */
 object ImkDumpJob extends App {
   override def main(args: Array[String]): Unit = {
@@ -44,12 +45,12 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
 
   @transient var properties: Properties = {
     val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("imk_dump." + params.channel + ".properties"))
+    properties.load(getClass.getClassLoader.getResourceAsStream("imk_dump.properties"))
     properties
   }
 
   @transient lazy val inputMetadata: Metadata = {
-    val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("imkdump.upstream"))
+    val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("imkdump.upstream.ps"))
     Metadata(params.workDir, params.channel, usage)
   }
 
@@ -65,6 +66,8 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       ESMetrics.getInstance()
     } else null
   }
+
+  @transient lazy val metaPostFix = ".epnnrt"
 
   var guidCguidMap: util.HashMap[String, String] = {
     CorpCouchbaseClient.dataSource = properties.getProperty("imkdump.couchbase.datasource")
@@ -97,7 +100,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       suffixArray = suffix.split(",")
     }
 
-    var dedupeOutputMeta = inputMetadata.readDedupeOutputMeta(".epnnrt")
+    var dedupeOutputMeta = inputMetadata.readDedupeOutputMeta(metaPostFix)
     if (dedupeOutputMeta.length > batchSize) {
       dedupeOutputMeta = dedupeOutputMeta.slice(0, batchSize)
     }
@@ -154,8 +157,13 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     }
   }
 
-  def imkDumpCore(df: DataFrame): DataFrame = {
-    var imkDf = df
+  /**
+    * parse common fields
+    * @param df input df
+    * @return df with appended fields
+    */
+  def imkDumpCommon(df: DataFrame): DataFrame = {
+    df
       .withColumn("temp_uri_query", getQueryParamsUdf(col("uri")))
       .withColumn("batch_id", getBatchIdUdf())
       .withColumn("rvr_id", col("short_snapshot_id"))
@@ -183,13 +191,15 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("uri")))
       .withColumn("mfe_name", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("cguid", getCguidUdf(col("cguid"), col("guid")))
-      .withColumn("transaction_id", getRoiIdsUdf(lit(2), col("temp_uri_query")))
-      .withColumn("transaction_type", getParamFromQueryUdf(col("temp_uri_query"), lit("tranType")))
-      .withColumn("cart_id", getRoiIdsUdf(lit(3), col("temp_uri_query")))
-      .drop("lang_cd")
-      .filter(judegNotEbaySitesUdf(col("referer"), col("channel_type")))
-//      .filter(judgeCGuidNotNullUdf(col("cguid")))
+  }
 
+  /**
+    * parse flex fields and filter output by schema
+    * @param df input df
+    * @return df with final schema
+    */
+  def imkDumpEx(df: DataFrame): DataFrame = {
+    var imkDf = df
     for (i <- 1 to 20) {
       val columnName = "flex_field_" + i
       val paramName = "ff" + i
@@ -200,6 +210,13 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       imkDf = imkDf.withColumn(e, lit(schema_imk_table.defaultValues(e)))
     })
     imkDf.select(schema_imk_table.dfColumns: _*)
+  }
+
+  def imkDumpCore(df: DataFrame): DataFrame = {
+    val imkDf = imkDumpCommon(df)
+      .drop("lang_cd")
+      .filter(judegNotEbaySitesUdf(col("referer")))
+    imkDumpEx(imkDf)
   }
 
   val tools: Tools = new Tools(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
@@ -220,11 +237,11 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getParamFromQueryUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getParamValueFromQuery(query, key))
   val getUserMapIndUdf: UserDefinedFunction = udf((userId: String) => tools.getUserMapInd(userId))
   val getItemIdUdf: UserDefinedFunction = udf((uri: String, channelType: String) => tools.getItemIdFromUri(uri, channelType))
-  val judegNotEbaySitesUdf: UserDefinedFunction = udf((referer: String, channelType: String) => tools.judgeNotEbaySites(referer, channelType))
+  val judegNotEbaySitesUdf: UserDefinedFunction = udf((referer: String) => tools.judgeNotEbaySites(referer))
   val needQueryCBToGetCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => StringUtils.isEmpty(cguid) && StringUtils.isNotEmpty(guid))
   val getCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => getCguid(cguid, guid))
   val judgeCGuidNotNullUdf: UserDefinedFunction = udf((cguid: String) => judgeCGuidNotNull(cguid))
-  val getRoiIdsUdf: UserDefinedFunction = udf((index: Int, uri: String) => tools.getRoiIdFromUri(index, uri))
+
   /**
     * override renameFiles to have special output file name for TD
     * @param outputDir final destination

@@ -89,10 +89,9 @@ class ToolsTest extends FunSuite {
   }
 
   test("test judgeNotEbaySites") {
-    assert(!tools.judgeNotEbaySites("http://www.ebay.com", ""))
-    assert(!tools.judgeNotEbaySites("www.ebay.com", ""))
-    assert(tools.judgeNotEbaySites("http://www.google.com", ""))
-    assert(tools.judgeNotEbaySites("http://www.ebay.com", "ROI"))
+    assert(!tools.judgeNotEbaySites("http://www.ebay.com"))
+    assert(!tools.judgeNotEbaySites("www.ebay.com"))
+    assert(tools.judgeNotEbaySites("http://www.google.com"))
   }
 
   test("test getChannelType") {

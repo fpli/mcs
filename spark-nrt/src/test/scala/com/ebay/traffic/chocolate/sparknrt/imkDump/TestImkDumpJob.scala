@@ -78,9 +78,9 @@ class TestImkDumpJob extends BaseFunSuite{
       "--elasticsearchUrl", "http://10.148.181.34:9200"
     )
     val params = Parameter(args)
-    val job = new ImkDumpJob(params)
-    val metadata1 = Metadata(workDir, "ROI", MetadataEnum.capping)
-    val dedupeMeta = metadata1.readDedupeOutputMeta(".epnnrt")
+    val job = new RoiImkDumpJob(params)
+    val metadata1 = Metadata(workDir, "ROI", MetadataEnum.dedupe)
+    val dedupeMeta = metadata1.readDedupeOutputMeta("")
     val dedupeMetaPath = new Path(dedupeMeta(0)._1)
 
     assert (fs.exists(dedupeMetaPath))
@@ -145,10 +145,10 @@ class TestImkDumpJob extends BaseFunSuite{
 
 
   def createTestDataForROI(): Unit = {
-    val metadata = Metadata(workDir, "ROI", MetadataEnum.capping)
+    val metadata = Metadata(workDir, "ROI", MetadataEnum.dedupe)
     val dateFiles = DateFiles("date=2018-05-01", Array("file://" + tmpPath + "/date=2018-05-01/part-00001.snappy.parquet"))
     val meta: MetaFiles = MetaFiles(Array(dateFiles))
-    metadata.writeDedupeOutputMeta(meta, Array(".epnnrt"))
+    metadata.writeDedupeOutputMeta(meta, Array(""))
 
     // prepare data file
     val writer = AvroParquetWriter.
