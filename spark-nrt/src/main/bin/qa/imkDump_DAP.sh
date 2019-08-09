@@ -1,7 +1,7 @@
 #!/bin/bash
-# run DISPLAY spark job on YARN - dapImkDump.sh
+# run DISPLAY spark job on YARN - imkDump_DAP.sh
 
-usage="Usage: dapImkDump.sh [channel] [workDir] [outPutDir] [elasticsearchUrl]"
+usage="Usage: imkDump_DAP.sh [channel] [workDir] [outPutDir] [elasticsearchUrl]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
@@ -33,7 +33,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.sparknrt.imkDump.DapImkDumpJob \
+    --class com.ebay.traffic.chocolate.sparknrt.imkDump.ImkDumpDapJob \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
