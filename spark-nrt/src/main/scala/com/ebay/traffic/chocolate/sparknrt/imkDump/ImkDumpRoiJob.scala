@@ -12,18 +12,18 @@ import org.apache.spark.sql.functions.{col, lit, udf}
   * @since 2019-08-08
   */
 
-object RoiImkDumpJob extends App {
+object ImkDumpRoiJob extends App {
   override def main(args: Array[String]): Unit = {
     val params = Parameter(args)
 
-    val job = new RoiImkDumpJob(params)
+    val job = new ImkDumpRoiJob(params)
 
     job.run()
     job.stop()
   }
 }
 
-class RoiImkDumpJob(params: Parameter) extends ImkDumpJob(params: Parameter) {
+class ImkDumpRoiJob(params: Parameter) extends ImkDumpJob(params: Parameter) {
 
   @transient override lazy val inputMetadata: Metadata = {
     val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("imkdump.upstream.roi"))

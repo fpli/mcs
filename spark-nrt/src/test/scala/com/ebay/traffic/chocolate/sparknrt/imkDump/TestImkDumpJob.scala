@@ -78,7 +78,7 @@ class TestImkDumpJob extends BaseFunSuite{
       "--elasticsearchUrl", "http://10.148.181.34:9200"
     )
     val params = Parameter(args)
-    val job = new RoiImkDumpJob(params)
+    val job = new ImkDumpRoiJob(params)
     val metadata1 = Metadata(workDir, "ROI", MetadataEnum.dedupe)
     val dedupeMeta = metadata1.readDedupeOutputMeta("")
     val dedupeMetaPath = new Path(dedupeMeta(0)._1)
