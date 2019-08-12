@@ -9,6 +9,7 @@ META_SUFFIX=$4
 KEY_LOCATION=$5
 ETL_ACCOUNT_LOCATION=$6
 SCP_DONE_FILE=$7
+TOUCH_PROCESS_FILE=$8
 
 function process_one_meta(){
     meta_file=$1
@@ -30,6 +31,7 @@ function process_one_meta(){
 
     data_files=`cat ${output_file} | tr "\n" " "`
     while read -r date_file; do
+        date=`echo ${date_file} | cut -d" " -f1`
         data_file=`echo ${date_file} | cut -d" " -f2`
         data_file_name=$(basename "$data_file")
         rm -f data_file_name
@@ -58,6 +60,13 @@ function process_one_meta(){
              fi
         done
         rm -f ${data_file_name}
+
+        ####################################### Generate epn nrt processed file #######################################
+        if [ $3 = "YES" ]
+        then
+            touch "/datashare/mkttracking/data/epn-nrt/etl/date=${date}.processed"
+        fi
+
         if [ ${rcode} -ne 0 ]
         then
             echo "Fail to scp to ETL, please check!!!"
@@ -84,7 +93,7 @@ echo "start process meta files size:"${files_size}
 all_files=`cat ${all_meta_files} | tr "\n" " "`
 for one_meta in ${all_files}
 do
-    process_one_meta ${one_meta} ${SCP_DONE_FILE}
+    process_one_meta ${one_meta} ${SCP_DONE_FILE} ${TOUCH_PROCESS_FILE}
     rcode=$?
     if [ ${rcode} -ne 0 ]
     then

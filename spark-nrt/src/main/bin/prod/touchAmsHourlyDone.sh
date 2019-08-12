@@ -1,39 +1,65 @@
 #!/usr/bin/env bash
 
-DONE_FILE=$1
+DONE_TIME=$1
 LOCAL_DONE_DATE_FILE=$2
+ACTION=$3
+DONE_CLUSTER=$4
 
 DONE_FILE_DIR=/apps/b_marketing_tracking/watch/
 
-done_date=${DONE_FILE:22:8}
-done_hour=${DONE_FILE:30:2}
+done_date=${DONE_TIME:0:8}
+repair_date=${done_date:0:4}-${done_date:4:2}-${done_date:6}
+done_hour=${DONE_TIME:8:2}
 done_file_full_dir=${DONE_FILE_DIR}${done_date}
-done_file_full_name=${done_file_full_dir}'/'${DONE_FILE}
+
+if [ "${ACTION}" == "click" ]
+then
+    done_file_full_name="${done_file_full_dir}/ams_click_hourly.done.${DONE_TIME}00000000"
+elif [ "${ACTION}" == "imp" ]
+then
+    done_file_full_name="${done_file_full_dir}/ams_imprsn_hourly.done.${DONE_TIME}00000000"
+else
+    echo "Wrong action to touch hourly done!"
+    exit 1
+fi
+
+if [ "${DONE_CLUSTER}" == "reno" ]
+then
+    command_hive="/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive"
+    command_hadoop="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs"
+    table_click=choco_data.ams_click
+    table_imp=choco_data.ams_imprsn
+elif [ "${DONE_CLUSTER}" == "hercules" ]
+then
+    command_hive="/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive"
+    command_hadoop="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs"
+    table_click=im_tracking.ams_click
+    table_imp=im_tracking.ams_imprsn
+else
+    echo "Wrong cluster to touch hourly done!"
+    exit 1
+fi
 
 
-################################ Add partition to Hive on Reno and Hercules once a day ################################
+###################### Add partition to Hive on Reno or Hercules before touching 0:00 done file ######################
 
 if [ "${done_hour}" == "00" ]
 then
-    echo "======================== Add partition to Hive on Reno and Hercules ========================"
-
-    command_1="/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table choco_ams_click;""
-    command_2="/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table choco_ams_imprsn;""
-    command_3="/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table im_tracking.choco_ams_click;""
-    command_4="/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; MSCK repair table im_tracking.choco_ams_imprsn;""
+    echo "======================== Add partition to Hive on ${DONE_CLUSTER} ========================"
 
     retry_repair=1
     rcode_repair=1
     until [[ ${retry_repair} -gt 3 ]]
     do
-        ${command_1} && ${command_2} && ${command_3} && ${command_4}
+        ${command_hive} -e "set hive.msck.path.validation=ignore; ALTER TABLE ${table_click} ADD IF NOT EXISTS PARTITION (click_dt='${repair_date}')" &&
+        ${command_hive} -e "set hive.msck.path.validation=ignore; ALTER TABLE ${table_imp} ADD IF NOT EXISTS PARTITION (imprsn_dt='${repair_date}')"
         rcode_repair=$?
         if [ ${rcode_repair} -eq 0 ]
         then
             break
         else
             echo "Failed to add today's partition to hive."
-            retry=`expr ${retry_repair} + 1`
+            retry_repair=`expr ${retry_repair} + 1`
         fi
     done
     if [ ${rcode_repair} -ne 0 ]
@@ -41,25 +67,25 @@ then
         echo -e "Failed to add today's partition on hive!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in adding hive partition!!!" -v DL-eBay-Chocolate-GC@ebay.com
         exit ${rcode_repair}
     fi
-
 fi
 
 
-######################################### Touch hourly done file on Hercules #########################################
+##################################### Touch hourly done file on Reno or Hercules #####################################
 
-echo "======================= Start touching hourly done file on hercules ======================="
+echo "==================== Start touching hourly done file on ${DONE_CLUSTER} ===================="
 
 ## Create hourly done date dir if it doesn't exist
-/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -test -e ${done_file_full_dir}
+${command_hadoop} -test -e ${done_file_full_dir}
 done_dir_exists=$?
 if [ ${done_dir_exists} -ne 0 ]
 then
-    /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -mkdir ${done_file_full_dir}
+    echo "Create ${DONE_CLUSTER} folder ${done_file_full_dir}"
+    ${command_hadoop} -mkdir ${done_file_full_dir}
 fi
 
-## Touch done file, retry 3 times
+## Touch hourly done file, retry 3 times
 rcode=1
-/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -test -e ${done_file_full_name}
+${command_hadoop} -test -e ${done_file_full_name}
 done_file_exists=$?
 if [ ${done_file_exists} -eq 0 ]
 then
@@ -69,21 +95,21 @@ else
     retry=1
     until [[ ${retry} -gt 3 ]]
     do
-        /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -touchz ${done_file_full_name}
+        ${command_hadoop} -touchz ${done_file_full_name}
         rcode=$?
         if [ ${rcode} -eq 0 ]
         then
-            echo "Successfully generated done file on Apollo Rno: "${done_file_full_name}
+            echo "Successfully touch done file on ${DONE_CLUSTER}: "${done_file_full_name}
             break
         else
-            echo "Faild to generate done file on Apollo Rno: "${done_file_full_name}", retrying ${retry}"
+            echo "Failed to touch done file on ${DONE_CLUSTER}: "${done_file_full_name}", retrying ${retry}"
             retry=`expr ${retry} + 1`
         fi
     done
 fi
 if [ ${rcode} -ne 0 ]
     then
-        echo -e "Failed to touch hourly done file: ${done_file_full_name} on Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in touching hourly done file on Hercules!!!" -v DL-eBay-Chocolate-GC@ebay.com
+        echo -e "Failed to touch hourly done file: ${done_file_full_name} on ${DONE_CLUSTER}!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in touching hourly done file on ${DONE_CLUSTER}!!!" -v DL-eBay-Chocolate-GC@ebay.com
         exit ${rcode}
 fi
 
@@ -92,4 +118,4 @@ fi
 
 echo "=============================== Save done time to local file ==============================="
 
-echo ${DONE_FILE:22:10} > ${LOCAL_DONE_DATE_FILE}
+echo ${DONE_TIME} > ${LOCAL_DONE_DATE_FILE}

@@ -215,7 +215,7 @@ class TestEpnNrtCommon extends BaseFunSuite{
 
   test("test get country locale from header") {
     val requestHeader = "Referer:http://translate.google.com.mx|X-Purpose:preview|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/92d9dfe51670a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/47a11c671620a93c91006917fffa2a915d116016^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:10.108.159.177|User-Agent:Shuang-UP.Browser-baiduspider-ebaywinphocore"
-    val res = epnNrtCommon.getCountryLocaleFromHeader(requestHeader)
+    val res = epnNrtCommon.getCountryLocaleFromHeader(requestHeader, "")
     assert(res.equals("US"))
   }
 
@@ -230,6 +230,61 @@ class TestEpnNrtCommon extends BaseFunSuite{
     val res = epnNrtCommon.getItemId(uri)
     assert(res.equals("111"))
   }
+
+  test("test get Item Id while invalid item Id") {
+    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_item_id=QW112/&uq=2&xxx=4&pub=2"
+    val res = epnNrtCommon.getItemId(uri)
+    assert(res.equals("112"))
+  }
+
+  test("test get tool Id while invalid tool Id") {
+    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_item_id=112/&toolid=20008/index.php/product/yongnuo-yn24ex-ttl-macro-ring-flash-led-macro-flash-speedlite-with-2-pcs-flash-head-and-4-pcs-adapter-rings-for-canon/&xxx=4&pub=2"
+    val res = epnNrtCommon.getAms_tool_id(uri)
+    assert(res.equals("20008"))
+  }
+
+  test("test get tool Id while invalid prefix tool Id") {
+    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_item_id=112/&toolid=Q10001&xxx=4&pub=2"
+    val res = epnNrtCommon.getAms_tool_id(uri)
+    assert(res.equals("10001"))
+  }
+
+  test("test get ams program id while invalid rotation id") {
+    val uri = "http://rover.ebay.com/rover/1/null/1?ff3=2&icep_item_id=112/&toolid=20008/index.php/product/yongnuo-yn24ex-ttl-macro-ring-flash-led-macro-flash-speedlite-with-2-pcs-flash-head-and-4-pcs-adapter-rings-for-canon/&xxx=4&pub=2"
+    val res = epnNrtCommon.getAMSProgramId(uri)
+    assert(res.equals(0))
+  }
+
+  test("test get valid param") {
+    val test = "F1001"
+    val res = epnNrtCommon.getValidParam(test)
+    assert(res.equals("1001"))
+  }
+
+  test("test get valid param2") {
+    val test = "1002ABC"
+    val res = epnNrtCommon.getValidParam(test)
+    assert(res.equals("1002"))
+  }
+
+  test("test get valid param3") {
+    val test = "10A01"
+    val res = epnNrtCommon.getValidParam(test)
+    assert(res.equals("10"))
+  }
+
+  test("test get valid param4") {
+    val test = "%1001"
+    val res = epnNrtCommon.getValidParam(test)
+    assert(res.equals("1001"))
+  }
+
+  test("test get valid param5") {
+    val test = "ACDE"
+    val res = epnNrtCommon.getValidParam(test)
+    assert(res.equals(""))
+  }
+
 
   test("test get traffic source code") {
     val browser = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"

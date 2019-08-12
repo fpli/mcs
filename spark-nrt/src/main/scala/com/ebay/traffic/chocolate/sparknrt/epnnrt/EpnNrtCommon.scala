@@ -8,6 +8,7 @@ import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.{Gson, JsonParser}
+import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.DataFrame
@@ -211,7 +212,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val getRefererHostUdf = udf((referer: String) => getRefererURLAndDomain(referer, true))
   val getDateTimeUdf = udf((timestamp: Long) => getDateTimeFromTimestamp(timestamp, "yyyy-MM-dd HH:mm:ss.SSS"))
   val getcbcatUdf = udf((url: String) => getQueryParam(url, "cb_cat"))
-  val get_ams_prgrm_id_Udf = udf((uri: String) => getPrgrmIdAdvrtsrIdFromAMSClick(getRoverUriInfo(uri, 3)))
+  val get_ams_advertise_id_Udf = udf((uri: String) => getPrgrmIdAdvrtsrIdFromAMSClick(getRoverUriInfo(uri, 3)))
+  val get_ams_prgrm_id_Udf = udf((uri: String) => getAMSProgramId(uri))
   val get_cb_ex_kw_Udf = udf((url: String) => getQueryParam(url, "cb_ex_kw"))
   val get_cb_ex_cat_Udf = udf((url: String) => getQueryParam(url, "cb_ex_cat"))
   val get_fb_used_Udf = udf((url: String) => getQueryParam(url, "fb_used"))
@@ -220,7 +222,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_load_time_udf = udf((url: String) => getQueryParam(url, "load_time"))
   val get_udid_Udf = udf((url: String) => getQueryParam(url, "udid"))
   val get_rule_flag_udf = udf((ruleFlag: Long, index: Int) => getRuleFlag(ruleFlag, index))
-  val get_country_locale_udf = udf((requestHeader: String) => getCountryLocaleFromHeader(requestHeader))
+  val get_country_locale_udf = udf((requestHeader: String, lang_cd: String) => getCountryLocaleFromHeader(requestHeader, lang_cd))
   val get_lego_udf = udf((uri: String) => getToolLvlOptn(uri))
   val get_icep_vectorid_udf = udf((uri: String) => getQueryParam(uri, "icep_vectorid"))
   val get_icep_store_udf = udf((uri: String) => getQueryParam(uri, "icep_store"))
@@ -256,6 +258,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     0
   }
 
+  def getAMSProgramId(uri: String): Int = {
+    val pair = getPrgrmIdAdvrtsrIdFromAMSClick(getRoverUriInfo(uri, 3))
+    if (pair(0).equals("-999")) {
+      logger.error("Error in parsing the ams_program_id from URL: " + uri)
+      return 0
+    }
+    pair(0).toInt
+  }
 
   def getLastViewItemInfo(cguid: String, timestamp: String): Array[String] = {
     val res = BullseyeUtils.getLastViewItem(fs,cguid, timestamp, properties.getProperty("epnnrt.modelId"), properties.getProperty("epnnrt.lastviewitemnum"), properties.getProperty("epnnrt.bullseyeUrl"))
@@ -406,7 +416,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def getAms_tool_id(uri: String): String = {
     var res = getQueryParam(uri, "toolid")
-    if (res.equalsIgnoreCase(""))
+    if(res.equalsIgnoreCase(""))
+      res = "0"
+    if (StringUtils.isNumeric(res))
+      return res
+    logger.error("Error in parsing the item id: " + res)
+    res = extractValidId(res)
+    if (res.equals(""))
       res = "0"
     res
   }
@@ -470,7 +486,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     0
   }
 
-  def getCountryLocaleFromHeader(requestHeader: String): String = {
+  def getCountryLocaleFromHeader(requestHeader: String, lang_cd: String): String = {
     var accept = getValueFromRequest(requestHeader, "accept-language")
     try {
       if (accept != null && !accept.equals(""))
@@ -483,6 +499,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         return ""
       }
     }
+    if ((accept == null || accept.equals("")) && lang_cd != null)
+      accept = lang_cd
+    if (accept.length > 2)
+      return ""
     accept
   }
 
@@ -499,11 +519,87 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     for (i <- 0 until array.length) {
       val value = getQueryParam(uri, array(i))
       if (!value.equals("")) {
-        return value
+        if (StringUtils.isNumeric(value))
+          return value
+        logger.error("Error in parsing the item id: " + value)
+        return extractValidId(value)
       }
     }
     ""
   }
+
+  def extractValidId(id: String): String = {
+    /*if (id != null || !id.equals("")) {
+      val arr = id.toCharArray
+      var pos = 0
+      var flag = true
+      for (i <- 0 until arr.length) {
+        if (!Character.isDigit(arr(i)))
+          flag = false
+        if (Character.isDigit(arr(i)) && flag)
+          pos = pos + 1
+      }
+      try {
+        return id.substring(0, pos)
+      } catch {
+        case e: Exception => {
+          return ""
+        }
+      }
+    }
+    ""*/
+    getValidParam(id)
+  }
+
+  def getValidParam(id: String): String = {
+    if (id != null || !id.equals("")) {
+      val arr = id.toCharArray
+      var pos = 0
+      var flag = true
+      var break = false
+
+      var i = 0
+      var j = arr.length - 1
+      var res = ""
+
+      while (flag) {
+        while (i < arr.length && !Character.isDigit(arr(i))) {
+          i = i + 1
+        }
+        while (j >= 0 && !Character.isDigit(arr(j))) {
+          j = j - 1
+        }
+        try{
+          res = id.substring(i, j + 1)
+          flag = false
+        }catch {
+          case e: Exception => {
+            return ""
+          }
+        }
+      }
+
+      val resArr = res.toCharArray
+
+      for (i <- resArr.indices) {
+        if (!Character.isDigit(resArr(i)))
+          break = true
+        if (Character.isDigit(resArr(i)) && !break)
+          pos = pos + 1
+      }
+
+      try {
+        return res.substring(0, pos)
+      } catch {
+        case e: Exception => {
+          return ""
+        }
+      }
+    }
+
+    ""
+  }
+
 
   def get_TRFC_SRC_CD(browser: String, action: String): Int = {
     val mobile = Array("eBay", "Mobile", "Android", "Nexus", "Nokia", "Playbook", "webos", "bntv", "blackberry", "silk",

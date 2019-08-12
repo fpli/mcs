@@ -1,0 +1,4 @@
+type=command
+command=bash AlertingAggregationHourly.sh
+failure.emails=lxiong1@ebay.com
+success.emails=lxiong1@ebay.com
