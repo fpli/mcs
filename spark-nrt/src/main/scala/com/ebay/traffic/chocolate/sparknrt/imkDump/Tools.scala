@@ -30,7 +30,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
 
   lazy val userQueryParamsOfLandingUrl: Array[String] = Array("uq", "satitle", "keyword", "item", "store")
 
-//  lazy val ebaySites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE)
+  // do not filter /ulk XC-1541
   lazy val ebaySites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE)
 
   lazy val user_agent_map: Map[String, Int] = Map(
