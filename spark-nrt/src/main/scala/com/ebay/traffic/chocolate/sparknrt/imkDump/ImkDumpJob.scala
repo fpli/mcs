@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.imkDump
 
-import java.net.{InetAddress, URL}
+import java.net.InetAddress
 import java.util
 import java.util.Properties
 
@@ -9,11 +9,11 @@ import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
-import com.google.gson.{Gson, GsonBuilder}
+import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
-import org.apache.spark.sql.{DataFrame, Encoder, Encoders, Row}
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import rx.Observable
@@ -22,6 +22,7 @@ import rx.functions.Func1
 /**
   * Created by ganghuang on 12/3/18.
   * read capping result and generate files for imk table
+  * Base class of ImkDump for different channels. It's for paid search at the beginning.
   */
 object ImkDumpJob extends App {
   override def main(args: Array[String]): Unit = {
@@ -66,6 +67,8 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     } else null
   }
 
+  @transient lazy val metaPostFix = ".epnnrt"
+
   var guidCguidMap: util.HashMap[String, String] = {
     CorpCouchbaseClient.dataSource = properties.getProperty("imkdump.couchbase.datasource")
     null
@@ -97,7 +100,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       suffixArray = suffix.split(",")
     }
 
-    var dedupeOutputMeta = inputMetadata.readDedupeOutputMeta(".epnnrt")
+    var dedupeOutputMeta = inputMetadata.readDedupeOutputMeta(metaPostFix)
     if (dedupeOutputMeta.length > batchSize) {
       dedupeOutputMeta = dedupeOutputMeta.slice(0, batchSize)
     }
@@ -154,8 +157,13 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     }
   }
 
-  def imkDumpCore(df: DataFrame): DataFrame = {
-    var imkDf = df
+  /**
+    * parse common fields
+    * @param df input df
+    * @return df with appended fields
+    */
+  def imkDumpCommon(df: DataFrame): DataFrame = {
+    df
       .withColumn("temp_uri_query", getQueryParamsUdf(col("uri")))
       .withColumn("batch_id", getBatchIdUdf())
       .withColumn("rvr_id", col("short_snapshot_id"))
@@ -179,14 +187,19 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("mt_id", getDefaultNullNumParamValueFromUrlUdf(col("temp_uri_query"), lit("mt_id")))
       .withColumn("crlp", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("user_map_ind", getUserMapIndUdf(col("user_id")))
-      .withColumn("item_id", getItemIdUdf(col("uri")))
+      .withColumn("item_id", getItemIdUdf(col("uri"), col("channel_type")))
       .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("uri")))
       .withColumn("mfe_name", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("cguid", getCguidUdf(col("cguid"), col("guid")))
-      .drop("lang_cd")
-      .filter(judegNotEbaySitesUdf(col("referer")))
-//      .filter(judgeCGuidNotNullUdf(col("cguid")))
+  }
 
+  /**
+    * parse flex fields and filter output by schema
+    * @param df input df
+    * @return df with final schema
+    */
+  def imkDumpEx(df: DataFrame): DataFrame = {
+    var imkDf = df
     for (i <- 1 to 20) {
       val columnName = "flex_field_" + i
       val paramName = "ff" + i
@@ -197,6 +210,13 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       imkDf = imkDf.withColumn(e, lit(schema_imk_table.defaultValues(e)))
     })
     imkDf.select(schema_imk_table.dfColumns: _*)
+  }
+
+  def imkDumpCore(df: DataFrame): DataFrame = {
+    val imkDf = imkDumpCommon(df)
+      .drop("lang_cd")
+      .filter(judegNotEbaySitesUdf(col("referer")))
+    imkDumpEx(imkDf)
   }
 
   val tools: Tools = new Tools(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
@@ -216,11 +236,12 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getDefaultNullNumParamValueFromUrlUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getDefaultNullNumParamValueFromQuery(query, key))
   val getParamFromQueryUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getParamValueFromQuery(query, key))
   val getUserMapIndUdf: UserDefinedFunction = udf((userId: String) => tools.getUserMapInd(userId))
-  val getItemIdUdf: UserDefinedFunction = udf((uri: String) => tools.getItemIdFromUri(uri))
+  val getItemIdUdf: UserDefinedFunction = udf((uri: String, channelType: String) => tools.getItemIdFromUri(uri, channelType))
   val judegNotEbaySitesUdf: UserDefinedFunction = udf((referer: String) => tools.judgeNotEbaySites(referer))
   val needQueryCBToGetCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => StringUtils.isEmpty(cguid) && StringUtils.isNotEmpty(guid))
   val getCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => getCguid(cguid, guid))
   val judgeCGuidNotNullUdf: UserDefinedFunction = udf((cguid: String) => judgeCGuidNotNull(cguid))
+
   /**
     * override renameFiles to have special output file name for TD
     * @param outputDir final destination

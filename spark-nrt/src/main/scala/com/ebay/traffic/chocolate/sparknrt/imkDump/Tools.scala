@@ -30,8 +30,8 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
 
   lazy val userQueryParamsOfLandingUrl: Array[String] = Array("uq", "satitle", "keyword", "item", "store")
 
-//  lazy val ebaySites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE)
-  lazy val ebaySites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE)
+  // do not filter /ulk XC-1541
+  lazy val ebaySites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE)
 
   lazy val user_agent_map: Map[String, Int] = Map(
     "msie" -> 2,
@@ -211,15 +211,18 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
   }
 
   /**
-    * get item id from url, only support itm and i page now
+    * get item id from url, only support itm and i page now for marketing channels and mpuid in roi events
     * @param uri url string
     * @return item id
     */
-  def getItemIdFromUri(uri: String): String = {
+  def getItemIdFromUri(uri: String, channelType: String): String = {
     var path = ""
     try {
       path = new URL(uri).getPath
 
+      if(channelType.equalsIgnoreCase("ROI")) {
+        return getRoiIdFromUri(1, uri)
+      }
       if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
         val itemId = path.substring(path.lastIndexOf("/") + 1)
         if (StringUtils.isNumeric(itemId)) {
@@ -291,6 +294,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
   def getCommandType(commandType: String): String = {
     commandType match {
       case "IMPRESSION" => "4"
+      case "ROI" => "2"
       case _ => "1"
     }
   }
@@ -307,6 +311,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       case "PAID_SEARCH" => "2"
       case "SOCIAL_MEDIA" => "16"
       case "PAID_SOCIAL" => "20"
+      case "ROI" => "0"
       case _ => "0"
     }
   }
@@ -395,6 +400,15 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     } else {
       true
     }
+  }
+
+  def getRoiIdFromUri(index: Int, uri: String): String = {
+    val mupid = getParamValueFromQuery(uri,"mpuid")
+    val ids = mupid.split(";")
+    if(ids.length > index)
+      return ids(index)
+    else
+      return "0"
   }
 
 }

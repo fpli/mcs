@@ -9,7 +9,7 @@
   </parent>
   <groupId>com.ebay.traffic</groupId>
   <artifactId>chocolate</artifactId>
-  <version>3.4.2-RELEASE</version>
+  <version>3.5.0-RELEASE</version>
   <name>chocolate</name>
   <packaging>pom</packaging>
 
