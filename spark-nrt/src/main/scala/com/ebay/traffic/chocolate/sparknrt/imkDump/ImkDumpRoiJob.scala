@@ -35,6 +35,7 @@ class ImkDumpRoiJob(params: Parameter) extends ImkDumpJob(params: Parameter) {
 
   override def imkDumpCore(df: DataFrame): DataFrame = {
     val imkDf = super.imkDumpCommon(df)
+      .withColumn("roi_item_id", getItemIdUdf(col("uri"), col("channel_type")))
       .withColumn("transaction_id", getRoiIdsUdf(lit(2), col("temp_uri_query")))
       .withColumn("transaction_type", getParamFromQueryUdf(col("temp_uri_query"), lit("tranType")))
       .withColumn("cart_id", getRoiIdsUdf(lit(3), col("temp_uri_query")))
