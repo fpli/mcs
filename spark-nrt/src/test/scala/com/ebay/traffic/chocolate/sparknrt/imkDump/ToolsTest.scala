@@ -91,7 +91,8 @@ class ToolsTest extends FunSuite {
   test("test judgeNotEbaySites") {
     assert(!tools.judgeNotEbaySites("http://www.ebay.com"))
     assert(!tools.judgeNotEbaySites("www.ebay.com"))
-    assert(!tools.judgeNotEbaySites("https://www.ebay.com/ulk/sch/?_nkw=iphone+cases&mkevt=1&mkrid=123&mkcid=2&keyword=testkeyword&crlp=123&MT_ID=1geo_id=123&rlsatarget=123&adpos=1&device=m&loc=1&poi=1&abcId=1&cmpgn=123&sitelnk=123&test=XiangMobile"))
+    // /ulk/ should be treated as external
+    assert(tools.judgeNotEbaySites("www.ebay.com/ulk/sch/?_nkw=iphone+cases&mkevt=1&mkrid=123&mkcid=2&keyword=testkeyword&crlp=123&MT_ID=1geo_id=123&rlsatarget=123&adpos=1&device=m&loc=1&poi=1&abcId=1&cmpgn=123&sitelnk=123&test=XiangMobile"))
     assert(tools.judgeNotEbaySites("http://www.google.com"))
   }
 
