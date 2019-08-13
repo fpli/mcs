@@ -71,9 +71,9 @@ class CrabTransformJob(params: Parameter)
 
   @transient lazy val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
 
-  lazy val imkTempDir: String = params.outputDir + "/imkTemp/"
-  lazy val dtlTempDir: String = params.outputDir + "/dtlTemp/"
-  lazy val mgTempDir: String = params.outputDir + "/mgTemp/"
+  lazy val imkTempDir: String = params.outputDir + "/" + params.channel + "/imkTemp/"
+  lazy val dtlTempDir: String = params.outputDir + "/" + params.channel + "/dtlTemp/"
+  lazy val mgTempDir: String = params.outputDir + "/" + params.channel + "/mgTemp/"
   lazy val imkOutputDir: String = params.outputDir + "/imkOutput/"
   lazy val dtlOutputDir: String = params.outputDir + "/dtlOutput/"
   lazy val mgOutputDir: String = params.outputDir + "/mgOutput/"

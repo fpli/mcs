@@ -17,7 +17,7 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 /**
   * Created by ganghuang on 12/3/18.
   */
-class TestDapImkDumpJob extends BaseFunSuite{
+class TestImkDumpDapJob extends BaseFunSuite{
 
   private val tmpPath = createTempDir()
   private val workDir = tmpPath + "/workDir/"
@@ -51,7 +51,7 @@ class TestDapImkDumpJob extends BaseFunSuite{
       "--elasticsearchUrl", "http://10.148.181.34:9200"
     )
     val params = Parameter(args)
-    val job = new DapImkDumpJob(params)
+    val job = new ImkDumpDapJob(params)
     val metadata1 = Metadata(workDir, "DISPLAY", MetadataEnum.capping)
     val dedupeMeta = metadata1.readDedupeOutputMeta(".epnnrt")
     val dedupeMetaPath = new Path(dedupeMeta(0)._1)
