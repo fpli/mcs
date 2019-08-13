@@ -605,6 +605,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           }
         } catch {
           case e: Exception => {
+            metrics.meter("epn.XidTimeOut", 1)
             logger.warn("call xid error" + e.printStackTrace())
           }
         }

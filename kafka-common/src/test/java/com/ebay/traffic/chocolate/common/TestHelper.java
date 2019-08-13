@@ -393,7 +393,7 @@ public class TestHelper {
     message.setSnapshotId(snapshotId);
     message.setShortSnapshotId(snapshotId);
     message.setTimestamp(timestamp);
-    //message.setUserId();
+    message.setUserId(1L);
     message.setCguid(cguid);
     message.setGuid("");
     message.setRemoteIp("127.0.0.1");
