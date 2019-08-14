@@ -1,7 +1,5 @@
 package com.ebay.traffic.chocolate.sparknrt.imkDump
 
-import java.nio.file.Paths
-
 import com.ebay.kernel.patternmatch.dawg.{Dawg, DawgDictionary}
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.commons.lang3.StringUtils
@@ -10,7 +8,6 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 
 import scala.io.Source
-import scala.reflect.io.{File, Path}
 
 /**
  * Read display channel capping result and generate files for imk table
@@ -25,8 +22,6 @@ object ImkDumpDapJob extends App {
 
     val job = new ImkDumpDapJob(params)
 
-    import java.nio.file.Paths
-    Paths.get("string").toUri.toURL
     job.run()
     job.stop()
   }
