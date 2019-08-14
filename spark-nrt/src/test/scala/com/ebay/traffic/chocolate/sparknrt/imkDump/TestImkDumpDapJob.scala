@@ -15,8 +15,9 @@ import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 
 /**
-  * Created by ganghuang on 12/3/18.
-  */
+ * @author Zhiyuan Wang
+ * @since 2019-08-08
+ */
 class TestImkDumpDapJob extends BaseFunSuite{
 
   private val tmpPath = createTempDir()
