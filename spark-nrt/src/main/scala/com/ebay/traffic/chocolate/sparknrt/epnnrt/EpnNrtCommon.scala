@@ -594,7 +594,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def getUserIdByCguid(userId: String, cguid: String): String = {
     var result = userId
-    if (StringUtils.isEmpty(userId) || userId.equals("0")) {
+    if (StringUtils.isEmpty(userId) || userId.equals("0") || userId.equals("-1")) {
       if (StringUtils.isNotEmpty(cguid)) {
         try{
           val xid = xidRequest("cguid", cguid)
@@ -615,26 +615,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     result
   }
 
-
   def xidRequest(idType: String, id: String): MyID = {
-    logger.info("XID: call xid to get user id, cguid=" + id)
-
-    val response = Http(s"http://$xidHost/anyid/v1/$idType/$id")
-      .header("X-EBAY-CONSUMER-ID", xidConsumerId)
-      .header("X-EBAY-CLIENT-ID", xidClientId)
-      .timeout(xidConnectTimeout, xidReadTimeout)
-      .asString
-      .body
-
-    logger.info("XID: response=" + response)
-
-    response.parseJson
-      .convertTo[XIDResponse]
-      .toMyID()
-  }
-
-
-/*  def xidRequest(idType: String, id: String): MyID = {
     Http(s"http://$xidHost/anyid/v1/$idType/$id")
       .header("X-EBAY-CONSUMER-ID", xidConsumerId)
       .header("X-EBAY-CLIENT-ID", xidClientId)
@@ -644,7 +625,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       .parseJson
       .convertTo[XIDResponse]
       .toMyID()
-  }*/
+  }
 
 
   def get_TRFC_SRC_CD(browser: String, action: String): Int = {
