@@ -1,7 +1,8 @@
 #!/bin/bash
-# run spark job on YARN - imkDump
+# run DISPLAY spark job on YARN - imkDump_DAP.sh
 
-usage="Usage: imkDump.sh [channel] [workDir] [outPutDir] [elasticsearchUrl]"
+usage="Usage: imkDump_DAP.sh [channel] [workDir] [outPutDir] [elasticsearchUrl]"
+
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then

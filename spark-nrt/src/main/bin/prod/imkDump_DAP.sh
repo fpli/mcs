@@ -1,5 +1,5 @@
 #!/bin/bash
-# run spark job on YARN - imkDump
+# run spark job on YARN - dapImkDump
 # Dump long term IMK data from capping result to IMK format. The format is the same as Crab dedupe job's output.
 # Input:    LVS HDFS
 #           /apps/tracking-events-workdir
@@ -8,7 +8,8 @@
 #           /apps/tracking-events/channel/imkDump
 # Schedule: /5 * ? * *
 
-usage="Usage: imkDump.sh [channel] [workDir] [outPutDir] [elasticsearchUrl]"
+usage="Usage: imkDump_DAP.sh [channel] [workDir] [outPutDir] [elasticsearchUrl]"
+
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
