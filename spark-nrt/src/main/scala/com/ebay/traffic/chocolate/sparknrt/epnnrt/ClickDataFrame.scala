@@ -24,6 +24,7 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
       .withColumn("CHNL_ID", common.getRoverUriInfoUdf(col("uri"), lit(4).cast(IntegerType)))
       .withColumn("CRLTN_GUID_TXT", col("cguid"))
       .withColumn("GUID_TXT", col("guid"))
+      .withColumn("USER_ID", common.getUserIdUdf(col("user_id"), col("cguid")))
       .withColumn("CLNT_RMT_IP", col("remote_ip"))
       .withColumn("BRWSR_TYPE_NUM",  common.get_browser_type_udf(col("user_agent")))
       .withColumn("BRWSR_NAME", col("user_agent"))

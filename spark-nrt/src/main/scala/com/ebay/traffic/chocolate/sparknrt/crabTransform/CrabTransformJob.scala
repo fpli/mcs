@@ -71,9 +71,9 @@ class CrabTransformJob(params: Parameter)
 
   @transient lazy val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
 
-  lazy val imkTempDir: String = params.outputDir + "/imkTemp/"
-  lazy val dtlTempDir: String = params.outputDir + "/dtlTemp/"
-  lazy val mgTempDir: String = params.outputDir + "/mgTemp/"
+  lazy val imkTempDir: String = params.outputDir + "/" + params.channel + "/imkTemp/"
+  lazy val dtlTempDir: String = params.outputDir + "/" + params.channel + "/dtlTemp/"
+  lazy val mgTempDir: String = params.outputDir + "/" + params.channel + "/mgTemp/"
   lazy val imkOutputDir: String = params.outputDir + "/imkOutput/"
   lazy val dtlOutputDir: String = params.outputDir + "/dtlOutput/"
   lazy val mgOutputDir: String = params.outputDir + "/mgOutput/"
@@ -122,6 +122,7 @@ class CrabTransformJob(params: Parameter)
         .withColumn("user_id", getUserIdUdf(col("user_id"), col("cguid"), col("rvr_cmnd_type_cd")))
         .withColumn("mfe_id", getMfeIdUdf(col("mfe_name")))
         .withColumn("event_ts", setMessageLagUdf(col("event_ts")))
+        .withColumn("mgvalue_rsn_cd", getMgvalueRsnCdUdf(col("mgvaluereason")))
         .na.fill(schema_tfs.defaultValues).cache()
       // set default values for some columns
       schema_apollo.filterNotColumns(commonDf.columns).foreach(e => {
@@ -188,6 +189,7 @@ class CrabTransformJob(params: Parameter)
 
   val getItemIdUdf: UserDefinedFunction = udf((roi_item_id: String, item_id: String) => getItemId(roi_item_id, item_id))
   val getMfeIdUdf: UserDefinedFunction = udf((mfe_name: String) => getMfeIdByMfeName(mfe_name))
+  val getMgvalueRsnCdUdf: UserDefinedFunction = udf((mgvaluereason: String) => getMgvalueRsnCd(mgvaluereason))
   val setDefaultValueForKwIdUdf: UserDefinedFunction = udf((kw_id: String) => {
     if (StringUtils.isEmpty(kw_id)) {
       "-999"
@@ -324,6 +326,14 @@ class CrabTransformJob(params: Parameter)
       mfe_name_id_map.getOrElse(mfeName, "-999")
     } else {
       "-999"
+    }
+  }
+
+  def getMgvalueRsnCd(mgvaluereason: String): String = {
+    if ("BOT".equalsIgnoreCase(mgvaluereason)) {
+      "4"
+    } else {
+      ""
     }
   }
 
