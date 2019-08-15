@@ -9,7 +9,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
  * @author - xiangli4
  */
 @SpringBootApplication
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 public class EventListenerApplication {
 
 	public static void main(String[] args) {

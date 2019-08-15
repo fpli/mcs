@@ -29,8 +29,7 @@ public class ListenerInitializerTest {
 
     @Test
     public void testInitElasticSearch() {
-        String url = "frontier://tenant=mp;env=qa;app_svc=%s@sherlock-ftr-qa.stratus.phx.qa.ebay.com";
-        String esUrl = "http://10.148.185.16:9200";
+        String esUrl = "http://10.148.181.34:9200";
         ListenerInitializer.initElasticsearch(esUrl);
         assertTrue(ESMetrics.getInstance() != null);
     }

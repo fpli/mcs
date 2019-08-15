@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.ebay.traffic</groupId>
         <artifactId>chocolate</artifactId>
-        <version>3.4.2-RELEASE</version>
+        <version>3.5.0-RELEASE</version>
         <relativePath>..</relativePath>
     </parent>
     <groupId>com.ebay.traffic</groupId>
@@ -231,22 +231,34 @@
       </dependency>
     </dependencies>
 
-    <build>
-      <plugins>
-        <!-- spring boot plugin -->
-        <plugin>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-maven-plugin</artifactId>
-        </plugin> 
-        <!-- raptor.io plugin -->
-        <plugin>
-          <groupId>com.ebay.raptor.build</groupId>
-          <artifactId>raptorconfig-maven-plugin</artifactId>
-        </plugin>
-        <plugin>
-          <groupId>com.ebay.raptor.build</groupId>
-          <artifactId>assembler-maven-plugin</artifactId>
-        </plugin>
-      </plugins>
-    </build>
+  <build>
+    <plugins>
+      <!-- spring boot plugin -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      <!-- raptor.io plugin -->
+      <plugin>
+        <groupId>com.ebay.raptor.build</groupId>
+        <artifactId>service-discovery-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.ebay.raptor.build</groupId>
+        <artifactId>raptorconfig-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.ebay.raptor.build</groupId>
+        <artifactId>assembler-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.ebay.globalconfig</groupId>
+        <artifactId>globalconfig-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>

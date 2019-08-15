@@ -37,6 +37,7 @@ class TestImkDumpJob extends BaseFunSuite{
 
   override def beforeAll(): Unit = {
     createTestDataForPS()
+    createTestDataForROI()
     fs.mkdirs(new Path(workDir))
     fs.mkdirs(new Path(outPutDir))
   }
@@ -65,6 +66,31 @@ class TestImkDumpJob extends BaseFunSuite{
     })
     job.stop()
 
+  }
+
+  test("test imk dump job for roi events") {
+    val args = Array(
+      "--mode", "local[8]",
+      "--channel", "ROI",
+      "--workDir", workDir,
+      "--outPutDir", outPutDir,
+      "--partitions", "1",
+      "--elasticsearchUrl", "http://10.148.181.34:9200"
+    )
+    val params = Parameter(args)
+    val job = new ImkDumpRoiJob(params)
+    val metadata1 = Metadata(workDir, "ROI", MetadataEnum.dedupe)
+    val dedupeMeta = metadata1.readDedupeOutputMeta("")
+    val dedupeMetaPath = new Path(dedupeMeta(0)._1)
+
+    assert (fs.exists(dedupeMetaPath))
+    job.run()
+    val outputFolder = new File(outPutDir + "/ROI/imkDump/date=2018-05-01")
+    assert(outputFolder.listFiles().length > 0)
+    outputFolder.listFiles().foreach(file => {
+      assert(file.toPath.toString.contains("imk_rvr_trckng_"))
+    })
+    job.stop()
   }
 
   def createTestDataForPS(): Unit = {
@@ -113,6 +139,41 @@ class TestImkDumpJob extends BaseFunSuite{
       "1111",
       "https://www.google.com",
       "http://www.ebay.com",
+      writer)
+    writer.close()
+  }
+
+
+  def createTestDataForROI(): Unit = {
+    val metadata = Metadata(workDir, "ROI", MetadataEnum.dedupe)
+    val dateFiles = DateFiles("date=2018-05-01", Array("file://" + tmpPath + "/date=2018-05-01/part-00001.snappy.parquet"))
+    val meta: MetaFiles = MetaFiles(Array(dateFiles))
+    metadata.writeDedupeOutputMeta(meta, Array(""))
+
+    // prepare data file
+    val writer = AvroParquetWriter.
+      builder[GenericRecord](new Path(tmpPath + "/date=2018-05-01/part-00001.snappy.parquet"))
+      .withSchema(FilterMessageV2.getClassSchema)
+      .withConf(hadoopConf)
+      .withCompressionCodec(CompressionCodecName.SNAPPY)
+      .build()
+    val timestamp = getTimestamp("2018-05-01")
+
+    writeFilterMessage(6457493984045429247L, timestamp - 12,
+      -1,
+      "X-EBAY-CLIENT-IP:157.55.39.67|X-EBAY-C-TRACKING: guid=cc3af5c11660ac3d8844157cff04c381,cguid=cc3af5c71660ac3d8844157cff04c37c,tguid=cc3af5c11660ac3d8844157cff04c381,pageid=2067260,cobrandId=2|Referer:http://www.google.com|X-EBAY-C-ENDUSERCTX: userAgent=ebayUserAgent/eBayIOS;5.19.0;iOS;11.2;Apple;x86_64;no-carrier;414x736;3.0,deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF,contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134|userid:123456|geoid:123456",
+      "https://rover.ebay.com/roverroi/1/707-515-1801-16?siteId=77&tranType=LocClass-FreeAd&LocClass-FreeAd=1&mpuid=53189805;1174241238;53189805;3274;195;203;;;;1564652607898&raptor=1",
+      "Cache-Control:private,no-cache,no-store",
+      "test",
+      "cc3af5c71660ac3d8844157cff04c37c",
+      "cc3af5c11660ac3d8844157cff04c381",
+      123L,
+      "157.55.39.67",
+      "123",
+      "ebayUserAgent/eBayIOS;5.19.0;iOS;11.2;Apple;x86_64;no-carrier;414x736;3.0",
+      "1111",
+      "https://www.ebay-kleinanzeigen.de/p-anzeige-aufgeben-bestaetigung.html?adId=1174241238&uuid=d7d8ce73-4a1e-466d-a769-d993eda747bb",
+      "",
       writer)
     writer.close()
   }

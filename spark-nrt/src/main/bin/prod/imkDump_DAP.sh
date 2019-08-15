@@ -10,6 +10,7 @@
 
 usage="Usage: imkDump_DAP.sh [channel] [workDir] [outPutDir] [elasticsearchUrl]"
 
+
 # if no args specified, show usage
 if [ $# -le 1 ]; then
   echo $usage
