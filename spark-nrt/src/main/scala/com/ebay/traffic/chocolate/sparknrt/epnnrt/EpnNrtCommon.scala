@@ -602,7 +602,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
             metrics.meter("epn.XidGotUserId", 1)
             result = xid.accounts.head
             logger.debug("get userid from Xid user_id=" + result)
-            logger.info("XID: get userid from Xid user_id=" + result)
           }
         } catch {
           case e: Exception => {
