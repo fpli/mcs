@@ -1,16 +1,16 @@
 package com.ebay.traffic.chocolate.sparknrt.crabDedupe
 
 import java.net.URI
-import java.time.{ZoneId, ZonedDateTime}
 import java.time.format.DateTimeFormatter
+import java.time.{ZoneId, ZonedDateTime}
 
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.kernel.util.StringUtils
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
-import com.ebay.traffic.chocolate.sparknrt.imkDump.TableSchema
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
+import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.expressions.UserDefinedFunction
