@@ -5,15 +5,14 @@ import java.util
 import java.util.{Date, Properties}
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import com.ebay.traffic.chocolate.sparknrt.imkDump.TableSchema
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
+import com.ebay.traffic.chocolate.sparknrt.utils.{MyID, TableSchema, XIDResponse}
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.compress.GzipCodec
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, lit, udf}
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions.{col, lit, udf, _}
 import scalaj.http.Http
 import spray.json._
 
