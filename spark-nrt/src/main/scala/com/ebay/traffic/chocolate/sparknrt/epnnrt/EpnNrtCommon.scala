@@ -594,7 +594,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def getUserIdByCguid(userId: String, cguid: String): String = {
     var result = userId
-    if (StringUtils.isEmpty(userId) || userId.equals("0")) {
+    if (StringUtils.isEmpty(userId) || userId.equals("0") || userId.equals("-1")) {
       if (StringUtils.isNotEmpty(cguid)) {
         try{
           val xid = xidRequest("cguid", cguid)
