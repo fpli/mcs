@@ -121,8 +121,7 @@
   </property>
   <property>
     <name>proxyTo</name>
-    <!--<value>http://rover-app.vip.qa.ebay.com</value>-->
-    <value>http://10.78.34.63:8080</value>
+    <value>http://rover-app.vip.qa.ebay.com</value>
     <description>Proxy between listener and rover clusters</description>
   </property>
   <property>
