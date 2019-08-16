@@ -8,6 +8,7 @@ import com.couchbase.client.java.document.JsonDocument
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
+import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
