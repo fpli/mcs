@@ -71,7 +71,7 @@ public class SendEmail {
   public void send(HashMap<String, ArrayList<MetricCount>> map, HashMap<String, ArrayList<MetricCount>> historymap, String emailAccount) {
 
     // 发件人电子邮箱
-    String from = "lxiong1@ebay.com";
+    String from = "dl-ebay-performance-marketing-oncall@ebay.com";
 
     // 获取系统属性
     Properties properties = System.getProperties();
