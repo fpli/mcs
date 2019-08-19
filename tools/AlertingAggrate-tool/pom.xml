@@ -13,6 +13,7 @@
         <scala.compat.version>2.11</scala.compat.version>
         <hadoop.version>2.7.3</hadoop.version>
         <spark.version>2.3.0</spark.version>
+        <kite2.version>0.1.0</kite2.version>
     </properties>
 
     <dependencies>
@@ -41,15 +42,33 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client</artifactId>
-            <version>${hadoop.version}</version>
+            <groupId>com.ebay.hadoop</groupId>
+            <artifactId>kite2-client</artifactId>
+            <version>${kite2.version}</version>
         </dependency>
 
         <!--<dependency>-->
-            <!--<groupId>org.glassfish.jersey.core</groupId>-->
-            <!--<artifactId>jersey-client</artifactId>-->
-            <!--<version>2.25.1</version>-->
+            <!--<groupId>org.apache.hadoop</groupId>-->
+            <!--<artifactId>hadoop-common</artifactId>-->
+            <!--<version>${hadoop.version}</version>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>org.apache.hadoop</groupId>-->
+            <!--<artifactId>hadoop-hdfs</artifactId>-->
+            <!--<version>${hadoop.version}</version>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>org.apache.hadoop</groupId>-->
+            <!--<artifactId>hadoop-client</artifactId>-->
+            <!--<version>${hadoop.version}</version>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+        <!--<groupId>org.glassfish.jersey.core</groupId>-->
+        <!--<artifactId>jersey-client</artifactId>-->
+        <!--<version>2.25.1</version>-->
         <!--</dependency>-->
 
         <!-- https://mvnrepository.com/artifact/com.sun.mail/javax.mail -->
@@ -171,6 +190,27 @@
                     <source>8</source>
                     <target>8</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+                <version>2.15.1</version>
+                <executions>
+                    <execution>
+                        <id>compile-scala</id>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile-scala</id>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

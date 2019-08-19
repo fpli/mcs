@@ -18,7 +18,7 @@ class TestAmsClickReport extends BaseFunSuite {
   val tmpPath = createTempPath()
 
 
-  test("test hourlyClickCount function in the AppflyerDataMain job") {
+  test("test hourlyClickCount function in the AppflyerDataMain com.xl.traffic.chocolate.job") {
     var inputDir = getClass.getResource("/click/").getPath
     val outputDir = tmpPath + "/hourlyClickCount"
     val schema_epn_click_dir = "df_epn_click.json"
@@ -36,7 +36,7 @@ class TestAmsClickReport extends BaseFunSuite {
     job.stop()
   }
 
-  test("test dailyClickTrend function in the AppflyerDataMain job") {
+  test("test dailyClickTrend function in the AppflyerDataMain com.xl.traffic.chocolate.job") {
     var inputDir = getClass.getResource("/click/").getPath
     val outputDir = tmpPath + "/dailyClickTrend"
     val schema_epn_click_dir = "df_epn_click.json"
@@ -54,7 +54,7 @@ class TestAmsClickReport extends BaseFunSuite {
     job.stop()
   }
 
-  test("test dailyDomainTrend function in the AppflyerDataMain job") {
+  test("test dailyDomainTrend function in the AppflyerDataMain com.xl.traffic.chocolate.job") {
     var inputDir = getClass.getResource("/click/").getPath
     val outputDir = tmpPath + "/dailyDomainTrend"
     val schema_epn_click_dir = "df_epn_click.json"

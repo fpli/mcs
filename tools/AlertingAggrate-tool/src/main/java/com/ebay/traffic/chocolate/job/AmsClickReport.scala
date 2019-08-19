@@ -24,7 +24,7 @@ object AmsClickReport extends App {
     val outputdir = args(1)
     println("Output Path: " + outputdir)
     val jobtask = args(2)
-    println("job task: " + jobtask)
+    println("com.xl.traffic.chocolate.job task: " + jobtask)
     val schema_epn_click_dir = args(3)
     println("schema epn click dir: " + schema_epn_click_dir)
     val mode = args(4)
@@ -43,7 +43,7 @@ class AmsClickReport(val inputdir: String, val outputdir: String, val jobtask: S
   @transient val schema_epn_click_table = TableSchema(schema_epn_click_dir)
 
   /**
-    * Whether the spark job is in local mode
+    * Whether the spark com.xl.traffic.chocolate.job is in local mode
     */
   @transient lazy val isTest: Boolean = {
     mode.indexOf("test") == 0
@@ -283,7 +283,7 @@ class AmsClickReport(val inputdir: String, val outputdir: String, val jobtask: S
   }
 
   /**
-    * stop the spark job.
+    * stop the spark com.xl.traffic.chocolate.job.
     */
   def stop() = {
     spark.stop()
