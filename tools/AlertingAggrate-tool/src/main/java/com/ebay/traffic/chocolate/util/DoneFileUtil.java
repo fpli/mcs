@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -25,11 +26,13 @@ public class DoneFileUtil {
 		return "The status of the ams_imprsn table:" + getDalayDelayInfo("ams_imprsn_hourly");
 	}
 
-	public static int getDalayHours(String pattern) {
+	public static ArrayList<String> getParams(String pattern) {
 		List<String> list = HdfsClient.getFileList("viewfs://apollo-rno/apps/b_marketing_tracking/watch", LocalDate.now().toString(), pattern);
 		Collections.sort(list, Collections.reverseOrder());
 
+		ArrayList<String> retList = new ArrayList<>();
 		int delay = 0;
+
 		if (list == null || list.size() == 0) {
 			int h = LocalDateTime.now().getHour();
 			delay = -1;
@@ -53,7 +56,10 @@ public class DoneFileUtil {
 			System.out.println("console: max_time ----> " + max_time);
 		}
 
-		return delay;
+		retList.add(new Integer(delay).toString());
+		retList.add(list.get(0));
+
+		return retList;
 	}
 
 	public static int getDelay(String max_time) {
@@ -77,17 +83,20 @@ public class DoneFileUtil {
 	}
 
 	public static String getDalayDelayInfo(String pattern) {
-		int delay_hour = getDalayHours(pattern);
+		ArrayList<String> list = getParams(pattern);
+
+		int delay_hour = Integer.parseInt(list.get(0));
+		String donefile = list.get(1);
 
 		if (delay_hour < 0) {
-			return "<span color=\"red\">delay many days, is very critic. warning</span>";
+			return "delay many days, is very critic. <span color=\"red\">warning</span>";
 		}
 
 		if (delay_hour >= 3) {
-			return "<span color=\"red\">delay over " + (delay_hour - 2) + " hours. warning!</span>";
+			return "delay over " + (delay_hour - 2) + " hours. <span color=\"red\">warning!</span> current donefile: " + donefile;
 		}
 
-		return "ok";
+		return "ok! current donefile: " + donefile;
 	}
 
 }

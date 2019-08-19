@@ -105,7 +105,7 @@ public class EPNSendEmail {
 	public void send(List<HourlyClickCount> hourlyClickCount, String emailAccount) {
 
 		// 发件人电子邮箱
-		String from = "lxiong1@ebay.com";
+		String from = "dl-ebay-performance-marketing-oncall@ebay.com";
 
 		// 获取系统属性
 		Properties properties = System.getProperties();
