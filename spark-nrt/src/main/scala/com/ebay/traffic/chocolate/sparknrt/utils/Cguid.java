@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.sparknrt.imkDump;
+package com.ebay.traffic.chocolate.sparknrt.utils;
 
 import java.io.Serializable;
 
