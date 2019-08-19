@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.crabTransform
 
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
+import com.ebay.traffic.chocolate.sparknrt.utils.{XID, XIDAccount, XIDMapping, XIDResponse}
 
 class TestXID extends BaseFunSuite{
 

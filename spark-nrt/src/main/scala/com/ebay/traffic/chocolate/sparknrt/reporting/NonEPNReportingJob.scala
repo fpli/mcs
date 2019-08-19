@@ -2,17 +2,15 @@ package com.ebay.traffic.chocolate.sparknrt.reporting
 
 import java.net.URI
 
-import com.ebay.traffic.monitoring.{ESReporting, Field, Reporting}
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import com.ebay.traffic.chocolate.sparknrt.imkDump.TableSchema
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
+import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
+import com.ebay.traffic.monitoring.{ESReporting, Field, Reporting}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.FileSystem
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
-
-import collection.JavaConverters._
 
 object NonEPNReportingJob extends App {
   override def main(args: Array[String]): Unit = {
