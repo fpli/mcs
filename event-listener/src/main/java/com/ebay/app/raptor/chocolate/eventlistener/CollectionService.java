@@ -367,6 +367,7 @@ public class CollectionService {
     }
 
     if (message != null) {
+      metrics.meter(channelType.getLogicalChannel().name());
       long eventTime = message.getTimestamp();
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       stopTimerAndLogData(startTime, eventTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),

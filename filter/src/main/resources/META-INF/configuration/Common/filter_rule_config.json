@@ -63,5 +63,11 @@
     "filterRules": [
 
     ]
+  },
+  {
+    "channelType": "SOCIAL_MEDIA",
+    "filterRules": [
+
+    ]
   }
 ]
