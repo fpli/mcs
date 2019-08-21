@@ -24,7 +24,7 @@
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.SOCIAL_MEDIA</name>
-    <value>marketing.tracking.listened-social-media,listened-social-media</value>
+    <value>marketing.tracking.pp.listened-social-media-preprod,preprod_listened-social-media</value>
     <description>Kafka topic for social media channel to publish.</description>
   </property>
   <!-- Kafka producer end -->
