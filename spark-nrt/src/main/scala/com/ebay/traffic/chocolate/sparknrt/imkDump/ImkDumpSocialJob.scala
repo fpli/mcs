@@ -4,6 +4,11 @@ import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import org.apache.spark.sql.DataFrame
 
 
+/**
+  * Read social channel capping result and generate files for imk table
+  * @author huiclu
+  * @since 2019-08-018
+  */
 object ImkDumpSocialJob extends App {
   override def main(args: Array[String]): Unit = {
     val params = Parameter(args)
