@@ -6,7 +6,9 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, lit, udf}
 
 /**
-  * Read roi channel dedupe result and generate files for imk table
+  * Read roi channel dedupe result and generate files for imk table.
+  * Adding roi related columns in imk_rvr_trckng_event: item_id, transaction_id, transaction_type, cart_id
+  * and columns needed for imk_rvr_trckng_mgvalue: mgvalue, mgvaluereason
   *
   * @author Xiang Li
   * @since 2019-08-08
@@ -39,6 +41,8 @@ class ImkDumpRoiJob(params: Parameter) extends ImkDumpJob(params: Parameter) {
       .withColumn("transaction_id", getRoiIdsUdf(lit(2), col("temp_uri_query")))
       .withColumn("transaction_type", getParamFromQueryUdf(col("temp_uri_query"), lit("tranType")))
       .withColumn("cart_id", getRoiIdsUdf(lit(3), col("temp_uri_query")))
+      .withColumn("mgvalue", lit("0"))
+      .withColumn("mgvaluereason", getMgvaluereasonUdf(col("brwsr_name"), col("clnt_remote_ip")))
       .drop("lang_cd")
 
     imkDumpEx(imkDf)

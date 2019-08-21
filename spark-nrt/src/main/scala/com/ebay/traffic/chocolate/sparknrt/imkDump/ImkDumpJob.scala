@@ -5,6 +5,7 @@ import java.util
 import java.util.Properties
 
 import com.couchbase.client.java.document.JsonDocument
+import com.ebay.kernel.patternmatch.dawg.{Dawg, DawgDictionary}
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
@@ -18,6 +19,8 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import rx.Observable
 import rx.functions.Func1
+
+import scala.io.Source
 
 /**
   * Created by ganghuang on 12/3/18.
@@ -73,6 +76,17 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     CorpCouchbaseClient.dataSource = properties.getProperty("imkdump.couchbase.datasource")
     null
   }
+
+  @transient lazy val userAgentBotDawgDictionary : DawgDictionary =  {
+    val lines = Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("dap_user_agent_robot.txt")).getLines.toArray
+    new DawgDictionary(lines, true)
+  }
+
+  @transient lazy val ipBotDawgDictionary : DawgDictionary =  {
+    val lines = Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("dap_ip_robot.txt")).getLines.toArray
+    new DawgDictionary(lines, true)
+  }
+
   /**
     * :: DeveloperApi ::
     * Implemented by subclasses to run the spark job.
@@ -375,6 +389,54 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     val endTime = System.currentTimeMillis
     metrics.mean("imk.dump.cb.latency", endTime - startTime)
     res
+  }
+
+  val getMgvaluereasonUdf: UserDefinedFunction = udf((brwsrName: String, clntRemoteIp: String) => getMgvaluereason(brwsrName, clntRemoteIp))
+
+  /**
+    * Generate mgvaluereason, "BOT" or empty string
+    * @param brwsrName alias for user agent
+    * @param clntRemoteIp alias for remote ip
+    * @return "BOT" or empty string
+    */
+  def getMgvaluereason(brwsrName: String, clntRemoteIp: String): String = {
+    if (isBotByUserAgent(brwsrName) || isBotByIp(clntRemoteIp)) {
+      "BOT"
+    } else {
+      ""
+    }
+  }
+
+  /**
+    * Check if this request is bot with brwsr_name
+    * @param brwsrName alias for user agent
+    * @return is bot or not
+    */
+  def isBotByUserAgent(brwsrName: String): Boolean = {
+    isBot(brwsrName, userAgentBotDawgDictionary)
+  }
+
+  /**
+    * Check if this request is bot with clnt_remote_ip
+    * @param clntRemoteIp alias for remote ip
+    * @return is bot or not
+    */
+  def isBotByIp(clntRemoteIp: String): Boolean = {
+    isBot(clntRemoteIp, ipBotDawgDictionary)
+  }
+
+  def isBot(info: String, dawgDictionary: DawgDictionary): Boolean = {
+    if (StringUtils.isEmpty(info)) {
+      false
+    } else {
+      val dawg = new Dawg(dawgDictionary)
+      val result = dawg.findAllWords(info.toLowerCase, false)
+      if (result.isEmpty) {
+        false
+      } else {
+        true
+      }
+    }
   }
 
 }
