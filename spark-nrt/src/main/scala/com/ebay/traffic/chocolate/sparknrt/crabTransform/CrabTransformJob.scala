@@ -104,7 +104,7 @@ class CrabTransformJob(params: Parameter)
     var crabTransformMeta = metadata.readDedupeOutputMeta()
     // at most meta files
     if (crabTransformMeta.length > params.maxMetaFiles) {
-      metrics.meter("imk.transform.TooManyMetas", Field.of[String, AnyRef]("channelType", params.channel))
+      metrics.meter("imk.transform.TooManyMetas", crabTransformMeta.length, Field.of[String, AnyRef]("channelType", params.channel))
       crabTransformMeta = crabTransformMeta.slice(0, params.maxMetaFiles)
     }
 
