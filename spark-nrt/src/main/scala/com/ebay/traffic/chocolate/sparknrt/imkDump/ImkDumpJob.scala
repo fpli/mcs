@@ -151,7 +151,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
           iter
         }).repartition(params.partitions)
 
-        metrics.meter("imk.dump.out", imkDf.count(), Field.of[String, AnyRef]("channel_type", params.channel))
+        metrics.meter("imk.dump.out", imkDf.count(), Field.of[String, AnyRef]("channelType", params.channel))
 
         saveDFToFiles(imkDf, sparkDir, "gzip", "csv", "bel")
         val files = renameFiles(outputDir, sparkDir, date)
@@ -295,7 +295,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     */
   def judgeCGuidNotNull(cguid: String): Boolean = {
     if (StringUtils.isEmpty(cguid)) {
-      metrics.meter("imk.dump.nullCguid", 1, Field.of[String, AnyRef]("channel_type", params.channel))
+      metrics.meter("imk.dump.nullCguid", 1, Field.of[String, AnyRef]("channelType", params.channel))
       false
     }  else {
       true
@@ -319,7 +319,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       } catch {
         case e: Exception => {
           if(metrics != null) {
-            metrics.meter("imk.dump.malformed", 1, Field.of[String, AnyRef]("channel_type", params.channel))
+            metrics.meter("imk.dump.malformed", 1, Field.of[String, AnyRef]("channelType", params.channel))
           }
           logger.warn("MalformedUrl", e)
         }
@@ -338,11 +338,11 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     if (StringUtils.isNotEmpty(cguid)) {
       cguid
     } else {
-      metrics.meter("imk.dump.tryCguidByGuid", 1, Field.of[String, AnyRef]("channel_type", params.channel))
+      metrics.meter("imk.dump.tryCguidByGuid", 1, Field.of[String, AnyRef]("channelType", params.channel))
       if (guidCguidMap != null) {
         val result = guidCguidMap.getOrDefault(guid, "")
         if (StringUtils.isNotEmpty(result)) {
-          metrics.meter("imk.dump.gotCguidByGuid", 1, Field.of[String, AnyRef]("channel_type", params.channel))
+          metrics.meter("imk.dump.gotCguidByGuid", 1, Field.of[String, AnyRef]("channelType", params.channel))
           result
         } else {
           guid
@@ -381,14 +381,14 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting cguid by guid list" +  e)
-        metrics.meter("imk.dump.error.cbquery", 1, Field.of[String, AnyRef]("channel_type", params.channel))
+        metrics.meter("imk.dump.error.cbquery", 1, Field.of[String, AnyRef]("channelType", params.channel))
         // should we throw the exception and make the job fail?
         throw new Exception(e)
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
     val endTime = System.currentTimeMillis
-    metrics.mean("imk.dump.cb.latency", endTime - startTime, Field.of[String, AnyRef]("channel_type", params.channel))
+    metrics.mean("imk.dump.cb.latency", endTime - startTime, Field.of[String, AnyRef]("channelType", params.channel))
     res
   }
 
