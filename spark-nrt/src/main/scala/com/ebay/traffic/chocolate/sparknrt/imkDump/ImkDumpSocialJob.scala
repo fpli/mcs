@@ -27,7 +27,10 @@ class ImkDumpSocialJob(params: Parameter) extends ImkDumpJob(params: Parameter){
     Metadata(params.workDir, params.channel, usage)
   }
 
+  @transient override lazy val metaPostFix = ""
+
   override def imkDumpCore(df: DataFrame): DataFrame = {
+    logger.info("Building Social dataframe...")
     val imkDf = super.imkDumpCore(df)
     imkDf
   }
