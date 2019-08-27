@@ -107,4 +107,8 @@ class ToolsTest extends FunSuite {
     assert(tools.getPerfTrackNameValue("a=123&b=123") == "^a=123^b=123")
   }
 
+  test("test getClientIdFromRoverUrl") {
+    assert(tools.getClientIdFromRoverUrl("https://rover.ebay.com/roverroi/1/710-517-1801-4?siteId=3&tranType=BIN-FP&BIN-FP=1&mpuid=70496838;174004811693;2049386542007;&raptor=1") == "710")
+  }
+
 }
