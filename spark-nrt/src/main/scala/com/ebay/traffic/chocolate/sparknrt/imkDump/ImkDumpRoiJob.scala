@@ -37,6 +37,8 @@ class ImkDumpRoiJob(params: Parameter) extends ImkDumpJob(params: Parameter) {
 
   override def imkDumpCore(df: DataFrame): DataFrame = {
     val imkDf = super.imkDumpCommon(df)
+      .drop("dst_client_id")
+      .withColumn("dst_client_id", getClientIdFromRotationIdUdf(col("dst_rotation_id")))
       .withColumn("roi_item_id", getItemIdUdf(col("uri"), col("channel_type")))
       .withColumn("transaction_id", getRoiIdsUdf(lit(2), col("temp_uri_query")))
       .withColumn("transaction_type", getParamFromQueryUdf(col("temp_uri_query"), lit("tranType")))
@@ -49,4 +51,5 @@ class ImkDumpRoiJob(params: Parameter) extends ImkDumpJob(params: Parameter) {
   }
 
   val getRoiIdsUdf: UserDefinedFunction = udf((index: Int, uri: String) => tools.getRoiIdFromUri(index, uri))
+  val getClientIdFromRotationIdUdf: UserDefinedFunction = udf((rotationId: String) => tools.getClientIdFromRotationId(rotationId))
 }
