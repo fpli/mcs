@@ -43,6 +43,7 @@ class ImkDumpRoiJob(params: Parameter) extends ImkDumpJob(params: Parameter) {
       .withColumn("transaction_id", getRoiIdsUdf(lit(2), col("temp_uri_query")))
       .withColumn("transaction_type", getParamFromQueryUdf(col("temp_uri_query"), lit("tranType")))
       .withColumn("cart_id", getRoiIdsUdf(lit(3), col("temp_uri_query")))
+      .withColumn("ebay_site_id", getParamFromQueryUdf(col("temp_uri_query"), lit("siteId")))
       .withColumn("mgvalue", lit("0"))
       .withColumn("mgvaluereason", getMgvaluereasonUdf(col("brwsr_name"), col("clnt_remote_ip")))
       .drop("lang_cd")
