@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.imkDump
 
+import java.net.URL
+
 import org.scalatest.FunSuite
 
 /**
@@ -48,11 +50,11 @@ class ToolsTest extends FunSuite {
   }
 
   test("test getItemIdFromUri") {
-    assert(tools.getItemIdFromUri("http://www.ebay.com/itm/aaa/123", "") == "123")
-    assert(tools.getItemIdFromUri("http://www.ebay.com/itm/123", "") == "123")
-    assert(tools.getItemIdFromUri("http://www.ebay.com/itm/aaa/123a", "") == "")
-    assert(tools.getItemIdFromUri("http://www.ebay.com/i/aaa/123", "") == "123")
-    assert(tools.getItemIdFromUri("http://www.ebay.com/item/aaa/123", "") == "")
+    assert(tools.getItemIdFromUri("http://www.ebay.com/itm/aaa/123") == "123")
+    assert(tools.getItemIdFromUri("http://www.ebay.com/itm/123") == "123")
+    assert(tools.getItemIdFromUri("http://www.ebay.com/itm/aaa/123a") == "")
+    assert(tools.getItemIdFromUri("http://www.ebay.com/i/aaa/123") == "123")
+    assert(tools.getItemIdFromUri("http://www.ebay.com/item/aaa/123") == "")
   }
 
   test("test getBrowserType") {
@@ -105,6 +107,18 @@ class ToolsTest extends FunSuite {
     assert(tools.getPerfTrackNameValue("a=123") == "^a=123")
     assert(tools.getPerfTrackNameValue("") == "")
     assert(tools.getPerfTrackNameValue("a=123&b=123") == "^a=123^b=123")
+  }
+
+  test("test getClientIdFromRoverUrl") {
+    assert(tools.getClientIdFromRoverUrl("https://rover.ebay.com/roverroi/1/711-518-1801-10?mpuid=187937644;223525488837;2288208264012;&siteId=0&BIN-Store=1&ff1=ss&ff2=CHECKOUT") == "711")
+  }
+
+  test("test get ROI ids") {
+    val query = new URL("https://rover.ebay.com/roverroi/1/711-518-1801-10?mpuid=187937644;223525488837;2288208264012;&siteId=0&BIN-Store=1&ff1=ss&ff2=CHECKOUT").getQuery
+    assert(tools.getRoiIdFromUrlQuery(0, query) == "187937644")
+    assert(tools.getRoiIdFromUrlQuery(1, query) == "223525488837")
+    assert(tools.getRoiIdFromUrlQuery(2, query) == "2288208264012")
+
   }
 
 }

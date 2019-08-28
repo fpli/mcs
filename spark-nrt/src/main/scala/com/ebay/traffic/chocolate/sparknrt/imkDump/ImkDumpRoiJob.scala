@@ -37,10 +37,13 @@ class ImkDumpRoiJob(params: Parameter) extends ImkDumpJob(params: Parameter) {
 
   override def imkDumpCore(df: DataFrame): DataFrame = {
     val imkDf = super.imkDumpCommon(df)
-      .withColumn("roi_item_id", getItemIdUdf(col("uri"), col("channel_type")))
+      .withColumn("dst_client_id",getClientIdFromRoverUrlUdf(col("uri")))
+      .withColumn("roi_item_id", getItemIdFromRoverUrlQueryUdf(col("temp_uri_query")))
+      .withColumn("item_id", getItemIdFromRoverUrlQueryUdf(col("temp_uri_query")))
       .withColumn("transaction_id", getRoiIdsUdf(lit(2), col("temp_uri_query")))
       .withColumn("transaction_type", getParamFromQueryUdf(col("temp_uri_query"), lit("tranType")))
       .withColumn("cart_id", getRoiIdsUdf(lit(3), col("temp_uri_query")))
+      .withColumn("ebay_site_id", getParamFromQueryUdf(col("temp_uri_query"), lit("siteId")))
       .withColumn("mgvalue", lit("0"))
       .withColumn("mgvaluereason", getMgvaluereasonUdf(col("brwsr_name"), col("clnt_remote_ip")))
       .drop("lang_cd")
@@ -48,5 +51,8 @@ class ImkDumpRoiJob(params: Parameter) extends ImkDumpJob(params: Parameter) {
     imkDumpEx(imkDf)
   }
 
-  val getRoiIdsUdf: UserDefinedFunction = udf((index: Int, uri: String) => tools.getRoiIdFromUri(index, uri))
+  val getRoiIdsUdf: UserDefinedFunction = udf((index: Int, uri: String) => tools.getRoiIdFromUrlQuery(index, uri))
+  val getItemIdFromRoverUrlQueryUdf: UserDefinedFunction = udf((query: String) => tools.getRoiIdFromUrlQuery(1, query))
+  //TODO: deprecate this when move ROI out of rover
+  val getClientIdFromRoverUrlUdf: UserDefinedFunction = udf((uri: String) => tools.getClientIdFromRoverUrl(uri))
 }

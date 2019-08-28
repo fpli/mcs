@@ -215,14 +215,10 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     * @param uri url string
     * @return item id
     */
-  def getItemIdFromUri(uri: String, channelType: String): String = {
+  def getItemIdFromUri(uri: String): String = {
     var path = ""
     try {
       path = new URL(uri).getPath
-
-      if(channelType.equalsIgnoreCase("ROI")) {
-        return getRoiIdFromUri(1, uri)
-      }
       if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
         val itemId = path.substring(path.lastIndexOf("/") + 1)
         if (StringUtils.isNumeric(itemId)) {
@@ -402,13 +398,34 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     }
   }
 
-  def getRoiIdFromUri(index: Int, uri: String): String = {
-    val mupid = getParamValueFromQuery(uri,"mpuid")
+  /**
+    * Get ROI related fields from mpuid
+    * @param index the index of field
+    * @param query input uri query
+    * @return roi field
+    */
+  def getRoiIdFromUrlQuery(index: Int, query: String): String = {
+    val mupid = getParamValueFromQuery(query,"mpuid")
     val ids = mupid.split(";")
     if(ids.length > index)
       return ids(index)
     else
       return "0"
+  }
+
+  /**
+    * Get client_id from rover url
+    * @param uri rover uri
+    * @return client_id
+    */
+  def getClientIdFromRoverUrl(uri: String): String = {
+    val path = new URL(uri).getPath()
+    if (path != null && path != "") {
+      val pathArray = path.split("/")
+      if (pathArray.length > 3)
+        return pathArray(3).split("\\?")(0).split("-")(0)
+    }
+    ""
   }
 
 }
