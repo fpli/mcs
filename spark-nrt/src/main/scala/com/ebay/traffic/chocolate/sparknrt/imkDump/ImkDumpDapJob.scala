@@ -30,12 +30,14 @@ class ImkDumpDapJob(params: Parameter) extends ImkDumpJob(params: Parameter){
   }
 
   override def imkDumpCore(df: DataFrame): DataFrame = {
-    val imkDf = super.imkDumpCore(df)
+    val imkDf = super.imkDumpCommon(df)
     imkDf
       .withColumn("dst_client_id", getClientIdUdf(col("temp_uri_query"), lit("mkrid")))
       .withColumn("item_id", getItemIdUdf(col("uri")))
       .withColumn("mgvalue", lit("0"))
       .withColumn("mgvaluereason", getMgvaluereasonUdf(col("brwsr_name"), col("clnt_remote_ip")))
+
+    imkDumpEx(imkDf)
   }
 
 }
