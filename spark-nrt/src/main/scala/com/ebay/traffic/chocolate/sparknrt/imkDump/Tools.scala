@@ -402,6 +402,12 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     }
   }
 
+  /**
+    * Get ROI related fields from mpuid
+    * @param index the index of field
+    * @param uri input uri
+    * @return roi field
+    */
   def getRoiIdFromUri(index: Int, uri: String): String = {
     val mupid = getParamValueFromQuery(uri,"mpuid")
     val ids = mupid.split(";")
@@ -409,6 +415,21 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       return ids(index)
     else
       return "0"
+  }
+
+  /**
+    * Get client_id from rover url
+    * @param uri rover uri
+    * @return client_id
+    */
+  def getClientIdFromRoverUrl(uri: String): String = {
+    val path = new URL(uri).getPath()
+    if (path != null && path != "") {
+      val pathArray = path.split("/")
+      if (pathArray.length > 3)
+        return pathArray(3).split("\\?")(0).split("-")(0)
+    }
+    ""
   }
 
 }
