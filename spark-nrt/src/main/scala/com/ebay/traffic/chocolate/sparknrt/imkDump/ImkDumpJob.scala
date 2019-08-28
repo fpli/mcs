@@ -192,7 +192,6 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("rfrr_url", col("referer"))
       .withColumn("src_rotation_id", col("src_rotation_id"))
       .withColumn("dst_rotation_id", col("dst_rotation_id"))
-      .withColumn("dst_client_id", getClientIdUdf(col("temp_uri_query"), lit("mkrid")))
       .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(col("uri")))
       .withColumn("lndng_page_url", replaceMkgroupidMktypeUdf(col("uri")))
       .withColumn("user_query", getUserQueryUdf(col("referer"), col("temp_uri_query")))
@@ -202,7 +201,6 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("mt_id", getDefaultNullNumParamValueFromUrlUdf(col("temp_uri_query"), lit("mt_id")))
       .withColumn("crlp", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("user_map_ind", getUserMapIndUdf(col("user_id")))
-      .withColumn("item_id", getItemIdUdf(col("uri"), col("channel_type")))
       .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("uri")))
       .withColumn("mfe_name", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("cguid", getCguidUdf(col("cguid"), col("guid")))
@@ -229,6 +227,8 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
 
   def imkDumpCore(df: DataFrame): DataFrame = {
     val imkDf = imkDumpCommon(df)
+      .withColumn("dst_client_id", getClientIdUdf(col("temp_uri_query"), lit("mkrid")))
+      .withColumn("item_id", getItemIdUdf(col("uri")))
       .drop("lang_cd")
       .filter(judegNotEbaySitesUdf(col("referer")))
     imkDumpEx(imkDf)
@@ -251,7 +251,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getDefaultNullNumParamValueFromUrlUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getDefaultNullNumParamValueFromQuery(query, key))
   val getParamFromQueryUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getParamValueFromQuery(query, key))
   val getUserMapIndUdf: UserDefinedFunction = udf((userId: String) => tools.getUserMapInd(userId))
-  val getItemIdUdf: UserDefinedFunction = udf((uri: String, channelType: String) => tools.getItemIdFromUri(uri, channelType))
+  val getItemIdUdf: UserDefinedFunction = udf((uri: String) => tools.getItemIdFromUri(uri))
   val judegNotEbaySitesUdf: UserDefinedFunction = udf((referer: String) => tools.judgeNotEbaySites(referer))
   val needQueryCBToGetCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => StringUtils.isEmpty(cguid) && StringUtils.isNotEmpty(guid))
   val getCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => getCguid(cguid, guid))
