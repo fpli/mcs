@@ -36,6 +36,8 @@ class ImkDumpDapJob(params: Parameter) extends ImkDumpJob(params: Parameter){
       .withColumn("item_id", getItemIdUdf(col("uri")))
       .withColumn("mgvalue", lit("0"))
       .withColumn("mgvaluereason", getMgvaluereasonUdf(col("brwsr_name"), col("clnt_remote_ip")))
+      .drop("lang_cd")
+      .filter(judegNotEbaySitesUdf(col("referer")))
 
     imkDumpEx(imkDf)
   }
