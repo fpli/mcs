@@ -248,6 +248,7 @@ public class RoverRheosTopicFilterTask extends Thread {
             campaignId = Long.valueOf(lowerCaseParams.get("campid").get(0));
             if(campaignId == 5338380161l) {
               logger.error("5338380161: " + uri);
+              ESMetrics.getInstance().meter("5338380161");
             }
           } catch (Exception e) {
             logger.error("Parse campaign id error");
