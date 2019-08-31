@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.mysql.cj.util.StringUtils;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
@@ -40,7 +41,7 @@ import java.util.regex.Pattern;
 public class RoverRheosTopicFilterTask extends Thread {
 
   private static final String APPLICATION_PAYLOAD = "applicationPayload";
-
+  private static final String CLIENT_DATA = "clientData";
   private static final String INCOMING = "Incoming";
   private static final String INCOMING_PAGE_ROVER = "IncomingPageRover";
   private static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
@@ -210,7 +211,26 @@ public class RoverRheosTopicFilterTask extends Thread {
         ESMetrics.getInstance().meter(INCOMING_PAGE_ROVER);
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.EPN);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
+        // get urlQueryString from 3 places
         String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
+        if (StringUtils.isNullOrEmpty(urlQueryString)) {
+          urlQueryString = getField(genericRecord, "urlQueryString", "");
+        } else {
+          ESMetrics.getInstance().meter("UrlQueryStringFromApplicationPayload");
+        }
+        if (StringUtils.isNullOrEmpty(urlQueryString)) {
+          HashMap<Utf8, Utf8> clientData = ((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA));
+          urlQueryString = coalesce(clientData.get(new Utf8("urlQueryString")), empty).toString();
+        } else {
+          ESMetrics.getInstance().meter("UrlQueryStringFromRheosTag");
+        }
+        if (StringUtils.isNullOrEmpty(urlQueryString)) {
+          ESMetrics.getInstance().meter("UrlQueryStringEmpty");
+        } else {
+          ESMetrics.getInstance().meter("UrlQueryStringFromClientData");
+        }
+
+
         Matcher roverSitesMatcher = missingRoverClicksPattern.matcher(urlQueryString.toLowerCase());
         // match the missing clicks type, forward to filter
         if (roverSitesMatcher.find()) {
