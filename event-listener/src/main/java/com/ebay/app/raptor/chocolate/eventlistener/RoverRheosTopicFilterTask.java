@@ -214,6 +214,7 @@ public class RoverRheosTopicFilterTask extends Thread {
         Matcher roverSitesMatcher = missingRoverClicksPattern.matcher(urlQueryString.toLowerCase());
         // match the missing clicks type, forward to filter
         if (roverSitesMatcher.find()) {
+          logger.info("Find match missing clicks:", urlQueryString);
           ESMetrics.getInstance().meter(INCOMING_MISSING_CLICKS);
           ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
             0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
@@ -245,6 +246,9 @@ public class RoverRheosTopicFilterTask extends Thread {
           long campaignId = -1L;
           try{
             campaignId = Long.valueOf(lowerCaseParams.get("campid").get(0));
+            if(campaignId == 5338380161l) {
+              logger.error("5338380161: " + uri);
+            }
           } catch (Exception e) {
             logger.error("Parse campaign id error");
           }
