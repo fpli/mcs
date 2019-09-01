@@ -21,7 +21,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-
+import org.apache.commons.lang3.StringUtils;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 public class RoverRheosTopicFilterTask extends Thread {
 
   private static final String APPLICATION_PAYLOAD = "applicationPayload";
-
+  private static final String CLIENT_DATA = "clientData";
   private static final String INCOMING = "Incoming";
   private static final String INCOMING_PAGE_ROVER = "IncomingPageRover";
   private static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
@@ -210,7 +210,24 @@ public class RoverRheosTopicFilterTask extends Thread {
         ESMetrics.getInstance().meter(INCOMING_PAGE_ROVER);
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.EPN);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
+
+        // get urlQueryString from 3 places
         String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
+        if (StringUtils.isEmpty(urlQueryString)) {
+          urlQueryString = getField(genericRecord, "urlQueryString", "");
+          if (StringUtils.isEmpty(urlQueryString)) {
+            HashMap<Utf8, Utf8> clientData = ((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA));
+            urlQueryString = coalesce(clientData.get(new Utf8("urlQueryString")), empty).toString();
+            if (!(StringUtils.isEmpty(urlQueryString))) {
+              ESMetrics.getInstance().meter("UrlQueryStringFromClientData");
+            }
+          } else {
+            ESMetrics.getInstance().meter("UrlQueryStringFromRheosTag");
+          }
+        } else {
+          ESMetrics.getInstance().meter("UrlQueryStringFromApplicationPayload");
+        }
+
         Matcher roverSitesMatcher = missingRoverClicksPattern.matcher(urlQueryString.toLowerCase());
         // match the missing clicks type, forward to filter
         if (roverSitesMatcher.find()) {
