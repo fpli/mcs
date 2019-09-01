@@ -9,7 +9,6 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
-import com.mysql.cj.util.StringUtils;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
@@ -22,7 +21,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-
+import org.apache.commons.lang3.StringUtils;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -214,12 +213,12 @@ public class RoverRheosTopicFilterTask extends Thread {
 
         // get urlQueryString from 3 places
         String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
-        if (StringUtils.isNullOrEmpty(urlQueryString)) {
+        if (StringUtils.isEmpty(urlQueryString)) {
           urlQueryString = getField(genericRecord, "urlQueryString", "");
-          if (StringUtils.isNullOrEmpty(urlQueryString)) {
+          if (StringUtils.isEmpty(urlQueryString)) {
             HashMap<Utf8, Utf8> clientData = ((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA));
             urlQueryString = coalesce(clientData.get(new Utf8("urlQueryString")), empty).toString();
-            if (!(StringUtils.isNullOrEmpty(urlQueryString))) {
+            if (!(StringUtils.isEmpty(urlQueryString))) {
               ESMetrics.getInstance().meter("UrlQueryStringFromClientData");
             }
           } else {
