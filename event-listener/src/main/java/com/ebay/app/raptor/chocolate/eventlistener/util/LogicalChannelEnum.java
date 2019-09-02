@@ -38,7 +38,17 @@ public enum LogicalChannelEnum {
    * Display channel - no valid Rover actions as of yet
    */
   DISPLAY(ChannelType.DISPLAY, ChannelActionEnum.CLICK, ChannelActionEnum.SERVE, ChannelActionEnum.IMPRESSION,
-    ChannelActionEnum.VIMP, ChannelActionEnum.VIEW_ITEM, ChannelActionEnum.VIEW_TIME);
+    ChannelActionEnum.VIMP, ChannelActionEnum.VIEW_ITEM, ChannelActionEnum.VIEW_TIME),
+
+  /**
+   * SITE EMAIL channel
+   */
+  SITE_EMAIL(ChannelType.SITE_EMAIL, ChannelActionEnum.CLICK, ChannelActionEnum.OPEN),
+
+  /**
+   * MARKETING EMAIL channel
+   */
+  MRKT_EMAIL(ChannelType.MRKT_EMAIL, ChannelActionEnum.CLICK, ChannelActionEnum.OPEN);
 
   /**
    * Construct of valid Rover actions for this logical channel
