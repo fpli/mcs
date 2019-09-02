@@ -466,6 +466,27 @@ public class CollectionService {
         if (isFacebookPrefetchEnabled(request))
           requestTracker.addTag("fbprefetch", true, Boolean.class);
 
+        // source id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKSID, TrackerTagValueUtil.SidTag, String.class);
+
+        // email id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKBU, "emid", Integer.class);
+
+        // campaign run date
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKCRD, "crd", String.class);
+
+        // segment name
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKSEGNAME, "segname", String.class);
+
+        // Yesmail message master id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMMMID, "ymmmid", Long.class);
+
+        // YesMail message id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMSID, "ymsid", Long.class);
+
+        // Yesmail mailing instance
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMINSTC, "yminstc", Integer.class);
+
 
       } catch (Exception ex) {
         logger.warn("Error when tracking ubi", ex);

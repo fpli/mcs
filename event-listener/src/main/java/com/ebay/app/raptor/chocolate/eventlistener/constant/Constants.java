@@ -21,5 +21,11 @@ public class Constants {
   public static final String MKSID = "mksid";
   public static final String MKEUID = "mkeuid";
   public static final String MKEXT = "mkext";
+  public static final String MKBU = "mkbu";
+  public static final String MKCRD = "mkcrd";
+  public static final String MKSEGNAME = "mksegname";
+  public static final String MKYMMMID = "mkymmmid";
+  public static final String MKYMSID = "mkymsid";
+  public static final String MKYMINSTC = "mkyminstc";
 
 }
