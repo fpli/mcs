@@ -17,4 +17,9 @@ public class Constants {
   public static final String PLATFORM_DESKTOP = "dsktop";
   public static final String PLATFORM_UNKNOWN = "UNKNOWN";
 
+  // CRM tags
+  public static final String MKSID = "mksid";
+  public static final String MKEUID = "mkeuid";
+  public static final String MKEXT = "mkext";
+
 }

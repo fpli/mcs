@@ -276,6 +276,10 @@ public class CollectionService {
         channelType == ChannelIdEnum.SOCIAL_MEDIA)
       processFlag = processImkEvent(requestContext, targetUrl, referer, agentInfo, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext);
+    else if (channelType == ChannelIdEnum.SITE_EMAIL)
+      processFlag = processSiteEmailEvent(requestContext, targetUrl, referer, agentInfo, parameters, request);
+    else if (channelType == ChannelIdEnum.MRKT_EMAIL)
+      processFlag = processMrktEmailEvent(requestContext, targetUrl, referer, agentInfo, parameters, request);
 
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
@@ -291,9 +295,6 @@ public class CollectionService {
                                   UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
                                   ChannelIdEnum channelType, ChannelActionEnum channelAction, HttpServletRequest request,
                                   long startTime, IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
-
-    Producer<Long, ListenerMessage> producer = KafkaSink.get();
-    String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
 
     // parse rotation id
     long rotationId = parseRotationId(parameters);
@@ -371,11 +372,110 @@ public class CollectionService {
       metrics.meter("InternalDomainRef");
     }
 
+    Producer<Long, ListenerMessage> producer = KafkaSink.get();
+    String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
+
     if (message != null) {
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       return true;
     } else
       return false;
+  }
+
+  private boolean processSiteEmailEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
+                                        UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
+                                        HttpServletRequest request) {
+
+    // Tracking ubi only when refer domain is not ebay.
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(m.find() == false) {
+      try {
+        // Ubi tracking
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker
+            .NAME);
+
+        // page id
+        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
+
+        // event action and event family
+        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
+
+        // target url
+        requestTracker.addTag("url_mpre", targetUrl, String.class);
+
+        // referer
+        requestTracker.addTag("ref", referer, String.class);
+
+        // populate device info
+        CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
+
+        // fbprefetch
+        if (isFacebookPrefetchEnabled(request))
+          requestTracker.addTag("fbprefetch", true, Boolean.class);
+
+        // source id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKSID, TrackerTagValueUtil.SidTag, String.class);
+
+        // email unique id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKEUID, "euid", String.class);
+
+        // email experienced treatment
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKEXT, "ext", String.class);
+
+      } catch (Exception ex) {
+        logger.warn("Error when tracking ubi", ex);
+        metrics.meter("ErrorTrackUbi");
+      }
+    } else {
+      metrics.meter("InternalDomainRef");
+    }
+
+    return true;
+  }
+
+  private boolean processMrktEmailEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
+                                        UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
+                                        HttpServletRequest request) {
+
+    // Tracking ubi only when refer domain is not ebay.
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(m.find() == false) {
+      try {
+        // Ubi tracking
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker
+            .NAME);
+
+        // page id
+        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
+
+        // event action and event family
+        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
+
+        // target url
+        requestTracker.addTag("url_mpre", targetUrl, String.class);
+
+        // referer
+        requestTracker.addTag("ref", referer, String.class);
+
+        // populate device info
+        CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
+
+        // fbprefetch
+        if (isFacebookPrefetchEnabled(request))
+          requestTracker.addTag("fbprefetch", true, Boolean.class);
+
+
+      } catch (Exception ex) {
+        logger.warn("Error when tracking ubi", ex);
+        metrics.meter("ErrorTrackUbi");
+      }
+    } else {
+      metrics.meter("InternalDomainRef");
+    }
+
+    return true;
   }
 
   /**
@@ -438,4 +538,26 @@ public class CollectionService {
 
     return rotationId;
   }
+
+  /**
+   * Soj tag fbprefetch
+   */
+  private static boolean isFacebookPrefetchEnabled(HttpServletRequest request) {
+    String facebookprefetch = request.getHeader("X-Purpose");
+    if (facebookprefetch != null && facebookprefetch.trim().equals("preview")) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Parse tag from url query string and add to sojourner
+   */
+  private static void addTagFromUrlQuery(MultiValueMap<String, String> parameters, IRequestScopeTracker requestTracker,
+                                           String urlParam, String tag, Class tagType) {
+    if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
+      requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
+    }
+  }
+
 }
