@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
+import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.auth.RaptorSecureContext;
@@ -30,7 +31,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-import com.ebay.app.raptor.chocolate.gen.model.Event;
+
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -195,11 +196,8 @@ public class CollectionService {
       return true;
     }
 
-    String kafkaTopic;
-    Producer<Long, ListenerMessage> producer;
-    ChannelActionEnum channelAction;
     ChannelIdEnum channelType;
-    long campaignId = -1L;
+    ChannelActionEnum channelAction = ChannelActionEnum.CLICK;
 
     // targetUrl is from post body
     String targetUrl = event.getTargetUrl();
@@ -245,33 +243,6 @@ public class CollectionService {
       return true;
     }
 
-    // parse rotation id from query mkrid
-    long rotationId = -1L;
-    if (parameters.containsKey(Constants.MKRID) && parameters.get(Constants.MKRID).get(0) != null) {
-      try {
-        String rawRotationId = parameters.get(Constants.MKRID).get(0);
-        rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
-      } catch (Exception e) {
-        logger.warn(Errors.ERROR_INVALID_MKRID);
-        metrics.meter("InvalidMkrid");
-      }
-    } else {
-      logger.warn(Errors.ERROR_NO_MKRID);
-      metrics.meter("NoMkrid");
-    }
-
-    try {
-      campaignId = Long.parseLong(parameters.get(Constants.CAMPID).get(0));
-    } catch (Exception e) {
-      logger.debug("No campaign id");
-    }
-
-    channelAction = ChannelActionEnum.CLICK;
-
-    String action = ChannelActionEnum.CLICK.toString();
-
-    String type = channelType.getLogicalChannel().getAvro().toString();
-
     String landingPageType;
     List<String> pathSegments = uriComponents.getPathSegments();
     if (pathSegments == null || pathSegments.size() == 0) {
@@ -294,6 +265,47 @@ public class CollectionService {
       platform = Constants.PLATFORM_NATIVE_APP;
     }
 
+    String action = ChannelActionEnum.CLICK.toString();
+    String type = channelType.getLogicalChannel().getAvro().toString();
+
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+        Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+
+    long metricsTime = -1;
+    if (channelType == ChannelIdEnum.PAID_SEARCH || channelType == ChannelIdEnum.DAP ||
+        channelType == ChannelIdEnum.SOCIAL_MEDIA)
+      metricsTime = processImkEvent(requestContext, targetUrl, referer, agentInfo, parameters, channelType, channelAction,
+          request, startTime, endUserContext, raptorSecureContext);
+
+    if (metricsTime != -1)
+      stopTimerAndLogData(startTime, metricsTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+          Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+
+    return true;
+  }
+
+  /**
+   * Process IMK events
+   */
+  private long processImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
+                               UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
+                               ChannelIdEnum channelType, ChannelActionEnum channelAction, HttpServletRequest request,
+                               long startTime, IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
+
+    Producer<Long, ListenerMessage> producer = KafkaSink.get();
+    String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
+
+    // parse rotation id
+    long rotationId = parseRotationId(parameters);
+
+    // parse campaign id
+    long campaignId = -1L;
+    try {
+      campaignId = Long.parseLong(parameters.get(Constants.CAMPID).get(0));
+    } catch (Exception e) {
+      logger.debug("No campaign id");
+    }
+
     // get user id from auth token if it's user token, else we get from end user ctx
     String userId;
     if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
@@ -301,13 +313,6 @@ public class CollectionService {
     } else {
       userId = Long.toString(endUserContext.getOrigUserOracleId());
     }
-
-    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-            Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
-
-    producer = KafkaSink.get();
-
-    kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
 
     // Parse the response
     ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
@@ -366,14 +371,13 @@ public class CollectionService {
       metrics.meter("InternalDomainRef");
     }
 
+    long eventTime = -1;
     if (message != null) {
-      metrics.meter(channelType.getLogicalChannel().name());
-      long eventTime = message.getTimestamp();
+      eventTime = message.getTimestamp();
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
-      stopTimerAndLogData(startTime, eventTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-              Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
     }
-    return true;
+
+    return eventTime;
   }
 
   /**
@@ -414,5 +418,26 @@ public class CollectionService {
     logger.debug(String.format("EndTime: %d", endTime));
     metrics.meter("CollectionServiceSuccess", 1, eventTime, additionalFields);
     metrics.mean("CollectionServiceAverageLatency", endTime - startTime);
+  }
+
+  /**
+   * Parse rotation id from query mkrid
+   */
+  private long parseRotationId(MultiValueMap<String, String> parameters) {
+    long rotationId = -1L;
+    if (parameters.containsKey(Constants.MKRID) && parameters.get(Constants.MKRID).get(0) != null) {
+      try {
+        String rawRotationId = parameters.get(Constants.MKRID).get(0);
+        rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
+      } catch (Exception e) {
+        logger.warn(Errors.ERROR_INVALID_MKRID);
+        metrics.meter("InvalidMkrid");
+      }
+    } else {
+      logger.warn(Errors.ERROR_NO_MKRID);
+      metrics.meter("NoMkrid");
+    }
+
+    return rotationId;
   }
 }
