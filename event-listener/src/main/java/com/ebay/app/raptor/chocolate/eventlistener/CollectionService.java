@@ -271,14 +271,14 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
-    long metricsTime = -1;
+    boolean processFlag = false;
     if (channelType == ChannelIdEnum.PAID_SEARCH || channelType == ChannelIdEnum.DAP ||
         channelType == ChannelIdEnum.SOCIAL_MEDIA)
-      metricsTime = processImkEvent(requestContext, targetUrl, referer, agentInfo, parameters, channelType, channelAction,
+      processFlag = processImkEvent(requestContext, targetUrl, referer, agentInfo, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext);
 
-    if (metricsTime != -1)
-      stopTimerAndLogData(startTime, metricsTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+    if (processFlag)
+      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
           Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
@@ -287,10 +287,10 @@ public class CollectionService {
   /**
    * Process IMK events
    */
-  private long processImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
-                               UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
-                               ChannelIdEnum channelType, ChannelActionEnum channelAction, HttpServletRequest request,
-                               long startTime, IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
+  private boolean processImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
+                                  UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
+                                  ChannelIdEnum channelType, ChannelActionEnum channelAction, HttpServletRequest request,
+                                  long startTime, IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
 
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
     String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
@@ -371,13 +371,11 @@ public class CollectionService {
       metrics.meter("InternalDomainRef");
     }
 
-    long eventTime = -1;
     if (message != null) {
-      eventTime = message.getTimestamp();
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
-    }
-
-    return eventTime;
+      return true;
+    } else
+      return false;
   }
 
   /**
@@ -413,10 +411,10 @@ public class CollectionService {
    * @param startTime        the start time, so that latency can be calculated
    * @param additionalFields channelAction, channelType, platform, landing page type
    */
-  private void stopTimerAndLogData(long startTime, long eventTime, Field<String, Object>... additionalFields) {
+  private void stopTimerAndLogData(long startTime, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("CollectionServiceSuccess", 1, eventTime, additionalFields);
+    metrics.meter("CollectionServiceSuccess", 1, startTime, additionalFields);
     metrics.mean("CollectionServiceAverageLatency", endTime - startTime);
   }
 
