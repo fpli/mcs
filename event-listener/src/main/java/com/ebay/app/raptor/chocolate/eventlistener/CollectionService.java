@@ -271,15 +271,19 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
+    // add tags all channels need
+    addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action);
+
+    // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
     if (channelType == ChannelIdEnum.EPN || channelType == ChannelIdEnum.PAID_SEARCH || channelType == ChannelIdEnum.DAP ||
         channelType == ChannelIdEnum.SOCIAL_MEDIA)
-      processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, agentInfo, parameters, channelType, channelAction,
+      processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext);
     else if (channelType == ChannelIdEnum.SITE_EMAIL)
-      processFlag = processSiteEmailEvent(requestContext, targetUrl, referer, agentInfo, parameters, type, action, request);
+      processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
-      processFlag = processMrktEmailEvent(requestContext, targetUrl, referer, agentInfo, parameters, type, action, request);
+      processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
 
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
@@ -292,9 +296,9 @@ public class CollectionService {
    * Process IMK events
    */
   private boolean processAmsAndImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
-                                  UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
-                                  ChannelIdEnum channelType, ChannelActionEnum channelAction, HttpServletRequest request,
-                                  long startTime, IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
+                                        MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
+                                        ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
+                                        IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
 
     // parse rotation id
     long rotationId = parseRotationId(parameters);
@@ -326,19 +330,6 @@ public class CollectionService {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-        // page id
-        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
-
-        // event action and event family
-        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
-        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
-
-        // target url
-        requestTracker.addTag("url_mpre", targetUrl, String.class);
-
-        // referer
-        requestTracker.addTag("ref", referer, String.class);
-
         // rotation id
         requestTracker.addTag("rotid", String.valueOf(rotationId), String.class);
 
@@ -360,9 +351,6 @@ public class CollectionService {
           gclid = parameters.get(Constants.GCLID).get(0);
         }
         requestTracker.addTag("gclid", gclid, String.class);
-
-        // populate device info
-        CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
 
       } catch (Exception ex) {
         logger.warn("Error when tracking ubi for imk", ex);
@@ -387,9 +375,9 @@ public class CollectionService {
   /**
    * Process site email event
    */
-  private boolean processSiteEmailEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
-                                        UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
-                                        String type, String action, HttpServletRequest request) {
+  private boolean processSiteEmailEvent(ContainerRequestContext requestContext, String referer,
+                                        MultiValueMap<String, String> parameters, String type, String action,
+                                        HttpServletRequest request) {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
@@ -397,22 +385,6 @@ public class CollectionService {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
-
-        // page id
-        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
-
-        // event action and event family
-        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
-        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
-
-        // target url
-        requestTracker.addTag("url_mpre", targetUrl, String.class);
-
-        // referer
-        requestTracker.addTag("ref", referer, String.class);
-
-        // populate device info
-        CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
 
         // fbprefetch
         if (isFacebookPrefetchEnabled(request))
@@ -441,9 +413,9 @@ public class CollectionService {
   /**
    * Process marketing email event
    */
-  private boolean processMrktEmailEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
-                                        UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
-                                        String type, String action, HttpServletRequest request) {
+  private boolean processMrktEmailEvent(ContainerRequestContext requestContext, String referer,
+                                        MultiValueMap<String, String> parameters, String type, String action,
+                                        HttpServletRequest request) {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
@@ -451,22 +423,6 @@ public class CollectionService {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
-
-        // page id
-        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
-
-        // event action and event family
-        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
-        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
-
-        // target url
-        requestTracker.addTag("url_mpre", targetUrl, String.class);
-
-        // referer
-        requestTracker.addTag("ref", referer, String.class);
-
-        // populate device info
-        CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
 
         // fbprefetch
         if (isFacebookPrefetchEnabled(request))
@@ -502,6 +458,40 @@ public class CollectionService {
     }
 
     return true;
+  }
+
+  private void addCommonTags(ContainerRequestContext requestContext, String targetUrl, String referer,
+                             UserAgentInfo agentInfo, String type, String action) {
+    // Tracking ubi only when refer domain is not ebay.
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(m.find() == false) {
+      try {
+        // Ubi tracking
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+        // page id
+        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
+
+        // event action and event family
+        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
+
+        // target url
+        requestTracker.addTag("url_mpre", targetUrl, String.class);
+
+        // referer
+        requestTracker.addTag("ref", referer, String.class);
+
+        // populate device info
+        CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
+
+      } catch (Exception ex) {
+        logger.warn("Error when tracking ubi for marketing email", ex);
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      }
+    } else {
+      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+    }
   }
 
   /**
