@@ -272,9 +272,9 @@ public class CollectionService {
         Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     boolean processFlag = false;
-    if (channelType == ChannelIdEnum.PAID_SEARCH || channelType == ChannelIdEnum.DAP ||
+    if (channelType == ChannelIdEnum.EPN || channelType == ChannelIdEnum.PAID_SEARCH || channelType == ChannelIdEnum.DAP ||
         channelType == ChannelIdEnum.SOCIAL_MEDIA)
-      processFlag = processImkEvent(requestContext, targetUrl, referer, agentInfo, parameters, channelType, channelAction,
+      processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, agentInfo, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext);
     else if (channelType == ChannelIdEnum.SITE_EMAIL)
       processFlag = processSiteEmailEvent(requestContext, targetUrl, referer, agentInfo, parameters, type, action, request);
@@ -291,7 +291,7 @@ public class CollectionService {
   /**
    * Process IMK events
    */
-  private boolean processImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
+  private boolean processAmsAndImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
                                   UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
                                   ChannelIdEnum channelType, ChannelActionEnum channelAction, HttpServletRequest request,
                                   long startTime, IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
@@ -324,8 +324,7 @@ public class CollectionService {
     if(m.find() == false) {
       try {
         // Ubi tracking
-        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker
-                .NAME);
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
         // page id
         requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
@@ -364,6 +363,7 @@ public class CollectionService {
 
         // populate device info
         CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
+
       } catch (Exception ex) {
         logger.warn("Error when tracking ubi for imk", ex);
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
@@ -384,6 +384,9 @@ public class CollectionService {
       return false;
   }
 
+  /**
+   * Process site email event
+   */
   private boolean processSiteEmailEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
                                         UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
                                         String type, String action, HttpServletRequest request) {
@@ -393,8 +396,7 @@ public class CollectionService {
     if(m.find() == false) {
       try {
         // Ubi tracking
-        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker
-            .NAME);
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
         // page id
         requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
@@ -436,6 +438,9 @@ public class CollectionService {
     return true;
   }
 
+  /**
+   * Process marketing email event
+   */
   private boolean processMrktEmailEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
                                         UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
                                         String type, String action, HttpServletRequest request) {
@@ -445,8 +450,7 @@ public class CollectionService {
     if(m.find() == false) {
       try {
         // Ubi tracking
-        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker
-            .NAME);
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
         // page id
         requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
@@ -488,7 +492,6 @@ public class CollectionService {
 
         // Yesmail mailing instance
         addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMINSTC, "yminstc", Integer.class);
-
 
       } catch (Exception ex) {
         logger.warn("Error when tracking ubi for marketing email", ex);
