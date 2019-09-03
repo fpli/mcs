@@ -4,7 +4,7 @@ import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.compress.GzipCodec
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.Row
 
 /**
  * Merge small imk crab transform output files to single file.
@@ -43,26 +43,28 @@ class ImkCrabTransformOutputMergeJob(params: Parameter)
   lazy val dtlInputDir: String = params.inputDir + "/dtlOutput"
   lazy val mgInputDir: String = params.inputDir + "/mgOutput"
 
-  // mk crab transform backup dir
+  // imk crab transform backup dir
   lazy val imkBackupDir: String = params.backupDir + "/imkOutput"
   lazy val dtlBackupDir: String = params.backupDir + "/dtlOutput"
   lazy val mgBackupDir: String = params.backupDir + "/mgOutput"
 
+  // imk crab transform output temp dir
   lazy val imkMergedTempDir: String = params.outputDir + "/imkTemp"
   lazy val dtlMergedTempDir: String = params.outputDir + "/dtlTemp"
   lazy val mgMergedTempDir: String = params.outputDir + "/mgTemp"
 
+  // imk crab transform output dir
   lazy val imkMergedOutputDir: String = params.outputDir + "/imkOutput"
   lazy val dtlMergedOutputDir: String = params.outputDir + "/dtlOutput"
   lazy val mgMergedOutputDir: String = params.outputDir + "/mgOutput"
 
   override def run(): Unit = {
-    mergeFiles(imkInputDir, schema_apollo.dfSchema, imkMergedTempDir, imkMergedOutputDir, imkBackupDir)
-    mergeFiles(dtlInputDir, schema_apollo_dtl.dfSchema, dtlMergedTempDir, dtlMergedOutputDir, dtlBackupDir)
-    mergeFiles(mgInputDir, schema_apollo_mg.dfSchema, mgMergedTempDir, mgMergedOutputDir, mgBackupDir)
+    mergeFiles(imkInputDir, schema_apollo, imkMergedTempDir, imkMergedOutputDir, imkBackupDir)
+    mergeFiles(dtlInputDir, schema_apollo_dtl, dtlMergedTempDir, dtlMergedOutputDir, dtlBackupDir)
+    mergeFiles(mgInputDir, schema_apollo_mg, mgMergedTempDir, mgMergedOutputDir, mgBackupDir)
   }
 
-  def mergeFiles(inputDir: String, schema: StructType, tempDir: String, outputDir: String, backupDir: String): Unit = {
+  def mergeFiles(inputDir: String, schema: TableSchema, tempDir: String, outputDir: String, backupDir: String): Unit = {
     fs.delete(new Path(tempDir), true)
 
     val status = fs.listStatus(new Path(inputDir))
@@ -78,9 +80,9 @@ class ImkCrabTransformOutputMergeJob(params: Parameter)
 
     dateRawPaths.foreach(tuple => {
       val rawFiles = tuple._2
-      val frame = readFilesAsDFEx(rawFiles, schema, "sequence", "delete")
+      val frame = readFilesAsDFEx(rawFiles, schema.dfSchema, "sequence", "delete")
       logger.info("merge files "+ tuple._2.mkString(","))
-      frame.rdd.map(row => ("", row.mkString("\u007F"))).repartition(1).saveAsSequenceFile(tempDir, compressCodec)
+      frame.na.fill(schema.defaultValues).rdd.map(row => ("", row.mkString("\u007F"))).repartition(1).saveAsSequenceFile(tempDir, compressCodec)
       simpleRenameFiles(tempDir, outputDir, tuple._1)
       fs.delete(new Path(tempDir), true)
       backupRawFiles(rawFiles, backupDir)
@@ -88,7 +90,7 @@ class ImkCrabTransformOutputMergeJob(params: Parameter)
   }
 
   /**
-    * rename files
+    * rename temp files
     * @param tempDir tempDir
     * @param outputDir outputDir
     * @param date date

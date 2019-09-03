@@ -59,7 +59,7 @@ class TestImkCrabTransformOutputMergeJob extends BaseFunSuite {
       "--inputDir", inputDir,
       "--outputDir", outputDir,
       "--backupDir", backupDir,
-      "--compressOutPut", "true",
+      "--compressOutPut", "false",
       "--elasticsearchUrl", "http://10.148.181.34:9200"
     )
     val params = Parameter(args)
@@ -69,36 +69,36 @@ class TestImkCrabTransformOutputMergeJob extends BaseFunSuite {
       inputDir + "/" + imkDir + "/" + imkRawFile1,
       inputDir + "/" + imkDir + "/" + imkRawFile2,
       inputDir + "/" + imkDir + "/" + imkRawFile3),
-      schema_apollo.dfSchema, "sequence", "delete")
-    rawImkDf.show()
+      schema_apollo.dfSchema, "sequence", "delete").cache()
+    rawImkDf.count()
 
     val rawDtlDf = job.readFilesAsDFEx(Array(
       inputDir + "/" + dtlDir + "/" + dtlRawFile1,
       inputDir + "/" + dtlDir + "/" + dtlRawFile2,
       inputDir + "/" + dtlDir + "/" + dtlRawFile3),
-      schema_apollo_dtl.dfSchema, "sequence", "delete")
-    rawDtlDf.show()
+      schema_apollo_dtl.dfSchema, "sequence", "delete").cache()
+    rawDtlDf.count()
 
     val rawMgDf = job.readFilesAsDFEx(Array(
       inputDir + "/" + mgDir + "/" + mgRawFile1,
       inputDir + "/" + mgDir + "/" + mgRawFile2,
       inputDir + "/" + mgDir + "/" + mgRawFile3),
-      schema_apollo_mg.dfSchema, "sequence", "delete")
-    rawMgDf.show()
+      schema_apollo_mg.dfSchema, "sequence", "delete").cache()
+    rawMgDf.count()
 
     job.run()
 
-//    assert(fs.exists(new Path(backupDir + "/" + imkDir + "/" + imkRawFile1)))
-//    assert(fs.exists(new Path(backupDir + "/" + imkDir + "/" + imkRawFile2)))
-//    assert(fs.exists(new Path(backupDir + "/" + imkDir + "/" + imkRawFile3)))
-//
-//    assert(fs.exists(new Path(backupDir + "/" + dtlDir + "/" + dtlRawFile1)))
-//    assert(fs.exists(new Path(backupDir + "/" + dtlDir + "/" + dtlRawFile2)))
-//    assert(fs.exists(new Path(backupDir + "/" + dtlDir + "/" + dtlRawFile3)))
-//
-//    assert(fs.exists(new Path(backupDir + "/" + mgDir + "/" + mgRawFile1)))
-//    assert(fs.exists(new Path(backupDir + "/" + mgDir + "/" + mgRawFile2)))
-//    assert(fs.exists(new Path(backupDir + "/" + mgDir + "/" + mgRawFile3)))
+    assert(fs.exists(new Path(backupDir + "/" + imkDir + "/" + imkRawFile1)))
+    assert(fs.exists(new Path(backupDir + "/" + imkDir + "/" + imkRawFile2)))
+    assert(fs.exists(new Path(backupDir + "/" + imkDir + "/" + imkRawFile3)))
+
+    assert(fs.exists(new Path(backupDir + "/" + dtlDir + "/" + dtlRawFile1)))
+    assert(fs.exists(new Path(backupDir + "/" + dtlDir + "/" + dtlRawFile2)))
+    assert(fs.exists(new Path(backupDir + "/" + dtlDir + "/" + dtlRawFile3)))
+
+    assert(fs.exists(new Path(backupDir + "/" + mgDir + "/" + mgRawFile1)))
+    assert(fs.exists(new Path(backupDir + "/" + mgDir + "/" + mgRawFile2)))
+    assert(fs.exists(new Path(backupDir + "/" + mgDir + "/" + mgRawFile3)))
 
     val backupImkDf = job.readFilesAsDFEx(Array(
       backupDir + "/" + imkDir + "/" + imkRawFile1,
@@ -127,23 +127,35 @@ class TestImkCrabTransformOutputMergeJob extends BaseFunSuite {
     val mergedMgDf = job.readFilesAsDFEx(fs.listStatus(new Path(outputDir + "/" + mgDir)).map(s => s.getPath.toString),
       schema_apollo_mg.dfSchema, "sequence", "delete")
 
-    assert(backupImkDf.except(rawImkDf).count == 0)
-    assert(rawImkDf.except(backupImkDf).count == 0)
+    // compare raw files and merged files
+    assert(rawImkDf.except(mergedImkDf).count == 0)
+    assert(mergedImkDf.except(rawImkDf).count == 0)
 
-    assert(backupDtlDf.except(rawDtlDf).count == 0)
-    assert(rawDtlDf.except(backupDtlDf).count == 0)
+    assert(rawDtlDf.except(mergedDtlDf).count == 0)
+    assert(mergedDtlDf.except(rawDtlDf).count == 0)
 
-    assert(backupMgDf.except(rawMgDf).count == 0)
-    assert(rawMgDf.except(backupMgDf).count == 0)
+    assert(rawMgDf.except(mergedMgDf).count == 0)
+    assert(mergedMgDf.except(rawMgDf).count == 0)
 
-    assert(backupImkDf.except(mergedImkDf).count == 0)
+    // compare merged files and backup files
     assert(mergedImkDf.except(backupImkDf).count == 0)
+    assert(backupImkDf.except(mergedImkDf).count == 0)
 
-    assert(backupDtlDf.except(mergedDtlDf).count == 0)
     assert(mergedDtlDf.except(backupDtlDf).count == 0)
+    assert(backupDtlDf.except(mergedDtlDf).count == 0)
 
-    assert(backupMgDf.except(mergedMgDf).count == 0)
     assert(mergedMgDf.except(backupMgDf).count == 0)
+    assert(backupMgDf.except(mergedMgDf).count == 0)
+
+    // compare raw files and backup files
+    assert(rawImkDf.except(backupImkDf).count == 0)
+    assert(backupImkDf.except(rawImkDf).count == 0)
+
+    assert(rawDtlDf.except(backupDtlDf).count == 0)
+    assert(backupDtlDf.except(rawDtlDf).count == 0)
+
+    assert(rawMgDf.except(backupMgDf).count == 0)
+    assert(backupMgDf.except(rawMgDf).count == 0)
   }
 
   def createTestData(): Unit = {

@@ -1,13 +1,13 @@
 #!/bin/bash
 # run spark job on YARN
 # imkCrabTransformOutputMerge.
-# Input:    SLC Imk CrabTransform Output Files
+# Input:    SLC Imk CrabTransform Output Dir
 #           /apps/tracking-events/imkTransform
-# Output:   SLC Imk CrabTransform Output Merged Files
+# Output:   SLC Imk CrabTransform Merged Output Merged Dir
 #           /apps/tracking-events/imkTransformMerged
-#           SLC Imk CrabTransform Output Backup Files
+#           SLC Imk CrabTransform Backup Output Dir
 #           /apps/tracking-events/imkTransformBackup
-# Schedule: /3 * ? * *
+# Schedule: /10 * ? * *
 
 set -x
 
