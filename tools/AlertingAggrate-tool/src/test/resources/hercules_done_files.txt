@@ -1,0 +1,8 @@
+hdfs://hercules/apps/b_marketing_tracking/watch/20190901/ams_click_hourly.done.201909010000000000
+hdfs://hercules/apps/b_marketing_tracking/watch/20190901/ams_click_hourly.done.201909010100000000
+hdfs://hercules/apps/b_marketing_tracking/watch/20190901/ams_click_hourly.done.201909010200000000
+hdfs://hercules/apps/b_marketing_tracking/watch/20190901/ams_click_hourly.done.201909010300000000
+hdfs://hercules/apps/b_marketing_tracking/watch/20190901/ams_click_hourly.done.201909010400000000
+hdfs://hercules/apps/b_marketing_tracking/watch/20190901/ams_click_hourly.done.201909010500000000
+hdfs://hercules/apps/b_marketing_tracking/watch/20190901/ams_click_hourly.done.201909010600000000
+hdfs://hercules/apps/b_marketing_tracking/watch/20190901/ams_click_hourly.done.201909010700000000

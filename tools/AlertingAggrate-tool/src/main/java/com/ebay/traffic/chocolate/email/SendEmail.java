@@ -101,7 +101,7 @@ public class SendEmail {
       }
 
       // 设置消息体
-      message.setContent(HTMLParse.parse(map, historymap), "text/html");
+      message.setContent(HTMLParse.parse(map, historymap, runPeriod), "text/html");
 
       // 发送消息
       Transport.send(message);

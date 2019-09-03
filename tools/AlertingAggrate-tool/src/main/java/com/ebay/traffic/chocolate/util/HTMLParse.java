@@ -10,7 +10,7 @@ public class HTMLParse {
 
 	private static final Logger logger = LoggerFactory.getLogger(HTMLParse.class);
 
-	public static String parse(HashMap<String, ArrayList<MetricCount>> map, HashMap<String, ArrayList<MetricCount>> historymap) {
+	public static String parse(HashMap<String, ArrayList<MetricCount>> map, HashMap<String, ArrayList<MetricCount>> historymap, String runPeriod) {
 		String html = "";
 
 		int len = map.size();
@@ -33,9 +33,12 @@ public class HTMLParse {
 			html = html + HistoryTable.parseHistoryProject(list);
 		}
 
-		html = html + "<h3></h3><h3><h3>" + "<h3>" + DoneFileUtil.getAmsClickDoneFileDetail() + "</h3>"
-			+ "<h3>" + DoneFileUtil.getAmsImpressionDoneFileDetail() + "</h3>"
-			+ "<h3>" + DoneFileUtil.getImkEventDoneFileDetail() + "</h3>";
+		if(runPeriod.equalsIgnoreCase("daily")) {
+			html = html + "Hdfs file number compare\n" + HdfsCompareTable.parseHdfsCompare(HdfsCompareUtil.getHdfsFileNumberCompares());
+		}else if(runPeriod.equalsIgnoreCase("hourly")){
+			html = html + "Done file information\n" + DoneFileTable.parseDoneFileProject(DoneFileUtil.getDoneFileInfos());
+		}
+
 		return html;
 	}
 
