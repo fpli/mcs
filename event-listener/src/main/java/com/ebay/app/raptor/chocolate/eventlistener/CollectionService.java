@@ -412,7 +412,7 @@ public class CollectionService {
 
         // fbprefetch
         if (isFacebookPrefetchEnabled(request))
-          requestTracker.addTag("fbprefetch", true, Boolean.class);
+          requestTracker.addTag("fbprefetch", "true", String.class);
 
         // source id
         addTagFromUrlQuery(parameters, requestTracker, Constants.MKSID, TrackerTagValueUtil.SidTag, String.class);
@@ -464,13 +464,13 @@ public class CollectionService {
 
         // fbprefetch
         if (isFacebookPrefetchEnabled(request))
-          requestTracker.addTag("fbprefetch", true, Boolean.class);
+          requestTracker.addTag("fbprefetch", "true", String.class);
 
         // source id
         addTagFromUrlQuery(parameters, requestTracker, Constants.MKSID, TrackerTagValueUtil.SidTag, String.class);
 
         // email id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKBU, "emid", Integer.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKBU, "emid", Long.class);
 
         // campaign run date
         addTagFromUrlQuery(parameters, requestTracker, Constants.MKCRD, "crd", String.class);
@@ -479,7 +479,7 @@ public class CollectionService {
         addTagFromUrlQuery(parameters, requestTracker, Constants.MKSEGNAME, "segname", String.class);
 
         // Yesmail message master id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMMMID, "ymmmid", Long.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMMMID, "ymmmid", Integer.class);
 
         // YesMail message id
         addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMSID, "ymsid", Long.class);
