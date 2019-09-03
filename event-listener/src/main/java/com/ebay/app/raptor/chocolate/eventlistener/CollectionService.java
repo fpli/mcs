@@ -277,9 +277,9 @@ public class CollectionService {
       processFlag = processImkEvent(requestContext, targetUrl, referer, agentInfo, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext);
     else if (channelType == ChannelIdEnum.SITE_EMAIL)
-      processFlag = processSiteEmailEvent(requestContext, targetUrl, referer, agentInfo, parameters, request);
+      processFlag = processSiteEmailEvent(requestContext, targetUrl, referer, agentInfo, parameters, type, action, request);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
-      processFlag = processMrktEmailEvent(requestContext, targetUrl, referer, agentInfo, parameters, request);
+      processFlag = processMrktEmailEvent(requestContext, targetUrl, referer, agentInfo, parameters, type, action, request);
 
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
@@ -365,11 +365,13 @@ public class CollectionService {
         // populate device info
         CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
       } catch (Exception ex) {
-        logger.warn("Error when tracking ubi", ex);
-        metrics.meter("ErrorTrackUbi");
+        logger.warn("Error when tracking ubi for imk", ex);
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+            Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
       }
     } else {
-      metrics.meter("InternalDomainRef");
+      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+          Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
     }
 
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
@@ -384,7 +386,7 @@ public class CollectionService {
 
   private boolean processSiteEmailEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
                                         UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
-                                        HttpServletRequest request) {
+                                        String type, String action, HttpServletRequest request) {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
@@ -424,11 +426,11 @@ public class CollectionService {
         addTagFromUrlQuery(parameters, requestTracker, Constants.MKEXT, "ext", String.class);
 
       } catch (Exception ex) {
-        logger.warn("Error when tracking ubi", ex);
-        metrics.meter("ErrorTrackUbi");
+        logger.warn("Error when tracking ubi for site email", ex);
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
       }
     } else {
-      metrics.meter("InternalDomainRef");
+      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
     }
 
     return true;
@@ -436,7 +438,7 @@ public class CollectionService {
 
   private boolean processMrktEmailEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
                                         UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
-                                        HttpServletRequest request) {
+                                        String type, String action, HttpServletRequest request) {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
@@ -489,11 +491,11 @@ public class CollectionService {
 
 
       } catch (Exception ex) {
-        logger.warn("Error when tracking ubi", ex);
-        metrics.meter("ErrorTrackUbi");
+        logger.warn("Error when tracking ubi for marketing email", ex);
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
       }
     } else {
-      metrics.meter("InternalDomainRef");
+      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
     }
 
     return true;
