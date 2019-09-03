@@ -1,18 +1,20 @@
-package com.ebay.traffic.chocolate.sparknrt.imkCrabTransformRotation
+package com.ebay.traffic.chocolate.sparknrt.imkCrabTransformOutputMerge
 
 import scopt.OptionParser
 
-case class Parameter(appName: String = "crabTransformRotationJob",
+case class Parameter(appName: String = "crabTransformOutputMergeJob",
                      mode: String = "yarn",
                      transformedPrefix: String = "",
                      inputDir: String = "",
                      outputDir: String = "",
+                     backupDir: String = "",
+                     compressOutPut: Boolean = false,
                      elasticsearchUrl: String = "")
 
 object Parameter {
 
-  private lazy val parser = new OptionParser[Parameter]("crabTransformRotationJob") {
-    head("crabTransformRotationJob")
+  private lazy val parser = new OptionParser[Parameter]("crabTransformOutputMergeJob") {
+    head("crabTransformOutputMergeJob")
 
     opt[String]("appName")
       .optional
@@ -38,6 +40,16 @@ object Parameter {
       .required
       .valueName("outputDir")
       .action((cont, param) => param.copy(outputDir = cont))
+
+    opt[String]("backupDir")
+      .required
+      .valueName("backupDir")
+      .action((cont, param) => param.copy(backupDir = cont))
+
+    opt[Boolean]("compressOutPut")
+      .required
+      .valueName("compressOutPut")
+      .action((cont, param) => param.copy(compressOutPut = cont))
 
     opt[String]("elasticsearchUrl")
       .optional
