@@ -51,7 +51,12 @@ public enum ChannelActionEnum {
   /**
    * Mobile App first start
    */
-  APP_FIRST_START(ChannelAction.APP_FIRST_START, "1m");
+  APP_FIRST_START(ChannelAction.APP_FIRST_START, "1m"),
+
+  /**
+   * Email open
+   */
+  EMAIL_OPEN(ChannelAction.EMAIL_OPEN, "1o");
 
   /**
    * The human-readable action name
