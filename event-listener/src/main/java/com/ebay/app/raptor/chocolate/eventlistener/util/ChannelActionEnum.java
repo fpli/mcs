@@ -56,7 +56,7 @@ public enum ChannelActionEnum {
   /**
    * Email open
    */
-  OPEN(ChannelAction.OPEN, "1o");
+  EMAIL_OPEN(ChannelAction.EMAIL_OPEN, "1o");
 
   /**
    * The human-readable action name

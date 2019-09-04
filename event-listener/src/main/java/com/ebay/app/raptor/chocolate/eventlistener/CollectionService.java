@@ -486,7 +486,7 @@ public class CollectionService {
         CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
 
       } catch (Exception ex) {
-        logger.warn("Error when tracking ubi for marketing email", ex);
+        logger.warn("Error when tracking ubi for common tags", ex);
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
       }
     } else {

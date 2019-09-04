@@ -43,12 +43,12 @@ public enum LogicalChannelEnum {
   /**
    * SITE EMAIL channel
    */
-  SITE_EMAIL(ChannelType.SITE_EMAIL, ChannelActionEnum.CLICK, ChannelActionEnum.OPEN),
+  SITE_EMAIL(ChannelType.SITE_EMAIL, ChannelActionEnum.CLICK, ChannelActionEnum.EMAIL_OPEN),
 
   /**
    * MARKETING EMAIL channel
    */
-  MRKT_EMAIL(ChannelType.MRKT_EMAIL, ChannelActionEnum.CLICK, ChannelActionEnum.OPEN);
+  MRKT_EMAIL(ChannelType.MRKT_EMAIL, ChannelActionEnum.CLICK, ChannelActionEnum.EMAIL_OPEN);
 
   /**
    * Construct of valid Rover actions for this logical channel
