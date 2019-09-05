@@ -2,7 +2,7 @@ package com.ebay.traffic.chocolate.sparknrt.imkCrabTransformOutputMerge
 
 import scopt.OptionParser
 
-case class Parameter(appName: String = "crabTransformOutputMergeJob",
+case class Parameter(appName: String = "imkCrabTransformOutputMergeJob",
                      mode: String = "yarn",
                      transformedPrefix: String = "",
                      inputDir: String = "",
@@ -13,8 +13,8 @@ case class Parameter(appName: String = "crabTransformOutputMergeJob",
 
 object Parameter {
 
-  private lazy val parser = new OptionParser[Parameter]("crabTransformOutputMergeJob") {
-    head("crabTransformOutputMergeJob")
+  private lazy val parser = new OptionParser[Parameter]("imkCrabTransformOutputMergeJob") {
+    head("imkCrabTransformOutputMergeJob")
 
     opt[String]("appName")
       .optional
