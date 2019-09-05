@@ -74,7 +74,7 @@ abstract class BaseSparkJob(val jobName: String,
 
   lazy val delimiterMap =
     Map("bel" -> "\007", "tab" -> "\t",
-      "space" -> " ", "comma" -> ",", "del" -> "\177")
+      "space" -> " ", "comma" -> ",", "del" -> "\177", "delete" -> "\u007F")
 
   /**
     * Counter for the corrupt rows.
