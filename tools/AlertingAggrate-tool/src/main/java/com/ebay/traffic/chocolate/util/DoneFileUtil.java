@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.util;
 
+import com.ebay.traffic.chocolate.pojo.DoneFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,20 +15,26 @@ public class DoneFileUtil {
 
 	private static final Logger logger = LoggerFactory.getLogger(DoneFileUtil.class);
 
-	public static String getImkEventDoneFileDetail() {
-		return "The status of the imk_rvr_trckng_event table:" + getDalayDelayInfo("imk_rvr_trckng_event_hourly");
+	public static DoneFile getImkEventDoneFileDetail(String clusterName, String path) {
+		DoneFile doneFile = getDalayDelayInfo("imk_rvr_trckng_event_hourly", path);
+		doneFile.setClusterName(clusterName);
+		return doneFile;
 	}
 
-	public static String getAmsClickDoneFileDetail() {
-		return "The status of the ams_click table:" + getDalayDelayInfo("ams_click_hourly");
+	public static DoneFile getAmsClickDoneFileDetail(String clusterName, String path) {
+		DoneFile doneFile = getDalayDelayInfo("ams_click_hourly", path);
+		doneFile.setClusterName(clusterName);
+		return doneFile;
 	}
 
-	public static String getAmsImpressionDoneFileDetail() {
-		return "The status of the ams_imprsn table:" + getDalayDelayInfo("ams_imprsn_hourly");
+	public static DoneFile getAmsImpressionDoneFileDetail(String clusterName, String path) {
+		DoneFile doneFile = getDalayDelayInfo("ams_imprsn_hourly", path);
+		doneFile.setClusterName(clusterName);
+		return doneFile;
 	}
 
-	public static ArrayList<String> getParams(String pattern) {
-		List<String> list = HdfsClient.getFileList("viewfs://apollo-rno/apps/b_marketing_tracking/watch", LocalDate.now().toString(), pattern);
+	public static ArrayList<String> getParams(String pattern, String path) {
+		List<String> list = getFileList(pattern, path);
 		Collections.sort(list, Collections.reverseOrder());
 
 		ArrayList<String> retList = new ArrayList<>();
@@ -62,6 +69,16 @@ public class DoneFileUtil {
 		return retList;
 	}
 
+	private static List<String> getFileList(String pattern, String path) {
+		if(path.contains("apollo")){
+			return ApolloHdfsClient.getDoneFileList(path, LocalDate.now().toString(), pattern);
+		}else if(path.contains("hercules")){
+			return HerculesHdfsClient.getDoneFileList("/datashare/mkttracking/tools/AlertingAggrate-tool/temp/hercules_files/hercules_done_files.txt", LocalDate.now().toString(), pattern);
+		} else{
+			return null;
+		}
+	}
+
 	public static int getDelay(String max_time) {
 		int year = Integer.parseInt(max_time.substring(0, 4));
 		int month = Integer.parseInt(max_time.substring(4, 6));
@@ -82,21 +99,44 @@ public class DoneFileUtil {
 		return (int) delay;
 	}
 
-	public static String getDalayDelayInfo(String pattern) {
-		ArrayList<String> list = getParams(pattern);
+	public static DoneFile getDalayDelayInfo(String pattern, String path) {
+		ArrayList<String> list = getParams(pattern, path);
 
 		int delay_hour = Integer.parseInt(list.get(0));
 		String donefile = list.get(1);
 
-		if (delay_hour < 0) {
-			return "delay many days, is very critic. <span color=\"red\">warning</span>";
-		}
+		DoneFile doneFile = new DoneFile();
+		int delay = 0;
+		String status = "Ok";
 
 		if (delay_hour >= 3) {
-			return "delay over " + (delay_hour - 2) + " hours. <span color=\"red\">warning!</span> current donefile: " + donefile;
+			delay = delay_hour - 2;
 		}
 
-		return "ok! current donefile: " + donefile;
+		if(delay > 0 && delay <= 12){
+			status = "Warning";
+		}else if(delay > 12){
+			status = "Critical";
+		}
+
+		doneFile.setDataSource(pattern);
+		doneFile.setStatus(status);
+		doneFile.setDelay(delay);
+		doneFile.setCurrentDoneFile(donefile);
+
+		return doneFile;
+	}
+
+	public static ArrayList<DoneFile> getDoneFileInfos() {
+		ArrayList<DoneFile> list = new ArrayList<>();
+		list.add(getImkEventDoneFileDetail("apollo-rno", "viewfs://apollo-rno/apps/b_marketing_tracking/watch"));
+		list.add(getAmsClickDoneFileDetail("apollo-rno", "viewfs://apollo-rno/apps/b_marketing_tracking/watch"));
+		list.add(getAmsImpressionDoneFileDetail("apollo-rno", "viewfs://apollo-rno/apps/b_marketing_tracking/watch"));
+		list.add(getImkEventDoneFileDetail("hercules-lvs", "hdfs://hercules/apps/b_marketing_tracking/watch"));
+		list.add(getAmsClickDoneFileDetail("hercules-lvs", "hdfs://hercules/apps/b_marketing_tracking/watch"));
+		list.add(getAmsImpressionDoneFileDetail("hercules-lvs", "hdfs://hercules/apps/b_marketing_tracking/watch"));
+
+		return list;
 	}
 
 }
