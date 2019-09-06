@@ -19,6 +19,7 @@
     <module>zookeeper-tool</module>
     <module>CheckRecover-tool</module>
     <module>AlertingAggrate-tool</module>
+      <module>HadoopLogCleaner</module>
   </modules>
 
   <properties>
