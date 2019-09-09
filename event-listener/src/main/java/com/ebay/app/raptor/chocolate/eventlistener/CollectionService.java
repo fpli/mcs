@@ -185,13 +185,13 @@ public class CollectionService {
       while (headers.hasMoreElements()) {
         final String header = headers.nextElement();
         if (header.equalsIgnoreCase("x-forwarded-for") ||
-              header.equalsIgnoreCase("user-agent") ) {
+            header.equalsIgnoreCase("user-agent") ) {
           final Enumeration<String> values = request.getHeaders(header);
           //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
           httpGet.addHeader(header, values.nextElement());
         }
       }
-      
+
       roverClient.forwardRequestToRover(client, httpGet, context);
       return true;
     }
@@ -252,8 +252,7 @@ public class CollectionService {
     }
 
     // platform check by user agent
-    UserAgentInfo agentInfo = (UserAgentInfo) requestContext
-            .getProperty(UserAgentInfo.NAME);
+    UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
     String platform = Constants.PLATFORM_UNKNOWN;
     if (agentInfo.isDesktop()) {
       platform = Constants.PLATFORM_DESKTOP;
@@ -330,6 +329,9 @@ public class CollectionService {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
+        // event family
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
+
         // rotation id
         requestTracker.addTag("rotid", String.valueOf(rotationId), String.class);
 
@@ -352,8 +354,8 @@ public class CollectionService {
         }
         requestTracker.addTag("gclid", gclid, String.class);
 
-      } catch (Exception ex) {
-        logger.warn("Error when tracking ubi for imk", ex);
+      } catch (Exception e) {
+        logger.warn("Error when tracking ubi for imk", e);
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
             Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
       }
@@ -386,9 +388,12 @@ public class CollectionService {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
+        // event family
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
+
         // fbprefetch
         if (isFacebookPrefetchEnabled(request))
-          requestTracker.addTag("fbprefetch", "true", String.class);
+          requestTracker.addTag("fbprefetch", true, Boolean.class);
 
         // source id
         addTagFromUrlQuery(parameters, requestTracker, Constants.MKSID, TrackerTagValueUtil.SidTag, String.class);
@@ -399,8 +404,8 @@ public class CollectionService {
         // email experienced treatment
         addTagFromUrlQuery(parameters, requestTracker, Constants.MKEXT, "ext", String.class);
 
-      } catch (Exception ex) {
-        logger.warn("Error when tracking ubi for site email", ex);
+      } catch (Exception e) {
+        logger.warn("Error when tracking ubi for site email click tags", e);
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
       }
     } else {
@@ -424,15 +429,18 @@ public class CollectionService {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
+        // event family
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
+
         // fbprefetch
         if (isFacebookPrefetchEnabled(request))
-          requestTracker.addTag("fbprefetch", "true", String.class);
+          requestTracker.addTag("fbprefetch", true, Boolean.class);
 
         // source id
         addTagFromUrlQuery(parameters, requestTracker, Constants.MKSID, TrackerTagValueUtil.SidTag, String.class);
 
         // email id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKBU, "emid", Long.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKBU, "emid", String.class);
 
         // campaign run date
         addTagFromUrlQuery(parameters, requestTracker, Constants.MKCRD, "crd", String.class);
@@ -441,16 +449,16 @@ public class CollectionService {
         addTagFromUrlQuery(parameters, requestTracker, Constants.MKSEGNAME, "segname", String.class);
 
         // Yesmail message master id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMMMID, "ymmmid", Integer.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMMMID, "ymmmid", String.class);
 
         // YesMail message id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMSID, "ymsid", Long.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMSID, "ymsid", String.class);
 
         // Yesmail mailing instance
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMINSTC, "yminstc", Integer.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMINSTC, "yminstc", String.class);
 
-      } catch (Exception ex) {
-        logger.warn("Error when tracking ubi for marketing email", ex);
+      } catch (Exception e) {
+        logger.warn("Error when tracking ubi for marketing email click tags", e);
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
       }
     } else {
@@ -460,6 +468,9 @@ public class CollectionService {
     return true;
   }
 
+  /**
+   * Add common tags all channels need
+   */
   private void addCommonTags(ContainerRequestContext requestContext, String targetUrl, String referer,
                              UserAgentInfo agentInfo, String type, String action) {
     // Tracking ubi only when refer domain is not ebay.
@@ -472,9 +483,8 @@ public class CollectionService {
         // page id
         requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
 
-        // event action and event family
+        // event action - click
         requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
-        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
 
         // target url
         requestTracker.addTag("url_mpre", targetUrl, String.class);
@@ -485,8 +495,8 @@ public class CollectionService {
         // populate device info
         CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
 
-      } catch (Exception ex) {
-        logger.warn("Error when tracking ubi for common tags", ex);
+      } catch (Exception e) {
+        logger.warn("Error when tracking ubi for common tags", e);
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
       }
     } else {
@@ -570,7 +580,7 @@ public class CollectionService {
    * Parse tag from url query string and add to sojourner
    */
   private static void addTagFromUrlQuery(MultiValueMap<String, String> parameters, IRequestScopeTracker requestTracker,
-                                           String urlParam, String tag, Class tagType) {
+                                         String urlParam, String tag, Class tagType) {
     if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
       requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
     }
