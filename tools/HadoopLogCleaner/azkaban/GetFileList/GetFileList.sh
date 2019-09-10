@@ -5,5 +5,6 @@ hostname
 cd /datashare/mkttracking/tools/HadoopLogCleaner/bin/
 pwd
 export HADOOP_USER_NAME=hdfs
+export HADOOP_CLIENT_OPTS="-XX:-UseGCOverheadLimit -Xmx6g"
 echo $HADOOP_USER_NAME
 ./get_files_list.sh
