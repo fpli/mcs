@@ -101,7 +101,7 @@ done
 rm -f ${tmp_index_file}
 echo "finish copy files size:"${files_size}
 
-KW_LKP_LATEST_PATH=hdfs://slickha/apps/kw_lkp/latest_path
+KW_LKP_LATEST_PATH=/apps/kw_lkp/latest_path
 
 tmp_path_file=latest_path
 rm -f ${tmp_path_file}
@@ -111,6 +111,9 @@ echo "${destFolder}" > ${tmp_path_file}
 hdfs dfs -test -e ${KW_LKP_LATEST_PATH}
 fileExist=$?
 if [[ ${fileExist} -eq 0 ]]; then
+    cur_path=$(hdfs dfs -text ${KW_LKP_LATEST_PATH})
+    cur_path_date=${cur_path:13:10}
+    the_day_before_cur_path_date=$(date --date="${cur_path_date} -1days" +%Y-%m-%d)
 #       max 3 times update path file
     retry=1
     rcode=1
@@ -132,6 +135,7 @@ if [[ ${fileExist} -eq 0 ]]; then
         echo "Fail to upload to SLC, please check!!!"
         exit ${rcode}
     fi
+    hdfs dfs -rm -r ${SLC_DEST_DIR}/${the_day_before_cur_path_date}
 else
     echo "${KW_LKP_LATEST_PATH} not existed"
 fi
