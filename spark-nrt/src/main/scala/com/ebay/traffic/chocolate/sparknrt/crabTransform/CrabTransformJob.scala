@@ -136,14 +136,16 @@ class CrabTransformJob(params: Parameter)
 
       // select core data columns
       val coreDf = commonDf.select(schema_apollo.dfColumns: _*).drop("kw_id")
-      val smallJoinDf = coreDf.select("keyword").filter(kwIsNotEmptyUdf(col("keyword"))).distinct()
+      val smallJoinDf = coreDf.select("keyword", "rvr_id")
+        .withColumnRenamed("rvr_id", "temp_rvr_id")
+        .filter(kwIsNotEmptyUdf(col("keyword"))).distinct()
       val heavyJoinResultDf = kwLKPDf
         .join(broadcast(smallJoinDf), $"keyword" === $"kw", "right_outer")
         //        .groupBy("keyword")
         //        .agg(min("kw_id") as "kw_id")
         .withColumnRenamed("keyword", "temp_kw")
 
-      coreDf.join(heavyJoinResultDf, $"keyword" === $"temp_kw", "left_outer")
+      coreDf.join(heavyJoinResultDf, $"rvr_id" === $"temp_rvr_id", "left_outer")
         .withColumn("kw_id", setDefaultValueForKwIdUdf(col("kw_id")))
         .select(schema_apollo.dfColumns: _*)
         .rdd
