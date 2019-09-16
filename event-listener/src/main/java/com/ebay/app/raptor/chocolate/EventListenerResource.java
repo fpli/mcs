@@ -8,6 +8,7 @@ import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.raptor.opentracing.Tags;
+import com.ebay.tracking.api.IRequestScopeTracker;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -83,6 +84,16 @@ public class EventListenerResource implements EventsApi {
   @Override
   public Response getVersion() {
     return Response.ok("1.0").build();
+  }
+
+  @Override
+  public Response impression() {
+    IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+    if (requestTracker == null) {
+      return Response.ok("TODO1").build();
+    } else {
+      return Response.ok("TODO2").build();
+    }
   }
 }
 
