@@ -35,6 +35,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URLDecoder;
 import java.util.*;
@@ -295,10 +296,11 @@ public class CollectionService {
   /**
    * Collect event and publish to kafka
    *
-   * @param request             raw request
+   * @param request raw request
    * @return OK or Error message
    */
-  public boolean collectImpression(HttpServletRequest request, ContainerRequestContext requestContext) throws Exception {
+  public boolean collectImpression(HttpServletRequest request, HttpServletResponse response,
+                                   ContainerRequestContext requestContext) throws Exception {
 
     String referer = request.getHeader("Referer");
 
@@ -403,6 +405,9 @@ public class CollectionService {
       processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
       processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
+
+    // send 1x1 pixel
+    ImageResponseHandler.sendImageResponse(response);
 
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),

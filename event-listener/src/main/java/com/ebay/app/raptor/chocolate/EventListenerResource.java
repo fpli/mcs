@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
@@ -41,6 +42,9 @@ public class EventListenerResource implements EventsApi {
 
   @Autowired
   private HttpServletRequest request;
+
+  @Autowired
+  private HttpServletResponse response;
 
   @Autowired
   private IEndUserContextProvider userCtxProvider;
@@ -92,7 +96,7 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res = null;
       try {
-        collectionService.collectImpression(request, requestContext);
+        collectionService.collectImpression(request, response, requestContext);
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
