@@ -92,7 +92,7 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res = null;
       try {
-        collectionService.collectImpression(request, userCtxProvider.get(), requestContext);
+        collectionService.collectImpression(request, requestContext);
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {

@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
@@ -295,11 +296,9 @@ public class CollectionService {
    * Collect event and publish to kafka
    *
    * @param request             raw request
-   * @param endUserContext      wrapped end user context
    * @return OK or Error message
    */
-  public boolean collectImpression(HttpServletRequest request, IEndUserContext endUserContext,
-                                   ContainerRequestContext requestContext) throws Exception {
+  public boolean collectImpression(HttpServletRequest request, ContainerRequestContext requestContext) throws Exception {
 
     String referer = request.getHeader("Referer");
 
@@ -324,20 +323,28 @@ public class CollectionService {
     ChannelActionEnum channelAction = null;
 
     // no query parameter, rejected
-    Map<String, String[]> parameters = request.getParameterMap();
-    if (parameters.size() == 0) {
+    Map<String, String[]> params = request.getParameterMap();
+    if (params.size() == 0) {
       logError(Errors.ERROR_NO_QUERY_PARAMETER);
+    }
+
+    MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+    for (Map.Entry<String, String[]> param : params.entrySet()) {
+      String[] values = param.getValue();
+      for (String value: values) {
+        parameters.add(param.getKey(), value);
+      }
     }
 
     // parse action from query param mkevt
     // no mkevt, rejected
-    if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT)[0] == null) {
+    if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
       logError(Errors.ERROR_NO_MKEVT);
     }
 
     // TODO refactor ChannelActionEnum
     // mkevt != 2, 3, 4, rejected
-    String mkevt = parameters.get(Constants.MKEVT)[0];
+    String mkevt = parameters.get(Constants.MKEVT).get(0);
     switch (mkevt) {
       case "2":
         channelAction = ChannelActionEnum.IMPRESSION;
@@ -354,14 +361,14 @@ public class CollectionService {
 
     // parse channel from query mkcid
     // no mkcid, accepted
-    if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID)[0] == null) {
+    if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
       logger.warn(Errors.ERROR_NO_MKCID);
       metrics.meter("NoMkcidParameter");
       return true;
     }
 
     // invalid mkcid, show error and accept
-    channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID)[0]);
+    channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
     if (channelType == null) {
       logger.warn(Errors.ERROR_INVALID_MKCID);
       metrics.meter("InvalidMkcid");
@@ -392,10 +399,10 @@ public class CollectionService {
 
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
-//    if (channelType == ChannelIdEnum.SITE_EMAIL)
-//      processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request);
-//    else if (channelType == ChannelIdEnum.MRKT_EMAIL)
-//      processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
+    if (channelType == ChannelIdEnum.SITE_EMAIL)
+      processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request);
+    else if (channelType == ChannelIdEnum.MRKT_EMAIL)
+      processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
 
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
