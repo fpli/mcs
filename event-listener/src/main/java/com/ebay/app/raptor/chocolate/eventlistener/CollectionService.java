@@ -223,7 +223,7 @@ public class CollectionService {
 
     // mkevt != 1, rejected
     String mkevt = parameters.get(Constants.MKEVT).get(0);
-    if (!mkevt.equals(Constants.VALID_MKEVT)) {
+    if (!mkevt.equals(Constants.VALID_MKEVT_CLICK)) {
       logError(Errors.ERROR_INVALID_MKEVT);
     }
 
@@ -292,7 +292,120 @@ public class CollectionService {
   }
 
   /**
-   * Process IMK events
+   * Collect event and publish to kafka
+   *
+   * @param request             raw request
+   * @param endUserContext      wrapped end user context
+   * @return OK or Error message
+   */
+  public boolean collectImpression(HttpServletRequest request, IEndUserContext endUserContext,
+                                   ContainerRequestContext requestContext) throws Exception {
+
+    String referer = request.getHeader("Referer");
+
+    if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
+      logger.warn(Errors.ERROR_NO_REFERER);
+      metrics.meter(Errors.ERROR_NO_REFERER);
+      referer = "";
+    }
+
+    // decode referer if necessary. Currently, android is sending rover url encoded.
+    if(referer.startsWith("https%3A%2F%2") || referer.startsWith("http%3A%2F%2")) {
+      referer = URLDecoder.decode( referer, "UTF-8" );
+    }
+
+    // no user agent, rejected
+    String userAgent = request.getHeader("User-Agent");
+    if (null == userAgent) {
+      logError(Errors.ERROR_NO_USER_AGENT);
+    }
+
+    ChannelIdEnum channelType;
+    ChannelActionEnum channelAction = null;
+
+    // no query parameter, rejected
+    Map<String, String[]> parameters = request.getParameterMap();
+    if (parameters.size() == 0) {
+      logError(Errors.ERROR_NO_QUERY_PARAMETER);
+    }
+
+    // parse action from query param mkevt
+    // no mkevt, rejected
+    if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT)[0] == null) {
+      logError(Errors.ERROR_NO_MKEVT);
+    }
+
+    // TODO refactor ChannelActionEnum
+    // mkevt != 2, 3, 4, rejected
+    String mkevt = parameters.get(Constants.MKEVT)[0];
+    switch (mkevt) {
+      case "2":
+        channelAction = ChannelActionEnum.IMPRESSION;
+        break;
+      case "3":
+        channelAction = ChannelActionEnum.VIMP;
+        break;
+      case "4":
+        channelAction = ChannelActionEnum.EMAIL_OPEN;
+        break;
+      default:
+        logError(Errors.ERROR_INVALID_MKEVT);
+    }
+
+    // parse channel from query mkcid
+    // no mkcid, accepted
+    if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID)[0] == null) {
+      logger.warn(Errors.ERROR_NO_MKCID);
+      metrics.meter("NoMkcidParameter");
+      return true;
+    }
+
+    // invalid mkcid, show error and accept
+    channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID)[0]);
+    if (channelType == null) {
+      logger.warn(Errors.ERROR_INVALID_MKCID);
+      metrics.meter("InvalidMkcid");
+      return true;
+    }
+
+    // platform check by user agent
+    UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
+    String platform = Constants.PLATFORM_UNKNOWN;
+    if (agentInfo.isDesktop()) {
+      platform = Constants.PLATFORM_DESKTOP;
+    } else if (agentInfo.isTablet()) {
+      platform = Constants.PLATFORM_TABLET;
+    } else if (agentInfo.isMobile()) {
+      platform = Constants.PLATFORM_MOBILE;
+    } else if (agentInfo.isNativeApp()) {
+      platform = Constants.PLATFORM_NATIVE_APP;
+    }
+
+    String action = channelAction.getAvro().toString();
+    String type = channelType.getLogicalChannel().getAvro().toString();
+
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+        Field.of(PLATFORM, platform));
+
+    // add tags all channels need
+    addCommonTags(requestContext, null, referer, agentInfo, type, action);
+
+    // add channel specific tags, and produce message for EPN and IMK
+    boolean processFlag = false;
+//    if (channelType == ChannelIdEnum.SITE_EMAIL)
+//      processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request);
+//    else if (channelType == ChannelIdEnum.MRKT_EMAIL)
+//      processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
+
+    if (processFlag)
+      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+          Field.of(PLATFORM, platform));
+
+    return true;
+  }
+
+  /**
+   * Process AMS and IMK events
    */
   private boolean processAmsAndImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
                                         MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
@@ -487,7 +600,8 @@ public class CollectionService {
         requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
 
         // target url
-        requestTracker.addTag("url_mpre", targetUrl, String.class);
+        if (targetUrl != null)
+          requestTracker.addTag("url_mpre", targetUrl, String.class);
 
         // referer
         requestTracker.addTag("ref", referer, String.class);
