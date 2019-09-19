@@ -5,6 +5,8 @@ import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.kernel.BaseEnum;
+import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.auth.RaptorSecureContext;
@@ -273,7 +275,7 @@ public class CollectionService {
         Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     // add tags all channels need
-    addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action);
+    addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, 2547208);
 
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
@@ -294,7 +296,7 @@ public class CollectionService {
   }
 
   /**
-   * Collect event and publish to kafka
+   * Collect impression event and send pixel response
    *
    * @param request raw request
    * @return OK or Error message
@@ -396,8 +398,9 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PLATFORM, platform));
 
+    // TODO apply for a new page id for email open
     // add tags all channels need
-    addCommonTags(requestContext, null, referer, agentInfo, type, action);
+    addCommonTags(requestContext, null, referer, agentInfo, type, action, 2547208);
 
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
@@ -521,13 +524,13 @@ public class CollectionService {
           requestTracker.addTag("fbprefetch", true, Boolean.class);
 
         // source id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKSID, TrackerTagValueUtil.SidTag, String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, TrackerTagValueUtil.SidTag, String.class);
 
         // email unique id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKEUID, "euid", String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.EMAIL_UNIQUE_ID, "euid", String.class);
 
         // email experienced treatment
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKEXT, "ext", String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.EXPRCD_TRTMT, "ext", String.class);
 
       } catch (Exception e) {
         logger.warn("Error when tracking ubi for site email click tags", e);
@@ -562,25 +565,25 @@ public class CollectionService {
           requestTracker.addTag("fbprefetch", true, Boolean.class);
 
         // source id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKSID, TrackerTagValueUtil.SidTag, String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, TrackerTagValueUtil.SidTag, String.class);
 
         // email id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKBU, "emid", String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.BEST_GUESS_USER, "emid", String.class);
 
         // campaign run date
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKCRD, "crd", String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.CAMP_RUN_DT, "crd", String.class);
 
         // segment name
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKSEGNAME, "segname", String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SEGMENT_NAME, "segname", String.class);
 
         // Yesmail message master id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMMMID, "ymmmid", String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.YM_MSSG_MSTR_ID, "ymmmid", String.class);
 
         // YesMail message id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMSID, "ymsid", String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.YM_MSSG_ID, "ymsid", String.class);
 
         // Yesmail mailing instance
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKYMINSTC, "yminstc", String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.YM_INSTC, "yminstc", String.class);
 
       } catch (Exception e) {
         logger.warn("Error when tracking ubi for marketing email click tags", e);
@@ -597,7 +600,7 @@ public class CollectionService {
    * Add common tags all channels need
    */
   private void addCommonTags(ContainerRequestContext requestContext, String targetUrl, String referer,
-                             UserAgentInfo agentInfo, String type, String action) {
+                             UserAgentInfo agentInfo, String type, String action, int pageId) {
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
     if(m.find() == false) {
@@ -606,7 +609,7 @@ public class CollectionService {
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
         // page id
-        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, 2547208, Integer.class);
+        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, pageId, Integer.class);
 
         // event action - click
         requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
@@ -627,6 +630,33 @@ public class CollectionService {
       }
     } else {
       metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+    }
+  }
+
+  private void addGenericSojTags(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
+                                 String type, String action) {
+    // Ubi tracking
+    IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+    String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
+    if (!StringUtils.isEmpty(sojTags)) {
+      StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
+      while (stToken.hasMoreTokens()) {
+        try {
+          StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
+          if (sojNvp.countTokens() == 2) {
+            String sojTag = sojNvp.nextToken().trim();
+            String urlParam = sojNvp.nextToken().trim();
+            // add data to Sojourner if the values are not null
+            if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
+              requestTracker.addTag(sojTag, parameters.get(urlParam).get(0), String.class);
+            }
+          }
+        } catch (Exception e) {
+          logger.warn("Error when tracking ubi for common tags", e);
+          metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+        }
+      }
     }
   }
 
