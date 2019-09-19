@@ -7,6 +7,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * Created by jialili1 on 9/18/19
+ *
+ * Send 1x1 pixel response for impression event
+ */
 public class ImageResponseHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(ImageResponseHandler.class);
@@ -22,7 +27,7 @@ public class ImageResponseHandler {
   /**
    * Send a 1x1 pixel image back to the client
    *
-   * @param response
+   * @param response the HTTP servlet response
    */
   public static void sendImageResponse(final HttpServletResponse response) {
     OutputStream os = null;
