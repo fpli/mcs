@@ -274,6 +274,9 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
+    // add tags in url param "sojTags"
+    addGenericSojTags(requestContext, parameters, type, action);
+
     // add tags all channels need
     addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, 2547208);
 
@@ -397,6 +400,9 @@ public class CollectionService {
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PLATFORM, platform));
+
+    // add tags in url param "sojTags"
+    addGenericSojTags(requestContext, parameters, type, action);
 
     // TODO apply for a new page id for email open
     // add tags all channels need
@@ -647,9 +653,8 @@ public class CollectionService {
           if (sojNvp.countTokens() == 2) {
             String sojTag = sojNvp.nextToken().trim();
             String urlParam = sojNvp.nextToken().trim();
-            // add data to Sojourner if the values are not null
             if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
-              requestTracker.addTag(sojTag, parameters.get(urlParam).get(0), String.class);
+              addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
             }
           }
         } catch (Exception e) {
