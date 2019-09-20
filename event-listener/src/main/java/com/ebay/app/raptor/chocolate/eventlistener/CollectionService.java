@@ -275,7 +275,7 @@ public class CollectionService {
         Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     // add tags in url param "sojTags"
-    addGenericSojTags(requestContext, parameters, type, action);
+    addGenericSojTags(requestContext, parameters, referer, type, action);
 
     // add tags all channels need
     addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, 2547208);
@@ -402,7 +402,7 @@ public class CollectionService {
         Field.of(PLATFORM, platform));
 
     // add tags in url param "sojTags"
-    addGenericSojTags(requestContext, parameters, type, action);
+    addGenericSojTags(requestContext, parameters, referer, type, action);
 
     // TODO apply for a new page id for email open
     // add tags all channels need
@@ -432,7 +432,6 @@ public class CollectionService {
                                         MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                         ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
                                         IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
-
     // parse rotation id
     long rotationId = parseRotationId(parameters);
 
@@ -458,7 +457,7 @@ public class CollectionService {
 
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(m.find() == false) {
+    if(!m.find()) {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
@@ -514,10 +513,9 @@ public class CollectionService {
   private boolean processSiteEmailEvent(ContainerRequestContext requestContext, String referer,
                                         MultiValueMap<String, String> parameters, String type, String action,
                                         HttpServletRequest request) {
-
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(m.find() == false) {
+    if(!m.find()) {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
@@ -558,7 +556,7 @@ public class CollectionService {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(m.find() == false) {
+    if(!m.find()) {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
@@ -609,7 +607,7 @@ public class CollectionService {
                              UserAgentInfo agentInfo, String type, String action, int pageId) {
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(m.find() == false) {
+    if(!m.find()) {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
@@ -640,28 +638,34 @@ public class CollectionService {
   }
 
   private void addGenericSojTags(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
-                                 String type, String action) {
-    // Ubi tracking
-    IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+                                 String referer, String type, String action) {
+    // Tracking ubi only when refer domain is not ebay.
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(!m.find()) {
+      // Ubi tracking
+      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-    String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
-    if (!StringUtils.isEmpty(sojTags)) {
-      StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
-      while (stToken.hasMoreTokens()) {
-        try {
-          StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
-          if (sojNvp.countTokens() == 2) {
-            String sojTag = sojNvp.nextToken().trim();
-            String urlParam = sojNvp.nextToken().trim();
-            if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
-              addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
+      String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
+      if (!StringUtils.isEmpty(sojTags)) {
+        StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
+        while (stToken.hasMoreTokens()) {
+          try {
+            StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
+            if (sojNvp.countTokens() == 2) {
+              String sojTag = sojNvp.nextToken().trim();
+              String urlParam = sojNvp.nextToken().trim();
+              if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
+                addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
+              }
             }
+          } catch (Exception e) {
+            logger.warn("Error when tracking ubi for common tags", e);
+            metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
           }
-        } catch (Exception e) {
-          logger.warn("Error when tracking ubi for common tags", e);
-          metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
         }
       }
+    } else {
+      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
     }
   }
 
