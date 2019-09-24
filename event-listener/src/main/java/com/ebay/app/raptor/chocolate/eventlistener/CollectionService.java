@@ -194,16 +194,16 @@ public class CollectionService {
           //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
           httpGet.addHeader(header, values.nextElement());
         }
-        if (header.equalsIgnoreCase("cookie")) {
-          if (!guid.isEmpty() || !cguid.isEmpty()) {
-            String cookie = "npii=";
-            if (!guid.isEmpty())
-              cookie += "btguid/" + guid + "^";
-            if (!cguid.isEmpty())
-              cookie += "cguid/" + cguid + "^";
-            httpGet.addHeader(header, cookie);
-          }
-        }
+      }
+
+      // add guid and cguid in request cookie header
+      if (!guid.isEmpty() || !cguid.isEmpty()) {
+        String cookie = "npii=";
+        if (!guid.isEmpty())
+          cookie += "btguid/" + guid + "^";
+        if (!cguid.isEmpty())
+          cookie += "cguid/" + cguid + "^";
+        httpGet.addHeader("Cookie", cookie);
       }
 
       roverClient.forwardRequestToRover(client, httpGet, context);
