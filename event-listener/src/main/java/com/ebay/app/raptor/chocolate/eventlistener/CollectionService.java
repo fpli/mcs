@@ -68,7 +68,7 @@ public class CollectionService {
   private static final String LANDING_PAGE_TYPE = "landingPageType";
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
-  private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?(rover\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
+  private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?(rover\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
 
   @PostConstruct
   public void postInit() {
@@ -151,21 +151,21 @@ public class CollectionService {
 
       String guid = "";
       String cguid = "";
-      // add udid parameter from tracking header's guid if udid is not in rover url. The udid will be set as guid by rover later
-      if (!queryNames.contains("udid")) {
-        String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
-        for (String seg : trackingHeader.split(",")
+      String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
+      for (String seg : trackingHeader.split(",")
           ) {
-          String[] keyValue = seg.split("=");
-          if (keyValue.length == 2) {
-            if (keyValue[0].equalsIgnoreCase("guid")) {
-              guid = keyValue[1];
-            }
-            if (keyValue[0].equalsIgnoreCase("cguid")) {
-              cguid = keyValue[1];
-            }
+        String[] keyValue = seg.split("=");
+        if (keyValue.length == 2) {
+          if (keyValue[0].equalsIgnoreCase("guid")) {
+            guid = keyValue[1];
+          }
+          if (keyValue[0].equalsIgnoreCase("cguid")) {
+            cguid = keyValue[1];
           }
         }
+      }
+      // add udid parameter from tracking header's guid if udid is not in rover url. The udid will be set as guid by rover later
+      if (!queryNames.contains("udid")) {
         if (!guid.isEmpty()) {
           uriBuilder.addParameter("udid", guid);
         }
