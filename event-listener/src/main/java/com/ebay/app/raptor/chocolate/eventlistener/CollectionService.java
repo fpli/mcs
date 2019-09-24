@@ -149,16 +149,20 @@ public class CollectionService {
       }
       uriBuilder.setParameters(queryParameters);
 
+      String guid = "";
+      String cguid = "";
       // add udid parameter from tracking header's guid if udid is not in rover url. The udid will be set as guid by rover later
       if (!queryNames.contains("udid")) {
         String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
-        String guid = "";
         for (String seg : trackingHeader.split(",")
           ) {
           String[] keyValue = seg.split("=");
           if (keyValue.length == 2) {
             if (keyValue[0].equalsIgnoreCase("guid")) {
               guid = keyValue[1];
+            }
+            if (keyValue[0].equalsIgnoreCase("cguid")) {
+              cguid = keyValue[1];
             }
           }
         }
@@ -190,6 +194,16 @@ public class CollectionService {
           //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
           httpGet.addHeader(header, values.nextElement());
         }
+      }
+
+      // add guid and cguid in request cookie header
+      if (!guid.isEmpty() || !cguid.isEmpty()) {
+        String cookie = "npii=";
+        if (!guid.isEmpty())
+          cookie += "btguid/" + guid + "^";
+        if (!cguid.isEmpty())
+          cookie += "cguid/" + cguid + "^";
+        httpGet.addHeader("Cookie", cookie);
       }
 
       roverClient.forwardRequestToRover(client, httpGet, context);
