@@ -6,6 +6,7 @@ import java.util.Properties
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
+import com.ebay.traffic.chocolate.sparknrt.utils.{MyID, XIDResponse}
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.{Gson, JsonParser}
 import org.apache.commons.lang3.StringUtils
@@ -16,6 +17,8 @@ import org.apache.spark.sql.functions.udf
 import org.slf4j.LoggerFactory
 import rx.Observable
 import rx.functions.Func1
+import scalaj.http.Http
+import spray.json._
 
 import scala.collection.immutable.HashMap
 import scala.collection.mutable
@@ -26,6 +29,12 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
   lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
+
+  lazy val xidHost: String = properties.getProperty("xid.xidHost")
+  lazy val xidConsumerId: String = properties.getProperty("xid.xidConsumerId")
+  lazy val xidClientId: String = properties.getProperty("xid.xidClientId")
+  lazy val xidConnectTimeout: Int = properties.getProperty("xid.xidConnectTimeout").toInt
+  lazy val xidReadTimeout: Int = properties.getProperty("xid.xidReadTimeout").toInt
 
   val cbData = asyncCouchbaseGet(df)
 
@@ -251,6 +260,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_last_view_item_info_udf = udf((cguid: String, timestamp: String) => getLastViewItemInfo(cguid, timestamp))
 
   val filter_specific_pub_udf = udf((referer: String, publisher: String) => filter_specific_pub(referer, publisher))
+
+  val getUserIdUdf = udf((userId: String, cguid: String) => getUserIdByCguid(userId, cguid))
 
   def filter_specific_pub(referer: String, publisher: String): Int = {
     if (publisher.equals("5574651234") && getRefererURLAndDomain(referer, true).endsWith(".bid"))
@@ -529,25 +540,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def extractValidId(id: String): String = {
-    /*if (id != null || !id.equals("")) {
-      val arr = id.toCharArray
-      var pos = 0
-      var flag = true
-      for (i <- 0 until arr.length) {
-        if (!Character.isDigit(arr(i)))
-          flag = false
-        if (Character.isDigit(arr(i)) && flag)
-          pos = pos + 1
-      }
-      try {
-        return id.substring(0, pos)
-      } catch {
-        case e: Exception => {
-          return ""
-        }
-      }
-    }
-    ""*/
     getValidParam(id)
   }
 
@@ -598,6 +590,40 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
 
     ""
+  }
+
+  def getUserIdByCguid(userId: String, cguid: String): String = {
+    var result = userId
+    if (StringUtils.isEmpty(userId) || userId.equals("0") || userId.equals("-1")) {
+      if (StringUtils.isNotEmpty(cguid)) {
+        try{
+          val xid = xidRequest("cguid", cguid)
+          if (xid.accounts.nonEmpty) {
+            metrics.meter("epn.XidGotUserId", 1)
+            result = xid.accounts.head
+            logger.debug("get userid from Xid user_id=" + result)
+          }
+        } catch {
+          case e: Exception => {
+            metrics.meter("epn.XidTimeOut", 1)
+            logger.warn("call xid error" + e.printStackTrace())
+          }
+        }
+      }
+    }
+    result
+  }
+
+  def xidRequest(idType: String, id: String): MyID = {
+    Http(s"http://$xidHost/anyid/v1/$idType/$id")
+      .header("X-EBAY-CONSUMER-ID", xidConsumerId)
+      .header("X-EBAY-CLIENT-ID", xidClientId)
+      .timeout(xidConnectTimeout, xidReadTimeout)
+      .asString
+      .body
+      .parseJson
+      .convertTo[XIDResponse]
+      .toMyID()
   }
 
 
@@ -684,11 +710,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     pageId
   }
 
-  /* def findDomainInUrl(url: String): String = {
-     val domain = new URL(url)
-     domain.getProtocol + "://" + domain.getHost
-   }*/
-
   def getclickFilterTypeId(publisherId: String, rotationId: String) = {
     var clickFilterTypeId = "3"
     val advrtsrId = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1)
@@ -703,34 +724,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     })
     clickFilterTypeId
   }
-
-  /*def getRoiRuleValue(rotationId: String, publisherId: String, referer_domain: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_9: Int, rt_rule_15: Int): (Int, Int) = {
-    var temp_roi_values = 0
-    var roiRuleValues = 0
-    //  var amsFilterRoiValue = 0
-    var roi_fltr_yn_ind = 0
-
-    if (isDefinedPublisher(publisherId) && isDefinedAdvertiserId(rotationId)) {
-      if (callRoiRulesSwitch(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1)).equals("2")) {
-        val roiRuleList = lookupAdvClickFilterMapAndROI(publisherId, getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1), traffic_source_code)
-        roiRuleList(0).setRule_result(callRoiSdkRule(roiRuleList(0).getIs_rule_enable, roiRuleList(0).getIs_pblshr_advsr_enable_rule, 0))
-        roiRuleList(1).setRule_result(callRoiEbayReferrerRule(roiRuleList(1).getIs_rule_enable, roiRuleList(1).getIs_pblshr_advsr_enable_rule, rt_rule_9))
-        roiRuleList(2).setRule_result(callRoiNqBlacklistRule(roiRuleList(2).getIs_rule_enable, roiRuleList(2).getIs_pblshr_advsr_enable_rule, rt_rule_15))
-        roiRuleList(3).setRule_result(callRoiNqWhitelistRule(publisherId, roiRuleList(3).getIs_rule_enable, roiRuleList(3).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
-        roiRuleList(4).setRule_result(callRoiMissingReferrerUrlRule(roiRuleList(4).getIs_rule_enable, roiRuleList(4).getIs_pblshr_advsr_enable_rule, referer_domain))
-        roiRuleList(5).setRule_result(callRoiNotRegisteredRule(publisherId, roiRuleList(5).getIs_rule_enable, roiRuleList(5).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
-
-        for (i <- roiRuleList.indices) {
-          temp_roi_values = temp_roi_values + (roiRuleList(i).getRule_result << i)
-        }
-      }
-    }
-    roiRuleValues = temp_roi_values + (google_fltr_do_flag << 6)
-    if (roiRuleValues != 0) {
-      roi_fltr_yn_ind = 1
-    }
-    (roiRuleValues, roi_fltr_yn_ind)
-  }*/
 
   def getRoiRuleValue(rotationId: String, publisherId: String, referer_domain: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_9: Int, rt_rule_15: Int): (Int, Int) = {
     var temp_roi_values = 0

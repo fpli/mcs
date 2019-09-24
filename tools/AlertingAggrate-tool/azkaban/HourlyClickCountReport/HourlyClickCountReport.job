@@ -1,0 +1,3 @@
+type=command
+command=bash HourlyClickCountReport.sh
+failure.emails=lxiong1@ebay.com

@@ -1,27 +1,32 @@
 package com.ebay.traffic.chocolate.sparknrt.imkDump
 
-import java.net.{InetAddress, URL}
+import java.net.InetAddress
 import java.util
 import java.util.Properties
 
 import com.couchbase.client.java.document.JsonDocument
+import com.ebay.kernel.patternmatch.dawg.{Dawg, DawgDictionary}
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
-import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
-import com.google.gson.{Gson, GsonBuilder}
+import com.ebay.traffic.chocolate.sparknrt.utils.{Cguid, TableSchema}
+import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
+import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
-import org.apache.spark.sql.{DataFrame, Encoder, Encoders, Row}
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import rx.Observable
 import rx.functions.Func1
 
+import scala.io.Source
+
 /**
   * Created by ganghuang on 12/3/18.
   * read capping result and generate files for imk table
+  * Base class of ImkDump for different channels. It's for paid search at the beginning.
   */
 object ImkDumpJob extends App {
   override def main(args: Array[String]): Unit = {
@@ -66,10 +71,23 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     } else null
   }
 
+  @transient lazy val metaPostFix = ".epnnrt"
+
   var guidCguidMap: util.HashMap[String, String] = {
     CorpCouchbaseClient.dataSource = properties.getProperty("imkdump.couchbase.datasource")
     null
   }
+
+  @transient lazy val userAgentBotDawgDictionary : DawgDictionary =  {
+    val lines = Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("dap_user_agent_robot.txt")).getLines.toArray
+    new DawgDictionary(lines, true)
+  }
+
+  @transient lazy val ipBotDawgDictionary : DawgDictionary =  {
+    val lines = Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("dap_ip_robot.txt")).getLines.toArray
+    new DawgDictionary(lines, true)
+  }
+
   /**
     * :: DeveloperApi ::
     * Implemented by subclasses to run the spark job.
@@ -97,7 +115,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       suffixArray = suffix.split(",")
     }
 
-    var dedupeOutputMeta = inputMetadata.readDedupeOutputMeta(".epnnrt")
+    var dedupeOutputMeta = inputMetadata.readDedupeOutputMeta(metaPostFix)
     if (dedupeOutputMeta.length > batchSize) {
       dedupeOutputMeta = dedupeOutputMeta.slice(0, batchSize)
     }
@@ -133,7 +151,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
           iter
         }).repartition(params.partitions)
 
-        metrics.meter("imk.dump.out", imkDf.count())
+        metrics.meter("imk.dump.out", imkDf.count(), Field.of[String, AnyRef]("channelType", params.channel))
 
         saveDFToFiles(imkDf, sparkDir, "gzip", "csv", "bel")
         val files = renameFiles(outputDir, sparkDir, date)
@@ -154,8 +172,13 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     }
   }
 
-  def imkDumpCore(df: DataFrame): DataFrame = {
-    var imkDf = df
+  /**
+    * parse common fields
+    * @param df input df
+    * @return df with appended fields
+    */
+  def imkDumpCommon(df: DataFrame): DataFrame = {
+    df
       .withColumn("temp_uri_query", getQueryParamsUdf(col("uri")))
       .withColumn("batch_id", getBatchIdUdf())
       .withColumn("rvr_id", col("short_snapshot_id"))
@@ -169,7 +192,6 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("rfrr_url", col("referer"))
       .withColumn("src_rotation_id", col("src_rotation_id"))
       .withColumn("dst_rotation_id", col("dst_rotation_id"))
-      .withColumn("dst_client_id", getClientIdUdf(col("temp_uri_query"), lit("mkrid")))
       .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(col("uri")))
       .withColumn("lndng_page_url", replaceMkgroupidMktypeUdf(col("uri")))
       .withColumn("user_query", getUserQueryUdf(col("referer"), col("temp_uri_query")))
@@ -179,14 +201,18 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       .withColumn("mt_id", getDefaultNullNumParamValueFromUrlUdf(col("temp_uri_query"), lit("mt_id")))
       .withColumn("crlp", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("user_map_ind", getUserMapIndUdf(col("user_id")))
-      .withColumn("item_id", getItemIdUdf(col("uri")))
       .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("uri")))
       .withColumn("mfe_name", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("cguid", getCguidUdf(col("cguid"), col("guid")))
-      .drop("lang_cd")
-      .filter(judegNotEbaySitesUdf(col("referer")))
-//      .filter(judgeCGuidNotNullUdf(col("cguid")))
+  }
 
+  /**
+    * parse flex fields and filter output by schema
+    * @param df input df
+    * @return df with final schema
+    */
+  def imkDumpEx(df: DataFrame): DataFrame = {
+    var imkDf = df
     for (i <- 1 to 20) {
       val columnName = "flex_field_" + i
       val paramName = "ff" + i
@@ -197,6 +223,15 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       imkDf = imkDf.withColumn(e, lit(schema_imk_table.defaultValues(e)))
     })
     imkDf.select(schema_imk_table.dfColumns: _*)
+  }
+
+  def imkDumpCore(df: DataFrame): DataFrame = {
+    val imkDf = imkDumpCommon(df)
+      .withColumn("dst_client_id", getClientIdUdf(col("temp_uri_query"), lit("mkrid")))
+      .withColumn("item_id", getItemIdUdf(col("uri")))
+      .drop("lang_cd")
+      .filter(judegNotEbaySitesUdf(col("referer")))
+    imkDumpEx(imkDf)
   }
 
   val tools: Tools = new Tools(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
@@ -221,6 +256,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val needQueryCBToGetCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => StringUtils.isEmpty(cguid) && StringUtils.isNotEmpty(guid))
   val getCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => getCguid(cguid, guid))
   val judgeCGuidNotNullUdf: UserDefinedFunction = udf((cguid: String) => judgeCGuidNotNull(cguid))
+
   /**
     * override renameFiles to have special output file name for TD
     * @param outputDir final destination
@@ -259,7 +295,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     */
   def judgeCGuidNotNull(cguid: String): Boolean = {
     if (StringUtils.isEmpty(cguid)) {
-      metrics.meter("imk.dump.nullCguid", 1)
+      metrics.meter("imk.dump.nullCguid", 1, Field.of[String, AnyRef]("channelType", params.channel))
       false
     }  else {
       true
@@ -283,7 +319,7 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       } catch {
         case e: Exception => {
           if(metrics != null) {
-            metrics.meter("imk.dump.malformed", 1)
+            metrics.meter("imk.dump.malformed", 1, Field.of[String, AnyRef]("channelType", params.channel))
           }
           logger.warn("MalformedUrl", e)
         }
@@ -302,11 +338,11 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     if (StringUtils.isNotEmpty(cguid)) {
       cguid
     } else {
-      metrics.meter("imk.dump.tryCguidByGuid", 1)
+      metrics.meter("imk.dump.tryCguidByGuid", 1, Field.of[String, AnyRef]("channelType", params.channel))
       if (guidCguidMap != null) {
         val result = guidCguidMap.getOrDefault(guid, "")
         if (StringUtils.isNotEmpty(result)) {
-          metrics.meter("imk.dump.gotCguidByGuid", 1)
+          metrics.meter("imk.dump.gotCguidByGuid", 1, Field.of[String, AnyRef]("channelType", params.channel))
           result
         } else {
           guid
@@ -345,15 +381,63 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting cguid by guid list" +  e)
-        metrics.meter("imk.dump.error.cbquery", 1)
+        metrics.meter("imk.dump.error.cbquery", 1, Field.of[String, AnyRef]("channelType", params.channel))
         // should we throw the exception and make the job fail?
         throw new Exception(e)
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
     val endTime = System.currentTimeMillis
-    metrics.mean("imk.dump.cb.latency", endTime - startTime)
+    metrics.mean("imk.dump.cb.latency", endTime - startTime, Field.of[String, AnyRef]("channelType", params.channel))
     res
+  }
+
+  val getMgvaluereasonUdf: UserDefinedFunction = udf((brwsrName: String, clntRemoteIp: String) => getMgvaluereason(brwsrName, clntRemoteIp))
+
+  /**
+    * Generate mgvaluereason, "BOT" or empty string
+    * @param brwsrName alias for user agent
+    * @param clntRemoteIp alias for remote ip
+    * @return "BOT" or empty string
+    */
+  def getMgvaluereason(brwsrName: String, clntRemoteIp: String): String = {
+    if (isBotByUserAgent(brwsrName) || isBotByIp(clntRemoteIp)) {
+      "BOT"
+    } else {
+      ""
+    }
+  }
+
+  /**
+    * Check if this request is bot with brwsr_name
+    * @param brwsrName alias for user agent
+    * @return is bot or not
+    */
+  def isBotByUserAgent(brwsrName: String): Boolean = {
+    isBot(brwsrName, userAgentBotDawgDictionary)
+  }
+
+  /**
+    * Check if this request is bot with clnt_remote_ip
+    * @param clntRemoteIp alias for remote ip
+    * @return is bot or not
+    */
+  def isBotByIp(clntRemoteIp: String): Boolean = {
+    isBot(clntRemoteIp, ipBotDawgDictionary)
+  }
+
+  def isBot(info: String, dawgDictionary: DawgDictionary): Boolean = {
+    if (StringUtils.isEmpty(info)) {
+      false
+    } else {
+      val dawg = new Dawg(dawgDictionary)
+      val result = dawg.findAllWords(info.toLowerCase, false)
+      if (result.isEmpty) {
+        false
+      } else {
+        true
+      }
+    }
   }
 
 }

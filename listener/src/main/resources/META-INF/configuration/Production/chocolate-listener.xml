@@ -22,7 +22,11 @@
     <value>marketing.tracking.listened-display,listened-display</value>
     <description>Kafka topic for display channel to publish.</description>
   </property>
-
+  <property>
+    <name>chocolate.listener.kafka.topic.SOCIAL_MEDIA</name>
+    <value>marketing.tracking.listened-social-media,listened-social-media</value>
+    <description>Kafka topic for social media channel to publish.</description>
+  </property>
   <!-- Kafka producer end -->
 
   <!-- ElasticSearch begin -->

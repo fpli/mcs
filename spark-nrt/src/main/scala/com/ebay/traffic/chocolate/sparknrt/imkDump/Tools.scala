@@ -30,7 +30,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
 
   lazy val userQueryParamsOfLandingUrl: Array[String] = Array("uq", "satitle", "keyword", "item", "store")
 
-//  lazy val ebaySites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE)
+  // do not filter /ulk XC-1541
   lazy val ebaySites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE)
 
   lazy val user_agent_map: Map[String, Int] = Map(
@@ -211,7 +211,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
   }
 
   /**
-    * get item id from url, only support itm and i page now
+    * get item id from url, only support itm and i page now for marketing channels and mpuid in roi events
     * @param uri url string
     * @return item id
     */
@@ -219,7 +219,6 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     var path = ""
     try {
       path = new URL(uri).getPath
-
       if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
         val itemId = path.substring(path.lastIndexOf("/") + 1)
         if (StringUtils.isNumeric(itemId)) {
@@ -291,6 +290,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
   def getCommandType(commandType: String): String = {
     commandType match {
       case "IMPRESSION" => "4"
+      case "ROI" => "2"
       case _ => "1"
     }
   }
@@ -307,6 +307,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       case "PAID_SEARCH" => "2"
       case "SOCIAL_MEDIA" => "16"
       case "PAID_SOCIAL" => "20"
+      case "ROI" => "0"
       case _ => "0"
     }
   }
@@ -395,6 +396,36 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     } else {
       true
     }
+  }
+
+  /**
+    * Get ROI related fields from mpuid
+    * @param index the index of field
+    * @param query input uri query
+    * @return roi field
+    */
+  def getRoiIdFromUrlQuery(index: Int, query: String): String = {
+    val mupid = getParamValueFromQuery(query,"mpuid")
+    val ids = mupid.split(";")
+    if(ids.length > index)
+      return ids(index)
+    else
+      return "0"
+  }
+
+  /**
+    * Get client_id from rover url
+    * @param uri rover uri
+    * @return client_id
+    */
+  def getClientIdFromRoverUrl(uri: String): String = {
+    val path = new URL(uri).getPath()
+    if (path != null && path != "") {
+      val pathArray = path.split("/")
+      if (pathArray.length > 3)
+        return pathArray(3).split("\\?")(0).split("-")(0)
+    }
+    ""
   }
 
 }

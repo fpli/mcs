@@ -5,15 +5,14 @@ import java.util
 import java.util.{Date, Properties}
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import com.ebay.traffic.chocolate.sparknrt.imkDump.TableSchema
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
-import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
+import com.ebay.traffic.chocolate.sparknrt.utils.{MyID, TableSchema, XIDResponse}
+import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.compress.GzipCodec
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, lit, udf}
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions.{col, lit, udf, _}
 import scalaj.http.Http
 import spray.json._
 
@@ -71,9 +70,9 @@ class CrabTransformJob(params: Parameter)
 
   @transient lazy val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
 
-  lazy val imkTempDir: String = params.outputDir + "/imkTemp/"
-  lazy val dtlTempDir: String = params.outputDir + "/dtlTemp/"
-  lazy val mgTempDir: String = params.outputDir + "/mgTemp/"
+  lazy val imkTempDir: String = params.outputDir + "/" + params.channel + "/imkTemp/"
+  lazy val dtlTempDir: String = params.outputDir + "/" + params.channel + "/dtlTemp/"
+  lazy val mgTempDir: String = params.outputDir + "/" + params.channel + "/mgTemp/"
   lazy val imkOutputDir: String = params.outputDir + "/imkOutput/"
   lazy val dtlOutputDir: String = params.outputDir + "/dtlOutput/"
   lazy val mgOutputDir: String = params.outputDir + "/mgOutput/"
@@ -105,7 +104,7 @@ class CrabTransformJob(params: Parameter)
     var crabTransformMeta = metadata.readDedupeOutputMeta()
     // at most meta files
     if (crabTransformMeta.length > params.maxMetaFiles) {
-      metrics.meter("imk.transform.TooManyMetas")
+      metrics.meter("imk.transform.TooManyMetas", crabTransformMeta.length, Field.of[String, AnyRef]("channelType", params.channel))
       crabTransformMeta = crabTransformMeta.slice(0, params.maxMetaFiles)
     }
 
@@ -122,6 +121,7 @@ class CrabTransformJob(params: Parameter)
         .withColumn("user_id", getUserIdUdf(col("user_id"), col("cguid"), col("rvr_cmnd_type_cd")))
         .withColumn("mfe_id", getMfeIdUdf(col("mfe_name")))
         .withColumn("event_ts", setMessageLagUdf(col("event_ts")))
+        .withColumn("mgvalue_rsn_cd", getMgvalueRsnCdUdf(col("mgvaluereason")))
         .na.fill(schema_tfs.defaultValues).cache()
       // set default values for some columns
       schema_apollo.filterNotColumns(commonDf.columns).foreach(e => {
@@ -136,14 +136,16 @@ class CrabTransformJob(params: Parameter)
 
       // select core data columns
       val coreDf = commonDf.select(schema_apollo.dfColumns: _*).drop("kw_id")
-      val smallJoinDf = coreDf.select("keyword").filter(kwIsNotEmptyUdf(col("keyword"))).distinct()
+      val smallJoinDf = coreDf.select("keyword", "rvr_id")
+        .withColumnRenamed("rvr_id", "temp_rvr_id")
+        .filter(kwIsNotEmptyUdf(col("keyword"))).distinct()
       val heavyJoinResultDf = kwLKPDf
         .join(broadcast(smallJoinDf), $"keyword" === $"kw", "right_outer")
         //        .groupBy("keyword")
         //        .agg(min("kw_id") as "kw_id")
         .withColumnRenamed("keyword", "temp_kw")
 
-      coreDf.join(heavyJoinResultDf, $"keyword" === $"temp_kw", "left_outer")
+      coreDf.join(heavyJoinResultDf, $"rvr_id" === $"temp_rvr_id", "left_outer")
         .withColumn("kw_id", setDefaultValueForKwIdUdf(col("kw_id")))
         .select(schema_apollo.dfColumns: _*)
         .rdd
@@ -179,7 +181,7 @@ class CrabTransformJob(params: Parameter)
       val file = metaFiles._1
       metadata.deleteDedupeOutputMeta(file)
     })
-    metrics.meter("imk.transform.processedMete", crabTransformMeta.length)
+    metrics.meter("imk.transform.processedMete", crabTransformMeta.length, Field.of[String, AnyRef]("channelType", params.channel))
     if (metrics != null) {
       metrics.flush()
       metrics.close()
@@ -188,6 +190,7 @@ class CrabTransformJob(params: Parameter)
 
   val getItemIdUdf: UserDefinedFunction = udf((roi_item_id: String, item_id: String) => getItemId(roi_item_id, item_id))
   val getMfeIdUdf: UserDefinedFunction = udf((mfe_name: String) => getMfeIdByMfeName(mfe_name))
+  val getMgvalueRsnCdUdf: UserDefinedFunction = udf((mgvaluereason: String) => getMgvalueRsnCd(mgvaluereason))
   val setDefaultValueForKwIdUdf: UserDefinedFunction = udf((kw_id: String) => {
     if (StringUtils.isEmpty(kw_id)) {
       "-999"
@@ -239,7 +242,7 @@ class CrabTransformJob(params: Parameter)
       try{
         val messageDt = dateFormat.parse(eventTs)
         val nowDt = new Date()
-        metrics.mean("imk.transform.messageLag", nowDt.getTime - messageDt.getTime)
+        metrics.mean("imk.transform.messageLag", nowDt.getTime - messageDt.getTime, Field.of[String, AnyRef]("channelType", params.channel))
       } catch {
         case e:Exception => {
           logger.warn("parse event ts error", e)
@@ -264,10 +267,10 @@ class CrabTransformJob(params: Parameter)
     if (StringUtils.isEmpty(userId) || userId.equals("0")) {
       if (StringUtils.isNotEmpty(cguid)) {
         try{
-          metrics.meter("imk.transform.XidTryGetUserId", 1)
+          metrics.meter("imk.transform.XidTryGetUserId", 1, Field.of[String, AnyRef]("channelType", params.channel))
           val xid = xidRequest("cguid", cguid)
           if (xid.accounts.nonEmpty) {
-            metrics.meter("imk.transform.XidGotUserId", 1)
+            metrics.meter("imk.transform.XidGotUserId", 1, Field.of[String, AnyRef]("channelType", params.channel))
             result = xid.accounts.head
           }
         } catch {
@@ -324,6 +327,14 @@ class CrabTransformJob(params: Parameter)
       mfe_name_id_map.getOrElse(mfeName, "-999")
     } else {
       "-999"
+    }
+  }
+
+  def getMgvalueRsnCd(mgvaluereason: String): String = {
+    if ("BOT".equalsIgnoreCase(mgvaluereason)) {
+      "4"
+    } else {
+      ""
     }
   }
 

@@ -119,7 +119,7 @@ public class FilterWorker extends Thread {
                       Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
                       Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
               long latency = System.currentTimeMillis() - message.getTimestamp();
-              metrics.mean("FilterLatency", latency);
+              metrics.mean("FilterLatency", latency, Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
 
               ++count;
               metrics.meter("FilterThroughput", 1, message.getTimestamp(),
@@ -189,7 +189,7 @@ public class FilterWorker extends Thread {
             metrics.mean("FilterIdle");
             Thread.sleep(POLL_STEP_MS);
           } else {
-            metrics.mean("FilterPassedPPM", 1000000L * passed / count);
+            metrics.mean("FilterPassedPPM", 100L * passed / count);
             long timeSpent = System.currentTimeMillis() - startTime;
             metrics.mean("FilterProcessingTime", timeSpent);
 

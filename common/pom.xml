@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.ebay.traffic</groupId>
     <artifactId>chocolate</artifactId>
-    <version>3.4.2-RELEASE</version>
+    <version>3.5.0-RELEASE</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>chocolate-common</artifactId>
@@ -97,39 +97,6 @@
       </resource>
     </resources>
     <plugins>
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.7.7.201606060606</version>
-        <executions>
-          <execution>
-            <id>agent</id>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>post-test</id>
-            <phase>test</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <destFile>${basedir}/target/jacoco-unit.exe</destFile>
-          <dataFile>${basedir}/target/jacoco-unit.exe</dataFile>
-          <append>true</append>
-          <propertyName>surefireArgLine</propertyName>
-          <excludes>
-            <!-- Excluded the Avro generated code. -->
-            <exclude>**/avro/*.*</exclude>
-            <!-- Exclude utility classes -->
-            <exclude>**/ZKUploader.*</exclude>
-            <exclude>**/DecodeSnapshotId.*</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>

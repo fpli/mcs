@@ -21,34 +21,37 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-
+import org.apache.commons.lang3.StringUtils;
+import java.net.URLDecoder;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Rover rheos topic filter.
  *
- * We only filter missing clicks in epn case.
+ * We only filter
+ *
+ * 1. missing clicks in epn case.
+ * 2. roi events
  *
  * @author xiangli4
  */
 public class RoverRheosTopicFilterTask extends Thread {
 
-  protected static final String APPLICATION_PAYLOAD = "applicationPayload";
+  private static final String APPLICATION_PAYLOAD = "applicationPayload";
+  private static final String CLIENT_DATA = "clientData";
+  private static final String INCOMING = "Incoming";
+  private static final String INCOMING_PAGE_ROVER = "IncomingPageRover";
+  private static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
+  private static final String INCOMING_PAGE_ROI = "IncomingPageRoi";
 
-  protected static final String INCOMING = "Incoming";
-  protected static final String INCOMING_PAGE_ROVER = "IncomingPageRover";
-  protected static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
   private static Pattern missingRoverClicksPattern = Pattern.compile("^\\/rover\\/.*\\/.*\\/1\\?.*rvrhostname=.*",
     Pattern.CASE_INSENSITIVE);
-  protected static final Utf8 empty = new Utf8("");
-  protected static final Utf8 zero = new Utf8("0");
-
-  protected static Map<String, String> defaultApplicationPayload = new HashMap<>();
+  private static final Utf8 empty = new Utf8("");
+  private static final Utf8 zero = new Utf8("0");
   private static Long interval = 0L;
   private static RoverRheosTopicFilterTask task = null;
   private static Boolean runFlag = true;
@@ -111,18 +114,75 @@ public class RoverRheosTopicFilterTask extends Thread {
     Producer<Long, ListenerMessage> producer;
     producer = KafkaSink.get();
     String kafkaTopic;
-    kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.EPN);
     Long round = 0L;
 
     while (runFlag) {
       round++;
       if ((round % 10000) == 1) logger.warn(String.format("Round %d from rheos", round));
       try {
-        processRecords(rheosConsumer, producer, kafkaTopic);
+        processRecords(rheosConsumer, producer);
       } catch (Throwable e) {
         logger.error("Something wrong:", e);
       }
     }
+  }
+
+  /**
+   * Set common fields for listener message
+   * @param record listener message
+   * @param applicationPayload rheos application payload
+   */
+  public void setCommonFields(ListenerMessage record, HashMap<Utf8, Utf8> applicationPayload, GenericRecord genericRecord) {
+    // user id
+    record.setUserId(Long.valueOf(getField(genericRecord, "userId", "0")));
+
+    // guid, cguid
+    record.setGuid(coalesce(applicationPayload.get(new Utf8("g")), empty).toString());
+    record.setCguid(coalesce(applicationPayload.get(new Utf8("n")), empty).toString());
+
+    // remote ip
+    record.setRemoteIp(coalesce(applicationPayload.get(new Utf8("ForwardedFor")), empty).toString());
+
+    // user agent
+    record.setUserAgent(coalesce(applicationPayload.get(new Utf8("Agent")), empty).toString());
+
+
+    // language code
+    record.setLangCd(coalesce(applicationPayload.get(new Utf8("ul")), empty).toString());
+
+    // geography identifier
+    record.setGeoId(Long.valueOf(coalesce(applicationPayload.get(new Utf8("uc")), zero).toString()));
+
+    // site id
+    record.setSiteId(Long.valueOf(getField(genericRecord, "siteId", "0")));
+
+
+    record.setUdid(coalesce(applicationPayload.get(new Utf8("udid")), empty).toString());
+
+    //TODO: no referer in rheos
+    // referer
+    record.setReferer(coalesce(applicationPayload.get(new Utf8("Referer")), empty).toString());
+
+    //TODO: landing page url
+    // landing page url
+    record.setLandingPageUrl("");
+
+    record.setSnid("");
+    record.setIsTracked(false);
+
+    // Format record
+    record.setRequestHeaders("");
+    record.setResponseHeaders("");
+    long timestamp = Long.valueOf(coalesce(applicationPayload.get(new Utf8("timestamp")), empty).toString());
+    record.setTimestamp(timestamp);
+
+    // Get snapshotId from request
+    Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId(), timestamp)
+        .getRepresentation();
+    record.setSnapshotId(snapshotId);
+    ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId());
+    record.setShortSnapshotId(shortSnapshotId.getRepresentation());
+
   }
 
   /**
@@ -131,8 +191,7 @@ public class RoverRheosTopicFilterTask extends Thread {
    * @param rheosConsumer Rheos used to consume
    * @param producer      Kafka producer
    */
-  public void processRecords(RheosConsumerWrapper rheosConsumer, Producer<Long, ListenerMessage> producer, String
-    kafkaTopic) {
+  public void processRecords(RheosConsumerWrapper rheosConsumer, Producer<Long, ListenerMessage> producer) {
 
     ConsumerRecords<byte[], RheosEvent> consumerRecords;
     consumerRecords = rheosConsumer.getConsumer().poll(interval);
@@ -149,52 +208,38 @@ public class RoverRheosTopicFilterTask extends Thread {
 
       if (pageId == 3084) {
         ESMetrics.getInstance().meter(INCOMING_PAGE_ROVER);
+        String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.EPN);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
+
+        // get urlQueryString from 3 places
         String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
+        if (StringUtils.isEmpty(urlQueryString)) {
+          urlQueryString = getField(genericRecord, "urlQueryString", "");
+          if (StringUtils.isEmpty(urlQueryString)) {
+            HashMap<Utf8, Utf8> clientData = ((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA));
+            urlQueryString = coalesce(clientData.get(new Utf8("urlQueryString")), empty).toString();
+            if (!(StringUtils.isEmpty(urlQueryString))) {
+              ESMetrics.getInstance().meter("UrlQueryStringFromClientData");
+            }
+          } else {
+            ESMetrics.getInstance().meter("UrlQueryStringFromRheosTag");
+          }
+        } else {
+          ESMetrics.getInstance().meter("UrlQueryStringFromApplicationPayload");
+        }
+
         Matcher roverSitesMatcher = missingRoverClicksPattern.matcher(urlQueryString.toLowerCase());
         // match the missing clicks type, forward to filter
         if (roverSitesMatcher.find()) {
+          if(urlQueryString.contains("5338380161")) {
+            logger.info("Incoming5338380161: " + urlQueryString);
+            ESMetrics.getInstance().meter("Incoming5338380161");
+          }
           ESMetrics.getInstance().meter(INCOMING_MISSING_CLICKS);
           ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
             0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
 
-          // user id
-          record.setUserId(Long.valueOf(getField(genericRecord, "userId", "0")));
-
-          // guid, cguid
-          record.setGuid(coalesce(applicationPayload.get(new Utf8("g")), empty).toString());
-          record.setCguid(coalesce(applicationPayload.get(new Utf8("n")), empty).toString());
-
-          // remote ip
-          record.setRemoteIp(coalesce(applicationPayload.get(new Utf8("ForwardedFor")), empty).toString());
-
-          // user agent
-          record.setUserAgent(coalesce(applicationPayload.get(new Utf8("Agent")), empty).toString());
-
-
-          // language code
-          record.setLangCd(coalesce(applicationPayload.get(new Utf8("ul")), empty).toString());
-
-          // geography identifier
-          record.setGeoId(Long.valueOf(coalesce(applicationPayload.get(new Utf8("uc")), zero).toString()));
-
-          // site id
-          record.setSiteId(Long.valueOf(getField(genericRecord, "siteId", "0")));
-
-
-          record.setUdid(coalesce(applicationPayload.get(new Utf8("udid")), empty).toString());
-
-          //TODO: no referer in rheos
-          // referer
-          record.setReferer(coalesce(applicationPayload.get(new Utf8("Referer")), empty).toString());
-
-          //TODO: landing page url
-          // landing page url
-          record.setLandingPageUrl("");
-
-          // source and destination rotation id
-          record.setSrcRotationId(-1L);
-          record.setDstRotationId(-1L);
+          setCommonFields(record, applicationPayload, genericRecord);
 
           String uri = "https://rover.ebay.com" + urlQueryString;
           record.setUri(uri);
@@ -202,19 +247,8 @@ public class RoverRheosTopicFilterTask extends Thread {
           record.setChannelType(ChannelType.EPN);
           record.setHttpMethod(HttpMethod.GET);
           record.setChannelAction(ChannelAction.CLICK);
-          // Format record
-          record.setRequestHeaders("");
-          record.setResponseHeaders("");
-          long timestamp = Long.valueOf(coalesce(applicationPayload.get(new Utf8("timestamp")), empty).toString());
-          record.setTimestamp(timestamp);
 
-          // Get snapshotId from request
-          Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId(), timestamp)
-            .getRepresentation();
-          record.setSnapshotId(snapshotId);
-          ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId());
-          record.setShortSnapshotId(shortSnapshotId.getRepresentation());
-
+          // Set campaign id
           UriComponents uriComponents;
           uriComponents = UriComponentsBuilder.fromUriString(uri).build();
 
@@ -225,18 +259,62 @@ public class RoverRheosTopicFilterTask extends Thread {
             lowerCaseParams.put(key.toLowerCase(), params.get(key));
           }
 
+          // source and destination rotation id are parsed later in epn nrt
+          record.setSrcRotationId(-1L);
+          record.setDstRotationId(-1L);
+
           long campaignId = -1L;
           try{
             campaignId = Long.valueOf(lowerCaseParams.get("campid").get(0));
+            if(campaignId == 5338380161l) {
+              logger.info("Success5338380161: " + uri);
+              ESMetrics.getInstance().meter("Success5338380161");
+            }
           } catch (Exception e) {
             logger.error("Parse campaign id error");
           }
           record.setCampaignId(campaignId);
           record.setPublisherId(-1L);
-          record.setSnid("");
-          record.setIsTracked(false);
+
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
+      } else if(pageId == 3086) {
+        ESMetrics.getInstance().meter(INCOMING_PAGE_ROI);
+        String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.ROI);
+        HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
+        String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
+        try {
+          urlQueryString = URLDecoder.decode(urlQueryString, "UTF-8");
+        } catch (Exception ex) {
+          ESMetrics.getInstance().meter("DecodeROIUrlError");
+          logger.warn("Decode ROI url error");
+        }
+
+        ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
+            0L, 0L, "", "", "", ChannelAction.ROI, ChannelType.ROI, HttpMethod.GET, "", false);
+
+        setCommonFields(record, applicationPayload, genericRecord);
+
+        // TODO: Remove this logic after release and everything stable
+        // set short snapshot id to be from Rheos event so that when inserting into TD, it can be deduped by primary index
+        String rvrIdStr = coalesce(applicationPayload.get(new Utf8("rvrid")), empty).toString();
+        if (StringUtils.isNumeric(rvrIdStr)) {
+          record.setShortSnapshotId(Long.valueOf(rvrIdStr));
+        }
+
+        String uri = "https://rover.ebay.com" + urlQueryString;
+        record.setUri(uri);
+
+        record.setHttpMethod(HttpMethod.GET);
+
+        // source and destination rotation id parse for roi
+        Long rotationId = urlQueryString.split("/").length > 3 ? Long.valueOf(urlQueryString.split("/")[3].split("\\?")[0].replace("-", "")) : 0l;
+        record.setSrcRotationId(rotationId);
+        record.setDstRotationId(rotationId);
+
+        record.setCampaignId(-1L);
+        record.setPublisherId(-1L);
+        producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
       }
     }
   }

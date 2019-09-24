@@ -7,7 +7,7 @@
 #           /apps/tracking-events/imkTransform
 # Schedule: * * ? * *
 
-usage="Usage: imkCrabTransform.sh [workDir] [outPutDir]"
+usage="Usage: imkCrabTransform.sh [channel] [workDir] [outPutDir]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
@@ -20,8 +20,9 @@ bin=`cd "$bin">/dev/null; pwd`
 
 . ${bin}/../chocolate-env.sh
 
-WORK_DIR=$1
-OUTPUT_DIR=$2
+CHANNEL=$1
+WORK_DIR=$2
+OUTPUT_DIR=$3
 ES_URL=http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
 
 KW_LK_FOLDER=hdfs://slickha/apps/kw_lkp/2019-04-14/
@@ -59,7 +60,7 @@ ${SPARK_HOME}/bin/spark-submit \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
-      --channel PAID_SEARCH \
+      --channel "${CHANNEL}" \
       --transformedPrefix chocolate_ \
       --kwDataDir "${KW_LK_FOLDER}" \
       --workDir "${WORK_DIR}" \
@@ -70,4 +71,3 @@ ${SPARK_HOME}/bin/spark-submit \
       --metaFile imkDump \
       --hdfsUri hdfs://elvisha \
       --xidParallelNum 20
-

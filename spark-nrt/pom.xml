@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.ebay.traffic</groupId>
         <artifactId>chocolate</artifactId>
-        <version>3.4.2-RELEASE</version>
+        <version>3.5.0-RELEASE</version>
         <relativePath>..</relativePath>
     </parent>
     <groupId>com.ebay.traffic</groupId>
@@ -179,6 +179,11 @@
             <groupId>com.ebay.dukes</groupId>
             <artifactId>dukes</artifactId>
             <version>${dukes.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-dawg-dictionary</artifactId>
         </dependency>
 
     </dependencies>

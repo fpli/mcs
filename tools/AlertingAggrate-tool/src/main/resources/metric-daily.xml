@@ -11,31 +11,25 @@
         <metric name="Capping Output: impression" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:epn,channelAction:impression" threshold="19000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
         <metric name="EPN Impression: impression" value="SuccessfulCount" source="chocolate-metrics" condition="channelAction:impression" threshold="10000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
     </project>
-    <project name="Chocolate-Display-data" id="3">
-        <metric name="Listener Input: click" value="ProxyIncomingCount" source="chocolate-metrics" condition="channelType:display,channelAction:click" threshold="1200000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="Capping Output: click" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:display,channelAction:click" threshold="900000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="Listener Input: impression" value="ProxyIncomingCount" source="chocolate-metrics" condition="channelType:display,channelAction:impression" threshold="80000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="Capping Output: impression" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:display,channelAction:impression" threshold="80000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-    </project>
-    <project name="Chocolate-PaidSearch-data" id="4">
+    <project name="Chocolate-PaidSearch-data" id="3">
         <metric name="Collectionsvc Input: click" value="CollectionServiceIncoming" source="chocolate-metrics" condition="channelType:paid_search" threshold="10000" thresholdFactor="0.5" computeType="sum" alert="true"/>
         <metric name="Capping Output: click" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:paid_search,channelAction:click" threshold="10000" thresholdFactor="0.5" computeType="sum" alert="true"/>
     </project>
-    <project name="IMK-data" id="5">
+    <project name="IMK-data" id="4">
         <metric name="Imk Dump Out Num" value="imk.dump.out" source="chocolate-metrics" condition="" threshold="250" thresholdFactor="0.5" computeType="sum" alert="true"/>
     </project>
-    <project name="Rotation-data" id="6">
+    <project name="Rotation-data" id="5">
         <metric name="Rotation create fail" value="RotationCreateFail" source="mkttracksvc-metrics" condition="" threshold="0" thresholdFactor="2" computeType="sum" alert="false"/>
     </project>
-    <project name="Compaign-data" id="7">
+    <project name="Compaign-data" id="6">
         <metric name="Compaign create fail" value="CampaignMapCreateFail" source="mkttracksvc-metrics" condition="" threshold="0" thresholdFactor="0.5" computeType="sum" alert="true"/>
         <metric name="Compaign update fail" value="CampaignMapUpdateFail" source="mkttracksvc-metrics" condition="" threshold="0" thresholdFactor="0.5" computeType="sum" alert="true"/>
     </project>
-    <project name="Rover-data" id="8">
+    <project name="Rover-data" id="7">
         <metric name="Rover Imk Events Success" value="rover.imk.events.success" source="rover-metrics" condition="" threshold="0" thresholdFactor="0.5" computeType="sum" alert="true"/>
         <metric name="Rover Imk Events Files" value="rover.imk.events.files" source="rover-metrics" condition="" threshold="0" thresholdFactor="0.5" computeType="sum" alert="true"/>
     </project>
-    <project name="Appdl-data" id="9">
+    <project name="Appdl-data" id="8">
         <metric name="All App Event" value="Incoming" source="appdl-metrics" condition="" threshold="900000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
         <metric name="First Open" value="MMPSuccessFirstOpen" source="appdl-metrics" condition="" threshold="100000" thresholdFactor="0.5" computeType="sum" alert="true"/>
         <metric name="Open" value="MMPSuccessOpen" source="appdl-metrics" condition="" threshold="40000000" thresholdFactor="0.5" computeType="sum" alert="true"/>

@@ -57,5 +57,17 @@
     "filterRules": [
       
     ]
+  },
+  {
+    "channelType": "ROI",
+    "filterRules": [
+
+    ]
+  },
+  {
+    "channelType": "SOCIAL_MEDIA",
+    "filterRules": [
+
+    ]
   }
 ]

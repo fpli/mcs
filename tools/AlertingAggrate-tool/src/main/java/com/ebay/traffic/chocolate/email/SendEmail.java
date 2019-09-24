@@ -70,40 +70,40 @@ public class SendEmail {
 
   public void send(HashMap<String, ArrayList<MetricCount>> map, HashMap<String, ArrayList<MetricCount>> historymap, String emailAccount) {
 
-    // 发件人电子邮箱
-    String from = "lxiong1@ebay.com";
+    // sender email address
+    String from = "dl-ebay-performance-marketing-oncall@ebay.com";
 
-    // 获取系统属性
+    // system property
     Properties properties = System.getProperties();
 
-    // 设置邮件服务器
+    // set smtp server name
     properties.setProperty("mail.smtp.host", emailHostServer);
 
-    // 获取默认session对象
+    // get the default session
     Session session = Session.getDefaultInstance(properties);
 
     try {
-      // 创建默认的 MimeMessage 对象
+      // MimeMessage
       MimeMessage message = new MimeMessage(session);
 
-      // Set From: 头部头字段
+      // Set From: header
       message.setFrom(new InternetAddress(from));
 
-      // Set To: 头部头字段
+      // Set To: header
       message.addRecipient(Message.RecipientType.TO,
               new InternetAddress(emailAccount));
 
-      // Set Subject: 头部头字段
+      // Set Subject: header
       if(runPeriod.equalsIgnoreCase("daily")) {
         message.setSubject("Daily report for tracking! " + date);
       }else if(runPeriod.equalsIgnoreCase("hourly")){
         message.setSubject("Hourly report for tracking! " + time);
       }
 
-      // 设置消息体
-      message.setContent(HTMLParse.parse(map, historymap), "text/html");
+      // set message entity
+      message.setContent(HTMLParse.parse(map, historymap, runPeriod), "text/html");
 
-      // 发送消息
+      // send message
       Transport.send(message);
       System.out.println("Sent message successfully....");
     } catch (MessagingException mex) {
