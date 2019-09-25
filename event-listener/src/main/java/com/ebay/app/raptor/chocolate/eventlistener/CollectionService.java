@@ -36,6 +36,8 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URLDecoder;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -520,12 +522,14 @@ public class CollectionService {
   }
 
   private String generateTimestampForCookie() {
-    Calendar c = Calendar.getInstance();
-    c.setTime(new Date());
+    LocalDateTime now = LocalDateTime.now();
+
     // GUID, CGUID has 2 years expiration time
-    c.add(Calendar.YEAR, 2);
+    LocalDateTime expiration = now.plusYears(2);
+
     // the last 8 hex number is the unix timestamp in seconds
-    return Long.toHexString(c.getTimeInMillis() / 1000);
+    long timeInSeconds = expiration.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1000;
+    return Long.toHexString(timeInSeconds);
   }
 
   /**
