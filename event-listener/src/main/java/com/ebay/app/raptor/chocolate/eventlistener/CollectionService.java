@@ -199,10 +199,11 @@ public class CollectionService {
       // add guid and cguid in request cookie header
       if (!guid.isEmpty() || !cguid.isEmpty()) {
         String cookie = "npii=";
+        String timestamp = generateTimestampForCookie();
         if (!guid.isEmpty())
-          cookie += "btguid/" + guid + "^";
+          cookie += "btguid/" + guid + timestamp + "^";
         if (!cguid.isEmpty())
-          cookie += "cguid/" + cguid + "^";
+          cookie += "cguid/" + cguid + timestamp + "^";
         httpGet.addHeader("Cookie", cookie);
       }
 
@@ -516,6 +517,15 @@ public class CollectionService {
     } else {
       metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
     }
+  }
+
+  private String generateTimestampForCookie() {
+    Calendar c = Calendar.getInstance();
+    c.setTime(new Date());
+    // GUID, CGUID has 2 years expiration time
+    c.add(Calendar.YEAR, 2);
+    // the last 8 hex number is the unix timestamp in seconds
+    return Long.toHexString(c.getTimeInMillis() / 1000);
   }
 
   /**
