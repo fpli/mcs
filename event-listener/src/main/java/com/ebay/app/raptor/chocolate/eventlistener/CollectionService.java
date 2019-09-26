@@ -274,16 +274,7 @@ public class CollectionService {
 
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
-    String platform = Constants.PLATFORM_UNKNOWN;
-    if (agentInfo.isDesktop()) {
-      platform = Constants.PLATFORM_DESKTOP;
-    } else if (agentInfo.isTablet()) {
-      platform = Constants.PLATFORM_TABLET;
-    } else if (agentInfo.isMobile()) {
-      platform = Constants.PLATFORM_MOBILE;
-    } else if (agentInfo.isNativeApp()) {
-      platform = Constants.PLATFORM_NATIVE_APP;
-    }
+    String platform = getPlatform(agentInfo);
 
     String action = ChannelActionEnum.CLICK.toString();
     String type = channelType.getLogicalChannel().getAvro().toString();
@@ -401,16 +392,7 @@ public class CollectionService {
 
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
-    String platform = Constants.PLATFORM_UNKNOWN;
-    if (agentInfo.isDesktop()) {
-      platform = Constants.PLATFORM_DESKTOP;
-    } else if (agentInfo.isTablet()) {
-      platform = Constants.PLATFORM_TABLET;
-    } else if (agentInfo.isMobile()) {
-      platform = Constants.PLATFORM_MOBILE;
-    } else if (agentInfo.isNativeApp()) {
-      platform = Constants.PLATFORM_NATIVE_APP;
-    }
+    String platform = getPlatform(agentInfo);
 
     String action = channelAction.getAvro().toString();
     String type = channelType.getLogicalChannel().getAvro().toString();
@@ -737,6 +719,24 @@ public class CollectionService {
     logger.debug(String.format("EndTime: %d", endTime));
     metrics.meter("CollectionServiceSuccess", 1, startTime, additionalFields);
     metrics.mean("CollectionServiceAverageLatency", endTime - startTime);
+  }
+
+  /**
+   * Check platform by user agent
+   */
+  private String getPlatform(UserAgentInfo agentInfo) {
+    String platform = Constants.PLATFORM_UNKNOWN;
+    if (agentInfo.isDesktop()) {
+      platform = Constants.PLATFORM_DESKTOP;
+    } else if (agentInfo.isTablet()) {
+      platform = Constants.PLATFORM_TABLET;
+    } else if (agentInfo.isMobile()) {
+      platform = Constants.PLATFORM_MOBILE;
+    } else if (agentInfo.isNativeApp()) {
+      platform = Constants.PLATFORM_NATIVE_APP;
+    }
+
+    return platform;
   }
 
   /**
