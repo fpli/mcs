@@ -40,6 +40,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URLDecoder;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,7 +74,7 @@ public class CollectionService {
   private static final String LANDING_PAGE_TYPE = "landingPageType";
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
-  private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?(rover\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
+  private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?(rover\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
 
   @PostConstruct
   public void postInit() {
@@ -153,19 +155,23 @@ public class CollectionService {
       }
       uriBuilder.setParameters(queryParameters);
 
-      // add udid parameter from tracking header's guid if udid is not in rover url. The udid will be set as guid by rover later
-      if (!queryNames.contains("udid")) {
-        String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
-        String guid = "";
-        for (String seg : trackingHeader.split(",")
+      String guid = "";
+      String cguid = "";
+      String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
+      for (String seg : trackingHeader.split(",")
           ) {
-          String[] keyValue = seg.split("=");
-          if (keyValue.length == 2) {
-            if (keyValue[0].equalsIgnoreCase("guid")) {
-              guid = keyValue[1];
-            }
+        String[] keyValue = seg.split("=");
+        if (keyValue.length == 2) {
+          if (keyValue[0].equalsIgnoreCase("guid")) {
+            guid = keyValue[1];
+          }
+          if (keyValue[0].equalsIgnoreCase("cguid")) {
+            cguid = keyValue[1];
           }
         }
+      }
+      // add udid parameter from tracking header's guid if udid is not in rover url. The udid will be set as guid by rover later
+      if (!queryNames.contains("udid")) {
         if (!guid.isEmpty()) {
           uriBuilder.addParameter("udid", guid);
         }
@@ -194,6 +200,17 @@ public class CollectionService {
           //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
           httpGet.addHeader(header, values.nextElement());
         }
+      }
+
+      // add guid and cguid in request cookie header
+      if (!guid.isEmpty() || !cguid.isEmpty()) {
+        String cookie = "npii=";
+        String timestamp = generateTimestampForCookie();
+        if (!guid.isEmpty())
+          cookie += "btguid/" + guid + timestamp + "^";
+        if (!cguid.isEmpty())
+          cookie += "cguid/" + cguid + timestamp + "^";
+        httpGet.addHeader("Cookie", cookie);
       }
 
       roverClient.forwardRequestToRover(client, httpGet, context);
@@ -432,6 +449,7 @@ public class CollectionService {
                                         MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                         ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
                                         IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
+
     // parse rotation id
     long rotationId = parseRotationId(parameters);
 
@@ -513,6 +531,7 @@ public class CollectionService {
   private boolean processSiteEmailEvent(ContainerRequestContext requestContext, String referer,
                                         MultiValueMap<String, String> parameters, String type, String action,
                                         HttpServletRequest request) {
+
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
     if(!m.find()) {
@@ -667,6 +686,17 @@ public class CollectionService {
     } else {
       metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
     }
+  }
+
+  private String generateTimestampForCookie() {
+    LocalDateTime now = LocalDateTime.now();
+
+    // GUID, CGUID has 2 years expiration time
+    LocalDateTime expiration = now.plusYears(2);
+
+    // the last 8 hex number is the unix timestamp in seconds
+    long timeInSeconds = expiration.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1000;
+    return Long.toHexString(timeInSeconds);
   }
 
   /**
