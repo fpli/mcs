@@ -105,7 +105,8 @@
           "VIEW_ITEM",
           "VIEW_TIME",
           "APP_FIRST_START",
-          "ROI"
+          "ROI",
+          "EMAIL_OPEN"
         ]
       }
     },
@@ -123,6 +124,8 @@
           "SOCIAL_MEDIA",
           "PAID_SOCIAL",
           "ROI",
+          "SITE_EMAIL",
+          "MRKT_EMAIL",
           "UNKNOWN"
         ]
       }
