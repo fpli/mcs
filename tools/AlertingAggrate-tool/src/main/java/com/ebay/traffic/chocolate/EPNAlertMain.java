@@ -33,7 +33,6 @@ public class EPNAlertMain {
 
 			EPNSendEmail.getInstance().send(hourlyClickCount);
 		}
-
-
 	}
+
 }
