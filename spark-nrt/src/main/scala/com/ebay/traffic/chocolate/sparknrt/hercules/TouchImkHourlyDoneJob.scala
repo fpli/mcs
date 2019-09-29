@@ -30,12 +30,6 @@ object TouchImkHourlyDoneJob extends App {
 class TouchImkHourlyDoneJob(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
-  @transient lazy val lvsFs: FileSystem = {
-    val fs = FileSystem.get(URI.create(params.lagDir), hadoopConf)
-    sys.addShutdownHook(fs.close())
-    fs
-  }
-
   @transient override lazy val fs: FileSystem = {
     val fs = FileSystem.get(URI.create(params.workDir), hadoopConf)
     sys.addShutdownHook(fs.close())
@@ -111,7 +105,7 @@ class TouchImkHourlyDoneJob(params: Parameter)
     * @return watermark
     */
   def getEventWatermark: ZonedDateTime = {
-    lvsFs.listStatus(new Path(lagDir))
+    fs.listStatus(new Path(lagDir))
       .map(status => status.getPath)
       .map(path => readFileContent(path).toLong)
       .map(ts => ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts), defaultZoneId))
@@ -133,7 +127,7 @@ class TouchImkHourlyDoneJob(params: Parameter)
     * @return file content
     */
   def readFileContent(path: Path): String = {
-    val in = lvsFs.open(path)
+    val in = fs.open(path)
     val out = new ByteArrayOutputStream()
     val buffer = new Array[Byte](1024)
     var n = 0

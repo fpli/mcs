@@ -20,7 +20,7 @@ fi
 bin=`dirname "$0"`
 bin=`cd "$bin">/dev/null; pwd`
 
-. ${bin}/../chocolate-env.sh
+. ${bin}/../chocolate-env-qa.sh
 
 WORK_DIR=$1
 LAG_DIR=$2
@@ -37,17 +37,14 @@ if [ ${done_file_exists} -eq 0 ]; then
     exit 0
 fi
 
-DRIVER_MEMORY=4g
-EXECUTOR_NUMBER=5
-EXECUTOR_MEMORY=4g
-EXECUTOR_CORES=2
+DRIVER_MEMORY=1g
+EXECUTOR_NUMBER=3
+EXECUTOR_MEMORY=1g
+EXECUTOR_CORES=1
 
 JOB_NAME="touchImkHourlyDone"
 
-SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/chocolate/logs
-HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
-
-for f in $(find $bin/../../conf/prod -name '*.*');
+for f in $(find $bin/../../conf/qa -name '*.*');
 do
   FILES=${FILES},file://$f;
 done
@@ -63,7 +60,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
-    --conf spark.yarn.executor.memoryOverhead=8192 \
+    --conf spark.yarn.executor.memoryOverhead=1024 \
     --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
     --conf spark.yarn.historyServer.address=${HISTORY_SERVER} \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
