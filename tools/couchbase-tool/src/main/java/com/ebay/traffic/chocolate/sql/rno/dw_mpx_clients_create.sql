@@ -19,7 +19,7 @@ SET hive.exec.max.dynamic.partitions.pernode=100000;
 set hive.merge.smallfiles.avgsize=128000000;
 set hive.merge.size.per.task=128000000;
 
-create table choco_data.dw_mpx_clients (
+create external table choco_data.dw_mpx_clients (
   client_id int,
   client_name varchar(200),
   client_cntry_id decimal(9,0),

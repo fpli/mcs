@@ -21,7 +21,7 @@ set hive.merge.size.per.task=128000000;
 SET hive.auto.convert.join=false;
 
 
-create table choco_data.dw_mpx_rotations (
+create external table choco_data.dw_mpx_rotations (
   ROTATION_ID DECIMAL(18,0),
   PLACEMENT_ID DECIMAL(9,0),
   CAMPAIGN_ID DECIMAL(18,0),

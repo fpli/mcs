@@ -19,7 +19,7 @@ SET hive.exec.max.dynamic.partitions.pernode=100000;
 set hive.merge.smallfiles.avgsize=128000000;
 set hive.merge.size.per.task=128000000;
 
-create table choco_data.dw_mpx_vendors (
+create external table choco_data.dw_mpx_vendors (
   vendor_id int,
   vendor_name varchar(200),
   vendor_url varchar(4000),

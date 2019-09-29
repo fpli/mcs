@@ -29,26 +29,7 @@ public enum MPLXClientEnum {
   PL(4908, "Poland", 212),
   HK(3422, "Hong Kong", 201),
   UK(710, "UK", 3),
-  FR(709, "France", 71),
-
-  //new client_id for LatAm Countries
-  AR(21551, "Argentina", 12),
-  BO(21528, "Bolivia", 28),
-  BR(21527, "Brazil", 31),
-  CL(21552, "Chile", 44),
-  CO(21553, "Colombia", 46),
-  CR(21554, "Costa Rica", 51),
-  DO(21555, "Dominican Republic", 60),
-  EC(21556, "Ecuador", 61),
-  GT(21559, "Guatemala", 85),
-  MX(21562, "Mexico", 136),
-  NI(21566, "Nicaragua", 150),
-  PA(21567, "Panama", 158),
-  PY(21568, "Paraguay", 160),
-  PE(21565, "Peru", 225),
-  PR(21569, "Puerto Rico", 214),
-  UY(21570, "Uruguay", 248),
-  VE(21571, "Venezuela", 252);
+  FR(709, "France", 71);
 
   private Integer mplxClientId;
   private String mplxClientName;

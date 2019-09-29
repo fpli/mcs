@@ -189,6 +189,7 @@ public class DumpRotationToRno {
         }
 
         metrics.meter("rotation.dump.FromCBToRno.total", size);
+        metrics.meter("rotation.changeRotationQuantity", changeRotationQuantity);
         // sample: 2018-02-22_01_rotations.txt
         genFileForRotation(outputFilePath, compress, result, metrics);
         // sample: 2018-02-22_01_campaigns.txt
