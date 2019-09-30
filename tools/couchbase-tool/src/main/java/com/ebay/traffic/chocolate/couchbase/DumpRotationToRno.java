@@ -187,6 +187,7 @@ public class DumpRotationToRno {
         if (changeRotationQuantity > 0 && size == 0) {
             logger.error("couchbase dump rotation data count = 0, throw exception!");
             metrics.meter("rotation.dumpCount.mismatch", 1);
+            metrics.flush();
             close();
             System.exit(-1);
         }
