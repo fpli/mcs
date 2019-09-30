@@ -1,4 +1,4 @@
-set mapreduce.job.queuename=hdlq-commrce-default;
+set mapreduce.job.queuename=hdlq-data-default;
 set hive.optimize.index.filter=false;
 set mapreduce.job.split.metainfo.maxsize=-1;
 set hive.vectorized.execution.enabled = true;
