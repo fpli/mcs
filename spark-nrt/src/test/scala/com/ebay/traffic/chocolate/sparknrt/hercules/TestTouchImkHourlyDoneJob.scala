@@ -15,7 +15,7 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 class TestTouchImkHourlyDoneJob extends BaseFunSuite {
   private val tmpPath = createTempDir()
   private val workDir = tmpPath + "/workDir"
-  private val lagDir = tmpPath + "/lagDir"
+  private val lagDir = tmpPath + "/calCrabTransformWatermark"
   private val doneDir = tmpPath + "/doneDir"
 
   var job: TouchImkHourlyDoneJob = _
@@ -56,7 +56,7 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
 
     // create temp lag file, lag ts is today 12:10
     fs.mkdirs(new Path(lagDir))
-    val lagOut = fs.create(new Path(lagDir + "/" + "0"), true)
+    val lagOut = fs.create(new Path(lagDir + "/" + "imkCrabTransformWatermark"), true)
     lagOut.writeBytes(String.valueOf(doneDateHour.withHour(12).withMinute(10).toInstant.toEpochMilli))
     lagOut.close()
 
@@ -98,10 +98,10 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
   }
 
   test("testGetEventWatermark") {
-    val file1 = new File("src/test/resources/touchImkHourlyDone.data/lag/0")
-    fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(lagDir + "/0"))
-    val file2 = new File("src/test/resources/touchImkHourlyDone.data/lag/1")
-    fs.copyFromLocalFile(new Path(file2.getAbsolutePath), new Path(lagDir + "/1"))
+    val file1 = new File("src/test/resources/touchImkHourlyDone.data/calCrabTransformWatermark/imkCrabTransformWatermark")
+    fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(lagDir + "/imkCrabTransformWatermark"))
+    val file2 = new File("src/test/resources/touchImkHourlyDone.data/calCrabTransformWatermark/crabTransformWatermark")
+    fs.copyFromLocalFile(new Path(file2.getAbsolutePath), new Path(lagDir + "/crabTransformWatermark"))
 
     val actual = job.getEventWatermark
     val expect = ZonedDateTime.ofInstant(Instant.ofEpochMilli(1560859857002L), job.defaultZoneId)
@@ -112,9 +112,9 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
   }
 
   test("testReadFileContent") {
-    val file = new File("src/test/resources/touchImkHourlyDone.data/lag/0")
-    fs.copyFromLocalFile(new Path(file.getAbsolutePath), new Path(lagDir + "/0"))
-    assert(job.readFileContent(new Path(lagDir + "/0")).equals("1560946257001"))
+    val file = new File("src/test/resources/touchImkHourlyDone.data/calCrabTransformWatermark/imkCrabTransformWatermark")
+    fs.copyFromLocalFile(new Path(file.getAbsolutePath), new Path(lagDir + "/imkCrabTransformWatermark"))
+    assert(job.readFileContent(new Path(lagDir + "/imkCrabTransformWatermark")).equals("1560946257001"))
 
     fs.delete(new Path(lagDir), true)
     fs.delete(new Path(doneDir), true)
