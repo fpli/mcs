@@ -22,7 +22,7 @@
   </modules>
 
   <properties>
-    <elasticsearch.version>6.3.0</elasticsearch.version>
+    <elasticsearch.version>6.4.3</elasticsearch.version>
   </properties>
 
   <dependencies>

@@ -1,0 +1,3 @@
+type=command
+command=bash dumpRotationDaily.sh
+failure.emails=zhofan@ebay.com,zjian@ebay.com,yliu29@ebay.com,shuangxu@ebay.com,jialili1@ebay.com,xiangli4@ebay.com,fechen@ebay.com,zhiyuawang@ebay.com,huiclu@ebay.com,lxiong1@ebay.com,lli5@ebay.com
