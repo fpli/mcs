@@ -45,7 +45,7 @@ java -cp ${bin}/../lib/couchbase-tool-*.jar com.ebay.traffic.chocolate.couchbase
 
 rc=$?
 if [[ ${rc} != 0 ]]; then
-   echo `date`"=====================================================dumpFromCouchbase ERROR!!======================================================" | tee -a ${log_file}
+   echo `date`"=====================================================dumpFromCouchbase ERROR!!======================================================"
    exit ${rc}
 else
    echo "=============== dump  data from couchbase done  ===========" | tee -a ${log_file}
@@ -68,7 +68,7 @@ echo `date`"------ Apollo_rno -- LoadData started~~~" | tee -a ${log_file}
 
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -rm -r ${HDP}/dt=${DT}
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -put ${OUTPUT_PATH} ${HDP}
-/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -ls ${HDP}/dt=${DT} | tee -a ${log_file}
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -ls ${HDP}/dt=${DT}
 echo `date`"=====================================================Apollo_rno -- LoadData Ended======================================================" | tee -a ${log_file}
 
 HDP_HERCULES=hdfs://hercules/apps/b_marketing_tracking/rotation/hercules_daily
@@ -85,5 +85,5 @@ echo `date`"------ Hercules -- LoadData started~~~" | tee -a ${log_file}
 
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -rm -r ${HDP_HERCULES}/dt=${DT}
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -put ${OUTPUT_PATH} ${HDP_HERCULES}
-/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -ls ${HDP_HERCULES}/dt=${DT} | tee -a ${log_file}
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -ls ${HDP_HERCULES}/dt=${DT}
 echo `date`"=====================================================Hercules -- LoadData Ended======================================================" | tee -a ${log_file}

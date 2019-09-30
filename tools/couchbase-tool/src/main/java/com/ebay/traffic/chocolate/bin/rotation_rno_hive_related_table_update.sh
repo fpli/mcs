@@ -14,12 +14,12 @@ echo "DS="${DS} | tee -a ${log_file}
 echo `date`" =============== Job Start ===========" | tee -a ${log_file}
 echo `date`"-------- Apollo-rno LoadData ${DS} started~~~" | tee -a ${log_file}
 
-/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -f ${SQL_FILE} | tee -a ${log_file}
+/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -f ${SQL_FILE}
 
 rc=$?
 if [[ $rc != 0 ]]; then
-    echo `date`"===  Apollo-Rno ${DS} Table Job error ===" | tee -a ${log_file}
+    echo `date`"===  Apollo-Rno ${DS} Table Job error ==="
     exit $rc
 else
-    echo `date`" =============== Apollo-Rno ${DS} Table Job End ===========" | tee -a ${log_file}
+    echo `date`" =============== Apollo-Rno ${DS} Table Job End ==========="
 fi

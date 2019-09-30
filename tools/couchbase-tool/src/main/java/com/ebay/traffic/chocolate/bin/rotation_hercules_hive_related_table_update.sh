@@ -14,12 +14,12 @@ echo "DS="${DS} | tee -a ${log_file}
 echo `date`" =============== Job Start ===========" | tee -a ${log_file}
 echo `date`"-------- Hercules LoadData ${DS} started~~~" | tee -a ${log_file}
 
-/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -f ${SQL_FILE} | tee -a ${log_file}
+/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -f ${SQL_FILE}
 
 rc=$?
 if [[ $rc != 0 ]]; then
-    echo `date`"===  Hercules ${DS} Table Job error ===" | tee -a ${log_file}
+    echo `date`"===  Hercules ${DS} Table Job error ==="
     exit $rc
 else
-    echo `date`" =============== Hercules ${DS} Table Job End ===========" | tee -a ${log_file}
+    echo `date`" =============== Hercules ${DS} Table Job End ==========="
 fi
