@@ -27,7 +27,7 @@ msck repair table im_tracking.dw_mpx_campaigns_ups;
 insert overwrite table im_tracking.dw_mpx_campaigns_ups_distinct
 select origin.campaign_id,
        origin.campaign_name,
-       origin.client_id,
+       nvl(origin.client_id, -999),
        origin.cre_date,
        origin.cre_user,
        origin.upd_user
@@ -60,7 +60,7 @@ where u.campaign_id is null;
 
 insert into table im_tracking.dw_mpx_campaigns_temp
 select w.campaign_id,
-       nvl(w.campaign_name, 'Undefined'),
+       nvl(nvl(w.campaign_name, t.campaign_name), 'Undefined'),
        w.client_id,
        t.cre_date,
        t.cre_user,

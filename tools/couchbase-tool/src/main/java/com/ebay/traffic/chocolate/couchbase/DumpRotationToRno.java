@@ -97,6 +97,7 @@ public class DumpRotationToRno {
             rotationESClient.closeESClient(esRestHighLevelClient);
         } finally {
             close();
+            System.exit(0);
         }
     }
 
@@ -185,7 +186,9 @@ public class DumpRotationToRno {
         logger.info("couchbase dump rotation data count = " + size);
         if (changeRotationQuantity > 0 && size == 0) {
             logger.error("couchbase dump rotation data count = 0, throw exception!");
-            throw new IOException("couchbase dump rotation data count = 0");
+            metrics.meter("rotation.dumpCount.mismatch", 1);
+            close();
+            System.exit(-1);
         }
 
         metrics.meter("rotation.dump.FromCBToRno.total", size);
@@ -436,7 +439,6 @@ public class DumpRotationToRno {
         if (client != null) {
             client.shutdown();
         }
-        System.exit(0);
     }
 
     private static void writeString(OutputStream out, Object content) throws IOException {
