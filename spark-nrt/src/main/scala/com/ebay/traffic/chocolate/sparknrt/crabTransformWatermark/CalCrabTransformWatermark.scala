@@ -59,9 +59,13 @@ class CalCrabTransformWatermark(params: Parameter)
 
   override def run(): Unit = {
     val imkCrabTransformWatermark = getCrabTransformWatermark(imkCrabTransformDataDir)
+    if (imkCrabTransformWatermark != null) {
+      write(outputDir + "/imkCrabTransformWatermark", imkCrabTransformWatermark.toInstant.toEpochMilli.toString)
+    }
     val crabTransformWatermark = getCrabTransformWatermark(crabTransformDataDir)
-    write(outputDir + "/imkCrabTransformWatermark", imkCrabTransformWatermark.toInstant.toEpochMilli.toString)
-    write(outputDir + "/crabTransformWatermark", crabTransformWatermark.toInstant.toEpochMilli.toString)
+    if (crabTransformWatermark != null) {
+      write(outputDir + "/crabTransformWatermark", crabTransformWatermark.toInstant.toEpochMilli.toString)
+    }
     val kafkaWatermark = getKafkaWatermark
     kafkaWatermark.foreach(channelWatermarkTuple => {
       write(outputDir + "/dedupAndSinkWatermark" + "_" + channelWatermarkTuple._1, channelWatermarkTuple._2.toInstant.toEpochMilli.toString)
@@ -93,6 +97,9 @@ class CalCrabTransformWatermark(params: Parameter)
   def getCrabTransformWatermark(inputDir: String): ZonedDateTime = {
     val status = fs.listStatus(new Path(inputDir))
     val strings: Array[String] = status.map(s => s.getPath.toString)
+    if (strings.isEmpty) {
+      return null
+    }
     val frame = readFilesAsDFEx(strings, schema_apollo.dfSchema, "sequence", "delete")
     val smallJoinDf = frame.select("event_ts")
     val watermark =  smallJoinDf.agg(min(smallJoinDf.col("event_ts"))).head().getString(0)

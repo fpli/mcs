@@ -57,13 +57,16 @@ class TestCalCrabTransformWatermark extends BaseFunSuite {
     val job = new CalCrabTransformWatermark(params)
     job.run()
 
-    assert(job.readFileContent(new Path(outPutDir + "/crabTransformWatermark"), fs).equals("1567350689871"))
+    assert(!fs.exists(new Path(outPutDir + "/crabTransformWatermark")))
+
+//    assert(job.readFileContent(new Path(outPutDir + "/crabTransformWatermark"), fs).equals("1567350689871"))
     assert(job.readFileContent(new Path(outPutDir + "/imkCrabTransformWatermark"), fs).equals("1567351002591"))
     assert(job.readFileContent(new Path(outPutDir + "/dedupAndSinkWatermark_PAID_SEARCH"), fs).equals("1569720941824"))
   }
 
   def createTestData(): Unit = {
-    fs.copyFromLocalFile(new Path(new File(localDir + "/" + crabDir + "/" + crabFile).getAbsolutePath), new Path(crabTransformDataDir + "/" + crabFile))
+//    fs.copyFromLocalFile(new Path(new File(localDir + "/" + crabDir + "/" + crabFile).getAbsolutePath), new Path(crabTransformDataDir + "/" + crabFile))
+    fs.mkdirs(new Path(crabTransformDataDir))
 
     fs.copyFromLocalFile(new Path(new File(localDir + "/" + imkDir + "/" + imkFile1).getAbsolutePath), new Path(imkCrabTransformDataDir + "/" + imkFile1))
     fs.copyFromLocalFile(new Path(new File(localDir + "/" + imkDir + "/" + imkFile2).getAbsolutePath), new Path(imkCrabTransformDataDir + "/" + imkFile2))
