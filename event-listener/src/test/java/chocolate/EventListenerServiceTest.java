@@ -289,9 +289,7 @@ public class EventListenerServiceTest {
       .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
-    assertEquals(200, response.getStatus());
-    errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4005, errorMessage.getErrorCode());
+    assertEquals(201, response.getStatus());
 
     // no mkevt
     event.setTargetUrl("https://www.ebay.com?mkcid=2");
