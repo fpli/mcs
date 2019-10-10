@@ -1,8 +1,8 @@
 #!/bin/bash
 # run spark job on YARN
 # Touch imk hourly done.
-# Input:    LVS Lag HDFS
-#           /apps/tracking-events-workdir/last_ts/PAID_SEARCH
+# Input:    SLC Watermark HDFS
+#           /apps/tracking-events-workdir/calCrabTransformWatermark
 # Output:   SLC Done HDFS
 #           /apps/tracking-events/watch
 # Schedule: /3 * ? * *
@@ -38,7 +38,7 @@ if [ ${done_file_exists} -eq 0 ]; then
 fi
 
 DRIVER_MEMORY=4g
-EXECUTOR_NUMBER=10
+EXECUTOR_NUMBER=5
 EXECUTOR_MEMORY=4g
 EXECUTOR_CORES=2
 

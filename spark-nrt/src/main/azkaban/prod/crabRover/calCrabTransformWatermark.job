@@ -1,0 +1,4 @@
+type=command
+dependencies=imkCrabTransformOutputMerge
+command=bash SubmitJob.sh "SLC" "/datashare/mkttracking/jobs/chocolate-sparknrt/bin/prod" "./touchImkHourlyDone.sh hdfs://slickha/apps/tracking-events/crabTransform/imkOutput hdfs://slickha/apps/tracking-events/imkTransformMerged/imkOutput hdfs://elvisha/apps/tracking-events-workdir/last_ts PAID_SEARCH hdfs://slickha/apps/tracking-events-workdir/calCrabTransformWatermark"
+failure.emails=jialili1@ebay.com, fechen@ebay.com, xiangli4@ebay.com, yliu29@ebay.com, huiclu@ebay.com, shuangxu@ebay.com, lxiong1@ebay.com, zhofan@ebay.com, zjian@ebay.com, zhiyuawang@ebay.com
