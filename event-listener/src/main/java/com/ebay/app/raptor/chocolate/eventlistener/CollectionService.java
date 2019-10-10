@@ -230,10 +230,12 @@ public class CollectionService {
       logError(Errors.ERROR_ILLEGAL_URL);
     }
 
-    // no query parameter, rejected
+    // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
     if (parameters.size() == 0) {
-      logError(Errors.ERROR_NO_QUERY_PARAMETER);
+      logger.warn(Errors.ERROR_NO_QUERY_PARAMETER);
+      metrics.meter(Errors.ERROR_NO_QUERY_PARAMETER);
+      return true;
     }
 
     // XC-1695. no mkevt, rejected but return 201 accepted for clients since app team has started unconditionally call
