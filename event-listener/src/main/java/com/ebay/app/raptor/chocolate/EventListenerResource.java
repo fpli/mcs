@@ -55,6 +55,11 @@ public class EventListenerResource implements EventsApi {
   @Context
   private ContainerRequestContext requestContext;
 
+  /**
+   * Collect clicks from upstream raptor, nodejs and native app
+   * @param body json body containing referrerUrl and targetUrl
+   * @return Response telling it's successful or not
+   */
   @Override
   public Response event(Event body) {
     Tracer tracer = GlobalTracer.get();
@@ -89,6 +94,10 @@ public class EventListenerResource implements EventsApi {
     return Response.ok("1.0").build();
   }
 
+  /**
+   * Get method to collect impression, viewimp, email open
+   * @return response
+   */
   @Override
   public Response impression() {
     Tracer tracer = GlobalTracer.get();
@@ -97,7 +106,7 @@ public class EventListenerResource implements EventsApi {
       Response res = null;
       try {
         collectionService.collectImpression(request, response, requestContext);
-        res = Response.status(Response.Status.CREATED).build();
+        res = Response.status(Response.Status.OK).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
         // logger.warn(e.getMessage(), e);

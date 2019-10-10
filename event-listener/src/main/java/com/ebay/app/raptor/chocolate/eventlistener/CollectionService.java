@@ -5,7 +5,6 @@ import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
-import com.ebay.kernel.BaseEnum;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
@@ -120,7 +119,7 @@ public class CollectionService {
       referer = endUserContext.getReferer();
     }
 
-    // TODO: return 201 for now for the no referer case. Need investigation further.
+    // return 201 for now for the no referer case. Need investigation further.
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
       //logError(ErrorType.NO_REFERER);
       logger.warn(Errors.ERROR_NO_REFERER);
@@ -237,19 +236,23 @@ public class CollectionService {
       logError(Errors.ERROR_NO_QUERY_PARAMETER);
     }
 
-    // no mkevt, rejected
+    // XC-1695. no mkevt, rejected but return 201 accepted for clients since app team has started unconditionally call
     if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
-      logError(Errors.ERROR_NO_MKEVT);
+      logger.warn(Errors.ERROR_NO_MKEVT);
+      metrics.meter(Errors.ERROR_NO_MKEVT);
+      return true;
     }
 
-    // mkevt != 1, rejected
+    // XC-1695. mkevt != 1, rejected but return 201 accepted for clients
     String mkevt = parameters.get(Constants.MKEVT).get(0);
     if (!mkevt.equals(Constants.VALID_MKEVT_CLICK)) {
-      logError(Errors.ERROR_INVALID_MKEVT);
+      logger.warn(Errors.ERROR_INVALID_MKEVT);
+      metrics.meter(Errors.ERROR_INVALID_MKEVT);
+      return true;
     }
 
     // parse channel from query mkcid
-    // no mkcid, accepted
+    // no mkcid, rejected but return 201 accepted for clients
     if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
       logger.warn(Errors.ERROR_NO_MKCID);
       metrics.meter("NoMkcidParameter");
@@ -646,22 +649,24 @@ public class CollectionService {
       // Ubi tracking
       IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-      String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
-      if (!StringUtils.isEmpty(sojTags)) {
-        StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
-        while (stToken.hasMoreTokens()) {
-          try {
-            StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
-            if (sojNvp.countTokens() == 2) {
-              String sojTag = sojNvp.nextToken().trim();
-              String urlParam = sojNvp.nextToken().trim();
-              if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
-                addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
+      if(parameters.containsKey(Constants.SOJ_TAGS)) {
+        String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
+        if (!StringUtils.isEmpty(sojTags)) {
+          StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
+          while (stToken.hasMoreTokens()) {
+            try {
+              StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
+              if (sojNvp.countTokens() == 2) {
+                String sojTag = sojNvp.nextToken().trim();
+                String urlParam = sojNvp.nextToken().trim();
+                if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
+                  addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
+                }
               }
+            } catch (Exception e) {
+              logger.warn("Error when tracking ubi for common tags", e);
+              metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
             }
-          } catch (Exception e) {
-            logger.warn("Error when tracking ubi for common tags", e);
-            metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
           }
         }
       }
