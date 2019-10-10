@@ -339,6 +339,46 @@ select t.rotation_id,
        t.MPX_CHNL_ID,
        t.PORTL_APP_ID,
        t.GEO_CLIENT_ID,
+       t.ROTATION_BRAND_IND,
+       t.CRE_DATE,
+       t.CRE_USER,
+       t.UPD_DATE,
+       t.UPD_USER
+from choco_data.dw_mpx_rotations_temp_one t
+where ROTATION_BRAND_IND <> 0;
+
+
+insert into table choco_data.dw_mpx_rotations_temp_two
+select t.rotation_id,
+       t.placement_id,
+       t.campaign_id,
+       t.vendor_id,
+       t.PORTL_BKT_ID,
+       t.PORTL_SUB_BKT_ID,
+       t.PORTL_PRTNR_GRP_ID,
+       t.rotation_string,
+       t.rotation_name,
+       t.rotation_cost,
+       t.rotation_count,
+       t.rotation_count_type,
+       t.rotation_date_start,
+       t.rotation_date_end,
+       t.PORTL_DSHBRD_FLAG_ID,
+       t.PORTL_INVC_FLAG_ID,
+       t.PORTL_SRC_CRE_DT,
+       t.ROTATION_CT_URL_NAME,
+       t.ROTATION_STS_NAME,
+       t.ROTATION_DESC_TXT,
+       t.MPX_PIXEL_DMNSN_SIZE_TXT,
+       t.MPX_ORGNZNG_TXT,
+       t.TRFC_ORDER_STNDRD_TXT,
+       t.TRFC_ORDER_JAVA_SCRPT_TXT,
+       t.TRFC_ORDER_LINK_TXT,
+       t.TRFC_ORDER_TRCR_TXT,
+       t.ROT_PT_ID,
+       t.MPX_CHNL_ID,
+       t.PORTL_APP_ID,
+       t.GEO_CLIENT_ID,
        1,
        t.CRE_DATE,
        t.CRE_USER,
@@ -385,7 +425,47 @@ select t.rotation_id,
        t.UPD_DATE,
        t.UPD_USER
 from choco_data.dw_mpx_rotations_temp_one t
-where ROTATION_DESC_TXT not like '%GBC%' or ROTATION_BRAND_IND <>0;
+where ROTATION_DESC_TXT not like '%GBC%' and ROTATION_BRAND_IND = 0;
+
+
+insert into table choco_data.dw_mpx_rotations_temp_two
+select t.rotation_id,
+       t.placement_id,
+       t.campaign_id,
+       t.vendor_id,
+       t.PORTL_BKT_ID,
+       t.PORTL_SUB_BKT_ID,
+       t.PORTL_PRTNR_GRP_ID,
+       t.rotation_string,
+       t.rotation_name,
+       t.rotation_cost,
+       t.rotation_count,
+       t.rotation_count_type,
+       t.rotation_date_start,
+       t.rotation_date_end,
+       t.PORTL_DSHBRD_FLAG_ID,
+       t.PORTL_INVC_FLAG_ID,
+       t.PORTL_SRC_CRE_DT,
+       t.ROTATION_CT_URL_NAME,
+       t.ROTATION_STS_NAME,
+       t.ROTATION_DESC_TXT,
+       t.MPX_PIXEL_DMNSN_SIZE_TXT,
+       t.MPX_ORGNZNG_TXT,
+       t.TRFC_ORDER_STNDRD_TXT,
+       t.TRFC_ORDER_JAVA_SCRPT_TXT,
+       t.TRFC_ORDER_LINK_TXT,
+       t.TRFC_ORDER_TRCR_TXT,
+       t.ROT_PT_ID,
+       t.MPX_CHNL_ID,
+       t.PORTL_APP_ID,
+       t.GEO_CLIENT_ID,
+       t.ROTATION_BRAND_IND,
+       t.CRE_DATE,
+       t.CRE_USER,
+       t.UPD_DATE,
+       t.UPD_USER
+from choco_data.dw_mpx_rotations_temp_one t
+where ROTATION_BRAND_IND = 0 and ROTATION_DESC_TXT is null;
 
 
 
