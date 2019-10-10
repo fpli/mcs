@@ -302,9 +302,7 @@ public class EventListenerServiceTest {
       .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
-    assertEquals(200, response.getStatus());
-    errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4006, errorMessage.getErrorCode());
+    assertEquals(201, response.getStatus());
 
     // invalid mkevt
     event.setTargetUrl("https://www.ebay.com?mkcid=2&mkevt=0");
@@ -315,9 +313,7 @@ public class EventListenerServiceTest {
       .header("Authorization", token)
       .accept(MediaType.APPLICATION_JSON_TYPE)
       .post(Entity.json(event));
-    assertEquals(200, response.getStatus());
-    errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4007, errorMessage.getErrorCode());
+    assertEquals(201, response.getStatus());
 
     // no mkcid
     // service will pass but no message to kafka
