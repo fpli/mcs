@@ -22,6 +22,7 @@ SET hive.auto.convert.join=false;
 set mapred.task.timeout= 1200000;
 
 
+
 msck repair table im_tracking.dw_mpx_campaigns_ups;
 
 
