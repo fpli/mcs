@@ -29,6 +29,16 @@ public enum ChannelIdEnum {
   DAP("4", LogicalChannelEnum.DISPLAY, false),
 
   /**
+   * Channel seven -- production SITE EMAIL
+   */
+  SITE_EMAIL("7", LogicalChannelEnum.SITE_EMAIL, false),
+
+  /**
+   * Channel eight -- production MARKETING EMAIL
+   */
+  MRKT_EMAIL("8", LogicalChannelEnum.MRKT_EMAIL, false),
+
+  /**
    * Channel nine -- test ePN
    */
   NINE("9", LogicalChannelEnum.EPN, true),

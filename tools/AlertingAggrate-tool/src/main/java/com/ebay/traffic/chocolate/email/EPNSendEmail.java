@@ -65,36 +65,36 @@ public class EPNSendEmail {
 
 	public void send(List<DailyClickTrend> dailyClickTrend, List<DailyDomainTrend> dailyDomainTrend, String emailAccount) {
 
-		// 发件人电子邮箱
+		// sender email address
 		String from = "dl-ebay-performance-marketing-oncall@ebay.com";
 
-		// 获取系统属性
+		// system property
 		Properties properties = System.getProperties();
 
-		// 设置邮件服务器
+		// set smtp server name
 		properties.setProperty("mail.smtp.host", emailHostServer);
 
-		// 获取默认session对象
+		// get the default session
 		Session session = Session.getDefaultInstance(properties);
 
 		try {
-			// 创建默认的 MimeMessage 对象
+			// MimeMessage
 			MimeMessage message = new MimeMessage(session);
 
-			// Set From: 头部头字段
+			// Set From: header
 			message.setFrom(new InternetAddress(from));
 
-			// Set To: 头部头字段
+			// Set To: header
 			message.addRecipient(Message.RecipientType.TO,
 				new InternetAddress(emailAccount));
 
-			// Set Subject: 头部头字段
+			// Set Subject: header
 			message.setSubject("Daily report for ams_click!");
 
-			// 设置消息体
+			// set message entity
 			message.setContent(EPNHTMLParse.parse(dailyClickTrend, dailyDomainTrend), "text/html");
 
-			// 发送消息
+			// send message
 			Transport.send(message);
 			System.out.println("Sent message successfully....");
 		} catch (MessagingException mex) {
@@ -104,36 +104,36 @@ public class EPNSendEmail {
 
 	public void send(List<HourlyClickCount> hourlyClickCount, String emailAccount) {
 
-		// 发件人电子邮箱
+		// sender email address
 		String from = "dl-ebay-performance-marketing-oncall@ebay.com";
 
-		// 获取系统属性
+		// system property
 		Properties properties = System.getProperties();
 
-		// 设置邮件服务器
+		// set smtp server name
 		properties.setProperty("mail.smtp.host", emailHostServer);
 
-		// 获取默认session对象
+		// get the default session
 		Session session = Session.getDefaultInstance(properties);
 
 		try {
-			// 创建默认的 MimeMessage 对象
+			// MimeMessage
 			MimeMessage message = new MimeMessage(session);
 
-			// Set From: 头部头字段
+			// Set From: header
 			message.setFrom(new InternetAddress(from));
 
-			// Set To: 头部头字段
+			// Set To: header
 			message.addRecipient(Message.RecipientType.TO,
 				new InternetAddress(emailAccount));
 
-			// Set Subject: 头部头字段
+			// Set Subject: header
 			message.setSubject("Hourly report for ams_click! ");
 
-			// 设置消息体
+			// set message entity
 			message.setContent(EPNHTMLParse.parse(hourlyClickCount), "text/html");
 
-			// 发送消息
+			// send message
 			Transport.send(message);
 			System.out.println("Sent message successfully....");
 		} catch (MessagingException mex) {

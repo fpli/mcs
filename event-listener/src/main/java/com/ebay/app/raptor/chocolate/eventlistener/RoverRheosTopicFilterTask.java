@@ -21,7 +21,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-
+import org.apache.commons.lang3.StringUtils;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 public class RoverRheosTopicFilterTask extends Thread {
 
   private static final String APPLICATION_PAYLOAD = "applicationPayload";
-
+  private static final String CLIENT_DATA = "clientData";
   private static final String INCOMING = "Incoming";
   private static final String INCOMING_PAGE_ROVER = "IncomingPageRover";
   private static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
@@ -210,10 +210,31 @@ public class RoverRheosTopicFilterTask extends Thread {
         ESMetrics.getInstance().meter(INCOMING_PAGE_ROVER);
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.EPN);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
+
+        // get urlQueryString from 3 places
         String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
+        if (StringUtils.isEmpty(urlQueryString)) {
+          urlQueryString = getField(genericRecord, "urlQueryString", "");
+          if (StringUtils.isEmpty(urlQueryString)) {
+            HashMap<Utf8, Utf8> clientData = ((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA));
+            urlQueryString = coalesce(clientData.get(new Utf8("urlQueryString")), empty).toString();
+            if (!(StringUtils.isEmpty(urlQueryString))) {
+              ESMetrics.getInstance().meter("UrlQueryStringFromClientData");
+            }
+          } else {
+            ESMetrics.getInstance().meter("UrlQueryStringFromRheosTag");
+          }
+        } else {
+          ESMetrics.getInstance().meter("UrlQueryStringFromApplicationPayload");
+        }
+
         Matcher roverSitesMatcher = missingRoverClicksPattern.matcher(urlQueryString.toLowerCase());
         // match the missing clicks type, forward to filter
         if (roverSitesMatcher.find()) {
+          if(urlQueryString.contains("5338380161")) {
+            logger.info("Incoming5338380161: " + urlQueryString);
+            ESMetrics.getInstance().meter("Incoming5338380161");
+          }
           ESMetrics.getInstance().meter(INCOMING_MISSING_CLICKS);
           ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
             0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
@@ -245,6 +266,10 @@ public class RoverRheosTopicFilterTask extends Thread {
           long campaignId = -1L;
           try{
             campaignId = Long.valueOf(lowerCaseParams.get("campid").get(0));
+            if(campaignId == 5338380161l) {
+              logger.info("Success5338380161: " + uri);
+              ESMetrics.getInstance().meter("Success5338380161");
+            }
           } catch (Exception e) {
             logger.error("Parse campaign id error");
           }
@@ -269,6 +294,13 @@ public class RoverRheosTopicFilterTask extends Thread {
             0L, 0L, "", "", "", ChannelAction.ROI, ChannelType.ROI, HttpMethod.GET, "", false);
 
         setCommonFields(record, applicationPayload, genericRecord);
+
+        // TODO: Remove this logic after release and everything stable
+        // set short snapshot id to be from Rheos event so that when inserting into TD, it can be deduped by primary index
+        String rvrIdStr = coalesce(applicationPayload.get(new Utf8("rvrid")), empty).toString();
+        if (StringUtils.isNumeric(rvrIdStr)) {
+          record.setShortSnapshotId(Long.valueOf(rvrIdStr));
+        }
 
         String uri = "https://rover.ebay.com" + urlQueryString;
         record.setUri(uri);
