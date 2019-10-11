@@ -33,9 +33,9 @@ if [[ $? -ne 0 ]]; then
    exit 1
 fi
 
-DRIVER_MEMORY=8g
-EXECUTOR_NUMBER=60
-EXECUTOR_MEMORY=4g
+DRIVER_MEMORY=16g
+EXECUTOR_NUMBER=50
+EXECUTOR_MEMORY=8g
 EXECUTOR_CORES=4
 
 JOB_NAME="crabTransform"
@@ -72,7 +72,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --workDir "${WORK_DIR}" \
       --outputDir "${OUTPUT_DIR}" \
       --compressOutPut true \
-      --maxMetaFiles 20 \
+      --maxMetaFiles 12 \
       --elasticsearchUrl ${ES_URL} \
       --metaFile dedupe \
       --hdfsUri hdfs://slickha \
