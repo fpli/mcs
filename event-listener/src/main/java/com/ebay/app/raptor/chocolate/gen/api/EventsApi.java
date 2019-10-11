@@ -41,4 +41,8 @@ public interface EventsApi {
     )
     @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public') and hasAuthority('https://api.ebay.com/oauth/scope/base@public') and hasAuthority('https://api.ebay.com/oauth/scope/experience@public')")
     Response getVersion();
+
+    @GET
+    @Path("/impression")
+    Response impression();
 }

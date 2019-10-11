@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
@@ -43,6 +44,9 @@ public class EventListenerResource implements EventsApi {
   private HttpServletRequest request;
 
   @Autowired
+  private HttpServletResponse response;
+
+  @Autowired
   private IEndUserContextProvider userCtxProvider;
 
   @Autowired
@@ -51,6 +55,11 @@ public class EventListenerResource implements EventsApi {
   @Context
   private ContainerRequestContext requestContext;
 
+  /**
+   * Collect clicks from upstream raptor, nodejs and native app
+   * @param body json body containing referrerUrl and targetUrl
+   * @return Response telling it's successful or not
+   */
   @Override
   public Response event(Event body) {
     Tracer tracer = GlobalTracer.get();
@@ -83,6 +92,37 @@ public class EventListenerResource implements EventsApi {
   @Override
   public Response getVersion() {
     return Response.ok("1.0").build();
+  }
+
+  /**
+   * Get method to collect impression, viewimp, email open
+   * @return response
+   */
+  @Override
+  public Response impression() {
+    Tracer tracer = GlobalTracer.get();
+    try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "impression").startActive(true)) {
+      Span span = scope.span();
+      Response res = null;
+      try {
+        collectionService.collectImpression(request, response, requestContext);
+        res = Response.status(Response.Status.OK).build();
+        Tags.STATUS.set(span, "0");
+      } catch (Exception e) {
+        // logger.warn(e.getMessage(), e);
+        // Tags.STATUS.set(span, e.getMessage());
+        Tags.STATUS.set(span, "0");
+        // show warning in cal
+        SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
+        try {
+          res = errorFactoryV3.makeWarnResponse(e.getMessage());
+        } catch (Exception ex) {
+          logger.warn(ex.getMessage(), ex);
+        }
+      } finally {
+        return res;
+      }
+    }
   }
 }
 
