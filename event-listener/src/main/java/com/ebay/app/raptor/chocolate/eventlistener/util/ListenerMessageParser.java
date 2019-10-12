@@ -136,7 +136,7 @@ public class ListenerMessageParser {
     record.setTimestamp(startTime);
 
     // Get snapshotId from request
-    Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId(), startTime).getRepresentation();
+    Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
     record.setSnapshotId(snapshotId);
     ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId());
     record.setShortSnapshotId(shortSnapshotId.getRepresentation());
