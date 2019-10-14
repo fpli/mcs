@@ -88,11 +88,9 @@ public class DumpRotationToTD {
       dumpFileFromCouchbase(updateTimeStartKey, updateTimeEndKey, outputFilePath);
       client.returnClient(cacheClient);
       rotationESClient.closeESClient(esRestHighLevelClient);
-    } catch (Exception e) {
-      logger.error(e.getMessage());
-      throw e;
     } finally {
       close();
+      System.exit(0);
     }
   }
 
@@ -165,7 +163,10 @@ public class DumpRotationToTD {
     //if rotation change quantity from es >0 but rotation dump from couchbase =0, throw couchbase dump exception
     if (changeRotationQuantity > 0 && size == 0) {
       logger.error("couchbase dump rotation data count = 0, throw exception!");
-      throw new IOException("couchbase dump rotation data count = 0");
+      metrics.meter("rotation.dumpTD.mismatch");
+      metrics.flush();
+      close();
+      System.exit(-1);
     }
 
     metrics.meter("rotation.dump.FromCBToTD.total", size);
@@ -201,7 +202,6 @@ public class DumpRotationToTD {
     if (client != null) {
       client.shutdown();
     }
-    System.exit(0);
   }
 
   private static void genFileForRotation(String output, boolean compress, List<JsonDocument> result, Metrics metrics) throws IOException {
