@@ -88,9 +88,11 @@ public class DumpRotationToTD {
       dumpFileFromCouchbase(updateTimeStartKey, updateTimeEndKey, outputFilePath);
       client.returnClient(cacheClient);
       rotationESClient.closeESClient(esRestHighLevelClient);
+    } catch (Exception e) {
+      logger.error(e.getMessage());
+      throw e;
     } finally {
       close();
-      System.exit(0);
     }
   }
 
@@ -152,22 +154,19 @@ public class DumpRotationToTD {
           .single();
     }
 
-    //get new-create rotation quantity and update rotation quantity from es per hour
-    String esSearchStartTime = sdf.format(new Date(Long.parseLong(startKey)));
-    String esSearchEndTime = sdf.format(new Date(Long.parseLong(endKey)));
-    Integer newCreateRotationQuantity = getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
-    Integer updateRotationQuantity = getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
-    Integer changeRotationQuantity = newCreateRotationQuantity + updateRotationQuantity;
-
-    //compare rotation change quantity from es and rotation change quantity dump from couchbase
-    //if rotation change quantity from es >0 but rotation dump from couchbase =0, throw couchbase dump exception
-    if (changeRotationQuantity > 0 && size == 0) {
-      logger.error("couchbase dump rotation data count = 0, throw exception!");
-      metrics.meter("rotation.dumpTD.mismatch");
-      metrics.flush();
-      close();
-      System.exit(-1);
-    }
+//    //get new-create rotation quantity and update rotation quantity from es per hour
+//    String esSearchStartTime = sdf.format(new Date(Long.parseLong(startKey)));
+//    String esSearchEndTime = sdf.format(new Date(Long.parseLong(endKey)));
+//    Integer newCreateRotationQuantity = getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
+//    Integer updateRotationQuantity = getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
+//    Integer changeRotationQuantity = newCreateRotationQuantity + updateRotationQuantity;
+//
+//    //compare rotation change quantity from es and rotation change quantity dump from couchbase
+//    //if rotation change quantity from es >0 but rotation dump from couchbase =0, throw couchbase dump exception
+//    if (changeRotationQuantity > 0 && size == 0) {
+//      logger.error("couchbase dump rotation data count = 0, throw exception!");
+//      throw new IOException("couchbase dump rotation data count = 0");
+//    }
 
     metrics.meter("rotation.dump.FromCBToTD.total", size);
     // sample: 2018-02-22_01_rotations.txt
@@ -202,6 +201,7 @@ public class DumpRotationToTD {
     if (client != null) {
       client.shutdown();
     }
+    System.exit(0);
   }
 
   private static void genFileForRotation(String output, boolean compress, List<JsonDocument> result, Metrics metrics) throws IOException {
