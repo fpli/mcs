@@ -534,7 +534,7 @@ public class CollectionService {
           requestTracker.addTag("fbprefetch", true, Boolean.class);
 
         // source id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, TrackerTagValueUtil.SidTag, String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
 
         // email unique id
         addTagFromUrlQuery(parameters, requestTracker, Constants.EMAIL_UNIQUE_ID, "euid", String.class);
@@ -575,7 +575,7 @@ public class CollectionService {
           requestTracker.addTag("fbprefetch", true, Boolean.class);
 
         // source id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, TrackerTagValueUtil.SidTag, String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
 
         // email id
         addTagFromUrlQuery(parameters, requestTracker, Constants.BEST_GUESS_USER, "emid", String.class);
