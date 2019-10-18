@@ -19,7 +19,7 @@ public class Constants {
 
   // CRM url params
   public static final String SOJ_TAGS = "sojTags";
-  public static final String SOURCE_ID = "sid";
+  public static final String SOURCE_ID = "emsid";
   public static final String EMAIL_UNIQUE_ID = "euid";
   public static final String EXPRCD_TRTMT = "ext";
   public static final String BEST_GUESS_USER = "bu";

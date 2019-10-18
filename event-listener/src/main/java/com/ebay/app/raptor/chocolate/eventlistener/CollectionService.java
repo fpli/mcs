@@ -38,6 +38,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -408,9 +409,8 @@ public class CollectionService {
     // add tags in url param "sojTags"
     addGenericSojTags(requestContext, parameters, referer, type, action);
 
-    // TODO apply for a new page id for email open
     // add tags all channels need
-    addCommonTags(requestContext, null, referer, agentInfo, type, action, 2547208);
+    addCommonTags(requestContext, null, referer, agentInfo, type, action, 3962);
 
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
@@ -534,7 +534,7 @@ public class CollectionService {
           requestTracker.addTag("fbprefetch", true, Boolean.class);
 
         // source id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, TrackerTagValueUtil.SidTag, String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
 
         // email unique id
         addTagFromUrlQuery(parameters, requestTracker, Constants.EMAIL_UNIQUE_ID, "euid", String.class);
@@ -575,7 +575,7 @@ public class CollectionService {
           requestTracker.addTag("fbprefetch", true, Boolean.class);
 
         // source id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, TrackerTagValueUtil.SidTag, String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
 
         // email id
         addTagFromUrlQuery(parameters, requestTracker, Constants.BEST_GUESS_USER, "emid", String.class);
@@ -653,6 +653,12 @@ public class CollectionService {
 
       if(parameters.containsKey(Constants.SOJ_TAGS)) {
         String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
+        try {
+          sojTags = URLDecoder.decode(sojTags, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+          logger.warn("Param sojTags is wrongly encoded", e);
+          metrics.meter("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+        }
         if (!StringUtils.isEmpty(sojTags)) {
           StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
           while (stToken.hasMoreTokens()) {
