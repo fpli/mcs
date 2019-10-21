@@ -154,19 +154,19 @@ public class DumpRotationToTD {
           .single();
     }
 
-    //get new-create rotation quantity and update rotation quantity from es per hour
-    String esSearchStartTime = sdf.format(new Date(Long.parseLong(startKey)));
-    String esSearchEndTime = sdf.format(new Date(Long.parseLong(endKey)));
-    Integer newCreateRotationQuantity = getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
-    Integer updateRotationQuantity = getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
-    Integer changeRotationQuantity = newCreateRotationQuantity + updateRotationQuantity;
-
-    //compare rotation change quantity from es and rotation change quantity dump from couchbase
-    //if rotation change quantity from es >0 but rotation dump from couchbase =0, throw couchbase dump exception
-    if (changeRotationQuantity > 0 && size == 0) {
-      logger.error("couchbase dump rotation data count = 0, throw exception!");
-      throw new IOException("couchbase dump rotation data count = 0");
-    }
+//    //get new-create rotation quantity and update rotation quantity from es per hour
+//    String esSearchStartTime = sdf.format(new Date(Long.parseLong(startKey)));
+//    String esSearchEndTime = sdf.format(new Date(Long.parseLong(endKey)));
+//    Integer newCreateRotationQuantity = getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
+//    Integer updateRotationQuantity = getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
+//    Integer changeRotationQuantity = newCreateRotationQuantity + updateRotationQuantity;
+//
+//    //compare rotation change quantity from es and rotation change quantity dump from couchbase
+//    //if rotation change quantity from es >0 but rotation dump from couchbase =0, throw couchbase dump exception
+//    if (changeRotationQuantity > 0 && size == 0) {
+//      logger.error("couchbase dump rotation data count = 0, throw exception!");
+//      throw new IOException("couchbase dump rotation data count = 0");
+//    }
 
     metrics.meter("rotation.dump.FromCBToTD.total", size);
     // sample: 2018-02-22_01_rotations.txt

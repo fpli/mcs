@@ -5,7 +5,6 @@ import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
-import com.ebay.kernel.BaseEnum;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
@@ -39,6 +38,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -120,7 +120,7 @@ public class CollectionService {
       referer = endUserContext.getReferer();
     }
 
-    // TODO: return 201 for now for the no referer case. Need investigation further.
+    // return 201 for now for the no referer case. Need investigation further.
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
       //logError(ErrorType.NO_REFERER);
       logger.warn(Errors.ERROR_NO_REFERER);
@@ -231,25 +231,31 @@ public class CollectionService {
       logError(Errors.ERROR_ILLEGAL_URL);
     }
 
-    // no query parameter, rejected
+    // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
     if (parameters.size() == 0) {
-      logError(Errors.ERROR_NO_QUERY_PARAMETER);
+      logger.warn(Errors.ERROR_NO_QUERY_PARAMETER);
+      metrics.meter(Errors.ERROR_NO_QUERY_PARAMETER);
+      return true;
     }
 
-    // no mkevt, rejected
+    // XC-1695. no mkevt, rejected but return 201 accepted for clients since app team has started unconditionally call
     if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
-      logError(Errors.ERROR_NO_MKEVT);
+      logger.warn(Errors.ERROR_NO_MKEVT);
+      metrics.meter(Errors.ERROR_NO_MKEVT);
+      return true;
     }
 
-    // mkevt != 1, rejected
+    // XC-1695. mkevt != 1, rejected but return 201 accepted for clients
     String mkevt = parameters.get(Constants.MKEVT).get(0);
     if (!mkevt.equals(Constants.VALID_MKEVT_CLICK)) {
-      logError(Errors.ERROR_INVALID_MKEVT);
+      logger.warn(Errors.ERROR_INVALID_MKEVT);
+      metrics.meter(Errors.ERROR_INVALID_MKEVT);
+      return true;
     }
 
     // parse channel from query mkcid
-    // no mkcid, accepted
+    // no mkcid, rejected but return 201 accepted for clients
     if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
       logger.warn(Errors.ERROR_NO_MKCID);
       metrics.meter("NoMkcidParameter");
@@ -403,9 +409,8 @@ public class CollectionService {
     // add tags in url param "sojTags"
     addGenericSojTags(requestContext, parameters, referer, type, action);
 
-    // TODO apply for a new page id for email open
     // add tags all channels need
-    addCommonTags(requestContext, null, referer, agentInfo, type, action, 2547208);
+    addCommonTags(requestContext, null, referer, agentInfo, type, action, 3962);
 
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
@@ -529,7 +534,7 @@ public class CollectionService {
           requestTracker.addTag("fbprefetch", true, Boolean.class);
 
         // source id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, TrackerTagValueUtil.SidTag, String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
 
         // email unique id
         addTagFromUrlQuery(parameters, requestTracker, Constants.EMAIL_UNIQUE_ID, "euid", String.class);
@@ -570,7 +575,7 @@ public class CollectionService {
           requestTracker.addTag("fbprefetch", true, Boolean.class);
 
         // source id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, TrackerTagValueUtil.SidTag, String.class);
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
 
         // email id
         addTagFromUrlQuery(parameters, requestTracker, Constants.BEST_GUESS_USER, "emid", String.class);
@@ -646,22 +651,30 @@ public class CollectionService {
       // Ubi tracking
       IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-      String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
-      if (!StringUtils.isEmpty(sojTags)) {
-        StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
-        while (stToken.hasMoreTokens()) {
-          try {
-            StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
-            if (sojNvp.countTokens() == 2) {
-              String sojTag = sojNvp.nextToken().trim();
-              String urlParam = sojNvp.nextToken().trim();
-              if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
-                addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
+      if(parameters.containsKey(Constants.SOJ_TAGS)) {
+        String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
+        try {
+          sojTags = URLDecoder.decode(sojTags, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+          logger.warn("Param sojTags is wrongly encoded", e);
+          metrics.meter("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+        }
+        if (!StringUtils.isEmpty(sojTags)) {
+          StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
+          while (stToken.hasMoreTokens()) {
+            try {
+              StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
+              if (sojNvp.countTokens() == 2) {
+                String sojTag = sojNvp.nextToken().trim();
+                String urlParam = sojNvp.nextToken().trim();
+                if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
+                  addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
+                }
               }
+            } catch (Exception e) {
+              logger.warn("Error when tracking ubi for common tags", e);
+              metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
             }
-          } catch (Exception e) {
-            logger.warn("Error when tracking ubi for common tags", e);
-            metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
           }
         }
       }

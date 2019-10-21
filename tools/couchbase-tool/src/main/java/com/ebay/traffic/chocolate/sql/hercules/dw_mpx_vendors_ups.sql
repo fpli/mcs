@@ -19,6 +19,7 @@ SET hive.exec.max.dynamic.partitions.pernode=100000;
 set hive.merge.smallfiles.avgsize=128000000;
 set hive.merge.size.per.task=128000000;
 SET hive.auto.convert.join=false;
+set mapred.task.timeout= 1200000;
 
 
 insert overwrite table im_tracking.dw_mpx_rotations_w_ve_volatile
