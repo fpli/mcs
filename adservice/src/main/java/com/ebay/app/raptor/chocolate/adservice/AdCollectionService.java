@@ -3,7 +3,6 @@ package com.ebay.app.raptor.chocolate.adservice;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
-import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -49,9 +48,6 @@ public class AdCollectionService {
   private Metrics metrics;
   private ListenerMessageParser parser;
   private static AdCollectionService instance = null;
-
-  @Autowired
-  private HttpClientConnectionManager httpClientConnectionManager;
 
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
