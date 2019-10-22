@@ -53,6 +53,7 @@
     <module>tools</module>
     <module>ingester</module>
     <module>event-listener</module>
+    <module>adservice</module>
   </modules>
 
   <dependencyManagement>

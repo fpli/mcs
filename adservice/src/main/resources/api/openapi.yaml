@@ -1,0 +1,148 @@
+---
+openapi: 3.0.0
+servers:
+  - url: 'http://api.ebay.com/marketingtracking/v1'
+    description: 'Marketing tracking collection services'
+
+info:
+  description: >-
+    marketing tracking compoent to receive marketing events
+  version: 1.0.0
+  title: service-tracking-events
+paths:
+  /events:
+    post:
+      summary: Send one event to marketing tracking
+      description: Send one event to marketing tracking
+      tags:
+        - events
+      operationId: event
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Rejected due to message format
+          content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/errorModel'
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+  /getVersion:
+    get:
+      summary: Get api version
+      description: Get marketing tracking api version
+      tags:
+        - version
+      operationId: version
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '200':
+          description: version number
+        '400':
+          description: Rejected due to message format
+            content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/errorModel'
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+
+components:
+   securitySchemes:
+    app_scope_auth:
+      type: oauth2
+      description: >-
+        The security definitions for this API. Please check individual
+        operations for applicable scopes.
+      flows:
+        clientCredentials:
+          tokenUrl: 'https://api.ebay.com/identity/v1/oauth2/token'
+          scopes:
+            'https://api.ebay.com/oauth/scope/@public': This scope would allow public access.
+            'https://api.ebay.com/oauth/scope/base@public': This scope would allow base public access.
+            'https://api.ebay.com/oauth/scope/experience@public': This scope would allow experience public access.
+   schemas:
+    Event:
+      type: object
+      properties:
+        targetUrl:
+          type: "string"
+          example: "htttps://www.ebay.com/deals"
+        referrer:
+          type: "string"
+          example: "htttps://www.google.com"
+    errorData:
+      type: object
+      description: >
+        Detail of each error modeled based on the cos error and exceptions spec:  https://github.corp.ebay.com/commerceos/cos-error-and-exceptions/blob/master/error-and-exception-handling.md
+      properties:
+        errorId:
+          example:
+            4000: No User-Agent header
+            4001: No X-EBAY-C-ENDUSERCTX header
+            4002: No X-EBAY-C-TRACKING header
+            4003: No Referer in header nor in post body
+            4004: Illegal URL
+            4005: No query parameter
+            4006: No mkevt
+            4007: Invalid mkevt
+            4008: Invalid X-EBAY-C-ENDUSERCTX header
+            5000: Internal Service Error
+          type: number
+          description: Value indicates type of error
+        domain:
+          type: string
+          enum:
+            - Marketing
+        subdomain:
+          type: string
+          enum:
+            - Tracking
+        category:
+          type: string
+          example:
+            REQUEST: Incorrect request e.g. auth, headers etc (Error Code 4xxx)
+            APPLICATION: Service related runtime exception (Error Code 5xxx)
+          enum:
+            - REQUEST # Issues with the request e.g. auth, headers etc.
+            - APPLICATION # application/runtime exception
+        message:
+          type: string
+        longMessage:
+          type: string
+        inputRefIds:
+          type: array
+          items:
+            type: string
+        outputRefIds:
+          type: array
+          items:
+            type: string
+        parameters:
+          type: array
+          items:
+            type: string
+    errorModel:
+      description: One or more error details
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/errorData'
