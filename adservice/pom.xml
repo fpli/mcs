@@ -12,6 +12,7 @@
 
   <groupId>com.ebay.traffic</groupId>
   <artifactId>chocolate-adservice</artifactId>
+  <name>chocolate adservice</name>
 
   <properties>
     <swagger.annotations.version>1.5.20</swagger.annotations.version>

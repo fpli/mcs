@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate;
 
+import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.adservice.AdCollectionService;
@@ -60,6 +61,9 @@ public class AdserviceResource implements EventsApi {
   @Inject
   ISecureTokenManager tokenGenerator;
 
+  @Autowired
+  private CookieReader cookieReader;
+
   /**
    * Get method to collect impression, viewimp, email open
    *
@@ -78,13 +82,8 @@ public class AdserviceResource implements EventsApi {
       //token
       String token = tokenGenerator.getToken().getAccessToken();
       //cookie
-      RequestCookieData requestCookieData = (RequestCookieData) requestContext
-          .getProperty(RequestCookieData.NAME);
-      // read the information from ebay cookies
-      if (requestCookieData != null) {
-        String value = requestCookieData.getCookieletValue(347);
-        logger.error("Cookie: " + value);
-      }
+      String cguid = cookieReader.getCguid(requestContext).substring(0,31);
+      String guid = cookieReader.getGuid(requestContext).substring(0,31);
 
       Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
       Client mktClient = GingerClientBuilder.newClient(config);
@@ -93,10 +92,9 @@ public class AdserviceResource implements EventsApi {
       Response ress = mktClient.target(endpoint).path("/events/").request()
           .header("Authorization", token)
           .header("X-EBAY-C-ENDUSERCTX", "userAgent=ebayUserAgent/eBayIOS;5.28.0;iOS;12.1.2;Apple;iPhone11_2;AT&T;375x812;3.0")
-          .header("X-EBAY-C-TRACKING", "guid=044595af16668760aa7bdbf0013429ac")
+          .header("X-EBAY-C-TRACKING", "guid=" + guid + "," + "cguid=" + cguid)
           .post(Entity.json(mktEvent));
       ress.close();
-
 
     } catch (Exception e) {
       // logger.warn(e.getMessage(), e);

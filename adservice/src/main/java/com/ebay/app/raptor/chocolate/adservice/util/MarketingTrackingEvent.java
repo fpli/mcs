@@ -14,11 +14,22 @@ public class MarketingTrackingEvent implements Serializable {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String targetUrl = null;
 
+	@JsonProperty("referrer")
+	private String referrer = null;
+
 	public String getTargetUrl() {
 		return targetUrl;
 	}
 
 	public void setTargetUrl(String targetUrl) {
 		this.targetUrl = targetUrl;
+	}
+
+	public String getReferrer() {
+		return referrer;
+	}
+
+	public void setReferrer(String referrer) {
+		this.referrer = referrer;
 	}
 }
