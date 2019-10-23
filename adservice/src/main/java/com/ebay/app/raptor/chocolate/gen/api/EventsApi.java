@@ -11,4 +11,6 @@ public interface EventsApi {
     @GET
     @Path("/impression")
     Response impression();
+
+
 }
