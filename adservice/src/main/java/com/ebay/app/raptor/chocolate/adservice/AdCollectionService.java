@@ -1,0 +1,548 @@
+package com.ebay.app.raptor.chocolate.adservice;
+
+import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
+import com.ebay.app.raptor.chocolate.adservice.util.*;
+import com.ebay.kernel.presentation.constants.PresentationConstants;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
+import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
+import com.ebay.raptor.auth.RaptorSecureContext;
+import com.ebay.tracking.api.IRequestScopeTracker;
+import com.ebay.tracking.util.TrackerTagValueUtil;
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
+import com.ebay.traffic.monitoring.Metrics;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.container.ContainerRequestContext;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * @author xiangli4
+ * Handle ar, impression, email open, and redirection
+ */
+@Component
+@DependsOn("AdserviceService")
+public class AdCollectionService {
+  private static final Logger logger = LoggerFactory.getLogger(AdCollectionService.class);
+  private Metrics metrics;
+  private ListenerMessageParser parser;
+  private static AdCollectionService instance = null;
+
+  private static final String CHANNEL_ACTION = "channelAction";
+  private static final String CHANNEL_TYPE = "channelType";
+  private static final String PLATFORM = "platform";
+  private static final String LANDING_PAGE_TYPE = "landingPageType";
+  // do not filter /ulk XC-1541
+  private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
+
+  @PostConstruct
+  public void postInit() {
+    this.metrics = ESMetrics.getInstance();
+    this.parser = ListenerMessageParser.getInstance();
+
+  }
+
+  /**
+   * Collect impression event and send pixel response
+   *
+   * @param request raw request
+   * @return OK or Error message
+   */
+  public boolean collectImpression(HttpServletRequest request, HttpServletResponse response,
+                                   ContainerRequestContext requestContext) throws Exception {
+
+    String referer = request.getHeader("Referer");
+
+    if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
+      logger.warn(Errors.ERROR_NO_REFERER);
+      metrics.meter(Errors.ERROR_NO_REFERER);
+      referer = "";
+    }
+
+    // decode referer if necessary. Currently, android is sending rover url encoded.
+    if(referer.startsWith("https%3A%2F%2") || referer.startsWith("http%3A%2F%2")) {
+      referer = URLDecoder.decode( referer, "UTF-8" );
+    }
+
+    // no user agent, rejected
+    String userAgent = request.getHeader("User-Agent");
+    if (null == userAgent) {
+      logError(Errors.ERROR_NO_USER_AGENT);
+    }
+
+    ChannelIdEnum channelType;
+    ChannelActionEnum channelAction = null;
+
+    // no query parameter, rejected
+    Map<String, String[]> params = request.getParameterMap();
+    if (params.size() == 0) {
+      logError(Errors.ERROR_NO_QUERY_PARAMETER);
+    }
+
+    MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+    for (Map.Entry<String, String[]> param : params.entrySet()) {
+      String[] values = param.getValue();
+      for (String value: values) {
+        parameters.add(param.getKey(), value);
+      }
+    }
+
+    // parse action from query param mkevt
+    // no mkevt, rejected
+    if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
+      logError(Errors.ERROR_NO_MKEVT);
+    }
+
+    // TODO refactor ChannelActionEnum
+    // mkevt != 2, 3, 4, rejected
+    String mkevt = parameters.get(Constants.MKEVT).get(0);
+    switch (mkevt) {
+      case "2":
+        channelAction = ChannelActionEnum.IMPRESSION;
+        break;
+      case "3":
+        channelAction = ChannelActionEnum.VIMP;
+        break;
+      case "4":
+        channelAction = ChannelActionEnum.EMAIL_OPEN;
+        break;
+      default:
+        logError(Errors.ERROR_INVALID_MKEVT);
+    }
+
+    // parse channel from query mkcid
+    // no mkcid, accepted
+    if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
+      logger.warn(Errors.ERROR_NO_MKCID);
+      metrics.meter("NoMkcidParameter");
+      return true;
+    }
+
+    // invalid mkcid, show error and accept
+    channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
+    if (channelType == null) {
+      logger.warn(Errors.ERROR_INVALID_MKCID);
+      metrics.meter("InvalidMkcid");
+      return true;
+    }
+
+    // platform check by user agent
+    UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
+    String platform = getPlatform(agentInfo);
+
+    String action = channelAction.getAvro().toString();
+    String type = channelType.getLogicalChannel().getAvro().toString();
+
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+        Field.of(PLATFORM, platform));
+
+    // add tags in url param "sojTags"
+    addGenericSojTags(requestContext, parameters, referer, type, action);
+
+    // add tags all channels need
+    addCommonTags(requestContext, null, referer, agentInfo, type, action, 3962);
+
+    // add channel specific tags, and produce message for EPN and IMK
+    boolean processFlag = false;
+    if (channelType == ChannelIdEnum.SITE_EMAIL)
+      processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request);
+    else if (channelType == ChannelIdEnum.MRKT_EMAIL)
+      processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
+
+    // send 1x1 pixel
+    ImageResponseHandler.sendImageResponse(response);
+
+    if (processFlag)
+      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+          Field.of(PLATFORM, platform));
+
+    return true;
+  }
+
+  /**
+   * Process AMS and IMK events
+   */
+  private boolean processAmsAndImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
+                                        MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
+                                        ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
+                                        IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
+
+    // parse rotation id
+    long rotationId = parseRotationId(parameters);
+
+    // parse campaign id
+    long campaignId = -1L;
+    try {
+      campaignId = Long.parseLong(parameters.get(Constants.CAMPID).get(0));
+    } catch (Exception e) {
+      logger.debug("No campaign id");
+    }
+
+    // get user id from auth token if it's user token, else we get from end user ctx
+    String userId;
+    if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
+      userId = raptorSecureContext.getSubjectImmutableId();
+    } else {
+      userId = Long.toString(endUserContext.getOrigUserOracleId());
+    }
+
+    // Parse the response
+    ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
+            .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
+
+    // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(!m.find()) {
+      try {
+        // Ubi tracking
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+        // event family
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
+
+        // rotation id
+        requestTracker.addTag("rotid", String.valueOf(rotationId), String.class);
+
+        // keyword
+        String searchKeyword = "";
+        if (parameters.containsKey(Constants.SEARCH_KEYWORD) && parameters.get(Constants.SEARCH_KEYWORD).get(0) != null) {
+
+          searchKeyword = parameters.get(Constants.SEARCH_KEYWORD).get(0);
+        }
+        requestTracker.addTag("keyword", searchKeyword, String.class);
+
+        // rvr id
+        requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
+
+        // gclid
+        String gclid = "";
+        if (parameters.containsKey(Constants.GCLID) && parameters.get(Constants.GCLID).get(0) != null) {
+
+          gclid = parameters.get(Constants.GCLID).get(0);
+        }
+        requestTracker.addTag("gclid", gclid, String.class);
+
+      } catch (Exception e) {
+        logger.warn("Error when tracking ubi for imk", e);
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+            Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
+      }
+    } else {
+      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+          Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
+    }
+
+    Producer<Long, ListenerMessage> producer = KafkaSink.get();
+    String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
+
+    if (message != null) {
+      producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
+      return true;
+    } else
+      return false;
+  }
+
+  /**
+   * Process site email event
+   */
+  private boolean processSiteEmailEvent(ContainerRequestContext requestContext, String referer,
+                                        MultiValueMap<String, String> parameters, String type, String action,
+                                        HttpServletRequest request) {
+
+    // Tracking ubi only when refer domain is not ebay.
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(!m.find()) {
+      try {
+        // Ubi tracking
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+        // event family
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
+
+        // fbprefetch
+        if (isFacebookPrefetchEnabled(request))
+          requestTracker.addTag("fbprefetch", true, Boolean.class);
+
+        // source id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
+
+        // email unique id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.EMAIL_UNIQUE_ID, "euid", String.class);
+
+        // email experienced treatment
+        addTagFromUrlQuery(parameters, requestTracker, Constants.EXPRCD_TRTMT, "ext", String.class);
+
+      } catch (Exception e) {
+        logger.warn("Error when tracking ubi for site email click tags", e);
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      }
+    } else {
+      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+    }
+
+    return true;
+  }
+
+  /**
+   * Process marketing email event
+   */
+  private boolean processMrktEmailEvent(ContainerRequestContext requestContext, String referer,
+                                        MultiValueMap<String, String> parameters, String type, String action,
+                                        HttpServletRequest request) {
+
+    // Tracking ubi only when refer domain is not ebay.
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(!m.find()) {
+      try {
+        // Ubi tracking
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+        // event family
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
+
+        // fbprefetch
+        if (isFacebookPrefetchEnabled(request))
+          requestTracker.addTag("fbprefetch", true, Boolean.class);
+
+        // source id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
+
+        // email id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.BEST_GUESS_USER, "emid", String.class);
+
+        // campaign run date
+        addTagFromUrlQuery(parameters, requestTracker, Constants.CAMP_RUN_DT, "crd", String.class);
+
+        // segment name
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SEGMENT_NAME, "segname", String.class);
+
+        // Yesmail message master id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.YM_MSSG_MSTR_ID, "ymmmid", String.class);
+
+        // YesMail message id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.YM_MSSG_ID, "ymsid", String.class);
+
+        // Yesmail mailing instance
+        addTagFromUrlQuery(parameters, requestTracker, Constants.YM_INSTC, "yminstc", String.class);
+
+      } catch (Exception e) {
+        logger.warn("Error when tracking ubi for marketing email click tags", e);
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      }
+    } else {
+      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+    }
+
+    return true;
+  }
+
+  /**
+   * Add common tags all channels need
+   */
+  private void addCommonTags(ContainerRequestContext requestContext, String targetUrl, String referer,
+                             UserAgentInfo agentInfo, String type, String action, int pageId) {
+    // Tracking ubi only when refer domain is not ebay.
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(!m.find()) {
+      try {
+        // Ubi tracking
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+        // page id
+        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, pageId, Integer.class);
+
+        // event action - click
+        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
+
+        // target url
+        if (targetUrl != null)
+          requestTracker.addTag("url_mpre", targetUrl, String.class);
+
+        // referer
+        requestTracker.addTag("ref", referer, String.class);
+
+        // populate device info
+        CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
+
+      } catch (Exception e) {
+        logger.warn("Error when tracking ubi for common tags", e);
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      }
+    } else {
+      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+    }
+  }
+
+  private void addGenericSojTags(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
+                                 String referer, String type, String action) {
+    // Tracking ubi only when refer domain is not ebay.
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(!m.find()) {
+      // Ubi tracking
+      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+      if(parameters.containsKey(Constants.SOJ_TAGS)) {
+        String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
+        try {
+          sojTags = URLDecoder.decode(sojTags, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+          logger.warn("Param sojTags is wrongly encoded", e);
+          metrics.meter("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+        }
+        if (!StringUtils.isEmpty(sojTags)) {
+          StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
+          while (stToken.hasMoreTokens()) {
+            try {
+              StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
+              if (sojNvp.countTokens() == 2) {
+                String sojTag = sojNvp.nextToken().trim();
+                String urlParam = sojNvp.nextToken().trim();
+                if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
+                  addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
+                }
+              }
+            } catch (Exception e) {
+              logger.warn("Error when tracking ubi for common tags", e);
+              metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+            }
+          }
+        }
+      }
+    } else {
+      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+    }
+  }
+
+  private String generateTimestampForCookie() {
+    LocalDateTime now = LocalDateTime.now();
+
+    // GUID, CGUID has 2 years expiration time
+    LocalDateTime expiration = now.plusYears(2);
+
+    // the last 8 hex number is the unix timestamp in seconds
+    long timeInSeconds = expiration.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1000;
+    return Long.toHexString(timeInSeconds);
+  }
+
+  /**
+   * log error, log metric and throw error with error key
+   *
+   * @param  error error type
+   * @throws Exception exception with error key
+   */
+  private void logError(String error) throws Exception {
+    logger.warn(error);
+    metrics.meter(error);
+    throw new Exception(error);
+  }
+
+  /**
+   * Starts the timer and logs some basic info
+   *
+   * @param additionalFields channelAction, channelType, platform, landing page type
+   * @return start time
+   */
+  private long startTimerAndLogData(Field<String, Object>... additionalFields) {
+    // the main rover process is already finished at this moment
+    // use the timestamp from request as the start time
+    long startTime = System.currentTimeMillis();
+    logger.debug(String.format("StartTime: %d", startTime));
+    metrics.meter("CollectionServiceIncoming", 1, startTime, additionalFields);
+    return startTime;
+  }
+
+  /**
+   * Stops the timer and logs relevant debugging messages
+   *
+   * @param startTime        the start time, so that latency can be calculated
+   * @param additionalFields channelAction, channelType, platform, landing page type
+   */
+  private void stopTimerAndLogData(long startTime, Field<String, Object>... additionalFields) {
+    long endTime = System.currentTimeMillis();
+    logger.debug(String.format("EndTime: %d", endTime));
+    metrics.meter("CollectionServiceSuccess", 1, startTime, additionalFields);
+    metrics.mean("CollectionServiceAverageLatency", endTime - startTime);
+  }
+
+  /**
+   * Check platform by user agent
+   */
+  private String getPlatform(UserAgentInfo agentInfo) {
+    String platform = Constants.PLATFORM_UNKNOWN;
+    if (agentInfo.isDesktop()) {
+      platform = Constants.PLATFORM_DESKTOP;
+    } else if (agentInfo.isTablet()) {
+      platform = Constants.PLATFORM_TABLET;
+    } else if (agentInfo.isMobile()) {
+      platform = Constants.PLATFORM_MOBILE;
+    } else if (agentInfo.isNativeApp()) {
+      platform = Constants.PLATFORM_NATIVE_APP;
+    }
+
+    return platform;
+  }
+
+  /**
+   * Parse rotation id from query mkrid
+   */
+  private long parseRotationId(MultiValueMap<String, String> parameters) {
+    long rotationId = -1L;
+    if (parameters.containsKey(Constants.MKRID) && parameters.get(Constants.MKRID).get(0) != null) {
+      try {
+        String rawRotationId = parameters.get(Constants.MKRID).get(0);
+        rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
+      } catch (Exception e) {
+        logger.warn(Errors.ERROR_INVALID_MKRID);
+        metrics.meter("InvalidMkrid");
+      }
+    } else {
+      logger.warn(Errors.ERROR_NO_MKRID);
+      metrics.meter("NoMkrid");
+    }
+
+    return rotationId;
+  }
+
+  /**
+   * Soj tag fbprefetch
+   */
+  private static boolean isFacebookPrefetchEnabled(HttpServletRequest request) {
+    String facebookprefetch = request.getHeader("X-Purpose");
+    if (facebookprefetch != null && facebookprefetch.trim().equals("preview")) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Parse tag from url query string and add to sojourner
+   */
+  private static void addTagFromUrlQuery(MultiValueMap<String, String> parameters, IRequestScopeTracker requestTracker,
+                                         String urlParam, String tag, Class tagType) {
+    if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
+      requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
+    }
+  }
+
+}
