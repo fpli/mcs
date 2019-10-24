@@ -1,6 +1,5 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
-import com.ebay.app.raptor.chocolate.utils.ListenerMessageParser;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import org.slf4j.Logger;
@@ -36,7 +35,6 @@ public class AdserviceService {
     ApplicationOptions options = ApplicationOptions.getInstance();
 
     KafkaSink.initialize(options, options);
-    ListenerMessageParser.init();
   }
 
   @PreDestroy
