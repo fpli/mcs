@@ -95,6 +95,23 @@ public class AdserviceResource implements EventsApi {
       return res;
     }
   }
+
+  @Override
+  public Response redirect() {
+      Response res = null;
+      try {
+        collectionService.collectRdirect(request, response, requestContext);
+      } catch (Exception e) {
+        try {
+          res = Response.status(Response.Status.BAD_REQUEST).build();
+        } catch (Exception ex) {
+          logger.warn(ex.getMessage(), ex);
+        }
+      } finally {
+        return res;
+      }
+    }
+
 }
 
 

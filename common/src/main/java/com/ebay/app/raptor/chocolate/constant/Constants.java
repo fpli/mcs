@@ -34,4 +34,10 @@ public class Constants {
   public static final String YM_MSSG_ID = "ymsid";
   public static final String YM_INSTC = "yminstc";
 
+  // Redirect url params
+  public static final String PARTNER_ID = "partnerId";
+  public static final String ADOBE_PARAMS = "adobeParams";
+  public static final String LOCTATION = "loc";
+  public static final String REDIRECT = "redirect";
+
 }
