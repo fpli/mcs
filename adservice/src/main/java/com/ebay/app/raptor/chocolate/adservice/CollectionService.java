@@ -3,7 +3,6 @@ package com.ebay.app.raptor.chocolate.adservice;
 import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.constant.Errors;
-import com.ebay.app.raptor.chocolate.utils.ListenerMessageParser;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;
@@ -27,7 +26,6 @@ import java.util.regex.Pattern;
 public class CollectionService {
   private static final Logger logger = LoggerFactory.getLogger(CollectionService.class);
   private Metrics metrics;
-  private ListenerMessageParser parser;
   private static CollectionService instance = null;
 
   // do not filter /ulk XC-1541
@@ -36,7 +34,6 @@ public class CollectionService {
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
-    this.parser = ListenerMessageParser.getInstance();
   }
 
   /**
