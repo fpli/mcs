@@ -19,7 +19,7 @@ import java.util.Properties;
 import static com.ebay.traffic.chocolate.kafka.KafkaCluster.DELIMITER;
 
 /**
- * Controls the parsing of event listener application options.
+ * Controls the parsing of adservice application options.
  *
  * @author xiangli4
  */
@@ -37,34 +37,30 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
   private static final String CONFIG_SUBFOLDER = "config/";
 
-  public static final String EVENT_LISTENER_PROPERTIES_FILE = "event-listener.properties";
+  public static final String ADSERVICE_PROPERTIES_FILE = "adservice.properties";
 
-  public static final String CONSUME_RHEOS_KAFKA_PROPERTIES_FILE = "event-listener-rheos-consumer.properties";
+  public static final String SINK_KAFKA_PROPERTIES_FILE = "adservice-kafka-producer.properties";
 
-  public static final String CONSUME_RHEOS_KAFKA_SERVICE_URL = "chocolate.event-listener.kafka.consumer.services.urls";
-
-  public static final String SINK_KAFKA_PROPERTIES_FILE = "event-listener-kafka-producer.properties";
-
-  public static final String SINK_RHEOS_KAFKA_PROPERTIES_FILE = "event-listener-rheos-producer.properties";
+  public static final String SINK_RHEOS_KAFKA_PROPERTIES_FILE = "adservice-rheos-producer.properties";
 
   /**
    * Out Kafka cluster, can be "kafka", "rheos", "rheos,kafka", "kafka,rheos".
    */
-  public static final String KAFKA_OUT_CLUSTER = "chocolate.event-listener.kafka.out";
+  public static final String KAFKA_OUT_CLUSTER = "chocolate.adservice.kafka.out";
 
   /**
    * prefix for rover rheos topic
    */
-  public static final String RHEOS_INPUT_TOPIC_PREFIX = "chocolate.event-listener.kafka.consumer.topic";
+  public static final String RHEOS_INPUT_TOPIC_PREFIX = "chocolate.adservice.kafka.consumer.topic";
   /**
    * prefix of out Kafka topic for channels.
    */
-  public static final String KAFKA_OUT_TOPIC_PREFIX = "chocolate.event-listener.kafka.producer.topic.";
+  public static final String KAFKA_OUT_TOPIC_PREFIX = "chocolate.adservice.kafka.producer.topic.";
 
   /**
    * couchbase data source
    */
-  public static final String COUCHBASE_DATASOURCE = "chocolate.event-listener.couchbase.datasource";
+  public static final String COUCHBASE_DATASOURCE = "chocolate.adservice.couchbase.datasource";
 
   /**
    * Static driver ID
@@ -87,8 +83,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    * @throws IOException if properties could not be loaded
    */
   public static void init() throws IOException {
-    instance.initInstance(loadProperties(EVENT_LISTENER_PROPERTIES_FILE));
-    consumeRheosKafkaProperties = loadProperties(CONSUME_RHEOS_KAFKA_PROPERTIES_FILE);
+    instance.initInstance(loadProperties(ADSERVICE_PROPERTIES_FILE));
     if (sinkKafkaProperties == null) {
       sinkKafkaProperties = loadProperties(SINK_KAFKA_PROPERTIES_FILE);
     }
@@ -158,25 +153,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   }
 
   /**
-   * Get consume rheos properties
-   */
-  public Properties getConsumeRheosKafkaProperties() {
-    return consumeRheosKafkaProperties;
-  }
-
-  /**
-   * Get consume rheos topic
-   *
-   */
-  public String getConsumeRheosTopic() {
-    return ApplicationOptionsParser.getStringProperty(properties, RHEOS_INPUT_TOPIC_PREFIX);
-  }
-
-  public String getConsumeRheosKafkaServiceUrl() {
-    return ApplicationOptionsParser.getStringProperty(properties, CONSUME_RHEOS_KAFKA_SERVICE_URL);
-  }
-
-  /**
    * Get sink channel kafka topic map
    *
    * @return sink channel kafka topic map
@@ -217,7 +193,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
 
   /**
-   * @return the driver ID for the event-listener.
+   * @return the driver ID.
    */
   public int getDriverId() {
     return DRIVER_ID;

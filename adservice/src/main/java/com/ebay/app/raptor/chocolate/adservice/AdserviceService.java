@@ -23,8 +23,8 @@ import java.io.IOException;
 public class AdserviceService {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceService.class);
 
-  private static final String ELASTICSEARCH_URL = "chocolate.event-listener.elasticsearch.url";
-  private static final String METRICS_INDEX_PREFIX = "chocolate.event-listener.elasticsearch.index.prefix";
+  private static final String ELASTICSEARCH_URL = "chocolate.adservice.elasticsearch.url";
+  private static final String METRICS_INDEX_PREFIX = "chocolate.adservice.elasticsearch.index.prefix";
 
   @PostConstruct
   public void postInit() throws Exception {
