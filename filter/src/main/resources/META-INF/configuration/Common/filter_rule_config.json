@@ -69,5 +69,11 @@
     "filterRules": [
 
     ]
+  },
+  {
+    "channelType": "NATURAL_SEARCH",
+    "filterRules": [
+
+    ]
   }
 ]

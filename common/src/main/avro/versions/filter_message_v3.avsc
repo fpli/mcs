@@ -113,7 +113,8 @@
           "VIEW_ITEM",
           "VIEW_TIME",
           "APP_FIRST_START",
-          "ROI"
+          "ROI",
+          "NATURAL_SEARCH"
         ]
       }
     },
@@ -131,6 +132,7 @@
           "SOCIAL_MEDIA",
           "PAID_SOCIAL",
           "ROI",
+          "NATURAL_SEARCH",
           "UNKNOWN"
         ]
       }
