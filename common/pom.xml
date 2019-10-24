@@ -72,14 +72,6 @@
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-cos-usercontext-starter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-geo-starter</artifactId>
-    </dependency>
 
     <!-- test -->
     <dependency>
