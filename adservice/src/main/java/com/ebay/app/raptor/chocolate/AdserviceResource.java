@@ -3,14 +3,13 @@ package com.ebay.app.raptor.chocolate;
 import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
-import com.ebay.app.raptor.chocolate.adservice.AdCollectionService;
+import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
-import com.ebay.raptor.cookie.api.RequestCookieData;
 import com.ebay.raptor.opentracing.SpanEventHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +27,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-
 /**
  * Resource class
  *
@@ -40,7 +38,7 @@ import javax.ws.rs.core.Response;
 public class AdserviceResource implements EventsApi {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceResource.class);
   @Autowired
-  private AdCollectionService collectionService;
+  private CollectionService collectionService;
 
   @Autowired
   private HttpServletRequest request;

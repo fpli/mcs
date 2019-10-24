@@ -1,12 +1,13 @@
-package com.ebay.app.raptor.chocolate.adservice.util;
+package com.ebay.app.raptor.chocolate.utils;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
-import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.kernel.util.StringUtils;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
@@ -55,9 +56,9 @@ public class ListenerMessageParser {
    * @return ListenerMessage object
    */
   public ListenerMessage parse(
-    final HttpServletRequest clientRequest, final ContainerRequestContext requestContext, Long startTime, Long campaignId,
-    final ChannelType channelType, final ChannelActionEnum action, String userId, IEndUserContext endUserContext,
-    String uri, String referer, long rotationId, String snid) {
+      final HttpServletRequest clientRequest, final ContainerRequestContext requestContext, Long startTime, Long campaignId,
+      final ChannelType channelType, final ChannelActionEnum action, String userId, IEndUserContext endUserContext,
+      String uri, String referer, long rotationId, String snid) {
 
     // set default values to prevent unable to serialize message exception
     ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
@@ -136,7 +137,7 @@ public class ListenerMessageParser {
     record.setTimestamp(startTime);
 
     // Get snapshotId from request
-    Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
+    Long snapshotId = SnapshotId.getNext(ApplicationOptionsParser.getDriverIdFromIp()).getRepresentation();
     record.setSnapshotId(snapshotId);
     ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId());
     record.setShortSnapshotId(shortSnapshotId.getRepresentation());

@@ -1,6 +1,6 @@
-package com.ebay.app.raptor.chocolate.adservice.constant;
+package com.ebay.app.raptor.chocolate.constant;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import javax.xml.bind.annotation.XmlRootElement;
 

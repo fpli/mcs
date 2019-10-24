@@ -1,4 +1,4 @@
-package com.ebay.app.raptor.chocolate.adservice.constant;
+package com.ebay.app.raptor.chocolate.constant;
 
 import java.util.HashMap;
 import java.util.Map;

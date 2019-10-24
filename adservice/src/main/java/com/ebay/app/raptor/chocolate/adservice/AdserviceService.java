@@ -1,6 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
-import com.ebay.app.raptor.chocolate.adservice.util.ListenerMessageParser;
+import com.ebay.app.raptor.chocolate.utils.ListenerMessageParser;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import org.slf4j.Logger;

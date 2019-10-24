@@ -1,4 +1,4 @@
-package com.ebay.app.raptor.chocolate.adservice.util;
+package com.ebay.app.raptor.chocolate.constant;
 
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.StringUtils;

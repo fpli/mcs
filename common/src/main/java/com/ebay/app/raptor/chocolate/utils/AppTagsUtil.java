@@ -1,4 +1,4 @@
-package com.ebay.app.raptor.chocolate.adservice.util;
+package com.ebay.app.raptor.chocolate.utils;
 
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
@@ -35,7 +35,7 @@ import com.ebay.tracking.api.IRequestScopeTracker;
  * dn
  * dm
  */
-public class CollectionServiceUtil {
+public class AppTagsUtil {
 
   private static String MOBILE_WEB_APPID = "3564";
   private static String IPHONE_APPID = "1462";

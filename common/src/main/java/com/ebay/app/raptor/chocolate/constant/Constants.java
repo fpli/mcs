@@ -1,4 +1,4 @@
-package com.ebay.app.raptor.chocolate.adservice.constant;
+package com.ebay.app.raptor.chocolate.constant;
 
 /**
  * @author xiangli4
@@ -16,6 +16,11 @@ public class Constants {
   public static final String PLATFORM_MOBILE = "mobile";
   public static final String PLATFORM_DESKTOP = "dsktop";
   public static final String PLATFORM_UNKNOWN = "UNKNOWN";
+
+  public static final String CHANNEL_ACTION = "channelAction";
+  public static final String CHANNEL_TYPE = "channelType";
+  public static final String PLATFORM = "platform";
+  public static final String LANDING_PAGE_TYPE = "landingPageType";
 
   // CRM url params
   public static final String SOJ_TAGS = "sojTags";
