@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Feature;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -18,6 +19,10 @@ import java.util.Set;
 @Configuration
 @ApplicationPath("/marketingtracking")
 public class AdserviceResourceConfig extends Application {
+
+  @Autowired
+  @Qualifier("ets-feature")
+  private Feature etsFeature;
 
   @Autowired
   @Qualifier("cookie-filter")
@@ -34,7 +39,7 @@ public class AdserviceResourceConfig extends Application {
   public Set<Object> getSingletons() {
     Set<Object> providers = new LinkedHashSet<Object>();
     providers.add(cookieFilter);
-
+    providers.add(etsFeature);
     return providers;
   }
 }
