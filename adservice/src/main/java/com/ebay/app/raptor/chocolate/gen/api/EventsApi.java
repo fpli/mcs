@@ -13,5 +13,4 @@ public interface EventsApi {
     Response impression();
 
 
-
 }
