@@ -1,4 +1,4 @@
-package com.ebay.app.raptor.chocolate.adservice.util;
+package com.ebay.app.raptor.chocolate.constant;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import org.apache.commons.lang.Validate;
