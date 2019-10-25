@@ -1,9 +1,14 @@
 package com.ebay.app.raptor.chocolate.adservice.redirect;
 
+import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.HttpClientConnectionManager;
+import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.constant.Errors;
+import com.ebay.jaxrs.client.EndpointUri;
+import com.ebay.jaxrs.client.GingerClientBuilder;
+import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
@@ -21,9 +26,14 @@ import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.HashMap;
@@ -31,8 +41,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AdobeRedirectStrategy implements RedirectStrategy {
-  private HttpClientConnectionManager httpClientConnectionManager;
   private ContainerRequestContext requestContext;
+  private CookieReader cookieReader;
   private static final Logger logger = LoggerFactory.getLogger(AdobeRedirectStrategy.class);
   private Metrics metrics;
   private String redirectSource = "default";
@@ -47,6 +57,7 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
   private static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   private static final String REDIRECT_SRC_SOJ_TAG = "adcamp_locationsrc";
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
+  private static final String MCS_SERVICE_NAME = "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46";
 
   // TODO: REDIRECT_SERVER_DOMAIN need to be defined
   private static final String REDIRECT_SERVER_DOMAIN = "TBD";
@@ -80,8 +91,8 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
 
   }
 
-  public AdobeRedirectStrategy(HttpClientConnectionManager connectionManager, ContainerRequestContext context) {
-    httpClientConnectionManager = connectionManager;
+  public AdobeRedirectStrategy(CookieReader cookie, ContainerRequestContext context) {
+    cookieReader = cookie;
     requestContext = context;
     this.metrics = ESMetrics.getInstance();
   }
@@ -95,8 +106,32 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
     // send Response
     response.sendRedirect(redirectUrl);
 
-    // store redirect url and redirect source to Soj
-    addAdobeSojTags(redirectUrl, redirectSource);
+    // Store data to Soj by MCS, generate a click event to call MCS
+    Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", MCS_SERVICE_NAME);
+    Client mktClient = GingerClientBuilder.newClient(config);
+    String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
+    // Generate marketing event
+    MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
+    String sojTags = request.getParameter(Constants.SOJ_TAGS);
+    String redirectUrlParam = REDIRECT_URL_SOJ_TAG + "=" + redirectUrl;
+    String redirectSourceParam = REDIRECT_SRC_SOJ_TAG + "=" + redirectSource;
+    String targetUrl = String.format("http://www.ebay.com?mkevt=1&mkcid=8&mkrid=222&%s&%s&%s", sojTags, redirectUrlParam, redirectSourceParam);
+    mktEvent.setTargetUrl(targetUrl);
+
+    // cookie and userAgent
+    String cguid = cookieReader.getCguid(requestContext).substring(0,31);
+    String guid = cookieReader.getGuid(requestContext).substring(0,31);
+    String userAgent = request.getHeader("User-Agent");
+    if(StringUtils.isEmpty(userAgent)) {
+      userAgent = "userAgent=ebayUserAgent/eBayIOS;5.28.0;iOS;12.1.2;Apple;iPhone11_2;AT&T;375x812;3.0";
+    }
+
+    // call MCS
+    Response ress = mktClient.target(endpoint).path("/events/").request()
+        .header("X-EBAY-C-ENDUSERCTX", userAgent)
+        .header("X-EBAY-C-TRACKING", "guid=" + guid + "," + "cguid=" + cguid)
+        .post(Entity.json(mktEvent));
+    ress.close();
 
   }
 
@@ -177,45 +212,32 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
   }
 
   private String getRedirectUrlByAdobe(HttpServletRequest request) {
-    CloseableHttpClient client = httpClientConnectionManager.getHttpClient();
-    URIBuilder uriBuilder = null;
-    HttpContext httpContext = HttpClientContext.create();
-    HttpGet httpGet = null;
-    String headers = "";
-    String redirectUrl = "";
     // generate Adobe Server URL
-    try {
-      uriBuilder = generateAdobeUrl(request);
+    URIBuilder uriBuilder = null;
+    String redirectUrl = "";
+    // get the
+    Configuration config = ConfigurationBuilder.newConfig("mktAdobeClient");
+    Client mktClient = GingerClientBuilder.newClient(config);
+      try {
+        uriBuilder = generateAdobeUrl(request);
+        Response response = mktClient.target(uriBuilder.build()).path("/events/").request().get();
+        // Get the redirect URL from reponse
+        if (isValidResponse(response, uriBuilder)) {
+          redirectUrl = parseRedirectUrl(response);
+        }
+        response.close();
     } catch (Exception ex) {
       logger.error("Generate Adobe URL exception", ex);
+      metrics.meter("AdobeServerException");
       return redirectUrl;
     }
-    try {
-      // call Adobe Server
-      httpGet = new HttpGet(uriBuilder.build());
-      for (Header header : httpGet.getAllHeaders()) {
-        headers = headers + header.toString() + ",";
-      }
-      // TODO: add timeout
-      CloseableHttpResponse response = client.execute(httpGet, httpContext);
-      // Get the redirect URL from reponse
-      if (isValidResponse(response, httpGet, headers)) {
-        redirectUrl = parseRedirectUrl(response);
-      }
-      response.close();
-    } catch (Exception ex) {
-      logger.error("Call Adobe Server exception", ex);
-      if (null != httpGet) {
-        logger.error("AdobeServerException req. URI: " + httpGet.getURI());
-      }
-      metrics.meter("AdobeServerException");
-    }
+
     // TODO: Will throw an exception when redirectUrl is empty?
     return redirectUrl;
   }
 
   //TODO
-  private String parseRedirectUrl(CloseableHttpResponse response) {
+  private String parseRedirectUrl(Response response) {
     return "adobe-redirect";
   }
 
@@ -223,13 +245,12 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
    * Verify the response and judge is it success ack
    *
    * @param response
-   * @param httpGet
-   * @param headers
+   * @param uriBuilder
    * @return
    */
-  private boolean isValidResponse(CloseableHttpResponse response, HttpGet httpGet, String headers) {
+  private boolean isValidResponse(Response response, URIBuilder uriBuilder) throws URISyntaxException {
     boolean status = false;
-    switch (response.getStatusLine().getStatusCode()) {
+    switch (response.getStatus()) {
       case SUCCESS_CODE: {
         metrics.meter("AdobeServerSuccess");
         status = true;
@@ -237,12 +258,12 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
       }
       case REDIRECT_CODE: {
         metrics.meter("AdobeServerRedirect");
-        logger.error("AdobeServerRedirect req. URI: " + httpGet.getURI() + ", headers: " + headers);
+        logger.error("AdobeServerRedirect req. URI: " + uriBuilder.build());
         break;
       }
       default: {
         metrics.meter("AdobeServerFail");
-        logger.error("AdobeServerFail req. URI: " + httpGet.getURI() + ", headers: " + headers);
+        logger.error("AdobeServerFail req. URI: " + uriBuilder.build());
       }
     }
     return status;
@@ -254,6 +275,7 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
    * the paramter get from request's parameters
    */
   public URIBuilder generateAdobeUrl(HttpServletRequest request) throws Exception {
+    // TODO
     String adobeHost = "";
     URIBuilder uriBuilder = new URIBuilder(adobeHost);
     MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
@@ -309,7 +331,7 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
    */
   private boolean isWhiteListDomain(String redirectUrl) {
     // judge whether the url contain whitelist domain
-    return false;
+    return true;
   }
 
   private void addAdobeSojTags( String redirectUrl, String redirectSource) {

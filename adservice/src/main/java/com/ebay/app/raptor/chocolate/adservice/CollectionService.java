@@ -7,6 +7,9 @@ import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.constant.Errors;
+import com.ebay.jaxrs.client.EndpointUri;
+import com.ebay.jaxrs.client.GingerClientBuilder;
+import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -23,7 +26,11 @@ import org.springframework.util.StringUtils;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -49,8 +56,6 @@ public class CollectionService {
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
 
-  @Autowired
-  private HttpClientConnectionManager httpClientConnectionManager;
 
   @PostConstruct
   public void postInit() {
@@ -99,7 +104,7 @@ public class CollectionService {
    * @return OK or Error message
    */
   public boolean collectRdirect(HttpServletRequest request, HttpServletResponse response,
-                                ContainerRequestContext requestContext) throws Exception {
+                                ContainerRequestContext requestContext, CookieReader cookieReader) throws Exception {
 
     // verify the request
     verifyRedirectRequest(request);
@@ -123,12 +128,8 @@ public class CollectionService {
     String partnerId = parameters.get(Constants.PARTNER_ID).get(0);
 
     // execute redirect Strategy
-    executeRedirectStrategy(request, response, partnerId, requestContext);
+    executeRedirectStrategy(request, response, partnerId, requestContext,cookieReader);
 
-    // store data to Soj
-    addGenericSojTags(requestContext, parameters, referer, type, ChannelActionEnum.CLICK.name());
-
-    // TODO: store data to Chocolate
     return true;
   }
 
@@ -169,11 +170,11 @@ public class CollectionService {
   /**
    * Send redirect response by Strategy Pattern
    */
-  private void executeRedirectStrategy(HttpServletRequest request, HttpServletResponse response, String partnerId, ContainerRequestContext requestContext) throws Exception {
+  private void executeRedirectStrategy(HttpServletRequest request, HttpServletResponse response, String partnerId, ContainerRequestContext requestContext, CookieReader cookieReader) throws Exception {
     RedirectContext redirectContext = null;
     switch (partnerId) {
       case ADOBE_PARTNER_ID:
-        redirectContext = new RedirectContext(new AdobeRedirectStrategy(httpClientConnectionManager, requestContext));
+        redirectContext = new RedirectContext(new AdobeRedirectStrategy(cookieReader, requestContext));
         break;
       default:
         logError(Errors.ERROR_INVALID_PARTNER_ID);
@@ -201,53 +202,4 @@ public class CollectionService {
     throw new Exception(error);
   }
 
-  private void addGenericSojTags(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
-                                 String referer, String type, String action) {
-    // Tracking ubi only when refer domain is not ebay.
-    Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(!m.find()) {
-      // Ubi tracking
-      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
-
-      String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
-      // Format the sojTags field when it contains UTF-8 character
-      if(sojTags.contains("%3D")) {
-        try {
-          sojTags = URLDecoder.decode( sojTags, "UTF-8" );
-        } catch (UnsupportedEncodingException e) {
-          logger.warn("sojTags is wrong format", e);
-        }
-      }
-      if (!StringUtils.isEmpty(sojTags)) {
-        StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
-        while (stToken.hasMoreTokens()) {
-          try {
-            StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
-            if (sojNvp.countTokens() == 2) {
-              String sojTag = sojNvp.nextToken().trim();
-              String urlParam = sojNvp.nextToken().trim();
-              if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
-                addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
-              }
-            }
-          } catch (Exception e) {
-            logger.warn("Error when tracking ubi for common tags", e);
-            metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
-          }
-        }
-      }
-    } else {
-      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
-    }
-  }
-
-  /**
-   * Parse tag from url query string and add to sojourner
-   */
-  private static void addTagFromUrlQuery(MultiValueMap<String, String> parameters, IRequestScopeTracker requestTracker,
-                                         String urlParam, String tag, Class tagType) {
-    if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
-      requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
-    }
-  }
 }
