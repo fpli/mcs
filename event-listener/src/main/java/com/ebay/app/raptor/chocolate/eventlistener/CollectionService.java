@@ -36,7 +36,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -121,8 +120,7 @@ public class CollectionService {
     }
 
     // return 201 for now for the no referer case. Need investigation further.
-    if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
-      //logError(ErrorType.NO_REFERER);
+    if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null") ) {
       logger.warn(Errors.ERROR_NO_REFERER);
       metrics.meter(Errors.ERROR_NO_REFERER);
       referer = "";
@@ -318,10 +316,34 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public boolean collectImpression(HttpServletRequest request, HttpServletResponse response,
-                                   ContainerRequestContext requestContext) throws Exception {
+  public boolean collectImpression(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
+      raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
 
-    String referer = request.getHeader("Referer");
+    if (request.getHeader("X-EBAY-C-TRACKING") == null) {
+      logError(Errors.ERROR_NO_TRACKING);
+    }
+
+    if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
+      logError(Errors.ERROR_NO_ENDUSERCTX);
+    }
+
+    /* referer is from post body (mobile) and from header (NodeJs and handler)
+       By internet standard, referer is typo of referrer.
+       From ginger client call, the referer is embedded in enduserctx header, but we also check header for other cases.
+       For local test using postman, do not include enduserctx header, the service will generate enduserctx by
+       cos-user-context-filter.
+       Ginger client call will pass enduserctx in its header.
+       Priority 1. native app from body, as they are the most part 2. enduserctx, ginger client calls 3. referer header
+     */
+
+    String referer = null;
+    if (!StringUtils.isEmpty(event.getReferrer())) {
+      referer = event.getReferrer();
+    }
+
+    if (StringUtils.isEmpty(referer)) {
+      referer = endUserContext.getReferer();
+    }
 
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
       logger.warn(Errors.ERROR_NO_REFERER);
@@ -376,6 +398,8 @@ public class CollectionService {
       case "4":
         channelAction = ChannelActionEnum.EMAIL_OPEN;
         break;
+      case "6":
+        channelAction = ChannelActionEnum.SERVE;
       default:
         logError(Errors.ERROR_INVALID_MKEVT);
     }
@@ -395,6 +419,9 @@ public class CollectionService {
       metrics.meter("InvalidMkcid");
       return true;
     }
+
+    // targetUrl is from post body
+    String targetUrl = event.getTargetUrl();
 
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
@@ -418,9 +445,9 @@ public class CollectionService {
       processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
       processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
-
-    // send 1x1 pixel
-    ImageResponseHandler.sendImageResponse(response);
+    else
+      processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType, channelAction,
+          request, startTime, endUserContext, raptorSecureContext);;
 
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
