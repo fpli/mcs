@@ -18,9 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
@@ -84,7 +83,7 @@ public class AdserviceResource implements EventsApi {
       }
 
       // add all header except Cookie
-      Invocation.Builder builder = webTarget.request();
+      Builder builder = webTarget.request();
       final Enumeration<String> headers = request.getHeaderNames();
       while (headers.hasMoreElements()) {
         String header = headers.nextElement();
