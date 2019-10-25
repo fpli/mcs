@@ -95,7 +95,6 @@ public class AdserviceResource implements EventsApi {
         }
         String values = request.getHeader(header);
         builder = builder.header(header, values);
-        break;
       }
 
       // call marketing collection service to send ubi event or send kafka
