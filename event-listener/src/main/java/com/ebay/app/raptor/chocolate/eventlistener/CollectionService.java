@@ -323,10 +323,6 @@ public class CollectionService {
       logError(Errors.ERROR_NO_TRACKING);
     }
 
-    if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
-      logError(Errors.ERROR_NO_ENDUSERCTX);
-    }
-
     /* referer is from post body (mobile) and from header (NodeJs and handler)
        By internet standard, referer is typo of referrer.
        From ginger client call, the referer is embedded in enduserctx header, but we also check header for other cases.
@@ -371,13 +367,26 @@ public class CollectionService {
       logError(Errors.ERROR_NO_QUERY_PARAMETER);
     }
 
-    MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-    for (Map.Entry<String, String[]> param : params.entrySet()) {
-      String[] values = param.getValue();
-      for (String value: values) {
-        parameters.add(param.getKey(), value);
-      }
+//    MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+//    for (Map.Entry<String, String[]> param : params.entrySet()) {
+//      String[] values = param.getValue();
+//      for (String value: values) {
+//        parameters.add(param.getKey(), value);
+//      }
+//    }
+
+    // targetUrl is from post body
+    String uri = event.getTargetUrl();
+
+    // illegal url, rejected
+    UriComponents uriComponents;
+    uriComponents = UriComponentsBuilder.fromUriString(uri).build();
+    if (uriComponents == null) {
+      logError(Errors.ERROR_ILLEGAL_URL);
     }
+
+    // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
+    MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
 
     // parse action from query param mkevt
     // no mkevt, rejected
@@ -420,9 +429,6 @@ public class CollectionService {
       return true;
     }
 
-    // targetUrl is from post body
-    String targetUrl = event.getTargetUrl();
-
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
     String platform = getPlatform(agentInfo);
@@ -446,7 +452,7 @@ public class CollectionService {
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
       processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
     else
-      processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType, channelAction,
+      processFlag = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext);;
 
     if (processFlag)
