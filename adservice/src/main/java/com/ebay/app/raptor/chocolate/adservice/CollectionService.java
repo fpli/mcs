@@ -1,6 +1,5 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
-import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.constant.Errors;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -12,10 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.container.ContainerRequestContext;
-import java.util.regex.Pattern;
 
 /**
  * @author xiangli4
@@ -28,25 +23,9 @@ public class CollectionService {
   private Metrics metrics;
   private static CollectionService instance = null;
 
-  // do not filter /ulk XC-1541
-  private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
-
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
-  }
-
-  /**
-   * Collect impression event and send pixel response
-   *
-   * @param request raw request
-   * @return OK or Error message
-   */
-  public boolean collectImpression(HttpServletRequest request, HttpServletResponse response,
-                                   ContainerRequestContext requestContext) throws Exception {
-    // send 1x1 pixel
-    ImageResponseHandler.sendImageResponse(response);
-    return true;
   }
 
 
