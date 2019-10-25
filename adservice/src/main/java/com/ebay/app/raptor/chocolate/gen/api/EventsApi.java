@@ -11,10 +11,10 @@ public interface EventsApi {
     @GET
     @Path("/impression")
     Response impression();
-
-    @GET
-    @Path("/ar")
-    Response ar();
+//
+//    @GET
+//    @Path("/ar")
+//    Response ar();
 
 
 }

@@ -38,31 +38,31 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public boolean collectAr(HttpServletRequest request, HttpServletResponse response, CookieReader cookieReader, IEndUserContext endUserContext,
-                           ContainerRequestContext requestContext) throws Exception {
-    DAPResponseHandler.sendDAPResponse(request, response, cookieReader, endUserContext, requestContext);
-    return true;
-  }
-
-  /**
-   * Parse rotation id from query mkrid
-   */
-  private long parseRotationId(MultiValueMap<String, String> parameters) {
-    long rotationId = -1L;
-    if (parameters.containsKey(Constants.MKRID) && parameters.get(Constants.MKRID).get(0) != null) {
-      try {
-        String rawRotationId = parameters.get(Constants.MKRID).get(0);
-        rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
-      } catch (Exception e) {
-        logger.warn(Errors.ERROR_INVALID_MKRID);
-        metrics.meter("InvalidMkrid");
-      }
-    } else {
-      logger.warn(Errors.ERROR_NO_MKRID);
-      metrics.meter("NoMkrid");
-    }
-
-    return rotationId;
-  }
+//  public boolean collectAr(HttpServletRequest request, HttpServletResponse response, CookieReader cookieReader, IEndUserContext endUserContext,
+//                           ContainerRequestContext requestContext) throws Exception {
+//    DAPResponseHandler.sendDAPResponse(request, response, cookieReader, endUserContext, requestContext);
+//    return true;
+//  }
+//
+//  /**
+//   * Parse rotation id from query mkrid
+//   */
+//  private long parseRotationId(MultiValueMap<String, String> parameters) {
+//    long rotationId = -1L;
+//    if (parameters.containsKey(Constants.MKRID) && parameters.get(Constants.MKRID).get(0) != null) {
+//      try {
+//        String rawRotationId = parameters.get(Constants.MKRID).get(0);
+//        rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
+//      } catch (Exception e) {
+//        logger.warn(Errors.ERROR_INVALID_MKRID);
+//        metrics.meter("InvalidMkrid");
+//      }
+//    } else {
+//      logger.warn(Errors.ERROR_NO_MKRID);
+//      metrics.meter("NoMkrid");
+//    }
+//
+//    return rotationId;
+//  }
 
 }
