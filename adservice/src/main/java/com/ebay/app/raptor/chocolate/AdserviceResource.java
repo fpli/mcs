@@ -9,6 +9,13 @@ import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
+import com.ebay.raptor.cookie.api.RequestCookieData;
+import com.ebay.raptor.opentracing.SpanEventHelper;
+import com.ebay.raptor.opentracing.Tags;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +101,22 @@ public class AdserviceResource implements EventsApi {
     } finally {
       return res;
     }
+  }
+
+  @Override
+  public Response ar() {
+    Response res = null;
+    try {
+      collectionService.collectAr(request, response, cookieReader, userCtxProvider.get(), requestContext);
+      res = Response.status(Response.Status.OK).build();
+    } catch (Exception e) {
+      try {
+        res = Response.status(Response.Status.BAD_REQUEST).build();
+      } catch (Exception ex) {
+        logger.warn(ex.getMessage(), ex);
+      }
+    }
+    return res;
   }
 }
 

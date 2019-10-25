@@ -1,8 +1,11 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
-import com.ebay.app.raptor.chocolate.adservice.util.*;
+import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
+import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
+import com.ebay.app.raptor.chocolate.adservice.util.ImageResponseHandler;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.constant.Errors;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;
@@ -49,6 +52,17 @@ public class CollectionService {
     return true;
   }
 
+  /**
+   * Collect impression event and send pixel response
+   *
+   * @param request raw request
+   * @return OK or Error message
+   */
+  public boolean collectAr(HttpServletRequest request, HttpServletResponse response, CookieReader cookieReader, IEndUserContext endUserContext,
+                           ContainerRequestContext requestContext) throws Exception {
+    DAPResponseHandler.sendDAPResponse(request, response, cookieReader, endUserContext, requestContext);
+    return true;
+  }
 
   /**
    * Parse rotation id from query mkrid
