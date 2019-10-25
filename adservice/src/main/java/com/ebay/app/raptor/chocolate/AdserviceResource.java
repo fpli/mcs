@@ -72,8 +72,8 @@ public class AdserviceResource implements EventsApi {
       mktEvent.setTargetUrl("http://www.ebay.com?mkevt=1&mkcid=2&mkrid=222");
 
       //cookie
-      String cguid = cookieReader.getCguid(requestContext).substring(0,31);
-      String guid = cookieReader.getGuid(requestContext).substring(0,31);
+      String cguid = cookieReader.getCguid(requestContext).substring(0,32);
+      String guid = cookieReader.getGuid(requestContext).substring(0,32);
 
       Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
       Client mktClient = GingerClientBuilder.newClient(config);
