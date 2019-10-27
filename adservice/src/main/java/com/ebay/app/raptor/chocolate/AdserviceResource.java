@@ -114,6 +114,22 @@ public class AdserviceResource implements EventsApi {
       return res;
     }
   }
+
+  @Override
+  public Response ar() {
+    Response res = null;
+    try {
+      collectionService.collectAr(request, response, cookieReader, userCtxProvider.get(), requestContext);
+      res = Response.status(Response.Status.OK).build();
+    } catch (Exception e) {
+      try {
+        res = Response.status(Response.Status.BAD_REQUEST).build();
+      } catch (Exception ex) {
+        logger.warn(ex.getMessage(), ex);
+      }
+    }
+    return res;
+  }
 }
 
 

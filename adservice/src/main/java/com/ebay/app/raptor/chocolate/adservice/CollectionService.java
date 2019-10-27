@@ -1,7 +1,10 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
-import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
+import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
+import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.constant.Errors;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;
@@ -11,6 +14,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.container.ContainerRequestContext;
 
 /**
  * @author xiangli4
@@ -28,6 +34,17 @@ public class CollectionService {
     this.metrics = ESMetrics.getInstance();
   }
 
+  /**
+   * Collect impression event and send pixel response
+   *
+   * @param request raw request
+   * @return OK or Error message
+   */
+  public boolean collectAr(HttpServletRequest request, HttpServletResponse response, CookieReader cookieReader, IEndUserContext endUserContext,
+                           ContainerRequestContext requestContext) throws Exception {
+    DAPResponseHandler.sendDAPResponse(request, response, cookieReader, endUserContext, requestContext);
+    return true;
+  }
 
   /**
    * Parse rotation id from query mkrid
