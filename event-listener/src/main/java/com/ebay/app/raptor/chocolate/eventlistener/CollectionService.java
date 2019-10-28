@@ -350,7 +350,7 @@ public class CollectionService {
     ChannelIdEnum channelType;
     ChannelActionEnum channelAction = null;
 
-    // targetUrl is from post body
+    // uri is from post body
     String uri = event.getTargetUrl();
 
     // illegal url, rejected
