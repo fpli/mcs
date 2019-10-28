@@ -13,11 +13,13 @@ import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.server.ServletServerHttpRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -73,17 +75,8 @@ public class AdserviceResource implements EventsApi {
       Client mktClient = GingerClientBuilder.newClient(config);
       String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
 
-      // add all query parameters
-      WebTarget webTarget = mktClient.target(endpoint).path("/impression/");
-      Enumeration<String> queryParams = request.getParameterNames();
-      while (queryParams.hasMoreElements()) {
-        String queryParam = queryParams.nextElement();
-        String[] values = request.getParameterValues(queryParam);
-        webTarget = webTarget.queryParam(queryParam, values);
-      }
-
-      // add all header except Cookie
-      Builder builder = webTarget.request();
+      // add all headers except Cookie
+      Builder builder = mktClient.target(endpoint).path("/impression/").request();
       final Enumeration<String> headers = request.getHeaderNames();
       while (headers.hasMoreElements()) {
         String header = headers.nextElement();
@@ -97,8 +90,13 @@ public class AdserviceResource implements EventsApi {
         builder = builder.header(header, values);
       }
 
+      // add uri and referer to marketing event body
+      MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
+      mktEvent.setTargetUrl(new ServletServerHttpRequest(request).getURI().toString());
+      mktEvent.setReferrer(request.getHeader("Referer"));
+
       // call marketing collection service to send ubi event or send kafka
-      Response ress = builder.get();
+      Response ress = builder.post(Entity.json(mktEvent));
       ress.close();
 
       // send 1x1 pixel
