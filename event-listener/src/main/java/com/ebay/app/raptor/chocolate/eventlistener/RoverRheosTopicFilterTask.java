@@ -330,7 +330,7 @@ public class RoverRheosTopicFilterTask extends Thread {
         }
 
         ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
-                0L, 0L, "", "", "", ChannelAction.NATURAL_SEARCH, ChannelType.NATURAL_SEARCH, HttpMethod.GET, "", false);
+                0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.NATURAL_SEARCH, HttpMethod.GET, "", false);
 
         setCommonFields(record, applicationPayload, genericRecord);
 
