@@ -346,7 +346,7 @@ public class RoverRheosTopicFilterTask extends Thread {
 
         record.setHttpMethod(HttpMethod.GET);
 
-        // source and destination rotation id parse for roi
+        // source and destination rotation id parse for natural search
         Long rotationId = urlQueryString.split("/").length > 3 ? Long.valueOf(urlQueryString.split("/")[3].split("\\?")[0].replace("-", "")) : 0l;
         record.setSrcRotationId(rotationId);
         record.setDstRotationId(rotationId);
