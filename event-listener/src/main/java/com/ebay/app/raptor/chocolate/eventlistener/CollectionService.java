@@ -323,26 +323,11 @@ public class CollectionService {
       logError(Errors.ERROR_NO_TRACKING);
     }
 
-    if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
-      logError(Errors.ERROR_NO_ENDUSERCTX);
-    }
-
-    /* referer is from post body (mobile) and from header (NodeJs and handler)
-       By internet standard, referer is typo of referrer.
-       From ginger client call, the referer is embedded in enduserctx header, but we also check header for other cases.
-       For local test using postman, do not include enduserctx header, the service will generate enduserctx by
-       cos-user-context-filter.
-       Ginger client call will pass enduserctx in its header.
-       Priority 1. native app from body, as they are the most part 2. enduserctx, ginger client calls 3. referer header
-     */
-
+    // referer is in both request header and body
+    // we just get referer from body, and tracking api get it from header
     String referer = null;
     if (!StringUtils.isEmpty(event.getReferrer())) {
       referer = event.getReferrer();
-    }
-
-    if (StringUtils.isEmpty(referer)) {
-      referer = endUserContext.getReferer();
     }
 
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
@@ -365,18 +350,22 @@ public class CollectionService {
     ChannelIdEnum channelType;
     ChannelActionEnum channelAction = null;
 
-    // no query parameter, rejected
-    Map<String, String[]> params = request.getParameterMap();
-    if (params.size() == 0) {
-      logError(Errors.ERROR_NO_QUERY_PARAMETER);
+    // uri is from post body
+    String uri = event.getTargetUrl();
+
+    // illegal url, rejected
+    UriComponents uriComponents;
+    uriComponents = UriComponentsBuilder.fromUriString(uri).build();
+    if (uriComponents == null) {
+      logError(Errors.ERROR_ILLEGAL_URL);
     }
 
-    MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-    for (Map.Entry<String, String[]> param : params.entrySet()) {
-      String[] values = param.getValue();
-      for (String value: values) {
-        parameters.add(param.getKey(), value);
-      }
+    // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
+    MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
+    if (parameters.size() == 0) {
+      logger.warn(Errors.ERROR_NO_QUERY_PARAMETER);
+      metrics.meter(Errors.ERROR_NO_QUERY_PARAMETER);
+      return true;
     }
 
     // parse action from query param mkevt
@@ -420,9 +409,6 @@ public class CollectionService {
       return true;
     }
 
-    // targetUrl is from post body
-    String targetUrl = event.getTargetUrl();
-
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
     String platform = getPlatform(agentInfo);
@@ -446,7 +432,7 @@ public class CollectionService {
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
       processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
     else
-      processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType, channelAction,
+      processFlag = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext);;
 
     if (processFlag)
