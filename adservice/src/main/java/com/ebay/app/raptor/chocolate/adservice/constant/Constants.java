@@ -1,9 +1,13 @@
 package com.ebay.app.raptor.chocolate.adservice.constant;
 
 /**
- * @author xiangli4
+ * @author Zhiyuan Wang
+ * @since 2019/10/26
  */
 public class Constants {
+  private Constants() {
+  }
+
   public static final String MKCID = "mkcid";
   public static final String MKRID = "mkrid";
   public static final String SEARCH_KEYWORD = "keyword";
@@ -43,4 +47,9 @@ public class Constants {
   public static final int ISO_COUNTRY_CODE_LENGTH = 2;
   public static final String REFERER = "referer";
   public static final String REF_URL = "refURL";
+
+  public static final int CGUID_LENGTH = 32;
+  public static final int GUID_LENGTH = 32;
+
 }
+

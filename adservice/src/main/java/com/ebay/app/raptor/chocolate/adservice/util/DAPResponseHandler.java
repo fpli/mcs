@@ -6,12 +6,14 @@ import com.ebay.app.raptor.chocolate.adservice.constant.LBSConstants;
 import com.ebay.app.raptor.chocolate.adservice.constant.StringConstants;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
-import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
+import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.kernel.domain.lookup.biz.LookupBoHelperCfg;
+import com.ebay.kernel.patternmatch.dawg.Dawg;
 import com.ebay.kernel.patternmatch.dawg.DawgDictionary;
+import com.ebay.kernel.resource.ResolverFactory;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.raptor.device.fingerprint.client.api.DeviceFingerPrintClient;
 import com.ebay.raptor.device.fingerprint.client.api.DeviceFingerPrintClientFactory;
@@ -40,13 +42,14 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Response;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * @author Zhiyuan Wang
@@ -54,6 +57,32 @@ import java.util.Map;
  */
 public class DAPResponseHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(DAPResponseHandler.class);
+  private static final String CONFIG_SUBFOLDER = "config/";
+
+  private static final DawgDictionary userAgentBotDawgDictionary;
+  private static final DawgDictionary ipBotDawgDictionary;
+
+  private static final String MGVALUEREASON = "mgvaluereason";
+  private static final String MGVALUE = "mgvalue";
+  private static final String DEFAULT_MGVALUE = "0";
+
+  private static final String DAP_USER_AGENT_ROBOT_FILE = "dap_user_agent_robot.txt";
+  private static final String DAP_IP_ROBOT_FILE = "dap_ip_robot.txt";
+
+  static {
+    List<String> userAgentBotList = null;
+    List<String> ipBotList = null;
+
+    try {
+      userAgentBotList = Files.readAllLines(Paths.get(RuntimeContext.getConfigRoot().getFile() + CONFIG_SUBFOLDER + DAP_USER_AGENT_ROBOT_FILE));
+      ipBotList = Files.readAllLines(Paths.get(RuntimeContext.getConfigRoot().getFile() + CONFIG_SUBFOLDER + DAP_IP_ROBOT_FILE));
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage());
+    }
+
+    userAgentBotDawgDictionary = new DawgDictionary(Objects.requireNonNull(userAgentBotList).toArray(new String[0]), true);
+    ipBotDawgDictionary = new DawgDictionary(Objects.requireNonNull(ipBotList).toArray(new String[0]), true);
+  }
 
   private DAPResponseHandler() {
   }
@@ -69,8 +98,8 @@ public class DAPResponseHandler {
                                      ContainerRequestContext requestContext)
           throws URISyntaxException, IOException {
 
-    String cguid = cookieReader.getCguid(requestContext).substring(0, 31);
-    String guid = cookieReader.getGuid(requestContext).substring(0, 31);
+    String cguid = cookieReader.getCguid(requestContext).substring(0, Constants.CGUID_LENGTH);
+    String guid = cookieReader.getGuid(requestContext).substring(0, Constants.GUID_LENGTH);
 
     URIBuilder uriBuilder = new URIBuilder()
             .setScheme(ApplicationOptions.getInstance().getDapClientProperties().getProperty("uri.schema"))
@@ -80,26 +109,42 @@ public class DAPResponseHandler {
     setRequestParameters(uriBuilder, request);
     setRvrId(uriBuilder, System.currentTimeMillis());
     setReferrer(uriBuilder, request);
-    setGeoInfo(uriBuilder, request);
+    setGeoInfo(uriBuilder, request, endUserContext);
     setCguid(uriBuilder, cguid);
     setGuid(uriBuilder, guid);
     setUdid(uriBuilder, endUserContext);
-    setMid(uriBuilder);
-    setMg(uriBuilder, cguid);
+    setMgInfo(uriBuilder, cguid, endUserContext);
     setUserInfo(uriBuilder, cguid);
     callDAPResponse(uriBuilder, response);
   }
 
-  private static void setMg(URIBuilder uriBuilder, String cguid) {
-    ImmutablePair<String, String> mgvalueAndMgvalueReason = getMgvalueAndMgvalueReason(cguid);
-    uriBuilder.setParameter("mgvalue", mgvalueAndMgvalueReason.left);
-    uriBuilder.setParameter("mgvaluereason", mgvalueAndMgvalueReason.right);
+  private static void setMgInfo(URIBuilder uriBuilder, String cguid, IEndUserContext endUserContext) {
+    boolean isBot = isBotByIp(endUserContext.getIPAddress()) || isBotByUserAgent(endUserContext.getUserAgent());
+    if (isBot) {
+      uriBuilder.setParameter(MGVALUE, DEFAULT_MGVALUE);
+      uriBuilder.setParameter(MGVALUEREASON, String.valueOf(MgvalueReason.BOT.getId()));
+      return;
+    }
+    ImmutablePair<String, MgvalueReason> mgvalueAndMgvalueReason = getMgvalueAndMgvalueReason(cguid);
+    uriBuilder.setParameter(MGVALUE, mgvalueAndMgvalueReason.left);
+    uriBuilder.setParameter(MGVALUEREASON, String.valueOf(mgvalueAndMgvalueReason.right.getId()));
+
+    if (!mgvalueAndMgvalueReason.left.equals(DEFAULT_MGVALUE)) {
+      return;
+    }
+    String mid = getMid();
+    if (StringUtils.isEmpty(mid)) {
+      // replace mgvaluereason
+      uriBuilder.setParameter(MGVALUEREASON, String.valueOf(MgvalueReason.TRUST_CALL_ERROR.getId()));
+      return;
+    }
+    uriBuilder.setParameter(Constants.MID, mid);
   }
 
-  private static ImmutablePair<String, String> getMgvalueAndMgvalueReason(String cguid) {
+  private static ImmutablePair<String, MgvalueReason> getMgvalueAndMgvalueReason(String cguid) {
     cguid = "49bb481e14d0af4285d7b4b7fffffff6";
     String mgvalue = null;
-    String mgvalueReason = null;
+    MgvalueReason mgvalueReason = null;
     Configuration config = ConfigurationBuilder.newConfig("idlinksvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:bf59aef8-25de-4140-acc5-2d7ddc290ecb");
     Client mktClient = GingerClientBuilder.newClient(config);
     String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
@@ -108,12 +153,12 @@ public class DAPResponseHandler {
             .queryParam("id", cguid)
             .queryParam("type", Constants.CGUID)
             .request()
-            .header("Authorization", "Bearer v^1.1#i^1#r^0#I^3#f^0#p^1#t^H4sIAAAAAAAAAO1YbWwURRju9toahNpGiQrB5LoFNNS93dnd+9gNd+G4UnpQ2soV5EMj+zHbLr3b3ezMchwGKIVgggT8YyAESNWQqJgoESghgBo1GI0mJARUBKzxB0KIgR+IiOLe9SjXiny1aE28P5eZeeed532e952ZHaajbMSktfVrfyknHiju6mA6igkCjGRGlJXWPOQpHltaxBQYEF0d4ztKOj1nJiMplbTE2RBZpoGgd2kqaSAx1xkmHdsQTQnpSDSkFEQiVsREdFaDyPoY0bJNbCpmkvTGa8Mk4DRF5UOSBAHQAoLi9hrXfbaY7rikcUFZUIIBRmN4jXHHEXJg3EBYMnCYZBkgUIChWK4FcKI/JPKsTwDsAtI7F9pINw3XxMeQkRxcMTfXLsB6a6gSQtDGrhMyEo/WJZqi8dppjS2T6QJfkTwPCSxhB/VvxUwVeudKSQfeehmUsxYTjqJAhEg60rtCf6di9DqYe4Cfo1pSOE7QWJbXQioLZH5IqKwz7ZSEb40j26OrlJYzFaGBdZy5HaMuG/JiqOB8q9F1Ea/1Zv+ecaSkrunQDpPTpkbnR5ubyUh2dShLGSol2e0QW0lJgZTi5pCTgrauigzHA4VXFCrAC5DiZcBRIVkQKAVyAgtVnpcZIQ+id6W8BANQxExD1bOEIm+jiadCNyI4kDe+gDfXqMlosqMazqLts/MX8MsEF2QF71XYwW1GVnOYckny5pq3V6dvNsa2LjsY9nkYOJCjz80Dy9JVcuBgLk/zqbUUhck2jC2RptPZWk+nfWnOZ9qtNMswgJ43qyGhtMGURPbZ6zcm/J0xpedCUaA7C+kizlgulqVuHrsAjFYyAkBICIA87/1hRQb2/qWjIGa6f7UMVfWEgpCDQY4PCFowpMIh2Ygi+QSmb5e/nF9juZAGKdVdnuIFTaNkvxqggAYhA6EsK0Lo/yK6uzJIQMWG+I7r4B+pgbYltel5CHJ8yqDVOn5eHZjO87CuYcbMOe31y0B6Tv3MeJytgbNrQuE7rZSbB6+YFmw2k7qSKWAgW+vDgAWAcLNk48ygIkTZCIeZuu585DqQLN2XLTSfYqZoU3K3eTqHlp5iObIryaDijlpWPJVysCQnYfzOt/lhuMXfNDzdvSANq5hcDXvF1NXem40vp6gPLVF8NkSmY7uXOl9T9jBvMduh4W5/2DaTSWjPHRwTWaEHoW+21u8HH0N4itwbL3d3vfmv5L2S1N30emG4Rfavq61Lw+wIB/4gCHHu1YUdVFyxnN4tmSE5w0pW7R7CCOtNhKF6Hy7qdP8nhUhR7gc6iT1MJ7GrmCAYmpkAqpmqMs+cEs+osUjH0KdLmg/prYb7pWxDXzvMWJJuF5cR+grWXFbwiNH1PPN43zPGCA8YWfCmwYy7MVIKKh4rBwJgWA5w/hDPLmCqb4yWgEdLRleeriovnX+E2D1x9JETpzeMOXQw/j1T3mdEEKVFJZ1E0Zr332udcHTrKX3+0ZXL12+Y8mSlZ0vsWtWxncdW/i5NPDNq8fqrsRc/YX8gxm+kXzl8/LjUvVA7Iny4TeoZc9rTcKnpROn2mLBv29U/lgVCLz28MI2rU6qwd/uOzTta5eU/HeQ+auw6P/K5LysvNPs3Uef30LFfD3dfPmmdiq/b211x4jf17M8VVy6CxIPfvHtg6uvmufNV2/hdb2w9d/HKj8H9n8/0ow9Wlz27b5PzXfXORxbV7Lt26Yswvtxz4OVRla+R6adeHZcc+/FbbatXOd8GNz3ddHbr2xeMrydFQ+TEVVd69p+Lblm0ZW/D9O716+iTK6iqz2Yc6vnU2fyOUpGecvCJN9do0leXO3rl+xMqetLSXhIAAA==")
+            .header("Authorization", "Bearer v^1.1#i^1#r^0#f^0#I^3#p^1#t^H4sIAAAAAAAAAO1Yf2wTVRxvt24E5jAqCg6M9YAYXa733vXa3p20UOh+1ME2aDcHCsv1+rqd6901917ZuqgZUwZRgzFqYgRj+R0MxiBqCAFRIwkJLiAkhCgKMUSICYnTGOIf/rjryugm8mtDZmL/ad573/d93+/n8/289+6BntKJj/bV9l0st08oyvaAniK7HZaBiaUllZOLiypKbKDAwJ7tmdXj6C0+PwdLajIlLkE4pWsYObvUpIbFXKefShuaqEtYwaImqQiLRBYjwUULRdYFxJShE13Wk5QzHPJT0MvzPuiLcT7kAZLH7NQuuYzqfiomIyhAifO6WR74kGyOY5xGYQ0TSSN+igVQoCGgWW8U8CIURJZ38R7PMsrZjAys6Jpp4gJUIBetmJtrFIR69UgljJFBTCdUIBysjjQEw6Gq+ugcpsBXIA9DhEgkjYe3Fuhx5GyWkml09WVwzlqMpGUZYUwxgcEVhjsVg5eCuYnwc0jzXt4rQ4nlOJjwxRNoTKCs1g1VIlePw+pR4nQiZyoijSgkcy1ETTRiTyOZ5Fv1potwyGn9LU5LSSWhIMNPVc0PLg02NlIBa3UUkzK0KhkdiKSSkoxo2ayhtIoMJS4CNwdlTpZpLycgmotBN83HBIGWkVtgUZzjYkDIBzG4Up6CEVEs0LW4YgGKnfU6mY/MjNBI3EABbqZRg9ZgBBPEinbIji/EFy6zCB9kOE3aNYtzpJogOXPNa7MzNJsQQ4mlCRryMHIgB5+fklIpJU6NHMzVab60urCfaickJTJMZ6el9U5Xp9ulG20MCwBkWhYtjMjtSJWoIXulYMI/GNNKLhXZrDvTXiSZlBlLl1nHZgBaGxWAkBe8MI/78LACI3v/1lGQMzNcLWOlnrhHkjkvK3DA2osSnrFQTyBfwMy16tftSbBuPoHouFdI0JyQSNAxT9xLwwRCAKFYTBb4/0V0YzKIINlA5Pp18G9ooH1lqLMFIzenaky8mmuphjUch6oXPl7X1FHbDTubauvCYbYSLank/derlCsnL+sp1KgnFTlTiICl9duPAsSkUTJIZlQZYivDccauOR+bDqSU4rKE5pJ1ldElc5tnctEyMQmjeeb2bNIiWQoZFQDBVCqsqmkixZIofAP7/fjb66+YnmLelMZVTiaZg6wq8cErjitHrQuvlF0GwnraMG93rgbrVI/qHUgz90Fi6MkkMppHh4RF9E3wa2n9VuIxhsfJzeFyg/ec/0jdy0nFLK/W8ZbZbWdbkcbZWQ49Phb4fIKXH1VeC3J8RzOjOswcq/bdggxrdUxQ/Bbc2JnhTwsBW+4He+0fgV77riK7HTBgNpwJHiotbnIU31GBFYJcipRwYaVNMz+ZDeTqQJmUpBhFpXblOVbvLnjMyC4H04aeMyYWw7KCtw0w4/JICbxzajkUIGC9gIcCyy8DMy+POuB9jinBpx7blWaLjn6wZW/2+Gu7W9d/epoH5UNGdnuJzdFrt/Udyl4sq1v06ieO5d51bQPddQNfHVnvPrSXk8/OZbp+fPYY0bOpkK1iTnfX+ZM/nAyXDmz4bef+bQNbd2cerDh68c0l2uYD98+YfM8jE4q//DwzfdsbW/q2T+nf2qw+I++899ThSS8E1nxdE/rstO3nrIi2/3782+mtd8mNmw7Sje+dudu+7ru1VR9+P7vlyIWpKPTTixsHZi19e0+USUafn7zxVy00CdWHXp++v3R2pH/uy5XipnNffPN+ZFNk9YVX1q7+ZeOBto4dJxafPfdkzYoH3O9sX32i5uNp8zavW6E8/O7pSeXqYXKsaRf/0r4/d+zpWL/liZNryoqyrWfe+mNFT/9Bz4X5pzbsW2Xb2T9I318QCXYkZhIAAA==")
             .get()) {
       switch (ress.getStatus()) {
         case HttpStatus.SC_NOT_FOUND:
-          mgvalue = "0";
-          mgvalueReason = "NEW_USER";
+          mgvalue = DEFAULT_MGVALUE;
+          mgvalueReason = MgvalueReason.NEW_USER;
           break;
         case HttpStatus.SC_OK:
           String msg = ress.readEntity(String.class);
@@ -127,21 +172,22 @@ public class DAPResponseHandler {
               JSONArray arr = first.getJSONArray("ids");
               // fetch the last inserted mgvalue
               mgvalue = arr.get(arr.length() - 1).toString();
+              mgvalueReason = MgvalueReason.SUCCESS;
               break;
             }
           }
           if (mgvalue == null) {
-            mgvalue = "0";
-            mgvalueReason = "NEW_USER";
+            mgvalue = DEFAULT_MGVALUE;
+            mgvalueReason = MgvalueReason.NEW_USER;
           }
           break;
         default:
-          mgvalue = "0";
-          mgvalueReason = "IDLINK_CALL_ERROR";
+          mgvalue = DEFAULT_MGVALUE;
+          mgvalueReason = MgvalueReason.IDLINK_CALL_ERROR;
       }
     } catch(Exception exception) {
-      mgvalue = "0";
-      mgvalueReason = "IDLINK_CALL_ERROR";
+      mgvalue = DEFAULT_MGVALUE;
+      mgvalueReason = MgvalueReason.IDLINK_CALL_ERROR;
     }
 
     return new ImmutablePair<>(mgvalue, mgvalueReason);
@@ -150,7 +196,7 @@ public class DAPResponseHandler {
   // TODO sync with dap
   private static void setMid(URIBuilder uriBuilder) {
     String mid = getMid();
-    if (mid != null) {
+    if (!StringUtils.isEmpty(mid)) {
       uriBuilder.setParameter(Constants.MID, mid);
     }
   }
@@ -164,7 +210,6 @@ public class DAPResponseHandler {
     } catch (Exception e) {
       LOGGER.info(e.getMessage());
     }
-
     return mId;
   }
 
@@ -204,6 +249,11 @@ public class DAPResponseHandler {
     uriBuilder.setParameter(Constants.RVR_ID, String.valueOf(getRvrId(startTime)));
   }
 
+  /**
+   * Append all request parameter to url
+   * @param uriBuilder dap request url
+   * @param request client request
+   */
   private static void setRequestParameters(URIBuilder uriBuilder, HttpServletRequest request) {
     Map<String, String[]> params = request.getParameterMap();
     MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
@@ -248,12 +298,15 @@ public class DAPResponseHandler {
 
   private static void setReferrer(URIBuilder uriBuilder, HttpServletRequest request) {
     String referrer = request.getHeader(Constants.REFERER);
-    if (referrer != null) {
-      uriBuilder.setParameter(Constants.REF_URL, referrer);
-      String referrerDomain = getHostFromUrl(referrer);
-      if (referrerDomain != null)
-        uriBuilder.setParameter(Constants.REF_DOMAIN, referrerDomain);
+    if (referrer == null) {
+      return;
     }
+    uriBuilder.setParameter(Constants.REF_URL, referrer);
+    String referrerDomain = getHostFromUrl(referrer);
+    if (referrerDomain == null) {
+      return;
+    }
+    uriBuilder.setParameter(Constants.REF_DOMAIN, referrerDomain);
   }
 
   private static String getCountryFromBrowserLocale(HttpServletRequest request) {
@@ -319,8 +372,8 @@ public class DAPResponseHandler {
     return 2056960579986L;
   }
 
-  private static void setGeoInfo(URIBuilder uriBuilder, HttpServletRequest request) {
-    Map<String, String> lbsParameters = getLBSParameters(request.getRemoteAddr());
+  private static void setGeoInfo(URIBuilder uriBuilder, HttpServletRequest request, IEndUserContext endUserContext) {
+    Map<String, String> lbsParameters = getLBSParameters(endUserContext.getIPAddress());
 
     String countryFromBrowserLocale = getCountryFromBrowserLocale(request);
     if (!StringUtils.isEmpty(countryFromBrowserLocale)) {
@@ -336,16 +389,44 @@ public class DAPResponseHandler {
     ip = "155.94.176.242";
 
     LBSQueryResult lbsResponse = LBSClient.getInstance().getLBSInfo(ip, TOKEN);
-    if (lbsResponse != null) {
-      map.put(LBSConstants.GEO_COUNTRY_CODE, lbsResponse.getIsoCountryCode2());
-      map.put(LBSConstants.GEO_DMA, lbsResponse.getStateCode());
-      map.put(LBSConstants.GEO_CITY, lbsResponse.getCity());
-      map.put(LBSConstants.GEO_ZIP_CODE, lbsResponse.getPostalCode());
-      map.put(LBSConstants.GEO_LATITUDE, String.valueOf(lbsResponse.getLatitude()));
-      map.put(LBSConstants.GEO_LONGITUDE, String.valueOf(lbsResponse.getLongitude()));
-      map.put(LBSConstants.GEO_METRO_CODE, lbsResponse.getMetroCode());
-      map.put(LBSConstants.GEO_AREA_CODE, lbsResponse.getAreaCodes());
+    if (lbsResponse == null) {
+      return map;
     }
+    map.put(LBSConstants.GEO_COUNTRY_CODE, lbsResponse.getIsoCountryCode2());
+    map.put(LBSConstants.GEO_DMA, lbsResponse.getStateCode());
+    map.put(LBSConstants.GEO_CITY, lbsResponse.getCity());
+    map.put(LBSConstants.GEO_ZIP_CODE, lbsResponse.getPostalCode());
+    map.put(LBSConstants.GEO_LATITUDE, String.valueOf(lbsResponse.getLatitude()));
+    map.put(LBSConstants.GEO_LONGITUDE, String.valueOf(lbsResponse.getLongitude()));
+    map.put(LBSConstants.GEO_METRO_CODE, lbsResponse.getMetroCode());
+    map.put(LBSConstants.GEO_AREA_CODE, lbsResponse.getAreaCodes());
     return map;
+  }
+
+  /**
+   * Check if this request is bot with userAgent
+   * @param userAgent alias for user agent
+   * @return is bot or not
+   */
+  private static boolean isBotByUserAgent(String userAgent) {
+    return isBot(userAgent, userAgentBotDawgDictionary);
+  }
+
+  /**
+   * Check if this request is bot with ip
+   * @param ip alias for remote ip
+   * @return is bot or not
+   */
+  private static boolean isBotByIp(String ip) {
+    return isBot(ip, ipBotDawgDictionary);
+  }
+
+  private static boolean isBot(String info, DawgDictionary dawgDictionary) {
+    if (StringUtils.isEmpty(info)) {
+      return false;
+    }
+    Dawg dawg = new Dawg(dawgDictionary);
+    Map result = dawg.findAllWords(info.toLowerCase(), false);
+    return !result.isEmpty();
   }
 }

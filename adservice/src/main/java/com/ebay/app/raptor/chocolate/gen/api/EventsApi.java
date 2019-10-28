@@ -16,5 +16,9 @@ public interface EventsApi {
 //    @Path("/ar")
 //    Response ar();
 
+    @GET
+    @Path("/ar")
+    Response ar();
+
 
 }
