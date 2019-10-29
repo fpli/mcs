@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
+import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient1;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.common.AbstractApplicationOptions;
 import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
@@ -85,7 +86,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    *
    * @throws IOException if properties could not be loaded
    */
-  public static void init() throws IOException {
+  static void init() throws IOException {
     instance.initInstance(loadProperties(ADSERVICE_PROPERTIES_FILE));
     if (sinkKafkaProperties == null) {
       sinkKafkaProperties = loadProperties(SINK_KAFKA_PROPERTIES_FILE);
