@@ -1,7 +1,7 @@
 {
   "namespace": "com.ebay.app.raptor.chocolate.avro.versions",
   "type": "record",
-  "name": "FilterMessageV3",
+  "name": "FilterMessageV4",
   "pk": [
     "snapshot_id"
   ],
@@ -131,6 +131,7 @@
           "SOCIAL_MEDIA",
           "PAID_SOCIAL",
           "ROI",
+          "NATURAL_SEARCH",
           "UNKNOWN"
         ]
       }

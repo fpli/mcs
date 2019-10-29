@@ -1,7 +1,7 @@
 {
   "namespace": "com.ebay.app.raptor.chocolate.avro.versions",
   "type": "record",
-  "name": "FilterMessageV3",
+  "name": "ListenerMessageV4",
   "pk": [
     "snapshot_id"
   ],
@@ -91,14 +91,6 @@
       "type": "string"
     },
     {
-      "name": "rt_rule_flags",
-      "type": "long"
-    },
-    {
-      "name": "nrt_rule_flags",
-      "type": "long"
-    },
-    {
       "name": "channel_action",
       "type": {
         "name": "ChannelAction",
@@ -113,7 +105,8 @@
           "VIEW_ITEM",
           "VIEW_TIME",
           "APP_FIRST_START",
-          "ROI"
+          "ROI",
+          "EMAIL_OPEN"
         ]
       }
     },
@@ -131,6 +124,9 @@
           "SOCIAL_MEDIA",
           "PAID_SOCIAL",
           "ROI",
+          "SITE_EMAIL",
+          "MRKT_EMAIL",
+          "NATURAL_SEARCH",
           "UNKNOWN"
         ]
       }
