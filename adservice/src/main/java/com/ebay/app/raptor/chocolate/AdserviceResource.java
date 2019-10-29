@@ -1,28 +1,26 @@
 package com.ebay.app.raptor.chocolate;
 
+import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.ImageResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
-import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
-import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.ServletServerHttpRequest;
 
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.Path;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;

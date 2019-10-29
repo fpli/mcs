@@ -1,11 +1,10 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
+import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
-import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.constant.Errors;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
-import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;

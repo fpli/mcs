@@ -1,10 +1,9 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
-import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient1;
+import com.ebay.app.raptor.chocolate.adservice.util.CouchbaseClient;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.common.AbstractApplicationOptions;
 import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
-import com.ebay.app.raptor.chocolate.adservice.util.CouchbaseClient;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;

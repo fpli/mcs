@@ -4,9 +4,6 @@ import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.util.DomainIpChecker;
-import com.ebay.platform.raptor.cosadaptor.exceptions.TokenCreationException;
-import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
-import com.ebay.platform.raptor.cosadaptor.token.SecureTokenFactory;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang.StringUtils;
@@ -14,7 +11,6 @@ import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
 
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
