@@ -144,12 +144,11 @@ class DedupeAndSink(params: Parameter)
         }
         // write message
         // couchbase dedupe only apply on click
-        if(message.getChannelAction == ChannelAction.CLICK && couchbaseDedupe) {
+        if ((message.getChannelAction == ChannelAction.CLICK || message.getChannelAction == ChannelAction.ROI) && couchbaseDedupe) {
           try {
             val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
             val key = DEDUPE_KEY_PREFIX + message.getSnapshotId.toString
             if (!bucket.exists(key)) {
-              bucket.upsert(JsonDocument.create(key, couchbaseTTL, JsonObject.empty()))
               writeMessage(writer, message)
             }
             CorpCouchbaseClient.returnClient(cacheClient)
@@ -193,8 +192,9 @@ class DedupeAndSink(params: Parameter)
     fs.delete(new Path(baseTempDir), true)
 
     // dedupe
+    var metaFiles: MetaFiles = null
     if(dates.length>0) {
-      val metaFiles = new MetaFiles(dates.map(date => dedupe(date)))
+      metaFiles = new MetaFiles(dates.map(date => dedupe(date)))
 
       metadata.writeDedupeCompMeta(metaFiles)
       metadata.writeDedupeOutputMeta(metaFiles)
@@ -202,6 +202,34 @@ class DedupeAndSink(params: Parameter)
     // commit offsets of kafka RDDs
     kafkaRDD.commitOffsets()
     kafkaRDD.close()
+
+    // insert new keys to couchbase for next round's dedupe
+    if (metaFiles != null && couchbaseDedupe) {
+      if (metaFiles.metaFiles != null && metaFiles.metaFiles.length > 0) {
+        val datesFiles = metaFiles.metaFiles
+        if (datesFiles != null && datesFiles.length > 0) {
+          datesFiles.foreach(dateFiles => {
+            if (couchbaseDedupe) {
+              val df = this.readFilesAsDFEx(dateFiles.files)
+              df.filter($"channel_action" === "CLICK" || $"channel_action" === "ROI").select("snapshot_id").foreach(row => {
+                try {
+                  val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+                  val key = DEDUPE_KEY_PREFIX + row.get(0).toString
+                  if (!bucket.exists(key)) {
+                    bucket.upsert(JsonDocument.create(key, couchbaseTTL, JsonObject.empty()))
+                  }
+                  CorpCouchbaseClient.returnClient(cacheClient)
+                } catch {
+                  case e: Exception =>
+                    logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
+                    couchbaseDedupe = false
+                }
+              })
+            }
+          })
+        }
+      }
+    }
 
     // delete the dir
     fs.delete(new Path(baseDir), true)
