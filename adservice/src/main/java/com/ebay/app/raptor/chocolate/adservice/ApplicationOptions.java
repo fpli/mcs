@@ -43,6 +43,8 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
   public static final String SINK_RHEOS_KAFKA_PROPERTIES_FILE = "adservice-rheos-producer.properties";
 
+  public static final String DAP_CLIENT_PROPERTIES_FILE = "adservice-dap-client.properties";
+
   /**
    * Out Kafka cluster, can be "kafka", "rheos", "rheos,kafka", "kafka,rheos".
    */
@@ -73,6 +75,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   private static Properties consumeRheosKafkaProperties;
   private static Properties sinkKafkaProperties;
   private static Properties sinkRheosKafkaProperties;
+  private static Properties dapClientProperties;
 
   private String outKafkaCluster;
   private Map<ChannelType, String> outKafkaConfigMap = new HashMap<>();
@@ -89,6 +92,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     }
     sinkRheosKafkaProperties = loadProperties(SINK_RHEOS_KAFKA_PROPERTIES_FILE);
     instance.initKafkaConfigs();
+    dapClientProperties = loadProperties(DAP_CLIENT_PROPERTIES_FILE);
   }
 
   private static Properties loadProperties(String file) throws IOException {
@@ -150,6 +154,10 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     } else {
       return sinkRheosKafkaProperties;
     }
+  }
+
+  public Properties getDapClientProperties() {
+    return dapClientProperties;
   }
 
   /**

@@ -326,6 +326,11 @@
       <artifactId>raptor-geo-starter</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.ebay.raptor.dfp</groupId>
+      <artifactId>DeviceFingerprintSvcClient</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>

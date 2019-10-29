@@ -16,4 +16,9 @@ public interface EventsApi {
     @Path("/redirect")
     Response redirect();
 
+    @GET
+    @Path("/ar")
+    Response ar();
+
+
 }

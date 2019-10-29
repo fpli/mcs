@@ -2,22 +2,16 @@ package com.ebay.app.raptor.chocolate.adservice;
 
 import com.ebay.app.raptor.chocolate.adservice.redirect.AdobeRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.redirect.RedirectContext;
-import com.ebay.app.raptor.chocolate.adservice.util.*;
-import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
-import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
+import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
+import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.constant.Errors;
-import com.ebay.jaxrs.client.EndpointUri;
-import com.ebay.jaxrs.client.GingerClientBuilder;
-import com.ebay.jaxrs.client.config.ConfigurationBuilder;
-import com.ebay.kernel.presentation.constants.PresentationConstants;
-import com.ebay.tracking.api.IRequestScopeTracker;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
@@ -26,18 +20,11 @@ import org.springframework.util.StringUtils;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Configuration;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 /**
  * @author xiangli4
@@ -53,9 +40,6 @@ public class CollectionService {
   private static final String CHANNEL_TYPE = "channelType";
   private static final String ADOBE_PARTNER_ID = "14";
 
-  // do not filter /ulk XC-1541
-  private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
-
 
   @PostConstruct
   public void postInit() {
@@ -68,13 +52,11 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public boolean collectImpression(HttpServletRequest request, HttpServletResponse response,
-                                   ContainerRequestContext requestContext) throws Exception {
-    // send 1x1 pixel
-    ImageResponseHandler.sendImageResponse(response);
+  public boolean collectAr(HttpServletRequest request, HttpServletResponse response, CookieReader cookieReader, IEndUserContext endUserContext,
+                           ContainerRequestContext requestContext) throws Exception {
+    DAPResponseHandler.sendDAPResponse(request, response, cookieReader, endUserContext, requestContext);
     return true;
   }
-
 
   /**
    * Parse rotation id from query mkrid
