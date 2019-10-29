@@ -60,10 +60,6 @@ public class DAPResponseHandler {
   private static final DawgDictionary userAgentBotDawgDictionary;
   private static final DawgDictionary ipBotDawgDictionary;
 
-  private static final String MGVALUEREASON = "mgvaluereason";
-  private static final String MGVALUE = "mgvalue";
-  private static final String DEFAULT_MGVALUE = "0";
-
   private static final String DAP_USER_AGENT_ROBOT_FILE = "dap_user_agent_robot.txt";
   private static final String DAP_IP_ROBOT_FILE = "dap_ip_robot.txt";
 
@@ -141,7 +137,6 @@ public class DAPResponseHandler {
     setCguid(cguid);
     setGuid(guid);
     setUdid();
-    setMgInfo(cguid);
     setUserInfo(cguid);
     callDAPResponse();
   }
@@ -166,98 +161,6 @@ public class DAPResponseHandler {
       return null;
     }
     return readerGuid.substring(0, Constants.GUID_LENGTH);
-  }
-
-  private void setMgInfo(String cguid) {
-    boolean isBot = isBotByIp(endUserContext.getIPAddress()) || isBotByUserAgent(endUserContext.getUserAgent());
-    if (isBot) {
-      uriBuilder.setParameter(MGVALUE, DEFAULT_MGVALUE);
-      uriBuilder.setParameter(MGVALUEREASON, String.valueOf(MgvalueReason.BOT.getId()));
-      return;
-    }
-    if (StringUtils.isEmpty(cguid)) {
-      uriBuilder.setParameter(MGVALUE, DEFAULT_MGVALUE);
-      uriBuilder.setParameter(MGVALUEREASON, String.valueOf(MgvalueReason.TRACKING_ERROR.getId()));
-    } else {
-      ImmutablePair<String, MgvalueReason> mgvalueAndMgvalueReason = getMgvalueAndMgvalueReason(cguid);
-      uriBuilder.setParameter(MGVALUE, mgvalueAndMgvalueReason.left);
-      uriBuilder.setParameter(MGVALUEREASON, String.valueOf(mgvalueAndMgvalueReason.right.getId()));
-      if (!mgvalueAndMgvalueReason.left.equals(DEFAULT_MGVALUE)) {
-        return;
-      }
-    }
-
-    String mid = getMid();
-    if (StringUtils.isEmpty(mid)) {
-      // replace mgvaluereason
-      uriBuilder.setParameter(MGVALUEREASON, String.valueOf(MgvalueReason.TRUST_CALL_ERROR.getId()));
-      return;
-    }
-    uriBuilder.setParameter(Constants.MID, mid);
-  }
-
-  private ImmutablePair<String, MgvalueReason> getMgvalueAndMgvalueReason(String cguid) {
-    // TODO remove hacked cguid
-    cguid = "49bb481e14d0af4285d7b4b7fffffff6";
-    String mgvalue = null;
-    MgvalueReason mgvalueReason = null;
-    Configuration config = ConfigurationBuilder.newConfig("idlinksvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:bf59aef8-25de-4140-acc5-2d7ddc290ecb");
-    Client mktClient = GingerClientBuilder.newClient(config);
-    String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
-
-    try (Response ress = mktClient.target(endpoint).path("/idlink")
-            .queryParam("id", cguid)
-            .queryParam("type", Constants.CGUID)
-            .request()
-            .get()) {
-      switch (ress.getStatus()) {
-        case HttpStatus.SC_NOT_FOUND:
-          mgvalue = DEFAULT_MGVALUE;
-          mgvalueReason = MgvalueReason.NEW_USER;
-          break;
-        case HttpStatus.SC_OK:
-          String msg = ress.readEntity(String.class);
-          JSONObject obj = new JSONObject(msg);
-          JSONArray type = (JSONArray) obj.get("identityLinking");
-          int size = type.length();
-          for (int j = 0; j < size; j++) {
-            JSONObject first = (JSONObject) type.get(j);
-            String value = first.getString("type");
-            if (value.equalsIgnoreCase("MGVALUE")) {
-              JSONArray arr = first.getJSONArray("ids");
-              // fetch the last inserted mgvalue
-              mgvalue = arr.get(arr.length() - 1).toString();
-              mgvalueReason = MgvalueReason.SUCCESS;
-              break;
-            }
-          }
-          if (mgvalue == null) {
-            mgvalue = DEFAULT_MGVALUE;
-            mgvalueReason = MgvalueReason.NEW_USER;
-          }
-          break;
-        default:
-          mgvalue = DEFAULT_MGVALUE;
-          mgvalueReason = MgvalueReason.IDLINK_CALL_ERROR;
-      }
-    } catch(Exception exception) {
-      mgvalue = DEFAULT_MGVALUE;
-      mgvalueReason = MgvalueReason.IDLINK_CALL_ERROR;
-    }
-
-    return new ImmutablePair<>(mgvalue, mgvalueReason);
-  }
-
-  private String getMid() {
-    String mId = null;
-    LookupBoHelperCfg.initialize();
-    try {
-      DeviceFingerPrintClient dfpClient = DeviceFingerPrintClientFactory.getDeviceFingerPrintClient();
-      mId = dfpClient.getMid();
-    } catch (Exception e) {
-      LOGGER.info(e.getMessage());
-    }
-    return mId;
   }
 
   private void setCguid(String cguid) {
