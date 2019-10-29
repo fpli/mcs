@@ -144,7 +144,7 @@ class DedupeAndSink(params: Parameter)
         }
         // write message
         // couchbase dedupe only apply on click
-        if(message.getChannelAction == ChannelAction.CLICK && couchbaseDedupe) {
+        if ((message.getChannelAction == ChannelAction.CLICK || message.getChannelAction == ChannelAction.ROI) && couchbaseDedupe) {
           try {
             val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
             val key = DEDUPE_KEY_PREFIX + message.getSnapshotId.toString
