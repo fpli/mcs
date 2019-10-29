@@ -433,7 +433,7 @@ public class CollectionService {
       processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
     else
       processFlag = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
-          request, startTime, endUserContext, raptorSecureContext);;
+          request, startTime, endUserContext, raptorSecureContext);
 
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
