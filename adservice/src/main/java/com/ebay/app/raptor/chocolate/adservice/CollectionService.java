@@ -123,8 +123,6 @@ public class CollectionService {
 
     // get parameters from request
     MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
-    ChannelIdEnum channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
-    String type = channelType.getLogicalChannel().getAvro().toString();
     String partnerId = parameters.get(Constants.PARTNER_ID).get(0);
 
     // execute redirect Strategy
@@ -155,16 +153,6 @@ public class CollectionService {
       logError(Errors.ERROR_NO_PARTNER_ID);
     }
 
-    // no mkcid, rejected
-    if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
-      logError(Errors.ERROR_NO_MKCID);
-    }
-
-    // invalid mkcid, rejected
-    ChannelIdEnum channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
-    if (channelType == null) {
-      logError(Errors.ERROR_INVALID_MKCID);
-    }
   }
 
   /**

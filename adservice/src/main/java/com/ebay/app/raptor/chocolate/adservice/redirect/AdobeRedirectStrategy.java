@@ -1,7 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice.redirect;
 
 import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
-import com.ebay.app.raptor.chocolate.adservice.util.HttpClientConnectionManager;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.constant.Constants;
@@ -12,13 +11,7 @@ import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
-import org.apache.http.Header;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
@@ -28,15 +21,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLDecoder;
+import java.net.*;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,13 +44,14 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
   private static final int SUCCESS_CODE = 200;
   private static final String[] TARGET_URL_PARMS = {"mpre", "loc", "url", "URL"};
   private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId", "ap_oid"};
-  private static final String DEFAULT_REDIRECT_URL = "www.ebay.com";
+  private static final String DEFAULT_REDIRECT_URL = "http://www.ebay.com";
   private static final String ADOBE_COUNTRY = "country";
   private static final String ADOBE_ID = "id";
   private static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   private static final String REDIRECT_SRC_SOJ_TAG = "adcamp_locationsrc";
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
   private static final String MCS_SERVICE_NAME = "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46";
+  private static final String ADSERVICE_SERVICE_NAME = "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46";
 
   // TODO: REDIRECT_SERVER_DOMAIN need to be defined
   private static final String REDIRECT_SERVER_DOMAIN = "TBD";
@@ -119,15 +113,22 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
     mktEvent.setTargetUrl(targetUrl);
 
     // cookie and userAgent
-    String cguid = cookieReader.getCguid(requestContext).substring(0,31);
-    String guid = cookieReader.getGuid(requestContext).substring(0,31);
+    String cguid = cookieReader.getCguid(requestContext);
+    if (!StringUtils.isEmpty(cguid)) {
+      cguid = cguid.substring(0, 31);
+    }
+    String guid = cookieReader.getGuid(requestContext);
+    if (!StringUtils.isEmpty(cguid)) {
+      guid = guid.substring(0, 31);
+    }
     String userAgent = request.getHeader("User-Agent");
     if(StringUtils.isEmpty(userAgent)) {
       userAgent = "userAgent=ebayUserAgent/eBayIOS;5.28.0;iOS;12.1.2;Apple;iPhone11_2;AT&T;375x812;3.0";
     }
 
     // call MCS
-    Response ress = mktClient.target(endpoint).path("/events/").request()
+    Response ress = mktClient.target(endpoint).path("/events").request()
+        .header("Content-Type", "application/json")
         .header("X-EBAY-C-ENDUSERCTX", userAgent)
         .header("X-EBAY-C-TRACKING", "guid=" + guid + "," + "cguid=" + cguid)
         .post(Entity.json(mktEvent));
@@ -215,19 +216,20 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
     // generate Adobe Server URL
     URIBuilder uriBuilder = null;
     String redirectUrl = "";
-    // get the
-    Configuration config = ConfigurationBuilder.newConfig("mktAdobeClient");
+    // get the adobe service info from application.properties in resources dir
+    Configuration config = ConfigurationBuilder.newConfig("adservice.mktAdobeClient", ADSERVICE_SERVICE_NAME);
     Client mktClient = GingerClientBuilder.newClient(config);
+    String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
       try {
-        uriBuilder = generateAdobeUrl(request);
-        Response response = mktClient.target(uriBuilder.build()).path("/events/").request().get();
+        uriBuilder = generateAdobeUrl(request, endpoint);
+        Response response = mktClient.target(uriBuilder.build()).request().get();
         // Get the redirect URL from reponse
         if (isValidResponse(response, uriBuilder)) {
           redirectUrl = parseRedirectUrl(response);
         }
         response.close();
     } catch (Exception ex) {
-      logger.error("Generate Adobe URL exception", ex);
+      logger.error("Generate Redirect URL from Adobe exception", ex);
       metrics.meter("AdobeServerException");
       return redirectUrl;
     }
@@ -238,7 +240,7 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
 
   //TODO
   private String parseRedirectUrl(Response response) {
-    return "adobe-redirect";
+    return "http://www.ebay.com";
   }
 
   /**
@@ -274,12 +276,10 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
    * the adobe server get from raptorio config
    * the paramter get from request's parameters
    */
-  public URIBuilder generateAdobeUrl(HttpServletRequest request) throws Exception {
-    // TODO
-    String adobeHost = "";
-    URIBuilder uriBuilder = new URIBuilder(adobeHost);
+  public URIBuilder generateAdobeUrl(HttpServletRequest request, String endpoint) throws Exception {
+    URIBuilder uriBuilder = new URIBuilder(endpoint);
     MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
-    // no adobeParams, rejected
+    // if the url has no adobeParams, we will construct the url with the possible list of params
     if (!parameters.containsKey(Constants.ADOBE_PARAMS) || parameters.get(Constants.ADOBE_PARAMS).get(0) == null) {
       logger.warn(Errors.ERROR_NO_ADOBE_PARAMS);
       metrics.meter(Errors.ERROR_NO_ADOBE_PARAMS);
