@@ -149,7 +149,6 @@ class DedupeAndSink(params: Parameter)
             val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
             val key = DEDUPE_KEY_PREFIX + message.getSnapshotId.toString
             if (!bucket.exists(key)) {
-              bucket.upsert(JsonDocument.create(key, couchbaseTTL, JsonObject.empty()))
               writeMessage(writer, message)
             }
             CorpCouchbaseClient.returnClient(cacheClient)
