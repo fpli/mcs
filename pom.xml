@@ -32,7 +32,7 @@
     <dukes.version>1.5.1.raptorio</dukes.version>
     <rheos.version>2.0.5-SNAPSHOT</rheos.version>
     <kafka.version>2.0.1</kafka.version>
-    <metrics.version>1.2.4-RELEASE</metrics.version>
+    <metrics.version>1.2.5-RELEASE</metrics.version>
     <jackson.version>2.9.7</jackson.version>
     <powermock.version>1.6.6</powermock.version>
     <scoverage.plugin.version>1.3.0</scoverage.plugin.version>
