@@ -341,10 +341,10 @@ public class CollectionService {
       referer = URLDecoder.decode( referer, "UTF-8" );
     }
 
-    // no user agent, rejected
     String userAgent = request.getHeader("User-Agent");
     if (null == userAgent) {
-      logError(Errors.ERROR_NO_USER_AGENT);
+      logger.warn(Errors.ERROR_NO_USER_AGENT);
+      metrics.meter(Errors.ERROR_NO_USER_AGENT);
     }
 
     ChannelIdEnum channelType;
@@ -353,11 +353,11 @@ public class CollectionService {
     // uri is from post body
     String uri = event.getTargetUrl();
 
-    // illegal url, rejected
     UriComponents uriComponents;
     uriComponents = UriComponentsBuilder.fromUriString(uri).build();
     if (uriComponents == null) {
-      logError(Errors.ERROR_ILLEGAL_URL);
+      logger.warn(Errors.ERROR_ILLEGAL_URL);
+      metrics.meter(Errors.ERROR_ILLEGAL_URL);
     }
 
     // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
@@ -369,9 +369,9 @@ public class CollectionService {
     }
 
     // parse action from query param mkevt
-    // no mkevt, rejected
     if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
-      logError(Errors.ERROR_NO_MKEVT);
+      logger.warn(Errors.ERROR_NO_MKEVT);
+      metrics.meter(Errors.ERROR_NO_MKEVT);
     }
 
     // TODO refactor ChannelActionEnum
@@ -389,6 +389,7 @@ public class CollectionService {
         break;
       case "6":
         channelAction = ChannelActionEnum.SERVE;
+        break;
       default:
         logError(Errors.ERROR_INVALID_MKEVT);
     }
