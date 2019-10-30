@@ -51,5 +51,9 @@ public class Constants {
   public static final int CGUID_LENGTH = 32;
   public static final int GUID_LENGTH = 32;
 
+  // metrics field
+  public static final String CHANNEL_ACTION = "channelAction";
+  public static final String CHANNEL_TYPE = "channelType";
+
 }
 
