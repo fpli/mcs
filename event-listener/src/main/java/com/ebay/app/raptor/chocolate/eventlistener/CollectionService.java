@@ -389,6 +389,7 @@ public class CollectionService {
         break;
       case "6":
         channelAction = ChannelActionEnum.SERVE;
+        break;
       default:
         logError(Errors.ERROR_INVALID_MKEVT);
     }
