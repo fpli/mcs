@@ -1,8 +1,8 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
+import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
-import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.constant.Errors;
 import com.ebay.kernel.util.guid.Guid;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -46,7 +46,8 @@ public class CollectionService {
    */
   public boolean collectAr(HttpServletRequest request, HttpServletResponse response, CookieReader cookieReader, IEndUserContext endUserContext,
                            ContainerRequestContext requestContext) throws Exception {
-    DAPResponseHandler.sendDAPResponse(request, response, cookieReader, endUserContext, requestContext);
+    new DAPResponseHandler(request, response, cookieReader, endUserContext, requestContext)
+            .sendDAPResponse();
     return true;
   }
 
