@@ -64,6 +64,7 @@ public class CollectionService {
         cookie += "guid=" + new Guid().nextPaddedGUID();
       } catch (UnknownHostException e) {
         logger.warn("Create guid failure: ", e);
+        metrics.meter("CreateGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
       }
       logger.warn("No guid");
       metrics.meter("NoGuid", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
