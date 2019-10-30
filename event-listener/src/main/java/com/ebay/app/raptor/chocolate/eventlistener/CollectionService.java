@@ -595,6 +595,12 @@ public class CollectionService {
         // Yesmail mailing instance
         addTagFromUrlQuery(parameters, requestTracker, Constants.YM_INSTC, "yminstc", String.class);
 
+        // Adobe email redirect url
+        addTagFromUrlQuery(parameters, requestTracker, Constants.REDIRECT_URL_SOJ_TAG, "adcamp_landingpage", String.class);
+
+        // Adobe email redirect source
+        addTagFromUrlQuery(parameters, requestTracker, Constants.REDIRECT_SRC_SOJ_SOURCE, "adcamp_locationsrc", String.class);
+
       } catch (Exception e) {
         logger.warn("Error when tracking ubi for marketing email click tags", e);
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
