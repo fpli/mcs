@@ -1,6 +1,6 @@
 package com.ebay.app.raptor.chocolate.avro;
 
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV2;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV3;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import org.apache.avro.Schema;
@@ -13,13 +13,13 @@ import org.apache.avro.specific.SpecificDatumWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class FilterMessage extends FilterMessageV3 {
+public class FilterMessage extends FilterMessageV4 {
   public static Schema getClassSchema() {
     return SCHEMA$;
   }
 
-  private static Schema getV2Schema() {
-    return FilterMessageV2.getClassSchema();
+  private static Schema getV3Schema() {
+    return FilterMessageV3.getClassSchema();
   }
 
   // Avro reader (threadsafe, therefore static)
@@ -27,8 +27,8 @@ public class FilterMessage extends FilterMessageV3 {
       getClassSchema());
 
   // Avro reader that reads previous version of schema (threadsafe, therefore static)
-  private final static DatumReader<FilterMessageV2> readerV2 = new SpecificDatumReader<>(
-      getV2Schema(), FilterMessageV2.getClassSchema());
+  private final static DatumReader<FilterMessageV3> readerV3 = new SpecificDatumReader<>(
+      getV3Schema(), FilterMessageV3.getClassSchema());
 
   // Avro writer (threadsafe, therefore static)
   private final static DatumWriter<FilterMessage> writer = new SpecificDatumWriter<>(
@@ -51,9 +51,9 @@ public class FilterMessage extends FilterMessageV3 {
 
   public static FilterMessage readFromJSON(String json) throws IOException {
     JsonDecoder decoder = DecoderFactory.get().jsonDecoder(getClassSchema(), json);
-    JsonDecoder decoderV2 = DecoderFactory.get().jsonDecoder(getV2Schema(), json);
+    JsonDecoder decoderV3 = DecoderFactory.get().jsonDecoder(getV3Schema(), json);
 
-    return decode(decoder, decoderV2);
+    return decode(decoder, decoderV3);
   }
 
   public static FilterMessage decodeRheos(Schema rheosHeaderSchema,
@@ -64,14 +64,14 @@ public class FilterMessage extends FilterMessageV3 {
     // skips the rheos header
     rheosHeaderReader.read(null, decoder);
 
-    BinaryDecoder decoderV2 = DecoderFactory.get().binaryDecoder(data, null);
+    BinaryDecoder decoderV3 = DecoderFactory.get().binaryDecoder(data, null);
     // skips the rheos header
-    rheosHeaderReader.read(null, decoderV2);
+    rheosHeaderReader.read(null, decoderV3);
 
-    return decode(decoder, decoderV2);
+    return decode(decoder, decoderV3);
   }
 
-  public static <D extends Decoder> FilterMessage decode(D decoder, D decoderV2) throws IOException {
+  public static <D extends Decoder> FilterMessage decode(D decoder, D decoderV3) throws IOException {
 
     FilterMessage datum = new FilterMessage();
     try {
@@ -82,17 +82,17 @@ public class FilterMessage extends FilterMessageV3 {
       // Nothing to do, need to try the upgrading reader first
     }
 
-    // fallback to read V2
-    FilterMessageV2 datumV2 = new FilterMessageV2();
-    datumV2 = readerV2.read(datumV2, decoderV2);
-    ShortSnapshotId shortSnapshotId = new ShortSnapshotId(datumV2.getSnapshotId().longValue());
-    datum = new FilterMessage(datumV2.getSnapshotId(), shortSnapshotId.getRepresentation(), datumV2.getTimestamp(),
+    // fallback to read V3
+    FilterMessageV3 datumV3 = new FilterMessageV3();
+    datumV3 = readerV3.read(datumV3, decoderV3);
+    ShortSnapshotId shortSnapshotId = new ShortSnapshotId(datumV3.getSnapshotId().longValue());
+    datum = new FilterMessage(datumV3.getSnapshotId(), shortSnapshotId.getRepresentation(), datumV3.getTimestamp(),
         -1L, "", "", "", "", "", -1L, "", "",
-        datumV2.getPublisherId(), datumV2.getCampaignId(),
+        datumV3.getPublisherId(), datumV3.getCampaignId(),
         -1L, "", -1L, -1L,
-        datumV2.getRequestHeaders(), datumV2.getUri(), datumV2.getResponseHeaders(),
-        datumV2.getRtRuleFlags(), datumV2.getNrtRuleFlags(), datumV2.getChannelAction(), datumV2.getChannelType(),
-        datumV2.getHttpMethod(), datumV2.getSnid(), datumV2.getIsTracked());
+        datumV3.getRequestHeaders(), datumV3.getUri(), datumV3.getResponseHeaders(),
+        datumV3.getRtRuleFlags(), datumV3.getNrtRuleFlags(), datumV3.getChannelAction(), datumV3.getChannelType(),
+        datumV3.getHttpMethod(), datumV3.getSnid(), datumV3.getIsTracked());
     return datum;
   }
 
