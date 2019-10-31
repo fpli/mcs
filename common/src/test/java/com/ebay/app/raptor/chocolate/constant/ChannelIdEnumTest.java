@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.listener.util;
+package com.ebay.app.raptor.chocolate.constant;
 
 import org.junit.Test;
 

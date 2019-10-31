@@ -6,6 +6,8 @@ import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.*;
 import com.ebay.traffic.monitoring.ESMetrics;

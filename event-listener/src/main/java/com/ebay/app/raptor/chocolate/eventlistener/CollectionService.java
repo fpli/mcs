@@ -1,6 +1,8 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
@@ -28,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
@@ -434,7 +435,7 @@ public class CollectionService {
       processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
     else
       processFlag = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
-          request, startTime, endUserContext, raptorSecureContext);;
+          request, startTime, endUserContext, raptorSecureContext);
 
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),

@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.kernel.util.DomainIpChecker;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.kernel.util.StringUtils;
