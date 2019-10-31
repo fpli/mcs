@@ -6,6 +6,7 @@ import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.eventlistener.util.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -329,8 +330,13 @@ public class RoverRheosTopicFilterTask extends Thread {
           logger.warn("Decode Natural Search url error");
         }
 
+        // Page 3085 have events including channel 3 (natural search) and channel 16 (social media)
+        // query_string all start with '/roverns/'
+        String channelId = coalesce(applicationPayload.get(new Utf8("chnl")), new Utf8("3")).toString();
+        ChannelType channelType = ChannelIdEnum.parse(channelId).getLogicalChannel().getAvro();
+
         ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
-                0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.NATURAL_SEARCH, HttpMethod.GET, "", false);
+                0L, 0L, "", "", "", ChannelAction.CLICK, channelType, HttpMethod.GET, "", false);
 
         setCommonFields(record, applicationPayload, genericRecord);
 
