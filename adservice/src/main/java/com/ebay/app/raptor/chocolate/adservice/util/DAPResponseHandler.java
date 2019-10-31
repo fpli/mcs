@@ -218,7 +218,7 @@ public class DAPResponseHandler {
     return map;
   }
 
-  private void setLastItems(Map<String, String> dapuUriBuilder, String key, Object value) {
+  private void setLastItems(Map<String, String> map, String key, Object value) {
     JSONArray value1 = (JSONArray) value;
     List<String> itemList = new ArrayList<>();
     for (int i = 0; i < value1.length(); i++) {
@@ -234,10 +234,10 @@ public class DAPResponseHandler {
       list.add(object.get("itemtitle"));
       itemList.add(StringUtils.join(list, ":"));
     }
-    dapuUriBuilder.put(key, StringUtils.join(itemList, ","));
+    map.put(key, StringUtils.join(itemList, ","));
   }
 
-  private void setLastQuery(Map<String, String> dapuUriBuilder, String key, Object value) {
+  private void setLastQuery(Map<String, String> map, String key, Object value) {
     JSONArray value1 = (JSONArray) value;
     List<String> itemList = new ArrayList<>();
     for (int i = 0; i < value1.length(); i++) {
@@ -251,10 +251,10 @@ public class DAPResponseHandler {
       list.add(object.get("categoryid"));
       itemList.add(StringUtils.join(list, ":"));
     }
-    dapuUriBuilder.put(key, StringUtils.join(itemList, ","));
+    map.put(key, StringUtils.join(itemList, ","));
   }
 
-  private void setCategory(Map<String, String> dapuUriBuilder, String key, Object value) {
+  private void setCategory(Map<String, String> map, String key, Object value) {
     JSONArray value1 = (JSONArray) value;
     List<String> itemList = new ArrayList<>();
     for (int i = 0; i < value1.length(); i++) {
@@ -267,7 +267,7 @@ public class DAPResponseHandler {
       list.add(object.get("siteid"));
       itemList.add(StringUtils.join(list, ":"));
     }
-    dapuUriBuilder.put(key, StringUtils.join(itemList, ","));
+    map.put(key, StringUtils.join(itemList, ","));
   }
 
   private void extract(Map<String, String> dapuUriBuilder, String key, Object value) {
