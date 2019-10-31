@@ -13,6 +13,8 @@ public class Constants {
   public static final String CGUID = "cguid";
   public static final String GUID = "guid";
   public static final String RVR_ID = "rvr_id";
+  public static final String MKEVT = "mkevt";
+  public static final String RVRID = "rvrid";
 
   public static final String UNIQUE_DEVICE_ID = "udid";
 
@@ -30,6 +32,8 @@ public class Constants {
 
   // metrics field
   public static final String CHANNEL_TYPE = "channelType";
+
+  public static final String ROVER_USERID = "rover_userid";
 
 }
 

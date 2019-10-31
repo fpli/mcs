@@ -11,6 +11,7 @@ import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,9 @@ public class CollectionService {
   private Metrics metrics;
   private static CollectionService instance = null;
 
+  @Autowired
+  private DAPResponseHandler dapResponseHandler;
+
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
@@ -44,8 +48,7 @@ public class CollectionService {
    */
   public boolean collectAr(HttpServletRequest request, HttpServletResponse response, CookieReader cookieReader, IEndUserContext endUserContext,
                            ContainerRequestContext requestContext) throws Exception {
-    new DAPResponseHandler(request, response, cookieReader, endUserContext, requestContext)
-            .sendDAPResponse();
+    dapResponseHandler.sendDAPResponse(request, response, cookieReader, endUserContext, requestContext);
     return true;
   }
 
