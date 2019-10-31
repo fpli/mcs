@@ -1,8 +1,8 @@
 package com.ebay.traffic.chocolate.listener.api;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
-import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import org.apache.commons.lang3.Validate;
 
 import javax.servlet.http.HttpServletResponse;
