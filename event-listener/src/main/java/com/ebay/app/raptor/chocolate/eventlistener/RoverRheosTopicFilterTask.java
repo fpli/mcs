@@ -320,7 +320,6 @@ public class RoverRheosTopicFilterTask extends Thread {
       }
         else if(pageId == 3085) {
         ESMetrics.getInstance().meter(INCOMING_PAGE_NATURAL_SEARCH);
-        String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.NATURAL_SEARCH);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
         String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
 
@@ -329,7 +328,10 @@ public class RoverRheosTopicFilterTask extends Thread {
         String channelId = coalesce(applicationPayload.get(new Utf8("chnl")), new Utf8("3")).toString();
         ChannelType channelType = ChannelIdEnum.parse(channelId).getLogicalChannel().getAvro();
 
-        ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
+        //set kafkaTopic depends on ChannelType
+        String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType);
+
+          ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
                 0L, 0L, "", "", "", ChannelAction.CLICK, channelType, HttpMethod.GET, "", false);
 
         setCommonFields(record, applicationPayload, genericRecord);
