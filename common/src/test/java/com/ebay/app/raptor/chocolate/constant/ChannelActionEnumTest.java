@@ -1,14 +1,11 @@
-package com.ebay.traffic.chocolate.listener.util;
+package com.ebay.app.raptor.chocolate.constant;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
-
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import java.util.Arrays;
+
+import static org.junit.Assert.*;
 
 @SuppressWarnings("javadoc")
 public class ChannelActionEnumTest {

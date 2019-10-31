@@ -12,7 +12,7 @@ import javax.inject.Singleton;
 import java.io.IOException;
 
 /**
- * Event listener service class
+ * Adservice entrance class
  *
  * @author - xiangli4
  */
@@ -34,7 +34,6 @@ public class AdserviceService {
       .getInstance().getByNameString(ELASTICSEARCH_URL));
     ApplicationOptions options = ApplicationOptions.getInstance();
 
-    KafkaSink.initialize(options, options);
   }
 
   @PreDestroy
