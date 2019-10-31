@@ -1,8 +1,8 @@
 package com.ebay.traffic.chocolate.listener.api;
 
-import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
-import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
-import com.ebay.traffic.chocolate.listener.util.LogicalChannelEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.constant.LogicalChannelEnum;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;

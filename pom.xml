@@ -53,6 +53,7 @@
     <module>tools</module>
     <module>ingester</module>
     <module>event-listener</module>
+    <module>adservice</module>
   </modules>
 
   <dependencyManagement>
@@ -271,6 +272,12 @@
         <groupId>com.ebay.raptorio.component</groupId>
         <artifactId>raptor-dawg-dictionary</artifactId>
         <version>0.4.0-RELEASE</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.ebay.raptor.dfp</groupId>
+        <artifactId>DeviceFingerprintSvcClient</artifactId>
+        <version>1.0.12</version>
       </dependency>
 
     </dependencies>

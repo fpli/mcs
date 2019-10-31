@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>chocolate</artifactId>
+    <groupId>com.ebay.traffic</groupId>
+    <version>3.5.0-RELEASE</version>
+    <relativePath>..</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.ebay.traffic</groupId>
+  <artifactId>chocolate-adservice</artifactId>
+  <name>chocolate adservice</name>
+
+  <properties>
+    <swagger.annotations.version>1.5.20</swagger.annotations.version>
+    <swagger.codegen.version>3.0.0</swagger.codegen.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-ginger-client-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-initializer-starter</artifactId>
+    </dependency>
+    <!--eBay Core-->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-esams-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-hystrix-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-metadata-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-qualys-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-service-discovery-client-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-trustfabric-client-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.standards</groupId>
+      <artifactId>service-description-processor</artifactId>
+    </dependency>
+    <!--eBay Operational-->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-componentstatus-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-configbean-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-initializer-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-jersey-operational-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-jmx-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-logger-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-mcf-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-opentracing-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-opentracing-cal-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-perfmon-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-telemetry-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-tomcat-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-troubleshooting-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-validateinternals-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.standards</groupId>
+      <artifactId>standards-error-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-content-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-permutation-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-micrometer-starter</artifactId>
+    </dependency>
+
+    <!--cookie-->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-cookie-starter</artifactId>
+      <version>0.6.0-SNAPSHOT</version>
+    </dependency>
+
+    <!--global config-->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-globalconfig-starter</artifactId>
+    </dependency>
+
+    <!-- spring boot jetty starter -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jersey</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!--for URL validation-->
+    <dependency>
+      <groupId>commons-validator</groupId>
+      <artifactId>commons-validator</artifactId>
+    </dependency>
+
+    <!--for URIBuilder-->
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes</artifactId>
+      <version>${dukes.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-dal-starter</artifactId>
+    </dependency>
+
+    <!--Chocolate dependencies-->
+    <dependency>
+      <groupId>com.ebay.traffic</groupId>
+      <artifactId>chocolate-kafkacommon</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.couchbase.client</groupId>
+      <artifactId>java-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-io-test-framework</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!--logging dependencies-->
+    <dependency>
+      <groupId>com.github.danielwegener</groupId>
+      <artifactId>logback-kafka-appender</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.logstash.logback</groupId>
+      <artifactId>logstash-logback-encoder</artifactId>
+    </dependency>
+
+    <!-- test -->
+    <dependency>
+      <groupId>com.ebay.traffic</groupId>
+      <artifactId>chocolate-kafkacommon</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka_2.11</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+      </exclusions>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay</groupId>
+      <artifactId>compliance-evaluator-io</artifactId>
+    </dependency>
+
+    <!-- OpenApi / Swagger processing -->
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <version>${swagger.annotations.version}</version>
+    </dependency>
+
+    <!-- auth related -->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-core-auth-starter</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-cos-token-starter</artifactId>
+    </dependency>
+
+    <!-- userctx related -->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-cos-usercontext-starter</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-cos-client-filter</artifactId>
+    </dependency>
+
+    <!-- tracking -->
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-tracking-starter</artifactId>
+    </dependency>
+
+    <!-- domain request -->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-domain-request-starter</artifactId>
+    </dependency>
+
+    <!--JAX-RS Operational Components-->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-ginger-server-starter</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-configresource-starter</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-dds-client-starter</artifactId>
+    </dependency>
+
+    <!-- for geo -->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-geo-starter</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptor.dfp</groupId>
+      <artifactId>DeviceFingerprintSvcClient</artifactId>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- spring boot plugin -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      <!-- raptor.io plugin -->
+      <plugin>
+        <groupId>com.ebay.raptor.build</groupId>
+        <artifactId>service-discovery-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.ebay.raptor.build</groupId>
+        <artifactId>raptorconfig-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.ebay.raptor.build</groupId>
+        <artifactId>assembler-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.ebay.globalconfig</groupId>
+        <artifactId>globalconfig-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+      </plugin>
+      <!--<plugin>-->
+        <!--<groupId>com.ebay.raptor.build</groupId>-->
+        <!--<artifactId>maven-content-plugin</artifactId>-->
+      <!--</plugin>-->
+      <!--<plugin>-->
+      <!--<groupId>com.ebay.cos</groupId>-->
+      <!--<artifactId>compliance-evaluator-io-maven-plugin</artifactId>-->
+      <!--<version>1.1.5-RELEASE</version>-->
+      <!--</plugin>-->
+      <!--&lt;!&ndash; Swagger code generation plugin using custom template library. &ndash;&gt;-->
+      <!--<plugin>-->
+      <!--<groupId>io.swagger.codegen.v3</groupId>-->
+      <!--<artifactId>swagger-codegen-maven-plugin</artifactId>-->
+      <!--<version>${swagger.codegen.version}</version>-->
+      <!--<executions>-->
+      <!--<execution>-->
+      <!--<goals>-->
+      <!--<goal>generate</goal>-->
+      <!--</goals>-->
+      <!--<configuration>-->
+      <!--<language>com.ebay.swagger.templates.codegen.JavaEtsGenerator</language>-->
+      <!--<apiPackage>com.ebay.app.raptor.chocolate.gen.api</apiPackage>-->
+      <!--<modelPackage>com.ebay.app.raptor.chocolate.gen.model</modelPackage>-->
+      <!--<inputSpec>${project.basedir}/src/main/resources/api/openapi.yaml</inputSpec>-->
+      <!--<generateApis>true</generateApis>-->
+      <!--<generateApiTests>false</generateApiTests>-->
+      <!--<generateApiDocumentation>false</generateApiDocumentation>-->
+      <!--<generateModels>true</generateModels>-->
+      <!--<generateModelTests>false</generateModelTests>-->
+      <!--<generateModelDocumentation>false</generateModelDocumentation>-->
+      <!--<generateSupportingFiles>false</generateSupportingFiles>-->
+      <!--<output>${project.build.directory}/gen-src</output>-->
+      <!--<configOptions>-->
+      <!--<additional-properties>-->
+      <!--preAuthorize=hasAuthority,useJsonPropertyOrder=true-->
+      <!--</additional-properties>-->
+      <!--</configOptions>-->
+      <!--</configuration>-->
+      <!--</execution>-->
+      <!--</executions>-->
+      <!--<dependencies>-->
+      <!--<dependency>-->
+      <!--<groupId>com.ebay.swagger.templates</groupId>-->
+      <!--<artifactId>java-ets-oas3</artifactId>-->
+      <!--<version>1.0.2</version>-->
+      <!--</dependency>-->
+      <!--</dependencies>-->
+      <!--</plugin>-->
+    </plugins>
+  </build>
+
+</project>
