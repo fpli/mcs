@@ -323,12 +323,6 @@ public class RoverRheosTopicFilterTask extends Thread {
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.NATURAL_SEARCH);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
         String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
-        try {
-          urlQueryString = URLDecoder.decode(urlQueryString, "UTF-8");
-        } catch (Exception ex) {
-          ESMetrics.getInstance().meter("DecodeNaturalSearchUrlError");
-          logger.warn("Decode Natural Search url error");
-        }
 
         // Page 3085 have events including channel 3 (natural search) and channel 16 (social media)
         // query_string all start with '/roverns/'
