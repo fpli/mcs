@@ -5,8 +5,6 @@ import java.text.SimpleDateFormat
 import java.util
 import java.util.{Date, Properties}
 
-import com.couchbase.client.java.document.JsonDocument
-import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
 import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import com.ebay.traffic.chocolate.spark.kafka.KafkaRDD
@@ -19,8 +17,12 @@ import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.apache.spark.TaskContext
+import com.couchbase.client.java.document.json.JsonObject
+import rx.Observable
+import rx.functions.Func1
+import com.couchbase.client.java.document.JsonDocument
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 /**
   * Created by yliu29 on 3/8/18.
@@ -211,20 +213,32 @@ class DedupeAndSink(params: Parameter)
           datesFiles.foreach(dateFiles => {
             if (couchbaseDedupe) {
               val df = this.readFilesAsDFEx(dateFiles.files)
-              df.filter($"channel_action" === "CLICK" || $"channel_action" === "ROI").select("snapshot_id").foreach(row => {
-                try {
-                  val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-                  val key = DEDUPE_KEY_PREFIX + row.get(0).toString
-                  if (!bucket.exists(key)) {
-                    bucket.upsert(JsonDocument.create(key, couchbaseTTL, JsonObject.empty()))
-                  }
-                  CorpCouchbaseClient.returnClient(cacheClient)
-                } catch {
-                  case e: Exception =>
-                    logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
-                    couchbaseDedupe = false
-                }
-              })
+              df.filter($"channel_action" === "CLICK" || $"channel_action" === "ROI")
+                .repartition(30)
+                .select("snapshot_id")
+                .foreachPartition(partition => {
+                    // each partition insert cb by batch, limit the size to send to 5000 records
+                    partition.grouped(5000).foreach(
+                      group => {
+                        var snapshotIdList = new ListBuffer[String]()
+                        try {
+                          val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+                          group.foreach(record => snapshotIdList += record.get(0).toString)
+                          // async call couchbase batch api
+                          Observable.from(snapshotIdList.toArray).flatMap(new Func1[String, Observable[JsonDocument]]() {
+                            override def call(snapshotId: String): Observable[JsonDocument] = {
+                              val snapshotIdKey = DEDUPE_KEY_PREFIX + snapshotId
+                              bucket.async.upsert(JsonDocument.create(snapshotIdKey, couchbaseTTL, JsonObject.empty()))
+                            }
+                          }).last().toBlocking.single()
+                        } catch {
+                          case e: Exception =>
+                            logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
+                            couchbaseDedupe = false
+                        }
+                      }
+                    )
+                })
             }
           })
         }
