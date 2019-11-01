@@ -228,18 +228,12 @@ class DedupeAndSink(params: Parameter)
                       val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
                       group.foreach(record => snapshotIdList += record.get(0).toString)
                       // async call couchbase batch api
-                      val asyncProcessing = Observable.from(snapshotIdList.toArray).flatMap(new Func1[String, Observable[JsonDocument]]() {
+                      Observable.from(snapshotIdList.toArray).flatMap(new Func1[String, Observable[JsonDocument]]() {
                         override def call(snapshotId: String): Observable[JsonDocument] = {
                           val snapshotIdKey = DEDUPE_KEY_PREFIX + snapshotId
                           bucket.async.upsert(JsonDocument.create(snapshotIdKey, couchbaseTTL, JsonObject.empty()))
                         }
-                      })
-
-                      asyncProcessing.toBlocking.forEach(new Action1[JsonDocument]() {
-                        override def call(jsonDocument: JsonDocument): Unit = {
-                          // do nothing
-                        }
-                      })
+                      }).last().toBlocking.single()
                     }
                   )
                 })
