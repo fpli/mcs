@@ -3,13 +3,15 @@ package com.ebay.app.raptor.chocolate.adservice.redirect;
 import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
-import com.ebay.app.raptor.chocolate.constant.Constants;
-import com.ebay.app.raptor.chocolate.constant.Errors;
+import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
+import com.ebay.kernel.util.guid.Guid;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.http.client.utils.URIBuilder;
 import org.glassfish.jersey.client.ClientProperties;
@@ -123,12 +125,26 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
     // cookie and userAgent
     String cguid = cookie.getCguid(context);
     if (!StringUtils.isEmpty(cguid)) {
-      cguid = cguid.substring(0, 31);
+      cguid = cguid.substring(0, Constants.CGUID_LENGTH);
+    } else {
+      logger.warn("No cguid");
+      metrics.meter("NoCguid", 1, Field.of("Partner", "Adobe"));
     }
+
     String guid = cookie.getGuid(context);
-    if (!StringUtils.isEmpty(cguid)) {
-      guid = guid.substring(0, 31);
+    if (!StringUtils.isEmpty(guid))
+      guid = guid.substring(0, Constants.CGUID_LENGTH);
+    else {
+      try {
+        guid = new Guid().nextPaddedGUID();
+      } catch (UnknownHostException e) {
+        logger.warn("Create guid failure: ", e);
+        metrics.meter("CreateGuidFailure", 1, Field.of("Partner", "Adobe"));
+      }
+      logger.warn("No guid");
+      metrics.meter("NoGuid", 1, Field.of("Partner", "Adobe"));
     }
+
     String userAgent = request.getHeader("User-Agent");
     if(StringUtils.isEmpty(userAgent)) {
       userAgent = "userAgent=ebayUserAgent/eBayIOS;5.28.0;iOS;12.1.2;Apple;iPhone11_2;AT&T;375x812;3.0";

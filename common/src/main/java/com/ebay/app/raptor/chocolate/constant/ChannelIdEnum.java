@@ -68,6 +68,9 @@ public enum ChannelIdEnum {
    */
   private final boolean isTestChannel;
 
+  /** @return true iff this is a mock (test purposes only) channel. */
+  public boolean isTestChannel() { return this.isTestChannel; }
+
   /**
    * Static mapping of channel names to IDs.
    */

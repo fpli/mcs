@@ -1,10 +1,11 @@
 package com.ebay.app.raptor.chocolate;
 
 
+import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.ImageResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
-import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.jaxrs.client.EndpointUri;
@@ -23,7 +24,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
@@ -32,7 +32,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
+import javax.ws.rs.core.*;
 import java.util.Enumeration;
+import java.util.Map;
 
 /**
  * Resource class
@@ -87,14 +89,21 @@ public class AdserviceResource implements EventsApi {
       while (headers.hasMoreElements()) {
         String header = headers.nextElement();
         if ("Cookie".equalsIgnoreCase(header)) {
-          String cguid = cookieReader.getCguid(requestContext).substring(0, 32);
-          String guid = cookieReader.getGuid(requestContext).substring(0, 32);
-          builder = builder.header("X-EBAY-C-TRACKING", "guid=" + guid + "," + "cguid=" + cguid);
           continue;
         }
         String values = request.getHeader(header);
         builder = builder.header(header, values);
       }
+
+      // get channel for metrics
+      String channelType = "";
+      Map<String, String[]> params = request.getParameterMap();
+      if (params.containsKey(Constants.MKCID) && params.get(Constants.MKCID)[0] != null)
+        channelType = ChannelIdEnum.parse(params.get(Constants.MKCID)[0]).getLogicalChannel().getAvro().toString();
+
+      // construct X-EBAY-C-TRACKING header
+      builder = builder.header("X-EBAY-C-TRACKING",
+          collectionService.constructTrackingHeader(requestContext, cookieReader, channelType));
 
       // add uri and referer to marketing event body
       MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();

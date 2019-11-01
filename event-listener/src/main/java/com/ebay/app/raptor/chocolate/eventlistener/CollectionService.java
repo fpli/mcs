@@ -1,6 +1,8 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
@@ -28,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
@@ -341,10 +342,10 @@ public class CollectionService {
       referer = URLDecoder.decode( referer, "UTF-8" );
     }
 
-    // no user agent, rejected
     String userAgent = request.getHeader("User-Agent");
     if (null == userAgent) {
-      logError(Errors.ERROR_NO_USER_AGENT);
+      logger.warn(Errors.ERROR_NO_USER_AGENT);
+      metrics.meter(Errors.ERROR_NO_USER_AGENT);
     }
 
     ChannelIdEnum channelType;
@@ -353,11 +354,11 @@ public class CollectionService {
     // uri is from post body
     String uri = event.getTargetUrl();
 
-    // illegal url, rejected
     UriComponents uriComponents;
     uriComponents = UriComponentsBuilder.fromUriString(uri).build();
     if (uriComponents == null) {
-      logError(Errors.ERROR_ILLEGAL_URL);
+      logger.warn(Errors.ERROR_ILLEGAL_URL);
+      metrics.meter(Errors.ERROR_ILLEGAL_URL);
     }
 
     // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
@@ -369,9 +370,9 @@ public class CollectionService {
     }
 
     // parse action from query param mkevt
-    // no mkevt, rejected
     if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
-      logError(Errors.ERROR_NO_MKEVT);
+      logger.warn(Errors.ERROR_NO_MKEVT);
+      metrics.meter(Errors.ERROR_NO_MKEVT);
     }
 
     // TODO refactor ChannelActionEnum
@@ -389,6 +390,7 @@ public class CollectionService {
         break;
       case "6":
         channelAction = ChannelActionEnum.SERVE;
+        break;
       default:
         logError(Errors.ERROR_INVALID_MKEVT);
     }
@@ -433,7 +435,7 @@ public class CollectionService {
       processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
     else
       processFlag = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
-          request, startTime, endUserContext, raptorSecureContext);;
+          request, startTime, endUserContext, raptorSecureContext);
 
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
