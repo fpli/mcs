@@ -53,29 +53,6 @@ import java.util.*;
 public class DAPResponseHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(DAPResponseHandler.class);
 
-  private static final List<String> BULLSEYE_MODEL_911_ATTRIBUTES = Arrays.asList(
-          "LastItemsViewed2",
-          "LastItemsWatched2",
-          "LastItemsBidOrBin",
-          "LastItemsLost2",
-          "LastItemsPurchased2",
-          "LastItemsBidOn2",
-          "LastQueriesUsed",
-          "CouponData",
-          "MaritalStatus",
-          "NumChildren",
-          "EstIncome",
-          "Gender",
-          "Occupation",
-          "Age",
-          "LeftNegativeFeedBack",
-          "AdChoice",
-          "HasUserFiledINR",
-          "HasUserContactedCS",
-          "LastCategoriesAccessed_Agg",
-          "MainCategories"
-  );
-
   private URIBuilder getDapURIBuilder() {
     return new URIBuilder()
             .setScheme(ApplicationOptions.getInstance().getDapClientProperties().getProperty("uri.schema"))
@@ -92,7 +69,6 @@ public class DAPResponseHandler {
     String accountId = getAccountId(cookieReader, requestContext);
     String deviceId = endUserContext.getDeviceId();
     long dapRvrId = getDAPRvrId();
-    Map<String, String> userAttributes = getUserAttributes(cguid);
     String referrer = request.getHeader(Constants.REFERER);
     Map<String, String> lbsParameters = getLBSParameters(request, endUserContext);
     URIBuilder dapUriBuilder = getDapURIBuilder();
@@ -105,7 +81,6 @@ public class DAPResponseHandler {
     setReferrer(dapUriBuilder, referrer);
     setGeoInfo(dapUriBuilder, lbsParameters);
     setUdid(dapUriBuilder, deviceId);
-    setUserAttributes(dapUriBuilder, userAttributes);
 
     callDAPResponse(dapUriBuilder, response);
 
@@ -148,202 +123,6 @@ public class DAPResponseHandler {
 
   private String getAccountId(CookieReader cookieReader, ContainerRequestContext requestContext) {
     return cookieReader.getAccountId(requestContext);
-  }
-
-  private void setUserAttributes(URIBuilder dapuUriBuilder, Map<String, String> userAttributes) {
-    userAttributes.forEach(dapuUriBuilder::setParameter);
-  }
-
-  /**
-   * Get user attributes from Bullseye Model 910
-   * @param cguid cuid
-   */
-  private Map<String, String> getUserAttributes(String cguid) {
-    if (StringUtils.isEmpty(cguid)) {
-      return new HashMap<>();
-    }
-
-    String msg = getBullseyeUserAttributesResponse(cguid);
-    Map<String, String> map = new HashMap<>();
-    try {
-      map = parseUserAttributes(msg);
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage());
-    }
-    return map;
-  }
-
-  private String getBullseyeUserAttributesResponse(String cguid) {
-    String msg = null;
-    Configuration config = ConfigurationBuilder.newConfig("beclntsrv.adservice");
-    Client mktClient = GingerClientBuilder.newClient(config);
-    String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
-
-    try (Response ress = mktClient.target(endpoint).path("/timeline")
-            .queryParam("modelid","911")
-            .queryParam("cguid", cguid)
-            .queryParam("attrs", StringUtils.join(BULLSEYE_MODEL_911_ATTRIBUTES, ","))
-            .request()
-            .get()) {
-      if (ress.getStatus() == Response.Status.OK.getStatusCode()) {
-        msg = ress.readEntity(String.class);
-      }
-    } catch(Exception e) {
-      LOGGER.error(e.getMessage());
-    }
-    return msg;
-  }
-
-  private Map<String, String> parseUserAttributes(String msg) {
-    if (StringUtils.isEmpty(msg)) {
-      return new HashMap<>();
-    }
-    JSONArray results = new JSONArray(msg);
-    if (results.length() == 0) {
-      return new HashMap<>();
-    }
-    JSONObject first = results.getJSONObject(0);
-    if (first.isNull("results")) {
-      return new HashMap<>();
-    }
-    JSONObject results1 = first.getJSONObject("results");
-    if (results1.isNull("response")) {
-      return new HashMap<>();
-    }
-    JSONObject bullseyeResponse = results1.getJSONObject("response");
-    Map<String, String> map = new HashMap<>();
-    for (String key : bullseyeResponse.keySet()) {
-      extract(map, key, bullseyeResponse.get(key));
-    }
-    return map;
-  }
-
-  private void setLastItems(Map<String, String> map, String key, Object value) {
-    JSONArray value1 = (JSONArray) value;
-    List<String> itemList = new ArrayList<>();
-    for (int i = 0; i < value1.length(); i++) {
-      if (i == 5) {
-        break;
-      }
-      List<Object> list = new ArrayList<>();
-      JSONObject object = (JSONObject) value1.get(i);
-      list.add(object.get("timestamp"));
-      list.add(object.get("itemid"));
-      list.add(object.get("categoryid"));
-      list.add(object.get("siteid"));
-      list.add(object.get("itemtitle"));
-      itemList.add(StringUtils.join(list, ":"));
-    }
-    map.put(key, StringUtils.join(itemList, ","));
-  }
-
-  private void setLastQuery(Map<String, String> map, String key, Object value) {
-    JSONArray value1 = (JSONArray) value;
-    List<String> itemList = new ArrayList<>();
-    for (int i = 0; i < value1.length(); i++) {
-      if (i == 5) {
-        break;
-      }
-      List<Object> list = new ArrayList<>();
-      JSONObject object = (JSONObject) value1.get(i);
-      list.add(object.get("timestamp"));
-      list.add(object.get("searchquery"));
-      list.add(object.get("categoryid"));
-      itemList.add(StringUtils.join(list, ":"));
-    }
-    map.put(key, StringUtils.join(itemList, ","));
-  }
-
-  private void setCategory(Map<String, String> map, String key, Object value) {
-    JSONArray value1 = (JSONArray) value;
-    List<String> itemList = new ArrayList<>();
-    for (int i = 0; i < value1.length(); i++) {
-      if (i == 5) {
-        break;
-      }
-      List<Object> list = new ArrayList<>();
-      JSONObject object = (JSONObject) value1.get(i);
-      list.add(object.get("categoryid"));
-      list.add(object.get("siteid"));
-      itemList.add(StringUtils.join(list, ":"));
-    }
-    map.put(key, StringUtils.join(itemList, ","));
-  }
-
-  private void extract(Map<String, String> dapuUriBuilder, String key, Object value) {
-    if (StringConstants.EMPTY.equals(value)) {
-      return;
-    }
-    switch (key) {
-      case "LastItemsViewed2":
-        setLastItems(dapuUriBuilder, "LastItemsViewed2",  value);
-        break;
-      case "LastItemsWatched2":
-        setLastItems(dapuUriBuilder, "LastItemsWatched2",  value);
-        break;
-      case "LastItemsBidOrBin":
-        setLastItems(dapuUriBuilder, "LastItemsBidOrBin",  value);
-        break;
-      case "LastItemsLost2":
-        setLastItems(dapuUriBuilder, "LastItemsLost2",  value);
-        break;
-      case "LastItemsPurchased2":
-        setLastItems(dapuUriBuilder, "LastItemsPurchased2",  value);
-        break;
-      case "LastItemsBidOn2":
-        setLastItems(dapuUriBuilder, "LastItemsBidOn2",  value);
-        break;
-      case "LastQueriesUsed":
-        setLastQuery(dapuUriBuilder, "LastQueriesUsed", value);
-        break;
-      case "CouponData":
-        dapuUriBuilder.put("CouponData", String.valueOf(value));
-        break;
-      case "MaritalStatus":
-        dapuUriBuilder.put("MaritalStatus", String.valueOf(value));
-        break;
-      case "NumChildren":
-        dapuUriBuilder.put("NumChildren", String.valueOf(value));
-        break;
-      case "EstIncome":
-        dapuUriBuilder.put("EstIncome", String.valueOf(value));
-        break;
-      case "Gender":
-        dapuUriBuilder.put("Gender", String.valueOf(value));
-        break;
-      case "Occupation":
-        dapuUriBuilder.put("Occupation", String.valueOf(value));
-        break;
-      case "Age":
-        dapuUriBuilder.put("Age", String.valueOf(value));
-        break;
-      case "LeftNegativeFeedBack":
-        dapuUriBuilder.put("LeftNegativeFeedBack", String.valueOf(value));
-        break;
-      case "AdChoice":
-        if ("1".equals(value)) {
-          dapuUriBuilder.put("AdChoicePreference", "true");
-        }
-        break;
-      case "HasUserFiledINR":
-        dapuUriBuilder.put("HasUserFiledINR", String.valueOf(value));
-        break;
-      case "HasUserContactedCS":
-        dapuUriBuilder.put("HasUserContactedCS", String.valueOf(value));
-        break;
-      case "LastCategoriesAccessed_Agg":
-        setCategory(dapuUriBuilder, "LastCategoriesAccessed_Agg", value);
-        break;
-      case "MainCategories":
-        setCategory(dapuUriBuilder, "MainCategories", value);
-        break;
-      case "UserId":
-        break;
-      case "ModelId":
-        break;
-      default:
-        throw new IllegalArgumentException("Invalid Attribute");
-    }
   }
 
   private void setUdid(URIBuilder dapuUriBuilder, String deviceId) {
