@@ -217,21 +217,27 @@ class DedupeAndSink(params: Parameter)
                 .repartition(30)
                 .select("snapshot_id")
                 .foreachPartition(partition => {
-                  // each partition insert cb by batch, limit the size to send to 5000 records
-                  partition.grouped(5000).foreach(
-                    group => {
-                      var snapshotIdList = new ListBuffer[String]()
-                      val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-                      group.foreach(record => snapshotIdList += record.get(0).toString)
-                      // async call couchbase batch api
-                      Observable.from(snapshotIdList.toArray).flatMap(new Func1[String, Observable[JsonDocument]]() {
-                        override def call(snapshotId: String): Observable[JsonDocument] = {
-                          val snapshotIdKey = DEDUPE_KEY_PREFIX + snapshotId
-                          bucket.async.upsert(JsonDocument.create(snapshotIdKey, couchbaseTTL, JsonObject.empty()))
+                    // each partition insert cb by batch, limit the size to send to 5000 records
+                    partition.grouped(5000).foreach(
+                      group => {
+                        var snapshotIdList = new ListBuffer[String]()
+                        try {
+                          val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+                          group.foreach(record => snapshotIdList += record.get(0).toString)
+                          // async call couchbase batch api
+                          Observable.from(snapshotIdList.toArray).flatMap(new Func1[String, Observable[JsonDocument]]() {
+                            override def call(snapshotId: String): Observable[JsonDocument] = {
+                              val snapshotIdKey = DEDUPE_KEY_PREFIX + snapshotId
+                              bucket.async.upsert(JsonDocument.create(snapshotIdKey, couchbaseTTL, JsonObject.empty()))
+                            }
+                          }).last().toBlocking.single()
+                        } catch {
+                          case e: Exception =>
+                            logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
+                            couchbaseDedupe = false
                         }
-                      }).last().toBlocking.single()
-                    }
-                  )
+                      }
+                    )
                 })
             }
           })
