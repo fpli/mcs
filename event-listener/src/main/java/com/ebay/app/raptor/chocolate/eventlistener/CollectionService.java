@@ -642,7 +642,7 @@ public class CollectionService {
         // page id
         requestTracker.addTag(TrackerTagValueUtil.PageIdTag, pageId, Integer.class);
 
-        // event action - click
+        // event action
         requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
 
         // target url

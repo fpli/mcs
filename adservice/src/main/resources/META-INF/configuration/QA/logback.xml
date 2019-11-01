@@ -32,7 +32,7 @@
             <layout class="net.logstash.logback.layout.LogstashLayout" >
                 <includeContext>true</includeContext>
                 <includeCallerData>true</includeCallerData>
-                <customFields>{"component":"event-listener"}</customFields>
+                <customFields>{"component":"adservice"}</customFields>
                 <fieldNames class="net.logstash.logback.fieldnames.ShortenedFieldNames"/>
             </layout>
             <charset>UTF-8</charset>
