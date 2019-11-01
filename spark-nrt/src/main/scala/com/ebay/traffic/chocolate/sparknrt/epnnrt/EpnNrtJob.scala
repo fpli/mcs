@@ -36,7 +36,13 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
   @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression.json")
 
-  @transient lazy val properties: Properties = {
+/*  @transient lazy val properties: Properties = {
+    val properties = new Properties()
+    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
+    properties
+  }*/
+
+    var properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
     properties
@@ -152,7 +158,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           //3. build impression dataframe  save dataframe to files and rename files
           var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
           impressionDf = impressionDf.repartition(params.partitions)
-          saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
+           saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
 
           val countImpDf = readFilesAsDF(epnNrtTempDir + "/impression/", schema_epn_impression_table.dfSchema, "csv", "tab", false)
 
