@@ -6,6 +6,7 @@ import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.kernel.util.StringUtils;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -55,9 +56,9 @@ public class ListenerMessageParser {
    * @return ListenerMessage object
    */
   public ListenerMessage parse(
-    final HttpServletRequest clientRequest, final ContainerRequestContext requestContext, Long startTime, Long campaignId,
-    final ChannelType channelType, final ChannelActionEnum action, String userId, IEndUserContext endUserContext,
-    String uri, String referer, long rotationId, String snid) {
+      final HttpServletRequest clientRequest, final ContainerRequestContext requestContext, Long startTime, Long campaignId,
+      final ChannelType channelType, final ChannelActionEnum action, String userId, IEndUserContext endUserContext,
+      String uri, String referer, long rotationId, String snid) {
 
     // set default values to prevent unable to serialize message exception
     ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",

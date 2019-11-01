@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="STARTUP"
+              class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>log/aero-ebay.log</file>
+        <triggeringPolicy
+            class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>10MB</maxFileSize>
+        </triggeringPolicy>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>log/aero-ebay%i.log</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>9</maxIndex>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date %level [%thread] %logger{36} %msg%n</pattern>
+            <!-- this improves logging throughput -->
+            <immediateFlush>false</immediateFlush>
+        </encoder>
+    </appender>
+
+    <appender name="KafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+        <encoder class="com.github.danielwegener.logback.kafka.encoding.LayoutKafkaMessageEncoder">
+            <layout class="net.logstash.logback.layout.LogstashLayout" >
+                <includeContext>true</includeContext>
+                <includeCallerData>true</includeCallerData>
+                <customFields>{"component":"event-listener"}</customFields>
+                <fieldNames class="net.logstash.logback.fieldnames.ShortenedFieldNames"/>
+            </layout>
+            <charset>UTF-8</charset>
+        </encoder>
+        <topic>chocolate-log-preprod</topic>
+        <!-- ensure that every message sent by the executing host is partitioned to the same partition strategy -->
+        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy" />
+        <!-- use async delivery. the application threads are not blocked by logging -->
+        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
+        <!-- even if the producer buffer runs full, do not block the application but start to drop messages -->
+        <producerConfig>max.block.ms=0</producerConfig>
+        <producerConfig>request.timeout.ms=3000</producerConfig>
+        <producerConfig>acks=0</producerConfig>
+        <producerConfig>bootstrap.servers=chocolate-kafka-pits.vip.lvs.ebay.com:6667</producerConfig>
+    </appender>
+
+    <appender name="CAL"
+              class="com.ebay.raptor.kernel.logging.CalLoggingAppender">
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="STARTUP" />
+        <appender-ref ref="FILE" />
+        <appender-ref ref="KafkaAppender" />
+        <appender-ref ref="CAL" />
+    </root>
+
+</configuration>
