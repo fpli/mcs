@@ -48,12 +48,7 @@ public enum LogicalChannelEnum {
   /**
    * MARKETING EMAIL channel
    */
-  MRKT_EMAIL(ChannelType.MRKT_EMAIL, ChannelActionEnum.CLICK, ChannelActionEnum.EMAIL_OPEN),
-
-  /**
-   * NATURAL SEARCH channel
-   */
-  NATURAL_SEARCH(ChannelType.NATURAL_SEARCH, ChannelActionEnum.CLICK);
+  MRKT_EMAIL(ChannelType.MRKT_EMAIL, ChannelActionEnum.CLICK, ChannelActionEnum.EMAIL_OPEN);
 
 
   /**
