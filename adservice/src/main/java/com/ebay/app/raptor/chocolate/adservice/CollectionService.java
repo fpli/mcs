@@ -10,6 +10,7 @@ import com.ebay.app.raptor.chocolate.constant.Errors;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
@@ -22,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.util.Map;
 
@@ -85,54 +87,34 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public boolean collectRdirect(HttpServletRequest request, HttpServletResponse response,
-                                ContainerRequestContext requestContext, CookieReader cookieReader) throws Exception {
+  public URI collectRdirect(HttpServletRequest request, HttpServletResponse response,
+                            ContainerRequestContext requestContext, CookieReader cookieReader) throws Exception {
 
     // verify the request
     verifyRedirectRequest(request);
-
-    // get referer from request
-    String referer = request.getHeader("Referer");
-    if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
-      logger.warn(Errors.ERROR_NO_REFERER);
-      metrics.meter(Errors.ERROR_NO_REFERER);
-      referer = "";
-    }
-    // decode referer if necessary. Currently, android is sending rover url encoded.
-    if(referer.startsWith("https%3A%2F%2") || referer.startsWith("http%3A%2F%2")) {
-      referer = URLDecoder.decode( referer, "UTF-8" );
-    }
 
     // get parameters from request
     MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
     String partnerId = parameters.get(Constants.PARTNER_ID).get(0);
 
     // execute redirect Strategy
-    executeRedirectStrategy(request, response, partnerId, requestContext,cookieReader);
-
-    return true;
+    return executeRedirectStrategy(request, response, partnerId, requestContext,cookieReader);
   }
 
   /**
    * Verify redirect request, if invalid then throw an exception
    */
   private void verifyRedirectRequest(HttpServletRequest request)  throws Exception {
-    // no user agent, rejected
-    String userAgent = request.getHeader("User-Agent");
-    if (null == userAgent) {
-      logError(Errors.ERROR_NO_USER_AGENT);
-    }
-
     // no query parameter, rejected
     Map<String, String[]> params = request.getParameterMap();
-    if (params.isEmpty()) {
-      logError(Errors.ERROR_NO_QUERY_PARAMETER);
+    if (null == params || params.isEmpty()) {
+      logError(Errors.ERROR_REDIRECT_NO_QUERY_PARAMETER);
     }
     MultiValueMap<String, String> parameters = ParametersParser.parse(params);
 
     // no partnerId, rejected
-    if (!parameters.containsKey(Constants.PARTNER_ID) || parameters.get(Constants.PARTNER_ID).get(0) == null) {
-      logError(Errors.ERROR_NO_PARTNER_ID);
+    if (!parameters.containsKey(Constants.PARTNER_ID) || null == parameters.get(Constants.PARTNER_ID).get(0) ) {
+      logError(Errors.ERROR_REDIRECT_NO_PARTNER_ID);
     }
 
   }
@@ -140,24 +122,22 @@ public class CollectionService {
   /**
    * Send redirect response by Strategy Pattern
    */
-  private void executeRedirectStrategy(HttpServletRequest request, HttpServletResponse response, String partnerId, ContainerRequestContext requestContext, CookieReader cookieReader) throws Exception {
+  private URI executeRedirectStrategy(HttpServletRequest request, HttpServletResponse response, String partnerId, ContainerRequestContext context, CookieReader cookie) throws Exception {
     RedirectContext redirectContext = null;
     switch (partnerId) {
       case ADOBE_PARTNER_ID:
-        redirectContext = new RedirectContext(new AdobeRedirectStrategy(cookieReader, requestContext));
+        // AdobeRedirectStrategy has been implemented the Singleton pattern by Enum
+        redirectContext = new RedirectContext(AdobeRedirectStrategy.INSTANCE);
         break;
       default:
-        logError(Errors.ERROR_INVALID_PARTNER_ID);
+        logError(Errors.ERROR_REDIRECT_INVALID_PARTNER_ID);
     }
-    if (redirectContext != null) {
-      try {
-        redirectContext.execute(request, response);
-      } catch (IOException e) {
-        logError(Errors.ERROR_REDIRECT_RUNTIME);
-      }
-    } else {
-      logError(Errors.ERROR_INVALID_PARTNER_ID);
+    try {
+      return redirectContext.execute(request, response, cookie, context);
+    } catch (Exception e) {
+      logError(Errors.ERROR_REDIRECT_RUNTIME);
     }
+      return new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
   }
 
   /**

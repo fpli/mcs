@@ -1,8 +1,10 @@
 package com.ebay.app.raptor.chocolate;
 
+
 import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.ImageResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.jaxrs.client.EndpointUri;
@@ -10,6 +12,7 @@ import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,8 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Enumeration;
 
 /**
@@ -60,6 +65,7 @@ public class AdserviceResource implements EventsApi {
   @Autowired
   private CookieReader cookieReader;
 
+
   /**
    * Get method to collect impression, viewimp, email open
    *
@@ -81,8 +87,8 @@ public class AdserviceResource implements EventsApi {
       while (headers.hasMoreElements()) {
         String header = headers.nextElement();
         if ("Cookie".equalsIgnoreCase(header)) {
-          String cguid = cookieReader.getCguid(requestContext).substring(0,32);
-          String guid = cookieReader.getGuid(requestContext).substring(0,32);
+          String cguid = cookieReader.getCguid(requestContext).substring(0, 32);
+          String guid = cookieReader.getGuid(requestContext).substring(0, 32);
           builder = builder.header("X-EBAY-C-TRACKING", "guid=" + guid + "," + "cguid=" + cguid);
           continue;
         }
@@ -130,19 +136,15 @@ public class AdserviceResource implements EventsApi {
   }
 
   @Override
-  public Response redirect() {
-    Response res = null;
+  public Response redirect() throws URISyntaxException {
+    URI redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
     try {
-      collectionService.collectRdirect(request, response, requestContext, cookieReader);
+      redirectUri = collectionService.collectRdirect(request, response, requestContext, cookieReader);
     } catch (Exception e) {
-      try {
-        res = Response.status(Response.Status.BAD_REQUEST).build();
-      } catch (Exception ex) {
-        logger.warn(ex.getMessage(), ex);
-      }
-    } finally {
-      return res;
+      // When exception happen, redirect to www.ebay.com
+      logger.warn(e.getMessage(), e);
     }
+    return Response.status(Response.Status.MOVED_PERMANENTLY).location(redirectUri).build();
   }
 
 }

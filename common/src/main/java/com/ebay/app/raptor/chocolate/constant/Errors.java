@@ -24,10 +24,13 @@ public class Errors {
   public static final String ERROR_INVALID_MKRID = "Invalid mkrid.";
   public static final String ERROR_CONTENT = "mktCollectionSvcErrorContent";
   public static final String ERROR_DOMAIN = "marketingTrackingDomain";
-  public static final String ERROR_NO_PARTNER_ID = "No partner ID";
-  public static final String ERROR_INVALID_PARTNER_ID = "Invalid partner ID";
+
+  // Redirect error
+  public static final String ERROR_REDIRECT_NO_PARTNER_ID = "Redirect No partner ID";
+  public static final String ERROR_REDIRECT_INVALID_PARTNER_ID = "Redirect Invalid partner ID";
   public static final String ERROR_REDIRECT_RUNTIME = "Redirect Runtime ERROR";
-  public static final String ERROR_NO_ADOBE_PARAMS = "No adobeParams";
+  public static final String ERROR_REDIRECT_NO_ADOBE_PARAMS = "Redirect No adobeParams";
+  public static final String ERROR_REDIRECT_NO_QUERY_PARAMETER = "Redirect No QueryParameter";
 
   public static final Map<String, ErrorType> errorMap = new HashMap<>();
   static {

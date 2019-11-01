@@ -14,7 +14,7 @@ public class Constants {
   public static final String PLATFORM_NATIVE_APP = "nativeApp";
   public static final String PLATFORM_TABLET = "tablet";
   public static final String PLATFORM_MOBILE = "mobile";
-  public static final String PLATFORM_DESKTOP = "dsktop";
+  public static final String PLATtaFORM_DESKTOP = "dsktop";
   public static final String PLATFORM_UNKNOWN = "UNKNOWN";
 
   public static final String CHANNEL_ACTION = "channelAction";
@@ -39,5 +39,6 @@ public class Constants {
   public static final String ADOBE_PARAMS = "adobeParams";
   public static final String LOCTATION = "loc";
   public static final String REDIRECT = "redirect";
+  public static final String DEFAULT_REDIRECT_URL = "http://www.ebay.com";
 
 }

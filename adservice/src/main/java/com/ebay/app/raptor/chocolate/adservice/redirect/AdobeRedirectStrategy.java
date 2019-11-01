@@ -12,19 +12,21 @@ import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.http.client.utils.URIBuilder;
+import org.glassfish.jersey.client.ClientProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
+import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.*;
@@ -33,29 +35,36 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AdobeRedirectStrategy implements RedirectStrategy {
-  private ContainerRequestContext requestContext;
-  private CookieReader cookieReader;
+// Singleton pattern
+public enum AdobeRedirectStrategy implements RedirectStrategy {
+  // Implement the Singleton pattern using Enum, this solution is thread safety
+  INSTANCE;
   private static final Logger logger = LoggerFactory.getLogger(AdobeRedirectStrategy.class);
   private Metrics metrics;
-  private String redirectSource = "default";
 
-  private static final int REDIRECT_CODE = 301;
-  private static final int SUCCESS_CODE = 200;
+  private static final int REDIRECT_CODE = 3;
+  private static final int SUCCESS_CODE = 2;
   private static final String[] TARGET_URL_PARMS = {"mpre", "loc", "url", "URL"};
-  private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId", "ap_oid"};
+  private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId", "ap_oid", "data"};
   private static final String DEFAULT_REDIRECT_URL = "http://www.ebay.com";
   private static final String ADOBE_COUNTRY = "country";
   private static final String ADOBE_ID = "id";
+  private static final String REDIRECT_SOURCE = "redirect_source";
+  private static final String TARGET_URL = "target_url";
   private static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   private static final String REDIRECT_SRC_SOJ_TAG = "adcamp_locationsrc";
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
   private static final String MCS_SERVICE_NAME = "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46";
   private static final String ADSERVICE_SERVICE_NAME = "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46";
+  private static final int HUNDRED = 100;
+
 
   // TODO: REDIRECT_SERVER_DOMAIN need to be defined
   private static final String REDIRECT_SERVER_DOMAIN = "TBD";
   private static HashMap<String, String> ADOBE_COUNTRY_MAP = new HashMap<String, String>();
+
+  @Context
+  private HttpServletRequest servletRequest;
 
   static {
     ADOBE_COUNTRY_MAP.put("AT", "http://www.ebay.at");
@@ -85,20 +94,19 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
 
   }
 
-  public AdobeRedirectStrategy(CookieReader cookie, ContainerRequestContext context) {
-    cookieReader = cookie;
-    requestContext = context;
+  AdobeRedirectStrategy() {
     this.metrics = ESMetrics.getInstance();
   }
 
   @Override
-  public void process(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public URI process(HttpServletRequest request, HttpServletResponse response, CookieReader cookie, ContainerRequestContext context) throws IOException, URISyntaxException {
+
+    MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
 
     // generate Redirect Url
-    String redirectUrl = generateRedirectUrl(request);
-
-    // send Response
-    response.sendRedirect(redirectUrl);
+    Map<String, String> redirectPair = generateRedirectUrl(parameters);
+    String redirectUrl = redirectPair.get(TARGET_URL);
+    String redirectSource = redirectPair.get(REDIRECT_SOURCE);
 
     // Store data to Soj by MCS, generate a click event to call MCS
     Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", MCS_SERVICE_NAME);
@@ -113,11 +121,11 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
     mktEvent.setTargetUrl(targetUrl);
 
     // cookie and userAgent
-    String cguid = cookieReader.getCguid(requestContext);
+    String cguid = cookie.getCguid(context);
     if (!StringUtils.isEmpty(cguid)) {
       cguid = cguid.substring(0, 31);
     }
-    String guid = cookieReader.getGuid(requestContext);
+    String guid = cookie.getGuid(context);
     if (!StringUtils.isEmpty(cguid)) {
       guid = guid.substring(0, 31);
     }
@@ -133,7 +141,7 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
         .header("X-EBAY-C-TRACKING", "guid=" + guid + "," + "cguid=" + cguid)
         .post(Entity.json(mktEvent));
     ress.close();
-
+    return new URIBuilder(redirectUrl).build();
   }
 
   /**
@@ -176,53 +184,62 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
   /**
    * Generate the redirect URL
    *
-   * @param request
+   * @param parameters
    * @return
    */
-  @Override
-  public String generateRedirectUrl(HttpServletRequest request) {
+  public Map<String, String> generateRedirectUrl(MultiValueMap<String, String> parameters) {
+    Map<String, String> result = new HashMap<String, String>();
+    result.put(REDIRECT_SOURCE, "default");
+    result.put(TARGET_URL, DEFAULT_REDIRECT_URL);
     // get loc parameter from request, if loc URL is valid, return it as redirect url
-    MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
     // get loc URL
     String targetLocation = getTargetLocation(parameters);
     // if loc URL is valid, return it as redirect url
     if (isValidRedirectUrl(targetLocation)) {
-      redirectSource = "loc";
-      return targetLocation;
+      result.put(REDIRECT_SOURCE, "loc");
+      result.put(TARGET_URL, targetLocation);
+      return result;
     }
 
     // get response from Adobe Server, if the url in response is valid, return it as redirect url
-    String adobeRedirectUrl = getRedirectUrlByAdobe(request);
+    String adobeRedirectUrl = getRedirectUrlByAdobe(parameters);
     if (isValidRedirectUrl(adobeRedirectUrl)) {
-      redirectSource = "adobe";
-      return adobeRedirectUrl;
+      result.put(REDIRECT_SOURCE, "adobe");
+      result.put(TARGET_URL, targetLocation);
+      return result;
     }
 
     // generate redirect url by country
     if (parameters.containsKey(ADOBE_COUNTRY)) {
       String county = parameters.get(ADOBE_COUNTRY).get(0);
       if (ADOBE_COUNTRY_MAP.containsKey(county)) {
-        redirectSource = "country";
-        return ADOBE_COUNTRY_MAP.get(county);
+        result.put(REDIRECT_SOURCE, "country");
+        result.put(TARGET_URL, targetLocation);
+        return result;
       }
     } else {
       logger.warn("adobe parameter field country is missing: ");
     }
 
-    return DEFAULT_REDIRECT_URL;
+    return result;
   }
 
-  private String getRedirectUrlByAdobe(HttpServletRequest request) {
+  private String getRedirectUrlByAdobe(MultiValueMap<String, String> parameters) {
     // generate Adobe Server URL
     URIBuilder uriBuilder = null;
     String redirectUrl = "";
     // get the adobe service info from application.properties in resources dir
-    Configuration config = ConfigurationBuilder.newConfig("adservice.mktAdobeClient", ADSERVICE_SERVICE_NAME);
+    Configuration config = ConfigurationBuilder.newConfig("adservice.mktAdobeClient");
     Client mktClient = GingerClientBuilder.newClient(config);
+    Map<String, Object> aa = mktClient.getConfiguration().getProperties();
     String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
       try {
-        uriBuilder = generateAdobeUrl(request, endpoint);
-        Response response = mktClient.target(uriBuilder.build()).request().get();
+        uriBuilder = generateAdobeUrl(parameters, endpoint);
+        // Init the webTarget instance and set the property FOLLOW_REDIRECTS
+        // FOLLOW_REDIRECTS = false means get method will not auto connect the redirect URL in 301 response
+        WebTarget webTarget = mktClient.target(uriBuilder.build()).property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
+        Response response = webTarget.request().get();
+
         // Get the redirect URL from reponse
         if (isValidResponse(response, uriBuilder)) {
           redirectUrl = parseRedirectUrl(response);
@@ -240,7 +257,8 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
 
   //TODO
   private String parseRedirectUrl(Response response) {
-    return "http://www.ebay.com";
+
+    return response.getLocation().toString();
   }
 
   /**
@@ -251,16 +269,14 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
    * @return
    */
   private boolean isValidResponse(Response response, URIBuilder uriBuilder) throws URISyntaxException {
-    boolean status = false;
-    switch (response.getStatus()) {
-      case SUCCESS_CODE: {
-        metrics.meter("AdobeServerSuccess");
-        status = true;
-        break;
-      }
+    boolean result = false;
+    int statusHeadCode = response.getStatus() / HUNDRED;
+
+    switch (statusHeadCode) {
       case REDIRECT_CODE: {
         metrics.meter("AdobeServerRedirect");
         logger.error("AdobeServerRedirect req. URI: " + uriBuilder.build());
+        result = true;
         break;
       }
       default: {
@@ -268,7 +284,7 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
         logger.error("AdobeServerFail req. URI: " + uriBuilder.build());
       }
     }
-    return status;
+    return result;
   }
 
   /**
@@ -276,13 +292,12 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
    * the adobe server get from raptorio config
    * the paramter get from request's parameters
    */
-  public URIBuilder generateAdobeUrl(HttpServletRequest request, String endpoint) throws Exception {
+  public URIBuilder generateAdobeUrl(MultiValueMap<String, String> parameters, String endpoint) throws Exception {
     URIBuilder uriBuilder = new URIBuilder(endpoint);
-    MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
     // if the url has no adobeParams, we will construct the url with the possible list of params
     if (!parameters.containsKey(Constants.ADOBE_PARAMS) || parameters.get(Constants.ADOBE_PARAMS).get(0) == null) {
-      logger.warn(Errors.ERROR_NO_ADOBE_PARAMS);
-      metrics.meter(Errors.ERROR_NO_ADOBE_PARAMS);
+      logger.warn(Errors.ERROR_REDIRECT_NO_ADOBE_PARAMS);
+      metrics.meter(Errors.ERROR_REDIRECT_NO_ADOBE_PARAMS);
       // construct the url with the possible list of params,  only "id" in the the params list is Mandatory
       for (String adobeParam : ADOBE_PARAMS_LIST) {
         if (parameters.containsKey(adobeParam)) {
@@ -294,6 +309,7 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
           }
         }
       }
+      return uriBuilder;
     }
     String[] adobeParams = URLDecoder.decode(parameters.get(Constants.ADOBE_PARAMS).get(0), "UTF-8").split(",");
     // check the value of adobeParams, it must be a subset of parameters in request
@@ -334,20 +350,5 @@ public class AdobeRedirectStrategy implements RedirectStrategy {
     return true;
   }
 
-  private void addAdobeSojTags( String redirectUrl, String redirectSource) {
-    try {
-      // Ubi tracking
-      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-      // redirect url
-      requestTracker.addTag(REDIRECT_URL_SOJ_TAG, redirectUrl, String.class);
-
-      // redirect source
-      requestTracker.addTag(REDIRECT_SRC_SOJ_TAG, redirectSource, String.class);
-
-    } catch (Exception e) {
-      logger.warn("Error when tracking ubi for adobe redirect tags", e);
-    }
-
-  }
 }
