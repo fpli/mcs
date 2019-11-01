@@ -50,7 +50,6 @@ public enum LogicalChannelEnum {
    */
   MRKT_EMAIL(ChannelType.MRKT_EMAIL, ChannelActionEnum.CLICK, ChannelActionEnum.EMAIL_OPEN);
 
-
   /**
    * Construct of valid Rover actions for this logical channel
    */
