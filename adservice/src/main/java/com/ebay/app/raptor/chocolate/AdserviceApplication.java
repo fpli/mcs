@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 
 /**
- * Event listener entrance class
+ * Adservice entrance class
  * @author - xiangli4
  */
 @SpringBootApplication
