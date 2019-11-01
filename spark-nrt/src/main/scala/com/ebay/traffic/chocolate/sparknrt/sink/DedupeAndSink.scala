@@ -5,8 +5,6 @@ import java.text.SimpleDateFormat
 import java.util
 import java.util.{Date, Properties}
 
-import com.couchbase.client.java.document.JsonDocument
-import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
 import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import com.ebay.traffic.chocolate.spark.kafka.KafkaRDD
@@ -19,12 +17,10 @@ import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.apache.spark.TaskContext
-import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
 import rx.Observable
 import rx.functions.Func1
 import com.couchbase.client.java.document.JsonDocument
-import rx.functions.Action1
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
