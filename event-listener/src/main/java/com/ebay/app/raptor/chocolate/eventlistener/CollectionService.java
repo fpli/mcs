@@ -475,6 +475,11 @@ public class CollectionService {
     ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
             .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
 
+    // Use the shot snapshot id from requests
+    if (parameters.containsKey(Constants.SSID) && parameters.get(Constants.SSID).get(0) != null) {
+      message.setShortSnapshotId(Long.valueOf(parameters.get(Constants.SSID).get(0)));
+    }
+
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
     if(!m.find()) {
