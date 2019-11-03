@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.adservice.util;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.adservice.constant.BullseyeConstants;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.LBSConstants;
 import com.ebay.app.raptor.chocolate.adservice.constant.StringConstants;
@@ -11,18 +12,15 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
+import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
+import com.ebay.raptor.geo.context.UserPrefsCtx;
+import com.ebay.raptor.kernel.util.RaptorConstants;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.Header;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -43,6 +41,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -53,12 +53,32 @@ import java.util.*;
 public class DAPResponseHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(DAPResponseHandler.class);
 
-  private URIBuilder getDapURIBuilder() {
-    return new URIBuilder()
-            .setScheme(ApplicationOptions.getInstance().getDapClientProperties().getProperty("uri.schema"))
-            .setHost(ApplicationOptions.getInstance().getDapClientProperties().getProperty("uri.host"))
-            .setPath(ApplicationOptions.getInstance().getDapClientProperties().getProperty("uri.path"));
+  private static List<TwoParamsListEntry> mobileUserAgentList = new ArrayList<>();
+
+  private static final String MOBILE_USER_AGENT_CONFIG_FILE = "/config/mobile_user_agent.txt";
+
+  static {
+    List<String> mobileUserAgent = new ArrayList<>();
+    try {
+      mobileUserAgent = Files.readAllLines(Paths.get(RuntimeContext.getConfigRoot().getFile() + MOBILE_USER_AGENT_CONFIG_FILE));
+    } catch (IOException e) {
+      LOGGER.error("read mobile user agent config file failed", e);
+    }
+    for (String userAgent : mobileUserAgent) {
+      String t = userAgent.trim();
+      if (t.isEmpty() || t.startsWith("#")) {
+        continue;
+      }
+      mobileUserAgentList.add(new TwoParamsListEntry(t));
+    }
   }
+
+  private static final List<String> BULLSEYE_MODEL_911_ATTRIBUTES = Arrays.asList(
+          BullseyeConstants.LAST_PRODUCTS_PURCHASED,
+          BullseyeConstants.LAST_PRODUCTS_WATCHED,
+          BullseyeConstants.ZIP_CODE,
+          BullseyeConstants.FEEDBACK_SCORE
+  );
 
   public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, CookieReader cookieReader,
                                      IEndUserContext endUserContext, ContainerRequestContext requestContext)
@@ -69,22 +89,131 @@ public class DAPResponseHandler {
     String accountId = getAccountId(cookieReader, requestContext);
     String deviceId = endUserContext.getDeviceId();
     long dapRvrId = getDAPRvrId();
+    Map<String, String> userAttributes = getUserAttributes(cguid);
     String referrer = request.getHeader(Constants.REFERER);
     Map<String, String> lbsParameters = getLBSParameters(request, endUserContext);
-    URIBuilder dapUriBuilder = getDapURIBuilder();
+    String hLastLoggedInUserId = getHLastLoggedInUserId(accountId);
+    String userAgent = endUserContext.getUserAgent();
+    String uaPrime = getUaPrime(params);
+    boolean isMobile = isMobileUserAgent(userAgent) || isMobileSDK(uaPrime, deviceId);
+    int siteId = getSiteId(requestContext);
 
+    URIBuilder dapUriBuilder = new URIBuilder();
     setCguid(dapUriBuilder, cguid);
     setGuid(dapUriBuilder, guid);
     setRvrId(dapUriBuilder, dapRvrId);
     setRoverUserid(dapUriBuilder, accountId);
+    setSiteId(dapUriBuilder, siteId);
     setRequestParameters(dapUriBuilder, params);
     setReferrer(dapUriBuilder, referrer);
     setGeoInfo(dapUriBuilder, lbsParameters);
     setUdid(dapUriBuilder, deviceId);
+    setIsMobile(dapUriBuilder, isMobile);
+    setHLastLoggedInUserId(dapUriBuilder, hLastLoggedInUserId);
+    setUserAttributes(dapUriBuilder, userAttributes);
 
     callDAPResponse(dapUriBuilder, response);
 
     sendToMCS(request, cookieReader, requestContext, params, dapRvrId);
+  }
+
+  private int getSiteId(ContainerRequestContext requestContext) {
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+    return userPrefsCtx.getGeoContext().getSiteId();
+  }
+
+  private void setSiteId(URIBuilder dapuUriBuilder, int siteId) {
+    dapuUriBuilder.setParameter(Constants.SITE_ID, String.valueOf(siteId));
+  }
+
+  private String getUaPrime(Map<String, String[]> params) {
+    if (!params.containsKey(Constants.UA_PARAM)) {
+      return null;
+    }
+    String[] strings = params.get(Constants.UA_PARAM);
+    if (ArrayUtils.isEmpty(strings)) {
+      return null;
+    }
+    return strings[0];
+  }
+
+  private void setHLastLoggedInUserId(URIBuilder dapUriBuilder, String hLastLoggedInUserId) {
+    if (!StringUtils.isEmpty(hLastLoggedInUserId)) {
+      dapUriBuilder.setParameter(Constants.H_LAST_LOGGED_IN_USER_ID, hLastLoggedInUserId);
+    }
+  }
+
+  private String getHLastLoggedInUserId(String userId) {
+    if (StringUtils.isEmpty(userId)) {
+      return null;
+    }
+    if (!StringUtils.isNumeric(userId)) {
+      return null;
+    }
+
+    Long userIdLong = null;
+    try {
+      userIdLong = Long.valueOf(userId);
+    } catch (Exception e){
+      LOGGER.error(e.getMessage());
+    }
+
+    if (userIdLong == null) {
+      return null;
+    }
+    if (userIdLong <= 0) {
+      return null;
+    }
+    return IdMapUrlBuilder.hashData(userId, IdMapUrlBuilder.HASH_ALGO_SHA_256);
+  }
+
+  private void setIsMobile(URIBuilder dapUriBuilder, boolean isMobile) {
+    if (isMobile) {
+      dapUriBuilder.setParameter(Constants.IS_MOB, Constants.IS_MOB_TRUE);
+    }
+  }
+
+  private String getDecodedUA(String ua, String udid) {
+    if (StringUtils.isEmpty(ua)) {
+      return null;
+    }
+    if (StringUtils.isEmpty(udid)) {
+      return null;
+    }
+    if (udid.length() < Constants.UDID_MIN_LENGTH) {
+      return null;
+    }
+
+    String decodedUA = null;
+    String key = "" + udid.charAt(1) + udid.charAt(4) + udid.charAt(5) + udid.charAt(8);
+    try {
+      decodedUA = TrackingUtil.decrypt(key, ua);
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage());
+    }
+    return decodedUA;
+  }
+
+  private boolean isMobileUserAgent(String userAgent) {
+    if (StringUtils.isEmpty(userAgent)) {
+      return false;
+    }
+
+    for (TwoParamsListEntry entry : mobileUserAgentList) {
+      if (entry.match(userAgent)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private boolean isMobileSDK(String uaPrime, String udid) {
+    String decodedUaPrime = getDecodedUA(uaPrime, udid);
+    if (StringUtils.isEmpty(decodedUaPrime)) {
+      return false;
+    }
+    return decodedUaPrime.contains("sdkN=mSDK");
   }
 
   private String getCguid(CookieReader cookieReader, ContainerRequestContext requestContext) {
@@ -109,20 +238,132 @@ public class DAPResponseHandler {
     return readerGuid.substring(0, Constants.GUID_LENGTH);
   }
 
-  private void setCguid(URIBuilder dapuUriBuilder, String cguid) {
+  private void setCguid(URIBuilder dapUriBuilder, String cguid) {
     if (cguid != null) {
-      dapuUriBuilder.setParameter(Constants.CGUID, cguid);
+      dapUriBuilder.setParameter(Constants.CGUID, cguid);
     }
   }
 
-  private void setGuid(URIBuilder dapuUriBuilder, String guid) {
+  private void setGuid(URIBuilder dapUriBuilder, String guid) {
     if (guid != null) {
-      dapuUriBuilder.setParameter(Constants.GUID, guid);
+      dapUriBuilder.setParameter(Constants.GUID, guid);
     }
   }
 
   private String getAccountId(CookieReader cookieReader, ContainerRequestContext requestContext) {
     return cookieReader.getAccountId(requestContext);
+  }
+
+  private void setUserAttributes(URIBuilder dapUriBuilder, Map<String, String> userAttributes) {
+    userAttributes.forEach(dapUriBuilder::setParameter);
+  }
+
+  /**
+   * Get user attributes from Bullseye Model 910
+   * @param cguid cuid
+   */
+  private Map<String, String> getUserAttributes(String cguid) {
+    if (StringUtils.isEmpty(cguid)) {
+      return new HashMap<>();
+    }
+
+    String msg = getBullseyeUserAttributesResponse(cguid);
+    if (StringUtils.isEmpty(msg)) {
+      return new HashMap<>();
+    }
+
+    Map<String, String> map = new HashMap<>();
+    try {
+      map = parseUserAttributes(msg);
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage());
+    }
+    return map;
+  }
+
+  private String getBullseyeUserAttributesResponse(String cguid) {
+    String msg = null;
+    Configuration config = ConfigurationBuilder.newConfig("beclntsrv.adservice");
+    Client mktClient = GingerClientBuilder.newClient(config);
+    String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
+
+    try (Response response = mktClient.target(endpoint).path("/timeline")
+            .queryParam("modelid","911")
+            .queryParam(Constants.CGUID, cguid)
+            .queryParam("attrs", StringUtils.join(BULLSEYE_MODEL_911_ATTRIBUTES, StringConstants.COMMA))
+            .request()
+            .get()) {
+      if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+        msg = response.readEntity(String.class);
+      }
+    } catch(Exception e) {
+      LOGGER.error(e.getMessage());
+    }
+    return msg;
+  }
+
+  private Map<String, String> parseUserAttributes(String msg) {
+    JSONArray jsonArray = new JSONArray(msg);
+    if (jsonArray.length() == 0) {
+      return new HashMap<>();
+    }
+    JSONObject first = jsonArray.getJSONObject(0);
+    if (first.isNull("results")) {
+      return new HashMap<>();
+    }
+    JSONObject results = first.getJSONObject("results");
+    if (results.isNull("response")) {
+      return new HashMap<>();
+    }
+    JSONObject bullseyeResponse = results.getJSONObject("response");
+    Map<String, String> map = new HashMap<>();
+    for (String key : bullseyeResponse.keySet()) {
+      extract(map, key, bullseyeResponse.get(key));
+    }
+    return map;
+  }
+
+  private void setLastProducts(Map<String, String> map, String key, Object value) {
+    JSONArray jsonArray = (JSONArray) value;
+    List<String> itemList = new ArrayList<>();
+    for (int i = 0; i < jsonArray.length(); i++) {
+      if (i == 5) {
+        break;
+      }
+      List<Object> list = new ArrayList<>();
+      JSONObject object = (JSONObject) jsonArray.get(i);
+      list.add(object.get("timestamp"));
+      list.add(object.get("productid"));
+      list.add(object.get("itemtitle"));
+      itemList.add(StringUtils.join(list, ":"));
+    }
+    map.put(key, StringUtils.join(itemList, StringConstants.COMMA));
+  }
+
+  private void extract(Map<String, String> dapUriBuilder, String key, Object value) {
+    if (StringConstants.EMPTY.equals(value)) {
+      return;
+    }
+    switch (key) {
+      case BullseyeConstants.ZIP_CODE:
+        dapUriBuilder.put(BullseyeConstants.ZIP_CODE, String.valueOf(value));
+        break;
+      case BullseyeConstants.FEEDBACK_SCORE:
+        dapUriBuilder.put(BullseyeConstants.FEEDBACK_SCORE, String.valueOf(value));
+        break;
+      case BullseyeConstants.LAST_PRODUCTS_PURCHASED:
+        setLastProducts(dapUriBuilder, BullseyeConstants.LAST_PRODUCTS_PURCHASED, value);
+        break;
+      case BullseyeConstants.LAST_PRODUCTS_WATCHED:
+        setLastProducts(dapUriBuilder, BullseyeConstants.LAST_PRODUCTS_WATCHED, value);
+        break;
+      case BullseyeConstants.USER_ID:
+        break;
+      case BullseyeConstants.MODEL_ID:
+        break;
+      default:
+        throw new IllegalArgumentException(String.format("Invalid Attribute %s", key));
+    }
   }
 
   private void setUdid(URIBuilder dapuUriBuilder, String deviceId) {
@@ -158,7 +399,7 @@ public class DAPResponseHandler {
   /**
    * Append all request parameters to url
    */
-  private void setRequestParameters(URIBuilder dapuUriBuilder, Map<String, String[]> params) {
+  private void setRequestParameters(URIBuilder dapUriBuilder, Map<String, String[]> params) {
     MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
     params.forEach((key, values) -> Arrays.stream(values).forEach(value -> parameters.add(key, value)));
 
@@ -167,9 +408,9 @@ public class DAPResponseHandler {
 
     parameters.forEach((name, values) -> {
       if (name.toUpperCase().startsWith(Constants.ICEP_PREFIX)) {
-        values.forEach(value -> dapuUriBuilder.setParameter(name.substring(Constants.ICEP_PREFIX.length()), value));
+        values.forEach(value -> dapUriBuilder.setParameter(name.substring(Constants.ICEP_PREFIX.length()), value));
       } else {
-        values.forEach(value -> dapuUriBuilder.setParameter(name, value));
+        values.forEach(value -> dapUriBuilder.setParameter(name, value));
       }
     });
   }
@@ -177,18 +418,29 @@ public class DAPResponseHandler {
   /**
    * Call DAP interface and send response to browser
    */
-  private void callDAPResponse(URIBuilder dapuUriBuilder, HttpServletResponse response) throws URISyntaxException, IOException {
-    HttpContext context = HttpClientContext.create();
-    HttpGet httpget = new HttpGet(dapuUriBuilder.build());
-
-    try (CloseableHttpClient httpclient = HttpClients.createDefault();
-         CloseableHttpResponse dapResponse = httpclient.execute(httpget, context);
+  private void callDAPResponse(URIBuilder dapUriBuilder, HttpServletResponse response) throws URISyntaxException, IOException {
+    Configuration config = ConfigurationBuilder.newConfig("dapio.adservice");
+    Client client = GingerClientBuilder.newClient(config);
+    String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
+    String targetUri = endpoint + dapUriBuilder.build().toString();
+    try (Response dapResponse = client.target(targetUri).request().get();
          OutputStream os = response.getOutputStream()) {
-      for (Header header : dapResponse.getAllHeaders()) {
-        response.setHeader(header.getName(), header.getValue());
+      int status = dapResponse.getStatus();
+      if (status == HttpStatus.SC_OK) {
+        for (Map.Entry<String, List<Object>> entry : dapResponse.getHeaders().entrySet()) {
+          List<Object> list = entry.getValue();
+          if (CollectionUtils.isEmpty(list)) {
+            continue;
+          }
+          response.setHeader(entry.getKey(), String.valueOf(list.get(0)));
+        }
+        byte[] bytes = dapResponse.readEntity(byte[].class);
+        os.write(bytes);
+      } else {
+        LOGGER.error("DAP response status {}", status);
       }
-      byte[] bytes = EntityUtils.toByteArray(dapResponse.getEntity());
-      os.write(bytes);
+    } catch (Exception e) {
+      LOGGER.error("Failed to call DAP", e);
     }
   }
 
@@ -240,16 +492,16 @@ public class DAPResponseHandler {
     }
   }
 
-  private void setReferrer(URIBuilder dapuUriBuilder, String referrer) {
+  private void setReferrer(URIBuilder dapUriBuilder, String referrer) {
     if (referrer == null) {
       return;
     }
-    dapuUriBuilder.setParameter(Constants.REF_URL, referrer);
+    dapUriBuilder.setParameter(Constants.REF_URL, referrer);
     String referrerDomain = getHostFromUrl(referrer);
     if (referrerDomain == null) {
       return;
     }
-    dapuUriBuilder.setParameter(Constants.REF_DOMAIN, referrerDomain);
+    dapUriBuilder.setParameter(Constants.REF_DOMAIN, referrerDomain);
   }
 
   private String getCountryFromBrowserLocale(HttpServletRequest request) {
