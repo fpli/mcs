@@ -12,8 +12,11 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
+import com.ebay.kernel.constants.KernelConstants;
 import com.ebay.kernel.context.RuntimeContext;
+import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
+import com.ebay.raptor.geo.context.GeoCtx;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import org.apache.commons.collections.CollectionUtils;
@@ -26,9 +29,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
@@ -99,18 +99,19 @@ public class DAPResponseHandler {
     int siteId = getSiteId(requestContext);
 
     URIBuilder dapUriBuilder = new URIBuilder();
-    setCguid(dapUriBuilder, cguid);
-    setGuid(dapUriBuilder, guid);
-    setRvrId(dapUriBuilder, dapRvrId);
-    setRoverUserid(dapUriBuilder, accountId);
+
     setSiteId(dapUriBuilder, siteId);
     setRequestParameters(dapUriBuilder, params);
+    setRvrId(dapUriBuilder, dapRvrId);
     setReferrer(dapUriBuilder, referrer);
     setGeoInfo(dapUriBuilder, lbsParameters);
-    setUdid(dapUriBuilder, deviceId);
-    setIsMobile(dapUriBuilder, isMobile);
-    setHLastLoggedInUserId(dapUriBuilder, hLastLoggedInUserId);
     setUserAttributes(dapUriBuilder, userAttributes);
+    setIsMobile(dapUriBuilder, isMobile);
+    setCguid(dapUriBuilder, cguid);
+    setGuid(dapUriBuilder, guid);
+    setRoverUserid(dapUriBuilder, accountId);
+    setHLastLoggedInUserId(dapUriBuilder, hLastLoggedInUserId);
+    setUdid(dapUriBuilder, deviceId);
 
     callDAPResponse(dapUriBuilder, response);
 
@@ -119,11 +120,18 @@ public class DAPResponseHandler {
 
   private int getSiteId(ContainerRequestContext requestContext) {
     UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-    return userPrefsCtx.getGeoContext().getSiteId();
+    if (userPrefsCtx == null) {
+      return 0;
+    }
+    GeoCtx geoContext = userPrefsCtx.getGeoContext();
+    if (geoContext == null) {
+      return 0;
+    }
+    return geoContext.getSiteId();
   }
 
-  private void setSiteId(URIBuilder dapuUriBuilder, int siteId) {
-    dapuUriBuilder.setParameter(Constants.SITE_ID, String.valueOf(siteId));
+  private void setSiteId(URIBuilder dapUriBuilder, int siteId) {
+    addParameter(dapUriBuilder, Constants.SITE_ID, String.valueOf(siteId));
   }
 
   private String getUaPrime(Map<String, String[]> params) {
@@ -138,9 +146,7 @@ public class DAPResponseHandler {
   }
 
   private void setHLastLoggedInUserId(URIBuilder dapUriBuilder, String hLastLoggedInUserId) {
-    if (!StringUtils.isEmpty(hLastLoggedInUserId)) {
-      dapUriBuilder.setParameter(Constants.H_LAST_LOGGED_IN_USER_ID, hLastLoggedInUserId);
-    }
+    addParameter(dapUriBuilder, Constants.H_LAST_LOGGED_IN_USER_ID, hLastLoggedInUserId);
   }
 
   private String getHLastLoggedInUserId(String userId) {
@@ -169,7 +175,7 @@ public class DAPResponseHandler {
 
   private void setIsMobile(URIBuilder dapUriBuilder, boolean isMobile) {
     if (isMobile) {
-      dapUriBuilder.setParameter(Constants.IS_MOB, Constants.IS_MOB_TRUE);
+      addParameter(dapUriBuilder, Constants.IS_MOB, Constants.IS_MOB_TRUE);
     }
   }
 
@@ -239,15 +245,11 @@ public class DAPResponseHandler {
   }
 
   private void setCguid(URIBuilder dapUriBuilder, String cguid) {
-    if (cguid != null) {
-      dapUriBuilder.setParameter(Constants.CGUID, cguid);
-    }
+    addParameter(dapUriBuilder, Constants.CGUID, cguid);
   }
 
   private void setGuid(URIBuilder dapUriBuilder, String guid) {
-    if (guid != null) {
-      dapUriBuilder.setParameter(Constants.GUID, guid);
-    }
+    addParameter(dapUriBuilder, Constants.GUID, guid);
   }
 
   private String getAccountId(CookieReader cookieReader, ContainerRequestContext requestContext) {
@@ -255,7 +257,7 @@ public class DAPResponseHandler {
   }
 
   private void setUserAttributes(URIBuilder dapUriBuilder, Map<String, String> userAttributes) {
-    userAttributes.forEach(dapUriBuilder::setParameter);
+    userAttributes.forEach((key, value) -> addParameter(dapUriBuilder, key, value));
   }
 
   /**
@@ -366,14 +368,22 @@ public class DAPResponseHandler {
     }
   }
 
-  private void setUdid(URIBuilder dapuUriBuilder, String deviceId) {
-    if (deviceId != null) {
-      dapuUriBuilder.setParameter(Constants.UNIQUE_DEVICE_ID, deviceId);
-    }
+  private void setUdid(URIBuilder dapUriBuilder, String deviceId) {
+    addParameter(dapUriBuilder, Constants.UNIQUE_DEVICE_ID, deviceId);
   }
 
-  private void setRvrId(URIBuilder dapuUriBuilder, long dapRvrId) {
-    dapuUriBuilder.setParameter(Constants.RVR_ID, String.valueOf(dapRvrId));
+  private void setRvrId(URIBuilder dapUriBuilder, long dapRvrId) {
+    addParameter(dapUriBuilder, Constants.RVR_ID, String.valueOf(dapRvrId));
+  }
+
+  private void addParameter(URIBuilder dapuUriBuilder, String key, String value) {
+    if (StringUtils.isEmpty(key)) {
+      return;
+    }
+    if (StringUtils.isEmpty(value)) {
+      return;
+    }
+    dapuUriBuilder.addParameter(key, FastURLEncoder.encode(value.trim(), KernelConstants.UTF8_ENCODING));
   }
 
   /**
@@ -382,9 +392,7 @@ public class DAPResponseHandler {
    * @param roverUserid rover_userid
    */
   private void setRoverUserid(URIBuilder dapuUriBuilder, String roverUserid) {
-    if (roverUserid != null) {
-      dapuUriBuilder.setParameter(Constants.ROVER_USERID, roverUserid);
-    }
+    addParameter(dapuUriBuilder, Constants.ROVER_USERID, roverUserid);
   }
 
   /**
@@ -400,17 +408,26 @@ public class DAPResponseHandler {
    * Append all request parameters to url
    */
   private void setRequestParameters(URIBuilder dapUriBuilder, Map<String, String[]> params) {
-    MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-    params.forEach((key, values) -> Arrays.stream(values).forEach(value -> parameters.add(key, value)));
-
-    parameters.remove(Constants.IPN);
-    parameters.remove(Constants.MPT);
-
-    parameters.forEach((name, values) -> {
-      if (name.toUpperCase().startsWith(Constants.ICEP_PREFIX)) {
-        values.forEach(value -> dapUriBuilder.setParameter(name.substring(Constants.ICEP_PREFIX.length()), value));
-      } else {
-        values.forEach(value -> dapUriBuilder.setParameter(name, value));
+    params.forEach((key, values) -> {
+      if (StringUtils.isEmpty(key)) {
+        return;
+      }
+      // skip unused parameters
+      if (key.equals(Constants.IPN) || key.equals(Constants.MPT)) {
+        return;
+      }
+      if (ArrayUtils.isEmpty(values)) {
+        return;
+      }
+      // strip key startswith ICEP_
+      if (key.toUpperCase().startsWith(Constants.ICEP_PREFIX)) {
+        key = key.substring(Constants.ICEP_PREFIX.length());
+      }
+      for (String value : values) {
+        if (StringUtils.isEmpty(value)) {
+          continue;
+        }
+        dapUriBuilder.addParameter(key, FastURLEncoder.encode(value.trim(), KernelConstants.UTF8_ENCODING));
       }
     });
   }
@@ -473,9 +490,9 @@ public class DAPResponseHandler {
             .setHost("www.ebay.com")
             .setPath("/test");
 
-    mcsUriBuilder.setParameter(Constants.MKEVT, String.valueOf(MKEVT.AD_REQUEST.getId()));
-    params.forEach((name, values) -> Arrays.stream(values).forEach(value -> mcsUriBuilder.setParameter(name, value)));
-    mcsUriBuilder.setParameter(Constants.RVRID, String.valueOf(dapRvrId));
+    mcsUriBuilder.addParameter(Constants.MKEVT, String.valueOf(MKEVT.AD_REQUEST.getId()));
+    params.forEach((name, values) -> Arrays.stream(values).forEach(value -> mcsUriBuilder.addParameter(name, value)));
+    mcsUriBuilder.addParameter(Constants.RVRID, String.valueOf(dapRvrId));
 
     mktEvent.setTargetUrl(mcsUriBuilder.build().toString());
     mktEvent.setReferrer(request.getHeader(Constants.REFERER));
@@ -496,12 +513,12 @@ public class DAPResponseHandler {
     if (referrer == null) {
       return;
     }
-    dapUriBuilder.setParameter(Constants.REF_URL, referrer);
+    addParameter(dapUriBuilder, Constants.REF_URL, referrer);
     String referrerDomain = getHostFromUrl(referrer);
     if (referrerDomain == null) {
       return;
     }
-    dapUriBuilder.setParameter(Constants.REF_DOMAIN, referrerDomain);
+    addParameter(dapUriBuilder, Constants.REF_DOMAIN, referrerDomain);
   }
 
   private String getCountryFromBrowserLocale(HttpServletRequest request) {
@@ -568,7 +585,7 @@ public class DAPResponseHandler {
   }
 
   private void setGeoInfo(URIBuilder dapuUriBuilder, Map<String, String> lbsParameters) {
-    lbsParameters.forEach(dapuUriBuilder::setParameter);
+    lbsParameters.forEach((key, value) -> addParameter(dapuUriBuilder, key, value));
   }
 
   /**
