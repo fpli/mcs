@@ -476,8 +476,8 @@ public class CollectionService {
             .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
 
     // Use the shot snapshot id from requests
-    if (parameters.containsKey(Constants.SSID) && parameters.get(Constants.SSID).get(0) != null) {
-      message.setShortSnapshotId(Long.valueOf(parameters.get(Constants.SSID).get(0)));
+    if (parameters.containsKey(Constants.CHOCO_HACK_SSID) && parameters.get(Constants.CHOCO_HACK_SSID).get(0) != null) {
+      message.setShortSnapshotId(Long.valueOf(parameters.get(Constants.CHOCO_HACK_SSID).get(0)));
     }
 
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.

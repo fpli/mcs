@@ -17,7 +17,7 @@ public class Constants {
   public static final String PLATFORM_DESKTOP = "dsktop";
   public static final String PLATFORM_UNKNOWN = "UNKNOWN";
 
-  public static final String SSID = "ssid";
+  public static final String CHOCO_HACK_SSID = "choco_hack_ssid";
 
   // CRM url params
   public static final String SOJ_TAGS = "sojTags";
