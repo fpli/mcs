@@ -119,7 +119,12 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
     String sojTags = request.getParameter(Constants.SOJ_TAGS);
     String redirectUrlParam = REDIRECT_URL_SOJ_TAG + "=" + redirectUrl;
     String redirectSourceParam = REDIRECT_SRC_SOJ_TAG + "=" + redirectSource;
-    String targetUrl = String.format("http://www.ebay.com?mkevt=1&mkcid=8&mkrid=222&%s&%s&%s", sojTags, redirectUrlParam, redirectSourceParam);
+    String targetUrl = null;
+    if (!StringUtils.isEmpty(sojTags)) {
+      targetUrl = String.format("http://www.ebay.com?mkevt=1&mkcid=8&mkrid=222&%s&%s&%s", sojTags, redirectUrlParam, redirectSourceParam);
+    } else {
+      targetUrl = String.format("http://www.ebay.com?mkevt=1&mkcid=8&mkrid=222&%s&%s", redirectUrlParam, redirectSourceParam);
+    }
     mktEvent.setTargetUrl(targetUrl);
 
     // cookie and userAgent
@@ -127,6 +132,12 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
     if (!StringUtils.isEmpty(cguid)) {
       cguid = cguid.substring(0, Constants.CGUID_LENGTH);
     } else {
+      try {
+        cguid = new Guid().nextPaddedGUID();
+      } catch (UnknownHostException e) {
+        logger.warn("Create Cguid failure: ", e);
+        metrics.meter("CreateCGuidFailure", 1, Field.of("Partner", "Adobe"));
+      }
       logger.warn("No cguid");
       metrics.meter("NoCguid", 1, Field.of("Partner", "Adobe"));
     }
@@ -221,7 +232,7 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
     String adobeRedirectUrl = getRedirectUrlByAdobe(parameters);
     if (isValidRedirectUrl(adobeRedirectUrl)) {
       result.put(REDIRECT_SOURCE, "adobe");
-      result.put(TARGET_URL, targetLocation);
+      result.put(TARGET_URL, adobeRedirectUrl);
       return result;
     }
 
@@ -230,7 +241,7 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
       String county = parameters.get(ADOBE_COUNTRY).get(0);
       if (ADOBE_COUNTRY_MAP.containsKey(county)) {
         result.put(REDIRECT_SOURCE, "country");
-        result.put(TARGET_URL, targetLocation);
+        result.put(TARGET_URL, ADOBE_COUNTRY_MAP.get(county));
         return result;
       }
     } else {
