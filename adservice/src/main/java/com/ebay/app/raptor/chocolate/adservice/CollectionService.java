@@ -46,9 +46,9 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public boolean collectAr(HttpServletRequest request, HttpServletResponse response, CookieReader cookieReader, IEndUserContext endUserContext,
+  public boolean collectAr(HttpServletRequest request, HttpServletResponse response, CookieReader cookieReader,
                            ContainerRequestContext requestContext) throws Exception {
-    dapResponseHandler.sendDAPResponse(request, response, cookieReader, endUserContext, requestContext);
+    dapResponseHandler.sendDAPResponse(request, response, cookieReader, requestContext);
     return true;
   }
 

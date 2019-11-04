@@ -22,6 +22,9 @@ public class Constants {
   public static final String H_LAST_LOGGED_IN_USER_ID = "hLastLoggedInUserId";
 
   public static final String UNIQUE_DEVICE_ID = "udid";
+  public static final String USER_AGENT = "User-Agent";
+
+  public static final String MKRVRID = "mkrvrid";
 
   public static final String UA_PARAM = "uaPrime";
 

@@ -5,6 +5,7 @@ import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.util.DomainIpChecker;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
@@ -62,14 +63,15 @@ public class LBSClient {
             .queryParam("ipAddress", ipAddress)
             .request(MediaType.APPLICATION_JSON)
             .get()) {
-      if (lbsResponse.getStatus() == HttpStatus.SC_OK) {
+      int status = lbsResponse.getStatus();
+      if (status == HttpStatus.SC_OK) {
         LBSResults results = lbsResponse.readEntity(LBSResults.class);
         queryResult = getFirstLBSResult(results);
       } else {
         String msg = lbsResponse.readEntity(String.class);
         LOGGER.error("LBS service returns: " + msg);
-        metrics.meter("LBSexception");
       }
+      metrics.meter("LBSStatus", 1, Field.of("status", status));
     } catch (Exception e) {
       LOGGER.error("Failed to call LBS service.", e);
       metrics.meter("LBSexception");
