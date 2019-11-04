@@ -38,14 +38,14 @@ object BullseyeUtils {
     .asString
     .body.parseJson
 
-  def generateToken2: JsValue = try {
+  def generateToken2: String = try {
     Http(properties.getProperty("epnnrt.oauthUrl")).method("GET")
       .param("client_id", properties.getProperty("epnnrt.clientId"))
       .param("client_secret", properties.getProperty("epnnrt.clientsecret"))
       .param("grant_type", "client_credentials")
       .param("scope", "https://api.ebay.com/oauth/scope/@public")
       .asString
-      .body.parseJson
+      .body.parseJson.convertTo[TokenResponse].access_token
   } catch {
     case e: Exception => {
       logger.error("Error when generate Bullseye token from bullseye, get token from HDFS file" + e)
@@ -54,7 +54,7 @@ object BullseyeUtils {
     }
   }
 
-  var token: JsValue = generateToken2
+  var token: String = generateToken2
 
   //may be retry here
   def getData(fs: FileSystem, cguid: String, modelId: String, count: String, bullseyeUrl: String): Option[HttpResponse[String]] = {
@@ -214,5 +214,15 @@ object BullseyeUtils {
       case _: Exception =>
         ("", "")
     }
+  }
+
+  case class TokenResponse(
+                            access_token:String,
+                            token_type:String,
+                            expires_in:Long,
+                            refresh_token:String
+                          )
+  object TokenResponse extends DefaultJsonProtocol {
+    implicit val _format: RootJsonFormat[TokenResponse] = jsonFormat4(apply)
   }
 }
