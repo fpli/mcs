@@ -17,7 +17,7 @@ public class Constants {
   public static final String PLATFORM_DESKTOP = "dsktop";
   public static final String PLATFORM_UNKNOWN = "UNKNOWN";
 
-  public static final String SSID = "ssid";
+  public static final String MKRVRID = "mkrvrid";
 
   // CRM url params
   public static final String SOJ_TAGS = "sojTags";
