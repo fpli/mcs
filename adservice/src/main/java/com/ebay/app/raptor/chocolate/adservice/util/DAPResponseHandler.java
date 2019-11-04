@@ -355,6 +355,7 @@ public class DAPResponseHandler {
     Client mktClient = GingerClientBuilder.newClient(config);
     String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
 
+    long startTime = System.currentTimeMillis();
     try (Response response = mktClient.target(endpoint).path("/timeline")
             .queryParam("modelid","911")
             .queryParam(Constants.CGUID, cguid)
@@ -372,6 +373,7 @@ public class DAPResponseHandler {
       LOGGER.error("Failed to call Bullseye {}", e.getMessage());
       ESMetrics.getInstance().meter("BullseyeException");
     }
+    ESMetrics.getInstance().mean("BullseyeLatency", System.currentTimeMillis() - startTime);
     return msg;
   }
 
