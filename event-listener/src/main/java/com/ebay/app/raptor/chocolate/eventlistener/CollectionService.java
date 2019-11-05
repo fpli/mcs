@@ -475,6 +475,11 @@ public class CollectionService {
     ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
             .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
 
+    // Use the shot snapshot id from requests
+    if (parameters.containsKey(Constants.MKRVRID) && parameters.get(Constants.MKRVRID).get(0) != null) {
+      message.setShortSnapshotId(Long.valueOf(parameters.get(Constants.MKRVRID).get(0)));
+    }
+
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
     if(!m.find()) {
@@ -610,6 +615,12 @@ public class CollectionService {
         // Yesmail mailing instance
         addTagFromUrlQuery(parameters, requestTracker, Constants.YM_INSTC, "yminstc", String.class);
 
+        // Adobe email redirect url
+        addTagFromUrlQuery(parameters, requestTracker, Constants.REDIRECT_URL_SOJ_TAG, "adcamp_landingpage", String.class);
+
+        // Adobe email redirect source
+        addTagFromUrlQuery(parameters, requestTracker, Constants.REDIRECT_SRC_SOJ_SOURCE, "adcamp_locationsrc", String.class);
+
       } catch (Exception e) {
         logger.warn("Error when tracking ubi for marketing email click tags", e);
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
@@ -636,7 +647,7 @@ public class CollectionService {
         // page id
         requestTracker.addTag(TrackerTagValueUtil.PageIdTag, pageId, Integer.class);
 
-        // event action - click
+        // event action
         requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
 
         // target url

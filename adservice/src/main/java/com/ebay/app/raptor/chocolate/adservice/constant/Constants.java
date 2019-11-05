@@ -13,8 +13,20 @@ public class Constants {
   public static final String CGUID = "cguid";
   public static final String GUID = "guid";
   public static final String RVR_ID = "rvr_id";
+  public static final String MKEVT = "mkevt";
+  public static final String RVRID = "rvrid";
+  public static final String SITE_ID = "siteId";
+  public static final String IS_MOB_TRUE = "Y";
+  public static final int UDID_MIN_LENGTH = 32;
+  public static final String IS_MOB = "ismob";
+  public static final String H_LAST_LOGGED_IN_USER_ID = "hLastLoggedInUserId";
 
   public static final String UNIQUE_DEVICE_ID = "udid";
+  public static final String USER_AGENT = "User-Agent";
+
+  public static final String MKRVRID = "mkrvrid";
+
+  public static final String UA_PARAM = "uaPrime";
 
   public static final String REF_DOMAIN = "refDomain";
   public static final String IPN = "ipn";
@@ -30,6 +42,8 @@ public class Constants {
 
   // metrics field
   public static final String CHANNEL_TYPE = "channelType";
+
+  public static final String ROVER_USERID = "rover_userid";
 
 }
 

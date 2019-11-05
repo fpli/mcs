@@ -16,6 +16,9 @@ public class Constants {
   public static final String PLATFORM_MOBILE = "mobile";
   public static final String PLATFORM_DESKTOP = "dsktop";
   public static final String PLATFORM_UNKNOWN = "UNKNOWN";
+  public static final String RVRID = "rvrid";
+
+  public static final String MKRVRID = "mkrvrid";
 
   // CRM url params
   public static final String SOJ_TAGS = "sojTags";
@@ -28,5 +31,9 @@ public class Constants {
   public static final String YM_MSSG_MSTR_ID = "ymmmid";
   public static final String YM_MSSG_ID = "ymsid";
   public static final String YM_INSTC = "yminstc";
+
+  // Adobe url params
+  public static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
+  public static final String REDIRECT_SRC_SOJ_SOURCE = "adcamp_locationsrc";
 
 }

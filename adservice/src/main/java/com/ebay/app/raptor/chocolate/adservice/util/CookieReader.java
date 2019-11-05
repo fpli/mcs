@@ -36,4 +36,9 @@ public class CookieReader {
 
   }
 
+  //ACCOUNT_ID cookielet id = 12
+  public String getAccountId(ContainerRequestContext requestContext) {
+    return getCookieletValue(requestContext, 12);
+  }
+
 }
