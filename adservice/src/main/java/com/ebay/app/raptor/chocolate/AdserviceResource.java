@@ -132,7 +132,7 @@ public class AdserviceResource implements EventsApi {
   public Response ar() {
     Response res = null;
     try {
-      collectionService.collectAr(request, response, cookieReader, userCtxProvider.get(), requestContext);
+      collectionService.collectAr(request, response, cookieReader, requestContext);
       res = Response.status(Response.Status.OK).build();
     } catch (Exception e) {
       try {

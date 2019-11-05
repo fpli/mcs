@@ -38,7 +38,11 @@ class TestEpnNrtJob extends BaseFunSuite{
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
     properties.setProperty("epnnrt.outputdir", outputDir)
-    properties.setProperty("epnnrt.result.meta.click.outputdir", outputDir + "/meta/EPN/output/epnnrt/")
+    properties.setProperty("epnnrt.result.meta.click.outputdir", outputDir + "/meta/EPN/output/epnnrt/click/")
+    properties.setProperty("epnnrt.result.meta.imp.outputdir", outputDir + "/meta/EPN/output/epnnrt/imp/")
+    properties.getProperty("epnnrt.scp.meta.click.outputdir", outputDir + "/meta/EPN/output/epnnrt_scp_click/")
+    properties.getProperty("epnnrt.scp.meta.imp.outputdir", outputDir + "/meta/EPN/output/epnnrt_scp_imp/")
+    properties.setProperty("epnnrt.archiveDir", outputDir + "/meta/EPN/output/archive/")
     properties
   }
 
@@ -64,6 +68,7 @@ class TestEpnNrtJob extends BaseFunSuite{
 
     assert (fs.exists(dedupeMetaPath))
 
+    job.properties = properties
     job.run()
     job.stop()
   }
