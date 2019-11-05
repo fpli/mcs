@@ -319,47 +319,51 @@ public class RoverRheosTopicFilterTask extends Thread {
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
       }
         else if(pageId == 3085) {
+        // Page 3085 have events including channel 3 (natural search) and channel 16 (social media)
+        // Now we only send natural search events
         ESMetrics.getInstance().meter(INCOMING_PAGE_ROVERNS);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
 
-        // Page 3085 have events including channel 3 (natural search) and channel 16 (social media)
-        // Now we only send natural search events
-        try{
-          if (applicationPayload.get(new Utf8("chnl")).toString().equals("3")) {
-            ESMetrics.getInstance().meter(INCOMING_PAGE_NATURAL_SEARCH);
+        String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.NATURAL_SEARCH);
 
-            String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.NATURAL_SEARCH);
-            String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
+        String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
 
-            ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
-                    0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.NATURAL_SEARCH, HttpMethod.GET, "", false);
+        ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
+                0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.NATURAL_SEARCH, HttpMethod.GET, "", false);
 
-            setCommonFields(record, applicationPayload, genericRecord);
+        setCommonFields(record, applicationPayload, genericRecord);
 
-            // TODO: Remove this logic after release and everything stable
-            // set short snapshot id to be from Rheos event so that when inserting into TD, it can be deduped by primary index
-            String rvrIdStr = coalesce(applicationPayload.get(new Utf8("rvrid")), empty).toString();
-            if (StringUtils.isNumeric(rvrIdStr)) {
-              record.setShortSnapshotId(Long.valueOf(rvrIdStr));
-            }
+        String uri = "https://rover.ebay.com" + urlQueryString;
+        record.setUri(uri);
 
-            String uri = "https://rover.ebay.com" + urlQueryString;
-            record.setUri(uri);
+        record.setHttpMethod(HttpMethod.GET);
 
-            record.setHttpMethod(HttpMethod.GET);
+        // source and destination rotation id parse for natural search
+        Long rotationId = urlQueryString.split("/").length > 3 ? Long.valueOf(urlQueryString.split("/")[3].split("\\?")[0].replace("-", "")) : 0l;
+        record.setSrcRotationId(rotationId);
+        record.setDstRotationId(rotationId);
 
-            // source and destination rotation id parse for natural search
-            Long rotationId = urlQueryString.split("/").length > 3 ? Long.valueOf(urlQueryString.split("/")[3].split("\\?")[0].replace("-", "")) : 0l;
-            record.setSrcRotationId(rotationId);
-            record.setDstRotationId(rotationId);
+        record.setCampaignId(-1L);
+        record.setPublisherId(-1L);
 
-            record.setCampaignId(-1L);
-            record.setPublisherId(-1L);
-            producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
+        // if applicationPayload.chnl doesn't exist, then use original shortSnapshotId to distinguish from normal natural_search click events
+        if (null == applicationPayload.get(new Utf8("chnl"))
+                || applicationPayload.get(new Utf8("chnl")).length() == 0) {
+
+          ESMetrics.getInstance().meter("GetNullRoverNSChannelId");
+          producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
+
+        }
+        else if (applicationPayload.get(new Utf8("chnl")).toString().equals("3")){
+          ESMetrics.getInstance().meter(INCOMING_PAGE_NATURAL_SEARCH);
+
+          // TODO: Remove this logic after release and everything stable
+          // set short snapshot id to be from Rheos event so that when inserting into TD, it can be deduped by primary index
+          String rvrIdStr = coalesce(applicationPayload.get(new Utf8("rvrid")), empty).toString();
+          if (StringUtils.isNumeric(rvrIdStr)) {
+            record.setShortSnapshotId(Long.valueOf(rvrIdStr));
           }
-        } catch(NullPointerException ex) {
-          ESMetrics.getInstance().meter("GetRoverNSChannelIdError");
-          logger.warn("Get RoverNS channel id error");
+          producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
       }
     }
