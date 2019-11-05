@@ -173,7 +173,7 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
     Enumeration<String> headers = request.getHeaderNames();
     while (headers.hasMoreElements()) {
       String header = headers.nextElement();
-      if ("Cookie".equalsIgnoreCase(header)) {
+      if ("Cookie".equalsIgnoreCase(header) || "authorization".equalsIgnoreCase(header)) {
         continue;
       }
       String values = request.getHeader(header);
