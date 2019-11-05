@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
@@ -32,10 +33,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.*;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.ebay.app.raptor.chocolate.adservice.constant.Constants.MKCID;
+import static com.ebay.app.raptor.chocolate.adservice.constant.Constants.MKEVT;
+import static com.ebay.app.raptor.chocolate.adservice.util.MKEVT.MARKETING_EVENT;
+
 
 // Singleton pattern
 public enum AdobeRedirectStrategy implements RedirectStrategy {
@@ -59,6 +66,7 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
   private static final String MCS_SERVICE_NAME = "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46";
   private static final String ADSERVICE_SERVICE_NAME = "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46";
   private static final int HUNDRED = 100;
+  private static final String MRKT_EMAIL = "8";
 
 
   // TODO: REDIRECT_SERVER_DOMAIN need to be defined
@@ -113,19 +121,18 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
     // Store data to Soj by MCS, generate a click event to call MCS
     Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", MCS_SERVICE_NAME);
     Client mktClient = GingerClientBuilder.newClient(config);
-    String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
+    String mcsEndpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
     // Generate marketing event
     MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
-    String sojTags = request.getParameter(Constants.SOJ_TAGS);
-    String redirectUrlParam = REDIRECT_URL_SOJ_TAG + "=" + redirectUrl;
-    String redirectSourceParam = REDIRECT_SRC_SOJ_TAG + "=" + redirectSource;
-    String targetUrl = null;
-    if (!StringUtils.isEmpty(sojTags)) {
-      targetUrl = String.format("http://www.ebay.com?mkevt=1&mkcid=8&mkrid=222&%s&%s&%s", sojTags, redirectUrlParam, redirectSourceParam);
-    } else {
-      targetUrl = String.format("http://www.ebay.com?mkevt=1&mkcid=8&mkrid=222&%s&%s", redirectUrlParam, redirectSourceParam);
+    URIBuilder uriBuilder = new URIBuilder(DEFAULT_REDIRECT_URL)
+        .addParameter(MKEVT, String.valueOf(MARKETING_EVENT.getId()))
+        .addParameter(MKCID, MRKT_EMAIL)
+        .addParameter(REDIRECT_URL_SOJ_TAG, redirectUrl)
+        .addParameter(REDIRECT_SRC_SOJ_TAG, redirectSource);
+    for (String paramterName : parameters.keySet()) {
+      uriBuilder.addParameter(paramterName, parameters.get(paramterName).get(0));
     }
-    mktEvent.setTargetUrl(targetUrl);
+    mktEvent.setTargetUrl(uriBuilder.toString());
 
     // cookie and userAgent
     String cguid = cookie.getCguid(context);
@@ -157,12 +164,24 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
     }
 
     String userAgent = request.getHeader("User-Agent");
-    if(StringUtils.isEmpty(userAgent)) {
+    if (StringUtils.isEmpty(userAgent)) {
       userAgent = "userAgent=ebayUserAgent/eBayIOS;5.28.0;iOS;12.1.2;Apple;iPhone11_2;AT&T;375x812;3.0";
     }
 
+    // add all headers except Cookie
+    Invocation.Builder builder = mktClient.target(mcsEndpoint).path("/events").request();
+    Enumeration<String> headers = request.getHeaderNames();
+    while (headers.hasMoreElements()) {
+      String header = headers.nextElement();
+      if ("Cookie".equalsIgnoreCase(header)) {
+        continue;
+      }
+      String values = request.getHeader(header);
+      builder = builder.header(header, values);
+    }
+
     // call MCS
-    Response ress = mktClient.target(endpoint).path("/events").request()
+    Response ress = builder
         .header("Content-Type", "application/json")
         .header("X-EBAY-C-ENDUSERCTX", userAgent)
         .header("X-EBAY-C-TRACKING", "guid=" + guid + "," + "cguid=" + cguid)
@@ -200,7 +219,7 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
 
     // judge whether the url contain ebay domain
     Matcher m = ebaysites.matcher(redirectUrl.toLowerCase());
-    if(m.find()) {
+    if (m.find()) {
       return true;
     }
 
@@ -258,20 +277,19 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
     // get the adobe service info from application.properties in resources dir
     Configuration config = ConfigurationBuilder.newConfig("adservice.mktAdobeClient");
     Client mktClient = GingerClientBuilder.newClient(config);
-    Map<String, Object> aa = mktClient.getConfiguration().getProperties();
     String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
-      try {
-        uriBuilder = generateAdobeUrl(parameters, endpoint);
-        // Init the webTarget instance and set the property FOLLOW_REDIRECTS
-        // FOLLOW_REDIRECTS = false means get method will not auto connect the redirect URL in 301 response
-        WebTarget webTarget = mktClient.target(uriBuilder.build()).property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
-        Response response = webTarget.request().get();
+    try {
+      uriBuilder = generateAdobeUrl(parameters, endpoint);
+      // Init the webTarget instance and set the property FOLLOW_REDIRECTS
+      // FOLLOW_REDIRECTS = false means get method will not auto connect the redirect URL in 301 response
+      WebTarget webTarget = mktClient.target(uriBuilder.build()).property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
+      Response response = webTarget.request().get();
 
-        // Get the redirect URL from reponse
-        if (isValidResponse(response, uriBuilder)) {
-          redirectUrl = parseRedirectUrl(response);
-        }
-        response.close();
+      // Get the redirect URL from reponse
+      if (isValidResponse(response, uriBuilder)) {
+        redirectUrl = parseRedirectUrl(response);
+      }
+      response.close();
     } catch (Exception ex) {
       logger.error("Generate Redirect URL from Adobe exception", ex);
       metrics.meter("AdobeServerException");
