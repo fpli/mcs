@@ -295,6 +295,13 @@ public class RoverRheosTopicFilterTask extends Thread {
 
         setCommonFields(record, applicationPayload, genericRecord);
 
+        // TODO: Remove this logic after release and everything stable
+        // set short snapshot id to be from Rheos event so that when inserting into TD, it can be deduped by primary index
+        String rvrIdStr = coalesce(applicationPayload.get(new Utf8("rvrid")), empty).toString();
+        if (StringUtils.isNumeric(rvrIdStr)) {
+          record.setShortSnapshotId(Long.valueOf(rvrIdStr));
+        }
+
         String uri = "https://rover.ebay.com" + urlQueryString;
         record.setUri(uri);
 

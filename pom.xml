@@ -32,9 +32,9 @@
     <dukes.version>1.5.1.raptorio</dukes.version>
     <rheos.version>2.0.5-SNAPSHOT</rheos.version>
     <kafka.version>2.0.1</kafka.version>
-    <metrics.version>1.2.4-RELEASE</metrics.version>
+    <metrics.version>1.2.5-RELEASE</metrics.version>
     <jackson.version>2.9.7</jackson.version>
-    <jacoco.dump.skip>true</jacoco.dump.skip>
+    <powermock.version>1.6.6</powermock.version>
     <scoverage.plugin.version>1.3.0</scoverage.plugin.version>
     <logback.kafkaAppender.version>0.1.0</logback.kafkaAppender.version>
     <logback.encoder.version>4.11</logback.encoder.version>
@@ -244,14 +244,14 @@
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
-        <version>1.6.3</version>
+        <version>${powermock.version}</version>
         <scope>test</scope>
       </dependency>
 
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-api-mockito</artifactId>
-        <version>1.6.3</version>
+        <version>${powermock.version}</version>
         <scope>test</scope>
       </dependency>
 
@@ -422,122 +422,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.7.9</version>
-        <executions>
-
-          <!-- Configure Jacoco for unit tests. -->
-          <execution>
-            <id>pre-unit-test</id>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-            <configuration>
-              <append>true</append>
-              <destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
-              <propertyName>surefireArgLine</propertyName>
-            </configuration>
-          </execution>
-
-          <!-- Set reporting for Jacoco unit tests. -->
-          <execution>
-            <id>post-unit-test</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-            <configuration>
-              <append>true</append>
-              <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
-              <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
-            </configuration>
-          </execution>
-
-          <!-- Configure Jacoco for integrity tests. -->
-          <execution>
-            <id>pre-integration-test</id>
-            <goals>
-              <goal>prepare-agent-integration</goal>
-            </goals>
-            <configuration>
-              <append>true</append>
-              <destFile>${project.build.directory}/coverage-reports/jacoco-it.exec</destFile>
-              <propertyName>failsafeArgLine</propertyName>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>dump</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>dump</goal>
-            </goals>
-            <configuration>
-              <append>true</append>
-              <destFile>${project.build.directory}/coverage-reports/jacoco-it.exec</destFile>
-              <skip>${jacoco.dump.skip}</skip>
-            </configuration>
-          </execution>
-
-          <!-- Set reporting for Jacoco integrity tests. -->
-          <execution>
-            <id>it-report</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-            <configuration>
-              <append>true</append>
-              <dataFile>${project.build.directory}/coverage-reports/jacoco-it.exec</dataFile>
-              <outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
-            </configuration>
-          </execution>
-
-          <!-- Merge the data file of Jacoco integrity + unit tests. -->
-          <execution>
-            <id>merge-results</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>merge</goal>
-            </goals>
-            <configuration>
-              <fileSets>
-                <fileSet>
-                  <directory>${project.build.directory}/coverage-reports</directory>
-                  <includes>
-                    <include>*.exec</include>
-                  </includes>
-                </fileSet>
-              </fileSets>
-              <destFile>${project.build.directory}/coverage-reports/aggregate.exec</destFile>
-            </configuration>
-          </execution>
-
-          <!-- Set reporting for Jacoco merged data. -->
-          <execution>
-            <id>post-merge-report</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-            <configuration>
-              <dataFile>${project.build.directory}/coverage-reports/aggregate.exec</dataFile>
-              <outputDirectory>${project.reporting.outputDirectory}/jacoco-aggregate</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-        <configuration>
-          <!-- Sets the path to the file which contains the execution data. -->
-          <append>true</append>
-          <dataFile>${basedir}/target/jacoco-unit.exe</dataFile>
-          <destFile>${basedir}/target/jacoco-unit.exe</destFile>
-          <propertyName>surefireArgLine</propertyName>
-          <excludes>
-          </excludes>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
