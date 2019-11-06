@@ -25,11 +25,11 @@ public class Table {
 
   private static String getBodyLine(MetricCount metricCount) {
     String bodyLine = "<tr><td>" + metricCount.getName()
-            + "</td><td>" + metricCount.getDate() + "</td><td>"
-            + metricCount.getValue() + "</td><td>"
-            + metricCount.getThreshold() + "</td><td>"
-            + metricCount.getThresholdFactor() + "</td>"
-            + renderFlag(metricCount.getFlag(), metricCount.getAlert()) + "</tr>";
+      + "</td><td>" + metricCount.getDate() + "</td><td>"
+      + metricCount.getValue() + "</td><td>"
+      + metricCount.getThreshold() + "</td><td>"
+      + metricCount.getThresholdFactor() + "</td>"
+      + renderFlag(metricCount.getFlag(), metricCount.getAlert()) + "</tr>";
     return bodyLine;
   }
 
