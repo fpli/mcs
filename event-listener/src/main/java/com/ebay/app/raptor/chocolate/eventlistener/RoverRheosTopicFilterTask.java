@@ -45,6 +45,7 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static final String INCOMING_PAGE_ROVER = "IncomingPageRover";
   private static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
   private static final String INCOMING_PAGE_ROI = "IncomingPageRoi";
+  private static final String INCOMING_PAGE_ROVERNS = "IncomingPageRoverNS";
   private static final String INCOMING_PAGE_NATURAL_SEARCH = "IncomingPageNaturalSearch";
 
 
@@ -318,12 +319,20 @@ public class RoverRheosTopicFilterTask extends Thread {
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
       }
         else if(pageId == 3085) {
-        ESMetrics.getInstance().meter(INCOMING_PAGE_NATURAL_SEARCH);
+        ESMetrics.getInstance().meter(INCOMING_PAGE_ROVERNS);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
 
         // Page 3085 have events including channel 3 (natural search) and channel 16 (social media)
         // Now we only send natural search events
-        if (applicationPayload.get(new Utf8("chnl")).toString().equals("3")) {
+        if (null == applicationPayload.get(new Utf8("chnl"))
+                || applicationPayload.get(new Utf8("chnl")).length() == 0) {
+
+          //click events are not be sent when applicationPayload.chnl is null
+          ESMetrics.getInstance().meter("GetNullRoverNSChannelId");
+          logger.warn("Get null RoverNS channel id");
+
+        } else if (applicationPayload.get(new Utf8("chnl")).toString().equals("3")) {
+          ESMetrics.getInstance().meter(INCOMING_PAGE_NATURAL_SEARCH);
 
           String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.NATURAL_SEARCH);
           String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();

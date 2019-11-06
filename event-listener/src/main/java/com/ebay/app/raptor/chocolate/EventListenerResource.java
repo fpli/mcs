@@ -95,17 +95,17 @@ public class EventListenerResource implements EventsApi {
   }
 
   /**
-   * Get method to collect impression, viewimp, email open
+   * Get method to collect impression, viewimp, email open, ad request
    * @return response
    */
   @Override
-  public Response impression() {
+  public Response impression(Event body) {
     Tracer tracer = GlobalTracer.get();
     try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "impression").startActive(true)) {
       Span span = scope.span();
       Response res = null;
       try {
-        collectionService.collectImpression(request, response, requestContext);
+        collectionService.collectImpression(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
         res = Response.status(Response.Status.OK).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {

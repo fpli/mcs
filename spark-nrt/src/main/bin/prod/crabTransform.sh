@@ -24,11 +24,18 @@ WORK_DIR=$1
 OUTPUT_DIR=$2
 ES_URL=http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
 
-KW_LK_FOLDER=hdfs://slickha/apps/kw_lkp/2019-04-14/
+KW_LKP_LATEST_PATH=hdfs://slickha/apps/kw_lkp/latest_path
 
-DRIVER_MEMORY=8g
-EXECUTOR_NUMBER=60
-EXECUTOR_MEMORY=4g
+KW_LKP_FOLDER=$(hdfs dfs -text ${KW_LKP_LATEST_PATH})
+
+if [[ $? -ne 0 ]]; then
+   echo "get latest path failed"
+   exit 1
+fi
+
+DRIVER_MEMORY=16g
+EXECUTOR_NUMBER=50
+EXECUTOR_MEMORY=8g
 EXECUTOR_CORES=4
 
 JOB_NAME="crabTransform"
@@ -61,11 +68,11 @@ ${SPARK_HOME}/bin/spark-submit \
       --mode yarn \
       --channel crabDedupe \
       --transformedPrefix chocolate_ \
-      --kwDataDir "${KW_LK_FOLDER}" \
+      --kwDataDir "${KW_LKP_FOLDER}" \
       --workDir "${WORK_DIR}" \
       --outputDir "${OUTPUT_DIR}" \
       --compressOutPut true \
-      --maxMetaFiles 20 \
+      --maxMetaFiles 12 \
       --elasticsearchUrl ${ES_URL} \
       --metaFile dedupe \
       --hdfsUri hdfs://slickha \

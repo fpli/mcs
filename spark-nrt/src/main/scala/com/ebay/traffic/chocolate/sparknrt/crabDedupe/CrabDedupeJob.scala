@@ -36,7 +36,7 @@ class CrabDedupeJob(params: Parameter)
   lazy val DEDUPE_KEY_PREFIX: String = params.appName + "_"
   lazy val couchbaseTTL: Int = params.couchbaseTTL
   lazy val METRICS_INDEX_PREFIX: String = "crab-metrics-"
-  lazy val LAG_FILE: String = "hdfs://elvisha/apps/tracking-events-workdir/last_ts/PAID_SEARCH/crab_min_ts"
+  var LAG_FILE: String = "hdfs://elvisha/apps/tracking-events-workdir/last_ts/PAID_SEARCH/crab_min_ts"
   lazy val compression: String = {
     if(params.snappyCompression) {
       "snappy"

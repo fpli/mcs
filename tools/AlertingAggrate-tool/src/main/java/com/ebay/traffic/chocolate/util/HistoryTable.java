@@ -22,7 +22,7 @@ public class HistoryTable {
     String bodyLine = "";
 
     int min = Math.min(10, getMinSize(list));
-    for (int i = 0; i < min; i++){
+    for (int i = 0; i < min; i++) {
       bodyLine = bodyLine + "<tr>" + "<td>" + list.get(0).get(i).getDate() + "</td>";
       for (int j = 0; j < list.size(); j++) {
         bodyLine = bodyLine + "<td>" + list.get(j).get(i).getValue() + "</td>";
@@ -35,17 +35,17 @@ public class HistoryTable {
 
   private static int getMinSize(ArrayList<ArrayList<MetricCount>> list) {
     List<Integer> list1 = new ArrayList<Integer>();
-    for (int i = 0; i < list.size(); i++){
+    for (int i = 0; i < list.size(); i++) {
       list1.add(list.get(i).size());
     }
 
     return Collections.min(list1);
-    }
+  }
 
   private static String getHeader(ArrayList<ArrayList<MetricCount>> list) {
     String header = "<table border='1'><tr width=\"350\" bgcolor=\"#8A8A8A\">";
     header = header + "<th width=\"300\">time</th>";
-    for (ArrayList<MetricCount> metricCountList: list){
+    for (ArrayList<MetricCount> metricCountList : list) {
       header = header + "<th width=\"300\">" + metricCountList.get(0).getName() + "</th>";
     }
 
