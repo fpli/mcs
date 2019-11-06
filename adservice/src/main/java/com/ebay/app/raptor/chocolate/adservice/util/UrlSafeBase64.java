@@ -12,7 +12,7 @@ public class UrlSafeBase64 {
    * returns a String of base64-encoded characters to represent the passed
    * data array.
    * 
-   * @param byte[] data - the array of bytes to encode
+   * @param data - the array of bytes to encode
    * @return base64-coded String.
    */
   static public String encode(byte[] data) {
@@ -63,13 +63,11 @@ public class UrlSafeBase64 {
   /**
    * return decoded array of bytes
    * 
-   * @param String
+   * @param strData
    *            strData a base64-encoded string
-   * @param boolean
-   *            isStandard - indicating whether the string was encoded with
-   *            standard ending character("=").
    * @return decoded byte array
    */
+
   static public byte[] decode(String strData) {
     char[] data = strData.toCharArray();
 
