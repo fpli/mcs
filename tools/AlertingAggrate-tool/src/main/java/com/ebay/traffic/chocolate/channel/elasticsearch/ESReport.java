@@ -228,7 +228,7 @@ public class ESReport {
   }
 
   private String getESDataByHourly(Metric metric, String source) {
-    String data = "{\"query\": {\"bool\": {\"must\": [{\"match\": {\"key\": \"" + metric.getValue() + "\"}}]}},\"aggs\" : {\"hourly\": {\"date_histogram\": {\"field\": \"date\",\"interval\": \"1h\"},\"aggs\": {\"sum_value\": {\"" + metric.getComputeType() + "\": {\"field\": \"value\"}}}}},\"size\": 0}";
+    String data = "{\"query\": {\"bool\": {\"must\": [{\"match\": {\"key\": \"" + metric.getValue() + "\"}}" + getCondition(metric) + "]}},\"aggs\" : {\"hourly\": {\"date_histogram\": {\"field\": \"date\",\"interval\": \"1h\"},\"aggs\": {\"sum_value\": {\"" + metric.getComputeType() + "\": {\"field\": \"value\"}}}}},\"size\": 0}";
     String url = "http://" + hostName + ":9200/" + getIndexForHourly(source) + "/_search?pretty";
     logger.info("ES url: " + url);
     String res = RestHelper.post(url, data);
