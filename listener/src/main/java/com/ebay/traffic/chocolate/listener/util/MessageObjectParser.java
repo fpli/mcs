@@ -214,9 +214,11 @@ public class MessageObjectParser {
         try {
             url = new URL(urlStr);
         } catch (MalformedURLException e) {
-            return "";
         }
-        String query = url.getQuery();
+        String query = "";
+        if (url != null) {
+            query = url.getQuery();
+        }
         // append snapshotId into URL
         if(!urlStr.contains(CHOCO_TAG)){
             if(query != null && ! query.isEmpty()) {
