@@ -214,6 +214,7 @@ public class MessageObjectParser {
         try {
             url = new URL(urlStr);
         } catch (MalformedURLException e) {
+            return "";
         }
         String query = url.getQuery();
         // append snapshotId into URL
