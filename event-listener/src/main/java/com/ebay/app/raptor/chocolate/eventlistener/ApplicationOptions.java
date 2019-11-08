@@ -86,7 +86,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    *
    * @throws IOException if properties could not be loaded
    */
-  public static void init() throws IOException {
+  public static synchronized void init() throws IOException {
     instance.initInstance(loadProperties(EVENT_LISTENER_PROPERTIES_FILE));
     consumeRheosKafkaProperties = loadProperties(CONSUME_RHEOS_KAFKA_PROPERTIES_FILE);
     if (sinkKafkaProperties == null) {
@@ -137,7 +137,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   /**
    * Only for test
    */
-  public void setSinkKafkaProperties(Properties properties) {
+  public static synchronized void setSinkKafkaProperties(Properties properties) {
     sinkKafkaProperties = properties;
   }
 
