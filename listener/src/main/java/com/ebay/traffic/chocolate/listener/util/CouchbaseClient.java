@@ -127,8 +127,8 @@ public class CouchbaseClient {
       logger.warn("Couchbase get operation exception", e);
     } finally {
       factory.returnClient(cacheClient);
-      return cguid;
     }
+    return cguid;
   }
 
   /**
@@ -147,8 +147,8 @@ public class CouchbaseClient {
       logger.warn("Couchbase get operation exception", e);
     } finally {
       factory.returnClient(cacheClient);
-      return globalConfig;
     }
+    return globalConfig;
   }
 
   /**
