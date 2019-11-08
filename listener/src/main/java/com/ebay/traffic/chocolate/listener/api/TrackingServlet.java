@@ -23,7 +23,7 @@ public class TrackingServlet extends HttpServlet {
 
   private static final String SNID_PATTERN = "snid";
 
-  private Producer<Long, ListenerMessage> producer;
+  private static Producer<Long, ListenerMessage> producer = KafkaSink.get();
 
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
@@ -31,7 +31,7 @@ public class TrackingServlet extends HttpServlet {
   /**
    * Metrics client instance
    */
-  private Metrics metrics;
+  private static Metrics metrics = ESMetrics.getInstance();
 
   /**
    * Message object parser instance
@@ -44,7 +44,7 @@ public class TrackingServlet extends HttpServlet {
   }
 
   @Override
-  public void init() {
+  public synchronized void init() {
     producer = KafkaSink.get();
 
     if (parser == null)
