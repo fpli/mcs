@@ -45,6 +45,8 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static final String INCOMING_PAGE_ROVER = "IncomingPageRover";
   private static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
   private static final String INCOMING_PAGE_ROI = "IncomingPageRoi";
+  private static final String INCOMING_PAGE_ROVERNS = "IncomingPageRoverNS";
+  private static final String INCOMING_PAGE_NATURAL_SEARCH = "IncomingPageNaturalSearch";
 
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
@@ -315,6 +317,52 @@ public class RoverRheosTopicFilterTask extends Thread {
         record.setCampaignId(-1L);
         record.setPublisherId(-1L);
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
+      }
+        else if(pageId == 3085) {
+        ESMetrics.getInstance().meter(INCOMING_PAGE_ROVERNS);
+        HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
+
+        // Page 3085 have events including channel 3 (natural search) and channel 16 (social media)
+        // Now we only send natural search events
+        if (null == applicationPayload.get(new Utf8("chnl"))
+                || applicationPayload.get(new Utf8("chnl")).length() == 0) {
+
+          //click events are not be sent when applicationPayload.chnl is null
+          ESMetrics.getInstance().meter("GetNullRoverNSChannelId");
+          logger.warn("Get null RoverNS channel id");
+
+        } else if (applicationPayload.get(new Utf8("chnl")).toString().equals("3")) {
+          ESMetrics.getInstance().meter(INCOMING_PAGE_NATURAL_SEARCH);
+
+          String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.NATURAL_SEARCH);
+          String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
+
+          ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
+                  0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.NATURAL_SEARCH, HttpMethod.GET, "", false);
+
+          setCommonFields(record, applicationPayload, genericRecord);
+
+          // TODO: Remove this logic after release and everything stable
+          // set short snapshot id to be from Rheos event so that when inserting into TD, it can be deduped by primary index
+          String rvrIdStr = coalesce(applicationPayload.get(new Utf8("rvrid")), empty).toString();
+          if (StringUtils.isNumeric(rvrIdStr)) {
+            record.setShortSnapshotId(Long.valueOf(rvrIdStr));
+          }
+
+          String uri = "https://rover.ebay.com" + urlQueryString;
+          record.setUri(uri);
+
+          record.setHttpMethod(HttpMethod.GET);
+
+          // source and destination rotation id parse for natural search
+          Long rotationId = urlQueryString.split("/").length > 3 ? Long.valueOf(urlQueryString.split("/")[3].split("\\?")[0].replace("-", "")) : 0l;
+          record.setSrcRotationId(rotationId);
+          record.setDstRotationId(rotationId);
+
+          record.setCampaignId(-1L);
+          record.setPublisherId(-1L);
+          producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
+        }
       }
     }
   }

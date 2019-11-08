@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ebay:config-category-file
+	xmlns:ebay="http://www.ebay.com"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
+  <config-category id="com.ebay.soa.client.EchoService.InvokerConfigurations" alias="null" group="com.ebay.soa.client" site-ops-command="true" category-desc="Echo Service Invoker Configurations" persist-updates="true" timestamp="Tue Oct 22 17:56:55 CST 2019" Validator="com.ebay.kernel.bean.configuration.adapter.ConfigManagementValidatorAdapter" >
+    <attribute name="echo-invocation-data-binding-formats" value="XML,FAST_INFOSET,JSON,NV,PROTOBUF" type="com.ebay.marketplace.inframgmt.services.echoservice.config.EchoServiceInvokerConfigBean$StringList" />
+    <attribute name="echo-invocation-gzip-comp-reqd" value="false" type="java.lang.Boolean" />
+    <attribute name="echo-invocation-payload-sizes-in-kb" value="5,10" type="com.ebay.marketplace.inframgmt.services.echoservice.config.EchoServiceInvokerConfigBean$IntList" />
+    <attribute name="echo-invocation-service-admin-lookup-names" value="EsamsService.EsamsServiceConsumer.dev,CryptographicService.EsamsServiceConsumer.dev" type="com.ebay.marketplace.inframgmt.services.echoservice.config.ServiceAdminNameLookUpUtil$LookUpNameList" />
+    <attribute name="no-of-echo-results-cached" value="2" type="java.lang.Integer" />
+  </config-category>
+</ebay:config-category-file>

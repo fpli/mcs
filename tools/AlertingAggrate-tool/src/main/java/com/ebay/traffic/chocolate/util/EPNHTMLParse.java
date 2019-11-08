@@ -8,20 +8,20 @@ import java.util.List;
 
 public class EPNHTMLParse {
 
-	public static String parse(List<HourlyClickCount> hourlyClickCount) {
-		String html = "";
+  public static String parse(List<HourlyClickCount> hourlyClickCount) {
+    String html = "";
 
-		html = HourlyClickCountTable.parseProject(hourlyClickCount);
+    html = HourlyClickCountTable.parseProject(hourlyClickCount);
 
-		return html;
-	}
+    return html;
+  }
 
-	public static String parse(List<DailyClickTrend> dailyClickTrend, List<DailyDomainTrend> dailyDomainTrend) {
-		String html = "";
+  public static String parse(List<DailyClickTrend> dailyClickTrend, List<DailyDomainTrend> dailyDomainTrend) {
+    String html = "";
 
-		html = DailyClickCountTable.parseProject(dailyClickTrend) + DailyDaminTrendTable.parseProject(dailyDomainTrend);
+    html = DailyClickCountTable.parseProject(dailyClickTrend) + DailyDaminTrendTable.parseProject(dailyDomainTrend);
 
-		return html;
-	}
+    return html;
+  }
 
 }

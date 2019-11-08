@@ -96,7 +96,7 @@ public class ApplicationOptionsParser {
      * @pre no null parameters
      * @param properties to use
      * @param property to use
-     * @param pidRequired if true, then there *must* be a %d syntax for PID.
+     * @param isPidRequired if true, then there *must* be a %d syntax for PID.
      * @param repoName if non-null, then there must be a %s syntax. False means no %s syntax is allowed.
      * @param isTemp return true if this is marked a temp file, false otherwise.
      * @return the given file, 
@@ -108,7 +108,10 @@ public class ApplicationOptionsParser {
         // Now check and make sure we can write to the parent directory.
         File parentDir = null;
         if (file.getCanonicalFile() != null) parentDir = file.getCanonicalFile().getParentFile();
-        if (parentDir == null || !parentDir.canWrite()) {
+        if (parentDir == null) {
+            logger.fatal("Parent directory null");
+        }
+        else if (!parentDir.canWrite()) {
             logger.fatal("Parent directory=" + parentDir.getCanonicalPath() + " cannot be written to");
             throw new UnsupportedOperationException(
                     "PID parent directory=" + parentDir.getCanonicalPath() + " cannot be written to by process");

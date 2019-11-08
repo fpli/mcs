@@ -43,6 +43,7 @@ class TestCrabDedupeJob extends BaseFunSuite{
     )
     val params = Parameter(args)
     val job = new CrabDedupeJob(params)
+    job.LAG_FILE = tmpPath + "/last_ts/PAID_SEARCH/crab_min_ts"
     job.run()
     val metadata = Metadata(workDir, "crabDedupe", MetadataEnum.dedupe)
     val dom = metadata.readDedupeOutputMeta()

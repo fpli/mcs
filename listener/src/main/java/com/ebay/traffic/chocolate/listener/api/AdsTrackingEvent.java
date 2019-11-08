@@ -1,8 +1,8 @@
 package com.ebay.traffic.chocolate.listener.api;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
-import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;

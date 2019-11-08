@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.kernel.util.DomainIpChecker;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.kernel.util.StringUtils;
@@ -214,7 +215,10 @@ public class MessageObjectParser {
             url = new URL(urlStr);
         } catch (MalformedURLException e) {
         }
-        String query = url.getQuery();
+        String query = "";
+        if (url != null) {
+            query = url.getQuery();
+        }
         // append snapshotId into URL
         if(!urlStr.contains(CHOCO_TAG)){
             if(query != null && ! query.isEmpty()) {
