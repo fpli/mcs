@@ -55,15 +55,18 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
   private static String outputHttpsPort;
   private static int inputHttpPort;
   private static int inputHttpsPort;
-  private static Metrics metrics = ESMetrics.getInstance();
-  private static Channel channel = ChannelFactory.createChannel();
-  private static MessageObjectParser parser = MessageObjectParser.getInstance();
+  private static Metrics metrics;
+  private static Channel channel;
+  private static MessageObjectParser parser;
 
   private static void staticInit(ServletConfig config) {
     outputHttpPort = config.getInitParameter(ListenerOptions.OUTPUT_HTTP_PORT);
     outputHttpsPort = config.getInitParameter(ListenerOptions.OUTPUT_HTTPS_PORT);
     inputHttpPort = Integer.parseInt(config.getInitParameter(ListenerOptions.INPUT_HTTP_PORT));
     inputHttpsPort = Integer.parseInt(config.getInitParameter(ListenerOptions.INPUT_HTTPS_PORT));
+    metrics = ESMetrics.getInstance();
+    channel = ChannelFactory.createChannel();
+    parser = MessageObjectParser.getInstance();
   }
 
   @Override
