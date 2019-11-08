@@ -487,7 +487,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
         if (host.contains(k.trim)) {
           v.split("\\|").foreach(keyword => {
             if (StringUtils.isNotEmpty(keyword)) {
-              if (StringUtils.isNotEmpty(queryMap.get(keyword.trim).get)) {
+              if (!queryMap.get(keyword.trim).isEmpty) {
                 return queryMap.get(keyword.trim).get
               }
             }
