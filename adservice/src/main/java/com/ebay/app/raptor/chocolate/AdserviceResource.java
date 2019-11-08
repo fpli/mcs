@@ -8,6 +8,8 @@ import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
+import com.ebay.app.raptor.chocolate.jdbc.model.ThirdpartyWhitelist;
+import com.ebay.app.raptor.chocolate.jdbc.repo.ThirdpartyWhitelistRepo;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
@@ -34,6 +36,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import javax.ws.rs.core.*;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -67,6 +70,8 @@ public class AdserviceResource implements EventsApi {
   @Autowired
   private CookieReader cookieReader;
 
+  @Autowired
+  private ThirdpartyWhitelistRepo thirdpartyWhitelistRepo;
 
   /**
    * Get method to collect impression, viewimp, email open
@@ -146,6 +151,12 @@ public class AdserviceResource implements EventsApi {
 
   @Override
   public Response redirect() throws URISyntaxException {
+
+    Iterator<ThirdpartyWhitelist> thirdpartyWhitelists = thirdpartyWhitelistRepo.findByName("thirdparty2").iterator();
+
+    return Response.ok(thirdpartyWhitelists.next().getUrl()).build();
+
+    /*
     URI redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
     try {
       redirectUri = collectionService.collectRdirect(request, response, requestContext, cookieReader);
@@ -154,6 +165,7 @@ public class AdserviceResource implements EventsApi {
       logger.warn(e.getMessage(), e);
     }
     return Response.status(Response.Status.MOVED_PERMANENTLY).location(redirectUri).build();
+     */
   }
 
 }
