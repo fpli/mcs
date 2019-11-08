@@ -231,7 +231,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     /**
      * Only for test
      */
-    public void setInputKafkaProperties(Properties properties) {
+    public static void setInputKafkaProperties(Properties properties) {
         inputKafkaProperties = properties;
     }
 
@@ -258,7 +258,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     /**
      * Only for test
      */
-    public void setSinkKafkaProperties(Properties properties) {
+    public static void setSinkKafkaProperties(Properties properties) {
         sinkKafkaProperties = properties;
     }
 
