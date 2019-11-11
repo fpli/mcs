@@ -42,9 +42,4 @@ public class CouchbaseClientTest {
         couchbaseClient.addMappingRecord("guidtest123", "cguidtest123");
         assertEquals("cguidtest123", couchbaseClient.getCguid("guidtest123"));
     }
-
-    @Test
-    public void testGetKafkaGlobalConfig() {
-        assertEquals(couchbaseClient.getKafkaGlobalConfig(), 0);
-    }
 }
