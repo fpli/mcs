@@ -10,6 +10,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -43,7 +44,7 @@ public class ApplicationOptionsParser {
      * @pre no null parameters
      * @param properties to use
      * @param property to use
-     * @param pidRequired if true, then there *must* be a %d syntax for PID.
+     * @param isPidRequired if true, then there *must* be a %d syntax for PID.
      * @param repoName if non-null, then there must be a %s syntax. False means no %s syntax is allowed.
      * @return the given file name. 
      */
@@ -237,7 +238,9 @@ public class ApplicationOptionsParser {
 
         DocumentBuilder dBuilder;
         try {
-            dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            dBuilder = dbf.newDocumentBuilder();
         }
         catch (ParserConfigurationException e1) {
             logger.fatal("Error in creating document builder", e1);
