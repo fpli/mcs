@@ -7,6 +7,7 @@ import java.time.temporal.ChronoUnit
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
+import scala.math.min
 
 /**
   * @author Zhiyuan Wang
@@ -63,7 +64,7 @@ class TestTouchImkHourlyDoneJob extends BaseFunSuite {
     job.run()
 
     val hours = Duration.between(lastDoneDateTime, doneDateHour).toHours.toInt + 1
-    for (i <- 1 until hours)  {
+    for (i <- 1 until min(hours, 24))  {
       val time = lastDoneDateTime.plusHours(i)
       val file = job.getDoneDir(time) + "/" + "imk_rvr_trckng_event_hourly.done." + time.format(job.doneFileDatetimeFormatter) + "00000000"
       val bool = fs.exists(new Path(file))
