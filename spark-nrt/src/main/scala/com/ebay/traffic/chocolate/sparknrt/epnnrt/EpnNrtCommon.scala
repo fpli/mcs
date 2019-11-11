@@ -549,11 +549,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       var pos = 0
       var flag = true
       var break = false
-
       var i = 0
       var j = arr.length - 1
       var res = ""
-
       while (flag) {
         while (i < arr.length && !Character.isDigit(arr(i))) {
           i = i + 1
@@ -570,16 +568,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           }
         }
       }
-
       val resArr = res.toCharArray
-
       for (i <- resArr.indices) {
         if (!Character.isDigit(resArr(i)))
           break = true
         if (Character.isDigit(resArr(i)) && !break)
           pos = pos + 1
       }
-
       try {
         return res.substring(0, pos)
       } catch {
