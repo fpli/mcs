@@ -25,6 +25,7 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
   import spark.implicits._
 
   lazy val workDir = params.workPath + "/tmp/0/"
+  lazy val chocoDir = "/chocolate/"
 
   val amsClickSchema: StructType = StructType(
     Seq(
@@ -99,7 +100,7 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
       .withColumn("today", lit(0))
       .select($"snapshot_id", $"timestamp", $"publisher_id", cguid(), ip(), $"today", $"rt_rule_flags", $"nrt_rule_flags")
 
-    val path = new Path(workDir + "/chocolate/", today)
+    val path = new Path(workDir + chocoDir, today)
     fs.delete(path, true)
     saveDFToFiles(dfToday.union(dfYesterday), path.toString)
     val df = readFilesAsDF(path.toString)
@@ -152,7 +153,7 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
         .map(id => Row(id))
     var dfCguid = spark.createDataFrame(rddCguid, schema)
 
-    val pathCguid = new Path(workDir + "/chocolate/cguid/", today)
+    val pathCguid = new Path(workDir + chocoDir + "/cguid/", today)
     fs.delete(pathCguid, true)
     saveDFToFiles(dfCguid, pathCguid.toString)
     dfCguid = readFilesAsDF(pathCguid.toString)
@@ -205,7 +206,7 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
       .withColumn("today", lit(1))
       .select($"snapshot_id", $"timestamp", $"publisher_id", cguid(), ip(), $"today", $"rt_rule_flags", $"nrt_rule_flags")
 
-    val pathToday = new Path(workDir + "/chocolate/today/", (new Path(params.chocoTodayPath).getName))
+    val pathToday = new Path(workDir + chocoDir + "/today/", (new Path(params.chocoTodayPath).getName))
     fs.delete(pathToday, true)
     saveDFToFiles(dfToday, pathToday.toString)
     dfToday = readFilesAsDF(pathToday.toString)
@@ -214,9 +215,9 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
     println("number of records in df Today: " + countToday)
 
     if (params.chocoQuickCheck) {
-      verifyChocoQuick(dfToday, params.outputPath + "/chocolate/" )
+      verifyChocoQuick(dfToday, params.outputPath + chocoDir )
     } else {
-      verifyChocoDetails(dfToday, countToday, params.outputPath + "/chocolate/")
+      verifyChocoDetails(dfToday, countToday, params.outputPath + chocoDir)
     }
   }
 
@@ -232,7 +233,7 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
   }
 
   def verifyEpnDetails(df: DataFrame, outputPath: String) = {
-
+//
   }
 
   def verifyEpn() = {

@@ -32,9 +32,11 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   lazy val archiveDir = properties.getProperty("epnnrt.archiveDir")
 
 
-  @transient lazy val schema_epn_click_table = TableSchema("df_epn_click.json")
+  private val click = "click"
+  @transient lazy val schema_epn_click_table = TableSchema("df_epn_" + click + ".json")
 
-  @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression.json")
+  private val impression = "impression"
+  @transient lazy val schema_epn_impression_table = TableSchema("df_epn_" + impression + ".json")
 
 /*  @transient lazy val properties: Properties = {
     val properties = new Properties()
@@ -158,14 +160,14 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           //3. build impression dataframe  save dataframe to files and rename files
           var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
           impressionDf = impressionDf.repartition(params.partitions)
-           saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
+           saveDFToFiles(impressionDf, epnNrtTempDir + "/" + impression + "/", "gzip", "csv", "tab")
 
-          val countImpDf = readFilesAsDF(epnNrtTempDir + "/impression/", schema_epn_impression_table.dfSchema, "csv", "tab", false)
+          val countImpDf = readFilesAsDF(epnNrtTempDir + "/" + impression + "/", schema_epn_impression_table.dfSchema, "csv", "tab", false)
 
           metrics.meter("SuccessfulCount", countImpDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 
           //write to EPN NRT output meta files
-          val imp_files = renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
+          val imp_files = renameFile(outputDir + "/" + impression + "/", epnNrtTempDir + "/" + impression + "/", date, "dw_ams.ams_imprsn_cntnr_cs_")
           val imp_metaFile = new MetaFiles(Array(DateFiles(date, imp_files)))
 
           try {
@@ -173,12 +175,12 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
             //write meta file for EPN SCP job to copy result to ETL and reno
             metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
 
-            logger.info("successfully write EPN NRT impression output meta to HDFS")
+            logger.info("successfully write EPN NRT " + impression + " output meta to HDFS")
             metrics.meter("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 
           } catch {
             case e: Exception => {
-              logger.error("Error while writing EPN NRT impression output meta files" + e)
+              logger.error("Error while writing EPN NRT " + impression + " output meta files" + e)
             }
           }
 
@@ -203,21 +205,21 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
             }
           }*/
 
-          saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
+          saveDFToFiles(clickDf, epnNrtTempDir + "/" + click + "/", "gzip", "csv", "tab")
 
-          val countClickDf = readFilesAsDF(epnNrtTempDir + "/click/", schema_epn_click_table.dfSchema, "csv", "tab", false)
+          val countClickDf = readFilesAsDF(epnNrtTempDir + "/" + click + "/", schema_epn_click_table.dfSchema, "csv", "tab", false)
 
           metrics.meter("SuccessfulCount", countClickDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "CLICK"))
 
-          val clickFiles = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
+          val clickFiles = renameFile(outputDir + "/" + click + "/", epnNrtTempDir + "/" + click + "/", date, "dw_ams.ams_" + click + "s_cs_")
 
 
           //5. write the epn-nrt meta output file to hdfs
           val click_metaFile = new MetaFiles(Array(DateFiles(date, clickFiles)))
           try {
-            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta.click.outputdir"), "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
+            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta." + click + ".outputdir"), "epnnrt_" + click, Array(".epnnrt_1", ".epnnrt_2"))
             //write meta file for EPN SCP job to copy result to ETL and reno
-            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta.click.outputdir"), "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta." + click + ".outputdir"), "epnnrt_scp_" + click, Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
             metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
             logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
           } catch {

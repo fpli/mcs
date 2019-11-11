@@ -20,7 +20,7 @@ public class ListenerInitializer {
      * @param options the Listener options
      * @throws IOException if problems with the journal
      */
-    public static void init(ListenerOptions options) {
+    public static synchronized void init(ListenerOptions options) {
         KafkaSink.initialize(options, options);
         METRICS_INDEX_PREFIX = options.getElasticsearchIndexPrefix();
         initElasticsearch(options.getElasticsearchUrl());

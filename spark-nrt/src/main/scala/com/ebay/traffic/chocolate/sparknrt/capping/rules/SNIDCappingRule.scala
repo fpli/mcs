@@ -88,15 +88,7 @@ class SNIDCappingRule(params: Parameter, bitLong: Long, bitShort: Long, dateFile
         }
         else {
           val clickTimestamp = event.getLong(event.fieldIndex("timestamp"))
-          if (clickTimestamp - impressionTimestamp < timeWindowShort) {
-            cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), bitShort)
-          }
-          else if (clickTimestamp - impressionTimestamp > timeWindow){
-            cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), bitLong)
-          }
-          else {
-            cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), 0l)
-          }
+          cappingEvents = cappingBySnid(cappingEvents, event, clickTimestamp, impressionTimestamp)
         }
       }
     }
@@ -141,6 +133,21 @@ class SNIDCappingRule(params: Parameter, bitLong: Long, bitShort: Long, dateFile
     }
     // convert back to dataframe with schema
     cappingRDD.toDF("snapshot_id_1", "capping")
+  }
+
+  // process short and long snid capping rule by every snid
+  def cappingBySnid(cappingEvents: ListBuffer[Tuple2[Long, Long]], event: Row, clickTimestamp: Long,
+                    impressionTimestamp: Long): ListBuffer[Tuple2[Long, Long]] = {
+    if (clickTimestamp - impressionTimestamp < timeWindowShort) {
+    cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), bitShort)
+    }
+    else if (clickTimestamp - impressionTimestamp > timeWindow){
+    cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), bitLong)
+    }
+    else {
+    cappingEvents += Tuple2(event.getLong(event.fieldIndex("snapshot_id")), 0l)
+    }
+    cappingEvents
   }
 
   override def test(): DataFrame = {

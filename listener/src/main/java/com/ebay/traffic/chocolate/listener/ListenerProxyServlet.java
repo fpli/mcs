@@ -18,7 +18,6 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
-import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.proxy.AsyncProxyServlet;
 
@@ -56,24 +55,27 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
   private static String outputHttpsPort;
   private static int inputHttpPort;
   private static int inputHttpsPort;
-  private Metrics metrics;
-  private Channel channel;
-  private MessageObjectParser parser;
+  private static Metrics metrics;
+  private static Channel channel;
+  private static MessageObjectParser parser;
 
-  @Override
-  public void init() throws ServletException {
-    ServletConfig config = getServletConfig();
-
+  private static void staticInit(ServletConfig config) {
     outputHttpPort = config.getInitParameter(ListenerOptions.OUTPUT_HTTP_PORT);
     outputHttpsPort = config.getInitParameter(ListenerOptions.OUTPUT_HTTPS_PORT);
     inputHttpPort = Integer.parseInt(config.getInitParameter(ListenerOptions.INPUT_HTTP_PORT));
     inputHttpsPort = Integer.parseInt(config.getInitParameter(ListenerOptions.INPUT_HTTPS_PORT));
     metrics = ESMetrics.getInstance();
+    channel = ChannelFactory.createChannel();
+    parser = MessageObjectParser.getInstance();
+  }
+
+  @Override
+  public void init() throws ServletException {
+    ServletConfig config = getServletConfig();
+    staticInit(config);
     metrics.meter(PROXY_FAILURE, 0);
     metrics.meter(CLIENT_FAILURE, 0);
     metrics.meter(MALFORMED_URL, 0);
-    channel = ChannelFactory.createChannel();
-    parser = MessageObjectParser.getInstance();
     // init couchbase client at startup
     CouchbaseClient.getInstance();
     super.init();
@@ -89,13 +91,6 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
     super.onProxyResponseSuccess(clientRequest, proxyResponse, serverResponse);
   }
 
-  /**
-   * Do not add Proxy related headers
-   */
-  @Override
-  protected void addProxyHeaders(HttpServletRequest clientRequest,
-                                 Request proxyRequest) {
-  }
 
   /**
    * Add chocolate special header for tracking
@@ -107,7 +102,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
       super.service(request, response);
       response.addHeader("X-EBAY-CHOCOLATE", "true");
     } catch (ServletException | IOException e) {
-      e.printStackTrace();
+      logger.error("Listener Proxy Servlet Exception: ", e);
     }
   }
 
@@ -216,7 +211,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
     try {
       url = new URIBuilder(uri).setPort(port).build().toString();
     } catch (URISyntaxException e) {
-      e.printStackTrace();
+      logger.error("Uri format exception: ", e);
     }
     return url;
   }

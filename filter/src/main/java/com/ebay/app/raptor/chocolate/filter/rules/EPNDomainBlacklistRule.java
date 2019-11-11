@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleContent;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 import com.ebay.kernel.context.RuntimeContext;
 import org.apache.log4j.Logger;
@@ -33,7 +34,7 @@ public class EPNDomainBlacklistRule extends GenericBlacklistRule {
   
   private void readFromLocalFile() {
     try {
-      blacklistName = this.filterRuleContent.getBlacklistName();
+      getBlacklistName(this.filterRuleContent);
       String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
       this.readFromString(blString);
     } catch (Exception e) {
@@ -41,7 +42,11 @@ public class EPNDomainBlacklistRule extends GenericBlacklistRule {
       throw new Error("EPN domain blacklist not found", e);
     }
   }
-  
+
+  private static void getBlacklistName(FilterRuleContent filterRuleContent) {
+    blacklistName = filterRuleContent.getBlacklistName();
+  }
+
   @Override
   protected String getFilteredValue(FilterRequest request) {
     return request.getReferrerDomain();

@@ -24,6 +24,8 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     } else null
   }
 
+  lazy val METRIC_IMK_DUMP_MALFORMED = "imk.dump.malformed"
+
   lazy val keywordParams: Array[String] = Array("_nkw", "keyword", "kw")
 
   lazy val userQueryParamsOfReferrer: Array[String] = Array("q")
@@ -85,7 +87,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       }catch {
         case e: Exception => {
           if(metrics != null) {
-            metrics.meter("imk.dump.malformed", 1)
+            metrics.meter(METRIC_IMK_DUMP_MALFORMED, 1)
           }
           logger.warn("MalformedUrl", e)
         }
@@ -228,7 +230,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     } catch {
       case e: Exception => {
         if (metrics != null) {
-          metrics.meter("imk.dump.malformed", 1)
+          metrics.meter(METRIC_IMK_DUMP_MALFORMED, 1)
         }
         logger.warn("MalformedUrl", e)
       }
@@ -343,7 +345,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       } catch {
         case e: Exception => {
           if(metrics != null) {
-            metrics.meter("imk.dump.malformed", 1)
+            metrics.meter(METRIC_IMK_DUMP_MALFORMED, 1)
           }
           logger.warn("MalformedUrl", e)
         }

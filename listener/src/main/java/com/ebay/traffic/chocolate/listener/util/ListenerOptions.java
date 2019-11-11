@@ -151,7 +151,7 @@ public class ListenerOptions extends AbstractApplicationOptions implements
     /**
      * Only for test
      */
-    public void setKafkaProperties(Properties properties) {
+    public static void setKafkaProperties(Properties properties) {
         kafkaProperties = properties;
     }
 

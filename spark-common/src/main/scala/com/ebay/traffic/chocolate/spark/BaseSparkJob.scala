@@ -20,6 +20,10 @@ abstract class BaseSparkJob(val jobName: String,
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
+  lazy val DELIMITER_FAILURE_MESSAGE = "the value of delimiter can be one of 'bel', 'tab', 'space', 'comma', 'del'"
+
+  lazy val ORC_FILTER_PUSHDOWN = "spark.sql.orc.filterPushdown"
+
   /**
     * Whether the spark job is in local mode
     */
@@ -171,6 +175,8 @@ abstract class BaseSparkJob(val jobName: String,
     readFilesAsDFEx(Array(inputPath), schema, inputFormat, delimiter, broadcastHint)
   }
 
+  private val value = "com.databricks.spark.csv"
+
   /**
     * Read table files as Dataframe.
     *
@@ -186,18 +192,18 @@ abstract class BaseSparkJob(val jobName: String,
                     inputFormat: String = "parquet", delimiter: String = "del",
                     broadcastHint: Boolean = false): DataFrame = {
     require(delimiterMap.contains(delimiter),
-      "the value of delimiter can be one of 'bel', 'tab', 'space', 'comma', 'del'")
+      DELIMITER_FAILURE_MESSAGE)
     val df = inputFormat match {
       case "parquet" => spark.read.parquet(inputPaths: _*)
       case "orc" => {
-        spark.conf.set("spark.sql.orc.filterPushdown", "true")
+        spark.conf.set(ORC_FILTER_PUSHDOWN, "true")
         spark.read.orc(inputPaths: _*)
       }
-      case "csv" => spark.read.format("com.databricks.spark.csv")
+      case "csv" => spark.read.format(value)
         .option("delimiter", delimiterMap(delimiter))
         .schema(schema)
         .load(inputPaths: _*)
-//      case "csv" => {
+//      case "csv" => {oTools.scala
 //        spark.createDataFrame(sc.textFile(inputPaths.mkString(","))
 //          .map(asRow(_, delimiterMap(delimiter)))
 //          .map(toDfRow(_, schema)).filter(_ != null), schema)
@@ -228,7 +234,7 @@ abstract class BaseSparkJob(val jobName: String,
                      delimiter: String = "del"): RDD[Array[String]] = {
     require(Seq("sequence", "csv").contains(inputFormat), "Unsupported file format: " + inputFormat)
     require(delimiterMap.contains(delimiter),
-      "the value of delimiter can be one of 'bel', 'tab', 'space', 'comma', 'del'")
+      DELIMITER_FAILURE_MESSAGE)
     inputFormat match {
       case "sequence" => sc.sequenceFile[String, String](inputPath).values
         .map(asRow(_, delimiterMap(delimiter)))
@@ -289,7 +295,7 @@ abstract class BaseSparkJob(val jobName: String,
                   delimiter: String = "tab",
                   compressFormat: String = "snappy") = {
     require(delimiterMap.contains(delimiter),
-      "the value of delimiter can be one of 'bel', 'tab', 'space', 'comma', 'del'")
+      DELIMITER_FAILURE_MESSAGE)
     require(enableHiveSupport, "should enable hive support")
 
     val writer = df.write.mode(writeMode)
@@ -300,11 +306,11 @@ abstract class BaseSparkJob(val jobName: String,
         spark.conf.set("spark.sql.parquet.compression.codec", compressFormat)
       case "orc" => {
         writer.format(outputFormat)
-        spark.conf.set("spark.sql.orc.filterPushdown", "true")
+        spark.conf.set(ORC_FILTER_PUSHDOWN, "true")
         spark.conf.set("orc.compress", compressFormat)
       }
       case "csv" => {
-        writer.format("com.databricks.spark.csv")
+        writer.format(value)
           .option("delimiter", delimiterMap(delimiter))
           .option("escape", null)
           .option("quoteMode", "NONE")
@@ -341,7 +347,7 @@ abstract class BaseSparkJob(val jobName: String,
     require(Seq("parquet", "csv", "orc").contains(outputFormat),
       "Unsupported storage format: " + outputFormat)
     require(delimiterMap.contains(delimiter),
-      "the value of delimiter can be one of 'bel', 'tab', 'space', 'comma', 'del'")
+      DELIMITER_FAILURE_MESSAGE)
 
     val writer = df.write.mode(writeMode)
     if (partitionColumn != null) {
@@ -354,13 +360,13 @@ abstract class BaseSparkJob(val jobName: String,
         writer.format(outputFormat).save(outputPath)
       }
       case "orc" => {
-        spark.conf.set("spark.sql.orc.filterPushdown", "true")
+        spark.conf.set(ORC_FILTER_PUSHDOWN, "true")
         spark.conf.set("orc.compress", compressFormat) // zlib, snappy, none
         spark.conf.set("spark.io.compression.codec", compressFormat) // lzf, lz4, snappy
         writer.format(outputFormat).save(outputPath)
       }
       case "csv" => {
-        writer.format("com.databricks.spark.csv")
+        writer.format(value)
           .option("delimiter", delimiterMap(delimiter))
           .option("header", headerHint.toString)
           .option("escape", null)
