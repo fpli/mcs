@@ -39,14 +39,18 @@ class ImkCrabTransformOutputMergeJob(params: Parameter)
   @transient lazy val schema_apollo_mg = TableSchema("df_imk_apollo_mg.json")
 
   // imk crab transform output dir
-  lazy val imkInputDir: String = params.inputDir + "/imkOutput"
-  lazy val dtlInputDir: String = params.inputDir + "/dtlOutput"
-  lazy val mgInputDir: String = params.inputDir + "/mgOutput"
+  lazy val IMK_OUTPUT_DIR = "/imkOutput"
+  lazy val DTL_OUTPUT_DIR = "/dtlOutput"
+  lazy val MG_OUTPUT_DIR = "/mgOutput"
+
+  lazy val imkInputDir: String = params.inputDir + IMK_OUTPUT_DIR
+  lazy val dtlInputDir: String = params.inputDir + DTL_OUTPUT_DIR
+  lazy val mgInputDir: String = params.inputDir + MG_OUTPUT_DIR
 
   // imk crab transform backup dir
-  lazy val imkBackupDir: String = params.backupDir + "/imkOutput"
-  lazy val dtlBackupDir: String = params.backupDir + "/dtlOutput"
-  lazy val mgBackupDir: String = params.backupDir + "/mgOutput"
+  lazy val imkBackupDir: String = params.backupDir + IMK_OUTPUT_DIR
+  lazy val dtlBackupDir: String = params.backupDir + DTL_OUTPUT_DIR
+  lazy val mgBackupDir: String = params.backupDir + MG_OUTPUT_DIR
 
   // imk crab transform output temp dir
   lazy val imkMergedTempDir: String = params.outputDir + "/imkTemp"
@@ -54,9 +58,9 @@ class ImkCrabTransformOutputMergeJob(params: Parameter)
   lazy val mgMergedTempDir: String = params.outputDir + "/mgTemp"
 
   // imk crab transform output dir
-  lazy val imkMergedOutputDir: String = params.outputDir + "/imkOutput"
-  lazy val dtlMergedOutputDir: String = params.outputDir + "/dtlOutput"
-  lazy val mgMergedOutputDir: String = params.outputDir + "/mgOutput"
+  lazy val imkMergedOutputDir: String = params.outputDir + IMK_OUTPUT_DIR
+  lazy val dtlMergedOutputDir: String = params.outputDir + DTL_OUTPUT_DIR
+  lazy val mgMergedOutputDir: String = params.outputDir + MG_OUTPUT_DIR
 
   override def run(): Unit = {
     mergeFiles(imkInputDir, schema_apollo, imkMergedTempDir, imkMergedOutputDir, imkBackupDir)
