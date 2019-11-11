@@ -15,6 +15,7 @@ import org.springframework.core.env.Environment;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 
 @Configuration
 public class JettyServerConfiguration {
@@ -27,7 +28,7 @@ public class JettyServerConfiguration {
   @Bean
   public ConfigurableServletWebServerFactory webServerFactory() throws IOException
   {
-    ListenerOptions.init(env.getProperty(LISTENER_OPTIONS, URL.class).openStream());
+    ListenerOptions.init(Objects.requireNonNull(env.getProperty(LISTENER_OPTIONS, URL.class)).openStream());
 
     ListenerOptions options = ListenerOptions.getInstance();
 

@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleContent;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 import com.ebay.kernel.context.RuntimeContext;
 import org.apache.log4j.Logger;
@@ -26,13 +27,17 @@ public class EBayRefererDomainRule extends GenericBlacklistRule {
 
   private void readFromLocalFile() {
     try {
-      listName = this.filterRuleContent.getBlacklistName();
+      getBlacklistName(this.filterRuleContent);
       String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + listName)));
       this.readFromString(blString);
     } catch (Exception e) {
       Logger.getLogger(EBayRefererDomainRule.class).error("Failed to get eBay referer domain list in local file", e);
       throw new Error("eBay referer domain list not found", e);
     }
+  }
+
+  private static void getBlacklistName(FilterRuleContent filterRuleContent) {
+    listName = filterRuleContent.getBlacklistName();
   }
 
   @Override
