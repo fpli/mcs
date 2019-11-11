@@ -21,7 +21,7 @@ public abstract class GenericBlacklistRule extends HashSet<String> implements Fi
    * serialVersionUID required by any serializable class
    */
   private static final long serialVersionUID = 617699547977539162L;
-  protected final FilterRuleContent filterRuleContent;
+  protected final transient FilterRuleContent filterRuleContent;
 
   /**
    * Had to do this explicitly here, because Java doesn't have multiple inheritance
