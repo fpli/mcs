@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.filter.rules;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleContent;
 import com.ebay.app.raptor.chocolate.filter.service.FilterRequest;
 import com.ebay.kernel.context.RuntimeContext;
 import org.apache.log4j.Logger;
@@ -35,9 +36,14 @@ public class IPBlacklistRule extends GenericBlacklistRule {
    *
    * @return new instance
    */
+
+  public static void init(FilterRuleContent filterRuleContent) {
+    blacklistName = filterRuleContent.getBlacklistName();
+  }
+
   public void createFromBundledFile() {
     try {
-      blacklistName = this.filterRuleContent.getBlacklistName();
+      init(this.filterRuleContent);
       String blString = new String(Files.readAllBytes(Paths.get(RuntimeContext.getConfigRoot().getFile() + blacklistName)));
       this.readFromString(blString);
     } catch (Exception e) {
