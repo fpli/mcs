@@ -212,7 +212,7 @@ class KafkaRDD[K, V](
     }
 
     /**
-     * validate partUtilOffset, in normal cases, partUtilOffset should be less than rangeEarliest
+     * validate partUtilOffset, in normal cases, partUtilOffset should be larger than rangeEarliest
      * @param rangeEarliest the earliest offset of this partition
      * @param offset the topic partition current offset
      * @param partUtilOffset max consume offset, min(endOffset.getValue, position + maxConsumeSize)
