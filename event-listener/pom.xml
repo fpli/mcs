@@ -318,6 +318,14 @@
       <artifactId>raptor-geo-starter</artifactId>
     </dependency>
 
+    <!-- Test -->
+    <dependency>
+      <groupId>com.couchbase.mock</groupId>
+      <artifactId>CouchbaseMock</artifactId>
+      <version>1.5.12</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
