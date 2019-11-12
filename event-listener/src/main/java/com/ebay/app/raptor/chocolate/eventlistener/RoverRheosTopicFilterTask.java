@@ -271,7 +271,9 @@ public class RoverRheosTopicFilterTask extends Thread {
           long campaignId = -1L;
           try{
             List<String> list = lowerCaseParams.get("campid");
+            Validate.notNull(list);
             String first = list.get(0);
+            Validate.notNull(first);
             campaignId = Long.valueOf(first);
             if(campaignId == 5338380161l) {
               logger.info("Success5338380161: " + uri);
