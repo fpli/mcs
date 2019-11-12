@@ -30,26 +30,29 @@ public class JettyServerConfiguration {
   public ConfigurableServletWebServerFactory webServerFactory() throws IOException
   {
     URL property = env.getProperty(LISTENER_OPTIONS, URL.class);
-    Validate.notNull(property);
-    InputStream inputStream = property.openStream();
-    ListenerOptions.init(inputStream);
+    if (property == null) {
+      throw new IllegalArgumentException("listener options is null");
+    } else {
+      InputStream inputStream = property.openStream();
+      ListenerOptions.init(inputStream);
 
-    ListenerOptions options = ListenerOptions.getInstance();
+      ListenerOptions options = ListenerOptions.getInstance();
 
-    ListenerInitializer.init(ListenerOptions.getInstance());
+      ListenerInitializer.init(ListenerOptions.getInstance());
 
-    JettyServletWebServerFactory factory = new JettyServletWebServerFactory(options.getInputHttpPort());
-    factory.addServerCustomizers(new JettyServerCustomizer() {
-      @Override
-      public void customize(Server server) {
-        final QueuedThreadPool threadPool = server.getBean(QueuedThreadPool.class);
-        threadPool.setMaxThreads(options.getMaxThreads());
-        final NetworkTrafficServerConnector connectorHttps = new NetworkTrafficServerConnector(server);
-        connectorHttps.setPort(options.getInputHttpsPort());
-        server.addConnector(connectorHttps);
-      }
-    });
-    return factory;
+      JettyServletWebServerFactory factory = new JettyServletWebServerFactory(options.getInputHttpPort());
+      factory.addServerCustomizers(new JettyServerCustomizer() {
+        @Override
+        public void customize(Server server) {
+          final QueuedThreadPool threadPool = server.getBean(QueuedThreadPool.class);
+          threadPool.setMaxThreads(options.getMaxThreads());
+          final NetworkTrafficServerConnector connectorHttps = new NetworkTrafficServerConnector(server);
+          connectorHttps.setPort(options.getInputHttpsPort());
+          server.addConnector(connectorHttps);
+        }
+      });
+      return factory;
+    }
   }
 
   @PreDestroy
