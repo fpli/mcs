@@ -52,7 +52,7 @@ public class RheosConsumerWrapper {
   /**
    * Terminate the consumer gracefully
    */
-  public static void terminate() {
+  public static synchronized void terminate() {
     rheosConsumer.consumer.close();
     rheosConsumer = null;
     logger.info("RheosConsumer terminated");
