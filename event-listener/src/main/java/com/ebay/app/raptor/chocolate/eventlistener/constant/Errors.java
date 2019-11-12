@@ -25,7 +25,7 @@ public class Errors {
   public static final String ERROR_CONTENT = "mktCollectionSvcErrorContent";
   public static final String ERROR_DOMAIN = "marketingTrackingDomain";
 
-  public static final Map<String, ErrorType> ERROR_MAP = new HashMap<>();
+  private static final Map<String, ErrorType> ERROR_MAP = new HashMap<>();
   static {
     ERROR_MAP.put(ERROR_NO_USER_AGENT, new ErrorType(4000, ERROR_NO_USER_AGENT, "No User-Agent found."));
     ERROR_MAP.put(ERROR_NO_ENDUSERCTX, new ErrorType(4001, ERROR_NO_ENDUSERCTX, "No X-EBAY-C-ENDUSERCTX header."));
