@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.init;
 
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
+import org.apache.commons.lang.Validate;
 import org.eclipse.jetty.server.NetworkTrafficServerConnector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -14,8 +15,8 @@ import org.springframework.core.env.Environment;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.Objects;
 
 @Configuration
 public class JettyServerConfiguration {
@@ -28,7 +29,10 @@ public class JettyServerConfiguration {
   @Bean
   public ConfigurableServletWebServerFactory webServerFactory() throws IOException
   {
-    ListenerOptions.init(Objects.requireNonNull(env.getProperty(LISTENER_OPTIONS, URL.class)).openStream());
+    URL property = env.getProperty(LISTENER_OPTIONS, URL.class);
+    Validate.notNull(property);
+    InputStream inputStream = property.openStream();
+    ListenerOptions.init(inputStream);
 
     ListenerOptions options = ListenerOptions.getInstance();
 
