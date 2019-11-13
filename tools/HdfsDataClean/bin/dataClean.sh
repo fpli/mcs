@@ -22,9 +22,7 @@ else
   echo "And diff is greater than or equals 8."
 fi
 
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/*/capping/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/*/dedupe/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/*/imkDump/date=$DATE
+hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/*/*/date=$DATE
 
 hdfs dfs -rm -r hdfs://slickha/apps/tracking-events/crabDedupe/date=$DATE
 
@@ -49,5 +47,4 @@ else
   echo "And diff is greater than or equals 60."
 fi
 
-hdfs dfs -rm -r hdfs://elvisha/apps/epn-nrt/click/date=$DATE60
-hdfs dfs -rm -r hdfs://elvisha/apps/epn-nrt/impression/date=$DATE60
+hdfs dfs -rm -r hdfs://elvisha/apps/epn-nrt/*/date=$DATE60
