@@ -151,10 +151,17 @@ public class AdserviceResource implements EventsApi {
 
   @Override
   public Response redirect() throws URISyntaxException {
+    String domain = request.getParameterValues("domain")[0];
 
-    Iterator<ThirdpartyWhitelist> thirdpartyWhitelists = thirdpartyWhitelistRepo.findByName("thirdparty2").iterator();
+    Iterator<ThirdpartyWhitelist> thirdpartyWhitelists = thirdpartyWhitelistRepo.findByValue(domain).iterator();
 
-    return Response.ok(thirdpartyWhitelists.next().getUrl()).build();
+    Iterator<ThirdpartyWhitelist> fullWhitelist = thirdpartyWhitelistRepo.findByTypeIdIs(5).iterator();
+
+    while (fullWhitelist.hasNext()) {
+      System.out.println(fullWhitelist.next().getValue());
+    }
+
+    return Response.ok(thirdpartyWhitelists.next().getTypeId()).build();
 
     /*
     URI redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();

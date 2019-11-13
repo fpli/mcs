@@ -1,18 +1,34 @@
 CREATE TABLE "thirdparty_whitelist" (
-  ID INTEGER NOT NULL,
-  TYPE_ID INTEGER NOT NULL,
-  VERSION INTEGER NOT NULL,
-  NAME VARCHAR(64) NOT NULL,
+  "ID" INTEGER NOT NULL,
+  "TYPE_ID" INTEGER NOT NULL,
+  "VERSION" INTEGER NOT NULL,
+  "NAME" VARCHAR(64) NOT NULL,
   VALUE VARCHAR(255) NOT NULL,
   DESCRIPTION VARCHAR(255) NOT NULL,
   CREATION_DATE TIMESTAMP NOT NULL,
   LAST_MODIFIED_DATE TIMESTAMP NOT NULL,
-  UTF8_STATUS
-  PRIMARY KEY ("id")
+  UTF8_STATUS INTEGER,
+  CREATED_BY_USER VARCHAR(32),
+  MODIFIED_BY_USER VARCHAR(32),
+  PRIMARY KEY (id)
 );
 
-INSERT INTO thirdparty_whitelist (name, url)
-    VALUES("thirdparty1", "https://thirdparty1");
+INSERT INTO thirdparty_whitelist (TYPE_ID, VERSION, NAME, VALUE, DESCRIPTION, CREATION_DATE, LAST_MODIFIED_DATE,
+CREATED_BY_USER, MODIFIED_BY_USER) VALUES (5, 1, 'FULL_HOSTNAME', 'full_domain1', 'WhiteList Full Host Name',
+datetime(), datetime(), 'test1', 'test1');
 
-INSERT INTO thirdparty_whitelist (name, url)
-    VALUES("thirdparty2", "https://thirdparty2");
+INSERT INTO thirdparty_whitelist (TYPE_ID, VERSION, NAME, VALUE, DESCRIPTION, CREATION_DATE, LAST_MODIFIED_DATE,
+CREATED_BY_USER, MODIFIED_BY_USER) VALUES (5, 1, 'FULL_HOSTNAME', 'full_domain2', 'WhiteList Full Host Name',
+datetime(), datetime(), 'test2', 'test2');
+--
+INSERT INTO thirdparty_whitelist (TYPE_ID, VERSION, NAME, VALUE, DESCRIPTION, CREATION_DATE, LAST_MODIFIED_DATE,
+CREATED_BY_USER, MODIFIED_BY_USER) VALUES (5, 1, 'FULL_HOSTNAME', 'full_domain3', 'WhiteList Full Host Name',
+datetime(), datetime(), 'test3', 'test3');
+--
+INSERT INTO thirdparty_whitelist (TYPE_ID, VERSION, NAME, VALUE, DESCRIPTION, CREATION_DATE, LAST_MODIFIED_DATE,
+CREATED_BY_USER, MODIFIED_BY_USER) VALUES (4, 1, 'PARTIAL_HOSTNAME', 'partial_domain1', 'WhiteList Full Host Name',
+datetime(), datetime(), 'test4', 'test4');
+--
+INSERT INTO thirdparty_whitelist (TYPE_ID, VERSION, NAME, VALUE, DESCRIPTION, CREATION_DATE, LAST_MODIFIED_DATE,
+CREATED_BY_USER, MODIFIED_BY_USER) VALUES (4, 1, 'PARTIAL_HOSTNAME', 'partial_domain2', 'WhiteList Full Host Name',
+datetime(), datetime(), 'test5', 'test5');

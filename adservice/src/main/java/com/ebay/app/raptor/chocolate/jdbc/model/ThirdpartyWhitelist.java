@@ -11,42 +11,43 @@ public class ThirdpartyWhitelist {
   @Column(name = "id")
   private Integer id;
 
-  @Column(name = "name")
-  private String name;
+  @Column(name = "type_id")
+  private Integer typeId;
 
-  @Column(name = "url")
-  private String url;
+  @Column(name = "value")
+  private String value;
 
   public ThirdpartyWhitelist() {
   }
 
-  public ThirdpartyWhitelist(Integer id, String name, String url) {
+  public ThirdpartyWhitelist(Integer id, Integer typeId, String value) {
     this.id = id;
-    this.name = name;
-    this.url = url;
+    this.typeId = typeId;
+    this.value = value;
   }
 
   public void setId(Integer id) {
     this.id = id;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public void setUrl(String url) {
-    this.url = url;
-  }
-
   public Integer getId() {
     return id;
   }
 
-  public String getName() {
-    return name;
+  public void setTypeId(Integer typeId) {
+    this.typeId = typeId;
   }
 
-  public String getUrl() {
-    return url;
+  public Integer getTypeId() {
+    return typeId;
   }
+
+  public void setValue(String value) {
+    this.value = value;
+  }
+
+  public String getValue() {
+    return value;
+  }
+
 }
