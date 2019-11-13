@@ -147,7 +147,6 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
             }
           }
 
-
           var df_click_count_after_filter = 0L
           var df_impression_count_after_filter = 0L
           if (debug) {
