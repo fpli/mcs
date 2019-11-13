@@ -22,20 +22,9 @@ else
   echo "And diff is greater than or equals 8."
 fi
 
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/EPN/capping/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/EPN/dedupe/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/DISPLAY/capping/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/DISPLAY/dedupe/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/DISPLAY/imkDump/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/PAID_SEARCH/capping/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/PAID_SEARCH/dedupe/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/PAID_SEARCH/imkDump/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/ROI/capping/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/ROI/dedupe/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/ROI/imkDump/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/SOCIAL_MEDIA/capping/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/SOCIAL_MEDIA/dedupe/date=$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/SOCIAL_MEDIA/imkDump/date=$DATE
+hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/*/capping/date=$DATE
+hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/*/dedupe/date=$DATE
+hdfs dfs -rm -r hdfs://elvisha/apps/tracking-events/*/imkDump/date=$DATE
 
 hdfs dfs -rm -r hdfs://slickha/apps/tracking-events/crabDedupe/date=$DATE
 
