@@ -121,47 +121,19 @@ class CalCrabTransformWatermark(params: Parameter)
   }
 
   /**
-   * Ignore invalid row
+   * Convert string array of row fields to DataFrame row
+   * according to the table schema, ignore invalid line
    *
    * @param values string array of row fields
    * @param schema dataframe schema
    * @return dataframe row
    */
   override def toDfRow(values: Array[String], schema: StructType): Row = {
-    val validateSchema = (values.length == schema.fields.length) || (values.length == schema.fields.length + 1)
-    if (!validateSchema) {
+    if (values.length != schema.fields.length) {
       metrics.meter("invalidValueLength")
       return null
     }
-    try {
-      Row(values zip schema map (e => {
-        if (e._1.length == 0) {
-          null
-        } else {
-          e._2.dataType match {
-            case _: StringType => e._1.trim
-            case _: LongType => e._1.trim.toLong
-            case _: IntegerType => e._1.trim.toInt
-            case _: ShortType => e._1.trim.toShort
-            case _: FloatType => e._1.trim.toFloat
-            case _: DoubleType => e._1.trim.toDouble
-            case _: ByteType => e._1.trim.toByte
-            case _: BooleanType => e._1.trim.toBoolean
-          }
-        }
-      }): _*)
-    } catch {
-      case ex: Exception => {
-        corruptRows.set(corruptRows.get + 1)
-        if (corruptRows.get() <= MAX_CORRUPT_ROWS) {
-          logger.warn("Failed to parse row: " + values.mkString("|"), ex)
-          null
-        } else {
-          logger.error("Two many corrupt rows.")
-          throw ex
-        }
-      }
-    }
+    convertToDfRow(values, schema)
   }
 
   def getKafkaWatermark: Array[(String, ZonedDateTime)] = {
