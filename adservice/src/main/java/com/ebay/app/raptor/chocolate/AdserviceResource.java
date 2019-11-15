@@ -8,14 +8,11 @@ import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
-import com.ebay.app.raptor.chocolate.jdbc.model.ThirdpartyWhitelist;
-import com.ebay.app.raptor.chocolate.jdbc.repo.ThirdpartyWhitelistRepo;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,11 +29,8 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URI;
 import java.net.URISyntaxException;
-import javax.ws.rs.core.*;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -69,9 +63,6 @@ public class AdserviceResource implements EventsApi {
 
   @Autowired
   private CookieReader cookieReader;
-
-  @Autowired
-  private ThirdpartyWhitelistRepo thirdpartyWhitelistRepo;
 
   /**
    * Get method to collect impression, viewimp, email open
@@ -151,28 +142,16 @@ public class AdserviceResource implements EventsApi {
 
   @Override
   public Response redirect() throws URISyntaxException {
-    String domain = request.getParameterValues("domain")[0];
-
-    Iterator<ThirdpartyWhitelist> thirdpartyWhitelists = thirdpartyWhitelistRepo.findByValue(domain).iterator();
-
-    Iterator<ThirdpartyWhitelist> fullWhitelist = thirdpartyWhitelistRepo.findByTypeIdIs(5).iterator();
-
-    while (fullWhitelist.hasNext()) {
-      System.out.println(fullWhitelist.next().getValue());
-    }
-
-    return Response.ok(thirdpartyWhitelists.next().getTypeId()).build();
-
-    /*
-    URI redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
-    try {
-      redirectUri = collectionService.collectRdirect(request, response, requestContext, cookieReader);
-    } catch (Exception e) {
-      // When exception happen, redirect to www.ebay.com
-      logger.warn(e.getMessage(), e);
-    }
-    return Response.status(Response.Status.MOVED_PERMANENTLY).location(redirectUri).build();
-     */
+    return Response.ok(collectionService.collectTest(request)).build();
+//
+//    URI redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
+//    try {
+//      redirectUri = collectionService.collectRdirect(request, response, requestContext, cookieReader);
+//    } catch (Exception e) {
+//      // When exception happen, redirect to www.ebay.com
+//      logger.warn(e.getMessage(), e);
+//    }
+//    return Response.status(Response.Status.MOVED_PERMANENTLY).location(redirectUri).build();
   }
 
 }

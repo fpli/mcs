@@ -5,8 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface ThirdpartyWhitelistRepo extends JpaRepository<ThirdpartyWhitelist, Integer> {
+public interface ThirdpartyWhitelistRepo extends JpaRepository<ThirdpartyWhitelist, Integer>{
 
-  List<ThirdpartyWhitelist> findByValue(String value);
-  List<ThirdpartyWhitelist> findByTypeIdIs(Integer typeId);
+  List<ThirdpartyWhitelist> findByTypeId(Integer typeId);
 }

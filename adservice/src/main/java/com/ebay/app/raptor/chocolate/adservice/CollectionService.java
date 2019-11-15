@@ -7,8 +7,8 @@ import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
 import com.ebay.kernel.util.guid.Guid;
-import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
@@ -25,9 +25,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
-import java.io.IOException;
 import java.net.URI;
-import java.net.URLDecoder;
 import java.util.Map;
 
 import java.net.UnknownHostException;
@@ -56,6 +54,11 @@ public class CollectionService {
     this.metrics = ESMetrics.getInstance();
   }
 
+  public String collectTest(HttpServletRequest request) {
+    String domain = request.getParameter("domain");
+
+    return String.valueOf(LookupManager.isApprovedOffEbayDestination(domain));
+  }
   /**
    * Collect impression event and send pixel response
    *
