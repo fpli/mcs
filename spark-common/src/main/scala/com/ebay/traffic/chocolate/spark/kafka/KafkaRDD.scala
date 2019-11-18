@@ -189,6 +189,57 @@ class KafkaRDD[K, V](
       record
     }
 
+    /**
+     * validate resultOffset, in normal cases, resultOffset should equals to offset
+     * @param resultOffset the offset of this message
+     * @param offset the topic partition current offset
+     * @param partUtilOffset max consume offset, min(endOffset.getValue, position + maxConsumeSize)
+     */
+    private def validateResultOffset(resultOffset: Long, offset: Long, partUtilOffset: Long): Unit = {
+      if (resultOffset > offset) {
+        log.warn(s"Cannot fetch records in [${offset}, ${resultOffset})")
+        if (resultOffset >= partUtilOffset) {
+          throw new IllegalStateException(
+            s"Tried to fetch ${offset} but the returned record offset was ${resultOffset} " +
+              s"which exceeded untilOffset ${partUtilOffset}")
+        } else {
+          log.warn(s"Skip missing records in [$offset, ${resultOffset})")
+        }
+      } else if (resultOffset < offset) {
+        throw new IllegalStateException(
+          s"Tried to fetch ${offset} but the returned record offset was ${resultOffset}")
+      }
+    }
+
+    /**
+     * validate partUtilOffset, in normal cases, partUtilOffset should be larger than rangeEarliest
+     * @param rangeEarliest the earliest offset of this partition
+     * @param offset the topic partition current offset
+     * @param partUtilOffset max consume offset, min(endOffset.getValue, position + maxConsumeSize)
+     */
+    def validatePartUtilOffset(rangeEarliest: Long, offset: Long, partUtilOffset: Long): Unit = {
+      if (rangeEarliest >= partUtilOffset) { // range.earliest >= part.untilOffset
+        throw new IllegalStateException(
+          s"Tried to fetch [${offset}, ${partUtilOffset}) but the range earliest is ${rangeEarliest}")
+      }
+    }
+
+    /**
+     * validate current offset, current offset should be less than latest offset of the partition
+     * @param offset current offset
+     * @param rangeLatest latest offset of the partition
+     * @param timeout poll timeout
+     */
+    def validateCurrentOffset(offset: Long, rangeLatest:Long, timeout: Long):Unit = {
+      if (offset >= rangeLatest) {
+        throw new IllegalStateException(
+          s"Tried to fetch ${offset} which exceeds the latest offset ${rangeLatest}.")
+      } else { // range.earliest <= offset < range.latest
+        throw new TimeoutException(
+          s"Cannot fetch record for offset ${offset} in ${timeout} milliseconds")
+      }
+    }
+
     /** poll records from kafka topic partition **/
     private def poll(timeout: Long): ConsumerRecord[K, V] = {
       var result : ConsumerRecord[K, V] = null
@@ -205,19 +256,7 @@ class KafkaRDD[K, V](
         val iter = records.iterator()
         if (iter.hasNext) {
           result = iter.next
-          if (result.offset() > offset) {
-            log.warn(s"Cannot fetch records in [${offset}, ${result.offset})")
-            if (result.offset() >= part.untilOffset) {
-              throw new IllegalStateException(
-                s"Tried to fetch ${offset} but the returned record offset was ${result.offset} " +
-                  s"which exceeded untilOffset ${part.untilOffset}")
-            } else {
-              log.warn(s"Skip missing records in [$offset, ${result.offset})")
-            }
-          } else if (result.offset() < offset) {
-            throw new IllegalStateException(
-              s"Tried to fetch ${offset} but the returned record offset was ${result.offset}")
-          }
+          validateResultOffset(result.offset(), offset, part.untilOffset)
           buffer = iter
           finish = true
         } else {
@@ -233,20 +272,12 @@ class KafkaRDD[K, V](
             finish = true
           } else {
             if (offset < range.earliest) {
-              if (range.earliest < part.untilOffset) {
-                log.warn(s"Skip missing records in [$offset, ${range.earliest})")
-                offset = range.earliest
-                reset = true
-              } else { // range.earliest >= part.untilOffset
-                throw new IllegalStateException(
-                  s"Tried to fetch [${offset}, ${part.untilOffset}) but the range earliest is ${range.earliest}")
-              }
-            } else if (offset >= range.latest) {
-              throw new IllegalStateException(
-                s"Tried to fetch ${offset} which exceeds the latest offset ${range.latest}.")
-            } else { // range.earliest <= offset < range.latest
-              throw new TimeoutException(
-                s"Cannot fetch record for offset ${offset} in ${timeout} milliseconds")
+              validatePartUtilOffset(range.earliest, offset, part.untilOffset)
+              log.warn(s"Skip missing records in [$offset, ${range.earliest})")
+              offset = range.earliest
+              reset = true
+            } else {
+              validateCurrentOffset(offset, range.latest, timeout)
             }
           }
         }
