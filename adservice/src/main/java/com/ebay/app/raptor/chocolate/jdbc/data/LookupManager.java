@@ -5,18 +5,23 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 
+/**
+ * Look up tables for thirdparty urls
+ * Created by jialili1 on 11/15/19
+ */
 public class LookupManager {
   private static final Logger logger = LoggerFactory.getLogger(LookupManager.class);
 
+  /**
+   * Check if the thirdparty url is illegal to redirect
+   * @param destination thirdparty url
+   */
   public static boolean isApprovedOffEbayDestination(final String destination) {
-    final String destHost = getHostFromUrl(destination);
-    if (destHost == null || destHost.length() == 0) {
-      if (lookupProtocolWhitelist(destination)) {
-        return true;
-      }
-
-      return false;
+    if (lookupProtocolWhitelist(destination)) {
+      return true;
     }
+
+    final String destHost = getHostFromUrl(destination);
 
     // Check against exception suffixes
     if (lookupFullWhitelist(destHost)) {
@@ -31,6 +36,11 @@ public class LookupManager {
     return false;
   }
 
+  /**
+   * Get the domain from url
+   * @param destination url
+   * @return domain
+   */
   private static String getHostFromUrl(final String destination) {
     if (destination == null || destination.length() == 0) {
       return null;

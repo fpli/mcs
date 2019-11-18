@@ -9,6 +9,10 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Refresh the table and provide whitelist lookup
+ * Created by jialili1 on 11/15/19
+ */
 public class ThirdpartyWhitelistCache {
   private static final Logger logger = LoggerFactory.getLogger(ThirdpartyWhitelistCache.class);
 
@@ -32,14 +36,14 @@ public class ThirdpartyWhitelistCache {
   private static final long REFRESH_INTERVAL = 15 * 60 * 1000L;
 
   /**
-   * Full domain type id
-   */
-  private static final Integer FULL_DOMAIN_TYPE_ID = 5;
-
-  /**
    * Partial domain type id
    */
   private static final Integer PARTIAL_DOMAIN_TYPE_ID = 4;
+
+  /**
+   * Full domain type id
+   */
+  private static final Integer FULL_DOMAIN_TYPE_ID = 5;
 
   /**
    * Protocol suffix type id
@@ -75,14 +79,14 @@ public class ThirdpartyWhitelistCache {
   }
 
   /**
-   * Initialize the thirdparty cache
+   * Initialize the thirdparty whitelist cache and get the protocol whitelist
    */
   public static synchronized void init(ThirdpartyWhitelistRepo thirdpartyWhitelistRepo) {
     if (INSTANCE != null) {
       return;
     }
     INSTANCE = new ThirdpartyWhitelistCache(thirdpartyWhitelistRepo);
-    protocolWhitelist = thirdpartyWhitelistRepo.findByTypeId(6);
+    protocolWhitelist = thirdpartyWhitelistRepo.findByTypeId(PROTOCOL_SUFFIX_TYPE_ID);
   }
 
   /**
@@ -92,11 +96,18 @@ public class ThirdpartyWhitelistCache {
     return INSTANCE;
   }
 
+  /**
+   * Refresh thirdparty whitelists
+   */
   private void refreshThirdpartyWhitelist() {
     fullWhitelist = thirdpartyWhitelistRepo.findByTypeId(FULL_DOMAIN_TYPE_ID);
     partialWhitelist = thirdpartyWhitelistRepo.findByTypeId(PARTIAL_DOMAIN_TYPE_ID);
   }
 
+  /**
+   * Add this function for allowing non-http landing pages
+   * For instance, the links which open an app could be tracked
+   */
   public boolean isInProtocolWhitelist(String value) {
     if (value == null || value.trim().length() == 0) {
       return false;
@@ -112,7 +123,7 @@ public class ThirdpartyWhitelistCache {
       Iterator<ThirdpartyWhitelist> iter = protocolWhitelist.iterator();
       while (iter.hasNext()) {
         String protocolSuffix = iter.next().getValue();
-        if (value.equals(protocolSuffix)) {
+        if (protocolSuffix.equals(protocol)) {
           return true;
         }
       }
@@ -121,6 +132,9 @@ public class ThirdpartyWhitelistCache {
     return false;
   }
 
+  /**
+   * Check the full domain list, domain must be exactly match
+   */
   public boolean isInFullWhitelist(String value) {
     if (value == null || value.length() == 0) {
       return false;
@@ -137,6 +151,9 @@ public class ThirdpartyWhitelistCache {
     return false;
   }
 
+  /**
+   * Check the partial domain list, domain should be end with partial domain
+   */
   public boolean isInParitialWhitelist(String value) {
     if (value == null || value.length() == 0) {
       return false;
@@ -152,6 +169,9 @@ public class ThirdpartyWhitelistCache {
     return false;
   }
 
+  /**
+   * Check the domain pattern to avoid redirect url spoofing with approved suffix
+   */
   private static boolean isValidDomain(String in) {
     Matcher m = domainPattern.matcher(in);
     return m.matches();

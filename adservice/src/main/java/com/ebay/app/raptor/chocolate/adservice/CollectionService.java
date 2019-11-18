@@ -59,6 +59,7 @@ public class CollectionService {
 
     return String.valueOf(LookupManager.isApprovedOffEbayDestination(domain));
   }
+
   /**
    * Collect impression event and send pixel response
    *

@@ -2,6 +2,9 @@ package com.ebay.app.raptor.chocolate.jdbc.model;
 
 import javax.persistence.*;
 
+/**
+ * Created by jialili1 on 11/14/19
+ */
 @Entity
 @Table(name = "thirdparty_whitelist")
 public class ThirdpartyWhitelist {
