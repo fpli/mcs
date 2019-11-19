@@ -109,7 +109,7 @@ class CrabTransformJob(params: Parameter)
     }
 
     //    val kwLKPDf = spark.sql("select kw_id, kw from default.dw_kwdm_kw_lkp")
-    val kwLKPDf = readFilesAsDF(params.kwDataDir)
+    val kwLKPDf = readFilesAsDF(params.kwDataDir).filter($"is_dup" === false)
     val partitions = crabTransformMeta.length
 
     val metas = mergeMetaFiles(crabTransformMeta)
