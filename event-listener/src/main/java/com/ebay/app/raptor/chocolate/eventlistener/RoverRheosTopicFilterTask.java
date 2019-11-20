@@ -289,6 +289,16 @@ public class RoverRheosTopicFilterTask extends Thread {
           record.setCampaignId(campaignId);
           record.setPublisherId(-1L);
 
+          //For mobile clicks, get landingPageUrl from applicationPayload.url_mpre
+          String landingPageUrl = coalesce(applicationPayload.get(new Utf8("url_mpre")), empty).toString();
+          try {
+            landingPageUrl = URLDecoder.decode(landingPageUrl, "UTF-8");
+          } catch (Exception ex) {
+            ESMetrics.getInstance().meter("DecodeEpnMobileClicksLandingPageUrlError");
+            logger.warn("Decode EPN Mobile clicks landing page url error");
+          }
+          record.setLandingPageUrl(landingPageUrl);
+
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
       } else if(pageId == 3086) {
