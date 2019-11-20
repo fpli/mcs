@@ -289,7 +289,7 @@ public class RoverRheosTopicFilterTask extends Thread {
           record.setCampaignId(campaignId);
           record.setPublisherId(-1L);
 
-          //For mobile clicks, get landingPageUrl from applicationPayload.url_mpre
+          // get landingPageUrl from applicationPayload.url_mpre
           String landingPageUrl = coalesce(applicationPayload.get(new Utf8("url_mpre")), empty).toString();
           try {
             landingPageUrl = URLDecoder.decode(landingPageUrl, "UTF-8");
