@@ -292,7 +292,9 @@ public class RoverRheosTopicFilterTask extends Thread {
           // get landingPageUrl from applicationPayload.url_mpre
           String landingPageUrl = coalesce(applicationPayload.get(new Utf8("url_mpre")), empty).toString();
           try {
-            landingPageUrl = URLDecoder.decode(landingPageUrl, "UTF-8");
+            if(landingPageUrl.startsWith("https%3A%2F%2") || landingPageUrl.startsWith("http%3A%2F%2")) {
+              landingPageUrl = URLDecoder.decode(landingPageUrl, "UTF-8");
+            }
           } catch (Exception ex) {
             ESMetrics.getInstance().meter("DecodeEpnMobileClicksLandingPageUrlError");
             logger.warn("Decode EPN Mobile clicks landing page url error");
