@@ -9,7 +9,6 @@ import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.util.guid.Guid;
-import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
@@ -20,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
-import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
@@ -64,8 +62,8 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
   private static final String REDIRECT_SRC_SOJ_TAG = "adcamp_locationsrc";
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
   private static final String MCS_SERVICE_NAME = "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46";
-  private static final String ADSERVICE_SERVICE_NAME = "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46";
   private static final int HUNDRED = 100;
+  private static final int REDIRECT_API_OFFSET = 3;
   private static final String MRKT_EMAIL = "8";
 
 
@@ -109,7 +107,8 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
   }
 
   @Override
-  public URI process(HttpServletRequest request, HttpServletResponse response, CookieReader cookie, ContainerRequestContext context) throws IOException, URISyntaxException {
+  public URI process(HttpServletRequest request, HttpServletResponse response, 
+                     CookieReader cookie, ContainerRequestContext context) throws IOException, URISyntaxException {
 
     MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
 
@@ -199,22 +198,21 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
    */
   @Override
   public boolean isValidRedirectUrl(String redirectUrl) {
+    if (StringUtils.isEmpty(redirectUrl)) {
+      logger.warn("Redirect URL is empty " );
+      return false;
+    }
     // avoid infinite redirects
     URL urlObj = null;
     try {
       urlObj = new URL(redirectUrl);
     } catch (MalformedURLException e) {
-      logger.warn("Redirect URL is wrong: ");
+      logger.warn("Redirect URL is wrong: " + redirectUrl);
       return false;
     }
     String requestUri = urlObj.getPath();
-    if (!StringUtils.isEmpty(requestUri)) {
-      String[] tokens = requestUri.split("/");
-      // If the URL's domain is redirect host, and the api is redirect
-      // we identified it's a redirect URL in chocolate, need ignore it
-      if (tokens.length > 1 && tokens[0].equalsIgnoreCase(REDIRECT_SERVER_DOMAIN) && tokens[3].equals(Constants.REDIRECT)) {
-        return false;
-      }
+    if (!StringUtils.isEmpty(requestUri) && isRedirectDomain(requestUri)) {
+      return false;
     }
 
     // judge whether the url contain ebay domain
@@ -282,7 +280,8 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
       uriBuilder = generateAdobeUrl(parameters, endpoint);
       // Init the webTarget instance and set the property FOLLOW_REDIRECTS
       // FOLLOW_REDIRECTS = false means get method will not auto connect the redirect URL in 301 response
-      WebTarget webTarget = mktClient.target(uriBuilder.build()).property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
+      WebTarget webTarget = mktClient.target(uriBuilder.build())
+          .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
       Response response = webTarget.request().get();
 
       // Get the redirect URL from reponse
@@ -395,5 +394,19 @@ public enum AdobeRedirectStrategy implements RedirectStrategy {
     return true;
   }
 
+  private boolean isRedirectDomain(String requestUri) {
+    String[] tokens = requestUri.split("/");
+    // If the URL's domain is redirect host, and the api is redirect
+    // we identified it's a redirect URL in chocolate, need ignore it
+    if (tokens.length > REDIRECT_API_OFFSET) {
+      if (tokens[0].equalsIgnoreCase(REDIRECT_SERVER_DOMAIN)
+          && tokens[REDIRECT_API_OFFSET].equalsIgnoreCase(Constants.REDIRECT)) {
+        return true;
+      }
+    } else {
+      return false;
+    }
+    return false;
+  }
 
 }
