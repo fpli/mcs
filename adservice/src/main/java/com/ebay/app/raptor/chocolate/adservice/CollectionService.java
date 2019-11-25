@@ -2,12 +2,12 @@ package com.ebay.app.raptor.chocolate.adservice;
 
 import com.ebay.app.raptor.chocolate.adservice.redirect.AdobeRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.redirect.RedirectContext;
+import com.ebay.app.raptor.chocolate.adservice.redirect.ThirdpartyRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
-import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
 import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
@@ -52,12 +52,6 @@ public class CollectionService {
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
-  }
-
-  public String collectTest(HttpServletRequest request) {
-    String domain = request.getParameter("domain");
-
-    return String.valueOf(LookupManager.isApprovedOffEbayDestination(domain));
   }
 
   /**
@@ -108,15 +102,17 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public URI collectRdirect(HttpServletRequest request, HttpServletResponse response,
-                            ContainerRequestContext requestContext, CookieReader cookieReader) throws Exception {
+  public URI collectRedirect(HttpServletRequest request, HttpServletResponse response,
+                             ContainerRequestContext requestContext, CookieReader cookieReader) throws Exception {
 
     // verify the request
     verifyRedirectRequest(request);
 
     // get parameters from request
     MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
-    String partnerId = parameters.get(Constants.PARTNER_ID).get(0);
+    String partnerId = "";
+    if (parameters.containsKey(Constants.PARTNER_ID) && parameters.get(Constants.PARTNER_ID) != null)
+      partnerId = parameters.get(Constants.PARTNER_ID).get(0);
 
     // execute redirect Strategy
     return executeRedirectStrategy(request, response, partnerId, requestContext,cookieReader);
@@ -131,27 +127,22 @@ public class CollectionService {
     if (null == params || params.isEmpty()) {
       logError(Errors.ERROR_REDIRECT_NO_QUERY_PARAMETER);
     }
-    MultiValueMap<String, String> parameters = ParametersParser.parse(params);
-
-    // no partnerId, rejected
-    if (!parameters.containsKey(Constants.PARTNER_ID) || null == parameters.get(Constants.PARTNER_ID).get(0) ) {
-      logError(Errors.ERROR_REDIRECT_NO_PARTNER_ID);
-    }
 
   }
 
   /**
    * Send redirect response by Strategy Pattern
    */
-  private URI executeRedirectStrategy(HttpServletRequest request, HttpServletResponse response, String partnerId, ContainerRequestContext context, CookieReader cookie) throws Exception {
-    RedirectContext redirectContext = null;
+  private URI executeRedirectStrategy(HttpServletRequest request, HttpServletResponse response, String partnerId,
+                                      ContainerRequestContext context, CookieReader cookie) throws Exception {
+    RedirectContext redirectContext;
     switch (partnerId) {
       case ADOBE_PARTNER_ID:
         // AdobeRedirectStrategy has been implemented the Singleton pattern by Enum
-        redirectContext = new RedirectContext(AdobeRedirectStrategy.INSTANCE);
+        redirectContext = new RedirectContext(new AdobeRedirectStrategy());
         break;
       default:
-        logError(Errors.ERROR_REDIRECT_INVALID_PARTNER_ID);
+        redirectContext = new RedirectContext(new ThirdpartyRedirectStrategy());
     }
     try {
       return redirectContext.execute(request, response, cookie, context);

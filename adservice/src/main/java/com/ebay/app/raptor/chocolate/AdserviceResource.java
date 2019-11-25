@@ -13,6 +13,7 @@ import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.Map;
@@ -142,16 +144,14 @@ public class AdserviceResource implements EventsApi {
 
   @Override
   public Response redirect() throws URISyntaxException {
-    return Response.ok(collectionService.collectTest(request)).build();
-//
-//    URI redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
-//    try {
-//      redirectUri = collectionService.collectRdirect(request, response, requestContext, cookieReader);
-//    } catch (Exception e) {
-//      // When exception happen, redirect to www.ebay.com
-//      logger.warn(e.getMessage(), e);
-//    }
-//    return Response.status(Response.Status.MOVED_PERMANENTLY).location(redirectUri).build();
+    URI redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
+    try {
+      redirectUri = collectionService.collectRedirect(request, response, requestContext, cookieReader);
+    } catch (Exception e) {
+      // When exception happen, redirect to www.ebay.com
+      logger.warn(e.getMessage(), e);
+    }
+    return Response.status(Response.Status.MOVED_PERMANENTLY).location(redirectUri).build();
   }
 
 }
