@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 /**
  * Refresh the table and provide whitelist lookup
+ *
  * Created by jialili1 on 11/15/19
  */
 public class ThirdpartyWhitelistCache {

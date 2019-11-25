@@ -7,6 +7,7 @@ import java.util.List;
 
 /**
  * Query on the table thirdparty_whitelist
+ *
  * Created by jialili1 on 11/14/19
  */
 public interface ThirdpartyWhitelistRepo extends JpaRepository<ThirdpartyWhitelist, Integer>{

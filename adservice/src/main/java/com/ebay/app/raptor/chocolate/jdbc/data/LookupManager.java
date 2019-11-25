@@ -7,6 +7,7 @@ import java.net.URL;
 
 /**
  * Look up tables for thirdparty urls
+ *
  * Created by jialili1 on 11/15/19
  */
 public class LookupManager {
