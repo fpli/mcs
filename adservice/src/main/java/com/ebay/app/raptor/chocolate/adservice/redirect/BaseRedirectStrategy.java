@@ -45,9 +45,9 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   private static final String REDIRECT_SERVER_DOMAIN = "TBD";
   private static final String[] TARGET_URL_PARMS = {"mpre", "loc", "url", "URL"};
   private static final String MCS_SERVICE_NAME = "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46";
-  private static final String DEFAULT_REDIRECT_URL = "http://www.ebay.com";
   private static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   private static final String REDIRECT_SRC_SOJ_TAG = "adcamp_locationsrc";
+  private static final int REDIRECT_API_OFFSET = 3;
 
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
 
@@ -60,8 +60,8 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   ContainerRequestContext context) throws URISyntaxException {
     MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
 
-    redirectionEvent = new RedirectionEvent(getParam(parameters, Constants.MKCID), getParam(parameters, Constants.MKEVT),
-        getParam(parameters, Constants.PARTNER_ID));
+    redirectionEvent = new RedirectionEvent(getParam(parameters, Constants.MKCID),
+        getParam(parameters, Constants.MKEVT), getParam(parameters, Constants.PARTNER_ID));
 
     // generate Redirect Url
     generateRedirectUrl(parameters);
@@ -72,47 +72,38 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     return new URIBuilder(redirectionEvent.getRedirectUrl()).build();
   }
 
-  /**
-   * Verify the redirect url, if loc URL is ebay url or in whitelist return true
-   * Must avoid infinite redirects
-   */
-  public boolean isValidRedirectUrl(String url) {
-    // avoid infinite redirects
-    URL urlObj;
-    try {
-      urlObj = new URL(url);
-    } catch (MalformedURLException e) {
-      logger.warn("Redirect URL is wrong: ", e);
-      return false;
-    }
-    String requestUri = urlObj.getPath();
-    if (!StringUtils.isEmpty(requestUri)) {
-      String[] tokens = requestUri.split("/");
-      // If the URL's domain is redirect host, and the api is redirect
-      // we identified it's a redirect URL in chocolate, need ignore it
-      if (tokens.length > 1 && tokens[0].equalsIgnoreCase(REDIRECT_SERVER_DOMAIN)
-          && tokens[3].equals(Constants.REDIRECT)) {
-        return false;
-      }
-    }
-
-    // judge whether the url contain ebay domain
-    Matcher m = ebaysites.matcher(url.toLowerCase());
-    if (m.find()) {
-      return true;
-    }
-
-    return isWhiteListDomain(url);
-  }
-
   protected void generateRedirectUrl(MultiValueMap<String, String> parameters) {
     // The method should have specific implementation
   }
 
   /**
-   * Judge whether the redirection url is a valid thirdparty url
+   * Verify the redirect url, if loc URL is ebay url or in whitelist return true
+   * Must avoid infinite redirects
    */
-  private boolean isWhiteListDomain(String redirectUrl) {
+  public boolean isValidRedirectUrl(String redirectUrl) {
+    if (StringUtils.isEmpty(redirectUrl)) {
+      logger.warn("Redirect URL is empty " );
+      return false;
+    }
+    // avoid infinite redirects
+    URL urlObj = null;
+    try {
+      urlObj = new URL(redirectUrl);
+    } catch (MalformedURLException e) {
+      logger.warn("Redirect URL is wrong: " + redirectUrl);
+      return false;
+    }
+    String requestUri = urlObj.getPath();
+    if (!StringUtils.isEmpty(requestUri) && isRedirectDomain(requestUri)) {
+      return false;
+    }
+
+    // judge whether the url contain ebay domain
+    Matcher m = ebaysites.matcher(redirectUrl.toLowerCase());
+    if (m.find()) {
+      return true;
+    }
+
     return LookupManager.isApprovedOffEbayDestination(redirectUrl);
   }
 
@@ -216,12 +207,30 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     return "userAgent=" + userAgent;
   }
 
+  /**
+   * Get parameter from url
+   */
   private String getParam(MultiValueMap<String, String> parameters, String param) {
     if (parameters.containsKey(param) && parameters.get(param) != null) {
       return parameters.get(param).get(0);
     }
     else
       return null;
+  }
+
+  private boolean isRedirectDomain(String requestUri) {
+    String[] tokens = requestUri.split("/");
+    // If the URL's domain is redirect host, and the api is redirect
+    // we identified it's a redirect URL in chocolate, need ignore it
+    if (tokens.length > REDIRECT_API_OFFSET) {
+      if (tokens[0].equalsIgnoreCase(REDIRECT_SERVER_DOMAIN)
+          && tokens[REDIRECT_API_OFFSET].equalsIgnoreCase(Constants.REDIRECT)) {
+        return true;
+      }
+    } else {
+      return false;
+    }
+    return false;
   }
 
 }

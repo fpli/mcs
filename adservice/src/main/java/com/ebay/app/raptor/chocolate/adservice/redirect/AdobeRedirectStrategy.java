@@ -113,7 +113,8 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
       uriBuilder = generateAdobeUrl(parameters, endpoint);
       // Init the webTarget instance and set the property FOLLOW_REDIRECTS
       // FOLLOW_REDIRECTS = false means get method will not auto connect the redirect URL in 301 response
-      WebTarget webTarget = mktClient.target(uriBuilder.build()).property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
+      WebTarget webTarget = mktClient.target(uriBuilder.build())
+          .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
       Response response = webTarget.request().get();
 
       // Get the redirect URL from reponse
