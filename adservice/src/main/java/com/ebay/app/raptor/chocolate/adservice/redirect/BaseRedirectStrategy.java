@@ -67,7 +67,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     generateRedirectUrl(parameters);
 
     // call mcs to send ubi event if redirect url is not an ebay doamin
-    callMcs(request, cookie, context, parameters);
+    callMcs(request, cookie, context);
 
     return new URIBuilder(redirectionEvent.getRedirectUrl()).build();
   }
@@ -136,8 +136,8 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   /**
    * Generate a mcs click event and call mcs
    */
-  private void callMcs(HttpServletRequest request, CookieReader cookie, ContainerRequestContext context,
-                      MultiValueMap<String, String> parameters) throws URISyntaxException{
+  private void callMcs(HttpServletRequest request, CookieReader cookie, ContainerRequestContext context)
+      throws URISyntaxException{
 
     Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", MCS_SERVICE_NAME);
     Client mktClient = GingerClientBuilder.newClient(config);
