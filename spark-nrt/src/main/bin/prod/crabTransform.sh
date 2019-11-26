@@ -36,7 +36,7 @@ fi
 DRIVER_MEMORY=16g
 EXECUTOR_NUMBER=50
 EXECUTOR_MEMORY=8g
-EXECUTOR_CORES=4
+EXECUTOR_CORES=8
 
 JOB_NAME="crabTransform"
 
@@ -71,6 +71,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --kwDataDir "${KW_LKP_FOLDER}" \
       --workDir "${WORK_DIR}" \
       --outputDir "${OUTPUT_DIR}" \
+      --joinKeyword true \
       --compressOutPut true \
       --maxMetaFiles 12 \
       --elasticsearchUrl ${ES_URL} \
