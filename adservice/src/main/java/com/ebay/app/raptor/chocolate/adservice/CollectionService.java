@@ -148,14 +148,13 @@ public class CollectionService {
   private URI executeRedirectStrategy(HttpServletRequest request, String partnerId, ContainerRequestContext context,
                                       CookieReader cookie) throws URISyntaxException{
     RedirectContext redirectContext;
-    switch (partnerId) {
-      case Constants.ADOBE_PARTNER_ID:
-        // AdobeRedirectStrategy has been implemented the Singleton pattern by Enum
-        redirectContext = new RedirectContext(new AdobeRedirectStrategy());
-        break;
-      default:
-        redirectContext = new RedirectContext(new ThirdpartyRedirectStrategy());
+    if (Constants.ADOBE_PARTNER_ID.equals(partnerId)) {
+      // AdobeRedirectStrategy has been implemented the Singleton pattern by Enum
+      redirectContext = new RedirectContext(new AdobeRedirectStrategy());
+    } else {
+      redirectContext = new RedirectContext(new ThirdpartyRedirectStrategy());
     }
+
     try {
       return redirectContext.execute(request, cookie, context);
     } catch (Exception e) {
