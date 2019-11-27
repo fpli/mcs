@@ -4,7 +4,6 @@ import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
-import com.ebay.app.raptor.chocolate.adservice.util.RedirectionEvent;
 import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
@@ -20,7 +19,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
@@ -28,6 +26,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Response;
 import java.net.*;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,13 +50,13 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
 
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
 
-  BaseRedirectStrategy() {
+  public BaseRedirectStrategy() {
     this.metrics = ESMetrics.getInstance();
   }
 
   @Override
-  public URI process(HttpServletRequest request, HttpServletResponse response, CookieReader cookie,
-  ContainerRequestContext context) throws URISyntaxException {
+  public URI process(HttpServletRequest request, CookieReader cookie, ContainerRequestContext context)
+      throws URISyntaxException {
     MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
 
     redirectionEvent = new RedirectionEvent(getParam(parameters, Constants.MKCID),
@@ -67,13 +66,10 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     generateRedirectUrl(parameters);
 
     // call mcs to send ubi event if redirect url is not an ebay doamin
-    callMcs(request, cookie, context);
+    // always call for now because pages are not fully accessible for mcs
+    callMcs(request, cookie, context, parameters);
 
     return new URIBuilder(redirectionEvent.getRedirectUrl()).build();
-  }
-
-  protected void generateRedirectUrl(MultiValueMap<String, String> parameters) {
-    // The method should have specific implementation
   }
 
   /**
@@ -127,17 +123,21 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   /**
    * Generate a mcs click event and call mcs
    */
-  private void callMcs(HttpServletRequest request, CookieReader cookie, ContainerRequestContext context)
+  private void callMcs(HttpServletRequest request, CookieReader cookie, ContainerRequestContext context,
+                       MultiValueMap<String, String> parameters)
       throws URISyntaxException{
 
     Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", MCS_SERVICE_NAME);
     Client mktClient = GingerClientBuilder.newClient(config);
     String mcsEndpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
 
-    // build mcs target url, add mkcid and mkevt
+    // build mcs target url, add all original parameter for ubi events except target url parameter
     URIBuilder uriBuilder = new URIBuilder(redirectionEvent.getRedirectUrl());
-    uriBuilder.addParameter(Constants.MKCID, redirectionEvent.getChannelId())
-        .addParameter(Constants.MKEVT, redirectionEvent.getActionId());
+    for (String paramter : parameters.keySet()) {
+      if (!Arrays.asList(TARGET_URL_PARMS).contains(paramter)) {
+        uriBuilder.addParameter(paramter, parameters.get(paramter).get(0));
+      }
+    }
 
     // Adobe needs additional parameters
     if ("adobe".equals(redirectionEvent.getPartner())) {
