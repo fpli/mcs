@@ -68,7 +68,7 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
    * Generate the redirect URL
    */
   @Override
-  protected void generateRedirectUrl(MultiValueMap<String, String> parameters) {
+  public void generateRedirectUrl(MultiValueMap<String, String> parameters) {
     redirectionEvent.setRedirectSource("default");
     redirectionEvent.setRedirectUrl(DEFAULT_REDIRECT_URL);
     // get loc parameter from request, if loc URL is valid, return it as redirect url

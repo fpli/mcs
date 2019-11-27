@@ -102,8 +102,8 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public URI collectRedirect(HttpServletRequest request, HttpServletResponse response,
-                             ContainerRequestContext requestContext, CookieReader cookieReader) throws Exception {
+  public URI collectRedirect(HttpServletRequest request, ContainerRequestContext requestContext,
+                             CookieReader cookieReader) throws Exception {
 
     // verify the request
     verifyRedirectRequest(request);
@@ -115,7 +115,7 @@ public class CollectionService {
       partnerId = parameters.get(Constants.PARTNER_ID).get(0);
 
     // execute redirect Strategy
-    return executeRedirectStrategy(request, response, partnerId, requestContext,cookieReader);
+    return executeRedirectStrategy(request, partnerId, requestContext, cookieReader);
   }
 
   /**
@@ -133,8 +133,8 @@ public class CollectionService {
   /**
    * Send redirect response by Strategy Pattern
    */
-  private URI executeRedirectStrategy(HttpServletRequest request, HttpServletResponse response, String partnerId,
-                                      ContainerRequestContext context, CookieReader cookie) throws Exception {
+  private URI executeRedirectStrategy(HttpServletRequest request, String partnerId, ContainerRequestContext context,
+                                      CookieReader cookie) throws Exception {
     RedirectContext redirectContext;
     switch (partnerId) {
       case ADOBE_PARTNER_ID:
@@ -145,7 +145,7 @@ public class CollectionService {
         redirectContext = new RedirectContext(new ThirdpartyRedirectStrategy());
     }
     try {
-      return redirectContext.execute(request, response, cookie, context);
+      return redirectContext.execute(request, cookie, context);
     } catch (Exception e) {
       logError(Errors.ERROR_REDIRECT_RUNTIME);
     }

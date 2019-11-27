@@ -146,7 +146,7 @@ public class AdserviceResource implements EventsApi {
   public Response redirect() throws URISyntaxException {
     URI redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
     try {
-      redirectUri = collectionService.collectRedirect(request, response, requestContext, cookieReader);
+      redirectUri = collectionService.collectRedirect(request, requestContext, cookieReader);
     } catch (Exception e) {
       // When exception happen, redirect to www.ebay.com
       logger.warn(e.getMessage(), e);

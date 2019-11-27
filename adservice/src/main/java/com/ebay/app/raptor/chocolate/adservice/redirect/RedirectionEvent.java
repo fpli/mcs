@@ -1,4 +1,4 @@
-package com.ebay.app.raptor.chocolate.adservice.util;
+package com.ebay.app.raptor.chocolate.adservice.redirect;
 
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 
@@ -53,6 +53,14 @@ public class RedirectionEvent {
       return null;
   }
 
+  public void setChannelId(String channelId) {
+    this.channelId = channelId;
+  }
+
+  public String getChannelId() {
+    return channelId;
+  }
+
   public void setChannelType(String channel) {
     this.channelType = channel;
   }
@@ -61,15 +69,11 @@ public class RedirectionEvent {
     return channelType;
   }
 
-  public void setActionId(String action) {
-    this.actionId = action;
+  public void setActionId(String actionId) {
+    this.actionId = actionId;
   }
 
   public String getActionId() {
     return actionId;
-  }
-
-  public String getChannelId() {
-    return channelId;
   }
 }
