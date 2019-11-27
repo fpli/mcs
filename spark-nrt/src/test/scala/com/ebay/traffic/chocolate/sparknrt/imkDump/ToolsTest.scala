@@ -122,12 +122,12 @@ class ToolsTest extends FunSuite {
   }
 
   test("test getUserQueryFromRef") {
-    val testQuery = tools.getQueryString("https://rover.ebay.com/roverns/1/710-16388-7832-0?mpt=1572370403910&mpcl=https%3A%2F%2Fwww.ebay.co.uk%2F&mpvl=https%3A%2F%2Fwww.bing.com%2Fsearch%3FQ%3Debay%26form%3DEDNTHT%26mkt%3Den-gb%26httpsmsn%3D1%26msnews%3D1%26plvar%3D0%26refig%3Dde0359d2287f4fc6f0d43c815214d153%26sp%3D1%26qs%3DAS%26pq%3Deb%26sk%3DPRES1%26sc%3D8-2%26cvid%3Dde0359d2287f4fc6f0d43c815214d153%26cc%3DGB%26setlang%3Den-GB")
+    val testQuery = tools.getQueryString("https://rover.ebay.com/roverns/1/710-16388-7832-0?mpt=1572370403910&mpcl=https%3A%2F%2Fwww.ebay.co.uk%2F&mpvl=https%3A%2F%2Fwww.bing.com%2Fsearch%3FQ%3DeBay%26form%3DEDNTHT%26mkt%3Den-gb%26httpsmsn%3D1%26msnews%3D1%26plvar%3D0%26refig%3Dde0359d2287f4fc6f0d43c815214d153%26sp%3D1%26qs%3DAS%26pq%3Deb%26sk%3DPRES1%26sc%3D8-2%26cvid%3Dde0359d2287f4fc6f0d43c815214d153%26cc%3DGB%26setlang%3Den-GB")
     val ref = tools.getDecodeParamUrlValueFromQuery(testQuery, "mpvl")
     val userQuery = tools.getUserQueryFromRef(ref)
     val refererDomainName = tools.getDomain(ref)
 
-    assert(ref == "https://www.bing.com/search?Q=ebay&form=EDNTHT&mkt=en-gb&httpsmsn=1&msnews=1&plvar=0&refig=de0359d2287f4fc6f0d43c815214d153&sp=1&qs=AS&pq=eb&sk=PRES1&sc=8-2&cvid=de0359d2287f4fc6f0d43c815214d153&cc=GB&setlang=en-GB")
+    assert(ref == "https://www.bing.com/search?Q=eBay&form=EDNTHT&mkt=en-gb&httpsmsn=1&msnews=1&plvar=0&refig=de0359d2287f4fc6f0d43c815214d153&sp=1&qs=AS&pq=eb&sk=PRES1&sc=8-2&cvid=de0359d2287f4fc6f0d43c815214d153&cc=GB&setlang=en-GB")
     assert(userQuery == "ebay")
     assert(refererDomainName == "www.bing.com")
   }

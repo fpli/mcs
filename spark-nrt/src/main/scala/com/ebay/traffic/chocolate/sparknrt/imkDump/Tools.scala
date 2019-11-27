@@ -480,8 +480,8 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     * @return user query
     */
   def getUserQueryFromRef(ref: String): String = {
-    val host = getDomain(ref)
-    val queryMap = getQueryMapFromUrl(ref)
+    val host = getDomain(ref.toLowerCase)
+    val queryMap = getQueryMapFromUrl(ref.toLowerCase)
     if (StringUtils.isNotEmpty(host) && queryMap.nonEmpty) {
       for ((k, v) <- search_keyword_map) {
         if (host.contains(k.trim)) {
