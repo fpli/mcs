@@ -5,7 +5,6 @@ import org.springframework.util.MultiValueMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -16,7 +15,6 @@ public interface RedirectStrategy {
    * @param cookie  cookies
    * @param context request context
    * @return        redirection url
-   * @throws IOException
    * @throws URISyntaxException
    */
   URI process(HttpServletRequest request, CookieReader cookie, ContainerRequestContext context)
