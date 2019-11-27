@@ -45,6 +45,7 @@ public class Constants {
   public static final String CHANNEL_TYPE = "channelType";
 
   // Redirect url params
+  public static final String ADOBE_PARTNER_ID = "14";
   public static final String PARTNER_ID = "partnerId";
   public static final String ADOBE_PARAMS = "adobeParams";
   public static final String LOCTATION = "loc";

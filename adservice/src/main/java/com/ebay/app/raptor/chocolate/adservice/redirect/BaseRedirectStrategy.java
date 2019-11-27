@@ -59,6 +59,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
       throws URISyntaxException {
     MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
 
+    // build redirection event
     redirectionEvent = new RedirectionEvent(getParam(parameters, Constants.MKCID),
         getParam(parameters, Constants.MKEVT), getParam(parameters, Constants.PARTNER_ID));
 

@@ -94,7 +94,7 @@ public class AdserviceResource implements EventsApi {
       }
 
       // get channel for metrics
-      String channelType = "";
+      String channelType = null;
       Map<String, String[]> params = request.getParameterMap();
       if (params.containsKey(Constants.MKCID) && params.get(Constants.MKCID)[0] != null)
         channelType = ChannelIdEnum.parse(params.get(Constants.MKCID)[0]).getLogicalChannel().getAvro().toString();

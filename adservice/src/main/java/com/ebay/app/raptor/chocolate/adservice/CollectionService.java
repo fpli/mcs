@@ -8,6 +8,7 @@ import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import java.net.UnknownHostException;
@@ -40,10 +42,7 @@ import java.net.UnknownHostException;
 public class CollectionService {
   private static final Logger logger = LoggerFactory.getLogger(CollectionService.class);
   private Metrics metrics;
-  private static CollectionService instance = null;
-  private static final String CHANNEL_ACTION = "channelAction";
-  private static final String CHANNEL_TYPE = "channelType";
-  private static final String ADOBE_PARTNER_ID = "14";
+  private static final String CLICK = "1";
 
 
   @Autowired
@@ -106,38 +105,51 @@ public class CollectionService {
                              CookieReader cookieReader) throws Exception {
 
     // verify the request
-    verifyRedirectRequest(request);
-
-    // get parameters from request
-    MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
-    String partnerId = "";
-    if (parameters.containsKey(Constants.PARTNER_ID) && parameters.get(Constants.PARTNER_ID) != null)
-      partnerId = parameters.get(Constants.PARTNER_ID).get(0);
+    MultiValueMap<String, String> parameters = verifyRedirectRequest(request);
 
     // execute redirect Strategy
-    return executeRedirectStrategy(request, partnerId, requestContext, cookieReader);
+    return executeRedirectStrategy(request, getParam(parameters, Constants.PARTNER_ID), requestContext, cookieReader);
   }
 
   /**
    * Verify redirect request, if invalid then throw an exception
    */
-  private void verifyRedirectRequest(HttpServletRequest request)  throws Exception {
+  private MultiValueMap<String, String> verifyRedirectRequest(HttpServletRequest request)  throws Exception {
     // no query parameter, rejected
     Map<String, String[]> params = request.getParameterMap();
     if (null == params || params.isEmpty()) {
       logError(Errors.ERROR_REDIRECT_NO_QUERY_PARAMETER);
     }
 
+    MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
+    // reject no mkevt
+    if (!parameters.containsKey(Constants.MKEVT)) {
+      logError(Errors.REDIRECT_NO_MKEVT);
+    }
+    // reject invalid mkevt
+    if (!CLICK.equals(getParam(parameters, Constants.MKEVT))) {
+      logError(Errors.REDIRECT_INVALID_MKEVT);
+    }
+    // reject no mkcid
+    if (!parameters.containsKey(Constants.MKCID)) {
+      logError(Errors.REDIRECT_NO_MKCID);
+    }
+    // reject invalid mkcid
+    if (ChannelIdEnum.parse(getParam(parameters, Constants.MKCID)) == null) {
+      logError(Errors.REDIRECT_INVALID_MKCID);
+    }
+
+    return parameters;
   }
 
   /**
    * Send redirect response by Strategy Pattern
    */
   private URI executeRedirectStrategy(HttpServletRequest request, String partnerId, ContainerRequestContext context,
-                                      CookieReader cookie) throws Exception {
+                                      CookieReader cookie) throws URISyntaxException{
     RedirectContext redirectContext;
     switch (partnerId) {
-      case ADOBE_PARTNER_ID:
+      case Constants.ADOBE_PARTNER_ID:
         // AdobeRedirectStrategy has been implemented the Singleton pattern by Enum
         redirectContext = new RedirectContext(new AdobeRedirectStrategy());
         break;
@@ -147,9 +159,11 @@ public class CollectionService {
     try {
       return redirectContext.execute(request, cookie, context);
     } catch (Exception e) {
-      logError(Errors.ERROR_REDIRECT_RUNTIME);
+      metrics.meter("RedirectionRuntimeError");
+      logger.warn("Redirection runtime error: ", e);
     }
-      return new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
+
+    return new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
   }
 
   /**
@@ -162,6 +176,17 @@ public class CollectionService {
     logger.warn(error);
     metrics.meter(error);
     throw new Exception(error);
+  }
+
+  /**
+   * Get parameter from url
+   */
+  private String getParam(MultiValueMap<String, String> parameters, String param) {
+    if (parameters.containsKey(param) && parameters.get(param) != null) {
+      return parameters.get(param).get(0);
+    }
+    else
+      return null;
   }
 
 }

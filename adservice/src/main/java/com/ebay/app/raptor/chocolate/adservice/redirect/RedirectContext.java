@@ -4,7 +4,6 @@ import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -16,7 +15,7 @@ public class RedirectContext {
   }
 
   public URI execute(HttpServletRequest request, CookieReader cookie, ContainerRequestContext context)
-      throws IOException, URISyntaxException {
+      throws URISyntaxException {
     return strategy.process(request, cookie, context);
   }
 }

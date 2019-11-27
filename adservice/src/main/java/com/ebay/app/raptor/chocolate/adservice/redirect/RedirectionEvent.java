@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice.redirect;
 
+import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 
 /**
@@ -14,6 +15,8 @@ public class RedirectionEvent {
   private String channelId;
   private String channelType;
   private String actionId;
+
+  private static final String ADOBE = "adobe";
 
   public RedirectionEvent(String channelId, String actionId, String partnerId) {
     this.channelId = channelId;
@@ -47,10 +50,11 @@ public class RedirectionEvent {
   }
 
   public String getPartner() {
-    if ("14".equals(partnerId)) {
-      return "adobe";
-    } else
+    if (Constants.ADOBE_PARTNER_ID.equals(partnerId)) {
+      return ADOBE;
+    } else {
       return null;
+    }
   }
 
   public void setChannelId(String channelId) {

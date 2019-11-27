@@ -20,7 +20,7 @@ public interface RedirectStrategy {
    * @throws URISyntaxException
    */
   URI process(HttpServletRequest request, CookieReader cookie, ContainerRequestContext context)
-      throws IOException, URISyntaxException;
+      throws URISyntaxException;
 
   /**
    * Get redirection url
