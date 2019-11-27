@@ -125,9 +125,7 @@ class TestCrabTransformJob extends BaseFunSuite{
     )
     val params = Parameter(args)
     val job = new CrabTransformJob(params)
-    // prepare keyword lookup data
-    val df = job.spark.read.format("csv").option("header", "true").option("delimiter", "\t").load(tmpPath + "/kwData.csv")
-    df.write.parquet(kwDataDir)
+
     job.run()
     val status1 = fs.listStatus(new Path(outPutDir + "/imkOutput"))
     assert(status1.nonEmpty)
