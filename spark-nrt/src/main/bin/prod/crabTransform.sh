@@ -22,6 +22,7 @@ bin=`cd "$bin">/dev/null; pwd`
 
 WORK_DIR=$1
 OUTPUT_DIR=$2
+JOIN_KEYWORD=$4
 ES_URL=http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
 
 KW_LKP_LATEST_PATH=hdfs://slickha/apps/kw_lkp/latest_path
