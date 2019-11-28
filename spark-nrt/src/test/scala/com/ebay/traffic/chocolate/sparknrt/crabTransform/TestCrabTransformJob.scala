@@ -38,6 +38,7 @@ class TestCrabTransformJob extends BaseFunSuite{
       "--transformedPrefix", "chocolate_",
       "--workDir", workDir,
       "--outputDir", outPutDir,
+      "--joinKeyword", "true",
       "--kwDataDir", kwDataDir,
       "--compressOutPut", "false",
       "--maxMetaFiles", "2",
@@ -104,6 +105,36 @@ class TestCrabTransformJob extends BaseFunSuite{
 
     assert(notDupDF.count() == 1)
     assert(df.except(notDupDF).count == 2)
+  }
+
+  test("Test not join keyword") {
+    val args = Array(
+      "--mode", "local[8]",
+      "--channel", "crabDedupe",
+      "--transformedPrefix", "chocolate_",
+      "--workDir", workDir,
+      "--outputDir", outPutDir,
+      "--joinKeyword", "false",
+      "--kwDataDir", kwDataDir,
+      "--compressOutPut", "false",
+      "--maxMetaFiles", "2",
+      "--elasticsearchUrl", "http://10.148.181.34:9200",
+      "--metaFile", "dedupe",
+      "--hdfsUri", "",
+      "--xidParallelNum", "2"
+    )
+    val params = Parameter(args)
+    val job = new CrabTransformJob(params)
+
+    job.run()
+    val status1 = fs.listStatus(new Path(outPutDir + "/imkOutput"))
+    assert(status1.nonEmpty)
+    val status2 = fs.listStatus(new Path(outPutDir + "/dtlOutput"))
+    assert(status2.nonEmpty)
+    val status3 = fs.listStatus(new Path(outPutDir + "/mgOutput"))
+    assert(status3.nonEmpty)
+
+    println(job.getUserIdByCguid("", "1eb2d8b915c0a9e807109ca3f924b4c2", "1"))
   }
 
 }
