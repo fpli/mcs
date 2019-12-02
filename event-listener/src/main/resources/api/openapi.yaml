@@ -10,6 +10,35 @@ info:
   version: 1.0.0
   title: service-tracking-events
 paths:
+  /roi:
+    post:
+      summary: Send roi event to marketing tracking
+      description: Send roi event to marketing tracking
+      tags:
+        - roi
+      operationId: roi
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Rejected due to message format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorModel'
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ROIEvent'
   /events:
     post:
       summary: Send one event to marketing tracking
@@ -28,9 +57,9 @@ paths:
         '400':
           description: Rejected due to message format
           content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/errorModel'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorModel'
         '500':
           description: The call was unsuccessful due to exceptions on the Server
       requestBody:
@@ -56,15 +85,15 @@ paths:
           description: version number
         '400':
           description: Rejected due to message format
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorModel'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorModel'
         '500':
           description: The call was unsuccessful due to exceptions on the Server
 
 components:
-   securitySchemes:
+  securitySchemes:
     app_scope_auth:
       type: oauth2
       description: >-
@@ -77,7 +106,7 @@ components:
             'https://api.ebay.com/oauth/scope/@public': This scope would allow public access.
             'https://api.ebay.com/oauth/scope/base@public': This scope would allow base public access.
             'https://api.ebay.com/oauth/scope/experience@public': This scope would allow experience public access.
-   schemas:
+  schemas:
     Event:
       type: object
       properties:
@@ -87,6 +116,18 @@ components:
         referrer:
           type: "string"
           example: "htttps://www.google.com"
+    ROIEvent:
+      type: object
+      properties:
+        transType:
+          type: "string"
+          example: "BIN"
+        uniqueTransactionId:
+          type: "string"
+          example: "BIN"
+        itemId:
+          type: "string"
+          example: "BIN"
     errorData:
       type: object
       description: >
