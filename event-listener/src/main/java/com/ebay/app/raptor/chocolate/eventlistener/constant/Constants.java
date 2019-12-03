@@ -11,6 +11,7 @@ public class Constants {
   public static final String MKEVT = "mkevt";
   public static final String VALID_MKEVT_CLICK = "1";
   public static final String CAMPID = "campid";
+  public static final String MKSID = "mksid";
   public static final String PLATFORM_NATIVE_APP = "nativeApp";
   public static final String PLATFORM_TABLET = "tablet";
   public static final String PLATFORM_MOBILE = "mobile";

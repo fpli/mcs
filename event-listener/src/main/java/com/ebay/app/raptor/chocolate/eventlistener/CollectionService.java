@@ -471,9 +471,15 @@ public class CollectionService {
       userId = Long.toString(endUserContext.getOrigUserOracleId());
     }
 
+    // parse session id for EPN channel
+    String snid = "";
+    if (channelType == ChannelIdEnum.EPN) {
+      snid = parseSessionId(parameters);
+    }
+
     // Parse the response
     ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
-            .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
+            .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, snid);
 
     // Use the shot snapshot id from requests
     if (parameters.containsKey(Constants.MKRVRID) && parameters.get(Constants.MKRVRID).get(0) != null) {
@@ -818,6 +824,26 @@ public class CollectionService {
     if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
       requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
     }
+  }
+
+  /**
+   * Parse session id from query mksid for epn channel
+   */
+  private String parseSessionId(MultiValueMap<String, String> parameters) {
+    String sessionId = "";
+    if (parameters.containsKey(Constants.MKSID) && parameters.get(Constants.MKSID).get(0) != null) {
+      try {
+        sessionId = parameters.get(Constants.MKSID).get(0);
+      } catch (Exception e) {
+        logger.warn(Errors.ERROR_INVALID_MKSID);
+        metrics.meter("InvalidMksid");
+      }
+    } else {
+      logger.warn(Errors.ERROR_NO_MKSID);
+      metrics.meter("NoMksid");
+    }
+
+    return sessionId;
   }
 
 }
