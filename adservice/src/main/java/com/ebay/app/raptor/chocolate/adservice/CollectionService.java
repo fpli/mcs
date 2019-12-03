@@ -105,7 +105,7 @@ public class CollectionService {
                              CookieReader cookieReader) throws Exception {
 
     // verify the request
-    MultiValueMap<String, String> parameters = verifyRedirectRequest(request);
+    MultiValueMap<String, String> parameters = verifyAndParseRequest(request);
 
     // execute redirect Strategy
     return executeRedirectStrategy(request, getParam(parameters, Constants.PARTNER_ID), requestContext, cookieReader);
@@ -114,14 +114,14 @@ public class CollectionService {
   /**
    * Verify redirect request, if invalid then throw an exception
    */
-  private MultiValueMap<String, String> verifyRedirectRequest(HttpServletRequest request)  throws Exception {
+  private MultiValueMap<String, String> verifyAndParseRequest(HttpServletRequest request)  throws Exception {
     // no query parameter, rejected
     Map<String, String[]> params = request.getParameterMap();
     if (null == params || params.isEmpty()) {
       logError(Errors.ERROR_REDIRECT_NO_QUERY_PARAMETER);
     }
 
-    MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
+    MultiValueMap<String, String> parameters = ParametersParser.parse(params);
     // reject no mkevt
     if (!parameters.containsKey(Constants.MKEVT)) {
       logError(Errors.REDIRECT_NO_MKEVT);
@@ -149,7 +149,6 @@ public class CollectionService {
                                       CookieReader cookie) throws URISyntaxException{
     RedirectContext redirectContext;
     if (Constants.ADOBE_PARTNER_ID.equals(partnerId)) {
-      // AdobeRedirectStrategy has been implemented the Singleton pattern by Enum
       redirectContext = new RedirectContext(new AdobeRedirectStrategy());
     } else {
       redirectContext = new RedirectContext(new ThirdpartyRedirectStrategy());
