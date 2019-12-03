@@ -123,7 +123,7 @@ class CrabTransformJob(params: Parameter)
         .withColumn("user_id", getUserIdUdf(col("user_id"), col("cguid"), col("rvr_cmnd_type_cd")))
         .withColumn("mfe_id", getMfeIdUdf(col("mfe_name")))
         .withColumn("event_ts", setMessageLagUdf(col("event_ts")))
-        .withColumn("mgvalue_rsn_cd", getMgvalueRsnCdUdf(col("mgvaluereason")))
+        .withColumn("mgvalue_rsn_cd", col("mgvaluereason"))
         .na.fill(schema_tfs.defaultValues).cache()
       // set default values for some columns
       schema_apollo.filterNotColumns(commonDf.columns).foreach(e => {
