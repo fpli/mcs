@@ -12,16 +12,14 @@
 
 package com.ebay.app.raptor.chocolate.gen.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import java.io.Serializable;
-import io.swagger.annotations.*;
-
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import com.fasterxml.jackson.annotation.*;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Detail of each error modeled based on the cos error and exceptions spec:  https://github.corp.ebay.com/commerceos/cos-error-and-exceptions/blob/master/error-and-exception-handling.md 

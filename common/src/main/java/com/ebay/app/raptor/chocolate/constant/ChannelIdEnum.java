@@ -51,7 +51,12 @@ public enum ChannelIdEnum {
   /**
    * Channel 20 -- production PAID SOCIAL
    */
-  PAID_SOCIAL("20", LogicalChannelEnum.PAID_SOCIAL, false);
+  PAID_SOCIAL("20", LogicalChannelEnum.PAID_SOCIAL, false),
+
+  /**
+   * Channel 20 -- production PAID SOCIAL
+   */
+  ROI("0", LogicalChannelEnum.ROI, false);
 
   /**
    * The human-parsable channel name.

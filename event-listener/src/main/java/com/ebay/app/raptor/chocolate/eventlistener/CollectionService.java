@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -7,6 +8,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
@@ -21,6 +23,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.apache.kafka.clients.producer.Producer;
@@ -40,6 +43,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -346,11 +350,63 @@ public class CollectionService {
       processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
       processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
-
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
           Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
+    return true;
+  }
+
+  /**
+   * Collect roi event and publish to kafka
+   *
+   * @param request             raw request
+   * @param endUserContext      wrapped end user context
+   * @param raptorSecureContext wrapped secure header context
+   * @return OK or Error message
+   */
+
+  public boolean collectROIEvent(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
+      raptorSecureContext, ContainerRequestContext requestContext, ROIEvent roiEvent) throws Exception {
+
+    if (request.getHeader("X-EBAY-C-TRACKING") == null) {
+      logError(Errors.ERROR_NO_TRACKING);
+    }
+
+    if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
+      logError(Errors.ERROR_NO_ENDUSERCTX);
+    }
+
+    // platform check by user agent
+    UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
+    String platform = getPlatform(agentInfo);
+
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI), Field.of(CHANNEL_TYPE, ChannelType.ROI),
+        Field.of(PLATFORM, platform));
+
+
+    String queryString = "transType=" + roiEvent.getTransType() + "&uniqueTransactionId=" +
+        roiEvent.getUniqueTransactionId() + "&itemId=" + roiEvent.getItemId();
+    List<NameValuePair> params =
+        URLEncodedUtils.parse(queryString, StandardCharsets.UTF_8);
+    String encodedQueryString =
+        URLEncodedUtils.format(params, StandardCharsets.UTF_8);
+    String targetUrl = request.getRequestURL() + "?" + encodedQueryString;
+
+    UriComponents uriComponents;
+    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+    if (uriComponents == null) {
+      logError(Errors.ERROR_ILLEGAL_URL);
+    }
+
+    MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
+
+    boolean processFlag = processAmsAndImkEvent(requestContext, targetUrl, "", parameters, ChannelIdEnum.ROI, ChannelActionEnum.ROI,
+        request, startTime, endUserContext, raptorSecureContext);
+
+    if (processFlag)
+      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI), Field.of(CHANNEL_TYPE, ChannelType.ROI),
+          Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "home"));
     return true;
   }
 

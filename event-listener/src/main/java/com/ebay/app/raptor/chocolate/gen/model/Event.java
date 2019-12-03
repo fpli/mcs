@@ -12,13 +12,14 @@
 
 package com.ebay.app.raptor.chocolate.gen.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import java.io.Serializable;
-import io.swagger.annotations.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.annotations.ApiModelProperty;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import com.fasterxml.jackson.annotation.*;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Event
