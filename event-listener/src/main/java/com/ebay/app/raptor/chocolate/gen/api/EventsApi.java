@@ -61,7 +61,6 @@ public interface EventsApi {
 
     @POST
     @Path("/notification")
-    @Consumes({ "application/json" })
     @Produces({ "application/json" })
     @ApiOperation(value = "Send one notification event to marketing tracking", notes = "Send one notification event to marketing tracking", authorizations = {
         @Authorization(value = "app_scope_auth", scopes = {
@@ -74,5 +73,5 @@ public interface EventsApi {
         @ApiResponse(code = 500, message = "The call was unsuccessful due to exceptions on the Server", response = Void.class) }
     )
     @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public') and hasAuthority('https://api.ebay.com/oauth/scope/base@public') and hasAuthority('https://api.ebay.com/oauth/scope/experience@public')")
-    Response notification(Event body);
+    Response notification();
 }

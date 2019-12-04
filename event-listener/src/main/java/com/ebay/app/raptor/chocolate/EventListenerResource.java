@@ -124,7 +124,7 @@ public class EventListenerResource implements EventsApi {
   }
 
   @Override
-  public Response notification(Event body) {
+  public Response notification() {
     return Response.ok("notification").build();
   }
 }

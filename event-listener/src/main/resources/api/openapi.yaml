@@ -114,12 +114,6 @@ paths:
                   $ref: '#/components/schemas/errorModel'
         '500':
           description: The call was unsuccessful due to exceptions on the Server
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Event'
 
 components:
    securitySchemes:
