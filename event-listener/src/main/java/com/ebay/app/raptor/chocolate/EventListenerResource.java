@@ -2,8 +2,8 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.eventlistener.error.LocalizedErrorFactoryV3;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
-import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
+import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;

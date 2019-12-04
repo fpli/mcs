@@ -12,21 +12,23 @@
 
 package com.ebay.app.raptor.chocolate.gen.model;
 
-import com.fasterxml.jackson.annotation.*;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.List;
 import java.util.Objects;
+import java.util.Arrays;
+import java.io.Serializable;
+import io.swagger.annotations.*;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import com.fasterxml.jackson.annotation.*;
 
 /**
  * Detail of each error modeled based on the cos error and exceptions spec:  https://github.corp.ebay.com/commerceos/cos-error-and-exceptions/blob/master/error-and-exception-handling.md 
  */
 
 @ApiModel(description = "Detail of each error modeled based on the cos error and exceptions spec:  https://github.corp.ebay.com/commerceos/cos-error-and-exceptions/blob/master/error-and-exception-handling.md ")
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2019-01-02T16:56:26.190+08:00[Asia/Shanghai]")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2019-12-03T17:15:41.556+08:00[Asia/Shanghai]")
 @JsonPropertyOrder({ "errorId","domain","subdomain","category","message","longMessage","inputRefIds","outputRefIds","parameters" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 

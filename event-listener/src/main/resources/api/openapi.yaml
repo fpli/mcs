@@ -121,13 +121,13 @@ components:
       properties:
         transType:
           type: "string"
-          example: "BIN"
+          example: "BO-MobileApp"
         uniqueTransactionId:
           type: "string"
-          example: "BIN"
+          example: "1677235978009"
         itemId:
           type: "string"
-          example: "BIN"
+          example: "192658398245"
     errorData:
       type: object
       description: >
