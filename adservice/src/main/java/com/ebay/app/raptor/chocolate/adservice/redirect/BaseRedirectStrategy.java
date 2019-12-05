@@ -66,8 +66,8 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     // generate Redirect Url
     generateRedirectUrl(parameters);
 
-    // call mcs to send ubi event if redirect url is not an ebay doamin
-    // always call for now because pages are not fully accessible for mcs
+    // TODO: for the direction to ebay landing page, not sending event to mcs while redirection,
+    // TODO: and leverage the marketing tracking event for landing page which has mkevt
     callMcs(request, cookie, context, parameters);
 
     return new URIBuilder(redirectionEvent.getRedirectUrl()).build();
@@ -83,7 +83,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
       return false;
     }
     // avoid infinite redirects
-    URL urlObj = null;
+    URL urlObj;
     try {
       urlObj = new URL(redirectUrl);
     } catch (MalformedURLException e) {
@@ -141,23 +141,21 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     }
 
     // Adobe needs additional parameters
-    if ("adobe".equals(redirectionEvent.getPartner())) {
-      uriBuilder.addParameter(Constants.PARTNER_ID, redirectionEvent.getPartnerId())
-          .addParameter(REDIRECT_URL_SOJ_TAG, redirectionEvent.getRedirectUrl())
+    if (Constants.ADOBE.equals(redirectionEvent.getPartner())) {
+      uriBuilder.addParameter(REDIRECT_URL_SOJ_TAG, redirectionEvent.getRedirectUrl())
           .addParameter(REDIRECT_SRC_SOJ_TAG, redirectionEvent.getRedirectSource());
     }
 
     // generate marketing event
     MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
     mktEvent.setTargetUrl(uriBuilder.toString());
-    mktEvent.setReferrer(request.getHeader("Referer"));
+    mktEvent.setReferrer(request.getHeader(Constants.REFERER));
 
-    // add all headers except Cookie
     Invocation.Builder builder = mktClient.target(mcsEndpoint).path("/events").request();
 
     // add Commerce-OS standard header
     builder = builder.header("X-EBAY-C-ENDUSERCTX", constructEndUserContextHeader(request))
-        .header("X-EBAY-C-TRACKING", constructTrackingHeader(cookie, context));
+        .header("X-EBAY-C-TRACKING", constructCookieHeader(cookie, context));
 
     // call MCS
     Response ress = builder.post(Entity.json(mktEvent));
@@ -167,7 +165,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   /**
    * Construct X-EBAY-C-TRACKING header with guid and cguid
    */
-  public String constructTrackingHeader(CookieReader cookie, ContainerRequestContext context) {
+  public String constructCookieHeader(CookieReader cookie, ContainerRequestContext context) {
     String cguid = cookie.getCguid(context);
     if (!StringUtils.isEmpty(cguid)) {
       cguid = cguid.substring(0, Constants.CGUID_LENGTH);
@@ -203,7 +201,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
    * Construct X-EBAY-C-ENDUSERCTX header with user agent
    */
   public String constructEndUserContextHeader(HttpServletRequest request) {
-    String userAgent = request.getHeader("User-Agent");
+    String userAgent = request.getHeader(Constants.USER_AGENT);
 
     return "userAgent=" + userAgent;
   }

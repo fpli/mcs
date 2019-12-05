@@ -84,7 +84,7 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
     // get response from Adobe Server, if the url in response is valid, return it as redirect url
     String adobeRedirectUrl = getRedirectUrlByAdobe(parameters);
     if (isValidRedirectUrl(adobeRedirectUrl)) {
-      redirectionEvent.setRedirectSource("adobe");
+      redirectionEvent.setRedirectSource(Constants.ADOBE);
       redirectionEvent.setRedirectUrl(adobeRedirectUrl);
       return;
     }

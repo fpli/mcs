@@ -16,8 +16,6 @@ public class RedirectionEvent {
   private String channelType;
   private String actionId;
 
-  private static final String ADOBE = "adobe";
-
   public RedirectionEvent(String channelId, String actionId, String partnerId) {
     this.channelId = channelId;
     this.channelType = ChannelIdEnum.parse(channelId).getLogicalChannel().getAvro().toString();
@@ -51,7 +49,7 @@ public class RedirectionEvent {
 
   public String getPartner() {
     if (Constants.ADOBE_PARTNER_ID.equals(partnerId)) {
-      return ADOBE;
+      return Constants.ADOBE;
     } else {
       return null;
     }
