@@ -381,7 +381,7 @@ public class CollectionService {
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
     String platform = getPlatform(agentInfo);
 
-    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI), Field.of(CHANNEL_TYPE, ChannelType.ROI),
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI), Field.of(CHANNEL_TYPE, ChannelType.NEW_ROI),
         Field.of(PLATFORM, platform));
 
 
@@ -401,11 +401,11 @@ public class CollectionService {
 
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
 
-    boolean processFlag = processAmsAndImkEvent(requestContext, targetUrl, "", parameters, ChannelIdEnum.ROI, ChannelActionEnum.ROI,
+    boolean processFlag = processAmsAndImkEvent(requestContext, targetUrl, "", parameters, ChannelIdEnum.NEW_ROI, ChannelActionEnum.ROI,
         request, startTime, endUserContext, raptorSecureContext);
 
     if (processFlag)
-      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI), Field.of(CHANNEL_TYPE, ChannelType.ROI),
+      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI), Field.of(CHANNEL_TYPE, ChannelType.NEW_ROI),
           Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "home"));
     return true;
   }
