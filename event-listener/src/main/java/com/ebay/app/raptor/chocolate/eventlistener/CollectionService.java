@@ -220,7 +220,7 @@ public class CollectionService {
     ChannelActionEnum channelAction = ChannelActionEnum.CLICK;
 
     // targetUrl is from post body
-    String targetUrl = (event.getTargetUrl() != null) ? event.getTargetUrl() : "";
+    String targetUrl = event.getTargetUrl();
 
     // parse channel from uri
     // illegal url, rejected
@@ -352,7 +352,7 @@ public class CollectionService {
     ChannelActionEnum channelAction = null;
 
     // uri is from post body
-    String uri =  (event.getTargetUrl() != null) ? event.getTargetUrl() : "";
+    String uri = event.getTargetUrl();
 
     UriComponents uriComponents;
     uriComponents = UriComponentsBuilder.fromUriString(uri).build();
