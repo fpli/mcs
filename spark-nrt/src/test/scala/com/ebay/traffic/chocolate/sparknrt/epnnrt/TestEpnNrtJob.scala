@@ -88,7 +88,8 @@ class TestEpnNrtJob extends BaseFunSuite{
   def createTestDataForEPN(): Unit = {
     val metadata = Metadata(workDir, "EPN", MetadataEnum.capping)
     val dateFiles1 = DateFiles("date=2018-05-01", Array("file://" + inputDir + "/date=2018-05-01/part-00000.snappy.parquet",
-      "file://" + inputDir + "/date=2018-05-01/part-00001.snappy.parquet"))
+      "file://" + inputDir + "/date=2018-05-01/part-00001.snappy.parquet",
+      "file://" + inputDir + "/date=2018-05-01/part-00002.snappy.parquet"))
     val dateFiles2 = DateFiles("date=2018-05-02", Array("file://" + inputDir + "/date=2018-05-02/part-00000.snappy.parquet"))
 
     val meta: MetaFiles = MetaFiles(Array(dateFiles1,dateFiles2))
@@ -110,6 +111,13 @@ class TestEpnNrtJob extends BaseFunSuite{
 
     val writer3 = AvroParquetWriter.
       builder[GenericRecord](new Path(inputDir + "/date=2018-05-02/part-00000.snappy.parquet"))
+      .withSchema(FilterMessage.getClassSchema)
+      .withConf(hadoopConf)
+      .withCompressionCodec(CompressionCodecName.SNAPPY)
+      .build()
+
+    val writer4 = AvroParquetWriter.
+      builder[GenericRecord](new Path(inputDir + "/date=2018-05-01/part-00002.snappy.parquet"))
       .withSchema(FilterMessage.getClassSchema)
       .withConf(hadoopConf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
@@ -138,6 +146,14 @@ class TestEpnNrtJob extends BaseFunSuite{
     writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7817281212121239247L, 7000001285L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", timestamp - 8, writer3)
     writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 2902129817128329247L, 7000001727L, 9000052575L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 7,  writer3)
     writer3.close()
+
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 3457493984045429247L, 7000001262L, 435453655L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489151020000L, "https://www.ebay.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556&item=292832042631&toolid=10044&customid=1&ff3=2&campid=5336203178&lgeo=1&vectorid=229466", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 2109090984045429247L, 7000001262L, 435453655L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489166020000L, "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", writer4)
+
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 3817281212121239247L, 7000001564L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", 1489189020000L, "https://www.ebay.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556&item=292832042631&toolid=10044&customid=1", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 2902129817128329248L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", writer4)
+    writer4.close()
+
 
 
 
@@ -181,6 +197,27 @@ class TestEpnNrtJob extends BaseFunSuite{
       campaignId,
       cguid,
       timestamp)
+    writer.write(message)
+    message
+  }
+
+  def writeFilterMessageWithSpecificUri(channelType: ChannelType,
+                                        channelAction: ChannelAction,
+                                        snapshotId: Long,
+                                        publisherId: Long,
+                                        campaignId: Long,
+                                        cguid: String,
+                                        timestamp: Long,
+                                        uri: String,
+                                        writer: ParquetWriter[GenericRecord]): FilterMessage = {
+    val message = TestHelper.newFilterMessage(channelType,
+      channelAction,
+      snapshotId,
+      publisherId,
+      campaignId,
+      cguid,
+      timestamp)
+    message.setUri(uri)
     writer.write(message)
     message
   }
