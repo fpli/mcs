@@ -323,7 +323,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     * @return channel id
     */
   def getLndPageUrlName(responseHeader: String, uri: String): String = {
-    if (!roversites.matcher(uri.toLowerCase()).find()) {
+    if (uri != null && !roversites.matcher(uri.toLowerCase()).find()) {
       return uri
     } else {
       val location = getValueFromRequest(responseHeader, "Location")
@@ -1314,7 +1314,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     * @return channel id
     */
   def getRelatedInfoFromUri(uri: String, index: Int, key: String): String = {
-    if (!roversites.matcher(uri.toLowerCase()).find()) {
+    if (uri != null && !roversites.matcher(uri.toLowerCase()).find()) {
       return getQueryParam(uri, key)
     } else {
       val path = new URL(uri).getPath()

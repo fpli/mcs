@@ -62,7 +62,7 @@ public class FilterRequest {
          * For epn long term case, no Cookie in request headers, use cguid as requestCguid
          *
          */
-        if ((message.getUri() != null) && (!roversites.matcher(message.getUri().toLowerCase()).find())) {
+        if (message.getUri() != null && !roversites.matcher(message.getUri().toLowerCase()).find()) {
             this.requestCguid = message.getCguid();
             this.requestCguidTimestamp = parseTimestampFromCguid(this.requestCguid);
         }
