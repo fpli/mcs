@@ -203,10 +203,13 @@ class CrabTransformJob(params: Parameter)
 
   // join keyword table
   def getJoinedKwDf(smallJoinDf: DataFrame, kwLKPDf: DataFrame, isBroadcast: Boolean) : DataFrame = {
-    val heavyJoinResultDf = kwLKPDf
-      .join(broadcast(smallJoinDf), $"keyword" === $"kw", "inner")
-      .withColumnRenamed("keyword", "temp_kw")
-    return heavyJoinResultDf
+    if(isBroadcast) {
+      kwLKPDf.join(broadcast(smallJoinDf), $"keyword" === $"kw", "inner")
+        .withColumnRenamed("keyword", "temp_kw")
+    } else {
+      kwLKPDf.join(smallJoinDf, $"keyword" === $"kw", "inner")
+        .withColumnRenamed("keyword", "temp_kw")
+    }
   }
 
   val getItemIdUdf: UserDefinedFunction = udf((roi_item_id: String, item_id: String) => getItemId(roi_item_id, item_id))
