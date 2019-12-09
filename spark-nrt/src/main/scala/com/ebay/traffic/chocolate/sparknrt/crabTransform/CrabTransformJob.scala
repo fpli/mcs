@@ -147,6 +147,7 @@ class CrabTransformJob(params: Parameter)
           .filter(kwIsNotEmptyUdf(col("keyword"))).distinct()
 
         // if input number is less, then we choose broadcast join to improve the performance
+        // 1,000,000 tfs file format data approximately equals to 500MB
         var isBroadCast = smallJoinDf.count() <= 1000000
         val heavyJoinResultDf = getJoinedKwDf(smallJoinDf, kwLKPDf, isBroadCast)
 
