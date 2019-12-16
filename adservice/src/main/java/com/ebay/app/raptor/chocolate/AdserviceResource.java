@@ -32,7 +32,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.ws.rs.core.*;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -67,7 +66,6 @@ public class AdserviceResource implements EventsApi {
   @Autowired
   private CookieReader cookieReader;
 
-
   /**
    * Get method to collect impression, viewimp, email open
    *
@@ -96,7 +94,7 @@ public class AdserviceResource implements EventsApi {
       }
 
       // get channel for metrics
-      String channelType = "";
+      String channelType = null;
       Map<String, String[]> params = request.getParameterMap();
       if (params.containsKey(Constants.MKCID) && params.get(Constants.MKCID)[0] != null)
         channelType = ChannelIdEnum.parse(params.get(Constants.MKCID)[0]).getLogicalChannel().getAvro().toString();
@@ -148,7 +146,7 @@ public class AdserviceResource implements EventsApi {
   public Response redirect() throws URISyntaxException {
     URI redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
     try {
-      redirectUri = collectionService.collectRdirect(request, response, requestContext, cookieReader);
+      redirectUri = collectionService.collectRedirect(request, requestContext, cookieReader);
     } catch (Exception e) {
       // When exception happen, redirect to www.ebay.com
       logger.warn(e.getMessage(), e);
