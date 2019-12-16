@@ -2,6 +2,8 @@ package com.ebay.app.raptor.chocolate.gen.api;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+
+import com.ebay.app.raptor.chocolate.gen.model.SyncEvent;
 import io.swagger.annotations.*;
 
 @Api(description = "The Events API")
@@ -16,5 +18,12 @@ public interface EventsApi {
     @Path("/ar")
     Response ar();
 
+    @POST
+    @Path("/sync")
+    Response sync(SyncEvent syncEvent);
+
+    @GET
+    @Path("/testGuid")
+    String testGuid();
 
 }

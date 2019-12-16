@@ -1,12 +1,11 @@
 package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
-import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
-import com.ebay.app.raptor.chocolate.adservice.util.ImageResponseHandler;
-import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
+import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
+import com.ebay.app.raptor.chocolate.gen.model.SyncEvent;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
@@ -58,6 +57,12 @@ public class AdserviceResource implements EventsApi {
 
   @Autowired
   private CookieReader cookieReader;
+
+  @Autowired
+  private AdserviceCookie adserviceCookie;
+
+  @Autowired
+  private CouchbaseUtil couchbaseUtil;
 
   /**
    * Get method to collect impression, viewimp, email open
@@ -123,6 +128,7 @@ public class AdserviceResource implements EventsApi {
   public Response ar() {
     Response res = null;
     try {
+      adserviceCookie.setAdguid(request, response);
       collectionService.collectAr(request, response, cookieReader, userCtxProvider.get(), requestContext);
       res = Response.status(Response.Status.OK).build();
     } catch (Exception e) {
@@ -133,6 +139,31 @@ public class AdserviceResource implements EventsApi {
       }
     }
     return res;
+  }
+
+  @Override
+  public Response sync(SyncEvent syncEvent) {
+    Response res = null;
+    try {
+      adserviceCookie.setAdguid(request, response);
+      String adguid = adserviceCookie.readAdguid(request);
+      couchbaseUtil.addMapping(adguid, syncEvent.getGuid());
+      res = Response.status(Response.Status.OK).build();
+    } catch (Exception e) {
+      try {
+        res = Response.status(Response.Status.BAD_REQUEST).build();
+      } catch (Exception ex) {
+        logger.warn(ex.getMessage(), ex);
+      }
+    }
+    return res;
+  }
+
+  @Override
+  public String testGuid() {
+    String adguid = adserviceCookie.readAdguid(request);
+    String guid = couchbaseUtil.getGuid(adguid);
+    return guid;
   }
 }
 
