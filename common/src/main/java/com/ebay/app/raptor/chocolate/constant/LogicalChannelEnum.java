@@ -53,12 +53,12 @@ public enum LogicalChannelEnum {
   /**
    * ROI channel
    */
-  ROI(ChannelType.ROI, ChannelActionEnum.ROI, ChannelActionEnum.ROI),
+  ROI(ChannelType.ROI, ChannelActionEnum.ROI, ChannelActionEnum.ROI);
 
-  /**
+ /* *//**
    * New ROI Test channel
-   */
-  NEW_ROI(ChannelType.NEW_ROI, ChannelActionEnum.ROI, ChannelActionEnum.ROI);
+   *//*
+  NEW_ROI(ChannelType.NEW_ROI, ChannelActionEnum.ROI, ChannelActionEnum.ROI);*/
 
   /**
    * Construct of valid Rover actions for this logical channel

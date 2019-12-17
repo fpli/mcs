@@ -89,7 +89,6 @@ public class CollectionService {
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
-
   }
 
   /**
@@ -166,8 +165,7 @@ public class CollectionService {
       String guid = "";
       String cguid = "";
       String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
-      for (String seg : trackingHeader.split(",")
-          ) {
+      for (String seg : trackingHeader.split(",")) {
         String[] keyValue = seg.split("=");
         if (keyValue.length == 2) {
           if (keyValue[0].equalsIgnoreCase("guid")) {
@@ -381,12 +379,13 @@ public class CollectionService {
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
     String platform = getPlatform(agentInfo);
 
-    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI), Field.of(CHANNEL_TYPE, ChannelType.NEW_ROI),
-        Field.of(PLATFORM, platform));
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI), Field.of(CHANNEL_TYPE,
+        ChannelType.ROI), Field.of(PLATFORM, platform));
 
 
     String queryString = "transType=" + roiEvent.getTransType() + "&uniqueTransactionId=" +
-        roiEvent.getUniqueTransactionId() + "&itemId=" + roiEvent.getItemId();
+        roiEvent.getUniqueTransactionId() + "&itemId=" + roiEvent.getItemId() + "&transactionTimestamp="
+        + roiEvent.getTransactionTimestamp() + "&nroi=1";
     List<NameValuePair> params =
         URLEncodedUtils.parse(queryString, StandardCharsets.UTF_8);
     String encodedQueryString =
@@ -401,12 +400,12 @@ public class CollectionService {
 
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
 
-    boolean processFlag = processAmsAndImkEvent(requestContext, targetUrl, "", parameters, ChannelIdEnum.NEW_ROI, ChannelActionEnum.ROI,
-        request, startTime, endUserContext, raptorSecureContext);
+    boolean processFlag = processAmsAndImkEvent(requestContext, targetUrl, "", parameters, ChannelIdEnum.ROI,
+        ChannelActionEnum.ROI, request, startTime, endUserContext, raptorSecureContext);
 
     if (processFlag)
-      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI), Field.of(CHANNEL_TYPE, ChannelType.NEW_ROI),
-          Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "home"));
+      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI), Field.of(CHANNEL_TYPE,
+          ChannelType.ROI), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "home"));
     return true;
   }
 

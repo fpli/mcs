@@ -128,6 +128,9 @@ components:
         itemId:
           type: "string"
           example: "192658398245"
+        transactionTimestamp:
+          type: "string"
+          example: "1576108800000"
     errorData:
       type: object
       description: >

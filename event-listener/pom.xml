@@ -359,8 +359,8 @@
      <!-- <plugin>
         <groupId>com.ebay.raptor.build</groupId>
         <artifactId>maven-content-plugin</artifactId>
-      </plugin>
-      <plugin>
+      </plugin>-->
+<!--      <plugin>
       <groupId>com.ebay.cos</groupId>
       <artifactId>compliance-evaluator-io-maven-plugin</artifactId>
       <version>1.1.5-RELEASE</version>

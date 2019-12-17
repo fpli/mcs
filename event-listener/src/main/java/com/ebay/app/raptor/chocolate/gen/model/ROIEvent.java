@@ -25,8 +25,8 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2019-12-03T17:15:41.556+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "transType","uniqueTransactionId","itemId" })
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2019-12-15T12:59:12.864+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "transType","uniqueTransactionId","itemId","transactionTimestamp" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -45,6 +45,9 @@ private static final long serialVersionUID = 1L;
     @JsonProperty("itemId")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String itemId = null;
+    @JsonProperty("transactionTimestamp")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String transactionTimestamp = null;
 
 /**
     * Get transType
@@ -82,6 +85,18 @@ public String getItemId() {
 public void setItemId(String itemId) {
         this.itemId = itemId;
         }
+/**
+    * Get transactionTimestamp
+* @return transactionTimestamp
+    **/
+    @ApiModelProperty(example = "1576108800000", value = "")
+public String getTransactionTimestamp() {
+    return transactionTimestamp;
+    }
+
+public void setTransactionTimestamp(String transactionTimestamp) {
+        this.transactionTimestamp = transactionTimestamp;
+        }
     @Override
     public boolean equals(Object o) {
     if (this == o) {
@@ -93,12 +108,13 @@ public void setItemId(String itemId) {
         ROIEvent roIEvent = (ROIEvent) o;
         return Objects.equals(this.transType, roIEvent.transType) &&
         Objects.equals(this.uniqueTransactionId, roIEvent.uniqueTransactionId) &&
-        Objects.equals(this.itemId, roIEvent.itemId);
+        Objects.equals(this.itemId, roIEvent.itemId) &&
+        Objects.equals(this.transactionTimestamp, roIEvent.transactionTimestamp);
     }
 
     @Override
     public int hashCode() {
-    return Objects.hash(transType, uniqueTransactionId, itemId);
+    return Objects.hash(transType, uniqueTransactionId, itemId, transactionTimestamp);
     }
 
     @Override
@@ -109,6 +125,7 @@ public void setItemId(String itemId) {
       sb.append("    transType: ").append(toIndentedString(transType)).append("\n");
       sb.append("    uniqueTransactionId: ").append(toIndentedString(uniqueTransactionId)).append("\n");
       sb.append("    itemId: ").append(toIndentedString(itemId)).append("\n");
+      sb.append("    transactionTimestamp: ").append(toIndentedString(transactionTimestamp)).append("\n");
       sb.append("}");
       return sb.toString();
     }
