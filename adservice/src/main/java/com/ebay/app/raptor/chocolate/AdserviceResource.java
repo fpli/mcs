@@ -2,6 +2,7 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.util.*;
+import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
@@ -14,6 +15,7 @@ import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.server.ServletServerHttpRequest;
 
 import javax.servlet.http.HttpServletRequest;
@@ -62,7 +64,8 @@ public class AdserviceResource implements EventsApi {
   private AdserviceCookie adserviceCookie;
 
   @Autowired
-  private CouchbaseUtil couchbaseUtil;
+  @Qualifier("lc")
+  private IdMapable idMapping;
 
   /**
    * Get method to collect impression, viewimp, email open
@@ -147,7 +150,7 @@ public class AdserviceResource implements EventsApi {
     try {
       adserviceCookie.setAdguid(request, response);
       String adguid = adserviceCookie.readAdguid(request);
-      couchbaseUtil.addMapping(adguid, syncEvent.getGuid());
+      idMapping.addMapping(adguid, syncEvent.getGuid());
       res = Response.status(Response.Status.OK).build();
     } catch (Exception e) {
       try {
@@ -162,7 +165,7 @@ public class AdserviceResource implements EventsApi {
   @Override
   public String testGuid() {
     String adguid = adserviceCookie.readAdguid(request);
-    String guid = couchbaseUtil.getGuid(adguid);
+    String guid = idMapping.getGuid(adguid);
     return guid;
   }
 }
