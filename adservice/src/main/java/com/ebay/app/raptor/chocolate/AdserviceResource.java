@@ -72,8 +72,8 @@ public class AdserviceResource implements EventsApi {
 
   private Metrics metrics;
 
-  private final static String METRIC_ADD_MAPPING_SUCCESS = "METRIC_ADD_MAPPING_SUCCESS";
-  private final static String METRIC_ADD_MAPPING_FAIL = "METRIC_ADD_MAPPING_FAIL";
+  private static final String METRIC_ADD_MAPPING_SUCCESS = "METRIC_ADD_MAPPING_SUCCESS";
+  private static final String METRIC_ADD_MAPPING_FAIL = "METRIC_ADD_MAPPING_FAIL";
 
   @PostConstruct
   public void postInit() {
@@ -92,7 +92,8 @@ public class AdserviceResource implements EventsApi {
       adserviceCookie.setAdguid(request, response);
       res = Response.status(Response.Status.OK).build();
 
-      Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
+      Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient",
+          "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
       Client mktClient = GingerClientBuilder.newClient(config);
       String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
 
@@ -164,7 +165,7 @@ public class AdserviceResource implements EventsApi {
     try {
       String adguid = adserviceCookie.setAdguid(request, response);
       boolean isAddMappingSuccess = idMapping.addMapping(adguid, syncEvent.getGuid());
-      if(isAddMappingSuccess) {
+      if (isAddMappingSuccess) {
         metrics.meter(METRIC_ADD_MAPPING_SUCCESS);
         res = Response.status(Response.Status.OK).build();
       } else {
