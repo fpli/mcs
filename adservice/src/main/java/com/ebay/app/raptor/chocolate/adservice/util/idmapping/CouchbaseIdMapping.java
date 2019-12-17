@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice.util.idmapping;
 
+import com.ebay.app.raptor.chocolate.adservice.util.CouchbaseClient;
 import org.springframework.stereotype.Service;
 
 /**
@@ -9,12 +10,12 @@ import org.springframework.stereotype.Service;
 @Service("cb")
 public class CouchbaseIdMapping implements IdMapable {
   @Override
-  public void addMapping(String adguid, String guid) {
-
+  public boolean addMapping(String adguid, String guid) {
+    return CouchbaseClient.getInstance().addMappingRecord(adguid, guid);
   }
 
   @Override
   public String getGuid(String adguid) {
-    return null;
+    return CouchbaseClient.getInstance().getGuidByAdguid(adguid);
   }
 }

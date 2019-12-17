@@ -12,12 +12,15 @@ import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.server.ServletServerHttpRequest;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
@@ -67,6 +70,16 @@ public class AdserviceResource implements EventsApi {
   @Qualifier("lc")
   private IdMapable idMapping;
 
+  private Metrics metrics;
+
+  private final static String METRIC_ADD_MAPPING_SUCCESS = "METRIC_ADD_MAPPING_SUCCESS";
+  private final static String METRIC_ADD_MAPPING_FAIL = "METRIC_ADD_MAPPING_FAIL";
+
+  @PostConstruct
+  public void postInit() {
+    this.metrics = ESMetrics.getInstance();
+  }
+
   /**
    * Get method to collect impression, viewimp, email open
    *
@@ -76,6 +89,7 @@ public class AdserviceResource implements EventsApi {
   public Response impression() {
     Response res = null;
     try {
+      adserviceCookie.setAdguid(request, response);
       res = Response.status(Response.Status.OK).build();
 
       Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
@@ -148,12 +162,18 @@ public class AdserviceResource implements EventsApi {
   public Response sync(SyncEvent syncEvent) {
     Response res = null;
     try {
-      adserviceCookie.setAdguid(request, response);
-      String adguid = adserviceCookie.readAdguid(request);
-      idMapping.addMapping(adguid, syncEvent.getGuid());
-      res = Response.status(Response.Status.OK).build();
+      String adguid = adserviceCookie.setAdguid(request, response);
+      boolean isAddMappingSuccess = idMapping.addMapping(adguid, syncEvent.getGuid());
+      if(isAddMappingSuccess) {
+        metrics.meter(METRIC_ADD_MAPPING_SUCCESS);
+        res = Response.status(Response.Status.OK).build();
+      } else {
+        metrics.meter(METRIC_ADD_MAPPING_FAIL);
+        res = Response.status(Response.Status.BAD_REQUEST).build();
+      }
     } catch (Exception e) {
       try {
+        metrics.meter(METRIC_ADD_MAPPING_FAIL);
         res = Response.status(Response.Status.BAD_REQUEST).build();
       } catch (Exception ex) {
         logger.warn(ex.getMessage(), ex);

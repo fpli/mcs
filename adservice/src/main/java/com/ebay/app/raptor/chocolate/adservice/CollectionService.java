@@ -78,5 +78,4 @@ public class CollectionService {
 
     return cookie;
   }
-
 }

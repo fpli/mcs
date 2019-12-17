@@ -13,8 +13,9 @@ public interface IdMapable {
    * Add adguid -> guid mapping
    * @param adguid adguid in cookie
    * @param guid guid from sync command
+   * @return is successful or not
    */
-  void addMapping(String adguid, String guid);
+  boolean addMapping(String adguid, String guid);
 
   /**
    * Get guid by adguid

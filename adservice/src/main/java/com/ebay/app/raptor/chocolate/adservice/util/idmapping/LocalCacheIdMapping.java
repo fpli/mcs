@@ -15,8 +15,9 @@ public class LocalCacheIdMapping implements IdMapable {
   private Map<String, String> adguidGuidMap = new HashMap<>();
 
   @Override
-  public void addMapping(String adguid, String guid) {
+  public boolean addMapping(String adguid, String guid) {
     adguidGuidMap.put(adguid, guid);
+    return true;
   }
 
   @Override
