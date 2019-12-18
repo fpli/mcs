@@ -67,7 +67,7 @@ public class AdserviceResource implements EventsApi {
   private AdserviceCookie adserviceCookie;
 
   @Autowired
-  @Qualifier("lc")
+  @Qualifier("cb")
   private IdMapable idMapping;
 
   private Metrics metrics;
