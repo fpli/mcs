@@ -1,12 +1,15 @@
 package com.ebay.app.raptor.chocolate;
 
 
+import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
-import com.ebay.app.raptor.chocolate.adservice.util.*;
+import com.ebay.app.raptor.chocolate.adservice.util.AdserviceCookie;
+import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
+import com.ebay.app.raptor.chocolate.adservice.util.ImageResponseHandler;
+import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
-import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
-import com.ebay.app.raptor.chocolate.adservice.CollectionService;
+import com.ebay.app.raptor.chocolate.gen.api.*;
 import com.ebay.app.raptor.chocolate.gen.model.SyncEvent;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
@@ -25,7 +28,8 @@ import org.springframework.http.server.ServletServerHttpRequest;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.Path;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
@@ -35,7 +39,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -47,7 +50,7 @@ import java.util.Map;
 
 @Path("/v1")
 @Consumes(MediaType.APPLICATION_JSON)
-public class AdserviceResource implements EventsApi {
+public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, SyncApi, GuidApi {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceResource.class);
   @Autowired
   private CollectionService collectionService;
@@ -81,10 +84,37 @@ public class AdserviceResource implements EventsApi {
 
   private static final String METRIC_ADD_MAPPING_SUCCESS = "METRIC_ADD_MAPPING_SUCCESS";
   private static final String METRIC_ADD_MAPPING_FAIL = "METRIC_ADD_MAPPING_FAIL";
+  private static final String METRIC_NO_MKCID_IN_AR = "METRIC_NO_MKCID_IN_AR";
+  private static final String METRIC_NO_MKCID_IN_IMPRESSION = "METRIC_NO_MKCID_IN_IMPRESSION";
+  private static final String METRIC_NO_MKRID_IN_AR = "METRIC_NO_MKRID_IN_AR";
+  private static final String METRIC_NO_MKRID_IN_IMPRESSION = "METRIC_NO_MKRID_IN_IMPRESSION";
 
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
+  }
+
+  @Override
+  public Response ar(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
+    if(null == mkcid) {
+      metrics.meter(METRIC_NO_MKCID_IN_AR);
+    }
+    if(null == mkrid) {
+      metrics.meter(METRIC_NO_MKRID_IN_AR);
+    }
+    Response res = null;
+    try {
+      adserviceCookie.setAdguid(request, response);
+      collectionService.collectAr(request, response, cookieReader, requestContext);
+      res = Response.status(Response.Status.OK).build();
+    } catch (Exception e) {
+      try {
+        res = Response.status(Response.Status.BAD_REQUEST).build();
+      } catch (Exception ex) {
+        logger.warn(ex.getMessage(), ex);
+      }
+    }
+    return res;
   }
 
   /**
@@ -93,7 +123,13 @@ public class AdserviceResource implements EventsApi {
    * @return response
    */
   @Override
-  public Response impression() {
+  public Response impression(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
+    if(null == mkcid) {
+      metrics.meter(METRIC_NO_MKCID_IN_IMPRESSION);
+    }
+    if(null == mkrid) {
+      metrics.meter(METRIC_NO_MKRID_IN_IMPRESSION);
+    }
     Response res = null;
     try {
       adserviceCookie.setAdguid(request, response);
@@ -144,34 +180,34 @@ public class AdserviceResource implements EventsApi {
       } catch (Exception ex) {
         logger.warn(ex.getMessage(), ex);
       }
-    } finally {
-      return res;
-    }
-  }
-
-  @Override
-  public Response ar() {
-    Response res = null;
-    try {
-      adserviceCookie.setAdguid(request, response);
-      collectionService.collectAr(request, response, cookieReader, requestContext);
-      res = Response.status(Response.Status.OK).build();
-    } catch (Exception e) {
-      try {
-        res = Response.status(Response.Status.BAD_REQUEST).build();
-      } catch (Exception ex) {
-        logger.warn(ex.getMessage(), ex);
-      }
     }
     return res;
   }
 
   @Override
-  public Response sync(SyncEvent syncEvent) {
+  public Response redirect(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
+    adserviceCookie.setAdguid(request, response);
+    URI redirectUri = null;
+    try {
+      redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
+      redirectUri = collectionService.collectRedirect(request, requestContext, cookieReader);
+    } catch (Exception e) {
+      // When exception happen, redirect to www.ebay.com
+      logger.warn(e.getMessage(), e);
+    }
+    if(redirectUri!=null) {
+      return Response.status(Response.Status.MOVED_PERMANENTLY).location(redirectUri).build();
+    } else {
+      return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+  }
+
+  @Override
+  public Response sync(SyncEvent body) {
     Response res = null;
     try {
       String adguid = adserviceCookie.setAdguid(request, response);
-      boolean isAddMappingSuccess = idMapping.addMapping(adguid, syncEvent.getGuid());
+      boolean isAddMappingSuccess = idMapping.addMapping(adguid, body.getGuid());
       if (isAddMappingSuccess) {
         metrics.meter(METRIC_ADD_MAPPING_SUCCESS);
         res = Response.status(Response.Status.OK).build();
@@ -191,23 +227,9 @@ public class AdserviceResource implements EventsApi {
   }
 
   @Override
-  public String testGuid() {
+  public Response guid() {
     String adguid = adserviceCookie.readAdguid(request);
     String guid = idMapping.getGuid(adguid);
-    return guid;
+    return Response.status(Response.Status.OK).entity(guid).build();
   }
-
-  @Override
-  public Response redirect() throws URISyntaxException {
-    adserviceCookie.setAdguid(request, response);
-    URI redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
-    try {
-      redirectUri = collectionService.collectRedirect(request, requestContext, cookieReader);
-    } catch (Exception e) {
-      // When exception happen, redirect to www.ebay.com
-      logger.warn(e.getMessage(), e);
-    }
-    return Response.status(Response.Status.MOVED_PERMANENTLY).location(redirectUri).build();
-  }
-
 }

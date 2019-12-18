@@ -15,12 +15,27 @@ paths:
         - impression
       operationId: impression
       parameters:
-        - in: path
+        - in: query
           name: mkcid
           schema:
             type: integer
           required: true
           description: Marketing channel id
+        - in: query
+          name: mkrid
+          schema:
+            type: string
+          description: Marketing rotation id
+        - in: query
+          name: mkevt
+          schema:
+            type: integer
+          description: Marketing event type
+        - in: query
+          name: mksid
+          schema:
+            type: string
+          description: Marketing session id
       responses:
         '200':
           description: Success
@@ -35,6 +50,28 @@ paths:
       tags:
         - ar
       operationId: ar
+      parameters:
+        - in: query
+          name: mkcid
+          schema:
+            type: integer
+          required: true
+          description: Marketing channel id
+        - in: query
+          name: mkrid
+          schema:
+            type: string
+          description: Marketing rotation id
+        - in: query
+          name: mkevt
+          schema:
+            type: integer
+          description: Marketing event type
+        - in: query
+          name: mksid
+          schema:
+            type: string
+          description: Marketing session id
       responses:
         '200':
           description: Success
@@ -49,6 +86,28 @@ paths:
       tags:
         - redirect
       operationId: redirect
+      parameters:
+        - in: query
+          name: mkcid
+          schema:
+            type: integer
+          required: true
+          description: Marketing channel id
+        - in: query
+          name: mkrid
+          schema:
+            type: string
+          description: Marketing rotation id
+        - in: query
+          name: mkevt
+          schema:
+            type: integer
+          description: Marketing event type
+        - in: query
+          name: mksid
+          schema:
+            type: string
+          description: Marketing session id
       responses:
         '301':
           description: Success
@@ -76,6 +135,20 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SyncEvent'
+  /guid:
+    get:
+      summary: Get eBay GUID
+      description: Get eBay GUID by ADGUID
+      tags:
+        - guid
+      operationId: guid
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Rejected
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
 components:
   schemas:
     SyncEvent:
