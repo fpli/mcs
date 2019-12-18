@@ -1,10 +1,7 @@
 package com.ebay.app.raptor.chocolate.adservice.util;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
-import com.ebay.app.raptor.chocolate.adservice.constant.BullseyeConstants;
-import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
-import com.ebay.app.raptor.chocolate.adservice.constant.LBSConstants;
-import com.ebay.app.raptor.chocolate.adservice.constant.StringConstants;
+import com.ebay.app.raptor.chocolate.adservice.constant.*;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
 import com.ebay.app.raptor.chocolate.common.DAPRvrId;

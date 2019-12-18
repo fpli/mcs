@@ -89,11 +89,19 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
   private static final String METRIC_NO_MKRID_IN_AR = "METRIC_NO_MKRID_IN_AR";
   private static final String METRIC_NO_MKRID_IN_IMPRESSION = "METRIC_NO_MKRID_IN_IMPRESSION";
 
+  /**
+   * Initialize function
+   */
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
   }
 
+  /**
+   * AR method to collect ar and serve the ad
+   *
+   * @return response
+   */
   @Override
   public Response ar(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
     if(null == mkcid) {
@@ -155,8 +163,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
       // get channel for metrics
       String channelType = null;
       Map<String, String[]> params = request.getParameterMap();
-      if (params.containsKey(Constants.MKCID) && params.get(Constants.MKCID)[0] != null)
+      if (params.containsKey(Constants.MKCID) && params.get(Constants.MKCID)[0] != null) {
         channelType = ChannelIdEnum.parse(params.get(Constants.MKCID)[0]).getLogicalChannel().getAvro().toString();
+      }
 
       // construct X-EBAY-C-TRACKING header
       builder = builder.header("X-EBAY-C-TRACKING",
@@ -184,6 +193,11 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
     return res;
   }
 
+  /**
+   * Redirect entrance. Only for CRM
+   *
+   * @return response
+   */
   @Override
   public Response redirect(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
     adserviceCookie.setAdguid(request, response);
@@ -202,6 +216,11 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
     }
   }
 
+  /**
+   * Sync command used to map cookie
+   *
+   * @return response
+   */
   @Override
   public Response sync(SyncEvent body) {
     Response res = null;
@@ -226,6 +245,10 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
     return res;
   }
 
+  /**
+   * Get GUID from mapping
+   * @return guid in string
+   */
   @Override
   public Response guid() {
     String adguid = adserviceCookie.readAdguid(request);
