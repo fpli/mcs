@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate;
 
+
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
@@ -14,6 +15,7 @@ import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +30,12 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -110,7 +117,7 @@ public class AdserviceResource implements EventsApi {
       }
 
       // get channel for metrics
-      String channelType = "";
+      String channelType = null;
       Map<String, String[]> params = request.getParameterMap();
       if (params.containsKey(Constants.MKCID) && params.get(Constants.MKCID)[0] != null)
         channelType = ChannelIdEnum.parse(params.get(Constants.MKCID)[0]).getLogicalChannel().getAvro().toString();
@@ -147,7 +154,7 @@ public class AdserviceResource implements EventsApi {
     Response res = null;
     try {
       adserviceCookie.setAdguid(request, response);
-      collectionService.collectAr(request, response, cookieReader, userCtxProvider.get(), requestContext);
+      collectionService.collectAr(request, response, cookieReader, requestContext);
       res = Response.status(Response.Status.OK).build();
     } catch (Exception e) {
       try {
@@ -189,6 +196,18 @@ public class AdserviceResource implements EventsApi {
     String guid = idMapping.getGuid(adguid);
     return guid;
   }
+
+  @Override
+  public Response redirect() throws URISyntaxException {
+    adserviceCookie.setAdguid(request, response);
+    URI redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
+    try {
+      redirectUri = collectionService.collectRedirect(request, requestContext, cookieReader);
+    } catch (Exception e) {
+      // When exception happen, redirect to www.ebay.com
+      logger.warn(e.getMessage(), e);
+    }
+    return Response.status(Response.Status.MOVED_PERMANENTLY).location(redirectUri).build();
+  }
+
 }
-
-

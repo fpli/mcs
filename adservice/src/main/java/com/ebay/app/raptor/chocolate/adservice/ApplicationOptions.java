@@ -33,8 +33,6 @@ public class ApplicationOptions extends AbstractApplicationOptions {
 
   private static final String ADSERVICE_PROPERTIES_FILE = "adservice.properties";
 
-  private static final String DAP_CLIENT_PROPERTIES_FILE = "adservice-dap-client.properties";
-
   /**
    * couchbase data source
    */
@@ -44,11 +42,6 @@ public class ApplicationOptions extends AbstractApplicationOptions {
    * Static driver ID
    */
   static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
-
-  /**
-   * kafka related
-   **/
-  private static Properties dapClientProperties;
 
   private String outKafkaCluster;
   private Map<ChannelType, String> outKafkaConfigMap = new HashMap<>();
@@ -60,7 +53,6 @@ public class ApplicationOptions extends AbstractApplicationOptions {
    */
   static void init() throws IOException {
     instance.initInstance(loadProperties(ADSERVICE_PROPERTIES_FILE));
-    dapClientProperties = loadProperties(DAP_CLIENT_PROPERTIES_FILE);
   }
 
   private static Properties loadProperties(String file) throws IOException {
@@ -94,10 +86,6 @@ public class ApplicationOptions extends AbstractApplicationOptions {
    */
   public static ApplicationOptions getInstance() {
     return instance;
-  }
-
-  public Properties getDapClientProperties() {
-    return dapClientProperties;
   }
 
   /**
