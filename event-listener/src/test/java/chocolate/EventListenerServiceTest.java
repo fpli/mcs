@@ -662,16 +662,5 @@ public class EventListenerServiceTest {
             .accept(MediaType.APPLICATION_JSON_TYPE)
             .post(Entity.json(event));
     assertEquals(201, response.getStatus());
-
-    // validate kafka message
-    Thread.sleep(3000);
-    KafkaSink.get().flush();
-    Consumer<Long, ListenerMessage> consumerEpn = kafkaCluster.createConsumer(
-            LongDeserializer.class, ListenerMessageDeserializer.class);
-    Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
-            consumerEpn, Arrays.asList("dev_listened-epn"), 1, 30 * 1000);
-    consumerEpn.close();
-
-    assertEquals(1, listenerMessagesEpn.size());
   }
 }
