@@ -19,7 +19,7 @@ public class Constants {
 
   public static final String MKRVRID = "mkrvrid";
 
-  // CRM url params
+  // Email url params
   public static final String SOJ_TAGS = "sojTags";
   public static final String SOURCE_ID = "emsid";
   public static final String EMAIL_UNIQUE_ID = "euid";
@@ -34,5 +34,15 @@ public class Constants {
   // Adobe url params
   public static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   public static final String REDIRECT_SRC_SOJ_SOURCE = "adcamp_locationsrc";
+
+  // Mobile Notification params
+  public static final String NOTIFICATION_PAGE_ID = "imp";
+  public static final String NOTIFICATION_ID = "nid";
+  public static final String NOTIFICATION_TYPE = "ntype";
+  public static final String NOTIFICATION_TYPE_EVT = "evt";
+  public static final String NOTIFICATION_ACTION = "pnact";
+  public static final String ITEM_ID = "itm";
+  public static final String USER_NAME = "username";
+  public static final String MC3_MSSG_ID = "mc3id";
 
 }
