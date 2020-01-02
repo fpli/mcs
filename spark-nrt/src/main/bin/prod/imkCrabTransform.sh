@@ -37,7 +37,7 @@ fi
 
 DRIVER_MEMORY=8g
 EXECUTOR_NUMBER=30
-EXECUTOR_MEMORY=3g
+EXECUTOR_MEMORY=10g
 EXECUTOR_CORES=4
 
 JOB_NAME="imkCrabTransform"
@@ -62,7 +62,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
-    --conf spark.yarn.executor.memoryOverhead=8192 \
+    --conf spark.yarn.executor.memoryOverhead=1024 \
     --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
     --conf spark.yarn.historyServer.address=${HISTORY_SERVER} \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
