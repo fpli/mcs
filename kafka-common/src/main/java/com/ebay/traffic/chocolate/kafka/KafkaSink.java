@@ -126,7 +126,7 @@ public class KafkaSink {
    *
    * @throws IOException
    */
-  public static void close() throws IOException {
+  public static synchronized void close() throws IOException {
     if (producer != null) {
       producer.close();
       producer = null;

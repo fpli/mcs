@@ -38,7 +38,7 @@ public class ByteArrayWrapper {
      * @return the wrapped bytes
      */
     public byte [] getBytes() {
-        return bytes;
+        return bytes.clone();
     }
 
     @Override

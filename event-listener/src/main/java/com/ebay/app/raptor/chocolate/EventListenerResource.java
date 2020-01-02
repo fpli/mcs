@@ -83,9 +83,8 @@ public class EventListenerResource implements EventsApi {
           logger.warn(e.getMessage(), request.toString(), body);
           logger.warn(ex.getMessage(), ex);
         }
-      } finally {
-        return res;
       }
+      return res;
     }
   }
 
@@ -119,9 +118,8 @@ public class EventListenerResource implements EventsApi {
         } catch (Exception ex) {
           logger.warn(ex.getMessage(), ex);
         }
-      } finally {
-        return res;
       }
+      return res;
     }
   }
 }

@@ -23,6 +23,7 @@ bin=`cd "$bin">/dev/null; pwd`
 CHANNEL=$1
 WORK_DIR=$2
 OUTPUT_DIR=$3
+JOIN_KEYWORD=$4
 ES_URL=http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
 
 KW_LKP_LATEST_PATH=hdfs://slickha/apps/kw_lkp/latest_path
@@ -72,6 +73,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --kwDataDir "${KW_LKP_FOLDER}" \
       --workDir "${WORK_DIR}" \
       --outputDir "${OUTPUT_DIR}" \
+      --joinKeyword "${JOIN_KEYWORD}" \
       --compressOutPut true \
       --maxMetaFiles 100 \
       --elasticsearchUrl ${ES_URL} \

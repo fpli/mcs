@@ -77,8 +77,6 @@ public class AAMain {
       SendEmail.getInstance().send(metricCountMap, historyMetricCountMap);
       logger.info("send the metric by the email");
     }
-
-
   }
 
 }

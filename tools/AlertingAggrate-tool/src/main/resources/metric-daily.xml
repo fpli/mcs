@@ -1,41 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <projects>
-    <project name="Chocolate-data" id="1">
+    <project name="Chocolate-EPN-data" id="1">
+        <metric name="Listener Input: click" value="ProxyIncomingCount" source="chocolate-metrics" condition="channelType:epn,channelAction:click" threshold="30000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+        <metric name="Capping Output: click" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:epn,channelAction:click" threshold="20000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+        <metric name="EPN click: click" value="SuccessfulCount" source="chocolate-metrics" condition="channelAction:click" threshold="20000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+        <metric name="Listener Input: impression" value="ProxyIncomingCount" source="chocolate-metrics" condition="channelType:epn,channelAction:impression" threshold="80000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+        <metric name="Capping Output: impression" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:epn,channelAction:impression" threshold="80000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+        <metric name="EPN Impression: impression" value="SuccessfulCount" source="chocolate-metrics" condition="channelAction:impression" threshold="80000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+    </project>
+    <project name="Chocolate-PaidSearch-data" id="2">
+        <metric name="Collectionsvc Input: click" value="CollectionServiceIncoming" source="chocolate-metrics" condition="channelType:paid_search" threshold="10000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+        <metric name="Capping Output: click" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:paid_search,channelAction:click" threshold="10000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+    </project>
+    <project name="Chocolate-SocialMedia-data" id="3">
+        <metric name="Collectionsvc Input: click" value="CollectionServiceIncoming" source="chocolate-metrics" condition="channelType:social_media" threshold="10000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+        <metric name="Capping Output: click" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:social_media,channelAction:click" threshold="10000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+    </project>
+    <project name="Chocolate-Display-data" id="4">
+        <metric name="Collectionsvc Input: click" value="CollectionServiceIncoming" source="chocolate-metrics" condition="channelType:display" threshold="10000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+        <metric name="Capping Output: click" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:display,channelAction:click" threshold="10000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+    </project>
+    <project name="Chocolate-data" id="5">
         <metric name="Rover Sync" value="syncCommand" source="chocolate-metrics" condition="" threshold="13000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
     </project>
-    <project name="Chocolate-EPN-data" id="2">
-        <metric name="Listener Input: click" value="ProxyIncomingCount" source="chocolate-metrics" condition="channelType:epn,channelAction:click" threshold="20000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="Capping Output: click" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:epn,channelAction:click" threshold="10000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="EPN click: click" value="SuccessfulCount" source="chocolate-metrics" condition="channelAction:click" threshold="10000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="Listener Input: impression" value="ProxyIncomingCount" source="chocolate-metrics" condition="channelType:epn,channelAction:impression" threshold="20000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="Capping Output: impression" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:epn,channelAction:impression" threshold="19000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="EPN Impression: impression" value="SuccessfulCount" source="chocolate-metrics" condition="channelAction:impression" threshold="10000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-    </project>
-    <project name="Chocolate-PaidSearch-data" id="3">
-        <metric name="Collectionsvc Input: click" value="CollectionServiceIncoming" source="chocolate-metrics" condition="channelType:paid_search" threshold="10000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="Capping Output: click" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:paid_search,channelAction:click" threshold="10000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-    </project>
-    <project name="IMK-data" id="4">
-        <metric name="Imk Dump Out Num" value="imk.dump.out" source="chocolate-metrics" condition="" threshold="250" thresholdFactor="0.5" computeType="sum" alert="true"/>
-    </project>
-    <project name="Rotation-data" id="5">
+    <project name="Rotation-data" id="6">
         <metric name="Rotation create fail" value="RotationCreateFail" source="mkttracksvc-metrics" condition="" threshold="0" thresholdFactor="2" computeType="sum" alert="false"/>
     </project>
-    <project name="Compaign-data" id="6">
+    <project name="Compaign-data" id="7">
         <metric name="Compaign create fail" value="CampaignMapCreateFail" source="mkttracksvc-metrics" condition="" threshold="0" thresholdFactor="0.5" computeType="sum" alert="true"/>
         <metric name="Compaign update fail" value="CampaignMapUpdateFail" source="mkttracksvc-metrics" condition="" threshold="0" thresholdFactor="0.5" computeType="sum" alert="true"/>
     </project>
-    <project name="Rover-data" id="7">
-        <metric name="Rover Imk Events Success" value="rover.imk.events.success" source="rover-metrics" condition="" threshold="0" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="Rover Imk Events Files" value="rover.imk.events.files" source="rover-metrics" condition="" threshold="0" thresholdFactor="0.5" computeType="sum" alert="true"/>
-    </project>
     <project name="Appdl-data" id="8">
-        <metric name="All App Event" value="Incoming" source="appdl-metrics" condition="" threshold="900000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="First Open" value="MMPSuccessFirstOpen" source="appdl-metrics" condition="" threshold="100000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="Open" value="MMPSuccessOpen" source="appdl-metrics" condition="" threshold="40000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="ViewItem" value="MMPSuccessViewItem" source="appdl-metrics" condition="" threshold="50000000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="Checkout" value="MMPSuccessCheckout" source="appdl-metrics" condition="" threshold="1500000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="Norb" value="MMPSuccessNorb" source="appdl-metrics" condition="" threshold="5000" thresholdFactor="0.5" computeType="sum" alert="true"/>
+        <metric name="All App Event" value="Incoming" source="appdl-metrics" condition="" threshold="1000000000" thresholdFactor="0.8" computeType="sum" alert="true"/>
+        <metric name="First Open" value="MMPSuccessFirstOpen" source="appdl-metrics" condition="" threshold="200000" thresholdFactor="0.8" computeType="sum" alert="true"/>
+        <metric name="Open" value="MMPSuccessOpen" source="appdl-metrics" condition="" threshold="45000000" thresholdFactor="0.8" computeType="sum" alert="true"/>
+        <metric name="ViewItem" value="MMPSuccessViewItem" source="appdl-metrics" condition="" threshold="130000000" thresholdFactor="0.8" computeType="sum" alert="true"/>
+        <metric name="Checkout" value="MMPSuccessCheckout" source="appdl-metrics" condition="" threshold="1500000" thresholdFactor="0.8" computeType="sum" alert="true"/>
+        <metric name="Norb" value="MMPSuccessNorb" source="appdl-metrics" condition="" threshold="10000" thresholdFactor="0.8" computeType="sum" alert="true"/>
         <metric name="Api Kafka Failed" value="ApiKafkaFailed" source="appdl-metrics" condition="" threshold="0" thresholdFactor="0.5" computeType="sum" alert="true"/>
         <metric name="Rheos Kafka Failed" value="KafkaFailed" source="appdl-metrics" condition="" threshold="0" thresholdFactor="0.5" computeType="sum" alert="true"/>
         <metric name="MMP Fail" value="MMPFail" source="appdl-metrics" condition="" threshold="4000000" thresholdFactor="2" computeType="sum" alert="false"/>

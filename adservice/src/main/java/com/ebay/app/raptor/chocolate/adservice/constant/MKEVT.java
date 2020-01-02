@@ -1,4 +1,8 @@
-package com.ebay.app.raptor.chocolate.adservice.util;
+/*
+ * Copyright (c) 2019. eBay inc. All rights reserved.
+ */
+
+package com.ebay.app.raptor.chocolate.adservice.constant;
 
 /**
  * @author Zhiyuan Wang

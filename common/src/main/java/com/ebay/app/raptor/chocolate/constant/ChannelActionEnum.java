@@ -108,7 +108,7 @@ public enum ChannelActionEnum {
    * @return the URI segment representing this action
    */
   String[] getActions() {
-    return this.actions;
+    return this.actions.clone();
   }
 
   /**

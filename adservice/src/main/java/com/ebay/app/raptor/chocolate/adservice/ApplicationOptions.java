@@ -102,4 +102,12 @@ public class ApplicationOptions extends AbstractApplicationOptions {
   public int getDriverId() {
     return DRIVER_ID;
   }
+
+  /**
+   * Get couchbase datasource
+   * @return datasource
+   */
+  public String getCouchbaseDatasource() {
+    return ApplicationOptionsParser.getStringProperty(properties, COUCHBASE_DATASOURCE);
+  }
 }

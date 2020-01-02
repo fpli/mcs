@@ -22,6 +22,7 @@ bin=`cd "$bin">/dev/null; pwd`
 
 WORK_DIR=$1
 OUTPUT_DIR=$2
+JOIN_KEYWORD=$4
 ES_URL=http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
 
 KW_LKP_LATEST_PATH=hdfs://slickha/apps/kw_lkp/latest_path
@@ -36,7 +37,7 @@ fi
 DRIVER_MEMORY=16g
 EXECUTOR_NUMBER=50
 EXECUTOR_MEMORY=8g
-EXECUTOR_CORES=4
+EXECUTOR_CORES=8
 
 JOB_NAME="crabTransform"
 
@@ -71,6 +72,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --kwDataDir "${KW_LKP_FOLDER}" \
       --workDir "${WORK_DIR}" \
       --outputDir "${OUTPUT_DIR}" \
+      --joinKeyword true \
       --compressOutPut true \
       --maxMetaFiles 12 \
       --elasticsearchUrl ${ES_URL} \

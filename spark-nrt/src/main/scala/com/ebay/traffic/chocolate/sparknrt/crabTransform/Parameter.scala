@@ -8,6 +8,7 @@ case class Parameter(appName: String = "crabSinkTransform",
                      transformedPrefix: String = "",
                      workDir: String = "",
                      outputDir: String = "",
+                     joinKeyword: Boolean = true,
                      kwDataDir: String = "",
                      compressOutPut: Boolean = false,
                      maxMetaFiles: Int = 6,
@@ -55,6 +56,11 @@ object Parameter {
       .required
       .valueName("outputDir")
       .action((cont, param) => param.copy(outputDir = cont))
+
+    opt[Boolean]("joinKeyword")
+      .required
+      .valueName("joinKeyword")
+      .action((cont, param) => param.copy(joinKeyword = cont))
 
     opt[Boolean]("compressOutPut")
       .required

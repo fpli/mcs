@@ -7,8 +7,11 @@ import java.time.{Instant, ZoneId, ZonedDateTime}
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
+import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.min
+import org.apache.spark.sql.types.{BooleanType, ByteType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, StructType}
 
 /**
  * Calculate dedupe and sink watermark and imk output watermark.
@@ -46,6 +49,15 @@ class CalCrabTransformWatermark(params: Parameter)
     fs
   }
 
+  @transient lazy val metrics: Metrics = {
+    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
+      ESMetrics.init("watermark-metrics-", params.elasticsearchUrl)
+      ESMetrics.getInstance()
+    } else {
+      null
+    }
+  }
+
   @transient lazy val schema_apollo = TableSchema("df_imk_apollo.json")
 
   // imk crab transform data dir
@@ -70,6 +82,8 @@ class CalCrabTransformWatermark(params: Parameter)
     kafkaWatermark.foreach(channelWatermarkTuple => {
       write(outputDir + "/dedupAndSinkWatermark" + "_" + channelWatermarkTuple._1, channelWatermarkTuple._2.toInstant.toEpochMilli.toString)
     })
+    metrics.flush()
+    metrics.close()
   }
 
   def write(path: String, outputValue: String) {
@@ -104,6 +118,22 @@ class CalCrabTransformWatermark(params: Parameter)
     val smallJoinDf = frame.select("event_ts")
     val watermark =  smallJoinDf.agg(min(smallJoinDf.col("event_ts"))).head().getString(0)
     ZonedDateTime.parse(watermark, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault()))
+  }
+
+  /**
+   * Convert string array of row fields to DataFrame row
+   * according to the table schema, ignore invalid line
+   *
+   * @param values string array of row fields
+   * @param schema dataframe schema
+   * @return dataframe row
+   */
+  override def toDfRow(values: Array[String], schema: StructType): Row = {
+    if (values.length != schema.fields.length) {
+      metrics.meter("invalidValueLength")
+      return null
+    }
+    convertToDfRow(values, schema)
   }
 
   def getKafkaWatermark: Array[(String, ZonedDateTime)] = {

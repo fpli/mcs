@@ -2,7 +2,7 @@ package com.ebay.traffic.chocolate.sparknrt.sink
 
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
-import java.util
+import java.{lang, util}
 import java.util.{Date, Properties}
 
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
@@ -95,7 +95,7 @@ class DedupeAndSink(params: Parameter)
     fs.mkdirs(new Path(baseTempDir))
     fs.mkdirs(new Path(sparkDir))
 
-    val kafkaRDD = new KafkaRDD[java.lang.Long, FilterMessage](
+    val kafkaRDD = new KafkaRDD[lang.Long, FilterMessage](
       sc, params.kafkaTopic, properties, params.elasticsearchUrl, params.maxConsumeSize)
 
     val dates =
@@ -104,27 +104,11 @@ class DedupeAndSink(params: Parameter)
       val writers = new util.HashMap[String, ParquetWriter[GenericRecord]]()
       var hasWrittenTimestamp = false
 
-      // output messages to files
       while (iter.hasNext) {
         val message = iter.next().value()
-        if (metrics != null) {
-          metrics.meter("DedupeInputCount", 1, message.getTimestamp,
-            Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
-            Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
-        }
-        // write message lag to file with first message in this partition
-        if(!hasWrittenTimestamp) {
-          val timestampOfPartition = message.getTimestamp
-          try {
-            // write lag to hdfs file
-            val output = fs.create(new Path(lagDir + TaskContext.get.partitionId()), true)
-            output.writeBytes(String.valueOf(timestampOfPartition))
-            output.writeBytes(System.getProperty("line.separator"))
-            output.close()
-          } catch {
-            case e: Exception =>
-              logger.error("Exception when writing message lag to file", e)
-          }
+        metric(message)
+        if (!hasWrittenTimestamp) {
+          writePartitionLag(message)
           hasWrittenTimestamp = true
         }
         val date = DATE_COL + "=" + getDateString(message.getTimestamp) // get the event date
@@ -145,27 +129,10 @@ class DedupeAndSink(params: Parameter)
           writers.put(date, writer)
         }
         // write message
-        // couchbase dedupe only apply on click
-        if ((message.getChannelAction == ChannelAction.CLICK || message.getChannelAction == ChannelAction.ROI) && couchbaseDedupe) {
-          try {
-            val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-            val key = DEDUPE_KEY_PREFIX + message.getSnapshotId.toString
-            if (!bucket.exists(key)) {
-              writeMessage(writer, message)
-            }
-            CorpCouchbaseClient.returnClient(cacheClient)
-          } catch {
-            case e: Exception =>
-              logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
-              writeMessage(writer, message)
-              couchbaseDedupe = false
-          }
-        } else {
-          writeMessage(writer, message)
-        }
+        dedupeByCBAndWriteMessage(message, writer)
       }
-      if (metrics != null)
-        metrics.flush()
+
+      flushMetric
 
       // 1. close the parquet writers
       // 2. rename tmp files to final files
@@ -196,7 +163,7 @@ class DedupeAndSink(params: Parameter)
     // dedupe
     var metaFiles: MetaFiles = null
     if(dates.length>0) {
-      metaFiles = new MetaFiles(dates.map(date => dedupe(date)))
+      metaFiles = new MetaFiles(dates.map(date => dedupeThisAndLastMeta(date)))
 
       metadata.writeDedupeCompMeta(metaFiles)
       metadata.writeDedupeOutputMeta(metaFiles)
@@ -205,54 +172,124 @@ class DedupeAndSink(params: Parameter)
     kafkaRDD.commitOffsets()
     kafkaRDD.close()
 
-    // insert new keys to couchbase for next round's dedupe
-    if (metaFiles != null && couchbaseDedupe) {
-      if (metaFiles.metaFiles != null && metaFiles.metaFiles.length > 0) {
-        val datesFiles = metaFiles.metaFiles
-        if (datesFiles != null && datesFiles.length > 0) {
-          datesFiles.foreach(dateFiles => {
-            if (couchbaseDedupe) {
-              val df = this.readFilesAsDFEx(dateFiles.files)
-              df.filter($"channel_action" === "CLICK" || $"channel_action" === "ROI")
-                .repartition(30)
-                .select("snapshot_id")
-                .foreachPartition(partition => {
-                    // each partition insert cb by batch, limit the size to send to 5000 records
-                    partition.grouped(5000).foreach(
-                      group => {
-                        var snapshotIdList = new ListBuffer[String]()
-                        try {
-                          val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-                          group.foreach(record => snapshotIdList += record.get(0).toString)
-                          // async call couchbase batch api
-                          Observable.from(snapshotIdList.toArray).flatMap(new Func1[String, Observable[JsonDocument]]() {
-                            override def call(snapshotId: String): Observable[JsonDocument] = {
-                              val snapshotIdKey = DEDUPE_KEY_PREFIX + snapshotId
-                              bucket.async.upsert(JsonDocument.create(snapshotIdKey, couchbaseTTL, JsonObject.empty()))
-                            }
-                          }).last().toBlocking.single()
-                        } catch {
-                          case e: Exception =>
-                            logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
-                            couchbaseDedupe = false
-                        }
-                      }
-                    )
-                })
-            }
-          })
-        }
-      }
-    }
+    writeSnapshort2Cb(metaFiles)
 
     // delete the dir
     fs.delete(new Path(baseDir), true)
   }
 
   /**
-    * Dedupe logic
+    * Dedupe by couchbase to click and roi. Write result to file.
+    * @param message filter message
+    * @param writer file writer
     */
-  def dedupe(date: String): DateFiles = {
+  private def dedupeByCBAndWriteMessage(message: FilterMessage, writer: ParquetWriter[GenericRecord]) = {
+    // couchbase dedupe only apply on click
+    if ((message.getChannelAction == ChannelAction.CLICK || message.getChannelAction == ChannelAction.ROI) && couchbaseDedupe) {
+      try {
+        val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+        val key = DEDUPE_KEY_PREFIX + message.getSnapshotId.toString
+        if (!bucket.exists(key)) {
+          writeMessage(writer, message)
+        }
+        CorpCouchbaseClient.returnClient(cacheClient)
+      } catch {
+        case e: Exception =>
+          logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
+          writeMessage(writer, message)
+          couchbaseDedupe = false
+      }
+    } else {
+      writeMessage(writer, message)
+    }
+  }
+
+  /**
+    * Write snapshort id as key to couchbase
+ *
+    * @param metaFiles meta files
+    */
+  private def writeSnapshort2Cb(metaFiles: MetaFiles) = {
+    // insert new keys to couchbase for next round's dedupe
+    if (metaFiles != null && couchbaseDedupe && metaFiles.metaFiles != null && metaFiles.metaFiles.length > 0) {
+      val datesFiles = metaFiles.metaFiles
+      if (datesFiles != null && datesFiles.length > 0) {
+        datesFiles.foreach(dateFiles => {
+          val df = this.readFilesAsDFEx(dateFiles.files)
+          df.filter($"channel_action" === "CLICK" || $"channel_action" === "ROI")
+            .repartition(30)
+            .select("snapshot_id")
+            .foreachPartition(partition => {
+              // each partition insert cb by batch, limit the size to send to 5000 records
+              partition.grouped(5000).foreach(
+                group => {
+                  var snapshotIdList = new ListBuffer[String]()
+                  try {
+                    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+                    group.foreach(record => snapshotIdList += record.get(0).toString)
+                    // async call couchbase batch api
+                    Observable.from(snapshotIdList.toArray).flatMap(new Func1[String, Observable[JsonDocument]]() {
+                      override def call(snapshotId: String): Observable[JsonDocument] = {
+                        val snapshotIdKey = DEDUPE_KEY_PREFIX + snapshotId
+                        bucket.async.upsert(JsonDocument.create(snapshotIdKey, couchbaseTTL, JsonObject.empty()))
+                      }
+                    }).last().toBlocking.single()
+                  } catch {
+                    case e: Exception =>
+                      logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
+                      couchbaseDedupe = false
+                  }
+                }
+              )
+            })
+        })
+      }
+    }
+  }
+
+  /**
+    * Output message to files
+    * @param message
+    */
+  def writePartitionLag(message: FilterMessage) = {
+    // write message lag to file with first message in this partition
+    val timestampOfPartition = message.getTimestamp
+    try {
+      // write lag to hdfs file
+      val output = fs.create(new Path(lagDir + TaskContext.get.partitionId()), true)
+      output.writeBytes(String.valueOf(timestampOfPartition))
+      output.writeBytes(System.getProperty("line.separator"))
+      output.close()
+    } catch {
+      case e: Exception =>
+        logger.error("Exception when writing message lag to file", e)
+    }
+  }
+
+  /**
+    * Flush the metrics
+    */
+  private def flushMetric = {
+    if (metrics != null)
+      metrics.flush()
+  }
+
+  /**
+    * Write metrics of message
+    * @param message
+    */
+  private def metric(message: FilterMessage) = {
+    if (metrics != null) {
+      metrics.meter("DedupeInputCount", 1, message.getTimestamp,
+        Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
+        Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
+    }
+  }
+
+  /**
+    * Dedupe in meta and compare last meta
+    */
+  def dedupeThisAndLastMeta(date: String): DateFiles = {
     // dedupe current df
     var df = readFilesAsDF(baseDir + "/" + date)
 

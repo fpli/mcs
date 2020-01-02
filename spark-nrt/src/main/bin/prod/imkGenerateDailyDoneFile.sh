@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -x
 # Generate hadoop done file in ApolloRNO
 # Input:    Apollo RNO
 #           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event
@@ -35,22 +36,8 @@ fi
 
 hourly_done_file=${HOURLY_DONE_FILE_RNO_PATH}/${dt}/imk_rvr_trckng_event_hourly.done.${dt}2300000000
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -test -e ${hourly_done_file}
-echo $hourly_done_file
 hourly_done_file_exists=$?
 if [ ${hourly_done_file_exists} -eq 0 ]
-then
-    /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -touchz ${done_file}
-    echo "generated done file: ${done_file}"
-else
-    echo "${TABLE_NAME} done file delay!!!"
-    exit 1
-fi
-tmp_file=imk_daily_done_check_${TABLE_NAME}.txt
-/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls -R ${IMK_RNO_PATH}/${dts} | grep -v "^$" | awk '{print $NF}' | grep "chocolate_" > ${tmp_file}
-files_size=`cat ${tmp_file} | wc -l`
-rm -f ${tmp_file}
-
-if [ ${files_size} -gt ${FILE_SIZE_THRESHOLD} ];
 then
     /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -touchz ${done_file}
     echo "generated done file: ${done_file}"

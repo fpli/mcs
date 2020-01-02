@@ -34,10 +34,11 @@ class CappingRuleJob(params: Parameter)
 
   @transient lazy val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
-  lazy val baseDir = params.workDir + "/capping/" + params.channel + "/"
+  lazy val cappingDir = "/capping/"
+  lazy val baseDir = params.workDir + cappingDir + params.channel + "/"
   lazy val sparkDir = baseDir + "/spark/"
-  lazy val outputDir = params.outputDir + "/" + params.channel + "/capping/"
-  lazy val archiveDir = params.archiveDir + "/" + params.channel + "/capping/"
+  lazy val outputDir = params.outputDir + "/" + params.channel + cappingDir
+  lazy val archiveDir = params.archiveDir + "/" + params.channel + cappingDir
 
   override def run(): Unit = {
 

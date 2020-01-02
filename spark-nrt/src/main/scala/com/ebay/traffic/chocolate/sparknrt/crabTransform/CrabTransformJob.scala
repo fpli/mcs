@@ -11,6 +11,7 @@ import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.compress.GzipCodec
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, lit, udf, _}
 import scalaj.http.Http
@@ -81,6 +82,7 @@ class CrabTransformJob(params: Parameter)
   lazy val xidClientId: String = properties.getProperty("xid.xidClientId")
   lazy val xidConnectTimeout: Int = properties.getProperty("xid.xidConnectTimeout").toInt
   lazy val xidReadTimeout: Int = properties.getProperty("xid.xidReadTimeout").toInt
+  lazy val joinKeyword: Boolean = params.joinKeyword
 
   import spark.implicits._
 
@@ -97,6 +99,10 @@ class CrabTransformJob(params: Parameter)
       }
     }
 
+    // reduce the read parquet test size by increasing the reading input block size to 1GB
+    // spark.sparkContext.hadoopConfiguration.set("mapreduce.input.fileinputformat.split.minsize", "1073741824")
+    // spark.sparkContext.hadoopConfiguration.set("mapred.min.split.size", "1073741824")
+
     fs.delete(new Path(imkTempDir), true)
     fs.delete(new Path(dtlTempDir), true)
     fs.delete(new Path(mgTempDir), true)
@@ -108,12 +114,10 @@ class CrabTransformJob(params: Parameter)
       crabTransformMeta = crabTransformMeta.slice(0, params.maxMetaFiles)
     }
 
-    //    val kwLKPDf = spark.sql("select kw_id, kw from default.dw_kwdm_kw_lkp")
-    val kwLKPDf = readFilesAsDF(params.kwDataDir)
     val partitions = crabTransformMeta.length
 
     val metas = mergeMetaFiles(crabTransformMeta)
-    metas.foreach(datesFile => {
+    metas.foreach(f = datesFile => {
       val date = datesFile._1
       var commonDf = readFilesAsDFEx(datesFile._2, schema_tfs.dfSchema, "csv", "bel")
         .repartition(params.xidParallelNum)
@@ -134,24 +138,33 @@ class CrabTransformJob(params: Parameter)
         commonDf = commonDf.withColumn(e, lit(schema_apollo_mg.defaultValues(e)))
       })
 
-      // select core data columns
-      val coreDf = commonDf.select(schema_apollo.dfColumns: _*).drop("kw_id")
-      val smallJoinDf = coreDf.select("keyword", "rvr_id")
-        .withColumnRenamed("rvr_id", "temp_rvr_id")
-        .filter(kwIsNotEmptyUdf(col("keyword"))).distinct()
-      val heavyJoinResultDf = kwLKPDf
-        .join(broadcast(smallJoinDf), $"keyword" === $"kw", "right_outer")
-        //        .groupBy("keyword")
-        //        .agg(min("kw_id") as "kw_id")
-        .withColumnRenamed("keyword", "temp_kw")
+      if (joinKeyword) {
+        val kwLKPDf = readFilesAsDF(params.kwDataDir).filter($"is_dup" === false)
+        // select core data columns
+        val coreDf = commonDf.select(schema_apollo.dfColumns: _*).drop("kw_id")
+        val smallJoinDf = coreDf.select("keyword", "rvr_id")
+          .withColumnRenamed("rvr_id", "temp_rvr_id")
+          .filter(kwIsNotEmptyUdf(col("keyword"))).distinct()
 
-      coreDf.join(heavyJoinResultDf, $"rvr_id" === $"temp_rvr_id", "left_outer")
-        .withColumn("kw_id", setDefaultValueForKwIdUdf(col("kw_id")))
-        .select(schema_apollo.dfColumns: _*)
-        .rdd
-        .map(row => ("", row.mkString("\u007F")))
-        .repartition(partitions)
-        .saveAsSequenceFile(imkTempDir, compressCodec)
+        // if input number is less, then we choose broadcast join to improve the performance
+        // 1,000,000 tfs file format data approximately equals to 500MB
+        var isBroadCast = smallJoinDf.count() <= 1000000
+        val heavyJoinResultDf = getJoinedKwDf(smallJoinDf, kwLKPDf, isBroadCast)
+
+        coreDf.join(heavyJoinResultDf, $"rvr_id" === $"temp_rvr_id", "left_outer")
+          .withColumn("kw_id", setDefaultValueForKwIdUdf(col("kw_id")))
+          .select(schema_apollo.dfColumns: _*)
+          .rdd
+          .map(row => ("", row.mkString("\u007F")))
+          .repartition(partitions)
+          .saveAsSequenceFile(imkTempDir, compressCodec)
+      } else {
+        val coreDf = commonDf.select(schema_apollo.dfColumns: _*)
+        coreDf.rdd
+          .map(row => ("", row.mkString("\u007F")))
+          .repartition(partitions)
+          .saveAsSequenceFile(imkTempDir, compressCodec)
+      }
 
       // select dtl columns
       commonDf.select(schema_apollo_dtl.dfColumns: _*)
@@ -185,6 +198,17 @@ class CrabTransformJob(params: Parameter)
     if (metrics != null) {
       metrics.flush()
       metrics.close()
+    }
+  }
+
+  // join keyword table
+  def getJoinedKwDf(smallJoinDf: DataFrame, kwLKPDf: DataFrame, isBroadcast: Boolean) : DataFrame = {
+    if(isBroadcast) {
+      kwLKPDf.join(broadcast(smallJoinDf), $"keyword" === $"kw", "inner")
+        .withColumnRenamed("keyword", "temp_kw")
+    } else {
+      kwLKPDf.join(smallJoinDf, $"keyword" === $"kw", "inner")
+        .withColumnRenamed("keyword", "temp_kw")
     }
   }
 
@@ -345,11 +369,6 @@ class CrabTransformJob(params: Parameter)
     * @param date date
     */
   def simpleRenameFiles(workDir: String, outputDir: String, date: String): Unit = {
-    //    val outputPath = outputDir + "/" + date
-    //    if (!fs.exists(new Path(outputPath))) {
-    //      fs.mkdirs(new Path(outputPath))
-    //    }
-
     val status = fs.listStatus(new Path(workDir))
     status
       .filter(path => path.getPath.getName != "_SUCCESS")
