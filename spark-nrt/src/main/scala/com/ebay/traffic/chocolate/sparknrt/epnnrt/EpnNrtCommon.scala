@@ -248,7 +248,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_click_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("click", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
   val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("impression", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
   val get_google_fltr_do_flag_udf = udf((referer: String, publisherId: String) => getGoogleFltrDoFlag(getRefererURLAndDomain(referer, true), publisherId))
-  val get_lnd_page_url_name_udf = udf((responseHeader: String) => getLndPageUrlName(responseHeader))
+  val get_lnd_page_url_name_udf = udf((responseHeader: String, landingPageUrl: String) => getLndPageUrlName(responseHeader, landingPageUrl))
   val get_IcepFlexFld_udf = udf((uri: String, key: String) => getIcepFlexFld(uri, key))
   val get_Geo_Trgtd_Ind_udf = udf((uri: String) => getValueFromQueryURL(uri, "isgeo"))
   val get_Pblshr_Acptd_Prgrm_Ind_udf = udf((uri: String) => getValueFromQueryURL(uri, "isprogAccepted"))
@@ -310,23 +310,29 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     df.format(timestamp)
   }
 
-  def getLndPageUrlName(responseHeader: String): String = {
-    val location = getValueFromRequest(responseHeader, "Location")
-    if (location.equalsIgnoreCase(""))
-      return ""
-    val url = new URL(location)
-    if (url.getHost.equalsIgnoreCase("rover.ebay.com") || url.getHost.equalsIgnoreCase("r.ebay.com"))
-      removeParams(location)
-    else {
-      var res = getQueryParam(location, "mpre")
-      if (res.equalsIgnoreCase(""))
-        res = getQueryParam(location, "loc")
-      if (res.equalsIgnoreCase(""))
-        res = getQueryParam(location, "url")
-      if (res.equalsIgnoreCase(""))
+  //For normal clicks, parse landing page url name from response_headers
+  //For the missing mobile clicks which are sent through mcs, get landing page url name from landing_page_url
+  def getLndPageUrlName(responseHeader: String, landingPageUrl: String): String = {
+    if (landingPageUrl == null || landingPageUrl.equalsIgnoreCase("")) {
+      val location = getValueFromRequest(responseHeader, "Location")
+      if (location.equalsIgnoreCase(""))
+        return ""
+      val url = new URL(location)
+      if (url.getHost.equalsIgnoreCase("rover.ebay.com") || url.getHost.equalsIgnoreCase("r.ebay.com"))
         removeParams(location)
-      else
-        removeParams(res)
+      else {
+        var res = getQueryParam(location, "mpre")
+        if (res.equalsIgnoreCase(""))
+          res = getQueryParam(location, "loc")
+        if (res.equalsIgnoreCase(""))
+          res = getQueryParam(location, "url")
+        if (res.equalsIgnoreCase(""))
+          removeParams(location)
+        else
+          removeParams(res)
+      }
+    } else {
+      return landingPageUrl
     }
   }
 

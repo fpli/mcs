@@ -187,6 +187,7 @@ public class RoverRheosTopicFilterTaskTest {
         HashMap<Utf8, Utf8> data6 = new HashMap<Utf8, Utf8>();
         data6.put(new Utf8("rvrid"), new Utf8("1234567"));
         data6.put(new Utf8("timestamp"), new Utf8("1573461248484"));
+        data6.put(new Utf8("url_mpre"), new Utf8("http%3A%2F%2Fwww.ebay.de%2Fitm%2Flike%2F113936797595"));
 
         when(genericRecord3.get("clientData")).thenReturn(data5);
         when(genericRecord3.get("applicationPayload")).thenReturn(data6);

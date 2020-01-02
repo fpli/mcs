@@ -146,8 +146,14 @@ class TestEpnNrtCommon extends BaseFunSuite{
 
   test("Test get landing page url name") {
     val responseHeader = "Referer:http://translate.google.com.mx|X-Purpose:preview|Location:http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&dashenId=10044|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/92d9dfe51670a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/47a11c671620a93c91006917fffa2a915d116016^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:10.108.159.177|User-Agent:Shuang-UP.Browser-baiduspider-ebaywinphocore"
-    val res = epnNrtCommon.getLndPageUrlName(responseHeader)
+    val res = epnNrtCommon.getLndPageUrlName(responseHeader, "")
     assert(res.equals("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2"))
+
+    val resNullLandingPage = epnNrtCommon.getLndPageUrlName(responseHeader, null)
+    assert(resNullLandingPage.equals("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2"))
+
+    val resValidLandingPage = epnNrtCommon.getLndPageUrlName(responseHeader, "http://www.ebay.de/itm/like/113936797595")
+    assert(resValidLandingPage.equals("http://www.ebay.de/itm/like/113936797595"))
   }
 
   test("Test get value from request") {
