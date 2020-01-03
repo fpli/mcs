@@ -251,7 +251,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_click_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("click", getRelatedInfoFromUri(uri, 3, "mkrid"), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
   val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("impression", getRelatedInfoFromUri(uri, 3, "mkrid"), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
   val get_google_fltr_do_flag_udf = udf((referer: String, publisherId: String) => getGoogleFltrDoFlag(getRefererURLAndDomain(referer, true), publisherId))
-  val get_lnd_page_url_name_udf = udf((responseHeader: String, uri: String) => getLndPageUrlName(responseHeader, uri))
+  val get_lnd_page_url_name_udf = udf((responseHeader: String, landingPageUrl: String) => getLndPageUrlName(responseHeader, landingPageUrl))
   val get_IcepFlexFld_udf = udf((uri: String, key: String) => getIcepFlexFld(uri, key))
   val get_Geo_Trgtd_Ind_udf = udf((uri: String) => getValueFromQueryURL(uri, "isgeo"))
   val get_Pblshr_Acptd_Prgrm_Ind_udf = udf((uri: String) => getValueFromQueryURL(uri, "isprogAccepted"))
@@ -316,16 +316,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   /**
-    * get landing page from responseHeader or uri
+    * get landing page from responseHeader or landingPageUrl
     * for rover uri, get landing page url from responseHeader
-    * for mcs uri, use uri as landing page url
-    * @param responseHeader, uri
+    * for mcs uri, use landingPageUrl as landing page url
+    * @param responseHeader, landingPageUrl
     * @return channel id
     */
-  def getLndPageUrlName(responseHeader: String, uri: String): String = {
-    if (uri != null && !roversites.matcher(uri.toLowerCase()).find()) {
-      return uri
-    } else {
+  def getLndPageUrlName(responseHeader: String, landingPageUrl: String): String = {
+    if (landingPageUrl == null || landingPageUrl.equalsIgnoreCase("")) {
       val location = getValueFromRequest(responseHeader, "Location")
       if (location.equalsIgnoreCase(""))
         return ""
@@ -343,6 +341,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         else
           removeParams(res)
       }
+    } else {
+      return landingPageUrl
     }
   }
 

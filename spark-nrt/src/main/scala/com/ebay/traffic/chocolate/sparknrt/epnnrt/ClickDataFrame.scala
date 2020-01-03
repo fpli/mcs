@@ -33,7 +33,7 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
       .withColumn("AMS_PBLSHR_CMPGN_ID", col("campaign_id"))
       .withColumn("AMS_TOOL_ID", common.getToolIdUdf(col("uri")))
       .withColumn("CSTM_ID", common.getCustomIdUdf(col("uri")))
-      .withColumn("LND_PAGE_URL_NAME", common.get_lnd_page_url_name_udf(col("response_headers"), col("uri")))
+      .withColumn("LND_PAGE_URL_NAME", common.get_lnd_page_url_name_udf(col("response_headers"), col("landing_page_url")))
       .withColumn("USER_QUERY_TXT",  common.getUserQueryTextUdf(col("uri"), lit("click")))
       .withColumn("FLEX_FLD_1_TXT",  common.getFFValueUdf(col("uri"), lit(1)))
       .withColumn("FLEX_FLD_2_TXT",  common.getFFValueUdf(col("uri"), lit(2)))
