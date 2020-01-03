@@ -35,5 +35,5 @@ public class Constants {
   // Adobe url params
   public static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   public static final String REDIRECT_SRC_SOJ_SOURCE = "adcamp_locationsrc";
-
+  public static final String ADOBE_CAMP_PUBLIC_USER_ID = "pu";
 }
