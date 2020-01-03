@@ -320,7 +320,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     * for rover uri, get landing page url from responseHeader
     * for mcs uri, use landingPageUrl as landing page url
     * @param responseHeader, landingPageUrl
-    * @return channel id
+    * @return landingPageUrlName
     */
   def getLndPageUrlName(responseHeader: String, landingPageUrl: String): String = {
     if (landingPageUrl == null || landingPageUrl.equalsIgnoreCase("")) {
