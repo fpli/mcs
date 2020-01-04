@@ -355,7 +355,7 @@ class CrabTransformJob(params: Parameter)
   }
 
   def getMgvalueRsnCd(mgvaluereason: String): String = {
-    if ("4".equalsIgnoreCase(mgvaluereason)) {
+    if ("4".equalsIgnoreCase(mgvaluereason) || "BOT".equalsIgnoreCase(mgvaluereason)) {
       "4"
     } else {
       ""
