@@ -11,7 +11,8 @@ import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.compress.GzipCodec
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.scheduler.{SparkListener, SparkListenerTaskEnd}
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, lit, udf, _}
 import scalaj.http.Http
@@ -115,6 +116,16 @@ class CrabTransformJob(params: Parameter)
     }
 
     val partitions = crabTransformMeta.length
+
+    // add listener on task end to flush metrics
+    spark.sparkContext.addSparkListener(new SparkListener() {
+      override def onTaskEnd(taskEnd: SparkListenerTaskEnd) = {
+        if (metrics != null) {
+          metrics.flush()
+          metrics.close()
+        }
+      }
+    })
 
     val metas = mergeMetaFiles(crabTransformMeta)
     metas.foreach(f = datesFile => {
