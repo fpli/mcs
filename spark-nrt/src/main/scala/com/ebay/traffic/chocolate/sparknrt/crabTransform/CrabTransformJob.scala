@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.compress.GzipCodec
 import org.apache.spark.scheduler.{SparkListener, SparkListenerTaskEnd}
+import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, lit, udf, _}
@@ -117,15 +118,15 @@ class CrabTransformJob(params: Parameter)
 
     val partitions = crabTransformMeta.length
 
-    // add listener on task end to flush metrics
-    spark.sparkContext.addSparkListener(new SparkListener() {
-      override def onTaskEnd(taskEnd: SparkListenerTaskEnd) = {
-        if (metrics != null) {
-          metrics.flush()
-          metrics.close()
-        }
-      }
-    })
+//    // add listener on task end to flush metrics
+//    spark.sparkContext.addSparkListener(new SparkListener() {
+//      override def onTaskEnd(taskEnd: SparkListenerTaskEnd) = {
+//        if (metrics != null) {
+//          metrics.flush()
+//          metrics.close()
+//        }
+//      }
+//    })
 
     val metas = mergeMetaFiles(crabTransformMeta)
     metas.foreach(f = datesFile => {
@@ -147,6 +148,16 @@ class CrabTransformJob(params: Parameter)
       })
       schema_apollo_mg.filterNotColumns(commonDf.columns).foreach(e => {
         commonDf = commonDf.withColumn(e, lit(schema_apollo_mg.defaultValues(e)))
+      })
+
+      // flush metrics for tasks
+      import org.apache.spark.sql.catalyst.encoders.RowEncoder
+      implicit val encoder: ExpressionEncoder[Row] = RowEncoder(commonDf.schema)
+      commonDf = commonDf.mapPartitions((iter: Iterator[Row]) => {
+        if (metrics != null) {
+          metrics.flush()
+        }
+        iter
       })
 
       if (joinKeyword) {
