@@ -267,12 +267,12 @@ public class DefaultChannel implements Channel {
     // use the timestamp from request as the start time
     long startTime = System.currentTimeMillis();
 
-    try {
-      startTime = ((Request) request).getTimeStamp();
-    } catch (ClassCastException e) {
-      // ideally only touch this part in unit test
-      logger.warn("Cannot get request start time, use system time instead. ", e);
-    }
+//    try {
+//      startTime = ((Request) request).getTimeStamp();
+//    } catch (ClassCastException e) {
+//      // ideally only touch this part in unit test
+//      logger.warn("Cannot get request start time, use system time instead. ", e);
+//    }
     logger.debug(String.format("StartTime: %d", startTime));
     metrics.meter("ProxyIncomingCount", 1, startTime, Field.of(CHANNEL_ACTION, channelAction),
         Field.of(CHANNEL_TYPE, channelType));

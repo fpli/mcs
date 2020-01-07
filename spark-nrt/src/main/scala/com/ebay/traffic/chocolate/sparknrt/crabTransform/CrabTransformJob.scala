@@ -11,6 +11,9 @@ import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.compress.GzipCodec
+import org.apache.spark.scheduler.{SparkListener, SparkListenerTaskEnd}
+import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, lit, udf, _}
 import scalaj.http.Http
@@ -99,7 +102,8 @@ class CrabTransformJob(params: Parameter)
     }
 
     // reduce the read parquet test size by increasing the reading input block size to 1GB
-    spark.sparkContext.hadoopConfiguration.set("mapreduce.input.fileinputformat.split.minsize", "1073741824")
+    // spark.sparkContext.hadoopConfiguration.set("mapreduce.input.fileinputformat.split.minsize", "1073741824")
+    // spark.sparkContext.hadoopConfiguration.set("mapred.min.split.size", "1073741824")
 
     fs.delete(new Path(imkTempDir), true)
     fs.delete(new Path(dtlTempDir), true)
@@ -114,8 +118,18 @@ class CrabTransformJob(params: Parameter)
 
     val partitions = crabTransformMeta.length
 
+//    // add listener on task end to flush metrics
+//    spark.sparkContext.addSparkListener(new SparkListener() {
+//      override def onTaskEnd(taskEnd: SparkListenerTaskEnd) = {
+//        if (metrics != null) {
+//          metrics.flush()
+//          metrics.close()
+//        }
+//      }
+//    })
+
     val metas = mergeMetaFiles(crabTransformMeta)
-    metas.foreach(datesFile => {
+    metas.foreach(f = datesFile => {
       val date = datesFile._1
       var commonDf = readFilesAsDFEx(datesFile._2, schema_tfs.dfSchema, "csv", "bel")
         .repartition(params.xidParallelNum)
@@ -123,7 +137,7 @@ class CrabTransformJob(params: Parameter)
         .withColumn("user_id", getUserIdUdf(col("user_id"), col("cguid"), col("rvr_cmnd_type_cd")))
         .withColumn("mfe_id", getMfeIdUdf(col("mfe_name")))
         .withColumn("event_ts", setMessageLagUdf(col("event_ts")))
-        .withColumn("mgvalue_rsn_cd", col("mgvaluereason"))
+        .withColumn("mgvalue_rsn_cd", getMgvalueRsnCdUdf(col("mgvaluereason")))
         .na.fill(schema_tfs.defaultValues).cache()
       // set default values for some columns
       schema_apollo.filterNotColumns(commonDf.columns).foreach(e => {
@@ -136,18 +150,30 @@ class CrabTransformJob(params: Parameter)
         commonDf = commonDf.withColumn(e, lit(schema_apollo_mg.defaultValues(e)))
       })
 
-      if(joinKeyword) {
+      // flush metrics for tasks
+      import org.apache.spark.sql.catalyst.encoders.RowEncoder
+      implicit val encoder: ExpressionEncoder[Row] = RowEncoder(commonDf.schema)
+      commonDf = commonDf.mapPartitions((iter: Iterator[Row]) => {
+        if (metrics != null) {
+          metrics.flush()
+        }
+        iter
+      })
+
+      if (joinKeyword) {
         val kwLKPDf = readFilesAsDF(params.kwDataDir).filter($"is_dup" === false)
         // select core data columns
         val coreDf = commonDf.select(schema_apollo.dfColumns: _*).drop("kw_id")
         val smallJoinDf = coreDf.select("keyword", "rvr_id")
           .withColumnRenamed("rvr_id", "temp_rvr_id")
           .filter(kwIsNotEmptyUdf(col("keyword"))).distinct()
-        val heavyJoinResultDf = kwLKPDf
-          .join(broadcast(smallJoinDf), $"keyword" === $"kw", "right_outer")
-          .withColumnRenamed("keyword", "temp_kw")
 
-        coreDf.join(broadcast(heavyJoinResultDf), $"rvr_id" === $"temp_rvr_id", "left_outer")
+        // if input number is less, then we choose broadcast join to improve the performance
+        // 1,000,000 tfs file format data approximately equals to 500MB
+        var isBroadCast = smallJoinDf.count() <= 1000000
+        val heavyJoinResultDf = getJoinedKwDf(smallJoinDf, kwLKPDf, isBroadCast)
+
+        coreDf.join(heavyJoinResultDf, $"rvr_id" === $"temp_rvr_id", "left_outer")
           .withColumn("kw_id", setDefaultValueForKwIdUdf(col("kw_id")))
           .select(schema_apollo.dfColumns: _*)
           .rdd
@@ -194,6 +220,17 @@ class CrabTransformJob(params: Parameter)
     if (metrics != null) {
       metrics.flush()
       metrics.close()
+    }
+  }
+
+  // join keyword table
+  def getJoinedKwDf(smallJoinDf: DataFrame, kwLKPDf: DataFrame, isBroadcast: Boolean) : DataFrame = {
+    if(isBroadcast) {
+      kwLKPDf.join(broadcast(smallJoinDf), $"keyword" === $"kw", "inner")
+        .withColumnRenamed("keyword", "temp_kw")
+    } else {
+      kwLKPDf.join(smallJoinDf, $"keyword" === $"kw", "inner")
+        .withColumnRenamed("keyword", "temp_kw")
     }
   }
 
@@ -340,7 +377,7 @@ class CrabTransformJob(params: Parameter)
   }
 
   def getMgvalueRsnCd(mgvaluereason: String): String = {
-    if ("BOT".equalsIgnoreCase(mgvaluereason)) {
+    if ("4".equalsIgnoreCase(mgvaluereason) || "BOT".equalsIgnoreCase(mgvaluereason)) {
       "4"
     } else {
       ""
