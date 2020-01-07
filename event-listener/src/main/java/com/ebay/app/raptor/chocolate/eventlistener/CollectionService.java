@@ -74,7 +74,12 @@ public class CollectionService {
   private static final String LANDING_PAGE_TYPE = "landingPageType";
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
-  private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?(rover\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
+  private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
+
+  // app deeplink sites XC-1797
+  private static Pattern deeplinksites = Pattern.compile("^ebay:\\/\\/link\\/([\\w-$%?&/.])?", Pattern.CASE_INSENSITIVE);
+  // determine whether the url belongs to ebay sites for app deep link, and don't do any filter
+  private static Pattern deeplinkEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE);
 
   @PostConstruct
   public void postInit() {
@@ -221,6 +226,41 @@ public class CollectionService {
 
     // targetUrl is from post body
     String targetUrl = event.getTargetUrl();
+
+    //XC-1797, for app deeplink case, extract and decode actual target url from referrer parameter in targetUrl
+    //only accept the url when referrer domain is ebay"
+    Matcher deeplinkMatcher = deeplinksites.matcher(targetUrl.toLowerCase());
+    if (deeplinkMatcher.find()) {
+      UriComponents deeplinkUriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+      if (deeplinkUriComponents == null) {
+        logError(Errors.ERROR_ILLEGAL_URL);
+      }
+
+      MultiValueMap<String, String> deeplinkParameters = deeplinkUriComponents.getQueryParams();
+      if (deeplinkParameters.size() == 0 || !deeplinkParameters.containsKey(Constants.REFERRER)) {
+        logError(Errors.ERROR_NO_TARGET_URL_DEEPLINK);
+      }
+
+      String deeplinkTargetUrl = deeplinkParameters.get(Constants.REFERRER).get(0);
+
+      try {
+        if(deeplinkTargetUrl.startsWith("https%3A%2F%2") || deeplinkTargetUrl.startsWith("http%3A%2F%2")) {
+          deeplinkTargetUrl = URLDecoder.decode(deeplinkTargetUrl, "UTF-8");
+        }
+      } catch (Exception ex) {
+        ESMetrics.getInstance().meter("DecodeDeepLinkTargetUrlError");
+        logger.warn("Decode deeplink target url error.");
+      }
+
+      Matcher deeplinkEbaySitesMatcher = deeplinkEbaySites.matcher(deeplinkTargetUrl.toLowerCase());
+      if (deeplinkEbaySitesMatcher.find()) {
+        targetUrl = deeplinkTargetUrl;
+      } else {
+        logger.warn(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
+        metrics.meter(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
+        return true;
+      }
+    }
 
     // parse channel from uri
     // illegal url, rejected
