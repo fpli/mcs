@@ -1,7 +1,9 @@
 package com.ebay.traffic.chocolate.email;
 
+import com.ebay.traffic.chocolate.pojo.AzkabanFlow;
 import com.ebay.traffic.chocolate.pojo.MetricCount;
-import com.ebay.traffic.chocolate.util.HTMLParse;
+import com.ebay.traffic.chocolate.parse.AzkabanHTMLParse;
+import com.ebay.traffic.chocolate.parse.HTMLParse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +70,18 @@ public class SendEmail {
 
   }
 
+  public void sendAzkaban(HashMap<String, ArrayList<AzkabanFlow>> map) {
+    if (toEmail == null || toEmail.length() < 1) {
+      return;
+    }
+
+    String[] users = toEmail.split(",");
+    for (String user : users) {
+      sendAzkaban(map, user);
+    }
+
+  }
+
   public void send(HashMap<String, ArrayList<MetricCount>> map, HashMap<String, ArrayList<MetricCount>> historymap, String emailAccount) {
 
     // sender email address
@@ -102,6 +116,44 @@ public class SendEmail {
 
       // set message entity
       message.setContent(HTMLParse.parse(map, historymap, runPeriod), "text/html");
+
+      // send message
+      Transport.send(message);
+      System.out.println("Sent message successfully....");
+    } catch (MessagingException mex) {
+      mex.printStackTrace();
+    }
+  }
+
+  public void sendAzkaban(HashMap<String, ArrayList<AzkabanFlow>> map, String emailAccount) {
+
+    // sender email address
+    String from = "dl-ebay-performance-marketing-oncall@ebay.com";
+
+    // system property
+    Properties properties = System.getProperties();
+
+    // set smtp server name
+    properties.setProperty("mail.smtp.host", emailHostServer);
+
+    // get the default session
+    Session session = Session.getDefaultInstance(properties);
+
+    try {
+      // MimeMessage
+      MimeMessage message = new MimeMessage(session);
+
+      // Set From: header
+      message.setFrom(new InternetAddress(from));
+
+      // Set To: header
+      message.addRecipient(Message.RecipientType.TO,
+        new InternetAddress(emailAccount));
+
+      message.setSubject("Hourly azkaban report for tracking! " + time);
+
+      // set message entity
+      message.setContent(AzkabanHTMLParse.parse(map), "text/html");
 
       // send message
       Transport.send(message);

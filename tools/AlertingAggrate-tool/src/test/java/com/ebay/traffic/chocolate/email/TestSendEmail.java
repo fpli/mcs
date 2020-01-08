@@ -1,7 +1,5 @@
 package com.ebay.traffic.chocolate.email;
 
-import com.ebay.traffic.chocolate.pojo.MetricCount;
-import com.ebay.traffic.chocolate.util.HTMLParse;
 import org.junit.Test;
 
 import javax.mail.Message;
@@ -10,8 +8,6 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Properties;
 
 public class TestSendEmail {

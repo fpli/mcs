@@ -3,9 +3,7 @@ package com.ebay.traffic.chocolate.util;
 import com.ebay.traffic.chocolate.pojo.DailyClickTrend;
 import com.ebay.traffic.chocolate.pojo.DailyDomainTrend;
 import com.ebay.traffic.chocolate.pojo.HourlyClickCount;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.csv.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +84,35 @@ public class CSVUtil {
     try {
       //create CSVFormat
       CSVFormat formator = CSVFormat.DEFAULT.withHeader(headers).withSkipHeaderRecord();
+
+      FileReader fileReader = new FileReader(filePath);
+
+      //create CSVParser object
+      CSVParser parser = new CSVParser(fileReader, formator);
+
+      List<CSVRecord> records = parser.getRecords();
+
+      parser.close();
+      fileReader.close();
+      return records;
+    } catch (Exception e) {
+      logger.info("read csv exception: " + e.getMessage());
+      return null;
+    }
+  }
+
+  /**
+   * read csv file
+   *
+   * @param filePath
+   * @return CSVRecord record
+   * @throws IOException
+   **/
+  public static List<CSVRecord> readCSV(String filePath, char delimiter) {
+
+    try {
+      //create CSVFormat
+      CSVFormat formator = CSVFormat.DEFAULT.withDelimiter(delimiter).withRecordSeparator("\r\n");
 
       FileReader fileReader = new FileReader(filePath);
 

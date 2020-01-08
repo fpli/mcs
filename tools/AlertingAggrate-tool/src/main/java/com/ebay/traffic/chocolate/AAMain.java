@@ -7,6 +7,7 @@ import com.ebay.traffic.chocolate.pojo.Project;
 import com.ebay.traffic.chocolate.util.FileUtil;
 import com.ebay.traffic.chocolate.util.TimeUtil;
 import com.ebay.traffic.chocolate.xml.XMLUtil;
+import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,15 @@ public class AAMain {
 
   private static final Logger logger = LoggerFactory.getLogger(AAMain.class);
 
+  public static void config() {
+    String logDir = "../conf/log4j.properties";
+
+    PropertyConfigurator.configure(logDir);
+  }
+
   public static void main(String[] args) {
+    config();
+
     String date = args[0];
     String esHostName = args[1];
     String emailHostName = args[2];

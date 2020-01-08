@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.email;
 import com.ebay.traffic.chocolate.pojo.DailyClickTrend;
 import com.ebay.traffic.chocolate.pojo.DailyDomainTrend;
 import com.ebay.traffic.chocolate.pojo.HourlyClickCount;
-import com.ebay.traffic.chocolate.util.EPNHTMLParse;
+import com.ebay.traffic.chocolate.parse.EPNHTMLParse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +89,7 @@ public class EPNSendEmail {
 				new InternetAddress(emailAccount));
 
 			// Set Subject: header
-			message.setSubject("Daily report for ams_click!");
+			message.setSubject("Daily report for ams_click (chocolate hdfs)!");
 
 			// set message entity
 			message.setContent(EPNHTMLParse.parse(dailyClickTrend, dailyDomainTrend), "text/html");
@@ -128,7 +128,7 @@ public class EPNSendEmail {
 				new InternetAddress(emailAccount));
 
 			// Set Subject: header
-			message.setSubject("Hourly report for ams_click! ");
+			message.setSubject("Hourly report for ams_click (chocolate hdfs)! ");
 
 			// set message entity
 			message.setContent(EPNHTMLParse.parse(hourlyClickCount), "text/html");

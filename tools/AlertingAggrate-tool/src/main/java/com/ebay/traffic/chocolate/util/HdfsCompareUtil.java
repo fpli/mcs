@@ -1,5 +1,8 @@
 package com.ebay.traffic.chocolate.util;
 
+import com.ebay.traffic.chocolate.client.ApolloHdfsClient;
+import com.ebay.traffic.chocolate.client.ChocolateHdfsClient;
+import com.ebay.traffic.chocolate.client.HerculesHdfsClient;
 import com.ebay.traffic.chocolate.pojo.HdfsFileNumberCompare;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
