@@ -188,7 +188,7 @@ class DedupeAndSink(params: Parameter)
     if ((message.getChannelAction == ChannelAction.CLICK || message.getChannelAction == ChannelAction.ROI) && couchbaseDedupe) {
       try {
         val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-        val key = DEDUPE_KEY_PREFIX + message.getSnapshotId.toString
+        val key = DEDUPE_KEY_PREFIX + message.getShortSnapshotId.toString
         if (!bucket.exists(key)) {
           writeMessage(writer, message)
         }
@@ -218,20 +218,20 @@ class DedupeAndSink(params: Parameter)
           val df = this.readFilesAsDFEx(dateFiles.files)
           df.filter($"channel_action" === "CLICK" || $"channel_action" === "ROI")
             .repartition(30)
-            .select("snapshot_id")
+            .select("short_snapshot_id")
             .foreachPartition(partition => {
               // each partition insert cb by batch, limit the size to send to 5000 records
               partition.grouped(5000).foreach(
                 group => {
-                  var snapshotIdList = new ListBuffer[String]()
+                  var shortSnapshotIdList = new ListBuffer[String]()
                   try {
                     val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-                    group.foreach(record => snapshotIdList += record.get(0).toString)
+                    group.foreach(record => shortSnapshotIdList += record.get(0).toString)
                     // async call couchbase batch api
-                    Observable.from(snapshotIdList.toArray).flatMap(new Func1[String, Observable[JsonDocument]]() {
-                      override def call(snapshotId: String): Observable[JsonDocument] = {
-                        val snapshotIdKey = DEDUPE_KEY_PREFIX + snapshotId
-                        bucket.async.upsert(JsonDocument.create(snapshotIdKey, couchbaseTTL, JsonObject.empty()))
+                    Observable.from(shortSnapshotIdList.toArray).flatMap(new Func1[String, Observable[JsonDocument]]() {
+                      override def call(shortSnapshotId: String): Observable[JsonDocument] = {
+                        val shortSnapshotIdKey = DEDUPE_KEY_PREFIX + shortSnapshotId
+                        bucket.async.upsert(JsonDocument.create(shortSnapshotIdKey, couchbaseTTL, JsonObject.empty()))
                       }
                     }).last().toBlocking.single()
                   } catch {
