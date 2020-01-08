@@ -42,7 +42,7 @@ public class HTMLParse {
       html.append(DailyEmailHtml.getTDRotationCountHtml());
       html.append(DailyEmailHtml.getTDIMKCountHtml());
 //      html.append(DailyEmailHtml.getBenchMarkHtml());
-      html.append(DailyEmailHtml.getOralceAndCouchbaseCountHtml());
+//      html.append(DailyEmailHtml.getOralceAndCouchbaseCountHtml());
     } else if (runPeriod.equalsIgnoreCase("hourly")) {
       html.append(HourlyEmailHtml.getDoneFileHtml());
       html.append(HourlyEmailHtml.getRotationAlertHtml());

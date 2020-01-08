@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class AzkabanReport {
 
@@ -246,10 +247,12 @@ public class AzkabanReport {
       if (endTime == -1) {
         endTime = System.currentTimeMillis();
       }
+      logger.info(map.get("projectId") + ":startTime" + startTime);
+      logger.info(map.get("projectId") + ":endTime" + endTime);
 
-      long runningTime = (endTime - startTime) / 1000;
+      long runningTime = TimeUnit.MILLISECONDS.toSeconds(endTime - startTime);
       if (runningTime > 60) {
-        map.put("runningTime", Long.toString(runningTime / 60) + "min");
+        map.put("runningTime", Long.toString(TimeUnit.SECONDS.toMinutes(runningTime)) + "min");
       } else {
         map.put("runningTime", Long.toString(runningTime) + "s");
       }

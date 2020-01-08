@@ -3,8 +3,6 @@ package com.ebay.traffic.chocolate.map.dao.impl;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.document.JsonDocument;
 import com.couchbase.client.java.view.ViewQuery;
-import com.couchbase.client.java.view.ViewResult;
-import com.couchbase.client.java.view.ViewRow;
 import com.ebay.dukes.CacheClient;
 import com.ebay.traffic.chocolate.map.constant.CouchbasePrefixConstant;
 import com.ebay.traffic.chocolate.map.dao.CouchbaseClient;

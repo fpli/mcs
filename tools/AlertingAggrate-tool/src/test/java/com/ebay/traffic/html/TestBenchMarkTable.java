@@ -23,7 +23,7 @@ public class TestBenchMarkTable {
     benchMarkInfo.setChannelType("1");
     benchMarkInfo.setActionType("1");
     benchMarkInfo.setOnedayCount("100");
-    benchMarkInfo.setAvg("120");
+    benchMarkInfo.setAvg("100");
 
     list.add(benchMarkInfo);
   }

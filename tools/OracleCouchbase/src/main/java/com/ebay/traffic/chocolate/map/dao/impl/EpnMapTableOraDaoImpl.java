@@ -169,11 +169,12 @@ public class EpnMapTableOraDaoImpl implements EpnMapTableOraDao {
    * Get dynamic CLICK_FILTER_ID_RULE_MAP table all days data from oracle
    */
   @Override
-  public int getClickFilterMapInfoAlldays() throws SQLException {
+  public int getClickFilterMapInfoAlldays() {
     Map<String, List<PubAdvClickFilterMapInfo>> clickFilterMapInfoMap = new HashMap<>();
     Connection connection = null;
     PreparedStatement preparedStatement = null;
     ResultSet result = null;
+    int count = 0;
     try {
       String resultSql = OracleQueryConstant.AMS_PUB_ADV_CLICK_FILTER_MAP_ALL_DAYS_SQL;
       logger.info("Publisher click filter map info execute sql is " + resultSql);
@@ -183,15 +184,17 @@ public class EpnMapTableOraDaoImpl implements EpnMapTableOraDao {
       preparedStatement = connection.prepareStatement(resultSql);
       preparedStatement.setFetchSize(2000);
       result = preparedStatement.executeQuery();
-
-
+      while (result.next()) {
+        count = result.getInt(1);
+      }
       logger.info("All days publisherIdRuleMap get finished from oracle");
     } catch (SQLException e) {
-      throw e;
+      logger.info(e.getMessage());
+      count = 0;
     } finally {
       oracleClient.closeOracleConnection(connection, preparedStatement, result);
     }
-    return 0;
+    return count;
   }
 
   /**
@@ -234,11 +237,12 @@ public class EpnMapTableOraDaoImpl implements EpnMapTableOraDao {
    * Get dynamic AMS_PROG_PUB_MAP table all days data from oracle
    */
   @Override
-  public int getProgPubMapInfoAlldays() throws SQLException {
+  public int getProgPubMapInfoAlldays() {
     List<ProgPubMapInfo> progPubMapInfoList = new ArrayList<>();
     Connection connection = null;
     PreparedStatement preparedStatement = null;
     ResultSet result = null;
+    int count = 0;
     try {
       String sql = OracleQueryConstant.AMS_PROG_PUB_MAP_ALL_DAYS_SQL;
       logger.info("Program publisher map info execute sql is " + sql);
@@ -248,14 +252,17 @@ public class EpnMapTableOraDaoImpl implements EpnMapTableOraDao {
       preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setFetchSize(2000);
       result = preparedStatement.executeQuery();
-
+      while (result.next()) {
+        count = result.getInt(1);
+      }
       logger.info("All days ProgramPublisherMapList get finished from oracle");
     } catch (SQLException e) {
-      throw e;
+      logger.info(e.getMessage());
+      count = 0;
     } finally {
       oracleClient.closeOracleConnection(connection, preparedStatement, result);
     }
-    return 0;
+    return count;
   }
 
   /**
@@ -298,11 +305,12 @@ public class EpnMapTableOraDaoImpl implements EpnMapTableOraDao {
    * Get dynamic AMS_PUBLISHER_CAMPAIGN table all days data from oracle
    */
   @Override
-  public int getPublisherCampaignInfoAlldays() throws SQLException {
+  public int getPublisherCampaignInfoAlldays() {
     List<PublisherCampaignInfo> publisherCampaignInfoList = new ArrayList<>();
     Connection connection = null;
     PreparedStatement preparedStatement = null;
     ResultSet result = null;
+    int count = 0;
     try {
       String sql = OracleQueryConstant.AMS_PUBLISHER_CAMPAIGN_INFO_ALL_DAYS_SQL;
       logger.info("Publisher campaign info execute sql is " + sql);
@@ -314,15 +322,16 @@ public class EpnMapTableOraDaoImpl implements EpnMapTableOraDao {
       result = preparedStatement.executeQuery();
 
       while (result.next()) {
-        return result.getInt(1);
+        count = result.getInt(1);
       }
       logger.info("All days publisherCampaignInfoList get finished from oracle");
     } catch (SQLException e) {
-      throw e;
+      logger.info(e.getMessage());
+      count = 0;
     } finally {
       oracleClient.closeOracleConnection(connection, preparedStatement, result);
     }
-    return 0;
+    return count;
   }
 
   /**
@@ -367,11 +376,12 @@ public class EpnMapTableOraDaoImpl implements EpnMapTableOraDao {
    * Get dynamic AMS_PUBLISHER table all days data from oracle
    */
   @Override
-  public int getPublisherInfoAlldays() throws SQLException {
+  public int getPublisherInfoAlldays() {
     List<PublisherInfo> publisherInfoList = new ArrayList<>();
     Connection connection = null;
     PreparedStatement preparedStatement = null;
     ResultSet result = null;
+    int count = 0;
     try {
       String sql = String.format(OracleQueryConstant.AMS_PUBLISHER_ALL_DAYS_SQL);
       logger.info("Publisher info execute sql is " + sql);
@@ -383,15 +393,16 @@ public class EpnMapTableOraDaoImpl implements EpnMapTableOraDao {
       result = preparedStatement.executeQuery();
 
       while (result.next()) {
-        return result.getInt(1);
+        count = result.getInt(1);
       }
       logger.info("All days publisherInfoList get finished from oracle");
     } catch (SQLException e) {
-      throw e;
+      logger.info(e.getMessage());
+      count = 0;
     } finally {
       oracleClient.closeOracleConnection(connection, preparedStatement, result);
     }
-    return 0;
+    return count;
   }
 
   /**
@@ -436,11 +447,12 @@ public class EpnMapTableOraDaoImpl implements EpnMapTableOraDao {
    * Get dynamic AMS_PUB_DOMAIN table all days data from oracle
    */
   @Override
-  public int getPubDomainInfoAlldays() throws SQLException {
+  public int getPubDomainInfoAlldays() {
     Map<String, List<PubDomainInfo>> pubDomainInfoMap = new HashMap<>();
     Connection connection = null;
     PreparedStatement preparedStatement = null;
     ResultSet result = null;
+    int count = 0;
     try {
       String resultSql = OracleQueryConstant.AMS_PUB_DOMAIN_ALL_DAYS_SQL;
       logger.info("Publisher domain map info execute sql is " + resultSql);
@@ -452,15 +464,16 @@ public class EpnMapTableOraDaoImpl implements EpnMapTableOraDao {
       result = preparedStatement.executeQuery();
 
       while (result.next()) {
-        return result.getInt(1);
+        count = result.getInt(1);
       }
       logger.info("All days publisherDomainInfo get finished from oracle");
     } catch (SQLException e) {
-      throw e;
+      logger.info(e.getMessage());
+      count = 0;
     } finally {
       oracleClient.closeOracleConnection(connection, preparedStatement, result);
     }
-    return 0;
+    return count;
   }
 
 

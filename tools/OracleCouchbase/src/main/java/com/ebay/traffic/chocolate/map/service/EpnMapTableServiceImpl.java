@@ -100,8 +100,8 @@ public class EpnMapTableServiceImpl implements EpnMapTableService {
     dataCountInfo.setTableName("TrafficSource");
     dataCountInfo.setOnedayCountInOracle(String.valueOf(clickFilterMapInfoList.size()));
     dataCountInfo.setOnedayCountInCouchbase(String.valueOf(total));
-    dataCountInfo.setOnedayCountInOracle(String.valueOf(oracleTotalAlldays));
-    dataCountInfo.setOnedayCountInCouchbase(String.valueOf(totalAlldays));
+    dataCountInfo.setAlldayCountInOracle(String.valueOf(oracleTotalAlldays));
+    dataCountInfo.setAlldayCountInCouchbase(String.valueOf(totalAlldays));
     dataCountInfo.setTableType("dynamic table");
 
     list.add(dataCountInfo);
@@ -121,8 +121,8 @@ public class EpnMapTableServiceImpl implements EpnMapTableService {
     dataCountInfo.setTableName("TrafficSource");
     dataCountInfo.setOnedayCountInOracle(String.valueOf(progPubMapInfoList.size()));
     dataCountInfo.setOnedayCountInCouchbase(String.valueOf(total));
-    dataCountInfo.setOnedayCountInOracle(String.valueOf(oracleTotalAlldays));
-    dataCountInfo.setOnedayCountInCouchbase(String.valueOf(totalAlldays));
+    dataCountInfo.setAlldayCountInOracle(String.valueOf(oracleTotalAlldays));
+    dataCountInfo.setAlldayCountInCouchbase(String.valueOf(totalAlldays));
     dataCountInfo.setTableType("dynamic table");
 
     list.add(dataCountInfo);
@@ -142,8 +142,8 @@ public class EpnMapTableServiceImpl implements EpnMapTableService {
     dataCountInfo.setTableName("TrafficSource");
     dataCountInfo.setOnedayCountInOracle(String.valueOf(publisherCampaignInfoList.size()));
     dataCountInfo.setOnedayCountInCouchbase(String.valueOf(total));
-    dataCountInfo.setOnedayCountInOracle(String.valueOf(oracleTotalAlldays));
-    dataCountInfo.setOnedayCountInCouchbase(String.valueOf(totalAlldays));
+    dataCountInfo.setAlldayCountInOracle(String.valueOf(oracleTotalAlldays));
+    dataCountInfo.setAlldayCountInCouchbase(String.valueOf(totalAlldays));
     dataCountInfo.setTableType("dynamic table");
 
     list.add(dataCountInfo);
@@ -163,8 +163,8 @@ public class EpnMapTableServiceImpl implements EpnMapTableService {
     dataCountInfo.setTableName("TrafficSource");
     dataCountInfo.setOnedayCountInOracle(String.valueOf(publisherInfoList.size()));
     dataCountInfo.setOnedayCountInCouchbase(String.valueOf(total));
-    dataCountInfo.setOnedayCountInOracle(String.valueOf(oracleTotalAlldays));
-    dataCountInfo.setOnedayCountInCouchbase(String.valueOf(totalAlldays));
+    dataCountInfo.setAlldayCountInOracle(String.valueOf(oracleTotalAlldays));
+    dataCountInfo.setAlldayCountInCouchbase(String.valueOf(totalAlldays));
     dataCountInfo.setTableType("dynamic table");
 
     list.add(dataCountInfo);
@@ -184,8 +184,8 @@ public class EpnMapTableServiceImpl implements EpnMapTableService {
     dataCountInfo.setTableName("TrafficSource");
     dataCountInfo.setOnedayCountInOracle(String.valueOf(pubDomainInfoList.size()));
     dataCountInfo.setOnedayCountInCouchbase(String.valueOf(total));
-    dataCountInfo.setOnedayCountInOracle(String.valueOf(oracleTotalAlldays));
-    dataCountInfo.setOnedayCountInCouchbase(String.valueOf(totalAlldays));
+    dataCountInfo.setAlldayCountInOracle(String.valueOf(oracleTotalAlldays));
+    dataCountInfo.setAlldayCountInCouchbase(String.valueOf(totalAlldays));
     dataCountInfo.setTableType("dynamic table");
 
     list.add(dataCountInfo);

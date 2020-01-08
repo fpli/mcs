@@ -54,14 +54,14 @@ public class BenchMarkTable {
   }
 
   private static String rendRate(String rate) {
-    long rateLong = Long.parseLong(rate);
+    float rateLong = Float.parseFloat(rate);
 
-    if(rateLong == 0) {
-      return "<td bgcolor=\"#FFFFFF\">" + rate + "</td>";
-    }else if(rateLong > 0){
-      return "<td bgcolor=\"#FF0000\">" + rate + "</td>";
-    }else {
-      return "<td bgcolor=\"#00FF00\">" + rate + "</td>";
+    if (rateLong == 0.0) {
+      return "<td bgcolor=\"#FFFFFF\">" + rate + "%" + "</td>";
+    } else if (rateLong > 0) {
+      return "<td bgcolor=\"#FF0000\">" + rate + "%" + "</td>";
+    } else {
+      return "<td bgcolor=\"#00FF00\">" + rate + "%" + "</td>";
     }
 
   }
@@ -78,9 +78,8 @@ public class BenchMarkTable {
     float rate = (float) (onedayCount - avg) / avg * 100;
     String rateString = df.format(rate);
     benchMarkInfo.setRate(rateString);
-    return rateString + "%";
+    return rateString;
   }
-
 
 
   private static String getWarnLevel(BenchMarkInfo benchMarkInfo) {

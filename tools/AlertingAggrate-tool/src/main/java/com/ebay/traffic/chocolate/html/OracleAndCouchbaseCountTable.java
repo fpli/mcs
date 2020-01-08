@@ -68,9 +68,8 @@ public class OracleAndCouchbaseCountTable {
     int alldayCountInOracle = Integer.parseInt(oracleAndCouchbaseCountInfo.getAlldayCountInOracle());
     int alldayCountInCouchbase = Integer.parseInt(oracleAndCouchbaseCountInfo.getAlldayCountInCouchbase());
     int diffOneday = Integer.parseInt(ToolsUtil.getDiff(oracleAndCouchbaseCountInfo.getOnedayCountInOracle(), oracleAndCouchbaseCountInfo.getOnedayCountInCouchbase()));
-    int diffAllday = Integer.parseInt(ToolsUtil.getDiff(oracleAndCouchbaseCountInfo.getAlldayCountInOracle(), oracleAndCouchbaseCountInfo.getAlldayCountInCouchbase()));
 
-    if (onedayCountInOracle > 0 && onedayCountInCouchbase > 0 && alldayCountInOracle  > 0 && alldayCountInCouchbase > 0 && diffOneday == 0 && diffAllday ==0) {
+    if (onedayCountInOracle > 0 && onedayCountInCouchbase > 0 && alldayCountInOracle  > 0 && alldayCountInCouchbase > 0 && diffOneday == 0) {
       return "<td bgcolor=\"#FFFFFF\">" + "OK" + "</td>";
     }
 

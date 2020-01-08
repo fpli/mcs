@@ -31,9 +31,9 @@ public class ChocomapApplication implements CommandLineRunner {
     JobParamConstant.END_TIME = args[1];
     String env = args[2];
     if (env.equalsIgnoreCase("prod")) {
-      JobParamConstant.ENV = "";
+      JobParamConstant.ENV = "_design/";
     } else {
-      JobParamConstant.ENV = "dev_";
+      JobParamConstant.ENV = "_design/dev_";
     }
     String path = args[3];
 
