@@ -114,7 +114,7 @@ class TestDedupeAndSink extends BaseFunSuite {
 
     val df11 = job.readFilesAsDFEx(dom1(0)._2.get(DATE_COL1).get)
     df11.show()
-    assert (df11.count() == 2)
+    assert (df11.count() == 1)
 
     val df22 = job.readFilesAsDFEx(dom1(0)._2.get(DATE_COL2).get)
     df22.show()

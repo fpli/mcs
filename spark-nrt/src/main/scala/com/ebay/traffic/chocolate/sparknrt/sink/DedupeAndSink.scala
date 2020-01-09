@@ -73,7 +73,7 @@ class DedupeAndSink(params: Parameter)
     Metadata(params.workDir, params.channel, MetadataEnum.dedupe)
   }
 
-  val SNAPSHOT_ID_COL = "snapshot_id"
+  val SHORT_SNAPSHOT_ID_COL = "short_snapshot_id"
 
   @transient lazy val metrics: Metrics = {
     if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
@@ -295,17 +295,17 @@ class DedupeAndSink(params: Parameter)
     // dedupe current df
     var df = readFilesAsDF(baseDir + "/" + date)
 
-    df = df.dropDuplicates(SNAPSHOT_ID_COL)
+    df = df.dropDuplicates(SHORT_SNAPSHOT_ID_COL)
     val dedupeCompMeta = metadata.readDedupeCompMeta
     if (dedupeCompMeta != null && dedupeCompMeta.contains(date)) {
       val input = dedupeCompMeta.get(date).get
       val dfDedupe = readFilesAsDFEx(input)
-        .select($"snapshot_id")
-        .withColumnRenamed(SNAPSHOT_ID_COL, "snapshot_id_1")
+        .select($"short_snapshot_id")
+        .withColumnRenamed(SHORT_SNAPSHOT_ID_COL, "short_snapshot_id_1")
 
-      df = df.join(dfDedupe, $"snapshot_id" === $"snapshot_id_1", "left_outer")
-        .filter($"snapshot_id_1".isNull)
-        .drop("snapshot_id_1")
+      df = df.join(dfDedupe, $"short_snapshot_id" === $"short_snapshot_id_1", "left_outer")
+        .filter($"short_snapshot_id_1".isNull)
+        .drop("short_snapshot_id_1")
     }
 
     // reduce the number of file
