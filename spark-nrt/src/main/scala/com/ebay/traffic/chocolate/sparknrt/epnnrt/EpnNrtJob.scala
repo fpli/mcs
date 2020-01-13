@@ -44,11 +44,11 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     properties
   }
 
-  /*  var properties: Properties = {
-      val properties = new Properties()
-      properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
-      properties
-    }*/
+   /* var properties: Properties = {
+    val properties = new Properties()
+    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
+    properties
+  }*/
 
   @transient lazy val metadata: Metadata = {
     val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
@@ -65,7 +65,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   }
 
   @transient lazy val metrics: Metrics = {
-    val url = properties.getProperty("epnnrt.elasticsearchUrl")
+    val url  = properties.getProperty("epnnrt.elasticsearchUrl")
     if (url != null && url.nonEmpty) {
       ESMetrics.init(METRICS_INDEX_PREFIX, url)
       ESMetrics.getInstance()
@@ -135,10 +135,10 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
           if (filtered) {
             try {
-              df_click = df_click.filter(r => {
+              df_click = df_click.filter( r=> {
                 r.getAs[Long]("timestamp") >= params.filterTime.toLong
               })
-              df_impression = df_impression.filter(r => {
+              df_impression = df_impression.filter( r=> {
                 r.getAs[Long]("timestamp") >= params.filterTime.toLong
               })
             } catch {
@@ -159,7 +159,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           //3. build impression dataframe  save dataframe to files and rename files
           var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
           impressionDf = impressionDf.repartition(params.partitions)
-          saveDFToFiles(impressionDf, epnNrtTempDir + "/" + impression + "/", "gzip", "csv", "tab")
+           saveDFToFiles(impressionDf, epnNrtTempDir + "/" + impression + "/", "gzip", "csv", "tab")
 
           val countImpDf = readFilesAsDF(epnNrtTempDir + "/" + impression + "/", schema_epn_impression_table.dfSchema, "csv", "tab", false)
 
@@ -169,14 +169,19 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           val imp_files = renameFile(outputDir + "/" + impression + "/", epnNrtTempDir + "/" + impression + "/", date, "dw_ams.ams_imprsn_cntnr_cs_")
           val imp_metaFile = new MetaFiles(Array(DateFiles(date, imp_files)))
 
+          try {
+            metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.result.meta.imp.outputdir"), "epnnrt_imp", Array(".epnnrt"))
+            //write meta file for EPN SCP job to copy result to ETL and reno
+            metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
 
-          metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.result.meta.imp.outputdir"), "epnnrt_imp", Array(".epnnrt"))
-          //write meta file for EPN SCP job to copy result to ETL and reno
-          metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            logger.info("successfully write EPN NRT " + impression + " output meta to HDFS")
+            metrics.meter("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 
-          logger.info("successfully write EPN NRT " + impression + " output meta to HDFS")
-          metrics.meter("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
-
+          } catch {
+            case e: Exception => {
+              logger.error("Error while writing EPN NRT " + impression + " output meta files" + e)
+            }
+          }
 
           //4. build click dataframe  save dataframe to files and rename files
           var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
@@ -210,12 +215,17 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
           //5. write the epn-nrt meta output file to hdfs
           val click_metaFile = new MetaFiles(Array(DateFiles(date, clickFiles)))
-
-          metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta." + click + ".outputdir"), "epnnrt_" + click, Array(".epnnrt_1", ".epnnrt_2"))
-          //write meta file for EPN SCP job to copy result to ETL and reno
-          metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta." + click + ".outputdir"), "epnnrt_scp_" + click, Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
-          metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
-          logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
+          try {
+            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta." + click + ".outputdir"), "epnnrt_" + click, Array(".epnnrt_1", ".epnnrt_2"))
+            //write meta file for EPN SCP job to copy result to ETL and reno
+            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta." + click + ".outputdir"), "epnnrt_scp_" + click, Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
+            logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
+          } catch {
+            case e: Exception => {
+              logger.error("Error while writing EPN NRT Click output meta files" + e)
+            }
+          }
         }
       })
 
@@ -296,10 +306,10 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   }*/
 
   //update last_view_item_id and last_view_item_ts column
-  /*  def fixLastViewItem(cguid: String, lstVitm: String, lstItmStmp: String): Unit = {
-      /* r.getAs("LAST_VWD_ITEM_ID") = res(0)
-             r.getAs("LAST_VWD_ITEM_TS") = res(1)*/
-    }*/
+/*  def fixLastViewItem(cguid: String, lstVitm: String, lstItmStmp: String): Unit = {
+    /* r.getAs("LAST_VWD_ITEM_ID") = res(0)
+           r.getAs("LAST_VWD_ITEM_TS") = res(1)*/
+  }*/
 
 
   def getTimeStamp(date: String): Long = {
