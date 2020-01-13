@@ -3,8 +3,25 @@ package com.ebay.traffic.chocolate.html;
 import com.ebay.traffic.chocolate.pojo.MetricCount;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 public class Table {
+
+  public static String parseESAlertProjects(HashMap<String, ArrayList<MetricCount>> map, HashMap<String, ArrayList<MetricCount>> historymap) {
+    StringBuffer html = new StringBuffer();
+    int len = map.size();
+    int count = 1;
+    HashMap<Integer, String> numMap = toMap(map.keySet());
+    while (count <= len) {
+      String project_name = numMap.get(count);
+      html.append(Table.parseProject(map.get(project_name + "_" + count), project_name));
+      count++;
+    }
+
+    return html.toString();
+  }
 
   public static String parseProject(ArrayList<MetricCount> metricCounts, String project_name) {
     String html = getTtile(project_name) + getHeader();
@@ -62,6 +79,18 @@ public class Table {
   public static String getTtile(String project_name) {
 
     return project_name + "\n";
+  }
+
+  private static HashMap<Integer, String> toMap(Set<String> set) {
+    HashMap<Integer, String> map = new HashMap<Integer, String>();
+
+    Iterator<String> iterator = set.iterator();
+    while (iterator.hasNext()) {
+      String[] arr = iterator.next().split("_");
+      map.put(Integer.parseInt(arr[1]), arr[0]);
+    }
+
+    return map;
   }
 
 }

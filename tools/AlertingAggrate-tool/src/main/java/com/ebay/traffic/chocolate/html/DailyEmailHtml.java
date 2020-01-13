@@ -1,20 +1,28 @@
 package com.ebay.traffic.chocolate.html;
 
+import com.ebay.traffic.chocolate.parse.EPNReportUtil;
 import com.ebay.traffic.chocolate.util.*;
 
 public class DailyEmailHtml {
+
+  public static String getESAlertHtml(String runPeriod) {
+    return Table.parseESAlertProjects(ESAlertUtil.getESAlertInfos(runPeriod), null);
+  }
 
   public static String getHdfsCompareHtml() {
     return "Hdfs file number compare\n" + HdfsCompareTable.parseHdfsCompare(HdfsCompareUtil.getHdfsFileNumberCompares());
   }
 
-
   public static String getTDRotationCountHtml() {
-    return "TD rotation count\n" + TDRotationCountTable.parseTDRotationCountProject(TDRotationCountUtil.getTDRotationInfos());
+    return "Rotation count in TD\n" + TDRotationCountTable.parseTDRotationCountProject(TDRotationCountUtil.getTDRotationInfos());
   }
 
   public static String getTDIMKCountHtml() {
-    return "TD all channel count\n" + TDIMKCountTable.parseTDIMKCountProject(TDIMKCountUtil.getTDIMKInfos());
+    return "All channel count in TD\n" + TDIMKCountTable.parseTDIMKCountProject(TDIMKCountUtil.getTDIMKInfos());
+  }
+
+  public static String getEPNDailyReportHtml() {
+    return EPNReportUtil.getDailyReport();
   }
 
   public static String getBenchMarkHtml() {
@@ -22,7 +30,7 @@ public class DailyEmailHtml {
   }
 
   public static String getOralceAndCouchbaseCountHtml() {
-    return "All channel benchmark\n" + OracleAndCouchbaseCountTable.parseOracleAndCouchbaseCountProject(OracleAndCouchbaseCountUtil.getOracleAndCouchbaseCountInfos());
+    return "Epn campaign mapping count in the oralce and couchbase\n" + OracleAndCouchbaseCountTable.parseOracleAndCouchbaseCountProject(OracleAndCouchbaseCountUtil.getOracleAndCouchbaseCountInfos());
   }
 
 }

@@ -1,8 +1,5 @@
 package com.ebay.traffic.chocolate.email;
 
-import com.ebay.traffic.chocolate.pojo.AzkabanFlow;
-import com.ebay.traffic.chocolate.pojo.MetricCount;
-import com.ebay.traffic.chocolate.parse.AzkabanHTMLParse;
 import com.ebay.traffic.chocolate.parse.HTMLParse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +10,6 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Properties;
 
 /**
@@ -46,86 +41,18 @@ public class SendEmail {
     return sendEmail;
   }
 
-  public void send(HashMap<String, ArrayList<MetricCount>> map) {
+  public void send() {
     if (toEmail == null || toEmail.length() < 1) {
       return;
     }
 
     String[] users = toEmail.split(",");
     for (String user : users) {
-      send(map, null, user);
-    }
-
-  }
-
-  public void send(HashMap<String, ArrayList<MetricCount>> map, HashMap<String, ArrayList<MetricCount>> historymap) {
-    if (toEmail == null || toEmail.length() < 1) {
-      return;
-    }
-
-    String[] users = toEmail.split(",");
-    for (String user : users) {
-      send(map, historymap, user);
-    }
-
-  }
-
-  public void sendAzkaban(HashMap<String, ArrayList<AzkabanFlow>> map) {
-    if (toEmail == null || toEmail.length() < 1) {
-      return;
-    }
-
-    String[] users = toEmail.split(",");
-    for (String user : users) {
-      sendAzkaban(map, user);
-    }
-
-  }
-
-  public void send(HashMap<String, ArrayList<MetricCount>> map, HashMap<String, ArrayList<MetricCount>> historymap, String emailAccount) {
-
-    // sender email address
-    String from = "dl-ebay-performance-marketing-oncall@ebay.com";
-
-    // system property
-    Properties properties = System.getProperties();
-
-    // set smtp server name
-    properties.setProperty("mail.smtp.host", emailHostServer);
-
-    // get the default session
-    Session session = Session.getDefaultInstance(properties);
-
-    try {
-      // MimeMessage
-      MimeMessage message = new MimeMessage(session);
-
-      // Set From: header
-      message.setFrom(new InternetAddress(from));
-
-      // Set To: header
-      message.addRecipient(Message.RecipientType.TO,
-              new InternetAddress(emailAccount));
-
-      // Set Subject: header
-      if(runPeriod.equalsIgnoreCase("daily")) {
-        message.setSubject("Daily report for tracking! " + date);
-      }else if(runPeriod.equalsIgnoreCase("hourly")){
-        message.setSubject("Hourly report for tracking! " + time);
-      }
-
-      // set message entity
-      message.setContent(HTMLParse.parse(map, historymap, runPeriod), "text/html");
-
-      // send message
-      Transport.send(message);
-      System.out.println("Sent message successfully....");
-    } catch (MessagingException mex) {
-      mex.printStackTrace();
+      send(user);
     }
   }
 
-  public void sendAzkaban(HashMap<String, ArrayList<AzkabanFlow>> map, String emailAccount) {
+  public void send(String emailAccount) {
 
     // sender email address
     String from = "dl-ebay-performance-marketing-oncall@ebay.com";
@@ -150,16 +77,27 @@ public class SendEmail {
       message.addRecipient(Message.RecipientType.TO,
         new InternetAddress(emailAccount));
 
-      message.setSubject("Hourly azkaban report for tracking! " + time);
+      // Set Subject: header
+      switch (runPeriod) {
+        case "daily":
+          message.setSubject("Daily report for tracking (Chocolate team)! " + date);
+          break;
+        case "hourly":
+          message.setSubject("Hourly report for tracking (Chocolate team)! " + time);
+          break;
+        default:
+          message.setSubject("Wrong email message" + time);
+          break;
+      }
 
       // set message entity
-      message.setContent(AzkabanHTMLParse.parse(map), "text/html");
+      message.setContent(HTMLParse.parse(runPeriod), "text/html");
 
-      // send message
+      logger.info("Start to sent message to: " + emailAccount);
       Transport.send(message);
-      System.out.println("Sent message successfully....");
+      logger.info("Sent message to: " + emailAccount + " successfully.");
     } catch (MessagingException mex) {
-      mex.printStackTrace();
+      logger.info(mex.getMessage());
     }
   }
 

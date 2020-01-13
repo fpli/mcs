@@ -7,7 +7,7 @@ import java.util.List;
 public class DailyClickCountTable {
 
   public static String parseProject(List<DailyClickTrend> dailyClickTrends) {
-    String html = getTtile("Here is the CLICK_COUNT report") + getHeader();
+    String html = getTtile("Epn CLICK_COUNT report (from chocolate hdfs)") + getHeader();
 
     for (DailyClickTrend dailyClickTrend : dailyClickTrends) {
       html = html + getBodyLine(dailyClickTrend);

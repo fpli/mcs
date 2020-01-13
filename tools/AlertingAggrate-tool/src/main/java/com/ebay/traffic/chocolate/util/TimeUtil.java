@@ -15,6 +15,14 @@ public class TimeUtil {
     return df.format(calendar.getTime());
   }
 
+  public static String getYesterday() {
+    SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd");
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.DATE, -1);
+
+    return df.format(calendar.getTime());
+  }
+
   public static long getTimestamp(String date) {
     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     try {

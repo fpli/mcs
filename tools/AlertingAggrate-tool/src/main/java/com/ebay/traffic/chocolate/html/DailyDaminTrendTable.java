@@ -7,7 +7,7 @@ import java.util.List;
 public class DailyDaminTrendTable {
 
   public static String parseProject(List<DailyDomainTrend> dailyDomainTrends) {
-    String html = getTtile("Here is the AMS_CLICK_RFRNG_DMN report") + getHeader();
+    String html = getTtile("Epn AMS_CLICK_RFRNG_DMN report (from cholate hdfs)") + getHeader();
 
     for (DailyDomainTrend dailyDomainTrend : dailyDomainTrends) {
       html = html + getBodyLine(dailyDomainTrend);
@@ -32,7 +32,7 @@ public class DailyDaminTrendTable {
   }
 
   private static String getHeader() {
-    String header = "<table border='1'><tr width=\"300\" bgcolor=\"#8A8A8A\"><th width=\"200\">metric</th><th width=\"200\">date</th><th width=\"200\">value</th><th width=\"200\">threshold</th></tr>";
+    String header = "<table border='1'><tr width=\"300\" bgcolor=\"#8A8A8A\"><th width=\"200\">RFRNG_DMN_NAME</th><th width=\"200\">RFRNG_DMN_NAME</th><th width=\"200\">click_cnt</th><th width=\"200\">ranking</th></tr>";
 
     return header;
   }

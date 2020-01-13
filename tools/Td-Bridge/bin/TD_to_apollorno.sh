@@ -6,9 +6,9 @@ export HADOOP_USER_NAME=hdfs
 DATE=`date --date="1 days ago" +%Y-%m-%d`
 echo $DATE
 
-table_name=imk_rvr_trckng_event_hopper
-SQL=imk_hopper2apollorno.sql
-td_type=hopper
+table_name=$1
+SQL=$2
+td_type=$3
 
 HDP=viewfs://apollo-rno/user/b_marketing_tracking/monitor/td/${table_name}_${td_type}
 HDP_WITH_SUFFIX=${HDP}/lookup_
@@ -37,7 +37,7 @@ else
 fi
 
 echo "merge small files started ~~~"
-merge_dir=viewfs://apollo-rno/user/b_marketing_tracking/monitor/imk/${table_name}_${td_type}_merge/
+merge_dir=viewfs://apollo-rno/user/b_marketing_tracking/monitor/td/${table_name}_${td_type}_merge/
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -rm -r ${merge_dir}
 
 DRIVER_MEMORY=2g
@@ -54,7 +54,6 @@ ${SPARK_HOME}/bin/spark-submit \
     --num-executors ${EXECUTOR_NUMBER} \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
-
     --queue hdlq-commrce-product-high-mem \
     --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
     --conf spark.hadoop.yarn.timeline-service.enabled=false \

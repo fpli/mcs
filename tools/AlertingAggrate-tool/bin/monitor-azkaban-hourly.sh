@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-java -cp /datashare/mkttracking/tools/AlertingAggrate-tool/lib/AlertingAggrate-tool-3.4.2-RELEASE-fat.jar com.ebay.traffic.chocolate.AzkabanAlertMain 10.89.168.20 /datashare/mkttracking/tools/AlertingAggrate-tool/conf/azkaban-hourly.xml lli5@ebay.com,lxiong1@ebay.com,huiclu@ebay.com,zhofan@ebay.com,yliu29@ebay.com,shuangxu@ebay.com,jialili1@ebay.com,xiangli4@ebay.com,fechen@ebay.com,zhiyuawang@ebay.com,zjian@ebay.com

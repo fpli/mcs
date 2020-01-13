@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <projects>
-  <project name="appdl">
+  <project name="appdl-azkaban-monitor">
     <metric projectName="AppdlSendAppsflyerDataToDSS" flowName="ApolloRnoToHerculesLvs" total="1" alertCount="1"/>
     <metric projectName="AppdlSendNorbToKafka" flowName="AppdlSendNorbToKafaka" total="1" alertCount="1"/>
   </project>
-  <project name="chcocolate-core">
+  <project name="chcocolate-core-azkaban-monitor">
     <metric projectName="DedupeAndSink" flowName="dedupeAndSink_EPN" total="1" alertCount="1"/>
     <metric projectName="DedupeAndSink" flowName="dedupeAndSink_DAP" total="1" alertCount="1"/>
     <metric projectName="DedupeAndSink" flowName="DedupeAndSink_PAID_SEARCH" total="1" alertCount="1"/>
@@ -14,7 +14,7 @@
     <metric projectName="CappingRule" flowName="cappingRule_DAP" total="1" alertCount="1"/>
     <metric projectName="CappingRule" flowName="cappingRule_PAID_SEARCH" total="1" alertCount="1"/>
   </project>
-  <project name="epn">
+  <project name="epn-azkaban-monitor">
     <metric projectName="oracle_map_cb_cmpn_pub_mapping" flowName="oracle_map_cb_cmpn_pub_mapping" total="10" alertCount="1"/>
     <metric projectName="oracle_map_cb_cmpn_pub_mapping_daily_batch" flowName="oracle_map_cb_cmpn_pub_mapping_daily_batch" total="10" alertCount="1"/>
     <metric projectName="oracle_map_cb_epn_source" flowName="oracle_map_cb_epn_source" total="10" alertCount="1"/>
@@ -25,7 +25,7 @@
     <metric projectName="epnNRT" flowName="epnnrt_scheduler" total="10" alertCount="1"/>
     <metric projectName="epnNRT" flowName="epnnrt_done" total="10" alertCount="1"/>
   </project>
-  <project name="imk">
+  <project name="imk-azkaban-monitor">
     <metric projectName="crabJob" flowName="rover_end" total="10" alertCount="1"/>
     <metric projectName="CrabToRNO" flowName="crabDedupe" total="10" alertCount="1"/>
     <metric projectName="CrabToRNO" flowName="imkDtlGenerateDoneFile" total="10" alertCount="1"/>
@@ -40,12 +40,12 @@
     <metric projectName="ImkCrabTransform_DAP" flowName="imkCrabTransform_DAP" total="10" alertCount="1"/>
     <metric projectName="ImkCrabTransform_ROI" flowName="imkCrabTransform_ROI" total="10" alertCount="1"/>
   </project>
-  <project name="rotation">
+  <project name="rotation-azkaban-monitor">
     <metric projectName="rotation_daily_update" flowName="rotation_daily_update_end" total="10" alertCount="3"/>
     <metric projectName="rotation_snapshot_daily" flowName="rotation_snapshot_daily" total="10" alertCount="3"/>
     <metric projectName="rotation_td_hourly" flowName="rotation_hourly_update_end" total="10" alertCount="3"/>
   </project>
-  <project name="tools">
+  <project name="tools-azkaban-monitor">
     <metric projectName="AlertingAggregation" flowName="AlertingAggregation" total="1" alertCount="1"/>
     <metric projectName="AlertingAggregationHourly" flowName="AlertingAggregationHourly" total="1" alertCount="1"/>
     <metric projectName="HdfsDataClean" flowName="DataClean" total="1" alertCount="1"/>
