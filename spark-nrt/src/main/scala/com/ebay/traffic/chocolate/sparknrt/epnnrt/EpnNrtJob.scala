@@ -38,17 +38,17 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   private val impression = "impression"
   @transient lazy val schema_epn_impression_table = TableSchema("df_epn_" + impression + ".json")
 
-/*  @transient lazy val properties: Properties = {
-    val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
-    properties
-  }*/
-
-    var properties: Properties = {
+  @transient lazy val properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
     properties
   }
+
+   /* var properties: Properties = {
+    val properties = new Properties()
+    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
+    properties
+  }*/
 
   @transient lazy val metadata: Metadata = {
     val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
@@ -146,7 +146,6 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
                 logger.error("Illegal filter timestamp: " + params.filterTime + e)
             }
           }
-
 
           var df_click_count_after_filter = 0L
           var df_impression_count_after_filter = 0L

@@ -1,10 +1,11 @@
 package com.ebay.traffic.chocolate.html;
 
 import com.ebay.traffic.chocolate.parse.EPNReportUtil;
-import com.ebay.traffic.chocolate.util.AzkabanUtil;
-import com.ebay.traffic.chocolate.util.DoneFileUtil;
-import com.ebay.traffic.chocolate.util.ESAlertUtil;
-import com.ebay.traffic.chocolate.util.RotationAlertUtil;
+import com.ebay.traffic.chocolate.pojo.IMKHourlyClickCount;
+import com.ebay.traffic.chocolate.util.*;
+
+import java.util.List;
+import java.util.Map;
 
 public class HourlyEmailHtml {
 
@@ -26,6 +27,10 @@ public class HourlyEmailHtml {
 
   public static String getAzkabanReportHtml() {
     return AzkabanUtil.getAzkabanReportHtml();
+  }
+
+  public static String getIMKHourlyCountHtml() {
+    return IMKHourlyCountUtil.getIMKHourlyCountHtml();
   }
 
 }

@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.crabDedupe
 
 import java.io.File
+import java.time.{ZoneId, ZonedDateTime}
 
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
@@ -59,6 +60,29 @@ class TestCrabDedupeJob extends BaseFunSuite{
     df2.show()
     assert (df2.count() == 1)
 
+    assert(fs.exists(new Path(job.LAG_FILE)))
+  }
+
+  test("Test toDateTime") {
+    val args = Array(
+      "--mode", "local[8]",
+      "--workDir", workDir,
+      "--inputDir", inputDir,
+      "--outputDir", outputDir,
+      "--maxDataFiles", "10",
+      "--elasticsearchUrl", "http://10.148.181.34:9200",
+      "--couchbaseDedupe", "false",
+      "--snappyCompression", "false",
+      "--couchbaseDatasource", "chocopartnercbdbhost",
+      "--couchbaseTTL", "600",
+      "--partitions", "1"
+    )
+    val params = Parameter(args)
+    val job = new CrabDedupeJob(params)
+    assert(job.toDateTime("").isEmpty)
+    assert(job.toDateTime("12233").isEmpty)
+    assert(job.toDateTime("2019-10-18 19:10:20.123").isDefined)
+    assert(job.toDateTime("2019-10-18 19:10:20.123").get.equals(ZonedDateTime.of(2019, 10, 18, 19, 10, 20, 123 * 1000 * 1000, ZoneId.systemDefault())))
   }
 
 }

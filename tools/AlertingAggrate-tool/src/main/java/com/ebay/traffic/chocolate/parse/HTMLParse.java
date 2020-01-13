@@ -37,6 +37,7 @@ public class HTMLParse {
     html.append(HourlyEmailHtml.getRotationAlertHtml());
     html.append(HourlyEmailHtml.getEPNHourlyReportHtml());
     html.append(HourlyEmailHtml.getAzkabanReportHtml());
+    html.append(HourlyEmailHtml.getIMKHourlyCountHtml());
 
     return html.toString();
   }

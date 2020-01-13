@@ -12,6 +12,7 @@ import com.ebay.traffic.monitoring.ESMetrics;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
+import org.apache.commons.lang3.Validate;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
@@ -24,6 +25,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.apache.commons.lang3.StringUtils;
 import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -123,7 +126,7 @@ public class RoverRheosTopicFilterTask extends Thread {
       if ((round % 10000) == 1) logger.warn(String.format("Round %d from rheos", round));
       try {
         processRecords(rheosConsumer, producer);
-      } catch (Throwable e) {
+      } catch (Exception e) {
         logger.error("Something wrong:", e);
       }
     }
@@ -257,8 +260,8 @@ public class RoverRheosTopicFilterTask extends Thread {
           //get lowercase parameter in case some publishers may put different case of characters
           MultiValueMap<String, String> lowerCaseParams = new LinkedMultiValueMap<>();
           MultiValueMap<String, String> params = uriComponents.getQueryParams();
-          for (String key: params.keySet()) {
-            lowerCaseParams.put(key.toLowerCase(), params.get(key));
+          for (Map.Entry<String, List<String>> entry : params.entrySet()) {
+            lowerCaseParams.put(entry.getKey().toLowerCase(), entry.getValue());
           }
 
           // source and destination rotation id are parsed later in epn nrt
@@ -267,7 +270,15 @@ public class RoverRheosTopicFilterTask extends Thread {
 
           long campaignId = -1L;
           try{
-            campaignId = Long.valueOf(lowerCaseParams.get("campid").get(0));
+            List<String> list = lowerCaseParams.get("campid");
+            if (list == null) {
+              throw new IllegalArgumentException("no campid");
+            }
+            String first = list.get(0);
+            if (first == null) {
+              throw new IllegalArgumentException("no campid");
+            }
+            campaignId = Long.valueOf(first);
             if(campaignId == 5338380161l) {
               logger.info("Success5338380161: " + uri);
               ESMetrics.getInstance().meter("Success5338380161");
@@ -277,6 +288,18 @@ public class RoverRheosTopicFilterTask extends Thread {
           }
           record.setCampaignId(campaignId);
           record.setPublisherId(-1L);
+
+          // get landingPageUrl from applicationPayload.url_mpre
+          String landingPageUrl = coalesce(applicationPayload.get(new Utf8("url_mpre")), empty).toString();
+          try {
+            if(landingPageUrl.startsWith("https%3A%2F%2F") || landingPageUrl.startsWith("http%3A%2F%2F")) {
+              landingPageUrl = URLDecoder.decode(landingPageUrl, "UTF-8");
+            }
+          } catch (Exception ex) {
+            ESMetrics.getInstance().meter("DecodeEpnMobileClicksLandingPageUrlError");
+            logger.warn("Decode EPN Mobile clicks landing page url error");
+          }
+          record.setLandingPageUrl(landingPageUrl);
 
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }

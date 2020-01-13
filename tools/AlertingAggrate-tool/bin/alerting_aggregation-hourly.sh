@@ -17,6 +17,17 @@ hdfs dfs -get hdfs://elvisha/apps/alert/epn/$DATE3/hourlyClickCount/part-*.csv /
 mv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_click_count/part-*.csv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_click_count/hourlyClickCount.csv
 echo "end getting epn report data."
 
+echo "Start getting imk hourly count."
+filePath=/datashare/mkttracking/tools/AlertingAggrate-tool/temp/imk_hourly_count/
+rm -r /datashare/mkttracking/tools/AlertingAggrate-tool/temp/imk_hourly_count/*
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -get viewfs://apollo-rno/apps/b_marketing_tracking/alert/imk/temp/hourlyClickCount/* /datashare/mkttracking/tools/AlertingAggrate-tool/temp/imk_hourly_count
+cat ${filePath}channel_name=ROI/*.csv > ${filePath}channel_name=ROI/hourlyClick.csv
+cat ${filePath}channel_name=PaidSearch/*.csv > ${filePath}channel_name=PaidSearch/hourlyClick.csv
+cat ${filePath}channel_name=NaturalSearch/*.csv > ${filePath}channel_name=NaturalSearch/hourlyClick.csv
+cat ${filePath}channel_name=Display/*.csv > ${filePath}channel_name=Display/hourlyClick.csv
+cat ${filePath}channel_name=SocialMedia/*.csv > ${filePath}channel_name=SocialMedia/hourlyClick.csv
+echo "Finish getting imk hourly count."
+
 echo "Start AAMain application."
 java -cp AlertingAggrate-tool-3.4.2-RELEASE-fat.jar com.ebay.traffic.chocolate.AAMain $DATE 10.89.168.20 lli5@ebay.com,lxiong1@ebay.com,huiclu@ebay.com,zhofan@ebay.com,yliu29@ebay.com,shuangxu@ebay.com,jialili1@ebay.com,xiangli4@ebay.com,fechen@ebay.com,zhiyuawang@ebay.com,zjian@ebay.com hourly
 echo "AAMain application end."

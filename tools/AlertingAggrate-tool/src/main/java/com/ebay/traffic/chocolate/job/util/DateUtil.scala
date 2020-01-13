@@ -1,8 +1,13 @@
 package com.ebay.traffic.chocolate.job.util
 
 import java.time.LocalDate
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Calendar
 
 object DateUtil {
+
+  val dateFormat = "yyyy-MM-dd"
 
   def getToady(isTest: Boolean): String = {
     if (!isTest) {
@@ -58,6 +63,15 @@ object DateUtil {
   def getDateBeforeNDay(n: Integer): String = {
     val date: LocalDate = LocalDate.now.minusDays(n.toInt)
     date.toString
+  }
+
+  def getDateBeforeNDay(date: String, n: Integer): String = {
+    val format = new SimpleDateFormat(dateFormat)
+    val currentDate = format.parse(date)
+    val c = Calendar.getInstance()
+    c.setTime(currentDate)
+    c.add(Calendar.DATE, n)
+    format.format(c.getTime())
   }
 
 }

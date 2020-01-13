@@ -23,6 +23,7 @@ bin=`cd "$bin">/dev/null; pwd`
 CHANNEL=$1
 WORK_DIR=$2
 OUTPUT_DIR=$3
+JOIN_KEYWORD=$4
 ES_URL=http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
 
 KW_LKP_LATEST_PATH=hdfs://slickha/apps/kw_lkp/latest_path
@@ -35,8 +36,8 @@ if [[ $? -ne 0 ]]; then
 fi
 
 DRIVER_MEMORY=8g
-EXECUTOR_NUMBER=40
-EXECUTOR_MEMORY=4g
+EXECUTOR_NUMBER=30
+EXECUTOR_MEMORY=10g
 EXECUTOR_CORES=4
 
 JOB_NAME="imkCrabTransform"
@@ -61,7 +62,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
-    --conf spark.yarn.executor.memoryOverhead=8192 \
+    --conf spark.yarn.executor.memoryOverhead=1024 \
     --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
     --conf spark.yarn.historyServer.address=${HISTORY_SERVER} \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
@@ -72,6 +73,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --kwDataDir "${KW_LKP_FOLDER}" \
       --workDir "${WORK_DIR}" \
       --outputDir "${OUTPUT_DIR}" \
+      --joinKeyword "${JOIN_KEYWORD}" \
       --compressOutPut true \
       --maxMetaFiles 100 \
       --elasticsearchUrl ${ES_URL} \

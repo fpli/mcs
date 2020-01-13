@@ -127,6 +127,10 @@ abstract class BaseSparkJob(val jobName: String,
   def toDfRow(values: Array[String], schema: StructType): Row = {
     require(values.length == schema.fields.length
       || values.length == schema.fields.length + 1)
+    convertToDfRow(values, schema)
+  }
+
+  def convertToDfRow(values: Array[String], schema: StructType): Row = {
     try {
       Row(values zip schema map (e => {
         if (e._1.length == 0) {

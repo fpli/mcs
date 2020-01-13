@@ -9,7 +9,7 @@
   </parent>
   <groupId>com.ebay.traffic</groupId>
   <artifactId>chocolate</artifactId>
-  <version>3.5.0-RELEASE</version>
+  <version>3.6.0-RELEASE</version>
   <name>chocolate</name>
   <packaging>pom</packaging>
 
@@ -36,6 +36,8 @@
     <jackson.version>2.9.7</jackson.version>
     <powermock.version>1.6.6</powermock.version>
     <scoverage.plugin.version>1.3.0</scoverage.plugin.version>
+    <sonar.scoverage.reportPath>target/scoverage.xml</sonar.scoverage.reportPath>
+    <sonar.core.codeCoveragePlugin>scoverage</sonar.core.codeCoveragePlugin>
     <logback.kafkaAppender.version>0.1.0</logback.kafkaAppender.version>
     <logback.encoder.version>4.11</logback.encoder.version>
     <docker.image.prefix>hub.tess.io/raptorontess</docker.image.prefix>
@@ -312,6 +314,35 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.scoverage</groupId>
+          <artifactId>scoverage-maven-plugin</artifactId>
+          <version>${scoverage.plugin.version}</version>
+          <configuration>
+            <scalaVersion>${scala.version}</scalaVersion>
+            <aggregate>true</aggregate>
+            <highlighting>true</highlighting>
+          </configuration>
+          <executions>
+            <execution>
+              <id>instrument</id>
+              <goals>
+                <!-- used to add instrumentation -->
+                <goal>pre-compile</goal>
+                <!-- used to remove instrumentation for testCompile -->
+                <goal>post-compile</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>scoverage-report</id>
+              <goals>
+                <!-- Needed for Sonar -->
+                <goal>report-only</goal>
+              </goals>
+              <phase>prepare-package</phase>
+            </execution>
+          </executions>
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>

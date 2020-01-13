@@ -37,6 +37,6 @@ public class LocalizedErrorFactoryV3 {
    * @return
    */
   public Response makeWarnResponse(String errorName) {
-    return Response.status(Response.Status.OK).entity((Errors.errorMap.get(errorName))).build();
+    return Response.status(Response.Status.OK).entity((Errors.getErrorMap().get(errorName))).build();
   }
 }
