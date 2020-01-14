@@ -36,17 +36,17 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
   @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression.json")
 
-  @transient lazy val properties: Properties = {
-    val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
-    properties
-  }
-
-   /* var properties: Properties = {
+  /*@transient lazy val properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
     properties
   }*/
+
+    var properties: Properties = {
+    val properties = new Properties()
+    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
+    properties
+  }
 
   @transient lazy val metadata: Metadata = {
     val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
