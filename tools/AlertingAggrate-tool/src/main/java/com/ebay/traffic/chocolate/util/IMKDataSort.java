@@ -19,7 +19,7 @@ public class IMKDataSort {
 
     private static final Logger logger = LoggerFactory.getLogger(IMKDataSort.class);
 
-    public static Map<String, List<IMKHourlyClickCount>> getHourlyClickCount(String inputPath, String[] channelList) throws IOException{
+    public static Map<String, List<IMKHourlyClickCount>> getHourlyClickCount(String inputPath, String[] channelList){
         Map<String, List<IMKHourlyClickCount>> hourlyClickCountMap = new HashMap<String, List<IMKHourlyClickCount>>();
         if(channelList.length > 0){
             for(String channel: channelList){
@@ -54,7 +54,7 @@ public class IMKDataSort {
         return hourlyClickCountMap;
     }
 
-    public static List<IMKHourlyClickCount> getHourlyClickCountList(String hourlyClickCountFile) throws IOException{
+    public static List<IMKHourlyClickCount> getHourlyClickCountList(String hourlyClickCountFile){
         List<IMKHourlyClickCount> hourlyClickCountList = new ArrayList();
         try{
             hourlyClickCountList = CSVUtil.mapToBean(hourlyClickCountFile, IMKHourlyClickCount.class, ',');

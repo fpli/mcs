@@ -1,4 +1,0 @@
-type=command
-dependencies=HourlyClickCountReport
-command=bash HourlyClickAlert.sh
-failure.emails=lxiong1@ebay.com

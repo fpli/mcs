@@ -19,6 +19,8 @@
     <module>zookeeper-tool</module>
     <module>CheckRecover-tool</module>
     <module>AlertingAggrate-tool</module>
+    <module>Td-Bridge</module>
+    <module>OracleCouchbase</module>
   </modules>
 
   <properties>
