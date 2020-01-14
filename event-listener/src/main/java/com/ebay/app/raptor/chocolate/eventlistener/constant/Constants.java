@@ -43,7 +43,7 @@ public class Constants {
   public static final String NOTIFICATION_TYPE_EVT = "evt";
   public static final String NOTIFICATION_ACTION = "pnact";
   public static final String ITEM_ID = "itm";
-  public static final String USER_NAME = "username";
+  public static final String USER_NAME = "usrname";
   public static final String MC3_MSSG_ID = "mc3id";
 
 }
