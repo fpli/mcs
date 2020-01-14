@@ -295,7 +295,7 @@ public class CollectionService {
     addGenericSojTags(requestContext, parameters, referer, type, action);
 
     // add tags all channels need
-    addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, 2547208);
+    addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, PageIdEnum.CLICK.getId());
 
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
@@ -429,8 +429,11 @@ public class CollectionService {
     addGenericSojTags(requestContext, parameters, referer, type, action);
 
     // add tags all channels need
-    addCommonTags(requestContext, null, referer, agentInfo, type, action, 3962);
-
+    if (channelAction == ChannelActionEnum.SERVE) {
+      addCommonTags(requestContext, null, referer, agentInfo, type, action, PageIdEnum.AR.getId());
+    } else{
+      addCommonTags(requestContext, null, referer, agentInfo, type, action, PageIdEnum.EMAIL_OPEN.getId());
+    }
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
     if (channelType == ChannelIdEnum.SITE_EMAIL)
