@@ -551,9 +551,29 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def getValidParam(id: String): String = {
     if (id != null || !id.equals("")) {
+      val arr = id.toCharArray
       var pos = 0
+      var flag = true
       var break = false
-      val res = getValidParamInternal(id)
+      var i = 0
+      var j = arr.length - 1
+      var res = ""
+      while (flag) {
+        while (i < arr.length && !Character.isDigit(arr(i))) {
+          i = i + 1
+        }
+        while (j >= 0 && !Character.isDigit(arr(j))) {
+          j = j - 1
+        }
+        try{
+          res = id.substring(i, j + 1)
+          flag = false
+        }catch {
+          case e: Exception => {
+            return ""
+          }
+        }
+      }
       val resArr = res.toCharArray
       for (i <- resArr.indices) {
         if (!Character.isDigit(resArr(i)))
@@ -569,32 +589,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         }
       }
     }
-    ""
-  }
 
-  def getValidParamInternal(id: String): String = {
-    var flag = true
-    val arr = id.toCharArray
-    var i = 0
-    var j = arr.length - 1
-    var res = ""
-    while (flag) {
-      while (i < arr.length && !Character.isDigit(arr(i))) {
-        i = i + 1
-      }
-      while (j >= 0 && !Character.isDigit(arr(j))) {
-        j = j - 1
-      }
-      try{
-        res = id.substring(i, j + 1)
-        flag = false
-      }catch {
-        case e: Exception => {
-          return ""
-        }
-      }
-    }
-    res
+    ""
   }
 
   def getUserIdByCguid(userId: String, cguid: String): String = {
@@ -757,14 +753,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
 
     val advrtsrId = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1)
-
-    roi_fltr_yn_ind = setROIFltrInd(roi_fltr_yn_ind, rt_rule_9, rt_rule_15, traffic_source_code, publisherId, advrtsrId)
-
-    (roiRuleValues, roi_fltr_yn_ind)
-  }
-
-  def setROIFltrInd(roi: Int, rt_rule_9: Int, rt_rule_15: Int, traffic_source_code: Int, publisherId:String, advrtsrId: String): Int = {
-    var roi_fltr_yn_ind = roi
     // add UC4 logical rt_rule_9 here
     if (roi_fltr_yn_ind == 0 && rt_rule_9 == 1 && (traffic_source_code == ams_clk_fltr_type_map(12) || traffic_source_code == ams_clk_fltr_type_map(13))) {
       var list = getAdvClickFilterMap(publisherId)
@@ -781,7 +769,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       if (list.nonEmpty)
         roi_fltr_yn_ind = 1
     }
-    roi_fltr_yn_ind
+
+    (roiRuleValues, roi_fltr_yn_ind)
   }
 
   def getGoogleFltrDoFlag(referer_domain: String, publisherId: String): Int = {
@@ -843,34 +832,28 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           if (pubdomainlist.isEmpty)
             result = 1
           else {
-            result = callRoiRuleCommonInternal(pubdomainlist, referer_domain)
+            result = 1
+            var loop = true
+            var clean_ref_url = referer_domain.trim.toLowerCase
+            if (!clean_ref_url.startsWith("."))
+              clean_ref_url = ".".concat(clean_ref_url)
+            pubdomainlist.foreach(e => {
+              if (loop) {
+                var domain_entry = e.getUrl_domain.trim
+                if (!domain_entry.startsWith("."))
+                  domain_entry = ".".concat(domain_entry)
+                if (clean_ref_url.endsWith(domain_entry.toLowerCase)) {
+                  result = 0
+                  loop = false
+                }
+              }
+            })
           }
         }
       }
     }
     result
   }
-
-  def callRoiRuleCommonInternal(pubdomainlist: ListBuffer[PubDomainInfo], referer_domain: String): Int = {
-    var result = 1
-    var loop = true
-    var clean_ref_url = referer_domain.trim.toLowerCase
-    if (!clean_ref_url.startsWith("."))
-      clean_ref_url = ".".concat(clean_ref_url)
-    pubdomainlist.foreach(e => {
-      if (loop) {
-        var domain_entry = e.getUrl_domain.trim
-        if (!domain_entry.startsWith("."))
-          domain_entry = ".".concat(domain_entry)
-        if (clean_ref_url.endsWith(domain_entry.toLowerCase)) {
-          result = 0
-          loop = false
-        }
-      }
-    })
-    result
-  }
-
 
   def amsPubDomainLookup(publisherId: String, roi_rule: String): ListBuffer[PubDomainInfo] = {
     var list = cbData._5.getOrElse(publisherId, ListBuffer.empty[PubDomainInfo])
@@ -980,6 +963,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getReasonCode(action: String, rotationId: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int): String = {
+    var rsn_cd = ReasonCodeEnum.REASON_CODE0.getReasonCode
     var config_flag = 0
     val campaign_sts = getcampaignStatus(campaignId)
     val progPubMapStatus = getProgMapStatus(publisherId, rotationId)
@@ -989,10 +973,11 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if (!res(1).equals("")) {
       config_flag = res(1).toInt & 1
     }
-
-    var rsn_cd = getReasonCodeInternal(action, google_fltr_do_flag, publisherId)
-
-    if (campaign_sts == null || campaign_sts.equalsIgnoreCase("2") || campaign_sts.equalsIgnoreCase(""))
+    if (action.equalsIgnoreCase("click") && google_fltr_do_flag == 1)
+      rsn_cd = ReasonCodeEnum.REASON_CODE10.getReasonCode
+    else if (publisherId == null || publisherId.equalsIgnoreCase("") || publisherId.equalsIgnoreCase("999"))
+      rsn_cd = ReasonCodeEnum.REASON_CODE3.getReasonCode
+    else if (campaign_sts == null || campaign_sts.equalsIgnoreCase("2") || campaign_sts.equalsIgnoreCase(""))
       rsn_cd = ReasonCodeEnum.REASON_CODE7.getReasonCode
     else if (action.equalsIgnoreCase("click") && ams_fltr_roi_value == 1)
       rsn_cd = ReasonCodeEnum.REASON_CODE8.getReasonCode
@@ -1006,15 +991,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       rsn_cd = ReasonCodeEnum.REASON_CODE6.getReasonCode
     else
       rsn_cd = ReasonCodeEnum.REASON_CODE0.getReasonCode
-    rsn_cd
-  }
-
-  def getReasonCodeInternal(action: String, google_fltr_do_flag: Int, publisherId: String): String = {
-    var rsn_cd = ReasonCodeEnum.REASON_CODE0.getReasonCode
-    if (action.equalsIgnoreCase("click") && google_fltr_do_flag == 1)
-      rsn_cd = ReasonCodeEnum.REASON_CODE10.getReasonCode
-    else if (publisherId == null || publisherId.equalsIgnoreCase("") || publisherId.equalsIgnoreCase("999"))
-      rsn_cd = ReasonCodeEnum.REASON_CODE3.getReasonCode
     rsn_cd
   }
 
