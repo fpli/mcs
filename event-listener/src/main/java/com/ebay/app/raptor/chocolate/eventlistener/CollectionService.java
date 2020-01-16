@@ -228,7 +228,7 @@ public class CollectionService {
     String targetUrl = event.getTargetUrl();
 
     //XC-1797, for app deeplink case, extract and decode actual target url from referrer parameter in targetUrl
-    //only accept the url when referrer domain is ebay"
+    //only accept the url when referrer domain belongs to ebay sites
     Matcher deeplinkMatcher = deeplinksites.matcher(targetUrl.toLowerCase());
     if (deeplinkMatcher.find()) {
       UriComponents deeplinkUriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
