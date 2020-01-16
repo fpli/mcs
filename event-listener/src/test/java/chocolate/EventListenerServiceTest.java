@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
+import com.ebay.platform.raptor.cosadaptor.exceptions.TokenCreationException;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
 import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
@@ -67,74 +68,20 @@ public class EventListenerServiceTest {
 
   private Client client;
   private String svcEndPoint;
+  private String token;
 
-  private final String eventsPath = "/marketingtracking/v1/events";
-  private final String impressionPath = "/marketingtracking/v1/impression";
-  private final String notificationPath = "/marketingtracking/v1/notification";
-  private final String versionPath = "/marketingtracking/v1/getVersion";
+  private static String eventsPath;
+  private static String impressionPath;
+  private static String notificationPath;
+  private static String versionPath;
 
-  private final String endUserCtxiPhone = "ip=10.148.184.210," +
-    "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
-    "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
-    "userAgent=ebayUserAgent/eBayIOS;5.19.0;iOS;11.2;Apple;x86_64;no-carrier;414x736;3.0," +
-    "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
-    "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
-    ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
-    "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
-    "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
-    "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
-    "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
+  private static String endUserCtxiPhone;
+  private static String endUserCtxAndroid;
+  private static String endUserCtxDesktop;
+  private static String endUserCtxMweb;
+  private static String endUserCtxNoReferer;
 
-  private final String endUserCtxAndroid = "ip=10.148.184.210,userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml" +
-    "%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage%2Fapng%2C*%2F*%3Bq%3D0.8," +
-    "userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
-    "userAgent=ebayUserAgent%2FeBayAndroid%3B5.27.1%3BAndroid%3B8.0.0%3Bsamsung%3Bgreatqlte%3BU.S" +
-    ".%20Cellular%3B1080x2094%3B2.6,deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
-    "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
-    ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
-    "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
-    "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
-    "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
-    "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
-
-  private final String endUserCtxDesktop = "ip=10.148.184.205," +
-    "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
-    "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
-    "userAgent=Mozilla%2F5.0+%28Macintosh%3B+Intel+Mac+OS+X+10_13_6%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko" +
-    "%29+Chrome%2F71.0.3578.98+Safari%2F537.36,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
-    ".com%2Fdisplay%2FtrafficCOE%2FLong%2Bterm%2Bstage1%253A%2BTrack%2Bclick%2Bfrom%2Blanding%2Bpage," +
-    "xff=10.249.74.17,uri=%2Fmkttestappweb%2Fi%2FApple-iPhone-8-Plus-256gb-Gold%2F290016063137," +
-    "applicationURL=http%3A%2F%2Fmkttestapp.stratus.qa.ebay" +
-    ".com%2Fmkttestappweb%2Fi%2FApple-iPhone-8-Plus-256gb-Gold%2F290016063137%3Fmkevt%3D1%26mkcid%3D2," +
-    "physicalLocation=country%3DUS,contextualLocation=country%3DIT,isPiggybacked=false,fullSiteExperience=true," +
-    "expectSecureURL=true";
-
-  private final String endUserCtxMweb = "ip=10.148.184.210," +
-    "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
-    "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
-    "userAgent=Mozilla%2F5.0%20%28iPhone%3B%20CPU%20iPhone%20OS%2012_1_2%20like%20Mac%20OS%20X%29%20AppleWebKit" +
-    "%2F605.1.15%20%28KHTML%2C%20like%20Gecko%29%20Version%2F12.0%20Mobile%2F15E148%20Safari%2F604.1," +
-    "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
-    "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
-    ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
-    "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
-    "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
-    "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
-    "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
-
-  private final String endUserCtxNoReferer = "ip=10.148.184.210," +
-    "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
-    "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
-    "userAgent=ebayUserAgent/eBayIOS;5.19.0;iOS;11.2;Apple;x86_64;no-carrier;414x736;3.0," +
-    "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
-    "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134," +
-    "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
-    "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
-    "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
-    "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
-
-  private final String tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
-    "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
+  private static String tracking;
 
   @Autowired
   private CollectionService collectionService;
@@ -152,7 +99,7 @@ public class EventListenerServiceTest {
   }
 
   @Before
-  public void setUp() {
+  public void setUp() throws TokenCreationException {
     if (!initialized) {
       RuntimeContext.setConfigRoot(EventListenerServiceTest.class.getClassLoader().getResource
         ("META-INF/configuration/Dev/"));
@@ -160,6 +107,7 @@ public class EventListenerServiceTest {
       client = ClientBuilder.newClient(configuration);
       String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
       svcEndPoint = endpoint + ":" + port;
+      token = tokenGenerator.getToken().getAccessToken();
 
       prepareData();
       initialized = true;
@@ -167,7 +115,69 @@ public class EventListenerServiceTest {
   }
 
   private static void prepareData() {
+    eventsPath = "/marketingtracking/v1/events";
+    impressionPath = "/marketingtracking/v1/impression";
+    notificationPath = "/marketingtracking/v1/notification";
+    versionPath = "/marketingtracking/v1/getVersion";
 
+    endUserCtxiPhone = "ip=10.148.184.210," +
+      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
+      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
+      "userAgent=ebayUserAgent/eBayIOS;5.19.0;iOS;11.2;Apple;x86_64;no-carrier;414x736;3.0," +
+      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
+      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
+      ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
+      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
+      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
+      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
+      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
+    endUserCtxAndroid = "ip=10.148.184.210,userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml" +
+      "%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage%2Fapng%2C*%2F*%3Bq%3D0.8," +
+      "userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
+      "userAgent=ebayUserAgent%2FeBayAndroid%3B5.27.1%3BAndroid%3B8.0.0%3Bsamsung%3Bgreatqlte%3BU.S" +
+      ".%20Cellular%3B1080x2094%3B2.6,deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
+      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
+      ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
+      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
+      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
+      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
+      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
+    endUserCtxDesktop = "ip=10.148.184.205," +
+      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
+      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
+      "userAgent=Mozilla%2F5.0+%28Macintosh%3B+Intel+Mac+OS+X+10_13_6%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko" +
+      "%29+Chrome%2F71.0.3578.98+Safari%2F537.36,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
+      ".com%2Fdisplay%2FtrafficCOE%2FLong%2Bterm%2Bstage1%253A%2BTrack%2Bclick%2Bfrom%2Blanding%2Bpage," +
+      "xff=10.249.74.17,uri=%2Fmkttestappweb%2Fi%2FApple-iPhone-8-Plus-256gb-Gold%2F290016063137," +
+      "applicationURL=http%3A%2F%2Fmkttestapp.stratus.qa.ebay" +
+      ".com%2Fmkttestappweb%2Fi%2FApple-iPhone-8-Plus-256gb-Gold%2F290016063137%3Fmkevt%3D1%26mkcid%3D2," +
+      "physicalLocation=country%3DUS,contextualLocation=country%3DIT,isPiggybacked=false,fullSiteExperience=true," +
+      "expectSecureURL=true";
+    endUserCtxMweb = "ip=10.148.184.210," +
+      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
+      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
+      "userAgent=Mozilla%2F5.0%20%28iPhone%3B%20CPU%20iPhone%20OS%2012_1_2%20like%20Mac%20OS%20X%29%20AppleWebKit" +
+      "%2F605.1.15%20%28KHTML%2C%20like%20Gecko%29%20Version%2F12.0%20Mobile%2F15E148%20Safari%2F604.1," +
+      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
+      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
+      ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
+      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
+      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
+      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
+      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
+    endUserCtxNoReferer = "ip=10.148.184.210," +
+      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
+      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
+      "userAgent=ebayUserAgent/eBayIOS;5.19.0;iOS;11.2;Apple;x86_64;no-carrier;414x736;3.0," +
+      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
+      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134," +
+      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
+      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
+      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
+      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
+
+    tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
+      "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
   }
 
   @AfterClass
@@ -175,9 +185,10 @@ public class EventListenerServiceTest {
     KafkaTestHelper.shutdown();
   }
 
-  private Response postMcsResponse(String path, String token, String endUserCtx, String tracking,
+  private Response postMcsResponse(String path, String endUserCtx, String tracking,
                                    MultiValueMap<String, String> parameters, Event event) {
     WebTarget webTarget = client.target(svcEndPoint).path(path);
+    // add parameters
     if (MapUtils.isNotEmpty(parameters)) {
       for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
         for (String value : entry.getValue()) {
@@ -186,6 +197,7 @@ public class EventListenerServiceTest {
       }
     }
 
+    // add headers
     Invocation.Builder builder = webTarget.request();
     if (!StringUtils.isEmpty(endUserCtx)) {
       builder = builder.header("X-EBAY-C-ENDUSERCTX", endUserCtx);
@@ -198,193 +210,91 @@ public class EventListenerServiceTest {
   }
 
   @Test
-  public void testEventsResource() throws Exception {
-    String token = tokenGenerator.getToken().getAccessToken();
-
+  public void testEventsResource() throws InterruptedException {
     Event event = new Event();
     event.setReferrer("www.google.com");
     event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=2");
 
-    String tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
-      "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
     // success request
     // iphone
-    Response response = client.target(svcEndPoint).path(eventsPath)
-      .request()
-      .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-      .header("X-EBAY-C-TRACKING", tracking)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
+    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // desktop
-    response = client.target(svcEndPoint).path(eventsPath)
-      .request()
-      .header("X-EBAY-C-ENDUSERCTX", endUserCtxDesktop)
-      .header("X-EBAY-C-TRACKING", tracking)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxDesktop, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // android
-    response = client.target(svcEndPoint).path(eventsPath)
-      .request()
-      .header("X-EBAY-C-ENDUSERCTX", endUserCtxAndroid)
-      .header("X-EBAY-C-TRACKING", tracking)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxAndroid, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // mweb
-    response = client.target(svcEndPoint).path(eventsPath)
-      .request()
-      .header("X-EBAY-C-ENDUSERCTX", endUserCtxMweb)
-      .header("X-EBAY-C-TRACKING", tracking)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxMweb, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // no X-EBAY-C-ENDUSERCTX
-    response = client.target(svcEndPoint).path(eventsPath)
-      .request()
-      .header("X-EBAY-C-TRACKING", tracking)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, null, tracking, null, event);
     assertEquals(200, response.getStatus());
     ErrorType errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4001, errorMessage.getErrorCode());
 
     // no X-EBAY-C-TRACKING
-    response = client.target(svcEndPoint).path(eventsPath)
-      .request()
-      .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, null, null, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4002, errorMessage.getErrorCode());
 
     // no referer
     event.setReferrer(null);
-    response = client.target(svcEndPoint).path(eventsPath)
-      .request()
-      .header("X-EBAY-C-ENDUSERCTX", endUserCtxNoReferer)
-      .header("X-EBAY-C-TRACKING", tracking)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
-    // TODO: return 201 for now
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, null, event);
     assertEquals(201, response.getStatus());
-//    assertEquals(200, response.getStatus());
-//    errorMessageV3 = response.readEntity(ErrorMessageV3.class);
-//    assertEquals(4003, errorMessageV3.getErrors().get(0).getErrorId());
 
     // rover as referer
     event.setReferrer("https://rover.ebay.com/rover/1/709-41886-4896-0/2?mpre=https%3A%2F%2Fwww.ebay.fr%2Fulk%2Fsch%2F%3F_nkw%3Dcamescope%2520jvc%26mkevt%3D1%26mkrid%3D709-41886-4896-0%26mkcid%3D2%26keyword%3Dcamescope%2520jvc%26crlp%3D285602751787_%26MT_ID%3D58%26geo_id%3D32296%26rlsatarget%3Dkwd-119986605%26adpos%3D6o2%26device%3Dc%26loc%3D9056144%26poi%3D%26abcId%3D463856%26cmpgn%3D189547424%26sitelnk%3D&keyword=camescope%20jvc&crlp=285602751787_&MT_ID=58&geo_id=32296&rlsatarget=kwd-119986605&adpos=6o2&device=c&loc=9056144&poi=&abcId=463856&cmpgn=189547424&sitelnk=&gclid=Cj0KCQjwtMvlBRDmARIsAEoQ8zSmXHKLMq9rnAokRQtw5FQcGflfnJiPbRndTX1OvNzgImj7sGgkemsaAtw9EALw_wcB");
-    response = client.target(svcEndPoint).path(eventsPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxNoReferer)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // rover as referer but encoded
     event.setReferrer("https%3A%2F%2Frover.ebay.com%2Frover%2F1%2F711-117182-37290-0%2F2%3Fmpre%3Dhttps%253A%252F%252Fwww.ebay.com%252Fi%252F153018234148%253Fchn%253Dps%2526var%253D452828802628%26itemid%3D452828802628_153018234148%26targetid%3D477790169505%26device%3Dc%26adtype%3Dpla%26googleloc%3D9060230%26poi%3D%26campaignid%3D1746988278%26adgroupid%3D71277061587%26rlsatarget%3Dpla-477790169505%26abcId%3D1139306%26merchantid%3D6296724%26gclid%3DCj0KCQjwkoDmBRCcARIsAG3xzl8lXd3bcaLMaJ8-zY1zD-COSGJrZj-CVOht-VqgWiCtPBy_hrl38HgaAu2AEALw_wcB%26srcrot%3D711-117182-37290-0%26rvr_id%3D1973157993841%26rvr_ts%3Dc1c229cc16a0aa42c5d2b84affc9e842");
-    response = client.target(svcEndPoint).path(eventsPath)
-      .request()
-      .header("X-EBAY-C-ENDUSERCTX", endUserCtxNoReferer)
-      .header("X-EBAY-C-TRACKING", tracking)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // forward rover redirect
     event.setReferrer("https://rover.ebay.com/rover/");
-    response = client.target(svcEndPoint).path(eventsPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxNoReferer)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // forward rover fail
     event.setReferrer("https://rover.ebay.com/");
-    response = client.target(svcEndPoint).path(eventsPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxNoReferer)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // no query parameter
     event.setReferrer("https://www.google.com");
     event.setTargetUrl("https://www.ebay.com");
-    response = client.target(svcEndPoint).path(eventsPath)
-      .request()
-      .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-      .header("X-EBAY-C-TRACKING", tracking)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // no mkevt
     event.setTargetUrl("https://www.ebay.com?mkcid=2");
-    response = client.target(svcEndPoint).path(eventsPath)
-      .request()
-      .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-      .header("X-EBAY-C-TRACKING", tracking)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // invalid mkevt
     event.setTargetUrl("https://www.ebay.com?mkcid=2&mkevt=0");
-    response = client.target(svcEndPoint).path(eventsPath)
-      .request()
-      .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-      .header("X-EBAY-C-TRACKING", tracking)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // no mkcid
     // service will pass but no message to kafka
     event.setTargetUrl("https://www.ebay.com?mkevt=1");
-    response = client.target(svcEndPoint).path(eventsPath)
-      .request()
-      .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-      .header("X-EBAY-C-TRACKING", tracking)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // invalid mkcid
     // service will pass but no message to kafka
     event.setTargetUrl("https://www.ebay.com?mkcid=99&mkevt=1");
-    response = client.target(svcEndPoint).path(eventsPath)
-      .request()
-      .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-      .header("X-EBAY-C-TRACKING", tracking)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // validate kafka message
@@ -400,198 +310,102 @@ public class EventListenerServiceTest {
 
     // mrkt email click events
     event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=8&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
-    response = client.target(svcEndPoint).path(eventsPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // site email click events
     event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
-    response = client.target(svcEndPoint).path(eventsPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
   }
 
   @Test
-  public void testImpressionResource() throws Exception {
-    String token = tokenGenerator.getToken().getAccessToken();
-
+  public void testImpressionResource() throws InterruptedException {
     Event event = new Event();
     event.setReferrer("www.google.com");
-    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=2");
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=2&mkcid=1");
 
-    String tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
-            "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
     // success request
     // iphone
-    Response response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    Response response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(200, response.getStatus());
 
     // desktop
-    response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxDesktop)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    response = postMcsResponse(impressionPath, endUserCtxDesktop, tracking, null, event);
     assertEquals(200, response.getStatus());
 
     // android
-    response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxAndroid)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    response = postMcsResponse(impressionPath, endUserCtxAndroid, tracking, null, event);
     assertEquals(200, response.getStatus());
 
     // mweb
-    response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxMweb)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    response = postMcsResponse(impressionPath, endUserCtxMweb, tracking, null, event);
     assertEquals(200, response.getStatus());
 
     // no X-EBAY-C-TRACKING
-    response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, null, null, event);
     assertEquals(200, response.getStatus());
+    ErrorType errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4002, errorMessage.getErrorCode());
 
     // no referer
     event.setReferrer(null);
-    response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxNoReferer)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
-    // TODO: return 200 for now
-    assertEquals(200, response.getStatus());
-//    assertEquals(200, response.getStatus());
-//    errorMessageV3 = response.readEntity(ErrorMessageV3.class);
-//    assertEquals(4003, errorMessageV3.getErrors().get(0).getErrorId());
-
-    // rover as referer but encoded
-    event.setReferrer("https%3A%2F%2Frover.ebay.com%2Frover%2F1%2F711-117182-37290-0%2F2%3Fmpre%3Dhttps%253A%252F%252Fwww.ebay.com%252Fi%252F153018234148%253Fchn%253Dps%2526var%253D452828802628%26itemid%3D452828802628_153018234148%26targetid%3D477790169505%26device%3Dc%26adtype%3Dpla%26googleloc%3D9060230%26poi%3D%26campaignid%3D1746988278%26adgroupid%3D71277061587%26rlsatarget%3Dpla-477790169505%26abcId%3D1139306%26merchantid%3D6296724%26gclid%3DCj0KCQjwkoDmBRCcARIsAG3xzl8lXd3bcaLMaJ8-zY1zD-COSGJrZj-CVOht-VqgWiCtPBy_hrl38HgaAu2AEALw_wcB%26srcrot%3D711-117182-37290-0%26rvr_id%3D1973157993841%26rvr_ts%3Dc1c229cc16a0aa42c5d2b84affc9e842");
-    response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxNoReferer)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(200, response.getStatus());
 
     // no query parameter
     event.setReferrer("https://www.google.com");
-    event.setTargetUrl("https://www.ebay.com");
-    response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(200, response.getStatus());
 
     // no mkevt
-    event.setTargetUrl("https://www.ebay.com?mkcid=2");
-    response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkcid=1");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(200, response.getStatus());
 
     // invalid mkevt
-    event.setTargetUrl("https://www.ebay.com?mkcid=2&mkevt=0");
-    response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkcid=1&mkevt=1");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4007, errorMessage.getErrorCode());
 
     // no mkcid
     // service will pass but no message to kafka
-    event.setTargetUrl("https://www.ebay.com?mkevt=1");
-    response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=2");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(200, response.getStatus());
 
     // invalid mkcid
     // service will pass but no message to kafka
-    event.setTargetUrl("https://www.ebay.com?mkcid=99&mkevt=1");
-    response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkcid=99&mkevt=2");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(200, response.getStatus());
 
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerEpn = kafkaCluster.createConsumer(
+      LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
+      consumerEpn, Arrays.asList("dev_listened-epn"), 4, 30 * 1000);
+    consumerEpn.close();
+    assertEquals(5, listenerMessagesEpn.size());
+
     // mrkt email impression events
-    event.setTargetUrl("https://www.ebay.com?mkevt=4&mkcid=8&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
-    response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=8&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(200, response.getStatus());
 
     // site email impression events
-    event.setTargetUrl("https://www.ebay.com?mkevt=4&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
-    response = client.target(svcEndPoint).path(impressionPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(event));
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(200, response.getStatus());
   }
 
   @Test
-  public void testnotificationResource() throws Exception {
-    String token = tokenGenerator.getToken().getAccessToken();
-
+  public void testnotificationResource() {
     // notification parameters
     MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
     parameters.add("imp", "2054081");
@@ -605,35 +419,35 @@ public class EventListenerServiceTest {
 
     // success request
     // iphone
-    Response response = postMcsResponse(notificationPath, token, endUserCtxiPhone, tracking, parameters, null);
+    Response response = postMcsResponse(notificationPath, endUserCtxiPhone, tracking, parameters, null);
     assertEquals(201, response.getStatus());
 
     // desktop
-    response = postMcsResponse(notificationPath, token, endUserCtxDesktop, tracking, parameters, null);
+    response = postMcsResponse(notificationPath, endUserCtxDesktop, tracking, parameters, null);
     assertEquals(201, response.getStatus());
 
     // android
-    response = postMcsResponse(notificationPath, token, endUserCtxAndroid, tracking, parameters, null);
+    response = postMcsResponse(notificationPath, endUserCtxAndroid, tracking, parameters, null);
     assertEquals(201, response.getStatus());
 
     // mweb
-    response = postMcsResponse(notificationPath, token, endUserCtxMweb, tracking, parameters, null);
+    response = postMcsResponse(notificationPath, endUserCtxMweb, tracking, parameters, null);
     assertEquals(201, response.getStatus());
 
     // no X-EBAY-C-ENDUSERCTX
-    response = postMcsResponse(notificationPath, token, null, tracking, parameters, null);
+    response = postMcsResponse(notificationPath, null, tracking, parameters, null);
     assertEquals(200, response.getStatus());
     ErrorType errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4001, errorMessage.getErrorCode());
 
     // no X-EBAY-C-TRACKING
-    response = postMcsResponse(notificationPath, token, endUserCtxiPhone, null, parameters, null);
+    response = postMcsResponse(notificationPath, endUserCtxiPhone, null, parameters, null);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4002, errorMessage.getErrorCode());
 
     // no query parameter
-    response = postMcsResponse(notificationPath, token, endUserCtxiPhone, tracking, null, null);
+    response = postMcsResponse(notificationPath, endUserCtxiPhone, tracking, null, null);
     assertEquals(201, response.getStatus());
   }
 
