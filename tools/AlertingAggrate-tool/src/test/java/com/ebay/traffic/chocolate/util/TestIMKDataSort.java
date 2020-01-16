@@ -30,7 +30,7 @@ public class TestIMKDataSort {
     public void testgetHourlyClickCount() throws IOException{
         String testDir = TestCSVUtil.class.getResource("/").getPath() + "imkEmail/";
         System.out.println(testDir);
-        String channelList = "ROI,PaidSearch,NaturalSearch,Display,SocialMedia";
+        String channelList = "ROI,Display,SocialMedia";
         Map<String, List<IMKHourlyClickCount>> result = IMKDataSort.getHourlyClickCount(testDir, channelList.split(","));
         assert(result.keySet().contains("ROI"));
         assert(result.keySet().contains("SocialMedia"));

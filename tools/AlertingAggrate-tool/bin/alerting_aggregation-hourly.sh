@@ -13,7 +13,7 @@ echo "Finish getting hourly done file for hercules-lvs cluster."
 echo "Start getting epn report data."
 DATE3=`date --date= +%Y-%m-%d`
 rm /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_click_count/*.csv
-hdfs dfs -get hdfs://elvisha/apps/alert/epn/$DATE3/hourlyClickCount/part-*.csv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_click_count
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -get hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE3/hourlyClickCount/part-*.csv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_click_count
 mv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_click_count/part-*.csv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_click_count/hourlyClickCount.csv
 echo "end getting epn report data."
 
