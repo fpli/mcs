@@ -40,8 +40,8 @@ class TestEpnNrtJob extends BaseFunSuite{
     properties.setProperty("epnnrt.outputdir", outputDir)
     properties.setProperty("epnnrt.result.meta.click.outputdir", outputDir + "/meta/EPN/output/epnnrt/click/")
     properties.setProperty("epnnrt.result.meta.imp.outputdir", outputDir + "/meta/EPN/output/epnnrt/imp/")
-    properties.getProperty("epnnrt.scp.meta.click.outputdir", outputDir + "/meta/EPN/output/epnnrt_scp_click/")
-    properties.getProperty("epnnrt.scp.meta.imp.outputdir", outputDir + "/meta/EPN/output/epnnrt_scp_imp/")
+    properties.setProperty("epnnrt.scp.meta.click.outputdir", outputDir + "/meta/EPN/output/epnnrt_scp_click/")
+    properties.setProperty("epnnrt.scp.meta.imp.outputdir", outputDir + "/meta/EPN/output/epnnrt_scp_imp/")
     properties.setProperty("epnnrt.archiveDir", outputDir + "/meta/EPN/output/archive/")
     properties
   }

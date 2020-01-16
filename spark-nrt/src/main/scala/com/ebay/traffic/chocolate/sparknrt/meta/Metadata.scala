@@ -74,11 +74,28 @@ class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
     })
   }
 
-  def writeOutputMeta(outputMeta: MetaFiles, outputMetaDir: String, usage: String, suffixArray: Array[String] = Array()):Unit = {
+  def writeOutputMeta(outputMeta: MetaFiles,outputMetaTmpDir: String, outputMetaDir: String, usage: String, suffixArray: Array[String] = Array()):Unit = {
+    val tmpPath = new Path(outputMetaTmpDir)
+    if (fs.exists(tmpPath) && fs.listStatus(tmpPath).nonEmpty) {
+      fs.delete(tmpPath, true)
+    }
+    if (!fs.exists(tmpPath))
+      fs.mkdirs(tmpPath)
     val time = System.currentTimeMillis()
     suffixArray.foreach(suffix => {
-      writeMetaFiles(outputMeta, outputMetaDir + usage + "_output_" + time + ".meta" + suffix)
+      writeMetaFiles(outputMeta, outputMetaTmpDir + usage + "_output_" + time + ".meta" + suffix)
     })
+    renameMetaFiles(outputMetaTmpDir, outputMetaDir, time, usage, suffixArray)
+  }
+
+  def renameMetaFiles(src: String, dest: String, time: Long, usage: String, suffixArray: Array[String] = Array()): Unit = {
+    suffixArray.foreach(
+      suffix => {
+        val srcFile = new Path(src + usage + "_output_" + time + ".meta" + suffix)
+        val destFile = new Path(dest + usage + "_output_" + time + ".meta" + suffix)
+        fs.rename(srcFile, destFile)
+      }
+    )
   }
 
   def deleteDedupeOutputMeta(metaFile: String) = {
