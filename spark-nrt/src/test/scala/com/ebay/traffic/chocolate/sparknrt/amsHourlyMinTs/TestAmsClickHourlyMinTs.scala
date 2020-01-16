@@ -30,7 +30,7 @@ class TestAmsClickHourlyMinTs extends BaseFunSuite {
     val meta = new MetaFiles(Array(dateFiles))
     val outputMetaDir = workDir + "meta/EPN/output/epnnrt_scp_click/"
     val outputMetaTmpDir = workDir + "meta/EPN/output/tmp/epnnrt_scp_click/"
-    metadata.writeOutputMeta(meta, outputMetaTmpDir,outputMetaDir, usage, Array(metaSuffix))
+    metadata.writeOutputMeta(meta, outputMetaDir, usage, Array(metaSuffix))
 
     job.run()
     job.stop()

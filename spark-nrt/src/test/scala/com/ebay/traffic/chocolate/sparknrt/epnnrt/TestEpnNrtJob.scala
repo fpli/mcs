@@ -57,7 +57,8 @@ class TestEpnNrtJob extends BaseFunSuite{
       "--mode", "local[8]",
       "--workDir", workDir,
       "--resourceDir", resourceDir,
-      "--filterTime", "0"
+      "--filterTime", "0",
+      "--outPutDir", outputDir
     )
     val params = Parameter(args)
     val job = new EpnNrtJob(params)
@@ -68,7 +69,7 @@ class TestEpnNrtJob extends BaseFunSuite{
 
     assert (fs.exists(dedupeMetaPath))
 
-    job.properties = properties
+    //job.properties = properties
     job.run()
     job.stop()
   }

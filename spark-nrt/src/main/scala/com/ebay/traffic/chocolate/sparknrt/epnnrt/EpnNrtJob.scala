@@ -26,27 +26,40 @@ object EpnNrtJob extends App {
 
 class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, params.mode) {
 
-  lazy val outputDir = properties.getProperty("epnnrt.outputdir")
+ lazy val outputDir = params.outPutDir
+  lazy val workDir = params.workDir
   lazy val epnNrtTempDir = outputDir + "/tmp/"
+  // meta tmp dir
+  lazy val epnNrtResultMetaClickTempDir = outputDir + "/tmp_result_meta_click/"
+  lazy val epnNrtScpMetaClickTempDir = outputDir + "/tmp_scp_meta_click/"
+  lazy val epnNrtResultMetaImpTempDir = outputDir + "/tmp_result_meta_imp/"
+  lazy val epnNrtScpMetaImpTempDir = outputDir + "/tmp_scp_meta_imp/"
+
+  //meta final dir
+  lazy val epnNrtResultMetaClickDir = workDir + "/meta/EPN/output/epnnrt_click/"
+  lazy val epnNrtScpMetaClickDir = workDir + "/meta/EPN/output/epnnrt_scp_click/"
+  lazy val epnNrtResultMetaImpDir = workDir + "/meta/EPN/output/epnnrt_imp/"
+  lazy val epnNrtScpMetaImpDir = workDir + "/meta/EPN/output/epnnrt_scp_imp/"
+
   lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
-  lazy val archiveDir = properties.getProperty("epnnrt.archiveDir")
+  lazy val archiveDir = workDir + "/meta/EPN/output/archive/"
 
 
   @transient lazy val schema_epn_click_table = TableSchema("df_epn_click.json")
 
   @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression.json")
 
-  /*@transient lazy val properties: Properties = {
-    val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
-    properties
-  }*/
-
-    var properties: Properties = {
+  @transient lazy val properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
     properties
   }
+
+/*    var properties: Properties = {
+    val properties = new Properties()
+    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
+    properties
+  }*/
 
   @transient lazy val metadata: Metadata = {
     val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
@@ -169,9 +182,16 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           val imp_metaFile = new MetaFiles(Array(DateFiles(date, imp_files)))
 
           try {
-            metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.result.meta.imp.outputdir"), "epnnrt_imp", Array(".epnnrt"))
+
+           // metadata.writeOutputMeta(imp_metaFile, epnNrtMetaImpTempDir, properties.getProperty("epnnrt.scp.meta.imp.outputdir"),"epnnrt_imp", Array(".epnnrt", ".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+          //  metadata.writeOutputMeta(imp_metaFile, epnNrtMetaImpTempDir,)
+          //  renameMetaFiles(epnNrtMetaImpTempDir, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+
+            metadata.writeOutputMeta(imp_metaFile, epnNrtResultMetaImpTempDir, "epnnrt_imp", Array(".epnnrt"))
+          //  metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.result.meta.imp.outputdir"), "epnnrt_imp", Array(".epnnrt"))
             //write meta file for EPN SCP job to copy result to ETL and reno
-            metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            metadata.writeOutputMeta(imp_metaFile, epnNrtScpMetaImpTempDir, "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+         //   metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
 
             logger.info("successfully write EPN NRT impression output meta to HDFS")
             metrics.meter("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
@@ -186,23 +206,6 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
           clickDf = clickDf.repartition(params.partitions)
 
-          // val enableLastViewItem = properties.getProperty("epnnrt.enablelastviewitem").toBoolean
-
-
-          /*if(enableLastViewItem) {
-            try {
-              val executor: ExecutorService = Executors.newFixedThreadPool(maxThreadNum)
-              val completionService: CompletionService[(String, String)] = new ExecutorCompletionService(executor)
-               //clickDf = clickDf.mapPartitions(lastViewItemFunc(completionService))
-              clickDf.rdd.mapPartitions(lastViewItemFunc(completionService))
-            } catch {
-              case e: Exception => {
-                logger.error("Exception while getting last view item info from bullseye" + e)
-                metrics.meter("BullsEyeError",1,timestamp)
-              }
-            }
-          }*/
-
           saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
 
           val countClickDf = readFilesAsDF(epnNrtTempDir + "/click/", schema_epn_click_table.dfSchema, "csv", "tab", false)
@@ -215,9 +218,11 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           //5. write the epn-nrt meta output file to hdfs
           val click_metaFile = new MetaFiles(Array(DateFiles(date, clickFiles)))
           try {
-            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta.click.outputdir"), "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
+            metadata.writeOutputMeta(click_metaFile, epnNrtResultMetaClickTempDir, "epnnrt_" + click, Array(".epnnrt_1", ".epnnrt_2"))
+          //  metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta.click.outputdir"), "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
             //write meta file for EPN SCP job to copy result to ETL and reno
-            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta.click.outputdir"), "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            metadata.writeOutputMeta(click_metaFile, epnNrtScpMetaClickTempDir, "epnnrt_scp_" + click, Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+           // metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta.click.outputdir"), "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
             metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
             logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
           } catch {
@@ -225,6 +230,11 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
               logger.error("Error while writing EPN NRT Click output meta files" + e)
             }
           }
+          //rename meta files
+          renameMeta(epnNrtResultMetaImpTempDir, epnNrtResultMetaImpDir)
+          renameMeta(epnNrtScpMetaImpTempDir, epnNrtScpMetaImpDir)
+          renameMeta(epnNrtResultMetaClickTempDir, epnNrtResultMetaClickDir)
+          renameMeta(epnNrtScpMetaClickTempDir, epnNrtScpMetaClickDir)
         }
       })
 
@@ -242,6 +252,20 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       if (metrics != null)
         metrics.flush()
     })
+  }
+
+  def renameMeta(srcTmpDir: String, destDir: String): Unit = {
+    val tmpPath = new Path(srcTmpDir)
+    if (fs.exists(tmpPath)) {
+      val outputStatus = fs.listStatus(tmpPath)
+      if (outputStatus.nonEmpty) {
+        outputStatus.map(status => {
+          val srcFile = status.getPath
+          val destFile = new Path(destDir + status.getPath.getName)
+          fs.rename(srcFile, destFile)
+        })
+      }
+    }
   }
 
   def renameFile(outputDir: String, sparkDir: String, date: String, prefix: String) = {
@@ -280,36 +304,6 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     if (splitted != null && splitted.nonEmpty) splitted(1)
     else throw new Exception("Invalid date field in metafile.")
   }
-
-  /*def lastViewItemFunc(completionService: CompletionService[(String, String)])(iter: Iterator[Row]): Iterator[Row] = {
-    val list = List[Row]()
-    while (iter.hasNext) {
-      var threadNum = 0
-      val r = iter.next()
-
-      while (threadNum < maxThreadNum) {
-       // completionService.submit(() => getLastViewItem(r.getAs[String]("CRLTN_GUID_TXT"), r.getAs[String]("USER_ID"), r.getAs[String]("CLICK_TS")))
-        completionService.submit(new Callable[(String, String)] {
-          override def call(): (String, String) = BullseyeUtils.getLastViewItem2(r.getAs[String]("CRLTN_GUID_TXT"), getTimeStamp(r.getAs[String]("CLICK_TS")))
-        })
-        threadNum = threadNum + 1
-      }
-      var received = 0
-      while (received < threadNum) {
-        val res = completionService.take().get()
-        received = received + 1
-        fixLastViewItem(res._1, res._2, r.getAs[String]("CRLTN_GUID_TXT"))
-      }
-    }
-    list.iterator
-  }*/
-
-  //update last_view_item_id and last_view_item_ts column
-/*  def fixLastViewItem(cguid: String, lstVitm: String, lstItmStmp: String): Unit = {
-    /* r.getAs("LAST_VWD_ITEM_ID") = res(0)
-           r.getAs("LAST_VWD_ITEM_TS") = res(1)*/
-  }*/
-
 
   def getTimeStamp(date: String): Long = {
     try {

@@ -30,7 +30,7 @@ class TestAmsImpHourlyMinTs extends BaseFunSuite {
     val meta = new MetaFiles(Array(dateFiles))
     val outputMetaDir = workDir + "meta/EPN/output/epnnrt_scp_imp/"
     val outputMetaTmpDir = workDir + "meta/EPN/output/tmp/epnnrt_scp_imp/"
-    metadata.writeOutputMeta(meta, outputMetaTmpDir, outputMetaDir, usage, Array(metaSuffix))
+    metadata.writeOutputMeta(meta, outputMetaDir, usage, Array(metaSuffix))
 
     job.run()
     job.stop()
