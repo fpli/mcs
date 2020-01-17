@@ -458,15 +458,15 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         }
       } catch {
         case e: ArrayIndexOutOfBoundsException => {
-          logger.error("Error query parameters " + uri + " " + param + e)
+          logger.error("Error query parameters " + uri + " param=" + param + e)
           return ""
         }
         case e: NullPointerException => {
-          logger.error("Error query parameters " + uri + " " + param + e)
+          logger.error("Error query parameters " + uri + " param=" + param + e)
           return ""
         }
         case e: IllegalArgumentException => {
-          logger.error("Error URLDecoder param " + uri + " " + param + e)
+          logger.error("Error URLDecoder param " + uri + " param=" + param + e)
           return ""
         }
       }
@@ -489,7 +489,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         return empty
       }
       case e: NumberFormatException => {
-        logger.error(rotationId + " is invalid " + e)
+        logger.error("RotationId " + rotationId + " is not accepted " + e)
         return empty
       }
     }
@@ -555,9 +555,11 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       var pos = 0
       var flag = true
       var break = false
+
       var i = 0
       var j = arr.length - 1
       var res = ""
+
       while (flag) {
         while (i < arr.length && !Character.isDigit(arr(i))) {
           i = i + 1
@@ -574,13 +576,16 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           }
         }
       }
+
       val resArr = res.toCharArray
+
       for (i <- resArr.indices) {
         if (!Character.isDigit(resArr(i)))
           break = true
         if (Character.isDigit(resArr(i)) && !break)
           pos = pos + 1
       }
+
       try {
         return res.substring(0, pos)
       } catch {
@@ -1063,10 +1068,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
 
-  private val status_enum = "status_enum"
-
-  private val ams_publisher_id = "ams_publisher_id"
-
   def batchGetPublisherStatus(list: Array[String]): HashMap[String, String] = {
     var res = new HashMap[String, String]
     val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
@@ -1080,8 +1081,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         }).toList.toBlocking.single
       for (i <- 0 until jsonDocuments.size()) {
         val jsonString = String.valueOf(
-          "{\"" + ams_publisher_id + "\":\"" + jsonDocuments.get(i).content().get(ams_publisher_id) + "\"," +
-            "\"application_" + status_enum + "\":" + "\"" + jsonDocuments.get(i).content().get("application_" + status_enum) + "\"" + "}")
+          "{\"ams_publisher_id\":\"" + jsonDocuments.get(i).content().get("ams_publisher_id") + "\"," +
+            "\"application_status_enum\":" + "\"" + jsonDocuments.get(i).content().get("application_status_enum") + "\"" + "}")
         val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
         // val publisherInfo = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherInfo])
         val publisherInfo = new Gson().fromJson(jsonObj, classOf[PublisherInfo])
@@ -1121,7 +1122,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         //val campaign_sts = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherCampaignInfo])
         val jsonString = String.valueOf(
           "{\"ams_publisher_campaign_id\":\"" + jsonDocuments.get(i).content().get("ams_publisher_campaign_id") + "\"," +
-            "\"" + status_enum + "\":" + "\"" + jsonDocuments.get(i).content().get(status_enum) + "\"" + "}")
+            "\"status_enum\":" + "\"" + jsonDocuments.get(i).content().get("status_enum") + "\"" + "}")
         val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
         val campaign_sts = new Gson().fromJson(jsonObj, classOf[PublisherCampaignInfo])
         if (campaign_sts != null)
@@ -1160,8 +1161,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         // val progPubMap = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[ProgPubMapInfo])
         val jsonString = String.valueOf(
           "{\"ams_program_id\":\"" + jsonDocuments.get(i).content().get("ams_program_id") + "\"," +
-            "\"" + ams_publisher_id + "\":\"" + jsonDocuments.get(i).content().get(ams_publisher_id) + "\"," +
-            "\"" + status_enum + "\":" + "\"" + jsonDocuments.get(i).content().get(status_enum) + "\"" + "}")
+            "\"ams_publisher_id\":\"" + jsonDocuments.get(i).content().get("ams_publisher_id") + "\"," +
+            "\"status_enum\":" + "\"" + jsonDocuments.get(i).content().get("status_enum") + "\"" + "}")
         val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
         val progPubMap = new Gson().fromJson(jsonObj, classOf[ProgPubMapInfo])
 
@@ -1202,10 +1203,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         var objectList: ListBuffer[PubAdvClickFilterMapInfo] = ListBuffer.empty[PubAdvClickFilterMapInfo]
         for (j <- 0 until jsonArrayDocuments.get(i).content().size()) {
           val jsonString = String.valueOf(
-            "{\"" + ams_publisher_id + "\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get(ams_publisher_id) + "\"," +
+            "{\"ams_publisher_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_publisher_id") + "\"," +
               "\"ams_advertiser_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_advertiser_id") + "\"," +
               "\"ams_clk_fltr_type_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_clk_fltr_type_id") + "\"," +
-              "\"" + status_enum + "\":" + "\"" + jsonArrayDocuments.get(i).content().getObject(j).get(status_enum) + "\"" + "}")
+              "\"status_enum\":" + "\"" + jsonArrayDocuments.get(i).content().getObject(j).get("status_enum") + "\"" + "}")
           val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
           // objectList += new Gson().fromJson(String.valueOf(jsonArrayDocuments.get(i).content().get(j)), classOf[PubAdvClickFilterMapInfo])
           objectList += new Gson().fromJson(jsonObj, classOf[PubAdvClickFilterMapInfo])
@@ -1245,10 +1246,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         for (j <- 0 until jsonArrayDocuments.get(i).content().size()) {
           // objectList += new Gson().fromJson(String.valueOf(jsonArrayDocuments.get(i).content().get(j)), classOf[PubDomainInfo])
           val jsonString = String.valueOf(
-            "{\"" + ams_publisher_id + "\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get(ams_publisher_id) + "\"," +
+            "{\"ams_publisher_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_publisher_id") + "\"," +
               "\"url_domain\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("url_domain") + "\"," +
-              "\"whitelist_" + status_enum + "\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("whitelist_" + status_enum) + "\"," +
-              "\"domain_" + status_enum + "\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("domain_" + status_enum) + "\"," +
+              "\"whitelist_status_enum\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("whitelist_status_enum") + "\"," +
+              "\"domain_status_enum\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("domain_status_enum") + "\"," +
               "\"is_registered\":" + "\"" + jsonArrayDocuments.get(i).content().getObject(j).get("is_registered") + "\"" + "}")
           val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
           objectList += new Gson().fromJson(String.valueOf(jsonObj), classOf[PubDomainInfo])
