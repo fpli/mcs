@@ -233,7 +233,7 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
   }
 
   def verifyEpnDetails(df: DataFrame, outputPath: String) = {
-//
+
   }
 
   def verifyEpn() = {
