@@ -7,7 +7,7 @@
 
     <groupId>com.ebay.traffic</groupId>
     <artifactId>AlertingAggrate-tool</artifactId>
-    <version>3.5.0-RELEASE</version>
+    <version>3.6.0-RELEASE</version>
 
     <properties>
         <scala.compat.version>2.11</scala.compat.version>
@@ -128,6 +128,12 @@
             <version>1.5</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.apache.kylin/kylin-jdbc -->
+        <dependency>
+            <groupId>org.apache.kylin</groupId>
+            <artifactId>kylin-jdbc</artifactId>
+            <version>2.1.0</version>
+        </dependency>
 
         <!-- test -->
         <dependency>

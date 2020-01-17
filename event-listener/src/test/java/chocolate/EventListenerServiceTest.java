@@ -459,4 +459,109 @@ public class EventListenerServiceTest {
       .get();
     assertEquals(200, response.getStatus());
   }
+
+  @Test
+  public void testDeeplinkResource() throws Exception {
+    String token = tokenGenerator.getToken().getAccessToken();
+
+    Event event = new Event();
+    event.setReferrer("www.google.com");
+    event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkevt%3D1%26mkrid%3D724-218635-24755-0%26mkcid%3D16%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
+
+    String endUserCtxiPhone = "deviceId=16d4662df43.ad326e0.2f050.fffd8627,deviceIdType=IDREF,userAgent=ebayUserAgent/eBayIOS;5.39.0;iOS;12.2;Apple;x86_64;no-carrier;414x896;2.0";
+
+    String tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
+            "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
+    // success request
+    // iphone
+    Response response = client.target(svcEndPoint).path(eventsPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+            .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(event));
+    assertEquals(201, response.getStatus());
+
+    //no target url in deeplink case
+    event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982");
+    response = client.target(svcEndPoint).path(eventsPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+            .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(event));
+    assertEquals(200, response.getStatus());
+    ErrorType errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4009, errorMessage.getErrorCode());
+
+    //invalid target url in deeplink case
+    event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=http%3A%2F%2Frover.ebay.com%2Frover%2F1%2F710-53481-19255-0%2F1%3Fff3%3D2");
+    response = client.target(svcEndPoint).path(eventsPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+            .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(event));
+    assertEquals(201, response.getStatus());
+
+    // no query parameter
+    event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2F");
+    response = client.target(svcEndPoint).path(eventsPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+            .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(event));
+    assertEquals(201, response.getStatus());
+
+    // no mkevt
+    event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkrid%3D724-218635-24755-0%26mkcid%3D16%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
+    response = client.target(svcEndPoint).path(eventsPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+            .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(event));
+    assertEquals(201, response.getStatus());
+
+    // invalid mkevt
+    event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkevt%3D0%26mkrid%3D724-218635-24755-0%26mkcid%3D16%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
+    response = client.target(svcEndPoint).path(eventsPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+            .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(event));
+    assertEquals(201, response.getStatus());
+
+    // no mkcid
+    // service will pass but no message to kafka
+    event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkevt%3D1%26mkrid%3D724-218635-24755-0%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
+    response = client.target(svcEndPoint).path(eventsPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+            .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(event));
+    assertEquals(201, response.getStatus());
+
+    // invalid mkcid
+    // service will pass but no message to kafka
+    event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkevt%3D1%26mkrid%3D724-218635-24755-0%26mkcid%3D99%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
+    response = client.target(svcEndPoint).path(eventsPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+            .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(event));
+    assertEquals(201, response.getStatus());
+  }
 }

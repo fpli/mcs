@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>com.ebay.raptorio.platform</groupId>
+    <artifactId>raptor-io-parent</artifactId>
+    <version>0.8.3-RELEASE</version>
+    <relativePath/> <!-- lookup parent from repository -->
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.ebay.traffic.chocolate</groupId>
+  <artifactId>OracleCouchbase</artifactId>
+  <packaging>jar</packaging>
+  <name>OracleCouchbase</name>
+  <description>Oracle Couchbase tools</description>
+
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <CodeCacheSize>512m</CodeCacheSize>
+    <encoding>UTF-8</encoding>
+    <java.version>1.8</java.version>
+    <log4j.version>1.2.17</log4j.version>
+    <curator.version>4.0.1</curator.version>
+    <couchbase.client.version>2.7.2</couchbase.client.version>
+    <dukes.version>1.5.1.raptorio</dukes.version>
+    <raptor.dal.verion>2.2.0-RELEASE</raptor.dal.verion>
+    <rheos.version>0.0.7-SNAPSHOT</rheos.version>
+    <elasticsearch.version>6.3.0</elasticsearch.version>
+    <jackson.version>2.9.5</jackson.version>
+    <jacoco.dump.skip>true</jacoco.dump.skip>
+    <gson.version>2.8.2</gson.version>
+    <scoverage.plugin.version>1.3.0</scoverage.plugin.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.couchbase.client</groupId>
+        <artifactId>java-client</artifactId>
+        <version>${couchbase.client.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.elasticsearch.client</groupId>
+        <artifactId>elasticsearch-rest-client</artifactId>
+        <version>${elasticsearch.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.elasticsearch.client</groupId>
+        <artifactId>elasticsearch-rest-high-level-client</artifactId>
+        <version>${elasticsearch.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.elasticsearch.client</groupId>
+        <artifactId>elasticsearch-rest-client-sniffer</artifactId>
+        <version>${elasticsearch.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>${log4j.version}</version>
+      </dependency>
+
+      <!-- test -->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.12</version>
+        <scope>test</scope>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-ginger-client-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-ginger-server-starter</artifactId>
+    </dependency>
+    <!--eBay Core-->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-esams-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-hystrix-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-metadata-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-qualys-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-trustfabric-client-starter</artifactId>
+    </dependency>
+    <!--eBay Operational-->
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-cal-client-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-componentstatus-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-configbean-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-initializer-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-jersey-operational-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-jmx-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-logger-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-mcf-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-opentracing-cal-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-opentracing-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-perfmon-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-telemetry-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-tomcat-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-troubleshooting-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-validateinternals-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-micrometer-starter</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-dal-starter</artifactId>
+    </dependency>
+    <!--Third Party-->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jersey</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-config</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes</artifactId>
+      <version>${dukes.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.couchbase.client</groupId>
+      <artifactId>java-client</artifactId>
+      <version>${couchbase.client.version}</version>
+    </dependency>
+    <!-- Test -->
+    <dependency>
+      <groupId>com.couchbase.mock</groupId>
+      <artifactId>CouchbaseMock</artifactId>
+      <version>1.5.12</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.5</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.elasticsearch.client</groupId>
+      <artifactId>elasticsearch-rest-client</artifactId>
+      <version>6.3.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.traffic.chocolate</groupId>
+      <artifactId>metrics-common</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>c3p0</groupId>
+      <artifactId>c3p0</artifactId>
+      <version>0.9.1.2</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-csv -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>1.5</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.5.1</version>
+          <configuration>
+            <encoding>${encoding}</encoding>
+            <compilerVersion>${java.version}</compilerVersion>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+            <optimize>true</optimize>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>2.4.3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.0.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>2.19.1</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+
+      <!-- raptor.io plugin -->
+      <plugin>
+        <groupId>com.ebay.raptor.build</groupId>
+        <artifactId>raptorconfig-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.ebay.raptor.build</groupId>
+        <artifactId>assembler-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.ebay.raptor.build</groupId>
+        <artifactId>maven-content-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.7.9</version>
+        <executions>
+
+          <!-- Configure Jacoco for unit tests. -->
+          <execution>
+            <id>pre-unit-test</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <configuration>
+              <append>true</append>
+              <destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
+              <propertyName>surefireArgLine</propertyName>
+            </configuration>
+          </execution>
+
+          <!-- Set reporting for Jacoco unit tests. -->
+          <execution>
+            <id>post-unit-test</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <append>true</append>
+              <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
+              <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
+            </configuration>
+          </execution>
+
+          <!-- Configure Jacoco for integrity tests. -->
+          <execution>
+            <id>pre-integration-test</id>
+            <goals>
+              <goal>prepare-agent-integration</goal>
+            </goals>
+            <configuration>
+              <append>true</append>
+              <destFile>${project.build.directory}/coverage-reports/jacoco-it.exec</destFile>
+              <propertyName>failsafeArgLine</propertyName>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>dump</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>dump</goal>
+            </goals>
+            <configuration>
+              <append>true</append>
+              <destFile>${project.build.directory}/coverage-reports/jacoco-it.exec</destFile>
+              <skip>${jacoco.dump.skip}</skip>
+            </configuration>
+          </execution>
+
+          <!-- Set reporting for Jacoco integrity tests. -->
+          <execution>
+            <id>it-report</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <append>true</append>
+              <dataFile>${project.build.directory}/coverage-reports/jacoco-it.exec</dataFile>
+              <outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
+            </configuration>
+          </execution>
+
+          <!-- Merge the data file of Jacoco integrity + unit tests. -->
+          <execution>
+            <id>merge-results</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>merge</goal>
+            </goals>
+            <configuration>
+              <fileSets>
+                <fileSet>
+                  <directory>${project.build.directory}/coverage-reports</directory>
+                  <includes>
+                    <include>*.exec</include>
+                  </includes>
+                </fileSet>
+              </fileSets>
+              <destFile>${project.build.directory}/coverage-reports/aggregate.exec</destFile>
+            </configuration>
+          </execution>
+
+          <!-- Set reporting for Jacoco merged data. -->
+          <execution>
+            <id>post-merge-report</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <dataFile>${project.build.directory}/coverage-reports/aggregate.exec</dataFile>
+              <outputDirectory>${project.reporting.outputDirectory}/jacoco-aggregate</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <!-- Sets the path to the file which contains the execution data. -->
+          <append>true</append>
+          <dataFile>${basedir}/target/jacoco-unit.exe</dataFile>
+          <destFile>${basedir}/target/jacoco-unit.exe</destFile>
+          <propertyName>surefireArgLine</propertyName>
+          <excludes>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+
+  </build>
+
+</project>
