@@ -39,7 +39,7 @@ public class AdserviceService {
     ESMetrics.init(ApplicationOptions.getInstance().getByNameString(METRICS_INDEX_PREFIX), ApplicationOptions
       .getInstance().getByNameString(ELASTICSEARCH_URL));
     ApplicationOptions options = ApplicationOptions.getInstance();
-    ThirdpartyWhitelistCache.init(thirdpartyWhitelistRepo);
+//    ThirdpartyWhitelistCache.init(thirdpartyWhitelistRepo);
 
   }
 
