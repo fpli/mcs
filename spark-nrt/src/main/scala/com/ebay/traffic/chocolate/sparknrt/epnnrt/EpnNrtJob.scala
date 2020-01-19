@@ -187,9 +187,11 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           //  metadata.writeOutputMeta(imp_metaFile, epnNrtMetaImpTempDir,)
           //  renameMetaFiles(epnNrtMetaImpTempDir, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
 
+            deleteMetaTmpDir(epnNrtResultMetaImpTempDir)
             metadata.writeOutputMeta(imp_metaFile, epnNrtResultMetaImpTempDir, "epnnrt_imp", Array(".epnnrt"))
           //  metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.result.meta.imp.outputdir"), "epnnrt_imp", Array(".epnnrt"))
             //write meta file for EPN SCP job to copy result to ETL and reno
+            deleteMetaTmpDir(epnNrtScpMetaImpTempDir)
             metadata.writeOutputMeta(imp_metaFile, epnNrtScpMetaImpTempDir, "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
          //   metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
 
@@ -218,10 +220,12 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           //5. write the epn-nrt meta output file to hdfs
           val click_metaFile = new MetaFiles(Array(DateFiles(date, clickFiles)))
           try {
-            metadata.writeOutputMeta(click_metaFile, epnNrtResultMetaClickTempDir, "epnnrt_" + click, Array(".epnnrt_1", ".epnnrt_2"))
+            deleteMetaTmpDir(epnNrtResultMetaClickTempDir)
+            metadata.writeOutputMeta(click_metaFile, epnNrtResultMetaClickTempDir, "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
           //  metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta.click.outputdir"), "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
             //write meta file for EPN SCP job to copy result to ETL and reno
-            metadata.writeOutputMeta(click_metaFile, epnNrtScpMetaClickTempDir, "epnnrt_scp_" + click, Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            deleteMetaTmpDir(epnNrtScpMetaClickTempDir)
+            metadata.writeOutputMeta(click_metaFile, epnNrtScpMetaClickTempDir, "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
            // metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta.click.outputdir"), "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
             metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
             logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
@@ -252,6 +256,14 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       if (metrics != null)
         metrics.flush()
     })
+  }
+
+  def deleteMetaTmpDir(tmpDir: String): Unit = {
+    val tmpPath = new Path(tmpDir)
+    if (fs.exists(tmpPath)) {
+      fs.delete(tmpPath, true)
+    }
+    fs.mkdirs(tmpPath)
   }
 
   def renameMeta(srcTmpDir: String, destDir: String): Unit = {
