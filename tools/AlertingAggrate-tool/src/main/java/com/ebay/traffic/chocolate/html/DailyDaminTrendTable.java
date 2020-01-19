@@ -7,7 +7,7 @@ import java.util.List;
 public class DailyDaminTrendTable {
 
   public static String parseProject(List<DailyDomainTrend> dailyDomainTrends) {
-    String html = getTtile("Epn AMS_CLICK_RFRNG_DMN report (from cholate hdfs)") + getHeader();
+    String html = getTtile("Epn AMS_CLICK_RFRNG_DMN report (from hercules-lvs hdfs)") + getHeader();
 
     for (DailyDomainTrend dailyDomainTrend : dailyDomainTrends) {
       html = html + getBodyLine(dailyDomainTrend);

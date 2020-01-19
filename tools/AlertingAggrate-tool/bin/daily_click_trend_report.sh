@@ -7,7 +7,7 @@ DRIVER_MEMORY=6g
 EXECUTOR_NUMBER=40
 EXECUTOR_MEMORY=8g
 EXECUTOR_CORES=5
-SPARK_HOME=/datashare/mkttracking/tools/apache/spark
+SPARK_HOME=/datashare/mkttracking/tools/hercules_lvs/spark-hercules/
 FILES=/datashare/mkttracking/tools/AlertingAggrate-tool/conf/df_epn_click.json
 
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -mkdir hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE
