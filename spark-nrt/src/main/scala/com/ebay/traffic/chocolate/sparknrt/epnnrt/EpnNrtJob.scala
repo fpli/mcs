@@ -55,12 +55,6 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     properties
   }
 
-/*    var properties: Properties = {
-    val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
-    properties
-  }*/
-
   @transient lazy val metadata: Metadata = {
     val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
     Metadata(params.workDir, ChannelType.EPN.toString, usage)
@@ -181,7 +175,16 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           val imp_files = renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
           val imp_metaFile = new MetaFiles(Array(DateFiles(date, imp_files)))
 
-          try {
+          retry(3) {
+            deleteMetaTmpDir(epnNrtResultMetaImpTempDir)
+            metadata.writeOutputMeta(imp_metaFile, epnNrtResultMetaImpTempDir, "epnnrt_imp", Array(".epnnrt"))
+            deleteMetaTmpDir(epnNrtScpMetaImpTempDir)
+            metadata.writeOutputMeta(imp_metaFile, epnNrtScpMetaImpTempDir, "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            logger.info("successfully write EPN NRT impression output meta to HDFS")
+            metrics.meter("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
+          }
+
+         /* try {
 
            // metadata.writeOutputMeta(imp_metaFile, epnNrtMetaImpTempDir, properties.getProperty("epnnrt.scp.meta.imp.outputdir"),"epnnrt_imp", Array(".epnnrt", ".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
           //  metadata.writeOutputMeta(imp_metaFile, epnNrtMetaImpTempDir,)
@@ -202,7 +205,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
             case e: Exception => {
               logger.error("Error while writing EPN NRT impression output meta files" + e)
             }
-          }
+          }*/
 
           //4. build click dataframe  save dataframe to files and rename files
           var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
@@ -219,7 +222,16 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
           //5. write the epn-nrt meta output file to hdfs
           val click_metaFile = new MetaFiles(Array(DateFiles(date, clickFiles)))
-          try {
+
+          retry(3) {
+            deleteMetaTmpDir(epnNrtResultMetaClickTempDir)
+            metadata.writeOutputMeta(click_metaFile, epnNrtResultMetaClickTempDir, "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
+            deleteMetaTmpDir(epnNrtScpMetaClickTempDir)
+            metadata.writeOutputMeta(click_metaFile, epnNrtScpMetaClickTempDir, "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
+            logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
+          }
+          /*try {
             deleteMetaTmpDir(epnNrtResultMetaClickTempDir)
             metadata.writeOutputMeta(click_metaFile, epnNrtResultMetaClickTempDir, "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
           //  metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta.click.outputdir"), "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
@@ -233,7 +245,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
             case e: Exception => {
               logger.error("Error while writing EPN NRT Click output meta files" + e)
             }
-          }
+          }*/
           //rename meta files
           renameMeta(epnNrtResultMetaImpTempDir, epnNrtResultMetaImpDir)
           renameMeta(epnNrtScpMetaImpTempDir, epnNrtScpMetaImpDir)
@@ -277,6 +289,16 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           fs.rename(srcFile, destFile)
         })
       }
+    }
+  }
+
+  def retry[T](n: Int)(fn: => T): T = {
+    try {
+      fn
+    } catch {
+      case e =>
+        if (n > 1) retry(n - 1)(fn)
+        else throw e
     }
   }
 
