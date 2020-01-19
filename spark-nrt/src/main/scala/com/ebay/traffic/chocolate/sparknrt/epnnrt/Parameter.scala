@@ -45,9 +45,9 @@ object Parameter {
       .valueName("filterTime")
       .action((cont, param) => param.copy(filterTime = cont))
 
-    opt[String]("outPutDir")
+    opt[String]("outputDir")
       .required
-      .valueName("outPutDir")
+      .valueName("outputDir")
       .action((cont, param) => param.copy(outputDir = cont))
   }
 
