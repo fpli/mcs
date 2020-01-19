@@ -26,7 +26,7 @@ object EpnNrtJob extends App {
 
 class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, params.mode) {
 
- lazy val outputDir = params.outPutDir
+ lazy val outputDir = params.outputDir
   lazy val workDir = params.workDir
   lazy val epnNrtTempDir = outputDir + "/tmp/"
   // meta tmp dir
