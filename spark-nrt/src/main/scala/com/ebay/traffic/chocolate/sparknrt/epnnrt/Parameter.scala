@@ -9,7 +9,7 @@ case class Parameter(appName: String = "epnnrt",
                      workDir: String = "",
                      resourceDir: String = "",
                      filterTime: String = "",
-                     outPutDir: String = "/apps/epn-nrt")
+                     outputDir: String = "/apps/epn-nrt")
 
 object Parameter {
   private lazy val parser = new OptionParser[Parameter]("epnnrt") {
@@ -48,7 +48,7 @@ object Parameter {
     opt[String]("outPutDir")
       .required
       .valueName("outPutDir")
-      .action((cont, param) => param.copy(outPutDir = cont))
+      .action((cont, param) => param.copy(outputDir = cont))
   }
 
   def apply(args: Array[String]): Parameter = parser.parse(args, Parameter()) match {

@@ -49,4 +49,4 @@ ${SPARK_HOME}/bin/spark-submit \
       --workDir "${WORK_DIR}" \
       --resourceDir ${RESOURCE_DIR}\
       --filterTime ${FILTER_TIME} \
-      --outPutDir ${OUTPUT_DIR}
+      --outputDir ${OUTPUT_DIR}
