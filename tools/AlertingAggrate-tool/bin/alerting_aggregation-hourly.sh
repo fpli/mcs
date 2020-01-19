@@ -17,6 +17,21 @@ rm /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_click_count/*.c
 mv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_click_count/part-*.csv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_click_count/hourlyClickCount.csv
 echo "end getting epn report data."
 
+echo "Start getting epn hourly file from apollo-rno and hercules-lvs."
+DATE4=`date --date= +%Y-%m-%d`
+DATE5=`date --date="1 days ago" +%Y-%m-%d`
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -ls viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt/click/click_dt=$DATE4 | grep -v "^$" | awk '{print $7, $8}' > /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_monitor_epn/today/file-apollorno-list.csv
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -ls viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt/click/click_dt=$DATE5 | grep -v "^$" | awk '{print $7, $8}' > /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_monitor_epn/yesterday/file-apollorno-list.csv
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -ls hdfs://hercules/sys/edw/imk/im_tracking/epn/ams_click/snapshot/click_dt=$DATE4 | grep -v "^$" | awk '{print $7, $8}' > /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_monitor_epn/today/file-herculeslvs-list.csv
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -ls hdfs://hercules/sys/edw/imk/im_tracking/epn/ams_click/snapshot/click_dt=$DATE5 | grep -v "^$" | awk '{print $7, $8}' > /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_monitor_epn/yesterday/file-herculeslvs-list.csv
+DATE6=`date --date= +%Y%m%d`
+DATE7=`date --date="1 days ago" +%Y%m%d`
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -ls viewfs://apollo-rno/apps/b_marketing_tracking/watch/$DATE6 | grep -v "^$" | awk '{print $8}' | grep "ams_click_hourly" > /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_monitor_epn/today/donefile-apollorno-list.csv
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -ls viewfs://apollo-rno/apps/b_marketing_tracking/watch/$DATE7 | grep -v "^$" | awk '{print $8}' | grep "ams_click_hourly" > /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_monitor_epn/yesterday/donefile-apollorno-list.csv
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -ls hdfs://hercules/apps/b_marketing_tracking/watch/$DATE6 | grep -v "^$" | awk '{print $8}' | grep "ams_click_hourly" > /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_monitor_epn/today/donefile-herculeslvs-list.csv
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -ls hdfs://hercules/apps/b_marketing_tracking/watch/$DATE7 | grep -v "^$" | awk '{print $8}' | grep "ams_click_hourly" > /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_monitor_epn/yesterday/donefile-herculeslvs-list.csv
+echo "end getting epn hourly file from apollo-rno and hercules-lvs."
+
 echo "Start getting imk hourly count."
 filePath=/datashare/mkttracking/tools/AlertingAggrate-tool/temp/imk_hourly_count/
 rm -r /datashare/mkttracking/tools/AlertingAggrate-tool/temp/imk_hourly_count/*
