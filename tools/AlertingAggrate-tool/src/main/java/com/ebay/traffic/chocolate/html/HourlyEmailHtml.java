@@ -72,4 +72,8 @@ public class HourlyEmailHtml {
     }
   }
 
+  public static String getHourlyEPNClusterFileVerifyHtml() {
+    return "Hourly EPN cluster file verify alert\n" + HourlyEPNClusterFileVerifyTable.parseHourlyEPNClusterFileVerifyProject(HourlyEPNClusterFileVerifyUtil.getHourlyEPNClusterFileVerifyInfos());
+  }
+
 }
