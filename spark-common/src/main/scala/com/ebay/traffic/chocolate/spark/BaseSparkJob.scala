@@ -118,15 +118,16 @@ abstract class BaseSparkJob(val jobName: String,
 
   /**
     * Convert string array of row fields to DataFrame row
-    * according to the table schema.
+    * according to the table schema. Ignore invalid row.
     *
     * @param values string array of row fields
     * @param schema dataframe schema
     * @return dataframe row
     */
   def toDfRow(values: Array[String], schema: StructType): Row = {
-    require(values.length == schema.fields.length
-      || values.length == schema.fields.length + 1)
+    if (values.length != schema.fields.length) {
+      return null
+    }
     convertToDfRow(values, schema)
   }
 
@@ -205,11 +206,11 @@ abstract class BaseSparkJob(val jobName: String,
         .option("delimiter", delimiterMap(delimiter))
         .schema(schema)
         .load(inputPaths: _*)
-//      case "csv" => {oTools.scala
-//        spark.createDataFrame(sc.textFile(inputPaths.mkString(","))
-//          .map(asRow(_, delimiterMap(delimiter)))
-//          .map(toDfRow(_, schema)).filter(_ != null), schema)
-//      }
+      case "csv2" => {
+        spark.createDataFrame(sc.textFile(inputPaths.mkString(","))
+          .map(asRow(_, delimiterMap(delimiter)))
+          .map(toDfRow(_, schema)).filter(_ != null), schema)
+      }
       case "sequence" => {
         spark.createDataFrame(sc.sequenceFile[String, String](inputPaths.mkString(","))
           .values.map(asRow(_, delimiterMap(delimiter)))
