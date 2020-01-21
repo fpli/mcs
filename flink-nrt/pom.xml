@@ -5,7 +5,7 @@
     <parent>
         <artifactId>chocolate</artifactId>
         <groupId>com.ebay.traffic</groupId>
-        <version>3.5.0-RELEASE</version>
+        <version>3.6.0-RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -232,40 +232,7 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>src/main/scala</sourceDirectory>
-        <testSourceDirectory>src/test/scala</testSourceDirectory>
-        <outputDirectory>target/classes</outputDirectory>
-        <testOutputDirectory>${project.basedir}/target/test-classes</testOutputDirectory>
-        <resources>
-            <resource>
-                <directory>${project.basedir}/src/main/resources</directory>
-            </resource>
-        </resources>
-
         <plugins>
-            <plugin>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest-maven-plugin</artifactId>
-                <version>1.0</version>
-                <configuration>
-                    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-                    <junitxml>.</junitxml>
-                    <filereports>WDF TestSuite.txt</filereports>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>test</id>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>io.ebay.rheos.streaming</groupId>
-                <artifactId>job-uploader-maven-plugin</artifactId>
-                <version>1.0.1-SNAPSHOT</version>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -299,16 +266,15 @@
                                     <shadedPattern>182.org.apache.avro</shadedPattern>
                                 </relocation>
                             </relocations>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.ebay.traffic.chocolate.flink.nrt.app.TransformApp</mainClass>
-                                </transformer>
-                            </transformers>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-            <!--scoverage-placehoder-dont-remove-->
+            <plugin>
+                <groupId>io.ebay.rheos.streaming</groupId>
+                <artifactId>job-uploader-maven-plugin</artifactId>
+                <version>1.0.1-SNAPSHOT</version>
+            </plugin>
         </plugins>
     </build>
 
