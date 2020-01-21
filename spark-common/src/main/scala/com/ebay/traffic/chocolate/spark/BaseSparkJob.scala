@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.spark
 
+import java.sql.{Date, Timestamp}
+
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
@@ -146,6 +148,8 @@ abstract class BaseSparkJob(val jobName: String,
             case _: DoubleType => e._1.trim.toDouble
             case _: ByteType => e._1.trim.toByte
             case _: BooleanType => e._1.trim.toBoolean
+            case _: DateType => Date.valueOf(e._1.trim)
+            case _: TimestampType => Timestamp.valueOf(e._1.trim)
           }
         }
       }): _*)
