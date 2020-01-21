@@ -1,7 +1,11 @@
 package com.ebay.traffic.chocolate.flink.nrt.util;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class PropertyMgr {
@@ -37,6 +41,20 @@ public class PropertyMgr {
       throw new RuntimeException(e);
     }
     return prop;
+  }
+
+  public List<String> loadAllLines(String propertyName) {
+    List<String> allLines = new ArrayList<>();
+    try (InputStream in = getClass().getClassLoader().getResourceAsStream(propertyEnv.name() + "/" + propertyName);
+         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in))) {
+      String line;
+      while ((line = bufferedReader.readLine()) != null) {
+        allLines.add(line);
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return allLines;
   }
 
 }

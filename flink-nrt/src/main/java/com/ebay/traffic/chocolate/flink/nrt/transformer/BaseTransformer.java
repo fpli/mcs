@@ -6,6 +6,7 @@ import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.FlatMessage;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
+import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import com.google.common.base.CaseFormat;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
@@ -15,13 +16,9 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -29,7 +26,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 public class BaseTransformer {
   public static final String GET_METHOD_PREFIX = "get";
@@ -41,11 +37,8 @@ public class BaseTransformer {
 
   private static final Map<String, Integer> MFE_NAME_ID_MAP = new HashMap<String, Integer>() {
     {
-      try (Stream<String> stream = Files.lines(Paths.get(getClass().getClassLoader().getResource("mfe_name_id_map.txt").toURI()))) {
-        stream.map(line -> line.split("\\|")).forEach(split -> put(split[0], Integer.valueOf(split[1])));
-      } catch (IOException | URISyntaxException e) {
-        // TODO
-      }
+      PropertyMgr.getInstance().loadAllLines("mfe_name_id_map.txt").stream()
+              .map(line -> line.split("\\|")).forEach(split -> put(split[0], Integer.valueOf(split[1])));
     }
   };
 
