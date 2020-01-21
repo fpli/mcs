@@ -231,7 +231,7 @@ public class CollectionService {
     //only accept the url when referrer domain belongs to ebay sites
     Matcher deeplinkMatcher = deeplinksites.matcher(targetUrl.toLowerCase());
     if (deeplinkMatcher.find()) {
-      metrics.meter("SocialAppDeepLink");
+      metrics.meter("IncomingSocialAppDeepLink");
 
       UriComponents deeplinkUriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
       if (deeplinkUriComponents == null) {
@@ -257,7 +257,7 @@ public class CollectionService {
       Matcher deeplinkEbaySitesMatcher = deeplinkEbaySites.matcher(deeplinkTargetUrl.toLowerCase());
       if (deeplinkEbaySitesMatcher.find()) {
         targetUrl = deeplinkTargetUrl;
-        metrics.meter("SocialAppDeepLinkSuccess");
+        metrics.meter("IncomingSocialAppDeepLinkSuccess");
       } else {
         logger.warn(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
         metrics.meter(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
