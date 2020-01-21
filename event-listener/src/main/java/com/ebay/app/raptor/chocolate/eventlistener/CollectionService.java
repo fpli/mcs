@@ -250,7 +250,7 @@ public class CollectionService {
           deeplinkTargetUrl = URLDecoder.decode(deeplinkTargetUrl, "UTF-8");
         }
       } catch (Exception ex) {
-        ESMetrics.getInstance().meter("DecodeDeepLinkTargetUrlError");
+        metrics.meter("DecodeDeepLinkTargetUrlError");
         logger.warn("Decode deeplink target url error.");
       }
 
