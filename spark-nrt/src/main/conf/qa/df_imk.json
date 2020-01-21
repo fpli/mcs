@@ -24,7 +24,7 @@
     },
     {
       "name": "event_dt",
-      "dataType": "date",
+      "dataType": "string",
       "default": ""
     },
     {
@@ -249,7 +249,7 @@
     },
     {
       "name": "event_ts",
-      "dataType": "timestamp",
+      "dataType": "string",
       "default": ""
     },
     {

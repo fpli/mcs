@@ -56,7 +56,7 @@ class TestCrabTransformJob extends BaseFunSuite{
       val date = datesFile._1
       val df = job.readFilesAsDFEx(datesFile._2, job.schema_tfs.dfSchema, "csv2", "bel")
           .filter(_.getAs[Long]("rvr_id") != null)
-      assert(df.count() ==  3)
+      assert(df.count() ==  4)
     })
     job.stop()
   }
