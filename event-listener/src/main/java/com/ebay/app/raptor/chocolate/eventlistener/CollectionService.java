@@ -227,10 +227,12 @@ public class CollectionService {
     // targetUrl is from post body
     String targetUrl = event.getTargetUrl();
 
-    //XC-1797, for app deeplink case, extract and decode actual target url from referrer parameter in targetUrl
+    //XC-1797, for social app deeplink case, extract and decode actual target url from referrer parameter in targetUrl
     //only accept the url when referrer domain belongs to ebay sites
     Matcher deeplinkMatcher = deeplinksites.matcher(targetUrl.toLowerCase());
     if (deeplinkMatcher.find()) {
+      metrics.meter("IncomingSocialAppDeepLink");
+
       UriComponents deeplinkUriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
       if (deeplinkUriComponents == null) {
         logError(Errors.ERROR_ILLEGAL_URL);
@@ -248,13 +250,14 @@ public class CollectionService {
           deeplinkTargetUrl = URLDecoder.decode(deeplinkTargetUrl, "UTF-8");
         }
       } catch (Exception ex) {
-        ESMetrics.getInstance().meter("DecodeDeepLinkTargetUrlError");
+        metrics.meter("DecodeDeepLinkTargetUrlError");
         logger.warn("Decode deeplink target url error.");
       }
 
       Matcher deeplinkEbaySitesMatcher = deeplinkEbaySites.matcher(deeplinkTargetUrl.toLowerCase());
       if (deeplinkEbaySitesMatcher.find()) {
         targetUrl = deeplinkTargetUrl;
+        metrics.meter("IncomingSocialAppDeepLinkSuccess");
       } else {
         logger.warn(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
         metrics.meter(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
