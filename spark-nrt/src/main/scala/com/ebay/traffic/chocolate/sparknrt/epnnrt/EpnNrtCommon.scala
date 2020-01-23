@@ -37,7 +37,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   lazy val xidConnectTimeout: Int = properties.getProperty("xid.xidConnectTimeout").toInt
   lazy val xidReadTimeout: Int = properties.getProperty("xid.xidReadTimeout").toInt
 
-  lazy val roversites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE)
+  lazy val ebaysites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE)
 
   val cbData = asyncCouchbaseGet(df)
 
@@ -1291,7 +1291,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     * @return channel id
     */
   def getRelatedInfoFromUri(uri: String, index: Int, key: String): String = {
-    if (uri != null && !roversites.matcher(uri.toLowerCase()).find()) {
+    if (uri != null && ebaysites.matcher(uri.toLowerCase()).find()) {
       return getQueryParam(uri, key)
     } else {
       val path = new URL(uri).getPath()

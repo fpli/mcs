@@ -29,7 +29,7 @@ public class FilterRequest {
     private long publisherId = 0;
     private HttpMethod protocol = null;
 
-    private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
+    private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
 
 
     /**
@@ -62,7 +62,7 @@ public class FilterRequest {
          * For epn long term case, no Cookie in request headers, use cguid as requestCguid
          *
          */
-        if (message.getUri() != null && !roversites.matcher(message.getUri().toLowerCase()).find()) {
+        if (message.getUri() != null && ebaysites.matcher(message.getUri().toLowerCase()).find()) {
             this.requestCguid = message.getCguid();
             this.requestCguidTimestamp = parseTimestampFromCguid(this.requestCguid);
         }
