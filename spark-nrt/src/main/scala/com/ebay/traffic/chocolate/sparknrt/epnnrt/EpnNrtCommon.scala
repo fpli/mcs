@@ -317,8 +317,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   /**
     * get landing page from responseHeader or landingPageUrl
-    * for rover uri, get landing page url from responseHeader
-    * for mcs uri, use landingPageUrl as landing page url
+    * For normal rover uri, parse landing page url name from response_headers
+    * For the missing mobile clicks which are sent through mcs, get landing page url name from landing_page_url
+    * For mcs uri, get landing page url name from landing_page_url
     * @param responseHeader, landingPageUrl
     * @return landingPageUrlName
     */
