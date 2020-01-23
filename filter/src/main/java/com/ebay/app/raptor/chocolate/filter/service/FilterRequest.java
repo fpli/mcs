@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * FilterContainer-internal representation of the filterable event.
@@ -27,6 +28,9 @@ public class FilterRequest {
     private long campaignId = 0;
     private long publisherId = 0;
     private HttpMethod protocol = null;
+
+    private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
+
 
     /**
      * Default constructor for testing
@@ -52,6 +56,15 @@ public class FilterRequest {
                 this.requestCguid = parseCguidFromCookie(item.getValue());
                 this.requestCguidTimestamp = parseTimestampFromCguid(this.requestCguid);
             }
+        }
+
+        /**
+         * For epn long term case, no Cookie in request headers, use cguid as requestCguid
+         *
+         */
+        if (message.getUri() != null && ebaysites.matcher(message.getUri().toLowerCase()).find()) {
+            this.requestCguid = message.getCguid();
+            this.requestCguidTimestamp = parseTimestampFromCguid(this.requestCguid);
         }
 
         this.referrerDomain = getDomainName(message.getReferer());

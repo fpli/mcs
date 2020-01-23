@@ -24,6 +24,8 @@ public class Errors {
   public static final String ERROR_INVALID_MKCID = "Invalid mkcid.";
   public static final String ERROR_NO_MKRID = "No mkrid.";
   public static final String ERROR_INVALID_MKRID = "Invalid mkrid.";
+  public static final String ERROR_NO_MKSID = "No mksid.";
+  public static final String ERROR_INVALID_MKSID = "Invalid mksid.";
   public static final String ERROR_CONTENT = "mktCollectionSvcErrorContent";
   public static final String ERROR_DOMAIN = "marketingTrackingDomain";
 

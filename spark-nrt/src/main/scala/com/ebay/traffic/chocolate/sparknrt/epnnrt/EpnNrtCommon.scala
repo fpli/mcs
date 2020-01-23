@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt
 import java.net.{MalformedURLException, URISyntaxException, URL, URLDecoder}
 import java.text.SimpleDateFormat
 import java.util.Properties
+import java.util.regex.Pattern
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
@@ -35,6 +36,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   lazy val xidClientId: String = properties.getProperty("xid.xidClientId")
   lazy val xidConnectTimeout: Int = properties.getProperty("xid.xidConnectTimeout").toInt
   lazy val xidReadTimeout: Int = properties.getProperty("xid.xidReadTimeout").toInt
+
+  lazy val ebaysites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE)
 
   val cbData = asyncCouchbaseGet(df)
 
@@ -221,7 +224,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val getRefererHostUdf = udf((referer: String) => getRefererURLAndDomain(referer, true))
   val getDateTimeUdf = udf((timestamp: Long) => getDateTimeFromTimestamp(timestamp, "yyyy-MM-dd HH:mm:ss.SSS"))
   val getcbcatUdf = udf((url: String) => getQueryParam(url, "cb_cat"))
-  val get_ams_advertise_id_Udf = udf((uri: String) => getPrgrmIdAdvrtsrIdFromAMSClick(getRoverUriInfo(uri, 3)))
+  val get_ams_advertise_id_Udf = udf((uri: String) => getPrgrmIdAdvrtsrIdFromAMSClick(getRelatedInfoFromUri(uri, 3, "mkrid")))
   val get_ams_prgrm_id_Udf = udf((uri: String) => getAMSProgramId(uri))
   val get_cb_ex_kw_Udf = udf((url: String) => getQueryParam(url, "cb_ex_kw"))
   val get_cb_ex_cat_Udf = udf((url: String) => getQueryParam(url, "cb_ex_cat"))
@@ -241,12 +244,12 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_seller_udf = udf((uri: String) => getQueryParam(uri, "icep_sellerId"))
   val get_browser_type_udf = udf((user_agent: String) => getBrowserType(user_agent))
   val get_filter_yn_ind_udf = udf((rt_rule_flag: Long, nrt_rule_flag: Long, action: String) => getFilter_Yn_Ind(rt_rule_flag, nrt_rule_flag, action))
-  val get_page_id_udf = udf((landingPage: String, uri: String) => getPageIdByLandingPage(landingPage, getRoverUriInfo(uri, 3)))
-  val get_roi_rule_value_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13), getRuleFlag(rt_rule_flags, 4))._1)
-  val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13), getRuleFlag(rt_rule_flags, 4))._2)
-  val get_ams_clk_fltr_type_id_udf = udf((publisherId: String, uri: String) => getclickFilterTypeId(publisherId, getRoverUriInfo(uri, 3)))
-  val get_click_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("click", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
-  val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("impression", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
+  val get_page_id_udf = udf((landingPage: String, uri: String) => getPageIdByLandingPage(landingPage, getRelatedInfoFromUri(uri, 3, "mkrid")))
+  val get_roi_rule_value_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRelatedInfoFromUri(uri, 3, "mkrid"), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13), getRuleFlag(rt_rule_flags, 4))._1)
+  val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRelatedInfoFromUri(uri, 3, "mkrid"), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13), getRuleFlag(rt_rule_flags, 4))._2)
+  val get_ams_clk_fltr_type_id_udf = udf((publisherId: String, uri: String) => getclickFilterTypeId(publisherId, getRelatedInfoFromUri(uri, 3, "mkrid")))
+  val get_click_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("click", getRelatedInfoFromUri(uri, 3, "mkrid"), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
+  val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("impression", getRelatedInfoFromUri(uri, 3, "mkrid"), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
   val get_google_fltr_do_flag_udf = udf((referer: String, publisherId: String) => getGoogleFltrDoFlag(getRefererURLAndDomain(referer, true), publisherId))
   val get_lnd_page_url_name_udf = udf((responseHeader: String, landingPageUrl: String) => getLndPageUrlName(responseHeader, landingPageUrl))
   val get_IcepFlexFld_udf = udf((uri: String, key: String) => getIcepFlexFld(uri, key))
@@ -262,6 +265,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val filter_specific_pub_udf = udf((referer: String, publisher: String) => filter_specific_pub(referer, publisher))
 
   val getUserIdUdf = udf((userId: String, cguid: String) => getUserIdByCguid(userId, cguid))
+  val getRelatedInfoFromUriUdf = udf((uri: String, index: Int, key: String) => getRelatedInfoFromUri(uri, index, key))
+  val getChannelIdUdf = udf((channelType: String) => getChannelId(channelType))
 
   def filter_specific_pub(referer: String, publisher: String): Int = {
     if (publisher.equals("5574651234") && getRefererURLAndDomain(referer, true).endsWith(".bid"))
@@ -270,7 +275,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getAMSProgramId(uri: String): Int = {
-    val pair = getPrgrmIdAdvrtsrIdFromAMSClick(getRoverUriInfo(uri, 3))
+    val pair = getPrgrmIdAdvrtsrIdFromAMSClick(getRelatedInfoFromUri(uri, 3, "mkrid"))
     if (pair(0).equals("-999")) {
       logger.error("Error in parsing the ams_program_id from URL: " + uri)
       return 0
@@ -310,8 +315,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     df.format(timestamp)
   }
 
-  //For normal clicks, parse landing page url name from response_headers
-  //For the missing mobile clicks which are sent through mcs, get landing page url name from landing_page_url
+  /**
+    * get landing page from responseHeader or landingPageUrl
+    * For normal rover uri, parse landing page url name from response_headers
+    * For the missing mobile clicks which are sent through mcs, get landing page url name from landing_page_url
+    * For mcs uri, get landing page url name from landing_page_url
+    * @param responseHeader, landingPageUrl
+    * @return landingPageUrlName
+    */
   def getLndPageUrlName(responseHeader: String, landingPageUrl: String): String = {
     if (landingPageUrl == null || landingPageUrl.equalsIgnoreCase("")) {
       val location = getValueFromRequest(responseHeader, "Location")
@@ -1271,5 +1282,44 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
     CorpCouchbaseClient.returnClient(cacheClient)
     res
+  }
+
+  /**
+    * get related info from uri, like rotation_id and so on
+    * for rover uri, get related info from rover.ebay.com/.../
+    * for mcs uri, get related info from query params
+    * @param uri, index, key
+    * @return channel id
+    */
+  def getRelatedInfoFromUri(uri: String, index: Int, key: String): String = {
+    if (uri != null && ebaysites.matcher(uri.toLowerCase()).find()) {
+      return getQueryParam(uri, key)
+    } else {
+      val path = new URL(uri).getPath()
+      if (path != null && path != "" && index >= 0 && index <= 4) {
+        val pathArray = path.split("/")
+        if (pathArray.length == 5)
+          return pathArray(index)
+      }
+    }
+    ""
+  }
+
+  /**
+    * get channel id from channel type
+    * @param channelType channel type
+    * @return channel id
+    */
+  def getChannelId(channelType: String): String = {
+    channelType match {
+      case "EPN" => "1"
+      case "DISPLAY" => "4"
+      case "PAID_SEARCH" => "2"
+      case "SOCIAL_MEDIA" => "16"
+      case "PAID_SOCIAL" => "20"
+      case "ROI" => "0"
+      case "NATURAL_SEARCH" => "3"
+      case _ => "0"
+    }
   }
 }

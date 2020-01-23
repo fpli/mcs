@@ -373,4 +373,17 @@ class TestEpnNrtCommon extends BaseFunSuite{
     assert(res == 1)
   }
 
+  test("test rotation id from uri") {
+    val roverUri = "http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1"
+    val mcsUri = "https://www.ebay.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556"
+    val roverRotation = epnNrtCommon.getRelatedInfoFromUri(roverUri, 3, "mkrid")
+    val mcsRotation = epnNrtCommon.getRelatedInfoFromUri(mcsUri, 3, "mkrid")
+    assert(roverRotation == "711-53200-19255-0")
+    assert(mcsRotation == "4080-157294-765411-6")
+  }
+
+  test("test get channel id from channel type") {
+    assert(epnNrtCommon.getChannelId("EPN") == "1" )
+  }
+
 }
