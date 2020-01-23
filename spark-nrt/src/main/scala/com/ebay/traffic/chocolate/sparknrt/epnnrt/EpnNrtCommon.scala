@@ -37,7 +37,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   lazy val xidConnectTimeout: Int = properties.getProperty("xid.xidConnectTimeout").toInt
   lazy val xidReadTimeout: Int = properties.getProperty("xid.xidReadTimeout").toInt
 
-  lazy val roversites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?(rover\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE)
+  lazy val roversites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE)
 
   val cbData = asyncCouchbaseGet(df)
 

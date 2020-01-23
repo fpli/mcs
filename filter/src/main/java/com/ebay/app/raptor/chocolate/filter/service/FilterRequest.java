@@ -29,7 +29,7 @@ public class FilterRequest {
     private long publisherId = 0;
     private HttpMethod protocol = null;
 
-    private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?(rover\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
+    private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
 
 
     /**
