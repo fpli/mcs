@@ -292,7 +292,7 @@ public class RoverRheosTopicFilterTask extends Thread {
           // get landingPageUrl from applicationPayload.url_mpre
           String landingPageUrl = coalesce(applicationPayload.get(new Utf8("url_mpre")), empty).toString();
           try {
-            if(landingPageUrl.startsWith("https%3A%2F%2") || landingPageUrl.startsWith("http%3A%2F%2")) {
+            if(landingPageUrl.startsWith("https%3A%2F%2F") || landingPageUrl.startsWith("http%3A%2F%2F")) {
               landingPageUrl = URLDecoder.decode(landingPageUrl, "UTF-8");
             }
           } catch (Exception ex) {

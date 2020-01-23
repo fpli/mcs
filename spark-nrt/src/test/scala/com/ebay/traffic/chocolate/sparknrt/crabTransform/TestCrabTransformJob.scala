@@ -31,22 +31,37 @@ class TestCrabTransformJob extends BaseFunSuite{
     createTestData()
   }
 
+  val args = Array(
+    "--mode", "local[8]",
+    "--channel", "crabDedupe",
+    "--transformedPrefix", "chocolate_",
+    "--workDir", workDir,
+    "--outputDir", outPutDir,
+    "--joinKeyword", "true",
+    "--kwDataDir", kwDataDir,
+    "--compressOutPut", "false",
+    "--maxMetaFiles", "2",
+    "--elasticsearchUrl", "http://10.148.181.34:9200",
+    "--metaFile", "dedupe",
+    "--hdfsUri", "",
+    "--xidParallelNum", "2"
+  )
+
+  test ("Test crabTransform Input") {
+    val params = Parameter(args)
+    val job = new CrabTransformJob(params)
+    var crabTransformMeta = job.metadata.readDedupeOutputMeta()
+    val metas = job.mergeMetaFiles(crabTransformMeta)
+    metas.foreach(f = datesFile => {
+      val date = datesFile._1
+      val df = job.readFilesAsDFEx(datesFile._2, job.schema_tfs.dfSchema, "csv2", "bel")
+          .filter(_.getAs[Long]("rvr_id") != null)
+      assert(df.count() ==  4)
+    })
+    job.stop()
+  }
+
   test("Test crabTransformJob") {
-    val args = Array(
-      "--mode", "local[8]",
-      "--channel", "crabDedupe",
-      "--transformedPrefix", "chocolate_",
-      "--workDir", workDir,
-      "--outputDir", outPutDir,
-      "--joinKeyword", "true",
-      "--kwDataDir", kwDataDir,
-      "--compressOutPut", "false",
-      "--maxMetaFiles", "2",
-      "--elasticsearchUrl", "http://10.148.181.34:9200",
-      "--metaFile", "dedupe",
-      "--hdfsUri", "",
-      "--xidParallelNum", "2"
-    )
     val params = Parameter(args)
     val job = new CrabTransformJob(params)
     // prepare keyword lookup data

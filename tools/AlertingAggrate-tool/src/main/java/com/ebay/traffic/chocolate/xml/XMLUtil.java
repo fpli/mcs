@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.xml;
 
+import com.ebay.traffic.chocolate.pojo.Azkaban;
 import com.ebay.traffic.chocolate.pojo.Metric;
 import com.ebay.traffic.chocolate.pojo.Project;
 import org.dom4j.Document;
@@ -57,6 +58,37 @@ public class XMLUtil {
     }
 
     return projectList;
+  }
+
+  public static HashMap<String, ArrayList<Azkaban>> readAzkabanMap(String fileName) {
+    HashMap<String, ArrayList<Azkaban>> map = new HashMap<>();
+
+    SAXReader reader = new SAXReader();
+    try {
+      Document document = reader.read(new File(fileName));
+      Element projects = document.getRootElement();
+      Iterator it = projects.elementIterator();
+      while (it.hasNext()) {
+        ArrayList<Azkaban> list = new ArrayList<>();
+        Element project = (Element) it.next();
+        String subjectArea = project.attribute("name").getValue();
+        List<Element> metrics = project.elements("metric");
+        for (Element elem : metrics) {
+          Azkaban azkaban = new Azkaban();
+          azkaban.setSubjectArea(subjectArea);
+          azkaban.setProjectName(elem.attribute("projectName").getValue());
+          azkaban.setFlowName(elem.attribute("flowName").getValue());
+          azkaban.setTotal(elem.attribute("total").getValue());
+          azkaban.setAlertCount(elem.attribute("alertCount").getValue());
+          list.add(azkaban);
+        }
+        map.put(subjectArea, list);
+      }
+    } catch (DocumentException e) {
+      e.printStackTrace();
+    }
+
+    return map;
   }
 
   private static String getCondition(String condition) {

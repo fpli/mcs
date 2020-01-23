@@ -7,7 +7,7 @@
     <parent>
         <artifactId>tools</artifactId>
         <groupId>com.ebay.traffic</groupId>
-        <version>3.5.0-RELEASE</version>
+        <version>3.6.0-RELEASE</version>
     </parent>
 
     <groupId>com.ebay.traffic</groupId>

@@ -19,6 +19,7 @@ public class Constants {
   public static final String PLATFORM_UNKNOWN = "UNKNOWN";
 
   public static final String MKRVRID = "mkrvrid";
+  public static final String REFERRER = "referrer";
 
   // CRM url params
   public static final String SOJ_TAGS = "sojTags";

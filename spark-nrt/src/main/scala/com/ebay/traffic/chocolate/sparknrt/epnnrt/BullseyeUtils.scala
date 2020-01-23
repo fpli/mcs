@@ -4,7 +4,7 @@ import java.sql.Timestamp
 import java.util.Properties
 
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
-import com.google.gson.{JsonArray, JsonElement, JsonParser}
+import com.google.gson.JsonParser
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.slf4j.LoggerFactory
 import scalaj.http.{Http, HttpResponse}
@@ -114,12 +114,38 @@ object BullseyeUtils {
             val list = new JsonParser().parse(responseBody).getAsJsonArray.get(0).getAsJsonObject.get("results").
               getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
             if (list.size() > 0) {
-              return getLastViewItemTuple(list, timestamp)
+              for (i <- 0 until list.size()) {
+                var item_id = list.get(i).getAsJsonObject.get("item_id").toString
+                if (!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong) {
+                  item_id = item_id.replace("\"", "")
+                  val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
+                  metrics.meter("SuccessfulGet", 1)
+                  return (item_id, date)
+                }
+              }
             }
           } else {
             //for multiple response results
-            val maxLastViwTime = getLastViewItemTupleForMultiple(result_list, timestamp, responseBody)._1
-            val itemId = getLastViewItemTupleForMultiple(result_list, timestamp, responseBody)._2
+            var maxLastViwTime = Long.MinValue
+            var itemId = ""
+            for (i <- 0 until result_list.size()) {
+              val list = new JsonParser().parse(responseBody).getAsJsonArray.get(i).getAsJsonObject.get("results").
+                getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
+              if (list.size() > 0) {
+                import util.control.Breaks._
+                breakable {
+                  for (i <- 0 until list.size()) {
+                    val item_Id = list.get(i).getAsJsonObject.get("item_id").toString
+                    val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
+                    if (!item_Id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong && lastViewTime > maxLastViwTime) {
+                      itemId = item_Id.replace("\"", "")
+                      maxLastViwTime = lastViewTime
+                      break()
+                    }
+                  }
+                }
+              }
+            }
             if (maxLastViwTime > 0) {
               metrics.meter("SuccessfulGet", 1)
               return (itemId, new Timestamp(maxLastViwTime).toString)
@@ -135,48 +161,6 @@ object BullseyeUtils {
     }
   }
 
-  def getLastViewItemTuple(list: JsonArray, timestamp: String): (String, String) = {
-    for (i <- 0 until list.size()) {
-      var item_id = list.get(i).getAsJsonObject.get("item_id").toString
-      if (!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong) {
-        item_id = item_id.replace("\"", "")
-        val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
-        metrics.meter("SuccessfulGet", 1)
-        return (item_id, date)
-      }
-    }
-    ("","")
-  }
-
-  def getLastViewItemTupleForMultiple(result_list: JsonArray, timestamp: String, responseBody: String): (Long, String) = {
-    var maxLastViwTime = Long.MinValue
-    var itemId = ""
-    //for multiple response results
-    for (i <- 0 until result_list.size()) {
-      val list = new JsonParser().parse(responseBody).getAsJsonArray.get(i).getAsJsonObject.get("results").
-        getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
-      if (list.size() > 0) {
-        import util.control.Breaks._
-        breakable {
-          for (i <- 0 until list.size()) {
-            val item_Id = list.get(i).getAsJsonObject.get("item_id").toString
-            val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
-            if (!item_Id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong && lastViewTime > maxLastViwTime) {
-              itemId = item_Id.replace("\"", "")
-              maxLastViwTime = lastViewTime
-              break()
-            }
-          }
-        }
-      }
-    }
-    (maxLastViwTime,itemId)
-  }
-
-
-
-
-
 
   // for unit test
   def getLastViewItemByResponse(timestamp: String, result: HttpResponse[String]): (String, String) = {
@@ -190,11 +174,36 @@ object BullseyeUtils {
             val list = new JsonParser().parse(responseBody).getAsJsonArray.get(0).getAsJsonObject.get("results").
               getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
             if (list.size() > 0) {
-              return getLastViewItemTuple(list, timestamp)
+              for (i <- 0 until list.size()) {
+                var item_id = list.get(i).getAsJsonObject.get("item_id").toString
+                if (!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong) {
+                  item_id = item_id.replace("\"", "")
+                  val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
+                  return (item_id, date)
+                }
+              }
             }
           } else {
-            val maxLastViwTime = getLastViewItemTupleForMultiple(result_list, timestamp, responseBody)._1
-            val itemId = getLastViewItemTupleForMultiple(result_list, timestamp, responseBody)._2
+            var maxLastViwTime = Long.MinValue
+            var itemId = ""
+            for (i <- 0 until result_list.size()) {
+              val list = new JsonParser().parse(responseBody).getAsJsonArray.get(i).getAsJsonObject.get("results").
+                getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
+              if (list.size() > 0) {
+                import util.control.Breaks._
+                breakable {
+                  for (i <- 0 until list.size()) {
+                    val item_Id = list.get(i).getAsJsonObject.get("item_id").toString
+                    val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
+                    if (!item_Id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong && lastViewTime > maxLastViwTime) {
+                      itemId = item_Id.replace("\"", "")
+                      maxLastViwTime = lastViewTime
+                      break()
+                    }
+                  }
+                }
+              }
+            }
             if (maxLastViwTime > 0) {
               return (itemId, new Timestamp(maxLastViwTime).toString)
             }

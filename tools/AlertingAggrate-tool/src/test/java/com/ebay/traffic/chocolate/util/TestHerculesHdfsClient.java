@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.util;
 
+import com.ebay.traffic.chocolate.client.HerculesHdfsClient;
 import org.junit.Assert;
 import org.junit.Test;
 
