@@ -34,6 +34,7 @@ public class HTMLParse {
     StringBuffer html = new StringBuffer();
     html.append(HourlyEmailHtml.getESAlertHtml("hourly"));
     html.append(HourlyEmailHtml.getDoneFileHtml());
+    html.append(HourlyEmailHtml.getHourlyEPNClusterFileVerifyHtml());
     html.append(HourlyEmailHtml.getRotationAlertHtml());
     html.append(HourlyEmailHtml.getEPNHourlyReportHtml());
     html.append(HourlyEmailHtml.getAzkabanReportHtml());

@@ -27,10 +27,10 @@ echo "Finish getting td data count."
 echo "Start getting epn report data."
 DATE2=`date --date= +%Y-%m-%d`
 rm /datashare/mkttracking/tools/AlertingAggrate-tool/temp/daily_click_trend/*.csv
-hdfs dfs -get hdfs://elvisha/apps/alert/epn/$DATE2/dailyClickTrend/part-*.csv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/daily_click_trend
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -get hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE2/dailyClickTrend/part-*.csv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/daily_click_trend
 mv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/daily_click_trend/part-*.csv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/daily_click_trend/dailyClickTrend.csv
 rm /datashare/mkttracking/tools/AlertingAggrate-tool/temp/daily_domain_trend/main-*.csv
-hdfs dfs -get hdfs://elvisha/apps/alert/epn/$DATE2/dailyDomainTrend/part-*.csv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/daily_domain_trend
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -get hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE2/dailyDomainTrend/part-*.csv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/daily_domain_trend
 mv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/daily_domain_trend/part-*.csv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/daily_domain_trend/dailyDomainTrend.csv
 echo "Finish getting epn report data."
 

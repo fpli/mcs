@@ -132,6 +132,7 @@ class CrabTransformJob(params: Parameter)
     metas.foreach(f = datesFile => {
       val date = datesFile._1
       var commonDf = readFilesAsDFEx(datesFile._2, schema_tfs.dfSchema, "csv", "bel")
+        .filter(_.getAs[Long]("rvr_id") != null)
         .repartition(params.xidParallelNum)
         .withColumn("item_id", getItemIdUdf(col("roi_item_id"), col("item_id")))
         .withColumn("user_id", getUserIdUdf(col("user_id"), col("cguid"), col("rvr_cmnd_type_cd")))

@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.spark
 
+import java.sql.{Date, Timestamp}
+
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
@@ -118,15 +120,16 @@ abstract class BaseSparkJob(val jobName: String,
 
   /**
     * Convert string array of row fields to DataFrame row
-    * according to the table schema.
+    * according to the table schema. Ignore invalid row.
     *
     * @param values string array of row fields
     * @param schema dataframe schema
     * @return dataframe row
     */
   def toDfRow(values: Array[String], schema: StructType): Row = {
-    require(values.length == schema.fields.length
-      || values.length == schema.fields.length + 1)
+    if (values.length != schema.fields.length) {
+      return null
+    }
     convertToDfRow(values, schema)
   }
 
@@ -145,6 +148,8 @@ abstract class BaseSparkJob(val jobName: String,
             case _: DoubleType => e._1.trim.toDouble
             case _: ByteType => e._1.trim.toByte
             case _: BooleanType => e._1.trim.toBoolean
+            case _: DateType => Date.valueOf(e._1.trim)
+            case _: TimestampType => Timestamp.valueOf(e._1.trim)
           }
         }
       }): _*)
@@ -205,11 +210,11 @@ abstract class BaseSparkJob(val jobName: String,
         .option("delimiter", delimiterMap(delimiter))
         .schema(schema)
         .load(inputPaths: _*)
-//      case "csv" => {oTools.scala
-//        spark.createDataFrame(sc.textFile(inputPaths.mkString(","))
-//          .map(asRow(_, delimiterMap(delimiter)))
-//          .map(toDfRow(_, schema)).filter(_ != null), schema)
-//      }
+      case "csv2" => {
+        spark.createDataFrame(sc.textFile(inputPaths.mkString(","))
+          .map(asRow(_, delimiterMap(delimiter)))
+          .map(toDfRow(_, schema)).filter(_ != null), schema)
+      }
       case "sequence" => {
         spark.createDataFrame(sc.sequenceFile[String, String](inputPaths.mkString(","))
           .values.map(asRow(_, delimiterMap(delimiter)))

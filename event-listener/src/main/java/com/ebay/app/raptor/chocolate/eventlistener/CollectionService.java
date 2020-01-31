@@ -231,10 +231,12 @@ public class CollectionService {
     // targetUrl is from post body
     String targetUrl = event.getTargetUrl();
 
-    //XC-1797, for app deeplink case, extract and decode actual target url from referrer parameter in targetUrl
+    //XC-1797, for social app deeplink case, extract and decode actual target url from referrer parameter in targetUrl
     //only accept the url when referrer domain belongs to ebay sites
     Matcher deeplinkMatcher = deeplinksites.matcher(targetUrl.toLowerCase());
     if (deeplinkMatcher.find()) {
+      metrics.meter("IncomingSocialAppDeepLink");
+
       UriComponents deeplinkUriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
       if (deeplinkUriComponents == null) {
         logError(Errors.ERROR_ILLEGAL_URL);
@@ -252,13 +254,14 @@ public class CollectionService {
           deeplinkTargetUrl = URLDecoder.decode(deeplinkTargetUrl, "UTF-8");
         }
       } catch (Exception ex) {
-        ESMetrics.getInstance().meter("DecodeDeepLinkTargetUrlError");
+        metrics.meter("DecodeDeepLinkTargetUrlError");
         logger.warn("Decode deeplink target url error.");
       }
 
       Matcher deeplinkEbaySitesMatcher = deeplinkEbaySites.matcher(deeplinkTargetUrl.toLowerCase());
       if (deeplinkEbaySitesMatcher.find()) {
         targetUrl = deeplinkTargetUrl;
+        metrics.meter("IncomingSocialAppDeepLinkSuccess");
       } else {
         logger.warn(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
         metrics.meter(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
@@ -587,9 +590,15 @@ public class CollectionService {
       userId = Long.toString(endUserContext.getOrigUserOracleId());
     }
 
+    // parse session id for EPN channel
+    String snid = "";
+    if (channelType == ChannelIdEnum.EPN) {
+      snid = parseSessionId(parameters);
+    }
+
     // Parse the response
     ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
-            .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, null);
+            .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, snid);
 
     // Use the shot snapshot id from requests
     if (parameters.containsKey(Constants.MKRVRID) && parameters.get(Constants.MKRVRID).get(0) != null) {
@@ -981,6 +990,26 @@ public class CollectionService {
     if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
       requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
     }
+  }
+
+  /**
+   * Parse session id from query mksid for epn channel
+   */
+  private String parseSessionId(MultiValueMap<String, String> parameters) {
+    String sessionId = "";
+    if (parameters.containsKey(Constants.MKSID) && parameters.get(Constants.MKSID).get(0) != null) {
+      try {
+        sessionId = parameters.get(Constants.MKSID).get(0);
+      } catch (Exception e) {
+        logger.warn(Errors.ERROR_INVALID_MKSID);
+        metrics.meter("InvalidMksid");
+      }
+    } else {
+      logger.warn(Errors.ERROR_NO_MKSID);
+      metrics.meter("NoMksid");
+    }
+
+    return sessionId;
   }
 
 }
