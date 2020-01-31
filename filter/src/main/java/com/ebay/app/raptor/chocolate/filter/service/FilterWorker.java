@@ -277,6 +277,8 @@ public class FilterWorker extends Thread {
       outMessage.setRtRuleFlags(rtFilterRules);
     } catch (Exception e) {
       outMessage.setRtRuleFlags(Long.valueOf(FilterRuleType.ERROR.getRuleDigitPosition()));
+      LOG.warn("Exception when execute rtFilterRules: ", e);
+      this.metrics.meter("FilterRtRulesError");
     }
     return outMessage;
   }

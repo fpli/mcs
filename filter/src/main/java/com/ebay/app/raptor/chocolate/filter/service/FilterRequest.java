@@ -223,7 +223,7 @@ public class FilterRequest {
     }
 
     private long parseTimestampFromCguid(String cguid) {
-        if (cguid == null) {
+        if (cguid == null || cguid.equals("")) {
             return 0;
         }
 
