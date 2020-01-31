@@ -74,7 +74,6 @@ public class AdserviceCookie {
           .sameSite("None")
           .httpOnly(true)
           .secure(true)
-          .path("/")
           .build();
 
       String coo = cookie.toString();
