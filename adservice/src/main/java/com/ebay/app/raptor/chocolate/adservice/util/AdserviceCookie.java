@@ -71,11 +71,13 @@ public class AdserviceCookie {
 
       ResponseCookie cookie = ResponseCookie.from(ADGUID, adguid)
           .maxAge(COOKIE_EXPIRY)
-          .path("/")
           .sameSite("None")
+          .httpOnly(true)
           .secure(true)
+          .path("/")
           .build();
 
+      String coo = cookie.toString();
       response.addHeader("Set-Cookie", cookie.toString());
     }
     return adguid;
