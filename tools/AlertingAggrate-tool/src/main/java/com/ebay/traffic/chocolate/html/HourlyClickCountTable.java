@@ -9,6 +9,10 @@ public class HourlyClickCountTable {
   public static String parseProject(List<HourlyClickCount> hourlyClickCounts) {
     String html = getTtile("Epn hourly report (from hercules-lvs hdfs)") + getHeader();
 
+    if (hourlyClickCounts == null || hourlyClickCounts.size() == 0) {
+      return html;
+    }
+
     for (HourlyClickCount hourlyClickCount : hourlyClickCounts) {
       html = html + getBodyLine(hourlyClickCount);
     }
