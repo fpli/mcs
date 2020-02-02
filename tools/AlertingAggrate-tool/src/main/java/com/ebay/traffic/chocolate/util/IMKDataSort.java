@@ -20,37 +20,42 @@ public class IMKDataSort {
     private static final Logger logger = LoggerFactory.getLogger(IMKDataSort.class);
 
     public static Map<String, List<IMKHourlyClickCount>> getHourlyClickCount(String inputPath, String[] channelList){
-        Map<String, List<IMKHourlyClickCount>> hourlyClickCountMap = new HashMap<String, List<IMKHourlyClickCount>>();
-        if(channelList.length > 0){
-            for(String channel: channelList){
-                String filePath = inputPath + "channel_name=" + channel + "/hourlyClick.csv";
-                List<IMKHourlyClickCount> clickList = getHourlyClickCountList(filePath);
-                if(clickList != null && clickList.size() > 0)
-                    hourlyClickCountMap.put(channel, clickList);
-            }
+        Map<String, List<IMKHourlyClickCount>> hourlyClickCountMap = new HashMap<>();
+        try {
+            if (channelList.length > 0) {
+                for (String channel : channelList) {
+                    String filePath = inputPath + "channel_name=" + channel + "/hourlyClick.csv";
+                    List<IMKHourlyClickCount> clickList = getHourlyClickCountList(filePath);
+                    if (clickList != null && clickList.size() > 0)
+                        hourlyClickCountMap.put(channel, clickList);
+                }
 
-            Comparator<IMKHourlyClickCount> by_count_dt = Comparator.comparing(IMKHourlyClickCount::getEvent_dt).reversed();
-            Comparator<IMKHourlyClickCount> by_click_hour = Comparator.comparing(IMKHourlyClickCount::getClick_hour).reversed();
-            Comparator<IMKHourlyClickCount> unionComparator = by_count_dt.thenComparing(by_click_hour);
+                Comparator<IMKHourlyClickCount> by_count_dt = Comparator.comparing(IMKHourlyClickCount::getEvent_dt).reversed();
+                Comparator<IMKHourlyClickCount> by_click_hour = Comparator.comparing(IMKHourlyClickCount::getClick_hour).reversed();
+                Comparator<IMKHourlyClickCount> unionComparator = by_count_dt.thenComparing(by_click_hour);
 
-            for(String channel: hourlyClickCountMap.keySet()){
-                List<IMKHourlyClickCount> result = hourlyClickCountMap.get(channel).stream().sorted(unionComparator).collect(Collectors.toList());
-                if (result.size() <= 10) {
-                    hourlyClickCountMap.put(channel, result);
-                } else {
-                    List<IMKHourlyClickCount> res = new ArrayList<>();
-                    int count = 0;
-                    for (IMKHourlyClickCount hcc : result) {
-                        count++;
-                        if (count > 10) {
-                            break;
-                        } else
-                            res.add(hcc);
+                for (String channel : hourlyClickCountMap.keySet()) {
+                    List<IMKHourlyClickCount> result = hourlyClickCountMap.get(channel).stream().sorted(unionComparator).collect(Collectors.toList());
+                    if (result.size() <= 10) {
+                        hourlyClickCountMap.put(channel, result);
+                    } else {
+                        List<IMKHourlyClickCount> res = new ArrayList<>();
+                        int count = 0;
+                        for (IMKHourlyClickCount hcc : result) {
+                            count++;
+                            if (count > 10) {
+                                break;
+                            } else
+                                res.add(hcc);
+                        }
+                        hourlyClickCountMap.put(channel, res);
                     }
-                    hourlyClickCountMap.put(channel, res);
                 }
             }
+        }catch (Exception e){
+            return hourlyClickCountMap;
         }
+
         return hourlyClickCountMap;
     }
 
@@ -64,4 +69,5 @@ public class IMKDataSort {
             return hourlyClickCountList;
         }
     }
+
 }
