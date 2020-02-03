@@ -1,7 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice.redirect;
 
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
-import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
@@ -55,7 +54,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   }
 
   @Override
-  public URI process(HttpServletRequest request, CookieReader cookie, ContainerRequestContext context)
+  public URI process(HttpServletRequest request, ContainerRequestContext context)
       throws URISyntaxException {
     MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
 
@@ -68,7 +67,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
 
     // TODO: for the direction to ebay landing page, not sending event to mcs while redirection,
     // TODO: and leverage the marketing tracking event for landing page which has mkevt
-    callMcs(request, cookie, context, parameters);
+    callMcs(request, context, parameters);
 
     return new URIBuilder(redirectionEvent.getRedirectUrl()).build();
   }
@@ -124,7 +123,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   /**
    * Generate a mcs click event and call mcs
    */
-  private void callMcs(HttpServletRequest request, CookieReader cookie, ContainerRequestContext context,
+  private void callMcs(HttpServletRequest request, ContainerRequestContext context,
                        MultiValueMap<String, String> parameters)
       throws URISyntaxException{
 
@@ -155,7 +154,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
 
     // add Commerce-OS standard header
     builder = builder.header("X-EBAY-C-ENDUSERCTX", constructEndUserContextHeader(request))
-        .header("X-EBAY-C-TRACKING", constructCookieHeader(cookie, context));
+        .header("X-EBAY-C-TRACKING", constructCookieHeader(context));
 
     // call MCS
     Response ress = builder.post(Entity.json(mktEvent));
@@ -165,8 +164,9 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   /**
    * Construct X-EBAY-C-TRACKING header with guid and cguid
    */
-  public String constructCookieHeader(CookieReader cookie, ContainerRequestContext context) {
-    String cguid = cookie.getCguid(context);
+  //TODO: read guid by adservicecookie
+  public String constructCookieHeader(ContainerRequestContext context) {
+    String cguid = "";
     if (!StringUtils.isEmpty(cguid)) {
       cguid = cguid.substring(0, Constants.CGUID_LENGTH);
     } else {
@@ -180,7 +180,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
       metrics.meter("NoCguid", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()));
     }
 
-    String guid = cookie.getGuid(context);
+    String guid = "";
     if (!StringUtils.isEmpty(guid))
       guid = guid.substring(0, Constants.CGUID_LENGTH);
     else {

@@ -4,7 +4,6 @@ package com.ebay.app.raptor.chocolate;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.util.AdserviceCookie;
-import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.ImageResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
@@ -71,9 +70,6 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
   private ContainerRequestContext requestContext;
 
   @Autowired
-  private CookieReader cookieReader;
-
-  @Autowired
   private AdserviceCookie adserviceCookie;
 
   @Autowired
@@ -113,7 +109,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
     Response res = null;
     try {
       adserviceCookie.setAdguid(request, response);
-      collectionService.collectAr(request, response, cookieReader, requestContext);
+      collectionService.collectAr(request, response, requestContext);
       res = Response.status(Response.Status.OK).build();
     } catch (Exception e) {
       try {
@@ -169,7 +165,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
 
       // construct X-EBAY-C-TRACKING header
       builder = builder.header("X-EBAY-C-TRACKING",
-          collectionService.constructTrackingHeader(requestContext, cookieReader, channelType));
+          collectionService.constructTrackingHeader(requestContext, channelType));
 
       // add uri and referer to marketing event body
       MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
@@ -204,7 +200,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
     URI redirectUri = null;
     try {
       redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
-      redirectUri = collectionService.collectRedirect(request, requestContext, cookieReader);
+      redirectUri = collectionService.collectRedirect(request, requestContext);
     } catch (Exception e) {
       // When exception happen, redirect to www.ebay.com
       logger.warn(e.getMessage(), e);
