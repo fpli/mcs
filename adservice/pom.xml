@@ -274,6 +274,13 @@
     </dependency>
 
     <dependency>
+      <groupId>com.couchbase.mock</groupId>
+      <artifactId>CouchbaseMock</artifactId>
+      <version>1.5.12</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka_2.11</artifactId>
       <exclusions>

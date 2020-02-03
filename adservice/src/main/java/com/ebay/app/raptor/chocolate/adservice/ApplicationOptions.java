@@ -1,6 +1,5 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
-import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.common.AbstractApplicationOptions;
 import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
 import com.ebay.kernel.context.RuntimeContext;
@@ -8,8 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -36,22 +33,21 @@ public class ApplicationOptions extends AbstractApplicationOptions {
   /**
    * couchbase data source
    */
-  public static final String COUCHBASE_DATASOURCE = "chocolate.adservice.couchbase.datasource";
+  static final String COUCHBASE_DATASOURCE = "chocolate.adservice.couchbase.datasource";
+
+  static final String IS_SECURE_COOKIE = "chocolate.adservice.cookie.secure";
 
   /**
    * Static driver ID
    */
   static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
 
-  private String outKafkaCluster;
-  private Map<ChannelType, String> outKafkaConfigMap = new HashMap<>();
-
   /**
    * Application options to load from internal jar
    *
    * @throws IOException if properties could not be loaded
    */
-  static void init() throws IOException {
+  public static void init() throws IOException {
     instance.initInstance(loadProperties(ADSERVICE_PROPERTIES_FILE));
   }
 
@@ -109,5 +105,9 @@ public class ApplicationOptions extends AbstractApplicationOptions {
    */
   public String getCouchbaseDatasource() {
     return ApplicationOptionsParser.getStringProperty(properties, COUCHBASE_DATASOURCE);
+  }
+
+  public boolean isSecureCookie() {
+    return Boolean.valueOf(ApplicationOptionsParser.getStringProperty(properties, IS_SECURE_COOKIE));
   }
 }

@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice.util;
 
+import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;
@@ -69,14 +70,22 @@ public class AdserviceCookie {
       metrics.meter(METRIC_SET_NEW_ADGUID);
       adguid = UUID.randomUUID().toString();
 
-      ResponseCookie cookie = ResponseCookie.from(ADGUID, adguid)
-          .maxAge(COOKIE_EXPIRY)
-          .sameSite("None")
-          .httpOnly(true)
-          .secure(true)
-          .build();
+      ResponseCookie cookie;
+      if(ApplicationOptions.getInstance().isSecureCookie()) {
+        cookie = ResponseCookie.from(ADGUID, adguid)
+            .maxAge(COOKIE_EXPIRY)
+            .sameSite("None")
+            .httpOnly(true)
+            .secure(true)
+            .build();
+      } else {
+        cookie = ResponseCookie.from(ADGUID, adguid)
+            .maxAge(COOKIE_EXPIRY)
+            .sameSite("None")
+            .httpOnly(true)
+            .build();
+      }
 
-      String coo = cookie.toString();
       response.addHeader("Set-Cookie", cookie.toString());
     }
     return adguid;
