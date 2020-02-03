@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.email;
 
-import com.ebay.traffic.chocolate.pojo.MetricCount;
-import com.ebay.traffic.chocolate.util.HTMLParse;
+import com.ebay.traffic.chocolate.parse.HTMLParse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,8 +10,6 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Properties;
 
 /**
@@ -44,31 +41,18 @@ public class SendEmail {
     return sendEmail;
   }
 
-  public void send(HashMap<String, ArrayList<MetricCount>> map) {
+  public void send() {
     if (toEmail == null || toEmail.length() < 1) {
       return;
     }
 
     String[] users = toEmail.split(",");
     for (String user : users) {
-      send(map, null, user);
+      send(user);
     }
-
   }
 
-  public void send(HashMap<String, ArrayList<MetricCount>> map, HashMap<String, ArrayList<MetricCount>> historymap) {
-    if (toEmail == null || toEmail.length() < 1) {
-      return;
-    }
-
-    String[] users = toEmail.split(",");
-    for (String user : users) {
-      send(map, historymap, user);
-    }
-
-  }
-
-  public void send(HashMap<String, ArrayList<MetricCount>> map, HashMap<String, ArrayList<MetricCount>> historymap, String emailAccount) {
+  public void send(String emailAccount) {
 
     // sender email address
     String from = "dl-ebay-performance-marketing-oncall@ebay.com";
@@ -91,23 +75,29 @@ public class SendEmail {
 
       // Set To: header
       message.addRecipient(Message.RecipientType.TO,
-              new InternetAddress(emailAccount));
+        new InternetAddress(emailAccount));
 
       // Set Subject: header
-      if(runPeriod.equalsIgnoreCase("daily")) {
-        message.setSubject("Daily report for tracking! " + date);
-      }else if(runPeriod.equalsIgnoreCase("hourly")){
-        message.setSubject("Hourly report for tracking! " + time);
+      switch (runPeriod) {
+        case "daily":
+          message.setSubject("Daily report for tracking (Chocolate team)! " + date);
+          break;
+        case "hourly":
+          message.setSubject("Hourly report for tracking (Chocolate team)! " + time);
+          break;
+        default:
+          message.setSubject("Wrong email message" + time);
+          break;
       }
 
       // set message entity
-      message.setContent(HTMLParse.parse(map, historymap, runPeriod), "text/html");
+      message.setContent(HTMLParse.parse(runPeriod), "text/html");
 
-      // send message
+      logger.info("Start to sent message to: " + emailAccount);
       Transport.send(message);
-      System.out.println("Sent message successfully....");
+      logger.info("Sent message to: " + emailAccount + " successfully.");
     } catch (MessagingException mex) {
-      mex.printStackTrace();
+      logger.info(mex.getMessage());
     }
   }
 

@@ -11,6 +11,7 @@ public class Constants {
   public static final String MKEVT = "mkevt";
   public static final String VALID_MKEVT_CLICK = "1";
   public static final String CAMPID = "campid";
+  public static final String MKSID = "mksid";
   public static final String PLATFORM_NATIVE_APP = "nativeApp";
   public static final String PLATFORM_TABLET = "tablet";
   public static final String PLATFORM_MOBILE = "mobile";
@@ -19,6 +20,7 @@ public class Constants {
   public static final String RVRID = "rvrid";
 
   public static final String MKRVRID = "mkrvrid";
+  public static final String REFERRER = "referrer";
 
   // CRM url params
   public static final String SOJ_TAGS = "sojTags";
@@ -35,5 +37,5 @@ public class Constants {
   // Adobe url params
   public static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   public static final String REDIRECT_SRC_SOJ_SOURCE = "adcamp_locationsrc";
-
+  public static final String ADOBE_CAMP_PUBLIC_USER_ID = "pu";
 }

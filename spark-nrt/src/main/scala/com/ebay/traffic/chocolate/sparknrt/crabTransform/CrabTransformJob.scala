@@ -11,7 +11,9 @@ import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.compress.GzipCodec
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.scheduler.{SparkListener, SparkListenerTaskEnd}
+import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, lit, udf, _}
 import scalaj.http.Http
@@ -116,10 +118,21 @@ class CrabTransformJob(params: Parameter)
 
     val partitions = crabTransformMeta.length
 
+//    // add listener on task end to flush metrics
+//    spark.sparkContext.addSparkListener(new SparkListener() {
+//      override def onTaskEnd(taskEnd: SparkListenerTaskEnd) = {
+//        if (metrics != null) {
+//          metrics.flush()
+//          metrics.close()
+//        }
+//      }
+//    })
+
     val metas = mergeMetaFiles(crabTransformMeta)
     metas.foreach(f = datesFile => {
       val date = datesFile._1
       var commonDf = readFilesAsDFEx(datesFile._2, schema_tfs.dfSchema, "csv", "bel")
+        .filter(_.getAs[Long]("rvr_id") != null)
         .repartition(params.xidParallelNum)
         .withColumn("item_id", getItemIdUdf(col("roi_item_id"), col("item_id")))
         .withColumn("user_id", getUserIdUdf(col("user_id"), col("cguid"), col("rvr_cmnd_type_cd")))
@@ -136,6 +149,16 @@ class CrabTransformJob(params: Parameter)
       })
       schema_apollo_mg.filterNotColumns(commonDf.columns).foreach(e => {
         commonDf = commonDf.withColumn(e, lit(schema_apollo_mg.defaultValues(e)))
+      })
+
+      // flush metrics for tasks
+      import org.apache.spark.sql.catalyst.encoders.RowEncoder
+      implicit val encoder: ExpressionEncoder[Row] = RowEncoder(commonDf.schema)
+      commonDf = commonDf.mapPartitions((iter: Iterator[Row]) => {
+        if (metrics != null) {
+          metrics.flush()
+        }
+        iter
       })
 
       if (joinKeyword) {
@@ -355,7 +378,7 @@ class CrabTransformJob(params: Parameter)
   }
 
   def getMgvalueRsnCd(mgvaluereason: String): String = {
-    if ("BOT".equalsIgnoreCase(mgvaluereason)) {
+    if ("4".equalsIgnoreCase(mgvaluereason) || "BOT".equalsIgnoreCase(mgvaluereason)) {
       "4"
     } else {
       ""

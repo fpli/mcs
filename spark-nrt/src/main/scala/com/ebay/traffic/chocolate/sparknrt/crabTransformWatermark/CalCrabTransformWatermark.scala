@@ -120,22 +120,6 @@ class CalCrabTransformWatermark(params: Parameter)
     ZonedDateTime.parse(watermark, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault()))
   }
 
-  /**
-   * Convert string array of row fields to DataFrame row
-   * according to the table schema, ignore invalid line
-   *
-   * @param values string array of row fields
-   * @param schema dataframe schema
-   * @return dataframe row
-   */
-  override def toDfRow(values: Array[String], schema: StructType): Row = {
-    if (values.length != schema.fields.length) {
-      metrics.meter("invalidValueLength")
-      return null
-    }
-    convertToDfRow(values, schema)
-  }
-
   def getKafkaWatermark: Array[(String, ZonedDateTime)] = {
     params.channels.split(",").map(channel => {
       (channel, lvsFs.listStatus(new Path(dedupeAndSinkKafkaLagDir + "/" + channel))
