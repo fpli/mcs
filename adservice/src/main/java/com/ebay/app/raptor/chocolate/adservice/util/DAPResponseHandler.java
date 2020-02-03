@@ -82,13 +82,13 @@ public class DAPResponseHandler {
           BullseyeConstants.FEEDBACK_SCORE
   );
 
-  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, CookieReader cookieReader, ContainerRequestContext requestContext)
+  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext)
           throws URISyntaxException {
     long dapRvrId = getDAPRvrId();
     Map<String, String[]> params = request.getParameterMap();
-    String cguid = getCguid(cookieReader, requestContext);
-    String guid = getGuid(cookieReader, requestContext);
-    String accountId = getAccountId(cookieReader, requestContext);
+    String cguid = getCguid(requestContext);
+    String guid = getGuid(requestContext);
+    String accountId = getAccountId(requestContext);
     String udid = getUdid(params);
     Map<String, String> userAttributes = getUserAttributes(cguid);
     String referrer = request.getHeader(Constants.REFERER);
@@ -267,8 +267,8 @@ public class DAPResponseHandler {
    * Currently, we can only get cguid from cookie.
    */
   @SuppressWarnings("unchecked")
-  private String getCguid(CookieReader cookieReader, ContainerRequestContext requestContext) {
-    String readerCguid = cookieReader.getCguid(requestContext);
+  private String getCguid(ContainerRequestContext requestContext) {
+    String readerCguid = "";
     if (StringUtils.isEmpty(readerCguid)) {
       ESMetrics.getInstance().meter("NoCguid", 1, Field.of(Constants.CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()));
       return null;
@@ -284,8 +284,8 @@ public class DAPResponseHandler {
    * Currently, we can only get guid from cookie.
    */
   @SuppressWarnings("unchecked")
-  private String getGuid(CookieReader cookieReader, ContainerRequestContext requestContext) {
-    String readerGuid = cookieReader.getGuid(requestContext);
+  private String getGuid(ContainerRequestContext requestContext) {
+    String readerGuid = "";
     if (StringUtils.isEmpty(readerGuid)) {
       ESMetrics.getInstance().meter("NoGuid", 1, Field.of(Constants.CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()));
       return null;
@@ -309,8 +309,8 @@ public class DAPResponseHandler {
    * Currently, we can only get account id from cookie.
    */
   @SuppressWarnings("unchecked")
-  private String getAccountId(CookieReader cookieReader, ContainerRequestContext requestContext) {
-    String accountId = cookieReader.getAccountId(requestContext);
+  private String getAccountId(ContainerRequestContext requestContext) {
+    String accountId = "";
     if (StringUtils.isEmpty(accountId)) {
       ESMetrics.getInstance().meter("NoAccountId", 1, Field.of(Constants.CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()));
       return null;

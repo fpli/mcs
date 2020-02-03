@@ -3,7 +3,6 @@ package com.ebay.app.raptor.chocolate.adservice;
 import com.ebay.app.raptor.chocolate.adservice.redirect.AdobeRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.redirect.RedirectContext;
 import com.ebay.app.raptor.chocolate.adservice.redirect.ThirdpartyRedirectStrategy;
-import com.ebay.app.raptor.chocolate.adservice.util.CookieReader;
 import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
@@ -59,18 +58,19 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public boolean collectAr(HttpServletRequest request, HttpServletResponse response, CookieReader cookieReader,
+  public boolean collectAr(HttpServletRequest request, HttpServletResponse response,
                            ContainerRequestContext requestContext) throws Exception {
-    dapResponseHandler.sendDAPResponse(request, response, cookieReader, requestContext);
+    dapResponseHandler.sendDAPResponse(request, response, requestContext);
     return true;
   }
 
   // construct X-EBAY-C-TRACKING header for mcs to send ubi event
   // guid is mandatory, if guid is null, create a guid
-  public String constructTrackingHeader(ContainerRequestContext requestContext, CookieReader cookieReader,
+  //TODO: read guid by adservicecookie
+  public String constructTrackingHeader(ContainerRequestContext requestContext,
                                         String channelType) {
     String cookie = "";
-    String rawGuid = cookieReader.getGuid(requestContext);
+    String rawGuid = "";
     if (!StringUtils.isEmpty(rawGuid))
       cookie += "guid=" + rawGuid.substring(0,Constants.GUID_LENGTH);
     else {
@@ -84,7 +84,7 @@ public class CollectionService {
       metrics.meter("NoGuid", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
     }
 
-    String rawCguid = cookieReader.getCguid(requestContext);
+    String rawCguid = "";
     if (!StringUtils.isEmpty(rawCguid))
       cookie += ",cguid=" + rawCguid.substring(0,Constants.CGUID_LENGTH);
     else {
@@ -101,14 +101,13 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public URI collectRedirect(HttpServletRequest request, ContainerRequestContext requestContext,
-                             CookieReader cookieReader) throws Exception {
+  public URI collectRedirect(HttpServletRequest request, ContainerRequestContext requestContext) throws Exception {
 
     // verify the request
     MultiValueMap<String, String> parameters = verifyAndParseRequest(request);
 
     // execute redirect Strategy
-    return executeRedirectStrategy(request, getParam(parameters, Constants.PARTNER_ID), requestContext, cookieReader);
+    return executeRedirectStrategy(request, getParam(parameters, Constants.PARTNER_ID), requestContext);
   }
 
   /**
@@ -145,8 +144,7 @@ public class CollectionService {
   /**
    * Send redirect response by Strategy Pattern
    */
-  private URI executeRedirectStrategy(HttpServletRequest request, String partnerId, ContainerRequestContext context,
-                                      CookieReader cookie) throws URISyntaxException{
+  private URI executeRedirectStrategy(HttpServletRequest request, String partnerId, ContainerRequestContext context) throws URISyntaxException{
     RedirectContext redirectContext;
     if (Constants.ADOBE_PARTNER_ID.equals(partnerId)) {
       redirectContext = new RedirectContext(new AdobeRedirectStrategy());
@@ -155,7 +153,7 @@ public class CollectionService {
     }
 
     try {
-      return redirectContext.execute(request, cookie, context);
+      return redirectContext.execute(request, context);
     } catch (Exception e) {
       metrics.meter("RedirectionRuntimeError");
       logger.warn("Redirection runtime error: ", e);
