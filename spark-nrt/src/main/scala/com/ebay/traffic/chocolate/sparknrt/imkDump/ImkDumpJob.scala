@@ -395,14 +395,14 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getMgvaluereasonUdf: UserDefinedFunction = udf((brwsrName: String, clntRemoteIp: String) => getMgvaluereason(brwsrName, clntRemoteIp))
 
   /**
-    * Generate mgvaluereason, "BOT" or empty string
+    * Generate mgvaluereason, "4" or empty string, "4" means BOT
     * @param brwsrName alias for user agent
     * @param clntRemoteIp alias for remote ip
-    * @return "BOT" or empty string
+    * @return "4" or empty string
     */
   def getMgvaluereason(brwsrName: String, clntRemoteIp: String): String = {
     if (isBotByUserAgent(brwsrName) || isBotByIp(clntRemoteIp)) {
-      "BOT"
+      "4"
     } else {
       ""
     }

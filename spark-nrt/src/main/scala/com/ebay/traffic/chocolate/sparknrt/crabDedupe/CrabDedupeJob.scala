@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.crabDedupe
 
 import java.net.URI
-import java.time.format.DateTimeFormatter
+import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import java.time.{ZoneId, ZonedDateTime}
 
 import com.couchbase.client.java.document.JsonDocument
@@ -108,10 +108,10 @@ class CrabDedupeJob(params: Parameter)
 
     val lag =  df.agg(min(df.col("event_ts"))).head().getString(0)
 
-    if (!StringUtils.isEmpty(lag)) {
-      val time = ZonedDateTime.parse(lag, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault()))
+    val minEventDateTime = toDateTime(lag)
+    if (minEventDateTime.isDefined) {
       val output = lvsFs.create(new Path(LAG_FILE), true)
-      output.writeBytes(time.toInstant.toEpochMilli.toString)
+      output.writeBytes(minEventDateTime.get.toInstant.toEpochMilli.toString)
       output.close()
     }
 
@@ -142,6 +142,28 @@ class CrabDedupeJob(params: Parameter)
     if(metrics != null) {
       metrics.flush()
       metrics.close()
+    }
+  }
+
+  /**
+   * Convert datetime string to ZoneDateTime
+   * @param dateTimeStr datetime string
+   * @return ZoneDateTime or None if the dateTimeStr format is wrong
+   */
+  def toDateTime(dateTimeStr: String): Option[ZonedDateTime] = {
+    if (StringUtils.isEmpty(dateTimeStr)) {
+      logger.warn("event_ts is empty")
+      metrics.meter("crab.dedupe.InvalidEventTs")
+      return None
+    }
+    try{
+      Some(ZonedDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault())))
+    } catch {
+      case _: DateTimeParseException => {
+        logger.warn("invalid event_ts {}", dateTimeStr)
+        metrics.meter("crab.dedupe.InvalidEventTs")
+        None
+      }
     }
   }
 

@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt
 import java.net.{MalformedURLException, URISyntaxException, URL, URLDecoder}
 import java.text.SimpleDateFormat
 import java.util.Properties
+import java.util.regex.Pattern
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
@@ -35,6 +36,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   lazy val xidClientId: String = properties.getProperty("xid.xidClientId")
   lazy val xidConnectTimeout: Int = properties.getProperty("xid.xidConnectTimeout").toInt
   lazy val xidReadTimeout: Int = properties.getProperty("xid.xidReadTimeout").toInt
+
+  lazy val ebaysites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE)
 
   val cbData = asyncCouchbaseGet(df)
 
@@ -221,7 +224,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val getRefererHostUdf = udf((referer: String) => getRefererURLAndDomain(referer, true))
   val getDateTimeUdf = udf((timestamp: Long) => getDateTimeFromTimestamp(timestamp, "yyyy-MM-dd HH:mm:ss.SSS"))
   val getcbcatUdf = udf((url: String) => getQueryParam(url, "cb_cat"))
-  val get_ams_advertise_id_Udf = udf((uri: String) => getPrgrmIdAdvrtsrIdFromAMSClick(getRoverUriInfo(uri, 3)))
+  val get_ams_advertise_id_Udf = udf((uri: String) => getPrgrmIdAdvrtsrIdFromAMSClick(getRelatedInfoFromUri(uri, 3, "mkrid")))
   val get_ams_prgrm_id_Udf = udf((uri: String) => getAMSProgramId(uri))
   val get_cb_ex_kw_Udf = udf((url: String) => getQueryParam(url, "cb_ex_kw"))
   val get_cb_ex_cat_Udf = udf((url: String) => getQueryParam(url, "cb_ex_cat"))
@@ -241,14 +244,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_seller_udf = udf((uri: String) => getQueryParam(uri, "icep_sellerId"))
   val get_browser_type_udf = udf((user_agent: String) => getBrowserType(user_agent))
   val get_filter_yn_ind_udf = udf((rt_rule_flag: Long, nrt_rule_flag: Long, action: String) => getFilter_Yn_Ind(rt_rule_flag, nrt_rule_flag, action))
-  val get_page_id_udf = udf((landingPage: String, uri: String) => getPageIdByLandingPage(landingPage, getRoverUriInfo(uri, 3)))
-  val get_roi_rule_value_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13), getRuleFlag(rt_rule_flags, 4))._1)
-  val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRoverUriInfo(uri, 3), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13), getRuleFlag(rt_rule_flags, 4))._2)
-  val get_ams_clk_fltr_type_id_udf = udf((publisherId: String, uri: String) => getclickFilterTypeId(publisherId, getRoverUriInfo(uri, 3)))
-  val get_click_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("click", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
-  val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("impression", getRoverUriInfo(uri, 3), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
+  val get_page_id_udf = udf((landingPage: String, uri: String) => getPageIdByLandingPage(landingPage, getRelatedInfoFromUri(uri, 3, "mkrid")))
+  val get_roi_rule_value_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRelatedInfoFromUri(uri, 3, "mkrid"), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13), getRuleFlag(rt_rule_flags, 4))._1)
+  val get_roi_fltr_yn_ind_udf = udf((uri: String, publisherId: String, referer: String, google_fltr_do_flag: Int, traffic_source_code: Int, rt_rule_flags: Int) => getRoiRuleValue(getRelatedInfoFromUri(uri, 3, "mkrid"), publisherId, getRefererURLAndDomain(referer, true), google_fltr_do_flag, traffic_source_code, getRuleFlag(rt_rule_flags, 13), getRuleFlag(rt_rule_flags, 4))._2)
+  val get_ams_clk_fltr_type_id_udf = udf((publisherId: String, uri: String) => getclickFilterTypeId(publisherId, getRelatedInfoFromUri(uri, 3, "mkrid")))
+  val get_click_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("click", getRelatedInfoFromUri(uri, 3, "mkrid"), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
+  val get_impression_reason_code_udf = udf((uri: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int) => getReasonCode("impression", getRelatedInfoFromUri(uri, 3, "mkrid"), publisherId, campaignId, rt_rule_flag, nrt_rule_flag, ams_fltr_roi_value, google_fltr_do_flag))
   val get_google_fltr_do_flag_udf = udf((referer: String, publisherId: String) => getGoogleFltrDoFlag(getRefererURLAndDomain(referer, true), publisherId))
-  val get_lnd_page_url_name_udf = udf((responseHeader: String) => getLndPageUrlName(responseHeader))
+  val get_lnd_page_url_name_udf = udf((responseHeader: String, landingPageUrl: String) => getLndPageUrlName(responseHeader, landingPageUrl))
   val get_IcepFlexFld_udf = udf((uri: String, key: String) => getIcepFlexFld(uri, key))
   val get_Geo_Trgtd_Ind_udf = udf((uri: String) => getValueFromQueryURL(uri, "isgeo"))
   val get_Pblshr_Acptd_Prgrm_Ind_udf = udf((uri: String) => getValueFromQueryURL(uri, "isprogAccepted"))
@@ -262,6 +265,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val filter_specific_pub_udf = udf((referer: String, publisher: String) => filter_specific_pub(referer, publisher))
 
   val getUserIdUdf = udf((userId: String, cguid: String) => getUserIdByCguid(userId, cguid))
+  val getRelatedInfoFromUriUdf = udf((uri: String, index: Int, key: String) => getRelatedInfoFromUri(uri, index, key))
+  val getChannelIdUdf = udf((channelType: String) => getChannelId(channelType))
 
   def filter_specific_pub(referer: String, publisher: String): Int = {
     if (publisher.equals("5574651234") && getRefererURLAndDomain(referer, true).endsWith(".bid"))
@@ -270,7 +275,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getAMSProgramId(uri: String): Int = {
-    val pair = getPrgrmIdAdvrtsrIdFromAMSClick(getRoverUriInfo(uri, 3))
+    val pair = getPrgrmIdAdvrtsrIdFromAMSClick(getRelatedInfoFromUri(uri, 3, "mkrid"))
     if (pair(0).equals("-999")) {
       logger.error("Error in parsing the ams_program_id from URL: " + uri)
       return 0
@@ -310,23 +315,35 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     df.format(timestamp)
   }
 
-  def getLndPageUrlName(responseHeader: String): String = {
-    val location = getValueFromRequest(responseHeader, "Location")
-    if (location.equalsIgnoreCase(""))
-      return ""
-    val url = new URL(location)
-    if (url.getHost.equalsIgnoreCase("rover.ebay.com") || url.getHost.equalsIgnoreCase("r.ebay.com"))
-      removeParams(location)
-    else {
-      var res = getQueryParam(location, "mpre")
-      if (res.equalsIgnoreCase(""))
-        res = getQueryParam(location, "loc")
-      if (res.equalsIgnoreCase(""))
-        res = getQueryParam(location, "url")
-      if (res.equalsIgnoreCase(""))
+  /**
+    * get landing page from responseHeader or landingPageUrl
+    * For normal rover uri, parse landing page url name from response_headers
+    * For the missing mobile clicks which are sent through mcs, get landing page url name from landing_page_url
+    * For mcs uri, get landing page url name from landing_page_url
+    * @param responseHeader, landingPageUrl
+    * @return landingPageUrlName
+    */
+  def getLndPageUrlName(responseHeader: String, landingPageUrl: String): String = {
+    if (landingPageUrl == null || landingPageUrl.equalsIgnoreCase("")) {
+      val location = getValueFromRequest(responseHeader, "Location")
+      if (location.equalsIgnoreCase(""))
+        return ""
+      val url = new URL(location)
+      if (url.getHost.equalsIgnoreCase("rover.ebay.com") || url.getHost.equalsIgnoreCase("r.ebay.com"))
         removeParams(location)
-      else
-        removeParams(res)
+      else {
+        var res = getQueryParam(location, "mpre")
+        if (res.equalsIgnoreCase(""))
+          res = getQueryParam(location, "loc")
+        if (res.equalsIgnoreCase(""))
+          res = getQueryParam(location, "url")
+        if (res.equalsIgnoreCase(""))
+          removeParams(location)
+        else
+          removeParams(res)
+      }
+    } else {
+      return landingPageUrl
     }
   }
 
@@ -452,15 +469,15 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         }
       } catch {
         case e: ArrayIndexOutOfBoundsException => {
-          logger.error("Error query parameters " + uri + " " + param + e)
+          logger.error("Error query parameters " + uri + " param=" + param + e)
           return ""
         }
         case e: NullPointerException => {
-          logger.error("Error query parameters " + uri + " " + param + e)
+          logger.error("Error query parameters " + uri + " param=" + param + e)
           return ""
         }
         case e: IllegalArgumentException => {
-          logger.error("Error URLDecoder param " + uri + " " + param + e)
+          logger.error("Error URLDecoder param " + uri + " param=" + param + e)
           return ""
         }
       }
@@ -483,7 +500,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         return empty
       }
       case e: NumberFormatException => {
-        logger.error(rotationId + " is invalid " + e)
+        logger.error("RotationId " + rotationId + " is not accepted " + e)
         return empty
       }
     }
@@ -545,16 +562,41 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def getValidParam(id: String): String = {
     if (id != null || !id.equals("")) {
+      val arr = id.toCharArray
       var pos = 0
+      var flag = true
       var break = false
-      val res = getValidParamInternal(id)
+
+      var i = 0
+      var j = arr.length - 1
+      var res = ""
+
+      while (flag) {
+        while (i < arr.length && !Character.isDigit(arr(i))) {
+          i = i + 1
+        }
+        while (j >= 0 && !Character.isDigit(arr(j))) {
+          j = j - 1
+        }
+        try{
+          res = id.substring(i, j + 1)
+          flag = false
+        }catch {
+          case e: Exception => {
+            return ""
+          }
+        }
+      }
+
       val resArr = res.toCharArray
+
       for (i <- resArr.indices) {
         if (!Character.isDigit(resArr(i)))
           break = true
         if (Character.isDigit(resArr(i)) && !break)
           pos = pos + 1
       }
+
       try {
         return res.substring(0, pos)
       } catch {
@@ -563,32 +605,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         }
       }
     }
-    ""
-  }
 
-  def getValidParamInternal(id: String): String = {
-    var flag = true
-    val arr = id.toCharArray
-    var i = 0
-    var j = arr.length - 1
-    var res = ""
-    while (flag) {
-      while (i < arr.length && !Character.isDigit(arr(i))) {
-        i = i + 1
-      }
-      while (j >= 0 && !Character.isDigit(arr(j))) {
-        j = j - 1
-      }
-      try{
-        res = id.substring(i, j + 1)
-        flag = false
-      }catch {
-        case e: Exception => {
-          return ""
-        }
-      }
-    }
-    res
+    ""
   }
 
   def getUserIdByCguid(userId: String, cguid: String): String = {
@@ -751,14 +769,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
 
     val advrtsrId = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1)
-
-    roi_fltr_yn_ind = setROIFltrInd(roi_fltr_yn_ind, rt_rule_9, rt_rule_15, traffic_source_code, publisherId, advrtsrId)
-
-    (roiRuleValues, roi_fltr_yn_ind)
-  }
-
-  def setROIFltrInd(roi: Int, rt_rule_9: Int, rt_rule_15: Int, traffic_source_code: Int, publisherId:String, advrtsrId: String): Int = {
-    var roi_fltr_yn_ind = roi
     // add UC4 logical rt_rule_9 here
     if (roi_fltr_yn_ind == 0 && rt_rule_9 == 1 && (traffic_source_code == ams_clk_fltr_type_map(12) || traffic_source_code == ams_clk_fltr_type_map(13))) {
       var list = getAdvClickFilterMap(publisherId)
@@ -775,7 +785,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       if (list.nonEmpty)
         roi_fltr_yn_ind = 1
     }
-    roi_fltr_yn_ind
+
+    (roiRuleValues, roi_fltr_yn_ind)
   }
 
   def getGoogleFltrDoFlag(referer_domain: String, publisherId: String): Int = {
@@ -837,34 +848,28 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           if (pubdomainlist.isEmpty)
             result = 1
           else {
-            result = callRoiRuleCommonInternal(pubdomainlist, referer_domain)
+            result = 1
+            var loop = true
+            var clean_ref_url = referer_domain.trim.toLowerCase
+            if (!clean_ref_url.startsWith("."))
+              clean_ref_url = ".".concat(clean_ref_url)
+            pubdomainlist.foreach(e => {
+              if (loop) {
+                var domain_entry = e.getUrl_domain.trim
+                if (!domain_entry.startsWith("."))
+                  domain_entry = ".".concat(domain_entry)
+                if (clean_ref_url.endsWith(domain_entry.toLowerCase)) {
+                  result = 0
+                  loop = false
+                }
+              }
+            })
           }
         }
       }
     }
     result
   }
-
-  def callRoiRuleCommonInternal(pubdomainlist: ListBuffer[PubDomainInfo], referer_domain: String): Int = {
-    var result = 1
-    var loop = true
-    var clean_ref_url = referer_domain.trim.toLowerCase
-    if (!clean_ref_url.startsWith("."))
-      clean_ref_url = ".".concat(clean_ref_url)
-    pubdomainlist.foreach(e => {
-      if (loop) {
-        var domain_entry = e.getUrl_domain.trim
-        if (!domain_entry.startsWith("."))
-          domain_entry = ".".concat(domain_entry)
-        if (clean_ref_url.endsWith(domain_entry.toLowerCase)) {
-          result = 0
-          loop = false
-        }
-      }
-    })
-    result
-  }
-
 
   def amsPubDomainLookup(publisherId: String, roi_rule: String): ListBuffer[PubDomainInfo] = {
     var list = cbData._5.getOrElse(publisherId, ListBuffer.empty[PubDomainInfo])
@@ -974,6 +979,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getReasonCode(action: String, rotationId: String, publisherId: String, campaignId: String, rt_rule_flag: Long, nrt_rule_flag: Long, ams_fltr_roi_value: Int, google_fltr_do_flag: Int): String = {
+    var rsn_cd = ReasonCodeEnum.REASON_CODE0.getReasonCode
     var config_flag = 0
     val campaign_sts = getcampaignStatus(campaignId)
     val progPubMapStatus = getProgMapStatus(publisherId, rotationId)
@@ -983,10 +989,11 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if (!res(1).equals("")) {
       config_flag = res(1).toInt & 1
     }
-
-    var rsn_cd = getReasonCodeInternal(action, google_fltr_do_flag, publisherId)
-
-    if (campaign_sts == null || campaign_sts.equalsIgnoreCase("2") || campaign_sts.equalsIgnoreCase(""))
+    if (action.equalsIgnoreCase("click") && google_fltr_do_flag == 1)
+      rsn_cd = ReasonCodeEnum.REASON_CODE10.getReasonCode
+    else if (publisherId == null || publisherId.equalsIgnoreCase("") || publisherId.equalsIgnoreCase("999"))
+      rsn_cd = ReasonCodeEnum.REASON_CODE3.getReasonCode
+    else if (campaign_sts == null || campaign_sts.equalsIgnoreCase("2") || campaign_sts.equalsIgnoreCase(""))
       rsn_cd = ReasonCodeEnum.REASON_CODE7.getReasonCode
     else if (action.equalsIgnoreCase("click") && ams_fltr_roi_value == 1)
       rsn_cd = ReasonCodeEnum.REASON_CODE8.getReasonCode
@@ -1000,15 +1007,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       rsn_cd = ReasonCodeEnum.REASON_CODE6.getReasonCode
     else
       rsn_cd = ReasonCodeEnum.REASON_CODE0.getReasonCode
-    rsn_cd
-  }
-
-  def getReasonCodeInternal(action: String, google_fltr_do_flag: Int, publisherId: String): String = {
-    var rsn_cd = ReasonCodeEnum.REASON_CODE0.getReasonCode
-    if (action.equalsIgnoreCase("click") && google_fltr_do_flag == 1)
-      rsn_cd = ReasonCodeEnum.REASON_CODE10.getReasonCode
-    else if (publisherId == null || publisherId.equalsIgnoreCase("") || publisherId.equalsIgnoreCase("999"))
-      rsn_cd = ReasonCodeEnum.REASON_CODE3.getReasonCode
     rsn_cd
   }
 
@@ -1081,10 +1079,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
 
-  private val status_enum = "status_enum"
-
-  private val ams_publisher_id = "ams_publisher_id"
-
   def batchGetPublisherStatus(list: Array[String]): HashMap[String, String] = {
     var res = new HashMap[String, String]
     val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
@@ -1098,8 +1092,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         }).toList.toBlocking.single
       for (i <- 0 until jsonDocuments.size()) {
         val jsonString = String.valueOf(
-          "{\"" + ams_publisher_id + "\":\"" + jsonDocuments.get(i).content().get(ams_publisher_id) + "\"," +
-            "\"application_" + status_enum + "\":" + "\"" + jsonDocuments.get(i).content().get("application_" + status_enum) + "\"" + "}")
+          "{\"ams_publisher_id\":\"" + jsonDocuments.get(i).content().get("ams_publisher_id") + "\"," +
+            "\"application_status_enum\":" + "\"" + jsonDocuments.get(i).content().get("application_status_enum") + "\"" + "}")
         val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
         // val publisherInfo = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherInfo])
         val publisherInfo = new Gson().fromJson(jsonObj, classOf[PublisherInfo])
@@ -1139,7 +1133,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         //val campaign_sts = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherCampaignInfo])
         val jsonString = String.valueOf(
           "{\"ams_publisher_campaign_id\":\"" + jsonDocuments.get(i).content().get("ams_publisher_campaign_id") + "\"," +
-            "\"" + status_enum + "\":" + "\"" + jsonDocuments.get(i).content().get(status_enum) + "\"" + "}")
+            "\"status_enum\":" + "\"" + jsonDocuments.get(i).content().get("status_enum") + "\"" + "}")
         val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
         val campaign_sts = new Gson().fromJson(jsonObj, classOf[PublisherCampaignInfo])
         if (campaign_sts != null)
@@ -1178,8 +1172,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         // val progPubMap = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[ProgPubMapInfo])
         val jsonString = String.valueOf(
           "{\"ams_program_id\":\"" + jsonDocuments.get(i).content().get("ams_program_id") + "\"," +
-            "\"" + ams_publisher_id + "\":\"" + jsonDocuments.get(i).content().get(ams_publisher_id) + "\"," +
-            "\"" + status_enum + "\":" + "\"" + jsonDocuments.get(i).content().get(status_enum) + "\"" + "}")
+            "\"ams_publisher_id\":\"" + jsonDocuments.get(i).content().get("ams_publisher_id") + "\"," +
+            "\"status_enum\":" + "\"" + jsonDocuments.get(i).content().get("status_enum") + "\"" + "}")
         val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
         val progPubMap = new Gson().fromJson(jsonObj, classOf[ProgPubMapInfo])
 
@@ -1220,10 +1214,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         var objectList: ListBuffer[PubAdvClickFilterMapInfo] = ListBuffer.empty[PubAdvClickFilterMapInfo]
         for (j <- 0 until jsonArrayDocuments.get(i).content().size()) {
           val jsonString = String.valueOf(
-            "{\"" + ams_publisher_id + "\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get(ams_publisher_id) + "\"," +
+            "{\"ams_publisher_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_publisher_id") + "\"," +
               "\"ams_advertiser_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_advertiser_id") + "\"," +
               "\"ams_clk_fltr_type_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_clk_fltr_type_id") + "\"," +
-              "\"" + status_enum + "\":" + "\"" + jsonArrayDocuments.get(i).content().getObject(j).get(status_enum) + "\"" + "}")
+              "\"status_enum\":" + "\"" + jsonArrayDocuments.get(i).content().getObject(j).get("status_enum") + "\"" + "}")
           val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
           // objectList += new Gson().fromJson(String.valueOf(jsonArrayDocuments.get(i).content().get(j)), classOf[PubAdvClickFilterMapInfo])
           objectList += new Gson().fromJson(jsonObj, classOf[PubAdvClickFilterMapInfo])
@@ -1263,10 +1257,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         for (j <- 0 until jsonArrayDocuments.get(i).content().size()) {
           // objectList += new Gson().fromJson(String.valueOf(jsonArrayDocuments.get(i).content().get(j)), classOf[PubDomainInfo])
           val jsonString = String.valueOf(
-            "{\"" + ams_publisher_id + "\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get(ams_publisher_id) + "\"," +
+            "{\"ams_publisher_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_publisher_id") + "\"," +
               "\"url_domain\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("url_domain") + "\"," +
-              "\"whitelist_" + status_enum + "\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("whitelist_" + status_enum) + "\"," +
-              "\"domain_" + status_enum + "\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("domain_" + status_enum) + "\"," +
+              "\"whitelist_status_enum\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("whitelist_status_enum") + "\"," +
+              "\"domain_status_enum\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("domain_status_enum") + "\"," +
               "\"is_registered\":" + "\"" + jsonArrayDocuments.get(i).content().getObject(j).get("is_registered") + "\"" + "}")
           val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
           objectList += new Gson().fromJson(String.valueOf(jsonObj), classOf[PubDomainInfo])
@@ -1288,5 +1282,44 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
     CorpCouchbaseClient.returnClient(cacheClient)
     res
+  }
+
+  /**
+    * get related info from uri, like rotation_id and so on
+    * for rover uri, get related info from rover.ebay.com/.../
+    * for mcs uri, get related info from query params
+    * @param uri, index, key
+    * @return channel id
+    */
+  def getRelatedInfoFromUri(uri: String, index: Int, key: String): String = {
+    if (uri != null && ebaysites.matcher(uri.toLowerCase()).find()) {
+      return getQueryParam(uri, key)
+    } else {
+      val path = new URL(uri).getPath()
+      if (path != null && path != "" && index >= 0 && index <= 4) {
+        val pathArray = path.split("/")
+        if (pathArray.length == 5)
+          return pathArray(index)
+      }
+    }
+    ""
+  }
+
+  /**
+    * get channel id from channel type
+    * @param channelType channel type
+    * @return channel id
+    */
+  def getChannelId(channelType: String): String = {
+    channelType match {
+      case "EPN" => "1"
+      case "DISPLAY" => "4"
+      case "PAID_SEARCH" => "2"
+      case "SOCIAL_MEDIA" => "16"
+      case "PAID_SOCIAL" => "20"
+      case "ROI" => "0"
+      case "NATURAL_SEARCH" => "3"
+      case _ => "0"
+    }
   }
 }

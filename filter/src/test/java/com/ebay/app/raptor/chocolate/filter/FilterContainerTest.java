@@ -232,6 +232,17 @@ public class FilterContainerTest {
     assertEquals("d30ebafe1580a93d128516d5ffef202f", req.getRequestCguid());
     assertEquals(1481009707774L, req.getRequestCguidTimestamp());
   }
+
+  @Test
+  public void testFilterRequestRequestCguidLongTermParse() {
+    ListenerMessage lm = new ListenerMessage();
+    lm.setRequestHeaders("Cookie: npii=btguid/7157f9891590abc5e9e24766c9edf1fa5a505d29^trm/svid%3D2716036593043142815a505d29^tpim/1586f29e5^cguid/a30ebafe1580a93d128516d5ffef202f5a505d29^;dp1=bu1p/QEBfX0BAX19AQA**5a505d2a^bl/US5c3190aa^;nonsession=CgAAIABxYlraqMTQ4MzY4MDE3MHgyNzIyNDk1NjcxMzR4MHgyTgDLAAFYbzCyMgDKACBh1SsqNzE1N2Y5ODkxNTkwYWJjNWU5ZTI0NzY2YzllZGYxZmGSq2XR||");
+    lm.setUri("https://www.ebay.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556");
+    lm.setCguid("d30ebafe1580a93d128516d5ffef202f");
+    FilterRequest req = new FilterRequest(lm);
+    assertEquals("d30ebafe1580a93d128516d5ffef202f", req.getRequestCguid());
+    assertEquals(1481009707774L, req.getRequestCguidTimestamp());
+  }
   
   private class BaseRuleMock implements FilterRule {
     public int times = 0;

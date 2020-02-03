@@ -7,11 +7,11 @@ DRIVER_MEMORY=6g
 EXECUTOR_NUMBER=40
 EXECUTOR_MEMORY=8g
 EXECUTOR_CORES=5
-SPARK_HOME=/datashare/mkttracking/tools/apache/spark
+SPARK_HOME=/datashare/mkttracking/tools/hercules_lvs/spark-hercules/
 FILES=/datashare/mkttracking/tools/AlertingAggrate-tool/conf/df_epn_click.json
 
-hdfs dfs -mkdir hdfs://elvisha/apps/alert/epn/$DATE
-hdfs dfs -rm -r hdfs://elvisha/apps/alert/epn/$DATE/hourlyClickCount
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -mkdir hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -rm -r hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE/hourlyClickCount
 
 ${SPARK_HOME}/bin/spark-submit  \
     --files ${FILES}  \
@@ -32,4 +32,4 @@ ${SPARK_HOME}/bin/spark-submit  \
     --conf spark.driver.maxResultSize=10g \
     --conf spark.kryoserializer.buffer.max=2040m \
     --conf spark.task.maxFailures=3 \
-    /datashare/mkttracking/tools/AlertingAggrate-tool/lib/AlertingAggrate-tool-3.4.2-RELEASE-fat.jar hdfs://elvisha/apps/epn-nrt/click/ hdfs://elvisha/apps/alert/epn/$DATE/hourlyClickCount hourlyClickCount df_epn_click.json yarn
+    /datashare/mkttracking/tools/AlertingAggrate-tool/lib/AlertingAggrate-tool-3.4.2-RELEASE-fat.jar hdfs://hercules/sys/edw/imk/im_tracking/epn/ams_click/snapshot/ hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE/hourlyClickCount hourlyClickCount df_epn_click.json yarn

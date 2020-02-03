@@ -73,7 +73,7 @@ class DedupeAndSink(params: Parameter)
     Metadata(params.workDir, params.channel, MetadataEnum.dedupe)
   }
 
-  val SNAPSHOT_ID_COL = "snapshot_id"
+  val SHORT_SNAPSHOT_ID_COL = "short_snapshot_id"
 
   @transient lazy val metrics: Metrics = {
     if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
@@ -188,7 +188,7 @@ class DedupeAndSink(params: Parameter)
     if ((message.getChannelAction == ChannelAction.CLICK || message.getChannelAction == ChannelAction.ROI) && couchbaseDedupe) {
       try {
         val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-        val key = DEDUPE_KEY_PREFIX + message.getSnapshotId.toString
+        val key = DEDUPE_KEY_PREFIX + message.getShortSnapshotId.toString
         if (!bucket.exists(key)) {
           writeMessage(writer, message)
         }
@@ -196,6 +196,7 @@ class DedupeAndSink(params: Parameter)
       } catch {
         case e: Exception =>
           logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
+          metrics.meter("CBDedupeException")
           writeMessage(writer, message)
           couchbaseDedupe = false
       }
@@ -218,25 +219,26 @@ class DedupeAndSink(params: Parameter)
           val df = this.readFilesAsDFEx(dateFiles.files)
           df.filter($"channel_action" === "CLICK" || $"channel_action" === "ROI")
             .repartition(30)
-            .select("snapshot_id")
+            .select("short_snapshot_id")
             .foreachPartition(partition => {
               // each partition insert cb by batch, limit the size to send to 5000 records
               partition.grouped(5000).foreach(
                 group => {
-                  var snapshotIdList = new ListBuffer[String]()
+                  var shortSnapshotIdList = new ListBuffer[String]()
                   try {
                     val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-                    group.foreach(record => snapshotIdList += record.get(0).toString)
+                    group.foreach(record => shortSnapshotIdList += record.get(0).toString)
                     // async call couchbase batch api
-                    Observable.from(snapshotIdList.toArray).flatMap(new Func1[String, Observable[JsonDocument]]() {
-                      override def call(snapshotId: String): Observable[JsonDocument] = {
-                        val snapshotIdKey = DEDUPE_KEY_PREFIX + snapshotId
-                        bucket.async.upsert(JsonDocument.create(snapshotIdKey, couchbaseTTL, JsonObject.empty()))
+                    Observable.from(shortSnapshotIdList.toArray).flatMap(new Func1[String, Observable[JsonDocument]]() {
+                      override def call(shortSnapshotId: String): Observable[JsonDocument] = {
+                        val shortSnapshotIdKey = DEDUPE_KEY_PREFIX + shortSnapshotId
+                        bucket.async.upsert(JsonDocument.create(shortSnapshotIdKey, couchbaseTTL, JsonObject.empty()))
                       }
                     }).last().toBlocking.single()
                   } catch {
                     case e: Exception =>
                       logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
+                      metrics.meter("CBDedupeException")
                       couchbaseDedupe = false
                   }
                 }
@@ -293,17 +295,17 @@ class DedupeAndSink(params: Parameter)
     // dedupe current df
     var df = readFilesAsDF(baseDir + "/" + date)
 
-    df = df.dropDuplicates(SNAPSHOT_ID_COL)
+    df = df.dropDuplicates(SHORT_SNAPSHOT_ID_COL)
     val dedupeCompMeta = metadata.readDedupeCompMeta
     if (dedupeCompMeta != null && dedupeCompMeta.contains(date)) {
       val input = dedupeCompMeta.get(date).get
       val dfDedupe = readFilesAsDFEx(input)
-        .select($"snapshot_id")
-        .withColumnRenamed(SNAPSHOT_ID_COL, "snapshot_id_1")
+        .select($"short_snapshot_id")
+        .withColumnRenamed(SHORT_SNAPSHOT_ID_COL, "short_snapshot_id_1")
 
-      df = df.join(dfDedupe, $"snapshot_id" === $"snapshot_id_1", "left_outer")
-        .filter($"snapshot_id_1".isNull)
-        .drop("snapshot_id_1")
+      df = df.join(dfDedupe, $"short_snapshot_id" === $"short_snapshot_id_1", "left_outer")
+        .filter($"short_snapshot_id_1".isNull)
+        .drop("short_snapshot_id_1")
     }
 
     // reduce the number of file
