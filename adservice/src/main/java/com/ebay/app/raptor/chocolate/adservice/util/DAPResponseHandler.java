@@ -267,8 +267,9 @@ public class DAPResponseHandler {
    * Currently, we can only get cguid from cookie.
    */
   @SuppressWarnings("unchecked")
+  //TODO: get guid by adservicecookie
   private String getCguid(ContainerRequestContext requestContext) {
-    String readerCguid = "";
+    String readerCguid = "7fbad10916d0aad6a7870f00f1631295";
     if (StringUtils.isEmpty(readerCguid)) {
       ESMetrics.getInstance().meter("NoCguid", 1, Field.of(Constants.CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()));
       return null;
@@ -284,8 +285,9 @@ public class DAPResponseHandler {
    * Currently, we can only get guid from cookie.
    */
   @SuppressWarnings("unchecked")
+  //TODO: get guid by adservicecookie
   private String getGuid(ContainerRequestContext requestContext) {
-    String readerGuid = "";
+    String readerGuid = "7fbad10916d0aad6a7870f00f1631295";
     if (StringUtils.isEmpty(readerGuid)) {
       ESMetrics.getInstance().meter("NoGuid", 1, Field.of(Constants.CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()));
       return null;
@@ -309,8 +311,9 @@ public class DAPResponseHandler {
    * Currently, we can only get account id from cookie.
    */
   @SuppressWarnings("unchecked")
+  //TODO: get userid by adservicecookie ?? possible??
   private String getAccountId(ContainerRequestContext requestContext) {
-    String accountId = "";
+    String accountId = "1231313";
     if (StringUtils.isEmpty(accountId)) {
       ESMetrics.getInstance().meter("NoAccountId", 1, Field.of(Constants.CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()));
       return null;

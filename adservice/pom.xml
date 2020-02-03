@@ -131,13 +131,6 @@
       <artifactId>raptor-micrometer-starter</artifactId>
     </dependency>
 
-    <!--cookie-->
-    <dependency>
-      <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-cookie-starter</artifactId>
-      <version>0.6.0-SNAPSHOT</version>
-    </dependency>
-
     <!--global config-->
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
