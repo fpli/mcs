@@ -83,14 +83,6 @@ public class AdobeSolutionTest {
     }
   }
 
-  @Test
-  public void ar() {
-//    Response response = client.target(svcEndPoint).path(arPath+"?siteId=0&ff8=2600242&ff9=max&adm=1&gbh=10022&adtype=2&size=300x600&pgroup=459125&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&rvr_id=3223821930815456&ZipCode=default&cguid=aeeee67816d0a4d0bb744efef26d8f0a&guid=a5283d6816c0a99b6de1b3aafcbad5af")
-//        .request()
-//        .accept(MediaType.APPLICATION_JSON_TYPE)
-//        .get();
-//    assertEquals(200, response.getStatus());
-  }
 
   @Test
   public void adobeOpen() {
