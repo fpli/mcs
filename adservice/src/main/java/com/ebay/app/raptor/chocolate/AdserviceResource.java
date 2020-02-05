@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.util.AdserviceCookie;
 import com.ebay.app.raptor.chocolate.adservice.util.ImageResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -32,12 +34,16 @@ import javax.ws.rs.Path;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -84,6 +90,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
   private static final String METRIC_NO_MKCID_IN_IMPRESSION = "METRIC_NO_MKCID_IN_IMPRESSION";
   private static final String METRIC_NO_MKRID_IN_AR = "METRIC_NO_MKRID_IN_AR";
   private static final String METRIC_NO_MKRID_IN_IMPRESSION = "METRIC_NO_MKRID_IN_IMPRESSION";
+  private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId",
+      "ap_oid", "data"};
 
   /**
    * Initialize function
@@ -178,6 +186,13 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
 
       // send 1x1 pixel
       ImageResponseHandler.sendImageResponse(response);
+      String partnerId = null;
+      if (params.containsKey(Constants.PARTNER_ID)) {
+        partnerId = params.get(Constants.PARTNER_ID)[0];
+      }
+      if (!StringUtils.isEmpty(partnerId) && Constants.ADOBE_PARTNER_ID.equals(partnerId)) {
+        sendOpenEventToAdobe(params);
+      }
 
     } catch (Exception e) {
       try {
@@ -250,5 +265,55 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
     String adguid = adserviceCookie.readAdguid(request);
     String guid = idMapping.getGuid(adguid);
     return Response.status(Response.Status.OK).entity(guid).build();
+  }
+
+  private Response sendOpenEventToAdobe(Map<String, String[]> params) {
+    URIBuilder uriBuilder = null;
+    // get the adobe service info from application.properties in resources dir
+    Configuration config = ConfigurationBuilder.newConfig("adservice.mktAdobeClient");
+    Client mktClient = GingerClientBuilder.newClient(config);
+    String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
+    try {
+      uriBuilder = generateAdobeUrl(params, endpoint);
+      WebTarget webTarget = mktClient.target(uriBuilder.build());
+      Response adobeResponse = webTarget.request().get();
+      adobeResponse.close();
+      return adobeResponse;
+    } catch (Exception ex) {
+      logger.error("Send open event to Adobe exception", ex);
+    }
+    return null;
+  }
+
+  /**
+   * Generate the adobe URI,
+   * the adobe server get from raptorio config
+   * the paramter get from request's parameters
+   */
+  public URIBuilder generateAdobeUrl(Map<String, String[]> parameters, String endpoint)
+      throws URISyntaxException, UnsupportedEncodingException {
+    URIBuilder uriBuilder = new URIBuilder(endpoint);
+    // if the url has no adobeParams, we will construct the url with the possible list of params
+    if (!parameters.containsKey(Constants.ADOBE_PARAMS) || parameters.get(Constants.ADOBE_PARAMS)[0] == null) {
+      logger.warn(Errors.ERROR_OPEN_NO_ADOBE_PARAMS);
+      // construct the url with the possible list of params,  only "id" in the the params list is Mandatory
+      for (String adobeParam : ADOBE_PARAMS_LIST) {
+        if (parameters.containsKey(adobeParam)) {
+          uriBuilder.addParameter(adobeParam, parameters.get(adobeParam)[0]);
+        }
+      }
+      return uriBuilder;
+    }
+
+    String[] adobeParams = URLDecoder.decode(parameters.get(Constants.ADOBE_PARAMS)[0], "UTF-8").split(",");
+    // check the value of adobeParams, it must be a subset of parameters in request
+    for (String adobeParam : adobeParams) {
+      if (parameters.containsKey(adobeParam)) {
+        uriBuilder.addParameter(adobeParam, parameters.get(adobeParam)[0]);
+      } else {
+        logger.warn("adobeParams field has wrong parameter name: " + adobeParam);
+      }
+    }
+    return uriBuilder;
   }
 }
