@@ -22,7 +22,7 @@ fi
 bin=`dirname "$0"`
 bin=`cd "$bin">/dev/null; pwd`
 
-. ${bin}/../chocolate-env.sh
+. ${bin}/../chocolate-env-spark-23.sh
 
 INPUT_DIR=$1
 OUTPUT_DIR=$2

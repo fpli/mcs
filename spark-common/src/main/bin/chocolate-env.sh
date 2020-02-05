@@ -17,9 +17,25 @@ if [ -z "${SPARK_CONF_DIR}" ]; then
   export SPARK_CONF_DIR=${SPARK_HOME}/conf/
 fi
 
-#SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
-SPARK_EVENTLOG_DIR=hdfs://elvisha/spark-history-logs/chocolate/logs
-HISTORY_SERVER=http://lvschocolatepits-1583698.stratus.lvs.ebay.com:18080/
+echo "Start getting cluster name."
+HostName=`hostname`
+echo "HostName: "$HostName
+clustername=${HostName:0:3}
+echo "clustername: "$clustername
+if [ "$clustername" == "lvs" ]; then
+    echo "The clustername is lvs"
+    SPARK_EVENTLOG_DIR=hdfs://elvisha/spark-history-logs/chocolate/logs
+    HISTORY_SERVER=http://lvschocolatepits-1583698.stratus.lvs.ebay.com:18080/
+elif [ "$clustername" == "slc" ]; then
+    echo "The clustername is slc"
+    SPARK_EVENTLOG_DIR=hdfs://slickha/spark-history-logs/chocolate/logs
+    HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
+else
+  echo "The clustername is not slc or lvs."
+fi
+echo "SPARK_EVENTLOG_DIR: "$SPARK_EVENTLOG_DIR
+echo "HISTORY_SERVER: "$HISTORY_SERVER
+echo "Finish getting cluster name."
 
 FILES="file:///${HADOOP_CONF_DIR}/ssl-client.xml"
 

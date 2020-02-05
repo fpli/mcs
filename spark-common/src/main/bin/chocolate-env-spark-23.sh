@@ -10,15 +10,32 @@ if [ -z "${HADOOP_CONF_DIR}" ]; then
 fi
 
 if [ -z "${SPARK_HOME}" ]; then
-  export SPARK_HOME=/datashare/mkttracking/tools/apache/spark
+  export SPARK_HOME=/apache/spark-2.3.0-bin-hadoop2.7
 fi
 
 if [ -z "${SPARK_CONF_DIR}" ]; then
   export SPARK_CONF_DIR=${SPARK_HOME}/conf/
 fi
 
-SPARK_EVENTLOG_DIR=hdfs://slickha/spark-history-logs/chocolate/logs
-HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
+echo "Start getting cluster name."
+HostName=`hostname`
+echo "HostName: "$HostName
+clustername=${HostName:0:3}
+echo "clustername: "$clustername
+if [ "$clustername" == "lvs" ]; then
+    echo "The clustername is lvs"
+    SPARK_EVENTLOG_DIR=hdfs://elvisha/spark-history-logs/chocolate/logs
+    HISTORY_SERVER=http://lvschocolatepits-1583698.stratus.lvs.ebay.com:18080/
+elif [ "$clustername" == "slc" ]; then
+    echo "The clustername is slc"
+    SPARK_EVENTLOG_DIR=hdfs://slickha/spark-history-logs/chocolate/logs
+    HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
+else
+  echo "The clustername is not slc or lvs."
+fi
+echo "SPARK_EVENTLOG_DIR: "$SPARK_EVENTLOG_DIR
+echo "HISTORY_SERVER: "$HISTORY_SERVER
+echo "Finish getting cluster name."
 
 FILES="file:///${HADOOP_CONF_DIR}/ssl-client.xml"
 
@@ -30,7 +47,7 @@ read -d '' SPARK_JOB_CONF << EOF
     --queue ${QUEUE_NAME} \
     --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
     --conf spark.hadoop.yarn.timeline-service.enabled=false \
-    --conf spark.sql.autoBroadcastJoinThreshold=33554432 \
+    --conf spark.sql.autoBroadcastJoinThreshold=536870912 \
     --conf spark.sql.shuffle.partitions=200 \
     --conf spark.speculation=false \
     --conf spark.yarn.maxAppAttempts=${SPARK_YARN_MAX_APP_ATTEMPTS} \
