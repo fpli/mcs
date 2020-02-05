@@ -25,7 +25,7 @@ EXECUTOR_NUMBER=30
 EXECUTOR_MEMORY=16g
 EXECUTOR_CORES=4
 
-SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/chocolate/logs/verifier
+SPARK_EVENTLOG_DIR=hdfs://slickha/spark-history-logs/chocolate/logs/verifier
 HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
 JOB_NAME="RuleVerifier"
 

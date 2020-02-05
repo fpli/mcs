@@ -19,7 +19,7 @@ EXECUTOR_MEMORY=1g
 EXECUTOR_CORES=1
 
 
-SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/crabTransform
+SPARK_EVENTLOG_DIR=hdfs://slickha/spark-history-logs/chocolate/logs
 HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
 JOB_NAME="imkTransform"
 

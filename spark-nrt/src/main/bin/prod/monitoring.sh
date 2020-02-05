@@ -23,7 +23,7 @@ EXECUTOR_NUMBER=20
 EXECUTOR_MEMORY=4g
 EXECUTOR_CORES=1
 
-SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/chocolate/logs/
+SPARK_EVENTLOG_DIR=hdfs://slickha/spark-history-logs/chocolate/logs/
 HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
 
 JOB_NAME="Monitoring"

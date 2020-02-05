@@ -18,6 +18,7 @@ if [ -z "${SPARK_CONF_DIR}" ]; then
 fi
 
 #SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
+SPARK_EVENTLOG_DIR=hdfs://elvisha/spark-history-logs/chocolate/logs
 HISTORY_SERVER=http://lvschocolatepits-1583698.stratus.lvs.ebay.com:18080/
 
 FILES="file:///${HADOOP_CONF_DIR}/ssl-client.xml"
@@ -39,5 +40,6 @@ read -d '' SPARK_JOB_CONF << EOF
     --conf spark.eventLog.enabled=true \
     --conf spark.eventLog.compress=false \
     --conf spark.yarn.historyServer.address=${HISTORY_SERVER} \
+    --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
     --conf spark.task.maxFailures=${SPARK_TASK_MAX_FAILURES}
 EOF

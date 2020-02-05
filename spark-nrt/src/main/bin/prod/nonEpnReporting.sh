@@ -26,7 +26,7 @@ EXECUTOR_NUMBER=5
 EXECUTOR_MEMORY=6g
 EXECUTOR_CORES=1
 
-SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/spark/logs
+SPARK_EVENTLOG_DIR=hdfs://slickha/spark-history-logs/spark/logs
 HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
 JOB_NAME="EPNReporting"
 

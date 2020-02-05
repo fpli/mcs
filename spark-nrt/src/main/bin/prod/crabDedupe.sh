@@ -33,7 +33,7 @@ EXECUTOR_CORES=2
 
 JOB_NAME="crabDedupe"
 
-SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/chocolate/logs
+SPARK_EVENTLOG_DIR=hdfs://slickha/spark-history-logs/chocolate/logs
 HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
 
 for f in $(find $bin/../../conf/prod -name '*.*');
