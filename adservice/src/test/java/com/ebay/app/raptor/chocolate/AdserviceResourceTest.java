@@ -13,9 +13,9 @@ import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
+import org.apache.http.client.utils.URIBuilder;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +27,14 @@ import javax.inject.Inject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static org.junit.Assert.*;
+import java.net.URISyntaxException;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -61,6 +64,8 @@ public class AdserviceResourceTest {
   private final String redirectPath = "/marketingtracking/v1/redirect";
   private final String syncPath = "/marketingtracking/v1/sync";
   private final String guidPath = "/marketingtracking/v1/guid";
+  private final String adobeOpenPath = "/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=14&id=h1d3e4dcb,2d1b8f79,1&segname=SOP708_SG49&country=US&pu=hrtHY5sgRPq&crd=20200110015225&sojTags=adcampid%id%adcamppu%pu%crd%crd%segname%segname&adobeParams=id,p1,p2,p3,p4";
+
 
   @Autowired
   private CollectionService collectionService;
@@ -136,5 +141,24 @@ public class AdserviceResourceTest {
         .get();
     assertEquals(200, response.getStatus());
 
+  }
+
+  @Test
+  public void adobeOpen() throws URISyntaxException {
+    URIBuilder uriBuilder = new URIBuilder(svcEndPoint+impressionPath)
+        .addParameter("mkevt","4")
+        .addParameter("mkcid","7")
+        .addParameter("mkpid","14")
+        .addParameter("id","h1d3e4dcb,2d1b8f79,1")
+        .addParameter("segname","SOP708_SG49")
+        .addParameter("country","US")
+        .addParameter("pu","hrtHY5sgRPq")
+        .addParameter("sojTags","adcampid%id%adcamppu%pu%crd%crd%segname%segname")
+        .addParameter("adobeParams","id,p1,p2,p3,p4");
+    Response response = client.target(uriBuilder.build())
+        .request()
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .get();
+    assertEquals(200, response.getStatus());
   }
 }
