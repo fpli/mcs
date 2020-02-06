@@ -30,7 +30,7 @@ BACKUP_DIR=$3
 ES_URL=http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
 
 DRIVER_MEMORY=8g
-EXECUTOR_NUMBER=60
+EXECUTOR_NUMBER=10
 EXECUTOR_MEMORY=4g
 EXECUTOR_CORES=4
 

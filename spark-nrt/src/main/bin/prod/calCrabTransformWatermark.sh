@@ -26,7 +26,7 @@ fi
 bin=`dirname "$0"`
 bin=`cd "$bin">/dev/null; pwd`
 
-. ${bin}/../chocolate-env.sh
+. ${bin}/../chocolate-env-spark-23.sh
 
 CRAB_TRANSFORM_DATA_DIR=$1
 IMK_CRABTRANSFORM_DATA_DIR=$2
