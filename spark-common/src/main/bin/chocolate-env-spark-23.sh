@@ -10,7 +10,7 @@ if [ -z "${HADOOP_CONF_DIR}" ]; then
 fi
 
 if [ -z "${SPARK_HOME}" ]; then
-  export SPARK_HOME=/datashare/mkttracking/tools/apache/spark
+  export SPARK_HOME=/apache/spark-2.3.0-bin-hadoop2.7
 fi
 
 if [ -z "${SPARK_CONF_DIR}" ]; then
@@ -47,7 +47,7 @@ read -d '' SPARK_JOB_CONF << EOF
     --queue ${QUEUE_NAME} \
     --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
     --conf spark.hadoop.yarn.timeline-service.enabled=false \
-    --conf spark.sql.autoBroadcastJoinThreshold=33554432 \
+    --conf spark.sql.autoBroadcastJoinThreshold=536870912 \
     --conf spark.sql.shuffle.partitions=200 \
     --conf spark.speculation=false \
     --conf spark.yarn.maxAppAttempts=${SPARK_YARN_MAX_APP_ATTEMPTS} \

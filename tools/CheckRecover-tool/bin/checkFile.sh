@@ -11,14 +11,11 @@ echo $ESURL
 
 . ./chocolate-env.sh
 
-SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs/tools
-
 ${SPARK_HOME}/bin/spark-submit \
     --class com.ebay.traffic.chocolate.job.CheckJob \
     --master yarn \
     --deploy-mode cluster \
     ${SPARK_JOB_CONF} \
-    --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
     --files /home/chocolate/tools/CheckRecover-tool/conf/tasks.xml \
         /home/chocolate/tools/CheckRecover-tool/lib/CheckRecover-tool-*.jar \
         --appName "CheckJob" \
