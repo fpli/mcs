@@ -403,9 +403,11 @@ public class CollectionService {
     boolean processFlag = processAmsAndImkEvent(requestContext, targetUrl, "", parameters, ChannelIdEnum.ROI,
         ChannelActionEnum.ROI, request, startTime, endUserContext, raptorSecureContext);
 
-    if (processFlag)
+    if (processFlag) {
+      metrics.meter("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI), Field.of(CHANNEL_TYPE,
           ChannelType.ROI), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "home"));
+    }
     return true;
   }
 
