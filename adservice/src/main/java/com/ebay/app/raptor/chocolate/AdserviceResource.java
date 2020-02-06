@@ -31,10 +31,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.*;
 import javax.ws.rs.client.Invocation.Builder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
@@ -46,6 +44,7 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Resource class
@@ -90,8 +89,13 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
   private static final String METRIC_NO_MKCID_IN_IMPRESSION = "METRIC_NO_MKCID_IN_IMPRESSION";
   private static final String METRIC_NO_MKRID_IN_AR = "METRIC_NO_MKRID_IN_AR";
   private static final String METRIC_NO_MKRID_IN_IMPRESSION = "METRIC_NO_MKRID_IN_IMPRESSION";
+  private static final String METRIC_ERROR_IN_ASYNC_MODEL = "METRIC_ERROR_IN_ASYNC_MODEL";
   private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId",
       "ap_oid", "data"};
+
+  // get the adobe service info from application.properties in resources dir
+  private static Configuration adobeConfig = ConfigurationBuilder.newConfig("adservice.mktAdobeClient");
+  private static Client adobeClient = GingerClientBuilder.newClient(adobeConfig);
 
   /**
    * Initialize function
@@ -267,22 +271,18 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
     return Response.status(Response.Status.OK).entity(guid).build();
   }
 
-  private Response sendOpenEventToAdobe(Map<String, String[]> params) {
+  private void sendOpenEventToAdobe(Map<String, String[]> params) {
     URIBuilder uriBuilder = null;
-    // get the adobe service info from application.properties in resources dir
-    Configuration config = ConfigurationBuilder.newConfig("adservice.mktAdobeClient");
-    Client mktClient = GingerClientBuilder.newClient(config);
-    String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
+    String endpoint = (String) adobeClient.getConfiguration().getProperty(EndpointUri.KEY);
     try {
       uriBuilder = generateAdobeUrl(params, endpoint);
-      WebTarget webTarget = mktClient.target(uriBuilder.build());
-      Response adobeResponse = webTarget.request().get();
-      adobeResponse.close();
-      return adobeResponse;
+
+      WebTarget webTarget = adobeClient.target(uriBuilder.build());
+      // call Adobe service in async model
+      asyncCall(webTarget.request().async());
     } catch (Exception ex) {
       logger.error("Send open event to Adobe exception", ex);
     }
-    return null;
   }
 
   /**
@@ -315,5 +315,29 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
       }
     }
     return uriBuilder;
+  }
+
+  /**
+   * utility method for callback
+   * @param invoker
+   * @return
+   */
+  private CompletableFuture<Response> asyncCall(AsyncInvoker invoker) {
+    CompletableFuture<Response> cf = new CompletableFuture<>();
+    invoker.get(new InvocationCallback<Response>() {
+      @Override
+      public void completed(Response s) {
+        cf.complete(s);
+      }
+
+      @Override
+      public void failed(Throwable throwable) {
+        // If the session is failed, log a flag in metrics and throw a exception.
+        // The exception will be logged by logger
+        metrics.meter(METRIC_ERROR_IN_ASYNC_MODEL);
+        cf.completeExceptionally(throwable);
+      }
+    });
+    return cf;
   }
 }
