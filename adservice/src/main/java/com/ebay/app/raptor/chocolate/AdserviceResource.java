@@ -96,6 +96,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
   // get the adobe service info from application.properties in resources dir
   private static Configuration adobeConfig = ConfigurationBuilder.newConfig("adservice.mktAdobeClient");
   private static Client adobeClient = GingerClientBuilder.newClient(adobeConfig);
+  private static String adobeEndpoint = (String) adobeClient.getConfiguration().getProperty(EndpointUri.KEY);
 
   /**
    * Initialize function
@@ -273,9 +274,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
 
   private void sendOpenEventToAdobe(Map<String, String[]> params) {
     URIBuilder uriBuilder = null;
-    String endpoint = (String) adobeClient.getConfiguration().getProperty(EndpointUri.KEY);
     try {
-      uriBuilder = generateAdobeUrl(params, endpoint);
+      uriBuilder = generateAdobeUrl(params, adobeEndpoint);
 
       WebTarget webTarget = adobeClient.target(uriBuilder.build());
       // call Adobe service in async model
