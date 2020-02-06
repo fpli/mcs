@@ -37,6 +37,7 @@ public class FilterWorker extends Thread {
 
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
+  private static final String ROI_TOPIC = "marketing.tracking.filtered-new-roi";
 
   private final Metrics metrics;
   private final FilterContainer filters;
@@ -142,9 +143,14 @@ public class FilterWorker extends Thread {
                         Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
                         Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
               }
-
-              producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
-
+              if (outMessage.getUri() != null && outMessage.getUri().contains("nroi=1") && outMessage.getUri().contains("marketingtracking")) {
+                producer.send(new ProducerRecord<>(ROI_TOPIC, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
+                metrics.meter("NewROICount", 1, outMessage.getTimestamp(),
+                    Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
+                    Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
+              }
+              else
+                producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
             }
             metrics.mean("FilterThreadPoolLatency", System.currentTimeMillis() - theadPoolstartTime);
           }
