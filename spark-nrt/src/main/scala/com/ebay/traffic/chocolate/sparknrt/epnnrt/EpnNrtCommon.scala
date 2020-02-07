@@ -267,6 +267,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val getUserIdUdf = udf((userId: String, cguid: String) => getUserIdByCguid(userId, cguid))
   val getRelatedInfoFromUriUdf = udf((uri: String, index: Int, key: String) => getRelatedInfoFromUri(uri, index, key))
   val getChannelIdUdf = udf((channelType: String) => getChannelId(channelType))
+  val filter_longterm_ebaysites_ref_udf = udf((uri: String, referer: String) => filterLongTermEbaySitesRef(uri, referer))
 
   def filter_specific_pub(referer: String, publisher: String): Int = {
     if (publisher.equals("5574651234") && getRefererURLAndDomain(referer, true).endsWith(".bid"))
@@ -1320,6 +1321,24 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       case "ROI" => "0"
       case "NATURAL_SEARCH" => "3"
       case _ => "0"
+    }
+  }
+
+  /**
+    * filter traffic whose uri && referrer are ebay sites (long term traffic from ebay sites)
+    * @param uri uri
+    * @param referrer referrer
+    * @return is or not
+    */
+  def filterLongTermEbaySitesRef(uri: String, referrer: String): Boolean = {
+    val uriMatcher = ebaysites.matcher(uri)
+    val referrerMatcher = ebaysites.matcher(referrer)
+    if (uriMatcher.find() && referrerMatcher.find()) {
+      if(metrics != null)
+        metrics.meter("epnLongTermInternalReferer")
+      false
+    } else {
+      true
     }
   }
 }
