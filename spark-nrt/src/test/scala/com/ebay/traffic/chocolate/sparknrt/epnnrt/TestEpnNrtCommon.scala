@@ -386,4 +386,16 @@ class TestEpnNrtCommon extends BaseFunSuite{
     assert(epnNrtCommon.getChannelId("EPN") == "1" )
   }
 
+  test("test filter long term ebay sites ref") {
+    val roverUri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?icep_ff3=2&pub=5575378759&campid=5338273189&customid=&icep_item=233469755205&ipn=psmain&icep_vectorid=229466&kwid=902099&mtid=824&kw=lg&toolid=11111&dashenId=6626731601849466880&dashenCnt=0"
+    val mcsUri = "https://www.ebay.de/gh/useracquisition?mkevt=1&mkcid=1&mkrid=707-53477-19255-0&campid=5338586075&customid=dede-edge-ntp-topsites-affiliates&correlation=gci%3D6ed921ff1630aa415285df71fc83e944%2Csi%3D6edb0e5a1630aa6fd7b90629ffff9a92%2Cc%3D35%2CoperationId%3D2481888%2Ctrk-gflgs%3D&SSRFallback=0&critical=true"
+    val ebaySitesRef = "http://www.ebay.de/?mkevt=1&mkcid=1&mkrid=707-53477-19255-0&campid=5338586075&customid=dede-edge-ntp-topsites-affiliates"
+    val nonEbaySitesRef = "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de"
+
+    assert(true == epnNrtCommon.filterLongTermEbaySitesRef(roverUri, ebaySitesRef))
+    assert(true == epnNrtCommon.filterLongTermEbaySitesRef(roverUri, nonEbaySitesRef))
+    assert(false == epnNrtCommon.filterLongTermEbaySitesRef(mcsUri, ebaySitesRef))
+    assert(true == epnNrtCommon.filterLongTermEbaySitesRef(mcsUri, nonEbaySitesRef))
+  }
+
 }
