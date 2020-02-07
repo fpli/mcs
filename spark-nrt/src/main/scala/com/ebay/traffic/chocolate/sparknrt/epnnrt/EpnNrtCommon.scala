@@ -1334,7 +1334,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   def filterLongTermEbaySitesRef(uri: String, referrer: String): Boolean = {
     if (uri != null && ebaysites.matcher(uri.toLowerCase()).find()
         && referrer != null && refererEbaySites.matcher(referrer.toLowerCase()).find()) {
-      if(metrics != null) {
+      if (metrics != null) {
         metrics.meter("epnLongTermInternalReferer")
       }
       false
