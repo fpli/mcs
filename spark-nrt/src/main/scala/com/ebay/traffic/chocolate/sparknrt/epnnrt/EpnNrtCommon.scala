@@ -38,6 +38,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   lazy val xidReadTimeout: Int = properties.getProperty("xid.xidReadTimeout").toInt
 
   lazy val ebaysites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE)
+  lazy val refererEbaySites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE)
 
   val cbData = asyncCouchbaseGet(df)
 
@@ -263,11 +264,11 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_last_view_item_info_udf = udf((cguid: String, timestamp: String) => getLastViewItemInfo(cguid, timestamp))
 
   val filter_specific_pub_udf = udf((referer: String, publisher: String) => filter_specific_pub(referer, publisher))
+  val filter_longterm_ebaysites_ref_udf = udf((uri: String, referer: String) => filterLongTermEbaySitesRef(uri, referer))
 
   val getUserIdUdf = udf((userId: String, cguid: String) => getUserIdByCguid(userId, cguid))
   val getRelatedInfoFromUriUdf = udf((uri: String, index: Int, key: String) => getRelatedInfoFromUri(uri, index, key))
   val getChannelIdUdf = udf((channelType: String) => getChannelId(channelType))
-  val filter_longterm_ebaysites_ref_udf = udf((uri: String, referer: String) => filterLongTermEbaySitesRef(uri, referer))
 
   def filter_specific_pub(referer: String, publisher: String): Int = {
     if (publisher.equals("5574651234") && getRefererURLAndDomain(referer, true).endsWith(".bid"))
@@ -1331,9 +1332,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     * @return is or not
     */
   def filterLongTermEbaySitesRef(uri: String, referrer: String): Boolean = {
-    val uriMatcher = ebaysites.matcher(uri)
-    val referrerMatcher = ebaysites.matcher(referrer)
-    if (uriMatcher.find() && referrerMatcher.find()) {
+    if (uri != null && ebaysites.matcher(uri.toLowerCase()).find()
+        && referrer != null && refererEbaySites.matcher(referrer.toLowerCase()).find()) {
       if(metrics != null)
         metrics.meter("epnLongTermInternalReferer")
       false
