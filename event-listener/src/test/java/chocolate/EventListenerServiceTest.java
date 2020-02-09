@@ -6,6 +6,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
@@ -70,6 +71,7 @@ public class EventListenerServiceTest {
   private final String eventsPath = "/marketingtracking/v1/events";
   private final String impressionPath = "/marketingtracking/v1/impression";
   private final String versionPath = "/marketingtracking/v1/getVersion";
+  private final String roiPath = "/marketingtracking/v1/roi";
 
   @Autowired
   private CollectionService collectionService;
@@ -392,6 +394,39 @@ public class EventListenerServiceTest {
             .accept(MediaType.APPLICATION_JSON_TYPE)
             .post(Entity.json(event));
     assertEquals(201, response.getStatus());
+  }
+
+  @Test
+  public void testNewROIEvent() throws Exception {
+    String token = tokenGenerator.getToken().getAccessToken();
+    ROIEvent event = new ROIEvent();
+    event.setItemId("192658398245");
+    event.setTransactionTimestamp("1576108800000");
+    event.setTransType("BO-MobileApp");
+    event.setUniqueTransactionId("1677235978009");
+
+    String endUserCtx = "ip=10.148.184.205," +
+        "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
+        "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
+        "userAgent=Mozilla%2F5.0+%28Macintosh%3B+Intel+Mac+OS+X+10_13_6%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko" +
+        "%29+Chrome%2F71.0.3578.98+Safari%2F537.36,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
+        ".com%2Fdisplay%2FtrafficCOE%2FLong%2Bterm%2Bstage1%253A%2BTrack%2Bclick%2Bfrom%2Blanding%2Bpage," +
+        "xff=10.249.74.17,uri=%2Fmkttestappweb%2Fi%2FApple-iPhone-8-Plus-256gb-Gold%2F290016063137," +
+        "applicationURL=http%3A%2F%2Fmkttestapp.stratus.qa.ebay" +
+        ".com%2Fmkttestappweb%2Fi%2FApple-iPhone-8-Plus-256gb-Gold%2F290016063137%3Fmkevt%3D1%26mkcid%3D2," +
+        "physicalLocation=country%3DUS,contextualLocation=country%3DIT,isPiggybacked=false,fullSiteExperience=true," +
+        "expectSecureURL=true";
+    String tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
+        "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
+
+    Response response = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtx)
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event));
+    assertEquals(200, response.getStatus());
   }
 
   @Test
