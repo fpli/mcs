@@ -400,7 +400,8 @@ public class CollectionService {
 
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
 
-    boolean processFlag = processAmsAndImkEvent(requestContext, targetUrl, "", parameters, ChannelIdEnum.ROI,
+    // TODO currently will not send UBI, will update referer to "" when release
+    boolean processFlag = processAmsAndImkEvent(requestContext, targetUrl, "http://www.ebay.com", parameters, ChannelIdEnum.ROI,
         ChannelActionEnum.ROI, request, startTime, endUserContext, raptorSecureContext);
 
     if (processFlag) {
