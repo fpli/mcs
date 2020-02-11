@@ -379,8 +379,8 @@ public class CollectionService {
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
     String platform = getPlatform(agentInfo);
 
-    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI), Field.of(CHANNEL_TYPE,
-        ChannelType.ROI), Field.of(PLATFORM, platform));
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()),
+        Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
 
 
     String queryString = "transType=" + roiEvent.getTransType() + "&uniqueTransactionId=" +
@@ -400,14 +400,13 @@ public class CollectionService {
 
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
 
-    // TODO currently will not send UBI, will update referer to "" when release
-    boolean processFlag = processAmsAndImkEvent(requestContext, targetUrl, "http://www.ebay.com", parameters, ChannelIdEnum.ROI,
+    boolean processFlag = processROIEvent(requestContext, targetUrl, "", parameters, ChannelIdEnum.ROI,
         ChannelActionEnum.ROI, request, startTime, endUserContext, raptorSecureContext);
 
     if (processFlag) {
       metrics.meter("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
-      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI), Field.of(CHANNEL_TYPE,
-          ChannelType.ROI), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "home"));
+      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
+          ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
     }
     return true;
   }
@@ -547,6 +546,42 @@ public class CollectionService {
 
     return true;
   }
+
+  /**
+   * Process ROI events
+   */
+  private boolean processROIEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
+                                        MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
+                                        ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
+                                        IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
+
+    // get user id from auth token if it's user token, else we get from end user ctx
+    String userId;
+    if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
+      userId = raptorSecureContext.getSubjectImmutableId();
+    } else {
+      userId = Long.toString(endUserContext.getOrigUserOracleId());
+    }
+
+    // Parse the response
+    ListenerMessage message = parser.parse(request, requestContext, startTime, -1L, channelType
+        .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, 0L, "");
+
+    // Use the shot snapshot id from requests
+    if (parameters.containsKey(Constants.MKRVRID) && parameters.get(Constants.MKRVRID).get(0) != null) {
+      message.setShortSnapshotId(Long.valueOf(parameters.get(Constants.MKRVRID).get(0)));
+    }
+
+    Producer<Long, ListenerMessage> producer = KafkaSink.get();
+    String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
+
+    if (message != null) {
+      producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
+      return true;
+    } else
+      return false;
+  }
+
 
   /**
    * Process AMS and IMK events
