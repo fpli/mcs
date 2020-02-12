@@ -402,7 +402,7 @@ public class EventListenerServiceTest {
     ROIEvent event = new ROIEvent();
     event.setItemId("192658398245");
     event.setTransactionTimestamp("1576108800000");
-    event.setTransType("BO-MobileApp");
+    event.setTransType("BO-MobileApp@");
     event.setUniqueTransactionId("1677235978009");
 
     String endUserCtx = "ip=10.148.184.205," +
