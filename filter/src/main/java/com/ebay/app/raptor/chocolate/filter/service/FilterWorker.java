@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
 import com.ebay.app.raptor.chocolate.filter.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
@@ -142,9 +143,14 @@ public class FilterWorker extends Thread {
                         Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
                         Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
               }
-
-              producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
-
+              if (outMessage.getUri() != null && outMessage.getUri().contains("nroi=1") && outMessage.getUri().contains("marketingtracking")) {
+                producer.send(new ProducerRecord<>(ApplicationOptions.getInstance().getNewROITopic(), outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
+                metrics.meter("NewROICount", 1, outMessage.getTimestamp(),
+                    Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
+                    Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
+              }
+              else
+                producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
             }
             metrics.mean("FilterThreadPoolLatency", System.currentTimeMillis() - theadPoolstartTime);
           }
