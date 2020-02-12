@@ -378,8 +378,14 @@ public class CollectionService {
     try {
       Long.valueOf(roiEvent.getItemId());
     } catch (Exception e) {
-      roiEvent.setItemId("");
       logError("Error itemId " + roiEvent.getItemId());
+      roiEvent.setItemId("");
+    }
+    try {
+      Long.valueOf(roiEvent.getTransactionTimestamp());
+    } catch (Exception e) {
+      logError("Error timestamp " + roiEvent.getTransactionTimestamp());
+      roiEvent.setTransactionTimestamp("");
     }
 
     // platform check by user agent
