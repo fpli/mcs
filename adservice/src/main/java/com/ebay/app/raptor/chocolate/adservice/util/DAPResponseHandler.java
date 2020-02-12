@@ -86,9 +86,9 @@ public class DAPResponseHandler {
           throws URISyntaxException {
     long dapRvrId = getDAPRvrId();
     Map<String, String[]> params = request.getParameterMap();
-    String cguid = getCguid(requestContext);
-    String guid = getGuid(requestContext);
-    String accountId = getAccountId(requestContext);
+    String cguid = params.get("cguid")[0];
+    String guid = params.get("guid")[0];
+    String accountId = params.get("rover_userid")[0];
     String udid = getUdid(params);
     Map<String, String> userAttributes = getUserAttributes(cguid);
     String referrer = request.getHeader(Constants.REFERER);
@@ -488,7 +488,7 @@ public class DAPResponseHandler {
         return;
       }
       // skip unused parameters
-      if (key.equals(Constants.IPN) || key.equals(Constants.MPT)) {
+      if (key.equals(Constants.IPN) || key.equals(Constants.MPT) || key.equals("cguid") || key.equals("guid") || key.equals("rover_userid")) {
         return;
       }
       if (ArrayUtils.isEmpty(values)) {
