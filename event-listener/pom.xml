@@ -356,54 +356,54 @@
         <groupId>com.spotify</groupId>
         <artifactId>docker-maven-plugin</artifactId>
       </plugin>
-      <!--<plugin>-->
-        <!--<groupId>com.ebay.raptor.build</groupId>-->
-        <!--<artifactId>maven-content-plugin</artifactId>-->
-      <!--</plugin>-->
-      <!--<plugin>-->
-      <!--<groupId>com.ebay.cos</groupId>-->
-      <!--<artifactId>compliance-evaluator-io-maven-plugin</artifactId>-->
-      <!--<version>1.1.5-RELEASE</version>-->
-      <!--</plugin>-->
-      <!--&lt;!&ndash; Swagger code generation plugin using custom template library. &ndash;&gt;-->
-      <!--<plugin>-->
-      <!--<groupId>io.swagger.codegen.v3</groupId>-->
-      <!--<artifactId>swagger-codegen-maven-plugin</artifactId>-->
-      <!--<version>${swagger.codegen.version}</version>-->
-      <!--<executions>-->
-      <!--<execution>-->
-      <!--<goals>-->
-      <!--<goal>generate</goal>-->
-      <!--</goals>-->
-      <!--<configuration>-->
-      <!--<language>com.ebay.swagger.templates.codegen.JavaEtsGenerator</language>-->
-      <!--<apiPackage>com.ebay.app.raptor.chocolate.gen.api</apiPackage>-->
-      <!--<modelPackage>com.ebay.app.raptor.chocolate.gen.model</modelPackage>-->
-      <!--<inputSpec>${project.basedir}/src/main/resources/api/openapi.yaml</inputSpec>-->
-      <!--<generateApis>true</generateApis>-->
-      <!--<generateApiTests>false</generateApiTests>-->
-      <!--<generateApiDocumentation>false</generateApiDocumentation>-->
-      <!--<generateModels>true</generateModels>-->
-      <!--<generateModelTests>false</generateModelTests>-->
-      <!--<generateModelDocumentation>false</generateModelDocumentation>-->
-      <!--<generateSupportingFiles>false</generateSupportingFiles>-->
-      <!--<output>${project.build.directory}/gen-src</output>-->
-      <!--<configOptions>-->
-      <!--<additional-properties>-->
-      <!--preAuthorize=hasAuthority,useJsonPropertyOrder=true-->
-      <!--</additional-properties>-->
-      <!--</configOptions>-->
-      <!--</configuration>-->
-      <!--</execution>-->
-      <!--</executions>-->
-      <!--<dependencies>-->
-      <!--<dependency>-->
-      <!--<groupId>com.ebay.swagger.templates</groupId>-->
-      <!--<artifactId>java-ets-oas3</artifactId>-->
-      <!--<version>1.0.2</version>-->
-      <!--</dependency>-->
-      <!--</dependencies>-->
-      <!--</plugin>-->
+     <!-- <plugin>
+        <groupId>com.ebay.raptor.build</groupId>
+        <artifactId>maven-content-plugin</artifactId>
+      </plugin>-->
+<!--      <plugin>
+      <groupId>com.ebay.cos</groupId>
+      <artifactId>compliance-evaluator-io-maven-plugin</artifactId>
+      <version>1.1.5-RELEASE</version>
+      </plugin>
+      &lt;!&ndash; Swagger code generation plugin using custom template library. &ndash;&gt;
+      <plugin>
+      <groupId>io.swagger.codegen.v3</groupId>
+      <artifactId>swagger-codegen-maven-plugin</artifactId>
+      <version>${swagger.codegen.version}</version>
+      <executions>
+      <execution>
+      <goals>
+      <goal>generate</goal>
+      </goals>
+      <configuration>
+      <language>com.ebay.swagger.templates.codegen.JavaEtsGenerator</language>
+      <apiPackage>com.ebay.app.raptor.chocolate.gen.api</apiPackage>
+      <modelPackage>com.ebay.app.raptor.chocolate.gen.model</modelPackage>
+      <inputSpec>${project.basedir}/src/main/resources/api/openapi.yaml</inputSpec>
+      <generateApis>true</generateApis>
+      <generateApiTests>false</generateApiTests>
+      <generateApiDocumentation>false</generateApiDocumentation>
+      <generateModels>true</generateModels>
+      <generateModelTests>false</generateModelTests>
+      <generateModelDocumentation>false</generateModelDocumentation>
+      <generateSupportingFiles>false</generateSupportingFiles>
+      <output>${project.build.directory}/gen-src</output>
+      <configOptions>
+      <additional-properties>
+      preAuthorize=hasAuthority,useJsonPropertyOrder=true
+      </additional-properties>
+      </configOptions>
+      </configuration>
+      </execution>
+      </executions>
+      <dependencies>
+      <dependency>
+      <groupId>com.ebay.swagger.templates</groupId>
+      <artifactId>java-ets-oas3</artifactId>
+      <version>1.0.2</version>
+      </dependency>
+      </dependencies>
+      </plugin>-->
     </plugins>
   </build>
 
