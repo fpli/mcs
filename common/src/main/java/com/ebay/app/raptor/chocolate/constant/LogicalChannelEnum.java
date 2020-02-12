@@ -53,7 +53,7 @@ public enum LogicalChannelEnum {
   /**
    * ROI channel
    */
-  ROI(ChannelType.ROI, ChannelActionEnum.ROI, ChannelActionEnum.ROI);
+  ROI(ChannelType.ROI, ChannelActionEnum.ROI);
 
  /* *//**
    * New ROI Test channel
