@@ -376,16 +376,28 @@ public class CollectionService {
     }
 
     try {
-      Long.valueOf(roiEvent.getItemId());
+      long itemId = Long.valueOf(roiEvent.getItemId());
+      if (itemId < 0)
+        roiEvent.setItemId("");
     } catch (Exception e) {
       logError("Error itemId " + roiEvent.getItemId());
       roiEvent.setItemId("");
     }
     try {
-      Long.valueOf(roiEvent.getTransactionTimestamp());
+      long transTimestamp = Long.valueOf(roiEvent.getTransactionTimestamp());
+      if(transTimestamp < 0)
+        roiEvent.setTransactionTimestamp("");
     } catch (Exception e) {
       logError("Error timestamp " + roiEvent.getTransactionTimestamp());
       roiEvent.setTransactionTimestamp("");
+    }
+    try {
+      long transId = Long.valueOf(roiEvent.getUniqueTransactionId());
+      if (transId < 0)
+        roiEvent.setUniqueTransactionId("");
+    } catch (Exception e) {
+      logError("Error timestamp " + roiEvent.getUniqueTransactionId());
+      roiEvent.setUniqueTransactionId("");
     }
 
     // platform check by user agent
