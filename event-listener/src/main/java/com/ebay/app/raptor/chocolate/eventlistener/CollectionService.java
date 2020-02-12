@@ -375,6 +375,13 @@ public class CollectionService {
       logError(Errors.ERROR_NO_ENDUSERCTX);
     }
 
+    try {
+      Long.valueOf(roiEvent.getItemId());
+    } catch (Exception e) {
+      roiEvent.setItemId("");
+      logError("Error itemId " + roiEvent.getItemId());
+    }
+
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
     String platform = getPlatform(agentInfo);
