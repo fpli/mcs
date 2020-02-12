@@ -23,7 +23,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.apache.kafka.clients.producer.Producer;
@@ -43,7 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -380,7 +379,8 @@ public class CollectionService {
       if (itemId < 0)
         roiEvent.setItemId("");
     } catch (Exception e) {
-      logError("Error itemId " + roiEvent.getItemId());
+      logger.warn("Error itemId " + roiEvent.getItemId());
+      metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
       roiEvent.setItemId("");
     }
     try {
@@ -388,7 +388,8 @@ public class CollectionService {
       if(transTimestamp < 0)
         roiEvent.setTransactionTimestamp("");
     } catch (Exception e) {
-      logError("Error timestamp " + roiEvent.getTransactionTimestamp());
+      logger.warn("Error timestamp " + roiEvent.getTransactionTimestamp());
+      metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
       roiEvent.setTransactionTimestamp("");
     }
     try {
@@ -396,7 +397,8 @@ public class CollectionService {
       if (transId < 0)
         roiEvent.setUniqueTransactionId("");
     } catch (Exception e) {
-      logError("Error timestamp " + roiEvent.getUniqueTransactionId());
+      logger.warn("Error transactionId " + roiEvent.getUniqueTransactionId());
+      metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
       roiEvent.setUniqueTransactionId("");
     }
 
@@ -408,15 +410,12 @@ public class CollectionService {
         Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
 
 
-    String queryString = "transType=" + roiEvent.getTransType() + "&uniqueTransactionId=" +
-        roiEvent.getUniqueTransactionId() + "&itemId=" + roiEvent.getItemId() + "&transactionTimestamp="
-        + roiEvent.getTransactionTimestamp() + "&nroi=1";
-    List<NameValuePair> params =
-        URLEncodedUtils.parse(queryString, StandardCharsets.UTF_8);
-    String encodedQueryString =
-        URLEncodedUtils.format(params, StandardCharsets.UTF_8);
-    String targetUrl = request.getRequestURL() + "?" + encodedQueryString;
+    String queryString = "transType=" + URLEncoder.encode(roiEvent.getTransType() == null ? "": roiEvent.getTransType(), "UTF-8")
+        + "&uniqueTransactionId=" + URLEncoder.encode(roiEvent.getUniqueTransactionId() == null ? "" : roiEvent.getUniqueTransactionId(), "UTF-8")
+        + "&itemId=" + URLEncoder.encode(roiEvent.getItemId() == null? "" : roiEvent.getItemId(), "UTF-8")
+        + "&transactionTimestamp=" + URLEncoder.encode(roiEvent.getTransactionTimestamp() == null ? "" : roiEvent.getTransactionTimestamp(), "UTF-8") + "&nroi=1";
 
+    String targetUrl = request.getRequestURL() + "?" + queryString;
     UriComponents uriComponents;
     uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
     if (uriComponents == null) {
