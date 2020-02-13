@@ -125,6 +125,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
       collectionService.collectAr(request, response, requestContext);
       res = Response.status(Response.Status.OK).build();
     } catch (Exception e) {
+      logger.warn(e.getMessage(), e);
       try {
         res = Response.status(Response.Status.BAD_REQUEST).build();
       } catch (Exception ex) {
