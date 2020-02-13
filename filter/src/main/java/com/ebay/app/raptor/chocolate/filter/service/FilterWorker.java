@@ -143,7 +143,8 @@ public class FilterWorker extends Thread {
                         Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
                         Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
               }
-              if (outMessage.getUri() != null && outMessage.getUri().contains("nroi=1") && outMessage.getUri().contains("marketingtracking")) {
+              if (outMessage.getUri() != null && outMessage.getChannelType().toString().equals("ROI")
+                  && outMessage.getUri().contains("nroi=1") && outMessage.getUri().contains("marketingtracking")) {
                 producer.send(new ProducerRecord<>(ApplicationOptions.getInstance().getNewROITopic(), outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
                 metrics.meter("NewROICount", 1, outMessage.getTimestamp(),
                     Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
