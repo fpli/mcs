@@ -890,6 +890,40 @@ public class TestHelper {
     return message;
   }
 
+  public static ListenerMessage newROIMessage(ChannelType channelType,
+                                                   ChannelAction channelAction,
+                                                   long snapshotId,
+                                                   long publisherId,
+                                                   long campaignId) {
+    ListenerMessage message = new ListenerMessage();
+    message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
+    message.setTimestamp(System.currentTimeMillis());
+    message.setUserId(1L);
+    message.setCguid("");
+    message.setGuid("");
+    message.setRemoteIp("127.0.0.1");
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setGeoId(1L);
+    message.setUdid("");
+    message.setReferer("");
+    message.setCampaignId(campaignId);
+    message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setRequestHeaders("");
+    message.setUri("http://mktcollectionsvc.vip.qa.ebay.com/marketingtracking/v1/roi?transType=&uniqueTransactionId=324357529&itemId=52357723598250&transactionTimestamp=1581427339000&nroi=1");
+    message.setResponseHeaders("");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setSnid("");
+    return message;
+  }
+
   /**
    * Load properties from file
    *
