@@ -43,18 +43,18 @@ public class AdserviceCookie {
    * @return adguid in String
    */
   public String readAdguid(HttpServletRequest request) {
-    metrics.meter(METRIC_READ_ADGUID);
+    ESMetrics.getInstance().meter(METRIC_READ_ADGUID);
     Cookie[] cookies = request.getCookies();
     if (cookies != null) {
       for (Cookie cookie :
           cookies) {
         if(cookie.getName().equalsIgnoreCase(ADGUID)) {
-          metrics.meter(METRIC_HAS_ADGUID_IN_COOKIE);
+          ESMetrics.getInstance().meter(METRIC_HAS_ADGUID_IN_COOKIE);
           return cookie.getValue();
         }
       }
     }
-    metrics.meter(METRIC_NO_ADGUID_IN_COOKIE);
+    ESMetrics.getInstance().meter(METRIC_NO_ADGUID_IN_COOKIE);
     return null;
   }
 
@@ -67,7 +67,7 @@ public class AdserviceCookie {
   public String setAdguid(HttpServletRequest request, HttpServletResponse response) {
     String adguid = readAdguid(request);
     if(adguid == null) {
-      metrics.meter(METRIC_SET_NEW_ADGUID);
+      ESMetrics.getInstance().meter(METRIC_SET_NEW_ADGUID);
       adguid = UUID.randomUUID().toString();
 
       ResponseCookie cookie;
