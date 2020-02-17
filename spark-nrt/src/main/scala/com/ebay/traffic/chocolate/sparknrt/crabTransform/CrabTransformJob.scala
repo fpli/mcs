@@ -118,6 +118,8 @@ class CrabTransformJob(params: Parameter)
 
     val partitions = crabTransformMeta.length
 
+    logger.info("read files num %d".format(partitions))
+
 //    // add listener on task end to flush metrics
 //    spark.sparkContext.addSparkListener(new SparkListener() {
 //      override def onTaskEnd(taskEnd: SparkListenerTaskEnd) = {
@@ -131,7 +133,14 @@ class CrabTransformJob(params: Parameter)
     val metas = mergeMetaFiles(crabTransformMeta)
     metas.foreach(f = datesFile => {
       val date = datesFile._1
-      var commonDf = readFilesAsDFEx(datesFile._2, schema_tfs.dfSchema, "csv", "bel")
+      val files = datesFile._2
+      logger.info("read %s %s".format(date, files.mkString(",")))
+      // TODO release crabDedupe and crabTransform first
+      val sourceDf = params.metaFile match {
+        case "imkDump" => readFilesAsDFEx(files, schema_tfs.dfSchema, "csv", "bel")
+        case _ => readFilesAsDFEx(files)
+      }
+      var commonDf = sourceDf
         .filter(_.getAs[Long]("rvr_id") != null)
         .repartition(params.xidParallelNum)
         .withColumn("item_id", getItemIdUdf(col("roi_item_id"), col("item_id")))
@@ -172,6 +181,7 @@ class CrabTransformJob(params: Parameter)
         // if input number is less, then we choose broadcast join to improve the performance
         // 1,000,000 tfs file format data approximately equals to 500MB
         var isBroadCast = smallJoinDf.count() <= 1000000
+        logger.info("is broadCast %b".format(isBroadCast))
         val heavyJoinResultDf = getJoinedKwDf(smallJoinDf, kwLKPDf, isBroadCast)
 
         coreDf.join(heavyJoinResultDf, $"rvr_id" === $"temp_rvr_id", "left_outer")
@@ -401,6 +411,7 @@ class CrabTransformJob(params: Parameter)
         val seq = ("%5d" format swi._2).replace(" ", "0")
         // chocolate_appid_seq
         val fileName = params.transformedPrefix + date + "_" + sc.applicationId + "_" + seq
+        logger.info("rename %s to %s".format(src.toString, outputDir + "/" + fileName))
         fs.rename(new Path(src.toString), new Path(outputDir + "/" + fileName))
       })
   }
