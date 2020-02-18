@@ -15,13 +15,13 @@ public class LocalCacheIdMapping implements IdMapable {
   private Map<String, String> adguidGuidMap = new HashMap<>();
 
   @Override
-  public boolean addMapping(String adguid, String guid) {
-    adguidGuidMap.put(adguid, guid);
+  public boolean addMapping(String adguid, String guid, String userId) {
+    adguidGuidMap.put(adguid, String.format(format, guid, userId));
     return true;
   }
 
   @Override
-  public String getGuid(String adguid) {
+  public String getValues(String adguid) {
     return adguidGuidMap.getOrDefault(adguid, "");
   }
 }

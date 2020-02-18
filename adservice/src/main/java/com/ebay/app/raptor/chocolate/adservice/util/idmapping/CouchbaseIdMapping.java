@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 @Service("cb")
 public class CouchbaseIdMapping implements IdMapable {
   @Override
-  public boolean addMapping(String adguid, String guid) {
-    return CouchbaseClient.getInstance().addMappingRecord(adguid, guid);
+  public boolean addMapping(String adguid, String guid, String userId) {
+    return CouchbaseClient.getInstance().addMappingRecord(adguid, String.format(format, guid, userId));
   }
 
   @Override
-  public String getGuid(String adguid) {
-    return CouchbaseClient.getInstance().getGuidByAdguid(adguid);
+  public String getValues(String adguid) {
+    return CouchbaseClient.getInstance().getValuesByAdguid(adguid);
   }
 }

@@ -64,6 +64,7 @@ public class AdserviceResourceTest {
   private final String redirectPath = "/marketingtracking/v1/redirect";
   private final String syncPath = "/marketingtracking/v1/sync";
   private final String guidPath = "/marketingtracking/v1/guid";
+  private final String useridPath = "/marketingtracking/v1/userid";
   private final String adobeOpenPath = "/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=14&id=h1d3e4dcb,2d1b8f79,1&segname=SOP708_SG49&country=US&pu=hrtHY5sgRPq&crd=20200110015225&sojTags=adcampid%id%adcamppu%pu%crd%crd%segname%segname&adobeParams=id,p1,p2,p3,p4";
 
 
@@ -120,6 +121,7 @@ public class AdserviceResourceTest {
   public void sync() {
     SyncEvent syncEvent = new SyncEvent();
     syncEvent.setGuid("abcd-efgh");
+    syncEvent.setUserid("12345");
     Response syncResponse = client.target(svcEndPoint).path(syncPath)
         .request()
         .accept(MediaType.APPLICATION_JSON_TYPE)
@@ -131,11 +133,27 @@ public class AdserviceResourceTest {
         .accept(MediaType.APPLICATION_JSON_TYPE)
         .get();
     assertEquals(200, guidResponse.getStatus());
+
+    Response useridResponse = client.target(svcEndPoint).path(useridPath)
+        .request()
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .get();
+    assertEquals(200, useridResponse.getStatus());
   }
 
   @Test
   public void guid() {
     Response response = client.target(svcEndPoint).path(guidPath)
+        .request()
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .get();
+    assertEquals(200, response.getStatus());
+
+  }
+
+  @Test
+  public void userid() {
+    Response response = client.target(svcEndPoint).path(useridPath)
         .request()
         .accept(MediaType.APPLICATION_JSON_TYPE)
         .get();

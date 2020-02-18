@@ -54,7 +54,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Path("/v1")
 @Consumes(MediaType.APPLICATION_JSON)
-public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, SyncApi, GuidApi {
+public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, SyncApi, GuidApi, UseridApi {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceResource.class);
   @Autowired
   private CollectionService collectionService;
@@ -243,7 +243,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
     Response res = null;
     try {
       String adguid = adserviceCookie.setAdguid(request, response);
-      boolean isAddMappingSuccess = idMapping.addMapping(adguid, body.getGuid());
+      boolean isAddMappingSuccess = idMapping.addMapping(adguid, body.getGuid(), body.getUserid());
       if (isAddMappingSuccess) {
         metrics.meter(METRIC_ADD_MAPPING_SUCCESS);
         res = Response.status(Response.Status.OK).build();
@@ -271,6 +271,17 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
     String adguid = adserviceCookie.readAdguid(request);
     String guid = idMapping.getGuid(adguid);
     return Response.status(Response.Status.OK).entity(guid).build();
+  }
+
+  /**
+   * Get user id from mapping
+   * @return user id in string
+   */
+  @Override
+  public Response userid() {
+    String adguid = adserviceCookie.readAdguid(request);
+    String userid = idMapping.getUserid(adguid);
+    return Response.status(Response.Status.OK).entity(userid).build();
   }
 
   private void sendOpenEventToAdobe(Map<String, String[]> params) {
