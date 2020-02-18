@@ -147,12 +147,10 @@ public class CouchbaseClient {
     boolean upserted = false;
     try {
       cacheClient = factory.getClient(datasourceName);
-      if (!getBucket(cacheClient).exists(adguid)) {
-        Map<String, String> guidMap = new HashMap<>();
-        guidMap.put(MAPPING_VALUES_PREFIX, values);
-        getBucket(cacheClient).upsert(JsonDocument.create(adguid, EXPIRY, JsonObject.from(guidMap)));
-        logger.debug("Adding new mapping. adguid=" + adguid + " " + MAPPING_VALUES_PREFIX + "= " + values);
-      }
+      Map<String, String> guidMap = new HashMap<>();
+      guidMap.put(MAPPING_VALUES_PREFIX, values);
+      getBucket(cacheClient).upsert(JsonDocument.create(adguid, EXPIRY, JsonObject.from(guidMap)));
+      logger.debug("Adding new mapping. adguid=" + adguid + " " + MAPPING_VALUES_PREFIX + "= " + values);
       upserted = true;
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
