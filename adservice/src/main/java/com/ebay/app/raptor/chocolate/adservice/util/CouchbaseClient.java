@@ -148,6 +148,7 @@ public class CouchbaseClient {
     try {
       cacheClient = factory.getClient(datasourceName);
       Map<String, String> guidMap = new HashMap<>();
+      // always upsert in order to update user id
       guidMap.put(MAPPING_VALUES_PREFIX, values);
       getBucket(cacheClient).upsert(JsonDocument.create(adguid, EXPIRY, JsonObject.from(guidMap)));
       logger.debug("Adding new mapping. adguid=" + adguid + " " + MAPPING_VALUES_PREFIX + "= " + values);
