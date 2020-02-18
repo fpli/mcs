@@ -149,6 +149,20 @@ paths:
           description: Rejected
         '500':
           description: The call was unsuccessful due to exceptions on the Server
+  /userid:
+    get:
+      summary: Get eBay USERID
+      description: Get eBay USERID by ADGUID
+      tags:
+        - userid
+      operationId: userid
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Rejected
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
 components:
   schemas:
     SyncEvent:
@@ -157,3 +171,6 @@ components:
         guid:
           type: string
           example: '7fbad10916d0aad6a7870f00f1631295'
+        userid:
+          type: string
+          example: '12345678'

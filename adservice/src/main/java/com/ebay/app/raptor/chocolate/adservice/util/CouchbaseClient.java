@@ -48,6 +48,8 @@ public class CouchbaseClient {
 
   private static final String CB_PREFIX = "adguid_";
 
+  private static final String MAPPING_VALUES_PREFIX = "values_";
+
   private final Metrics metrics = ESMetrics.getInstance();
 
   /**
@@ -119,37 +121,37 @@ public class CouchbaseClient {
   }
 
   /*get guid by adguid*/
-  public String getGuidByAdguid(String adguid) {
+  public String getValuesByAdguid(String adguid) {
     CacheClient cacheClient = null;
-    String guid = "";
+    String values = "";
     try {
       cacheClient = factory.getClient(datasourceName);
       JsonDocument document = getBucket(cacheClient).get(CB_PREFIX + adguid, JsonDocument.class);
       if (document != null) {
-        guid = document.content().get("guid").toString();
-        logger.debug("Get guid. adguid=" + adguid + " guid=" + guid);
+        values = document.content().get(MAPPING_VALUES_PREFIX).toString();
+        logger.debug("Get guid. adguid=" + adguid + " " + MAPPING_VALUES_PREFIX + "= " + values);
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
     } finally {
       factory.returnClient(cacheClient);
     }
-    return guid;
+    return values;
   }
 
   /**
    * Couchbase upsert operation, make sure return client to factory when exception
    */
-  private boolean upsert(String adguid, String guid) {
+  private boolean upsert(String adguid, String values) {
     CacheClient cacheClient = null;
     boolean upserted = false;
     try {
       cacheClient = factory.getClient(datasourceName);
       if (!getBucket(cacheClient).exists(adguid)) {
         Map<String, String> guidMap = new HashMap<>();
-        guidMap.put("guid", guid);
+        guidMap.put(MAPPING_VALUES_PREFIX, values);
         getBucket(cacheClient).upsert(JsonDocument.create(adguid, EXPIRY, JsonObject.from(guidMap)));
-        logger.debug("Adding new mapping. adguid=" + adguid + " guid=" + guid);
+        logger.debug("Adding new mapping. adguid=" + adguid + " " + MAPPING_VALUES_PREFIX + "= " + values);
       }
       upserted = true;
     } catch (Exception e) {
