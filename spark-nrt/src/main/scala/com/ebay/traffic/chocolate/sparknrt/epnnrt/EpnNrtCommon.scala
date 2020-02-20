@@ -1292,6 +1292,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     * get related info from uri, like rotation_id and so on
     * for rover uri, get related info from rover.ebay.com/.../
     * for mcs uri, get related info from query params
+    * for impression uri which is redirected from adservice, get related info from query params
     * @param uri, index, key
     * @return channel id
     */
