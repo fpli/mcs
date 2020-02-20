@@ -167,8 +167,6 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
           //3. build impression dataframe  save dataframe to files and rename files
           var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
-
-          impressionDf.show(false)
           impressionDf = impressionDf.repartition(params.partitions)
            saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
 
