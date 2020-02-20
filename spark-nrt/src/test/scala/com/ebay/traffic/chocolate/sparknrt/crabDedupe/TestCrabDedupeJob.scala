@@ -10,9 +10,9 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 
 class TestCrabDedupeJob extends BaseFunSuite{
   private val tmpPath = createTempDir()
-  private val workDir = tmpPath + "/workDir"
-  private val inputDir = tmpPath + "/inputDir"
-  private val outputDir = tmpPath + "/outputDir"
+  private val workDir = tmpPath + "/apps/tracking-events-workdir"
+  private val inputDir = tmpPath + "/apps/tracking-events-workdir/crabScp/dest"
+  private val outputDir = tmpPath + "/apps/tracking-events"
 
   @transient private lazy val hadoopConf = {
     new Configuration()
@@ -44,7 +44,7 @@ class TestCrabDedupeJob extends BaseFunSuite{
     )
     val params = Parameter(args)
     val job = new CrabDedupeJob(params)
-    job.LAG_FILE = tmpPath + "/last_ts/PAID_SEARCH/crab_min_ts"
+    job.LAG_FILE = tmpPath + "/last_ts/crabDedupe/crab_min_ts"
     job.run()
     val metadata = Metadata(workDir, "crabDedupe", MetadataEnum.dedupe)
     val dom = metadata.readDedupeOutputMeta()
@@ -52,11 +52,11 @@ class TestCrabDedupeJob extends BaseFunSuite{
     assert (dom(0)._2.contains("date=2019-03-27"))
     assert (dom(0)._2.contains("date=2019-03-28"))
 
-    val df1 = job.readFilesAsDFEx(dom(0)._2("date=2019-03-27"), job.schema_tfs.dfSchema, "csv", "bel")
+    val df1 = job.readFilesAsDFEx(dom(0)._2("date=2019-03-27"))
     df1.show()
     assert (df1.count() == 7)
 
-    val df2 = job.readFilesAsDFEx(dom(0)._2("date=2019-03-28"), job.schema_tfs.dfSchema, "csv", "bel")
+    val df2 = job.readFilesAsDFEx(dom(0)._2("date=2019-03-28"))
     df2.show()
     assert (df2.count() == 1)
 
