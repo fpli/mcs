@@ -39,6 +39,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   lazy val ebaysites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE)
   lazy val refererEbaySites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE)
+  //add ebayadservicesites to support impression events which are redirected from adservice to mcs
+  lazy val ebayadservicesites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?ebayadservices\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE)
 
   val cbData = asyncCouchbaseGet(df)
 
@@ -1294,7 +1296,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     * @return channel id
     */
   def getRelatedInfoFromUri(uri: String, index: Int, key: String): String = {
-    if (uri != null && ebaysites.matcher(uri.toLowerCase()).find()) {
+    if (uri != null && (ebaysites.matcher(uri.toLowerCase()).find() || ebayadservicesites.matcher(uri.toLowerCase()).find())) {
       return getQueryParam(uri, key)
     } else {
       val path = new URL(uri).getPath()
