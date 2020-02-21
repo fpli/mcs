@@ -54,7 +54,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Path("/v1")
 @Consumes(MediaType.APPLICATION_JSON)
-public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, SyncApi, GuidApi, UseridApi {
+public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, SyncApi, GuidApi, UseridApi, Sync2Api {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceResource.class);
   @Autowired
   private CollectionService collectionService;
@@ -239,14 +239,61 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
    * @return response
    */
   @Override
+  public Response sync2(String guid, String crid) {
+    if(null == guid) {
+      metrics.meter("SYNC_NOGUID");
+    }
+    if(null == crid) {
+      metrics.meter("SYNC_NOCRID");
+    }
+    Response res = null;
+    try {
+      String adguid = adserviceCookie.setAdguid(request, response);
+      boolean isAddMappingSuccess = idMapping.addMapping(adguid, guid, crid);
+      if (isAddMappingSuccess) {
+        metrics.meter(METRIC_ADD_MAPPING_SUCCESS);
+        res = Response.status(Response.Status.OK).build();
+      } else {
+        metrics.meter(METRIC_ADD_MAPPING_FAIL);
+        res = Response.status(Response.Status.BAD_REQUEST).build();
+      }
+      // send 1x1 pixel
+      ImageResponseHandler.sendImageResponse(response);
+    } catch (Exception e) {
+      try {
+        metrics.meter(METRIC_ADD_MAPPING_FAIL);
+        res = Response.status(Response.Status.BAD_REQUEST).build();
+      } catch (Exception ex) {
+        logger.warn(ex.getMessage(), ex);
+      }
+    }
+    return res;
+  }
+
+  /**
+   * Sync command used to map cookie by get
+   *
+   * @return response
+   */
+  @Override
   public Response sync(SyncEvent body) {
     Response res = null;
     try {
       String adguid = adserviceCookie.setAdguid(request, response);
       boolean isAddMappingSuccess = idMapping.addMapping(adguid, body.getGuid(), body.getUserid());
+      String origin = request.getHeader("Origin");
+      if(StringUtils.isEmpty(origin)){
+        origin="";
+      }
       if (isAddMappingSuccess) {
         metrics.meter(METRIC_ADD_MAPPING_SUCCESS);
-        res = Response.status(Response.Status.OK).build();
+        res = Response.status(Response.Status.OK)
+            .header("Access-Control-Allow-origin", origin)
+            .header("Access-Control-Allow-Methods", "POST")
+            .header("Access-Control-Allow-Headers", "Content-Type")
+            .header("Access-Control-Max-Age", "3600")
+            .header("Access-Control-Allow-origin", true)
+            .build();
       } else {
         metrics.meter(METRIC_ADD_MAPPING_FAIL);
         res = Response.status(Response.Status.BAD_REQUEST).build();
