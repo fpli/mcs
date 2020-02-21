@@ -135,6 +135,32 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SyncEvent'
+  /sync2:
+    get:
+      summary: Sync cookie by get
+      description: Sync cookie by get
+      tags:
+        - sync2
+      operationId: sync2
+      parameters:
+        - in: query
+          name: guid
+          schema:
+            type: string
+          required: true
+          description: persistent guid
+        - in: query
+          name: crid
+          schema:
+            type: string
+          description: encrypted uid
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Rejected
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
   /guid:
     get:
       summary: Get eBay GUID
