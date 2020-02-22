@@ -74,6 +74,6 @@ ${SPARK_HOME}/bin/spark-submit \
   --workDir "${WORK_DIR}" \
   --outPutDir "${OUTPUT_DIR}" \
   --elasticsearchUrl ${ES_URL} \
-  --outputFormat "parquet" \
-  --compressOutPut "false" \
+  --outputFormat "sequence" \
+  --compressOutPut "true" \
   --xidParallelNum 60

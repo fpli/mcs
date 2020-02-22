@@ -62,7 +62,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
   lazy val METRICS_INDEX_PREFIX = "imk-etl-metrics-"
 
-  @transient var properties: Properties = {
+  @transient lazy val properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("imk_etl.properties"))
     properties
