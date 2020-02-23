@@ -236,7 +236,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
               tools.metrics.flush()
             }
             iter
-          }).repartition(params.partitions)
+          }).repartition(params.partitions).cache()
 
           metrics.meter("imk.dump.out", imkDumpRepartitionDf.count(), Field.of[String, AnyRef]("channelType", channel))
 
@@ -623,6 +623,10 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
    * @param imkDumpDfMap imk dump job output dataframe
    */
   def imkTransformJob(imkDumpDfMap: mutable.Map[String, mutable.Map[String, DataFrame]]): Unit = {
+    fs.delete(new Path(imkETLTempDir), true)
+    fs.delete(new Path(dtlETLTempDir), true)
+    fs.delete(new Path(mgETLTempDir), true)
+
     // metafiles for output data
     val suffix = properties.getProperty("imketl.meta.output.suffix")
     var suffixArray: Array[String] = Array()
@@ -646,7 +650,8 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           .withColumn("user_id", getUserIdUdf(col("user_id"), col("cguid"), col("rvr_cmnd_type_cd")))
           .withColumn("mfe_id", getMfeIdUdf(col("mfe_name")))
           .withColumn("mgvalue_rsn_cd", getMgvalueRsnCdUdf(col("mgvaluereason")))
-          .cache()
+          .na.fill(schema_imk_table.defaultValues).cache()
+
         // set default values for some columns
         schema_apollo.filterNotColumns(imkTransformDf.columns).foreach(e => {
           imkTransformDf = imkTransformDf.withColumn(e, lit(schema_apollo.defaultValues(e)))
@@ -730,7 +735,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   private def saveToFile(dfMap: mutable.Map[String, DataFrame], tempDir: String, outputDir: String): Unit = {
     dfMap.foreach(kv => {
       val date = kv._1
-      val df = kv._2.repartition(1)
+      val df = kv._2.repartition(params.partitions)
       params.outputFormat match {
         case "sequence" =>
           df.rdd.map(row => ("", row.mkString("\u007F"))).saveAsSequenceFile(tempDir, compressCodec)
@@ -738,8 +743,6 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         case _ => throw new Exception("Invalid output format %s.".format(params.outputFormat))
       }
       simpleRenameFiles(tempDir, outputDir, date)
-      // when save as sequence file, the output dir should not be existed.
-      fs.delete(new Path(tempDir), true)
     })
   }
 
