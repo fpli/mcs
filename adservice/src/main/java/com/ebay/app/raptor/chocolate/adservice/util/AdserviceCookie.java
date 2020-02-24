@@ -11,7 +11,9 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.UnknownHostException;
 import java.util.UUID;
+import com.ebay.kernel.util.guid.Guid;
 
 /**
  * Read and write ebayadserving.com cookie. The purpose of this cookie is for synchronizing adguid with ebay.com guid.
@@ -27,11 +29,13 @@ public class AdserviceCookie {
   private static final String ADGUID = "adguid";
   // expires in 90 days
   private static final int COOKIE_EXPIRY = 90 * 24 * 60 * 60;
-
+  private static final String DEFAULT_ADGUID = "00000000000000000000000000000000";
   private static final String METRIC_READ_ADGUID = "METRIC_READ_ADGUID";
   private static final String METRIC_NO_ADGUID_IN_COOKIE = "METRIC_NO_ADGUID_IN_COOKIE";
   private static final String METRIC_HAS_ADGUID_IN_COOKIE = "METRIC_HAS_ADGUID_IN_COOKIE";
   private static final String METRIC_SET_NEW_ADGUID = "METRIC_SET_NEW_ADGUID";
+  private static final String METRIC_ERROR_CREATE_ADGUID = "METRIC_ERROR_CREATE_ADGUID";
+
 
   @PostConstruct
   public void postInit() {
@@ -68,7 +72,14 @@ public class AdserviceCookie {
     String adguid = readAdguid(request);
     if(adguid == null) {
       ESMetrics.getInstance().meter(METRIC_SET_NEW_ADGUID);
-      adguid = UUID.randomUUID().toString();
+      try {
+        // same format as current guid, 32 digits
+        adguid = UUID.randomUUID().toString().replaceAll("-","");
+      } catch(Exception e) {
+        ESMetrics.getInstance().meter(METRIC_ERROR_CREATE_ADGUID);
+        logger.warn(e.toString());
+        adguid = DEFAULT_ADGUID;
+      }
 
       ResponseCookie cookie;
       if(ApplicationOptions.getInstance().isSecureCookie()) {
@@ -90,4 +101,7 @@ public class AdserviceCookie {
     }
     return adguid;
   }
+
+
+
 }
