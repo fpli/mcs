@@ -4,6 +4,7 @@ import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.document.JsonDocument;
 import com.couchbase.client.java.document.json.JsonObject;
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
@@ -11,9 +12,11 @@ import com.ebay.dukes.builder.DefaultCacheFactoryBuilder;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
+import com.mysql.cj.util.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 
+import javax.persistence.Id;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,9 +49,8 @@ public class CouchbaseClient {
    */
   private static final int EXPIRY = (int)(System.currentTimeMillis()/1000) + 90 * 24 * 60 * 60;
 
-  private static final String CB_PREFIX = "adguid_";
-
-  private static final String MAPPING_VALUES_PREFIX = "values_";
+  private static final String GUID_MAP_KEY = "guid";
+  private static final String UID_MAP_KEY = "uid";
 
   private final Metrics metrics = ESMetrics.getInstance();
 
@@ -110,10 +112,10 @@ public class CouchbaseClient {
    * @param guid guid
    * @return upserted
    */
-  public boolean addMappingRecord(String adguid, String guid) {
+  public boolean addMappingRecord(String adguid, String guid, String uid) {
     boolean upserted = false;
     try {
-      upserted = upsert(CB_PREFIX + adguid, guid);
+      upserted = upsert(adguid, guid, uid);
     } catch (Exception e) {
       logger.warn("Couchbase upsert operation exception", e);
     }
@@ -121,37 +123,68 @@ public class CouchbaseClient {
   }
 
   /*get guid by adguid*/
-  public String getValuesByAdguid(String adguid) {
+  public String getGuidByAdguid(String adguid) {
     CacheClient cacheClient = null;
-    String values = "";
+    String guid = "";
     try {
       cacheClient = factory.getClient(datasourceName);
-      JsonDocument document = getBucket(cacheClient).get(CB_PREFIX + adguid, JsonDocument.class);
+      JsonDocument document = getBucket(cacheClient).get(IdMapable.ADGUID_GUID_PREFIX + adguid, JsonDocument.class);
       if (document != null) {
-        values = document.content().get(MAPPING_VALUES_PREFIX).toString();
-        logger.debug("Get guid. adguid=" + adguid + " " + MAPPING_VALUES_PREFIX + "= " + values);
+        guid = document.content().get(GUID_MAP_KEY).toString();
+        logger.debug("Get guid. adguid=" + adguid + " guid=" + guid);
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
     } finally {
       factory.returnClient(cacheClient);
     }
-    return values;
+    return guid;
+  }
+
+  /*get uid by adguid*/
+  public String getUidByAdguid(String adguid) {
+    CacheClient cacheClient = null;
+    String guid = "";
+    try {
+      cacheClient = factory.getClient(datasourceName);
+      JsonDocument document = getBucket(cacheClient).get(IdMapable.ADGUID_UID_PREFIX + adguid, JsonDocument.class);
+      if (document != null) {
+        guid = document.content().get(UID_MAP_KEY).toString();
+        logger.debug("Get guid. adguid=" + adguid + " uid=" + guid);
+      }
+    } catch (Exception e) {
+      logger.warn("Couchbase get operation exception", e);
+    } finally {
+      factory.returnClient(cacheClient);
+    }
+    return guid;
   }
 
   /**
    * Couchbase upsert operation, make sure return client to factory when exception
    */
-  private boolean upsert(String adguid, String values) {
+  private boolean upsert(String adguid, String guid, String uid) {
     CacheClient cacheClient = null;
     boolean upserted = false;
     try {
       cacheClient = factory.getClient(datasourceName);
-      Map<String, String> guidMap = new HashMap<>();
-      // always upsert in order to update user id
-      guidMap.put(MAPPING_VALUES_PREFIX, values);
-      getBucket(cacheClient).upsert(JsonDocument.create(adguid, EXPIRY, JsonObject.from(guidMap)));
-      logger.debug("Adding new mapping. adguid=" + adguid + " " + MAPPING_VALUES_PREFIX + "= " + values);
+      String adguidGuidKey = IdMapable.ADGUID_GUID_PREFIX + adguid;
+      String adguidUidKey = IdMapable.ADGUID_UID_PREFIX + adguid;
+
+      //update guid
+      if ((!getBucket(cacheClient).exists(adguidGuidKey)) && (!StringUtils.isNullOrEmpty(guid))) {
+        Map<String, String> guidMap = new HashMap<>();
+        guidMap.put(GUID_MAP_KEY, guid);
+        getBucket(cacheClient).upsert(JsonDocument.create(adguidGuidKey, EXPIRY, JsonObject.from(guidMap)));
+        logger.debug("Adding new mapping. adguid=" + adguid + " guid=" + guid);
+      }
+      //update uid
+      if ((!getBucket(cacheClient).exists(adguidUidKey)) && (!StringUtils.isNullOrEmpty(uid))) {
+        Map<String, String> uidMap = new HashMap<>();
+        uidMap.put(UID_MAP_KEY, uid);
+        getBucket(cacheClient).upsert(JsonDocument.create(adguidUidKey, EXPIRY, JsonObject.from(uidMap)));
+        logger.debug("Adding new mapping. adguid=" + adguid + " uid=" + guid);
+      }
       upserted = true;
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
