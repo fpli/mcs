@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 @Service
 public interface IdMapable {
 
-  // format = guid, userid
-  String format = "%s,%s";
+  String ADGUID_GUID_PREFIX = "a_g_";
+  String ADGUID_UID_PREFIX = "a_u_";
 
   /**
    * Add adguid -> guid mapping
@@ -22,44 +22,16 @@ public interface IdMapable {
   boolean addMapping(String adguid, String guid, String userId);
 
   /**
-   * Get values by adguid
-   * @param adguid adguid in cookie
-   * @return values in String. If there is no values return empty string.
-   */
-  String getValues(String adguid);
-  /**
    * Get guid by adguid
    * @param adguid adguid in cookie
    * @return guid in String. If there is no guid return empty string.
    */
-  default String getGuid(String adguid) {
-
-    String values = getValues(adguid);
-    if(StringUtils.isNullOrEmpty(values)) {
-      return "";
-    }
-    else {
-      return values.split(",")[0];
-    }
-  }
+  String getGuid(String adguid);
 
   /**
    * Get user id by adguid
    * @param adguid adguid in cookie
    * @return user id in String. If there is no user id return empty string.
    */
-  default String getUserid(String adguid) {
-    String values = getValues(adguid);
-    if(StringUtils.isNullOrEmpty(values))
-      return "";
-    else {
-      String[] splitedValues = values.split(",");
-      if(splitedValues.length > 1) {
-        return splitedValues[1];
-      }
-      else {
-        return "";
-      }
-    }
-  }
+  String getUid(String adguid);
 }

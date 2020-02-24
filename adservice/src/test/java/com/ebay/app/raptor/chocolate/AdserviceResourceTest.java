@@ -8,7 +8,6 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
-import com.ebay.app.raptor.chocolate.gen.model.SyncEvent;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
@@ -26,8 +25,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.inject.Inject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -64,7 +61,7 @@ public class AdserviceResourceTest {
   private final String redirectPath = "/marketingtracking/v1/redirect";
   private final String syncPath = "/marketingtracking/v1/sync";
   private final String guidPath = "/marketingtracking/v1/guid";
-  private final String useridPath = "/marketingtracking/v1/userid";
+  private final String useridPath = "/marketingtracking/v1/uid";
   private final String adobeOpenPath = "/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=14&id=h1d3e4dcb,2d1b8f79,1&segname=SOP708_SG49&country=US&pu=hrtHY5sgRPq&crd=20200110015225&sojTags=adcampid%id%adcamppu%pu%crd%crd%segname%segname&adobeParams=id,p1,p2,p3,p4";
 
 
@@ -119,13 +116,12 @@ public class AdserviceResourceTest {
 
   @Test
   public void sync() {
-    SyncEvent syncEvent = new SyncEvent();
-    syncEvent.setGuid("abcd-efgh");
-    syncEvent.setUserid("12345");
     Response syncResponse = client.target(svcEndPoint).path(syncPath)
+        .queryParam("guid", "abcd")
+        .queryParam("uid", "12345")
         .request()
         .accept(MediaType.APPLICATION_JSON_TYPE)
-        .post(Entity.json(syncEvent));
+        .get();
     assertEquals(200, syncResponse.getStatus());
 
     Response guidResponse = client.target(svcEndPoint).path(guidPath)
@@ -163,16 +159,16 @@ public class AdserviceResourceTest {
 
   @Test
   public void adobeOpen() throws URISyntaxException {
-    URIBuilder uriBuilder = new URIBuilder(svcEndPoint+impressionPath)
-        .addParameter("mkevt","4")
-        .addParameter("mkcid","7")
-        .addParameter("mkpid","14")
-        .addParameter("id","h1d3e4dcb,2d1b8f79,1")
-        .addParameter("segname","SOP708_SG49")
-        .addParameter("country","US")
-        .addParameter("pu","hrtHY5sgRPq")
-        .addParameter("sojTags","adcampid%id%adcamppu%pu%crd%crd%segname%segname")
-        .addParameter("adobeParams","id,p1,p2,p3,p4");
+    URIBuilder uriBuilder = new URIBuilder(svcEndPoint + impressionPath)
+        .addParameter("mkevt", "4")
+        .addParameter("mkcid", "7")
+        .addParameter("mkpid", "14")
+        .addParameter("id", "h1d3e4dcb,2d1b8f79,1")
+        .addParameter("segname", "SOP708_SG49")
+        .addParameter("country", "US")
+        .addParameter("pu", "hrtHY5sgRPq")
+        .addParameter("sojTags", "adcampid%id%adcamppu%pu%crd%crd%segname%segname")
+        .addParameter("adobeParams", "id,p1,p2,p3,p4");
     Response response = client.target(uriBuilder.build())
         .request()
         .accept(MediaType.APPLICATION_JSON_TYPE)

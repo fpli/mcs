@@ -116,32 +116,12 @@ paths:
         '500':
           description: The call was unsuccessful due to exceptions on the Server
   /sync:
-    post:
-      summary: Ad cookie sync
-      description: Sync eBay cookie with adservices cookie
-      tags:
-        - sync
-      operationId: sync
-      responses:
-        '200':
-          description: Success
-        '400':
-          description: Rejected
-        '500':
-          description: The call was unsuccessful due to exceptions on the Server
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SyncEvent'
-  /sync2:
     get:
       summary: Sync cookie by get
       description: Sync cookie by get
       tags:
-        - sync2
-      operationId: sync2
+        - sync
+      operationId: sync
       parameters:
         - in: query
           name: guid
@@ -150,7 +130,7 @@ paths:
           required: true
           description: persistent guid
         - in: query
-          name: crid
+          name: uid
           schema:
             type: string
           description: encrypted uid
@@ -175,7 +155,7 @@ paths:
           description: Rejected
         '500':
           description: The call was unsuccessful due to exceptions on the Server
-  /userid:
+  /uid:
     get:
       summary: Get eBay USERID
       description: Get eBay USERID by ADGUID

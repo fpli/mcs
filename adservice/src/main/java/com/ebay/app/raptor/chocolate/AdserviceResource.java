@@ -10,7 +10,6 @@ import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.gen.api.*;
-import com.ebay.app.raptor.chocolate.gen.model.SyncEvent;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
@@ -44,7 +43,7 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
 
 /**
  * Resource class
@@ -54,7 +53,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Path("/v1")
 @Consumes(MediaType.APPLICATION_JSON)
-public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, SyncApi, GuidApi, UseridApi, Sync2Api {
+public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, GuidApi, UseridApi, SyncApi {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceResource.class);
   @Autowired
   private CollectionService collectionService;
@@ -97,6 +96,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
   private static Configuration adobeConfig = ConfigurationBuilder.newConfig("adservice.mktAdobeClient");
   private static Client adobeClient = GingerClientBuilder.newClient(adobeConfig);
   private static String adobeEndpoint = (String) adobeClient.getConfiguration().getProperty(EndpointUri.KEY);
+
+  ExecutorService executorService =
+      Executors.newFixedThreadPool(10);
 
   /**
    * Initialize function
@@ -239,73 +241,30 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
    * @return response
    */
   @Override
-  public Response sync2(String guid, String crid) {
-    if(null == guid) {
-      metrics.meter("SYNC_NOGUID");
-    }
-    if(null == crid) {
-      metrics.meter("SYNC_NOCRID");
-    }
-    Response res = null;
-    try {
-      String adguid = adserviceCookie.setAdguid(request, response);
-      boolean isAddMappingSuccess = idMapping.addMapping(adguid, guid, crid);
-      if (isAddMappingSuccess) {
-        metrics.meter(METRIC_ADD_MAPPING_SUCCESS);
-        res = Response.status(Response.Status.OK).build();
-      } else {
-        metrics.meter(METRIC_ADD_MAPPING_FAIL);
-        res = Response.status(Response.Status.BAD_REQUEST).build();
-      }
-      // send 1x1 pixel
-      ImageResponseHandler.sendImageResponse(response);
-    } catch (Exception e) {
-      try {
-        metrics.meter(METRIC_ADD_MAPPING_FAIL);
-        res = Response.status(Response.Status.BAD_REQUEST).build();
-      } catch (Exception ex) {
-        logger.warn(ex.getMessage(), ex);
-      }
-    }
-    return res;
-  }
+  public Response sync(String guid, String uid) {
 
-  /**
-   * Sync command used to map cookie by get
-   *
-   * @return response
-   */
-  @Override
-  public Response sync(SyncEvent body) {
-    Response res = null;
-    try {
-      String adguid = adserviceCookie.setAdguid(request, response);
-      boolean isAddMappingSuccess = idMapping.addMapping(adguid, body.getGuid(), body.getUserid());
-      String origin = request.getHeader("Origin");
-      if(StringUtils.isEmpty(origin)){
-        origin="";
-      }
-      if (isAddMappingSuccess) {
-        metrics.meter(METRIC_ADD_MAPPING_SUCCESS);
-        res = Response.status(Response.Status.OK)
-            .header("Access-Control-Allow-origin", origin)
-            .header("Access-Control-Allow-Methods", "POST")
-            .header("Access-Control-Allow-Headers", "Content-Type")
-            .header("Access-Control-Max-Age", "3600")
-            .header("Access-Control-Allow-origin", true)
-            .build();
-      } else {
-        metrics.meter(METRIC_ADD_MAPPING_FAIL);
-        res = Response.status(Response.Status.BAD_REQUEST).build();
-      }
-    } catch (Exception e) {
+    String adguid = adserviceCookie.setAdguid(request, response);
+    Response res = Response.status(Response.Status.OK).build();
+    ImageResponseHandler.sendImageResponse(response);
+
+    executorService.submit(() -> {
       try {
-        metrics.meter(METRIC_ADD_MAPPING_FAIL);
-        res = Response.status(Response.Status.BAD_REQUEST).build();
-      } catch (Exception ex) {
-        logger.warn(ex.getMessage(), ex);
+        boolean isAddMappingSuccess = idMapping.addMapping(adguid, guid, uid);
+        if (isAddMappingSuccess) {
+          metrics.meter(METRIC_ADD_MAPPING_SUCCESS);
+        } else {
+          metrics.meter(METRIC_ADD_MAPPING_FAIL);
+        }
+
+      } catch (Exception e) {
+        try {
+          metrics.meter(METRIC_ADD_MAPPING_FAIL);
+        } catch (Exception ex) {
+          logger.warn(ex.getMessage(), ex);
+        }
       }
-    }
+    });
+
     return res;
   }
 
@@ -327,7 +286,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Syn
   @Override
   public Response userid() {
     String adguid = adserviceCookie.readAdguid(request);
-    String userid = idMapping.getUserid(adguid);
+    String userid = idMapping.getUid(adguid);
     return Response.status(Response.Status.OK).entity(userid).build();
   }
 

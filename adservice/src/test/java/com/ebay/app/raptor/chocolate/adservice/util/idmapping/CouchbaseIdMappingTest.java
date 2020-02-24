@@ -43,17 +43,17 @@ public class CouchbaseIdMappingTest {
     idMapping.addMapping("345", "456", "");
 
     assertEquals("456", idMapping.getGuid("123"));
-    assertEquals("12345", idMapping.getUserid("123"));
+    assertEquals("12345", idMapping.getUid("123"));
 
     assertEquals("", idMapping.getGuid("234"));
-    assertEquals("12345", idMapping.getUserid("234"));
+    assertEquals("12345", idMapping.getUid("234"));
 
     assertEquals("456", idMapping.getGuid("345"));
-    assertEquals("", idMapping.getUserid("345"));
+    assertEquals("", idMapping.getUid("345"));
 
 
     assertEquals("", idMapping.getGuid("2222"));
-    assertEquals("", idMapping.getUserid("2222"));
+    assertEquals("", idMapping.getUid("2222"));
   }
 
   @Test

@@ -12,16 +12,23 @@ import java.util.Map;
 @Service("lc")
 public class LocalCacheIdMapping implements IdMapable {
 
-  private Map<String, String> adguidGuidMap = new HashMap<>();
+  private Map<String, String> adguidIdMap = new HashMap<>();
 
   @Override
   public boolean addMapping(String adguid, String guid, String userId) {
-    adguidGuidMap.put(adguid, String.format(format, guid, userId));
+    adguidIdMap.put(ADGUID_GUID_PREFIX + adguid, guid);
+    adguidIdMap.put(ADGUID_UID_PREFIX + adguid, userId);
     return true;
   }
 
   @Override
-  public String getValues(String adguid) {
-    return adguidGuidMap.getOrDefault(adguid, "");
+  public String getGuid(String adguid) {
+    return adguidIdMap.getOrDefault(ADGUID_GUID_PREFIX + adguid, "");
   }
+
+  @Override
+  public String getUid(String adguid) {
+    return adguidIdMap.getOrDefault(ADGUID_UID_PREFIX + adguid, "");
+  }
+
 }
