@@ -11,9 +11,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.net.UnknownHostException;
 import java.util.UUID;
-import com.ebay.kernel.util.guid.Guid;
 
 /**
  * Read and write ebayadserving.com cookie. The purpose of this cookie is for synchronizing adguid with ebay.com guid.
@@ -101,7 +99,4 @@ public class AdserviceCookie {
     }
     return adguid;
   }
-
-
-
 }
