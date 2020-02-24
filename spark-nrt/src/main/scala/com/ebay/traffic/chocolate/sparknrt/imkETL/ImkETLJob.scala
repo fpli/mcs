@@ -650,6 +650,11 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           .withColumn("user_id", getUserIdUdf(col("user_id"), col("cguid"), col("rvr_cmnd_type_cd")))
           .withColumn("mfe_id", getMfeIdUdf(col("mfe_name")))
           .withColumn("mgvalue_rsn_cd", getMgvalueRsnCdUdf(col("mgvaluereason")))
+          /** when spark read csv file in crab transform, all empty value will be converted to null. As a result, empty
+           * dst_client_id will be converted to null firstly, and then converted to default value by
+           * na.fill(schema_imk_table.defaultValues).  setDefaultValueForDstClientIdUdf is needed to keep same with
+           * crab transform */
+          .withColumn("dst_client_id", setDefaultValueForDstClientIdUdf(col("dst_client_id")))
           .na.fill(schema_imk_table.defaultValues).cache()
 
         // set default values for some columns
@@ -743,6 +748,8 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         case _ => throw new Exception("Invalid output format %s.".format(params.outputFormat))
       }
       simpleRenameFiles(tempDir, outputDir, date)
+      // when save as sequence file, the output dir should not be existed.
+      fs.delete(new Path(tempDir), true)
     })
   }
 
@@ -754,6 +761,13 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       "-999"
     } else {
       kw_id
+    }
+  })
+  val setDefaultValueForDstClientIdUdf: UserDefinedFunction = udf((dstClientId: String) => {
+    if (StringUtils.isEmpty(dstClientId)) {
+      "0"
+    } else {
+      dstClientId
     }
   })
   val kwIsNotEmptyUdf: UserDefinedFunction = udf((keyword: String) => StringUtils.isNotEmpty(keyword))
