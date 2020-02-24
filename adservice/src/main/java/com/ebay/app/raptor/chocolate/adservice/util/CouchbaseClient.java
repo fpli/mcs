@@ -47,7 +47,7 @@ public class CouchbaseClient {
   /**
    * TTL is larger than 30 days, expiry is the end timestamp
    */
-  private static final int EXPIRY = (int)(System.currentTimeMillis()/1000) + 90 * 24 * 60 * 60;
+  private static final int EXPIRY = (int)(System.currentTimeMillis()/1000) + 31 * 24 * 60 * 60;
 
   private static final String GUID_MAP_KEY = "guid";
   private static final String UID_MAP_KEY = "uid";
