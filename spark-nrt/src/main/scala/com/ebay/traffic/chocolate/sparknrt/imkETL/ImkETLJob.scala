@@ -623,13 +623,6 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     fs.delete(new Path(dtlETLTempDir), true)
     fs.delete(new Path(mgETLTempDir), true)
 
-    // metafiles for output data
-    val suffix = properties.getProperty("imketl.meta.output.suffix")
-    var suffixArray: Array[String] = Array()
-    if (StringUtils.isNotEmpty(suffix)) {
-      suffixArray = suffix.split(",")
-    }
-
     val imkETLDfMap = mutable.Map[String, DataFrame]()
     val dtlETLDfMap = mutable.Map[String, DataFrame]()
     val mgETLDfMap = mutable.Map[String, DataFrame]()
