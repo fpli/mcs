@@ -588,9 +588,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
    * @return is bot or not
    */
   def isBotByUserAgent(brwsrName: String): Boolean = {
-    if (!StringUtils.isEmpty(brwsrName))
-      isBot(brwsrName, userAgentBotDawgDictionary)
-    false
+    isBot(brwsrName, userAgentBotDawgDictionary)
   }
 
   /**
@@ -599,9 +597,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
    * @return is bot or not
    */
   def isBotByIp(clntRemoteIp: String): Boolean = {
-    if (!StringUtils.isEmpty(clntRemoteIp))
-      isBot(clntRemoteIp, ipBotDawgDictionary)
-    false
+    isBot(clntRemoteIp, ipBotDawgDictionary)
   }
 
   def isBot(info: String, dawgDictionary: DawgDictionary): Boolean = {
