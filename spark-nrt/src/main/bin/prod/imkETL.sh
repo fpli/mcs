@@ -46,7 +46,7 @@ EXECUTOR_CORES=8
 
 JOB_NAME="IMK_ETL"
 
-for f in $(find $bin/../../conf/preprod -name '*.*'); do
+for f in $(find $bin/../../conf/prod -name '*.*'); do
   FILES=${FILES},file://$f;
 done
 
@@ -62,7 +62,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --executor-cores ${EXECUTOR_CORES} \
   ${SPARK_JOB_CONF} \
   --conf spark.yarn.executor.memoryOverhead=8192 \
-  ${bin}/../../lib_preprod/chocolate-spark-nrt-*.jar \
+  ${bin}/../../lib/chocolate-spark-nrt-*.jar \
   --appName ${JOB_NAME} \
   --mode yarn \
   --channel ${CHANNEL} \
