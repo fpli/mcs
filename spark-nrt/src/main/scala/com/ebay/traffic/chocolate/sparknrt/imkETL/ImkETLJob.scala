@@ -175,11 +175,13 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
     // delete input metas
     inputMeta.foreach(kv => {
+      val channel = kv._1
       kv._2.foreach(metaIter => {
         val metaFile = metaIter._1
         logger.info("delete meta %s".format(metaFile))
         fs.delete(new Path(metaFile), true)
       })
+      metrics.meter("imk.transform.processedMete", kv._2.length, Field.of[String, AnyRef]("channelType", channel))
     })
 
     if (metrics != null) {
