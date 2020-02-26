@@ -1,8 +1,9 @@
 package com.ebay.traffic.chocolate.sparknrt.imkETL
 
 import java.net.InetAddress
+import java.text.SimpleDateFormat
 import java.util
-import java.util.Properties
+import java.util.{Date, Properties}
 
 import com.couchbase.client.java.document.JsonDocument
 import com.ebay.kernel.patternmatch.dawg.{Dawg, DawgDictionary}
@@ -128,6 +129,8 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   lazy val xidConnectTimeout: Int = properties.getProperty("xid.xidConnectTimeout").toInt
   lazy val xidReadTimeout: Int = properties.getProperty("xid.xidReadTimeout").toInt
 
+  @transient lazy val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+
   @transient lazy val compressCodec: Option[Class[GzipCodec]] = {
     if (params.compressOutPut) {
       Some(classOf[GzipCodec])
@@ -222,7 +225,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
             .collect()
             .map(row => row.get(0).toString)
           if (!guidList.isEmpty) {
-            guidCguidMap = batchGetCguids(guidList)
+            guidCguidMap = batchGetCguids(channel, guidList)
           }
           val imkDumpDf = imkDump(df)
 
@@ -282,7 +285,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       .withColumn("src_rotation_id", col("src_rotation_id"))
       .withColumn("dst_rotation_id", col("dst_rotation_id"))
       .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(col("uri")))
-      .withColumn("lndng_page_url", replaceMkgroupidMktypeUdf(col("uri")))
+      .withColumn("lndng_page_url", replaceMkgroupidMktypeUdf(col("channel_type"), col("uri")))
       .withColumn("user_query", getUserQueryUdf(col("referer"), col("temp_uri_query")))
       .withColumn("event_ts", getDateTimeUdf(col("timestamp")))
       .withColumn("perf_track_name_value", getPerfTrackNameValueUdf(col("temp_uri_query")))
@@ -292,7 +295,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       .withColumn("user_map_ind", getUserMapIndUdf(col("user_id")))
       .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("uri")))
       .withColumn("mfe_name", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
-      .withColumn("cguid", getCguidUdf(col("cguid"), col("guid")))
+      .withColumn("cguid", getCguidUdf(col("channel_type"), col("cguid"), col("guid")))
   }
 
   /**
@@ -436,7 +439,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   val getBrowserTypeUdf: UserDefinedFunction = udf((userAgent: String) => tools.getBrowserType(userAgent))
   val getLandingPageDomainUdf: UserDefinedFunction = udf((uri: String) => tools.getDomain(uri))
   val getUserQueryUdf: UserDefinedFunction = udf((referer: String, query: String) => tools.getUserQuery(referer, query))
-  val replaceMkgroupidMktypeUdf: UserDefinedFunction = udf((uri: String) => replaceMkgroupidMktype(uri))
+  val replaceMkgroupidMktypeUdf: UserDefinedFunction = udf((channelType: String, uri: String) => replaceMkgroupidMktype(channelType, uri))
   val getDateTimeUdf: UserDefinedFunction = udf((timestamp: Long) => tools.getDateTimeFromTimestamp(timestamp))
   val getPerfTrackNameValueUdf: UserDefinedFunction = udf((query: String) => tools.getPerfTrackNameValue(query))
   val getKeywordUdf: UserDefinedFunction = udf((query: String) => tools.getParamFromQuery(query, tools.keywordParams))
@@ -444,8 +447,8 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   val getParamFromQueryUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getParamValueFromQuery(query, key))
   val getUserMapIndUdf: UserDefinedFunction = udf((userId: String) => tools.getUserMapInd(userId))
   val needQueryCBToGetCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => StringUtils.isEmpty(cguid) && StringUtils.isNotEmpty(guid))
-  val getCguidUdf: UserDefinedFunction = udf((cguid: String, guid: String) => getCguid(cguid, guid))
-  val judgeCGuidNotNullUdf: UserDefinedFunction = udf((cguid: String) => judgeCGuidNotNull(cguid))
+  val getCguidUdf: UserDefinedFunction = udf((channelType: String, cguid: String, guid: String) => getCguid(channelType, cguid, guid))
+  val judgeCGuidNotNullUdf: UserDefinedFunction = udf((channelType: String, cguid: String) => judgeCGuidNotNull(channelType, cguid))
 
   /**
    * override renameFiles to have special output file name for TD
@@ -480,12 +483,13 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
   /**
    * filder empty cguid traffic
+   * @param channelType channel
    * @param cguid cguid
    * @return
    */
-  def judgeCGuidNotNull(cguid: String): Boolean = {
+  def judgeCGuidNotNull(channelType:String, cguid: String): Boolean = {
     if (StringUtils.isEmpty(cguid)) {
-      metrics.meter("imk.dump.nullCguid", 1, Field.of[String, AnyRef]("channelType", params.channel))
+      metrics.meter("imk.dump.nullCguid", 1, Field.of[String, AnyRef]("channelType", channelType))
       false
     } else {
       true
@@ -497,10 +501,11 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
    * new parameter mkgroupid={adgroupid} and mktype={adtype}. Tracking’s MCS data pipeline job replace back to adtype
    * and adgroupid and persist into IMK so there wont be impact to downstream like data and science.
    * See <a href="https://jirap.corp.ebay.com/browse/XC-1464">replace landing page url and rvr_url's mktype and mkgroupid</a>
+   * @param channelType channel
    * @param uri tracking url
    * @return new tracking url
    */
-  def replaceMkgroupidMktype(uri: String): String = {
+  def replaceMkgroupidMktype(channelType:String, uri: String): String = {
     var newUri = ""
     if (StringUtils.isNotEmpty(uri)) {
       try {
@@ -509,7 +514,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       } catch {
         case e: Exception => {
           if (metrics != null) {
-            metrics.meter("imk.dump.malformed", 1, Field.of[String, AnyRef]("channelType", params.channel))
+            metrics.meter("imk.dump.malformed", 1, Field.of[String, AnyRef]("channelType", channelType))
           }
           logger.warn("MalformedUrl", e)
         }
@@ -520,19 +525,20 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
   /**
    * get cguid
+   * @param channelType channel
    * @param cguid cguid
    * @param guid guid
    * @return
    */
-  def getCguid(cguid: String, guid: String): String = {
+  def getCguid(channelType:String, cguid: String, guid: String): String = {
     if (StringUtils.isNotEmpty(cguid)) {
       cguid
     } else {
-      metrics.meter("imk.dump.tryCguidByGuid", 1, Field.of[String, AnyRef]("channelType", params.channel))
+      metrics.meter("imk.dump.tryCguidByGuid", 1, Field.of[String, AnyRef]("channelType", channelType))
       if (guidCguidMap != null) {
         val result = guidCguidMap.getOrDefault(guid, "")
         if (StringUtils.isNotEmpty(result)) {
-          metrics.meter("imk.dump.gotCguidByGuid", 1, Field.of[String, AnyRef]("channelType", params.channel))
+          metrics.meter("imk.dump.gotCguidByGuid", 1, Field.of[String, AnyRef]("channelType", channelType))
           result
         } else {
           guid
@@ -545,10 +551,11 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
   /**
    * async get cguid by guid list
+   * @param channel channel
    * @param list guid list
    * @return
    */
-  def batchGetCguids(list: Array[String]): util.HashMap[String, String] = {
+  def batchGetCguids(channel:String, list: Array[String]): util.HashMap[String, String] = {
     val startTime = System.currentTimeMillis
     val res = new util.HashMap[String, String]
     val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
@@ -571,14 +578,14 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting cguid by guid list" + e)
-        metrics.meter("imk.dump.error.cbquery", 1, Field.of[String, AnyRef]("channelType", params.channel))
+        metrics.meter("imk.dump.error.cbquery", 1, Field.of[String, AnyRef]("channelType", channel))
         // should we throw the exception and make the job fail?
         throw new Exception(e)
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
     val endTime = System.currentTimeMillis
-    metrics.mean("imk.dump.cb.latency", endTime - startTime, Field.of[String, AnyRef]("channelType", params.channel))
+    metrics.mean("imk.dump.cb.latency", endTime - startTime, Field.of[String, AnyRef]("channelType", channel))
     res
   }
 
@@ -638,6 +645,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           .withColumn("item_id", getApolloItemIdUdf(col("roi_item_id"), col("item_id")))
           .withColumn("user_id", getUserIdUdf(col("user_id"), col("cguid"), col("rvr_cmnd_type_cd")))
           .withColumn("mfe_id", getMfeIdUdf(col("mfe_name")))
+          .withColumn("event_ts", setMessageLagUdf(lit(channel), col("event_ts")))
           .withColumn("mgvalue_rsn_cd", getMgvalueRsnCdUdf(col("mgvaluereason")))
           /** when spark read csv file in crab transform, all empty value will be converted to null. As a result, empty
            * dst_client_id will be converted to null firstly, and then converted to default value by
@@ -760,17 +768,39 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     }
   })
   val kwIsNotEmptyUdf: UserDefinedFunction = udf((keyword: String) => StringUtils.isNotEmpty(keyword))
-  val getUserIdUdf: UserDefinedFunction = udf((userId: String, cguid: String, cmndType: String) => getUserIdByCguid(userId, cguid, cmndType))
+  val getUserIdUdf: UserDefinedFunction = udf((channelType:String, userId: String, cguid: String, cmndType: String) => getUserIdByCguid(channelType, userId, cguid, cmndType))
+  val setMessageLagUdf: UserDefinedFunction = udf((channelType:String, eventTs: String) => setMessageLag(channelType, eventTs))
+  /**
+   * set message lag
+   * @param channelType channel
+   * @param eventTs message event_ts
+   * @return
+   */
+  def setMessageLag(channelType:String, eventTs: String): String = {
+    if (StringUtils.isNotEmpty(eventTs)) {
+      try{
+        val messageDt = dateFormat.parse(eventTs)
+        val nowDt = new Date()
+        metrics.mean("imk.transform.messageLag", nowDt.getTime - messageDt.getTime, Field.of[String, AnyRef]("channelType", channelType))
+      } catch {
+        case e:Exception => {
+          logger.warn("parse event ts error", e)
+        }
+      }
+    }
+    eventTs
+  }
 
   /**
    * set value for userid.
    * 1, use origin userid if it's not empty.
    * 2, use cguid to call ERS to get user id
+   * @param channelType channel
    * @param userId origin user id
    * @param cguid cguid
    * @return user id
    */
-  def getUserIdByCguid(userId: String, cguid: String, cmndType: String): String = {
+  def getUserIdByCguid(channelType:String, userId: String, cguid: String, cmndType: String): String = {
     if (StringUtils.isEmpty(cmndType) || cmndType.equals("4")) {
       return userId
     }
@@ -778,10 +808,10 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     if (StringUtils.isEmpty(userId) || userId.equals("0")) {
       if (StringUtils.isNotEmpty(cguid)) {
         try{
-          metrics.meter("imk.transform.XidTryGetUserId", 1, Field.of[String, AnyRef]("channelType", params.channel))
+          metrics.meter("imk.transform.XidTryGetUserId", 1, Field.of[String, AnyRef]("channelType", channelType))
           val xid = xidRequest("cguid", cguid)
           if (xid.accounts.nonEmpty) {
-            metrics.meter("imk.transform.XidGotUserId", 1, Field.of[String, AnyRef]("channelType", params.channel))
+            metrics.meter("imk.transform.XidGotUserId", 1, Field.of[String, AnyRef]("channelType", channelType))
             result = xid.accounts.head
           }
         } catch {
