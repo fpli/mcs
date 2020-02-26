@@ -37,7 +37,8 @@ class TestEpnNrtCommon extends BaseFunSuite{
     "--mode", "local[8]",
     "--workDir", workDir,
     "--resourceDir", resourceDir,
-    "--filterTime", "0"
+    "--filterTime", "0",
+    "--outputDir", tmpPath
   )
   val params = Parameter(args)
 
@@ -146,8 +147,14 @@ class TestEpnNrtCommon extends BaseFunSuite{
 
   test("Test get landing page url name") {
     val responseHeader = "Referer:http://translate.google.com.mx|X-Purpose:preview|Location:http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&dashenId=10044|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/92d9dfe51670a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/47a11c671620a93c91006917fffa2a915d116016^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:10.108.159.177|User-Agent:Shuang-UP.Browser-baiduspider-ebaywinphocore"
-    val res = epnNrtCommon.getLndPageUrlName(responseHeader)
+    val res = epnNrtCommon.getLndPageUrlName(responseHeader, "")
     assert(res.equals("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2"))
+
+    val resNullLandingPage = epnNrtCommon.getLndPageUrlName(responseHeader, null)
+    assert(resNullLandingPage.equals("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2"))
+
+    val resValidLandingPage = epnNrtCommon.getLndPageUrlName(responseHeader, "http://www.ebay.de/itm/like/113936797595")
+    assert(resValidLandingPage.equals("http://www.ebay.de/itm/like/113936797595"))
   }
 
   test("Test get value from request") {
@@ -364,6 +371,34 @@ class TestEpnNrtCommon extends BaseFunSuite{
   test("test call roi sdk rule") {
     val res = epnNrtCommon.callRoiSdkRule(1, 1, 0)
     assert(res == 1)
+  }
+
+  test("test rotation id from uri") {
+    val roverUri = "http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1"
+    val mcsUri = "https://www.ebay.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556"
+    val adserviceUri = "https://www.ebayadservices.com/marketingtracking/v1/impression?mkevt=2&mkcid=1&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&additional=chaotest"
+    val roverRotation = epnNrtCommon.getRelatedInfoFromUri(roverUri, 3, "mkrid")
+    val mcsRotation = epnNrtCommon.getRelatedInfoFromUri(mcsUri, 3, "mkrid")
+    val adserviceRotation = epnNrtCommon.getRelatedInfoFromUri(adserviceUri, 3, "mkrid")
+    assert(roverRotation == "711-53200-19255-0")
+    assert(mcsRotation == "4080-157294-765411-6")
+    assert(adserviceRotation == "711-1245-1245-235")
+  }
+
+  test("test get channel id from channel type") {
+    assert(epnNrtCommon.getChannelId("EPN") == "1" )
+  }
+
+  test("test filter long term ebay sites ref") {
+    val roverUri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?icep_ff3=2&pub=5575378759&campid=5338273189&customid=&icep_item=233469755205&ipn=psmain&icep_vectorid=229466&kwid=902099&mtid=824&kw=lg&toolid=11111&dashenId=6626731601849466880&dashenCnt=0"
+    val mcsUri = "https://www.ebay.de/gh/useracquisition?mkevt=1&mkcid=1&mkrid=707-53477-19255-0&campid=5338586075&customid=dede-edge-ntp-topsites-affiliates&correlation=gci%3D6ed921ff1630aa415285df71fc83e944%2Csi%3D6edb0e5a1630aa6fd7b90629ffff9a92%2Cc%3D35%2CoperationId%3D2481888%2Ctrk-gflgs%3D&SSRFallback=0&critical=true"
+    val ebaySitesRef = "http://www.ebay.de/?mkevt=1&mkcid=1&mkrid=707-53477-19255-0&campid=5338586075&customid=dede-edge-ntp-topsites-affiliates"
+    val nonEbaySitesRef = "https://www.google.com/"
+
+    assert(true == epnNrtCommon.filterLongTermEbaySitesRef(roverUri, ebaySitesRef))
+    assert(true == epnNrtCommon.filterLongTermEbaySitesRef(roverUri, nonEbaySitesRef))
+    assert(false == epnNrtCommon.filterLongTermEbaySitesRef(mcsUri, ebaySitesRef))
+    assert(true == epnNrtCommon.filterLongTermEbaySitesRef(mcsUri, nonEbaySitesRef))
   }
 
 }

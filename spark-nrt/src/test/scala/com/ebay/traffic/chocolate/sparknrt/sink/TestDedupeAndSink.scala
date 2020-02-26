@@ -28,7 +28,8 @@ class TestDedupeAndSink extends BaseFunSuite {
     "--kafkaTopic", topic,
     "--workDir", workDir,
     "--outputDir", outputDir,
-    "--elasticsearchUrl", "http://10.148.181.34:9200"
+    "--elasticsearchUrl", "http://10.148.181.34:9200",
+    "--couchbaseDedupe", "false"
   )
 
   val params = Parameter(args)
@@ -56,8 +57,8 @@ class TestDedupeAndSink extends BaseFunSuite {
     job.sdf.parse(date).getTime
   }
 
-  def sendFilterMessage(snapshotId: Long, publisherId: Long, campaignId: Long, date: String): FilterMessage = {
-    val message = TestHelper.newFilterMessage(snapshotId, publisherId, campaignId, getTimestamp(date))
+  def sendFilterMessage(snapshotId: Long, shortSnapshotId: Long, publisherId: Long, campaignId: Long, date: String): FilterMessage = {
+    val message = TestHelper.newFilterMessage(snapshotId, shortSnapshotId, publisherId, campaignId, getTimestamp(date))
     val record = new ProducerRecord[java.lang.Long, FilterMessage](
       topic, message.getSnapshotId, message)
     producer.send(record)
@@ -73,11 +74,11 @@ class TestDedupeAndSink extends BaseFunSuite {
     val DATE_COL1 = job.DATE_COL + "=" + date1
     val DATE_COL2 = job.DATE_COL + "=" + date2
 
-    val message1 = sendFilterMessage(1L, 11L, 111L, date1)
-    val message2 = sendFilterMessage(2L, 22L, 222L, date1)
-    sendFilterMessage(1L, 11L, 111L, date1) // send duplicate message
-    val message3 = sendFilterMessage(3L, 33L, 333L, date2)
-    sendFilterMessage(3L, 33L, 333L, date2) // send duplicate message
+    val message1 = sendFilterMessage(11L, 1L, 11L, 111L, date1)
+    val message2 = sendFilterMessage(22L, 2L, 22L, 222L, date1)
+    sendFilterMessage(11L, 1L, 11L, 111L, date1) // send duplicate message
+    val message3 = sendFilterMessage(33L, 3L, 33L, 333L, date2)
+    sendFilterMessage(33L, 3L, 33L, 333L, date2) // send duplicate message
 
     job.run()
 
@@ -86,6 +87,28 @@ class TestDedupeAndSink extends BaseFunSuite {
     assert (dom.length == 1)
     assert (dom(0)._2.contains(DATE_COL1))
     assert (dom(0)._2.contains(DATE_COL2))
+
+    // validate .imketl meta file exists
+    assert(job.jobProperties.getProperty("meta.output.suffix").equals(".imketl"))
+    val imtETLMetaFiles = metadata.readDedupeOutputMeta(".imketl")
+    assert(dom.length == imtETLMetaFiles.length)
+    for (i <- dom.indices) {
+      val fileName = dom(i)._1
+      val targetFileName = imtETLMetaFiles(i)._1
+      // validate meta file name
+      assert((fileName + ".imketl").equals(targetFileName))
+      // validate meta file content
+      dom(i)._2.foreach(kv => {
+        val key = kv._1
+        val value = kv._2
+        assert(value.sameElements(imtETLMetaFiles(i)._2(key)))
+      })
+      imtETLMetaFiles(i)._2.foreach(kv => {
+        val key = kv._1
+        val value = kv._2
+        assert(value.sameElements(dom(i)._2(key)))
+      })
+    }
 
     val df1 = job.readFilesAsDFEx(dom(0)._2.get(DATE_COL1).get)
     df1.show()
@@ -97,11 +120,11 @@ class TestDedupeAndSink extends BaseFunSuite {
 
     metadata.deleteDedupeOutputMeta(dom(0)._1)
 
-    val message4 = sendFilterMessage(4L, 44L, 444L, date1)
-    val message5 = sendFilterMessage(5L, 55L, 555L, date2)
-    sendFilterMessage(1L, 11L, 111L, date1) // send duplicate message
-    sendFilterMessage(2L, 22L, 222L, date1) // send duplicate message
-    sendFilterMessage(3L, 33L, 333L, date2) // send duplicate message
+    val message4 = sendFilterMessage(44L, 4L, 44L, 444L, date1)
+    val message5 = sendFilterMessage(55L, 5L, 55L, 555L, date2)
+    sendFilterMessage(999L, 1L, 11L, 111L, date1) // duplicated short snapshot id, different snapshot id
+    sendFilterMessage(22L, 2L, 22L, 222L, date1) // send duplicate message
+    sendFilterMessage(33L, 3L, 33L, 333L, date2) // send duplicate message
 
     job.run()
 

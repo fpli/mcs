@@ -1,0 +1,4 @@
+type=command
+dependencies=DailyClickTrendReport,DailyDomainTrendReport
+command=bash DailyClickTrendDone.sh
+failure.emails=lxiong1@ebay.com

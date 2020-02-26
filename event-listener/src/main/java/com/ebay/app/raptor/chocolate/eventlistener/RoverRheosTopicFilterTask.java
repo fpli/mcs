@@ -12,6 +12,7 @@ import com.ebay.traffic.monitoring.ESMetrics;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
+import org.apache.commons.lang3.Validate;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
@@ -24,6 +25,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.apache.commons.lang3.StringUtils;
 import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +48,8 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static final String INCOMING_PAGE_ROVER = "IncomingPageRover";
   private static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
   private static final String INCOMING_PAGE_ROI = "IncomingPageRoi";
+  private static final String INCOMING_PAGE_ROVERNS = "IncomingPageRoverNS";
+  private static final String INCOMING_PAGE_NATURAL_SEARCH = "IncomingPageNaturalSearch";
 
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
@@ -121,7 +126,7 @@ public class RoverRheosTopicFilterTask extends Thread {
       if ((round % 10000) == 1) logger.warn(String.format("Round %d from rheos", round));
       try {
         processRecords(rheosConsumer, producer);
-      } catch (Throwable e) {
+      } catch (Exception e) {
         logger.error("Something wrong:", e);
       }
     }
@@ -255,8 +260,8 @@ public class RoverRheosTopicFilterTask extends Thread {
           //get lowercase parameter in case some publishers may put different case of characters
           MultiValueMap<String, String> lowerCaseParams = new LinkedMultiValueMap<>();
           MultiValueMap<String, String> params = uriComponents.getQueryParams();
-          for (String key: params.keySet()) {
-            lowerCaseParams.put(key.toLowerCase(), params.get(key));
+          for (Map.Entry<String, List<String>> entry : params.entrySet()) {
+            lowerCaseParams.put(entry.getKey().toLowerCase(), entry.getValue());
           }
 
           // source and destination rotation id are parsed later in epn nrt
@@ -265,7 +270,15 @@ public class RoverRheosTopicFilterTask extends Thread {
 
           long campaignId = -1L;
           try{
-            campaignId = Long.valueOf(lowerCaseParams.get("campid").get(0));
+            List<String> list = lowerCaseParams.get("campid");
+            if (list == null) {
+              throw new IllegalArgumentException("no campid");
+            }
+            String first = list.get(0);
+            if (first == null) {
+              throw new IllegalArgumentException("no campid");
+            }
+            campaignId = Long.valueOf(first);
             if(campaignId == 5338380161l) {
               logger.info("Success5338380161: " + uri);
               ESMetrics.getInstance().meter("Success5338380161");
@@ -275,6 +288,18 @@ public class RoverRheosTopicFilterTask extends Thread {
           }
           record.setCampaignId(campaignId);
           record.setPublisherId(-1L);
+
+          // get landingPageUrl from applicationPayload.url_mpre
+          String landingPageUrl = coalesce(applicationPayload.get(new Utf8("url_mpre")), empty).toString();
+          try {
+            if(landingPageUrl.startsWith("https%3A%2F%2F") || landingPageUrl.startsWith("http%3A%2F%2F")) {
+              landingPageUrl = URLDecoder.decode(landingPageUrl, "UTF-8");
+            }
+          } catch (Exception ex) {
+            ESMetrics.getInstance().meter("DecodeEpnMobileClicksLandingPageUrlError");
+            logger.warn("Decode EPN Mobile clicks landing page url error");
+          }
+          record.setLandingPageUrl(landingPageUrl);
 
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
@@ -315,6 +340,52 @@ public class RoverRheosTopicFilterTask extends Thread {
         record.setCampaignId(-1L);
         record.setPublisherId(-1L);
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
+      }
+        else if(pageId == 3085) {
+        ESMetrics.getInstance().meter(INCOMING_PAGE_ROVERNS);
+        HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
+
+        // Page 3085 have events including channel 3 (natural search) and channel 16 (social media)
+        // Now we only send natural search events
+        if (null == applicationPayload.get(new Utf8("chnl"))
+                || applicationPayload.get(new Utf8("chnl")).length() == 0) {
+
+          //click events are not be sent when applicationPayload.chnl is null
+          ESMetrics.getInstance().meter("GetNullRoverNSChannelId");
+          logger.warn("Get null RoverNS channel id");
+
+        } else if (applicationPayload.get(new Utf8("chnl")).toString().equals("3")) {
+          ESMetrics.getInstance().meter(INCOMING_PAGE_NATURAL_SEARCH);
+
+          String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.NATURAL_SEARCH);
+          String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
+
+          ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
+                  0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.NATURAL_SEARCH, HttpMethod.GET, "", false);
+
+          setCommonFields(record, applicationPayload, genericRecord);
+
+          // TODO: Remove this logic after release and everything stable
+          // set short snapshot id to be from Rheos event so that when inserting into TD, it can be deduped by primary index
+          String rvrIdStr = coalesce(applicationPayload.get(new Utf8("rvrid")), empty).toString();
+          if (StringUtils.isNumeric(rvrIdStr)) {
+            record.setShortSnapshotId(Long.valueOf(rvrIdStr));
+          }
+
+          String uri = "https://rover.ebay.com" + urlQueryString;
+          record.setUri(uri);
+
+          record.setHttpMethod(HttpMethod.GET);
+
+          // source and destination rotation id parse for natural search
+          Long rotationId = urlQueryString.split("/").length > 3 ? Long.valueOf(urlQueryString.split("/")[3].split("\\?")[0].replace("-", "")) : 0l;
+          record.setSrcRotationId(rotationId);
+          record.setDstRotationId(rotationId);
+
+          record.setCampaignId(-1L);
+          record.setPublisherId(-1L);
+          producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
+        }
       }
     }
   }

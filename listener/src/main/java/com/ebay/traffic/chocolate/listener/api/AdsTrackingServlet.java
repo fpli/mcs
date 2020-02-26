@@ -29,14 +29,14 @@ public class AdsTrackingServlet extends HttpServlet {
   /**
    * Metrics client instance
    */
-  private Metrics metrics;
+  private static Metrics metrics;
 
-  private Producer<Long, ListenerMessage> producer;
+  private static Producer<Long, ListenerMessage> producer;
 
   /**
    * Message object parser instance
    */
-  private MessageObjectParser parser;
+  private static MessageObjectParser parser;
 
   public AdsTrackingServlet(final Metrics metrics, final MessageObjectParser parser) {
     this.metrics = metrics;
@@ -44,16 +44,19 @@ public class AdsTrackingServlet extends HttpServlet {
   }
 
   @Override
-  public void init() {
+  public synchronized void init() {
     producer = KafkaSink.get();
 
-    if (parser == null) parser = MessageObjectParser.getInstance();
-    if (metrics == null) metrics = ESMetrics.getInstance();
+    if (parser == null)
+      parser = MessageObjectParser.getInstance();
+    if (metrics == null)
+      metrics = ESMetrics.getInstance();
   }
 
   /**
    * doGet method
    */
+  @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) {
     doRequest(request, response);
   }
@@ -61,6 +64,7 @@ public class AdsTrackingServlet extends HttpServlet {
   /**
    * doPost method
    */
+  @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) {
     doRequest(request, response);
   }

@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.crabDedupe
 
 import java.net.URI
-import java.time.format.DateTimeFormatter
+import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import java.time.{ZoneId, ZonedDateTime}
 
 import com.couchbase.client.java.document.JsonDocument
@@ -36,7 +36,7 @@ class CrabDedupeJob(params: Parameter)
   lazy val DEDUPE_KEY_PREFIX: String = params.appName + "_"
   lazy val couchbaseTTL: Int = params.couchbaseTTL
   lazy val METRICS_INDEX_PREFIX: String = "crab-metrics-"
-  lazy val LAG_FILE: String = "hdfs://elvisha/apps/tracking-events-workdir/last_ts/PAID_SEARCH/crab_min_ts"
+  var LAG_FILE: String = "hdfs://elvisha/apps/tracking-events-workdir/last_ts/crabDedupe/crab_min_ts"
   lazy val compression: String = {
     if(params.snappyCompression) {
       "snappy"
@@ -102,16 +102,21 @@ class CrabDedupeJob(params: Parameter)
     // clear temp folders, clear
     fs.delete(new Path(dedupeOutTempDir), true)
 
+    logger.info("read files num %s".format(inputFiles.length))
+    logger.info("read files %s".format(inputFiles.mkString(",")))
+
     val df = readFilesAsDFEx(inputFiles, schema_tfs.dfSchema, "csv", "bel")
       .dropDuplicates("rvr_id")
       .cache()
 
     val lag =  df.agg(min(df.col("event_ts"))).head().getString(0)
 
-    if (!StringUtils.isEmpty(lag)) {
-      val time = ZonedDateTime.parse(lag, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault()))
+    val minEventDateTime = toDateTime(lag)
+    if (minEventDateTime.isDefined) {
       val output = lvsFs.create(new Path(LAG_FILE), true)
-      output.writeBytes(time.toInstant.toEpochMilli.toString)
+      logger.info("min event_ts %s".format(lag))
+      output.writeBytes(minEventDateTime.get.toInstant.toEpochMilli.toString)
+      output.writeBytes(System.getProperty("line.separator"))
       output.close()
     }
 
@@ -130,18 +135,42 @@ class CrabDedupeJob(params: Parameter)
         .filter(dedupeRvrIdByCBUdf(col("rvr_id"), col("rvr_cmnd_type_cd")))
         .repartition(params.partitions)
       val tempOutFolder = dedupeOutTempDir + "/date=" + date
-      saveDFToFiles(oneDayDf, tempOutFolder, compression, "csv", "bel")
+      saveDFToFiles(oneDayDf, tempOutFolder)
       val files = renameFiles(outputDir, tempOutFolder, "date=" + date)
+      logger.info("output %s %s".format(date, files.mkString(",")))
       DateFiles("date=" + date, files)
     })
     outputMetadata.writeDedupeOutputMeta(MetaFiles(outputMetas))
     inputFiles.foreach(file => {
+      logger.info("delete %s".format(file))
       lvsFs.delete(new Path(file), true)
     })
     metrics.meter("crab.dedupe.processedFiles", inputFiles.length)
     if(metrics != null) {
       metrics.flush()
       metrics.close()
+    }
+  }
+
+  /**
+   * Convert datetime string to ZoneDateTime
+   * @param dateTimeStr datetime string
+   * @return ZoneDateTime or None if the dateTimeStr format is wrong
+   */
+  def toDateTime(dateTimeStr: String): Option[ZonedDateTime] = {
+    if (StringUtils.isEmpty(dateTimeStr)) {
+      logger.warn("event_ts is empty")
+      metrics.meter("crab.dedupe.InvalidEventTs")
+      return None
+    }
+    try{
+      Some(ZonedDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault())))
+    } catch {
+      case _: DateTimeParseException => {
+        logger.warn("invalid event_ts {}", dateTimeStr)
+        metrics.meter("crab.dedupe.InvalidEventTs")
+        None
+      }
     }
   }
 
@@ -172,43 +201,6 @@ class CrabDedupeJob(params: Parameter)
       }
     }
     result
-  }
-
-  /**
-    * move to destination folder
-    * @param outputDir final destination
-    * @param sparkDir temp result dir
-    * @param date current handled date
-    * @return files array handled
-    */
-  override def renameFiles(outputDir: String, sparkDir: String, date: String): Array[String] = {
-    // rename result to output dir
-    val dateOutputPath = new Path(outputDir + "/" + date)
-    var max = -1
-    if (fs.exists(dateOutputPath)) {
-      val outputStatus = fs.listStatus(dateOutputPath)
-      if (outputStatus.length > 0) {
-        max = outputStatus.map(status => {
-          val name = status.getPath.getName
-          Integer.valueOf(name.substring(5, name.indexOf(".")))
-        }).sortBy(i => i).last
-      }
-    } else {
-      fs.mkdirs(dateOutputPath)
-    }
-
-    val fileStatus = fs.listStatus(new Path(sparkDir))
-    val files = fileStatus.filter(status => status.getPath.getName != "_SUCCESS")
-      .zipWithIndex
-      .map(swi => {
-        val src = swi._1.getPath
-        val seq = ("%5d" format max + 1 + swi._2).replace(" ", "0")
-        val target = new Path(dateOutputPath, s"part-$seq.$dataFileSuffix")
-        logger.info("Rename from: " + src.toString + " to: " + target.toString)
-        fs.rename(src, target)
-        target.toString
-      })
-    files
   }
 
   /**

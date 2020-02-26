@@ -9,10 +9,15 @@ import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.ColumnPositionMappingStrategy;
+import com.opencsv.CSVReader;
 
 public class CSVUtil {
 
@@ -79,7 +84,6 @@ public class CSVUtil {
 	 * @param filePath
 	 * @param headers  csv head
 	 * @return CSVRecord record
-	 * @throws IOException
 	 **/
 	public static List<CSVRecord> readCSV(String filePath, String[] headers) {
 
@@ -101,6 +105,52 @@ public class CSVUtil {
 			logger.info("read csv exception: " + e.getMessage());
 			return null;
 		}
+	}
 
+	/**
+	 * read csv file
+	 *
+	 * @param filePath
+	 * @return CSVRecord record
+	 **/
+	public static List<CSVRecord> readCSV(String filePath, char delimiter) {
+
+		try {
+			//create CSVFormat
+			CSVFormat formator = CSVFormat.DEFAULT.withDelimiter(delimiter).withRecordSeparator("\r\n");
+
+			FileReader fileReader = new FileReader(filePath);
+
+			//create CSVParser object
+			CSVParser parser = new CSVParser(fileReader, formator);
+
+			List<CSVRecord> records = parser.getRecords();
+
+			parser.close();
+			fileReader.close();
+			return records;
+		} catch (Exception e) {
+			logger.info("read csv exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+
+
+	public static <T> List<T> mapToBean(String filePath, Class<T> mapToClass, char delimeter) throws FileNotFoundException, IOException{
+		CsvToBean<T> csvToBean = new CsvToBean<T>();
+		ArrayList<String> columnList = new ArrayList<>();
+		Arrays.stream(mapToClass.getDeclaredFields()).forEach(field -> {
+			columnList.add(field.getName());
+		});
+		String[] columns = columnList.toString().substring(1, columnList.toString().length() - 1).split(",");
+		ColumnPositionMappingStrategy strategy = new ColumnPositionMappingStrategy();
+		strategy.setType(mapToClass);
+		strategy.setColumnMapping(columns);
+
+		CSVReader reader = new CSVReader(new FileReader(filePath), delimeter);
+		CsvToBean<T> csv = new CsvToBean<T>();
+		List<T> list = csv.parse(strategy, reader);
+		return list;
 	}
 }

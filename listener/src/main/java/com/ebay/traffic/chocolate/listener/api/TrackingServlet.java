@@ -23,7 +23,7 @@ public class TrackingServlet extends HttpServlet {
 
   private static final String SNID_PATTERN = "snid";
 
-  private Producer<Long, ListenerMessage> producer;
+  private static Producer<Long, ListenerMessage> producer = KafkaSink.get();
 
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
@@ -31,12 +31,12 @@ public class TrackingServlet extends HttpServlet {
   /**
    * Metrics client instance
    */
-  private Metrics metrics;
+  private static Metrics metrics = ESMetrics.getInstance();
 
   /**
    * Message object parser instance
    */
-  private MessageObjectParser parser;
+  private static MessageObjectParser parser;
 
   public TrackingServlet(final Metrics metrics, final MessageObjectParser parser) {
     this.metrics = metrics;
@@ -44,7 +44,7 @@ public class TrackingServlet extends HttpServlet {
   }
 
   @Override
-  public void init() {
+  public synchronized void init() {
     producer = KafkaSink.get();
 
     if (parser == null)
@@ -56,6 +56,7 @@ public class TrackingServlet extends HttpServlet {
   /**
    * doGet method
    */
+  @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) {
     doRequest(request, response);
   }
@@ -63,6 +64,7 @@ public class TrackingServlet extends HttpServlet {
   /**
    * doPost method
    */
+  @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) {
     doRequest(request, response);
   }
@@ -98,12 +100,7 @@ public class TrackingServlet extends HttpServlet {
       event.respond(response);
 
       // Derive the campaign ID
-      try {
-        campaignId = Long.parseLong(event.getCollectionID());
-      } catch (NumberFormatException e) {
-        logger.error("Error in parsing collection as campaign=" + event.getCollectionID() + " for url=" + request.getRequestURL());
-        return;
-      }
+      campaignId = Long.parseLong(event.getCollectionID());
       if (event.getPayload() != null && event.getPayload().containsKey(SNID_PATTERN)) {
         snid = event.getPayload().get(SNID_PATTERN).toString();
       }
@@ -120,6 +117,9 @@ public class TrackingServlet extends HttpServlet {
       metrics.meter("TrackingSuccess", 1, Field.of(CHANNEL_ACTION, event.getAction().getAvro().toString()),
           Field.of(CHANNEL_TYPE, event.getChannel().toString()));
 
+    } catch (NumberFormatException e) {
+      logger.error("Error in parsing collection as campaign=" + event.getCollectionID()
+          + " for url=" + request.getRequestURL());
     } catch (Exception e) {
       logger.error("Couldn't respond to tracking event for " + request.getRequestURL(), e);
     }

@@ -129,15 +129,16 @@ class AmsClickReport(val inputdir: String, val outputdir: String, val jobtask: S
 
   def hourlyClickCount = {
     logger.info("hourlyClickCount function")
-    val epnClickToday = onceClickCount(inputdir + "date=" + getToady(isTest) + "/dw_ams.ams_clicks_cs_*.dat.gz").withColumn("count_dt", lit(getToady(isTest)))
-    val epnClickYesterday = onceClickCount(inputdir + "date=" + getYesterday(isTest) + "/dw_ams.ams_clicks_cs_*.dat.gz").withColumn("count_dt", lit(getYesterday(isTest)))
-    val epnClickBeforeYesterday = onceClickCount(inputdir + "date=" + getBeforeYesterday(isTest) + "/dw_ams.ams_clicks_cs_*.dat.gz").withColumn("count_dt", lit(getBeforeYesterday(isTest)))
+    val epnClickToday = onceClickCount(inputdir + "click_dt=" + getToady(isTest) + "/dw_ams.ams_clicks_cs_*.dat.gz").withColumn("count_dt", lit(getToady(isTest)))
+    val epnClickYesterday = onceClickCount(inputdir + "click_dt=" + getYesterday(isTest) + "/dw_ams.ams_clicks_cs_*.dat.gz").withColumn("count_dt", lit(getYesterday(isTest)))
+    val epnClickBeforeYesterday = onceClickCount(inputdir + "click_dt=" + getBeforeYesterday(isTest) + "/dw_ams.ams_clicks_cs_*.dat.gz").withColumn("count_dt", lit(getBeforeYesterday(isTest)))
 
     val total = epnClickToday.union(epnClickYesterday).union(epnClickBeforeYesterday)
     total.select("count_dt", "click_hour", "click_count", "rsn_cd", "roi_fltr_yn_ind")
       .repartition(1)
       .write
       .option("header", "true")
+      .option("compression", "none")
       .csv(outputdir)
   }
 
@@ -207,6 +208,7 @@ class AmsClickReport(val inputdir: String, val outputdir: String, val jobtask: S
       .repartition(1)
       .write
       .option("header", "true")
+      .option("compression", "none")
       .csv(outputdir)
   }
 
@@ -224,15 +226,16 @@ class AmsClickReport(val inputdir: String, val outputdir: String, val jobtask: S
 
   def dailyDomainTrend = {
 
-    val clickTrendToday = oneDayDomainTrend(inputdir + "date=" + getToady(isTest), getToady(isTest)).withColumn("click_dt", lit(getToady(isTest)))
-    val clickTrendYesterday = oneDayDomainTrend(inputdir + "date=" + getYesterday(isTest), getYesterday(isTest)).withColumn("click_dt", lit(getYesterday(isTest)))
-    val clickTrendBeforeYesterday = oneDayDomainTrend(inputdir + "date=" + getBeforeYesterday(isTest), getYesterday(isTest)).withColumn("click_dt", lit(getBeforeYesterday(isTest)))
+    val clickTrendToday = oneDayDomainTrend(inputdir + "click_dt=" + getToady(isTest), getToady(isTest)).withColumn("click_dt", lit(getToady(isTest)))
+    val clickTrendYesterday = oneDayDomainTrend(inputdir + "click_dt=" + getYesterday(isTest), getYesterday(isTest)).withColumn("click_dt", lit(getYesterday(isTest)))
+    val clickTrendBeforeYesterday = oneDayDomainTrend(inputdir + "click_dt=" + getBeforeYesterday(isTest), getYesterday(isTest)).withColumn("click_dt", lit(getBeforeYesterday(isTest)))
 
     val total = clickTrendToday.union(clickTrendYesterday).union(clickTrendBeforeYesterday)
     total.select("click_dt", "rfrng_dmn_name", "click_cnt", "ranking")
       .repartition(1)
       .write
       .option("header", "true")
+      .option("compression", "none")
       .csv(outputdir)
   }
 

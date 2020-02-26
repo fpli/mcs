@@ -18,9 +18,6 @@ EXECUTOR_NUMBER=3
 EXECUTOR_MEMORY=1g
 EXECUTOR_CORES=1
 
-
-SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/crabTransform
-HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
 JOB_NAME="imkTransform"
 
 for f in $(find $bin/../../conf/qa -name '*.*');
@@ -40,8 +37,6 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=1024 \
-    --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
-    --conf spark.yarn.historyServer.address=${HISTORY_SERVER} \
     ${bin}/../../lib/tfs-chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \

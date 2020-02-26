@@ -23,19 +23,24 @@ bin=`cd "$bin">/dev/null; pwd`
 CHANNEL=$1
 WORK_DIR=$2
 OUTPUT_DIR=$3
+JOIN_KEYWORD=$4
 ES_URL=http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200
 
-KW_LK_FOLDER=hdfs://slickha/apps/kw_lkp/2019-04-14/
+KW_LKP_LATEST_PATH=hdfs://slickha/apps/kw_lkp/latest_path
+
+KW_LKP_FOLDER=$(hdfs dfs -text ${KW_LKP_LATEST_PATH})
+
+if [[ $? -ne 0 ]]; then
+   echo "get latest path failed"
+   exit 1
+fi
 
 DRIVER_MEMORY=8g
-EXECUTOR_NUMBER=60
-EXECUTOR_MEMORY=4g
+EXECUTOR_NUMBER=30
+EXECUTOR_MEMORY=10g
 EXECUTOR_CORES=4
 
 JOB_NAME="imkCrabTransform"
-
-SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/chocolate/logs
-HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
 
 for f in $(find $bin/../../conf/prod -name '*.*');
 do
@@ -54,17 +59,16 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
-    --conf spark.yarn.executor.memoryOverhead=8192 \
-    --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
-    --conf spark.yarn.historyServer.address=${HISTORY_SERVER} \
+    --conf spark.yarn.executor.memoryOverhead=1024 \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
       --channel "${CHANNEL}" \
       --transformedPrefix chocolate_ \
-      --kwDataDir "${KW_LK_FOLDER}" \
+      --kwDataDir "${KW_LKP_FOLDER}" \
       --workDir "${WORK_DIR}" \
       --outputDir "${OUTPUT_DIR}" \
+      --joinKeyword "${JOIN_KEYWORD}" \
       --compressOutPut true \
       --maxMetaFiles 100 \
       --elasticsearchUrl ${ES_URL} \

@@ -395,14 +395,14 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   val getMgvaluereasonUdf: UserDefinedFunction = udf((brwsrName: String, clntRemoteIp: String) => getMgvaluereason(brwsrName, clntRemoteIp))
 
   /**
-    * Generate mgvaluereason, "BOT" or empty string
+    * Generate mgvaluereason, "4" or empty string, "4" means BOT
     * @param brwsrName alias for user agent
     * @param clntRemoteIp alias for remote ip
-    * @return "BOT" or empty string
+    * @return "4" or empty string
     */
   def getMgvaluereason(brwsrName: String, clntRemoteIp: String): String = {
     if (isBotByUserAgent(brwsrName) || isBotByIp(clntRemoteIp)) {
-      "BOT"
+      "4"
     } else {
       ""
     }
@@ -414,7 +414,9 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     * @return is bot or not
     */
   def isBotByUserAgent(brwsrName: String): Boolean = {
-    isBot(brwsrName, userAgentBotDawgDictionary)
+    if (!StringUtils.isEmpty(brwsrName))
+      isBot(brwsrName, userAgentBotDawgDictionary)
+    false
   }
 
   /**
@@ -423,7 +425,9 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     * @return is bot or not
     */
   def isBotByIp(clntRemoteIp: String): Boolean = {
-    isBot(clntRemoteIp, ipBotDawgDictionary)
+    if (!StringUtils.isEmpty(clntRemoteIp))
+      isBot(clntRemoteIp, ipBotDawgDictionary)
+    false
   }
 
   def isBot(info: String, dawgDictionary: DawgDictionary): Boolean = {

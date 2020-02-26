@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pipeline-configuration>
+<!--  
+	<profiles>
+		<profile name="p1">
+			com.ebay.raptor.kernel.cmd.stat.CmdStatMetricsHandler
+		</profile>
+		<profile name="p2">
+			com.ebay.raptor.tracking.handler.RaptorTrackingHandler,
+			com.ebay.raptor.experimentation.handler.RaptorExperimentationHandler
+		</profile>
+	</profiles>
+	<urlConfigs>
+		<urlConfig>
+			<urlPattern>"/*/sampleResource/v1/hello", "/*/i.html"</urlPattern>
+			<excludeProfile>p1</excludeProfile>
+		</urlConfig>
+		<urlConfig>
+			<urlPattern>"/*/sampleResource/v1/getVersion"</urlPattern>
+			<excludeProfile>p2</excludeProfile>
+		</urlConfig>
+	</urlConfigs>
+	-->
+</pipeline-configuration>

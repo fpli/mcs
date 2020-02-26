@@ -1,8 +1,8 @@
 package com.ebay.traffic.chocolate.listener.api;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.traffic.chocolate.listener.util.ChannelActionEnum;
-import com.ebay.traffic.chocolate.listener.util.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import org.apache.commons.lang3.Validate;
 
 import javax.servlet.http.HttpServletResponse;
@@ -36,7 +36,7 @@ public class TrackingEvent {
     public static final String ITEM = "item";
     public static final String PRODUCT = "product";
 
-    public static final String[] EBAY_HOSTS = {
+    private static final String[] EBAY_HOSTS = {
             "ebay.com",
             "ebay.co.uk",
             "ebay.com.au",
@@ -88,7 +88,7 @@ public class TrackingEvent {
     }
 
     /* hard coded 1x1 gif pixel, for impression serving */
-    public static byte[] pixel = { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x1, 0x0, 0x1, 0x0, (byte) 0x80, 0x0, 0x0, (byte)  0xff, (byte)  0xff,  (byte) 0xff, 0x0, 0x0, 0x0, 0x2c, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x1, 0x0, 0x0, 0x2, 0x2, 0x44, 0x1, 0x0, 0x3b };
+    protected static byte[] pixel = { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x1, 0x0, 0x1, 0x0, (byte) 0x80, 0x0, 0x0, (byte)  0xff, (byte)  0xff,  (byte) 0xff, 0x0, 0x0, 0x0, 0x2c, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x1, 0x0, 0x0, 0x2, 0x2, 0x44, 0x1, 0x0, 0x3b };
 
     /**
      * Parses the various pieces of the URL path

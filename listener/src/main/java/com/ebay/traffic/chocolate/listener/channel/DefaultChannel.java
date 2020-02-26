@@ -6,6 +6,8 @@ import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.*;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -265,12 +267,12 @@ public class DefaultChannel implements Channel {
     // use the timestamp from request as the start time
     long startTime = System.currentTimeMillis();
 
-    try {
-      startTime = ((Request) request).getTimeStamp();
-    } catch (ClassCastException e) {
-      // ideally only touch this part in unit test
-      logger.warn("Cannot get request start time, use system time instead. ", e);
-    }
+//    try {
+//      startTime = ((Request) request).getTimeStamp();
+//    } catch (ClassCastException e) {
+//      // ideally only touch this part in unit test
+//      logger.warn("Cannot get request start time, use system time instead. ", e);
+//    }
     logger.debug(String.format("StartTime: %d", startTime));
     metrics.meter("ProxyIncomingCount", 1, startTime, Field.of(CHANNEL_ACTION, channelAction),
         Field.of(CHANNEL_TYPE, channelType));

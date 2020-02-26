@@ -23,7 +23,8 @@ class TableSchema (val table: String,
   @transient lazy val types = Map(
     "string" -> StringType, "decimal"-> StringType, "long" -> LongType,
     "integer" -> IntegerType, "short" -> ShortType, "float" -> FloatType,
-    "double" -> DoubleType, "byte" -> ByteType, "boolean" -> BooleanType
+    "double" -> DoubleType, "byte" -> ByteType, "boolean" -> BooleanType,
+    "date" -> DateType, "timestamp" -> TimestampType
   )
 
   /**

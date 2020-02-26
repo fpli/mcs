@@ -2,8 +2,9 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.eventlistener.error.LocalizedErrorFactoryV3;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
-import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
+import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.raptor.opentracing.SpanEventHelper;
@@ -83,9 +84,8 @@ public class EventListenerResource implements EventsApi {
           logger.warn(e.getMessage(), request.toString(), body);
           logger.warn(ex.getMessage(), ex);
         }
-      } finally {
-        return res;
       }
+      return res;
     }
   }
 
@@ -95,17 +95,17 @@ public class EventListenerResource implements EventsApi {
   }
 
   /**
-   * Get method to collect impression, viewimp, email open
+   * Get method to collect impression, viewimp, email open, ad request
    * @return response
    */
   @Override
-  public Response impression() {
+  public Response impression(Event body) {
     Tracer tracer = GlobalTracer.get();
     try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "impression").startActive(true)) {
       Span span = scope.span();
       Response res = null;
       try {
-        collectionService.collectImpression(request, response, requestContext);
+        collectionService.collectImpression(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
         res = Response.status(Response.Status.OK).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
@@ -119,9 +119,32 @@ public class EventListenerResource implements EventsApi {
         } catch (Exception ex) {
           logger.warn(ex.getMessage(), ex);
         }
-      } finally {
-        return res;
       }
+      return res;
+    }
+  }
+
+  @Override
+  public Response roi(ROIEvent body) {
+    Tracer tracer = GlobalTracer.get();
+    try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "roi").startActive(true)) {
+      Span span = scope.span();
+      Response res = null;
+      try {
+        collectionService.collectROIEvent(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
+        res = Response.status(Response.Status.OK).build();
+        Tags.STATUS.set(span, "0");
+      } catch (Exception e) {
+        Tags.STATUS.set(span, "0");
+        // show warning in cal
+        SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
+        try {
+          res = errorFactoryV3.makeWarnResponse(e.getMessage());
+        } catch (Exception ex) {
+          logger.warn(ex.getMessage(), ex);
+        }
+      }
+      return res;
     }
   }
 }

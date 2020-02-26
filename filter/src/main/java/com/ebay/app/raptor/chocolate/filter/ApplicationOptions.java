@@ -87,6 +87,8 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     /** Couchbase datasource */
     private static final String COUCHBASE_DATASOURCE = "chocolate.filter.couchbase.datasource";
 
+    private static final String ROI_TOPIC = "chocolate.filter.new-roi.topic";
+
     /** zk connection string **/
     private String zkConnectionString;
 
@@ -207,6 +209,14 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
         return properties.getProperty(COUCHBASE_DATASOURCE);
     }
 
+    public String getNewROITopic() {
+        if (!properties.containsKey(ROI_TOPIC)) {
+            logger.fatal(ROI_TOPIC + " not found in properties file!");
+            throw new UnsupportedOperationException(ROI_TOPIC + " not found in properties file!");
+        }
+        return properties.getProperty(ROI_TOPIC);
+    }
+
     /**
      * Gets Zookeeper properties.
      */
@@ -231,7 +241,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     /**
      * Only for test
      */
-    public void setInputKafkaProperties(Properties properties) {
+    public static void setInputKafkaProperties(Properties properties) {
         inputKafkaProperties = properties;
     }
 
@@ -258,7 +268,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     /**
      * Only for test
      */
-    public void setSinkKafkaProperties(Properties properties) {
+    public static void setSinkKafkaProperties(Properties properties) {
         sinkKafkaProperties = properties;
     }
 

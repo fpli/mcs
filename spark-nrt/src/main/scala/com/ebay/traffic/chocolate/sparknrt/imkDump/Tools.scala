@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.imkDump
 
-import java.net.URL
+import java.net.{URL, URLDecoder}
 import java.text.{DecimalFormat, SimpleDateFormat}
 import java.util.Date
 import java.util.regex.Pattern
@@ -8,6 +8,9 @@ import java.util.regex.Pattern
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.{Logger, LoggerFactory}
+
+import scala.collection.mutable
+import scala.io.Source
 
 /**
   * Created by ganghuang on 12/3/18.
@@ -23,6 +26,8 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       ESMetrics.getInstance()
     } else null
   }
+
+  lazy val METRIC_IMK_DUMP_MALFORMED = "imk.dump.malformed"
 
   lazy val keywordParams: Array[String] = Array("_nkw", "keyword", "kw")
 
@@ -64,6 +69,13 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     "NULL_USERAGENT" -> 10,
     "UNKNOWN_USERAGENT" -> -99)
 
+
+  @transient lazy val search_keyword_map: Map[String, String] = {
+    val mapData = Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("search_host_keyword_map.txt")).getLines
+    mapData.map(line => line.split(",")(0) -> line.split(",")(1)).toMap
+  }
+
+
   def getDateTimeFromTimestamp(timestamp: Long): String = {
     val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
     df.format(timestamp)
@@ -85,7 +97,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       }catch {
         case e: Exception => {
           if(metrics != null) {
-            metrics.meter("imk.dump.malformed", 1)
+            metrics.meter(METRIC_IMK_DUMP_MALFORMED, 1)
           }
           logger.warn("MalformedUrl", e)
         }
@@ -228,7 +240,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     } catch {
       case e: Exception => {
         if (metrics != null) {
-          metrics.meter("imk.dump.malformed", 1)
+          metrics.meter(METRIC_IMK_DUMP_MALFORMED, 1)
         }
         logger.warn("MalformedUrl", e)
       }
@@ -308,6 +320,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       case "SOCIAL_MEDIA" => "16"
       case "PAID_SOCIAL" => "20"
       case "ROI" => "0"
+      case "NATURAL_SEARCH" => "3"
       case _ => "0"
     }
   }
@@ -343,7 +356,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       } catch {
         case e: Exception => {
           if(metrics != null) {
-            metrics.meter("imk.dump.malformed", 1)
+            metrics.meter(METRIC_IMK_DUMP_MALFORMED, 1)
           }
           logger.warn("MalformedUrl", e)
         }
@@ -426,6 +439,137 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
         return pathArray(3).split("\\?")(0).split("-")(0)
     }
     ""
+  }
+
+
+
+  /**
+    * Get query map from  url
+    * @param uri uri
+    * @return query_map
+    */
+  def getQueryMapFromUrl(uri: String): mutable.Map[String, String] = {
+    val result: mutable.Map[String, String] = mutable.Map[String, String]()
+    if (StringUtils.isNotEmpty(uri)) {
+      try {
+        val query = new URL(uri).getQuery
+        if (StringUtils.isNotEmpty(query)) {
+          query.split("&").foreach(paramMapString => {
+            if (StringUtils.isNotEmpty(paramMapString)) {
+              val paramStringArray = paramMapString.split("=")
+              if (paramStringArray.nonEmpty && paramStringArray.length == 2) {
+                result += (paramStringArray(0).trim -> paramStringArray(1).trim)
+              }
+            }
+          })
+        }
+      } catch {
+        case e: Exception => {
+          if(metrics != null) {
+            metrics.meter("imk.dump.errorGetQueryMap", 1)
+          }
+          logger.warn("ErrorGetQueryMap", e)
+        }
+      }
+    }
+    result
+  }
+
+
+  /**
+    * get user query from applicationPayload.ref, only for natural-search channel
+    * @param ref applicationPayload.ref
+    * @return user query
+    */
+  def getUserQueryFromRef(ref: String): String = {
+    val host = getDomain(ref.toLowerCase)
+    val queryMap = getQueryMapFromUrl(ref.toLowerCase)
+    if (StringUtils.isNotEmpty(host) && queryMap.nonEmpty) {
+      for ((k, v) <- search_keyword_map) {
+        if (host.contains(k.trim)) {
+          v.split("\\|").foreach(keyword => {
+            if (StringUtils.isNotEmpty(keyword)) {
+              if (!queryMap.get(keyword.trim).isEmpty) {
+                return queryMap.get(keyword.trim).get
+              }
+            }
+          })
+        }
+      }
+    }
+    return ""
+  }
+
+
+
+  /**
+    * get landing page url from rvr_url or client_data.referrer
+    * if rvr_url contains 'mpcl', then extract from rvr_url,
+    * else return client_data.referrer
+    * @param mpcl: extract from rvr_url, referer: client_data.referrer
+    * @return landing page url
+    */
+  def getLandingPageUrlFromUriOrRfrr(mpcl: String, referer: String): String = {
+    if (StringUtils.isEmpty(mpcl)) {
+      return referer
+    }
+    mpcl
+  }
+
+
+  /**
+    * get one decode param url value from the url query string
+    * @param query url query string
+    * @param key param name
+    * @return param value
+    */
+  def getDecodeParamUrlValueFromQuery(query: String, key: String): String = {
+    var result = ""
+    try {
+      if (StringUtils.isNotEmpty(query)) {
+        query.split("&").foreach(paramMapString => {
+          val paramStringArray = paramMapString.split("=")
+          if (paramStringArray.nonEmpty && paramStringArray(0).trim.equalsIgnoreCase(key) && paramStringArray.length == 2) {
+            result = URLDecoder.decode(paramStringArray(1).trim, "UTF-8")
+          }
+        })
+      }
+    } catch {
+      case e: Exception => {
+        if(metrics != null) {
+          metrics.meter("imk.dump.error.getDecodeParamUrlValueFromQuery", 1)
+        }
+        logger.warn("MalformedUrl", e)
+      }
+    }
+    return result
+  }
+
+  /**
+    * get decode perf_track_name_value from query string
+    * @param query query
+    * @return perf_track_name_value
+    */
+  def getDecodePerfTrackNameValue(query: String): String = {
+    val buf = StringBuilder.newBuilder
+    try {
+      if (StringUtils.isNotEmpty(query)) {
+        query.split("&").foreach(paramMapString => {
+          val paramStringArray = paramMapString.split("=")
+          if (paramStringArray.length == 2) {
+            buf.append("^" + URLDecoder.decode(paramMapString, "UTF-8"))
+          }
+        })
+      }
+    } catch {
+      case e: Exception => {
+        if(metrics != null) {
+          metrics.meter("imk.dump.error.getDecodePerfTrackNameValue", 1)
+        }
+        logger.warn("MalformedUrl", e)
+      }
+    }
+    buf.toString()
   }
 
 }
