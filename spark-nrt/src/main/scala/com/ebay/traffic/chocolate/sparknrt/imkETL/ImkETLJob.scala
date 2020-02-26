@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.imkETL
 
-import java.net.InetAddress
+import java.net.{InetAddress, URI}
 import java.text.SimpleDateFormat
 import java.util
 import java.util.{Date, Properties}
@@ -15,7 +15,7 @@ import com.ebay.traffic.chocolate.sparknrt.utils.{Cguid, MyID, TableSchema, XIDR
 import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.compress.GzipCodec
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
 import org.apache.spark.sql.expressions.UserDefinedFunction
@@ -50,18 +50,24 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   // imk dump job output, for uc4 etl job
   lazy val imkDumpOutputDir: String = params.outPutDir
 
-  lazy val imkDumpTempDir: String = params.workDir + "/imkETL/dumpTemp/"
+  lazy val imkDumpTempDir: String = params.outPutDir + "/imkETL/dumpTemp/"
 
   // imk crabTransform output，for apollo job, the dir same with imkTransform job
   lazy val imkETLOutputDir: String = params.outPutDir + "/imkTransform/imkOutput/"
   lazy val dtlETLOutputDir: String = params.outPutDir + "/imkTransform/dtlOutput/"
   lazy val mgETLOutputDir: String = params.outPutDir + "/imkTransform/mgOutput/"
 
-  lazy val imkETLTempDir: String = params.workDir + "/imkETL/imkTemp/"
-  lazy val dtlETLTempDir: String = params.workDir + "/imkETL/dtlTemp/"
-  lazy val mgETLTempDir: String = params.workDir + "/imkETL/mgTemp/"
+  lazy val imkETLTempDir: String = params.outPutDir + "/imkETL/imkTemp/"
+  lazy val dtlETLTempDir: String = params.outPutDir + "/imkETL/dtlTemp/"
+  lazy val mgETLTempDir: String = params.outPutDir + "/imkETL/mgTemp/"
 
   lazy val METRICS_INDEX_PREFIX = "imk-etl-metrics-"
+
+  @transient lazy val workDirFs = {
+    val fs = FileSystem.get(URI.create(params.workDir), hadoopConf)
+    sys.addShutdownHook(fs.close())
+    fs
+  }
 
   @transient lazy val properties: Properties = {
     val properties = new Properties()
@@ -179,7 +185,8 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       kv._2.foreach(metaIter => {
         val metaFile = metaIter._1
         logger.info("delete meta %s".format(metaFile))
-        fs.delete(new Path(metaFile), true)
+        // metaFile is located in workDir
+        workDirFs.delete(new Path(metaFile), true)
       })
       metrics.meter("imk.transform.processedMete", kv._2.length, Field.of[String, AnyRef]("channelType", channel))
     })
