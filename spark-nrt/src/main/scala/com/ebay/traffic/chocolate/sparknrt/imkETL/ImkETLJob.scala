@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.imkETL
 
-import java.net.InetAddress
+import java.net.{InetAddress, URI}
 import java.text.SimpleDateFormat
 import java.util
 import java.util.{Date, Properties}
@@ -15,7 +15,7 @@ import com.ebay.traffic.chocolate.sparknrt.utils.{Cguid, MyID, TableSchema, XIDR
 import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.compress.GzipCodec
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
 import org.apache.spark.sql.expressions.UserDefinedFunction
@@ -62,6 +62,12 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   lazy val mgETLTempDir: String = params.outPutDir + "/imkETL/mgTemp/"
 
   lazy val METRICS_INDEX_PREFIX = "imk-etl-metrics-"
+
+  @transient lazy val workDirFs = {
+    val fs = FileSystem.get(URI.create(params.workDir), hadoopConf)
+    sys.addShutdownHook(fs.close())
+    fs
+  }
 
   @transient lazy val properties: Properties = {
     val properties = new Properties()
@@ -179,7 +185,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       kv._2.foreach(metaIter => {
         val metaFile = metaIter._1
         logger.info("delete meta %s".format(metaFile))
-        fs.delete(new Path(metaFile), true)
+        workDirFs.delete(new Path(metaFile), true)
       })
       metrics.meter("imk.transform.processedMete", kv._2.length, Field.of[String, AnyRef]("channelType", channel))
     })
