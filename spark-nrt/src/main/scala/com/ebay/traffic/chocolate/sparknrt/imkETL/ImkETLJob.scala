@@ -185,6 +185,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       kv._2.foreach(metaIter => {
         val metaFile = metaIter._1
         logger.info("delete meta %s".format(metaFile))
+        // metaFile is located in workDir
         workDirFs.delete(new Path(metaFile), true)
       })
       metrics.meter("imk.transform.processedMete", kv._2.length, Field.of[String, AnyRef]("channelType", channel))
