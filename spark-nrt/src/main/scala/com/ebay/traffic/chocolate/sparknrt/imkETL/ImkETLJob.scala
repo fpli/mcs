@@ -50,16 +50,16 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   // imk dump job output, for uc4 etl job
   lazy val imkDumpOutputDir: String = params.outPutDir
 
-  lazy val imkDumpTempDir: String = params.workDir + "/imkETL/dumpTemp/"
+  lazy val imkDumpTempDir: String = params.outPutDir + "/imkETL/dumpTemp/"
 
   // imk crabTransform output，for apollo job, the dir same with imkTransform job
   lazy val imkETLOutputDir: String = params.outPutDir + "/imkTransform/imkOutput/"
   lazy val dtlETLOutputDir: String = params.outPutDir + "/imkTransform/dtlOutput/"
   lazy val mgETLOutputDir: String = params.outPutDir + "/imkTransform/mgOutput/"
 
-  lazy val imkETLTempDir: String = params.workDir + "/imkETL/imkTemp/"
-  lazy val dtlETLTempDir: String = params.workDir + "/imkETL/dtlTemp/"
-  lazy val mgETLTempDir: String = params.workDir + "/imkETL/mgTemp/"
+  lazy val imkETLTempDir: String = params.outPutDir + "/imkETL/imkTemp/"
+  lazy val dtlETLTempDir: String = params.outPutDir + "/imkETL/dtlTemp/"
+  lazy val mgETLTempDir: String = params.outPutDir + "/imkETL/mgTemp/"
 
   lazy val METRICS_INDEX_PREFIX = "imk-etl-metrics-"
 
