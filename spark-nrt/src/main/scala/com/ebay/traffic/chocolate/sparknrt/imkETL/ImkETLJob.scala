@@ -293,7 +293,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       .withColumn("mt_id", getDefaultNullNumParamValueFromUrlUdf(col("temp_uri_query"), lit("mt_id")))
       .withColumn("crlp", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("user_map_ind", getUserMapIndUdf(col("user_id")))
-      .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("uri")))
+      .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("channel_type"), col("uri")))
       .withColumn("mfe_name", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("cguid", getCguidUdf(col("channel_type"), col("cguid"), col("guid")))
   }
