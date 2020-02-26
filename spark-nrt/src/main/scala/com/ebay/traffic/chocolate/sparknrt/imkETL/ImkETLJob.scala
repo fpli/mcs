@@ -643,7 +643,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           .filter(_.getAs[Long]("rvr_id") != null)
           .repartition(params.xidParallelNum)
           .withColumn("item_id", getApolloItemIdUdf(col("roi_item_id"), col("item_id")))
-          .withColumn("user_id", getUserIdUdf(col("user_id"), col("cguid"), col("rvr_cmnd_type_cd")))
+          .withColumn("user_id", getUserIdUdf(lit(channel), col("user_id"), col("cguid"), col("rvr_cmnd_type_cd")))
           .withColumn("mfe_id", getMfeIdUdf(col("mfe_name")))
           .withColumn("event_ts", setMessageLagUdf(lit(channel), col("event_ts")))
           .withColumn("mgvalue_rsn_cd", getMgvalueRsnCdUdf(col("mgvaluereason")))
