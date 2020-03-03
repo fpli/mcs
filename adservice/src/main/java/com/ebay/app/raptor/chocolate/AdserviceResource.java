@@ -53,7 +53,7 @@ import java.util.concurrent.*;
 
 @Path("/v1")
 @Consumes(MediaType.APPLICATION_JSON)
-public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, GuidApi, UseridApi, SyncApi {
+public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, GuidApi, UseridApi, SyncApi, EpntApi {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceResource.class);
   @Autowired
   private CollectionService collectionService;
@@ -88,6 +88,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private static final String METRIC_NO_MKCID_IN_IMPRESSION = "METRIC_NO_MKCID_IN_IMPRESSION";
   private static final String METRIC_NO_MKRID_IN_AR = "METRIC_NO_MKRID_IN_AR";
   private static final String METRIC_NO_MKRID_IN_IMPRESSION = "METRIC_NO_MKRID_IN_IMPRESSION";
+  private static final String METRIC_NO_CONFIGID_IN_EPNT = "METRIC_NO_CONFIGID_IN_EPNT";
   private static final String METRIC_ERROR_IN_ASYNC_MODEL = "METRIC_ERROR_IN_ASYNC_MODEL";
   private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId",
       "ap_oid", "data"};
@@ -288,6 +289,78 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     String adguid = adserviceCookie.readAdguid(request);
     String userid = idMapping.getUid(adguid);
     return Response.status(Response.Status.OK).entity(userid).build();
+  }
+
+  /**
+   * Get user id from mapping
+   * @return user id in string
+   */
+  @Override
+  public Response config(String configid) {
+    if(null == configid) {
+      metrics.meter(METRIC_NO_CONFIGID_IN_EPNT);
+      return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+
+    Response res = null;
+    try {
+      adserviceCookie.setAdguid(request, response);
+      res = Response.status(Response.Status.OK).build();
+
+      Configuration config = ConfigurationBuilder.newConfig("");
+      Client mktClient = GingerClientBuilder.newClient(config);
+      String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
+
+      // add all headers except Cookie
+      Builder builder = mktClient.target(endpoint).path("/impression/").request();
+      final Enumeration<String> headers = request.getHeaderNames();
+      while (headers.hasMoreElements()) {
+        String header = headers.nextElement();
+        if ("Cookie".equalsIgnoreCase(header)) {
+          continue;
+        }
+        String values = request.getHeader(header);
+        builder = builder.header(header, values);
+      }
+
+      // get channel for metrics
+      String channelType = null;
+      Map<String, String[]> params = request.getParameterMap();
+      if (params.containsKey(Constants.MKCID) && params.get(Constants.MKCID)[0] != null) {
+        channelType = ChannelIdEnum.parse(params.get(Constants.MKCID)[0]).getLogicalChannel().getAvro().toString();
+      }
+
+      // construct X-EBAY-C-TRACKING header
+      builder = builder.header("X-EBAY-C-TRACKING",
+              collectionService.constructTrackingHeader(requestContext, channelType));
+
+      // add uri and referer to marketing event body
+      MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
+      mktEvent.setTargetUrl(new ServletServerHttpRequest(request).getURI().toString());
+      mktEvent.setReferrer(request.getHeader("Referer"));
+
+      // call marketing collection service to send ubi event or send kafka
+      Response ress = builder.post(Entity.json(mktEvent));
+      ress.close();
+
+      // send 1x1 pixel
+      ImageResponseHandler.sendImageResponse(response);
+      String partnerId = null;
+      if (params.containsKey(Constants.PARTNER_ID)) {
+        partnerId = params.get(Constants.PARTNER_ID)[0];
+      }
+      if (!StringUtils.isEmpty(partnerId) && Constants.ADOBE_PARTNER_ID.equals(partnerId)) {
+        sendOpenEventToAdobe(params);
+      }
+
+    } catch (Exception e) {
+      try {
+        res = Response.status(Response.Status.BAD_REQUEST).build();
+      } catch (Exception ex) {
+        logger.warn(ex.getMessage(), ex);
+      }
+    }
+    return res;
   }
 
   private void sendOpenEventToAdobe(Map<String, String[]> params) {

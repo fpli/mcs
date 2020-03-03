@@ -169,6 +169,26 @@ paths:
           description: Rejected
         '500':
           description: The call was unsuccessful due to exceptions on the Server
+  /config:
+    get:
+      summary: Get Epn Config Information
+      description: Get config information for ebay partner network by config id
+      tags:
+        - config
+      operationId: config
+      parameters:
+        - in: query
+          name: configid
+          schema:
+            type: string
+          description: Ebay partner network config id
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Rejected
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
 components:
   schemas:
     SyncEvent:
