@@ -127,6 +127,7 @@
           "SITE_EMAIL",
           "MRKT_EMAIL",
           "NATURAL_SEARCH",
+          "SMS",
           "UNKNOWN"
         ]
       }
