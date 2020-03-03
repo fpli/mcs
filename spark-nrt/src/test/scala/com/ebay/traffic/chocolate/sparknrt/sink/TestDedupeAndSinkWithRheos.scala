@@ -14,7 +14,7 @@ class TestDedupeAndSinkWithRheos extends BaseFunSuite {
   val workDir = tmpPath + "/workDir/"
   val outputDir = tmpPath + "/outputDir/"
 
-  val topic = "marketing.tracking.staging.filtered-epn"
+  val topic = "marketing.tracking.ssl.filtered-epn"
 
   val channel = "EPN"
 

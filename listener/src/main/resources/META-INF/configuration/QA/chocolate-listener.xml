@@ -10,22 +10,22 @@
   </property>
   <property>
     <name>chocolate.listener.kafka.topic_filtered</name>
-    <value>marketing.tracking.staging.listened-filtered,qa_listener_filtered</value>
+    <value>marketing.tracking.ssl.listened-filtered,qa_listener_filtered</value>
     <description>Kafka topic for messages filtered in listener.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.EPN</name>
-    <value>marketing.tracking.staging.listened-epn,qa_listener</value>
+    <value>marketing.tracking.ssl.listened-epn,qa_listener</value>
     <description>Kafka topic for epn channel to publish.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.DISPLAY</name>
-    <value>marketing.tracking.staging.listened-display,qa_listener_display2</value>
+    <value>marketing.tracking.ssl.listened-display,qa_listener_display2</value>
     <description>Kafka topic for display channel to publish.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.SOCIAL_MEDIA</name>
-    <value>marketing.tracking.staging.listened-social-media,qa_listened_social_media</value>
+    <value>marketing.tracking.ssl.listened-social-media,qa_listened_social_media</value>
     <description>Kafka topic for social media channel to publish.</description>
   </property>
   <!-- Kafka producer end -->
