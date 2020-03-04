@@ -830,7 +830,7 @@ public class CollectionService {
         addTagFromUrlQuery(parameters, requestTracker, Constants.SMS_ID, "smsid", String.class);
 
       } catch (Exception e) {
-        logger.warn("Error when tracking ubi for marketing email click tags", e);
+        logger.warn("Error when tracking ubi for sms click tags", e);
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
       }
     } else {
