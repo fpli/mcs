@@ -96,7 +96,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private static Configuration adobeConfig = ConfigurationBuilder.newConfig("adservice.mktAdobeClient");
   private static Client adobeClient = GingerClientBuilder.newClient(adobeConfig);
   private static String adobeEndpoint = (String) adobeClient.getConfiguration().getProperty(EndpointUri.KEY);
-  
+
   /**
    * Initialize function
    */

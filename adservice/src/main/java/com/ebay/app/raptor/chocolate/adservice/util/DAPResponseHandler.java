@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.constant.*;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
+import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.common.DAPRvrId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -28,6 +29,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
@@ -59,6 +62,13 @@ public class DAPResponseHandler {
 
   private static final String MOBILE_USER_AGENT_CONFIG_FILE = "/config/mobile_user_agent.txt";
 
+  @Autowired
+  private AdserviceCookie adserviceCookie;
+
+  @Autowired
+  @Qualifier("cb")
+  private IdMapable idMapping;
+
   static {
     List<String> mobileUserAgent = new ArrayList<>();
     try {
@@ -86,23 +96,22 @@ public class DAPResponseHandler {
           throws URISyntaxException {
     long dapRvrId = getDAPRvrId();
     Map<String, String[]> params = request.getParameterMap();
-    String cguid = params.get("cguid")[0];
-    String guid = params.get("guid")[0];
-    String accountId = params.get("rover_userid")[0];
-    String udid = getUdid(params);
-    Map<String, String> userAttributes = getUserAttributes(cguid);
+    String guid = getGuid(request);
+    String accountId = getUserId(request);
+    // no need anymore
+    // Map<String, String> userAttributes = getUserAttributes(cguid);
     String referrer = request.getHeader(Constants.REFERER);
     String remoteIp = getRemoteIp(request);
     Map<String, String> lbsParameters = getLBSParameters(request, remoteIp);
     String hLastLoggedInUserId = getHLastLoggedInUserId(accountId);
     String userAgent = request.getHeader(Constants.USER_AGENT);
     String uaPrime = getUaPrime(params);
-    boolean isMobile = isMobileUserAgent(userAgent) || isMobileSDK(uaPrime, udid);
+    boolean isMobile = isMobileUserAgent(userAgent);
     int siteId = getSiteId(requestContext);
 
-    LOGGER.info("dapRvrId: {} cguid: {} guid: {} accountId: {} udid: {} userAttributes: {} referrer: {} remoteIp: {} " +
+    LOGGER.info("dapRvrId: {} guid: {} accountId: {} referrer: {} remoteIp: {} " +
                     "lbsParameters: {} hLastLoggedInUserId: {} userAgent: {} uaPrime: {} isMobile: {} siteId: {}",
-            dapRvrId, cguid, guid, accountId, udid, userAttributes, referrer, remoteIp, lbsParameters,
+            dapRvrId, guid, accountId, referrer, remoteIp, lbsParameters,
             hLastLoggedInUserId, userAgent, uaPrime, isMobile, siteId);
 
     URIBuilder dapUriBuilder = new URIBuilder();
@@ -112,17 +121,19 @@ public class DAPResponseHandler {
     setRvrId(dapUriBuilder, dapRvrId);
     setReferrer(dapUriBuilder, referrer);
     setGeoInfo(dapUriBuilder, lbsParameters);
-    setUserAttributes(dapUriBuilder, userAttributes);
     setIsMobile(dapUriBuilder, isMobile);
-    setCguid(dapUriBuilder, cguid);
     setGuid(dapUriBuilder, guid);
     setRoverUserid(dapUriBuilder, accountId);
     setHLastLoggedInUserId(dapUriBuilder, hLastLoggedInUserId);
-    setUdid(dapUriBuilder, udid);
 
+    // call dap to get response
     callDAPResponse(dapUriBuilder.build().toString(), response);
 
-    sendToMCS(request, dapRvrId, cguid, guid);
+    // send to mcs with cguid equal to guid
+    if(StringUtils.isEmpty(guid)) {
+      guid = Constants.EMPTY_GUID;
+    }
+    sendToMCS(request, dapRvrId, guid, guid);
   }
 
   private int getSiteId(ContainerRequestContext requestContext) {
@@ -264,39 +275,50 @@ public class DAPResponseHandler {
   }
 
   /**
-   * Currently, we can only get cguid from cookie.
+   * Get guid from mapping
    */
-  @SuppressWarnings("unchecked")
-  //TODO: get guid by adservicecookie
-  private String getCguid(ContainerRequestContext requestContext) {
-    String readerCguid = "7fbad10916d0aad6a7870f00f1631295";
-    if (StringUtils.isEmpty(readerCguid)) {
-      ESMetrics.getInstance().meter("NoCguid", 1, Field.of(Constants.CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()));
-      return null;
+  private String getGuid(HttpServletRequest request) {
+    String adguid = adserviceCookie.readAdguid(request);
+    String guid = idMapping.getGuid(adguid);
+    if(StringUtils.isEmpty(guid)) {
+      guid = "";
     }
-    if (readerCguid.length() < Constants.CGUID_LENGTH) {
-      ESMetrics.getInstance().meter("InvalidCguidLength", 1, Field.of(Constants.CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()));
-      return null;
+    return guid;
+  }
+
+  private String getUserId(HttpServletRequest request) {
+    String adguid = adserviceCookie.readAdguid(request);
+    String encryptedUserid = idMapping.getUid(adguid);
+    if(StringUtils.isEmpty(encryptedUserid)) {
+      encryptedUserid = "0";
     }
-    return readerCguid.substring(0, Constants.CGUID_LENGTH);
+    return String.valueOf(decryptUserId(encryptedUserid));
   }
 
   /**
-   * Currently, we can only get guid from cookie.
+   * Decrypt user id from encrypted user id
+   * @param encryptedStr encrypted user id
+   * @return actual user id
    */
-  @SuppressWarnings("unchecked")
-  //TODO: get guid by adservicecookie
-  private String getGuid(ContainerRequestContext requestContext) {
-    String readerGuid = "7fbad10916d0aad6a7870f00f1631295";
-    if (StringUtils.isEmpty(readerGuid)) {
-      ESMetrics.getInstance().meter("NoGuid", 1, Field.of(Constants.CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()));
-      return null;
+  public long decryptUserId(String encryptedStr) {
+    long xorConst = 43188348269L;
+
+    long encrypted = 0;
+
+    try {
+      encrypted = Long.parseLong(encryptedStr);
     }
-    if (readerGuid.length() < Constants.GUID_LENGTH) {
-      ESMetrics.getInstance().meter("InvalidGuidLength", 1, Field.of(Constants.CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()));
-      return null;
+    catch (NumberFormatException e) {
+      return -1;
     }
-    return readerGuid.substring(0, Constants.GUID_LENGTH);
+
+    long decrypted = 0;
+
+    if(encrypted > 0){
+      decrypted  = encrypted ^ xorConst;
+    }
+
+    return decrypted;
   }
 
   private void setCguid(URIBuilder dapUriBuilder, String cguid) {
