@@ -19,6 +19,7 @@ public class CustomWebSecurityConfigurerAdapter extends WebSecurityConfigurerAda
   protected void configure(HttpSecurity http) throws Exception {
     http.headers().frameOptions().disable();
     http.headers().contentTypeOptions().disable();
+    http.headers().xssProtection().disable();
   }
 
 }
