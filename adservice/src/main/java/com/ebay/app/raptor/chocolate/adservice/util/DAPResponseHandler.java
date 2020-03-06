@@ -40,6 +40,8 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -127,13 +129,13 @@ public class DAPResponseHandler {
     setHLastLoggedInUserId(dapUriBuilder, hLastLoggedInUserId);
 
     // call dap to get response
-    callDAPResponse(dapUriBuilder.build().toString(), response);
+    MultivaluedMap<String, Object> dapResponseHeaders = callDAPResponse(dapUriBuilder.build().toString(), response);
 
     // send to mcs with cguid equal to guid
     if(StringUtils.isEmpty(guid)) {
       guid = Constants.EMPTY_GUID;
     }
-    sendToMCS(request, dapRvrId, guid, guid);
+    sendToMCS(request, dapRvrId, guid, guid, dapResponseHeaders);
   }
 
   private int getSiteId(ContainerRequestContext requestContext) {
@@ -533,7 +535,8 @@ public class DAPResponseHandler {
    * Call DAP interface and send response to browser
    */
   @SuppressWarnings("unchecked")
-  private void callDAPResponse(String dapUri, HttpServletResponse response) {
+  private MultivaluedMap<String, Object> callDAPResponse(String dapUri, HttpServletResponse response) {
+    MultivaluedMap<String, Object> headers = null;
     Configuration config = ConfigurationBuilder.newConfig("dapio.adservice");
     Client client = GingerClientBuilder.newClient(config);
     String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
@@ -544,13 +547,7 @@ public class DAPResponseHandler {
          OutputStream os = response.getOutputStream()) {
       int status = dapResponse.getStatus();
       if (status == Response.Status.OK.getStatusCode()) {
-        for (Map.Entry<String, List<Object>> entry : dapResponse.getHeaders().entrySet()) {
-          List<Object> list = entry.getValue();
-          if (CollectionUtils.isEmpty(list)) {
-            continue;
-          }
-          response.setHeader(entry.getKey(), String.valueOf(list.get(0)));
-        }
+        headers = dapResponse.getHeaders();
         byte[] bytes = dapResponse.readEntity(byte[].class);
         os.write(bytes);
       } else {
@@ -563,6 +560,7 @@ public class DAPResponseHandler {
     }
 
     ESMetrics.getInstance().mean("DAPLatency", System.currentTimeMillis() - startTime);
+    return headers;
   }
 
   private String constructTrackingHeader(String rawCguid, String rawGuid) {
@@ -591,7 +589,7 @@ public class DAPResponseHandler {
    * Send to MCS to track this request
    */
   @SuppressWarnings("unchecked")
-  private void sendToMCS(HttpServletRequest request, long dapRvrId, String cguid, String guid) throws URISyntaxException {
+  private void sendToMCS(HttpServletRequest request, long dapRvrId, String cguid, String guid, MultivaluedMap<String, Object> dapResponseHeaders) throws URISyntaxException {
     Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
     Client mktClient = GingerClientBuilder.newClient(config);
     String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
@@ -619,6 +617,14 @@ public class DAPResponseHandler {
     URIBuilder targetUrlBuilder = new URIBuilder(new ServletServerHttpRequest(request).getURI());
     targetUrlBuilder.addParameter(Constants.MKEVT, String.valueOf(MKEVT.AD_REQUEST.getId()));
     targetUrlBuilder.addParameter(Constants.MKRVRID, String.valueOf(dapRvrId));
+    // add flex fields of dap response headers, these fields start with "ff"
+    if (dapResponseHeaders != null) {
+      dapResponseHeaders.forEach((key, values) -> {
+        if (key.startsWith("ff")) {
+          values.forEach(value -> targetUrlBuilder.addParameter(key, String.valueOf(value)));
+        }
+      });
+    }
     String targetUrl = targetUrlBuilder.build().toString();
     mktEvent.setTargetUrl(targetUrl);
     String referer = request.getHeader(Constants.REFERER);
