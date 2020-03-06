@@ -618,11 +618,13 @@ public class DAPResponseHandler {
     targetUrlBuilder.addParameter(Constants.MKEVT, String.valueOf(MKEVT.AD_REQUEST.getId()));
     targetUrlBuilder.addParameter(Constants.MKRVRID, String.valueOf(dapRvrId));
     // add flex fields of dap response headers, these fields start with "ff"
-    dapResponseHeaders.forEach((key, values) -> {
-      if (key.startsWith("ff")) {
-        values.forEach(value -> targetUrlBuilder.addParameter(key, String.valueOf(value)));
-      }
-    });
+    if (dapResponseHeaders != null) {
+      dapResponseHeaders.forEach((key, values) -> {
+        if (key.startsWith("ff")) {
+          values.forEach(value -> targetUrlBuilder.addParameter(key, String.valueOf(value)));
+        }
+      });
+    }
     String targetUrl = targetUrlBuilder.build().toString();
     mktEvent.setTargetUrl(targetUrl);
     String referer = request.getHeader(Constants.REFERER);
