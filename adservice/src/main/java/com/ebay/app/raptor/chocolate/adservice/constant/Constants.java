@@ -42,6 +42,8 @@ public class Constants {
   public static final int CGUID_LENGTH = 32;
   public static final int GUID_LENGTH = 32;
 
+  // default guid
+  public static final String EMPTY_GUID = "00000000000000000000000000000000";
   // metrics field
   public static final String CHANNEL_TYPE = "channelType";
 

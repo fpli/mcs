@@ -98,9 +98,6 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private static Client adobeClient = GingerClientBuilder.newClient(adobeConfig);
   private static String adobeEndpoint = (String) adobeClient.getConfiguration().getProperty(EndpointUri.KEY);
 
-  ExecutorService executorService =
-      Executors.newFixedThreadPool(10);
-
   /**
    * Initialize function
    */
@@ -247,25 +244,20 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     String adguid = adserviceCookie.setAdguid(request, response);
     Response res = Response.status(Response.Status.OK).build();
     ImageResponseHandler.sendImageResponse(response);
-
-    executorService.submit(() -> {
-      try {
-        boolean isAddMappingSuccess = idMapping.addMapping(adguid, guid, uid);
-        if (isAddMappingSuccess) {
-          metrics.meter(METRIC_ADD_MAPPING_SUCCESS);
-        } else {
-          metrics.meter(METRIC_ADD_MAPPING_FAIL);
-        }
-
-      } catch (Exception e) {
-        try {
-          metrics.meter(METRIC_ADD_MAPPING_FAIL);
-        } catch (Exception ex) {
-          logger.warn(ex.getMessage(), ex);
-        }
+    try {
+      boolean isAddMappingSuccess = idMapping.addMapping(adguid, guid, uid);
+      if (isAddMappingSuccess) {
+        metrics.meter(METRIC_ADD_MAPPING_SUCCESS);
+      } else {
+        metrics.meter(METRIC_ADD_MAPPING_FAIL);
       }
-    });
-
+    } catch (Exception e) {
+      try {
+        metrics.meter(METRIC_ADD_MAPPING_FAIL);
+      } catch (Exception ex) {
+        logger.warn(ex.getMessage(), ex);
+      }
+    }
     return res;
   }
 
