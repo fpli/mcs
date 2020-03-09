@@ -297,52 +297,17 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     Response res = null;
     try {
       adserviceCookie.setAdguid(request, response);
-      res = Response.status(Response.Status.OK).build();
 
-      Configuration config = ConfigurationBuilder.newConfig("");
-      Client mktClient = GingerClientBuilder.newClient(config);
-      String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
+      Configuration config = ConfigurationBuilder.newConfig("epntconfig.adservice");
+      Client client = GingerClientBuilder.newClient(config);
+      String endpoint = String.format((String) client.getConfiguration().getProperty(EndpointUri.KEY), configid);
 
-      // add all headers except Cookie
-      Builder builder = mktClient.target(endpoint).path("/impression/").request();
-      final Enumeration<String> headers = request.getHeaderNames();
-      while (headers.hasMoreElements()) {
-        String header = headers.nextElement();
-        if ("Cookie".equalsIgnoreCase(header)) {
-          continue;
-        }
-        String values = request.getHeader(header);
-        builder = builder.header(header, values);
-      }
+      Response response = client.target(endpoint).request().get();
 
-      // get channel for metrics
-      String channelType = null;
-      Map<String, String[]> params = request.getParameterMap();
-      if (params.containsKey(Constants.MKCID) && params.get(Constants.MKCID)[0] != null) {
-        channelType = ChannelIdEnum.parse(params.get(Constants.MKCID)[0]).getLogicalChannel().getAvro().toString();
-      }
-
-      // construct X-EBAY-C-TRACKING header
-      builder = builder.header("X-EBAY-C-TRACKING",
-              collectionService.constructTrackingHeader(requestContext, channelType));
-
-      // add uri and referer to marketing event body
-      MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
-      mktEvent.setTargetUrl(new ServletServerHttpRequest(request).getURI().toString());
-      mktEvent.setReferrer(request.getHeader("Referer"));
-
-      // call marketing collection service to send ubi event or send kafka
-      Response ress = builder.post(Entity.json(mktEvent));
-      ress.close();
-
-      // send 1x1 pixel
-      ImageResponseHandler.sendImageResponse(response);
-      String partnerId = null;
-      if (params.containsKey(Constants.PARTNER_ID)) {
-        partnerId = params.get(Constants.PARTNER_ID)[0];
-      }
-      if (!StringUtils.isEmpty(partnerId) && Constants.ADOBE_PARTNER_ID.equals(partnerId)) {
-        sendOpenEventToAdobe(params);
+      if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+        res = response;
+      } else {
+        res = Response.status(Response.Status.BAD_REQUEST).build();
       }
 
     } catch (Exception e) {
