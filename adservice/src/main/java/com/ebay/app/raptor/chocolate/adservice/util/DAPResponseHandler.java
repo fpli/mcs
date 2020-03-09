@@ -548,6 +548,7 @@ public class DAPResponseHandler {
       int status = dapResponse.getStatus();
       if (status == Response.Status.OK.getStatusCode()) {
         headers = dapResponse.getHeaders();
+        response.setContentType("text/html;charset=UTF-8");
         byte[] bytes = dapResponse.readEntity(byte[].class);
         os.write(bytes);
       } else {
