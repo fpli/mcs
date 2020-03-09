@@ -687,12 +687,27 @@ public class EventListenerServiceTest {
 
     String tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
             "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
+
+    String trackingNoCguid = "guid=8101a7ad1670ac3c41a87509fffc40b4," +
+            "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
+
     // success request
     // iphone
     Response response = client.target(svcEndPoint).path(eventsPath)
             .request()
             .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
             .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(event));
+    assertEquals(201, response.getStatus());
+
+    // success request no cguid
+    // iphone
+    response = client.target(svcEndPoint).path(eventsPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+            .header("X-EBAY-C-TRACKING", trackingNoCguid)
             .header("Authorization", token)
             .accept(MediaType.APPLICATION_JSON_TYPE)
             .post(Entity.json(event));
