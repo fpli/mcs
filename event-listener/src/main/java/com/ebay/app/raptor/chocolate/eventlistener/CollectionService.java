@@ -76,7 +76,7 @@ public class CollectionService {
   private static final String CHANNEL_TYPE = "channelType";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
-  private static final String TRANSACTION_TIMESATAMP = "transactionTimestamp";
+  private static final String TRANSACTION_TIMESTAMP = "transactionTimestamp";
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
   private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
@@ -391,19 +391,19 @@ public class CollectionService {
     Map<String, String> payloadMap = new HashMap<String, String>();
     try {
       payloadMap = roiEvent.getPayload();
-      if(payloadMap.isEmpty() || !payloadMap.containsKey(TRANSACTION_TIMESATAMP)) {
-        payloadMap.put(TRANSACTION_TIMESATAMP, localTimestamp);
+      if(payloadMap.isEmpty() || !payloadMap.containsKey(TRANSACTION_TIMESTAMP)) {
+        payloadMap.put(TRANSACTION_TIMESTAMP, localTimestamp);
       } else {
         // check timestamp field value, if it is invalid, change it to localTimestamp
-        long transTimestamp = Long.valueOf(payloadMap.get(TRANSACTION_TIMESATAMP));
+        long transTimestamp = Long.valueOf(payloadMap.get(TRANSACTION_TIMESTAMP));
         if (transTimestamp < 0) {
-          payloadMap.put(TRANSACTION_TIMESATAMP, localTimestamp);
+          payloadMap.put(TRANSACTION_TIMESTAMP, localTimestamp);
         }
       }
     } catch (Exception e) {
       logger.warn("Error payload format " + roiEvent.getPayload().toString());
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
-      payloadMap.put(TRANSACTION_TIMESATAMP, localTimestamp);
+      payloadMap.put(TRANSACTION_TIMESTAMP, localTimestamp);
     }
     try {
       long transId = Long.valueOf(roiEvent.getUniqueTransactionId());
