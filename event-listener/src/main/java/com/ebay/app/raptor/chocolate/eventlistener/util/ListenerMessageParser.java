@@ -85,7 +85,7 @@ public class ListenerMessageParser {
     }
 
     // Overwrite cguid using guid for ePN channel in mcs to avoid the impact on capping rules related to cguid  XC-2125
-    if (channelType == ChannelType.EPN && (record.getCguid() == null || record.getCguid().equals("")) ) {
+    if (channelType == ChannelType.EPN && StringUtils.isEmpty(record.getCguid()) ) {
       record.setCguid(record.getGuid());
     }
 
