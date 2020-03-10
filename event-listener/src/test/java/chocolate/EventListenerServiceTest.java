@@ -36,6 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
@@ -399,11 +400,20 @@ public class EventListenerServiceTest {
   @Test
   public void testNewROIEvent() throws Exception {
     String token = tokenGenerator.getToken().getAccessToken();
+    // Test event cases
     ROIEvent event = new ROIEvent();
     event.setItemId("192658398245");
-    event.setTransactionTimestamp("1576108800000");
+    Map<String, String> aaa = new HashMap<String, String>();
+    aaa.put("ff1", "ss");
+    event.setPayload(aaa);
     event.setTransType("BO-MobileApp@");
     event.setUniqueTransactionId("1677235978009");
+
+    // No timestamp case
+    ROIEvent event2 = new ROIEvent();
+    event2.setItemId("192658398245");
+    event2.setTransType("BO-MobileApp@");
+    event2.setUniqueTransactionId("1677235978009");
 
     String endUserCtx = "ip=10.148.184.205," +
         "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
@@ -419,14 +429,22 @@ public class EventListenerServiceTest {
     String tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
         "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
 
-    Response response = client.target(svcEndPoint).path(roiPath)
+    Response response1 = client.target(svcEndPoint).path(roiPath)
         .request()
         .header("X-EBAY-C-ENDUSERCTX", endUserCtx)
         .header("X-EBAY-C-TRACKING", tracking)
         .header("Authorization", token)
         .accept(MediaType.APPLICATION_JSON_TYPE)
         .post(Entity.json(event));
-    assertEquals(200, response.getStatus());
+    assertEquals(201, response1.getStatus());
+//    Response response2 = client.target(svcEndPoint).path(roiPath)
+//        .request()
+//        .header("X-EBAY-C-ENDUSERCTX", endUserCtx)
+//        .header("X-EBAY-C-TRACKING", tracking)
+//        .header("Authorization", token)
+//        .accept(MediaType.APPLICATION_JSON_TYPE)
+//        .post(Entity.json(event2));
+//    assertEquals(201, response2.getStatus());
   }
 
   @Test
