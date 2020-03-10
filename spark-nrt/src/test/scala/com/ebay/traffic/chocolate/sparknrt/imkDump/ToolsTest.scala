@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.sparknrt.imkDump
 
 import java.net.URL
 
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum
 import org.scalatest.FunSuite
 
 /**
@@ -75,6 +76,7 @@ class ToolsTest extends FunSuite {
     assert(tools.getCommandType("IMPRESSION") == "4")
     assert(tools.getCommandType("CLICK") == "1")
     assert(tools.getCommandType("") == "1")
+    assert(tools.getCommandType("SERVE") == "4")
   }
 
   test("test getOutPutFileDate") {
