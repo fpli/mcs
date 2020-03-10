@@ -130,7 +130,7 @@ components:
           example: "192658398245"
         payload:
           type: object
-          example: '{"transactionTimestamp":"aaa","siteId":"bbb"}'
+          example: '{"transactionTimestamp":"aaa","siteId":"bbbb"}'
           additionalProperties:
             type: string
     errorData:
