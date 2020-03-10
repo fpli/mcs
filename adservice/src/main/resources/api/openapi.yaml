@@ -169,7 +169,7 @@ paths:
           description: Rejected
         '500':
           description: The call was unsuccessful due to exceptions on the Server
-  /config:
+  /config/{configid}:
     get:
       summary: Get Epn Config Information
       description: Get config information for ebay partner network by config id
@@ -177,6 +177,97 @@ paths:
         - config
       operationId: config
       parameters:
+        - in: path
+          name: configid
+          schema:
+            type: string
+          required: true
+          description: Ebay partner network config id
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Rejected
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+  /placement:
+    get:
+      summary: Get Epn Personalization Ads
+      description: Get personalization ads for ebay parter network by placement parameters
+      tags:
+        - placement
+      operationId: placement
+      parameters:
+        - in: query
+          name: st
+          schema:
+            type: string
+          description: ePN campaign status
+        - in: query
+          name: cpid
+          schema:
+            type: string
+          description: ePN campaign id
+        - in: query
+          name: l
+          schema:
+            type: string
+          description: ePN style layout
+        - in: query
+          name: ft
+          schema:
+            type: string
+          description: ePN style font
+        - in: query
+          name: tc
+          schema:
+            type: string
+          description: ePN style titleColor
+        - in: query
+          name: clp
+          schema:
+            type: string
+          description: ePN style collapse
+        - in: query
+          name: mi
+          schema:
+            type: integer
+          description: ePN style minNumberOfItems
+        - in: query
+          name: k
+          schema:
+            type: string
+          description: ePN search query keyword
+        - in: query
+          name: ctids
+          schema:
+            type: integer
+          description: ePN search query categoryIds
+        - in: query
+          name: configid
+          schema:
+            type: string
+          description: Ebay partner network config id
+        - in: query
+          name: configid
+          schema:
+            type: string
+          description: Ebay partner network config id
+        - in: query
+          name: configid
+          schema:
+            type: string
+          description: Ebay partner network config id
+        - in: query
+          name: configid
+          schema:
+            type: string
+          description: Ebay partner network config id
+        - in: query
+          name: configid
+          schema:
+            type: string
+          description: Ebay partner network config id
         - in: query
           name: configid
           schema:
