@@ -212,7 +212,7 @@ paths:
           name: l
           schema:
             type: string
-          description: ePN style layout
+          description: ePN style placementLayout
         - in: query
           name: ft
           schema:
@@ -244,35 +244,35 @@ paths:
             type: integer
           description: ePN search query categoryIds
         - in: query
-          name: configid
+          name: mkpid
           schema:
             type: string
-          description: Ebay partner network config id
+          description: ePN search query marketplaceId
         - in: query
-          name: configid
+          name: ur
           schema:
             type: string
-          description: Ebay partner network config id
+          description: ePN userRetargeting
         - in: query
-          name: configid
+          name: cts
           schema:
             type: string
-          description: Ebay partner network config id
+          description: ePN contextual
         - in: query
-          name: configid
+          name: sf
           schema:
             type: string
-          description: Ebay partner network config id
+          description: ePN searchFallback
         - in: query
-          name: configid
+          name: pid
           schema:
             type: string
-          description: Ebay partner network config id
+          description:
         - in: query
-          name: configid
+          name: ad_v
           schema:
-            type: string
-          description: Ebay partner network config id
+            type: integer
+          description:
       responses:
         '200':
           description: Success

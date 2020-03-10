@@ -284,8 +284,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   }
 
   /**
-   * Get user id from mapping
-   * @return user id in string
+   * Get config information for ebay partner network by config id
+   * @return response
    */
   @Override
   public Response config(String configid) {
@@ -301,6 +301,39 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       Configuration config = ConfigurationBuilder.newConfig("epntconfig.adservice");
       Client client = GingerClientBuilder.newClient(config);
       String endpoint = String.format((String) client.getConfiguration().getProperty(EndpointUri.KEY), configid);
+
+      Response response = client.target(endpoint).request().get();
+
+      if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+        res = response;
+      } else {
+        res = Response.status(Response.Status.BAD_REQUEST).build();
+      }
+
+    } catch (Exception e) {
+      try {
+        res = Response.status(Response.Status.BAD_REQUEST).build();
+      } catch (Exception ex) {
+        logger.warn(ex.getMessage(), ex);
+      }
+    }
+    return res;
+  }
+
+  /**
+   * Get personalization ads for ebay parter network by placement parameters
+   * @return response
+   */
+  @Override
+  public Response placement(String st, String cpid, String l, String ft, String tc, String clp, Integer mi,
+                            String k, Integer ctids, String mkpid, String ur, String cts, String sf, String pid, String ad_v) {
+    Response res = null;
+    try {
+      adserviceCookie.setAdguid(request, response);
+
+      Configuration config = ConfigurationBuilder.newConfig("epntplacement.adservice");
+      Client client = GingerClientBuilder.newClient(config);
+      String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
 
       Response response = client.target(endpoint).request().get();
 
