@@ -2,6 +2,8 @@ package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
+import com.ebay.app.raptor.chocolate.common.Hostname;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
@@ -88,6 +90,8 @@ public class CollectionService {
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
+    this.metrics.meter("driver.id", 1, Field.of("ip", Hostname.IP),
+            Field.of("driver_id", ApplicationOptionsParser.getDriverIdFromIp()));
   }
 
   /**
