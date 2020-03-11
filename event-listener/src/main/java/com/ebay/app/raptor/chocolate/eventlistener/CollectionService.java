@@ -443,7 +443,11 @@ public class CollectionService {
 
     // append payload fields into URI
     for(String key : payloadMap.keySet()) {
-      queryString = String.format("%s&%s=%s", queryString, URLEncoder.encode(key, "UTF-8"), URLEncoder.encode(payloadMap.get(key), "UTF-8"));
+      // If the value in payload is null, don't append the fields into url
+      if(payloadMap.get(key) != null) {
+        queryString = String.format("%s&%s=%s", queryString, URLEncoder.encode(key, "UTF-8"),
+            URLEncoder.encode(payloadMap.get(key), "UTF-8"));
+      }
     }
     queryString = queryString + "&nroi=1";
 
