@@ -68,7 +68,7 @@ public interface EventsApi {
     @Path("/impression")
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @ApiOperation(value = "Send one event to marketing tracking", notes = "Send one event to marketing tracking", authorizations = {
+    @ApiOperation(value = "Send one impression event to marketing tracking", notes = "Send one event to marketing tracking", authorizations = {
         @Authorization(value = "app_scope_auth", scopes = {
             @AuthorizationScope(scope = "https://api.ebay.com/oauth/scope/@public", description = "This scope would allow public access."),
             @AuthorizationScope(scope = "https://api.ebay.com/oauth/scope/base@public", description = "This scope would allow base public access."),
@@ -80,4 +80,20 @@ public interface EventsApi {
     )
     @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public') and hasAuthority('https://api.ebay.com/oauth/scope/base@public') and hasAuthority('https://api.ebay.com/oauth/scope/experience@public')")
     Response impression(Event body);
+
+    @POST
+    @Path("/notification")
+    @Produces({ "application/json" })
+    @ApiOperation(value = "Send one notification event to marketing tracking", notes = "Send one notification event to marketing tracking", authorizations = {
+        @Authorization(value = "app_scope_auth", scopes = {
+            @AuthorizationScope(scope = "https://api.ebay.com/oauth/scope/@public", description = "This scope would allow public access."),
+            @AuthorizationScope(scope = "https://api.ebay.com/oauth/scope/base@public", description = "This scope would allow base public access."),
+            @AuthorizationScope(scope = "https://api.ebay.com/oauth/scope/experience@public", description = "This scope would allow experience public access.")        })    }, tags={  })
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Created", response = Void.class),
+        @ApiResponse(code = 400, message = "Rejected due to message format", response = ErrorModel.class),
+        @ApiResponse(code = 500, message = "The call was unsuccessful due to exceptions on the Server", response = Void.class) }
+    )
+    @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public') and hasAuthority('https://api.ebay.com/oauth/scope/base@public') and hasAuthority('https://api.ebay.com/oauth/scope/experience@public')")
+    Response notification();
 }
