@@ -422,7 +422,8 @@ public class CollectionService {
 
     String queryString = "transType=" + URLEncoder.encode(roiEvent.getTransType() == null ? "": roiEvent.getTransType(), "UTF-8")
         + "&uniqueTransactionId=" + URLEncoder.encode(roiEvent.getUniqueTransactionId() == null ? "" : roiEvent.getUniqueTransactionId(), "UTF-8")
-        + "&itemId=" + URLEncoder.encode(roiEvent.getItemId() == null? "" : roiEvent.getItemId(), "UTF-8");
+        + "&itemId=" + URLEncoder.encode(roiEvent.getItemId() == null? "" : roiEvent.getItemId(), "UTF-8")
+        + "&transactionTimestamp=" + URLEncoder.encode(roiEvent.getTransactionTimestamp() == null ? localTimestamp : roiEvent.getTransactionTimestamp(), "UTF-8");
     // append payload fields into URI
     for(String key : payloadMap.keySet()) {
       queryString = String.format("%s&%s=%s", queryString, key, payloadMap.get(key));
