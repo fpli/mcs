@@ -59,6 +59,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=8192 \
+    --conf spark.speculation=true \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
