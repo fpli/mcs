@@ -47,6 +47,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -77,6 +78,7 @@ public class CollectionService {
   private static final String CHANNEL_TYPE = "channelType";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
+  private static final String TRANSACTION_TIMESTAMP = "transactionTimestamp";
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
   private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
@@ -381,6 +383,7 @@ public class CollectionService {
     if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
       logError(Errors.ERROR_NO_ENDUSERCTX);
     }
+    String localTimestamp = Long.toString(System.currentTimeMillis());
 
     try {
       long itemId = Long.valueOf(roiEvent.getItemId());
@@ -391,15 +394,22 @@ public class CollectionService {
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
       roiEvent.setItemId("");
     }
+    // Parse timestamp if it null or invalid, change it to localTimestamp
     try {
       long transTimestamp = Long.valueOf(roiEvent.getTransactionTimestamp());
       if(transTimestamp < 0)
-        roiEvent.setTransactionTimestamp("");
+        roiEvent.setTransactionTimestamp(localTimestamp);
     } catch (Exception e) {
       logger.warn("Error timestamp " + roiEvent.getTransactionTimestamp());
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
-      roiEvent.setTransactionTimestamp("");
+      roiEvent.setTransactionTimestamp(localTimestamp);
     }
+    // Parse payload fields
+    Map<String, String> payloadMap = roiEvent.getPayload();
+    if(payloadMap == null) {
+      payloadMap = new HashMap<String, String>();
+    }
+    // Parse transId
     try {
       long transId = Long.valueOf(roiEvent.getUniqueTransactionId());
       if (transId < 0)
@@ -421,7 +431,12 @@ public class CollectionService {
     String queryString = "transType=" + URLEncoder.encode(roiEvent.getTransType() == null ? "": roiEvent.getTransType(), "UTF-8")
         + "&uniqueTransactionId=" + URLEncoder.encode(roiEvent.getUniqueTransactionId() == null ? "" : roiEvent.getUniqueTransactionId(), "UTF-8")
         + "&itemId=" + URLEncoder.encode(roiEvent.getItemId() == null? "" : roiEvent.getItemId(), "UTF-8")
-        + "&transactionTimestamp=" + URLEncoder.encode(roiEvent.getTransactionTimestamp() == null ? "" : roiEvent.getTransactionTimestamp(), "UTF-8") + "&nroi=1";
+        + "&transactionTimestamp=" + URLEncoder.encode(roiEvent.getTransactionTimestamp() == null ? localTimestamp : roiEvent.getTransactionTimestamp(), "UTF-8");
+    // append payload fields into URI
+    for(String key : payloadMap.keySet()) {
+      queryString = String.format("%s&%s=%s", queryString, key, payloadMap.get(key));
+    }
+    queryString = queryString + "&nroi=1";
 
     String targetUrl = request.getRequestURL() + "?" + queryString;
     UriComponents uriComponents;
