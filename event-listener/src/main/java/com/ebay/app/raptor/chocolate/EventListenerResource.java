@@ -134,7 +134,7 @@ public class EventListenerResource implements EventsApi {
       Response res = null;
       try {
         collectionService.collectROIEvent(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
-        res = Response.status(Response.Status.OK).build();
+        res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
         Tags.STATUS.set(span, "0");

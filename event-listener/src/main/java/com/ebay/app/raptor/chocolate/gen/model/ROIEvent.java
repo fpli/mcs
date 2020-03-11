@@ -12,21 +12,22 @@
 
 package com.ebay.app.raptor.chocolate.gen.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import java.io.Serializable;
-import io.swagger.annotations.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import com.fasterxml.jackson.annotation.*;
+import java.io.Serializable;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * ROIEvent
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2019-12-15T12:59:12.864+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "transType","uniqueTransactionId","itemId","transactionTimestamp" })
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-03-11T09:50:51.248+08:00[Asia/Shanghai]")
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -48,6 +49,9 @@ private static final long serialVersionUID = 1L;
     @JsonProperty("transactionTimestamp")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String transactionTimestamp = null;
+    @JsonProperty("payload")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Map<String, String> payload = null;
 
 /**
     * Get transType
@@ -97,6 +101,18 @@ public String getTransactionTimestamp() {
 public void setTransactionTimestamp(String transactionTimestamp) {
         this.transactionTimestamp = transactionTimestamp;
         }
+/**
+    * Get payload
+* @return payload
+    **/
+    @ApiModelProperty(example = "{\"transactionTimestamp\":\"aaa\",\"siteId\":\"bbbb\"}", value = "")
+public Map<String, String> getPayload() {
+    return payload;
+    }
+
+public void setPayload(Map<String, String> payload) {
+        this.payload = payload;
+        }
     @Override
     public boolean equals(Object o) {
     if (this == o) {
@@ -109,23 +125,25 @@ public void setTransactionTimestamp(String transactionTimestamp) {
         return Objects.equals(this.transType, roIEvent.transType) &&
         Objects.equals(this.uniqueTransactionId, roIEvent.uniqueTransactionId) &&
         Objects.equals(this.itemId, roIEvent.itemId) &&
-        Objects.equals(this.transactionTimestamp, roIEvent.transactionTimestamp);
+        Objects.equals(this.transactionTimestamp, roIEvent.transactionTimestamp) &&
+        Objects.equals(this.payload, roIEvent.payload);
     }
 
     @Override
     public int hashCode() {
-    return Objects.hash(transType, uniqueTransactionId, itemId, transactionTimestamp);
+    return Objects.hash(transType, uniqueTransactionId, itemId, transactionTimestamp, payload);
     }
 
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
       sb.append("class ROIEvent {\n");
-      
+
       sb.append("    transType: ").append(toIndentedString(transType)).append("\n");
       sb.append("    uniqueTransactionId: ").append(toIndentedString(uniqueTransactionId)).append("\n");
       sb.append("    itemId: ").append(toIndentedString(itemId)).append("\n");
       sb.append("    transactionTimestamp: ").append(toIndentedString(transactionTimestamp)).append("\n");
+      sb.append("    payload: ").append(toIndentedString(payload)).append("\n");
       sb.append("}");
       return sb.toString();
     }

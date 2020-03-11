@@ -324,20 +324,37 @@ public class EventListenerServiceTest {
   @Test
   public void testNewROIEvent() throws Exception {
     String token = tokenGenerator.getToken().getAccessToken();
+    // Test event cases
     ROIEvent event = new ROIEvent();
     event.setItemId("192658398245");
-    event.setTransactionTimestamp("1576108800000");
+    Map<String, String> aaa = new HashMap<String, String>();
+    aaa.put("ff1", "ss");
+    event.setPayload(aaa);
     event.setTransType("BO-MobileApp@");
     event.setUniqueTransactionId("1677235978009");
 
-    Response response = client.target(svcEndPoint).path(roiPath)
-      .request()
-      .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
-      .header("X-EBAY-C-TRACKING", tracking)
-      .header("Authorization", token)
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .post(Entity.json(event));
-    assertEquals(200, response.getStatus());
+    // No timestamp case
+    ROIEvent event2 = new ROIEvent();
+    event2.setItemId("192658398245");
+    event2.setTransType("BO-MobileApp@");
+    event2.setUniqueTransactionId("1677235978009");
+
+    Response response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event));
+    assertEquals(201, response1.getStatus());
+//    Response response2 = client.target(svcEndPoint).path(roiPath)
+//        .request()
+//        .header("X-EBAY-C-ENDUSERCTX", endUserCtx)
+//        .header("X-EBAY-C-TRACKING", tracking)
+//        .header("Authorization", token)
+//        .accept(MediaType.APPLICATION_JSON_TYPE)
+//        .post(Entity.json(event2));
+//    assertEquals(201, response2.getStatus());
   }
 
   @Test

@@ -183,6 +183,11 @@ components:
         transactionTimestamp:
           type: "string"
           example: "1576108800000"
+        payload:
+          type: object
+          example: '{"transactionTimestamp":"aaa","siteId":"bbbb"}'
+          additionalProperties:
+            type: string
     errorData:
       type: object
       description: >
