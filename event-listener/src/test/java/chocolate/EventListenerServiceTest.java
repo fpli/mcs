@@ -74,6 +74,7 @@ public class EventListenerServiceTest {
   private static String eventsPath;
   private static String impressionPath;
   private static String notificationPath;
+  private static String roiPath;
   private static String versionPath;
 
   private static String endUserCtxiPhone;
@@ -118,6 +119,7 @@ public class EventListenerServiceTest {
     eventsPath = "/marketingtracking/v1/events";
     impressionPath = "/marketingtracking/v1/impression";
     notificationPath = "/marketingtracking/v1/notification";
+    roiPath = "/marketingtracking/v1/roi";
     versionPath = "/marketingtracking/v1/getVersion";
 
     endUserCtxiPhone = "ip=10.148.184.210," +
@@ -317,6 +319,25 @@ public class EventListenerServiceTest {
     event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
+  }
+
+  @Test
+  public void testNewROIEvent() throws Exception {
+    String token = tokenGenerator.getToken().getAccessToken();
+    ROIEvent event = new ROIEvent();
+    event.setItemId("192658398245");
+    event.setTransactionTimestamp("1576108800000");
+    event.setTransType("BO-MobileApp@");
+    event.setUniqueTransactionId("1677235978009");
+
+    Response response = client.target(svcEndPoint).path(roiPath)
+      .request()
+      .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+      .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
+      .accept(MediaType.APPLICATION_JSON_TYPE)
+      .post(Entity.json(event));
+    assertEquals(200, response.getStatus());
   }
 
   @Test
