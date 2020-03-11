@@ -8,6 +8,6 @@ package com.ebay.app.raptor.chocolate.avro;
 @org.apache.avro.specific.AvroGenerated
 public enum ChannelType {
   DEFAULT, EPN, DISPLAY, PAID_SEARCH, SOCIAL_MEDIA, PAID_SOCIAL, ROI, SITE_EMAIL, MRKT_EMAIL, NATURAL_SEARCH, NOTIFICATION, UNKNOWN  ;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\",\"PAID_SEARCH\",\"SOCIAL_MEDIA\",\"PAID_SOCIAL\",\"ROI\",\"SITE_EMAIL\",\"MRKT_EMAIL\",\"NATURAL_SEARCH\",\"NOTIFICATION\",\"UNKNOWN\"]}");
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\",\"PAID_SEARCH\",\"SOCIAL_MEDIA\",\"PAID_SOCIAL\",\"ROI\",\"SITE_EMAIL\",\"MRKT_EMAIL\",\"NATURAL_SEARCH\",\"NOTIFICATION\",\"SMS\",\"UNKNOWN\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 }

@@ -132,6 +132,7 @@
           "PAID_SOCIAL",
           "ROI",
           "NATURAL_SEARCH",
+          "SMS",
           "UNKNOWN"
         ]
       }

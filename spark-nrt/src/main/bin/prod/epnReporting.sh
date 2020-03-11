@@ -25,8 +25,6 @@ EXECUTOR_NUMBER=5
 EXECUTOR_MEMORY=4g
 EXECUTOR_CORES=1
 
-SPARK_EVENTLOG_DIR=hdfs://slickha/app-logs/spark/logs
-HISTORY_SERVER=http://slcchocolatepits-1242733.stratus.slc.ebay.com:18080/
 JOB_NAME="EPNReporting"
 
 for f in $(find $bin/../../conf/prod -name '*.*');
@@ -46,8 +44,6 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=8192 \
-    --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
-    --conf spark.yarn.historyServer.address=${HISTORY_SERVER} \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \

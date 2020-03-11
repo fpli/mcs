@@ -2,8 +2,9 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.eventlistener.error.LocalizedErrorFactoryV3;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
-import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
+import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.raptor.opentracing.SpanEventHelper;
@@ -125,6 +126,30 @@ public class EventListenerResource implements EventsApi {
     }
   }
 
+  @Override
+  public Response roi(ROIEvent body) {
+    Tracer tracer = GlobalTracer.get();
+    try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "roi").startActive(true)) {
+      Span span = scope.span();
+      Response res = null;
+      try {
+        collectionService.collectROIEvent(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
+        res = Response.status(Response.Status.OK).build();
+        Tags.STATUS.set(span, "0");
+      } catch (Exception e) {
+        Tags.STATUS.set(span, "0");
+        // show warning in cal
+        SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
+        try {
+          res = errorFactoryV3.makeWarnResponse(e.getMessage());
+        } catch (Exception ex) {
+          logger.warn(ex.getMessage(), ex);
+        }
+      }
+      return res;
+    }
+  }
+
   /**
    * Get method to collect mobile notification
    * @return response
@@ -133,7 +158,7 @@ public class EventListenerResource implements EventsApi {
   public Response notification() {
     Tracer tracer = GlobalTracer.get();
     try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "notification")
-        .startActive(true)) {
+      .startActive(true)) {
       Span span = scope.span();
       Response res = null;
       try {

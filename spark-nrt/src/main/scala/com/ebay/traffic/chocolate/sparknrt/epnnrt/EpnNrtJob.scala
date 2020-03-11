@@ -119,6 +119,9 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           df = df.withColumn("publisher_filter", epnNrtCommon.filter_specific_pub_udf(col("referer"), col("publisher_id")))
           df = df.filter(col("publisher_filter") === "0")
 
+          // filter uri && referer are ebay sites (long term traffic from ebay sites)
+          df = df.filter(epnNrtCommon.filter_longterm_ebaysites_ref_udf(col("uri"), col("referer")))
+
           // filter click and impression data, and if there is filterTime, filter the data older than filter time
           var df_click = df.filter(col("channel_action") === "CLICK")
           var df_impression = df.filter(col("channel_action") === "IMPRESSION")

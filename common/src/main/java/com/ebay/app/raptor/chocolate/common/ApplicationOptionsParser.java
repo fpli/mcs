@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.security.SecureRandom;
 import java.util.Enumeration;
 import java.util.IllegalFormatConversionException;
 import java.util.Properties;
@@ -34,6 +35,11 @@ public class ApplicationOptionsParser {
 
     /** Private logging instance */
     private static final Logger logger = Logger.getLogger(ApplicationOptionsParser.class);
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+    static final int RANDOM_DRIVER_ID_MASK =
+            SECURE_RANDOM.nextInt(Long.valueOf(SnapshotId.MAX_DRIVER_ID + 1l).intValue());
 
     /* don't initialize me, singleton class */
     private ApplicationOptionsParser() { }
@@ -311,13 +317,27 @@ public class ApplicationOptionsParser {
         logger.info("Parsed driver ID from IP=" + driverId);
         return driverId;
     }
+
+    /**
+     * driver_id = (decimal_iP / 1024) | RANDOM_DRIVER_ID_MASK
+     *
+     * @param ipDecimal  decimal ip
+     * @return driver id
+     */
+    static int getDriverIdFromIp(long ipDecimal) {
+        Validate.isTrue(ipDecimal > 0l, "ipDecimal should be valid");
+
+        int driverId = Long.valueOf(ipDecimal % (SnapshotId.MAX_DRIVER_ID + 1l)).intValue() & RANDOM_DRIVER_ID_MASK;
+        logger.info(String.format("ip: %s random driver id mask: %d driver id: %d", Hostname.getIp(), RANDOM_DRIVER_ID_MASK, driverId));
+        return driverId;
+    }
     
     /** 
      * Utility function to derive a driver ID, first going from the longest numeric sequence 
      * in the hostname, and falling back on the IP address. 
      */
     public static int getDriverIdFromIp() {
-        return getDriverIdFromIp(Hostname.HOSTNAME, Hostname.IP_DECIMAL);
+        return getDriverIdFromIp(Hostname.IP_DECIMAL);
     }
     
     /**

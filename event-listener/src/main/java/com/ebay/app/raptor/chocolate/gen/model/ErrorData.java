@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 @ApiModel(description = "Detail of each error modeled based on the cos error and exceptions spec:  https://github.corp.ebay.com/commerceos/cos-error-and-exceptions/blob/master/error-and-exception-handling.md ")
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2019-11-29T15:15:14.245+08:00[Asia/Shanghai]")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2019-12-03T17:15:41.556+08:00[Asia/Shanghai]")
 @JsonPropertyOrder({ "errorId","domain","subdomain","category","message","longMessage","inputRefIds","outputRefIds","parameters" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 

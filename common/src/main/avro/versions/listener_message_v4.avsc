@@ -129,6 +129,7 @@
           "MRKT_EMAIL",
           "NATURAL_SEARCH",
           "NOTIFICATION",
+          "SMS",
           "UNKNOWN"
         ]
       }
