@@ -336,7 +336,9 @@ public class CollectionService {
         Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     // add tags in url param "sojTags"
-    addGenericSojTags(requestContext, parameters, referer, type, action);
+    if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
+      addGenericSojTags(requestContext, parameters, referer, type, action);
+    }
 
     // add tags all channels need
     addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, PageIdEnum.CLICK.getId());
@@ -351,6 +353,8 @@ public class CollectionService {
       processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
       processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
+    else if (channelType == ChannelIdEnum.SMS)
+      processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
           Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
@@ -550,7 +554,9 @@ public class CollectionService {
         Field.of(PLATFORM, platform));
 
     // add tags in url param "sojTags"
-    addGenericSojTags(requestContext, parameters, referer, type, action);
+    if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
+      addGenericSojTags(requestContext, parameters, referer, type, action);
+    }
 
     // add tags all channels need
     if (channelAction == ChannelActionEnum.SERVE) {
@@ -813,6 +819,36 @@ public class CollectionService {
   }
 
   /**
+   * Process SMS event
+   */
+  private boolean processSMSEvent(ContainerRequestContext requestContext, String referer,
+                                        MultiValueMap<String, String> parameters, String type, String action) {
+
+    // Tracking ubi only when refer domain is not ebay.
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(!m.find()) {
+      try {
+        // Ubi tracking
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+        // event family
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
+
+        // sms unique id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SMS_ID, "smsid", String.class);
+
+      } catch (Exception e) {
+        logger.warn("Error when tracking ubi for sms click tags", e);
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      }
+    } else {
+      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+    }
+
+    return true;
+  }
+
+  /**
    * Add common tags all channels need
    */
   private void addCommonTags(ContainerRequestContext requestContext, String targetUrl, String referer,
@@ -857,30 +893,28 @@ public class CollectionService {
       // Ubi tracking
       IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-      if(parameters.containsKey(Constants.SOJ_TAGS)) {
-        String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
-        try {
-          sojTags = URLDecoder.decode(sojTags, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-          logger.warn("Param sojTags is wrongly encoded", e);
-          metrics.meter("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
-        }
-        if (!StringUtils.isEmpty(sojTags)) {
-          StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
-          while (stToken.hasMoreTokens()) {
-            try {
-              StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
-              if (sojNvp.countTokens() == 2) {
-                String sojTag = sojNvp.nextToken().trim();
-                String urlParam = sojNvp.nextToken().trim();
-                if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
-                  addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
-                }
+      String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
+      try {
+        sojTags = URLDecoder.decode(sojTags, "UTF-8");
+      } catch (UnsupportedEncodingException e) {
+        logger.warn("Param sojTags is wrongly encoded", e);
+        metrics.meter("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      }
+      if (!StringUtils.isEmpty(sojTags)) {
+        StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
+        while (stToken.hasMoreTokens()) {
+          try {
+            StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
+            if (sojNvp.countTokens() == 2) {
+              String sojTag = sojNvp.nextToken().trim();
+              String urlParam = sojNvp.nextToken().trim();
+              if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
+                addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
               }
-            } catch (Exception e) {
-              logger.warn("Error when tracking ubi for common tags", e);
-              metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
             }
+          } catch (Exception e) {
+            logger.warn("Error when tracking ubi for common tags", e);
+            metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
           }
         }
       }

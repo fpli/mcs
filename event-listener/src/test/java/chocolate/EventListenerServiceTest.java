@@ -374,7 +374,7 @@ public class EventListenerServiceTest {
     assertEquals(5, listenerMessagesPaidSearch.size());
 
     // mrkt email click events
-    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=8&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
+    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=8&mkpid=12&emsid=e11051.m44.l1139&sojTags=bu%3Dbu&bu=43551630917&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
     response = client.target(svcEndPoint).path(eventsPath)
             .request()
             .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
@@ -385,7 +385,7 @@ public class EventListenerServiceTest {
     assertEquals(201, response.getStatus());
 
     // site email click events
-    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=7&mkpid=0&emsid=e11051.m44.l1139&sojTags=bu%3Dbu&bu=43551630917&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = client.target(svcEndPoint).path(eventsPath)
             .request()
             .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
@@ -393,6 +393,17 @@ public class EventListenerServiceTest {
             .header("Authorization", token)
             .accept(MediaType.APPLICATION_JSON_TYPE)
             .post(Entity.json(event));
+    assertEquals(201, response.getStatus());
+
+    // SMS click events
+    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=24&smsid=1234567890&did=6045083310");
+    response = client.target(svcEndPoint).path(eventsPath)
+      .request()
+      .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+      .header("X-EBAY-C-TRACKING", tracking)
+      .header("Authorization", token)
+      .accept(MediaType.APPLICATION_JSON_TYPE)
+      .post(Entity.json(event));
     assertEquals(201, response.getStatus());
   }
 
