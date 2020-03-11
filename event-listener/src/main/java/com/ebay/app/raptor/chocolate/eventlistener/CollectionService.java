@@ -554,10 +554,14 @@ public class CollectionService {
 
     // add tags all channels need
     if (channelAction == ChannelActionEnum.SERVE) {
-      addCommonTags(requestContext, null, referer, agentInfo, type, action, PageIdEnum.AR.getId());
-    } else{
+      addCommonTags(requestContext, uri, referer, agentInfo, type, action, PageIdEnum.AR.getId());
+    } else if (channelAction == ChannelActionEnum.IMPRESSION) {
+      // impression and ar share same page id (adservice page id)
+      addCommonTags(requestContext, uri, referer, agentInfo, type, action, PageIdEnum.AR.getId());
+    } else {
       addCommonTags(requestContext, null, referer, agentInfo, type, action, PageIdEnum.EMAIL_OPEN.getId());
     }
+
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
     if (channelType == ChannelIdEnum.SITE_EMAIL)
