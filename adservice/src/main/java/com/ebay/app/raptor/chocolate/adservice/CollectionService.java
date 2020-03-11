@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.adservice.redirect.AdobeRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.redirect.RedirectContext;
 import com.ebay.app.raptor.chocolate.adservice.redirect.ThirdpartyRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
+import com.ebay.app.raptor.chocolate.adservice.util.EpntResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
@@ -25,6 +26,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -46,6 +48,9 @@ public class CollectionService {
 
   @Autowired
   private DAPResponseHandler dapResponseHandler;
+
+  @Autowired
+  private EpntResponseHandler epntResponseHandler;
 
   @PostConstruct
   public void postInit() {
@@ -183,6 +188,26 @@ public class CollectionService {
     }
     else
       return null;
+  }
+
+  /**
+   * Call epnt config api and return response
+   *
+   * @param configId
+   * @return reponse
+   */
+  public Response collectEpntConfigRedirect(String configId){
+    return epntResponseHandler.callEpntConfigResponse(configId);
+  }
+
+  /**
+   * Call epnt placement api and return response
+   *
+   * @param request
+   * @return response
+   */
+  public Response collectEpntConfigRedirect(HttpServletRequest request) throws URISyntaxException {
+    return epntResponseHandler.callEpntConfigResponse(request);
   }
 
 }

@@ -297,26 +297,16 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     Response res = null;
     try {
       adserviceCookie.setAdguid(request, response);
-
-      Configuration config = ConfigurationBuilder.newConfig("epntconfig.adservice");
-      Client client = GingerClientBuilder.newClient(config);
-      String endpoint = String.format((String) client.getConfiguration().getProperty(EndpointUri.KEY), configid);
-
-      Response response = client.target(endpoint).request().get();
-
-      if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-        res = response;
-      } else {
-        res = Response.status(Response.Status.BAD_REQUEST).build();
-      }
-
+      res = collectionService.collectEpntConfigRedirect(configid);
     } catch (Exception e) {
+      logger.warn(e.getMessage(), e);
       try {
         res = Response.status(Response.Status.BAD_REQUEST).build();
       } catch (Exception ex) {
         logger.warn(ex.getMessage(), ex);
       }
     }
+
     return res;
   }
 
@@ -330,26 +320,16 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     Response res = null;
     try {
       adserviceCookie.setAdguid(request, response);
-
-      Configuration config = ConfigurationBuilder.newConfig("epntplacement.adservice");
-      Client client = GingerClientBuilder.newClient(config);
-      String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
-
-      Response response = client.target(endpoint).request().get();
-
-      if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-        res = response;
-      } else {
-        res = Response.status(Response.Status.BAD_REQUEST).build();
-      }
-
+      res = collectionService.collectEpntConfigRedirect(request);
     } catch (Exception e) {
+      logger.warn(e.getMessage(), e);
       try {
         res = Response.status(Response.Status.BAD_REQUEST).build();
       } catch (Exception ex) {
         logger.warn(ex.getMessage(), ex);
       }
     }
+
     return res;
   }
 
