@@ -375,8 +375,7 @@ public class CollectionService {
     if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
       logError(Errors.ERROR_NO_ENDUSERCTX);
     }
-    LocalDateTime now = LocalDateTime.now();
-    String localTimestamp = Long.toString(now.atZone(ZoneOffset.UTC).toInstant().toEpochMilli());
+    String localTimestamp = Long.toString(System.currentTimeMillis());
 
     try {
       long itemId = Long.valueOf(roiEvent.getItemId());
@@ -387,24 +386,22 @@ public class CollectionService {
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
       roiEvent.setItemId("");
     }
-    // Parse payload fields
-    Map<String, String> payloadMap = new HashMap<String, String>();
+    // Parse timestamp if it null or invalid, change it to localTimestamp
     try {
-      payloadMap = roiEvent.getPayload();
-      if(payloadMap.isEmpty() || !payloadMap.containsKey(TRANSACTION_TIMESTAMP)) {
-        payloadMap.put(TRANSACTION_TIMESTAMP, localTimestamp);
-      } else {
-        // check timestamp field value, if it is invalid, change it to localTimestamp
-        long transTimestamp = Long.valueOf(payloadMap.get(TRANSACTION_TIMESTAMP));
-        if (transTimestamp < 0) {
-          payloadMap.put(TRANSACTION_TIMESTAMP, localTimestamp);
-        }
-      }
+      long transTimestamp = Long.valueOf(roiEvent.getTransactionTimestamp());
+      if(transTimestamp < 0)
+        roiEvent.setTransactionTimestamp(localTimestamp);
     } catch (Exception e) {
-      logger.warn("Error payload format " + roiEvent.getPayload().toString());
+      logger.warn("Error timestamp " + roiEvent.getTransactionTimestamp());
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
-      payloadMap.put(TRANSACTION_TIMESTAMP, localTimestamp);
+      roiEvent.setTransactionTimestamp(localTimestamp);
     }
+    // Parse payload fields
+    Map<String, String> payloadMap = roiEvent.getPayload();
+    if(payloadMap == null) {
+      payloadMap = new HashMap<String, String>();
+    }
+    // Parse transId
     try {
       long transId = Long.valueOf(roiEvent.getUniqueTransactionId());
       if (transId < 0)
