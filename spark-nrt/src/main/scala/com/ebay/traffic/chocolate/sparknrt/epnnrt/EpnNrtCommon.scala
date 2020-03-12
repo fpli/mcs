@@ -211,6 +211,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   )
 
 
+  // val getRoverChannelIdUdf = udf((uri: String) => getRoverUriInfo(uri, 4))
+  val getRoverUriInfoUdf = udf((uri: String, index: Int) => getRoverUriInfo(uri, index))
+
   //val getGUIDUdf = udf((requestHeader: String, responseHeader:String, guid: String) => getGUIDFromCookie(requestHeader, responseHeader, guid))
   val getValueFromRequestUdf = udf((requestHeader: String, key: String) => getValueFromRequest(requestHeader, key))
   val getUserQueryTextUdf = udf((url: String, action: String) => getUserQueryTxt(url, action))
@@ -326,22 +329,33 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     */
   def getLndPageUrlName(responseHeader: String, landingPageUrl: String): String = {
     if (landingPageUrl == null || landingPageUrl.equalsIgnoreCase("")) {
-      val location = getValueFromRequest(responseHeader, "Location")
-      if (location.equalsIgnoreCase(""))
-        return ""
-      val url = new URL(location)
-      if (url.getHost.equalsIgnoreCase("rover.ebay.com") || url.getHost.equalsIgnoreCase("r.ebay.com"))
-        removeParams(location)
-      else {
-        var res = getQueryParam(location, "mpre")
-        if (res.equalsIgnoreCase(""))
-          res = getQueryParam(location, "loc")
-        if (res.equalsIgnoreCase(""))
-          res = getQueryParam(location, "url")
-        if (res.equalsIgnoreCase(""))
+      try {
+        val location = getValueFromRequest(responseHeader, "Location")
+        if (location.equalsIgnoreCase(""))
+          return ""
+        val url = new URL(location)
+        if (url.getHost.equalsIgnoreCase("rover.ebay.com") || url.getHost.equalsIgnoreCase("r.ebay.com"))
           removeParams(location)
-        else
-          removeParams(res)
+        else {
+          var res = getQueryParam(location, "mpre")
+          if (res.equalsIgnoreCase(""))
+            res = getQueryParam(location, "loc")
+          if (res.equalsIgnoreCase(""))
+            res = getQueryParam(location, "url")
+          if (res.equalsIgnoreCase(""))
+            removeParams(location)
+          else
+            removeParams(res)
+        }
+      } catch {
+        case e: MalformedURLException => {
+          logger.error("Error pass landing page url from Location: " + e)
+          return ""
+        }
+        case e: Exception => {
+          logger.error("Error pass landing page url from responseHeader: " + responseHeader + e)
+          return ""
+        }
       }
     } else {
       return landingPageUrl
@@ -398,6 +412,16 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       return value
     val key = "ff" + index
     getQueryParam(uri, key)
+  }
+
+  def getRoverUriInfo(uri: String, index: Int): String = {
+    val path = new URL(uri).getPath()
+    if (path != null && path != "" && index >= 0 && index <= 4) {
+      val pathArray = path.split("/")
+      if (pathArray.length == 5)
+        return pathArray(index)
+    }
+    ""
   }
 
   def getValueFromRequest(request: String, key: String): String = {
@@ -1038,8 +1062,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     for (i <- test.indices) {
       publisher_list(i) = String.valueOf(test(i).get(0))
       campaign_list(i) = String.valueOf(test(i).get(1))
-      rotation_list(i) = getRelatedInfoFromUri(String.valueOf(test(i).get(2)), 3, "mkrid")
-
+      rotation_list(i) = getRoverUriInfo(String.valueOf(test(i).get(2)), 3)
     }
 
 
