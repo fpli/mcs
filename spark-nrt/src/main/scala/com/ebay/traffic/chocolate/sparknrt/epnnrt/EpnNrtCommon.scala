@@ -349,11 +349,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         }
       } catch {
         case e: MalformedURLException => {
-          logger.error("Error pass landing page url from Location: " + e)
+          logger.error("Error parse landing page url from Location: " + e)
+          metrics.meter("ParseLandingPageFromLocationError")
           return ""
         }
         case e: Exception => {
-          logger.error("Error pass landing page url from responseHeader: " + responseHeader + e)
+          logger.error("Error parse landing page url from responseHeader: " + responseHeader + e)
+          metrics.meter("ParseLandingPageFromResponseHeaderError")
           return ""
         }
       }
