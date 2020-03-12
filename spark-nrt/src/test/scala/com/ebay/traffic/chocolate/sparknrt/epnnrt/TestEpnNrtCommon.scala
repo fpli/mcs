@@ -147,6 +147,8 @@ class TestEpnNrtCommon extends BaseFunSuite{
 
   test("Test get landing page url name") {
     val responseHeader = "Referer:http://translate.google.com.mx|X-Purpose:preview|Location:http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&dashenId=10044|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/92d9dfe51670a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/47a11c671620a93c91006917fffa2a915d116016^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:10.108.159.177|User-Agent:Shuang-UP.Browser-baiduspider-ebaywinphocore"
+    val responseHeaderIllegalLocation = "Referer:http://translate.google.com.mx|X-Purpose:preview|Location:https%!a(MISSING)%!f(MISSING)%!f(MISSING)www.auctiva.com%!f(MISSING)email%!f(MISSING)tc.aspx%!f(MISSING)uid%!d(MISSING)2018965%!s(MISSING)id%!d(MISSING)15%!e(MISSING)id%!d(MISSING)961871317%!m(MISSING)id%!d(MISSING)33%!a(MISSING)id%!d(MISSING)41%!d(MISSING)est%!=(MISSING)3dhttp%!a(MISSING)%!f(MISSING)%!f(MISSING)cgi.ebay.com.au%!f(MISSING)ws%!f(MISSING)eBayISAPI.dll%!=(MISSING)fViewItem%!i(MISSING)tem%!d(MISSING)223085722664|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/92d9dfe51670a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/47a11c671620a93c91006917fffa2a915d116016^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:10.108.159.177|User-Agent:Shuang-UP.Browser-baiduspider-ebaywinphocore"
+
     val res = epnNrtCommon.getLndPageUrlName(responseHeader, "")
     assert(res.equals("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2"))
 
@@ -155,6 +157,15 @@ class TestEpnNrtCommon extends BaseFunSuite{
 
     val resValidLandingPage = epnNrtCommon.getLndPageUrlName(responseHeader, "http://www.ebay.de/itm/like/113936797595")
     assert(resValidLandingPage.equals("http://www.ebay.de/itm/like/113936797595"))
+
+    val resIllegalLocationNullLandingPage = epnNrtCommon.getLndPageUrlName(responseHeaderIllegalLocation, null)
+    assert(resIllegalLocationNullLandingPage.equals(""))
+
+    val resIllegalLocationValidLandingPage = epnNrtCommon.getLndPageUrlName(responseHeaderIllegalLocation, "http://www.ebay.de/itm/like/113936797595")
+    assert(resIllegalLocationValidLandingPage.equals("http://www.ebay.de/itm/like/113936797595"))
+
+    val resIllegalLocationEmptyLandingPage = epnNrtCommon.getLndPageUrlName(responseHeaderIllegalLocation, "")
+    assert(resIllegalLocationEmptyLandingPage.equals(""))
   }
 
   test("Test get value from request") {
