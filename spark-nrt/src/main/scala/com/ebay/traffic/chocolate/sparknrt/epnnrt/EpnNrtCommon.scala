@@ -1051,7 +1051,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     for (i <- test.indices) {
       publisher_list(i) = String.valueOf(test(i).get(0))
       campaign_list(i) = String.valueOf(test(i).get(1))
-      rotation_list(i) = getRoverUriInfo(String.valueOf(test(i).get(2)), 3)
+      rotation_list(i) = getRelatedInfoFromUri(String.valueOf(test(i).get(2)), 3, "mkrid")
+
     }
 
 
