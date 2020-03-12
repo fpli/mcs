@@ -211,9 +211,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   )
 
 
-  // val getRoverChannelIdUdf = udf((uri: String) => getRoverUriInfo(uri, 4))
-  val getRoverUriInfoUdf = udf((uri: String, index: Int) => getRoverUriInfo(uri, index))
-
   //val getGUIDUdf = udf((requestHeader: String, responseHeader:String, guid: String) => getGUIDFromCookie(requestHeader, responseHeader, guid))
   val getValueFromRequestUdf = udf((requestHeader: String, key: String) => getValueFromRequest(requestHeader, key))
   val getUserQueryTextUdf = udf((url: String, action: String) => getUserQueryTxt(url, action))
@@ -401,16 +398,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       return value
     val key = "ff" + index
     getQueryParam(uri, key)
-  }
-
-  def getRoverUriInfo(uri: String, index: Int): String = {
-    val path = new URL(uri).getPath()
-    if (path != null && path != "" && index >= 0 && index <= 4) {
-      val pathArray = path.split("/")
-      if (pathArray.length == 5)
-        return pathArray(index)
-    }
-    ""
   }
 
   def getValueFromRequest(request: String, key: String): String = {

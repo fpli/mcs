@@ -181,12 +181,6 @@ class TestEpnNrtCommon extends BaseFunSuite{
     assert(res.equals("10044"))
   }
 
-  test("test get Rover URI info") {
-    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_ff2=10044&dashenCnt=2&xxx=4&pub=2"
-    val rotation = epnNrtCommon.getRoverUriInfo(uri, 3)
-    assert(rotation.equals("711-53200-19255-0"))
-  }
-
   test("test get value from request") {
     val responseHeader = "Referer:http://translate.google.com.mx|X-Purpose:preview|Location:http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&dashenId=10044&mpre=http://www.amazon.com?xx=http://www.amazon.com|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/92d9dfe51670a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/47a11c671620a93c91006917fffa2a915d116016^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:10.108.159.177|User-Agent:Shuang-UP.Browser-baiduspider-ebaywinphocore"
     val value = epnNrtCommon.getValueFromRequest(responseHeader, "location")
