@@ -303,6 +303,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     commandType match {
       case "IMPRESSION" => "4"
       case "ROI" => "2"
+      case "SERVE" => "4"
       case _ => "1"
     }
   }

@@ -54,6 +54,11 @@ public enum ChannelIdEnum {
   PAID_SOCIAL("20", LogicalChannelEnum.PAID_SOCIAL, false),
 
   /**
+   * Channel 24 -- production SMS
+   */
+  SMS("24", LogicalChannelEnum.SMS, false),
+
+  /**
    * Channel 0 -- production ROI
    */
   ROI("0", LogicalChannelEnum.ROI, false);

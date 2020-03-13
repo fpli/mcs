@@ -1,7 +1,10 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
+import com.ebay.app.raptor.chocolate.common.Hostname;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
@@ -31,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
@@ -45,6 +49,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,6 +80,8 @@ public class CollectionService {
   private static final String CHANNEL_TYPE = "channelType";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
+  private static final String PAGE_ID = "pageId";
+  private static final String TRANSACTION_TIMESTAMP = "transactionTimestamp";
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
   private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
@@ -88,6 +95,8 @@ public class CollectionService {
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
+    this.metrics.meter("driver.id", 1, Field.of("ip", Hostname.IP),
+            Field.of("driver_id", ApplicationOptionsParser.getDriverIdFromIp()));
   }
 
   /**
@@ -332,7 +341,9 @@ public class CollectionService {
         Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     // add tags in url param "sojTags"
-    addGenericSojTags(requestContext, parameters, referer, type, action);
+    if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
+      addGenericSojTags(requestContext, parameters, referer, type, action);
+    }
 
     // add tags all channels need
     addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, PageIdEnum.CLICK.getId());
@@ -347,6 +358,8 @@ public class CollectionService {
       processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
       processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
+    else if (channelType == ChannelIdEnum.SMS)
+      processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
           Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
@@ -373,6 +386,7 @@ public class CollectionService {
     if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
       logError(Errors.ERROR_NO_ENDUSERCTX);
     }
+    String localTimestamp = Long.toString(System.currentTimeMillis());
 
     try {
       long itemId = Long.valueOf(roiEvent.getItemId());
@@ -383,15 +397,22 @@ public class CollectionService {
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
       roiEvent.setItemId("");
     }
+    // Parse timestamp if it null or invalid, change it to localTimestamp
     try {
       long transTimestamp = Long.valueOf(roiEvent.getTransactionTimestamp());
       if(transTimestamp < 0)
-        roiEvent.setTransactionTimestamp("");
+        roiEvent.setTransactionTimestamp(localTimestamp);
     } catch (Exception e) {
       logger.warn("Error timestamp " + roiEvent.getTransactionTimestamp());
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
-      roiEvent.setTransactionTimestamp("");
+      roiEvent.setTransactionTimestamp(localTimestamp);
     }
+    // Parse payload fields
+    Map<String, String> payloadMap = roiEvent.getPayload();
+    if(payloadMap == null) {
+      payloadMap = new HashMap<String, String>();
+    }
+    // Parse transId
     try {
       long transId = Long.valueOf(roiEvent.getUniqueTransactionId());
       if (transId < 0)
@@ -413,7 +434,22 @@ public class CollectionService {
     String queryString = "transType=" + URLEncoder.encode(roiEvent.getTransType() == null ? "": roiEvent.getTransType(), "UTF-8")
         + "&uniqueTransactionId=" + URLEncoder.encode(roiEvent.getUniqueTransactionId() == null ? "" : roiEvent.getUniqueTransactionId(), "UTF-8")
         + "&itemId=" + URLEncoder.encode(roiEvent.getItemId() == null? "" : roiEvent.getItemId(), "UTF-8")
-        + "&transactionTimestamp=" + URLEncoder.encode(roiEvent.getTransactionTimestamp() == null ? "" : roiEvent.getTransactionTimestamp(), "UTF-8") + "&nroi=1";
+        + "&transactionTimestamp=" + URLEncoder.encode(roiEvent.getTransactionTimestamp() == null ? localTimestamp : roiEvent.getTransactionTimestamp(), "UTF-8");
+    // If the field in payload is in {transType, uniqueTransactionId, itemId, transactionTimestamp}, don't append them into the url
+    payloadMap.remove(TRANSACTION_TIMESTAMP);
+    payloadMap.remove("transType");
+    payloadMap.remove("uniqueTransactionId");
+    payloadMap.remove("itemId");
+
+    // append payload fields into URI
+    for(String key : payloadMap.keySet()) {
+      // If the value in payload is null, don't append the fields into url
+      if(payloadMap.get(key) != null) {
+        queryString = String.format("%s&%s=%s", queryString, URLEncoder.encode(key, "UTF-8"),
+            URLEncoder.encode(payloadMap.get(key), "UTF-8"));
+      }
+    }
+    queryString = queryString + "&nroi=1";
 
     String targetUrl = request.getRequestURL() + "?" + queryString;
     UriComponents uriComponents;
@@ -546,14 +582,20 @@ public class CollectionService {
         Field.of(PLATFORM, platform));
 
     // add tags in url param "sojTags"
-    addGenericSojTags(requestContext, parameters, referer, type, action);
+    if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
+      addGenericSojTags(requestContext, parameters, referer, type, action);
+    }
 
     // add tags all channels need
     if (channelAction == ChannelActionEnum.SERVE) {
-      addCommonTags(requestContext, null, referer, agentInfo, type, action, PageIdEnum.AR.getId());
-    } else{
+      addCommonTags(requestContext, uri, referer, agentInfo, type, action, PageIdEnum.AR.getId());
+    } else if (channelAction == ChannelActionEnum.IMPRESSION) {
+      // impression and ar share same page id (adservice page id)
+      addCommonTags(requestContext, uri, referer, agentInfo, type, action, PageIdEnum.AR.getId());
+    } else {
       addCommonTags(requestContext, null, referer, agentInfo, type, action, PageIdEnum.EMAIL_OPEN.getId());
     }
+
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
     if (channelType == ChannelIdEnum.SITE_EMAIL)
@@ -606,6 +648,75 @@ public class CollectionService {
       return false;
   }
 
+
+  public boolean collectNotification(HttpServletRequest request, IEndUserContext endUserContext,
+                                     ContainerRequestContext requestContext) throws Exception {
+
+    if (request.getHeader("X-EBAY-C-TRACKING") == null) {
+      logError(Errors.ERROR_NO_TRACKING);
+    }
+
+    if (request.getHeader("X-EBAY-C-ENDUSERCTX") == null) {
+      logError(Errors.ERROR_NO_ENDUSERCTX);
+    }
+
+    String userAgent = endUserContext.getUserAgent();
+    if (null == userAgent) {
+      logError(Errors.ERROR_NO_USER_AGENT);
+    }
+
+    // targetUrl is from request
+    String url = new ServletServerHttpRequest(request).getURI().toString();
+
+    // parse channel from uri
+    // illegal url, rejected
+    UriComponents uriComponents;
+    uriComponents = UriComponentsBuilder.fromUriString(url).build();
+    if (uriComponents == null) {
+      logError(Errors.ERROR_ILLEGAL_URL);
+    }
+
+    // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
+    MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
+    if (parameters.size() == 0) {
+      logger.warn(Errors.ERROR_NO_QUERY_PARAMETER);
+      metrics.meter(Errors.ERROR_NO_QUERY_PARAMETER);
+      return true;
+    }
+
+    // no page id, accepted
+    if (!parameters.containsKey(Constants.NOTIFICATION_PAGE_ID) ||
+        parameters.get(Constants.NOTIFICATION_PAGE_ID).get(0) == null) {
+      logger.warn(Errors.ERROR_NO_PAGE_ID);
+      metrics.meter(Errors.ERROR_NO_PAGE_ID);
+      return true;
+    }
+    // parse page id from parameters
+    int pageId = Integer.parseInt(parameters.get(Constants.NOTIFICATION_PAGE_ID).get(0));
+
+    // platform check by user agent
+    UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
+    String platform = getPlatform(agentInfo);
+
+    String type = ChannelType.NOTIFICATION.toString();
+    String action = ChannelAction.NOTIFICATION.toString();
+
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+        Field.of(PLATFORM, platform), Field.of(PAGE_ID, pageId));
+
+    // add tags all channels need
+    addCommonTags(requestContext, "", "", agentInfo, type, action, pageId);
+
+    // add channel specific tags, and produce message for EPN and IMK
+    boolean processFlag = false;
+    processNotification(requestContext, parameters, type, action, pageId);
+
+    if (processFlag)
+      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+          Field.of(PLATFORM, platform), Field.of(PAGE_ID, pageId));
+
+    return true;
+  }
 
   /**
    * Process AMS and IMK events
@@ -805,6 +916,77 @@ public class CollectionService {
   }
 
   /**
+   * Process SMS event
+   */
+  private boolean processSMSEvent(ContainerRequestContext requestContext, String referer,
+                                        MultiValueMap<String, String> parameters, String type, String action) {
+
+    // Tracking ubi only when refer domain is not ebay.
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(!m.find()) {
+      try {
+        // Ubi tracking
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+        // event family
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
+
+        // sms unique id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SMS_ID, "smsid", String.class);
+
+      } catch (Exception e) {
+        logger.warn("Error when tracking ubi for sms click tags", e);
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      }
+    } else {
+      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+    }
+
+    return true;
+  }
+
+  /**
+   * Process mobile notification event
+   */
+  private void processNotification(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
+                                   String type, String action, int pageId) {
+    try {
+      // Ubi tracking
+      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+      // event family
+      requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
+
+      // notification id
+      addTagFromUrlQuery(parameters, requestTracker, Constants.NOTIFICATION_ID, "nid", String.class);
+
+      // notification type
+      addTagFromUrlQuery(parameters, requestTracker, Constants.NOTIFICATION_TYPE, "ntype", String.class);
+
+      // notification type evt
+      addTagFromUrlQuery(parameters, requestTracker, Constants.NOTIFICATION_TYPE_EVT, "evt", String.class);
+
+      // notification action
+      addTagFromUrlQuery(parameters, requestTracker, Constants.NOTIFICATION_ACTION, "pnact", String.class);
+
+      // item id
+      addTagFromUrlQuery(parameters, requestTracker, Constants.ITEM_ID, "itm", String.class);
+
+      // user name
+      addTagFromUrlQuery(parameters, requestTracker, Constants.USER_NAME, "user_name", String.class);
+
+      // mc3 canonical message id
+      addTagFromUrlQuery(parameters, requestTracker, Constants.MC3_MSSG_ID, "mc3id", String.class);
+
+    } catch (Exception e) {
+      logger.warn("Error when tracking ubi for mobile notification tags", e);
+      metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+          Field.of(PAGE_ID, pageId));
+    }
+
+  }
+
+  /**
    * Add common tags all channels need
    */
   private void addCommonTags(ContainerRequestContext requestContext, String targetUrl, String referer,
@@ -823,11 +1005,14 @@ public class CollectionService {
         requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
 
         // target url
-        if (targetUrl != null)
+        if (!StringUtils.isEmpty(targetUrl)) {
           requestTracker.addTag("url_mpre", targetUrl, String.class);
+        }
 
         // referer
-        requestTracker.addTag("ref", referer, String.class);
+        if (!StringUtils.isEmpty(referer)) {
+          requestTracker.addTag("ref", referer, String.class);
+        }
 
         // populate device info
         CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
@@ -849,30 +1034,28 @@ public class CollectionService {
       // Ubi tracking
       IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-      if(parameters.containsKey(Constants.SOJ_TAGS)) {
-        String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
-        try {
-          sojTags = URLDecoder.decode(sojTags, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-          logger.warn("Param sojTags is wrongly encoded", e);
-          metrics.meter("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
-        }
-        if (!StringUtils.isEmpty(sojTags)) {
-          StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
-          while (stToken.hasMoreTokens()) {
-            try {
-              StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
-              if (sojNvp.countTokens() == 2) {
-                String sojTag = sojNvp.nextToken().trim();
-                String urlParam = sojNvp.nextToken().trim();
-                if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
-                  addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
-                }
+      String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
+      try {
+        sojTags = URLDecoder.decode(sojTags, "UTF-8");
+      } catch (UnsupportedEncodingException e) {
+        logger.warn("Param sojTags is wrongly encoded", e);
+        metrics.meter("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      }
+      if (!StringUtils.isEmpty(sojTags)) {
+        StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
+        while (stToken.hasMoreTokens()) {
+          try {
+            StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
+            if (sojNvp.countTokens() == 2) {
+              String sojTag = sojNvp.nextToken().trim();
+              String urlParam = sojNvp.nextToken().trim();
+              if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
+                addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
               }
-            } catch (Exception e) {
-              logger.warn("Error when tracking ubi for common tags", e);
-              metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
             }
+          } catch (Exception e) {
+            logger.warn("Error when tracking ubi for common tags", e);
+            metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
           }
         }
       }

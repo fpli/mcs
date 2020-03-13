@@ -101,11 +101,13 @@ public class EventListenerResource implements EventsApi {
   @Override
   public Response impression(Event body) {
     Tracer tracer = GlobalTracer.get();
-    try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "impression").startActive(true)) {
+    try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "impression")
+        .startActive(true)) {
       Span span = scope.span();
       Response res = null;
       try {
-        collectionService.collectImpression(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
+        collectionService.collectImpression(request, userCtxProvider.get(), raptorSecureContextProvider.get(),
+            requestContext, body);
         res = Response.status(Response.Status.OK).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
@@ -132,9 +134,40 @@ public class EventListenerResource implements EventsApi {
       Response res = null;
       try {
         collectionService.collectROIEvent(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
-        res = Response.status(Response.Status.OK).build();
+        res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
+        Tags.STATUS.set(span, "0");
+        // show warning in cal
+        SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
+        try {
+          res = errorFactoryV3.makeWarnResponse(e.getMessage());
+        } catch (Exception ex) {
+          logger.warn(ex.getMessage(), ex);
+        }
+      }
+      return res;
+    }
+  }
+
+  /**
+   * Get method to collect mobile notification
+   * @return response
+   */
+  @Override
+  public Response notification() {
+    Tracer tracer = GlobalTracer.get();
+    try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "notification")
+      .startActive(true)) {
+      Span span = scope.span();
+      Response res = null;
+      try {
+        collectionService.collectNotification(request, userCtxProvider.get(), requestContext);
+        res = Response.status(Response.Status.CREATED).build();
+        Tags.STATUS.set(span, "0");
+      } catch (Exception e) {
+        // logger.warn(e.getMessage(), e);
+        // Tags.STATUS.set(span, e.getMessage());
         Tags.STATUS.set(span, "0");
         // show warning in cal
         SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
