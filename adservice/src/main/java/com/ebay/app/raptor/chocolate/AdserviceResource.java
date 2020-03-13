@@ -297,7 +297,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     Response res = null;
     try {
       adserviceCookie.setAdguid(request, response);
-      res = collectionService.collectEpntConfigRedirect(configid);
+      res = collectionService.collectEpntConfigRedirect(configid, response);
     } catch (Exception e) {
       logger.warn(e.getMessage(), e);
       try {
@@ -320,7 +320,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     Response res = null;
     try {
       adserviceCookie.setAdguid(request, response);
-      res = collectionService.collectEpntConfigRedirect(request);
+      res = collectionService.collectEpntPlacementRedirect(request, response);
     } catch (Exception e) {
       logger.warn(e.getMessage(), e);
       try {

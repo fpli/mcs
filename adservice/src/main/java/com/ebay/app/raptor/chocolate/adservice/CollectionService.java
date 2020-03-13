@@ -196,8 +196,8 @@ public class CollectionService {
    * @param configId
    * @return reponse
    */
-  public Response collectEpntConfigRedirect(String configId){
-    return epntResponseHandler.callEpntConfigResponse(configId);
+  public Response collectEpntConfigRedirect(String configId, HttpServletResponse response){
+    return epntResponseHandler.callEpntConfigResponse(configId, response);
   }
 
   /**
@@ -206,8 +206,8 @@ public class CollectionService {
    * @param request
    * @return response
    */
-  public Response collectEpntConfigRedirect(HttpServletRequest request) throws URISyntaxException {
-    return epntResponseHandler.callEpntConfigResponse(request);
+  public Response collectEpntPlacementRedirect(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    return epntResponseHandler.callEpntPlacementResponse(request, response);
   }
 
 }

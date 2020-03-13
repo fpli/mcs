@@ -22,6 +22,7 @@ import javax.ws.rs.core.Response;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -32,10 +33,8 @@ import java.util.Map;
 public class EpntResponseHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(EpntResponseHandler.class);
 
-    // get the epnt service info from application.properties in resources dir
-    private static Configuration epntConfig = ConfigurationBuilder.newConfig("epntconfig.adservice");
-    private static Client epntClient = GingerClientBuilder.newClient(epntConfig);
-    private static String epntEndpoint = (String) epntClient.getConfiguration().getProperty(EndpointUri.KEY);
+    private static final String EPNT_CONFIG_SERVICE_CLIENTKEY = "epntconfig.adservice";
+    private static final String EPNT_PLACEMENT_SERVICE_CLIENTKEY = "epntplacement.adservice";
 
     @Autowired
     private AdserviceCookie adserviceCookie;
@@ -48,17 +47,24 @@ public class EpntResponseHandler {
     /**
      * Call Epnt config interface and return response
      */
-    public Response callEpntConfigResponse(String configid){
+    public Response callEpntConfigResponse(String configid, HttpServletResponse response){
         Response res = null;
 
-        String targetUri = String.format(epntEndpoint, configid);
+        Client epntConfigClient = getEpntServiceClient(EPNT_CONFIG_SERVICE_CLIENTKEY);
+        String epntConfigEndpoint = getEpntServiceEndpoint(epntConfigClient);
+
+        String targetUri = String.format(epntConfigEndpoint, configid);
         LOGGER.info("call Epnt Config {}", targetUri);
 
         long startTime = System.currentTimeMillis();
-        try (Response epntConfigResponse = epntClient.target(targetUri).request().get()) {
+        try (Response epntConfigResponse = epntConfigClient.target(targetUri).request().get();
+             OutputStream os = response.getOutputStream()) {
             int status = epntConfigResponse.getStatus();
             if (status == Response.Status.OK.getStatusCode()) {
-                res = epntConfigResponse;
+                res = Response.status(Response.Status.OK).build();
+                response.setContentType("application/json; charset=utf-8");
+                byte[] bytes = epntConfigResponse.readEntity(byte[].class);
+                os.write(bytes);
             } else {
                 res = Response.status(Response.Status.BAD_REQUEST).build();
                 LOGGER.error("Failed to call Epnt Config {}", status);
@@ -78,21 +84,28 @@ public class EpntResponseHandler {
     /**
      * Call Epnt placement interface and return response
      */
-    public Response callEpntConfigResponse(HttpServletRequest request) throws URISyntaxException {
+    public Response callEpntPlacementResponse(HttpServletRequest request, HttpServletResponse response) throws Exception {
         Response res = null;
+
+        Client epntPlacementClient = getEpntServiceClient(EPNT_PLACEMENT_SERVICE_CLIENTKEY);
+        String epntPlacementEndpoint = getEpntServiceEndpoint(epntPlacementClient);
 
         Map<String, String[]> params = request.getParameterMap();
         String guid = getGuid(request);
         String userId = getUserId(request);
 
-        URI targetUri = generateEpntPlacementUri(params, userId, guid);
+        URI targetUri = generateEpntPlacementUri(epntPlacementEndpoint, params, userId, guid);
         LOGGER.info("call Epnt Placement {}",targetUri.toString());
 
         long startTime = System.currentTimeMillis();
-        try (Response epntPlacementResponse = epntClient.target(targetUri).request().get()) {
+        try (Response epntPlacementResponse = epntPlacementClient.target(targetUri).request().get();
+             OutputStream os = response.getOutputStream()) {
             int status = epntPlacementResponse.getStatus();
             if (status == Response.Status.OK.getStatusCode()) {
-                res = epntPlacementResponse;
+                res = Response.status(Response.Status.OK).build();
+                response.setContentType("text/html;charset=UTF-8");
+                byte[] bytes = epntPlacementResponse.readEntity(byte[].class);
+                os.write(bytes);
             } else {
                 res = Response.status(Response.Status.BAD_REQUEST).build();
                 LOGGER.error("Failed to call Epnt Placement {}", status);
@@ -117,8 +130,8 @@ public class EpntResponseHandler {
      * @param guid
      * @return epnt placement URI
      */
-    public URI generateEpntPlacementUri(Map<String, String[]> parameters, String userId, String guid) throws URISyntaxException {
-        URIBuilder uriBuilder = new URIBuilder(epntEndpoint);
+    public URI generateEpntPlacementUri(String epntPlacementEndpoint, Map<String, String[]> parameters, String userId, String guid) throws URISyntaxException {
+        URIBuilder uriBuilder = new URIBuilder(epntPlacementEndpoint);
 
         for (String param: parameters.keySet()) {
             uriBuilder.addParameter(param, parameters.get(param)[0]);
@@ -135,6 +148,24 @@ public class EpntResponseHandler {
         }
 
         return uriBuilder.build();
+    }
+
+    /**
+     * Get Epnt service client
+     */
+    private Client getEpntServiceClient(String clientKey) {
+        Configuration epntConfig = ConfigurationBuilder.newConfig(clientKey);
+        Client epntClient = GingerClientBuilder.newClient(epntConfig);
+
+        return epntClient;
+    }
+
+    /**
+     * Get Epnt service endpoint
+     */
+    private String getEpntServiceEndpoint(Client epntClient) {
+        String epntEndpoint = (String) epntClient.getConfiguration().getProperty(EndpointUri.KEY);
+        return epntEndpoint;
     }
 
     /**
