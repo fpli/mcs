@@ -6,7 +6,7 @@ set -x
 
 function start_job(){
     host=$1
-    ssh -T -i /usr/azkaban/id_rsa_spark stack@${host} <<EOSSH
+    ssh -T -i /usr/azkaban/id_rsa_spark _choco_admin@${host} <<EOSSH
     hostname
     cd /datashare/mkttracking/jobs/chocolate-sparknrt/bin/prod
     pwd
