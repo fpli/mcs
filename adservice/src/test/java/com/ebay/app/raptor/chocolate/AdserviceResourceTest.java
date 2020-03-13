@@ -63,8 +63,6 @@ public class AdserviceResourceTest {
   private final String guidPath = "/marketingtracking/v1/guid";
   private final String useridPath = "/marketingtracking/v1/uid";
   private final String adobeOpenPath = "/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=14&id=h1d3e4dcb,2d1b8f79,1&segname=SOP708_SG49&country=US&pu=hrtHY5sgRPq&crd=20200110015225&sojTags=adcampid%id%adcamppu%pu%crd%crd%segname%segname&adobeParams=id,p1,p2,p3,p4";
-  private final String configPath = "/marketingtracking/v1/config/%s";
-  private final String placementPath = "/marketingtracking/v1/placement";
 
 
   @Autowired
@@ -175,42 +173,6 @@ public class AdserviceResourceTest {
         .request()
         .accept(MediaType.APPLICATION_JSON_TYPE)
         .get();
-    assertEquals(200, response.getStatus());
-  }
-
-  @Test
-  public void config() {
-    String configUrl = String.format(configPath, "5c92a47d74493605fd7fc51c");
-
-    Response response = client.target(svcEndPoint).path(configUrl)
-            .request()
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .get();
-    assertEquals(200, response.getStatus());
-  }
-
-  @Test
-  public void placement() throws URISyntaxException {
-    URIBuilder uriBuilder = new URIBuilder(svcEndPoint + placementPath)
-            .addParameter("st", "ACTIVE")
-            .addParameter("cpid", "5338209972")
-            .addParameter("l", "900x220")
-            .addParameter("ft", "Montserrat")
-            .addParameter("tc", "939196")
-            .addParameter("clp", "true")
-            .addParameter("mi", "10")
-            .addParameter("k", "iphone")
-            .addParameter("ctids", "0")
-            .addParameter("mkpid", "EBAY-US")
-            .addParameter("ur", "true")
-            .addParameter("cts", "true")
-            .addParameter("sf", "false")
-            .addParameter("pid", "1582013175997-0-1062982")
-            .addParameter("ad_v", "2");
-    Response response = client.target(uriBuilder.build())
-            .request()
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .get();
     assertEquals(200, response.getStatus());
   }
 }
