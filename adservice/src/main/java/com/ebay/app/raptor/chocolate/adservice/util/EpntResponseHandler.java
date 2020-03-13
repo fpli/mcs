@@ -22,7 +22,6 @@ import javax.ws.rs.core.Response;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
