@@ -177,18 +177,17 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       }
 
       // construct X-EBAY-C-TRACKING header
+      String guid = adserviceCookie.getGuid(request);
       builder = builder.header("X-EBAY-C-TRACKING",
-          collectionService.constructTrackingHeader(requestContext, channelType));
+          collectionService.constructTrackingHeader(requestContext, guid, channelType));
 
       // add uri and referer to marketing event body
       MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
       mktEvent.setTargetUrl(new ServletServerHttpRequest(request).getURI().toString());
       mktEvent.setReferrer(request.getHeader("Referer"));
 
-      // call marketing collection service to send ubi event or send kafka
-      Response ress = builder.post(Entity.json(mktEvent));
-      ress.close();
-
+      // call marketing collection service to send ubi event or send kafka async
+      builder.async().post(Entity.json(mktEvent));
       // send 1x1 pixel
       ImageResponseHandler.sendImageResponse(response);
       String partnerId = null;
@@ -243,6 +242,37 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     String adguid = adserviceCookie.setAdguid(request, response);
     Response res = Response.status(Response.Status.OK).build();
     ImageResponseHandler.sendImageResponse(response);
+
+    Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient",
+        "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
+    Client mktClient = GingerClientBuilder.newClient(config);
+    String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
+
+    // add all headers except Cookie
+    Builder builder = mktClient.target(endpoint).path("/sync/").request();
+    final Enumeration<String> headers = request.getHeaderNames();
+    while (headers.hasMoreElements()) {
+      String header = headers.nextElement();
+      if ("Cookie".equalsIgnoreCase(header)) {
+        continue;
+      }
+      String values = request.getHeader(header);
+      builder = builder.header(header, values);
+    }
+    // forward to mcs for writing ubi. The adguid in ubi is to help XID team build adguid into the linking system.
+    // construct X-EBAY-C-TRACKING header
+    builder = builder.header("X-EBAY-C-TRACKING",
+        collectionService.constructTrackingHeader(requestContext, guid, "sync"));
+
+    // add uri and referer to marketing event body
+    MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
+    // append adguid into the url so that the mcs can parse it
+    mktEvent.setTargetUrl(new ServletServerHttpRequest(request).getURI().toString() + "&adguid=" + adguid);
+    mktEvent.setReferrer(request.getHeader("Referer"));
+
+    // call marketing collection service to send ubi event async
+    builder.async().post(Entity.json(mktEvent));
+
     try {
       boolean isAddMappingSuccess = idMapping.addMapping(adguid, guid, uid);
       if (isAddMappingSuccess) {

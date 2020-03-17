@@ -51,6 +51,7 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.Future;
 
 /**
  * @author Zhiyuan Wang
@@ -98,8 +99,8 @@ public class DAPResponseHandler {
           throws URISyntaxException {
     long dapRvrId = getDAPRvrId();
     Map<String, String[]> params = request.getParameterMap();
-    String guid = getGuid(request);
-    String accountId = getUserId(request);
+    String guid = adserviceCookie.getGuid(request);
+    String accountId = adserviceCookie.getUserId(request);
     // no need anymore
     // Map<String, String> userAttributes = getUserAttributes(cguid);
     String referrer = request.getHeader(Constants.REFERER);
@@ -331,19 +332,6 @@ public class DAPResponseHandler {
     addParameter(dapUriBuilder, Constants.GUID, guid);
   }
 
-  /**
-   * Currently, we can only get account id from cookie.
-   */
-  @SuppressWarnings("unchecked")
-  //TODO: get userid by adservicecookie ?? possible??
-  private String getAccountId(ContainerRequestContext requestContext) {
-    String accountId = "1231313";
-    if (StringUtils.isEmpty(accountId)) {
-      ESMetrics.getInstance().meter("NoAccountId", 1, Field.of(Constants.CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()));
-      return null;
-    }
-    return accountId;
-  }
 
   private void setUserAttributes(URIBuilder dapUriBuilder, Map<String, String> userAttributes) {
     userAttributes.forEach((key, value) -> addParameter(dapUriBuilder, key, value));
@@ -633,22 +621,9 @@ public class DAPResponseHandler {
 
     LOGGER.info("call MCS targetUrl {} referer {}", targetUrl, referer);
 
-    // call marketing collection service to send ubi event or send kafka
-    long startTime = System.currentTimeMillis();
-    try (Response res = builder.post(Entity.json(mktEvent))) {
-      int status = res.getStatus();
-      if (status == Response.Status.OK.getStatusCode()) {
-        LOGGER.info("Send to MCS success.");
-      } else {
-        LOGGER.error("Send to MCS failed. {}", status);
-      }
-      ESMetrics.getInstance().meter("MCSStatus", 1, Field.of("status", status));
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage());
-      ESMetrics.getInstance().meter("MCSException");
-    }
+    // async call mcs to record ubi
+    builder.async().post(Entity.json(mktEvent));
 
-    ESMetrics.getInstance().mean("MCSLatency", System.currentTimeMillis() - startTime);
   }
 
   private void setReferrer(URIBuilder dapUriBuilder, String referrer) {

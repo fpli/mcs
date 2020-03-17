@@ -64,14 +64,18 @@ public class CollectionService {
     return true;
   }
 
-  // construct X-EBAY-C-TRACKING header for mcs to send ubi event
-  // guid is mandatory, if guid is null, create a guid
-  //TODO: read guid by adservicecookie
-  public String constructTrackingHeader(ContainerRequestContext requestContext,
+  /**
+   * construct a tracking header. guid is mandatory, if guid is null, create a guid
+   * @param requestContext request context
+   * @param guid guid from mapping if there is
+   * @param channelType channel type
+   * @return a tracking header string
+   */
+  public String constructTrackingHeader(ContainerRequestContext requestContext, String guid,
                                         String channelType) {
     String cookie = "";
-    String rawGuid = "";
-    if (!StringUtils.isEmpty(rawGuid))
+    String rawGuid = guid;
+    if (!StringUtils.isEmpty(rawGuid) && rawGuid.length() >= Constants.GUID_LENGTH)
       cookie += "guid=" + rawGuid.substring(0,Constants.GUID_LENGTH);
     else {
       try {
@@ -82,14 +86,6 @@ public class CollectionService {
       }
       logger.warn("No guid");
       metrics.meter("NoGuid", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
-    }
-
-    String rawCguid = "";
-    if (!StringUtils.isEmpty(rawCguid))
-      cookie += ",cguid=" + rawCguid.substring(0,Constants.CGUID_LENGTH);
-    else {
-      logger.warn("No cguid");
-      metrics.meter("NoCguid", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
     }
 
     return cookie;
