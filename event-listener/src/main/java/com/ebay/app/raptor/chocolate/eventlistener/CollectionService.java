@@ -82,6 +82,7 @@ public class CollectionService {
   private static final String LANDING_PAGE_TYPE = "landingPageType";
   private static final String PAGE_ID = "pageId";
   private static final String TRANSACTION_TIMESTAMP = "transactionTimestamp";
+  private static final String ADGUID_PARAM = "adguid";
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
   private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
@@ -714,6 +715,86 @@ public class CollectionService {
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
           Field.of(PLATFORM, platform), Field.of(PAGE_ID, pageId));
+
+    return true;
+  }
+
+  /**
+   * Collect sync event and publish to ubi only
+   *
+   * @param request             raw request
+   * @param raptorSecureContext wrapped secure header context
+   * @param event               post body event
+   * @return OK or Error message
+   */
+  public boolean collectSync(HttpServletRequest request, RaptorSecureContext
+      raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
+
+    if (request.getHeader("X-EBAY-C-TRACKING") == null) {
+      logError(Errors.ERROR_NO_TRACKING);
+    }
+
+    String referer = null;
+    if (!StringUtils.isEmpty(event.getReferrer())) {
+      referer = event.getReferrer();
+    }
+
+    String userAgent = request.getHeader("User-Agent");
+
+    // targetUrl is from post body
+    String targetUrl = event.getTargetUrl();
+
+    // illegal url, rejected
+    UriComponents uriComponents;
+    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+    if (uriComponents == null) {
+      logError(Errors.ERROR_ILLEGAL_URL);
+    }
+
+    MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
+    if (parameters.size() == 0) {
+      logger.warn(Errors.ERROR_NO_QUERY_PARAMETER);
+      metrics.meter(Errors.ERROR_NO_QUERY_PARAMETER);
+      return true;
+    }
+
+    String adguid = parameters.getFirst(ADGUID_PARAM);
+
+    // platform check by user agent
+    UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
+
+    // write ubi. We cannot use addCommonTags here since the referer is internal of ebay
+    try {
+      // Ubi tracking
+      IRequestScopeTracker requestTracker =
+          (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+      // page id. share the same page id with ar and impression
+      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.AR.getId(), Integer.class);
+
+      // event action
+      requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
+
+      // target url
+      if (!StringUtils.isEmpty(targetUrl)) {
+        requestTracker.addTag("url_mpre", targetUrl, String.class);
+      }
+
+      // referer
+      if (!StringUtils.isEmpty(referer)) {
+        requestTracker.addTag("ref", referer, String.class);
+      }
+
+      // adguid
+      requestTracker.addTag(ADGUID_PARAM, adguid, String.class);
+
+      // populate device info
+      CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
+
+    } catch (Exception e) {
+      logger.warn("Error when tracking ubi for adguid", e);
+      metrics.meter("ErrorWriteAdguidToUBI");
+    }
 
     return true;
   }

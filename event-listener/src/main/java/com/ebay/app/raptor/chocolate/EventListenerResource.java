@@ -180,6 +180,39 @@ public class EventListenerResource implements EventsApi {
       return res;
     }
   }
+
+  /**
+   * Collect sync events from adservice
+   * @param body event body
+   * @return response
+   */
+  @Override
+  public Response sync(Event body) {
+    Tracer tracer = GlobalTracer.get();
+    try (Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "sync").startActive(true)) {
+      Span span = scope.span();
+      Response res = null;
+      try {
+        collectionService.collectSync(request, raptorSecureContextProvider.get(), requestContext, body);
+        res = Response.status(Response.Status.CREATED).build();
+        Tags.STATUS.set(span, "0");
+      } catch (Exception e) {
+        // do not write log here for short term. As current native app sends seo deeplinking which leads log blast.
+        //logger.warn(e.getMessage(), e);
+        // Tags.STATUS.set(span, e.getMessage());
+        Tags.STATUS.set(span, "0");
+        // show warning in cal
+        SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
+        try {
+          res = errorFactoryV3.makeWarnResponse(e.getMessage());
+        } catch (Exception ex) {
+          logger.warn(e.getMessage(), request.toString(), body);
+          logger.warn(ex.getMessage(), ex);
+        }
+      }
+      return res;
+    }
+  }
 }
 
 

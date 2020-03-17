@@ -76,6 +76,7 @@ public class EventListenerServiceTest {
   private static String notificationPath;
   private static String roiPath;
   private static String versionPath;
+  private static String syncPath;
 
   private static String endUserCtxiPhone;
   private static String endUserCtxAndroid;
@@ -121,6 +122,7 @@ public class EventListenerServiceTest {
     notificationPath = "/marketingtracking/v1/notification";
     roiPath = "/marketingtracking/v1/roi";
     versionPath = "/marketingtracking/v1/getVersion";
+    syncPath = "/marketingtracking/v1/sync";
 
     endUserCtxiPhone = "ip=10.148.184.210," +
       "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
@@ -570,5 +572,26 @@ public class EventListenerServiceTest {
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkevt%3D1%26mkrid%3D724-218635-24755-0%26mkcid%3D99%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
+  }
+
+  @Test
+  public void testSyncResource() throws InterruptedException {
+    Event event = new Event();
+    event.setReferrer("https://www.ebay.com");
+    event.setTargetUrl("https://www.ebayadservices.com/marketingtracking/v1/sync?guid=abcd&adguid=defg");
+
+    // success request
+    Response response = postMcsResponse(syncPath, endUserCtxiPhone, tracking, null, event);
+    assertEquals(201, response.getStatus());
+
+    // no X-EBAY-C-ENDUSERCTX
+    response = postMcsResponse(syncPath, null, tracking, null, event);
+    assertEquals(201, response.getStatus());
+
+    // no X-EBAY-C-TRACKING
+    response = postMcsResponse(syncPath, endUserCtxiPhone, null, null, event);
+    assertEquals(200, response.getStatus());
+    ErrorType errorMessage  = response.readEntity(ErrorType.class);
+    assertEquals(4002, errorMessage.getErrorCode());
   }
 }
