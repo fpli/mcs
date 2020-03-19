@@ -1,8 +1,13 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
+import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import org.springframework.util.StringUtils;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Map;
 
 /**
  * @author xiangli4
@@ -42,6 +47,12 @@ public class CollectionServiceUtil {
   private static String IPHONE_APPID = "1462";
   private static String IPAD_APPID = "2878";
   private static String ANDROID_APPID = "2571";
+  private static final String TRANSACTION_TIMESTAMP = "transactionTimestamp";
+  private static final String ADGUID_PARAM = "adguid";
+  private static final String ROI_SOURCE = "roisrc";
+  private static final String CHECKOUT_ROI_SOURCE = "2";
+  private static final String SITE_ID = "siteId";
+  private static final String MPUID = "mpuid";
 
   /**
    * get app id from user agent info
@@ -92,6 +103,42 @@ public class CollectionServiceUtil {
       return false;
     }
     return true;
+  }
+
+  public static String generateQueryString(ROIEvent roiEvent, Map<String, String> payloadMap, String localTimestamp, String userId) throws UnsupportedEncodingException {
+    String queryString = "transType=" + URLEncoder.encode(roiEvent.getTransType() == null ? "" : roiEvent.getTransType(), "UTF-8")
+        + "&uniqueTransactionId=" + URLEncoder.encode(roiEvent.getUniqueTransactionId() == null ? "" : roiEvent.getUniqueTransactionId(), "UTF-8")
+        + "&itemId=" + URLEncoder.encode(roiEvent.getItemId() == null ? "" : roiEvent.getItemId(), "UTF-8")
+        + "&transactionTimestamp=" + URLEncoder.encode(roiEvent.getTransactionTimestamp() == null ? localTimestamp : roiEvent.getTransactionTimestamp(), "UTF-8");
+
+    // If the field in payload is in {transType, uniqueTransactionId, itemId, transactionTimestamp}, don't append them into the url
+    payloadMap.remove(TRANSACTION_TIMESTAMP);
+    payloadMap.remove("transType");
+    payloadMap.remove("uniqueTransactionId");
+    payloadMap.remove("itemId");
+
+    // If MPUID is not inside payload, generate it and set into payload
+    // The format of mpuid: user_id;item_id;[transaction_id]
+    // MPUID is used in imkETL process
+    if (!payloadMap.containsKey(MPUID)) {
+      String mpuid = String.format("%s;%s;%s", userId, roiEvent.getItemId(), roiEvent.getUniqueTransactionId());
+      payloadMap.put(MPUID, mpuid);
+    }
+
+    // append payload fields into URI
+    for (String key : payloadMap.keySet()) {
+      // If the value in payload is null, don't append the fields into url
+      if (payloadMap.get(key) != null) {
+        queryString = String.format("%s&%s=%s", queryString, URLEncoder.encode(key, "UTF-8"),
+            URLEncoder.encode(payloadMap.get(key), "UTF-8"));
+      }
+    }
+    // If roi event is not checkout api source or roi source field not found, add nroi field
+    // If nroi=1, process will send the event to new roi topic, this pipeline is no impact with imk table
+    if (!payloadMap.containsKey(ROI_SOURCE) || !payloadMap.get(ROI_SOURCE).equals(CHECKOUT_ROI_SOURCE)) {
+      queryString = queryString + "&nroi=1";
+    }
+    return queryString;
   }
 
 }

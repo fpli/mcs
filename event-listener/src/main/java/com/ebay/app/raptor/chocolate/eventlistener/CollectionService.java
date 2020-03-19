@@ -89,7 +89,6 @@ public class CollectionService {
   private static final String CHECKOUT_ROI_SOURCE = "2";
   private static final String SITE_ID = "siteId";
   private static final String MPUID = "mpuid";
-  private static final int ROI_PAGE_ID = 2483445;
 
 
 
@@ -429,6 +428,7 @@ public class CollectionService {
     if(payloadMap == null) {
       payloadMap = new HashMap<String, String>();
     }
+
     // Parse transId
     try {
       long transId = Long.valueOf(roiEvent.getUniqueTransactionId());
@@ -447,86 +447,16 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()),
         Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
 
-
-    String queryString = "transType=" + URLEncoder.encode(roiEvent.getTransType() == null ? "": roiEvent.getTransType(), "UTF-8")
-        + "&uniqueTransactionId=" + URLEncoder.encode(roiEvent.getUniqueTransactionId() == null ? "" : roiEvent.getUniqueTransactionId(), "UTF-8")
-        + "&itemId=" + URLEncoder.encode(roiEvent.getItemId() == null? "" : roiEvent.getItemId(), "UTF-8")
-        + "&transactionTimestamp=" + URLEncoder.encode(roiEvent.getTransactionTimestamp() == null ? localTimestamp : roiEvent.getTransactionTimestamp(), "UTF-8");
-
-    // If the field in payload is in {transType, uniqueTransactionId, itemId, transactionTimestamp}, don't append them into the url
-    payloadMap.remove(TRANSACTION_TIMESTAMP);
-    payloadMap.remove("transType");
-    payloadMap.remove("uniqueTransactionId");
-    payloadMap.remove("itemId");
-
-    // If MPUID is not inside payload, generate it and set into payload
-    // The format of mpuid: user_id;item_id;[transaction_id]
-    // MPUID is used in imkETL process
-    if(!payloadMap.containsKey(MPUID)) {
-      String mpuid = String.format("%s;%s;%s", userId, roiEvent.getItemId(), roiEvent.getUniqueTransactionId());
-      payloadMap.put(MPUID, mpuid);
-    }
-
-    // append payload fields into URI
-    for(String key : payloadMap.keySet()) {
-      // If the value in payload is null, don't append the fields into url
-      if(payloadMap.get(key) != null) {
-        queryString = String.format("%s&%s=%s", queryString, URLEncoder.encode(key, "UTF-8"),
-            URLEncoder.encode(payloadMap.get(key), "UTF-8"));
-      }
-    }
-    // If roi event is not checkout api source or roi source field not found, add nroi field
-    // If nroi=1, process will send the event to new roi topic, this pipeline is no impact with imk table
-    if(!payloadMap.containsKey(ROI_SOURCE) || !payloadMap.get(ROI_SOURCE).equals(CHECKOUT_ROI_SOURCE)) {
-      queryString = queryString + "&nroi=1";
-    }
-
+    String queryString = CollectionServiceUtil.generateQueryString(roiEvent, payloadMap, localTimestamp, userId);
     String targetUrl = request.getRequestURL() + "?" + queryString;
     UriComponents uriComponents;
     uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
     if (uriComponents == null) {
       logError(Errors.ERROR_ILLEGAL_URL);
     }
-
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
-
-    // write roi event to ubi. We cannot use addCommonTags here since the referer is internal of ebay
-    try {
-      // Ubi tracking
-      IRequestScopeTracker requestTracker =
-          (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
-
-      // page id
-      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, ROI_PAGE_ID, Integer.class);
-
-      // site ID
-      if(isLongNumeric(payloadMap.get(SITE_ID))) {
-        requestTracker.addTag("t", Long.parseLong(payloadMap.get(SITE_ID)), Long.class);
-      }
-
-      // Item ID
-      if(isLongNumeric(roiEvent.getItemId())) {
-        requestTracker.addTag("itm", Long.parseLong(roiEvent.getItemId()), Long.class);
-      }
-
-      // Transation Type
-      if (!StringUtils.isEmpty(roiEvent.getTransType())) {
-        requestTracker.addTag("tt", roiEvent.getTransType(), String.class);
-      }
-
-      // Transation ID
-      if (isLongNumeric(roiEvent.getUniqueTransactionId())) {
-        requestTracker.addTag("roi_bti", Long.parseLong(userId), Long.class);
-      }
-
-      // user ID
-      if (isLongNumeric(userId)) {
-        requestTracker.addTag("userid", Long.parseLong(userId), Long.class);
-      }
-    } catch (Exception e) {
-      logger.warn("Error when tracking ubi for roi event", e);
-      metrics.meter("ErrorWriteRoiEventToUBI");
-    }
+    // write roi event tags to ubi
+    addRoiSojTags(requestContext, payloadMap, roiEvent, userId);
 
     // Write roi event to kafka output topic
     boolean processFlag = processROIEvent(requestContext, targetUrl, "", parameters, ChannelIdEnum.ROI,
@@ -1213,6 +1143,47 @@ public class CollectionService {
       metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
     }
   }
+
+  private void addRoiSojTags(ContainerRequestContext requestContext, Map<String, String> payloadMap, ROIEvent roiEvent,
+                             String userId) {
+    try {
+      // Ubi tracking
+      IRequestScopeTracker requestTracker =
+          (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+      // page id
+      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.ROI.getId(), Integer.class);
+
+      // site ID
+      if(isLongNumeric(payloadMap.get(SITE_ID))) {
+        requestTracker.addTag("t", Long.parseLong(payloadMap.get(SITE_ID)), Long.class);
+      }
+
+      // Item ID
+      if(isLongNumeric(roiEvent.getItemId())) {
+        requestTracker.addTag("itm", Long.parseLong(roiEvent.getItemId()), Long.class);
+      }
+
+      // Transation Type
+      if (!StringUtils.isEmpty(roiEvent.getTransType())) {
+        requestTracker.addTag("tt", roiEvent.getTransType(), String.class);
+      }
+
+      // Transation ID
+      if (isLongNumeric(roiEvent.getUniqueTransactionId())) {
+        requestTracker.addTag("roi_bti", Long.parseLong(userId), Long.class);
+      }
+
+      // user ID
+      if (isLongNumeric(userId)) {
+        requestTracker.addTag("userid", Long.parseLong(userId), Long.class);
+      }
+    } catch (Exception e) {
+      logger.warn("Error when tracking ubi for roi event", e);
+      metrics.meter("ErrorWriteRoiEventToUBI");
+    }
+  }
+
 
   private String generateTimestampForCookie() {
     LocalDateTime now = LocalDateTime.now();

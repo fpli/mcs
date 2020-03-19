@@ -12,7 +12,9 @@ public enum PageIdEnum {
   // for email open
   EMAIL_OPEN(3962),
   // for ad request
-  AR(2561745);
+  AR(2561745),
+  // for roi event
+  ROI(2483445);
 
   private final int id;
 
