@@ -89,6 +89,8 @@ public class CollectionService {
   private static final String CHECKOUT_ROI_SOURCE = "2";
   private static final String SITE_ID = "siteId";
   private static final String MPUID = "mpuid";
+  private static final int ROI_PAGE_ID = 2483445;
+
 
 
   // do not filter /ulk XC-1541
@@ -493,6 +495,9 @@ public class CollectionService {
       // Ubi tracking
       IRequestScopeTracker requestTracker =
           (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+      // page id
+      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, ROI_PAGE_ID, Integer.class);
 
       // site ID
       if(isLongNumeric(payloadMap.get(SITE_ID))) {
