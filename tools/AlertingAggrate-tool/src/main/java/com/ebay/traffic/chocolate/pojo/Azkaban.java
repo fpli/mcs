@@ -6,7 +6,7 @@ public class Azkaban {
 	private String projectName;
 	private String flowName;
 	private String total;
-	private String alertCount;
+	private String threshold;
 
 	public String getSubjectArea() {
 		return subjectArea;
@@ -40,12 +40,12 @@ public class Azkaban {
 		this.total = total;
 	}
 
-	public String getAlertCount() {
-		return alertCount;
+	public String getThreshold() {
+		return threshold;
 	}
 
-	public void setAlertCount(String alertCount) {
-		this.alertCount = alertCount;
+	public void setThreshold(String threshold) {
+		this.threshold = threshold;
 	}
 
 }

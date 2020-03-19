@@ -79,7 +79,7 @@ public class XMLUtil {
           azkaban.setProjectName(elem.attribute("projectName").getValue());
           azkaban.setFlowName(elem.attribute("flowName").getValue());
           azkaban.setTotal(elem.attribute("total").getValue());
-          azkaban.setAlertCount(elem.attribute("alertCount").getValue());
+          azkaban.setThreshold(elem.attribute("threshold").getValue());
           list.add(azkaban);
         }
         map.put(subjectArea, list);

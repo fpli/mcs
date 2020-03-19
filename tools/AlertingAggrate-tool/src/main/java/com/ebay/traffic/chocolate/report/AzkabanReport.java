@@ -62,6 +62,7 @@ public class AzkabanReport {
     azkabanFlow.setProjectName(azkaban.getProjectName());
     azkabanFlow.setFlowName(azkaban.getFlowName());
     azkabanFlow.setTatal(azkaban.getTotal());
+    azkabanFlow.setThreshold(azkaban.getThreshold());
 
     HashMap<String, String> managerInfoMap = getManagerInfo(azkaban, sessionId);
     azkabanFlow.setSuccess(managerInfoMap.getOrDefault("success", "0"));
