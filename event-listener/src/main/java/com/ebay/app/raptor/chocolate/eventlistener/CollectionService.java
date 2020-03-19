@@ -83,12 +83,9 @@ public class CollectionService {
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
   private static final String PAGE_ID = "pageId";
-  private static final String TRANSACTION_TIMESTAMP = "transactionTimestamp";
   private static final String ADGUID_PARAM = "adguid";
-  private static final String ROI_SOURCE = "roisrc";
-  private static final String CHECKOUT_ROI_SOURCE = "2";
   private static final String SITE_ID = "siteId";
-  private static final String MPUID = "mpuid";
+
 
 
 

@@ -48,10 +48,7 @@ public class CollectionServiceUtil {
   private static String IPAD_APPID = "2878";
   private static String ANDROID_APPID = "2571";
   private static final String TRANSACTION_TIMESTAMP = "transactionTimestamp";
-  private static final String ADGUID_PARAM = "adguid";
   private static final String ROI_SOURCE = "roisrc";
-  private static final String CHECKOUT_ROI_SOURCE = "2";
-  private static final String SITE_ID = "siteId";
   private static final String MPUID = "mpuid";
 
   /**
@@ -132,7 +129,7 @@ public class CollectionServiceUtil {
         // If payload key is mpuid, query will not encode its value, the reason is that
         // MPUID will be used in imkETL process to parse item_id and transaction_id, imkETL process will not decode
         // our query. So if MPUID is encoded in this place, it will cause split error in imkETL
-        if(key.equalsIgnoreCase(MPUID)) {
+        if (key.equalsIgnoreCase(MPUID)) {
           queryString = String.format("%s&%s=%s", queryString, key, payloadMap.get(key));
         } else {
           // Other fields in payload will be encode for avoiding invalid character cause rvr_url parse error
@@ -143,7 +140,8 @@ public class CollectionServiceUtil {
     }
     // If roi event is not checkout api source or roi source field not found, add nroi field
     // If nroi=1, process will send the event to new roi topic, this pipeline is no impact with imk table
-    if (!payloadMap.containsKey(ROI_SOURCE) || !payloadMap.get(ROI_SOURCE).equals(CHECKOUT_ROI_SOURCE)) {
+    if (!payloadMap.containsKey(ROI_SOURCE)
+        || !payloadMap.get(ROI_SOURCE).equals(String.valueOf(RoiSourceEnum.CHECKOUT_SOURCE.getId()))) {
       queryString = queryString + "&nroi=1";
     }
     return queryString;
