@@ -321,6 +321,16 @@ public class EventListenerServiceTest {
     event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
+
+    // marketing SMS click events
+    event.setTargetUrl("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=24&smsid=111&did=222");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
+    assertEquals(201, response.getStatus());
+
+    // site SMS click events
+    event.setTargetUrl("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=25&smsid=111&did=222");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
+    assertEquals(201, response.getStatus());
   }
 
   @Test
