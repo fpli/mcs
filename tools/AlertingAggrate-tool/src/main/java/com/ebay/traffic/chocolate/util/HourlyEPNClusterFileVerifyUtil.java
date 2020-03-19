@@ -147,7 +147,7 @@ public class HourlyEPNClusterFileVerifyUtil {
     }
 
     if (yesterdayCsvRecordList != null && yesterdayCsvRecordList.size() > 0) {
-      map.put("hourlyDoneFile", getNewestHourlyDoneFile(todayCsvRecordList));
+      map.put("hourlyDoneFile", getNewestHourlyDoneFile(yesterdayCsvRecordList));
       map.put("dateSegement", "yesterday");
       return map;
     }

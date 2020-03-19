@@ -14,11 +14,11 @@ public class HourlyEmailHtml {
   }
 
   public static String getDoneFileHtml() {
-    return "Done file information\n" + DoneFileTable.parseDoneFileProject(DoneFileUtil.getDoneFileInfos());
+    return "Done File Monitor\n" + DoneFileTable.parseDoneFileProject(DoneFileUtil.getDoneFileInfos());
   }
 
   public static String getRotationAlertHtml() {
-    return "Rotation alert\n" + RotationAlertTable.parseRotationAlertProject(RotationAlertUtil.getRotationAlertInfos());
+    return "Rotation Data Monitor\n" + RotationAlertTable.parseRotationAlertProject(RotationAlertUtil.getRotationAlertInfos());
   }
 
   public static String getEPNHourlyReportHtml() {
@@ -34,7 +34,7 @@ public class HourlyEmailHtml {
   }
 
   public static String getHourlyEPNClusterFileVerifyHtml() {
-    return "Hourly EPN cluster file verify alert\n" + HourlyEPNClusterFileVerifyTable.parseHourlyEPNClusterFileVerifyProject(HourlyEPNClusterFileVerifyUtil.getHourlyEPNClusterFileVerifyInfos());
+    return "EPN Hdfs File Number Monitor \n" + HourlyEPNClusterFileVerifyTable.parseHourlyEPNClusterFileVerifyProject(HourlyEPNClusterFileVerifyUtil.getHourlyEPNClusterFileVerifyInfos());
   }
 
 }
