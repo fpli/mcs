@@ -54,6 +54,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
+
 /**
  * @author xiangli4
  * The main logic of collection service:
@@ -83,6 +85,12 @@ public class CollectionService {
   private static final String PAGE_ID = "pageId";
   private static final String TRANSACTION_TIMESTAMP = "transactionTimestamp";
   private static final String ADGUID_PARAM = "adguid";
+  private static final String ROI_SOURCE = "roisrc";
+  private static final String CHECKOUT_ROI_SOURCE = "2";
+  private static final String SITE_ID = "siteId";
+  private static final String MPUID = "mpuid";
+
+
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
   private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
@@ -388,6 +396,12 @@ public class CollectionService {
       logError(Errors.ERROR_NO_ENDUSERCTX);
     }
     String localTimestamp = Long.toString(System.currentTimeMillis());
+    String userId;
+    if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
+      userId = raptorSecureContext.getSubjectImmutableId();
+    } else {
+      userId = Long.toString(endUserContext.getOrigUserOracleId());
+    }
 
     try {
       long itemId = Long.valueOf(roiEvent.getItemId());
@@ -436,11 +450,20 @@ public class CollectionService {
         + "&uniqueTransactionId=" + URLEncoder.encode(roiEvent.getUniqueTransactionId() == null ? "" : roiEvent.getUniqueTransactionId(), "UTF-8")
         + "&itemId=" + URLEncoder.encode(roiEvent.getItemId() == null? "" : roiEvent.getItemId(), "UTF-8")
         + "&transactionTimestamp=" + URLEncoder.encode(roiEvent.getTransactionTimestamp() == null ? localTimestamp : roiEvent.getTransactionTimestamp(), "UTF-8");
+
     // If the field in payload is in {transType, uniqueTransactionId, itemId, transactionTimestamp}, don't append them into the url
     payloadMap.remove(TRANSACTION_TIMESTAMP);
     payloadMap.remove("transType");
     payloadMap.remove("uniqueTransactionId");
     payloadMap.remove("itemId");
+
+    // If MPUID is not inside payload, generate it and set into payload
+    // The format of mpuid: user_id;item_id;[transaction_id]
+    // MPUID is used in imkETL process
+    if(!payloadMap.containsKey(MPUID)) {
+      String mpuid = String.format("%s;%s;%s", userId, roiEvent.getItemId(), roiEvent.getUniqueTransactionId());
+      payloadMap.put(MPUID, mpuid);
+    }
 
     // append payload fields into URI
     for(String key : payloadMap.keySet()) {
@@ -450,7 +473,11 @@ public class CollectionService {
             URLEncoder.encode(payloadMap.get(key), "UTF-8"));
       }
     }
-    queryString = queryString + "&nroi=1";
+    // If roi event is not checkout api source or roi source field not found, add nroi field
+    // If nroi=1, process will send the event to new roi topic, this pipeline is no impact with imk table
+    if(!payloadMap.containsKey(ROI_SOURCE) || !payloadMap.get(ROI_SOURCE).equals(CHECKOUT_ROI_SOURCE)) {
+      queryString = queryString + "&nroi=1";
+    }
 
     String targetUrl = request.getRequestURL() + "?" + queryString;
     UriComponents uriComponents;
@@ -461,6 +488,42 @@ public class CollectionService {
 
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
 
+    // write roi event to ubi. We cannot use addCommonTags here since the referer is internal of ebay
+    try {
+      // Ubi tracking
+      IRequestScopeTracker requestTracker =
+          (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+      // site ID
+      if(isLongNumeric(payloadMap.get(SITE_ID))) {
+        requestTracker.addTag("t", Long.parseLong(payloadMap.get(SITE_ID)), Long.class);
+      }
+
+      // Item ID
+      if(isLongNumeric(roiEvent.getItemId())) {
+        requestTracker.addTag("itm", Long.parseLong(roiEvent.getItemId()), Long.class);
+      }
+
+      // Transation Type
+      if (!StringUtils.isEmpty(roiEvent.getTransType())) {
+        requestTracker.addTag("tt", roiEvent.getTransType(), String.class);
+      }
+
+      // Transation ID
+      if (isLongNumeric(roiEvent.getUniqueTransactionId())) {
+        requestTracker.addTag("roi_bti", Long.parseLong(userId), Long.class);
+      }
+
+      // user ID
+      if (isLongNumeric(userId)) {
+        requestTracker.addTag("userid", Long.parseLong(userId), Long.class);
+      }
+    } catch (Exception e) {
+      logger.warn("Error when tracking ubi for roi event", e);
+      metrics.meter("ErrorWriteRoiEventToUBI");
+    }
+
+    // Write roi event to kafka output topic
     boolean processFlag = processROIEvent(requestContext, targetUrl, "", parameters, ChannelIdEnum.ROI,
         ChannelActionEnum.ROI, request, startTime, endUserContext, raptorSecureContext);
 
@@ -645,8 +708,9 @@ public class CollectionService {
     if (message != null) {
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       return true;
-    } else
+    } else {
       return false;
+    }
   }
 
 

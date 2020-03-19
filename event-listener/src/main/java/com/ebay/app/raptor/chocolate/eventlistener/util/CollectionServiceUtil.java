@@ -2,6 +2,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
+import org.springframework.util.StringUtils;
 
 /**
  * @author xiangli4
@@ -80,4 +81,17 @@ public class CollectionServiceUtil {
       tracker.addTag("app", getAppIdFromUserAgent(info), String.class);
     }
   }
+
+  public static boolean isLongNumeric(String strNum) {
+    if (StringUtils.isEmpty(strNum)) {
+      return false;
+    }
+    try {
+      Long l = Long.parseLong(strNum);
+    } catch (NumberFormatException nfe) {
+      return false;
+    }
+    return true;
+  }
+
 }
