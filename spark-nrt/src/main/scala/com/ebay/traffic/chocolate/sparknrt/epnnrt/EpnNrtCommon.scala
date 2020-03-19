@@ -484,6 +484,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           logger.error("Error URLDecoder param " + uri + " param=" + param + e)
           return ""
         }
+        case e: MalformedURLException => {
+          logger.error("Error URLDecoder param " + uri + " param=" + param + e)
+          return ""
+        }
+        case e: Exception => {
+          logger.error("Error URLDecoder param " + uri + " param=" + param + e)
+          return ""
+        }
       }
     }
     ""
@@ -1300,11 +1308,24 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if (uri != null && (ebaysites.matcher(uri.toLowerCase()).find() || ebayadservicesites.matcher(uri.toLowerCase()).find())) {
       return getQueryParam(uri, key)
     } else {
-      val path = new URL(uri).getPath()
-      if (path != null && path != "" && index >= 0 && index <= 4) {
-        val pathArray = path.split("/")
-        if (pathArray.length == 5)
-          return pathArray(index)
+      try {
+        val path = new URL(uri).getPath()
+        if (path != null && path != "" && index >= 0 && index <= 4) {
+          val pathArray = path.split("/")
+          if (pathArray.length == 5)
+            return pathArray(index)
+        }
+      } catch {
+        case e: MalformedURLException => {
+          logger.error("Error parse param from " + uri + e)
+          metrics.meter("ParseParamFromUriError")
+          return ""
+        }
+        case e: Exception => {
+          logger.error("Error parse param from " + uri + e)
+          metrics.meter("ParseParamFromUriError")
+          return ""
+        }
       }
     }
     ""
