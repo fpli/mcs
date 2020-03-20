@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.util.AdserviceCookie;
 import com.ebay.app.raptor.chocolate.adservice.util.ImageResponseHandler;
@@ -16,6 +17,7 @@ import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
@@ -175,6 +177,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       if (params.containsKey(Constants.MKCID) && params.get(Constants.MKCID)[0] != null) {
         channelType = ChannelIdEnum.parse(params.get(Constants.MKCID)[0]).getLogicalChannel().getAvro().toString();
       }
+      metrics.meter("ImpressionInput", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
 
       // construct X-EBAY-C-TRACKING header
       builder = builder.header("X-EBAY-C-TRACKING",
@@ -192,10 +195,10 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       // send 1x1 pixel
       ImageResponseHandler.sendImageResponse(response);
       String partnerId = null;
-      if (params.containsKey(Constants.PARTNER_ID)) {
-        partnerId = params.get(Constants.PARTNER_ID)[0];
+      if (params.containsKey(Constants.MKPID)) {
+        partnerId = params.get(Constants.MKPID)[0];
       }
-      if (!StringUtils.isEmpty(partnerId) && Constants.ADOBE_PARTNER_ID.equals(partnerId)) {
+      if (!StringUtils.isEmpty(partnerId) && EmailPartnerIdEnum.ADOBE.getId().equals(partnerId)) {
         sendOpenEventToAdobe(params);
       }
 

@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
+import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.adservice.redirect.AdobeRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.redirect.RedirectContext;
 import com.ebay.app.raptor.chocolate.adservice.redirect.ThirdpartyRedirectStrategy;
@@ -8,12 +9,9 @@ import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
-import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +26,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
-
-import java.net.UnknownHostException;
 
 
 /**
@@ -76,7 +72,7 @@ public class CollectionService {
     MultiValueMap<String, String> parameters = verifyAndParseRequest(request);
 
     // execute redirect Strategy
-    return executeRedirectStrategy(request, getParam(parameters, Constants.PARTNER_ID), requestContext);
+    return executeRedirectStrategy(request, getParam(parameters, Constants.MKPID), requestContext);
   }
 
   /**
@@ -86,7 +82,7 @@ public class CollectionService {
     // no query parameter, redirect to home page
     Map<String, String[]> params = request.getParameterMap();
     if (null == params || params.isEmpty()) {
-      logError(Errors.ERROR_REDIRECT_NO_QUERY_PARAMETER);
+      logError(Errors.REDIRECT_NO_QUERY_PARAMETER);
     }
 
     MultiValueMap<String, String> parameters = ParametersParser.parse(params);
@@ -106,6 +102,15 @@ public class CollectionService {
     if (ChannelIdEnum.parse(getParam(parameters, Constants.MKCID)) == null) {
       logError(Errors.REDIRECT_INVALID_MKCID);
     }
+    // no mkpid, redirect to home page
+    if (!parameters.containsKey(Constants.MKPID) || parameters.getFirst(Constants.MKPID) == null) {
+      logError(Errors.REDIRECT_NO_MKPID);
+    }
+    // invalid mkpid, accepted
+    if (EmailPartnerIdEnum.parse(getParam(parameters, Constants.MKPID)) == null) {
+      logger.warn(Errors.REDIRECT_INVALID_MKPID);
+      metrics.meter(Errors.REDIRECT_INVALID_MKPID);
+    }
 
     return parameters;
   }
@@ -115,7 +120,7 @@ public class CollectionService {
    */
   private URI executeRedirectStrategy(HttpServletRequest request, String partnerId, ContainerRequestContext context) throws URISyntaxException{
     RedirectContext redirectContext;
-    if (Constants.ADOBE_PARTNER_ID.equals(partnerId)) {
+    if (EmailPartnerIdEnum.ADOBE.getId().equals(partnerId)) {
       redirectContext = new RedirectContext(new AdobeRedirectStrategy());
     } else {
       redirectContext = new RedirectContext(new ThirdpartyRedirectStrategy());
