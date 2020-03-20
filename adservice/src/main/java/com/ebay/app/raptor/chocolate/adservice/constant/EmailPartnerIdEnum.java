@@ -7,6 +7,7 @@ import java.util.Map;
 /**
  * Email has 4 partenrs, internal for site email, others for marketing email
  * Emarsys is deprecated but still has traffic, we will process them as common events
+ *
  * Created by jialili1 on 3/20/20
  */
 public enum EmailPartnerIdEnum {

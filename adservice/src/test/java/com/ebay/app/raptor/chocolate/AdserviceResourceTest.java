@@ -142,7 +142,7 @@ public class AdserviceResourceTest {
     parameters.put("ymmmid", "1740915");
     parameters.put("yminstc", "7");
 
-    // Common marketing email redirect
+    // Common marketing email redirect, full hostname
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
     assertEquals("https://www.yahoo.com", response.getLocation().toString());
