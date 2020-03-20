@@ -64,37 +64,6 @@ public class CollectionService {
     return true;
   }
 
-  // construct X-EBAY-C-TRACKING header for mcs to send ubi event
-  // guid is mandatory, if guid is null, create a guid
-  //TODO: read guid by adservicecookie
-  public String constructTrackingHeader(ContainerRequestContext requestContext,
-                                        String channelType) {
-    String cookie = "";
-    String rawGuid = "";
-    if (!StringUtils.isEmpty(rawGuid))
-      cookie += "guid=" + rawGuid.substring(0,Constants.GUID_LENGTH);
-    else {
-      try {
-        cookie += "guid=" + new Guid().nextPaddedGUID();
-      } catch (UnknownHostException e) {
-        logger.warn("Create guid failure: ", e);
-        metrics.meter("CreateGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
-      }
-      logger.warn("No guid");
-      metrics.meter("NoGuid", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
-    }
-
-    String rawCguid = "";
-    if (!StringUtils.isEmpty(rawCguid))
-      cookie += ",cguid=" + rawCguid.substring(0,Constants.CGUID_LENGTH);
-    else {
-      logger.warn("No cguid");
-      metrics.meter("NoCguid", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
-    }
-
-    return cookie;
-  }
-
   /**
    * Collect email entry event(Adobe) and send redirect response
    *
@@ -114,26 +83,26 @@ public class CollectionService {
    * Verify redirect request, if invalid then throw an exception
    */
   private MultiValueMap<String, String> verifyAndParseRequest(HttpServletRequest request)  throws Exception {
-    // no query parameter, rejected
+    // no query parameter, redirect to home page
     Map<String, String[]> params = request.getParameterMap();
     if (null == params || params.isEmpty()) {
       logError(Errors.ERROR_REDIRECT_NO_QUERY_PARAMETER);
     }
 
     MultiValueMap<String, String> parameters = ParametersParser.parse(params);
-    // reject no mkevt
-    if (!parameters.containsKey(Constants.MKEVT)) {
+    // no mkevt, redirect to home page
+    if (!parameters.containsKey(Constants.MKEVT) || parameters.getFirst(Constants.MKEVT) == null) {
       logError(Errors.REDIRECT_NO_MKEVT);
     }
-    // reject invalid mkevt
+    // invalid mkevt, redirect to home page
     if (!CLICK.equals(getParam(parameters, Constants.MKEVT))) {
       logError(Errors.REDIRECT_INVALID_MKEVT);
     }
-    // reject no mkcid
-    if (!parameters.containsKey(Constants.MKCID)) {
+    // no mkcid, redirect to home page
+    if (!parameters.containsKey(Constants.MKCID) || parameters.getFirst(Constants.MKCID) == null) {
       logError(Errors.REDIRECT_NO_MKCID);
     }
-    // reject invalid mkcid
+    // invalid mkcid, redirect to home page
     if (ChannelIdEnum.parse(getParam(parameters, Constants.MKCID)) == null) {
       logError(Errors.REDIRECT_INVALID_MKCID);
     }

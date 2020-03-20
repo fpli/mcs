@@ -178,7 +178,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
       // construct X-EBAY-C-TRACKING header
       builder = builder.header("X-EBAY-C-TRACKING",
-          collectionService.constructTrackingHeader(requestContext, channelType));
+          "guid=" + Constants.EMPTY_GUID + ",cguid=" + Constants.EMPTY_GUID);
 
       // add uri and referer to marketing event body
       MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();

@@ -39,8 +39,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   public Metrics metrics;
   public RedirectionEvent redirectionEvent;
 
-  // TODO: REDIRECT_SERVER_DOMAIN need to be defined
-  private static final String REDIRECT_SERVER_DOMAIN = "TBD";
+  private static final String REDIRECT_SERVER_DOMAIN = "www.ebayadservices.com";
   private static final String[] TARGET_URL_PARMS = {"mpre", "loc", "url", "URL"};
   private static final String MCS_SERVICE_NAME = "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46";
   private static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
@@ -67,21 +66,33 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
 
     // TODO: for the direction to ebay landing page, not sending event to mcs while redirection,
     // TODO: and leverage the marketing tracking event for landing page which has mkevt
-    callMcs(request, context, parameters);
+    callMcs(request, parameters);
 
     return new URIBuilder(redirectionEvent.getRedirectUrl()).build();
   }
 
   /**
-   * Verify the redirect url, if loc URL is ebay url or in whitelist return true
+   * Verify the redirect url, if it is an ebay url or in whitelist, then return true
    * Must avoid infinite redirects
    */
   public boolean isValidRedirectUrl(String redirectUrl) {
+    // empty landing page
     if (StringUtils.isEmpty(redirectUrl)) {
       logger.warn("Redirect URL is empty " );
       return false;
     }
-    // avoid infinite redirects
+
+    // ebay domain
+    Matcher m = ebaysites.matcher(redirectUrl.toLowerCase());
+    if (m.find()) {
+      return true;
+    }
+
+    // Valid thirdparty domain
+    if (LookupManager.isApprovedOffEbayDestination(redirectUrl))
+      return true;
+
+    // avoid infinite redirect
     URL urlObj;
     try {
       urlObj = new URL(redirectUrl);
@@ -89,18 +100,11 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
       logger.warn("Redirect URL is wrong: " + redirectUrl);
       return false;
     }
-    String requestUri = urlObj.getPath();
-    if (!StringUtils.isEmpty(requestUri) && isRedirectDomain(requestUri)) {
+    if (REDIRECT_SERVER_DOMAIN.equals(urlObj.getHost())) {
       return false;
     }
 
-    // judge whether the url contain ebay domain
-    Matcher m = ebaysites.matcher(redirectUrl.toLowerCase());
-    if (m.find()) {
-      return true;
-    }
-
-    return LookupManager.isApprovedOffEbayDestination(redirectUrl);
+    return false;
   }
 
   /**
@@ -123,9 +127,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   /**
    * Generate a mcs click event and call mcs
    */
-  private void callMcs(HttpServletRequest request, ContainerRequestContext context,
-                       MultiValueMap<String, String> parameters)
-      throws URISyntaxException{
+  private void callMcs(HttpServletRequest request, MultiValueMap<String, String> parameters) throws URISyntaxException{
 
     Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", MCS_SERVICE_NAME);
     Client mktClient = GingerClientBuilder.newClient(config);
@@ -154,7 +156,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
 
     // add Commerce-OS standard header
     builder = builder.header("X-EBAY-C-ENDUSERCTX", constructEndUserContextHeader(request))
-        .header("X-EBAY-C-TRACKING", constructCookieHeader(context));
+        .header("X-EBAY-C-TRACKING", constructCookieHeader());
 
     // call MCS
     Response ress = builder.post(Entity.json(mktEvent));
@@ -164,34 +166,21 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   /**
    * Construct X-EBAY-C-TRACKING header with guid and cguid
    */
-  //TODO: read guid by adservicecookie
-  public String constructCookieHeader(ContainerRequestContext context) {
+  private String constructCookieHeader() {
     String cguid = "";
-    if (!StringUtils.isEmpty(cguid)) {
-      cguid = cguid.substring(0, Constants.CGUID_LENGTH);
-    } else {
-      try {
-        cguid = new Guid().nextPaddedGUID();
-      } catch (UnknownHostException e) {
-        logger.warn("Create Cguid failure: ", e);
-        metrics.meter("CreateCGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()));
-      }
-      logger.warn("No cguid");
-      metrics.meter("NoCguid", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()));
+    try {
+      cguid = new Guid().nextPaddedGUID();
+    } catch (UnknownHostException e) {
+      logger.warn("Create Cguid failure: ", e);
+      metrics.meter("CreateCGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()));
     }
 
     String guid = "";
-    if (!StringUtils.isEmpty(guid))
-      guid = guid.substring(0, Constants.CGUID_LENGTH);
-    else {
-      try {
-        guid = new Guid().nextPaddedGUID();
-      } catch (UnknownHostException e) {
-        logger.warn("Create guid failure: ", e);
-        metrics.meter("CreateGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()));
-      }
-      logger.warn("No guid");
-      metrics.meter("NoGuid", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()));
+    try {
+      guid = new Guid().nextPaddedGUID();
+    } catch (UnknownHostException e) {
+      logger.warn("Create guid failure: ", e);
+      metrics.meter("CreateGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()));
     }
 
     return "guid=" + guid + "," + "cguid=" + cguid;
@@ -200,7 +189,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   /**
    * Construct X-EBAY-C-ENDUSERCTX header with user agent
    */
-  public String constructEndUserContextHeader(HttpServletRequest request) {
+  private String constructEndUserContextHeader(HttpServletRequest request) {
     String userAgent = request.getHeader(Constants.USER_AGENT);
 
     return "userAgent=" + userAgent;
@@ -215,21 +204,6 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     }
     else
       return null;
-  }
-
-  private boolean isRedirectDomain(String requestUri) {
-    String[] tokens = requestUri.split("/");
-    // If the URL's domain is redirect host, and the api is redirect
-    // we identified it's a redirect URL in chocolate, need ignore it
-    if (tokens.length > REDIRECT_API_OFFSET) {
-      if (tokens[0].equalsIgnoreCase(REDIRECT_SERVER_DOMAIN)
-          && tokens[REDIRECT_API_OFFSET].equalsIgnoreCase(Constants.REDIRECT)) {
-        return true;
-      }
-    } else {
-      return false;
-    }
-    return false;
   }
 
 }
