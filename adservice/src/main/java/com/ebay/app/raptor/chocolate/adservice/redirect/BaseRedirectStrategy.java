@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.adservice.redirect;
 
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
@@ -59,7 +60,10 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
 
     // build redirection event
     redirectionEvent = new RedirectionEvent(getParam(parameters, Constants.MKCID),
-        getParam(parameters, Constants.MKEVT), getParam(parameters, Constants.PARTNER_ID));
+        getParam(parameters, Constants.MKEVT), getParam(parameters, Constants.MKPID));
+
+    metrics.meter("RedirectionInput", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()),
+        Field.of(Constants.PARTNER, redirectionEvent.getPartner()));
 
     // generate Redirect Url
     generateRedirectUrl(parameters);
@@ -142,7 +146,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     }
 
     // Adobe needs additional parameters
-    if (Constants.ADOBE.equals(redirectionEvent.getPartner())) {
+    if (EmailPartnerIdEnum.ADOBE.getPartner().equals(redirectionEvent.getPartner())) {
       uriBuilder.addParameter(REDIRECT_URL_SOJ_TAG, redirectionEvent.getRedirectUrl())
           .addParameter(REDIRECT_SRC_SOJ_TAG, redirectionEvent.getRedirectSource());
     }
