@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate.adservice.redirect;
 import org.springframework.util.MultiValueMap;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,7 +16,7 @@ public interface RedirectStrategy {
    * @return        redirection url
    * @throws URISyntaxException
    */
-  URI process(HttpServletRequest request, ContainerRequestContext context)
+  URI process(HttpServletRequest request, ContainerRequestContext context, Client mktClient, String endpoint)
       throws URISyntaxException;
 
   /**

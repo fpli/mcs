@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
+import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.adservice.redirect.AdobeRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.redirect.RedirectContext;
 import com.ebay.app.raptor.chocolate.adservice.redirect.ThirdpartyRedirectStrategy;
@@ -8,12 +9,9 @@ import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
-import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +22,11 @@ import org.springframework.util.MultiValueMap;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
-
-import java.net.UnknownHostException;
 
 
 /**
@@ -64,78 +61,57 @@ public class CollectionService {
     return true;
   }
 
-  // construct X-EBAY-C-TRACKING header for mcs to send ubi event
-  // guid is mandatory, if guid is null, create a guid
-  //TODO: read guid by adservicecookie
-  public String constructTrackingHeader(ContainerRequestContext requestContext,
-                                        String channelType) {
-    String cookie = "";
-    String rawGuid = "";
-    if (!StringUtils.isEmpty(rawGuid))
-      cookie += "guid=" + rawGuid.substring(0,Constants.GUID_LENGTH);
-    else {
-      try {
-        cookie += "guid=" + new Guid().nextPaddedGUID();
-      } catch (UnknownHostException e) {
-        logger.warn("Create guid failure: ", e);
-        metrics.meter("CreateGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
-      }
-      logger.warn("No guid");
-      metrics.meter("NoGuid", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
-    }
-
-    String rawCguid = "";
-    if (!StringUtils.isEmpty(rawCguid))
-      cookie += ",cguid=" + rawCguid.substring(0,Constants.CGUID_LENGTH);
-    else {
-      logger.warn("No cguid");
-      metrics.meter("NoCguid", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
-    }
-
-    return cookie;
-  }
-
   /**
    * Collect email entry event(Adobe) and send redirect response
    *
    * @param request raw request
    * @return OK or Error message
    */
-  public URI collectRedirect(HttpServletRequest request, ContainerRequestContext requestContext) throws Exception {
+  public URI collectRedirect(HttpServletRequest request, ContainerRequestContext requestContext, Client mktClient,
+                             String endpoint) throws Exception {
 
     // verify the request
     MultiValueMap<String, String> parameters = verifyAndParseRequest(request);
 
     // execute redirect Strategy
-    return executeRedirectStrategy(request, getParam(parameters, Constants.PARTNER_ID), requestContext);
+    return executeRedirectStrategy(request, getParam(parameters, Constants.MKPID), requestContext, mktClient, endpoint);
   }
 
   /**
    * Verify redirect request, if invalid then throw an exception
    */
   private MultiValueMap<String, String> verifyAndParseRequest(HttpServletRequest request)  throws Exception {
-    // no query parameter, rejected
+    // no query parameter, redirect to home page
     Map<String, String[]> params = request.getParameterMap();
     if (null == params || params.isEmpty()) {
-      logError(Errors.ERROR_REDIRECT_NO_QUERY_PARAMETER);
+      logError(Errors.REDIRECT_NO_QUERY_PARAMETER);
     }
 
     MultiValueMap<String, String> parameters = ParametersParser.parse(params);
-    // reject no mkevt
-    if (!parameters.containsKey(Constants.MKEVT)) {
+    // no mkevt, redirect to home page
+    if (!parameters.containsKey(Constants.MKEVT) || parameters.getFirst(Constants.MKEVT) == null) {
       logError(Errors.REDIRECT_NO_MKEVT);
     }
-    // reject invalid mkevt
+    // invalid mkevt, redirect to home page
     if (!CLICK.equals(getParam(parameters, Constants.MKEVT))) {
       logError(Errors.REDIRECT_INVALID_MKEVT);
     }
-    // reject no mkcid
-    if (!parameters.containsKey(Constants.MKCID)) {
+    // no mkcid, redirect to home page
+    if (!parameters.containsKey(Constants.MKCID) || parameters.getFirst(Constants.MKCID) == null) {
       logError(Errors.REDIRECT_NO_MKCID);
     }
-    // reject invalid mkcid
+    // invalid mkcid, redirect to home page
     if (ChannelIdEnum.parse(getParam(parameters, Constants.MKCID)) == null) {
       logError(Errors.REDIRECT_INVALID_MKCID);
+    }
+    // no mkpid, redirect to home page
+    if (!parameters.containsKey(Constants.MKPID) || parameters.getFirst(Constants.MKPID) == null) {
+      logError(Errors.REDIRECT_NO_MKPID);
+    }
+    // invalid mkpid, accepted
+    if (EmailPartnerIdEnum.parse(getParam(parameters, Constants.MKPID)) == null) {
+      logger.warn(Errors.REDIRECT_INVALID_MKPID);
+      metrics.meter(Errors.REDIRECT_INVALID_MKPID);
     }
 
     return parameters;
@@ -144,16 +120,17 @@ public class CollectionService {
   /**
    * Send redirect response by Strategy Pattern
    */
-  private URI executeRedirectStrategy(HttpServletRequest request, String partnerId, ContainerRequestContext context) throws URISyntaxException{
+  private URI executeRedirectStrategy(HttpServletRequest request, String partnerId, ContainerRequestContext context,
+                                      Client mktClient, String endpoint) throws URISyntaxException{
     RedirectContext redirectContext;
-    if (Constants.ADOBE_PARTNER_ID.equals(partnerId)) {
+    if (EmailPartnerIdEnum.ADOBE.getId().equals(partnerId)) {
       redirectContext = new RedirectContext(new AdobeRedirectStrategy());
     } else {
       redirectContext = new RedirectContext(new ThirdpartyRedirectStrategy());
     }
 
     try {
-      return redirectContext.execute(request, context);
+      return redirectContext.execute(request, context, mktClient, endpoint);
     } catch (Exception e) {
       metrics.meter("RedirectionRuntimeError");
       logger.warn("Redirection runtime error: ", e);

@@ -44,13 +44,13 @@ public class Constants {
 
   // default guid
   public static final String EMPTY_GUID = "00000000000000000000000000000000";
+
   // metrics field
   public static final String CHANNEL_TYPE = "channelType";
+  public static final String PARTNER = "partner";
 
   // Redirection constants
-  public static final String ADOBE_PARTNER_ID = "14";
-  public static final String ADOBE = "adobe";
-  public static final String PARTNER_ID = "mkpid";
+  public static final String MKPID = "mkpid";
   public static final String ADOBE_PARAMS = "adobeParams";
   public static final String LOCTATION = "loc";
   public static final String REDIRECT = "redirect";

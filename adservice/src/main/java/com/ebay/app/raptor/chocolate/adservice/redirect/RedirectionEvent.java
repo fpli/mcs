@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.adservice.redirect;
 
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 
 /**
@@ -48,11 +49,7 @@ public class RedirectionEvent {
   }
 
   public String getPartner() {
-    if (Constants.ADOBE_PARTNER_ID.equals(partnerId)) {
-      return Constants.ADOBE;
-    } else {
-      return null;
-    }
+    return EmailPartnerIdEnum.parse(partnerId);
   }
 
   public void setChannelId(String channelId) {

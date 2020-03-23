@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.adservice.redirect;
 
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
@@ -10,6 +11,7 @@ import org.glassfish.jersey.client.ClientProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
@@ -75,7 +77,7 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
     // get loc URL
     String targetLocation = getTargetLocation(parameters);
     // if loc URL is valid, return it as redirect url
-    if (isValidRedirectUrl(targetLocation)) {
+    if (!StringUtils.isEmpty(targetLocation) && isValidRedirectUrl(targetLocation)) {
       redirectionEvent.setRedirectSource("loc");
       redirectionEvent.setRedirectUrl(targetLocation);
       return;
@@ -84,7 +86,7 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
     // get response from Adobe Server, if the url in response is valid, return it as redirect url
     String adobeRedirectUrl = getRedirectUrlByAdobe(parameters);
     if (isValidRedirectUrl(adobeRedirectUrl)) {
-      redirectionEvent.setRedirectSource(Constants.ADOBE);
+      redirectionEvent.setRedirectSource(EmailPartnerIdEnum.ADOBE.getPartner());
       redirectionEvent.setRedirectUrl(adobeRedirectUrl);
       return;
     }
@@ -97,7 +99,8 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
         redirectionEvent.setRedirectUrl(ADOBE_COUNTRY_MAP.get(county));
       }
     } else {
-      logger.warn("adobe parameter field country is missing: ");
+      logger.warn(Errors.REDIRECT_NO_ADOBE_COUNTRY);
+      metrics.meter(Errors.REDIRECT_NO_ADOBE_COUNTRY);
     }
   }
 
@@ -163,21 +166,24 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
   public URIBuilder generateAdobeUrl(MultiValueMap<String, String> parameters, String endpoint)
       throws URISyntaxException, UnsupportedEncodingException {
     URIBuilder uriBuilder = new URIBuilder(endpoint);
+
+    // id is mandatory
+    if (!parameters.containsKey(ADOBE_ID) || parameters.getFirst(ADOBE_ID) == null) {
+      logger.warn(Errors.REDIRECT_NO_ADOBE_ID);
+      metrics.meter(Errors.REDIRECT_NO_ADOBE_ID);
+    }
+
     // if the url has no adobeParams, we will construct the url with the possible list of params
     if (!parameters.containsKey(Constants.ADOBE_PARAMS) || parameters.get(Constants.ADOBE_PARAMS).get(0) == null) {
-      logger.warn(Errors.ERROR_REDIRECT_NO_ADOBE_PARAMS);
-      metrics.meter(Errors.ERROR_REDIRECT_NO_ADOBE_PARAMS);
+      logger.warn(Errors.REDIRECT_NO_ADOBE_PARAMS);
+      metrics.meter(Errors.REDIRECT_NO_ADOBE_PARAMS);
       // construct the url with the possible list of params,  only "id" in the the params list is Mandatory
       for (String adobeParam : ADOBE_PARAMS_LIST) {
         if (parameters.containsKey(adobeParam)) {
           uriBuilder.addParameter(adobeParam, parameters.get(adobeParam).get(0));
-        } else {
-          // Log the warning info when "id" is miss
-          if (adobeParam.equalsIgnoreCase(ADOBE_ID)) {
-            logger.warn("adobe Mandatory parameter field id is missing: ");
-          }
         }
       }
+
       return uriBuilder;
     }
 
@@ -186,8 +192,6 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
     for (String adobeParam : adobeParams) {
       if (parameters.containsKey(adobeParam)) {
         uriBuilder.addParameter(adobeParam, parameters.get(adobeParam).get(0));
-      } else {
-        logger.warn("adobeParams field has wrong parameter name: " + adobeParam);
       }
     }
     return uriBuilder;
