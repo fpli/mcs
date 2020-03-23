@@ -27,6 +27,7 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Response;
 import java.net.*;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -153,6 +154,14 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     mktEvent.setReferrer(request.getHeader(Constants.REFERER));
 
     Invocation.Builder builder = mktClient.target(endpoint).path("/events").request();
+
+    // add all headers
+    final Enumeration<String> headers = request.getHeaderNames();
+    while (headers.hasMoreElements()) {
+      String header = headers.nextElement();
+      String values = request.getHeader(header);
+      builder = builder.header(header, values);
+    }
 
     // add Commerce-OS standard header
     builder = builder.header("X-EBAY-C-ENDUSERCTX", constructEndUserContextHeader(request))
