@@ -246,11 +246,6 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     Response res = Response.status(Response.Status.OK).build();
     ImageResponseHandler.sendImageResponse(response);
 
-    Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient",
-        "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
-    Client mktClient = GingerClientBuilder.newClient(config);
-    String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
-
     // add all headers except Cookie
     Builder builder = mktClient.target(endpoint).path("/sync/").request();
     final Enumeration<String> headers = request.getHeaderNames();
