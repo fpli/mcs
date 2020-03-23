@@ -1174,7 +1174,7 @@ public class CollectionService {
 
       // Transation ID
       if (isLongNumeric(roiEvent.getUniqueTransactionId())) {
-        requestTracker.addTag("bti", Long.parseLong(roiEvent.getUniqueTransactionId()), Long.class);
+        requestTracker.addTag("applicationPayload.roi_bti", Long.parseLong(roiEvent.getUniqueTransactionId()), Long.class);
       }
 
       // user ID
