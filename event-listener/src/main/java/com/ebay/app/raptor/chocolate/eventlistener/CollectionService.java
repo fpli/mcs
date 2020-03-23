@@ -465,7 +465,8 @@ public class CollectionService {
         ChannelActionEnum.ROI, request, startTime, endUserContext, raptorSecureContext);
 
     if (processFlag) {
-      metrics.meter("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
+      metrics.meter("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"),
+          Field.of(CHANNEL_TYPE, "New-ROI"), Field.of(ROI_SOURCE, payloadMap.get(ROI_SOURCE)));
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
           ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
     }
