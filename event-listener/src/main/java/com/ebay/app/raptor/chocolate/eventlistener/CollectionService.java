@@ -1159,12 +1159,12 @@ public class CollectionService {
 
       // site ID
       if(isLongNumeric(payloadMap.get(SITE_ID))) {
-        requestTracker.addTag("t", Long.parseLong(payloadMap.get(SITE_ID)), Long.class);
+        requestTracker.addTag("t", payloadMap.get(SITE_ID), String.class);
       }
 
       // Item ID
       if(isLongNumeric(roiEvent.getItemId())) {
-        requestTracker.addTag("itm", Long.parseLong(roiEvent.getItemId()), Long.class);
+        requestTracker.addTag("itm", roiEvent.getItemId(), String.class);
       }
 
       // Transation Type
@@ -1174,7 +1174,7 @@ public class CollectionService {
 
       // Transation ID
       if (isLongNumeric(roiEvent.getUniqueTransactionId())) {
-        requestTracker.addTag("applicationPayload.roi_bti", Long.parseLong(roiEvent.getUniqueTransactionId()), Long.class);
+        requestTracker.addTag("roi_bti", roiEvent.getUniqueTransactionId(), String.class);
       }
 
       // user ID
