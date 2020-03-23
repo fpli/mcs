@@ -143,8 +143,8 @@ public class CollectionServiceUtil {
     }
     // If roi event is not checkout api source or roi source field not found, add nroi field
     // If nroi=1, process will send the event to new roi topic, this pipeline is no impact with imk table
-    if (!payloadMap.containsKey(ROI_SOURCE)
-        || !payloadMap.get(ROI_SOURCE).equals(String.valueOf(RoiSourceEnum.CHECKOUT_SOURCE.getId()))) {
+    if ((!payloadMap.containsKey(ROI_SOURCE))
+        || (!payloadMap.get(ROI_SOURCE).equals(String.valueOf(RoiSourceEnum.CHECKOUT_SOURCE.getId())))) {
       queryString = queryString + "&nroi=1";
     }
     return queryString;

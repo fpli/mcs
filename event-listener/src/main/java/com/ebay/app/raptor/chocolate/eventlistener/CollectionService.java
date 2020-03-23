@@ -85,6 +85,7 @@ public class CollectionService {
   private static final String PAGE_ID = "pageId";
   private static final String ADGUID_PARAM = "adguid";
   private static final String SITE_ID = "siteId";
+  private static final String ROI_SOURCE = "roisrc";
 
 
 
@@ -452,8 +453,12 @@ public class CollectionService {
       logError(Errors.ERROR_ILLEGAL_URL);
     }
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
-    // write roi event tags to ubi
-    addRoiSojTags(requestContext, payloadMap, roiEvent, userId);
+
+    // If the soucre is checkout, write roi event tags to ubi
+    if (payloadMap.containsKey(ROI_SOURCE)
+        && payloadMap.get(ROI_SOURCE).equals(String.valueOf(RoiSourceEnum.CHECKOUT_SOURCE.getId()))) {
+      addRoiSojTags(requestContext, payloadMap, roiEvent, userId);
+    }
 
     // Write roi event to kafka output topic
     boolean processFlag = processROIEvent(requestContext, targetUrl, "", parameters, ChannelIdEnum.ROI,
