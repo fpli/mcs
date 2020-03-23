@@ -22,6 +22,7 @@ import org.springframework.util.MultiValueMap;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -66,13 +67,14 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public URI collectRedirect(HttpServletRequest request, ContainerRequestContext requestContext) throws Exception {
+  public URI collectRedirect(HttpServletRequest request, ContainerRequestContext requestContext, Client mktClient,
+                             String endpoint) throws Exception {
 
     // verify the request
     MultiValueMap<String, String> parameters = verifyAndParseRequest(request);
 
     // execute redirect Strategy
-    return executeRedirectStrategy(request, getParam(parameters, Constants.MKPID), requestContext);
+    return executeRedirectStrategy(request, getParam(parameters, Constants.MKPID), requestContext, mktClient, endpoint);
   }
 
   /**
@@ -118,7 +120,8 @@ public class CollectionService {
   /**
    * Send redirect response by Strategy Pattern
    */
-  private URI executeRedirectStrategy(HttpServletRequest request, String partnerId, ContainerRequestContext context) throws URISyntaxException{
+  private URI executeRedirectStrategy(HttpServletRequest request, String partnerId, ContainerRequestContext context,
+                                      Client mktClient, String endpoint) throws URISyntaxException{
     RedirectContext redirectContext;
     if (EmailPartnerIdEnum.ADOBE.getId().equals(partnerId)) {
       redirectContext = new RedirectContext(new AdobeRedirectStrategy());
@@ -127,7 +130,7 @@ public class CollectionService {
     }
 
     try {
-      return redirectContext.execute(request, context);
+      return redirectContext.execute(request, context, mktClient, endpoint);
     } catch (Exception e) {
       metrics.meter("RedirectionRuntimeError");
       logger.warn("Redirection runtime error: ", e);

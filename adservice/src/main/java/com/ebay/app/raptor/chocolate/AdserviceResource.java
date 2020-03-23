@@ -99,6 +99,12 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private static Client adobeClient = GingerClientBuilder.newClient(adobeConfig);
   private static String adobeEndpoint = (String) adobeClient.getConfiguration().getProperty(EndpointUri.KEY);
 
+  // build ginger client to call mcs
+  private static final Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient",
+      "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
+  private static final Client mktClient = GingerClientBuilder.newClient(config);
+  private static final String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
+
   /**
    * Initialize function
    */
@@ -154,23 +160,6 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       adserviceCookie.setAdguid(request, response);
       res = Response.status(Response.Status.OK).build();
 
-      Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient",
-          "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
-      Client mktClient = GingerClientBuilder.newClient(config);
-      String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
-
-      // add all headers except Cookie
-      Builder builder = mktClient.target(endpoint).path("/impression/").request();
-      final Enumeration<String> headers = request.getHeaderNames();
-      while (headers.hasMoreElements()) {
-        String header = headers.nextElement();
-        if ("Cookie".equalsIgnoreCase(header)) {
-          continue;
-        }
-        String values = request.getHeader(header);
-        builder = builder.header(header, values);
-      }
-
       // get channel for metrics
       String channelType = null;
       Map<String, String[]> params = request.getParameterMap();
@@ -178,6 +167,17 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
         channelType = ChannelIdEnum.parse(params.get(Constants.MKCID)[0]).getLogicalChannel().getAvro().toString();
       }
       metrics.meter("ImpressionInput", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
+
+      // call mcs
+      Builder builder = mktClient.target(endpoint).path("/impression/").request();
+
+      // add all headers
+      final Enumeration<String> headers = request.getHeaderNames();
+      while (headers.hasMoreElements()) {
+        String header = headers.nextElement();
+        String values = request.getHeader(header);
+        builder = builder.header(header, values);
+      }
 
       // construct X-EBAY-C-TRACKING header
       builder = builder.header("X-EBAY-C-TRACKING",
@@ -223,7 +223,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     URI redirectUri = null;
     try {
       redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
-      redirectUri = collectionService.collectRedirect(request, requestContext);
+      redirectUri = collectionService.collectRedirect(request, requestContext, mktClient, endpoint);
     } catch (Exception e) {
       // When exception happen, redirect to www.ebay.com
       logger.warn(e.getMessage(), e);

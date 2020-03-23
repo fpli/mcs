@@ -54,7 +54,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   }
 
   @Override
-  public URI process(HttpServletRequest request, ContainerRequestContext context)
+  public URI process(HttpServletRequest request, ContainerRequestContext context, Client mktClient, String endpoint)
       throws URISyntaxException {
     MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
 
@@ -70,7 +70,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
 
     // TODO: for the direction to ebay landing page, not sending event to mcs while redirection,
     // TODO: and leverage the marketing tracking event for landing page which has mkevt
-    callMcs(request, parameters);
+    callMcs(request, parameters, mktClient, endpoint);
 
     return new URIBuilder(redirectionEvent.getRedirectUrl()).build();
   }
@@ -131,12 +131,8 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   /**
    * Generate a mcs click event and call mcs
    */
-  private void callMcs(HttpServletRequest request, MultiValueMap<String, String> parameters) throws URISyntaxException{
-
-    Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", MCS_SERVICE_NAME);
-    Client mktClient = GingerClientBuilder.newClient(config);
-    String mcsEndpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
-
+  private void callMcs(HttpServletRequest request, MultiValueMap<String, String> parameters, Client mktClient,
+                       String endpoint) throws URISyntaxException{
     // build mcs target url, add all original parameter for ubi events except target url parameter
     URIBuilder uriBuilder = new URIBuilder(redirectionEvent.getRedirectUrl());
     for (String paramter : parameters.keySet()) {
@@ -156,7 +152,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     mktEvent.setTargetUrl(uriBuilder.toString());
     mktEvent.setReferrer(request.getHeader(Constants.REFERER));
 
-    Invocation.Builder builder = mktClient.target(mcsEndpoint).path("/events").request();
+    Invocation.Builder builder = mktClient.target(endpoint).path("/events").request();
 
     // add Commerce-OS standard header
     builder = builder.header("X-EBAY-C-ENDUSERCTX", constructEndUserContextHeader(request))
