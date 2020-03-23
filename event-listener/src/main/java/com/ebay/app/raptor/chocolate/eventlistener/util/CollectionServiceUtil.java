@@ -117,10 +117,10 @@ public class CollectionServiceUtil {
     payloadMap.remove(TRANSACTION_ID);
     payloadMap.remove(ITEM_ID);
 
-    // If MPUID is not inside payload, generate it and set into payload
+    // If MPUID is not inside payload or it's empty, generate it and set into payload
     // The format of mpuid: user_id;item_id;[transaction_id]
     // MPUID is used in imkETL process
-    if (!payloadMap.containsKey(MPUID)) {
+    if (!payloadMap.containsKey(MPUID) || StringUtils.isEmpty(payloadMap.get(MPUID))) {
       String mpuid = String.format("%s;%s;%s", userId, roiEvent.getItemId(), roiEvent.getUniqueTransactionId());
       payloadMap.put(MPUID, mpuid);
     }
