@@ -48,6 +48,9 @@ public class CollectionServiceUtil {
   private static String IPAD_APPID = "2878";
   private static String ANDROID_APPID = "2571";
   private static final String TRANSACTION_TIMESTAMP = "transactionTimestamp";
+  private static final String TRANSACTION_TYPE = "transType";
+  private static final String TRANSACTION_ID = "uniqueTransactionId";
+  private static final String ITEM_ID = "itemId";
   private static final String ROI_SOURCE = "roisrc";
   private static final String MPUID = "mpuid";
 
@@ -110,9 +113,9 @@ public class CollectionServiceUtil {
 
     // If the field in payload is in {transType, uniqueTransactionId, itemId, transactionTimestamp}, don't append them into the url
     payloadMap.remove(TRANSACTION_TIMESTAMP);
-    payloadMap.remove("transType");
-    payloadMap.remove("uniqueTransactionId");
-    payloadMap.remove("itemId");
+    payloadMap.remove(TRANSACTION_TYPE);
+    payloadMap.remove(TRANSACTION_ID);
+    payloadMap.remove(ITEM_ID);
 
     // If MPUID is not inside payload, generate it and set into payload
     // The format of mpuid: user_id;item_id;[transaction_id]
