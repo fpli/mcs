@@ -38,9 +38,13 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 
+import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.generateQueryString;
+import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -367,6 +371,34 @@ public class EventListenerServiceTest {
 //        .accept(MediaType.APPLICATION_JSON_TYPE)
 //        .post(Entity.json(event2));
 //    assertEquals(201, response2.getStatus());
+  }
+
+  @Test
+  public void testCollectionServiceUtil() throws UnsupportedEncodingException {
+    // Test isLongNumeric
+    String strNum1 = "11";
+    String strNum2 = null;
+    String strNum3 = "";
+    String strNum4 = "aa01";
+    assertTrue(isLongNumeric(strNum1));
+    assertFalse(isLongNumeric(strNum2));
+    assertFalse(isLongNumeric(strNum3));
+    assertFalse(isLongNumeric(strNum4));
+
+    // Test generateQueryString
+    ROIEvent event = new ROIEvent();
+    event.setItemId("52357723598250");
+    Map<String, String> payload = new HashMap<String, String>();
+    payload.put("siteId","2");
+    payload.put("roisrc","2");
+    payload.put("api","1");
+    event.setPayload(payload);
+    event.setTransType("BIN-FP");
+    event.setUniqueTransactionId("324357529");
+    event.setTransactionTimestamp("1581427339000");
+    String localTimestamp = Long.toString(System.currentTimeMillis());
+    String expectQuery = "transType=BIN-FP&uniqueTransactionId=324357529&itemId=52357723598250&transactionTimestamp=1581427339000&siteId=2&mpuid=0;52357723598250;324357529&api=1&roisrc=2";
+    assertEquals(expectQuery, generateQueryString(event, payload,localTimestamp, "0"));
   }
 
   @Test
