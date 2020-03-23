@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.util.AdserviceCookie;
 import com.ebay.app.raptor.chocolate.adservice.util.ImageResponseHandler;
@@ -16,6 +17,7 @@ import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
@@ -97,6 +99,12 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private static Client adobeClient = GingerClientBuilder.newClient(adobeConfig);
   private static String adobeEndpoint = (String) adobeClient.getConfiguration().getProperty(EndpointUri.KEY);
 
+  // build ginger client to call mcs
+  private static final Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient",
+      "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
+  private static final Client mktClient = GingerClientBuilder.newClient(config);
+  private static final String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
+
   /**
    * Initialize function
    */
@@ -112,10 +120,10 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response ar(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
-    if(null == mkcid) {
+    if (null == mkcid) {
       metrics.meter(METRIC_NO_MKCID_IN_AR);
     }
-    if(null == mkrid) {
+    if (null == mkrid) {
       metrics.meter(METRIC_NO_MKRID_IN_AR);
     }
     Response res = null;
@@ -141,10 +149,10 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response impression(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
-    if(null == mkcid) {
+    if (null == mkcid) {
       metrics.meter(METRIC_NO_MKCID_IN_IMPRESSION);
     }
-    if(null == mkrid) {
+    if (null == mkrid) {
       metrics.meter(METRIC_NO_MKRID_IN_IMPRESSION);
     }
     Response res = null;
@@ -152,28 +160,23 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       adserviceCookie.setAdguid(request, response);
       res = Response.status(Response.Status.OK).build();
 
-      Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient",
-          "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
-      Client mktClient = GingerClientBuilder.newClient(config);
-      String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
-
-      // add all headers except Cookie
-      Builder builder = mktClient.target(endpoint).path("/impression/").request();
-      final Enumeration<String> headers = request.getHeaderNames();
-      while (headers.hasMoreElements()) {
-        String header = headers.nextElement();
-        if ("Cookie".equalsIgnoreCase(header)) {
-          continue;
-        }
-        String values = request.getHeader(header);
-        builder = builder.header(header, values);
-      }
-
       // get channel for metrics
       String channelType = null;
       Map<String, String[]> params = request.getParameterMap();
       if (params.containsKey(Constants.MKCID) && params.get(Constants.MKCID)[0] != null) {
         channelType = ChannelIdEnum.parse(params.get(Constants.MKCID)[0]).getLogicalChannel().getAvro().toString();
+      }
+      metrics.meter("ImpressionInput", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
+
+      // call mcs
+      Builder builder = mktClient.target(endpoint).path("/impression/").request();
+
+      // add all headers
+      final Enumeration<String> headers = request.getHeaderNames();
+      while (headers.hasMoreElements()) {
+        String header = headers.nextElement();
+        String values = request.getHeader(header);
+        builder = builder.header(header, values);
       }
 
       // construct X-EBAY-C-TRACKING header
@@ -191,10 +194,10 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       // send 1x1 pixel
       ImageResponseHandler.sendImageResponse(response);
       String partnerId = null;
-      if (params.containsKey(Constants.PARTNER_ID)) {
-        partnerId = params.get(Constants.PARTNER_ID)[0];
+      if (params.containsKey(Constants.MKPID)) {
+        partnerId = params.get(Constants.MKPID)[0];
       }
-      if (!StringUtils.isEmpty(partnerId) && Constants.ADOBE_PARTNER_ID.equals(partnerId)) {
+      if (!StringUtils.isEmpty(partnerId) && EmailPartnerIdEnum.ADOBE.getId().equals(partnerId)) {
         sendOpenEventToAdobe(params);
       }
 
@@ -219,12 +222,12 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     URI redirectUri = null;
     try {
       redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
-      redirectUri = collectionService.collectRedirect(request, requestContext);
+      redirectUri = collectionService.collectRedirect(request, requestContext, mktClient, endpoint);
     } catch (Exception e) {
       // When exception happen, redirect to www.ebay.com
       logger.warn(e.getMessage(), e);
     }
-    if(redirectUri!=null) {
+    if (redirectUri != null) {
       return Response.status(Response.Status.MOVED_PERMANENTLY).location(redirectUri).build();
     } else {
       return Response.status(Response.Status.BAD_REQUEST).build();
@@ -292,6 +295,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
   /**
    * Get GUID from mapping
+   *
    * @return guid in string
    */
   @Override
@@ -303,6 +307,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
   /**
    * Get user id from mapping
+   *
    * @return user id in string
    */
   @Override
@@ -359,6 +364,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
   /**
    * utility method for callback
+   *
    * @param invoker
    * @return
    */
