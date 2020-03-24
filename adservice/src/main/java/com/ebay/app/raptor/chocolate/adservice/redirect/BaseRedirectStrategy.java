@@ -168,8 +168,13 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
         .header("X-EBAY-C-TRACKING", constructCookieHeader());
 
     // call MCS
-    Response ress = builder.post(Entity.json(mktEvent));
-    ress.close();
+    try {
+      Response ress = builder.post(Entity.json(mktEvent));
+      ress.close();
+    } catch (Exception e) {
+      logger.warn("Call MCS fail for redirection", e);
+      metrics.meter("RedirectionCallMcsFail");
+    }
   }
 
   /**
