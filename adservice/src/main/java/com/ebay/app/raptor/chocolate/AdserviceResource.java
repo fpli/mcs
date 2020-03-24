@@ -7,6 +7,7 @@ import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.util.AdserviceCookie;
 import com.ebay.app.raptor.chocolate.adservice.util.ImageResponseHandler;
+import com.ebay.app.raptor.chocolate.adservice.util.MCSCallback;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -190,7 +191,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       mktEvent.setReferrer(request.getHeader("Referer"));
 
       // call marketing collection service to send ubi event or send kafka async
-      builder.async().post(Entity.json(mktEvent));
+      builder.async().post(Entity.json(mktEvent), new MCSCallback());
       // send 1x1 pixel
       ImageResponseHandler.sendImageResponse(response);
       String partnerId = null;
@@ -269,7 +270,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     mktEvent.setReferrer(request.getHeader("Referer"));
 
     // call marketing collection service to send ubi event async
-    builder.async().post(Entity.json(mktEvent));
+    builder.async().post(Entity.json(mktEvent), new MCSCallback());
 
     try {
       boolean isAddMappingSuccess = idMapping.addMapping(adguid, guid, uid);
@@ -355,6 +356,10 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       }
     }
     return uriBuilder;
+  }
+
+  private void mcsCallback() {
+
   }
 
   /**
