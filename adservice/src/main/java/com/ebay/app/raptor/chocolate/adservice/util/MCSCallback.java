@@ -13,7 +13,8 @@ import javax.ws.rs.core.Response;
 public class MCSCallback implements InvocationCallback<Response> {
 
   public void completed(Response response) {
-    if (response.getStatus() == 201) {
+    if (response.getStatus() == Response.Status.CREATED.getStatusCode()
+        || response.getStatus() == Response.Status.OK.getStatusCode()) {
       ESMetrics.getInstance().meter("AsyncCallMCSSuccess");
     } else {
       ESMetrics.getInstance().meter("AsyncCallMCSFailed");
