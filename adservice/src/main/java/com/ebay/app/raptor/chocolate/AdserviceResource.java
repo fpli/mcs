@@ -357,11 +357,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     }
     return uriBuilder;
   }
-
-  private void mcsCallback() {
-
-  }
-
+  
   /**
    * utility method for callback
    *
