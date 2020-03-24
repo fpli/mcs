@@ -1157,10 +1157,7 @@ public class CollectionService {
       // page id
       requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.ROI.getId(), Integer.class);
 
-      // site ID
-      if(isLongNumeric(payloadMap.get(SITE_ID))) {
-        requestTracker.addTag("t", payloadMap.get(SITE_ID), String.class);
-      }
+      // site ID is embedded in IRequestScopeTracker default commit tags
 
       // Item ID
       if(isLongNumeric(roiEvent.getItemId())) {
@@ -1179,7 +1176,7 @@ public class CollectionService {
 
       // user ID
       if (isLongNumeric(userId)) {
-        requestTracker.addTag("userid", Long.parseLong(userId), Long.class);
+        requestTracker.addTag("userid", userId, String.class);
       }
     } catch (Exception e) {
       logger.warn("Error when tracking ubi for roi event", e);
