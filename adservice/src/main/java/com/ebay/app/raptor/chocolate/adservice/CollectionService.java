@@ -9,8 +9,11 @@ import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +29,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.Map;
 
 
@@ -59,6 +63,33 @@ public class CollectionService {
                            ContainerRequestContext requestContext) throws Exception {
     dapResponseHandler.sendDAPResponse(request, response, requestContext);
     return true;
+  }
+
+  /**
+   * construct a tracking header. guid is mandatory, if guid is null, create a guid
+   * @param requestContext request context
+   * @param guid guid from mapping if there is
+   * @param channelType channel type
+   * @return a tracking header string
+   */
+  public String constructTrackingHeader(ContainerRequestContext requestContext, String guid,
+                                        String channelType) {
+    String cookie = "";
+    String rawGuid = guid;
+    if (!StringUtils.isEmpty(rawGuid) && rawGuid.length() >= Constants.GUID_LENGTH) {
+      cookie += "guid=" + rawGuid.substring(0, Constants.GUID_LENGTH);
+    } else {
+      try {
+        cookie += "guid=" + new Guid().nextPaddedGUID();
+      } catch (UnknownHostException e) {
+        logger.warn("Create guid failure: ", e);
+        metrics.meter("CreateGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
+      }
+      logger.warn("No guid");
+      metrics.meter("NoGuid", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
+    }
+
+    return cookie;
   }
 
   /**

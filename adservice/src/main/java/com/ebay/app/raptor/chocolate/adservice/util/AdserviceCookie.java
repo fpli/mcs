@@ -1,10 +1,16 @@
 package com.ebay.app.raptor.chocolate.adservice.util;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
@@ -34,6 +40,9 @@ public class AdserviceCookie {
   private static final String METRIC_SET_NEW_ADGUID = "METRIC_SET_NEW_ADGUID";
   private static final String METRIC_ERROR_CREATE_ADGUID = "METRIC_ERROR_CREATE_ADGUID";
 
+  @Autowired
+  @Qualifier("cb")
+  private IdMapable idMapping;
 
   @PostConstruct
   public void postInit() {
@@ -98,5 +107,60 @@ public class AdserviceCookie {
       response.addHeader("Set-Cookie", cookie.toString());
     }
     return adguid;
+  }
+
+
+  /**
+   * Get guid from mapping
+   * @param request http request
+   * @return guid
+   */
+  public String getGuid(HttpServletRequest request) {
+    String adguid = readAdguid(request);
+    String guid = idMapping.getGuid(adguid);
+    if(StringUtils.isEmpty(guid)) {
+      guid = "";
+    }
+    return guid;
+  }
+
+  /**
+   * Get user id from mapping
+   * @param request http request
+   * @return decrypted user id
+   */
+  public String getUserId(HttpServletRequest request) {
+    String adguid = readAdguid(request);
+    String encryptedUserid = idMapping.getUid(adguid);
+    if(StringUtils.isEmpty(encryptedUserid)) {
+      encryptedUserid = "0";
+    }
+    return String.valueOf(decryptUserId(encryptedUserid));
+  }
+
+  /**
+   * Decrypt user id from encrypted user id
+   * @param encryptedStr encrypted user id
+   * @return actual user id
+   */
+  private long decryptUserId(String encryptedStr) {
+    long xorConst = 43188348269L;
+
+    long encrypted = 0;
+
+    try {
+      encrypted = Long.parseLong(encryptedStr);
+    }
+    catch (NumberFormatException e) {
+      return -1;
+    }
+
+    long decrypted = 0;
+
+    if(encrypted > 0){
+      decrypted  = encrypted ^ xorConst;
+    }
+
+    return decrypted;
   }
 }

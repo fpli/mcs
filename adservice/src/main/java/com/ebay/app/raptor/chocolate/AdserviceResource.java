@@ -120,10 +120,10 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response ar(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
-    if(null == mkcid) {
+    if (null == mkcid) {
       metrics.meter(METRIC_NO_MKCID_IN_AR);
     }
-    if(null == mkrid) {
+    if (null == mkrid) {
       metrics.meter(METRIC_NO_MKRID_IN_AR);
     }
     Response res = null;
@@ -149,10 +149,10 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response impression(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
-    if(null == mkcid) {
+    if (null == mkcid) {
       metrics.meter(METRIC_NO_MKCID_IN_IMPRESSION);
     }
-    if(null == mkrid) {
+    if (null == mkrid) {
       metrics.meter(METRIC_NO_MKRID_IN_IMPRESSION);
     }
     Response res = null;
@@ -180,18 +180,17 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       }
 
       // construct X-EBAY-C-TRACKING header
+      String guid = adserviceCookie.getGuid(request);
       builder = builder.header("X-EBAY-C-TRACKING",
-          "guid=" + Constants.EMPTY_GUID + ",cguid=" + Constants.EMPTY_GUID);
+          collectionService.constructTrackingHeader(requestContext, guid, channelType));
 
       // add uri and referer to marketing event body
       MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
       mktEvent.setTargetUrl(new ServletServerHttpRequest(request).getURI().toString());
       mktEvent.setReferrer(request.getHeader("Referer"));
 
-      // call marketing collection service to send ubi event or send kafka
-      Response ress = builder.post(Entity.json(mktEvent));
-      ress.close();
-
+      // call marketing collection service to send ubi event or send kafka async
+      builder.async().post(Entity.json(mktEvent));
       // send 1x1 pixel
       ImageResponseHandler.sendImageResponse(response);
       String partnerId = null;
@@ -228,7 +227,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       // When exception happen, redirect to www.ebay.com
       logger.warn(e.getMessage(), e);
     }
-    if(redirectUri!=null) {
+    if (redirectUri != null) {
       return Response.status(Response.Status.MOVED_PERMANENTLY).location(redirectUri).build();
     } else {
       return Response.status(Response.Status.BAD_REQUEST).build();
@@ -246,6 +245,32 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     String adguid = adserviceCookie.setAdguid(request, response);
     Response res = Response.status(Response.Status.OK).build();
     ImageResponseHandler.sendImageResponse(response);
+
+    // add all headers except Cookie
+    Builder builder = mktClient.target(endpoint).path("/sync/").request();
+    final Enumeration<String> headers = request.getHeaderNames();
+    while (headers.hasMoreElements()) {
+      String header = headers.nextElement();
+      if ("Cookie".equalsIgnoreCase(header)) {
+        continue;
+      }
+      String values = request.getHeader(header);
+      builder = builder.header(header, values);
+    }
+    // forward to mcs for writing ubi. The adguid in ubi is to help XID team build adguid into the linking system.
+    // construct X-EBAY-C-TRACKING header
+    builder = builder.header("X-EBAY-C-TRACKING",
+        collectionService.constructTrackingHeader(requestContext, guid, "sync"));
+
+    // add uri and referer to marketing event body
+    MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
+    // append adguid into the url so that the mcs can parse it
+    mktEvent.setTargetUrl(new ServletServerHttpRequest(request).getURI().toString() + "&adguid=" + adguid);
+    mktEvent.setReferrer(request.getHeader("Referer"));
+
+    // call marketing collection service to send ubi event async
+    builder.async().post(Entity.json(mktEvent));
+
     try {
       boolean isAddMappingSuccess = idMapping.addMapping(adguid, guid, uid);
       if (isAddMappingSuccess) {
@@ -265,6 +290,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
   /**
    * Get GUID from mapping
+   *
    * @return guid in string
    */
   @Override
@@ -276,6 +302,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
   /**
    * Get user id from mapping
+   *
    * @return user id in string
    */
   @Override
@@ -332,6 +359,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
   /**
    * utility method for callback
+   *
    * @param invoker
    * @return
    */
