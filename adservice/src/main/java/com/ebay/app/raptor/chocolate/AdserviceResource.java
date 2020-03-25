@@ -112,6 +112,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
+    System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
   }
 
   /**
