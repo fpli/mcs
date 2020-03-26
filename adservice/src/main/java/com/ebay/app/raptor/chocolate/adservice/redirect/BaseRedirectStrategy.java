@@ -2,6 +2,7 @@ package com.ebay.app.raptor.chocolate.adservice.redirect;
 
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
+import com.ebay.app.raptor.chocolate.adservice.util.MCSCallback;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
@@ -168,13 +169,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
         .header("X-EBAY-C-TRACKING", constructCookieHeader());
 
     // call MCS
-    try {
-      Response ress = builder.post(Entity.json(mktEvent));
-      ress.close();
-    } catch (Exception e) {
-      logger.warn("Call MCS fail for redirection", e);
-      metrics.meter("RedirectionCallMcsFail");
-    }
+    builder.async().post(Entity.json(mktEvent), new MCSCallback());
   }
 
   /**
