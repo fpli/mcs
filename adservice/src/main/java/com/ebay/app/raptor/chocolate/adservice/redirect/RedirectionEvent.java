@@ -16,6 +16,7 @@ public class RedirectionEvent {
   private String channelId;
   private String channelType;
   private String actionId;
+  private Boolean isEbayDomain;
 
   public RedirectionEvent(String channelId, String actionId, String partnerId) {
     this.channelId = channelId;
@@ -74,5 +75,13 @@ public class RedirectionEvent {
 
   public String getActionId() {
     return actionId;
+  }
+
+  public void setIsEbayDomain(Boolean isEbayDomain) {
+    this.isEbayDomain = isEbayDomain;
+  }
+
+  public Boolean getIsEbayDomain() {
+    return isEbayDomain;
   }
 }

@@ -31,7 +31,6 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
   private static final int SUCCESS_CODE = 2;
   private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId",
       "ap_oid", "data"};
-  private static final String DEFAULT_REDIRECT_URL = "http://www.ebay.com";
   private static final String ADOBE_COUNTRY = "country";
   private static final String ADOBE_ID = "id";
   private static final int HUNDRED = 100;
@@ -72,7 +71,7 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
   @Override
   public void generateRedirectUrl(MultiValueMap<String, String> parameters) {
     redirectionEvent.setRedirectSource("default");
-    redirectionEvent.setRedirectUrl(DEFAULT_REDIRECT_URL);
+    redirectionEvent.setRedirectUrl(Constants.DEFAULT_REDIRECT_URL);
     // get loc parameter from request, if loc URL is valid, return it as redirect url
     // get loc URL
     String targetLocation = getTargetLocation(parameters);
