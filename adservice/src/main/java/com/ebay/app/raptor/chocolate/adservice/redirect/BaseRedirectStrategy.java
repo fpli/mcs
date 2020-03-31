@@ -44,7 +44,6 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   public RedirectionEvent redirectionEvent;
 
   private static final String REDIRECT_SERVER_DOMAIN = "www.ebayadservices.com";
-  private static final String[] TARGET_URL_PARMS = {"mpre", "loc", "url", "URL"};
   private static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   private static final String REDIRECT_SRC_SOJ_TAG = "adcamp_locationsrc";
   private static final int REDIRECT_API_OFFSET = 3;
@@ -121,7 +120,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
    */
   public String getTargetLocation(MultiValueMap<String, String> parameters) {
     String result = null;
-    for (String targetUrlParm : TARGET_URL_PARMS) {
+    for (String targetUrlParm : Constants.TARGET_URL_PARMS) {
       // get target location
       if (parameters.containsKey(targetUrlParm)) {
         result = parameters.get(targetUrlParm).get(0);
@@ -141,7 +140,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     // build mcs target url, add all original parameter for ubi events except target url parameter
     URIBuilder uriBuilder = new URIBuilder(redirectionEvent.getRedirectUrl());
     for (String paramter : parameters.keySet()) {
-      if (!Arrays.asList(TARGET_URL_PARMS).contains(paramter)) {
+      if (!Arrays.asList(Constants.TARGET_URL_PARMS).contains(paramter)) {
         uriBuilder.addParameter(paramter, parameters.get(paramter).get(0));
       }
     }
@@ -194,7 +193,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
 
         Set<String> keySet = parameters.keySet();
         for (String key : keySet) {
-          if (Arrays.asList(TARGET_URL_PARMS).contains(key)) {
+          if (Arrays.asList(Constants.TARGET_URL_PARMS).contains(key)) {
             continue;
           }
           uriBuilder.addParameter(key, parameters.getFirst(key));

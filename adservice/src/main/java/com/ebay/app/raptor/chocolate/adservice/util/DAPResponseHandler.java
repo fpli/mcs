@@ -604,7 +604,7 @@ public class DAPResponseHandler {
     MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
 
     URIBuilder targetUrlBuilder = new URIBuilder(new ServletServerHttpRequest(request).getURI());
-    targetUrlBuilder.addParameter(Constants.MKEVT, String.valueOf(MKEVT.AD_REQUEST.getId()));
+    targetUrlBuilder.addParameter(Constants.MKEVT, MKEVT.AD_REQUEST.getId());
     targetUrlBuilder.addParameter(Constants.MKRVRID, String.valueOf(dapRvrId));
     // add flex fields of dap response headers, these fields start with "ff"
     if (dapResponseHeaders != null) {
