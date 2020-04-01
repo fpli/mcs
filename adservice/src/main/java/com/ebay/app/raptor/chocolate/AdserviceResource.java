@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate;
 
 
+import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
@@ -222,7 +223,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     URI redirectUri = null;
     try {
       // assign home page as default redirect url
-      URIBuilder uriBuilder = new URIBuilder(Constants.DEFAULT_REDIRECT_URL);
+      URIBuilder uriBuilder = new URIBuilder(ApplicationOptions.getInstance().getRedirectHomepage());
       // add all parameters except landing page parameter to the home page
       MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
       // make sure mkevt=1 to let home page go to mcs

@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice.redirect;
 
+import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
@@ -71,7 +72,7 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
   @Override
   public void generateRedirectUrl(MultiValueMap<String, String> parameters) {
     redirectionEvent.setRedirectSource("default");
-    redirectionEvent.setRedirectUrl(Constants.DEFAULT_REDIRECT_URL);
+    redirectionEvent.setRedirectUrl(ApplicationOptions.getInstance().getRedirectHomepage());
     // get loc parameter from request, if loc URL is valid, return it as redirect url
     // get loc URL
     String targetLocation = getTargetLocation(parameters);

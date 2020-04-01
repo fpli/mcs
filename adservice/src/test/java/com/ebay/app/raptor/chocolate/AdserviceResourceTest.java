@@ -163,7 +163,7 @@ public class AdserviceResourceTest {
     parameters.replace("mpre", "https://www.ebayadservices.com/marketingtracking/v1/redirect");
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
-    assertEquals("https://www.ebay.com/?mkcid=8&ymmmid=1740915&bu=43551630917&emsid=e11051.m44.l1139" +
+    assertEquals("https://www.qa.ebay.com/?mkcid=8&ymmmid=1740915&bu=43551630917&emsid=e11051.m44.l1139" +
         "&sojTags=bu%3Dbu&crd=20190801034425&yminstc=7&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK" +
         "&mkevt=1&mkpid=12", response.getLocation().toString());
 
@@ -171,7 +171,7 @@ public class AdserviceResourceTest {
     parameters.replace("mpre", "");
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
-    assertEquals("https://www.ebay.com/?mkcid=8&ymmmid=1740915&bu=43551630917&emsid=e11051.m44.l1139" +
+    assertEquals("https://www.qa.ebay.com/?mkcid=8&ymmmid=1740915&bu=43551630917&emsid=e11051.m44.l1139" +
         "&sojTags=bu%3Dbu&crd=20190801034425&yminstc=7&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK" +
         "&mkevt=1&mkpid=12", response.getLocation().toString());
 
@@ -179,7 +179,7 @@ public class AdserviceResourceTest {
     parameters.remove("mkevt");
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
-    assertEquals("https://www.ebay.com/?mkcid=8&ymmmid=1740915&bu=43551630917&emsid=e11051.m44.l1139" +
+    assertEquals("https://www.qa.ebay.com/?mkcid=8&ymmmid=1740915&bu=43551630917&emsid=e11051.m44.l1139" +
             "&sojTags=bu%3Dbu&crd=20190801034425&yminstc=7&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK" +
             "&mkpid=12&mkevt=1", response.getLocation().toString());
 
@@ -187,7 +187,7 @@ public class AdserviceResourceTest {
     parameters.put("mkevt", "");
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
-    assertEquals("https://www.ebay.com/?mkcid=8&ymmmid=1740915&bu=43551630917&emsid=e11051.m44.l1139" +
+    assertEquals("https://www.qa.ebay.com/?mkcid=8&ymmmid=1740915&bu=43551630917&emsid=e11051.m44.l1139" +
         "&sojTags=bu%3Dbu&crd=20190801034425&yminstc=7&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK" +
         "&mkevt=1&mkpid=12", response.getLocation().toString());
 
@@ -195,7 +195,7 @@ public class AdserviceResourceTest {
     parameters.replace("mkevt", "2");
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
-    assertEquals("https://www.ebay.com/?mkcid=8&ymmmid=1740915&bu=43551630917&emsid=e11051.m44.l1139" +
+    assertEquals("https://www.qa.ebay.com/?mkcid=8&ymmmid=1740915&bu=43551630917&emsid=e11051.m44.l1139" +
         "&sojTags=bu%3Dbu&crd=20190801034425&yminstc=7&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK" +
         "&mkevt=1&mkpid=12", response.getLocation().toString());
     parameters.replace("mkevt", "1");
@@ -204,7 +204,7 @@ public class AdserviceResourceTest {
     parameters.remove("mkcid");
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
-    assertEquals("https://www.ebay.com/?ymmmid=1740915&bu=43551630917&emsid=e11051.m44.l1139" +
+    assertEquals("https://www.qa.ebay.com/?ymmmid=1740915&bu=43551630917&emsid=e11051.m44.l1139" +
         "&sojTags=bu%3Dbu&crd=20190801034425&yminstc=7&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK" +
         "&mkevt=1&mkpid=12", response.getLocation().toString());
 
@@ -212,7 +212,7 @@ public class AdserviceResourceTest {
     parameters.put("mkcid", "999");
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
-    assertEquals("https://www.ebay.com/?ymmmid=1740915&mkcid=999&bu=43551630917&emsid=e11051.m44.l1139" +
+    assertEquals("https://www.qa.ebay.com/?ymmmid=1740915&mkcid=999&bu=43551630917&emsid=e11051.m44.l1139" +
         "&sojTags=bu%3Dbu&crd=20190801034425&yminstc=7&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK" +
         "&mkevt=1&mkpid=12", response.getLocation().toString());
     parameters.replace("mkcid", "8");
@@ -221,7 +221,7 @@ public class AdserviceResourceTest {
     parameters.remove("mkpid");
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
-    assertEquals("https://www.ebay.com/?ymmmid=1740915&mkcid=8&bu=43551630917&emsid=e11051.m44.l1139" +
+    assertEquals("https://www.qa.ebay.com/?ymmmid=1740915&mkcid=8&bu=43551630917&emsid=e11051.m44.l1139" +
         "&sojTags=bu%3Dbu&crd=20190801034425&yminstc=7&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK" +
         "&mkevt=1", response.getLocation().toString());
 
@@ -237,7 +237,7 @@ public class AdserviceResourceTest {
     parameters.clear();
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
-    assertEquals("https://www.ebay.com/?mkevt=1", response.getLocation().toString());
+    assertEquals("https://www.qa.ebay.com/?mkevt=1", response.getLocation().toString());
 
     // Adobe parameters
     parameters.clear();
@@ -278,7 +278,7 @@ public class AdserviceResourceTest {
     parameters.remove("country");
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
-    assertEquals("https://www.ebay.com/?mkcid=8&emsid=0&sojTags=adcampid%25id%EF%BF%BDcamppu%25pu%25crd%25" +
+    assertEquals("https://www.qa.ebay.com/?mkcid=8&emsid=0&sojTags=adcampid%25id%EF%BF%BDcamppu%25pu%25crd%25" +
         "crd%25segname%25segname&segname=SOP708_SG49&pu=hrtHY5sgRPq&mkevt=1&adobeParams=id%2Cp1%2Cp2%2Cp3%2Cp4&id=" +
         "h1d3e4dcb%2C2d1b8f79%2C1&mkpid=14", response.getLocation().toString());
     parameters.put("country", "US");

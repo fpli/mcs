@@ -54,7 +54,6 @@ public class Constants {
   public static final String ADOBE_PARAMS = "adobeParams";
   public static final String LOCTATION = "loc";
   public static final String REDIRECT = "redirect";
-  public static final String DEFAULT_REDIRECT_URL = "http://www.ebay.com";
   public static final String SOJ_TAGS = "sojTags";
   public static final String[] TARGET_URL_PARMS = {"mpre", "loc", "url", "URL"};
 

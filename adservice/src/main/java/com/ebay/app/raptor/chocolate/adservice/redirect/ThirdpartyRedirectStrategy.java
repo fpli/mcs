@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice.redirect;
 
+import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,7 @@ public class ThirdpartyRedirectStrategy extends BaseRedirectStrategy {
   @Override
   public void generateRedirectUrl(MultiValueMap<String, String> parameters) {
     redirectionEvent.setRedirectSource("default");
-    redirectionEvent.setRedirectUrl(Constants.DEFAULT_REDIRECT_URL);
+    redirectionEvent.setRedirectUrl(ApplicationOptions.getInstance().getRedirectHomepage());
     // get loc parameter from request, if loc URL is valid, return it as redirect url
     // get loc URL
     String targetLocation = getTargetLocation(parameters);
