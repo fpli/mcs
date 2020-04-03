@@ -271,7 +271,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     mktEvent.setReferrer(request.getHeader("Referer"));
 
     // call marketing collection service to send ubi event async
-    builder.async().post(Entity.json(mktEvent), new MCSCallback());
+    // Stop writing to Soj per site tracking's ask. It's external.
+    // builder.async().post(Entity.json(mktEvent), new MCSCallback());
 
     try {
       boolean isAddMappingSuccess = idMapping.addMapping(adguid, guid, uid);
