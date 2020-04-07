@@ -167,7 +167,7 @@ public class CollectionService {
       logger.warn("Redirection runtime error: ", e);
     }
 
-    return new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
+    return new URIBuilder(ApplicationOptions.getInstance().getRedirectHomepage()).build();
   }
 
   /**

@@ -2,6 +2,7 @@ package com.ebay.app.raptor.chocolate.adservice.redirect;
 
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
+import com.ebay.app.raptor.chocolate.adservice.util.MCSCallback;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
@@ -28,6 +29,7 @@ import javax.ws.rs.core.Response;
 import java.net.*;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,8 +44,6 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   public RedirectionEvent redirectionEvent;
 
   private static final String REDIRECT_SERVER_DOMAIN = "www.ebayadservices.com";
-  private static final String[] TARGET_URL_PARMS = {"mpre", "loc", "url", "URL"};
-  private static final String MCS_SERVICE_NAME = "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46";
   private static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   private static final String REDIRECT_SRC_SOJ_TAG = "adcamp_locationsrc";
   private static final int REDIRECT_API_OFFSET = 3;
@@ -69,9 +69,12 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     // generate Redirect Url
     generateRedirectUrl(parameters);
 
-    // TODO: for the direction to ebay landing page, not sending event to mcs while redirection,
-    // TODO: and leverage the marketing tracking event for landing page which has mkevt
-    callMcs(request, parameters, mktClient, endpoint);
+    // check if target url is ebay domain
+    checkEbayDomain(redirectionEvent.getRedirectUrl(), parameters);
+
+    if (!redirectionEvent.getIsEbayDomain()) {
+      callMcs(request, parameters, mktClient, endpoint);
+    }
 
     return new URIBuilder(redirectionEvent.getRedirectUrl()).build();
   }
@@ -117,7 +120,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
    */
   public String getTargetLocation(MultiValueMap<String, String> parameters) {
     String result = null;
-    for (String targetUrlParm : TARGET_URL_PARMS) {
+    for (String targetUrlParm : Constants.TARGET_URL_PARMS) {
       // get target location
       if (parameters.containsKey(targetUrlParm)) {
         result = parameters.get(targetUrlParm).get(0);
@@ -137,7 +140,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     // build mcs target url, add all original parameter for ubi events except target url parameter
     URIBuilder uriBuilder = new URIBuilder(redirectionEvent.getRedirectUrl());
     for (String paramter : parameters.keySet()) {
-      if (!Arrays.asList(TARGET_URL_PARMS).contains(paramter)) {
+      if (!Arrays.asList(Constants.TARGET_URL_PARMS).contains(paramter)) {
         uriBuilder.addParameter(paramter, parameters.get(paramter).get(0));
       }
     }
@@ -168,8 +171,40 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
         .header("X-EBAY-C-TRACKING", constructCookieHeader());
 
     // call MCS
-    Response ress = builder.post(Entity.json(mktEvent));
-    ress.close();
+    builder.async().post(Entity.json(mktEvent), new MCSCallback());
+  }
+
+  /**
+   * If the target url is ebay domain, then don't call mcs and add all parameters to target url
+   * Let the landing page send click events to mcs
+   */
+  private void checkEbayDomain(String redirectUrl, MultiValueMap<String, String> parameters) {
+    // 3rd party
+    if (!ebaysites.matcher(redirectUrl.toLowerCase()).find()) {
+      redirectionEvent.setIsEbayDomain(false);
+    }
+    // ebay page
+    else {
+      redirectionEvent.setIsEbayDomain(true);
+
+      // add all parameters except landing page parameter to the target url
+      try {
+        URIBuilder uriBuilder = new URIBuilder(redirectUrl);
+
+        Set<String> keySet = parameters.keySet();
+        for (String key : keySet) {
+          if (Arrays.asList(Constants.TARGET_URL_PARMS).contains(key)) {
+            continue;
+          }
+          uriBuilder.addParameter(key, parameters.getFirst(key));
+        }
+
+        redirectionEvent.setRedirectUrl(uriBuilder.build().toString());
+      } catch (URISyntaxException e) {
+        logger.warn("Build redirect url fail", e);
+        redirectionEvent.setIsEbayDomain(false);
+      }
+    }
   }
 
   /**

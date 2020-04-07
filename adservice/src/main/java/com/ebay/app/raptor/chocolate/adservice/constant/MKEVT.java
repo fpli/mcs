@@ -9,20 +9,20 @@ package com.ebay.app.raptor.chocolate.adservice.constant;
  * @since 2019/10/30
  */
 public enum MKEVT {
-  MARKETING_EVENT(1),
-  IMPRESSION(2),
-  VIEWABLE_IMPRESSION(3),
-  EMAIL_OPEN(4),
-  NOTIFICATION(5),
-  AD_REQUEST(6);
+  MARKETING_EVENT("1"),
+  IMPRESSION("2"),
+  VIEWABLE_IMPRESSION("3"),
+  EMAIL_OPEN("4"),
+  NOTIFICATION("5"),
+  AD_REQUEST("6");
 
-  private final int id;
+  private final String id;
 
-  MKEVT(final int id) {
+  MKEVT(final String id) {
     this.id = id;
   }
 
-  public int getId() {
+  public String getId() {
     return id;
   }
 }

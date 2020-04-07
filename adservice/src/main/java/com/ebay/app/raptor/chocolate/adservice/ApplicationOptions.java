@@ -38,6 +38,11 @@ public class ApplicationOptions extends AbstractApplicationOptions {
   static final String IS_SECURE_COOKIE = "chocolate.adservice.cookie.secure";
 
   /**
+   * Redirect default page
+   */
+  private static final String REDIRECT_HOMEPAGE = "chocolate.adservice.redirect.homepage";
+
+  /**
    * Static driver ID
    */
   static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
@@ -109,5 +114,9 @@ public class ApplicationOptions extends AbstractApplicationOptions {
 
   public boolean isSecureCookie() {
     return Boolean.valueOf(ApplicationOptionsParser.getStringProperty(properties, IS_SECURE_COOKIE));
+  }
+
+  public String getRedirectHomepage() {
+    return ApplicationOptionsParser.getStringProperty(properties, REDIRECT_HOMEPAGE);
   }
 }

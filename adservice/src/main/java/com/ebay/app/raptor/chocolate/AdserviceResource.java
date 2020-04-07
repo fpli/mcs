@@ -1,14 +1,13 @@
 package com.ebay.app.raptor.chocolate;
 
 
+import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
-import com.ebay.app.raptor.chocolate.adservice.util.AdserviceCookie;
-import com.ebay.app.raptor.chocolate.adservice.util.ImageResponseHandler;
-import com.ebay.app.raptor.chocolate.adservice.util.MCSCallback;
-import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
+import com.ebay.app.raptor.chocolate.adservice.constant.MKEVT;
+import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.gen.api.*;
@@ -26,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
@@ -44,8 +44,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.util.Enumeration;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -223,7 +222,33 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     adserviceCookie.setAdguid(request, response);
     URI redirectUri = null;
     try {
-      redirectUri = new URIBuilder(Constants.DEFAULT_REDIRECT_URL).build();
+      // assign home page as default redirect url
+      URIBuilder uriBuilder = new URIBuilder(ApplicationOptions.getInstance().getRedirectHomepage());
+      // add all parameters except landing page parameter to the home page
+      MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
+      // make sure mkevt=1 to let home page go to mcs
+      // no mkevt, then add mkevt=1
+      if (!parameters.containsKey(Constants.MKEVT)) {
+        parameters.add(Constants.MKEVT, MKEVT.MARKETING_EVENT.getId());
+      }
+      // invalid mkevt or empty mkevt, then correct it
+      if (parameters.getFirst(Constants.MKEVT) == null ||
+          !MKEVT.MARKETING_EVENT.getId().equals(parameters.getFirst(Constants.MKEVT))) {
+        Map<String, String> mkevtParam = new HashMap<>();
+        mkevtParam.put(Constants.MKEVT, MKEVT.MARKETING_EVENT.getId());
+        parameters.setAll(mkevtParam);
+      }
+      Set<String> keySet = parameters.keySet();
+      for (String key : keySet) {
+        if (Arrays.asList(Constants.TARGET_URL_PARMS).contains(key)) {
+          continue;
+        }
+        uriBuilder.addParameter(key, parameters.getFirst(key));
+      }
+
+      redirectUri = uriBuilder.build();
+
+      // get redirect url
       redirectUri = collectionService.collectRedirect(request, requestContext, mktClient, endpoint);
     } catch (Exception e) {
       // When exception happen, redirect to www.ebay.com
