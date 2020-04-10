@@ -126,18 +126,20 @@ public class CollectionServiceUtil {
     }
 
     // append payload fields into URI
-    for (String key : payloadMap.keySet()) {
+    for (Map.Entry<String, String> entry : payloadMap.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
       // If the value in payload is null, don't append the fields into url
-      if (payloadMap.get(key) != null) {
+      if (value != null) {
         // If payload key is mpuid, query will not encode its value, the reason is that
         // MPUID will be used in imkETL process to parse item_id and transaction_id, imkETL process will not decode
         // our query. So if MPUID is encoded in this place, it will cause split error in imkETL
         if (key.equalsIgnoreCase(MPUID)) {
-          queryString = String.format("%s&%s=%s", queryString, key, payloadMap.get(key));
+          queryString = String.format("%s&%s=%s", queryString, key, value);
         } else {
           // Other fields in payload will be encode for avoiding invalid character cause rvr_url parse error
           queryString = String.format("%s&%s=%s", queryString, URLEncoder.encode(key, "UTF-8"),
-              URLEncoder.encode(payloadMap.get(key), "UTF-8"));
+              URLEncoder.encode(value, "UTF-8"));
         }
       }
     }
