@@ -466,7 +466,6 @@ public class CollectionService {
       metrics.meter(Errors.ERROR_NO_REFERER);
       referer = "";
     }
-
     // decode referer if necessary
     if(referer.startsWith("https%3A%2F%2") || referer.startsWith("http%3A%2F%2")) {
       referer = URLDecoder.decode( referer, "UTF-8" );
