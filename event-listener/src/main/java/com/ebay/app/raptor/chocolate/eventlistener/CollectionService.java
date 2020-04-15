@@ -54,6 +54,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.ebay.app.raptor.chocolate.eventlistener.constant.Constants.REFERRER;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 
 /**
@@ -257,11 +258,11 @@ public class CollectionService {
       }
 
       MultiValueMap<String, String> deeplinkParameters = deeplinkUriComponents.getQueryParams();
-      if (deeplinkParameters.size() == 0 || !deeplinkParameters.containsKey(Constants.REFERRER)) {
+      if (deeplinkParameters.size() == 0 || !deeplinkParameters.containsKey(REFERRER)) {
         logError(Errors.ERROR_NO_TARGET_URL_DEEPLINK);
       }
 
-      String deeplinkTargetUrl = deeplinkParameters.get(Constants.REFERRER).get(0);
+      String deeplinkTargetUrl = deeplinkParameters.get(REFERRER).get(0);
 
       try {
         if(deeplinkTargetUrl.startsWith("https%3A%2F%2") || deeplinkTargetUrl.startsWith("http%3A%2F%2")) {
@@ -454,6 +455,23 @@ public class CollectionService {
     }
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
 
+    // we get referer from payload field
+    String referer = null;
+    if (payloadMap.containsKey(REFERRER)) {
+      referer = payloadMap.get(REFERRER);
+    }
+
+    if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
+      logger.warn(Errors.ERROR_NO_REFERER);
+      metrics.meter(Errors.ERROR_NO_REFERER);
+      referer = "";
+    }
+
+    // decode referer if necessary
+    if(referer.startsWith("https%3A%2F%2") || referer.startsWith("http%3A%2F%2")) {
+      referer = URLDecoder.decode( referer, "UTF-8" );
+    }
+
     // If the soucre is checkout, write roi event tags to ubi
     if (payloadMap.containsKey(ROI_SOURCE)
         && payloadMap.get(ROI_SOURCE).equals(String.valueOf(RoiSourceEnum.CHECKOUT_SOURCE.getId()))) {
@@ -461,7 +479,7 @@ public class CollectionService {
     }
 
     // Write roi event to kafka output topic
-    boolean processFlag = processROIEvent(requestContext, targetUrl, "", parameters, ChannelIdEnum.ROI,
+    boolean processFlag = processROIEvent(requestContext, targetUrl, referer, parameters, ChannelIdEnum.ROI,
         ChannelActionEnum.ROI, request, startTime, endUserContext, raptorSecureContext);
 
     if (processFlag) {
