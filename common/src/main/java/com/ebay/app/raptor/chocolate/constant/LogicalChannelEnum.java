@@ -51,9 +51,14 @@ public enum LogicalChannelEnum {
   MRKT_EMAIL(ChannelType.MRKT_EMAIL, ChannelActionEnum.CLICK, ChannelActionEnum.EMAIL_OPEN),
 
   /**
-   * SMS channel
+   * Marketing SMS channel
    */
-  SMS(ChannelType.SMS, ChannelActionEnum.CLICK),
+  MRKT_SMS(ChannelType.MRKT_SMS, ChannelActionEnum.CLICK),
+
+  /**
+   * Site SMS channel
+   */
+  SITE_SMS(ChannelType.SITE_SMS, ChannelActionEnum.CLICK),
 
   /**
    * ROI channel

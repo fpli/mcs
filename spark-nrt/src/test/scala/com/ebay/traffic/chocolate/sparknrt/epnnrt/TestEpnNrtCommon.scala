@@ -382,12 +382,17 @@ class TestEpnNrtCommon extends BaseFunSuite{
     val roverUri = "http://rover.qa.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1"
     val mcsUri = "https://www.ebay.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556"
     val adserviceUri = "https://www.ebayadservices.com/marketingtracking/v1/impression?mkevt=2&mkcid=1&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&additional=chaotest"
+    val invalidUri = "ebay"
+
     val roverRotation = epnNrtCommon.getRelatedInfoFromUri(roverUri, 3, "mkrid")
     val mcsRotation = epnNrtCommon.getRelatedInfoFromUri(mcsUri, 3, "mkrid")
     val adserviceRotation = epnNrtCommon.getRelatedInfoFromUri(adserviceUri, 3, "mkrid")
+    val invalidRotation = epnNrtCommon.getRelatedInfoFromUri(invalidUri, 3, "mkrid")
+
     assert(roverRotation == "711-53200-19255-0")
     assert(mcsRotation == "4080-157294-765411-6")
     assert(adserviceRotation == "711-1245-1245-235")
+    assert(invalidRotation == "")
   }
 
   test("test get channel id from channel type") {

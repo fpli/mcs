@@ -367,7 +367,7 @@ public class CollectionService {
       processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
       processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
-    else if (channelType == ChannelIdEnum.SMS)
+    else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS)
       processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
