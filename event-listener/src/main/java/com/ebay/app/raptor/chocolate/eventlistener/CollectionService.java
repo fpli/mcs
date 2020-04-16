@@ -455,9 +455,10 @@ public class CollectionService {
     }
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
 
-    // we get referer from payload field
-    String referer = null;
-    if (payloadMap.containsKey(REFERRER)) {
+    // we get referer from header or payload field,
+    // first we get it from header, if it null, read payload
+    String referer = endUserContext.getReferer();;
+    if (StringUtils.isEmpty(referer) && payloadMap.containsKey(REFERRER)) {
       referer = payloadMap.get(REFERRER);
     }
 
