@@ -370,7 +370,7 @@ public class RoverRheosTopicFilterTask extends Thread {
         metrics.meter(metricRheosSentLatency, latencyOfRheosSentTimestamp, Field.of("channelType",
             record.getChannelType().toString()));
         // if latency is larger than 1 hour log specifically to another metric
-        String delayLogFormat = "snapshort_id=%d, short_snapshort_id=%d, current_ts=%d, event_ts=%d, rheos_create_ts=%d, rheos_sent_ts=%d, rheosEvent=%d";
+        String delayLogFormat = "snapshort_id=%d, short_snapshort_id=%d, current_ts=%d, event_ts=%d, rheos_create_ts=%d, rheos_sent_ts=%d, rheosEvent=%s";
         if(latencyOfMessage > ONE_HOUR) {
           metrics.meter(metricMessageLatencyCritical, latencyOfMessage, Field.of("channelType",
               record.getChannelType().toString()));
