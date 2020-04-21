@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
@@ -50,7 +51,6 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static final String INCOMING_PAGE_ROI = "IncomingPageRoi";
   private static final String INCOMING_PAGE_ROVERNS = "IncomingPageRoverNS";
   private static final String INCOMING_PAGE_NATURAL_SEARCH = "IncomingPageNaturalSearch";
-
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
   private static Pattern missingRoverClicksPattern = Pattern.compile("^\\/rover\\/.*\\/.*\\/1\\?.*rvrhostname=.*",
@@ -187,7 +187,6 @@ public class RoverRheosTopicFilterTask extends Thread {
     record.setSnapshotId(snapshotId);
     ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId());
     record.setShortSnapshotId(shortSnapshotId.getRepresentation());
-
   }
 
   /**
@@ -303,7 +302,8 @@ public class RoverRheosTopicFilterTask extends Thread {
 
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
-      } else if(pageId == 3086) {
+      }
+      else if(pageId == 3086) {
         ESMetrics.getInstance().meter(INCOMING_PAGE_ROI);
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.ROI);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
@@ -339,6 +339,18 @@ public class RoverRheosTopicFilterTask extends Thread {
 
         record.setCampaignId(-1L);
         record.setPublisherId(-1L);
+
+        // record roi latency in mcs
+        long latency = System.currentTimeMillis() - record.getTimestamp();
+        ESMetrics.getInstance().meter("MCSConsumePulsarLatency", latency, Field.of("channelType",
+            record.getChannelType().toString()));
+        // if latency is larger than 1 hour log specifically to another metric
+        if(latency > 1000 * 60 * 60) {
+          ESMetrics.getInstance().meter("MCSConsumePulsarLatencyCritical", latency, Field.of("channelType",
+              record.getChannelType().toString()));
+        }
+
+
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
       }
         else if(pageId == 3085) {
