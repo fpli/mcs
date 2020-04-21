@@ -381,7 +381,7 @@ public class RoverRheosTopicFilterTask extends Thread {
               rheosSentTimestamp));
         }
         if(latencyOfRheosCreateTimestamp > ONE_HOUR) {
-          metrics.meter(metricRheosCreateLatencyCritical, latencyOfMessage, Field.of("channelType",
+          metrics.meter(metricRheosCreateLatencyCritical, latencyOfRheosCreateTimestamp, Field.of("channelType",
               record.getChannelType().toString()));
           logger.warn(String.format(metricRheosCreateLatencyCritical + ": " + delayLogFormat,
               record.getSnapshotId(),
@@ -392,7 +392,7 @@ public class RoverRheosTopicFilterTask extends Thread {
               rheosSentTimestamp));
         }
         if(latencyOfRheosSentTimestamp > ONE_HOUR) {
-          metrics.meter(metricRheosSentLatencyCritical, latencyOfMessage, Field.of("channelType",
+          metrics.meter(metricRheosSentLatencyCritical, latencyOfRheosSentTimestamp, Field.of("channelType",
               record.getChannelType().toString()));
           logger.warn(String.format(metricRheosSentLatencyCritical + ": " + delayLogFormat,
               record.getSnapshotId(),
