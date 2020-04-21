@@ -344,36 +344,64 @@ public class RoverRheosTopicFilterTask extends Thread {
         record.setPublisherId(-1L);
 
         long currentTimestamp = System.currentTimeMillis();
+        long eventTimestamp = record.getTimestamp();
+        long rheosCreateTimestamp = consumerRecord.value().getEventCreateTimestamp();
+        long rheosSentTimestamp = consumerRecord.value().getEventSentTimestamp();
+
+        String metricMessageLatency = "MCSConsumePulsarMessageLatency";
+        String metricRheosCreateLatency = "MCSConsumePulsarRheosCreateLatency";
+        String metricRheosSentLatency = "MCSConsumePulsarRheosSentLatency";
+        String metricMessageLatencyCritical = "MCSConsumePulsarMessageLatencyCritical";
+        String metricRheosCreateLatencyCritical = "MCSConsumePulsarRheosCreateLatencyCritical";
+        String metricRheosSentLatencyCritical = "MCSConsumePulsarRheosSentLatencyCritical";
 
         // record roi latency in mcs
-        long latencyOfMessage = currentTimestamp - record.getTimestamp();
+        long latencyOfMessage = currentTimestamp - eventTimestamp;
         // rheos event create timestamp diff
-        long latencyOfRheosCreateTimestamp = currentTimestamp - consumerRecord.value().getEventCreateTimestamp();
+        long latencyOfRheosCreateTimestamp = currentTimestamp - rheosCreateTimestamp;
         // rheos event sent timestamp diff
-        long latencyOfRheosSentTimestamp = currentTimestamp - consumerRecord.value().getEventSentTimestamp();
-        metrics.meter("MCSConsumePulsarMessageLatency", latencyOfMessage, Field.of("channelType",
+        long latencyOfRheosSentTimestamp = currentTimestamp - rheosSentTimestamp;
+        metrics.meter(metricMessageLatency, latencyOfMessage, Field.of("channelType",
             record.getChannelType().toString()));
-        metrics.meter("MCSConsumePulsarRheosCreateLatency", latencyOfRheosCreateTimestamp, Field.of("channelType",
+        metrics.meter(metricRheosCreateLatency, latencyOfRheosCreateTimestamp, Field.of("channelType",
             record.getChannelType().toString()));
-        metrics.meter("MCSConsumePulsarRheosSentLatency", latencyOfRheosSentTimestamp, Field.of("channelType",
+        metrics.meter(metricRheosSentLatency, latencyOfRheosSentTimestamp, Field.of("channelType",
             record.getChannelType().toString()));
         // if latency is larger than 1 hour log specifically to another metric
+        String delayLogFormat = "snapshort_id=%d, short_snapshort_id=%d, current_ts=%d, event_ts=%d, rheos_create_ts=%d, rheos_sent_ts=%d";
         if(latencyOfMessage > ONE_HOUR) {
-          metrics.meter("MCSConsumePulsarMessageLatencyCritical", latencyOfMessage, Field.of("channelType",
+          metrics.meter(metricMessageLatencyCritical, latencyOfMessage, Field.of("channelType",
               record.getChannelType().toString()));
+          logger.warn(String.format(metricMessageLatencyCritical + ": " + delayLogFormat,
+              record.getSnapshotId(),
+              record.getShortSnapshotId(),
+              currentTimestamp,
+              eventTimestamp,
+              rheosCreateTimestamp,
+              rheosSentTimestamp));
         }
         if(latencyOfRheosCreateTimestamp > ONE_HOUR) {
-          metrics.meter("MCSConsumePulsarRheosCreateLatencyCritical", latencyOfMessage, Field.of("channelType",
+          metrics.meter(metricRheosCreateLatencyCritical, latencyOfMessage, Field.of("channelType",
               record.getChannelType().toString()));
+          logger.warn(String.format(metricRheosCreateLatencyCritical + ": " + delayLogFormat,
+              record.getSnapshotId(),
+              record.getShortSnapshotId(),
+              currentTimestamp,
+              eventTimestamp,
+              rheosCreateTimestamp,
+              rheosSentTimestamp));
         }
         if(latencyOfRheosSentTimestamp > ONE_HOUR) {
-          metrics.meter("MCSConsumePulsarRheosSentLatencyCritical", latencyOfMessage, Field.of("channelType",
+          metrics.meter(metricRheosSentLatencyCritical, latencyOfMessage, Field.of("channelType",
               record.getChannelType().toString()));
+          logger.warn(String.format(metricRheosSentLatencyCritical + ": " + delayLogFormat,
+              record.getSnapshotId(),
+              record.getShortSnapshotId(),
+              currentTimestamp,
+              eventTimestamp,
+              rheosCreateTimestamp,
+              rheosSentTimestamp));
         }
-
-
-        consumerRecord.value().getEventCreateTimestamp()
-
 
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
       }
