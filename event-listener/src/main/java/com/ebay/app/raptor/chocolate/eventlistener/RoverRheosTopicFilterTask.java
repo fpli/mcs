@@ -10,6 +10,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
+import com.ebay.traffic.monitoring.Metrics;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
@@ -51,6 +52,8 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static final String INCOMING_PAGE_ROI = "IncomingPageRoi";
   private static final String INCOMING_PAGE_ROVERNS = "IncomingPageRoverNS";
   private static final String INCOMING_PAGE_NATURAL_SEARCH = "IncomingPageNaturalSearch";
+  private static final long ONE_HOUR = 1000 * 60 * 60;
+  private static final Metrics metrics = ESMetrics.getInstance();
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
   private static Pattern missingRoverClicksPattern = Pattern.compile("^\\/rover\\/.*\\/.*\\/1\\?.*rvrhostname=.*",
@@ -340,15 +343,36 @@ public class RoverRheosTopicFilterTask extends Thread {
         record.setCampaignId(-1L);
         record.setPublisherId(-1L);
 
+        long currentTimestamp = System.currentTimeMillis();
+
         // record roi latency in mcs
-        long latency = System.currentTimeMillis() - record.getTimestamp();
-        ESMetrics.getInstance().meter("MCSConsumePulsarLatency", latency, Field.of("channelType",
+        long latencyOfMessage = currentTimestamp - record.getTimestamp();
+        // rheos event create timestamp diff
+        long latencyOfRheosCreateTimestamp = currentTimestamp - consumerRecord.value().getEventCreateTimestamp();
+        // rheos event sent timestamp diff
+        long latencyOfRheosSentTimestamp = currentTimestamp - consumerRecord.value().getEventSentTimestamp();
+        metrics.meter("MCSConsumePulsarMessageLatency", latencyOfMessage, Field.of("channelType",
+            record.getChannelType().toString()));
+        metrics.meter("MCSConsumePulsarRheosCreateLatency", latencyOfRheosCreateTimestamp, Field.of("channelType",
+            record.getChannelType().toString()));
+        metrics.meter("MCSConsumePulsarRheosSentLatency", latencyOfRheosSentTimestamp, Field.of("channelType",
             record.getChannelType().toString()));
         // if latency is larger than 1 hour log specifically to another metric
-        if(latency > 1000 * 60 * 60) {
-          ESMetrics.getInstance().meter("MCSConsumePulsarLatencyCritical", latency, Field.of("channelType",
+        if(latencyOfMessage > ONE_HOUR) {
+          metrics.meter("MCSConsumePulsarMessageLatencyCritical", latencyOfMessage, Field.of("channelType",
               record.getChannelType().toString()));
         }
+        if(latencyOfRheosCreateTimestamp > ONE_HOUR) {
+          metrics.meter("MCSConsumePulsarRheosCreateLatencyCritical", latencyOfMessage, Field.of("channelType",
+              record.getChannelType().toString()));
+        }
+        if(latencyOfRheosSentTimestamp > ONE_HOUR) {
+          metrics.meter("MCSConsumePulsarRheosSentLatencyCritical", latencyOfMessage, Field.of("channelType",
+              record.getChannelType().toString()));
+        }
+
+
+        consumerRecord.value().getEventCreateTimestamp()
 
 
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
