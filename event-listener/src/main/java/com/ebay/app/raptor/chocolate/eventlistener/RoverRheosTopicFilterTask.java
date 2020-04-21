@@ -362,7 +362,7 @@ public class RoverRheosTopicFilterTask extends Thread {
         // rheos event sent timestamp diff
         long latencyOfRheosSentTimestamp = currentTimestamp - rheosSentTimestamp;
         // rheos internal timestamps
-        String rheosInternalTimestamps = coalesce(applicationPayload.get(new Utf8("rheosTimestamps")), empty).toString();
+        String rheosEventInString = consumerRecord.value().toString();
         metrics.meter(metricMessageLatency, latencyOfMessage, Field.of("channelType",
             record.getChannelType().toString()));
         metrics.meter(metricRheosCreateLatency, latencyOfRheosCreateTimestamp, Field.of("channelType",
@@ -370,10 +370,11 @@ public class RoverRheosTopicFilterTask extends Thread {
         metrics.meter(metricRheosSentLatency, latencyOfRheosSentTimestamp, Field.of("channelType",
             record.getChannelType().toString()));
         // if latency is larger than 1 hour log specifically to another metric
-        String delayLogFormat = "snapshort_id=%d, short_snapshort_id=%d, current_ts=%d, event_ts=%d, rheos_create_ts=%d, rheos_sent_ts=%d, rheos_internal_ts=%d";
+        String delayLogFormat = "snapshort_id=%d, short_snapshort_id=%d, current_ts=%d, event_ts=%d, rheos_create_ts=%d, rheos_sent_ts=%d, rheosEvent=%d";
         if(latencyOfMessage > ONE_HOUR) {
           metrics.meter(metricMessageLatencyCritical, latencyOfMessage, Field.of("channelType",
               record.getChannelType().toString()));
+
           logger.warn(String.format(metricMessageLatencyCritical + ": " + delayLogFormat,
               record.getSnapshotId(),
               record.getShortSnapshotId(),
@@ -381,7 +382,7 @@ public class RoverRheosTopicFilterTask extends Thread {
               eventTimestamp,
               rheosCreateTimestamp,
               rheosSentTimestamp,
-              rheosInternalTimestamps));
+              rheosEventInString));
         }
         if(latencyOfRheosCreateTimestamp > ONE_HOUR) {
           metrics.meter(metricRheosCreateLatencyCritical, latencyOfRheosCreateTimestamp, Field.of("channelType",
@@ -393,7 +394,7 @@ public class RoverRheosTopicFilterTask extends Thread {
               eventTimestamp,
               rheosCreateTimestamp,
               rheosSentTimestamp,
-              rheosInternalTimestamps));
+              rheosEventInString));
         }
         if(latencyOfRheosSentTimestamp > ONE_HOUR) {
           metrics.meter(metricRheosSentLatencyCritical, latencyOfRheosSentTimestamp, Field.of("channelType",
@@ -405,7 +406,7 @@ public class RoverRheosTopicFilterTask extends Thread {
               eventTimestamp,
               rheosCreateTimestamp,
               rheosSentTimestamp,
-              rheosInternalTimestamps));
+              rheosEventInString));
         }
 
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
