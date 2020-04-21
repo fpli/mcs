@@ -9,6 +9,8 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
+import com.ebay.traffic.monitoring.Metrics;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
@@ -50,7 +52,8 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static final String INCOMING_PAGE_ROI = "IncomingPageRoi";
   private static final String INCOMING_PAGE_ROVERNS = "IncomingPageRoverNS";
   private static final String INCOMING_PAGE_NATURAL_SEARCH = "IncomingPageNaturalSearch";
-
+  private static final long ONE_HOUR = 1000 * 60 * 60;
+  private static final Metrics metrics = ESMetrics.getInstance();
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
   private static Pattern missingRoverClicksPattern = Pattern.compile("^\\/rover\\/.*\\/.*\\/1\\?.*rvrhostname=.*",
@@ -187,7 +190,6 @@ public class RoverRheosTopicFilterTask extends Thread {
     record.setSnapshotId(snapshotId);
     ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId());
     record.setShortSnapshotId(shortSnapshotId.getRepresentation());
-
   }
 
   /**
@@ -303,7 +305,8 @@ public class RoverRheosTopicFilterTask extends Thread {
 
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
-      } else if(pageId == 3086) {
+      }
+      else if(pageId == 3086) {
         ESMetrics.getInstance().meter(INCOMING_PAGE_ROI);
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.ROI);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
@@ -339,6 +342,67 @@ public class RoverRheosTopicFilterTask extends Thread {
 
         record.setCampaignId(-1L);
         record.setPublisherId(-1L);
+
+        long currentTimestamp = System.currentTimeMillis();
+        long eventTimestamp = record.getTimestamp();
+        long rheosCreateTimestamp = consumerRecord.value().getEventCreateTimestamp();
+        long rheosSentTimestamp = consumerRecord.value().getEventSentTimestamp();
+
+        String metricMessageLatency = "MCSConsumePulsarMessageLatency";
+        String metricRheosCreateLatency = "MCSConsumePulsarRheosCreateLatency";
+        String metricRheosSentLatency = "MCSConsumePulsarRheosSentLatency";
+        String metricMessageLatencyCritical = "MCSConsumePulsarMessageLatencyCritical";
+        String metricRheosCreateLatencyCritical = "MCSConsumePulsarRheosCreateLatencyCritical";
+        String metricRheosSentLatencyCritical = "MCSConsumePulsarRheosSentLatencyCritical";
+
+        // record roi latency in mcs
+        long latencyOfMessage = currentTimestamp - eventTimestamp;
+        // rheos event create timestamp diff
+        long latencyOfRheosCreateTimestamp = currentTimestamp - rheosCreateTimestamp;
+        // rheos event sent timestamp diff
+        long latencyOfRheosSentTimestamp = currentTimestamp - rheosSentTimestamp;
+        metrics.meter(metricMessageLatency, latencyOfMessage, Field.of("channelType",
+            record.getChannelType().toString()));
+        metrics.meter(metricRheosCreateLatency, latencyOfRheosCreateTimestamp, Field.of("channelType",
+            record.getChannelType().toString()));
+        metrics.meter(metricRheosSentLatency, latencyOfRheosSentTimestamp, Field.of("channelType",
+            record.getChannelType().toString()));
+        // if latency is larger than 1 hour log specifically to another metric
+        String delayLogFormat = "snapshort_id=%d, short_snapshort_id=%d, current_ts=%d, event_ts=%d, rheos_create_ts=%d, rheos_sent_ts=%d";
+        if(latencyOfMessage > ONE_HOUR) {
+          metrics.meter(metricMessageLatencyCritical, latencyOfMessage, Field.of("channelType",
+              record.getChannelType().toString()));
+          logger.warn(String.format(metricMessageLatencyCritical + ": " + delayLogFormat,
+              record.getSnapshotId(),
+              record.getShortSnapshotId(),
+              currentTimestamp,
+              eventTimestamp,
+              rheosCreateTimestamp,
+              rheosSentTimestamp));
+        }
+        if(latencyOfRheosCreateTimestamp > ONE_HOUR) {
+          metrics.meter(metricRheosCreateLatencyCritical, latencyOfRheosCreateTimestamp, Field.of("channelType",
+              record.getChannelType().toString()));
+          logger.warn(String.format(metricRheosCreateLatencyCritical + ": " + delayLogFormat,
+              record.getSnapshotId(),
+              record.getShortSnapshotId(),
+              currentTimestamp,
+              eventTimestamp,
+              rheosCreateTimestamp,
+              rheosSentTimestamp));
+        }
+        if(latencyOfRheosSentTimestamp > ONE_HOUR) {
+          metrics.meter(metricRheosSentLatencyCritical, latencyOfRheosSentTimestamp, Field.of("channelType",
+              record.getChannelType().toString()));
+          logger.warn(String.format(metricRheosSentLatencyCritical + ": " + delayLogFormat,
+              record.getSnapshotId(),
+              record.getShortSnapshotId(),
+              currentTimestamp,
+              eventTimestamp,
+              rheosCreateTimestamp,
+              rheosSentTimestamp));
+        }
+
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
       }
         else if(pageId == 3085) {
