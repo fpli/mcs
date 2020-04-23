@@ -114,7 +114,7 @@ public class EventListenerServiceTest {
       client = ClientBuilder.newClient(configuration);
       String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
       svcEndPoint = endpoint + ":" + port;
-
+      token = tokenGenerator.getToken().getAccessToken();
       prepareData();
       initialized = true;
     }
@@ -545,8 +545,6 @@ public class EventListenerServiceTest {
 
   @Test
   public void testEPNResource() throws Exception {
-    String token = tokenGenerator.getToken().getAccessToken();
-
     Event event = new Event();
     event.setReferrer("www.google.com");
     event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=1&mksid=2345123");
