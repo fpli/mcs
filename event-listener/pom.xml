@@ -272,11 +272,6 @@
       <artifactId>raptor-cos-token-starter</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-iaf-token-starter</artifactId>
-    </dependency>
-
     <!-- userctx related -->
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
