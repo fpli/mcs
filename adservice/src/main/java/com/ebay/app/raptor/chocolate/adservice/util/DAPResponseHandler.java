@@ -13,6 +13,7 @@ import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.constants.KernelConstants;
 import com.ebay.kernel.context.RuntimeContext;
+import com.ebay.kernel.presentation.UrlUtils;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.kernel.util.guid.Guid;
@@ -21,7 +22,6 @@ import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
@@ -40,18 +40,16 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
-import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.Future;
 
 /**
  * @author Zhiyuan Wang
@@ -130,7 +128,7 @@ public class DAPResponseHandler {
     setHLastLoggedInUserId(dapUriBuilder, hLastLoggedInUserId);
 
     // call dap to get response
-    MultivaluedMap<String, Object> dapResponseHeaders = callDAPResponse(dapUriBuilder.build().toString(), response);
+    MultivaluedMap<String, Object> dapResponseHeaders = callDAPResponse(dapUriBuilder.build().toString(), request, response);
 
     // send to mcs with cguid equal to guid
     if(StringUtils.isEmpty(guid)) {
@@ -523,7 +521,7 @@ public class DAPResponseHandler {
    * Call DAP interface and send response to browser
    */
   @SuppressWarnings("unchecked")
-  private MultivaluedMap<String, Object> callDAPResponse(String dapUri, HttpServletResponse response) {
+  private MultivaluedMap<String, Object> callDAPResponse(String dapUri, HttpServletRequest request, HttpServletResponse response) {
     MultivaluedMap<String, Object> headers = null;
     Configuration config = ConfigurationBuilder.newConfig("dapio.adservice");
     Client client = GingerClientBuilder.newClient(config);
@@ -531,32 +529,90 @@ public class DAPResponseHandler {
     String targetUri = endpoint + dapUri;
     LOGGER.info("call DAP {}", targetUri);
     long startTime = System.currentTimeMillis();
-    try (Response dapResponse = client.target(targetUri).request().get();
-         OutputStream os = response.getOutputStream()) {
-      int status = dapResponse.getStatus();
-      if (status == Response.Status.OK.getStatusCode()) {
-        headers = dapResponse.getHeaders();
-        response.setContentType("text/html;charset=UTF-8");
-        byte[] bytes = dapResponse.readEntity(byte[].class);
-        os.write(bytes);
-      } else {
-        LOGGER.error("Failed to call DAP {}", status);
-      }
-      ESMetrics.getInstance().meter("DAPStatus", 1, Field.of("status", status));
+    String body = null;
+    int status = -1;
+    try (Response dapResponse = client.target(targetUri).request().get()) {
+      status = dapResponse.getStatus();
+      body = getBody(dapResponse);
+      headers = dapResponse.getHeaders();
     } catch (Exception e) {
       LOGGER.error("Failed to call DAP {}", e.getMessage());
       ESMetrics.getInstance().meter("DAPException");
+    }
+
+    ESMetrics.getInstance().meter("DAPStatus", 1, Field.of("status", status));
+
+    if (status != Response.Status.OK.getStatusCode()) {
+      LOGGER.error("Failed to call DAP {}", status);
+      return headers;
+    }
+
+    String redirectUrl = headers == null ? null : (String) headers.getFirst(Headers.REDIRECT_URL);
+    if (redirectUrl != null && redirectUrl.trim().length() > 0) {
+      response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+      String reqContextType = request.getHeader(Headers.ACCEPT);
+      if (reqContextType != null && reqContextType.contains("image/")) {
+        response.setContentType("image/gif");
+      }
+      response.setHeader(Headers.CACHE_CONTROL, "private,no-cache,no-store");
+      String safeForRedirect = UrlUtils.makeSafeForRedirect(redirectUrl);
+      response.setHeader(Headers.LOCATION, safeForRedirect);
+      return headers;
+    }
+
+    String contentType = headers == null ? null : (String) headers.getFirst(Headers.CONTENT_TYPE);
+    try (OutputStream os = response.getOutputStream()) {
+      String encoding = StandardCharsets.UTF_8.name();
+      if (contentType != null && (contentType.contains(Headers.CHARSET))) {
+        int startIdx = contentType.indexOf(Headers.CHARSET) + Headers.CHARSET.length();
+        int searchidx = contentType.indexOf(Headers.SEMICOLON, startIdx);
+        // we may have multiple match points in the body for each of the search strings. Locate the closest one
+        if (searchidx >= 0) {
+          encoding = contentType.substring(startIdx, searchidx);
+        } else {
+          encoding = contentType.substring(startIdx);
+        }
+      }
+
+      if (body == null) {
+        body = StringConstants.EMPTY;
+      }
+      byte[] data = body.getBytes(encoding);
+      // Set content headers and then write content to response
+      response.setHeader(Headers.CACHE_CONTROL, "private, no-cache");
+      response.setHeader(Headers.PRAGMA, "no-cache");
+      response.setContentType(contentType != null ? contentType : Headers.CONTENT_TYPE_HTML);
+      response.setContentLength(data.length);
+      response.setStatus(HttpServletResponse.SC_OK);
+      os.write(data);
+    } catch (Exception e) {
+      LOGGER.error("Failed to send response {}", e.getMessage());
     }
 
     ESMetrics.getInstance().mean("DAPLatency", System.currentTimeMillis() - startTime);
     return headers;
   }
 
+  private String getBody(Response dapResponse) throws IOException {
+    String body;
+    InputStream is = (InputStream) dapResponse.getEntity();
+
+    StringBuilder sb = new StringBuilder();
+    String line;
+    try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+      while ((line = br.readLine()) != null) {
+        sb.append(line);
+      }
+    }
+    body = sb.toString();
+    return body;
+  }
+
   private String constructTrackingHeader(String rawCguid, String rawGuid) {
     String cookie = "";
-    if (!StringUtils.isEmpty(rawGuid))
+    if (!StringUtils.isEmpty(rawGuid)) {
       cookie += "guid=" + rawGuid;
-    else {
+    } else {
       try {
         cookie += "guid=" + new Guid().nextPaddedGUID();
       } catch (UnknownHostException e) {
@@ -565,9 +621,9 @@ public class DAPResponseHandler {
       }
       LOGGER.warn("No guid");
     }
-    if (!StringUtils.isEmpty(rawCguid))
+    if (!StringUtils.isEmpty(rawCguid)) {
       cookie += ",cguid=" + rawCguid;
-    else {
+    } else {
       LOGGER.warn("No cguid");
     }
 
