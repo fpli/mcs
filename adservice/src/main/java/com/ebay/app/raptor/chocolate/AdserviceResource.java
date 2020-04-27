@@ -3,10 +3,7 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
-import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
-import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
-import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
-import com.ebay.app.raptor.chocolate.adservice.constant.MKEVT;
+import com.ebay.app.raptor.chocolate.adservice.constant.*;
 import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -131,7 +128,15 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     try {
       adserviceCookie.setAdguid(request, response);
       collectionService.collectAr(request, response, requestContext);
-      res = Response.status(Response.Status.OK).build();
+      if (HttpServletResponse.SC_MOVED_PERMANENTLY == response.getStatus()) {
+        Response.ResponseBuilder responseBuilder = Response.status(Response.Status.MOVED_PERMANENTLY);
+        for (String headerName : response.getHeaderNames()) {
+          responseBuilder.header(headerName, response.getHeader(headerName));
+        }
+        res = responseBuilder.build();
+      } else {
+        res = Response.status(Response.Status.OK).build();
+      }
     } catch (Exception e) {
       logger.warn(e.getMessage(), e);
       try {
