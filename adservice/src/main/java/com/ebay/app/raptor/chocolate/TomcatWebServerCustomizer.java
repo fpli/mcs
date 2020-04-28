@@ -23,12 +23,8 @@ public class TomcatWebServerCustomizer
 
   @Override
   public void customize(TomcatServletWebServerFactory factory) {
-    Map<String, String> hashMap = new HashMap<>();
-    for (String o : hashMap.keySet()) {
-      String value = hashMap.get(o);
-      System.out.println(o + value);
-    }
     factory.addConnectorCustomizers(connector -> {
+      connector.setScheme("https");
       connector.setAttribute("relaxedPathChars", "<>[\\]^`{|}");
       connector.setAttribute("relaxedQueryChars", "<>[\\]^`{|}");
     });
