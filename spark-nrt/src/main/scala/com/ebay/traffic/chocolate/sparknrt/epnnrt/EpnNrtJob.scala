@@ -105,8 +105,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           //if the dataframe is empty, just continue
           if (df.take(1).isEmpty)
             break
-          // do not repartition to improve read performance. no need to shuffle here. if input is too large, it reduces the performance.
-          //df = df.repartition(properties.getProperty("epnnrt.repartition").toInt)
+          df = df.repartition(properties.getProperty("epnnrt.repartition").toInt)
           val epnNrtCommon = new EpnNrtCommon(params, df)
           logger.info("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
 
@@ -124,11 +123,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           df = df.filter(epnNrtCommon.filter_longterm_ebaysites_ref_udf(col("uri"), col("referer")))
 
           // filter click and impression data, and if there is filterTime, filter the data older than filter time
-          // repartition click only to increase the parallism
           var df_click = df.filter(col("channel_action") === "CLICK")
-            .repartition(properties.getProperty("epnnrt.repartition").toInt)
-            .cache()
-          // no need repartition on impression as the logic in impression is just simply save them
           var df_impression = df.filter(col("channel_action") === "IMPRESSION")
 
           val debug = properties.getProperty("epnnrt.debug").toBoolean
