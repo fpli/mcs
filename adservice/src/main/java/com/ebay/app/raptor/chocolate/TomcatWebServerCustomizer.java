@@ -1,11 +1,16 @@
 package com.ebay.app.raptor.chocolate;
 
 
+import org.apache.catalina.connector.Connector;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,16 +22,20 @@ import java.util.Map;
  * @author Zhiyuan Wang
  * @since 2020/4/7
  */
-@Component
 public class TomcatWebServerCustomizer
-        implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
+        implements WebServerFactoryCustomizer<TomcatServletWebServerFactory>, Ordered {
 
   @Override
   public void customize(TomcatServletWebServerFactory factory) {
-    factory.addConnectorCustomizers(connector -> {
-      connector.setScheme("https");
-      connector.setAttribute("relaxedPathChars", "<>[\\]^`{|}");
-      connector.setAttribute("relaxedQueryChars", "<>[\\]^`{|}");
-    });
+	  List<Connector> connectors = factory.getAdditionalTomcatConnectors();
+	  for (Connector connector : connectors) {
+		  connector.setAttribute("relaxedPathChars", "<>[\\]^`{|}");
+		  connector.setAttribute("relaxedQueryChars", "<>[\\]^`{|}");
+	}
+  }
+
+  @Override
+  public int getOrder() {
+	return 5001;
   }
 }
