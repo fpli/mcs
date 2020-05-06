@@ -323,7 +323,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     }
 
     val fileStatus = fs.listStatus(new Path(sparkDir))
-    val files = fileStatus.filter(status => status.getPath.getName != "_SUCCESS")
+    val files = fileStatus.filter(status => status.isFile && status.getPath.getName != "_SUCCESS")
       .zipWithIndex
       .map(swi => {
         val src = swi._1.getPath
