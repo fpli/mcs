@@ -175,7 +175,7 @@ public class FilterWorker extends Thread {
             // update consumer offset
             consumerListener.commitSync();
 
-            metrics.mean("flushLatency", System.currentTimeMillis() - flushStartTime);
+            metrics.mean("FlushLatency", System.currentTimeMillis() - flushStartTime);
 
             // reset threshold
             flushThreshold = 0;
