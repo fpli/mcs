@@ -110,7 +110,7 @@ public class DAPResponseHandler {
     boolean isMobile = isMobileUserAgent(userAgent);
     int siteId = getSiteId(requestContext);
 
-    LOGGER.info("dapRvrId: {} guid: {} accountId: {} referrer: {} remoteIp: {} " +
+    LOGGER.debug("dapRvrId: {} guid: {} accountId: {} referrer: {} remoteIp: {} " +
                     "lbsParameters: {} hLastLoggedInUserId: {} userAgent: {} uaPrime: {} isMobile: {} siteId: {}",
             dapRvrId, guid, accountId, referrer, remoteIp, lbsParameters,
             hLastLoggedInUserId, userAgent, uaPrime, isMobile, siteId);
@@ -531,7 +531,7 @@ public class DAPResponseHandler {
     Client client = GingerClientBuilder.newClient(config);
     String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
     String targetUri = endpoint + dapUri;
-    LOGGER.info("call DAP {}", targetUri);
+    LOGGER.debug("call DAP {}", targetUri);
     long startTime = System.currentTimeMillis();
     String body = null;
     int status = -1;
@@ -658,7 +658,7 @@ public class DAPResponseHandler {
     // construct X-EBAY-C-TRACKING header
     String trackingHeader = constructTrackingHeader(cguid, guid);
     builder = builder.header("X-EBAY-C-TRACKING", trackingHeader);
-    LOGGER.info("set MCS X-EBAY-C-TRACKING {}", trackingHeader);
+    LOGGER.debug("set MCS X-EBAY-C-TRACKING {}", trackingHeader);
 
     // add uri and referer to marketing event body
     MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
@@ -680,7 +680,7 @@ public class DAPResponseHandler {
     String referer = request.getHeader(Constants.REFERER);
     mktEvent.setReferrer(referer);
 
-    LOGGER.info("call MCS targetUrl {} referer {}", targetUrl, referer);
+    LOGGER.debug("call MCS targetUrl {} referer {}", targetUrl, referer);
 
     // async call mcs to record ubi
     builder.async().post(Entity.json(mktEvent));
