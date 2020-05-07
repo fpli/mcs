@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.spark.kafka
 
+import java.time.Duration
 import java.util
 import java.util.concurrent.TimeoutException
 
@@ -252,7 +253,7 @@ class KafkaRDD[K, V](
           consumer.seek(topicPartition, offset)
           reset = false
         }
-        val records = consumer.poll(timeout)
+        val records = consumer.poll(Duration.ofMillis(timeout))
         val iter = records.iterator()
         if (iter.hasNext) {
           result = iter.next
