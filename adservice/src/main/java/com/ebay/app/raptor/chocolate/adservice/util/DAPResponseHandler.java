@@ -498,7 +498,11 @@ public class DAPResponseHandler {
         return;
       }
       // skip unused parameters
-      if (key.equals(Constants.IPN) || key.equals(Constants.MPT) || key.equals("cguid") || key.equals("guid") || key.equals("rover_userid")) {
+      if (key.equals(Constants.IPN) || key.equals("cguid") || key.equals("guid") || key.equals("rover_userid")) {
+        return;
+      }
+      // skip marketing tracking parameters
+      if (key.equals(Constants.MKRID) || key.equals(Constants.MKCID) || key.equals(Constants.MKEVT)) {
         return;
       }
       if (ArrayUtils.isEmpty(values)) {
