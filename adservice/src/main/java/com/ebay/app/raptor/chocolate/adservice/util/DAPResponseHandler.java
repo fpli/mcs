@@ -97,6 +97,9 @@ public class DAPResponseHandler {
   public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext)
           throws URISyntaxException {
     ESMetrics.getInstance().meter("sendDAPResponse");
+
+    LOGGER.info("query string {}", request.getQueryString());
+
     long dapRvrId = getDAPRvrId();
     Map<String, String[]> params = request.getParameterMap();
     String guid = adserviceCookie.getGuid(request);
