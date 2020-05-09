@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MultivaluedMap;
@@ -687,7 +688,7 @@ public class DAPResponseHandler {
 
     ESMetrics.getInstance().meter("SendToMCSAsync");
     // async call mcs to record ubi
-    builder.async().post(Entity.json(mktEvent));
+    builder.async().post(Entity.json(mktEvent), new MCSCallback());
 
   }
 
