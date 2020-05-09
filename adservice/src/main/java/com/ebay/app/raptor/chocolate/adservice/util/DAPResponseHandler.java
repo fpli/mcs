@@ -95,6 +95,7 @@ public class DAPResponseHandler {
 
   public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext)
           throws URISyntaxException {
+    ESMetrics.getInstance().meter("sendDAPResponse");
     long dapRvrId = getDAPRvrId();
     Map<String, String[]> params = request.getParameterMap();
     String guid = adserviceCookie.getGuid(request);
@@ -553,6 +554,7 @@ public class DAPResponseHandler {
 
     String redirectUrl = headers == null ? null : (String) headers.getFirst(Headers.REDIRECT_URL);
     if (redirectUrl != null && redirectUrl.trim().length() > 0) {
+      ESMetrics.getInstance().meter("DAPRedirect");
       response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
       String reqContextType = request.getHeader(Headers.ACCEPT);
       if (reqContextType != null && reqContextType.contains("image/")) {
@@ -639,6 +641,7 @@ public class DAPResponseHandler {
    */
   @SuppressWarnings("unchecked")
   private void sendToMCS(HttpServletRequest request, long dapRvrId, String cguid, String guid, MultivaluedMap<String, Object> dapResponseHeaders) throws URISyntaxException {
+    ESMetrics.getInstance().meter("StartSendToMCS");
     Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
     Client mktClient = GingerClientBuilder.newClient(config);
     String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
@@ -680,8 +683,9 @@ public class DAPResponseHandler {
     String referer = request.getHeader(Constants.REFERER);
     mktEvent.setReferrer(referer);
 
-    LOGGER.debug("call MCS targetUrl {} referer {}", targetUrl, referer);
+    LOGGER.info("call MCS targetUrl {} referer {}", targetUrl, referer);
 
+    ESMetrics.getInstance().meter("SendToMCSAsync");
     // async call mcs to record ubi
     builder.async().post(Entity.json(mktEvent));
 
