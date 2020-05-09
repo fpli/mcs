@@ -688,7 +688,23 @@ public class DAPResponseHandler {
 
     ESMetrics.getInstance().meter("SendToMCSAsync");
     // async call mcs to record ubi
-    builder.async().post(Entity.json(mktEvent), new MCSCallback());
+    builder.async().post(Entity.json(mktEvent), new InvocationCallback<Response>() {
+      public void completed(Response response) {
+        if (response.getStatus() == Response.Status.CREATED.getStatusCode()
+                || response.getStatus() == Response.Status.OK.getStatusCode()) {
+          ESMetrics.getInstance().meter("AsyncCallMCSSuccess", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
+          LOGGER.debug("AsyncCallMCSSuccess {}", targetUrl);
+        } else {
+          ESMetrics.getInstance().meter("AsyncCallMCSFailed", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
+          LOGGER.info("AsyncCallMCSFailed {}", targetUrl);
+        }
+      }
+
+      public void failed(Throwable throwable) {
+        ESMetrics.getInstance().meter("AsyncCallMCSException", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
+        LOGGER.error("AsyncCallMCSFailed {}", targetUrl);
+      }
+    });
 
   }
 
