@@ -693,7 +693,7 @@ public class DAPResponseHandler {
         if (response.getStatus() == Response.Status.CREATED.getStatusCode()
                 || response.getStatus() == Response.Status.OK.getStatusCode()) {
           ESMetrics.getInstance().meter("AsyncCallMCSSuccess", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
-          LOGGER.debug("AsyncCallMCSSuccess");
+          LOGGER.debug("AsyncCallMCSSuccess {}", targetUrl);
         } else {
           ESMetrics.getInstance().meter("AsyncCallMCSFailed", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
           LOGGER.info("AsyncCallMCSFailed {}", targetUrl);
