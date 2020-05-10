@@ -670,7 +670,12 @@ public class DAPResponseHandler {
     // add uri and referer to marketing event body
     MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
 
-    URIBuilder targetUrlBuilder = new URIBuilder(new ServletServerHttpRequest(request).getURI());
+    URIBuilder targetUrlBuilder = new URIBuilder(request.getRequestURL().toString());
+    request.getParameterMap().forEach((key, values) -> {
+      for (String value : values) {
+        targetUrlBuilder.addParameter(key, value);
+      }
+    });
     // set mkevt as 6, overriding existing value if set
     targetUrlBuilder.setParameter(Constants.MKEVT, MKEVT.AD_REQUEST.getId());
     targetUrlBuilder.addParameter(Constants.MKRVRID, String.valueOf(dapRvrId));
