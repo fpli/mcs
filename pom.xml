@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.9.2-RELEASE</version>
+    <version>0.11.1-RELEASE</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.ebay.traffic</groupId>
@@ -28,8 +28,8 @@
     <parquet.version>1.8.2</parquet.version>
     <zookeeper.version>3.4.6</zookeeper.version>
     <curator.version>4.0.1</curator.version>
-    <couchbase.client.version>2.7.2</couchbase.client.version>
-    <dukes.version>1.5.1.raptorio</dukes.version>
+    <couchbase.client.version>2.7.11</couchbase.client.version>
+    <dukes.version>1.6.6.raptorio</dukes.version>
     <rheos.version>2.0.5-SNAPSHOT</rheos.version>
     <kafka.version>2.0.1</kafka.version>
     <metrics.version>1.2.5-RELEASE</metrics.version>
@@ -41,8 +41,8 @@
     <logback.kafkaAppender.version>0.1.0</logback.kafkaAppender.version>
     <logback.encoder.version>4.11</logback.encoder.version>
     <docker.image.prefix>hub.tess.io/raptorontess</docker.image.prefix>
-    <tracking.component.version>0.9.0-RELEASE</tracking.component.version>
-    <ddsclient.component.version>0.9.1-RELEASE</ddsclient.component.version>
+    <tracking.component.version>0.11.1-RELEASE</tracking.component.version>
+    <ddsclient.component.version>0.11.0-RELEASE</ddsclient.component.version>
   </properties>
 
   <modules>
