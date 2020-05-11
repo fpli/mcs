@@ -430,9 +430,13 @@ public class CollectionService {
 
     // Parse transId
     try {
-      long transId = Long.valueOf(roiEvent.getUniqueTransactionId());
-      if (transId < 0)
+      String transId = roiEvent.getUniqueTransactionId();
+      if (transId.equalsIgnoreCase("-0")) {
+        roiEvent.setUniqueTransactionId("0");
+      }
+      if (Long.parseLong(transId) < 0) {
         roiEvent.setUniqueTransactionId("");
+      }
     } catch (Exception e) {
       logger.warn("Error transactionId " + roiEvent.getUniqueTransactionId());
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
