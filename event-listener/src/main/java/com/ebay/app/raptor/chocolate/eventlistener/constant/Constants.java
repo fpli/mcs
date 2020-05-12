@@ -49,4 +49,7 @@ public class Constants {
   public static final String USER_NAME = "usrname";
   public static final String MC3_MSSG_ID = "mc3id";
 
+  // Redirection header name
+  public static final String NODE_REDIRECTION_HEADER_NAME = "x-ebay-tracking-marketing-status-code";
+
 }
