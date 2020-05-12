@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MultivaluedMap;
@@ -95,6 +96,10 @@ public class DAPResponseHandler {
 
   public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext)
           throws URISyntaxException {
+    ESMetrics.getInstance().meter("sendDAPResponse");
+
+    LOGGER.info("query string {}", request.getQueryString());
+
     long dapRvrId = getDAPRvrId();
     Map<String, String[]> params = request.getParameterMap();
     String guid = adserviceCookie.getGuid(request);
@@ -110,7 +115,7 @@ public class DAPResponseHandler {
     boolean isMobile = isMobileUserAgent(userAgent);
     int siteId = getSiteId(requestContext);
 
-    LOGGER.info("dapRvrId: {} guid: {} accountId: {} referrer: {} remoteIp: {} " +
+    LOGGER.debug("dapRvrId: {} guid: {} accountId: {} referrer: {} remoteIp: {} " +
                     "lbsParameters: {} hLastLoggedInUserId: {} userAgent: {} uaPrime: {} isMobile: {} siteId: {}",
             dapRvrId, guid, accountId, referrer, remoteIp, lbsParameters,
             hLastLoggedInUserId, userAgent, uaPrime, isMobile, siteId);
@@ -498,7 +503,11 @@ public class DAPResponseHandler {
         return;
       }
       // skip unused parameters
-      if (key.equals(Constants.IPN) || key.equals(Constants.MPT) || key.equals("cguid") || key.equals("guid") || key.equals("rover_userid")) {
+      if (key.equals(Constants.IPN) || key.equals("cguid") || key.equals("guid") || key.equals("rover_userid")) {
+        return;
+      }
+      // skip marketing tracking parameters
+      if (key.equals(Constants.MKRID) || key.equals(Constants.MKCID) || key.equals(Constants.MKEVT)) {
         return;
       }
       if (ArrayUtils.isEmpty(values)) {
@@ -527,7 +536,7 @@ public class DAPResponseHandler {
     Client client = GingerClientBuilder.newClient(config);
     String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
     String targetUri = endpoint + dapUri;
-    LOGGER.info("call DAP {}", targetUri);
+    LOGGER.debug("call DAP {}", targetUri);
     long startTime = System.currentTimeMillis();
     String body = null;
     int status = -1;
@@ -549,6 +558,7 @@ public class DAPResponseHandler {
 
     String redirectUrl = headers == null ? null : (String) headers.getFirst(Headers.REDIRECT_URL);
     if (redirectUrl != null && redirectUrl.trim().length() > 0) {
+      ESMetrics.getInstance().meter("DAPRedirect");
       response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
       String reqContextType = request.getHeader(Headers.ACCEPT);
       if (reqContextType != null && reqContextType.contains("image/")) {
@@ -635,6 +645,7 @@ public class DAPResponseHandler {
    */
   @SuppressWarnings("unchecked")
   private void sendToMCS(HttpServletRequest request, long dapRvrId, String cguid, String guid, MultivaluedMap<String, Object> dapResponseHeaders) throws URISyntaxException {
+    ESMetrics.getInstance().meter("StartSendToMCS");
     Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
     Client mktClient = GingerClientBuilder.newClient(config);
     String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
@@ -654,13 +665,19 @@ public class DAPResponseHandler {
     // construct X-EBAY-C-TRACKING header
     String trackingHeader = constructTrackingHeader(cguid, guid);
     builder = builder.header("X-EBAY-C-TRACKING", trackingHeader);
-    LOGGER.info("set MCS X-EBAY-C-TRACKING {}", trackingHeader);
+    LOGGER.debug("set MCS X-EBAY-C-TRACKING {}", trackingHeader);
 
     // add uri and referer to marketing event body
     MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
 
-    URIBuilder targetUrlBuilder = new URIBuilder(new ServletServerHttpRequest(request).getURI());
-    targetUrlBuilder.addParameter(Constants.MKEVT, MKEVT.AD_REQUEST.getId());
+    URIBuilder targetUrlBuilder = new URIBuilder(request.getRequestURL().toString());
+    request.getParameterMap().forEach((key, values) -> {
+      for (String value : values) {
+        targetUrlBuilder.addParameter(key, value);
+      }
+    });
+    // set mkevt as 6, overriding existing value if set
+    targetUrlBuilder.setParameter(Constants.MKEVT, MKEVT.AD_REQUEST.getId());
     targetUrlBuilder.addParameter(Constants.MKRVRID, String.valueOf(dapRvrId));
     // add flex fields of dap response headers, these fields start with "ff"
     if (dapResponseHeaders != null) {
@@ -677,8 +694,25 @@ public class DAPResponseHandler {
 
     LOGGER.info("call MCS targetUrl {} referer {}", targetUrl, referer);
 
+    ESMetrics.getInstance().meter("SendToMCSAsync");
     // async call mcs to record ubi
-    builder.async().post(Entity.json(mktEvent));
+    builder.async().post(Entity.json(mktEvent), new InvocationCallback<Response>() {
+      public void completed(Response response) {
+        if (response.getStatus() == Response.Status.CREATED.getStatusCode()
+                || response.getStatus() == Response.Status.OK.getStatusCode()) {
+          ESMetrics.getInstance().meter("AsyncCallMCSSuccess", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
+          LOGGER.debug("AsyncCallMCSSuccess {}", targetUrl);
+        } else {
+          ESMetrics.getInstance().meter("AsyncCallMCSFailed", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
+          LOGGER.info("AsyncCallMCSFailed {}", targetUrl);
+        }
+      }
+
+      public void failed(Throwable throwable) {
+        ESMetrics.getInstance().meter("AsyncCallMCSException", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
+        LOGGER.error("AsyncCallMCSFailed {}", targetUrl);
+      }
+    });
 
   }
 
