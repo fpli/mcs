@@ -133,10 +133,13 @@ public class CollectionServiceUtil {
       String value = entry.getValue();
       // If the value in payload is null, don't append the fields into url
       if (value != null) {
-        // If payload key is mpuid or referrer, query will not encode its value, the reason is that
+        // If payload key is mpuid, query will not encode its value, the reason is that
         // MPUID will be used in imkETL process to parse item_id and transaction_id, imkETL process will not decode
         // our query. So if MPUID is encoded in this place, it will cause split error in imkETL
-        if (key.equalsIgnoreCase(MPUID) || key.equalsIgnoreCase(REFERRER)) {
+        if (key.equalsIgnoreCase(MPUID)) {
+          queryString = String.format("%s&%s=%s", queryString, key, value);
+        } else if (isEncodedUrl(value)){
+          // If payload value is encoded, query will not encode it twice
           queryString = String.format("%s&%s=%s", queryString, key, value);
         } else {
           // Other fields in payload will be encode for avoiding invalid character cause rvr_url parse error
@@ -154,4 +157,7 @@ public class CollectionServiceUtil {
     return queryString;
   }
 
+  private static boolean isEncodedUrl(String url) {
+    return (url.startsWith("https%3A%2F%2F") || url.startsWith("http%3A%2F%2F"));
+  }
 }
