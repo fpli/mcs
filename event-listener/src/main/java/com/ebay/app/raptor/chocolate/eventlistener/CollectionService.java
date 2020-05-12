@@ -826,9 +826,11 @@ public class CollectionService {
             statusCode < Response.Status.BAD_REQUEST.getStatusCode()) {
           metrics.meter("CollectStatusRedirection", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
               Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
+          logger.debug("CollectStatusRedirection: URL: " + targetUrl + ", UA: " + endUserContext.getUserAgent());
         } else if (statusCode >= Response.Status.BAD_REQUEST.getStatusCode()) {
           metrics.meter("CollectStatusError", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
               Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
+          logger.error("CollectStatusError: " + targetUrl);
         } else {
           metrics.meter("CollectStatusDefault", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
               Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));

@@ -350,10 +350,10 @@ public class EventListenerServiceTest {
     Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
       LongDeserializer.class, ListenerMessageDeserializer.class);
     Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
-      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 7, 30 * 1000);
+      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 8, 30 * 1000);
     consumerPaidSearch.close();
 
-    assertEquals(5, listenerMessagesPaidSearch.size());
+    assertEquals(8, listenerMessagesPaidSearch.size());
 
     // mrkt email click events
     event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=8&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
