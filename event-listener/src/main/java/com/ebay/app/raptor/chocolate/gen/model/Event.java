@@ -17,7 +17,10 @@ import java.util.Arrays;
 import java.io.Serializable;
 import io.swagger.annotations.*;
 
+import com.ebay.app.raptor.chocolate.gen.model.EventParameters;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.ArrayList;
+import java.util.List;
 import com.fasterxml.jackson.annotation.*;
 
 /**
@@ -25,8 +28,8 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2019-12-03T17:15:41.556+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "targetUrl","referrer" })
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-05-13T16:46:21.310+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "targetUrl","referrer","eventType","parameters" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -42,6 +45,46 @@ public class Event implements Serializable {
   @JsonProperty("referrer")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String referrer = null;
+  /**
+   * Gets or Sets eventType
+   */
+  public enum EventTypeEnum {
+
+    CLICK("click"),
+    NOTIFICATION("notification");
+    private String value;
+
+    EventTypeEnum(String value) {
+      this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    @JsonCreator
+    public static EventTypeEnum fromValue(String text) {
+      for (EventTypeEnum b : EventTypeEnum.values()) {
+        if (String.valueOf(b.value).equals(text)) {
+          return b;
+        }
+      }
+      return null;
+    }
+
+  }
+  @JsonProperty("eventType")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private EventTypeEnum eventType = null;
+  @JsonProperty("parameters")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private List<EventParameters> parameters = null;
 
   /**
    * Get targetUrl
@@ -67,6 +110,30 @@ public class Event implements Serializable {
   public void setReferrer(String referrer) {
     this.referrer = referrer;
   }
+  /**
+   * Get eventType
+   * @return eventType
+   **/
+  @ApiModelProperty(value = "")
+  public EventTypeEnum getEventType() {
+    return eventType;
+  }
+
+  public void setEventType(EventTypeEnum eventType) {
+    this.eventType = eventType;
+  }
+  /**
+   * Get parameters
+   * @return parameters
+   **/
+  @ApiModelProperty(value = "")
+  public List<EventParameters> getParameters() {
+    return parameters;
+  }
+
+  public void setParameters(List<EventParameters> parameters) {
+    this.parameters = parameters;
+  }
   @Override
   public boolean equals(java.lang.Object o) {
     if (this == o) {
@@ -77,12 +144,14 @@ public class Event implements Serializable {
     }
     Event event = (Event) o;
     return Objects.equals(this.targetUrl, event.targetUrl) &&
-      Objects.equals(this.referrer, event.referrer);
+        Objects.equals(this.referrer, event.referrer) &&
+        Objects.equals(this.eventType, event.eventType) &&
+        Objects.equals(this.parameters, event.parameters);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(targetUrl, referrer);
+    return Objects.hash(targetUrl, referrer, eventType, parameters);
   }
 
   @Override
@@ -92,6 +161,8 @@ public class Event implements Serializable {
 
     sb.append("    targetUrl: ").append(toIndentedString(targetUrl)).append("\n");
     sb.append("    referrer: ").append(toIndentedString(referrer)).append("\n");
+    sb.append("    eventType: ").append(toIndentedString(eventType)).append("\n");
+    sb.append("    parameters: ").append(toIndentedString(parameters)).append("\n");
     sb.append("}");
     return sb.toString();
   }
