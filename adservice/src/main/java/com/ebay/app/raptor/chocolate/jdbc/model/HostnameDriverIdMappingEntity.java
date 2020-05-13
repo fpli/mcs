@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 import java.util.Objects;
 
 @Entity
-@Table(name = "hostname_driver_id_mapping")
+@Table(name = "adservice_hostname_driver_id_mapping")
 public class HostnameDriverIdMappingEntity {
   private String hostname;
   private String ip;
