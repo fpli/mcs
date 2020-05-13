@@ -1,6 +1,5 @@
 package com.ebay.app.raptor.chocolate.jdbc.repo;
 
-import com.ebay.app.raptor.chocolate.common.Hostname;
 import com.ebay.app.raptor.chocolate.jdbc.model.HostnameDriverIdMappingEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +31,6 @@ public class DriverIdServiceImpl implements DriverIdService {
   @Override
   public int getDriverId(String hostname, String ip, int maxDriverId, int retry) {
     List<HostnameDriverIdMappingEntity> all = driverIdRepository.findAll();
-    if (Hostname.HOSTNAME.equalsIgnoreCase("lvsadservice2-rmqbc-tess0075.lvs02.dev.ebayc3.com")) {
-      throw new IllegalArgumentException("lvsadservice2-rmqbc-tess0075.lvs02.dev.ebayc3.com");
-    }
     // if hostname exists in database, use existed driver id
     for (HostnameDriverIdMappingEntity hostnameDriverId : all) {
       if (hostnameDriverId.getHostname().equals(hostname)) {
