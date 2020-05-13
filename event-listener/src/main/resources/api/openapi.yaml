@@ -196,6 +196,18 @@ components:
         referrer:
           type: "string"
           example: "htttps://www.google.com"
+        eventType:
+          type: "string"
+          enum: ["click", "notification"]
+        parameters:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
     ROIEvent:
       type: object
       properties:
