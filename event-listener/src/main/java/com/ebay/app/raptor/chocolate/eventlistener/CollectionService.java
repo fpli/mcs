@@ -431,9 +431,6 @@ public class CollectionService {
     // Parse transId
     try {
       String transId = roiEvent.getUniqueTransactionId();
-      if (transId.equalsIgnoreCase("-0")) {
-        roiEvent.setUniqueTransactionId("0");
-      }
       if (Long.parseLong(transId) < 0) {
         roiEvent.setUniqueTransactionId("");
       }
