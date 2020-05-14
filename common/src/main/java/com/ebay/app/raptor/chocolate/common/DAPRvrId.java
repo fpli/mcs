@@ -84,4 +84,8 @@ public class DAPRvrId implements Serializable, Comparable<DAPRvrId> {
     if (o == null) return -1;
     return Long.compare(representation, o.representation);
   }
+
+  public static int getMaxDriverId() {
+    return MAX_DRIVER_ID;
+  }
 }

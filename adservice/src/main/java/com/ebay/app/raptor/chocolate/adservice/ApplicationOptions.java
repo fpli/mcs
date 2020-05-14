@@ -45,7 +45,7 @@ public class ApplicationOptions extends AbstractApplicationOptions {
   /**
    * Static driver ID
    */
-  static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
+  static int DRIVER_ID;
 
   /**
    * Application options to load from internal jar
@@ -102,6 +102,10 @@ public class ApplicationOptions extends AbstractApplicationOptions {
    */
   public int getDriverId() {
     return DRIVER_ID;
+  }
+
+  public int setDriverId(int driverId) {
+    return DRIVER_ID = driverId;
   }
 
   /**
