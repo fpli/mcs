@@ -44,6 +44,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -430,9 +431,10 @@ public class CollectionService {
 
     // Parse transId
     try {
-      long transId = Long.valueOf(roiEvent.getUniqueTransactionId());
-      if (transId < 0)
+      String transId = roiEvent.getUniqueTransactionId();
+      if (Long.parseLong(transId) < 0) {
         roiEvent.setUniqueTransactionId("");
+      }
     } catch (Exception e) {
       logger.warn("Error transactionId " + roiEvent.getUniqueTransactionId());
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
@@ -826,6 +828,42 @@ public class CollectionService {
                                         MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                         ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
                                         IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
+
+    // logic to filter internal redirection in node, https://jirap.corp.ebay.com/browse/XC-2361
+    // currently we only observe the issue in vi pool in mweb case if the url does not contain title of the item
+    // log metric here about the header which identifiers if there is a redirection
+    String statusCodeStr = request.getHeader(Constants.NODE_REDIRECTION_HEADER_NAME);
+    if (statusCodeStr != null) {
+      int statusCode;
+
+      try {
+        statusCode = Integer.valueOf(statusCodeStr);
+        if (statusCode == Response.Status.OK.getStatusCode()) {
+          metrics.meter("CollectStatusOK", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+              Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
+        } else if (statusCode >= Response.Status.MOVED_PERMANENTLY.getStatusCode() &
+            statusCode < Response.Status.BAD_REQUEST.getStatusCode()) {
+          metrics.meter("CollectStatusRedirection", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+              Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
+          logger.debug("CollectStatusRedirection: URL: " + targetUrl + ", UA: " + endUserContext.getUserAgent());
+        } else if (statusCode >= Response.Status.BAD_REQUEST.getStatusCode()) {
+          metrics.meter("CollectStatusError", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+              Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
+          logger.error("CollectStatusError: " + targetUrl);
+        } else {
+          metrics.meter("CollectStatusDefault", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+              Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
+        }
+      } catch (NumberFormatException ex) {
+        metrics.meter("StatusCodeError", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+            Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
+        logger.error("Error status code: " + statusCodeStr);
+      }
+
+    } else {
+      metrics.meter("CollectStatusDefault", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+          Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
+    }
 
     // parse rotation id
     long rotationId = parseRotationId(parameters);

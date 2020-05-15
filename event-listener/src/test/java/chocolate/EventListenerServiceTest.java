@@ -3,6 +3,7 @@ package chocolate;
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
@@ -217,6 +218,32 @@ public class EventListenerServiceTest {
     return builder.header("Authorization", token).accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
   }
 
+  private Response postMcsResponse(String path, String endUserCtx, String tracking, int statusCode,
+                                   MultiValueMap<String, String> parameters, Event event) {
+    WebTarget webTarget = client.target(svcEndPoint).path(path);
+    // add parameters
+    if (MapUtils.isNotEmpty(parameters)) {
+      for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
+        for (String value : entry.getValue()) {
+          webTarget = webTarget.queryParam(entry.getKey(), value);
+        }
+      }
+    }
+
+    // add headers
+    Invocation.Builder builder = webTarget.request();
+    if (!StringUtils.isEmpty(endUserCtx)) {
+      builder = builder.header("X-EBAY-C-ENDUSERCTX", endUserCtx);
+    }
+    if (!StringUtils.isEmpty(tracking)) {
+      builder = builder.header("X-EBAY-C-TRACKING", tracking);
+    }
+
+    builder.header(Constants.NODE_REDIRECTION_HEADER_NAME, statusCode);
+
+    return builder.header("Authorization", token).accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
+  }
+
   @Test
   public void testEventsResource() throws InterruptedException {
     Event event = new Event();
@@ -238,6 +265,18 @@ public class EventListenerServiceTest {
 
     // mweb
     response = postMcsResponse(eventsPath, endUserCtxMweb, tracking, null, event);
+    assertEquals(201, response.getStatus());
+
+    // with statusCode header 200
+    response = postMcsResponse(eventsPath, endUserCtxMweb, tracking, 200, null, event);
+    assertEquals(201, response.getStatus());
+
+    // with statusCode header 301
+    response = postMcsResponse(eventsPath, endUserCtxMweb, tracking, 301, null, event);
+    assertEquals(201, response.getStatus());
+
+    // with statusCode header 404
+    response = postMcsResponse(eventsPath, endUserCtxMweb, tracking, 404, null, event);
     assertEquals(201, response.getStatus());
 
     // no X-EBAY-C-ENDUSERCTX
@@ -311,10 +350,10 @@ public class EventListenerServiceTest {
     Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
       LongDeserializer.class, ListenerMessageDeserializer.class);
     Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
-      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 4, 30 * 1000);
+      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 8, 30 * 1000);
     consumerPaidSearch.close();
 
-    assertEquals(5, listenerMessagesPaidSearch.size());
+    assertEquals(8, listenerMessagesPaidSearch.size());
 
     // mrkt email click events
     event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=8&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
