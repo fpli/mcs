@@ -31,6 +31,7 @@ public class TomcatWebServerCustomizer
 	  for (Connector connector : connectors) {
 		  connector.setAttribute("relaxedPathChars", "<>[\\]^`{|}");
 		  connector.setAttribute("relaxedQueryChars", "<>[\\]^`{|}");
+		  connector.setAttribute("rejectIllegalHeaderName", "false");
 	}
   }
 
