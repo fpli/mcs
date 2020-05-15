@@ -86,12 +86,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private static final String METRIC_NO_MKCID_IN_AR = "METRIC_NO_MKCID_IN_AR";
   private static final String METRIC_NO_MKCID_IN_IMPRESSION = "METRIC_NO_MKCID_IN_IMPRESSION";
   private static final String METRIC_NO_MKRID_IN_AR = "METRIC_NO_MKRID_IN_AR";
-  private static final String METRIC_IMPRESSION = "METRIC_IMPRESSION";
-  private static final String METRIC_AR = "METRIC_AR";
-  private static final String METRIC_REDIRECT = "METRIC_REDIRECT";
-  private static final String METRIC_SYNC = "METRIC_SYNC";
-  private static final String METRIC_GUID = "METRIC_GUID";
-  private static final String METRIC_UID = "METRIC_UID";
+  private static final String METRIC_INCOMING_REQUEST = "METRIC_INCOMING_REQUEST";
   private static final String METRIC_NO_MKRID_IN_IMPRESSION = "METRIC_NO_MKRID_IN_IMPRESSION";
   private static final String METRIC_ERROR_IN_ASYNC_MODEL = "METRIC_ERROR_IN_ASYNC_MODEL";
   private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId",
@@ -130,7 +125,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     if (null == mkrid) {
       metrics.meter(METRIC_NO_MKRID_IN_AR);
     }
-    metrics.meter(METRIC_AR);
+    metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "ar"));
     Response res = null;
     try {
       adserviceCookie.setAdguid(request, response);
@@ -168,7 +163,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     if (null == mkrid) {
       metrics.meter(METRIC_NO_MKRID_IN_IMPRESSION);
     }
-    metrics.meter(METRIC_IMPRESSION);
+    metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "impression"));
     Response res = null;
     try {
       adserviceCookie.setAdguid(request, response);
@@ -232,7 +227,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response redirect(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
-    metrics.meter(METRIC_REDIRECT);
+    metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "redirect"));
     adserviceCookie.setAdguid(request, response);
     URI redirectUri = null;
     try {
@@ -282,7 +277,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response sync(String guid, String uid) {
-    metrics.meter(METRIC_SYNC);
+    metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "sync"));
     String adguid = adserviceCookie.setAdguid(request, response);
     Response res = Response.status(Response.Status.OK).build();
     ImageResponseHandler.sendImageResponse(response);
@@ -337,7 +332,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response guid() {
-    metrics.meter(METRIC_GUID);
+    metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "guid"));
     String adguid = adserviceCookie.readAdguid(request);
     String guid = idMapping.getGuid(adguid);
     return Response.status(Response.Status.OK).entity(guid).build();
@@ -350,7 +345,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response userid() {
-    metrics.meter(METRIC_UID);
+    metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "userid"));
     String adguid = adserviceCookie.readAdguid(request);
     String userid = idMapping.getUid(adguid);
     return Response.status(Response.Status.OK).entity(userid).build();
