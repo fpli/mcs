@@ -1035,7 +1035,11 @@ public class CollectionService {
         addTagFromUrlQuery(parameters, requestTracker, Constants.YM_INSTC, "yminstc", String.class);
 
         // Adobe email redirect url
-        addTagFromUrlQuery(parameters, requestTracker, Constants.REDIRECT_URL_SOJ_TAG, "adcamp_landingpage", String.class);
+        if (parameters.containsKey(Constants.REDIRECT_URL_SOJ_TAG)
+            && parameters.get(Constants.REDIRECT_URL_SOJ_TAG).get(0) != null) {
+          requestTracker.addTag("adcamp_landingpage",
+              URLDecoder.decode(parameters.get(Constants.REDIRECT_URL_SOJ_TAG).get(0), "UTF-8"), String.class);
+        }
 
         // Adobe email redirect source
         addTagFromUrlQuery(parameters, requestTracker, Constants.REDIRECT_SRC_SOJ_SOURCE, "adcamp_locationsrc", String.class);
