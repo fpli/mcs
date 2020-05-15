@@ -321,6 +321,14 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
 
+    // adobe click events
+    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=8&mkpid=14&emsid=0&id=h1d3e4e16,2d2cb515,2d03a0a1&segname=" +
+        "SOP708_SG49&country=US&pu=hrtHY5sgRPq&crd=20200211040813&sojTags=adcampid%3Did%2Cadcamppu%3Dpu%2Ccrd%3Dcrd%2C" +
+        "segname%3Dsegname&adobeParams=id,p1,p2,p3,p4&adcamp_landingpage=https%3A%2F%2Fwww.ebay.de%2Fdeals" +
+        "&adcamp_locationsrc=adobe");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
+    assertEquals(201, response.getStatus());
+
     // site email click events
     event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
