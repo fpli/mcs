@@ -14,6 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class ListenerMessage extends ListenerMessageV4 {
+  public static Schema getClassSchema() { return SCHEMA$; }
+
   private static Schema getV3Schema() {
     return ListenerMessageV3.getClassSchema();
   }
