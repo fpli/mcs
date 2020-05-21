@@ -432,9 +432,10 @@ public class CollectionService {
 
     // Parse transId
     try {
-      long transId = Long.valueOf(roiEvent.getUniqueTransactionId());
-      if (transId < 0)
+      String transId = roiEvent.getUniqueTransactionId();
+      if (Long.parseLong(transId) < 0) {
         roiEvent.setUniqueTransactionId("");
+      }
     } catch (Exception e) {
       logger.warn("Error transactionId " + roiEvent.getUniqueTransactionId());
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
@@ -1014,10 +1015,18 @@ public class CollectionService {
         addTagFromUrlQuery(parameters, requestTracker, Constants.YM_INSTC, "yminstc", String.class);
 
         // Adobe email redirect url
-        addTagFromUrlQuery(parameters, requestTracker, Constants.REDIRECT_URL_SOJ_TAG, "adcamp_landingpage", String.class);
+        if (parameters.containsKey(Constants.REDIRECT_URL_SOJ_TAG)
+            && parameters.get(Constants.REDIRECT_URL_SOJ_TAG).get(0) != null) {
+          requestTracker.addTag("adcamp_landingpage",
+              URLDecoder.decode(parameters.get(Constants.REDIRECT_URL_SOJ_TAG).get(0), "UTF-8"), String.class);
+        }
 
         // Adobe email redirect source
-        addTagFromUrlQuery(parameters, requestTracker, Constants.REDIRECT_SRC_SOJ_SOURCE, "adcamp_locationsrc", String.class);
+        if (parameters.containsKey(Constants.REDIRECT_SRC_SOJ_SOURCE)
+            && parameters.get(Constants.REDIRECT_SRC_SOJ_SOURCE).get(0) != null) {
+          requestTracker.addTag(Constants.REDIRECT_SRC_SOJ_SOURCE,
+              URLDecoder.decode(parameters.get(Constants.REDIRECT_SRC_SOJ_SOURCE).get(0), "UTF-8"), String.class);
+        }
 
         //Adobe campaign public user id
         addTagFromUrlQuery(parameters, requestTracker, Constants.ADOBE_CAMP_PUBLIC_USER_ID, "adcamppu", String.class);
