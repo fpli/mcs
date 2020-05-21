@@ -24,4 +24,7 @@ public class TransformerConstants {
   public static final String MKTYPE = "mktype";
   public static final String ADTYPE = "adtype";
   public static final String CHANNEL_TYPE = "channel_type";
+  public static final String MPUID = "mpuid";
+  public static final String TRAN_TYPE = "tranType";
+  public static final String SITE_ID = "siteId";
 }

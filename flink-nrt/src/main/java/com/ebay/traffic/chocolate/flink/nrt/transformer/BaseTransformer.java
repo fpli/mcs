@@ -3,12 +3,14 @@ package com.ebay.traffic.chocolate.flink.nrt.transformer;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
-import com.ebay.app.raptor.chocolate.avro.FlatMessage;
-import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
-import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
+import com.ebay.kernel.patternmatch.dawg.Dawg;
+import com.ebay.kernel.patternmatch.dawg.DawgDictionary;
+import com.ebay.traffic.chocolate.flink.nrt.constant.*;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
+import com.ebay.traffic.chocolate.flink.nrt.model.TrackingEvent;
+import com.ebay.traffic.monitoring.ESMetrics;
 import com.google.common.base.CaseFormat;
-import org.apache.avro.Schema;
+import com.google.gson.annotations.SerializedName;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,14 +18,14 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 
@@ -32,8 +34,6 @@ public class BaseTransformer {
   public static final String SET_METHOD_PREFIX = "set";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseTransformer.class);
-  private static final DateTimeFormatter EVENT_DT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault());
-  private static final DateTimeFormatter EVENT_TS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault());
 
   private static final Map<String, Integer> MFE_NAME_ID_MAP = new HashMap<String, Integer>() {
     {
@@ -42,9 +42,19 @@ public class BaseTransformer {
     }
   };
 
+  protected static DawgDictionary userAgentBotDawgDictionary = new DawgDictionary(
+          PropertyMgr.getInstance().loadAllLines("dap_user_agent_robot.txt").toArray(new String[0]),
+          true);
+
+  protected static DawgDictionary ipBotDawgDictionary = new DawgDictionary(
+          PropertyMgr.getInstance().loadAllLines("dap_ip_robot.txt").toArray(new String[0]),
+          true);
+
   private static final List<String> USER_QUERY_PARAMS_OF_REFERRER = Collections.singletonList("q");
 
   private static final List<String> USER_QUERY_PARAMS_OF_LANDING_URL = Arrays.asList("uq", "satitle", "keyword", "item", "store");
+
+  public static final String MALFORMED_URL = "MalformedUrl";
 
   /**
    * Used to cache temp fields
@@ -58,11 +68,17 @@ public class BaseTransformer {
 
   private static final Map<String, Method> FIELD_SET_METHOD_CACHE = new HashMap<>(16);
 
+  /**
+   * Map field name to get method name, eg. batch_id -> getBatchId
+   */
   private static final Function<String, String> FIELD_GET_METHOD_MAP_FUNCTION = fieldName -> {
     String upperCamelCase = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, fieldName);
     return String.format("%s%s", GET_METHOD_PREFIX, upperCamelCase);
   };
 
+  /**
+   * Map field name to set method name, eg. batch_id -> setBatchId
+   */
   private static final Function<String, String> FIELD_SET_METHOD_MAP_FUNCTION = fieldName -> {
     String upperCamelCase = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, fieldName);
     return String.format("%s%s", SET_METHOD_PREFIX, upperCamelCase);
@@ -72,21 +88,30 @@ public class BaseTransformer {
    * Original record
    */
   protected GenericRecord sourceRecord;
-  protected Schema schema;
-
+  public static final DecimalFormat BATCH_ID_DECIMAL_FORMAT = new DecimalFormat("00");
 
   public BaseTransformer(FilterMessage sourceRecord) {
     this.sourceRecord = sourceRecord;
   }
 
-  public void transform(FlatMessage flatMessage) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-    for (Schema.Field field : flatMessage.getSchema().getFields()) {
-      String fieldName = field.name();
+  /**
+   * Transform to target event
+   */
+  public void transform(TrackingEvent trackingEvent) {
+    for (Field field : trackingEvent.getClass().getDeclaredFields()) {
+      SerializedName annotation = field.getAnnotation(SerializedName.class);
+      final String fieldName = annotation.value();
       Object value = getField(fieldName);
-      setField(flatMessage, fieldName, value);
+      setField(trackingEvent, fieldName, value);
     }
   }
 
+  /**
+   * Get field from source record
+   *
+   * @param fieldName field name
+   * @return value
+   */
   protected Object getField(String fieldName) {
     if (fieldCache.containsKey(fieldName)) {
       return fieldCache.get(fieldName);
@@ -96,16 +121,22 @@ public class BaseTransformer {
     try {
       value = method.invoke(this);
     } catch (IllegalAccessException | InvocationTargetException e) {
-      e.printStackTrace();
+      LOGGER.error("invoke method {} failed", method);
+      throw new RuntimeException(e);
     }
     Validate.notNull(value, String.format("%s is null", fieldName));
     fieldCache.put(fieldName, value);
     return fieldCache.get(fieldName);
   }
 
-  protected void setField(FlatMessage flatMessage, String fieldName, Object value) throws InvocationTargetException, IllegalAccessException {
-    Method setMethod = findMethod(flatMessage.getClass(), fieldName, FIELD_SET_METHOD_MAP_FUNCTION, FIELD_SET_METHOD_CACHE);
-    setMethod.invoke(flatMessage, value);
+  protected void setField(TrackingEvent trackingEvent, String fieldName, Object value) {
+    Method method = findMethod(trackingEvent.getClass(), fieldName, FIELD_SET_METHOD_MAP_FUNCTION, FIELD_SET_METHOD_CACHE);
+    try {
+      method.invoke(trackingEvent, value);
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      LOGGER.error("invoke method {} failed", method);
+      throw new RuntimeException(e);
+    }
   }
 
   private Method findMethod(Class<?> clazz, String fieldName, Function<String, String> fieldMethodMapFunction, Map<String, Method> methodCache) {
@@ -140,6 +171,8 @@ public class BaseTransformer {
           query = StringConstants.EMPTY;
         }
       } catch (Exception e) {
+        ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_MALFORMED, 1);
+        LOGGER.warn(MALFORMED_URL, e);
       }
     }
     return query;
@@ -147,8 +180,7 @@ public class BaseTransformer {
 
   protected String getBatchId() {
     LocalDateTime date = LocalDateTime.now();
-    DecimalFormat formatter = new DecimalFormat("00");
-    return formatter.format(date.getHour()) + formatter.format(date.getMinute()) + formatter.format(date.getSecond());
+    return BATCH_ID_DECIMAL_FORMAT.format(date.getHour()) + BATCH_ID_DECIMAL_FORMAT.format(date.getMinute()) + BATCH_ID_DECIMAL_FORMAT.format(date.getSecond());
   }
 
   protected Integer getFileId() {
@@ -164,7 +196,7 @@ public class BaseTransformer {
   }
 
   protected String getEventDt() {
-    return EVENT_DT_FORMATTER.format(Instant.ofEpochMilli((Long) sourceRecord.get(TransformerConstants.TIMESTAMP)));
+    return DateConstants.EVENT_DT_FORMATTER.format(Instant.ofEpochMilli((Long) sourceRecord.get(TransformerConstants.TIMESTAMP)));
   }
 
   protected Integer getSrvdPstn() {
@@ -175,11 +207,13 @@ public class BaseTransformer {
     ChannelAction channelAction = (ChannelAction) sourceRecord.get(TransformerConstants.CHANNEL_ACTION);
     switch (channelAction) {
       case IMPRESSION:
-        return "4";
+        return RvrCmndTypeCdEnum.IMPRESSION.getCd();
       case ROI:
-        return "2";
+        return RvrCmndTypeCdEnum.ROI.getCd();
+      case SERVE:
+        return RvrCmndTypeCdEnum.SERVE.getCd();
       default:
-        return "1";
+        return RvrCmndTypeCdEnum.CLICK.getCd();
     }
   }
 
@@ -187,19 +221,19 @@ public class BaseTransformer {
     ChannelType channelType = (ChannelType) sourceRecord.get(TransformerConstants.CHANNEL_TYPE);
     switch (channelType) {
       case EPN:
-        return "1";
+        return RvrChnlTypeCdEnum.EPN.getCd();
       case DISPLAY:
-        return "4";
+        return RvrChnlTypeCdEnum.DISPLAY.getCd();
       case PAID_SEARCH:
-        return "2";
+        return RvrChnlTypeCdEnum.PAID_SEARCH.getCd();
       case SOCIAL_MEDIA:
-        return "16";
+        return RvrChnlTypeCdEnum.SOCIAL_MEDIA.getCd();
       case PAID_SOCIAL:
-        return "20";
+        return RvrChnlTypeCdEnum.PAID_SOCIAL.getCd();
       case NATURAL_SEARCH:
-        return "3";
+        return RvrChnlTypeCdEnum.NATURAL_SEARCH.getCd();
       default:
-        return "0";
+        return RvrChnlTypeCdEnum.DEFAULT.getCd();
     }
   }
 
@@ -208,7 +242,7 @@ public class BaseTransformer {
   }
 
   protected String getLangCd() {
-    return (String) sourceRecord.get(TransformerConstants.LANG_CD);
+    return StringConstants.EMPTY;
   }
 
   protected Integer getTrckngPrtnrId() {
@@ -217,7 +251,7 @@ public class BaseTransformer {
 
   // TODO
   public String getCguid() {
-    return "";
+    return StringConstants.EMPTY;
   }
 
   public String getGuid() {
@@ -235,12 +269,13 @@ public class BaseTransformer {
 
   protected Integer getBrwsrTypeId() {
     String userAgent = (String) sourceRecord.get(TransformerConstants.USER_AGENT);
-    if (StringUtils.isNotEmpty(userAgent)) {
-      String agentStr = userAgent.toLowerCase();
-      for (UserAgentEnum userAgentEnum : UserAgentEnum.values()) {
-        if (agentStr.contains(userAgentEnum.getName())) {
-          return userAgentEnum.getId();
-        }
+    if (StringUtils.isEmpty(userAgent)) {
+      return UserAgentEnum.UNKNOWN_USERAGENT.getId();
+    }
+    String agentStr = userAgent.toLowerCase();
+    for (UserAgentEnum userAgentEnum : UserAgentEnum.values()) {
+      if (agentStr.contains(userAgentEnum.getName())) {
+        return userAgentEnum.getId();
       }
     }
     return UserAgentEnum.UNKNOWN_USERAGENT.getId();
@@ -271,7 +306,7 @@ public class BaseTransformer {
     return (Long) sourceRecord.get(TransformerConstants.DST_ROTATION_ID);
   }
 
-  public Integer getDstClientId() {
+  public Integer getDstClientId() throws MalformedURLException {
     String tempUriQuery = getTempUriQuery();
     String paramValueFromQuery = getParamValueFromQuery(tempUriQuery, TransformerConstants.MKRID);
     return getClientIdFromRotationId(paramValueFromQuery);
@@ -292,18 +327,23 @@ public class BaseTransformer {
       try {
         result = new URL(link).getHost();
       } catch (Exception e) {
+        ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_MALFORMED, 1);
+        LOGGER.warn(MALFORMED_URL, e);
       }
     }
     return result;
   }
 
   protected String getLndngPageUrl() {
+    String channelType = ((ChannelType) sourceRecord.get(TransformerConstants.CHANNEL_TYPE)).toString();
     String uri = (String) sourceRecord.get(TransformerConstants.URI);
     String newUri = StringConstants.EMPTY;
     if (StringUtils.isNotEmpty(uri)) {
       try {
         newUri = uri.replace(TransformerConstants.MKGROUPID, TransformerConstants.ADGROUPID).replace(TransformerConstants.MKTYPE, TransformerConstants.ADTYPE);
       } catch (Exception e) {
+        ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_MALFORMED, 1, com.ebay.traffic.monitoring.Field.of("channelType", channelType));
+        LOGGER.warn(MALFORMED_URL, e);
       }
     }
     return newUri;
@@ -325,6 +365,8 @@ public class BaseTransformer {
         result = StringConstants.EMPTY;
       }
     } catch (Exception e) {
+      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_ERROR_GET_QUERY, 1);
+      LOGGER.warn("ErrorGetQuery", e);
     }
     return result;
   }
@@ -338,83 +380,103 @@ public class BaseTransformer {
   }
 
   public String getFlexField1() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff1");
   }
 
   public String getFlexField2() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff2");
   }
 
   public String getFlexField3() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff3");
   }
 
   public String getFlexField4() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff4");
   }
 
   public String getFlexField5() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff5");
   }
 
   public String getFlexField6() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff6");
   }
 
   public String getFlexField7() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff7");
   }
 
   public String getFlexField8() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff8");
   }
 
   public String getFlexField9() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff9");
   }
 
   public String getFlexField10() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff10");
   }
 
   public String getFlexField11() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff11");
   }
 
   public String getFlexField12() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff12");
   }
 
   public String getFlexField13() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff13");
   }
 
   public String getFlexField14() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff14");
   }
 
   public String getFlexField15() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff15");
   }
 
   public String getFlexField16() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff16");
   }
 
   public String getFlexField17() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff17");
   }
 
   public String getFlexField18() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff18");
   }
 
   public String getFlexField19() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff19");
   }
 
   public String getFlexField20() {
-    return StringConstants.EMPTY;
+    String tempUriQuery = getTempUriQuery();
+    return getParamValueFromQuery(tempUriQuery, "ff20");
   }
 
   private String getQueryString(String uri) {
@@ -445,13 +507,14 @@ public class BaseTransformer {
         }
       }
     } catch (Exception e) {
-
+      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_ERROR_GET_PARAM_FROM_QUERY, 1);
+      LOGGER.warn(MALFORMED_URL, e);
     }
-    return "";
+    return StringConstants.EMPTY;
   }
 
   public String getEventTs() {
-    return EVENT_TS_FORMATTER.format(Instant.ofEpochMilli((Long) sourceRecord.get(TransformerConstants.TIMESTAMP)));
+    return DateConstants.EVENT_TS_FORMATTER.format(Instant.ofEpochMilli((Long) sourceRecord.get(TransformerConstants.TIMESTAMP)));
   }
 
   protected Integer getDfltBhrvId() {
@@ -466,11 +529,13 @@ public class BaseTransformer {
         for (String paramMapString : query.split(StringConstants.AND)) {
           String[] paramStringArray = paramMapString.split(StringConstants.EQUAL);
           if (paramStringArray.length == 2) {
-            buf.append(String.format("^%s", paramMapString));
+            buf.append(String.format(StringConstants.CARET, paramMapString));
           }
         }
       }
     } catch (Exception e) {
+      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_ERROR_GET_PERF_TRACK_NAME_VALUE, 1);
+      LOGGER.warn(MALFORMED_URL, e);
     }
     return buf.toString();
   }
@@ -498,7 +563,7 @@ public class BaseTransformer {
   }
 
   private String getDefaultNullNumParamValueFromQuery(String query, String key) {
-    String result = "";
+    String result = StringConstants.EMPTY;
     try {
       if (StringUtils.isNotEmpty(query)) {
         for (String paramMapString : query.split(StringConstants.AND)) {
@@ -511,6 +576,9 @@ public class BaseTransformer {
         }
       }
     } catch (Exception e) {
+      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_PARSEMTID_ERROR, 1);
+      LOGGER.warn("ParseMtidError", e);
+      LOGGER.warn("ParseMtidError query: ", query);
     }
     return result;
   }
@@ -521,7 +589,7 @@ public class BaseTransformer {
   }
 
   protected String getParamValueFromQuery(String query, String key) {
-    String result = "";
+    String result = StringConstants.EMPTY;
     try {
       if (StringUtils.isNotEmpty(query)) {
         for (String paramMapString : query.split(StringConstants.AND)) {
@@ -532,6 +600,8 @@ public class BaseTransformer {
         }
       }
     } catch (Exception e) {
+      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_ERROR_GET_PARAM_VALUE_FROM_QUERY, 1);
+      LOGGER.warn(MALFORMED_URL, e);
     }
     return result;
   }
@@ -552,10 +622,10 @@ public class BaseTransformer {
 
   protected String getUserMapInd() {
     String userId = String.valueOf(sourceRecord.get(TransformerConstants.USER_ID));
-    if (StringUtils.isEmpty(userId) || userId.equals("0")) {
-      return "0";
+    if (StringUtils.isEmpty(userId) || userId.equals(StringConstants.ZERO)) {
+      return StringConstants.ZERO;
     } else {
-      return "1";
+      return StringConstants.ONE;
     }
   }
 
@@ -577,7 +647,13 @@ public class BaseTransformer {
 
   protected String getItemId() {
     String uri = (String) sourceRecord.get(TransformerConstants.URI);
-    return getItemIdFromUri(uri);
+    String itemId = getItemIdFromUri(uri);
+
+    if (StringUtils.isNotEmpty(itemId) && itemId.length() <= 18) {
+      return itemId;
+    } else{
+      return StringConstants.EMPTY;
+    }
   }
 
   protected String getRoiItemId() {
@@ -604,9 +680,41 @@ public class BaseTransformer {
     return StringConstants.EMPTY;
   }
 
-  // TODO
-  protected Integer getMgvalueRsnCd() {
-    return 0;
+  protected String getMgvaluereason() {
+    return StringConstants.EMPTY;
+  }
+
+  protected String getMgvalueRsnCd() {
+    return StringConstants.EMPTY;
+  }
+
+  /**
+   * Check if this request is bot with brwsr_name
+   * @param brwsrName alias for user agent
+   * @return is bot or not
+   */
+  protected boolean isBotByUserAgent(String brwsrName, DawgDictionary userAgentBotDawgDictionary) {
+    return isBot(brwsrName, userAgentBotDawgDictionary);
+  }
+
+  /**
+   * Check if this request is bot with clnt_remote_ip
+   * @param clntRemoteIp alias for remote ip
+   * @return is bot or not
+   */
+  protected boolean isBotByIp(String clntRemoteIp, DawgDictionary ipBotDawgDictionary) {
+    return isBot(clntRemoteIp, ipBotDawgDictionary);
+  }
+
+  @SuppressWarnings("rawtypes")
+  protected boolean isBot(String info, DawgDictionary dawgDictionary) {
+    if (StringUtils.isEmpty(info)) {
+      return false;
+    } else {
+      Dawg dawg = new Dawg(dawgDictionary);
+      Map result = dawg.findAllWords(info.toLowerCase(), false);
+      return !result.isEmpty();
+    }
   }
 
   public Integer getClientIdFromRotationId(String rotationId) {
@@ -617,12 +725,12 @@ public class BaseTransformer {
               && StringUtils.isNumeric(rotationId.replace(StringConstants.HYPHEN, StringConstants.EMPTY))
               && rotationId.contains(StringConstants.HYPHEN)) {
         result = Integer.valueOf(rotationId.substring(0, rotationId.indexOf(StringConstants.HYPHEN)));
-      } else {
-        result = 0;
       }
     } catch (Exception e) {
-
+      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_ERROR_PARSE_CLIENTID, 1);
+      LOGGER.warn("cannot parse client id", e);
     }
+
     return result;
   }
 
@@ -637,7 +745,8 @@ public class BaseTransformer {
         }
       }
     } catch (Exception e) {
-
+      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_MALFORMED, 1);
+      LOGGER.warn(MALFORMED_URL, e);
     }
     return StringConstants.EMPTY;
   }
@@ -656,59 +765,5 @@ public class BaseTransformer {
 
   protected String getUpdUser() {
     return StringConstants.EMPTY;
-  }
-
-  /**
-   * This class
-   *
-   * @author Zhiyuan Wang
-   * @since 2019/12/8
-   */
-  public enum UserAgentEnum {
-    MSIE("msie", 2),
-    FIREFOX("firefox", 5),
-    CHROME("chrome", 11),
-    SAFARI("safari", 4),
-    OPERA("opera", 7),
-    NETSCAPE("netscape", 1),
-    NAVIGATOR("navigator", 1),
-    AOL("aol", 3),
-    MAC("mac", 8),
-    MSNTV("msntv", 9),
-    WEBTV("webtv", 6),
-    TRIDENT("trident", 2),
-    BINGBOT("bingbot", 12),
-    ADSBOT_GOOGLE("adsbot-google", 19),
-    UCWEB("ucweb", 25),
-    FACEBOOKEXTERNALHIT("facebookexternalhit", 20),
-    DVLVIK("dvlvik", 26),
-    AHC("ahc", 13),
-    TUBIDY("tubidy", 14),
-    ROKU("roku", 15),
-    YMOBILE("ymobile", 16),
-    PYCURL("pycurl", 17),
-    DAILYME("dailyme", 18),
-    EBAYANDROID("ebayandroid", 21),
-    EBAYIPHONE("ebayiphone", 22),
-    EBAYIPAD("ebayipad", 23),
-    EBAYWINPHOCORE("ebaywinphocore", 24),
-    NULL_USERAGENT("NULL_USERAGENT", 10),
-    UNKNOWN_USERAGENT("UNKNOWN_USERAGENT", -99);
-
-    private final String name;
-    private final Integer id;
-
-    UserAgentEnum(final String name, final Integer id) {
-      this.name = name;
-      this.id = id;
-    }
-
-    public String getName() {
-      return this.name;
-    }
-
-    public Integer getId() {
-      return this.id;
-    }
   }
 }
