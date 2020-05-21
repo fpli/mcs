@@ -1022,11 +1022,8 @@ public class CollectionService {
         }
 
         // Adobe email redirect source
-        if (parameters.containsKey(Constants.REDIRECT_SRC_SOJ_SOURCE)
-            && parameters.get(Constants.REDIRECT_SRC_SOJ_SOURCE).get(0) != null) {
-          requestTracker.addTag(Constants.REDIRECT_SRC_SOJ_SOURCE,
-              URLDecoder.decode(parameters.get(Constants.REDIRECT_SRC_SOJ_SOURCE).get(0), "UTF-8"), String.class);
-        }
+        addTagFromUrlQuery(parameters, requestTracker, Constants.REDIRECT_SRC_SOJ_SOURCE, "adcamp_locationsrc",
+            String.class);
 
         //Adobe campaign public user id
         addTagFromUrlQuery(parameters, requestTracker, Constants.ADOBE_CAMP_PUBLIC_USER_ID, "adcamppu", String.class);
