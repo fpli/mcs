@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-05-21T15:16:09.146+08:00[Asia/Shanghai]")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-05-21T17:31:11.377+08:00[Asia/Shanghai]")
 @JsonPropertyOrder({ "targetUrl","referrer","eventType","payload" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 

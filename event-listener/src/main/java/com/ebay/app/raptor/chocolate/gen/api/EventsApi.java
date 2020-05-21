@@ -13,7 +13,7 @@ import io.swagger.annotations.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @Api(description = "The Events API")
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2019-01-04T13:59:24.315+08:00[Asia/Shanghai]")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-05-21T17:31:11.377+08:00[Asia/Shanghai]")
 public interface EventsApi {
     @POST
     @Path("/events")
@@ -22,9 +22,9 @@ public interface EventsApi {
     @ApiOperation(value = "Send one event to marketing tracking", notes = "Send one event to marketing tracking", authorizations = {
         @Authorization(value = "app_scope_auth", scopes = {
             @AuthorizationScope(scope = "https://api.ebay.com/oauth/scope/@public", description = "This scope would allow public access."),
-@AuthorizationScope(scope = "https://api.ebay.com/oauth/scope/base@public", description = "This scope would allow base public access."),
-@AuthorizationScope(scope = "https://api.ebay.com/oauth/scope/experience@public", description = "This scope would allow experience public access.")        })    }, tags={  })
-    @ApiResponses(value = { 
+            @AuthorizationScope(scope = "https://api.ebay.com/oauth/scope/base@public", description = "This scope would allow base public access."),
+            @AuthorizationScope(scope = "https://api.ebay.com/oauth/scope/experience@public", description = "This scope would allow experience public access.")        })    }, tags={  })
+    @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Created", response = Void.class),
         @ApiResponse(code = 400, message = "Rejected due to message format", response = ErrorModel.class),
         @ApiResponse(code = 500, message = "The call was unsuccessful due to exceptions on the Server", response = Void.class) }

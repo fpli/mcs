@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 @ApiModel(description = "Json of soj tags")
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-05-21T15:16:09.146+08:00[Asia/Shanghai]")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-05-21T17:31:11.377+08:00[Asia/Shanghai]")
 @JsonPropertyOrder({ "pageId","nid","ntype","userName","mc3id","pnact" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
@@ -56,10 +56,10 @@ public class EventPayload implements Serializable {
   private String pnact = null;
 
   /**
-   * page id
+   * page id, it&#x27;s mandotary for notification
    * @return pageId
    **/
-  @ApiModelProperty(example = "2054081", value = "page id")
+  @ApiModelProperty(example = "2054081", value = "page id, it's mandotary for notification")
   public Integer getPageId() {
     return pageId;
   }

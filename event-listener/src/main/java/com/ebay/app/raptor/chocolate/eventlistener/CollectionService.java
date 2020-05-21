@@ -689,12 +689,10 @@ public class CollectionService {
       logError(Errors.ERROR_NO_USER_AGENT);
     }
 
-    // no page id, accepted
+    // no page id, reject
     EventPayload payload = event.getPayload();
     if (payload.getPageId() == null) {
-      logger.warn(Errors.ERROR_NO_PAGE_ID);
-      metrics.meter(Errors.ERROR_NO_PAGE_ID);
-      return true;
+      logError(Errors.ERROR_NO_PAGE_ID);
     }
     // get page id from payload
     int pageId = payload.getPageId();
