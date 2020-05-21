@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate;
 
+import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.error.LocalizedErrorFactoryV3;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
@@ -68,7 +69,12 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res = null;
       try {
-        collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
+        if (body.getEventType() == null) {
+          collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(),
+              requestContext, body);
+        } else if (body.getEventType().getValue().equals(Constants.NOTIFICATION)) {
+          collectionService.collectNotification(request, userCtxProvider.get(), requestContext, body);
+        }
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
@@ -137,37 +143,6 @@ public class EventListenerResource implements EventsApi {
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
-        Tags.STATUS.set(span, "0");
-        // show warning in cal
-        SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
-        try {
-          res = errorFactoryV3.makeWarnResponse(e.getMessage());
-        } catch (Exception ex) {
-          logger.warn(ex.getMessage(), ex);
-        }
-      }
-      return res;
-    }
-  }
-
-  /**
-   * Get method to collect mobile notification
-   * @return response
-   */
-  @Override
-  public Response notification() {
-    Tracer tracer = GlobalTracer.get();
-    try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "notification")
-      .startActive(true)) {
-      Span span = scope.span();
-      Response res = null;
-      try {
-        collectionService.collectNotification(request, userCtxProvider.get(), requestContext);
-        res = Response.status(Response.Status.CREATED).build();
-        Tags.STATUS.set(span, "0");
-      } catch (Exception e) {
-        // logger.warn(e.getMessage(), e);
-        // Tags.STATUS.set(span, e.getMessage());
         Tags.STATUS.set(span, "0");
         // show warning in cal
         SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
