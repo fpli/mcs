@@ -370,7 +370,7 @@
         <!--<artifactId>compliance-evaluator-io-maven-plugin</artifactId>-->
         <!--<version>1.1.5-RELEASE</version>-->
       <!--</plugin>-->
-      <!-- Swagger code generation plugin using custom template library. -->
+      <!--&lt;!&ndash; Swagger code generation plugin using custom template library. &ndash;&gt;-->
       <!--<plugin>-->
         <!--<groupId>io.swagger.codegen.v3</groupId>-->
         <!--<artifactId>swagger-codegen-maven-plugin</artifactId>-->

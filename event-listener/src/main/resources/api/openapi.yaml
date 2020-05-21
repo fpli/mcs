@@ -119,29 +119,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Event'
-  /notification:
-    post:
-      summary: Send one notification event to marketing tracking
-      description: Send one notification event to marketing tracking
-      tags:
-        - notification
-      operationId: notification
-      security:
-        - app_scope_auth:
-            - 'https://api.ebay.com/oauth/scope/@public'
-            - 'https://api.ebay.com/oauth/scope/base@public'
-            - 'https://api.ebay.com/oauth/scope/experience@public'
-      responses:
-        '201':
-          description: Created
-        '400':
-          description: Rejected due to message format
-          content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/errorModel'
-        '500':
-          description: The call was unsuccessful due to exceptions on the Server
   /sync:
     post:
       summary: Send sync event to mcs
@@ -191,23 +168,44 @@ components:
       type: object
       properties:
         targetUrl:
-          type: "string"
-          example: "htttps://www.ebay.com/deals"
+          type: string
+          example: 'htttps://www.ebay.com/deals'
         referrer:
-          type: "string"
-          example: "htttps://www.google.com"
+          type: string
+          example: 'htttps://www.google.com'
         eventType:
-          type: "string"
-          enum: ["click", "notification"]
-        parameters:
-          type: array
-          items:
-            type: object
-            properties:
-              name:
-                type: string
-              value:
-                type: string
+          type: string
+          enum: ['notification']
+        payload:
+          type: object
+          description: Json of soj tags
+          properties:
+            pageId:
+              type: integer
+              format: int32
+              description: page id
+              example: 2054081
+            nid:
+              type: string
+              description: notification id
+              example: '539721811729'
+            ntype:
+              type: string
+              description: notification type
+              example: 'HOT_ITEM'
+            user_name:
+              type: string
+              description: user name
+              example: '91334560c9v'
+            mc3id:
+              type: string
+              description: mc3 canonical message id (only for an mc3 message)
+              example: '1:763c4c33-b389-4016-b38e-83e29f82a1ba:2:70322535'
+            pnact:
+              type: string
+              description: notification action
+              example: '1'
+
     ROIEvent:
       type: object
       properties:

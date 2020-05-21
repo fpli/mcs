@@ -17,10 +17,8 @@ import java.util.Arrays;
 import java.io.Serializable;
 import io.swagger.annotations.*;
 
-import com.ebay.app.raptor.chocolate.gen.model.EventParameters;
+import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.ArrayList;
-import java.util.List;
 import com.fasterxml.jackson.annotation.*;
 
 /**
@@ -28,8 +26,8 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-05-13T16:46:21.310+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "targetUrl","referrer","eventType","parameters" })
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-05-21T15:16:09.146+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "targetUrl","referrer","eventType","payload" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -50,7 +48,6 @@ public class Event implements Serializable {
    */
   public enum EventTypeEnum {
 
-    CLICK("click"),
     NOTIFICATION("notification");
     private String value;
 
@@ -82,9 +79,9 @@ public class Event implements Serializable {
   @JsonProperty("eventType")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private EventTypeEnum eventType = null;
-  @JsonProperty("parameters")
+  @JsonProperty("payload")
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private List<EventParameters> parameters = null;
+  private EventPayload payload = null;
 
   /**
    * Get targetUrl
@@ -123,16 +120,16 @@ public class Event implements Serializable {
     this.eventType = eventType;
   }
   /**
-   * Get parameters
-   * @return parameters
+   * Get payload
+   * @return payload
    **/
   @ApiModelProperty(value = "")
-  public List<EventParameters> getParameters() {
-    return parameters;
+  public EventPayload getPayload() {
+    return payload;
   }
 
-  public void setParameters(List<EventParameters> parameters) {
-    this.parameters = parameters;
+  public void setPayload(EventPayload payload) {
+    this.payload = payload;
   }
   @Override
   public boolean equals(java.lang.Object o) {
@@ -146,12 +143,12 @@ public class Event implements Serializable {
     return Objects.equals(this.targetUrl, event.targetUrl) &&
         Objects.equals(this.referrer, event.referrer) &&
         Objects.equals(this.eventType, event.eventType) &&
-        Objects.equals(this.parameters, event.parameters);
+        Objects.equals(this.payload, event.payload);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(targetUrl, referrer, eventType, parameters);
+    return Objects.hash(targetUrl, referrer, eventType, payload);
   }
 
   @Override
@@ -162,7 +159,7 @@ public class Event implements Serializable {
     sb.append("    targetUrl: ").append(toIndentedString(targetUrl)).append("\n");
     sb.append("    referrer: ").append(toIndentedString(referrer)).append("\n");
     sb.append("    eventType: ").append(toIndentedString(eventType)).append("\n");
-    sb.append("    parameters: ").append(toIndentedString(parameters)).append("\n");
+    sb.append("    payload: ").append(toIndentedString(payload)).append("\n");
     sb.append("}");
     return sb.toString();
   }

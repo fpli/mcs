@@ -11,6 +11,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -673,7 +674,7 @@ public class CollectionService {
 
 
   public boolean collectNotification(HttpServletRequest request, IEndUserContext endUserContext,
-                                     ContainerRequestContext requestContext) throws Exception {
+                                     ContainerRequestContext requestContext, Event event) throws Exception {
 
     if (request.getHeader("X-EBAY-C-TRACKING") == null) {
       logError(Errors.ERROR_NO_TRACKING);
@@ -688,34 +689,15 @@ public class CollectionService {
       logError(Errors.ERROR_NO_USER_AGENT);
     }
 
-    // targetUrl is from request
-    String url = new ServletServerHttpRequest(request).getURI().toString();
-
-    // parse channel from uri
-    // illegal url, rejected
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(url).build();
-    if (uriComponents == null) {
-      logError(Errors.ERROR_ILLEGAL_URL);
-    }
-
-    // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
-    MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
-    if (parameters.size() == 0) {
-      logger.warn(Errors.ERROR_NO_QUERY_PARAMETER);
-      metrics.meter(Errors.ERROR_NO_QUERY_PARAMETER);
-      return true;
-    }
-
     // no page id, accepted
-    if (!parameters.containsKey(Constants.NOTIFICATION_PAGE_ID) ||
-        parameters.get(Constants.NOTIFICATION_PAGE_ID).get(0) == null) {
+    EventPayload payload = event.getPayload();
+    if (payload.getPageId() == null) {
       logger.warn(Errors.ERROR_NO_PAGE_ID);
       metrics.meter(Errors.ERROR_NO_PAGE_ID);
       return true;
     }
-    // parse page id from parameters
-    int pageId = Integer.parseInt(parameters.get(Constants.NOTIFICATION_PAGE_ID).get(0));
+    // get page id from payload
+    int pageId = payload.getPageId();
 
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
@@ -730,12 +712,10 @@ public class CollectionService {
     // add tags all channels need
     addCommonTags(requestContext, "", "", agentInfo, type, action, pageId);
 
-    // add channel specific tags, and produce message for EPN and IMK
-    boolean processFlag = false;
-    processNotification(requestContext, parameters, type, action, pageId);
+    // add channel specific tags
+    processNotification(requestContext, payload, type, action, pageId);
 
-    if (processFlag)
-      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+    stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
           Field.of(PLATFORM, platform), Field.of(PAGE_ID, pageId));
 
     return true;
@@ -1095,35 +1075,35 @@ public class CollectionService {
   /**
    * Process mobile notification event
    */
-  private void processNotification(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
+  private void processNotification(ContainerRequestContext requestContext, EventPayload payload,
                                    String type, String action, int pageId) {
     try {
       // Ubi tracking
-      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext
+          .getProperty(IRequestScopeTracker.NAME);
 
       // event family
       requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
 
       // notification id
-      addTagFromUrlQuery(parameters, requestTracker, Constants.NOTIFICATION_ID, "nid", String.class);
+      if (!StringUtils.isEmpty(payload.getNid()))
+        requestTracker.addTag(Constants.NOTIFICATION_ID, payload.getNid(), String.class);
 
       // notification type
-      addTagFromUrlQuery(parameters, requestTracker, Constants.NOTIFICATION_TYPE, "ntype", String.class);
-
-      // notification type evt
-      addTagFromUrlQuery(parameters, requestTracker, Constants.NOTIFICATION_TYPE_EVT, "evt", String.class);
+      if (!StringUtils.isEmpty(payload.getNtype()))
+        requestTracker.addTag(Constants.NOTIFICATION_TYPE, payload.getNtype(), String.class);
 
       // notification action
-      addTagFromUrlQuery(parameters, requestTracker, Constants.NOTIFICATION_ACTION, "pnact", String.class);
-
-      // item id
-      addTagFromUrlQuery(parameters, requestTracker, Constants.ITEM_ID, "itm", String.class);
+      if (!StringUtils.isEmpty(payload.getPnact()))
+        requestTracker.addTag(Constants.NOTIFICATION_ACTION, payload.getPnact(), String.class);
 
       // user name
-      addTagFromUrlQuery(parameters, requestTracker, Constants.USER_NAME, "user_name", String.class);
+      if (!StringUtils.isEmpty(payload.getUserName()))
+        requestTracker.addTag(Constants.USER_NAME, payload.getUserName(), String.class);
 
       // mc3 canonical message id
-      addTagFromUrlQuery(parameters, requestTracker, Constants.MC3_MSSG_ID, "mc3id", String.class);
+      if (!StringUtils.isEmpty(payload.getMc3id()))
+        requestTracker.addTag(Constants.MC3_MSSG_ID, payload.getMc3id(), String.class);
 
     } catch (Exception e) {
       logger.warn("Error when tracking ubi for mobile notification tags", e);

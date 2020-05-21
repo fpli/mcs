@@ -40,14 +40,12 @@ public class Constants {
   public static final String REDIRECT_SRC_SOJ_SOURCE = "adcamp_locationsrc";
   public static final String ADOBE_CAMP_PUBLIC_USER_ID = "pu";
 
-  // Mobile Notification params
-  public static final String NOTIFICATION_PAGE_ID = "imp";
+  // Mobile Notification name and soj tags
+  public static final String NOTIFICATION = "notification";
   public static final String NOTIFICATION_ID = "nid";
   public static final String NOTIFICATION_TYPE = "ntype";
-  public static final String NOTIFICATION_TYPE_EVT = "evt";
   public static final String NOTIFICATION_ACTION = "pnact";
-  public static final String ITEM_ID = "itm";
-  public static final String USER_NAME = "usrname";
+  public static final String USER_NAME = "user_name";
   public static final String MC3_MSSG_ID = "mc3id";
 
   // Redirection header name
