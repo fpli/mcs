@@ -184,7 +184,7 @@ components:
             pageId:
               type: integer
               format: int32
-              description: page id, it's mandotary for notification
+              description: page id, mandotary for notification
               example: 2054081
             nid:
               type: string
@@ -206,6 +206,14 @@ components:
               type: string
               description: notification action
               example: '1'
+            itm:
+              type: string
+              description: item id
+              example: '122931100413'
+            evt:
+              type: string
+              description: notification type (some notifications)
+              example: 'WATCHITM'
 
     ROIEvent:
       type: object

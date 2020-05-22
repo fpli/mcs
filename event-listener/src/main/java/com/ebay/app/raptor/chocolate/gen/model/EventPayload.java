@@ -25,8 +25,8 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 @ApiModel(description = "Json of soj tags")
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-05-21T17:31:11.377+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "pageId","nid","ntype","userName","mc3id","pnact" })
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-05-22T11:08:35.306+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "pageId","nid","ntype","userName","mc3id","pnact","itm","evt" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -54,12 +54,18 @@ public class EventPayload implements Serializable {
   @JsonProperty("pnact")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String pnact = null;
+  @JsonProperty("itm")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private String itm = null;
+  @JsonProperty("evt")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private String evt = null;
 
   /**
-   * page id, it&#x27;s mandotary for notification
+   * page id, mandotary for notification
    * @return pageId
    **/
-  @ApiModelProperty(example = "2054081", value = "page id, it's mandotary for notification")
+  @ApiModelProperty(example = "2054081", value = "page id, mandotary for notification")
   public Integer getPageId() {
     return pageId;
   }
@@ -127,6 +133,30 @@ public class EventPayload implements Serializable {
   public void setPnact(String pnact) {
     this.pnact = pnact;
   }
+  /**
+   * item id
+   * @return itm
+   **/
+  @ApiModelProperty(example = "122931100413", value = "item id")
+  public String getItm() {
+    return itm;
+  }
+
+  public void setItm(String itm) {
+    this.itm = itm;
+  }
+  /**
+   * notification type (some notifications)
+   * @return evt
+   **/
+  @ApiModelProperty(example = "WATCHITM", value = "notification type (some notifications)")
+  public String getEvt() {
+    return evt;
+  }
+
+  public void setEvt(String evt) {
+    this.evt = evt;
+  }
   @Override
   public boolean equals(java.lang.Object o) {
     if (this == o) {
@@ -141,12 +171,14 @@ public class EventPayload implements Serializable {
         Objects.equals(this.ntype, eventPayload.ntype) &&
         Objects.equals(this.userName, eventPayload.userName) &&
         Objects.equals(this.mc3id, eventPayload.mc3id) &&
-        Objects.equals(this.pnact, eventPayload.pnact);
+        Objects.equals(this.pnact, eventPayload.pnact) &&
+        Objects.equals(this.itm, eventPayload.itm) &&
+        Objects.equals(this.evt, eventPayload.evt);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(pageId, nid, ntype, userName, mc3id, pnact);
+    return Objects.hash(pageId, nid, ntype, userName, mc3id, pnact, itm, evt);
   }
 
   @Override
@@ -160,6 +192,8 @@ public class EventPayload implements Serializable {
     sb.append("    userName: ").append(toIndentedString(userName)).append("\n");
     sb.append("    mc3id: ").append(toIndentedString(mc3id)).append("\n");
     sb.append("    pnact: ").append(toIndentedString(pnact)).append("\n");
+    sb.append("    itm: ").append(toIndentedString(itm)).append("\n");
+    sb.append("    evt: ").append(toIndentedString(evt)).append("\n");
     sb.append("}");
     return sb.toString();
   }

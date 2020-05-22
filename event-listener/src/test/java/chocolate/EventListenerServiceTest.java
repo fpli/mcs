@@ -523,6 +523,8 @@ public class EventListenerServiceTest {
     payload.setUserName("91334560c9v");
     payload.setMc3id("1:763c4c33-b389-4016-b38e-83e29f82a1ba:2:70322535");
     payload.setPnact("1");
+    payload.setItm("122931100413");
+    payload.setEvt("WATCHITM");
     event.setPayload(payload);
 
     // success request

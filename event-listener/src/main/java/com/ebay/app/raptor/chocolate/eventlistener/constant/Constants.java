@@ -46,6 +46,8 @@ public class Constants {
   public static final String NOTIFICATION_ACTION = "pnact";
   public static final String USER_NAME = "user_name";
   public static final String MC3_MSSG_ID = "mc3id";
+  public static final String ITEM_ID = "itm";
+  public static final String NOTIFICATION_TYPE_EVT = "evt";
 
   // Redirection header name
   public static final String NODE_REDIRECTION_HEADER_NAME = "x-ebay-tracking-marketing-status-code";
