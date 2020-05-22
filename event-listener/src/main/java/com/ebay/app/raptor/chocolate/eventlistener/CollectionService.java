@@ -1100,6 +1100,14 @@ public class CollectionService {
       if (!StringUtils.isEmpty(payload.getMc3id()))
         requestTracker.addTag(Constants.MC3_MSSG_ID, payload.getMc3id(), String.class);
 
+      // item id
+      if (!StringUtils.isEmpty(payload.getItm()))
+        requestTracker.addTag(Constants.ITEM_ID, payload.getItm(), String.class);
+
+      // notification type evt
+      if (!StringUtils.isEmpty(payload.getEvt()))
+        requestTracker.addTag(Constants.NOTIFICATION_TYPE_EVT, payload.getEvt(), String.class);
+
     } catch (Exception e) {
       logger.warn("Error when tracking ubi for mobile notification tags", e);
       metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
