@@ -70,6 +70,7 @@ public class ListenerServletContextInitializer implements ServletContextInitiali
         serviceServlet.setInitParameter(options.OUTPUT_HTTPS_PORT, Integer.toString(options.getOutputHttpsPort()));
         serviceServlet.setInitParameter(options.INPUT_HTTP_PORT, Integer.toString(options.getInputHttpPort()));
         serviceServlet.setInitParameter(options.INPUT_HTTPS_PORT, Integer.toString(options.getInputHttpsPort()));
+        serviceServlet.setInitParameter(options.VI_PORT, Integer.toString(options.getViPort()));
         // Use preserveHost to keep Host Header in the proxy request
         serviceServlet.setInitParameter("preserveHost", "true");
         serviceServlet.setAsyncSupported(true);

@@ -49,6 +49,9 @@ public class JettyServerConfiguration {
           final NetworkTrafficServerConnector connectorHttps = new NetworkTrafficServerConnector(server);
           connectorHttps.setPort(options.getInputHttpsPort());
           server.addConnector(connectorHttps);
+          final NetworkTrafficServerConnector connectorValidateInternals = new NetworkTrafficServerConnector(server);
+          connectorValidateInternals.setPort(options.getViPort());
+          server.addConnector(connectorValidateInternals);
         }
       });
       return factory;
