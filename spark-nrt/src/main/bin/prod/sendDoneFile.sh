@@ -9,11 +9,11 @@ echo "INPUT_FILE=$INPUT_FILE"
 
 ############### ETL server for EPN NRT ########
 ETL_HOST=etl_epn_nrt_push@lvsdpeetl015.lvs.ebay.com
-ETL_PATH=/dw/etl/home/prod/land/dw_ams/nrt_test
+ETL_PATH=/dw/etl/home/prod/land/dw_ams/nrt
 ETL_TOKEN=/datashare/mkttracking/tools/rsa_token/nrt_etl_key
 
 ############################################# Send To ETL Server #####################################################
-echo "=================== start sending done file ================"
+echo "=================== start sending done file ================"  | tee -a ${log_file}
 
 #max 3 times copy data to ETL
 retry=1
