@@ -1,10 +1,13 @@
 package com.ebay.traffic.chocolate.sparknrt.capping
 
+import java.util.Properties
+
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMessage}
 import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import org.apache.avro.generic.GenericRecord
+import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.parquet.avro.AvroParquetWriter
@@ -179,6 +182,32 @@ class TestCappingRuleJobPaidSearch extends BaseFunSuite {
 
     // handle 4th meta containing 1 meta 1 date 1 file, no events
     job.run()
+
+    // validate .imketl meta file exists
+    val properties = new Properties()
+    properties.load(getClass.getClassLoader.getResourceAsStream("capping_rule.properties"))
+    assert(properties.getProperty("meta.output.suffix").equals(".detection,.epnnrt,.monitoring,.imketl"))
+    val cappingOutputMeta = Metadata(workDir, channel, MetadataEnum.capping)
+    val source = cappingOutputMeta.readDedupeOutputMeta()
+    val target = cappingOutputMeta.readDedupeOutputMeta(".imketl")
+    assert(source.length == target.length)
+    for (i <- source.indices) {
+      val fileName = source(i)._1
+      val targetFileName = target(i)._1
+      // validate meta file name
+      assert((fileName + ".imketl").equals(targetFileName))
+      // validate meta file content
+      source(i)._2.foreach(kv => {
+        val key = kv._1
+        val value = kv._2
+        assert(value.sameElements(target(i)._2(key)))
+      })
+      target(i)._2.foreach(kv => {
+        val key = kv._1
+        val value = kv._2
+        assert(value.sameElements(source(i)._2(key)))
+      })
+    }
 
     val df1 = job.readFilesAsDFEx(Array(outputDir + "/" + channel + "/capping" + "/date=2018-01-01/"))
     df1.show()

@@ -8,6 +8,35 @@ info:
   version: 1.0.0
   title: service-tracking-events
 paths:
+  /roi:
+    post:
+      summary: Send roi event to marketing tracking
+      description: Send roi event to marketing tracking
+      tags:
+        - roi
+      operationId: roi
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Rejected due to message format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorModel'
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ROIEvent'
   /events:
     post:
       summary: Send one event to marketing tracking
@@ -85,12 +114,88 @@ paths:
                 $ref: '#/components/schemas/errorModel'
         '500':
           description: The call was unsuccessful due to exceptions on the Server
+  /impression:
+    post:
+      summary: Send one impression event to marketing tracking
+      description: Send one event to marketing tracking
+      tags:
+        - impression
+      operationId: impression
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Rejected due to message format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorModel'
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Event'
+  /notification:
+    post:
+      summary: Send one notification event to marketing tracking
+      description: Send one notification event to marketing tracking
+      tags:
+        - notification
+      operationId: notification
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Rejected due to message format
+          content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/errorModel'
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+  /sync:
+    post:
+      summary: Send sync event to mcs
+      description: Send sync event to mcs
+      tags:
+        - sync
+      operationId: sync
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Rejected due to message format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorModel'
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+
 components:
   securitySchemes:
     app_scope_auth:
@@ -113,8 +218,28 @@ components:
           type: string
           example: 'htttps://www.ebay.com/deals'
         referrer:
-          type: string
-          example: 'htttps://www.google.com'
+          type: "string"
+          example: "htttps://www.google.com"
+    ROIEvent:
+      type: object
+      properties:
+        transType:
+          type: "string"
+          example: "BO-MobileApp"
+        uniqueTransactionId:
+          type: "string"
+          example: "1677235978009"
+        itemId:
+          type: "string"
+          example: "192658398245"
+        transactionTimestamp:
+          type: "string"
+          example: "1576108800000"
+        payload:
+          type: object
+          example: '{"transactionTimestamp":"aaa","siteId":"bbbb"}'
+          additionalProperties:
+            type: string
     errorData:
       type: object
       description: >

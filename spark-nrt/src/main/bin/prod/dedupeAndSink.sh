@@ -29,8 +29,6 @@ EXECUTOR_CORES=1
 
 JOB_NAME="DedupeAndSink"
 
-SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
-
 for f in $(find $bin/../../conf/prod -name '*.*');
 do
   FILES=${FILES},file://$f;
@@ -48,7 +46,6 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=8192 \
-    --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \

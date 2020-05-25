@@ -17,15 +17,14 @@ bin=`cd "$bin">/dev/null; pwd`
 WORK_DIR=$1
 RESOURCE_DIR=$2
 FILTER_TIME=$3
-OUTPUT_DIR=$4
+OUTPUT_DIR=/apps/epn-nrt
 
-DRIVER_MEMORY=6g
-EXECUTOR_NUMBER=40
-EXECUTOR_MEMORY=8g
-EXECUTOR_CORES=5
+DRIVER_MEMORY=15g
+EXECUTOR_NUMBER=50
+EXECUTOR_MEMORY=30g
+EXECUTOR_CORES=10
 
-JOB_NAME="EPN_Nrt"
-SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
+JOB_NAME="Chocolate_EPN_NRT"
 
 for f in $(find $bin/../../conf/prod -name '*.*');
 do
@@ -43,12 +42,14 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
-    --conf spark.yarn.executor.memoryOverhead=8192 \
-    --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
+    --conf spark.yarn.executor.memoryOverhead=2048 \
+    --conf spark.speculation=true \
+    --conf spark.speculation.quantile=0.5 \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
       --workDir ${WORK_DIR} \
+      --partitions 3 \
       --resourceDir ${RESOURCE_DIR} \
       --filterTime ${FILTER_TIME} \
       --outputDir ${OUTPUT_DIR}

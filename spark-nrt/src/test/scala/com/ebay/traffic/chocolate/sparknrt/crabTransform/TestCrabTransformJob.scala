@@ -4,6 +4,7 @@ import java.io.File
 
 import com.ebay.traffic.chocolate.spark.{BaseFunSuite, BaseSparkJob}
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
+import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.Row
@@ -16,6 +17,7 @@ class TestCrabTransformJob extends BaseFunSuite{
   private val dataDir = tmpPath + "/dataDir"
   private val outPutDir = tmpPath + "/outPutDir/"
   private val kwDataDir = tmpPath + "/kwData/"
+  private val schemaTfs = TableSchema("df_imk.json")
 
   @transient private lazy val hadoopConf = {
     new Configuration()
@@ -50,23 +52,32 @@ class TestCrabTransformJob extends BaseFunSuite{
   test ("Test crabTransform Input") {
     val params = Parameter(args)
     val job = new CrabTransformJob(params)
+    // prepare test data
+    val dataDf = job.readFilesAsDFEx(Array(tmpPath + "/imk_rvr_trckng_testData.csv"), schemaTfs.dfSchema, "csv", "bel")
+    dataDf.write.parquet(dataDir + "/date=2018-05-01/imk_rvr_trckng_testData")
+
     var crabTransformMeta = job.metadata.readDedupeOutputMeta()
     val metas = job.mergeMetaFiles(crabTransformMeta)
     metas.foreach(f = datesFile => {
       val date = datesFile._1
-      val df = job.readFilesAsDFEx(datesFile._2, job.schema_tfs.dfSchema, "csv2", "bel")
+      val df = job.readFilesAsDFEx(datesFile._2)
           .filter(_.getAs[Long]("rvr_id") != null)
       assert(df.count() ==  4)
     })
     job.stop()
+
+    fs.delete(new Path(dataDir), true)
   }
 
   test("Test crabTransformJob") {
     val params = Parameter(args)
     val job = new CrabTransformJob(params)
+    // prepare test data
+    val dataDf = job.readFilesAsDFEx(Array(tmpPath + "/imk_rvr_trckng_testData.csv"), schemaTfs.dfSchema, "csv", "bel")
+    dataDf.write.parquet(dataDir + "/date=2018-05-01/imk_rvr_trckng_testData")
     // prepare keyword lookup data
-    val df = job.spark.read.format("csv").option("header", "true").option("delimiter", "\t").load(tmpPath + "/kwData.csv")
-    df.write.parquet(kwDataDir)
+    val kwDf = job.spark.read.format("csv").option("header", "true").option("delimiter", "\t").load(tmpPath + "/kwData.csv")
+    kwDf.write.parquet(kwDataDir)
     job.run()
     val status1 = fs.listStatus(new Path(outPutDir + "/imkOutput"))
     assert(status1.nonEmpty)
@@ -76,15 +87,16 @@ class TestCrabTransformJob extends BaseFunSuite{
     assert(status3.nonEmpty)
 
     println(job.getUserIdByCguid("", "1eb2d8b915c0a9e807109ca3f924b4c2", "1"))
+    fs.delete(new Path(dataDir), true)
   }
 
   def createTestData(): Unit = {
     val metadata = Metadata(workDir, "crabDedupe", MetadataEnum.dedupe)
-    val dateFiles = DateFiles("date=2018-05-01", Array(dataDir + "/date=2018-05-01/imk_rvr_trckng_testData.csv"))
+    val dateFiles = DateFiles("date=2018-05-01", Array(dataDir + "/date=2018-05-01/imk_rvr_trckng_testData"))
     val meta: MetaFiles = MetaFiles(Array(dateFiles))
 
     metadata.writeDedupeOutputMeta(meta)
-    fs.copyFromLocalFile(new Path(new File("src/test/resources/crabTransform.data/imk_rvr_trckng_testData.csv").getAbsolutePath), new Path(dataDir + "/date=2018-05-01/imk_rvr_trckng_testData.csv"))
+    fs.copyFromLocalFile(new Path(new File("src/test/resources/crabTransform.data/imk_rvr_trckng_testData.csv").getAbsolutePath), new Path(tmpPath + "/imk_rvr_trckng_testData.csv"))
     fs.copyFromLocalFile(new Path(new File("src/test/resources/crabTransform.data/kwData.csv").getAbsolutePath), new Path(tmpPath + "/kwData.csv"))
   }
 
