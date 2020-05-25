@@ -58,7 +58,7 @@ public class ListenerOptions extends AbstractApplicationOptions implements
     public static final String INPUT_HTTPS_PORT = "https.port";
     public static final String OUTPUT_HTTP_PORT = "lb.http.port";
     public static final String OUTPUT_HTTPS_PORT = "lb.https.port";
-    public static final String VI_PORT = "vi.port";
+    public static final String VALIDATE_INTERNALS_PORT = "validate.internals.port";
     public static final String PROXY = "proxyTo";
 
     public static final String COUCHBASE_DATASOURCE = "chocolate.listener.couchbase.datasource";
@@ -276,8 +276,8 @@ public class ListenerOptions extends AbstractApplicationOptions implements
     public int getOutputHttpsPort() { return ApplicationOptionsParser.getNumericProperty(properties, OUTPUT_HTTPS_PORT, 443, 9000);
     }
 
-    public int getViPort() {
-        return ApplicationOptionsParser.getNumericProperty(properties, VI_PORT, 8000, 9000);
+    public int getValidateInternalsPort() {
+        return ApplicationOptionsParser.getNumericProperty(properties, VALIDATE_INTERNALS_PORT, 8000, 9000);
     }
 
     public String getProxy() {

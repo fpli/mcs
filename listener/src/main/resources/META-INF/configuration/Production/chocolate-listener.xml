@@ -110,7 +110,7 @@
     </value-attributes>
   </property>
   <property>
-    <name>vi.port</name>
+    <name>validate.internals.port</name>
     <value>8083</value>
     <description>Validate Internals port, should be 8083.</description>
     <value-attributes>
