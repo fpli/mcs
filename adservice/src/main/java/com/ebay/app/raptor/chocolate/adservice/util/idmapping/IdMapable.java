@@ -1,6 +1,5 @@
 package com.ebay.app.raptor.chocolate.adservice.util.idmapping;
 
-import com.mysql.cj.util.StringUtils;
 import org.springframework.stereotype.Service;
 
 /**
