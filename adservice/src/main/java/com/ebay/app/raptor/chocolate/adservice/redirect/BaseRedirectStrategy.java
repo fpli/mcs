@@ -146,10 +146,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     }
 
     // Adobe needs additional parameters
-    if (EmailPartnerIdEnum.ADOBE.getPartner().equals(redirectionEvent.getPartner())) {
-      uriBuilder.addParameter(REDIRECT_URL_SOJ_TAG, redirectionEvent.getRedirectUrl())
-          .addParameter(REDIRECT_SRC_SOJ_TAG, redirectionEvent.getRedirectSource());
-    }
+    addAdobeParams(uriBuilder);
 
     // generate marketing event
     MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
@@ -198,6 +195,9 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
           }
           uriBuilder.addParameter(key, parameters.getFirst(key));
         }
+
+        // Adobe need additional params
+        addAdobeParams(uriBuilder);
 
         redirectionEvent.setRedirectUrl(uriBuilder.build().toString());
       } catch (URISyntaxException e) {
@@ -248,6 +248,16 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     }
     else
       return null;
+  }
+
+  /**
+   * Adobe need to add adcamp_landingpage and adcamp_locationsrc
+   */
+  private void addAdobeParams(URIBuilder uriBuilder) {
+    if (EmailPartnerIdEnum.ADOBE.getPartner().equals(redirectionEvent.getPartner())) {
+      uriBuilder.addParameter(REDIRECT_URL_SOJ_TAG, redirectionEvent.getRedirectUrl())
+          .addParameter(REDIRECT_SRC_SOJ_TAG, redirectionEvent.getRedirectSource());
+    }
   }
 
 }

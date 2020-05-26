@@ -64,6 +64,7 @@ public class ListenerOptionsTest {
         prop.put(ListenerOptions.INPUT_HTTPS_PORT, "8082");
         prop.put(ListenerOptions.OUTPUT_HTTP_PORT, "80");
         prop.put(ListenerOptions.OUTPUT_HTTPS_PORT, "443");
+        prop.put(ListenerOptions.VALIDATE_INTERNALS_PORT, "8083");
         prop.put(ListenerOptions.MAX_THREADS, "250");
         prop.put(ListenerOptions.PROXY, "rover.qa.ebay.com");
 
@@ -74,6 +75,7 @@ public class ListenerOptionsTest {
         assertEquals(8082, options.getInputHttpsPort());
         assertEquals(80, options.getOutputHttpPort());
         assertEquals(443, options.getOutputHttpsPort());
+        assertEquals(8083, options.getValidateInternalsPort());
         assertEquals(250, options.getMaxThreads());
         assertEquals("rover.qa.ebay.com", options.getProxy());
     }

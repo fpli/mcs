@@ -21,6 +21,7 @@ import com.couchbase.client.java.document.json.JsonObject
 import rx.Observable
 import rx.functions.Func1
 import com.couchbase.client.java.document.JsonDocument
+import org.apache.commons.lang3.StringUtils
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
@@ -44,6 +45,12 @@ class DedupeAndSink(params: Parameter)
   @transient var properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("kafka.properties"))
+    properties
+  }
+
+  @transient var jobProperties: Properties = {
+    val properties = new Properties()
+    properties.load(getClass.getClassLoader.getResourceAsStream("dedupe_and_sink.properties"))
     properties
   }
 
@@ -94,6 +101,12 @@ class DedupeAndSink(params: Parameter)
     fs.mkdirs(new Path(baseDir))
     fs.mkdirs(new Path(baseTempDir))
     fs.mkdirs(new Path(sparkDir))
+
+    val suffix = jobProperties.getProperty("meta.output.suffix")
+    var suffixArray: Array[String] = Array()
+    if (StringUtils.isNotEmpty(suffix)) {
+      suffixArray = suffix.split(",")
+    }
 
     val kafkaRDD = new KafkaRDD[lang.Long, FilterMessage](
       sc, params.kafkaTopic, properties, params.elasticsearchUrl, params.maxConsumeSize)
@@ -166,7 +179,7 @@ class DedupeAndSink(params: Parameter)
       metaFiles = new MetaFiles(dates.map(date => dedupeThisAndLastMeta(date)))
 
       metadata.writeDedupeCompMeta(metaFiles)
-      metadata.writeDedupeOutputMeta(metaFiles)
+      metadata.writeDedupeOutputMeta(metaFiles, suffixArray)
     }
     // commit offsets of kafka RDDs
     kafkaRDD.commitOffsets()

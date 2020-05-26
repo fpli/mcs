@@ -17,7 +17,7 @@ class TestCalCrabTransformWatermark extends BaseFunSuite {
   private val imkCrabTransformDataDir = tmpPath + "/imkTransformMerged/imkOutput"
   private val dedupAndSinkKafkaLagDir = tmpPath + "/last_ts"
   private val outPutDir = tmpPath + "/outPutDir"
-  private val channels = "PAID_SEARCH"
+  private val channels = "PAID_SEARCH,ROI,crabDedupe"
 
   private val localDir = "src/test/resources/crabTransformWatermark.data"
 
@@ -62,6 +62,8 @@ class TestCalCrabTransformWatermark extends BaseFunSuite {
 //    assert(job.readFileContent(new Path(outPutDir + "/crabTransformWatermark"), fs).equals("1567350689871"))
     assert(job.readFileContent(new Path(outPutDir + "/imkCrabTransformWatermark"), fs).equals("1567351002591"))
     assert(job.readFileContent(new Path(outPutDir + "/dedupAndSinkWatermark_PAID_SEARCH"), fs).equals("1569720941824"))
+    assert(job.readFileContent(new Path(outPutDir + "/dedupAndSinkWatermark_ROI"), fs).equals("1569720941824"))
+    assert(job.readFileContent(new Path(outPutDir + "/dedupAndSinkWatermark_crabDedupe"), fs).equals("1569720943443"))
   }
 
   def createTestData(): Unit = {
@@ -73,6 +75,10 @@ class TestCalCrabTransformWatermark extends BaseFunSuite {
 
     fs.copyFromLocalFile(new Path(new File(localDir + "/" + lastTsDir + "/PAID_SEARCH/0").getAbsolutePath), new Path(dedupAndSinkKafkaLagDir + "/PAID_SEARCH/0"))
     fs.copyFromLocalFile(new Path(new File(localDir + "/" + lastTsDir + "/PAID_SEARCH/1").getAbsolutePath), new Path(dedupAndSinkKafkaLagDir + "/PAID_SEARCH/1"))
+
+    fs.copyFromLocalFile(new Path(new File(localDir + "/" + lastTsDir + "/PAID_SEARCH/0").getAbsolutePath), new Path(dedupAndSinkKafkaLagDir + "/ROI/0"))
+
+    fs.copyFromLocalFile(new Path(new File(localDir + "/" + lastTsDir + "/PAID_SEARCH/1").getAbsolutePath), new Path(dedupAndSinkKafkaLagDir + "/crabDedupe/crab_min_ts"))
   }
 
 }

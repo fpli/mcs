@@ -48,7 +48,27 @@ public enum LogicalChannelEnum {
   /**
    * MARKETING EMAIL channel
    */
-  MRKT_EMAIL(ChannelType.MRKT_EMAIL, ChannelActionEnum.CLICK, ChannelActionEnum.EMAIL_OPEN);
+  MRKT_EMAIL(ChannelType.MRKT_EMAIL, ChannelActionEnum.CLICK, ChannelActionEnum.EMAIL_OPEN),
+
+  /**
+   * Marketing SMS channel
+   */
+  MRKT_SMS(ChannelType.MRKT_SMS, ChannelActionEnum.CLICK),
+
+  /**
+   * Site SMS channel
+   */
+  SITE_SMS(ChannelType.SITE_SMS, ChannelActionEnum.CLICK),
+
+  /**
+   * ROI channel
+   */
+  ROI(ChannelType.ROI, ChannelActionEnum.ROI);
+
+ /* *//**
+   * New ROI Test channel
+   *//*
+  NEW_ROI(ChannelType.NEW_ROI, ChannelActionEnum.ROI, ChannelActionEnum.ROI);*/
 
   /**
    * Construct of valid Rover actions for this logical channel

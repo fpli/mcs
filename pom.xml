@@ -9,7 +9,7 @@
   </parent>
   <groupId>com.ebay.traffic</groupId>
   <artifactId>chocolate</artifactId>
-  <version>3.6.0-RELEASE</version>
+  <version>3.6.1-RELEASE</version>
   <name>chocolate</name>
   <packaging>pom</packaging>
 
@@ -29,7 +29,7 @@
     <zookeeper.version>3.4.6</zookeeper.version>
     <curator.version>4.0.1</curator.version>
     <couchbase.client.version>2.7.11</couchbase.client.version>
-    <dukes.version>1.6.4.raptorio</dukes.version>
+    <dukes.version>1.6.6.raptorio</dukes.version>
     <rheos.version>2.0.5-SNAPSHOT</rheos.version>
     <kafka.version>2.0.1</kafka.version>
     <metrics.version>1.2.5-RELEASE</metrics.version>

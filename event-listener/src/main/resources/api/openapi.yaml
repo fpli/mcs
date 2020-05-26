@@ -4,10 +4,40 @@ servers:
   - url: 'http://api.ebay.com/marketingtracking/v1'
     description: Marketing tracking collection services
 info:
-  description: marketing tracking compoent to receive marketing events
+  description: >-
+    marketing tracking compoent to receive marketing events
   version: 1.0.0
   title: service-tracking-events
 paths:
+  /roi:
+    post:
+      summary: Send roi event to marketing tracking
+      description: Send roi event to marketing tracking
+      tags:
+        - roi
+      operationId: roi
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Rejected due to message format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorModel'
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ROIEvent'
   /events:
     post:
       summary: Send one event to marketing tracking
@@ -15,6 +45,58 @@ paths:
       tags:
         - events
       operationId: event
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Rejected due to message format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorModel'
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+  /getVersion:
+    get:
+      summary: Get api version
+      description: Get marketing tracking api version
+      tags:
+        - version
+      operationId: version
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '200':
+          description: version number
+        '400':
+          description: Rejected due to message format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorModel'
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+  /impression:
+    post:
+      summary: Send one impression event to marketing tracking
+      description: Send one event to marketing tracking
+      tags:
+        - impression
+      operationId: impression
       security:
         - app_scope_auth:
             - 'https://api.ebay.com/oauth/scope/@public'
@@ -55,20 +137,18 @@ paths:
         '400':
           description: Rejected due to message format
           content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorModel'
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/errorModel'
         '500':
           description: The call was unsuccessful due to exceptions on the Server
-  /impression:
+  /sync:
     post:
-      summary: >-
-        Send one impression event to marketing tracking. (Chocolate internal use
-        only)
-      description: Send one event to marketing tracking
+      summary: Send sync event to mcs
+      description: Send sync event to mcs
       tags:
-        - impression
-      operationId: impression
+        - sync
+      operationId: sync
       security:
         - app_scope_auth:
             - 'https://api.ebay.com/oauth/scope/@public'
@@ -91,6 +171,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Event'
+
 components:
   securitySchemes:
     app_scope_auth:
@@ -110,30 +191,48 @@ components:
       type: object
       properties:
         targetUrl:
-          type: string
-          example: 'htttps://www.ebay.com/deals'
+          type: "string"
+          example: "htttps://www.ebay.com/deals"
         referrer:
-          type: string
-          example: 'htttps://www.google.com'
+          type: "string"
+          example: "htttps://www.google.com"
+    ROIEvent:
+      type: object
+      properties:
+        transType:
+          type: "string"
+          example: "BO-MobileApp"
+        uniqueTransactionId:
+          type: "string"
+          example: "1677235978009"
+        itemId:
+          type: "string"
+          example: "192658398245"
+        transactionTimestamp:
+          type: "string"
+          example: "1576108800000"
+        payload:
+          type: object
+          example: '{"transactionTimestamp":"aaa","siteId":"bbbb"}'
+          additionalProperties:
+            type: string
     errorData:
       type: object
       description: >
-        Detail of each error modeled based on the cos error and exceptions
-        spec:
-        https://github.corp.ebay.com/commerceos/cos-error-and-exceptions/blob/master/error-and-exception-handling.md
+        Detail of each error modeled based on the cos error and exceptions spec:  https://github.corp.ebay.com/commerceos/cos-error-and-exceptions/blob/master/error-and-exception-handling.md
       properties:
         errorId:
           example:
-            '4000': No User-Agent header
-            '4001': No X-EBAY-C-ENDUSERCTX header
-            '4002': No X-EBAY-C-TRACKING header
-            '4003': No Referer in header nor in post body
-            '4004': Illegal URL
-            '4005': No query parameter
-            '4006': No mkevt
-            '4007': Invalid mkevt
-            '4008': Invalid X-EBAY-C-ENDUSERCTX header
-            '5000': Internal Service Error
+            4000: No User-Agent header
+            4001: No X-EBAY-C-ENDUSERCTX header
+            4002: No X-EBAY-C-TRACKING header
+            4003: No Referer in header nor in post body
+            4004: Illegal URL
+            4005: No query parameter
+            4006: No mkevt
+            4007: Invalid mkevt
+            4008: Invalid X-EBAY-C-ENDUSERCTX header
+            5000: Internal Service Error
           type: number
           description: Value indicates type of error
         domain:
@@ -147,11 +246,11 @@ components:
         category:
           type: string
           example:
-            REQUEST: 'Incorrect request e.g. auth, headers etc (Error Code 4xxx)'
+            REQUEST: Incorrect request e.g. auth, headers etc (Error Code 4xxx)
             APPLICATION: Service related runtime exception (Error Code 5xxx)
           enum:
-            - REQUEST
-            - APPLICATION
+            - REQUEST # Issues with the request e.g. auth, headers etc.
+            - APPLICATION # application/runtime exception
         message:
           type: string
         longMessage:

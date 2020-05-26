@@ -103,7 +103,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           var df = readFilesAsDFEx(datesFile._2)
           val size = datesFile._2.length
           //if the dataframe is empty, just continue
-          if (df.take(1).isEmpty)
+          if (df.rdd.isEmpty)
             break
           df = df.repartition(properties.getProperty("epnnrt.repartition").toInt)
           val epnNrtCommon = new EpnNrtCommon(params, df)
@@ -118,6 +118,9 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           // filter publisher 5574651234
           df = df.withColumn("publisher_filter", epnNrtCommon.filter_specific_pub_udf(col("referer"), col("publisher_id")))
           df = df.filter(col("publisher_filter") === "0")
+
+          // filter uri && referer are ebay sites (long term traffic from ebay sites)
+          df = df.filter(epnNrtCommon.filter_longterm_ebaysites_ref_udf(col("uri"), col("referer")))
 
           // filter click and impression data, and if there is filterTime, filter the data older than filter time
           var df_click = df.filter(col("channel_action") === "CLICK")
@@ -320,7 +323,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     }
 
     val fileStatus = fs.listStatus(new Path(sparkDir))
-    val files = fileStatus.filter(status => status.getPath.getName != "_SUCCESS")
+    val files = fileStatus.filter(status => status.isFile && status.getPath.getName != "_SUCCESS")
       .zipWithIndex
       .map(swi => {
         val src = swi._1.getPath

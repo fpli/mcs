@@ -245,7 +245,7 @@ public class AdserviceResourceTest {
     parameters.put("mkcid", "8");
     parameters.put("mkpid", "14");
     parameters.put("emsid", "0");
-    parameters.put("sojTags", "adcampid%3Did%2Cadcamppu%3Dpu%2Ccrd%3Dcrd%2Csegname%3Dsegname");
+    parameters.put("sojTags", "adcampid=id,adcamppu=pu,crd=crd,segname=segname");
     parameters.put("id", "h1d3e4e16,2d2cb515,2d03a0a1");
     parameters.put("segname", "SOP708_SG49");
     parameters.put("pu", "hrtHY5sgRPq");
@@ -257,7 +257,8 @@ public class AdserviceResourceTest {
     assertEquals(301, response.getStatus());
     assertEquals("https://www.ebay.de/deals?country=US&mkcid=8&emsid=0&sojTags=adcampid%3Did%2C" +
         "adcamppu%3Dpu%2Ccrd%3Dcrd%2Csegname%3Dsegname&segname=SOP708_SG49&pu=hrtHY5sgRPq&mkevt=1&adobeParams=" +
-        "id%2Cp1%2Cp2%2Cp3%2Cp4&id=h1d3e4e16%2C2d2cb515%2C2d03a0a1&mkpid=14", response.getLocation().toString());
+        "id%2Cp1%2Cp2%2Cp3%2Cp4&id=h1d3e4e16%2C2d2cb515%2C2d03a0a1&mkpid=14&adcamp_landingpage=" +
+        "https%3A%2F%2Fwww.ebay.de%2Fdeals&adcamp_locationsrc=adobe", response.getLocation().toString());
 
     // Adobe landing page from parameter
     parameters.put("mpre", "https://www.yahoo.com");
@@ -270,17 +271,19 @@ public class AdserviceResourceTest {
     parameters.replace("id", "h1d3e4dcb,2d1b8f79,1");
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
-    assertEquals("https://www.ebay.com/?country=US&mkcid=8&emsid=0&sojTags=adcampid%3Did%2C" +
-        "adcamppu%3Dpu%2Ccrd%3Dcrd%2Csegname%3Dsegname&segname=SOP708_SG49&pu=hrtHY5sgRPq&mkevt=1" +
-        "&adobeParams=id%2Cp1%2Cp2%2Cp3%2Cp4&id=h1d3e4dcb%2C2d1b8f79%2C1&mkpid=14", response.getLocation().toString());
+    assertEquals("https://www.ebay.com/?country=US&mkcid=8&emsid=0&sojTags=adcampid%3Did%2Cadcamppu%3Dpu%2C" +
+        "crd%3Dcrd%2Csegname%3Dsegname&segname=SOP708_SG49&pu=hrtHY5sgRPq&mkevt=1&adobeParams=id%2Cp1%2Cp2%2Cp3%2Cp4" +
+        "&id=h1d3e4dcb%2C2d1b8f79%2C1&mkpid=14&adcamp_landingpage=http%3A%2F%2Fwww.ebay.com&adcamp_locationsrc=country",
+        response.getLocation().toString());
 
     // Adobe without country, redirect to home page
     parameters.remove("country");
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
-    assertEquals("https://www.qa.ebay.com/?mkcid=8&emsid=0&sojTags=adcampid%3Did%2Cadcamppu%3Dpu%2C" +
-        "crd%3Dcrd%2Csegname%3Dsegname&segname=SOP708_SG49&pu=hrtHY5sgRPq&mkevt=1&adobeParams=id%2Cp1%2Cp2%2Cp3%2Cp4" +
-        "&id=h1d3e4dcb%2C2d1b8f79%2C1&mkpid=14", response.getLocation().toString());
+    assertEquals("https://www.qa.ebay.com/?mkcid=8&emsid=0&sojTags=adcampid%3Did%2Cadcamppu%3Dpu%2Ccrd%3Dcrd" +
+        "%2Csegname%3Dsegname&segname=SOP708_SG49&pu=hrtHY5sgRPq&mkevt=1&adobeParams=id%2Cp1%2Cp2%2Cp3%2Cp4&id=" +
+        "h1d3e4dcb%2C2d1b8f79%2C1&mkpid=14&adcamp_landingpage=http%3A%2F%2Fwww.qa.ebay.com&adcamp_locationsrc=default",
+        response.getLocation().toString());
     parameters.put("country", "US");
     parameters.put("id", "h1d3e4e16,2d2cb515,2d03a0a1");
 
@@ -288,9 +291,10 @@ public class AdserviceResourceTest {
     parameters.remove("adobeParams");
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
-    assertEquals("https://www.ebay.de/deals?country=US&mkcid=8&emsid=0&sojTags=adcampid%3Did%2C" +
-        "adcamppu%3Dpu%2Ccrd%3Dcrd%2Csegname%3Dsegname&segname=SOP708_SG49&pu=hrtHY5sgRPq&mkevt=1" +
-        "&id=h1d3e4e16%2C2d2cb515%2C2d03a0a1&mkpid=14", response.getLocation().toString());
+    assertEquals("https://www.ebay.de/deals?country=US&mkcid=8&emsid=0&sojTags=adcampid%3Did%2Cadcamppu%3Dpu" +
+            "%2Ccrd%3Dcrd%2Csegname%3Dsegname&segname=SOP708_SG49&pu=hrtHY5sgRPq&mkevt=1&id=h1d3e4e16%2C2d2cb515%2C2d" +
+            "03a0a1&mkpid=14&adcamp_landingpage=https%3A%2F%2Fwww.ebay.de%2Fdeals&adcamp_locationsrc=adobe",
+        response.getLocation().toString());
     parameters.put("adobeParams", "id,p1,p2,p3,p4");
 
     // Adobe without id, redirect to home page by country
@@ -299,8 +303,9 @@ public class AdserviceResourceTest {
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
     assertEquals("https://www.ebay.de/?country=DE&mkcid=8&emsid=0&sojTags=adcampid%3Did%2Cadcamppu%3Dpu" +
-        "%2Ccrd%3Dcrd%2Csegname%3Dsegname&segname=SOP708_SG49&pu=hrtHY5sgRPq&mkevt=1&adobeParams=id%2Cp1" +
-        "%2Cp2%2Cp3%2Cp4&mkpid=14", response.getLocation().toString());
+        "%2Ccrd%3Dcrd%2Csegname%3Dsegname&segname=SOP708_SG49&pu=hrtHY5sgRPq&mkevt=1&adobeParams=id%2Cp1%2Cp2%2Cp3" +
+        "%2Cp4&mkpid=14&adcamp_landingpage=http%3A%2F%2Fwww.ebay.de&adcamp_locationsrc=country",
+        response.getLocation().toString());
     parameters.put("id", "h1d3e4e16,2d2cb515,2d03a0a1");
     parameters.replace("country", "US");
   }

@@ -26,8 +26,6 @@ EXECUTOR_NUMBER=20
 EXECUTOR_MEMORY=15g
 EXECUTOR_CORES=1
 
-SPARK_EVENTLOG_DIR=hdfs://elvisha/app-logs/chocolate/logs
-
 JOB_NAME="cappingRule"
 
 for f in $(find $bin/../../conf/prod -name '*.*');
@@ -47,7 +45,6 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
     --conf spark.yarn.executor.memoryOverhead=8192 \
-    --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR} \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
