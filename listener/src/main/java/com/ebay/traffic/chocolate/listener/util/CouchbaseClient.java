@@ -213,7 +213,7 @@ public class CouchbaseClient {
       Map<String, String> chocoTagGuidMap = new HashMap<>();
       chocoTagGuidMap.put("chocoTag", chocoTag);
       chocoTagGuidMap.put("guid", guid);
-      bucket.upsert(JsonDocument.create(chocoTagKey, JsonObject.from(chocoTagGuidMap)));
+      bucket.upsert(JsonDocument.create(chocoTagKey, 24 * 60 * 60, JsonObject.from(chocoTagGuidMap)));
       logger.debug("Adding new chocoTag guid mapping. chocoTagKey=" + chocoTagKey + " chocoTag=" + chocoTag + " guid=" + guid);
       metrics.mean("ListenerUpsertChocoTagGuidCouchbaseLatency", System.currentTimeMillis() - start);
       metrics.meter(CHOCOTAG_GUID_UPSERT_COMMAND);
