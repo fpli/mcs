@@ -149,6 +149,8 @@ public class FilterWorker extends Thread {
                         Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
               }
               long sendKafkaStartTime = System.currentTimeMillis();
+              // If the traffic is received from rover bes pipeline, we will send it to NewROITopic
+              // this traffic will not be tracked into imk table
               if (isRoverBESRoi(outMessage)) {
                 producer.send(new ProducerRecord<>(ApplicationOptions.getInstance().getNewROITopic(), outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
                 metrics.mean("SendKafkaLatency", System.currentTimeMillis() - sendKafkaStartTime);

@@ -24,9 +24,11 @@ public class FilterUtils {
       return null;
     }
     try {
+      // Pasre the urlstring
       URL url = new URL(urlString);
       String query = url.getQuery();
       if (StringUtils.isNotEmpty(query)) {
+        // Get the parameter value by the key, if not find, return null
         for (String paramMapString : query.split("&")) {
           if(StringUtils.isEmpty(paramMapString)) {
             continue;
@@ -44,6 +46,7 @@ public class FilterUtils {
   }
 
   public static boolean isBESRoiTransType(String transactionType) {
+    // Judging whether the transaction_type in ('Bid','BIN-ABIN','BIN-FP','BIN-Store') or not
     if (StringUtils.isEmpty(transactionType)) {
       return false;
     }
@@ -55,6 +58,11 @@ public class FilterUtils {
 
   public static boolean isRoverBESRoi(FilterMessage outMessage) {
     String transactionType = getParamValueFromQuery(outMessage.getUri(), TRANSACTION_TYPE);
+    // Filter rule:
+    // channel=ROI
+    // transaction_type in ('Bid','BIN-ABIN','BIN-FP','BIN-Store')
+    // rvr_url like '%ff1=ss%'
+    // rvr_url like '%ff2%'
     return outMessage.getUri() != null
         && outMessage.getChannelType().toString().equals("ROI")
         && outMessage.getUri().contains("ff1=ss")
