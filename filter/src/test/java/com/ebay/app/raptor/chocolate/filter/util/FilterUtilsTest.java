@@ -83,7 +83,7 @@ public class FilterUtilsTest {
 
       FilterMessage outMessage2 = Mockito.mock(FilterMessage.class);;
       when(outMessage2.getUri()).thenReturn("http://mktcollectionsvc.vip.qa.ebay.com/marketingtracking/v1/roi?transType=BIN-Store" +
-          "&ff1=ss&transactionTimestamp=1587346164000&roisrc=1&siteId=77");
+          "&ff1=ss&transactionTimestamp=1587346164000&roisrc=1&siteId=7");
       when(outMessage2.getChannelType()).thenReturn(ChannelType.ROI);
       assertFalse(isRoverBESRoi(outMessage2));
 
