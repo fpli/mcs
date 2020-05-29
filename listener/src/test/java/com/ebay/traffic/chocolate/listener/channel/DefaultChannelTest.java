@@ -282,7 +282,8 @@ public class DefaultChannelTest {
       spy.process(mockClientRequest, mockProxyResponse);
 
       Thread.sleep(3000);
-      assertEquals("75866c251690ab6af110f0bffffdb253", CouchbaseClient.getInstance().getGuidByChocoTag("DashenId_12345678"));
+      assertEquals("12345678", CouchbaseClient.getInstance().getChocoTagGuidMappingByChocoTag("DashenId_12345678").get("chocoTag"));
+      assertEquals("75866c251690ab6af110f0bffffdb253", CouchbaseClient.getInstance().getChocoTagGuidMappingByChocoTag("DashenId_12345678").get("guid"));
   }
 
   @Test
@@ -314,6 +315,7 @@ public class DefaultChannelTest {
 
       Thread.sleep(3000);
       // no upsert for impression
-      assertEquals("", CouchbaseClient.getInstance().getGuidByChocoTag("DashenId_1234567"));
+      Map<String, String> chocotagGuidMap = new HashMap<>();
+      assertEquals(chocotagGuidMap, CouchbaseClient.getInstance().getChocoTagGuidMappingByChocoTag("DashenId_1234567"));
     }
 }
