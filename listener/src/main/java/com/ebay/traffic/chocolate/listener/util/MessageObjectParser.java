@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -273,6 +274,29 @@ public class MessageObjectParser {
             urlWithCnt = REDIRECTION_CNT_TAG + "=" + 0;
         }
         return urlWithCnt;
+    }
+
+    /**
+     * Get dashenId from requestUrl
+     * @param requestUrl
+     */
+    public String getChocoTagValue(String requestUrl){
+        String chocoTagValue = "";
+        if (!StringUtils.isEmpty(requestUrl) && requestUrl.contains(CHOCO_TAG)) {
+            try {
+                Pattern p = Pattern.compile(CHOCO_TAG + "(=|%3D)\\d+");
+                Matcher m = p.matcher(requestUrl);
+                if (m.find()) {
+                    String chocoTag = URLDecoder.decode(m.group(), "UTF-8");
+                    chocoTagValue = chocoTag.split("=")[1];
+                }
+            } catch (UnsupportedEncodingException e) {
+                logger.error("Error get dashenId from " + requestUrl + e);
+            } catch(Exception e) {
+                logger.error("Error get dashenId from " + requestUrl + e);
+            }
+        }
+        return chocoTagValue;
     }
 
     /**

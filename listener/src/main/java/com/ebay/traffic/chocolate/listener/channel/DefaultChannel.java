@@ -8,6 +8,7 @@ import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.kernel.util.StringUtils;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.listener.util.*;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -93,6 +94,9 @@ public class DefaultChannel implements Channel {
     producer = KafkaSink.get();
 
     long campaignId = getCampaignID(request, startTime, action, type);
+
+    // upsert chocoTag -> guid mapping into couchbase
+    upsertChocoTagGuidMapping(request, response, requestUrl, result);
 
     //TODO: remove the logic when we stable
     try {
@@ -309,5 +313,42 @@ public class DefaultChannel implements Channel {
 
     producer.send(new ProducerRecord<>(kafkaMalformedTopic,
         message.getSnapshotId(), message), KafkaSink.callback);
+  }
+
+  /**
+   * Upsert chocoTag -> guid mapping into Couchbase (only for click)
+   * @param clientRequest Request
+   * @param proxyResponse Response, for first redirect to Rover, original request will
+   *                      be attached to Location header as part of the URL query
+   * @param requestUrl Request url
+   * @param requestUriPathArray requestUriPathArray
+   */
+  public void upsertChocoTagGuidMapping(HttpServletRequest clientRequest, HttpServletResponse proxyResponse,
+                                        String requestUrl, String[] requestUriPathArray) {
+    try {
+      if (requestUriPathArray.length == 5) {
+          ChannelIdEnum channelType = ChannelIdEnum.parse(requestUriPathArray[4]);
+          if (channelType != null) {
+            ChannelActionEnum channelAction = ChannelActionEnum.parse(channelType, requestUriPathArray[1]);
+            if (channelAction != null && channelAction.equals(ChannelActionEnum.CLICK)) {
+              String chocoTagValue = parser.getChocoTagValue(requestUrl);
+              if (!StringUtils.isEmpty(chocoTagValue)) {
+                // get guid from cookie
+                String cookieRequestHeader = clientRequest.getHeader("Cookie");
+                String cookieResponseHeader = proxyResponse.getHeader("Set-Cookie");
+                String guid = parser.getGuid(cookieRequestHeader, cookieResponseHeader, null, "tguid");
+
+                if (!StringUtils.isEmpty(guid)) {
+                  // upsert chocoTag -> guid mapping into couchbase
+                  CouchbaseClient.getInstance().updateChocoTagGuidMappingRecord(chocoTagValue, guid);
+                }
+              }
+            }
+          }
+      }
+    } catch (Exception e) {
+      logger.warn("Listener Upsert chocoTag guid mapping operation exception", e);
+      metrics.meter("ListenerUpsertChocoTagGuidFailure");
+    }
   }
 }

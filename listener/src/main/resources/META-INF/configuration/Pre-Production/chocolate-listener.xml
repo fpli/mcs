@@ -136,9 +136,15 @@
   </property>
 
   <property>
-    <name>chocolate.listener.couchbase.datasource</name>
+    <name>chocolate.listener.couchbase.appdldevicesdatasource</name>
     <value>appdldevicescbdbhost</value>
-    <description>Couchbase data source</description>
+    <description>Couchbase appdldevices data source</description>
+  </property>
+
+  <property>
+    <name>chocolate.listener.couchbase.appdlreportdatasource</name>
+    <value>appdlreportcbdbhost</value>
+    <description>Couchbase appdlreport data source</description>
   </property>
 
 </configuration>
