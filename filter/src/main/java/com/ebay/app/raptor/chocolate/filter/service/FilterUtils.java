@@ -2,6 +2,8 @@ package com.ebay.app.raptor.chocolate.filter.service;
 
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,25 +26,11 @@ public class FilterUtils {
       return null;
     }
     try {
-      // Pasre the urlstring
-      URL url = new URL(urlString);
-      String query = url.getQuery();
-      if (StringUtils.isNotEmpty(query)) {
-        // Get the parameter value by the key, if not find, return null
-        for (String paramMapString : query.split("&")) {
-          if(StringUtils.isEmpty(paramMapString)) {
-            continue;
-          }
-          String[] parameterPair = paramMapString.split("=");
-          if(key.equalsIgnoreCase(parameterPair[0])) {
-            return parameterPair[1].trim();
-          }
-        }
-      }
-    } catch (MalformedURLException e) {
+      MultiValueMap<String, String> queryParams = UriComponentsBuilder.fromUriString(urlString).build().getQueryParams();
+      return queryParams.get(key).get(0);
+    } catch (Exception e) {
       return null;
     }
-    return null;
   }
 
   public static boolean isBESRoiTransType(String transactionType) {
