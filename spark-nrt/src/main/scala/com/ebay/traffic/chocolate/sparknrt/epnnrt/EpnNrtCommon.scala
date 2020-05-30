@@ -1384,11 +1384,13 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     try {
       val chocoTag = getQueryParam(uri, CHOCO_TAG)
       if (StringUtils.isNotEmpty(chocoTag)) {
+        val start = System.currentTimeMillis
         val chocoTagKey = CB_CHOCO_TAG_PREFIX + chocoTag
         val jsonDocument = bucket.get(chocoTagKey, classOf[JsonDocument])
         if (jsonDocument != null) {
           roverLastClickGuid = jsonDocument.content().get("guid").toString
         }
+        metrics.mean("GetChocoTagGuidCouchbaseLatency", System.currentTimeMillis() - start)
       }
     } catch {
       case e: Exception => {
