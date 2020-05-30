@@ -178,7 +178,7 @@
     <dependency>
       <groupId>com.ebay.dukes</groupId>
       <artifactId>dukes</artifactId>
-      <version>${dukes.version}</version>
+      <version>1.5.4.raptorio</version>
     </dependency>
 
     <dependency>
