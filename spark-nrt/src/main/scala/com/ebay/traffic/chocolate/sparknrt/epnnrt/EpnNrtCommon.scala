@@ -1390,7 +1390,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         if (jsonDocument != null) {
           roverLastClickGuid = jsonDocument.content().get("guid").toString
         }
-        metrics.mean("GetChocoTagGuidCouchbaseLatency", System.currentTimeMillis() - start)
+        metrics.mean("GetRoverLastGuidCouchbaseLatency", System.currentTimeMillis() - start)
       }
     } catch {
       case e: Exception => {
