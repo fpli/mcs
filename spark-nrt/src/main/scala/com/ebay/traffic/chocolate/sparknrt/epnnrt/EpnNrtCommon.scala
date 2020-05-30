@@ -1403,7 +1403,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       CorpCouchbaseClient.returnClient(cacheClient)
     }
 
-    logger.info("=========final roverLastClickGuid = " + roverLastClickGuid)
     if (StringUtils.isEmpty(roverLastClickGuid)) {
       guid
     } else {
