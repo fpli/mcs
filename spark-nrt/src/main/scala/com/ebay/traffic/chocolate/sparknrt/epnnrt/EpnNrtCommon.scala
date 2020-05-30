@@ -1046,27 +1046,24 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def asyncCouchbaseGet(df: DataFrame): (HashMap[String, String], HashMap[String, String],
     HashMap[String, String], HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]],
-    HashMap[String, ListBuffer[PubDomainInfo]], HashMap[String, String]) = {
+    HashMap[String, ListBuffer[PubDomainInfo]]) = {
 
     val test = df.select("publisher_id", "campaign_id", "uri").collect()
     var publisher_list = new Array[String](test.length)
     var campaign_list = new Array[String](test.length)
     val rotation_list = new Array[String](test.length)
     var progmap_list = new Array[String](test.length)
-    var chocoTag_list = new Array[String](test.length)
     var publisher_map = new HashMap[String, String]
     var campaign_map = new HashMap[String, String]
     var prog_map = new HashMap[String, String]
     var clickFilter_map = new HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]]
     var pubDomain_map = new HashMap[String, ListBuffer[PubDomainInfo]]
-    var chocoTagGuid_map = new HashMap[String, String]
 
 
     for (i <- test.indices) {
       publisher_list(i) = String.valueOf(test(i).get(0))
       campaign_list(i) = String.valueOf(test(i).get(1))
       rotation_list(i) = getRelatedInfoFromUri(String.valueOf(test(i).get(2)), 3, "mkrid")
-      chocoTag_list(i) = getQueryParam(String.valueOf(test(i).get(2)), CHOCO_TAG)
     }
 
 
@@ -1082,7 +1079,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     publisher_list = publisher_list.distinct
     campaign_list = campaign_list.distinct
     progmap_list = progmap_list.distinct
-    chocoTag_list = chocoTag_list.distinct
 
     val start = System.currentTimeMillis
 
@@ -1091,12 +1087,11 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     prog_map = batchGetProgMapStatus(progmap_list)
     clickFilter_map = batchGetAdvClickFilterMap(publisher_list)
     pubDomain_map = batchGetPubDomainMap(publisher_list)
-    chocoTagGuid_map = batchGetChcoTagGuidMap(chocoTag_list)
 
     metrics.mean("NrtCouchbaseLatency", System.currentTimeMillis() - start)
 
 
-    (publisher_map, campaign_map, prog_map, clickFilter_map, pubDomain_map, chocoTagGuid_map)
+    (publisher_map, campaign_map, prog_map, clickFilter_map, pubDomain_map)
   }
 
 
@@ -1305,44 +1300,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     res
   }
 
-  def batchGetChcoTagGuidMap(list: Array[String]): HashMap[String, String] = {
-    var res = new HashMap[String, String]
-    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
-    try {
-      val jsonDocuments = Observable
-        .from(list)
-        .flatMap(new Func1[String, Observable[JsonDocument]]() {
-          override def call(key: String): Observable[JsonDocument] = {
-            bucket.async.get(CB_CHOCO_TAG_PREFIX + key, classOf[JsonDocument])
-          }
-        }).toList.toBlocking.single()
-      for (i <- 0 until jsonDocuments.size()) {
-        val jsonString = String.valueOf(
-          "{\"chocoTag\":\"" + jsonDocuments.get(i).content().get("chocoTag") + "\"," +
-            "\"guid\":" + "\"" + jsonDocuments.get(i).content().get("guid") + "\"" + "}")
-        val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
-        val chocoTagGuidMapping = new Gson().fromJson(jsonObj, classOf[ChocoTagGuidInfo])
-        if (chocoTagGuidMapping != null)
-          res = res + (chocoTagGuidMapping.getChocoTag -> chocoTagGuidMapping.getGuid)
-        else
-          res = res + (chocoTagGuidMapping.getChocoTag -> "")
-        if (jsonDocuments.size() != list.length) {
-          for (i <- list.indices) {
-            if (!res.contains(list(i)))
-              res = res + (list(i) -> "")
-          }
-        }
-      }
-    } catch {
-      case e: Exception => {
-        logger.error("Corp Couchbase error while getting chocoTag guid mapping " + e)
-        metrics.meter("CouchbaseError")
-      }
-    }
-    CorpCouchbaseClient.returnClient(cacheClient)
-    res
-  }
-
   /**
     * get related info from uri, like rotation_id and so on
     * for rover uri, get related info from rover.ebay.com/.../
@@ -1422,13 +1379,31 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     */
   def fixGuidUsingRoverLastClick(guid: String, uri: String): String = {
     var roverLastClickGuid = ""
+    // rewrite couchbase datasource property
+    CorpCouchbaseClient.dataSource = properties.getProperty("epnnrt.datasource")
+    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
 
-    val chocoTag = getQueryParam(uri, CHOCO_TAG)
-    if (!chocoTag.isEmpty) {
-      roverLastClickGuid = cbData._6.getOrElse(chocoTag, "")
+    try {
+      val chocoTag = getQueryParam(uri, CHOCO_TAG)
+      if (StringUtils.isNotEmpty(chocoTag)) {
+        val start = System.currentTimeMillis
+        val chocoTagKey = CB_CHOCO_TAG_PREFIX + chocoTag
+        val jsonDocument = bucket.get(chocoTagKey, classOf[JsonDocument])
+        if (jsonDocument != null) {
+          roverLastClickGuid = jsonDocument.content().get("guid").toString
+        }
+        metrics.mean("GetRoverLastGuidCouchbaseLatency", System.currentTimeMillis() - start)
+      }
+    } catch {
+      case e: Exception => {
+        logger.error("Corp Couchbase error while getting chocoTag guid mapping " + e)
+        metrics.meter("CouchbaseError")
+      }
+    } finally {
+      CorpCouchbaseClient.returnClient(cacheClient)
     }
 
-    if (roverLastClickGuid.isEmpty) {
+    if (StringUtils.isEmpty(roverLastClickGuid)) {
       guid
     } else {
       roverLastClickGuid
