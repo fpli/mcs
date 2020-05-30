@@ -1379,6 +1379,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     */
   def fixGuidUsingRoverLastClick(guid: String, uri: String): String = {
     var roverLastClickGuid = ""
+    // rewrite couchbase datasource property
+    CorpCouchbaseClient.dataSource = properties.getProperty("epnnrt.datasource")
     val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
 
     try {
@@ -1386,12 +1388,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       if (StringUtils.isNotEmpty(chocoTag)) {
         val start = System.currentTimeMillis
         val chocoTagKey = CB_CHOCO_TAG_PREFIX + chocoTag
-        logger.info("=========chocoTagKey = " + chocoTagKey)
         val jsonDocument = bucket.get(chocoTagKey, classOf[JsonDocument])
-        logger.info("=========jsonDocument = " + jsonDocument)
         if (jsonDocument != null) {
           roverLastClickGuid = jsonDocument.content().get("guid").toString
-          logger.info("=========roverLastClickGuid = " + roverLastClickGuid)
         }
         metrics.mean("GetRoverLastGuidCouchbaseLatency", System.currentTimeMillis() - start)
       }
