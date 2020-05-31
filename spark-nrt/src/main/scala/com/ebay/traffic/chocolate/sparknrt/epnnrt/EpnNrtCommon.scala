@@ -1378,6 +1378,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     * @return fixedGuid
     */
   def fixGuidUsingRoverLastClick(guid: String, uri: String): String = {
+    var fixedGuid = guid
     var roverLastClickGuid = ""
     // rewrite couchbase datasource property
     CorpCouchbaseClient.dataSource = properties.getProperty("epnnrt.datasource")
@@ -1403,10 +1404,11 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       CorpCouchbaseClient.returnClient(cacheClient)
     }
 
-    if (StringUtils.isEmpty(roverLastClickGuid)) {
-      guid
-    } else {
-      roverLastClickGuid
+    if (StringUtils.isNotEmpty(roverLastClickGuid)) {
+      metrics.meter("GetChocoTagGuidMappingFromCB")
+      fixedGuid = roverLastClickGuid
     }
+
+    fixedGuid
   }
 }
