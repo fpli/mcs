@@ -56,7 +56,6 @@
     <module>ingester</module>
     <module>event-listener</module>
     <module>adservice</module>
-    <module>flink-nrt</module>
   </modules>
 
   <dependencyManagement>
