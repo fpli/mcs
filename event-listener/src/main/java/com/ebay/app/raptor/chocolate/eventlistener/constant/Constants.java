@@ -52,4 +52,8 @@ public class Constants {
   // Redirection header name
   public static final String NODE_REDIRECTION_HEADER_NAME = "x-ebay-tracking-marketing-status-code";
 
+  // Self-service params
+  public static final String SELF_SERVICE = "self_service";
+  public static final String SELF_SERVICE_ID = "self_service_id";
+
 }

@@ -47,10 +47,8 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -346,6 +344,19 @@ public class CollectionService {
 
     String action = ChannelActionEnum.CLICK.toString();
     String type = channelType.getLogicalChannel().getAvro().toString();
+
+    // Self-service events, sent to specific topic
+    if (parameters.containsKey(Constants.SELF_SERVICE) && parameters.containsKey(Constants.SELF_SERVICE_ID)) {
+      if ("1".equals(parameters.getFirst(Constants.SELF_SERVICE)) &&
+          parameters.getFirst(Constants.SELF_SERVICE_ID) != null) {
+        Producer<Long, String> producer = KafkaSink.getSelfServiceProducer();
+        String selfServiceTopic = ApplicationOptions.getInstance().getSelfServiceKafkaTopic();
+        producer.send(new ProducerRecord<>(selfServiceTopic,
+                Long.parseLong(parameters.getFirst(Constants.SELF_SERVICE_ID)), targetUrl), KafkaSink.callback);
+
+        return true;
+      }
+    }
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
