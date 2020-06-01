@@ -82,7 +82,10 @@ public class FilterServiceTest {
 
     ListenerMessage roiMessage = newROIMessage(
         ChannelType.ROI, ChannelAction.ROI, 1L, -1L, -1L);
+    ListenerMessage roverRoiMessage = roverROIMessage(
+        ChannelType.ROI, ChannelAction.ROI, 1L, -1L, -1L);
     producer.send(new ProducerRecord<>("dev_listener", 4L, roiMessage));
+    producer.send(new ProducerRecord<>("dev_listener", 4L, roverRoiMessage));
 
     producer.flush();
     producer.close();

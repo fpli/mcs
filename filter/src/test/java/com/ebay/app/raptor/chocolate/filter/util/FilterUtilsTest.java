@@ -76,19 +76,25 @@ public class FilterUtilsTest {
     @Test
     public void testIsRoverBESRoi() throws Exception {
       FilterMessage outMessage = Mockito.mock(FilterMessage.class);;
-      when(outMessage.getUri()).thenReturn("http://mktcollectionsvc.vip.qa.ebay.com/marketingtracking/v1/roi?transType=BIN-Store" +
-          "&ff1=ss&ff2=TENSOR&transactionTimestamp=1587346164000&roisrc=1&siteId=77");
+      when(outMessage.getUri()).thenReturn("https://rover.ebay.com/roverroi/1/711-518-1801-10?mpuid=2082834080;324077230744;2176548533011;&siteId=0&BIN-Store=1&ff1=ss" +
+          "&ff2=CHECKOUT|26764&tranType=BIN-Store&ff3=100015329801208&rcb=0");
       when(outMessage.getChannelType()).thenReturn(ChannelType.ROI);
       assertTrue(isRoverBESRoi(outMessage));
 
+      FilterMessage outMessage1 = Mockito.mock(FilterMessage.class);;
+      when(outMessage1.getUri()).thenReturn("http://mktcollectionsvc.vip.qa.ebay.com/marketingtracking/v1/roi?tranType=BIN-Store" +
+          "&ff1=ss&ff2=TENSOR&transactionTimestamp=1587346164000&roisrc=1&siteId=77");
+      when(outMessage1.getChannelType()).thenReturn(ChannelType.ROI);
+      assertFalse(isRoverBESRoi(outMessage1));
+
       FilterMessage outMessage2 = Mockito.mock(FilterMessage.class);;
-      when(outMessage2.getUri()).thenReturn("http://mktcollectionsvc.vip.qa.ebay.com/marketingtracking/v1/roi?transType=BIN-Store" +
+      when(outMessage2.getUri()).thenReturn("http://mktcollectionsvc.vip.qa.ebay.com/marketingtracking/v1/roi?tranType=BIN-Store" +
           "&ff1=ss&transactionTimestamp=1587346164000&roisrc=1&siteId=7");
       when(outMessage2.getChannelType()).thenReturn(ChannelType.ROI);
       assertFalse(isRoverBESRoi(outMessage2));
 
       FilterMessage outMessage3 = Mockito.mock(FilterMessage.class);;
-      when(outMessage3.getUri()).thenReturn("http://mktcollectionsvc.vip.qa.ebay.com/marketingtracking/v1/roi?transType=BIN-Store" +
+      when(outMessage3.getUri()).thenReturn("http://mktcollectionsvc.vip.qa.ebay.com/marketingtracking/v1/roi?tranType=BIN-Store" +
           "&ff2=TENSOR&transactionTimestamp=1587346164000&roisrc=1&siteId=77");
       when(outMessage3.getChannelType()).thenReturn(ChannelType.ROI);
       assertFalse(isRoverBESRoi(outMessage3));

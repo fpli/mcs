@@ -13,7 +13,8 @@ public class FilterUtils {
   private static String BIN_ABIN = "BIN-ABIN";
   private static String BIN_FP = "BIN-FP";
   private static String BIN_STORE = "BIN-Store";
-  private static final String TRANSACTION_TYPE = "transType";
+  private static final String TRANSACTION_TYPE = "tranType";
+  private static final String NROI = "nroi";
 
   /**
    * get one param from the url query string
@@ -33,6 +34,7 @@ public class FilterUtils {
     }
   }
 
+
   public static boolean isBESRoiTransType(String transactionType) {
     // Judging whether the transaction_type in ('Bid','BIN-ABIN','BIN-FP','BIN-Store') or not
     if (StringUtils.isEmpty(transactionType)) {
@@ -46,15 +48,20 @@ public class FilterUtils {
 
   public static boolean isRoverBESRoi(FilterMessage outMessage) {
     String transactionType = getParamValueFromQuery(outMessage.getUri(), TRANSACTION_TYPE);
-    // Filter rule:
-    // channel=ROI
-    // transaction_type in ('Bid','BIN-ABIN','BIN-FP','BIN-Store')
-    // rvr_url like '%ff1=ss%'
-    // rvr_url like '%ff2%'
+    String nRoiTag = getParamValueFromQuery(outMessage.getUri(), NROI);
+//     Filter rule:
+//     have no nroi parameter
+//     channel=ROI
+//     transaction_type in ('Bid','BIN-ABIN','BIN-FP','BIN-Store')
+//     rvr_url like '%ff1=ss%'
+//     rvr_url like '%ff2%'
+//     rvr_url like '%rover%'
     return outMessage.getUri() != null
+        && nRoiTag == null
         && outMessage.getChannelType().toString().equals("ROI")
         && outMessage.getUri().contains("ff1=ss")
         && outMessage.getUri().contains("ff2")
+        && outMessage.getUri().contains("rover")
         && isBESRoiTransType(transactionType);
   }
 }

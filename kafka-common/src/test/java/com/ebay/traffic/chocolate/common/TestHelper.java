@@ -915,7 +915,42 @@ public class TestHelper {
     message.setSrcRotationId(1L);
     message.setDstRotationId(2L);
     message.setRequestHeaders("");
-    message.setUri("http://mktcollectionsvc.vip.qa.ebay.com/marketingtracking/v1/roi?transType=&uniqueTransactionId=324357529&itemId=52357723598250&transactionTimestamp=1581427339000&nroi=1");
+    message.setUri("http://mktcollectionsvc.vip.qa.ebay.com/marketingtracking/v1/roi?tranType=&uniqueTransactionId=324357529&itemId=52357723598250&transactionTimestamp=1581427339000&nroi=1");
+    message.setResponseHeaders("");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setSnid("");
+    return message;
+  }
+
+  public static ListenerMessage roverROIMessage(ChannelType channelType,
+                                              ChannelAction channelAction,
+                                              long snapshotId,
+                                              long publisherId,
+                                              long campaignId) {
+    ListenerMessage message = new ListenerMessage();
+    message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
+    message.setTimestamp(System.currentTimeMillis());
+    message.setUserId(1L);
+    message.setCguid("");
+    message.setGuid("");
+    message.setRemoteIp("127.0.0.1");
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setGeoId(1L);
+    message.setUdid("");
+    message.setReferer("");
+    message.setCampaignId(campaignId);
+    message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setRequestHeaders("");
+    message.setUri("https://rover.ebay.com/roverroi/1/711-518-1801-10?mpuid=2082834080;324077230744;2176548533011;&siteId=0&BIN-Store=1&ff1=ss" +
+        "&ff2=CHECKOUT|26764&tranType=BIN-Store&ff3=100015329801208&rcb=0");
     message.setResponseHeaders("");
     message.setChannelAction(channelAction);
     message.setChannelType(channelType);
