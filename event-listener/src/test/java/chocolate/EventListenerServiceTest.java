@@ -23,6 +23,8 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.LongSerializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
@@ -104,6 +106,8 @@ public class EventListenerServiceTest {
     ApplicationOptions options = ApplicationOptions.getInstance();
     options.setSinkKafkaProperties(kafkaCluster.getProducerProperties(
       LongSerializer.class, ListenerMessageSerializer.class));
+    options.setSelfServiceKafkaPropertiesFile(kafkaCluster.getProducerProperties(
+        LongSerializer.class, StringSerializer.class));
   }
 
   @Before
@@ -359,6 +363,25 @@ public class EventListenerServiceTest {
     event.setTargetUrl("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=25&smsid=111&did=222");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
+  }
+
+  @Test
+  public void testSelfService() throws InterruptedException{
+    Event event = new Event();
+    event.setTargetUrl("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=25&smsid=111&self_service=1&self_service_id=123");
+    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
+    assertEquals(201, response.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.getSelfServiceProducer().flush();
+    Consumer<Long, String> consumerSelfService = kafkaCluster.createConsumer(
+        LongDeserializer.class, StringDeserializer.class);
+    Map<Long, String> messageSelfService = pollFromKafkaTopic(
+        consumerSelfService, Arrays.asList("dev_self-service"), 3, 30 * 1000);
+    consumerSelfService.close();
+
+    assertTrue(messageSelfService.containsKey(123L));
   }
 
   @Test
