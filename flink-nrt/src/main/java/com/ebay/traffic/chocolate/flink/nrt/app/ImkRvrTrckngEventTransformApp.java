@@ -56,7 +56,7 @@ public class ImkRvrTrckngEventTransformApp extends BaseRheosCompatibleApp<Consum
 
   @Override
   protected FlinkKafkaProducer<Tuple3<String, Long, RheosEvent>> getKafkaProducer() {
-    return new FlinkKafkaProducer<>(getProducerTopic(), new RheosSerializationSchema(), getProducerProperties(), FlinkKafkaProducer.Semantic.AT_LEAST_ONCE);
+    return new FlinkKafkaProducer<>(getProducerTopic(), new RheosSerializationSchema(), getProducerProperties(), FlinkKafkaProducer.Semantic.EXACTLY_ONCE);
   }
 
   @Override
