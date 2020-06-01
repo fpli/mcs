@@ -10,7 +10,6 @@ import com.ebay.traffic.chocolate.flink.nrt.transformer.TransformerFactory;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import com.ebay.traffic.chocolate.flink.nrt.model.TrackingEvent;
 import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Field;
 import com.google.gson.Gson;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.Schema;
@@ -24,38 +23,38 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-public class TransformApp extends BaseKafkaCompatibleApp {
+public class TrackingEventTransformApp extends BaseKafkaCompatibleApp {
   private final static Schema RHEOS_HEADER_SCHEMA =
           RheosEvent.BASE_SCHEMA.getField(RheosEvent.RHEOS_HEADER).schema();
   private static final Gson GSON = new Gson();
   private static final EncoderFactory ENCODER_FACTORY = EncoderFactory.get();
 
   public static void main(String[] args) throws Exception {
-    TransformApp transformApp = new TransformApp();
+    TrackingEventTransformApp transformApp = new TrackingEventTransformApp();
     transformApp.run();
   }
 
   @Override
   protected List<String> getConsumerTopics() {
     return  Arrays.asList(PropertyMgr.getInstance()
-                    .loadProperty(PropertyConstants.KAFKA_TRANSFORM_CONSUMER_RHEOS_TOPIC_PROPERTIES)
+                    .loadProperty(PropertyConstants.KAFKA_TRACKING_EVENT_TRANSFORM_CONSUMER_RHEOS_TOPIC_PROPERTIES)
                     .getProperty(PropertyConstants.TOPIC).split(StringConstants.COMMA));
   }
 
   @Override
   protected Properties getConsumerProperties() {
-    return PropertyMgr.getInstance().loadProperty(PropertyConstants.KAFKA_TRANSFORM_CONSUMER_RHEOS_PROPERTIES);
+    return PropertyMgr.getInstance().loadProperty(PropertyConstants.KAFKA_TRACKING_EVENT_TRANSFORM_CONSUMER_RHEOS_PROPERTIES);
   }
 
   @Override
   protected String getProducerTopic() {
-    return PropertyMgr.getInstance().loadProperty(PropertyConstants.KAFKA_TRANSFORM_PRODUCER_TOPIC_PROPERTIES)
+    return PropertyMgr.getInstance().loadProperty(PropertyConstants.KAFKA_TRACKING_EVENT_TRANSFORM_PRODUCER_TOPIC_PROPERTIES)
             .getProperty(PropertyConstants.TOPIC);
   }
 
   @Override
   protected Properties getProducerProperties() {
-    return PropertyMgr.getInstance().loadProperty(PropertyConstants.KAFKA_TRANSFORM_PRODUCER_PROPERTIES);
+    return PropertyMgr.getInstance().loadProperty(PropertyConstants.KAFKA_TRACKING_EVENT_TRANSFORM_PRODUCER_PROPERTIES);
   }
 
   @Override
@@ -67,7 +66,6 @@ public class TransformApp extends BaseKafkaCompatibleApp {
     @Override
     public Tuple2<Long, byte[]> map(Tuple2<Long, byte[]> tuple) throws Exception {
       FilterMessage filterMessage = FilterMessage.decodeRheos(RHEOS_HEADER_SCHEMA, tuple.f1);
-      ESMetrics.getInstance().meter(MetricConstants.INCOMING_MESSAGES, 1, Field.of(MetricConstants.CHANNEL_TYPE, filterMessage.getChannelType().name()));
       BaseTransformer concreteTransformer = TransformerFactory.getConcreteTransformer(filterMessage);
       TrackingEvent trackingEvent = new TrackingEvent();
       concreteTransformer.transform(trackingEvent);

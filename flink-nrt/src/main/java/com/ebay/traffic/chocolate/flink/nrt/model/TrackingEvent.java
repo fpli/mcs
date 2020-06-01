@@ -2,7 +2,7 @@ package com.ebay.traffic.chocolate.flink.nrt.model;
 
 import com.google.gson.annotations.SerializedName;
 
-public class TrackingEvent {
+public class TrackingEvent implements EventTsCompatibleEvent {
 
   @SerializedName("batch_id")
   private String batchId;

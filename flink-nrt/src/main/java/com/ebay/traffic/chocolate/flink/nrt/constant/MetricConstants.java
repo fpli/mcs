@@ -9,5 +9,6 @@ public class MetricConstants {
     public static final String METRIC_IMK_DUMP_MALFORMED = "imk.dump.malformed";
     public static final String METRIC_IMK_DUMP_ERROR_PARSE_CLIENTID = "imk.dump.error.parseclientid";
     public static final String INCOMING_MESSAGES = "incoming.messages";
+    public static final String PROCESS_LATENCY = "process.latency";
     public static final String CHANNEL_TYPE = "channelType";
 }

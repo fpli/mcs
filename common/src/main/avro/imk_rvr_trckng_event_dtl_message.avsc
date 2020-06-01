@@ -1,0 +1,165 @@
+{
+  "namespace": "com.ebay.app.raptor.chocolate.avro",
+  "type": "record",
+  "name": "ImkRvrTrckngEventDtlMessage",
+  "pk": [
+    "rvr_id"
+  ],
+  "fields": [
+    {
+      "name": "rheosHeader",
+      "type": {
+        "type": "record",
+        "name": "RheosHeader",
+        "fields": [
+          {
+            "name": "eventCreateTimestamp",
+            "type": "long"
+          },
+          {
+            "name": "eventSentTimestamp",
+            "type": "long"
+          },
+          {
+            "name": "schemaId",
+            "type": "int"
+          },
+          {
+            "name": "eventId",
+            "type": [
+              "null",
+              {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            ]
+          },
+          {
+            "name": "producerId",
+            "type": {
+              "type": "string",
+              "avro.java.string": "String"
+            }
+          }
+        ]
+      },
+      "doc": "Rheos header - This is  mandatory for every schema in Rheos "
+    },
+    {
+      "name": "rvr_id",
+      "type": "long"
+    },
+    {
+      "name": "event_dt",
+      "type": "string"
+    },
+    {
+      "name": "event_ts",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_vrsn_num",
+      "type": "int"
+    },
+    {
+      "name": "flex_field_1",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_2",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_3",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_4",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_5",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_6",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_7",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_8",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_9",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_10",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_11",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_12",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_13",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_14",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_15",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_16",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_17",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_18",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_19",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_20",
+      "type": "string"
+    },
+    {
+      "name": "perf_track_name_value",
+      "type": "string"
+    },
+    {
+      "name": "cre_date",
+      "type": "string"
+    },
+    {
+      "name": "cre_user",
+      "type": "string"
+    },
+    {
+      "name": "upd_date",
+      "type": "string"
+    },
+    {
+      "name": "upd_user",
+      "type": "string"
+    }
+  ]
+}

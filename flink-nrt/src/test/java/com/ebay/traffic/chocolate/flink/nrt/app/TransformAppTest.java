@@ -10,11 +10,11 @@ import java.util.Properties;
 import static org.junit.Assert.assertEquals;
 
 public class TransformAppTest {
-  private TransformApp transformApp;
+  private TrackingEventTransformApp transformApp;
 
   @Before
   public void setUp() throws Exception {
-    transformApp = new TransformApp();
+    transformApp = new TrackingEventTransformApp();
   }
 
   @Test

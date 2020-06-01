@@ -11,7 +11,9 @@ import com.ebay.traffic.chocolate.flink.nrt.model.TrackingEvent;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.google.common.base.CaseFormat;
 import com.google.gson.annotations.SerializedName;
+import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -26,6 +28,8 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 
@@ -34,6 +38,10 @@ public class BaseTransformer {
   public static final String SET_METHOD_PREFIX = "set";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseTransformer.class);
+
+  public static final DateTimeFormatter EVENT_TS_FORMATTER = DateTimeFormatter.ofPattern(DateConstants.YYYY_MM_DD_HH_MM_SS_SSS).withZone(ZoneId.systemDefault());
+
+  public static final DateTimeFormatter EVENT_DT_FORMATTER = DateTimeFormatter.ofPattern(DateConstants.YYYY_MM_DD).withZone(ZoneId.systemDefault());
 
   private static final Map<String, Integer> MFE_NAME_ID_MAP = new HashMap<String, Integer>() {
     {
@@ -106,6 +114,17 @@ public class BaseTransformer {
     }
   }
 
+  public void transform(SpecificRecordBase trackingEvent) {
+    for (Schema.Field field : trackingEvent.getSchema().getFields()) {
+      final String fieldName = field.name();
+      if (fieldName.equals("rheosHeader")) {
+        continue;
+      }
+      Object value = getField(fieldName);
+      trackingEvent.put(fieldName, value);
+    }
+  }
+
   /**
    * Get field from source record
    *
@@ -137,6 +156,10 @@ public class BaseTransformer {
       LOGGER.error("invoke method {} failed", method);
       throw new RuntimeException(e);
     }
+  }
+
+  protected void setField(SpecificRecordBase trackingEvent, String fieldName, Object value) {
+    trackingEvent.put(fieldName, value);
   }
 
   private Method findMethod(Class<?> clazz, String fieldName, Function<String, String> fieldMethodMapFunction, Map<String, Method> methodCache) {
@@ -196,7 +219,7 @@ public class BaseTransformer {
   }
 
   protected String getEventDt() {
-    return DateConstants.EVENT_DT_FORMATTER.format(Instant.ofEpochMilli((Long) sourceRecord.get(TransformerConstants.TIMESTAMP)));
+    return EVENT_DT_FORMATTER.format(Instant.ofEpochMilli((Long) sourceRecord.get(TransformerConstants.TIMESTAMP)));
   }
 
   protected Integer getSrvdPstn() {
@@ -514,7 +537,7 @@ public class BaseTransformer {
   }
 
   public String getEventTs() {
-    return DateConstants.EVENT_TS_FORMATTER.format(Instant.ofEpochMilli((Long) sourceRecord.get(TransformerConstants.TIMESTAMP)));
+    return EVENT_TS_FORMATTER.format(Instant.ofEpochMilli((Long) sourceRecord.get(TransformerConstants.TIMESTAMP)));
   }
 
   protected Integer getDfltBhrvId() {

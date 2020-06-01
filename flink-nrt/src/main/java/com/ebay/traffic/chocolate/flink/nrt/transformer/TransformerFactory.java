@@ -2,7 +2,6 @@ package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
-import com.ebay.app.raptor.chocolate.avro.FlatMessage;
 import org.apache.avro.specific.SpecificRecordBase;
 
 /**

@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.flink.nrt.util;
 
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -59,6 +60,20 @@ public class PropertyMgr {
       throw new RuntimeException(e);
     }
     return allLines;
+  }
+
+  public String loadFile(String propertyName) {
+    StringBuilder contentBuilder = new StringBuilder();
+    try (InputStream in = getClass().getClassLoader().getResourceAsStream(propertyEnv.name() + StringConstants.SLASH + propertyName);
+         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(in)))) {
+      String line;
+      while ((line = bufferedReader.readLine()) != null) {
+        contentBuilder.append(line).append("\n");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return contentBuilder.toString();
   }
 
 }
