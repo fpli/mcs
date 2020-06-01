@@ -22,6 +22,9 @@ public class KafkaSink {
 
   private static Producer producer;
 
+  // Self-service kafka producer
+  private static Producer producer_ss;
+
   /**
    * Kafka Configurable Interface.
    */
@@ -42,6 +45,11 @@ public class KafkaSink {
      * @throws IOException
      */
     Properties getSinkKafkaProperties(KafkaCluster sinkCluster) throws IOException;
+
+    /**
+     * Get the self-service kafka properties
+     */
+    Properties getSelfServiceKafkaProperties();
   }
 
   /**
@@ -105,6 +113,12 @@ public class KafkaSink {
       LOG.error("Failed to init kafka producer", e);
       throw new RuntimeException(e);
     }
+
+    if (producer_ss != null) {
+      throw new IllegalStateException("Can only initialize once.");
+    }
+
+    producer_ss = new KafkaProducer(conf.getSelfServiceKafkaProperties());
   }
 
   /**
@@ -122,6 +136,20 @@ public class KafkaSink {
   }
 
   /**
+   * Get the self-service producer, which is singleton.
+   *
+   * @return Kafka producer
+   */
+  public static Producer<Long, String> getSelfServiceProducer() {
+    synchronized (KafkaSink.class) {
+      if (producer_ss == null) {
+        throw new RuntimeException("Self-service producer has not been initialized.");
+      }
+    }
+    return producer_ss;
+  }
+
+  /**
    * Close Kafka producer.
    *
    * @throws IOException
@@ -130,6 +158,11 @@ public class KafkaSink {
     if (producer != null) {
       producer.close();
       producer = null;
+    }
+
+    if (producer_ss != null) {
+      producer_ss.close();
+      producer_ss = null;
     }
   }
 
