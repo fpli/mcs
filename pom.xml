@@ -9,7 +9,7 @@
   </parent>
   <groupId>com.ebay.traffic</groupId>
   <artifactId>chocolate</artifactId>
-  <version>3.6.1-RELEASE</version>
+  <version>3.6.2-SNAPSHOT</version>
   <name>chocolate</name>
   <packaging>pom</packaging>
 
@@ -56,6 +56,7 @@
     <module>ingester</module>
     <module>event-listener</module>
     <module>adservice</module>
+    <module>flink-nrt</module>
   </modules>
 
   <dependencyManagement>
