@@ -101,7 +101,9 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
       sinkKafkaProperties = loadProperties(SINK_KAFKA_PROPERTIES_FILE);
     }
     sinkRheosKafkaProperties = loadProperties(SINK_RHEOS_KAFKA_PROPERTIES_FILE);
-    selfServiceKafkaProperties = loadProperties(SELF_SERVICE_KAFKA_PROPERTIES_FILE);
+    if (selfServiceKafkaProperties == null) {
+      selfServiceKafkaProperties = loadProperties(SELF_SERVICE_KAFKA_PROPERTIES_FILE);
+    }
     instance.initKafkaConfigs();
   }
 
@@ -172,6 +174,13 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   @Override
   public Properties getSelfServiceKafkaProperties() {
     return selfServiceKafkaProperties;
+  }
+
+  /**
+   * Only for test
+   */
+  public static synchronized void setSelfServiceKafkaPropertiesFile (Properties properties) {
+    selfServiceKafkaProperties = properties;
   }
 
   /**
