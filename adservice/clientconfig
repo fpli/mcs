@@ -3,7 +3,7 @@
 	xmlns:ebay="http://www.ebay.com"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >
-  <config-category id="com.ebay.security.trustfabric.TfEndpointConfig" alias="null" group="com.ebay.security.trustfabric" site-ops-command="true" category-desc="Trust Fabric Endpoint Configuration Bean" persist-updates="true" timestamp="Tue Oct 22 18:08:52 CST 2019" Validator="com.ebay.kernel.bean.configuration.adapter.ConfigManagementValidatorAdapter" >
+  <config-category id="com.ebay.security.trustfabric.TfEndpointConfig" alias="null" group="com.ebay.security.trustfabric" site-ops-command="true" category-desc="Trust Fabric Endpoint Configuration Bean" persist-updates="true" timestamp="Fri Jan 31 15:09:02 CST 2020" Validator="com.ebay.kernel.bean.configuration.adapter.ConfigManagementValidatorAdapter" >
     <attribute name="SSL_LOG_AS_ERROR" value="true" type="java.lang.Boolean" />
     <attribute name="SSL_TRUSTSTORE_FILEPATH" value="certs" type="java.lang.String" />
     <attribute name="SSL_VERIFY_HOSTNAME" value="true" type="java.lang.Boolean" />

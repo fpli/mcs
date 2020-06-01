@@ -61,7 +61,8 @@ public class ListenerOptions extends AbstractApplicationOptions implements
     public static final String VALIDATE_INTERNALS_PORT = "validate.internals.port";
     public static final String PROXY = "proxyTo";
 
-    public static final String COUCHBASE_DATASOURCE = "chocolate.listener.couchbase.datasource";
+    public static final String COUCHBASE_APPDLDEVICES_DATASOURCE = "chocolate.listener.couchbase.appdldevicesdatasource";
+    public static final String COUCHBASE_APPDLREPORT_DATASOURCE = "chocolate.listener.couchbase.appdlreportdatasource";
 
     public static final String MAX_THREADS = "max.threads";
     public static final String PID_FILE = "chocolate.listener.pidfile";
@@ -289,7 +290,11 @@ public class ListenerOptions extends AbstractApplicationOptions implements
 
     public File getPidFile() throws IOException { return ApplicationOptionsParser.getFile(properties, PID_FILE, false, null, false); }
 
-    public String getCouchbaseDatasource() {
-        return ApplicationOptionsParser.getStringProperty(properties, COUCHBASE_DATASOURCE);
+    public String getCouchbaseAppdldevicesDatasource() {
+        return ApplicationOptionsParser.getStringProperty(properties, COUCHBASE_APPDLDEVICES_DATASOURCE);
+    }
+
+    public String getCouchbaseAppdlreportDatasource() {
+        return ApplicationOptionsParser.getStringProperty(properties, COUCHBASE_APPDLREPORT_DATASOURCE);
     }
 }

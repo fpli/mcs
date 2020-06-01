@@ -253,4 +253,69 @@ public class DefaultChannelTest {
     assertEquals("758674e91690a99b9634d24de79bcaad", CouchbaseClient.getInstance().getCguid("75866c251690ab6af110f0bffffdb253"));
   }
 
+
+  @Test
+  public void processUpsertChocoTagGuidMappingForClick() throws Exception{
+      final long campaignId = TestHelper.positiveLong();
+      final long snapshotId = TestHelper.positiveLong();
+      Map<String, String[]> params = new HashMap<>();
+      params.put("CaMpid", new String[] {String.valueOf(campaignId)});
+      params.put("a", new String[] {"b"});
+      mockClientRequest.setParameters(params);
+      mockClientRequest.setMethod("get");
+      mockClientRequest.setRemoteHost("rover.ebay.com");
+      mockClientRequest.setRequestURI("/rover/1/xyz/1");
+      String kafkaMessage = "fake kafka message (EPNChannelTest)";
+
+      DefaultChannel spy = spy(channel);
+      ListenerMessage mockMessage = mock(ListenerMessage.class);
+
+      when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), eq(campaignId),
+              eq(ChannelType.EPN), eq(ChannelActionEnum.CLICK), anyString(), anyString())).thenReturn(mockMessage);
+      when(mockMessageParser.isCoreSite(any())).thenReturn(true);
+      when(mockMessage.getSnapshotId()).thenReturn(snapshotId);
+      when(mockMessage.toString()).thenReturn(kafkaMessage);
+      when(mockMessage.getUri()).thenReturn("http://rover.ebay.com/rover/1/xyz/1");
+      when(mockMessageParser.getGuid(any(), any(), any(), eq("tguid"))).thenReturn("75866c251690ab6af110f0bffffdb253");
+      when(mockMessageParser.getChocoTagValue(anyString())).thenReturn("12345678");
+
+      spy.process(mockClientRequest, mockProxyResponse);
+
+      Thread.sleep(3000);
+      assertEquals("12345678", CouchbaseClient.getInstance().getChocoTagGuidMappingByChocoTag("DashenId_12345678").get("chocoTag"));
+      assertEquals("75866c251690ab6af110f0bffffdb253", CouchbaseClient.getInstance().getChocoTagGuidMappingByChocoTag("DashenId_12345678").get("guid"));
+  }
+
+  @Test
+  public void processUpsertChocoTagGuidMappingForImpression() throws Exception{
+      final long campaignId = TestHelper.positiveLong();
+      final long snapshotId = TestHelper.positiveLong();
+      Map<String, String[]> params = new HashMap<>();
+      params.put("CaMpid", new String[] {String.valueOf(campaignId)});
+      params.put("a", new String[] {"b"});
+      mockClientRequest.setParameters(params);
+      mockClientRequest.setMethod("get");
+      mockClientRequest.setServerName("rover.ebay.com");
+      mockClientRequest.setRequestURI("/roverimp/1/xyz/1");
+      String kafkaMessage = "fake kafka message (EpnChannelTest)";
+
+      DefaultChannel spy = spy(channel);
+      ListenerMessage mockMessage = mock(ListenerMessage.class);
+
+      when(mockMessageParser.parseHeader(eq(mockClientRequest), eq(mockProxyResponse), anyLong(), eq(campaignId),
+              eq(ChannelType.EPN), eq(ChannelActionEnum.IMPRESSION), anyString(), anyString())).thenReturn(mockMessage);
+      when(mockMessageParser.isCoreSite(any())).thenReturn(true);
+      when(mockMessage.getSnapshotId()).thenReturn(snapshotId);
+      when(mockMessage.toString()).thenReturn(kafkaMessage);
+      when(mockMessage.getUri()).thenReturn("http://rover.ebay.com/roverimp/1/xyz/1");
+      when(mockMessageParser.getGuid(any(), any(), any(), eq("tguid"))).thenReturn("75866c251690ab6af110f0bffffdb253");
+      when(mockMessageParser.getChocoTagValue(anyString())).thenReturn("1234567");
+
+      spy.process(mockClientRequest, mockProxyResponse);
+
+      Thread.sleep(3000);
+      // no upsert for impression
+      Map<String, String> chocotagGuidMap = new HashMap<>();
+      assertEquals(chocotagGuidMap, CouchbaseClient.getInstance().getChocoTagGuidMappingByChocoTag("DashenId_1234567"));
+    }
 }
