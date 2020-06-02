@@ -171,7 +171,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   /**
    * Get the self-service kafka properties
    */
-  @Override
   public Properties getSelfServiceKafkaProperties() {
     return selfServiceKafkaProperties;
   }
@@ -179,7 +178,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   /**
    * Only for test
    */
-  public static synchronized void setSelfServiceKafkaPropertiesFile (Properties properties) {
+  public static synchronized void setSelfServiceKafkaProperties(Properties properties) {
     selfServiceKafkaProperties = properties;
   }
 
