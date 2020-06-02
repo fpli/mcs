@@ -7,7 +7,7 @@
 
     <groupId>com.ebay.traffic</groupId>
     <artifactId>AlertingAggrate-tool</artifactId>
-    <version>3.6.2-SNAPSHOT</version>
+    <version>3.6.1-RELEASE</version>
 
     <properties>
         <scala.compat.version>2.11</scala.compat.version>

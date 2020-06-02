@@ -7,10 +7,8 @@ import com.ebay.kernel.patternmatch.dawg.Dawg;
 import com.ebay.kernel.patternmatch.dawg.DawgDictionary;
 import com.ebay.traffic.chocolate.flink.nrt.constant.*;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
-import com.ebay.traffic.chocolate.flink.nrt.model.TrackingEvent;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.google.common.base.CaseFormat;
-import com.google.gson.annotations.SerializedName;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.specific.SpecificRecordBase;
@@ -20,7 +18,6 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -74,8 +71,6 @@ public class BaseTransformer {
    */
   private static final Map<String, Method> FIELD_GET_METHOD_CACHE = new HashMap<>(16);
 
-  private static final Map<String, Method> FIELD_SET_METHOD_CACHE = new HashMap<>(16);
-
   /**
    * Map field name to get method name, eg. batch_id -> getBatchId
    */
@@ -102,18 +97,6 @@ public class BaseTransformer {
     this.sourceRecord = sourceRecord;
   }
 
-  /**
-   * Transform to target event
-   */
-  public void transform(TrackingEvent trackingEvent) {
-    for (Field field : trackingEvent.getClass().getDeclaredFields()) {
-      SerializedName annotation = field.getAnnotation(SerializedName.class);
-      final String fieldName = annotation.value();
-      Object value = getField(fieldName);
-      setField(trackingEvent, fieldName, value);
-    }
-  }
-
   public void transform(SpecificRecordBase trackingEvent) {
     for (Schema.Field field : trackingEvent.getSchema().getFields()) {
       final String fieldName = field.name();
@@ -135,7 +118,7 @@ public class BaseTransformer {
     if (fieldCache.containsKey(fieldName)) {
       return fieldCache.get(fieldName);
     }
-    Method method = findMethod(BaseTransformer.class, fieldName, FIELD_GET_METHOD_MAP_FUNCTION, FIELD_GET_METHOD_CACHE);
+    Method method = findMethod(fieldName);
     Object value = null;
     try {
       value = method.invoke(this);
@@ -148,34 +131,20 @@ public class BaseTransformer {
     return fieldCache.get(fieldName);
   }
 
-  protected void setField(TrackingEvent trackingEvent, String fieldName, Object value) {
-    Method method = findMethod(trackingEvent.getClass(), fieldName, FIELD_SET_METHOD_MAP_FUNCTION, FIELD_SET_METHOD_CACHE);
-    try {
-      method.invoke(trackingEvent, value);
-    } catch (IllegalAccessException | InvocationTargetException e) {
-      LOGGER.error("invoke method {} failed", method);
-      throw new RuntimeException(e);
+  private Method findMethod(String fieldName) {
+    if (BaseTransformer.FIELD_GET_METHOD_CACHE.containsKey(fieldName)) {
+      return BaseTransformer.FIELD_GET_METHOD_CACHE.get(fieldName);
     }
-  }
-
-  protected void setField(SpecificRecordBase trackingEvent, String fieldName, Object value) {
-    trackingEvent.put(fieldName, value);
-  }
-
-  private Method findMethod(Class<?> clazz, String fieldName, Function<String, String> fieldMethodMapFunction, Map<String, Method> methodCache) {
-    if (methodCache.containsKey(fieldName)) {
-      return methodCache.get(fieldName);
-    }
-    String methodName = fieldMethodMapFunction.apply(fieldName);
-    Method method = findMethodByName(clazz, methodName);
+    String methodName = BaseTransformer.FIELD_GET_METHOD_MAP_FUNCTION.apply(fieldName);
+    Method method = findMethodByName(methodName);
     Validate.notNull(method, String.format("cannot find method %s", methodName));
-    methodCache.put(fieldName, method);
-    return methodCache.get(fieldName);
+    BaseTransformer.FIELD_GET_METHOD_CACHE.put(fieldName, method);
+    return BaseTransformer.FIELD_GET_METHOD_CACHE.get(fieldName);
   }
 
-  private Method findMethodByName(Class<?> clazz, String getMethodName) {
+  private Method findMethodByName(String getMethodName) {
     Method getMethod = null;
-    for (Method declaredMethod : clazz.getDeclaredMethods()) {
+    for (Method declaredMethod : BaseTransformer.class.getDeclaredMethods()) {
       if (declaredMethod.getName().equals(getMethodName)) {
         getMethod = declaredMethod;
         break;
