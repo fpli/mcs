@@ -28,6 +28,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -87,8 +88,8 @@ public class CollectionService {
   private static final String SITE_ID = "siteId";
   private static final String ROI_SOURCE = "roisrc";
 
-
-
+  // self-service producer
+  private static Producer<Long, String> producer;
 
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
@@ -105,6 +106,7 @@ public class CollectionService {
     this.parser = ListenerMessageParser.getInstance();
     this.metrics.meter("driver.id", 1, Field.of("ip", Hostname.IP),
             Field.of("driver_id", ApplicationOptionsParser.getDriverIdFromIp()));
+    producer = new KafkaProducer(ApplicationOptions.getInstance().getSelfServiceKafkaProperties());
   }
 
   /**
@@ -349,7 +351,6 @@ public class CollectionService {
     if (parameters.containsKey(Constants.SELF_SERVICE) && parameters.containsKey(Constants.SELF_SERVICE_ID)) {
       if ("1".equals(parameters.getFirst(Constants.SELF_SERVICE)) &&
           parameters.getFirst(Constants.SELF_SERVICE_ID) != null) {
-        Producer<Long, String> producer = KafkaSink.getSelfServiceProducer();
         String selfServiceTopic = ApplicationOptions.getInstance().getSelfServiceKafkaTopic();
         producer.send(new ProducerRecord<>(selfServiceTopic,
                 Long.parseLong(parameters.getFirst(Constants.SELF_SERVICE_ID)), targetUrl), KafkaSink.callback);
@@ -1389,6 +1390,20 @@ public class CollectionService {
     }
 
     return sessionId;
+  }
+
+  /**
+   * Get the self-service producer
+   *
+   * @return Kafka producer
+   */
+  public Producer<Long, String> getSelfServiceProducer() {
+    synchronized (KafkaSink.class) {
+      if (producer == null) {
+        throw new RuntimeException("Self-service producer has not been initialized.");
+      }
+    }
+    return producer;
   }
 
 }

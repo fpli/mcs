@@ -106,7 +106,7 @@ public class EventListenerServiceTest {
     ApplicationOptions options = ApplicationOptions.getInstance();
     options.setSinkKafkaProperties(kafkaCluster.getProducerProperties(
       LongSerializer.class, ListenerMessageSerializer.class));
-    options.setSelfServiceKafkaPropertiesFile(kafkaCluster.getProducerProperties(
+    options.setSelfServiceKafkaProperties(kafkaCluster.getProducerProperties(
         LongSerializer.class, StringSerializer.class));
   }
 
@@ -397,13 +397,14 @@ public class EventListenerServiceTest {
 
     // validate kafka message
     Thread.sleep(3000);
-    KafkaSink.getSelfServiceProducer().flush();
+    collectionService.getSelfServiceProducer().flush();
     Consumer<Long, String> consumerSelfService = kafkaCluster.createConsumer(
         LongDeserializer.class, StringDeserializer.class);
     Map<Long, String> messageSelfService = pollFromKafkaTopic(
         consumerSelfService, Arrays.asList("dev_self-service"), 3, 30 * 1000);
     consumerSelfService.close();
 
+    assertEquals(1, messageSelfService.size());
     assertTrue(messageSelfService.containsKey(123L));
   }
 
