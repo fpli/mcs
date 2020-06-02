@@ -18,7 +18,6 @@
 
 package com.ebay.traffic.chocolate.flink.nrt.function;
 
-import com.ebay.traffic.chocolate.flink.nrt.model.EventTsCompatibleEvent;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
 import org.apache.flink.streaming.api.functions.sink.filesystem.BucketAssigner;

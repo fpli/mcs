@@ -6,8 +6,8 @@ import com.ebay.app.raptor.chocolate.avro.ImkRvrTrckngEventMessage;
 import com.ebay.app.raptor.chocolate.avro.RheosHeader;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
-import com.ebay.traffic.chocolate.flink.nrt.deserialization.RheosSerializationSchema;
-import com.ebay.traffic.chocolate.flink.nrt.deserialization.Tuple2KeyedDeserializationSchema;
+import com.ebay.traffic.chocolate.flink.nrt.deserialization.DefaultKafkaDeserializationSchema;
+import com.ebay.traffic.chocolate.flink.nrt.deserialization.DefaultKafkaSerializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichFlatMapFunction;
 import com.ebay.traffic.chocolate.flink.nrt.transformer.BaseTransformer;
 import com.ebay.traffic.chocolate.flink.nrt.transformer.TransformerFactory;
@@ -19,7 +19,6 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.EncoderFactory;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -27,6 +26,7 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.util.Collector;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.errors.SerializationException;
 
 import java.io.ByteArrayOutputStream;
@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-public class ImkRvrTrckngEventTransformApp extends BaseRheosCompatibleApp<Tuple2<Long, byte[]>, Tuple3<String, Long, byte[]>> {
+public class ImkRvrTrckngEventTransformApp extends BaseRheosCompatibleApp<ConsumerRecord<byte[], byte[]>, Tuple3<String, Long, byte[]>> {
 
   public static void main(String[] args) throws Exception {
     ImkRvrTrckngEventTransformApp transformApp = new ImkRvrTrckngEventTransformApp();
@@ -59,13 +59,13 @@ public class ImkRvrTrckngEventTransformApp extends BaseRheosCompatibleApp<Tuple2
   }
 
   @Override
-  protected FlinkKafkaConsumer<Tuple2<Long, byte[]>> getKafkaConsumer() {
-    return new FlinkKafkaConsumer<>(getConsumerTopics(), new Tuple2KeyedDeserializationSchema(), getConsumerProperties());
+  protected FlinkKafkaConsumer<ConsumerRecord<byte[], byte[]>> getKafkaConsumer() {
+    return new FlinkKafkaConsumer<>(getConsumerTopics(), new DefaultKafkaDeserializationSchema(), getConsumerProperties());
   }
 
   @Override
   protected FlinkKafkaProducer<Tuple3<String, Long, byte[]>> getKafkaProducer() {
-    return new FlinkKafkaProducer<>(getProducerTopic(), new RheosSerializationSchema(), getProducerProperties(), FlinkKafkaProducer.Semantic.AT_LEAST_ONCE);
+    return new FlinkKafkaProducer<>(getProducerTopic(), new DefaultKafkaSerializationSchema(), getProducerProperties(), FlinkKafkaProducer.Semantic.AT_LEAST_ONCE);
   }
 
   @Override
@@ -74,11 +74,11 @@ public class ImkRvrTrckngEventTransformApp extends BaseRheosCompatibleApp<Tuple2
   }
 
   @Override
-  protected DataStream<Tuple3<String, Long, byte[]>> transform(DataStreamSource<Tuple2<Long, byte[]>> dataStreamSource) {
+  protected DataStream<Tuple3<String, Long, byte[]>> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
     return dataStreamSource.flatMap(new TransformRichFlatMapFunction());
   }
 
-  private static class TransformRichFlatMapFunction extends ESMetricsCompatibleRichFlatMapFunction<Tuple2<Long, byte[]>, Tuple3<String, Long, byte[]>> {
+  private static class TransformRichFlatMapFunction extends ESMetricsCompatibleRichFlatMapFunction<ConsumerRecord<byte[], byte[]>, Tuple3<String, Long, byte[]>> {
     private Schema rheosHeaderSchema;
     private String rheosProducer;
     private String imkRvrTrckngEventMessageTopic;
@@ -101,10 +101,10 @@ public class ImkRvrTrckngEventTransformApp extends BaseRheosCompatibleApp<Tuple2
     }
 
     @Override
-    public void flatMap(Tuple2<Long, byte[]> consumerRecord, Collector<Tuple3<String, Long, byte[]>> collector) throws Exception {
+    public void flatMap(ConsumerRecord<byte[], byte[]> consumerRecord, Collector<Tuple3<String, Long, byte[]>> collector) throws Exception {
       long currentTimeMillis = System.currentTimeMillis();
 
-      FilterMessage filterMessage = FilterMessage.decodeRheos(rheosHeaderSchema, consumerRecord.f1);
+      FilterMessage filterMessage = FilterMessage.decodeRheos(rheosHeaderSchema, consumerRecord.value());
       BaseTransformer concreteTransformer = TransformerFactory.getConcreteTransformer(filterMessage);
 
       ImkRvrTrckngEventMessage imkRvrTrckngEventMessage = new ImkRvrTrckngEventMessage();

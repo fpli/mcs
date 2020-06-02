@@ -1,20 +1,12 @@
 package com.ebay.traffic.chocolate.flink.nrt.deserialization;
 
-import io.ebay.rheos.schema.event.RheosEvent;
-import org.apache.avro.generic.GenericDatumExWriter;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.io.BinaryEncoder;
-import org.apache.avro.io.DatumWriter;
-import org.apache.avro.io.EncoderFactory;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.errors.SerializationException;
 
 import javax.annotation.Nullable;
-import java.io.ByteArrayOutputStream;
 
-public class RheosSerializationSchema implements KafkaSerializationSchema<Tuple3<String, Long, byte[]>> {
+public class DefaultKafkaSerializationSchema implements KafkaSerializationSchema<Tuple3<String, Long, byte[]>> {
 
   @Override
   public ProducerRecord<byte[], byte[]> serialize(Tuple3<String, Long, byte[]> element, @Nullable Long timestamp) {

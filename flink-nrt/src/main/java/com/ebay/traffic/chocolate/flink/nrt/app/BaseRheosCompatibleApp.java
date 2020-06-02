@@ -1,11 +1,5 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
-import com.ebay.traffic.chocolate.flink.nrt.deserialization.Tuple2KeyedDeserializationSchema;
-import com.ebay.traffic.chocolate.flink.nrt.deserialization.Tuple2KeyedSerializationSchema;
-import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -19,7 +13,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Receive messages from Kafka topics, apply ETL and send messages to another topics.
+ * Receive messages from rheos topics, apply ETL and send messages to another topics.
  *
  * @author Zhiyuan Wang
  * @since 2020/1/18
