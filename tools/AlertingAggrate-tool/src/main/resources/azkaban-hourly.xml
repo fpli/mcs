@@ -1,53 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <projects>
   <project name="appdl-azkaban-monitor">
-    <metric projectName="AppdlSendAppsflyerDataToDSS" flowName="ApolloRnoToHerculesLvs" total="1" alertCount="1"/>
-    <metric projectName="AppdlSendNorbToKafka" flowName="AppdlSendNorbToKafaka" total="1" alertCount="1"/>
+    <metric projectName="AppdlSendAppsflyerDataToDSS" flowName="ApolloRnoToHerculesLvs" total="1" threshold="1"/>
+    <metric projectName="AppdlSendNorbToKafka" flowName="AppdlSendNorbToKafaka" total="1" threshold="1"/>
+    <metric projectName="SendUseridFmToKafka" flowName="SendUseridFmToKafka" total="1" threshold="1"/>
   </project>
   <project name="chcocolate-core-azkaban-monitor">
-    <metric projectName="DedupeAndSink" flowName="dedupeAndSink_EPN" total="1" alertCount="1"/>
-    <metric projectName="DedupeAndSink" flowName="dedupeAndSink_DAP" total="1" alertCount="1"/>
-    <metric projectName="DedupeAndSink" flowName="DedupeAndSink_PAID_SEARCH" total="1" alertCount="1"/>
-    <metric projectName="DedupeAndSink" flowName="dedupeAndSink_SOCIAL_MEDIA" total="1" alertCount="1"/>
-    <metric projectName="DedupeAndSink" flowName="DedupeAndSink_PAID_SEARCH" total="1" alertCount="1"/>
-    <metric projectName="CappingRule" flowName="cappingRule_EPN" total="1" alertCount="1"/>
-    <metric projectName="CappingRule" flowName="cappingRule_DAP" total="1" alertCount="1"/>
-    <metric projectName="CappingRule" flowName="cappingRule_PAID_SEARCH" total="1" alertCount="1"/>
+    <metric projectName="DedupeAndSink" flowName="dedupeAndSink_EPN" total="1" threshold="1"/>
+    <metric projectName="DedupeAndSink" flowName="dedupeAndSink_DAP" total="1" threshold="1"/>
+    <metric projectName="DedupeAndSink" flowName="DedupeAndSink_PAID_SEARCH" total="1" threshold="1"/>
+    <metric projectName="DedupeAndSink" flowName="dedupeAndSink_SOCIAL_MEDIA" total="1" threshold="1"/>
+    <metric projectName="DedupeAndSink" flowName="DedupeAndSink_PAID_SEARCH" total="1" threshold="1"/>
+    <metric projectName="CappingRule" flowName="cappingRule_EPN" total="1" threshold="1"/>
+    <metric projectName="CappingRule" flowName="cappingRule_DAP" total="1" threshold="1"/>
+    <metric projectName="CappingRule" flowName="cappingRule_PAID_SEARCH" total="1" threshold="1"/>
   </project>
   <project name="epn-azkaban-monitor">
-    <metric projectName="oracle_map_cb_cmpn_pub_mapping" flowName="oracle_map_cb_cmpn_pub_mapping" total="10" alertCount="1"/>
-    <metric projectName="oracle_map_cb_cmpn_pub_mapping_daily_batch" flowName="oracle_map_cb_cmpn_pub_mapping_daily_batch" total="10" alertCount="1"/>
-    <metric projectName="oracle_map_cb_epn_source" flowName="oracle_map_cb_epn_source" total="10" alertCount="1"/>
-    <metric projectName="oracle_map_cb_epn_source_daily_batch" flowName="oracle_map_cb_epn_source_daily_batch" total="10" alertCount="1"/>
-    <metric projectName="epnNRT" flowName="sendAmsToHerculesAndHourlyDone" total="10" alertCount="1"/>
-    <metric projectName="epnNRT" flowName="sendAmsToRenoAndHourlyDone" total="10" alertCount="1"/>
-    <metric projectName="epnNRT" flowName="sendAmsToEtl" total="10" alertCount="1"/>
-    <metric projectName="epnNRT" flowName="epnnrt_scheduler" total="10" alertCount="1"/>
-    <metric projectName="epnNRT" flowName="epnnrt_done" total="10" alertCount="1"/>
+    <metric projectName="oracle_map_cb_cmpn_pub_mapping" flowName="oracle_map_cb_cmpn_pub_mapping" total="10" threshold="1"/>
+    <metric projectName="oracle_map_cb_cmpn_pub_mapping_daily_batch" flowName="oracle_map_cb_cmpn_pub_mapping_daily_batch" total="10" threshold="1"/>
+    <metric projectName="oracle_map_cb_epn_source" flowName="oracle_map_cb_epn_source" total="10" threshold="1"/>
+    <metric projectName="oracle_map_cb_epn_source_daily_batch" flowName="oracle_map_cb_epn_source_daily_batch" total="10" threshold="1"/>
+    <metric projectName="epnNRT" flowName="epnnrt_scheduler" total="10" threshold="1"/>
+    <metric projectName="epnNRT" flowName="sendAmsToEtl" total="10" threshold="1"/>
+    <metric projectName="epnNRT" flowName="epnnrt_done" total="10" threshold="1"/>
+    <metric projectName="epnNRT" flowName="sendAmsToHerculesAndHourlyDone" total="10" threshold="1"/>
+    <metric projectName="epnNRT" flowName="sendAmsToRenoAndHourlyDone" total="10" threshold="1"/>
   </project>
   <project name="imk-azkaban-monitor">
-    <metric projectName="crabJob" flowName="rover_end" total="10" alertCount="1"/>
-    <metric projectName="CrabToRNO" flowName="crabDedupe" total="10" alertCount="1"/>
-    <metric projectName="CrabToRNO" flowName="imkDtlGenerateDoneFile" total="10" alertCount="1"/>
-    <metric projectName="CrabToRNO" flowName="imkGenerateDoneFile" total="10" alertCount="1"/>
-    <metric projectName="CrabToRNO" flowName="crabTransform" total="10" alertCount="1"/>
-    <metric projectName="CrabToRNO" flowName="imkCrabTransform_ PAID_SEARCH" total="10" alertCount="1"/>
-    <metric projectName="IMK-Social-Media" flowName="imkCrabTransform_SOCIAL_MEDIA" total="10" alertCount="1"/>
-    <metric projectName="IMK-Social-Media" flowName="imkScpToETL_Social_Media" total="10" alertCount="1"/>
-    <metric projectName="IMK_DUMP_DAP" flowName="imkScpToETL_DAP" total="10" alertCount="1"/>
-    <metric projectName="IMK_DUMP_PAID_SEARCH" flowName="imkScpToETL" total="10" alertCount="1"/>
-    <metric projectName="IMK_DUMP_ROI" flowName="imkScpToETL_ROI" total="10" alertCount="1"/>
-    <metric projectName="ImkCrabTransform_DAP" flowName="imkCrabTransform_DAP" total="10" alertCount="1"/>
-    <metric projectName="ImkCrabTransform_ROI" flowName="imkCrabTransform_ROI" total="10" alertCount="1"/>
+    <metric projectName="crabJob" flowName="rover_end" total="10" threshold="1"/>
+    <metric projectName="CrabToRNO" flowName="imkDtlGenerateDoneFile" total="10" threshold="1"/>
+    <metric projectName="CrabToRNO" flowName="imkGenerateDoneFile" total="10" threshold="1"/>
+    <metric projectName="CrabToRNO" flowName="crabDedupe" total="10" threshold="1"/>
+    <metric projectName="CrabToRNO" flowName="crabTransform" total="10" threshold="1"/>
+    <metric projectName="IMK-Social-Media" flowName="imkScpToETL_Social_Media" total="10" threshold="1"/>
+    <metric projectName="IMK_DUMP_DAP" flowName="imkScpToETL_DAP" total="10" threshold="1"/>
+    <metric projectName="IMK_DUMP_PAID_SEARCH" flowName="imkScpToETL" total="10" threshold="1"/>
+    <metric projectName="IMK_DUMP_ROI" flowName="imkScpToETL_ROI" total="10" threshold="1"/>
+    <metric projectName="imkETL" flowName="imkETL" total="10" threshold="1"/>
+    <metric projectName="PutImkToRenoAndHercules" flowName="putImkHourlyDoneToRenoAndHercules" total="10" threshold="1"/>
+    <metric projectName="putRenoKwLkpToSlc" flowName="putRenoKwLkpToSlc" total="1" threshold="1"/>
   </project>
   <project name="rotation-azkaban-monitor">
-    <metric projectName="rotation_daily_update" flowName="rotation_daily_update_end" total="10" alertCount="3"/>
-    <metric projectName="rotation_snapshot_daily" flowName="rotation_snapshot_daily" total="10" alertCount="3"/>
-    <metric projectName="rotation_td_hourly" flowName="rotation_hourly_update_end" total="10" alertCount="3"/>
+    <metric projectName="rotation_daily_update" flowName="rotation_daily_update_end" total="10" threshold="3"/>
+    <metric projectName="rotation_snapshot_daily" flowName="rotation_snapshot_daily" total="10" threshold="3"/>
+    <metric projectName="rotation_td_hourly" flowName="rotation_hourly_update_end" total="10" threshold="3"/>
   </project>
   <project name="tools-azkaban-monitor">
-    <metric projectName="AlertingAggregation" flowName="AlertingAggregation" total="1" alertCount="1"/>
-    <metric projectName="AlertingAggregationHourly" flowName="AlertingAggregationHourly" total="1" alertCount="1"/>
-    <metric projectName="HdfsDataClean" flowName="DataClean" total="1" alertCount="1"/>
+    <metric projectName="AlertingAggregation" flowName="AlertingAggregation" total="1" threshold="1"/>
+    <metric projectName="AlertingAggregationHourly" flowName="AlertingAggregationHourly" total="1" threshold="1"/>
+    <metric projectName="HdfsDataClean" flowName="DataClean" total="1" threshold="1"/>
   </project>
 </projects>

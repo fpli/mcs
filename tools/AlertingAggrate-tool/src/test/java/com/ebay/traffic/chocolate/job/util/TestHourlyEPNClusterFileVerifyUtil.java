@@ -16,6 +16,24 @@ public class TestHourlyEPNClusterFileVerifyUtil {
   }
 
   @Test
+  public void testGetDate() {
+    String path = "viewfs://apollo-rno/apps/b_marketing_tracking/watch/20200116/ams_click_hourly.done.202001160200000000";
+
+    String dt = HourlyEPNClusterFileVerifyUtil.getDate(path);
+
+    Assert.assertEquals("20200116", dt);
+  }
+
+  @Test
+  public void testGetString() {
+    String origin_dt = "2020-01-01";
+
+    String new_dt = origin_dt.replaceAll("-", "");
+
+    Assert.assertEquals("20200101", new_dt);
+  }
+
+  @Test
   public void testGetSeqenceNum() {
     String path = "viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt/click/click_dt=2020-01-15/dw_ams.ams_clicks_cs_20200115_application_1578483518072_53120_00272.dat.gz";
 

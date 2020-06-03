@@ -21,4 +21,4 @@ set hive.merge.size.per.task=128000000;
 SET hive.auto.convert.join=false;
 set mapred.task.timeout=1200000;
 
-INSERT OVERWRITE LOCAL DIRECTORY '/home/stack/rotation/herculeslvs/vendors' select count(vendor_id), count(distinct vendor_id) from im_tracking.dw_mpx_vendors;
+INSERT OVERWRITE LOCAL DIRECTORY '/home/_choco_admin/rotation/herculeslvs/vendors' select count(vendor_id), count(distinct vendor_id) from im_tracking.dw_mpx_vendors;

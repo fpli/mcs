@@ -26,12 +26,13 @@ public class HourlyEPNClusterFileVerifyUtil {
     HashMap<String, String> map = getHourlyDoneFileMap(clusterName);
     String newestDoneFile = map.get("hourlyDoneFile");
     String dateSegement = map.get("dateSegement");
+    String dt = getDate(newestDoneFile);
     String hour = Integer.toString(getHour(newestDoneFile));
     logger.info("HourlyEPNClusterFileVerifyUtil getHourlyDoneFile: " + newestDoneFile);
     logger.info("HourlyEPNClusterFileVerifyUtil dateSegement: " + dateSegement);
     logger.info("HourlyEPNClusterFileVerifyUtil hour: " + hour);
 
-    HashMap<String, String> map1 = getIdentifiedFileMap(clusterName, Integer.parseInt(hour), dateSegement);
+    HashMap<String, String> map1 = getIdentifiedFileMap(clusterName, Integer.parseInt(hour), dateSegement, dt);
     int newestIdentifiedFileSequence = Integer.parseInt(map1.get("newestIdentifiedFileSequence"));
     int allIdentifiedFileNum = Integer.parseInt(map1.get("allIdentifiedFileNum"));
     logger.info("HourlyEPNClusterFileVerifyUtil newestIdentifiedFileSequence: " + newestIdentifiedFileSequence);
@@ -46,18 +47,22 @@ public class HourlyEPNClusterFileVerifyUtil {
     return hourlyEPNClusterFileVerifyInfo;
   }
 
-  public static HashMap<String, String> getIdentifiedFileMap(String clusterName, int hour, String dateSegement) {
+  public static HashMap<String, String> getIdentifiedFileMap(String clusterName, int hour, String dateSegement, String dt) {
     HashMap<Integer, String> map = new HashMap<>();
     List<CSVRecord> csvRecordList = CSVUtil.readCSV(getPath(clusterName, dateSegement), ' ');
     for (CSVRecord csvRecord : csvRecordList) {
       logger.info("getIdentifiedFileMap 1 : " + csvRecord.get(0));
-      if (csvRecord.size() > 1) {
+      if (csvRecord.size() > 2) {
         if(clusterName.equalsIgnoreCase("apollorno")) {
-          logger.info("getIdentifiedFileMap: " + csvRecord.get(0) + csvRecord.get(1));
-          map.put(getSeqenceNumFromApollo(csvRecord.get(1)), csvRecord.get(0));
+          logger.info("getIdentifiedFileMap: " + csvRecord.get(0) + csvRecord.get(1) + csvRecord.get(2));
+          if(dt.equalsIgnoreCase(csvRecord.get(0).replace("-", ""))) {
+            map.put(getSeqenceNumFromApollo(csvRecord.get(2)), csvRecord.get(1));
+          }
         }else {
-          logger.info("getIdentifiedFileMap: " + csvRecord.get(0) + csvRecord.get(1));
-          map.put(getSeqenceNumFromHercules(csvRecord.get(1)), csvRecord.get(0));
+          logger.info("getIdentifiedFileMap: " + csvRecord.get(0) + csvRecord.get(1) + csvRecord.get(2));
+          if(dt.equalsIgnoreCase(csvRecord.get(0).replace("-", ""))) {
+            map.put(getSeqenceNumFromHercules(csvRecord.get(2)), csvRecord.get(1));
+          }
         }
       }
     }
@@ -152,7 +157,6 @@ public class HourlyEPNClusterFileVerifyUtil {
     }
 
     if (yesterdayCsvRecordList != null && yesterdayCsvRecordList.size() > 0) {
-      logger.info("yesterdayCsvRecordList is not null");
       map.put("hourlyDoneFile", getNewestHourlyDoneFile(yesterdayCsvRecordList));
       map.put("dateSegement", "yesterday");
       return map;
@@ -184,17 +188,13 @@ public class HourlyEPNClusterFileVerifyUtil {
   }
 
   private static String getNewestHourlyDoneFile(List<CSVRecord> todayCsvRecordList) {
-    int maxHour = 0;
     String donfile = "";
     for (CSVRecord csvRecord : todayCsvRecordList) {
       logger.info("getNewestHourlyDoneFile-->:" + csvRecord.get(0))
       donfile = csvRecord.get(0);
-      int hour = getHour(donfile);
-      if (maxHour > hour) {
-        maxHour = hour;
-      }
     }
 
+    logger.info("getNewestHourlyDoneFile: " + donfile);
     return donfile;
   }
 
@@ -213,6 +213,23 @@ public class HourlyEPNClusterFileVerifyUtil {
     String donefileSequence = arr1[2];
 
     return Integer.parseInt(donefileSequence.substring(8, 10));
+  }
+
+  public static String getDate(String donfile) {
+    String[] arr = donfile.split("/");
+    if (arr.length < 8) {
+      return "";
+    }
+
+    String donefileName = arr[7];
+    String[] arr1 = donefileName.split("\\.");
+    if (arr1.length < 3) {
+      return "";
+    }
+
+    String donefileSequence = arr1[2];
+
+    return donefileSequence.substring(0, 8);
   }
 
   public static String getDonePath(String clusterName, String dateSegement) {
