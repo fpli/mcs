@@ -15,9 +15,8 @@ public class RoiTransformer extends BaseTransformer {
   }
 
   @Override
-  public Integer getDstClientId() throws MalformedURLException {
-    String uri = (String) sourceRecord.get(TransformerConstants.URI);
-    return getClientIdFromRoverUrl(uri);
+  public Integer getDstClientId() {
+    return 0;
   }
 
   @Override
@@ -72,17 +71,6 @@ public class RoiTransformer extends BaseTransformer {
     } else {
       return StringConstants.ZERO;
     }
-  }
-
-  private Integer getClientIdFromRoverUrl(String uri) throws MalformedURLException {
-    String path = new URL(uri).getPath();
-    if (StringUtils.isNotEmpty(path)) {
-      String[] pathArray = path.split(StringConstants.SLASH);
-      if (pathArray.length > 3) {
-        return Integer.valueOf(pathArray[3].split("\\?")[0].split(StringConstants.HYPHEN)[0]);
-      }
-    }
-    return 0;
   }
 
   @Override
