@@ -29,6 +29,8 @@ public class Errors {
   public static final String ERROR_CONTENT = "mktCollectionSvcErrorContent";
   public static final String ERROR_DOMAIN = "marketingTrackingDomain";
 
+  public static final String ERROR_NO_PAGE_ID = "No page id";
+
   private static final Map<String, ErrorType> ERROR_MAP = new HashMap<>();
   static {
     ERROR_MAP.put(ERROR_NO_USER_AGENT, new ErrorType(4000, ERROR_NO_USER_AGENT, "No User-Agent found."));

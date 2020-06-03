@@ -22,10 +22,13 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.protocol.types.SchemaException;
 import org.apache.log4j.Logger;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.ebay.app.raptor.chocolate.filter.service.FilterUtils.*;
 
 /**
  * Created by yliu29 on 2/23/18.
@@ -104,7 +107,9 @@ public class FilterWorker extends Thread {
       long kafkaCommitTime = System.currentTimeMillis();
       while (!shutdownRequested.get()) {
         try {
+          long pollStartTime = System.currentTimeMillis();
           ConsumerRecords<Long, ListenerMessage> records = consumer.poll(POLL_STEP_MS);
+          metrics.mean("PollLatency", System.currentTimeMillis() - pollStartTime);
           Iterator<ConsumerRecord<Long, ListenerMessage>> iterator = records.iterator();
           int count = 0;
           int passed = 0;
@@ -143,15 +148,20 @@ public class FilterWorker extends Thread {
                         Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
                         Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
               }
-              if (outMessage.getUri() != null && outMessage.getChannelType().toString().equals("ROI")
-                  && outMessage.getUri().contains("nroi=1") && outMessage.getUri().contains("marketingtracking")) {
+              long sendKafkaStartTime = System.currentTimeMillis();
+              // If the traffic is received from rover bes pipeline, we will send it to NewROITopic
+              // this traffic will not be tracked into imk table
+              if (isRoverBESRoi(outMessage)) {
                 producer.send(new ProducerRecord<>(ApplicationOptions.getInstance().getNewROITopic(), outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
+                metrics.mean("SendKafkaLatency", System.currentTimeMillis() - sendKafkaStartTime);
                 metrics.meter("NewROICount", 1, outMessage.getTimestamp(),
                     Field.of(CHANNEL_ACTION, outMessage.getChannelAction().toString()),
                     Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
               }
-              else
+              else {
                 producer.send(new ProducerRecord<>(outputTopic, outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
+                metrics.mean("SendKafkaLatency", System.currentTimeMillis() - sendKafkaStartTime);
+              }
             }
             metrics.mean("FilterThreadPoolLatency", System.currentTimeMillis() - theadPoolstartTime);
           }
@@ -162,11 +172,14 @@ public class FilterWorker extends Thread {
           flushThreshold += count;
 
           if (flushThreshold > 1000 || now - kafkaCommitTime > kafkaCommitInterval) {
+            long flushStartTime = System.currentTimeMillis();
             // producer flush
             producer.flush();
 
             // update consumer offset
             consumerListener.commitSync();
+
+            metrics.mean("FlushLatency", System.currentTimeMillis() - flushStartTime);
 
             // reset threshold
             flushThreshold = 0;
@@ -234,6 +247,7 @@ public class FilterWorker extends Thread {
   }
 
   private FilterMessage processMessage(ListenerMessage message) throws InterruptedException {
+    long processStartTime = System.currentTimeMillis();
     FilterMessage outMessage = new FilterMessage();
     outMessage.setSnapshotId(message.getSnapshotId());
     outMessage.setShortSnapshotId(message.getShortSnapshotId());
@@ -287,6 +301,7 @@ public class FilterWorker extends Thread {
       LOG.warn("Exception when execute rtFilterRules: ", e);
       this.metrics.meter("FilterRtRulesError");
     }
+    metrics.mean("ProcessLatency", System.currentTimeMillis() - processStartTime);
     return outMessage;
   }
 
@@ -304,4 +319,7 @@ public class FilterWorker extends Thread {
     }
     return publisher;
   }
+
+
+
 }

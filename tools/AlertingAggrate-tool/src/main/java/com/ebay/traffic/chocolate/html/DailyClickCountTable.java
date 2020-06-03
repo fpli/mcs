@@ -9,6 +9,10 @@ public class DailyClickCountTable {
   public static String parseProject(List<DailyClickTrend> dailyClickTrends) {
     String html = getTtile("Epn CLICK_COUNT report (from hercules-lvs hdfs)") + getHeader();
 
+    if (dailyClickTrends == null || dailyClickTrends.size() == 0) {
+      return html;
+    }
+
     for (DailyClickTrend dailyClickTrend : dailyClickTrends) {
       html = html + getBodyLine(dailyClickTrend);
     }

@@ -4,6 +4,8 @@ import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
+import com.ebay.app.raptor.chocolate.common.Hostname;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -13,6 +15,7 @@ import com.ebay.traffic.chocolate.listener.util.CouchbaseClient;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.kafka.clients.producer.Producer;
@@ -76,6 +79,7 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
     metrics.meter(PROXY_FAILURE, 0);
     metrics.meter(CLIENT_FAILURE, 0);
     metrics.meter(MALFORMED_URL, 0);
+    metrics.meter("driver.id", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", ApplicationOptionsParser.getDriverIdFromIp()));
     // init couchbase client at startup
     CouchbaseClient.getInstance();
     super.init();

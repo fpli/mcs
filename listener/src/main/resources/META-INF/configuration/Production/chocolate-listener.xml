@@ -9,22 +9,22 @@
   </property>
   <property>
     <name>chocolate.listener.kafka.topic_filtered</name>
-    <value>marketing.tracking.listened-filtered,listened-filtered</value>
+    <value>marketing.tracking.ssl.listened-filtered,listened-filtered</value>
     <description>Kafka topic for messages filtered in listener.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.EPN</name>
-    <value>marketing.tracking.listened-epn,listened-epn</value>
+    <value>marketing.tracking.ssl.listened-epn,listened-epn</value>
     <description>Kafka topic for epn channel to publish.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.DISPLAY</name>
-    <value>marketing.tracking.listened-display,listened-display</value>
+    <value>marketing.tracking.ssl.listened-display,listened-display</value>
     <description>Kafka topic for display channel to publish.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.SOCIAL_MEDIA</name>
-    <value>marketing.tracking.listened-social-media,listened-social-media</value>
+    <value>marketing.tracking.ssl.listened-social-media,listened-social-media</value>
     <description>Kafka topic for social media channel to publish.</description>
   </property>
   <!-- Kafka producer end -->
@@ -110,6 +110,14 @@
     </value-attributes>
   </property>
   <property>
+    <name>validate.internals.port</name>
+    <value>8083</value>
+    <description>Validate Internals port, should be 8083.</description>
+    <value-attributes>
+      <type>int</type>
+    </value-attributes>
+  </property>
+  <property>
     <name>proxyTo</name>
     <value>http://rover.vip.ebay.com</value>
     <description>Proxy between listener and rover clusters</description>
@@ -135,9 +143,15 @@
   </property>
 
   <property>
-    <name>chocolate.listener.couchbase.datasource</name>
+    <name>chocolate.listener.couchbase.appdldevicesdatasource</name>
     <value>appdldevicescbdbhost</value>
-    <description>Couchbase data source</description>
+    <description>Couchbase appdldevices data source</description>
+  </property>
+
+  <property>
+    <name>chocolate.listener.couchbase.appdlreportdatasource</name>
+    <value>appdlreportcbdbhost</value>
+    <description>Couchbase appdlreport data source</description>
   </property>
 
 </configuration>

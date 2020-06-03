@@ -103,7 +103,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           var df = readFilesAsDFEx(datesFile._2)
           val size = datesFile._2.length
           //if the dataframe is empty, just continue
-          if (df.take(1).isEmpty)
+          if (df.rdd.isEmpty)
             break
           df = df.repartition(properties.getProperty("epnnrt.repartition").toInt)
           val epnNrtCommon = new EpnNrtCommon(params, df)
@@ -323,7 +323,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     }
 
     val fileStatus = fs.listStatus(new Path(sparkDir))
-    val files = fileStatus.filter(status => status.getPath.getName != "_SUCCESS")
+    val files = fileStatus.filter(status => status.isFile && status.getPath.getName != "_SUCCESS")
       .zipWithIndex
       .map(swi => {
         val src = swi._1.getPath

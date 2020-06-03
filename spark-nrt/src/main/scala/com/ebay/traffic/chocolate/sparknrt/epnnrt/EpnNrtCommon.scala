@@ -39,6 +39,11 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   lazy val ebaysites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE)
   lazy val refererEbaySites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE)
+  //add ebayadservicesites to support impression events which are redirected from adservice to mcs
+  lazy val ebayadservicesites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?ebayadservices\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE)
+
+  lazy val CHOCO_TAG = "dashenId"
+  lazy val CB_CHOCO_TAG_PREFIX = "DashenId_"
 
   val cbData = asyncCouchbaseGet(df)
 
@@ -209,9 +214,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   )
 
 
-  // val getRoverChannelIdUdf = udf((uri: String) => getRoverUriInfo(uri, 4))
-  val getRoverUriInfoUdf = udf((uri: String, index: Int) => getRoverUriInfo(uri, index))
-
   //val getGUIDUdf = udf((requestHeader: String, responseHeader:String, guid: String) => getGUIDFromCookie(requestHeader, responseHeader, guid))
   val getValueFromRequestUdf = udf((requestHeader: String, key: String) => getValueFromRequest(requestHeader, key))
   val getUserQueryTextUdf = udf((url: String, action: String) => getUserQueryTxt(url, action))
@@ -269,6 +271,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val getUserIdUdf = udf((userId: String, cguid: String) => getUserIdByCguid(userId, cguid))
   val getRelatedInfoFromUriUdf = udf((uri: String, index: Int, key: String) => getRelatedInfoFromUri(uri, index, key))
   val getChannelIdUdf = udf((channelType: String) => getChannelId(channelType))
+  val fixGuidUsingRoverLastClickUdf = udf((guid: String, uri: String) => fixGuidUsingRoverLastClick(guid, uri))
 
   def filter_specific_pub(referer: String, publisher: String): Int = {
     if (publisher.equals("5574651234") && getRefererURLAndDomain(referer, true).endsWith(".bid"))
@@ -327,22 +330,35 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     */
   def getLndPageUrlName(responseHeader: String, landingPageUrl: String): String = {
     if (landingPageUrl == null || landingPageUrl.equalsIgnoreCase("")) {
-      val location = getValueFromRequest(responseHeader, "Location")
-      if (location.equalsIgnoreCase(""))
-        return ""
-      val url = new URL(location)
-      if (url.getHost.equalsIgnoreCase("rover.ebay.com") || url.getHost.equalsIgnoreCase("r.ebay.com"))
-        removeParams(location)
-      else {
-        var res = getQueryParam(location, "mpre")
-        if (res.equalsIgnoreCase(""))
-          res = getQueryParam(location, "loc")
-        if (res.equalsIgnoreCase(""))
-          res = getQueryParam(location, "url")
-        if (res.equalsIgnoreCase(""))
+      try {
+        val location = getValueFromRequest(responseHeader, "Location")
+        if (location.equalsIgnoreCase(""))
+          return ""
+        val url = new URL(location)
+        if (url.getHost.equalsIgnoreCase("rover.ebay.com") || url.getHost.equalsIgnoreCase("r.ebay.com"))
           removeParams(location)
-        else
-          removeParams(res)
+        else {
+          var res = getQueryParam(location, "mpre")
+          if (res.equalsIgnoreCase(""))
+            res = getQueryParam(location, "loc")
+          if (res.equalsIgnoreCase(""))
+            res = getQueryParam(location, "url")
+          if (res.equalsIgnoreCase(""))
+            removeParams(location)
+          else
+            removeParams(res)
+        }
+      } catch {
+        case e: MalformedURLException => {
+          logger.error("Error parse landing page url from Location: " + e)
+          metrics.meter("ParseLandingPageFromLocationError")
+          return ""
+        }
+        case e: Exception => {
+          logger.error("Error parse landing page url from responseHeader: " + responseHeader + e)
+          metrics.meter("ParseLandingPageFromResponseHeaderError")
+          return ""
+        }
       }
     } else {
       return landingPageUrl
@@ -399,16 +415,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       return value
     val key = "ff" + index
     getQueryParam(uri, key)
-  }
-
-  def getRoverUriInfo(uri: String, index: Int): String = {
-    val path = new URL(uri).getPath()
-    if (path != null && path != "" && index >= 0 && index <= 4) {
-      val pathArray = path.split("/")
-      if (pathArray.length == 5)
-        return pathArray(index)
-    }
-    ""
   }
 
   def getValueFromRequest(request: String, key: String): String = {
@@ -479,6 +485,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
           return ""
         }
         case e: IllegalArgumentException => {
+          logger.error("Error URLDecoder param " + uri + " param=" + param + e)
+          return ""
+        }
+        case e: MalformedURLException => {
+          logger.error("Error URLDecoder param " + uri + " param=" + param + e)
+          return ""
+        }
+        case e: Exception => {
           logger.error("Error URLDecoder param " + uri + " param=" + param + e)
           return ""
         }
@@ -1049,7 +1063,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     for (i <- test.indices) {
       publisher_list(i) = String.valueOf(test(i).get(0))
       campaign_list(i) = String.valueOf(test(i).get(1))
-      rotation_list(i) = getRoverUriInfo(String.valueOf(test(i).get(2)), 3)
+      rotation_list(i) = getRelatedInfoFromUri(String.valueOf(test(i).get(2)), 3, "mkrid")
     }
 
 
@@ -1290,18 +1304,32 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     * get related info from uri, like rotation_id and so on
     * for rover uri, get related info from rover.ebay.com/.../
     * for mcs uri, get related info from query params
+    * for impression uri which is redirected from adservice, get related info from query params
     * @param uri, index, key
     * @return channel id
     */
   def getRelatedInfoFromUri(uri: String, index: Int, key: String): String = {
-    if (uri != null && ebaysites.matcher(uri.toLowerCase()).find()) {
+    if (uri != null && (ebaysites.matcher(uri.toLowerCase()).find() || ebayadservicesites.matcher(uri.toLowerCase()).find())) {
       return getQueryParam(uri, key)
     } else {
-      val path = new URL(uri).getPath()
-      if (path != null && path != "" && index >= 0 && index <= 4) {
-        val pathArray = path.split("/")
-        if (pathArray.length == 5)
-          return pathArray(index)
+      try {
+        val path = new URL(uri).getPath()
+        if (path != null && path != "" && index >= 0 && index <= 4) {
+          val pathArray = path.split("/")
+          if (pathArray.length == 5)
+            return pathArray(index)
+        }
+      } catch {
+        case e: MalformedURLException => {
+          logger.error("Error parse param from " + uri + e)
+          metrics.meter("ParseParamFromUriError")
+          return ""
+        }
+        case e: Exception => {
+          logger.error("Error parse param from " + uri + e)
+          metrics.meter("ParseParamFromUriError")
+          return ""
+        }
       }
     }
     ""
@@ -1341,5 +1369,46 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } else {
       true
     }
+  }
+
+  /**
+    * fix guid using rover last click guid if exists
+    * @param guid guid
+    * @param uri uri
+    * @return fixedGuid
+    */
+  def fixGuidUsingRoverLastClick(guid: String, uri: String): String = {
+    var fixedGuid = guid
+    var roverLastClickGuid = ""
+    // rewrite couchbase datasource property
+    CorpCouchbaseClient.dataSource = properties.getProperty("epnnrt.datasource")
+    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+
+    try {
+      val chocoTag = getQueryParam(uri, CHOCO_TAG)
+      if (StringUtils.isNotEmpty(chocoTag)) {
+        val start = System.currentTimeMillis
+        val chocoTagKey = CB_CHOCO_TAG_PREFIX + chocoTag
+        val jsonDocument = bucket.get(chocoTagKey, classOf[JsonDocument])
+        if (jsonDocument != null) {
+          roverLastClickGuid = jsonDocument.content().get("guid").toString
+        }
+        metrics.mean("GetRoverLastGuidCouchbaseLatency", System.currentTimeMillis() - start)
+      }
+    } catch {
+      case e: Exception => {
+        logger.error("Corp Couchbase error while getting chocoTag guid mapping " + e)
+        metrics.meter("CouchbaseError")
+      }
+    } finally {
+      CorpCouchbaseClient.returnClient(cacheClient)
+    }
+
+    if (StringUtils.isNotEmpty(roverLastClickGuid)) {
+      metrics.meter("GetChocoTagGuidMappingFromCB")
+      fixedGuid = roverLastClickGuid
+    }
+
+    fixedGuid
   }
 }

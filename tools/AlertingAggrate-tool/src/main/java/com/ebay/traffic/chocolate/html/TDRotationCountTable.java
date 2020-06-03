@@ -38,7 +38,7 @@ public class TDRotationCountTable {
       return "<td bgcolor=\"#FFFFFF\">" + "OK" + "</td>";
     }
 
-    return "<td bgcolor=\"#ff0000\">" + "Warning" + "</td>";
+    return "<td bgcolor=\"#ff0000\">" + "Critical" + "</td>";
   }
 
   private static String getHeader() {

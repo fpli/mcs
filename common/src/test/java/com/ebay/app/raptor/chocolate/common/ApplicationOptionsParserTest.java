@@ -2,9 +2,11 @@ package com.ebay.app.raptor.chocolate.common;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Properties;
@@ -359,5 +361,14 @@ public class ApplicationOptionsParserTest {
         assertEquals(93423421142342423l % driverIdRange, ApplicationOptionsParser.getDriverIdFromIp("localhost7777-93423421142342423-1-93423421142342423l-23423421423142342423", 1l));
         assertEquals(93423421142342423l % driverIdRange, ApplicationOptionsParser.getDriverIdFromIp("93423421142342423localhost7777-1-23423421423142342423", 1l));
         
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testGetDriverIdFromIp() {
+        int randomDriverIdMask = ApplicationOptionsParser.RANDOM_DRIVER_ID_MASK;
+        assertEquals(randomDriverIdMask & 1, ApplicationOptionsParser.getDriverIdFromIp(1L));
+        assertEquals(randomDriverIdMask & 1, ApplicationOptionsParser.getDriverIdFromIp(1025L));
+        assertEquals(randomDriverIdMask & 0, ApplicationOptionsParser.getDriverIdFromIp(1024L));
+        assertEquals(randomDriverIdMask & 1, ApplicationOptionsParser.getDriverIdFromIp(-1L));
     }
 }
