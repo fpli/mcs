@@ -137,17 +137,23 @@ public class HourlyEPNClusterFileVerifyUtil {
 
   private static HashMap<String, String> getHourlyDoneFileMap(String clusterName) {
     HashMap<String, String> map = new HashMap<>();
+    logger.info("verifyNull todayCsvRecordList start");
     List<CSVRecord> todayCsvRecordList = verifyNull(CSVUtil.readCSV(getDonePath(clusterName, "today"), ' '));
+    logger.info("verifyNull todayCsvRecordList end");
+    logger.info("verifyNull yesterdayCsvRecordList start");
     List<CSVRecord> yesterdayCsvRecordList = verifyNull(CSVUtil.readCSV(getDonePath(clusterName, "yesterday"), ' '));
+    logger.info("verifyNull yesterdayCsvRecordList end");
 
     if (todayCsvRecordList != null && todayCsvRecordList.size() > 0) {
+      logger.info("todayCsvRecordList is not null");
       map.put("hourlyDoneFile", getNewestHourlyDoneFile(todayCsvRecordList));
       map.put("dateSegement", "today");
       return map;
     }
 
     if (yesterdayCsvRecordList != null && yesterdayCsvRecordList.size() > 0) {
-      map.put("hourlyDoneFile", getNewestHourlyDoneFile(todayCsvRecordList));
+      logger.info("yesterdayCsvRecordList is not null");
+      map.put("hourlyDoneFile", getNewestHourlyDoneFile(yesterdayCsvRecordList));
       map.put("dateSegement", "yesterday");
       return map;
     }
@@ -162,11 +168,14 @@ public class HourlyEPNClusterFileVerifyUtil {
 
     ArrayList<String> list = new ArrayList<>();
     for (CSVRecord csvRecord : readCSVlist) {
-      if(!csvRecord.get(0).trim().equalsIgnoreCase("")){
+      logger.info("before trim, verifyNull---->" + csvRecord.get(0));
+      if(csvRecord.get(0).length() > 10){
+        logger.info("after trim, verifyNull---->" + csvRecord.get(0));
         list.add(csvRecord.get(0));
       }
     }
 
+    logger.info("verifyNull list size: " + list.size());
     if(list.size() == 0){
       return null;
     }
@@ -178,6 +187,7 @@ public class HourlyEPNClusterFileVerifyUtil {
     int maxHour = 0;
     String donfile = "";
     for (CSVRecord csvRecord : todayCsvRecordList) {
+      logger.info("getNewestHourlyDoneFile-->:" + csvRecord.get(0))
       donfile = csvRecord.get(0);
       int hour = getHour(donfile);
       if (maxHour > hour) {
