@@ -14,44 +14,49 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Receive messages from rheos topics, apply ETL and send messages to another topics.
+ * @param <I> Type of the elements in the DataStream created from the this source
+ * @param <O> The type of the elements in this stream.
  *
  * @author Zhiyuan Wang
  * @since 2020/1/18
+ *
  */
-public abstract class BaseRheosCompatibleApp<IN, OUT> {
-  protected StreamExecutionEnvironment streamExecutionEnvironment;
+public abstract class AbstractRheosCompatibleApp<I, O> {
 
-  private static final long DEFAULT_CHECK_POINT_PERIOD = TimeUnit.SECONDS.toMillis(2);
+  private StreamExecutionEnvironment streamExecutionEnvironment;
 
-  private static final long DEFAULT_MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(1);
+  private static final long CHECK_POINT_PERIOD = TimeUnit.SECONDS.toMillis(2);
 
-  private static final long DEFAULT_CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(60);
+  private static final long MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(1);
 
-  private static final int DEFAULT_MAX_CONCURRENT_CHECK_POINTS = 1;
+  private static final long CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(60);
 
-  protected void run() throws Exception {
+  private static final int MAX_CONCURRENT_CHECK_POINTS = 1;
+
+  void run() throws Exception {
     streamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment();
     prepareBaseExecutionEnvironment();
-    DataStreamSource<IN> tuple2DataStreamSource = streamExecutionEnvironment.addSource(getKafkaConsumer());
-    DataStream<OUT> output = transform(tuple2DataStreamSource);
+    DataStreamSource<I> tuple2DataStreamSource = streamExecutionEnvironment.addSource(getKafkaConsumer());
+    DataStream<O> output = transform(tuple2DataStreamSource);
     output.addSink(getKafkaProducer());
     streamExecutionEnvironment.execute();
   }
 
-  protected void prepareBaseExecutionEnvironment() {
-    streamExecutionEnvironment.enableCheckpointing(DEFAULT_CHECK_POINT_PERIOD);
+  private void prepareBaseExecutionEnvironment() {
+    streamExecutionEnvironment.enableCheckpointing(CHECK_POINT_PERIOD);
     streamExecutionEnvironment.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
-    streamExecutionEnvironment.getCheckpointConfig().setMinPauseBetweenCheckpoints(DEFAULT_MIN_PAUSE_BETWEEN_CHECK_POINTS);
-    streamExecutionEnvironment.getCheckpointConfig().setCheckpointTimeout(DEFAULT_CHECK_POINT_TIMEOUT);
-    streamExecutionEnvironment.getCheckpointConfig().setMaxConcurrentCheckpoints(DEFAULT_MAX_CONCURRENT_CHECK_POINTS);
-    streamExecutionEnvironment.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
+    streamExecutionEnvironment.getCheckpointConfig().setMinPauseBetweenCheckpoints(MIN_PAUSE_BETWEEN_CHECK_POINTS);
+    streamExecutionEnvironment.getCheckpointConfig().setCheckpointTimeout(CHECK_POINT_TIMEOUT);
+    streamExecutionEnvironment.getCheckpointConfig().setMaxConcurrentCheckpoints(MAX_CONCURRENT_CHECK_POINTS);
+    streamExecutionEnvironment.getCheckpointConfig()
+        .enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
   }
 
-  protected abstract DataStream<OUT> transform(DataStreamSource<IN> dataStreamSource);
+  protected abstract DataStream<O> transform(DataStreamSource<I> dataStreamSource);
 
-  protected abstract FlinkKafkaConsumer<IN> getKafkaConsumer();
+  protected abstract FlinkKafkaConsumer<I> getKafkaConsumer();
 
-  protected abstract FlinkKafkaProducer<OUT> getKafkaProducer();
+  protected abstract FlinkKafkaProducer<O> getKafkaProducer();
 
   /**
    * Get consumer topics from config file
