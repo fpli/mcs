@@ -17,13 +17,19 @@ public class Errors {
   public static final String ERROR_INVALID_MKEVT = "InvalidMkevt";
   public static final String ERROR_INVALID_ENDUSERCTX="InvalidEndUserCtx";
   public static final String ERROR_INTERNAL_SERVICE = "InternalServiceError";
+  public static final String ERROR_NO_TARGET_URL_DEEPLINK = "NoTargetUrlDeeplink";
+  public static final String ERROR_INVALID_TARGET_URL_DEEPLINK = "InvalidTargetUrlDeeplink";
 
   public static final String ERROR_NO_MKCID = "No mkcid";
   public static final String ERROR_INVALID_MKCID = "Invalid mkcid.";
   public static final String ERROR_NO_MKRID = "No mkrid.";
   public static final String ERROR_INVALID_MKRID = "Invalid mkrid.";
+  public static final String ERROR_NO_MKSID = "No mksid.";
+  public static final String ERROR_INVALID_MKSID = "Invalid mksid.";
   public static final String ERROR_CONTENT = "mktCollectionSvcErrorContent";
   public static final String ERROR_DOMAIN = "marketingTrackingDomain";
+
+  public static final String ERROR_NO_PAGE_ID = "No page id";
 
   private static final Map<String, ErrorType> ERROR_MAP = new HashMap<>();
   static {
@@ -37,6 +43,8 @@ public class Errors {
     ERROR_MAP.put(ERROR_INVALID_MKEVT, new ErrorType(4007, ERROR_INVALID_MKEVT, "Invalid mkevt value."));
     ERROR_MAP.put(ERROR_INVALID_ENDUSERCTX, new ErrorType(4008, ERROR_INVALID_ENDUSERCTX, "Invalid X-EBAY-C-ENDUSERCTX header."));
     ERROR_MAP.put(ERROR_INTERNAL_SERVICE, new ErrorType(5000, ERROR_INTERNAL_SERVICE, "Internal Service Error."));
+    ERROR_MAP.put(ERROR_NO_TARGET_URL_DEEPLINK, new ErrorType(4009, ERROR_NO_TARGET_URL_DEEPLINK, "No TargetUrl in Deeplink Url"));
+    ERROR_MAP.put(ERROR_INVALID_TARGET_URL_DEEPLINK, new ErrorType(4010, ERROR_INVALID_TARGET_URL_DEEPLINK, "Invalid TargetUrl in Deeplink Url"));
   }
 
   public static Map<String, ErrorType> getErrorMap() {

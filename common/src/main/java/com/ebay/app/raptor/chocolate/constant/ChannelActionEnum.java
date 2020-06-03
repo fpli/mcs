@@ -61,7 +61,12 @@ public enum ChannelActionEnum {
   /**
    * Rover Sync
    */
-  SYNC(ChannelAction.IMPRESSION, "roversync");
+  SYNC(ChannelAction.IMPRESSION, "roversync"),
+
+  /**
+   * ROI
+   */
+  ROI(ChannelAction.ROI, "roi");
 
   /**
    * The human-readable action name

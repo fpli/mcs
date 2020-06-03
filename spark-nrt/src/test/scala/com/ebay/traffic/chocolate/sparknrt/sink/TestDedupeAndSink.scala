@@ -88,6 +88,28 @@ class TestDedupeAndSink extends BaseFunSuite {
     assert (dom(0)._2.contains(DATE_COL1))
     assert (dom(0)._2.contains(DATE_COL2))
 
+    // validate .imketl meta file exists
+    assert(job.jobProperties.getProperty("meta.output.suffix").equals(".imketl"))
+    val imtETLMetaFiles = metadata.readDedupeOutputMeta(".imketl")
+    assert(dom.length == imtETLMetaFiles.length)
+    for (i <- dom.indices) {
+      val fileName = dom(i)._1
+      val targetFileName = imtETLMetaFiles(i)._1
+      // validate meta file name
+      assert((fileName + ".imketl").equals(targetFileName))
+      // validate meta file content
+      dom(i)._2.foreach(kv => {
+        val key = kv._1
+        val value = kv._2
+        assert(value.sameElements(imtETLMetaFiles(i)._2(key)))
+      })
+      imtETLMetaFiles(i)._2.foreach(kv => {
+        val key = kv._1
+        val value = kv._2
+        assert(value.sameElements(dom(i)._2(key)))
+      })
+    }
+
     val df1 = job.readFilesAsDFEx(dom(0)._2.get(DATE_COL1).get)
     df1.show()
     assert (df1.count() == 2)

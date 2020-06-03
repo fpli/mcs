@@ -6,16 +6,16 @@ set -x
 
 function start_job(){
     host=$1
-    ssh -T -i /usr/azkaban/id_rsa_spark stack@${host} <<EOSSH
+    ssh -T -i /usr/azkaban/id_rsa_spark _choco_admin@${host} <<EOSSH
     hostname
     cd /datashare/mkttracking/jobs/chocolate-sparknrt/bin/prod
     pwd
     export HADOOP_USER_NAME=chocolate
     echo $HADOOP_USER_NAME
     ./putImkToRenoAndHercules.sh /apps/tracking-events/crabTransform/imkOutput /datashare/mkttracking/work/imkToReno/crab/imkTemp /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_scp_middle/imk_rvr_trckng_event /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event/snapshot &&
-    ./putImkToRenoAndHercules.sh /apps/tracking-events/imkTransformMerged/imkOutput /datashare/mkttracking/work/imkToReno/imk/imkTemp /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_scp_middle/imk_rvr_trckng_event /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event/snapshot &&
+    ./putImkToRenoAndHercules.sh /apps/tracking-events/imkTransform/imkOutput /datashare/mkttracking/work/imkToReno/imk/imkTemp /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_scp_middle/imk_rvr_trckng_event /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event/snapshot &&
     ./putImkToRenoAndHercules.sh /apps/tracking-events/crabTransform/dtlOutput /datashare/mkttracking/work/imkToReno/crab/dtlTemp /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_scp_middle/imk_rvr_trckng_event_dtl /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event_dtl/snapshot &&
-    ./putImkToRenoAndHercules.sh /apps/tracking-events/imkTransformMerged/dtlOutput /datashare/mkttracking/work/imkToReno/imk/dtlTemp /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl  /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_scp_middle/imk_rvr_trckng_event_dtl /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event_dtl/snapshot
+    ./putImkToRenoAndHercules.sh /apps/tracking-events/imkTransform/dtlOutput /datashare/mkttracking/work/imkToReno/imk/dtlTemp /apps/b_marketing_tracking/imk_tracking/imk_scp_middle/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl  /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_scp_middle/imk_rvr_trckng_event_dtl /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event_dtl/snapshot
 EOSSH
 }
 

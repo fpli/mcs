@@ -51,7 +51,27 @@ public enum ChannelIdEnum {
   /**
    * Channel 20 -- production PAID SOCIAL
    */
-  PAID_SOCIAL("20", LogicalChannelEnum.PAID_SOCIAL, false);
+  PAID_SOCIAL("20", LogicalChannelEnum.PAID_SOCIAL, false),
+
+  /**
+   * Channel 24 -- production MARKETING SMS
+   */
+  MRKT_SMS("24", LogicalChannelEnum.MRKT_SMS, false),
+
+  /**
+   * Channel 25 -- production SITE SMS
+   */
+  SITE_SMS("25", LogicalChannelEnum.SITE_SMS, false),
+
+  /**
+   * Channel 0 -- production ROI
+   */
+  ROI("0", LogicalChannelEnum.ROI, false);
+
+  /**
+   * Channel -1 -- production new ROI test channel
+   *//*
+  NEW_ROI("-1", LogicalChannelEnum.ROI, false);*/
 
   /**
    * The human-parsable channel name.

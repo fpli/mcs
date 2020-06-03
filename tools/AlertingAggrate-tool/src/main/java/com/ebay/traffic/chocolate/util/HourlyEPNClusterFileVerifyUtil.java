@@ -187,7 +187,7 @@ public class HourlyEPNClusterFileVerifyUtil {
     int maxHour = 0;
     String donfile = "";
     for (CSVRecord csvRecord : todayCsvRecordList) {
-      logger.info("getNewestHourlyDoneFile-->:" + csvRecord.get(0));
+      logger.info("getNewestHourlyDoneFile-->:" + csvRecord.get(0))
       donfile = csvRecord.get(0);
       int hour = getHour(donfile);
       if (maxHour > hour) {

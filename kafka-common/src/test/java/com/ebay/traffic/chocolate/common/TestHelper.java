@@ -891,6 +891,142 @@ public class TestHelper {
   }
 
   /**
+   * Create listener message
+   *
+   * @param snapshotId the snapshot ID
+   * @param shortSnapshotId the short snapshot ID
+   * @param publisherId the publisher ID
+   * @param campaignId the campaign ID
+   * @param timestamp the timestamp
+   * @return filter message
+   */
+  public static ListenerMessage newListenerMessage(long snapshotId,
+                                               long shortSnapshotId,
+                                               long publisherId,
+                                               long campaignId,
+                                               long timestamp) {
+    return newListenerMessage(ChannelType.EPN, ChannelAction.CLICK,
+            snapshotId, shortSnapshotId, publisherId, campaignId, timestamp);
+  }
+
+  /**
+   * Create listener message
+   *
+   * @param channelType channel type
+   * @param channelAction channel action
+   * @param snapshotId the snapshot ID
+   * @param shortSnapshotId the short snapshot ID
+   * @param publisherId the publisher ID
+   * @param campaignId the campaign ID
+   * @param timestamp the timestamp
+   * @return listener message
+   */
+  public static ListenerMessage newListenerMessage(ChannelType channelType,
+                                               ChannelAction channelAction,
+                                               long snapshotId,
+                                               long shortSnapshotId,
+                                               long publisherId,
+                                               long campaignId,
+                                               long timestamp) {
+    ListenerMessage message = new ListenerMessage();
+    message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(shortSnapshotId);
+    message.setTimestamp(timestamp);
+    message.setUserId(1L);
+    message.setCguid("");
+    message.setGuid("");
+    message.setRemoteIp("127.0.0.1");
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setGeoId(1L);
+    message.setUdid("");
+    message.setReferer("");
+    message.setCampaignId(campaignId);
+    message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setRequestHeaders("");
+    message.setUri("http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10039&campid=5338195018&item=263365814851");
+    message.setResponseHeaders("");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setSnid("");
+    return message;
+  }
+
+  public static ListenerMessage newROIMessage(ChannelType channelType,
+                                                   ChannelAction channelAction,
+                                                   long snapshotId,
+                                                   long publisherId,
+                                                   long campaignId) {
+    ListenerMessage message = new ListenerMessage();
+    message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
+    message.setTimestamp(System.currentTimeMillis());
+    message.setUserId(1L);
+    message.setCguid("");
+    message.setGuid("");
+    message.setRemoteIp("127.0.0.1");
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setGeoId(1L);
+    message.setUdid("");
+    message.setReferer("");
+    message.setCampaignId(campaignId);
+    message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setRequestHeaders("");
+    message.setUri("http://mktcollectionsvc.vip.qa.ebay.com/marketingtracking/v1/roi?tranType=&uniqueTransactionId=324357529&itemId=52357723598250&transactionTimestamp=1581427339000&nroi=1");
+    message.setResponseHeaders("");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setSnid("");
+    return message;
+  }
+
+  public static ListenerMessage roverROIMessage(ChannelType channelType,
+                                              ChannelAction channelAction,
+                                              long snapshotId,
+                                              long publisherId,
+                                              long campaignId) {
+    ListenerMessage message = new ListenerMessage();
+    message.setSnapshotId(snapshotId);
+    message.setShortSnapshotId(123L);
+    message.setTimestamp(System.currentTimeMillis());
+    message.setUserId(1L);
+    message.setCguid("");
+    message.setGuid("");
+    message.setRemoteIp("127.0.0.1");
+    message.setLangCd("");
+    message.setUserAgent("");
+    message.setGeoId(1L);
+    message.setUdid("");
+    message.setReferer("");
+    message.setCampaignId(campaignId);
+    message.setPublisherId(publisherId);
+    message.setSiteId(1L);
+    message.setLandingPageUrl("");
+    message.setSrcRotationId(1L);
+    message.setDstRotationId(2L);
+    message.setRequestHeaders("");
+    message.setUri("https://rover.ebay.com/roverroi/1/711-518-1801-10?mpuid=2082834080;324077230744;2176548533011;&siteId=0&BIN-Store=1&ff1=ss" +
+        "&ff2=CHECKOUT|26764&tranType=BIN-Store&ff3=100015329801208&rcb=0");
+    message.setResponseHeaders("");
+    message.setChannelAction(channelAction);
+    message.setChannelType(channelType);
+    message.setHttpMethod(HttpMethod.POST);
+    message.setSnid("");
+    return message;
+  }
+
+  /**
    * Load properties from file
    *
    * @param fileName the properties file

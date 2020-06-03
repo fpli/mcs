@@ -26,29 +26,34 @@ object EpnNrtJob extends App {
 
 class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, params.mode) {
 
-  lazy val outputDir = properties.getProperty("epnnrt.outputdir")
+ lazy val outputDir = params.outputDir
+  lazy val workDir = params.workDir
   lazy val epnNrtTempDir = outputDir + "/tmp/"
+  // meta tmp dir
+  lazy val epnNrtResultMetaClickTempDir = outputDir + "/tmp_result_meta_click/"
+  lazy val epnNrtScpMetaClickTempDir = outputDir + "/tmp_scp_meta_click/"
+  lazy val epnNrtResultMetaImpTempDir = outputDir + "/tmp_result_meta_imp/"
+  lazy val epnNrtScpMetaImpTempDir = outputDir + "/tmp_scp_meta_imp/"
+
+  //meta final dir
+  lazy val epnNrtResultMetaClickDir = workDir + "/meta/EPN/output/epnnrt_click/"
+  lazy val epnNrtScpMetaClickDir = workDir + "/meta/EPN/output/epnnrt_scp_click/"
+  lazy val epnNrtResultMetaImpDir = workDir + "/meta/EPN/output/epnnrt_imp/"
+  lazy val epnNrtScpMetaImpDir = workDir + "/meta/EPN/output/epnnrt_scp_imp/"
+
   lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
-  lazy val archiveDir = properties.getProperty("epnnrt.archiveDir")
+  lazy val archiveDir = workDir + "/meta/EPN/output/archive/"
 
 
-  private val click = "click"
-  @transient lazy val schema_epn_click_table = TableSchema("df_epn_" + click + ".json")
+  @transient lazy val schema_epn_click_table = TableSchema("df_epn_click.json")
 
-  private val impression = "impression"
-  @transient lazy val schema_epn_impression_table = TableSchema("df_epn_" + impression + ".json")
+  @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression.json")
 
   @transient lazy val properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
     properties
   }
-
-   /* var properties: Properties = {
-    val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
-    properties
-  }*/
 
   @transient lazy val metadata: Metadata = {
     val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
@@ -98,7 +103,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           var df = readFilesAsDFEx(datesFile._2)
           val size = datesFile._2.length
           //if the dataframe is empty, just continue
-          if (df.take(1).isEmpty)
+          if (df.rdd.isEmpty)
             break
           df = df.repartition(properties.getProperty("epnnrt.repartition").toInt)
           val epnNrtCommon = new EpnNrtCommon(params, df)
@@ -113,6 +118,9 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           // filter publisher 5574651234
           df = df.withColumn("publisher_filter", epnNrtCommon.filter_specific_pub_udf(col("referer"), col("publisher_id")))
           df = df.filter(col("publisher_filter") === "0")
+
+          // filter uri && referer are ebay sites (long term traffic from ebay sites)
+          df = df.filter(epnNrtCommon.filter_longterm_ebaysites_ref_udf(col("uri"), col("referer")))
 
           // filter click and impression data, and if there is filterTime, filter the data older than filter time
           var df_click = df.filter(col("channel_action") === "CLICK")
@@ -147,6 +155,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
             }
           }
 
+
           var df_click_count_after_filter = 0L
           var df_impression_count_after_filter = 0L
           if (debug) {
@@ -159,73 +168,92 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           //3. build impression dataframe  save dataframe to files and rename files
           var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
           impressionDf = impressionDf.repartition(params.partitions)
-           saveDFToFiles(impressionDf, epnNrtTempDir + "/" + impression + "/", "gzip", "csv", "tab")
+           saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
 
-          val countImpDf = readFilesAsDF(epnNrtTempDir + "/" + impression + "/", schema_epn_impression_table.dfSchema, "csv", "tab", false)
+          val countImpDf = readFilesAsDF(epnNrtTempDir + "/impression/", schema_epn_impression_table.dfSchema, "csv", "tab", false)
 
           metrics.meter("SuccessfulCount", countImpDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 
           //write to EPN NRT output meta files
-          val imp_files = renameFile(outputDir + "/" + impression + "/", epnNrtTempDir + "/" + impression + "/", date, "dw_ams.ams_imprsn_cntnr_cs_")
+          val imp_files = renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
           val imp_metaFile = new MetaFiles(Array(DateFiles(date, imp_files)))
 
-          try {
-            metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.result.meta.imp.outputdir"), "epnnrt_imp", Array(".epnnrt"))
-            //write meta file for EPN SCP job to copy result to ETL and reno
-            metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+          retry(3) {
+            deleteMetaTmpDir(epnNrtResultMetaImpTempDir)
+            metadata.writeOutputMeta(imp_metaFile, epnNrtResultMetaImpTempDir, "epnnrt_imp", Array(".epnnrt"))
+            deleteMetaTmpDir(epnNrtScpMetaImpTempDir)
+            metadata.writeOutputMeta(imp_metaFile, epnNrtScpMetaImpTempDir, "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            logger.info("successfully write EPN NRT impression output meta to HDFS")
+            metrics.meter("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
+          }
 
-            logger.info("successfully write EPN NRT " + impression + " output meta to HDFS")
+         /* try {
+
+           // metadata.writeOutputMeta(imp_metaFile, epnNrtMetaImpTempDir, properties.getProperty("epnnrt.scp.meta.imp.outputdir"),"epnnrt_imp", Array(".epnnrt", ".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+          //  metadata.writeOutputMeta(imp_metaFile, epnNrtMetaImpTempDir,)
+          //  renameMetaFiles(epnNrtMetaImpTempDir, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+
+            deleteMetaTmpDir(epnNrtResultMetaImpTempDir)
+            metadata.writeOutputMeta(imp_metaFile, epnNrtResultMetaImpTempDir, "epnnrt_imp", Array(".epnnrt"))
+          //  metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.result.meta.imp.outputdir"), "epnnrt_imp", Array(".epnnrt"))
+            //write meta file for EPN SCP job to copy result to ETL and reno
+            deleteMetaTmpDir(epnNrtScpMetaImpTempDir)
+            metadata.writeOutputMeta(imp_metaFile, epnNrtScpMetaImpTempDir, "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+         //   metadata.writeOutputMeta(imp_metaFile, properties.getProperty("epnnrt.scp.meta.imp.outputdir"), "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+
+            logger.info("successfully write EPN NRT impression output meta to HDFS")
             metrics.meter("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 
           } catch {
             case e: Exception => {
-              logger.error("Error while writing EPN NRT " + impression + " output meta files" + e)
+              logger.error("Error while writing EPN NRT impression output meta files" + e)
             }
-          }
+          }*/
 
           //4. build click dataframe  save dataframe to files and rename files
           var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
           clickDf = clickDf.repartition(params.partitions)
 
-          // val enableLastViewItem = properties.getProperty("epnnrt.enablelastviewitem").toBoolean
+          saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
 
-
-          /*if(enableLastViewItem) {
-            try {
-              val executor: ExecutorService = Executors.newFixedThreadPool(maxThreadNum)
-              val completionService: CompletionService[(String, String)] = new ExecutorCompletionService(executor)
-               //clickDf = clickDf.mapPartitions(lastViewItemFunc(completionService))
-              clickDf.rdd.mapPartitions(lastViewItemFunc(completionService))
-            } catch {
-              case e: Exception => {
-                logger.error("Exception while getting last view item info from bullseye" + e)
-                metrics.meter("BullsEyeError",1,timestamp)
-              }
-            }
-          }*/
-
-          saveDFToFiles(clickDf, epnNrtTempDir + "/" + click + "/", "gzip", "csv", "tab")
-
-          val countClickDf = readFilesAsDF(epnNrtTempDir + "/" + click + "/", schema_epn_click_table.dfSchema, "csv", "tab", false)
+          val countClickDf = readFilesAsDF(epnNrtTempDir + "/click/", schema_epn_click_table.dfSchema, "csv", "tab", false)
 
           metrics.meter("SuccessfulCount", countClickDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "CLICK"))
 
-          val clickFiles = renameFile(outputDir + "/" + click + "/", epnNrtTempDir + "/" + click + "/", date, "dw_ams.ams_" + click + "s_cs_")
+          val clickFiles = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
 
 
           //5. write the epn-nrt meta output file to hdfs
           val click_metaFile = new MetaFiles(Array(DateFiles(date, clickFiles)))
-          try {
-            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta." + click + ".outputdir"), "epnnrt_" + click, Array(".epnnrt_1", ".epnnrt_2"))
+
+          retry(3) {
+            deleteMetaTmpDir(epnNrtResultMetaClickTempDir)
+            metadata.writeOutputMeta(click_metaFile, epnNrtResultMetaClickTempDir, "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
+            deleteMetaTmpDir(epnNrtScpMetaClickTempDir)
+            metadata.writeOutputMeta(click_metaFile, epnNrtScpMetaClickTempDir, "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
+            logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
+          }
+          /*try {
+            deleteMetaTmpDir(epnNrtResultMetaClickTempDir)
+            metadata.writeOutputMeta(click_metaFile, epnNrtResultMetaClickTempDir, "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
+          //  metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.result.meta.click.outputdir"), "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
             //write meta file for EPN SCP job to copy result to ETL and reno
-            metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta." + click + ".outputdir"), "epnnrt_scp_" + click, Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            deleteMetaTmpDir(epnNrtScpMetaClickTempDir)
+            metadata.writeOutputMeta(click_metaFile, epnNrtScpMetaClickTempDir, "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+           // metadata.writeOutputMeta(click_metaFile, properties.getProperty("epnnrt.scp.meta.click.outputdir"), "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
             metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
             logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
           } catch {
             case e: Exception => {
               logger.error("Error while writing EPN NRT Click output meta files" + e)
             }
-          }
+          }*/
+          //rename meta files
+          renameMeta(epnNrtResultMetaImpTempDir, epnNrtResultMetaImpDir)
+          renameMeta(epnNrtScpMetaImpTempDir, epnNrtScpMetaImpDir)
+          renameMeta(epnNrtResultMetaClickTempDir, epnNrtResultMetaClickDir)
+          renameMeta(epnNrtScpMetaClickTempDir, epnNrtScpMetaClickDir)
         }
       })
 
@@ -243,6 +271,38 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       if (metrics != null)
         metrics.flush()
     })
+  }
+
+  def deleteMetaTmpDir(tmpDir: String): Unit = {
+    val tmpPath = new Path(tmpDir)
+    if (fs.exists(tmpPath)) {
+      fs.delete(tmpPath, true)
+    }
+    fs.mkdirs(tmpPath)
+  }
+
+  def renameMeta(srcTmpDir: String, destDir: String): Unit = {
+    val tmpPath = new Path(srcTmpDir)
+    if (fs.exists(tmpPath)) {
+      val outputStatus = fs.listStatus(tmpPath)
+      if (outputStatus.nonEmpty) {
+        outputStatus.map(status => {
+          val srcFile = status.getPath
+          val destFile = new Path(destDir + status.getPath.getName)
+          fs.rename(srcFile, destFile)
+        })
+      }
+    }
+  }
+
+  def retry[T](n: Int)(fn: => T): T = {
+    try {
+      fn
+    } catch {
+      case e =>
+        if (n > 1) retry(n - 1)(fn)
+        else throw e
+    }
   }
 
   def renameFile(outputDir: String, sparkDir: String, date: String, prefix: String) = {
@@ -263,7 +323,7 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     }
 
     val fileStatus = fs.listStatus(new Path(sparkDir))
-    val files = fileStatus.filter(status => status.getPath.getName != "_SUCCESS")
+    val files = fileStatus.filter(status => status.isFile && status.getPath.getName != "_SUCCESS")
       .zipWithIndex
       .map(swi => {
         val src = swi._1.getPath
@@ -281,36 +341,6 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     if (splitted != null && splitted.nonEmpty) splitted(1)
     else throw new Exception("Invalid date field in metafile.")
   }
-
-  /*def lastViewItemFunc(completionService: CompletionService[(String, String)])(iter: Iterator[Row]): Iterator[Row] = {
-    val list = List[Row]()
-    while (iter.hasNext) {
-      var threadNum = 0
-      val r = iter.next()
-
-      while (threadNum < maxThreadNum) {
-       // completionService.submit(() => getLastViewItem(r.getAs[String]("CRLTN_GUID_TXT"), r.getAs[String]("USER_ID"), r.getAs[String]("CLICK_TS")))
-        completionService.submit(new Callable[(String, String)] {
-          override def call(): (String, String) = BullseyeUtils.getLastViewItem2(r.getAs[String]("CRLTN_GUID_TXT"), getTimeStamp(r.getAs[String]("CLICK_TS")))
-        })
-        threadNum = threadNum + 1
-      }
-      var received = 0
-      while (received < threadNum) {
-        val res = completionService.take().get()
-        received = received + 1
-        fixLastViewItem(res._1, res._2, r.getAs[String]("CRLTN_GUID_TXT"))
-      }
-    }
-    list.iterator
-  }*/
-
-  //update last_view_item_id and last_view_item_ts column
-/*  def fixLastViewItem(cguid: String, lstVitm: String, lstItmStmp: String): Unit = {
-    /* r.getAs("LAST_VWD_ITEM_ID") = res(0)
-           r.getAs("LAST_VWD_ITEM_TS") = res(1)*/
-  }*/
-
 
   def getTimeStamp(date: String): Long = {
     try {
