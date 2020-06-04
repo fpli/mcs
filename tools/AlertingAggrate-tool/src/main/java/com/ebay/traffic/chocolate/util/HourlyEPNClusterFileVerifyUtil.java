@@ -190,7 +190,7 @@ public class HourlyEPNClusterFileVerifyUtil {
   private static String getNewestHourlyDoneFile(List<CSVRecord> todayCsvRecordList) {
     String donfile = "";
     for (CSVRecord csvRecord : todayCsvRecordList) {
-      logger.info("getNewestHourlyDoneFile-->:" + csvRecord.get(0))
+      logger.info("getNewestHourlyDoneFile-->:" + csvRecord.get(0));
       donfile = csvRecord.get(0);
     }
 
