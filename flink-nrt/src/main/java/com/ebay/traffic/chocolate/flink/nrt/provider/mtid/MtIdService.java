@@ -2,7 +2,7 @@
  * Copyright (c) 2020. eBay inc. All rights reserved.
  */
 
-package com.ebay.traffic.chocolate.flink.nrt.provider;
+package com.ebay.traffic.chocolate.flink.nrt.provider.mtid;
 
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.provider.token.IAFServiceUtil;
@@ -11,6 +11,7 @@ import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
 import java.util.Properties;
 
 
@@ -52,8 +53,16 @@ public class MtIdService {
 
   public String getAccountId(String key, String type) {
     String token = IAFServiceUtil.getInstance().getAppToken();
-    webTarget.path(path).queryParam("id", key).queryParam("type", type).request()
-        .header("Authorization", token).get(String.class);
+    Response response = webTarget.path(path).queryParam("id", key).queryParam("type", type).request()
+        .header("Authorization", "Bearer "+ token).get();
+    IdLinking idLinking = response.readEntity(IdLinking.class);
+    if(idLinking.getIdList()!=null)
+    for (Id id :
+        idLinking.getIdList()) {
+      if(id.getType() == IdType.ACCOUNT.name()) {
+        return id.getIds().get(0);
+      }
+    }
     return "";
   }
 

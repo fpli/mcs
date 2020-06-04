@@ -40,7 +40,7 @@ public class IAFServiceUtil {
 
   private static String authHeader;
   private static final String OAUTH_POST_BODY
-      = "grant_type=client_credentials&scope=https://api.ebay.com/oauth/scope/core@application,https://api.ebay.com/oauth/scope/@public,https://api.ebay.com/oauth/scope/base@public,https://api.ebay.com/oauth/scope/experience@public";
+      = "grant_type=client_credentials&scope=https://api.ebay.com/oauth/scope/core@application";
   private static final String AUTH_HEADER_NAME = "Authorization";
 
   private IAFServiceUtil() {
