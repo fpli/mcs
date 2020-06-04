@@ -23,6 +23,7 @@ public class PropertyConstants {
 
     public static final String IMK_RVR_TRCKNG_EVENT_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "imk-rvr-trckng-event-sink-app.rheos.consumer.properties";
     public static final String IMK_RVR_TRCKNG_EVENT_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "imk-rvr-trckng-event-sink-app.rheos.consumer.topic.properties";
+    public static final String IMK_RVR_TRCKNG_EVENT_SINK_APP_HDFS_PROPERTIES = "imk-rvr-trckng-event-sink-app.hdfs.properties";
 
     public static final String KAFKA_FILTER_SINK_CONSUMER_RHEOS_PROPERTIES = "kafka.filter-sink.consumer.rheos.properties";
     public static final String KAFKA_FILTER_SINK_CONSUMER_RHEOS_TOPIC_PROPERTIES = "kafka.filter-sink.consumer.rheos.topic.properties";
@@ -41,4 +42,5 @@ public class PropertyConstants {
     public static final String OAUTH_ENDPOINT = "oauth.endpointUri";
 
     public static final String MTID_ENDPOINT = "mtid.endpointUri";
+    public static final String PATH = "path";
 }

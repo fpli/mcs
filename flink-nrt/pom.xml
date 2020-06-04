@@ -10,13 +10,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>chocolate-flink-nrt</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.4-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>chocolate flink-nrt</name>
 
     <properties>
         <flink.version>1.10.0</flink.version>
         <iaf.version>0.0.8-RELEASE</iaf.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
