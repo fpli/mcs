@@ -19,10 +19,13 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.EncoderFactory;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.util.Collector;
@@ -35,6 +38,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Receive messages from rheos topics, apply IMK ETL and send messages to another topics.
@@ -65,7 +69,7 @@ public class ImkRvrTrckngEventTransformApp
   @Override
   protected List<String> getConsumerTopics() {
     return  Arrays.asList(PropertyMgr.getInstance()
-                    .loadProperty(PropertyConstants.IMK_RVR_TRCKNG__EVENT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
+                    .loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
                     .getProperty(PropertyConstants.TOPIC).split(StringConstants.COMMA));
   }
 
@@ -95,7 +99,7 @@ public class ImkRvrTrckngEventTransformApp
   @Override
   protected Properties getProducerProperties() {
     return PropertyMgr.getInstance()
-        .loadProperty(PropertyConstants.IMK_RVR_TRCKNG__EVENT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES);
+        .loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES);
   }
 
   @Override
@@ -120,7 +124,7 @@ public class ImkRvrTrckngEventTransformApp
       encoderFactory = EncoderFactory.get();
       rheosHeaderSchema = RheosEvent.BASE_SCHEMA.getField(RheosEvent.RHEOS_HEADER).schema();
       Properties topicProperties = PropertyMgr.getInstance()
-          .loadProperty(PropertyConstants.IMK_RVR_TRCKNG__EVENT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES);
+          .loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES);
       rheosProducer = topicProperties.getProperty(PropertyConstants.RHEOS_PRODUCER);
       imkEventMessageTopic = topicProperties.getProperty(PropertyConstants.TOPIC_IMK_RVR_TRCKNG_EVENT);
       imkEventDtlMessageTopic = topicProperties.getProperty(PropertyConstants.TOPIC_IMK_RVR_TRCKNG_EVENT_DTL);

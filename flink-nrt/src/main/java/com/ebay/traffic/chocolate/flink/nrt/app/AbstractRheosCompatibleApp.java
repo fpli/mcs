@@ -1,6 +1,10 @@
+/*
+ * Copyright (c) 2020. eBay inc. All rights reserved.
+ */
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
 import org.apache.flink.streaming.api.CheckpointingMode;
+import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.CheckpointConfig;
@@ -14,14 +18,14 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Receive messages from rheos topics, apply ETL and send messages to another topics.
- * @param <I> Type of the elements in the DataStream created from the this source
- * @param <O> The type of the elements in this stream.
+ * @param <IN> Type of the elements in the DataStream created from the this source
+ * @param <OUT> The type of the elements in this stream.
  *
  * @author Zhiyuan Wang
  * @since 2020/1/18
  *
  */
-public abstract class AbstractRheosCompatibleApp<I, O> {
+public abstract class AbstractRheosCompatibleApp<IN, OUT> {
 
   private StreamExecutionEnvironment streamExecutionEnvironment;
 
@@ -36,8 +40,8 @@ public abstract class AbstractRheosCompatibleApp<I, O> {
   void run() throws Exception {
     streamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment();
     prepareBaseExecutionEnvironment();
-    DataStreamSource<I> tuple2DataStreamSource = streamExecutionEnvironment.addSource(getKafkaConsumer());
-    DataStream<O> output = transform(tuple2DataStreamSource);
+    DataStreamSource<IN> tuple2DataStreamSource = streamExecutionEnvironment.addSource(getKafkaConsumer());
+    DataStream<OUT> output = transform(tuple2DataStreamSource);
     output.addSink(getKafkaProducer());
     streamExecutionEnvironment.execute();
   }
@@ -52,11 +56,11 @@ public abstract class AbstractRheosCompatibleApp<I, O> {
         .enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
   }
 
-  protected abstract DataStream<O> transform(DataStreamSource<I> dataStreamSource);
+  protected abstract DataStream<OUT> transform(DataStreamSource<IN> dataStreamSource);
 
-  protected abstract FlinkKafkaConsumer<I> getKafkaConsumer();
+  protected abstract FlinkKafkaConsumer<IN> getKafkaConsumer();
 
-  protected abstract FlinkKafkaProducer<O> getKafkaProducer();
+  protected abstract FlinkKafkaProducer<OUT> getKafkaProducer();
 
   /**
    * Get consumer topics from config file

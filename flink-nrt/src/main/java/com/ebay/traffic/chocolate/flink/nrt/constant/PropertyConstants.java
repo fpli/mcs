@@ -17,9 +17,9 @@ public class PropertyConstants {
     public static final String KAFKA_TRACKING_EVENT_TRANSFORM_PRODUCER_PROPERTIES = "kafka.tracking-event-transform.producer.properties";
 
     public static final String IMK_RVR_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_CONSUMER_PROPERTIES = "imk-rvr-trckng-event-transform-app.rheos.consumer.properties";
-    public static final String IMK_RVR_TRCKNG__EVENT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "imk-rvr-trckng-event-transform-app.rheos.consumer.topic.properties";
-    public static final String IMK_RVR_TRCKNG__EVENT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES = "imk-rvr-trckng-event-transform-app.rheos.producer.properties";
-    public static final String IMK_RVR_TRCKNG__EVENT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES = "imk-rvr-trckng-event-transform-app.rheos.producer.topic.properties";
+    public static final String IMK_RVR_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "imk-rvr-trckng-event-transform-app.rheos.consumer.topic.properties";
+    public static final String IMK_RVR_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES = "imk-rvr-trckng-event-transform-app.rheos.producer.properties";
+    public static final String IMK_RVR_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES = "imk-rvr-trckng-event-transform-app.rheos.producer.topic.properties";
 
     public static final String IMK_RVR_TRCKNG_EVENT_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "imk-rvr-trckng-event-sink-app.rheos.consumer.properties";
     public static final String IMK_RVR_TRCKNG_EVENT_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "imk-rvr-trckng-event-sink-app.rheos.consumer.topic.properties";
@@ -35,4 +35,10 @@ public class PropertyConstants {
     public static final String APPLICATION_PROPERTIES = "application.properties";
     public static final String PROFILES_ACTIVE = "profiles.active";
     public static final String RHEOS_PRODUCER = "rheos.producer";
+
+    public static final String OAUTH_CLIENT_ID = "oauth.clientId";
+    public static final String OAUTH_CLIENT_SECRET = "oauth.clientSecret";
+    public static final String OAUTH_ENDPOINT = "oauth.endpointUri";
+
+    public static final String MTID_ENDPOINT = "mtid.endpointUri";
 }
