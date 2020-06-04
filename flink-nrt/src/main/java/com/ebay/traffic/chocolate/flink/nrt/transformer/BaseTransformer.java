@@ -30,6 +30,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 
+import static com.ebay.traffic.chocolate.flink.nrt.constant.MetricConstants.METRIC_IMK_DUMP_MALFORMED;
+
 public class BaseTransformer {
   public static final String GET_METHOD_PREFIX = "get";
   public static final String SET_METHOD_PREFIX = "set";
@@ -119,7 +121,7 @@ public class BaseTransformer {
       return fieldCache.get(fieldName);
     }
     Method method = findMethod(fieldName);
-    Object value = null;
+    Object value;
     try {
       value = method.invoke(this);
     } catch (IllegalAccessException | InvocationTargetException e) {
@@ -153,6 +155,7 @@ public class BaseTransformer {
     return getMethod;
   }
 
+  @SuppressWarnings("unchecked")
   protected String getTempUriQuery() {
     String query = StringConstants.EMPTY;
     String uri = (String) sourceRecord.get(TransformerConstants.URI);
@@ -163,7 +166,7 @@ public class BaseTransformer {
           query = StringConstants.EMPTY;
         }
       } catch (Exception e) {
-        ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_MALFORMED, 1);
+        ESMetrics.getInstance().meter(METRIC_IMK_DUMP_MALFORMED, 1);
         LOGGER.warn(MALFORMED_URL, e);
       }
     }
@@ -298,7 +301,7 @@ public class BaseTransformer {
     return (Long) sourceRecord.get(TransformerConstants.DST_ROTATION_ID);
   }
 
-  public Integer getDstClientId() throws MalformedURLException {
+  public Integer getDstClientId() {
     String tempUriQuery = getTempUriQuery();
     String paramValueFromQuery = getParamValueFromQuery(tempUriQuery, TransformerConstants.MKRID);
     return getClientIdFromRotationId(paramValueFromQuery);
@@ -313,34 +316,37 @@ public class BaseTransformer {
     return getDomain(link);
   }
 
+  @SuppressWarnings("unchecked")
   private String getDomain(String link) {
     String result = StringConstants.EMPTY;
     if (StringUtils.isNotEmpty(link)) {
       try {
         result = new URL(link).getHost();
       } catch (Exception e) {
-        ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_MALFORMED, 1);
+        ESMetrics.getInstance().meter(METRIC_IMK_DUMP_MALFORMED, 1);
         LOGGER.warn(MALFORMED_URL, e);
       }
     }
     return result;
   }
 
+  @SuppressWarnings("unchecked")
   protected String getLndngPageUrl() {
-    String channelType = ((ChannelType) sourceRecord.get(TransformerConstants.CHANNEL_TYPE)).toString();
+    String channelType = sourceRecord.get(TransformerConstants.CHANNEL_TYPE).toString();
     String uri = (String) sourceRecord.get(TransformerConstants.URI);
     String newUri = StringConstants.EMPTY;
     if (StringUtils.isNotEmpty(uri)) {
       try {
         newUri = uri.replace(TransformerConstants.MKGROUPID, TransformerConstants.ADGROUPID).replace(TransformerConstants.MKTYPE, TransformerConstants.ADTYPE);
       } catch (Exception e) {
-        ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_MALFORMED, 1, com.ebay.traffic.monitoring.Field.of("channelType", channelType));
+        ESMetrics.getInstance().meter(METRIC_IMK_DUMP_MALFORMED, 1, com.ebay.traffic.monitoring.Field.of("channelType", channelType));
         LOGGER.warn(MALFORMED_URL, e);
       }
     }
     return newUri;
   }
 
+  @SuppressWarnings("unchecked")
   public String getUserQuery() {
     String referrer = (String) sourceRecord.get(TransformerConstants.REFERER);
     String query = getTempUriQuery();
@@ -471,6 +477,7 @@ public class BaseTransformer {
     return getParamValueFromQuery(tempUriQuery, "ff20");
   }
 
+  @SuppressWarnings("unchecked")
   private String getQueryString(String uri) {
     String query = StringConstants.EMPTY;
     if (StringUtils.isNotEmpty(uri)) {
@@ -480,11 +487,14 @@ public class BaseTransformer {
           query = StringConstants.EMPTY;
         }
       } catch (Exception e) {
+        ESMetrics.getInstance().meter(METRIC_IMK_DUMP_MALFORMED, 1);
+        LOGGER.warn("MalformedUrl", e);
       }
     }
     return query;
   }
 
+  @SuppressWarnings("unchecked")
   private String getParamFromQuery(String query, List<String> keys) {
     try {
       if (StringUtils.isNotEmpty(query)) {
@@ -513,6 +523,7 @@ public class BaseTransformer {
     return 0;
   }
 
+  @SuppressWarnings("unchecked")
   private String getPerfTrackNameValue() {
     String query = getTempUriQuery();
     StringBuilder buf = new StringBuilder();
@@ -554,6 +565,7 @@ public class BaseTransformer {
     return String.valueOf(sourceRecord.get(TransformerConstants.GEO_ID));
   }
 
+  @SuppressWarnings("unchecked")
   private String getDefaultNullNumParamValueFromQuery(String query, String key) {
     String result = StringConstants.EMPTY;
     try {
@@ -570,7 +582,7 @@ public class BaseTransformer {
     } catch (Exception e) {
       ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_PARSEMTID_ERROR, 1);
       LOGGER.warn("ParseMtidError", e);
-      LOGGER.warn("ParseMtidError query: ", query);
+      LOGGER.warn("ParseMtidError query {}", query);
     }
     return result;
   }
@@ -580,6 +592,7 @@ public class BaseTransformer {
     return getParamValueFromQuery(query, TransformerConstants.CRLP);
   }
 
+  @SuppressWarnings("unchecked")
   protected String getParamValueFromQuery(String query, String key) {
     String result = StringConstants.EMPTY;
     try {
@@ -709,14 +722,15 @@ public class BaseTransformer {
     }
   }
 
+  @SuppressWarnings("unchecked")
   public Integer getClientIdFromRotationId(String rotationId) {
-    Integer result = 0;
+    int result = 0;
     try {
       if (StringUtils.isNotEmpty(rotationId)
               && rotationId.length() <= 25
               && StringUtils.isNumeric(rotationId.replace(StringConstants.HYPHEN, StringConstants.EMPTY))
               && rotationId.contains(StringConstants.HYPHEN)) {
-        result = Integer.valueOf(rotationId.substring(0, rotationId.indexOf(StringConstants.HYPHEN)));
+        result = Integer.parseInt(rotationId.substring(0, rotationId.indexOf(StringConstants.HYPHEN)));
       }
     } catch (Exception e) {
       ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_ERROR_PARSE_CLIENTID, 1);
@@ -726,6 +740,7 @@ public class BaseTransformer {
     return result;
   }
 
+  @SuppressWarnings("unchecked")
   private String getItemIdFromUri(String uri) {
     String path;
     try {
@@ -737,7 +752,7 @@ public class BaseTransformer {
         }
       }
     } catch (Exception e) {
-      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_MALFORMED, 1);
+      ESMetrics.getInstance().meter(METRIC_IMK_DUMP_MALFORMED, 1);
       LOGGER.warn(MALFORMED_URL, e);
     }
     return StringConstants.EMPTY;
