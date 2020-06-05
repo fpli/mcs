@@ -351,10 +351,12 @@ public class CollectionService {
     if (parameters.containsKey(Constants.SELF_SERVICE) && parameters.containsKey(Constants.SELF_SERVICE_ID)) {
       if ("1".equals(parameters.getFirst(Constants.SELF_SERVICE)) &&
           parameters.getFirst(Constants.SELF_SERVICE_ID) != null) {
+        metrics.meter("SelfServiceIncoming");
         String selfServiceTopic = ApplicationOptions.getInstance().getSelfServiceKafkaTopic();
         producer.send(new ProducerRecord<>(selfServiceTopic,
                 Long.parseLong(parameters.getFirst(Constants.SELF_SERVICE_ID)), targetUrl), KafkaSink.callback);
-
+        metrics.meter("SelfServiceSuccess");
+        
         return true;
       }
     }
