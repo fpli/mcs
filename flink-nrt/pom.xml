@@ -16,6 +16,7 @@
 
     <properties>
         <flink.version>1.10.0</flink.version>
+        <iaf.version>0.0.8-RELEASE</iaf.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -90,6 +91,30 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
             <version>2.6.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ebay.iaf.service.client</groupId>
+            <artifactId>IAFServiceStdClient</artifactId>
+            <version>${iaf.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>2.26</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>2.26</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>2.30</version>
         </dependency>
     </dependencies>
 

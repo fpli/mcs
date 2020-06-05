@@ -37,5 +37,10 @@ public class PropertyConstants {
     public static final String PROFILES_ACTIVE = "profiles.active";
     public static final String RHEOS_PRODUCER = "rheos.producer";
 
+    public static final String OAUTH_CLIENT_ID = "oauth.clientId";
+    public static final String OAUTH_CLIENT_SECRET = "oauth.clientSecret";
+    public static final String OAUTH_ENDPOINT = "oauth.endpointUri";
+
+    public static final String MTID_ENDPOINT = "mtid.endpointUri";
     public static final String PATH = "path";
 }
