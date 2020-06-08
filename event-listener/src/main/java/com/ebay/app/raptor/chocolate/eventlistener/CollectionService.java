@@ -841,7 +841,7 @@ public class CollectionService {
         if (statusCode == Response.Status.OK.getStatusCode()) {
           metrics.meter("CollectStatusOK", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
               Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
-        } else if (statusCode >= Response.Status.MOVED_PERMANENTLY.getStatusCode() &
+        } else if (statusCode >= Response.Status.MOVED_PERMANENTLY.getStatusCode() &&
             statusCode < Response.Status.BAD_REQUEST.getStatusCode()) {
           metrics.meter("CollectStatusRedirection", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
               Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
