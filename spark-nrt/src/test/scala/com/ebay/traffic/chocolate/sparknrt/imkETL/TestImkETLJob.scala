@@ -118,7 +118,7 @@ class TestImkETLJob extends BaseFunSuite{
       List("date=2019-12-23", "date=2019-12-24").foreach(date => {
         // read target file. eg: /imkETL/imkOutput/date=2019-12-23/chocolate_*
         val targetFiles = fs.listStatus(new Path(outPutDir + "/imkTransform" + "/" + dir)).map(_.getPath.toUri.getPath)
-
+        assert(targetFiles.count(file => file.contains(date)) == 1)
       })
     })
 
@@ -127,16 +127,16 @@ class TestImkETLJob extends BaseFunSuite{
 
   def createTestData(): Unit = {
     Map(
-      "PAID_SEARCH" -> MetadataEnum.capping,
-      "DISPLAY" -> MetadataEnum.capping,
+      "PAID_SEARCH" -> MetadataEnum.dedupe,
+      "DISPLAY" -> MetadataEnum.dedupe,
       "ROI" -> MetadataEnum.dedupe,
       "SOCIAL_MEDIA" -> MetadataEnum.dedupe).foreach(kv => {
       val channel = kv._1
       val usage = kv._2
 
       val metadataImkRTL = Metadata(workDir, channel, usage)
-      metadataImkRTL.writeDedupeOutputMeta(MetaFiles(Array(DateFiles("date=2019-12-23", Array(outPutDir + "/" + channel + "/" + usage + "/date=2019-12-23/part-00000.snappy.parquet")))), Array(".epnnrt"))
-      metadataImkRTL.writeDedupeOutputMeta(MetaFiles(Array(DateFiles("date=2019-12-24", Array(outPutDir + "/" + channel + "/" + usage + "/date=2019-12-24/part-00000.snappy.parquet")))), Array(".epnnrt"))
+      metadataImkRTL.writeDedupeOutputMeta(MetaFiles(Array(DateFiles("date=2019-12-23", Array(outPutDir + "/" + channel + "/" + usage + "/date=2019-12-23/part-00000.snappy.parquet")))))
+      metadataImkRTL.writeDedupeOutputMeta(MetaFiles(Array(DateFiles("date=2019-12-24", Array(outPutDir + "/" + channel + "/" + usage + "/date=2019-12-24/part-00000.snappy.parquet")))))
 
       fs.copyFromLocalFile(new Path(new File(localDir + "/" + channel + "/date=2019-12-23/part-00000.snappy.parquet").getAbsolutePath), new Path(outPutDir + "/" + channel + "/" + usage + "/date=2019-12-23/part-00000.snappy.parquet"))
       fs.copyFromLocalFile(new Path(new File(localDir + "/" + channel + "/date=2019-12-24/part-00000.snappy.parquet").getAbsolutePath), new Path(outPutDir + "/" + channel + "/" + usage + "/date=2019-12-24/part-00000.snappy.parquet"))
