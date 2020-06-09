@@ -155,5 +155,15 @@ public class MessageObjectParserTest {
         assertTrue(testUrl.indexOf("dashenId") == testUrl.lastIndexOf("dashenId"));
         assertTrue(testUrl.indexOf("dashenCnt") == testUrl.lastIndexOf("dashenCnt"));
     }
+
+    @Test
+    public void testGetChocoTagValue() {
+        String requestURLWithDashenId = "/rover/1/707-53477-19255-0/1?vectorid=229487&lgeo=1&toolid=10039&item=132289807354&raptor=1&ff3=2&campid=5336987918&mpre=http%3A%2F%2Fwww.ebay.de%2Fitm%2Flike%2F132289807354%3Fclk_rvr_id%3D1588198933946%26lgeo%3D1%26vectorid%3D229487%26item%3D132289807354%26raptor%3D1%26rmvSB%3Dtrue&cguid=5f0effd91640ac3d2a575c0cfd01b63d&rvrrefts=69ab37ce1640ad4cfcf08d5ffff8f331&chocolateSauce=http%3A%2F%2Frover.ebay.com%2Frover%2F1%2F707-53477-19255-0%2F1%3Fff3%3D2%26toolid%3D10039%26campid%3D5336987918%26item%3D132289807354%26vectorid%3D229487%26lgeo%3D1%26raptor%3D1&dashenId=6671783080146010112&dashenCnt=0";
+        String requestURLNoDashenId = "/rover/1/707-53477-19255-0/1?vectorid=229487&lgeo=1&toolid=10039&item=132289807354&raptor=1&ff3=2&campid=5336987918&mpre=http%3A%2F%2Fwww.ebay.de%2Fitm%2Flike%2F132289807354%3Fclk_rvr_id%3D1588198933946%26lgeo%3D1%26vectorid%3D229487%26item%3D132289807354%26raptor%3D1%26rmvSB%3Dtrue&cguid=5f0effd91640ac3d2a575c0cfd01b63d&rvrrefts=69ab37ce1640ad4cfcf08d5ffff8f331&chocolateSauce=http%3A%2F%2Frover.ebay.com%2Frover%2F1%2F707-53477-19255-0%2F1%3Fff3%3D2%26toolid%3D10039%26campid%3D5336987918%26item%3D132289807354%26vectorid%3D229487%26lgeo%3D1%26raptor%3D1";
+        assertEquals("6671783080146010112", parser.getChocoTagValue(requestURLWithDashenId));
+        assertEquals("", parser.getChocoTagValue(requestURLNoDashenId));
+        assertEquals("", parser.getChocoTagValue(""));
+        assertEquals("", parser.getChocoTagValue(null));
+    }
 }
 

@@ -2,8 +2,7 @@
 openapi: 3.0.0
 servers:
   - url: 'http://api.ebay.com/marketingtracking/v1'
-    description: 'Marketing tracking collection services'
-
+    description: Marketing tracking collection services
 info:
   description: >-
     marketing tracking compoent to receive marketing events

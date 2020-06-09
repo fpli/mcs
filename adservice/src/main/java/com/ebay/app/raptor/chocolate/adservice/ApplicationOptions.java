@@ -1,6 +1,5 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
-import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.common.AbstractApplicationOptions;
 import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
 import com.ebay.kernel.context.RuntimeContext;
@@ -8,8 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -33,34 +30,30 @@ public class ApplicationOptions extends AbstractApplicationOptions {
 
   private static final String ADSERVICE_PROPERTIES_FILE = "adservice.properties";
 
-  private static final String DAP_CLIENT_PROPERTIES_FILE = "adservice-dap-client.properties";
-
   /**
    * couchbase data source
    */
-  public static final String COUCHBASE_DATASOURCE = "chocolate.adservice.couchbase.datasource";
+  static final String COUCHBASE_DATASOURCE = "chocolate.adservice.couchbase.datasource";
+
+  static final String IS_SECURE_COOKIE = "chocolate.adservice.cookie.secure";
+
+  /**
+   * Redirect default page
+   */
+  private static final String REDIRECT_HOMEPAGE = "chocolate.adservice.redirect.homepage";
 
   /**
    * Static driver ID
    */
-  static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
-
-  /**
-   * kafka related
-   **/
-  private static Properties dapClientProperties;
-
-  private String outKafkaCluster;
-  private Map<ChannelType, String> outKafkaConfigMap = new HashMap<>();
+  static int DRIVER_ID;
 
   /**
    * Application options to load from internal jar
    *
    * @throws IOException if properties could not be loaded
    */
-  static void init() throws IOException {
+  public static void init() throws IOException {
     instance.initInstance(loadProperties(ADSERVICE_PROPERTIES_FILE));
-    dapClientProperties = loadProperties(DAP_CLIENT_PROPERTIES_FILE);
   }
 
   private static Properties loadProperties(String file) throws IOException {
@@ -96,10 +89,6 @@ public class ApplicationOptions extends AbstractApplicationOptions {
     return instance;
   }
 
-  public Properties getDapClientProperties() {
-    return dapClientProperties;
-  }
-
   /**
    * @return the properties for testing purposes only
    */
@@ -113,5 +102,25 @@ public class ApplicationOptions extends AbstractApplicationOptions {
    */
   public int getDriverId() {
     return DRIVER_ID;
+  }
+
+  public int setDriverId(int driverId) {
+    return DRIVER_ID = driverId;
+  }
+
+  /**
+   * Get couchbase datasource
+   * @return datasource
+   */
+  public String getCouchbaseDatasource() {
+    return ApplicationOptionsParser.getStringProperty(properties, COUCHBASE_DATASOURCE);
+  }
+
+  public boolean isSecureCookie() {
+    return Boolean.valueOf(ApplicationOptionsParser.getStringProperty(properties, IS_SECURE_COOKIE));
+  }
+
+  public String getRedirectHomepage() {
+    return ApplicationOptionsParser.getStringProperty(properties, REDIRECT_HOMEPAGE);
   }
 }

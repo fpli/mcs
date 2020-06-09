@@ -20,4 +20,4 @@ set hive.merge.smallfiles.avgsize=128000000;
 set hive.merge.size.per.task=128000000;
 SET hive.auto.convert.join=false;
 
-INSERT OVERWRITE LOCAL DIRECTORY '/home/stack/rotation/apollorno/rotations' select count(ROTATION_ID), count(distinct ROTATION_ID) from choco_data.dw_mpx_rotations;
+INSERT OVERWRITE LOCAL DIRECTORY '/home/_choco_admin/rotation/apollorno/rotations' select count(ROTATION_ID), count(distinct ROTATION_ID) from choco_data.dw_mpx_rotations;

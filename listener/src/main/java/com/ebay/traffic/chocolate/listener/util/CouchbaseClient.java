@@ -39,26 +39,39 @@ public class CouchbaseClient {
    */
   private static final String SYNC_COMMAND = "syncCommand";
   /**
-   * Corp couchbase data source
+   * Metric for chocoTag -> guid mapping
    */
-  private String datasourceName;
+  private static final String CHOCOTAG_GUID_UPSERT_COMMAND = "chocoTagGuidMappingUpsertCommand";
+  /**
+   * Corp couchbase appdldevices data source
+   */
+  private String appdldevicesDatasourceName;
+  /**
+   * Corp couchbase appdlreport data source
+   */
+  private String appdlreportDatasourceName;
 
   private final Metrics metrics = ESMetrics.getInstance();
 
   private static final String KAFKA_GLOBAL_CONFIG = "KafkaGlobalConfig";
 
+  private static final String CB_CHOCO_TAG_PREFIX = "DashenId_";
+
   /**
    * Singleton
    */
   private CouchbaseClient() {
-    this.datasourceName = ListenerOptions.getInstance().getCouchbaseDatasource();
+    this.appdldevicesDatasourceName = ListenerOptions.getInstance().getCouchbaseAppdldevicesDatasource();
+    this.appdlreportDatasourceName = ListenerOptions.getInstance().getCouchbaseAppdlreportDatasource();
     try {
       factory = DefaultCacheFactoryBuilder
         .newBuilder()
-        .cache(datasourceName)
+        .cache(appdldevicesDatasourceName)
+        .cache(appdlreportDatasourceName)
         .build();
       // Throws an Exception if Datasource for CACHE_NAME could not be found.
-      factory.returnClient(factory.getClient(datasourceName));
+      factory.returnClient(factory.getClient(appdldevicesDatasourceName));
+      factory.returnClient(factory.getClient(appdlreportDatasourceName));
     } catch (Exception e) {
       logger.error("Couchbase init error", e);
       throw e;
@@ -117,7 +130,7 @@ public class CouchbaseClient {
     CacheClient cacheClient = null;
     String cguid = "";
     try {
-      cacheClient = factory.getClient(datasourceName);
+      cacheClient = factory.getClient(appdldevicesDatasourceName);
       JsonDocument document = getBucket(cacheClient).get(guid, JsonDocument.class);
       if (document != null) {
         cguid = document.content().get("cguid").toString();
@@ -138,7 +151,7 @@ public class CouchbaseClient {
     CacheClient cacheClient = null;
     int globalConfig = 0;
     try {
-      cacheClient = factory.getClient(datasourceName);
+      cacheClient = factory.getClient(appdldevicesDatasourceName);
       JsonDocument document = getBucket(cacheClient).get(KAFKA_GLOBAL_CONFIG, JsonDocument.class);
       if (document != null) {
         globalConfig = Integer.parseInt(document.content().get("globalConfig").toString());
@@ -157,7 +170,7 @@ public class CouchbaseClient {
   private void upsert(String guid, String cguid) throws Exception {
     CacheClient cacheClient = null;
     try {
-      cacheClient = factory.getClient(datasourceName);
+      cacheClient = factory.getClient(appdldevicesDatasourceName);
       if (!getBucket(cacheClient).exists(guid)) {
         Map<String, String> cguidMap = new HashMap<>();
         cguidMap.put("cguid", cguid);
@@ -170,6 +183,67 @@ public class CouchbaseClient {
     } finally {
       factory.returnClient(cacheClient);
     }
+  }
+
+  /**
+   * update chocoTag -> guid mapping pair into couchbase
+   */
+  public void updateChocoTagGuidMappingRecord(String chocoTag, String guid) {
+    // in listener we don't want to hang if we have exception in CB
+    //flushBuffer();
+    try {
+      upsertCBChocoTagGuidMapping(chocoTag, guid);
+    } catch (Exception e) {
+      logger.warn("Couchbase upsert chocoTag guid mapping operation exception", e);
+      metrics.meter("CBUpsertChocoTagGuidFailure");
+    }
+  }
+
+  /**
+   * Couchbase upsert chocoTag -> guid mapping operation, make sure return client to factory when exception
+   */
+  private void upsertCBChocoTagGuidMapping(String chocoTag, String guid) throws Exception {
+    CacheClient cacheClient = null;
+    try {
+      long start = System.currentTimeMillis();
+      cacheClient = factory.getClient(appdlreportDatasourceName);
+      Bucket bucket = getBucket(cacheClient);
+      // add prefix for chocoTag to distinguish
+      String chocoTagKey = CB_CHOCO_TAG_PREFIX + chocoTag;
+      Map<String, String> chocoTagGuidMap = new HashMap<>();
+      chocoTagGuidMap.put("chocoTag", chocoTag);
+      chocoTagGuidMap.put("guid", guid);
+      bucket.upsert(JsonDocument.create(chocoTagKey, 24 * 60 * 60, JsonObject.from(chocoTagGuidMap)));
+      logger.debug("Adding new chocoTag guid mapping. chocoTagKey=" + chocoTagKey + " chocoTag=" + chocoTag + " guid=" + guid);
+      metrics.mean("ListenerUpsertChocoTagGuidCouchbaseLatency", System.currentTimeMillis() - start);
+      metrics.meter(CHOCOTAG_GUID_UPSERT_COMMAND);
+    } catch (Exception e) {
+      throw new Exception(e);
+    } finally {
+      factory.returnClient(cacheClient);
+    }
+  }
+
+  /*get chocoTagGuidMapping by ChocoTag*/
+  public Map<String, String> getChocoTagGuidMappingByChocoTag(String chocoTag) {
+    CacheClient cacheClient = null;
+    Map<String, String> chocotagGuidMap = new HashMap<>();
+    try {
+      cacheClient = factory.getClient(appdlreportDatasourceName);
+      JsonDocument document = getBucket(cacheClient).get(chocoTag, JsonDocument.class);
+      if (document != null) {
+        String chocotag = document.content().get("chocoTag").toString();
+        String guid = document.content().get("guid").toString();
+        chocotagGuidMap.put("chocoTag", chocotag);
+        chocotagGuidMap.put("guid", guid);
+        logger.debug("Get chocoTag guid mapping. chocoTag=" + chocotag + " guid=" + guid);
+      }
+    } catch (Exception e) {
+      logger.warn("Couchbase get operation exception", e);
+    } finally {
+      factory.returnClient(cacheClient);
+    }
+    return chocotagGuidMap;
   }
 
   /**

@@ -2,100 +2,61 @@
 ####################################################################################################################
 # epnnrt done file generation script. Unless we meet all the criteria below, epnnrt is not done
 # 1. Today's data are being generated
-# 2. Message timestamp are newer than now-1h
-# 3. Check yesterday's data were handled
-# 4. Check yesterday's data are fully sent
+# 2. Message timestamp less than start timestamp of current date
 ####################################################################################################################
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
 log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/done_${log_dt}.log"
-
-######################################### Check the file of today has been generate ################################
+done_file_dir="/datashare/mkttracking/data/epn-nrt/done"
 DT_TODAY=$(date +%Y-%m-%d)
-LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/date=${DT_TODAY}   #Local file path which contains the epnnrt click result files
-clickFileCnt=`ls ${LOCAL_PATH}/dw_ams.ams_clicks_cs_* |wc -l`
-impFileCnt=`ls ${LOCAL_PATH}/dw_ams.ams_imprsn_cntnr_cs_*|wc -l`
+DONE_FILE="epn_$(date +%Y%m%d -d "`date` - 1 day").done"
 
-if [[ clickFileCnt -le 1 || impFileCnt -le 1 ]]; then
-     echo "chocolate-ePN ${DT}'s NRT not generated!!!!" | mail -s "NRT delayed!!!!(Today's Files not generated)" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+echo "check if done file has been generated"
+if [ -f "${done_file_dir}/${DONE_FILE}" ]; then
+    echo "${DONE_FILE} Done file has been already generated!" | tee -a ${log_file}
+    exit 0
+fi
+
+######################################### Check the file of today is processing ################################
+LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/etl/"date="${DT_TODAY}
+
+today_processed=`ls ${LOCAL_PATH}'.processed' | wc -l`
+
+if [[ today_processed -ne 1 ]]; then
+     echo -e "chocolate-ePN ${DT_TODAY}'s NRT not generated!!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT delayed!!!!(Today's Files not generated)" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
      exit 1
 fi
 
 ######################################### Check message lag from SinkAndDedupe job ################################
-LAG_THRESHOLD=3600000
-echo "the threshold of kafka message: "${LAG_THRESHOLD} | tee -a ${log_file}
+# modified by zhofan on 2020-03-01. Every time check the min timestamp of kafka message and the start timestamp of current date.
+# If the start timestamp of current date is greater than the min timestamp of kafka message, then send NRT delay mail.
+export HADOOP_USER_NAME=chocolate
+#echo "the threshold of kafka message: "${LAG_THRESHOLD}
 LAST_TS_PATH=/apps/tracking-events-workdir/last_ts/EPN/*
 last_ts=`hdfs dfs -cat ${LAST_TS_PATH} | sort -n | head -1`
-echo "timestamp of last message: "${last_ts} | tee -a ${log_file}
-now_ts=$(($(date +%s%N)/1000000))
-echo "timestamp of now: "${now_ts} | tee -a ${log_file}
-message_lag=$(($now_ts-$last_ts))
-echo "lag of message: "${message_lag} | tee -a ${log_file}
-if [[ message_lag -gt ${LAG_THRESHOLD} ]]; then
-     echo "chocolate-ePN ${DT}'s NRT not generated because of message lag!!!!" | mail -s "NRT delayed!!!!(Message lag)" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+echo "timestamp of last message: "${last_ts}
+DT_HOUR_TODAY=$(date +%Y-%m-%d' '00:00:00 -d "`date`")
+TIMESTAMP_TODAY=$(date +%s -d "$DT_HOUR_TODAY")000
+#now_ts=$(($(date +%s%N)/1000000))
+echo "start timestamp of current date: "${TIMESTAMP_TODAY}
+#message_lag=$(($now_ts-$last_ts))
+#echo "lag of message: "${message_lag}
+if [[ ${TIMESTAMP_TODAY} -gt ${last_ts} ]]; then
+     echo -e "chocolate-ePN ${DT_TODAY}'s NRT not generated because of message lag!!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT delayed!!!!(Message lag)" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
      exit 1
 fi
 
-######################################### Check the file of yesterday has been completed ################################
-DT=$(date +%Y-%m-%d -d "`date` - 1 day")
-HDP_CLICK=/apps/epn-nrt/click/date=${DT}/                   #chocolate hdfs files
-LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/date=${DT}   #Local file path which contains the epnnrt click result files
-HDP_IMP=/apps/epn-nrt/impression/date=${DT}/                #Local file path which contains the epnnrt impression result files
-
-echo "HDP_CLICK="${HDP_CLICK} | tee -a ${log_file}
-echo "LOCAL_PATH="${LOCAL_PATH} | tee -a ${log_file}
-echo "HDP_IMP="${HDP_IMP} | tee -a ${log_file}
-
-if [[ ! -d "${LOCAL_PATH}/" ]]; then
-    echo "chocolate-ePN ${DT}'s NRT data is NOT generated~!!!" | mail -s "No NRT result!!!!" DL-eBay-Chocolate-GC@ebay.com  | tee -a ${log_file}
-    exit 1;
-fi
-
-cd ${LOCAL_PATH}
-################ Check Click Files ################################
-hdfs dfs -ls -C ${HDP_CLICK} > ${LOCAL_PATH}/all_click_files.txt
-ls ${LOCAL_PATH}/dw_ams.ams_clicks_cs_*.processed > ${LOCAL_PATH}/all_click_processed.txt
-
-HDP_CLICK_FORMAT=`echo "${HDP_CLICK}" | sed 's:\/:\\\/:g'`
-sed -i -E "s/$HDP_CLICK_FORMAT//g" ${LOCAL_PATH}/all_click_files.txt
-LOCAL_PATH_FORMAT=`echo "${LOCAL_PATH}/" | sed 's:\/:\\\/:g'`
-sed -i -E "s/.processed//g" ${LOCAL_PATH}/all_click_processed.txt
-sed -i -E "s/$LOCAL_PATH_FORMAT//g" ${LOCAL_PATH}/all_click_processed.txt
-
-sort all_click_files.txt > sorted_all_click_files.txt
-sort all_click_processed.txt > sorted_all_click_processed.txt
-
-diff_click_line=`diff sorted_all_click_files.txt sorted_all_click_processed.txt |wc -l`
-if [[ ${diff_click_line} -lt 1 ]]; then
-    echo "chocolate-ePN ${DT}'s NRT completed(Click)." | mail -s "NRT completed(Click)" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
-else
-    echo "chocolate-ePN ${DT}'s NRT delayed(Click)!!!!" | mail -s "NRT delayed!!!!(Click)" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
-    exit 1
-fi
-
-################ Check Impression Files ################################
-hdfs dfs -ls -C ${HDP_IMP} > ${LOCAL_PATH}/all_imp_files.txt
-ls ${LOCAL_PATH}/dw_ams.ams_imprsn_cntnr_cs_*.processed > ${LOCAL_PATH}/all_imp_processed.txt
-
-HDP_IMP_FORMAT=`echo "${HDP_IMP}" | sed 's:\/:\\\/:g'`
-sed -i -E "s/$HDP_IMP_FORMAT//g" all_imp_files.txt
-LOCAL_PATH_FORMAT=`echo "${LOCAL_PATH}/" | sed 's:\/:\\\/:g'`
-sed -i -E "s/.processed//g" all_imp_processed.txt
-sed -i -E "s/$LOCAL_PATH_FORMAT//g" all_imp_processed.txt
-
-sort all_imp_files.txt > sorted_all_imp_files.txt
-sort all_imp_processed.txt > sorted_all_imp_processed.txt
-
-diff_imp_line=`diff sorted_all_imp_files.txt sorted_all_imp_processed.txt |wc -l`
-if [[ ${diff_imp_line} -lt 1 ]]; then
-    echo "chocolate-ePN ${DT}'s NRT completed(Impression)." | mail -s "NRT completed(Impression)" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
-else
-    echo "chocolate-ePN ${DT}'s NRT delayed(Impression)!!!!" | mail -s "NRT delayed!!!!(Impression)" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
-    exit 1
-fi
-
 ################ Generate Done file and send it to ETL ################################
-DONE_FILE="epn_$(date +%Y%m%d -d "`date` - 1 day").done"
+#DONE_FILE="epn_$(date +%Y%m%d -d "`date` - 1 day").done"
 touch "$DONE_FILE"
 
-/datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendToETL.sh ${DONE_FILE} ${log_file}
+/datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendDoneFile.sh ${DONE_FILE} ${log_file}
 
+if [ $? -ne 0 ]; then
+    echo -e "chocolate EPN NRT ${DT_TODAY}'s data delayed due to sending done file error!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT_TODAY} delayed!!!" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+    exit 1
+else
+    echo -e "Congrats, chocolate EPN NRT ${DT_TODAY}'s data completed" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT_TODAY} completed" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+    #echo -e "Hello world, Today is my first day to send chocolate EPN NRT ${DT_TODAY}'s data completed to you! Nice to meet you ^^" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "Hello World! EPN NRT ${DT_TODAY} completed" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+    touch "${done_file_dir}/${DONE_FILE}"
+    exit 0
+fi

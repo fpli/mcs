@@ -21,4 +21,4 @@ set hive.merge.size.per.task=128000000;
 SET hive.auto.convert.join=false;
 set mapred.task.timeout=1200000;
 
-INSERT OVERWRITE LOCAL DIRECTORY '/home/stack/rotation/herculeslvs/rotations' select count(ROTATION_ID), count(distinct ROTATION_ID) from im_tracking.dw_mpx_rotations;
+INSERT OVERWRITE LOCAL DIRECTORY '/home/_choco_admin/rotation/herculeslvs/rotations' select count(ROTATION_ID), count(distinct ROTATION_ID) from im_tracking.dw_mpx_rotations;

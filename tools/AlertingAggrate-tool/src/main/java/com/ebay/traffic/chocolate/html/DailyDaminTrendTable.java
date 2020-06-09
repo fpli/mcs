@@ -9,6 +9,10 @@ public class DailyDaminTrendTable {
   public static String parseProject(List<DailyDomainTrend> dailyDomainTrends) {
     String html = getTtile("Epn AMS_CLICK_RFRNG_DMN report (from hercules-lvs hdfs)") + getHeader();
 
+    if (dailyDomainTrends == null || dailyDomainTrends.size() == 0) {
+      return html;
+    }
+
     for (DailyDomainTrend dailyDomainTrend : dailyDomainTrends) {
       html = html + getBodyLine(dailyDomainTrend);
     }

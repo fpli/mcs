@@ -24,10 +24,6 @@ public class AdserviceResourceConfig extends Application {
   @Qualifier("ets-feature")
   private Feature etsFeature;
 
-  @Autowired
-  @Qualifier("cookie-filter")
-  private ContainerRequestFilter cookieFilter;
-
   @Override
   public Set<Class<?>> getClasses() {
     Set<Class<?>> providers = new LinkedHashSet<Class<?>>();
@@ -38,7 +34,6 @@ public class AdserviceResourceConfig extends Application {
   @Override
   public Set<Object> getSingletons() {
     Set<Object> providers = new LinkedHashSet<Object>();
-    providers.add(cookieFilter);
     providers.add(etsFeature);
     return providers;
   }

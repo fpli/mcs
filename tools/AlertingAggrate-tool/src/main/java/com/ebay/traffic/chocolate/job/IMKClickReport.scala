@@ -259,11 +259,10 @@ class IMKClickReport(inputdir: String,
           corruptRows.set(corruptRows.get + 1)
           if (corruptRows.get() <= MAX_CORRUPT_ROWS) {
             logger.warn("Failed to parse row: " + values.mkString("|"), ex)
-            null
           } else {
             logger.error("Two many corrupt rows.")
-            throw ex
           }
+          null
         }
       }
     }

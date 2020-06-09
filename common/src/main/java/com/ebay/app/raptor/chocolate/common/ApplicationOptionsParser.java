@@ -331,13 +331,22 @@ public class ApplicationOptionsParser {
         logger.info(String.format("ip: %s random driver id mask: %d driver id: %d", Hostname.getIp(), RANDOM_DRIVER_ID_MASK, driverId));
         return driverId;
     }
+
+    /**
+     * use RANDOM_DRIVER_ID_MASK as driver id
+     *
+     * @return driver id
+     */
+    static int getRandomDriverId() {
+        return RANDOM_DRIVER_ID_MASK;
+    }
     
     /** 
      * Utility function to derive a driver ID, first going from the longest numeric sequence 
      * in the hostname, and falling back on the IP address. 
      */
     public static int getDriverIdFromIp() {
-        return getDriverIdFromIp(Hostname.IP_DECIMAL);
+        return getRandomDriverId();
     }
     
     /**

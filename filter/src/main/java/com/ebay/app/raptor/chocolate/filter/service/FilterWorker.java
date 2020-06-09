@@ -22,10 +22,13 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.protocol.types.SchemaException;
 import org.apache.log4j.Logger;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.ebay.app.raptor.chocolate.filter.service.FilterUtils.*;
 
 /**
  * Created by yliu29 on 2/23/18.
@@ -146,8 +149,9 @@ public class FilterWorker extends Thread {
                         Field.of(CHANNEL_TYPE, outMessage.getChannelType().toString()));
               }
               long sendKafkaStartTime = System.currentTimeMillis();
-              if (outMessage.getUri() != null && outMessage.getChannelType().toString().equals("ROI")
-                  && outMessage.getUri().contains("nroi=1") && outMessage.getUri().contains("marketingtracking")) {
+              // If the traffic is received from rover bes pipeline, we will send it to NewROITopic
+              // this traffic will not be tracked into imk table
+              if (isRoverBESRoi(outMessage)) {
                 producer.send(new ProducerRecord<>(ApplicationOptions.getInstance().getNewROITopic(), outMessage.getSnapshotId(), outMessage), KafkaSink.callback);
                 metrics.mean("SendKafkaLatency", System.currentTimeMillis() - sendKafkaStartTime);
                 metrics.meter("NewROICount", 1, outMessage.getTimestamp(),
@@ -315,4 +319,7 @@ public class FilterWorker extends Thread {
     }
     return publisher;
   }
+
+
+
 }

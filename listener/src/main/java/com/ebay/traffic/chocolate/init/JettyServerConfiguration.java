@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.init;
 
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
-import org.apache.commons.lang.Validate;
 import org.eclipse.jetty.server.NetworkTrafficServerConnector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -49,6 +48,9 @@ public class JettyServerConfiguration {
           final NetworkTrafficServerConnector connectorHttps = new NetworkTrafficServerConnector(server);
           connectorHttps.setPort(options.getInputHttpsPort());
           server.addConnector(connectorHttps);
+          final NetworkTrafficServerConnector connectorValidateInternals = new NetworkTrafficServerConnector(server);
+          connectorValidateInternals.setPort(options.getValidateInternalsPort());
+          server.addConnector(connectorValidateInternals);
         }
       });
       return factory;

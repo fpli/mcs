@@ -421,7 +421,7 @@ public class EventListenerServiceTest {
     event.setUniqueTransactionId("324357529");
     event.setTransactionTimestamp("1581427339000");
     String localTimestamp = Long.toString(System.currentTimeMillis());
-    String expectQuery = "transType=BIN-FP&uniqueTransactionId=324357529&itemId=52357723598250&transactionTimestamp=1581427339000&siteId=2&mpuid=0;52357723598250;324357529&api=1&roisrc=2";
+    String expectQuery = "tranType=BIN-FP&uniqueTransactionId=324357529&itemId=52357723598250&transactionTimestamp=1581427339000&siteId=2&mpuid=0;52357723598250;324357529&api=1&roisrc=2";
     assertEquals(expectQuery, generateQueryString(event, payload,localTimestamp, "0"));
   }
 

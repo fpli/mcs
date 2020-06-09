@@ -58,9 +58,11 @@ public class ListenerOptions extends AbstractApplicationOptions implements
     public static final String INPUT_HTTPS_PORT = "https.port";
     public static final String OUTPUT_HTTP_PORT = "lb.http.port";
     public static final String OUTPUT_HTTPS_PORT = "lb.https.port";
+    public static final String VALIDATE_INTERNALS_PORT = "validate.internals.port";
     public static final String PROXY = "proxyTo";
 
-    public static final String COUCHBASE_DATASOURCE = "chocolate.listener.couchbase.datasource";
+    public static final String COUCHBASE_APPDLDEVICES_DATASOURCE = "chocolate.listener.couchbase.appdldevicesdatasource";
+    public static final String COUCHBASE_APPDLREPORT_DATASOURCE = "chocolate.listener.couchbase.appdlreportdatasource";
 
     public static final String MAX_THREADS = "max.threads";
     public static final String PID_FILE = "chocolate.listener.pidfile";
@@ -275,6 +277,10 @@ public class ListenerOptions extends AbstractApplicationOptions implements
     public int getOutputHttpsPort() { return ApplicationOptionsParser.getNumericProperty(properties, OUTPUT_HTTPS_PORT, 443, 9000);
     }
 
+    public int getValidateInternalsPort() {
+        return ApplicationOptionsParser.getNumericProperty(properties, VALIDATE_INTERNALS_PORT, 8000, 9000);
+    }
+
     public String getProxy() {
         return ApplicationOptionsParser.getStringProperty(properties, PROXY);
     }
@@ -284,7 +290,11 @@ public class ListenerOptions extends AbstractApplicationOptions implements
 
     public File getPidFile() throws IOException { return ApplicationOptionsParser.getFile(properties, PID_FILE, false, null, false); }
 
-    public String getCouchbaseDatasource() {
-        return ApplicationOptionsParser.getStringProperty(properties, COUCHBASE_DATASOURCE);
+    public String getCouchbaseAppdldevicesDatasource() {
+        return ApplicationOptionsParser.getStringProperty(properties, COUCHBASE_APPDLDEVICES_DATASOURCE);
+    }
+
+    public String getCouchbaseAppdlreportDatasource() {
+        return ApplicationOptionsParser.getStringProperty(properties, COUCHBASE_APPDLREPORT_DATASOURCE);
     }
 }
