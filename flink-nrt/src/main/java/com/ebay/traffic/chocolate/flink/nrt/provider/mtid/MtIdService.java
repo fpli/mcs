@@ -7,12 +7,15 @@ package com.ebay.traffic.chocolate.flink.nrt.provider.mtid;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.provider.token.IAFServiceUtil;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
+import org.apache.flink.shaded.netty4.io.netty.util.concurrent.CompleteFuture;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 
 /**
@@ -51,19 +54,34 @@ public class MtIdService {
     webTarget = client.target(endpointUri);
   }
 
-  public String getAccountId(String key, String type) {
+  public CompletableFuture<String> getAccountId(String key, String type) {
     String token = IAFServiceUtil.getInstance().getAppToken();
+    String accountId = "";
     Response response = webTarget.path(path).queryParam("id", key).queryParam("type", type).request()
         .header("Authorization", "Bearer "+ token).get();
     IdLinking idLinking = response.readEntity(IdLinking.class);
     if(idLinking.getIdList()!=null)
-    for (Id id :
-        idLinking.getIdList()) {
-      if(id.getType() == IdType.ACCOUNT.name()) {
-        return id.getIds().get(0);
+    for (Id id : idLinking.getIdList()) {
+      if(id.getType().equalsIgnoreCase(IdType.ACCOUNT.name())) {
+        accountId = id.getIds().get(0);
       }
     }
-    return "";
+    return CompletableFuture.completedFuture(accountId);
   }
+
+//  public String getAccountId(String key, String type) {
+//    String token = IAFServiceUtil.getInstance().getAppToken();
+//    Response response = webTarget.path(path).queryParam("id", key).queryParam("type", type).request()
+//        .header("Authorization", "Bearer "+ token).get();
+//    IdLinking idLinking = response.readEntity(IdLinking.class);
+//    if(idLinking.getIdList()!=null)
+//    for (Id id :
+//        idLinking.getIdList()) {
+//      if(id.getType() == IdType.ACCOUNT.name()) {
+//        return id.getIds().get(0);
+//      }
+//    }
+//    return "";
+//  }
 
 }
