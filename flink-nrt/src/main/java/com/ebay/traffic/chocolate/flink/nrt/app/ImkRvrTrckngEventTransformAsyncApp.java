@@ -10,6 +10,7 @@ import com.ebay.traffic.chocolate.flink.nrt.deserialization.DefaultKafkaDeserial
 import com.ebay.traffic.chocolate.flink.nrt.deserialization.DefaultKafkaSerializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichFlatMapFunction;
 import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichMapFunction;
+import com.ebay.traffic.chocolate.flink.nrt.provider.AsyncDataRequest;
 import com.ebay.traffic.chocolate.flink.nrt.transformer.BaseTransformer;
 import com.ebay.traffic.chocolate.flink.nrt.transformer.TransformerFactory;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
@@ -108,17 +109,9 @@ public class ImkRvrTrckngEventTransformAsyncApp
   protected DataStream<Tuple3<String, Long, byte[]>> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
     SingleOutputStreamOperator<FilterMessage> map = dataStreamSource.map(new TransformRichMapFunction());
     DataStream<FilterMessage> resultStream =
-            AsyncDataStream.unorderedWait(map, new AsyncFunction<FilterMessage, FilterMessage>() {
-              @Override
-              public void asyncInvoke(FilterMessage input, ResultFuture<FilterMessage> resultFuture) throws Exception {
-                String guid = input.getGuid();
-
-              }
-            }, 1000, TimeUnit.MILLISECONDS, 100);
-    return map.flatMap(new TransformRichFlatMapFunction());
+            AsyncDataStream.unorderedWait(map, new AsyncDataRequest(), 1000, TimeUnit.MILLISECONDS, 100);
+    return resultStream.flatMap(new TransformRichFlatMapFunction());
   }
-
-
 
   private static class TransformRichMapFunction
           extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, FilterMessage> {
