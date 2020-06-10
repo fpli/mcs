@@ -15,7 +15,7 @@ public class Token {
   private String token;
 
   @JsonIgnore
-  private Integer exires;
+  private Integer expires;
 
   @JsonIgnore
   private String tokenType;
@@ -34,14 +34,14 @@ public class Token {
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   @JsonProperty("expires_in")
-  public Integer getExires() {
-    return exires;
+  public Integer getExpires() {
+    return expires;
   }
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   @JsonProperty("expires_in")
-  public void setExires(Integer exires) {
-    this.exires = exires;
+  public void setExpires(Integer expires) {
+    this.expires = expires;
   }
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)

@@ -39,7 +39,7 @@ public abstract class BaseRheosHDFSCompatibleApp<IN, OUT> {
     DataStreamSource<IN> tuple2DataStreamSource = streamExecutionEnvironment.addSource(getKafkaConsumer());
     DataStream<OUT> output = transform(tuple2DataStreamSource);
     output.addSink(getStreamingFileSink());
-    streamExecutionEnvironment.execute();
+    streamExecutionEnvironment.execute(BaseRheosHDFSCompatibleApp.class.getSimpleName());
   }
 
   protected void prepareBaseExecutionEnvironment() {

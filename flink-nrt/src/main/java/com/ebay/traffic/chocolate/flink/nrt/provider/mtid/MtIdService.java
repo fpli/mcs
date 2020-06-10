@@ -7,6 +7,8 @@ package com.ebay.traffic.chocolate.flink.nrt.provider.mtid;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.provider.token.IAFServiceUtil;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJsonProvider;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -47,7 +49,7 @@ public class MtIdService {
 
     endpointUri = properties.getProperty(PropertyConstants.MTID_ENDPOINT);
 
-    client = ClientBuilder.newClient();
+    client = ClientBuilder.newClient(new ClientConfig().register(JacksonJsonProvider.class));
     webTarget = client.target(endpointUri);
   }
 

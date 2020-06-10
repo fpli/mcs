@@ -43,7 +43,7 @@ public abstract class AbstractRheosCompatibleApp<IN, OUT> {
     DataStreamSource<IN> tuple2DataStreamSource = streamExecutionEnvironment.addSource(getKafkaConsumer());
     DataStream<OUT> output = transform(tuple2DataStreamSource);
     output.addSink(getKafkaProducer());
-    streamExecutionEnvironment.execute();
+    streamExecutionEnvironment.execute(this.getClass().getSimpleName());
   }
 
   private void prepareBaseExecutionEnvironment() {
