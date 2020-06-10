@@ -1080,33 +1080,28 @@ public class CollectionService {
       // event family
       requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
 
+      Map<String, String> tags = payload.getTags();
+
       // notification id
-      if (!StringUtils.isEmpty(payload.getNid()))
-        requestTracker.addTag(Constants.NOTIFICATION_ID, payload.getNid(), String.class);
+      addTagFromPayload(tags, requestTracker, Constants.NOTIFICATION_ID);
 
       // notification type
-      if (!StringUtils.isEmpty(payload.getNtype()))
-        requestTracker.addTag(Constants.NOTIFICATION_TYPE, payload.getNtype(), String.class);
+      addTagFromPayload(tags, requestTracker, Constants.NOTIFICATION_TYPE);
 
       // notification action
-      if (!StringUtils.isEmpty(payload.getPnact()))
-        requestTracker.addTag(Constants.NOTIFICATION_ACTION, payload.getPnact(), String.class);
+      addTagFromPayload(tags, requestTracker, Constants.NOTIFICATION_ACTION);
 
       // user name
-      if (!StringUtils.isEmpty(payload.getUserName()))
-        requestTracker.addTag(Constants.USER_NAME, payload.getUserName(), String.class);
+      addTagFromPayload(tags, requestTracker, Constants.USER_NAME);
 
       // mc3 canonical message id
-      if (!StringUtils.isEmpty(payload.getMc3id()))
-        requestTracker.addTag(Constants.MC3_MSSG_ID, payload.getMc3id(), String.class);
+      addTagFromPayload(tags, requestTracker, Constants.MC3_MSSG_ID);
 
       // item id
-      if (!StringUtils.isEmpty(payload.getItm()))
-        requestTracker.addTag(Constants.ITEM_ID, payload.getItm(), String.class);
+      addTagFromPayload(tags, requestTracker, Constants.ITEM_ID);
 
       // notification type evt
-      if (!StringUtils.isEmpty(payload.getEvt()))
-        requestTracker.addTag(Constants.NOTIFICATION_TYPE_EVT, payload.getEvt(), String.class);
+      addTagFromPayload(tags, requestTracker, Constants.NOTIFICATION_TYPE_EVT);
 
     } catch (Exception e) {
       logger.warn("Error when tracking ubi for mobile notification tags", e);
@@ -1340,6 +1335,17 @@ public class CollectionService {
                                          String urlParam, String tag, Class tagType) {
     if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
       requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
+    }
+  }
+
+  /**
+   * Parse tag from payload map and add to sojourner
+   * @param tags  the name value pair of tags
+   * @param tag     the tag name
+   */
+  private static void addTagFromPayload(Map<String, String> tags, IRequestScopeTracker requestTracker, String tag) {
+    if (tags.containsKey(tag) && !StringUtils.isEmpty(tags.get(tag))) {
+      requestTracker.addTag(tag, tags.get(tag), String.class);
     }
   }
 

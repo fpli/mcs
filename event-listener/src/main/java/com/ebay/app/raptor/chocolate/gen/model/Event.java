@@ -26,8 +26,8 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-05-21T17:31:11.377+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "targetUrl","referrer","eventType","payload" })
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-06-10T14:58:18.447+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "targetUrl","referrer","eventName","payload" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -44,14 +44,14 @@ public class Event implements Serializable {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String referrer = null;
   /**
-   * Gets or Sets eventType
+   * Gets or Sets eventName
    */
-  public enum EventTypeEnum {
+  public enum EventNameEnum {
 
     NOTIFICATION("notification");
     private String value;
 
-    EventTypeEnum(String value) {
+    EventNameEnum(String value) {
       this.value = value;
     }
 
@@ -66,8 +66,8 @@ public class Event implements Serializable {
     }
 
     @JsonCreator
-    public static EventTypeEnum fromValue(String text) {
-      for (EventTypeEnum b : EventTypeEnum.values()) {
+    public static EventNameEnum fromValue(String text) {
+      for (EventNameEnum b : EventNameEnum.values()) {
         if (String.valueOf(b.value).equals(text)) {
           return b;
         }
@@ -76,9 +76,9 @@ public class Event implements Serializable {
     }
 
   }
-  @JsonProperty("eventType")
+  @JsonProperty("eventName")
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private EventTypeEnum eventType = null;
+  private EventNameEnum eventName = null;
   @JsonProperty("payload")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private EventPayload payload = null;
@@ -108,16 +108,16 @@ public class Event implements Serializable {
     this.referrer = referrer;
   }
   /**
-   * Get eventType
-   * @return eventType
+   * Get eventName
+   * @return eventName
    **/
   @ApiModelProperty(value = "")
-  public EventTypeEnum getEventType() {
-    return eventType;
+  public EventNameEnum getEventName() {
+    return eventName;
   }
 
-  public void setEventType(EventTypeEnum eventType) {
-    this.eventType = eventType;
+  public void setEventName(EventNameEnum eventName) {
+    this.eventName = eventName;
   }
   /**
    * Get payload
@@ -142,13 +142,13 @@ public class Event implements Serializable {
     Event event = (Event) o;
     return Objects.equals(this.targetUrl, event.targetUrl) &&
         Objects.equals(this.referrer, event.referrer) &&
-        Objects.equals(this.eventType, event.eventType) &&
+        Objects.equals(this.eventName, event.eventName) &&
         Objects.equals(this.payload, event.payload);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(targetUrl, referrer, eventType, payload);
+    return Objects.hash(targetUrl, referrer, eventName, payload);
   }
 
   @Override
@@ -158,7 +158,7 @@ public class Event implements Serializable {
 
     sb.append("    targetUrl: ").append(toIndentedString(targetUrl)).append("\n");
     sb.append("    referrer: ").append(toIndentedString(referrer)).append("\n");
-    sb.append("    eventType: ").append(toIndentedString(eventType)).append("\n");
+    sb.append("    eventName: ").append(toIndentedString(eventName)).append("\n");
     sb.append("    payload: ").append(toIndentedString(payload)).append("\n");
     sb.append("}");
     return sb.toString();

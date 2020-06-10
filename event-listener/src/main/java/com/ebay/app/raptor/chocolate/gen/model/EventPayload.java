@@ -18,15 +18,18 @@ import java.io.Serializable;
 import io.swagger.annotations.*;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import com.fasterxml.jackson.annotation.*;
 
 /**
- * Json of soj tags
+ * Tracking event payload
  */
 
-@ApiModel(description = "Json of soj tags")
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-05-22T11:08:35.306+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "pageId","nid","ntype","userName","mc3id","pnact","itm","evt" })
+@ApiModel(description = "Tracking event payload")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-06-10T15:06:58.415+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "pageId","tags" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -39,27 +42,9 @@ public class EventPayload implements Serializable {
   @JsonProperty("pageId")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private Integer pageId = null;
-  @JsonProperty("nid")
+  @JsonProperty("tags")
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private String nid = null;
-  @JsonProperty("ntype")
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  private String ntype = null;
-  @JsonProperty("user_name")
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  private String userName = null;
-  @JsonProperty("mc3id")
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  private String mc3id = null;
-  @JsonProperty("pnact")
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  private String pnact = null;
-  @JsonProperty("itm")
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  private String itm = null;
-  @JsonProperty("evt")
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  private String evt = null;
+  private Map<String, String> tags = null;
 
   /**
    * page id, mandotary for notification
@@ -74,88 +59,16 @@ public class EventPayload implements Serializable {
     this.pageId = pageId;
   }
   /**
-   * notification id
-   * @return nid
+   * Map&lt;String, String&gt; for soj tags
+   * @return tags
    **/
-  @ApiModelProperty(example = "539721811729", value = "notification id")
-  public String getNid() {
-    return nid;
+  @ApiModelProperty(value = "Map<String, String> for soj tags")
+  public Map<String, String> getTags() {
+    return tags;
   }
 
-  public void setNid(String nid) {
-    this.nid = nid;
-  }
-  /**
-   * notification type
-   * @return ntype
-   **/
-  @ApiModelProperty(example = "HOT_ITEM", value = "notification type")
-  public String getNtype() {
-    return ntype;
-  }
-
-  public void setNtype(String ntype) {
-    this.ntype = ntype;
-  }
-  /**
-   * user name
-   * @return userName
-   **/
-  @ApiModelProperty(example = "91334560c9v", value = "user name")
-  public String getUserName() {
-    return userName;
-  }
-
-  public void setUserName(String userName) {
-    this.userName = userName;
-  }
-  /**
-   * mc3 canonical message id (only for an mc3 message)
-   * @return mc3id
-   **/
-  @ApiModelProperty(example = "1:763c4c33-b389-4016-b38e-83e29f82a1ba:2:70322535", value = "mc3 canonical message id (only for an mc3 message)")
-  public String getMc3id() {
-    return mc3id;
-  }
-
-  public void setMc3id(String mc3id) {
-    this.mc3id = mc3id;
-  }
-  /**
-   * notification action
-   * @return pnact
-   **/
-  @ApiModelProperty(example = "1", value = "notification action")
-  public String getPnact() {
-    return pnact;
-  }
-
-  public void setPnact(String pnact) {
-    this.pnact = pnact;
-  }
-  /**
-   * item id
-   * @return itm
-   **/
-  @ApiModelProperty(example = "122931100413", value = "item id")
-  public String getItm() {
-    return itm;
-  }
-
-  public void setItm(String itm) {
-    this.itm = itm;
-  }
-  /**
-   * notification type (some notifications)
-   * @return evt
-   **/
-  @ApiModelProperty(example = "WATCHITM", value = "notification type (some notifications)")
-  public String getEvt() {
-    return evt;
-  }
-
-  public void setEvt(String evt) {
-    this.evt = evt;
+  public void setTags(Map<String, String> tags) {
+    this.tags = tags;
   }
   @Override
   public boolean equals(java.lang.Object o) {
@@ -167,18 +80,12 @@ public class EventPayload implements Serializable {
     }
     EventPayload eventPayload = (EventPayload) o;
     return Objects.equals(this.pageId, eventPayload.pageId) &&
-        Objects.equals(this.nid, eventPayload.nid) &&
-        Objects.equals(this.ntype, eventPayload.ntype) &&
-        Objects.equals(this.userName, eventPayload.userName) &&
-        Objects.equals(this.mc3id, eventPayload.mc3id) &&
-        Objects.equals(this.pnact, eventPayload.pnact) &&
-        Objects.equals(this.itm, eventPayload.itm) &&
-        Objects.equals(this.evt, eventPayload.evt);
+        Objects.equals(this.tags, eventPayload.tags);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(pageId, nid, ntype, userName, mc3id, pnact, itm, evt);
+    return Objects.hash(pageId, tags);
   }
 
   @Override
@@ -187,13 +94,7 @@ public class EventPayload implements Serializable {
     sb.append("class EventPayload {\n");
 
     sb.append("    pageId: ").append(toIndentedString(pageId)).append("\n");
-    sb.append("    nid: ").append(toIndentedString(nid)).append("\n");
-    sb.append("    ntype: ").append(toIndentedString(ntype)).append("\n");
-    sb.append("    userName: ").append(toIndentedString(userName)).append("\n");
-    sb.append("    mc3id: ").append(toIndentedString(mc3id)).append("\n");
-    sb.append("    pnact: ").append(toIndentedString(pnact)).append("\n");
-    sb.append("    itm: ").append(toIndentedString(itm)).append("\n");
-    sb.append("    evt: ").append(toIndentedString(evt)).append("\n");
+    sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
     sb.append("}");
     return sb.toString();
   }
