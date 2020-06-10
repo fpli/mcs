@@ -514,17 +514,19 @@ public class EventListenerServiceTest {
   public void testNotificationResource() {
     // notification event
     Event event = new Event();
-    event.setEventType(Event.EventTypeEnum.NOTIFICATION);
+    event.setEventName(Event.EventNameEnum.NOTIFICATION);
 
     EventPayload payload = new EventPayload();
     payload.setPageId(2054081);
-    payload.setNid("539721811729");
-    payload.setNtype("HOT_ITEM");
-    payload.setUserName("91334560c9v");
-    payload.setMc3id("1:763c4c33-b389-4016-b38e-83e29f82a1ba:2:70322535");
-    payload.setPnact("1");
-    payload.setItm("122931100413");
-    payload.setEvt("WATCHITM");
+    Map<String, String> tags = new HashMap<>();
+    tags.put(Constants.NOTIFICATION_ID, "539721811729");
+    tags.put(Constants.NOTIFICATION_TYPE, "HOT_ITEM");
+    tags.put(Constants.USER_NAME, "91334560c9v");
+    tags.put(Constants.MC3_MSSG_ID, "1:763c4c33-b389-4016-b38e-83e29f82a1ba:2:70322535");
+    tags.put(Constants.NOTIFICATION_ACTION, "1");
+    tags.put(Constants.ITEM_ID, "122931100413");
+    tags.put(Constants.NOTIFICATION_TYPE_EVT, "WATCHITM");
+    payload.setTags(tags);
     event.setPayload(payload);
 
     // success request

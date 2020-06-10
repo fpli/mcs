@@ -1,6 +1,5 @@
 package com.ebay.app.raptor.chocolate;
 
-import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.error.LocalizedErrorFactoryV3;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
@@ -69,10 +68,10 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res = null;
       try {
-        if (body.getEventType() == null) {
+        if (body.getEventName() == null) {
           collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(),
               requestContext, body);
-        } else if (body.getEventType().getValue().equals(Constants.NOTIFICATION)) {
+        } else if (body.getEventName().getValue().equals(Event.EventNameEnum.NOTIFICATION.toString())) {
           collectionService.collectNotification(request, userCtxProvider.get(), requestContext, body);
         }
         res = Response.status(Response.Status.CREATED).build();
