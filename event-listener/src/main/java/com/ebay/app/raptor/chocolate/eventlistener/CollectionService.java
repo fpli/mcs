@@ -950,6 +950,9 @@ public class CollectionService {
         if (isFacebookPrefetchEnabled(request))
           requestTracker.addTag("fbprefetch", true, Boolean.class);
 
+        // channel id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKCID, "chnl", String.class);
+
         // source id
         addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
 
@@ -990,6 +993,9 @@ public class CollectionService {
         // fbprefetch
         if (isFacebookPrefetchEnabled(request))
           requestTracker.addTag("fbprefetch", true, Boolean.class);
+
+        // channel id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKCID, "chnl", String.class);
 
         // source id
         addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
