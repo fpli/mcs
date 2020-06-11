@@ -5,11 +5,15 @@
 package com.ebay.traffic.chocolate.flink.nrt.provider;
 
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
+import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.provider.mtid.MtIdService;
+import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
 import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
 
 import java.util.Collections;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -27,19 +31,24 @@ public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV4, FilterM
   @Override
   public void asyncInvoke(FilterMessageV4 input, ResultFuture<FilterMessageV4> resultFuture) throws Exception {
 
+    if(ESMetrics.getInstance() == null) {
+      Properties properties = PropertyMgr.getInstance()
+          .loadProperty(PropertyConstants.APPLICATION_PROPERTIES);
+      ESMetrics.init(properties.getProperty(PropertyConstants.ELASTICSEARCH_INDEX_PREFIX),
+          properties.getProperty(PropertyConstants.ELASTICSEARCH_URL));
+    }
+
+    long timeMillis = System.currentTimeMillis();
     final Future<Long> accountId = MtIdService.getInstance().getAccountId(input.getGuid(), "GUID");
 
-    CompletableFuture.supplyAsync(new Supplier<FilterMessageV4>() {
-
-      @Override
-      public FilterMessageV4 get() {
-        try {
-          input.setUserId(accountId.get());
-          return input;
-        } catch (InterruptedException | ExecutionException e) {
-          // Normally handled explicitly.
-          return null;
-        }
+    CompletableFuture.supplyAsync(() -> {
+      try {
+        input.setUserId(accountId.get());
+        ESMetrics.getInstance().mean("MTID_LATENCY", System.currentTimeMillis() - timeMillis);
+        return input;
+      } catch (InterruptedException | ExecutionException e) {
+        // Normally handled explicitly.
+        return null;
       }
     }).thenAccept( (FilterMessageV4 outputFilterMessage) -> {
       resultFuture.complete(Collections.singleton(outputFilterMessage));

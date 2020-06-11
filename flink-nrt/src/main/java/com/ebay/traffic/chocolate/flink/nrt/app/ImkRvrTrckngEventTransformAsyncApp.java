@@ -110,7 +110,7 @@ public class ImkRvrTrckngEventTransformAsyncApp
   protected DataStream<Tuple3<String, Long, byte[]>> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
     SingleOutputStreamOperator<FilterMessageV4> map = dataStreamSource.map(new TransformRichMapFunction());
     DataStream<FilterMessageV4> resultStream =
-            AsyncDataStream.unorderedWait(map, new AsyncDataRequest(), 1000, TimeUnit.MILLISECONDS, 100);
+            AsyncDataStream.unorderedWait(map, new AsyncDataRequest(), 10000, TimeUnit.MILLISECONDS, 100);
     return resultStream.flatMap(new TransformRichFlatMapFunction());
   }
 

@@ -56,18 +56,22 @@ public class MtIdService {
   public CompletableFuture<Long> getAccountId(String key, String type) {
     String token = IAFServiceUtil.getInstance().getAppToken();
     Long accountId = 0l;
-    Response response = webTarget.path(path).queryParam("id", key).queryParam("type", type).request()
-        .header("Authorization", "Bearer "+ token).get();
-    IdLinking idLinking = response.readEntity(IdLinking.class);
-    if(idLinking.getIdList()!=null)
-    for (Id id : idLinking.getIdList()) {
-      if(id.getType().equalsIgnoreCase(IdType.ACCOUNT.name())) {
-        try {
-          accountId = Long.valueOf(id.getIds().get(0));
-        } catch (NumberFormatException e) {
+    try {
+      Response response = webTarget.path(path).queryParam("id", key).queryParam("type", type).request()
+          .header("Authorization", "Bearer " + token).get();
+      IdLinking idLinking = response.readEntity(IdLinking.class);
+      if (idLinking.getIdList() != null)
+        for (Id id : idLinking.getIdList()) {
+          if (id.getType().equalsIgnoreCase(IdType.ACCOUNT.name())) {
+            try {
+              accountId = Long.valueOf(id.getIds().get(0));
+            } catch (NumberFormatException e) {
 
+            }
+          }
         }
-      }
+    } catch(Exception ex) {
+
     }
     return CompletableFuture.completedFuture(accountId);
   }
