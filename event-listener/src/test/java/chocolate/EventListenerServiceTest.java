@@ -6,9 +6,13 @@ import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
+import com.ebay.dukes.CacheFactory;
+import com.ebay.dukes.base.BaseDelegatingCacheClient;
+import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
@@ -19,6 +23,7 @@ import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.commons.collections.MapUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.common.serialization.LongDeserializer;
@@ -28,6 +33,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -50,6 +56,8 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionService
 import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by xiangli4 on 11/19/18.
@@ -66,6 +74,7 @@ import static org.junit.Assert.assertEquals;
   classes = EventListenerApplication.class)
 public class EventListenerServiceTest {
   private static MiniKafkaCluster kafkaCluster;
+  private static CouchbaseClient couchbaseClient;
 
   @LocalServerPort
   private int port;
@@ -108,6 +117,18 @@ public class EventListenerServiceTest {
       LongSerializer.class, ListenerMessageSerializer.class));
     options.setSelfServiceKafkaProperties(kafkaCluster.getProducerProperties(
         LongSerializer.class, StringSerializer.class));
+
+    ESMetrics.init("test", "http://10.148.181.34:9200");
+    CouchbaseClientMock.createClient();
+    CacheFactory cacheFactory = Mockito.mock(CacheFactory.class);
+    BaseDelegatingCacheClient baseDelegatingCacheClient = Mockito.mock(BaseDelegatingCacheClient.class);
+    Couchbase2CacheClient couchbase2CacheClient = Mockito.mock(Couchbase2CacheClient.class);
+    when(couchbase2CacheClient.getCouchbaseClient()).thenReturn(CouchbaseClientMock.getBucket());
+    when(baseDelegatingCacheClient.getCacheClient()).thenReturn(couchbase2CacheClient);
+    when(cacheFactory.getClient(any())).thenReturn(baseDelegatingCacheClient);
+
+    couchbaseClient = new CouchbaseClient(cacheFactory);
+    CouchbaseClient.init(couchbaseClient);
   }
 
   @Before
@@ -372,17 +393,10 @@ public class EventListenerServiceTest {
     Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
 
-    // validate kafka message
+    // validate couchbase message
     Thread.sleep(3000);
-    collectionService.getSelfServiceProducer().flush();
-    Consumer<Long, String> consumerSelfService = kafkaCluster.createConsumer(
-        LongDeserializer.class, StringDeserializer.class);
-    Map<Long, String> messageSelfService = pollFromKafkaTopic(
-        consumerSelfService, Arrays.asList("dev_self-service"), 3, 30 * 1000);
-    consumerSelfService.close();
-
-    assertEquals(1, messageSelfService.size());
-    assertTrue(messageSelfService.containsKey(123L));
+    assertEquals("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=25&smsid=111&self_service=1&self_service_id=123",
+        CouchbaseClient.getInstance().getSelfServiceUrl("123"));
   }
 
   @Test
