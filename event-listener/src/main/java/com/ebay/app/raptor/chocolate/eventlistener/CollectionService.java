@@ -113,20 +113,6 @@ public class CollectionService {
     this.metrics.meter("driver.id", 1, Field.of("ip", Hostname.IP),
             Field.of("driver_id", ApplicationOptionsParser.getDriverIdFromIp()));
     producer_self_service = new KafkaProducer(ApplicationOptions.getInstance().getSelfServiceKafkaProperties());
-//    KafkaFlushTimer.init(producer_self_service);
-    kafkaFlushTimer();
-  }
-
-  private void kafkaFlushTimer() {
-    // Start the timer
-    timer = new Timer();
-    timer.scheduleAtFixedRate(new TimerTask() {
-      @Override
-      public void run() {
-        logger.info("Start to flush self-service messages");
-        producer_self_service.flush();
-      }
-    }, 0, REFRESH_INTERVAL);
   }
 
   /**
@@ -372,9 +358,7 @@ public class CollectionService {
       if ("1".equals(parameters.getFirst(Constants.SELF_SERVICE)) &&
           parameters.getFirst(Constants.SELF_SERVICE_ID) != null) {
         metrics.meter("SelfServiceIncoming");
-        String selfServiceTopic = ApplicationOptions.getInstance().getSelfServiceKafkaTopic();
-        producer_self_service.send(new ProducerRecord<>(selfServiceTopic,
-                Long.parseLong(parameters.getFirst(Constants.SELF_SERVICE_ID)), targetUrl), KafkaSink.callback);
+        CouchbaseClient.getInstance().addSelfServiceRecord(parameters.getFirst(Constants.SELF_SERVICE_ID), targetUrl);
         metrics.meter("SelfServiceSuccess");
         
         return true;
