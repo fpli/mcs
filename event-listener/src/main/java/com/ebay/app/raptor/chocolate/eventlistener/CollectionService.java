@@ -113,9 +113,11 @@ public class CollectionService {
     this.metrics.meter("driver.id", 1, Field.of("ip", Hostname.IP),
             Field.of("driver_id", ApplicationOptionsParser.getDriverIdFromIp()));
     producer_self_service = new KafkaProducer(ApplicationOptions.getInstance().getSelfServiceKafkaProperties());
+//    KafkaFlushTimer.init(producer_self_service);
+    kafkaFlushTimer();
   }
 
-  CollectionService () {
+  private void kafkaFlushTimer() {
     // Start the timer
     timer = new Timer();
     timer.scheduleAtFixedRate(new TimerTask() {
