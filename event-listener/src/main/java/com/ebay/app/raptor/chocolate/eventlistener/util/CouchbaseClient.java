@@ -52,7 +52,7 @@ public class CouchbaseClient {
 
   private static final String SELF_SERVICE_METRICS_SUCCESS = "SelfServiceCBSuccess";
 
-  private static final String SELF_SERVICE_METRICS_FAIL = "SelfServiceCBFail";
+  private static final String SELF_SERVICE_METRICS_FAILURE = "SelfServiceCBFailure";
 
   /**
    * Singleton
@@ -187,7 +187,7 @@ public class CouchbaseClient {
     try {
       upsertSelfService(id, url);
     } catch (Exception e) {
-      metrics.meter(SELF_SERVICE_METRICS_FAIL);
+      metrics.meter(SELF_SERVICE_METRICS_FAILURE);
       logger.warn("Couchbase upsert operation exception for self-service", e);
     }
   }
