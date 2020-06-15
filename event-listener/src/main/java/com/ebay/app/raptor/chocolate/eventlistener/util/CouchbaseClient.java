@@ -50,9 +50,9 @@ public class CouchbaseClient {
 
   private static final String SELF_SERVICE_PREFIX = "SelfService_";
 
-  private static final String SELF_SERVICE_METRICS_SUCCESS = "selfServiceCBSuccess";
+  private static final String SELF_SERVICE_METRICS_SUCCESS = "SelfServiceCBSuccess";
 
-  private static final String SELF_SERVICE_METRICS_FAIL = "selfServiceCBFail";
+  private static final String SELF_SERVICE_METRICS_FAIL = "SelfServiceCBFail";
 
   /**
    * Singleton

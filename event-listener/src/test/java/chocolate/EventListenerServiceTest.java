@@ -115,8 +115,6 @@ public class EventListenerServiceTest {
     ApplicationOptions options = ApplicationOptions.getInstance();
     options.setSinkKafkaProperties(kafkaCluster.getProducerProperties(
       LongSerializer.class, ListenerMessageSerializer.class));
-    options.setSelfServiceKafkaProperties(kafkaCluster.getProducerProperties(
-        LongSerializer.class, StringSerializer.class));
 
     ESMetrics.init("test", "http://10.148.181.34:9200");
     CouchbaseClientMock.createClient();
@@ -387,14 +385,13 @@ public class EventListenerServiceTest {
   }
 
   @Test
-  public void testSelfService() throws InterruptedException{
+  public void testSelfService() {
     Event event = new Event();
     event.setTargetUrl("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=25&smsid=111&self_service=1&self_service_id=123");
     Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
     assertEquals(201, response.getStatus());
 
     // validate couchbase message
-    Thread.sleep(3000);
     assertEquals("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=25&smsid=111&self_service=1&self_service_id=123",
         CouchbaseClient.getInstance().getSelfServiceUrl("123"));
   }
