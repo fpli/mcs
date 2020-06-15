@@ -88,15 +88,6 @@ public class CollectionService {
   private static final String SITE_ID = "siteId";
   private static final String ROI_SOURCE = "roisrc";
 
-  // self-service producer
-  private static Producer<Long, String> producer_self_service;
-
-  // the timer to flush self-service messages
-  private Timer timer;
-
-  // flush interval is 5s
-  private static final long REFRESH_INTERVAL = 5 * 1000L;
-
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
   private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
@@ -112,7 +103,6 @@ public class CollectionService {
     this.parser = ListenerMessageParser.getInstance();
     this.metrics.meter("driver.id", 1, Field.of("ip", Hostname.IP),
             Field.of("driver_id", ApplicationOptionsParser.getDriverIdFromIp()));
-    producer_self_service = new KafkaProducer(ApplicationOptions.getInstance().getSelfServiceKafkaProperties());
   }
 
   /**
@@ -1396,19 +1386,6 @@ public class CollectionService {
     }
 
     return sessionId;
-  }
-
-  /**
-   * Get the self-service producer
-   *
-   * @return Kafka producer
-   */
-  public Producer<Long, String> getSelfServiceProducer() {
-    if (producer_self_service == null) {
-      throw new RuntimeException("Self-service producer has not been initialized.");
-    }
-
-    return producer_self_service;
   }
 
 }

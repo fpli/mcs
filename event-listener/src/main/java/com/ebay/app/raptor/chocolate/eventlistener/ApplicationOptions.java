@@ -47,8 +47,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
   public static final String SINK_RHEOS_KAFKA_PROPERTIES_FILE = "event-listener-rheos-producer.properties";
 
-  private static final String SELF_SERVICE_KAFKA_PROPERTIES_FILE = "event-listener-self-service-producer.properties";
-
   /**
    * Out Kafka cluster, can be "kafka", "rheos", "rheos,kafka", "kafka,rheos".
    */
@@ -62,11 +60,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    * prefix of out Kafka topic for channels.
    */
   public static final String KAFKA_OUT_TOPIC_PREFIX = "chocolate.event-listener.kafka.producer.topic.";
-
-  /**
-   * kafka topic for self service data
-   */
-  public static final String KAFKA_TOPIC_SELF_SERVICE = "chocolate.event-listener.kafka.topic.self.service";
 
   /**
    * couchbase data source
@@ -84,7 +77,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   private static Properties consumeRheosKafkaProperties;
   private static Properties sinkKafkaProperties;
   private static Properties sinkRheosKafkaProperties;
-  private static Properties selfServiceKafkaProperties;
 
   private String outKafkaCluster;
   private Map<ChannelType, String> outKafkaConfigMap = new HashMap<>();
@@ -101,9 +93,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
       sinkKafkaProperties = loadProperties(SINK_KAFKA_PROPERTIES_FILE);
     }
     sinkRheosKafkaProperties = loadProperties(SINK_RHEOS_KAFKA_PROPERTIES_FILE);
-    if (selfServiceKafkaProperties == null) {
-      selfServiceKafkaProperties = loadProperties(SELF_SERVICE_KAFKA_PROPERTIES_FILE);
-    }
     instance.initKafkaConfigs();
   }
 
@@ -166,20 +155,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     } else {
       return sinkRheosKafkaProperties;
     }
-  }
-
-  /**
-   * Get the self-service kafka properties
-   */
-  public Properties getSelfServiceKafkaProperties() {
-    return selfServiceKafkaProperties;
-  }
-
-  /**
-   * Only for test
-   */
-  public static synchronized void setSelfServiceKafkaProperties(Properties properties) {
-    selfServiceKafkaProperties = properties;
   }
 
   /**
@@ -259,9 +234,5 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
   public String getCouchbaseDatasource() {
     return ApplicationOptionsParser.getStringProperty(properties, COUCHBASE_DATASOURCE);
-  }
-
-  public String getSelfServiceKafkaTopic() {
-    return ApplicationOptionsParser.getStringProperty(properties, KAFKA_TOPIC_SELF_SERVICE);
   }
 }
