@@ -150,7 +150,7 @@ public class CouchbaseClient {
       JsonDocument document = getBucket(cacheClient).get(key, JsonDocument.class);
       if (document != null) {
         url = document.content().get("url").toString();
-        logger.debug("Get self-service url. id=" + id + " url=" + url);
+        logger.info("Get self-service url. id=" + id + " url=" + url);
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception for self-service", e);
@@ -224,7 +224,7 @@ public class CouchbaseClient {
       if (!getBucket(cacheClient).exists(key)) {
         getBucket(cacheClient).upsert(JsonDocument.create(key, 24 * 60 * 60,
             JsonObject.create().put("url", url)));
-        logger.debug("Adding new self-service record. id=" + id + " url=" + url);
+        logger.info("Adding new self-service record. id=" + id + " url=" + url);
       }
       metrics.meter(SELF_SERVICE_METRICS_SUCCESS);
     } catch (Exception e) {
