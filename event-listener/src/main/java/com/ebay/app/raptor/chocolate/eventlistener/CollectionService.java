@@ -475,10 +475,7 @@ public class CollectionService {
     }
 
     // If the soucre is checkout, write roi event tags to ubi
-    if (payloadMap.containsKey(ROI_SOURCE)
-        && payloadMap.get(ROI_SOURCE).equals(String.valueOf(RoiSourceEnum.CHECKOUT_SOURCE.getId()))) {
-      addRoiSojTags(requestContext, payloadMap, roiEvent, userId);
-    }
+    addRoiSojTags(requestContext, payloadMap, roiEvent, userId);
 
     // Write roi event to kafka output topic
     boolean processFlag = processROIEvent(requestContext, targetUrl, referer, parameters, ChannelIdEnum.ROI,
