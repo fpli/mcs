@@ -89,6 +89,7 @@ public class CollectionService {
   private static final String ADGUID_PARAM = "adguid";
   private static final String SITE_ID = "siteId";
   private static final String ROI_SOURCE = "roisrc";
+  private static final String UTF_8 = "UTF-8";
 
 
 
@@ -1310,6 +1311,13 @@ public class CollectionService {
     if (parameters.containsKey(Constants.MKRID) && parameters.get(Constants.MKRID).get(0) != null) {
       try {
         String rawRotationId = parameters.get(Constants.MKRID).get(0);
+        // decode rotationId if rotation is encoded
+        // add decodeCnt to avoid looping infinitely
+        int decodeCnt = 0;
+        while (rawRotationId.contains("%") && decodeCnt<5) {
+          rawRotationId = URLDecoder.decode(rawRotationId, UTF_8);
+          decodeCnt = decodeCnt + 1;
+        }
         rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
       } catch (Exception e) {
         logger.warn(Errors.ERROR_INVALID_MKRID);
