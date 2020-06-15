@@ -474,7 +474,7 @@ public class CollectionService {
       referer = URLDecoder.decode( referer, "UTF-8" );
     }
 
-    // If the soucre is checkout, write roi event tags to ubi
+    // write roi event tags into ubi
     addRoiSojTags(requestContext, payloadMap, roiEvent, userId);
 
     // Write roi event to kafka output topic
