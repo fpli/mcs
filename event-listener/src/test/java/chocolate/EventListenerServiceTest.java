@@ -701,4 +701,50 @@ public class EventListenerServiceTest {
     ErrorType errorMessage  = response.readEntity(ErrorType.class);
     assertEquals(4002, errorMessage.getErrorCode());
   }
+
+  @Test
+  public void testEncodedRotationResource() throws IOException, InterruptedException {
+    Event event = new Event();
+    event.setReferrer("www.google.com");
+    event.setTargetUrl("http://www.ebay.com/sch/i.html?gclid=Cj0KCQjwj_XpBRCCARIsAItJiuTTQHX51hBamlNebEm1QEHuWzeb3mCTmjEqHjjg68fmARPt8jGbSyAaAmEuEALw_wcB&_recordsize=12&crlp=307364301297_&campid=1615587334&_sastarttime=1591534514&_saved=1&rlsatarget=dsa%252D19959388920&loc=9011814&mkrid=711%252D153677%252D346401%252D4&mkevt=1&adpos=1o3&_nkw=giannini%20awn%20guitar&device=m&mkcid=2");
+
+    // encoded rotationId twice
+    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // encoded rotationId
+    event.setTargetUrl("http://www.ebay.com/sch/i.html?gclid=CjwKCAjwx_boBRA9EiwA4kIELjFk97MMWjBrtG3pAqjES2Q945DOFkXdwC6PnxKRjJPJ6N15B5yIyhoC30sQAvD_BwE&_recordsize=12&geo_id=10232&MT_ID=69&campid=495209116&crlp=350660010882_&_sastarttime=1591553855&_saved=1&rlsatarget=kwd%252D366275174317&keyword=women%2520femme%2520perfume&abcId=473846&loc=1012226&mkrid=711%2D42618%2D2056%2D0&mkevt=1&adpos=1o2&_nkw=boudoir%20secrets%20perfume&device=m&mkcid=2");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // normal rotationId
+    event.setTargetUrl("http://www.ebay.co.uk/sch/i.html?gclid=EAIaIQobChMI78%252DP1Z2s6AIVy7TtCh11YAAxEAMYAyAAEgJYavD_BwE&recordsize=12&geo_id=32251&MT_ID=584396&campid=1537903894&crlp=349241947881&_sastarttime=1591532529&_saved=1&rlsatarget=aud%252D629407025665%253Akwd%252D312440981206&keyword=stonemarket%2520paving%2520slabs&abcId=1139886&loc=1006563&mkrid=710-154084-933926-0&mkevt=1&_nkw=stonemarket+paving+slabs&device=t&mkcid=2");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // invalid rotationId
+    event.setTargetUrl("http://www.ebay.co.uk/sch/i.html?gclid=EAIaIQobChMI78%252DP1Z2s6AIVy7TtCh11YAAxEAMYAyAAEgJYavD_BwE&recordsize=12&geo_id=32251&MT_ID=584396&campid=1537903895&crlp=349241947881&_sastarttime=1591532529&_saved=1&rlsatarget=aud%252D629407025665%253Akwd%252D312440981206&keyword=stonemarket%2520paving%2520slabs&abcId=1139886&loc=1006563&mkrid=711%2D42618%2D2056%0&mkevt=1&_nkw=stonemarket+paving+slabs&device=t&mkcid=2");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
+            consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 4, 30 * 1000);
+    consumerPaidSearch.close();
+
+    assertEquals(4, listenerMessagesPaidSearch.size());
+    Map<Long, Long> campaignRotationMap = new HashMap<>();
+    for (ListenerMessage listenerMessage: listenerMessagesPaidSearch.values()) {
+      campaignRotationMap.put(listenerMessage.getCampaignId(), listenerMessage.getDstRotationId());
+    }
+
+    assertEquals("7111536773464014", campaignRotationMap.get(1615587334L).toString());
+    assertEquals("7114261820560", campaignRotationMap.get(495209116L).toString());
+    assertEquals("7101540849339260", campaignRotationMap.get(1537903894L).toString());
+    assertEquals("-1", campaignRotationMap.get(1537903895L).toString());
+  }
 }
