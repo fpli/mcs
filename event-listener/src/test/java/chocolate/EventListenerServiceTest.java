@@ -6,9 +6,13 @@ import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
+import com.ebay.dukes.CacheFactory;
+import com.ebay.dukes.base.BaseDelegatingCacheClient;
+import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
@@ -19,6 +23,7 @@ import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.commons.collections.MapUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.common.serialization.LongDeserializer;
@@ -26,6 +31,7 @@ import org.apache.kafka.common.serialization.LongSerializer;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -48,6 +54,8 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionService
 import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by xiangli4 on 11/19/18.
@@ -64,6 +72,7 @@ import static org.junit.Assert.assertEquals;
   classes = EventListenerApplication.class)
 public class EventListenerServiceTest {
   private static MiniKafkaCluster kafkaCluster;
+  private static CouchbaseClient couchbaseClient;
 
   @LocalServerPort
   private int port;
@@ -104,6 +113,18 @@ public class EventListenerServiceTest {
     ApplicationOptions options = ApplicationOptions.getInstance();
     options.setSinkKafkaProperties(kafkaCluster.getProducerProperties(
       LongSerializer.class, ListenerMessageSerializer.class));
+
+    ESMetrics.init("test", "http://10.148.181.34:9200");
+    CouchbaseClientMock.createClient();
+    CacheFactory cacheFactory = Mockito.mock(CacheFactory.class);
+    BaseDelegatingCacheClient baseDelegatingCacheClient = Mockito.mock(BaseDelegatingCacheClient.class);
+    Couchbase2CacheClient couchbase2CacheClient = Mockito.mock(Couchbase2CacheClient.class);
+    when(couchbase2CacheClient.getCouchbaseClient()).thenReturn(CouchbaseClientMock.getBucket());
+    when(baseDelegatingCacheClient.getCacheClient()).thenReturn(couchbase2CacheClient);
+    when(cacheFactory.getClient(any())).thenReturn(baseDelegatingCacheClient);
+
+    couchbaseClient = new CouchbaseClient(cacheFactory);
+    CouchbaseClient.init(couchbaseClient);
   }
 
   @Before
@@ -359,6 +380,18 @@ public class EventListenerServiceTest {
     event.setTargetUrl("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=25&smsid=111&did=222");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
+  }
+
+  @Test
+  public void testSelfService() {
+    Event event = new Event();
+    event.setTargetUrl("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=25&smsid=111&self_service=1&self_service_id=123");
+    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // validate couchbase message
+    assertEquals("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=25&smsid=111&self_service=1&self_service_id=123",
+        CouchbaseClient.getInstance().getSelfServiceUrl("123"));
   }
 
   @Test
@@ -667,5 +700,51 @@ public class EventListenerServiceTest {
     assertEquals(200, response.getStatus());
     ErrorType errorMessage  = response.readEntity(ErrorType.class);
     assertEquals(4002, errorMessage.getErrorCode());
+  }
+
+  @Test
+  public void testEncodedRotationResource() throws IOException, InterruptedException {
+    Event event = new Event();
+    event.setReferrer("www.google.com");
+    event.setTargetUrl("http://www.ebay.com/sch/i.html?gclid=Cj0KCQjwj_XpBRCCARIsAItJiuTTQHX51hBamlNebEm1QEHuWzeb3mCTmjEqHjjg68fmARPt8jGbSyAaAmEuEALw_wcB&_recordsize=12&crlp=307364301297_&campid=1615587334&_sastarttime=1591534514&_saved=1&rlsatarget=dsa%252D19959388920&loc=9011814&mkrid=711%252D153677%252D346401%252D4&mkevt=1&adpos=1o3&_nkw=giannini%20awn%20guitar&device=m&mkcid=2");
+
+    // encoded rotationId twice
+    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // encoded rotationId
+    event.setTargetUrl("http://www.ebay.com/sch/i.html?gclid=CjwKCAjwx_boBRA9EiwA4kIELjFk97MMWjBrtG3pAqjES2Q945DOFkXdwC6PnxKRjJPJ6N15B5yIyhoC30sQAvD_BwE&_recordsize=12&geo_id=10232&MT_ID=69&campid=495209116&crlp=350660010882_&_sastarttime=1591553855&_saved=1&rlsatarget=kwd%252D366275174317&keyword=women%2520femme%2520perfume&abcId=473846&loc=1012226&mkrid=711%2D42618%2D2056%2D0&mkevt=1&adpos=1o2&_nkw=boudoir%20secrets%20perfume&device=m&mkcid=2");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // normal rotationId
+    event.setTargetUrl("http://www.ebay.co.uk/sch/i.html?gclid=EAIaIQobChMI78%252DP1Z2s6AIVy7TtCh11YAAxEAMYAyAAEgJYavD_BwE&recordsize=12&geo_id=32251&MT_ID=584396&campid=1537903894&crlp=349241947881&_sastarttime=1591532529&_saved=1&rlsatarget=aud%252D629407025665%253Akwd%252D312440981206&keyword=stonemarket%2520paving%2520slabs&abcId=1139886&loc=1006563&mkrid=710-154084-933926-0&mkevt=1&_nkw=stonemarket+paving+slabs&device=t&mkcid=2");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // invalid rotationId
+    event.setTargetUrl("http://www.ebay.co.uk/sch/i.html?gclid=EAIaIQobChMI78%252DP1Z2s6AIVy7TtCh11YAAxEAMYAyAAEgJYavD_BwE&recordsize=12&geo_id=32251&MT_ID=584396&campid=1537903895&crlp=349241947881&_sastarttime=1591532529&_saved=1&rlsatarget=aud%252D629407025665%253Akwd%252D312440981206&keyword=stonemarket%2520paving%2520slabs&abcId=1139886&loc=1006563&mkrid=711%2D42618%2D2056%0&mkevt=1&_nkw=stonemarket+paving+slabs&device=t&mkcid=2");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
+            consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 4, 30 * 1000);
+    consumerPaidSearch.close();
+
+    assertEquals(4, listenerMessagesPaidSearch.size());
+    Map<Long, Long> campaignRotationMap = new HashMap<>();
+    for (ListenerMessage listenerMessage: listenerMessagesPaidSearch.values()) {
+      campaignRotationMap.put(listenerMessage.getCampaignId(), listenerMessage.getDstRotationId());
+    }
+
+    assertEquals("7111536773464014", campaignRotationMap.get(1615587334L).toString());
+    assertEquals("7114261820560", campaignRotationMap.get(495209116L).toString());
+    assertEquals("7101540849339260", campaignRotationMap.get(1537903894L).toString());
+    assertEquals("-1", campaignRotationMap.get(1537903895L).toString());
   }
 }

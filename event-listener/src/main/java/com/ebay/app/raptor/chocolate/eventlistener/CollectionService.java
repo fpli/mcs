@@ -48,10 +48,8 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -89,9 +87,7 @@ public class CollectionService {
   private static final String ADGUID_PARAM = "adguid";
   private static final String SITE_ID = "siteId";
   private static final String ROI_SOURCE = "roisrc";
-
-
-
+  private static final String UTF_8 = "UTF-8";
 
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
@@ -348,6 +344,18 @@ public class CollectionService {
     String action = ChannelActionEnum.CLICK.toString();
     String type = channelType.getLogicalChannel().getAvro().toString();
 
+    // Self-service events, sent to specific topic
+    if (parameters.containsKey(Constants.SELF_SERVICE) && parameters.containsKey(Constants.SELF_SERVICE_ID)) {
+      if ("1".equals(parameters.getFirst(Constants.SELF_SERVICE)) &&
+          parameters.getFirst(Constants.SELF_SERVICE_ID) != null) {
+        metrics.meter("SelfServiceIncoming");
+        CouchbaseClient.getInstance().addSelfServiceRecord(parameters.getFirst(Constants.SELF_SERVICE_ID), targetUrl);
+        metrics.meter("SelfServiceSuccess");
+        
+        return true;
+      }
+    }
+
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
@@ -475,11 +483,8 @@ public class CollectionService {
       referer = URLDecoder.decode( referer, "UTF-8" );
     }
 
-    // If the soucre is checkout, write roi event tags to ubi
-    if (payloadMap.containsKey(ROI_SOURCE)
-        && payloadMap.get(ROI_SOURCE).equals(String.valueOf(RoiSourceEnum.CHECKOUT_SOURCE.getId()))) {
-      addRoiSojTags(requestContext, payloadMap, roiEvent, userId);
-    }
+    // write roi event tags into ubi
+    addRoiSojTags(requestContext, payloadMap, roiEvent, userId);
 
     // Write roi event to kafka output topic
     boolean processFlag = processROIEvent(requestContext, targetUrl, referer, parameters, ChannelIdEnum.ROI,
@@ -1310,6 +1315,13 @@ public class CollectionService {
     if (parameters.containsKey(Constants.MKRID) && parameters.get(Constants.MKRID).get(0) != null) {
       try {
         String rawRotationId = parameters.get(Constants.MKRID).get(0);
+        // decode rotationId if rotation is encoded
+        // add decodeCnt to avoid looping infinitely
+        int decodeCnt = 0;
+        while (rawRotationId.contains("%") && decodeCnt<5) {
+          rawRotationId = URLDecoder.decode(rawRotationId, UTF_8);
+          decodeCnt = decodeCnt + 1;
+        }
         rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
       } catch (Exception e) {
         logger.warn(Errors.ERROR_INVALID_MKRID);

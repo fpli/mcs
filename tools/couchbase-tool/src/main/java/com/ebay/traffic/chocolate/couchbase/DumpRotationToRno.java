@@ -95,10 +95,13 @@ public class DumpRotationToRno {
             dumpFileFromCouchbase(updateTimeStartKey, updateTimeEndKey, outputFilePath);
             client.returnClient(cacheClient);
             rotationESClient.closeESClient(esRestHighLevelClient);
+        } catch (Exception e) {
+            logger.error("couchbase dump rotation data exception: " + e);
+            throw e;
         } finally {
             close();
-            System.exit(0);
         }
+        System.exit(0);
     }
 
     /**
