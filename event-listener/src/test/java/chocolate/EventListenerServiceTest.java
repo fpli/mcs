@@ -386,7 +386,7 @@ public class EventListenerServiceTest {
   public void testSelfService() {
     Event event = new Event();
     event.setTargetUrl("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=25&smsid=111&self_service=1&self_service_id=123");
-    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, null, event);
+    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
     // validate couchbase message
