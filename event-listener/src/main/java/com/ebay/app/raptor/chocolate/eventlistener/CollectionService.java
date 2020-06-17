@@ -98,6 +98,9 @@ public class CollectionService {
   // determine whether the url belongs to ebay sites for app deep link, and don't do any filter
   private static Pattern deeplinkEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)", Pattern.CASE_INSENSITIVE);
 
+  // e page target url sites
+  private static Pattern ePageSites = Pattern.compile("^(http[s]?:\\/\\/)?c\\.([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+\\/marketingtracking\\/v1\\/pixel\\?(.*)", Pattern.CASE_INSENSITIVE);
+
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
@@ -243,6 +246,27 @@ public class CollectionService {
 
     // targetUrl is from post body
     String targetUrl = event.getTargetUrl();
+
+    // For e page, the real target url is in the referer
+    // if referer is existed, it will be in the target url (request body) parameter
+    if (ePageSites.matcher(targetUrl.toLowerCase()).find()) {
+      metrics.meter("ePageIncoming");
+
+      String originalReferer = "";
+      UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+      if (uriComponents != null && uriComponents.getQueryParams() != null) {
+        originalReferer = uriComponents.getQueryParams().getFirst(Constants.EPAGE_REFERER);
+      }
+
+      targetUrl = referer;
+      if (!StringUtils.isEmpty(originalReferer)) {
+        referer = URLDecoder.decode(originalReferer, "UTF-8");
+      } else {
+        logger.warn(Errors.ERROR_NO_REFERER);
+        metrics.meter(Errors.ERROR_NO_REFERER);
+        referer = "";
+      }
+    }
 
     //XC-1797, for social app deeplink case, extract and decode actual target url from referrer parameter in targetUrl
     //only accept the url when referrer domain belongs to ebay sites
