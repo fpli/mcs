@@ -55,7 +55,7 @@ class EpnNrtClickJob(params: Parameter) extends BaseSparkNrtJob(params.appName, 
   }
 
   @transient lazy val batchSize: Int = {
-    val batchSize = properties.getProperty("epnnrt.metafile.batchsize")
+    val batchSize = properties.getProperty("epnnrt.click.metafile.batchsize")
     if (StringUtils.isNumeric(batchSize)) {
       Integer.parseInt(batchSize)
     } else {
@@ -99,15 +99,15 @@ class EpnNrtClickJob(params: Parameter) extends BaseSparkNrtJob(params.appName, 
           //if the dataframe is empty, just continue
           if (df.rdd.isEmpty)
             break
-          df = df.repartition(properties.getProperty("epnnrt.repartition").toInt)
+          df = df.repartition(properties.getProperty("epnnrt.click.repartition").toInt)
           val epnNrtCommon = new EpnNrtCommon(params, df)
           logger.info("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
 
           timestamp = df.first().getAs[Long]("timestamp")
 
           logger.info("Processing " + size + " datesFile in metaFile " + file)
-          metrics.meter("DateFileCount", size, timestamp)
-          metrics.meter("InComingCount", df.count(), timestamp)
+          metrics.meter("DateFileCount", size, timestamp, Field.of[String, AnyRef]("channelAction", "CLICK"))
+          metrics.meter("InComingCount", df.count(), timestamp, Field.of[String, AnyRef]("channelAction", "CLICK"))
 
           // filter publisher 5574651234
           df = df.withColumn("publisher_filter", epnNrtCommon.filter_specific_pub_udf(col("referer"), col("publisher_id")))
@@ -189,7 +189,7 @@ class EpnNrtClickJob(params: Parameter) extends BaseSparkNrtJob(params.appName, 
       metadata.deleteDedupeOutputMeta(file)
 
       logger.info("Successfully processed the meta file: + " + file)
-      metrics.meter("MetaFileCount", 1, timestamp)
+      metrics.meter("MetaFileCount", 1, timestamp, Field.of[String, AnyRef]("channelAction", "CLICK"))
 
       if (metrics != null)
         metrics.flush()

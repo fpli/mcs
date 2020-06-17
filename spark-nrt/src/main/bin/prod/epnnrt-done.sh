@@ -13,13 +13,27 @@ DONE_FILE="epn_$(date +%Y%m%d -d "`date` - 1 day").done"
 echo "check if done file has been generated"
 if [ -f "${done_file_dir}/${DONE_FILE}" ]; then
     echo "${DONE_FILE} Done file has been already generated!" | tee -a ${log_file}
-    exit 0
+
+    echo "check if impression has been processed completely"
+    IMP_LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/etl/"date="${DT_TODAY}
+    impression_today_processed=`ls ${IMP_LOCAL_PATH}'.impression.processed' | wc -l`
+    if [[ impression_today_processed -eq 1 ]]; then
+         /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendDoneFile.sh ${DONE_FILE} ${log_file}
+    fi
+
+    if [ $? -ne 0 ]; then
+        echo "Send Chocolate EPN NRT done file error!!" | mail -s "Send Done File ERROR!!!!" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+        exit 1
+    else
+        echo "${DONE_FILE} Done file has been already generated!" | tee -a ${log_file}
+        exit 0
+    fi
 fi
 
 ######################################### Check the file of today is processing ################################
 LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/etl/"date="${DT_TODAY}
 
-today_processed=`ls ${LOCAL_PATH}'.processed' | wc -l`
+today_processed=`ls ${LOCAL_PATH}'.click.processed' | wc -l`
 
 if [[ today_processed -ne 1 ]]; then
      echo -e "chocolate-ePN ${DT_TODAY}'s NRT not generated!!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "NRT delayed!!!!(Today's Files not generated)" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
@@ -49,7 +63,7 @@ fi
 #DONE_FILE="epn_$(date +%Y%m%d -d "`date` - 1 day").done"
 touch "$DONE_FILE"
 
-/datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendDoneFile.sh ${DONE_FILE} ${log_file}
+#/datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendDoneFile.sh ${DONE_FILE} ${log_file}
 
 if [ $? -ne 0 ]; then
     echo -e "chocolate EPN NRT ${DT_TODAY}'s data delayed due to sending done file error!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT_TODAY} delayed!!!" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}

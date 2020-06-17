@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
 import java.sql.Timestamp
-import java.util.Properties
+import java.util.{Base64, Properties}
 
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.JsonParser
@@ -38,12 +38,13 @@ object BullseyeUtils {
     .asString
     .body.parseJson
 
+
+  // use new oAuth POST endpoint to get token
   def generateToken2: String = try {
-    Http(properties.getProperty("epnnrt.oauthUrl")).method("GET")
-      .param("client_id", properties.getProperty("epnnrt.clientId"))
-      .param("client_secret", properties.getProperty("epnnrt.clientsecret"))
-      .param("grant_type", "client_credentials")
-      .param("scope", "https://api.ebay.com/oauth/scope/@public")
+    Http(properties.getProperty("epnnrt.oauthUrl")).method("POST")
+      .header("Authorization", "Basic " + getOauthAuthorization())
+      .header("Content-Type", properties.getProperty("epnnrt.contenttype"))
+      .postData(properties.getProperty("epnnrt.oauthbody"))
       .asString
       .body.parseJson.convertTo[TokenResponse].access_token
   } catch {
@@ -72,19 +73,6 @@ object BullseyeUtils {
       else {
         logger.error(s"bullseye response for cguid $cguid with error: $response")
         token = generateToken2
-        if (token != null) {
-          val output = fs.create(new Path(bullseyeTokenFile), true)
-          try {
-            output.writeBytes(token.toString())
-            output.writeBytes(System.getProperty("line.separator"))
-          } catch {
-            case e: Exception =>{
-              logger.warn("Error when writing bullseye token to HDFS")
-            }
-          } finally {
-            output.close()
-          }
-        }
         logger.warn(s"get new token: $token")
         metrics.meter("BullsEyeError", 1)
         None
@@ -216,13 +204,29 @@ object BullseyeUtils {
     }
   }
 
+  // get oauth Authorization
+  def getOauthAuthorization(): String = {
+    var authorization = ""
+
+    try {
+      val consumerIdAndSecret = properties.getProperty("epnnrt.clientId") + ":" + properties.getProperty("epnnrt.clientsecret")
+      authorization = Base64.getEncoder().encodeToString(consumerIdAndSecret.getBytes("UTF-8"))
+    } catch {
+      case e: Exception => {
+        logger.error("Error when encode consumerId:consumerSecret to String" + e)
+        metrics.meter("ErrorEncodeConsumerIdAndSecret", 1)
+      }
+    }
+
+    authorization
+  }
+
   case class TokenResponse(
                             access_token:String,
                             token_type:String,
-                            expires_in:Long,
-                            refresh_token:String
+                            expires_in:Long
                           )
   object TokenResponse extends DefaultJsonProtocol {
-    implicit val _format: RootJsonFormat[TokenResponse] = jsonFormat4(apply)
+    implicit val _format: RootJsonFormat[TokenResponse] = jsonFormat3(apply)
   }
 }
