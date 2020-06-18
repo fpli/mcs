@@ -58,8 +58,8 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     redirectionEvent = new RedirectionEvent(getParam(parameters, Constants.MKCID),
         getParam(parameters, Constants.MKEVT), getParam(parameters, Constants.MKPID));
 
-    metrics.meter("RedirectionInput", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()),
-        Field.of(Constants.EMAIL_PARTNER, redirectionEvent.getPartner()));
+    long startTime = startTimerAndLogData(Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()),
+        Field.of(Constants.PARTNER, redirectionEvent.getPartner()));
 
     // generate Redirect Url
     generateRedirectUrl(parameters);
@@ -70,6 +70,9 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     if (!redirectionEvent.getIsEbayDomain()) {
       callMcs(request, parameters, mktClient, endpoint);
     }
+
+    stopTimerAndLogData(startTime, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()),
+      Field.of(Constants.PARTNER, redirectionEvent.getPartner()));
 
     return new URIBuilder(redirectionEvent.getRedirectUrl()).build();
   }
@@ -253,6 +256,32 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
       uriBuilder.addParameter(REDIRECT_URL_SOJ_TAG, redirectionEvent.getRedirectUrl())
           .addParameter(REDIRECT_SRC_SOJ_TAG, redirectionEvent.getRedirectSource());
     }
+  }
+
+  /**
+   * Starts the timer and logs some basic info
+   *
+   * @param additionalFields channelType, partner
+   * @return start time
+   */
+  private long startTimerAndLogData(Field<String, Object>... additionalFields) {
+    long startTime = System.currentTimeMillis();
+    logger.debug(String.format("StartTime: %d", startTime));
+    metrics.meter("RedirectionInput", 1, startTime, additionalFields);
+    return startTime;
+  }
+
+  /**
+   * Stops the timer and logs relevant debugging messages
+   *
+   * @param startTime        the start time, so that latency can be calculated
+   * @param additionalFields channelType, partner
+   */
+  private void stopTimerAndLogData(long startTime, Field<String, Object>... additionalFields) {
+    long endTime = System.currentTimeMillis();
+    logger.debug(String.format("EndTime: %d", endTime));
+    metrics.meter("RedirectionSuccess", 1, startTime, additionalFields);
+    metrics.mean("RedirectionLatency", endTime - startTime);
   }
 
 }

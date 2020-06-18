@@ -181,12 +181,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       if (params.containsKey(Constants.MKPID) && params.get(Constants.MKPID)[0] != null) {
         partner = EmailPartnerIdEnum.parse(params.get(Constants.MKPID)[0]);
       }
-      if (!StringUtils.isEmpty(partner)) {
-        metrics.meter("ImpressionInput", 1, Field.of(Constants.CHANNEL_TYPE, channelType),
-          Field.of(Constants.EMAIL_PARTNER, partner));
-      } else {
-        metrics.meter("ImpressionInput", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
-      }
+
+      long startTime = startTimerAndLogData(Field.of(Constants.CHANNEL_TYPE, channelType),
+          Field.of(Constants.PARTNER, partner));
 
       // call mcs
       Builder builder = mktClient.target(endpoint).path("/impression/").request();
@@ -218,6 +215,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       if (!StringUtils.isEmpty(partner) && EmailPartnerIdEnum.ADOBE.getPartner().equals(partner)) {
         sendOpenEventToAdobe(params);
       }
+
+      stopTimerAndLogData(startTime, Field.of(Constants.CHANNEL_TYPE, channelType),
+        Field.of(Constants.PARTNER, partner));
 
     } catch (Exception e) {
       try {
@@ -428,5 +428,31 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       }
     });
     return cf;
+  }
+
+  /**
+   * Starts the timer and logs some basic info
+   *
+   * @param additionalFields channelType, partner
+   * @return start time
+   */
+  private long startTimerAndLogData(Field<String, Object>... additionalFields) {
+    long startTime = System.currentTimeMillis();
+    logger.debug(String.format("StartTime: %d", startTime));
+    metrics.meter("ImpressionInput", 1, startTime, additionalFields);
+    return startTime;
+  }
+
+  /**
+   * Stops the timer and logs relevant debugging messages
+   *
+   * @param startTime        the start time, so that latency can be calculated
+   * @param additionalFields channelType, partner
+   */
+  private void stopTimerAndLogData(long startTime, Field<String, Object>... additionalFields) {
+    long endTime = System.currentTimeMillis();
+    logger.debug(String.format("EndTime: %d", endTime));
+    metrics.meter("ImpressionSuccess", 1, startTime, additionalFields);
+    metrics.mean("ImpressionLatency", endTime - startTime);
   }
 }
