@@ -21,7 +21,7 @@ if [ -f "${done_file_dir}/${DONE_FILE}" ]; then
          /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendDoneFile.sh ${DONE_FILE} ${log_file}
 
          if [ $? -ne 0 ]; then
-             echo "Send Chocolate EPN NRT done file error!!" | mail -s "Send Done File ERROR!!!!" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+             echo -e "Send Chocolate EPN NRT done file to etl error!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "Send Done File To ETL ERROR!!!!" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
              exit 1
          else
              echo -e "Congrats, chocolate EPN NRT ${DT_TODAY}'s impression data completed" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT_TODAY} IMPRESSION completed" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
