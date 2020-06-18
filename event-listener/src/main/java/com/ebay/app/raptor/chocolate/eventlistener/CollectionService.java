@@ -336,13 +336,13 @@ public class CollectionService {
       if (!parameters.containsKey(Constants.MKPID) || parameters.get(Constants.MKPID).get(0) == null) {
         logger.warn(Errors.ERROR_NO_MKPID);
         metrics.meter("NoMkpidParameter");
-      }
-
-      // invalid mkpid, accepted
-      partner = EmailPartnerIdEnum.parse(parameters.get(Constants.MKPID).get(0));
-      if (partner == null) {
-        logger.warn(Errors.ERROR_INVALID_MKPID);
-        metrics.meter("InvalidMkpid");
+      } else {
+        // invalid mkpid, accepted
+        partner = EmailPartnerIdEnum.parse(parameters.get(Constants.MKPID).get(0));
+        if (StringUtils.isEmpty(partner)) {
+          logger.warn(Errors.ERROR_INVALID_MKPID);
+          metrics.meter("InvalidMkpid");
+        }
       }
     }
 
@@ -624,13 +624,13 @@ public class CollectionService {
       if (!parameters.containsKey(Constants.MKPID) || parameters.get(Constants.MKPID).get(0) == null) {
         logger.warn(Errors.ERROR_NO_MKPID);
         metrics.meter("NoMkpidParameter");
-      }
-
-      // invalid mkpid, accepted
-      partner = EmailPartnerIdEnum.parse(parameters.get(Constants.MKPID).get(0));
-      if (partner == null) {
-        logger.warn(Errors.ERROR_INVALID_MKPID);
-        metrics.meter("InvalidMkpid");
+      } else {
+        // invalid mkpid, accepted
+        partner = EmailPartnerIdEnum.parse(parameters.get(Constants.MKPID).get(0));
+        if (StringUtils.isEmpty(partner)) {
+          logger.warn(Errors.ERROR_INVALID_MKPID);
+          metrics.meter("InvalidMkpid");
+        }
       }
     }
 
