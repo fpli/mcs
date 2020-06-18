@@ -1,18 +1,16 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
-import java.text.SimpleDateFormat
-import java.util.Properties
-
-import com.ebay.app.raptor.chocolate.avro.ChannelType
-import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
-import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
+import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles}
 import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
-import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
+import com.ebay.traffic.monitoring.Field
 import org.apache.commons.lang3.StringUtils
-import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.functions.col
 
+
+/**
+  * Created by zhofan on 6/17/20.
+  */
 object EpnNrtImpressionJob extends App {
   override def main(args: Array[String]): Unit = {
     val params = Parameter(args)
@@ -24,11 +22,8 @@ object EpnNrtImpressionJob extends App {
   }
 }
 
-class EpnNrtImpressionJob(params: Parameter) extends BaseSparkNrtJob(params.appName, params.mode) {
+class EpnNrtImpressionJob(params: Parameter) extends BaseEpnNrtJob(params, params.appName, params.mode) {
 
-  lazy val outputDir = params.outputDir
-  lazy val workDir = params.workDir
-  lazy val epnNrtTempDir = outputDir + "/tmp/"
   // meta tmp dir
   lazy val epnNrtResultMetaImpTempDir = outputDir + "/tmp_result_meta_imp/"
   lazy val epnNrtScpMetaImpTempDir = outputDir + "/tmp_scp_meta_imp/"
@@ -37,21 +32,7 @@ class EpnNrtImpressionJob(params: Parameter) extends BaseSparkNrtJob(params.appN
   lazy val epnNrtResultMetaImpDir = workDir + "/meta/EPN/output/epnnrt_imp/"
   lazy val epnNrtScpMetaImpDir = workDir + "/meta/EPN/output/epnnrt_scp_imp/"
 
-  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
-  lazy val archiveDir = workDir + "/meta/EPN/output/archive/"
-
   @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression.json")
-
-  @transient lazy val properties: Properties = {
-    val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
-    properties
-  }
-
-  @transient lazy val metadata: Metadata = {
-    val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
-    Metadata(params.workDir, ChannelType.EPN.toString, usage)
-  }
 
   @transient lazy val batchSize: Int = {
     val batchSize = properties.getProperty("epnnrt.impression.metafile.batchsize")
@@ -60,14 +41,6 @@ class EpnNrtImpressionJob(params: Parameter) extends BaseSparkNrtJob(params.appN
     } else {
       10 // default to 10 metafiles
     }
-  }
-
-  @transient lazy val metrics: Metrics = {
-    val url  = properties.getProperty("epnnrt.elasticsearchUrl")
-    if (url != null && url.nonEmpty) {
-      ESMetrics.init(METRICS_INDEX_PREFIX, url)
-      ESMetrics.getInstance()
-    } else null
   }
 
   override def run(): Unit = {
@@ -190,86 +163,5 @@ class EpnNrtImpressionJob(params: Parameter) extends BaseSparkNrtJob(params.appN
       if (metrics != null)
         metrics.flush()
     })
-  }
-
-  def deleteMetaTmpDir(tmpDir: String): Unit = {
-    val tmpPath = new Path(tmpDir)
-    if (fs.exists(tmpPath)) {
-      fs.delete(tmpPath, true)
-    }
-    fs.mkdirs(tmpPath)
-  }
-
-  def renameMeta(srcTmpDir: String, destDir: String): Unit = {
-    val tmpPath = new Path(srcTmpDir)
-    if (fs.exists(tmpPath)) {
-      val outputStatus = fs.listStatus(tmpPath)
-      if (outputStatus.nonEmpty) {
-        outputStatus.map(status => {
-          val srcFile = status.getPath
-          val destFile = new Path(destDir + status.getPath.getName)
-          fs.rename(srcFile, destFile)
-        })
-      }
-    }
-  }
-
-  def retry[T](n: Int)(fn: => T): T = {
-    try {
-      fn
-    } catch {
-      case e =>
-        if (n > 1) retry(n - 1)(fn)
-        else throw e
-    }
-  }
-
-  def renameFile(outputDir: String, sparkDir: String, date: String, prefix: String) = {
-    // rename result to output dir
-    val dateOutputPath = new Path(outputDir + "/date=" + date)
-    var max = -1
-    if (fs.exists(dateOutputPath)) {
-      val outputStatus = fs.listStatus(dateOutputPath)
-      if (outputStatus.nonEmpty) {
-        max = outputStatus.map(status => {
-          val name = status.getPath.getName
-          val number = name.substring(name.lastIndexOf("_"))
-          Integer.valueOf(number.substring(1, number.indexOf(".")))
-        }).sortBy(i => i).last
-      }
-    } else {
-      fs.mkdirs(dateOutputPath)
-    }
-
-    val fileStatus = fs.listStatus(new Path(sparkDir))
-    val files = fileStatus.filter(status => status.isFile && status.getPath.getName != "_SUCCESS")
-      .zipWithIndex
-      .map(swi => {
-        val src = swi._1.getPath
-        val seq = ("%5d" format max + 1 + swi._2).replace(" ", "0")
-        val target = new Path(dateOutputPath, prefix +
-          date.replaceAll("-", "") + "_" + sc.applicationId + "_" + seq + ".dat.gz")
-        fs.rename(src, target)
-        target.toString
-      })
-    files
-  }
-
-  def getDate(date: String): String = {
-    val splitted = date.split("=")
-    if (splitted != null && splitted.nonEmpty) splitted(1)
-    else throw new Exception("Invalid date field in metafile.")
-  }
-
-  def getTimeStamp(date: String): Long = {
-    try {
-      val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-      sdf.parse(date).getTime
-    } catch {
-      case e: Exception => {
-        logger.error("Error while parsing timestamp " + e)
-        0L
-      }
-    }
   }
 }
