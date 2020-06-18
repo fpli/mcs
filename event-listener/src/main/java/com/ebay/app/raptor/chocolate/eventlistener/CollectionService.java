@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
@@ -81,7 +80,7 @@ public class CollectionService {
 
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
-  private static final String EMAIL_PARTNER = "emailPartner";
+  private static final String PARTNER = "partner";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
   private static final String PAGE_ID = "pageId";
@@ -330,6 +329,23 @@ public class CollectionService {
       return true;
     }
 
+    // check partner for email click
+    String partner = null;
+    if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
+      // no mkpid, accepted
+      if (!parameters.containsKey(Constants.MKPID) || parameters.get(Constants.MKPID).get(0) == null) {
+        logger.warn(Errors.ERROR_NO_MKPID);
+        metrics.meter("NoMkpidParameter");
+      }
+
+      // invalid mkpid, accepted
+      partner = EmailPartnerIdEnum.parse(parameters.get(Constants.MKPID).get(0));
+      if (partner == null) {
+        logger.warn(Errors.ERROR_INVALID_MKPID);
+        metrics.meter("InvalidMkpid");
+      }
+    }
+
     String landingPageType;
     List<String> pathSegments = uriComponents.getPathSegments();
     if (pathSegments == null || pathSegments.size() == 0) {
@@ -357,19 +373,9 @@ public class CollectionService {
       }
     }
 
-    // get CRM partner if existed
-    String partnerId = parameters.getFirst(Constants.MKPID);
-    String partner;
-    long startTime;
-    if (!StringUtils.isEmpty(partnerId)) {
-      partner = EmailPartnerIdEnum.parse(partnerId);
-      startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(EMAIL_PARTNER, partner), Field.of(PLATFORM, platform),
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+        Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
         Field.of(LANDING_PAGE_TYPE, landingPageType));
-    } else {
-      startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
-    }
 
     // add tags in url param "sojTags"
     if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
@@ -393,7 +399,7 @@ public class CollectionService {
       processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-          Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+        Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
   }
@@ -635,14 +641,8 @@ public class CollectionService {
     String action = channelAction.getAvro().toString();
     String type = channelType.getLogicalChannel().getAvro().toString();
 
-    long startTime;
-    if (!StringUtils.isEmpty(partner)) {
-      startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(EMAIL_PARTNER, partner), Field.of(PLATFORM, platform));
-    } else {
-      startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PLATFORM, platform));
-    }
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+        Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
     // add tags in url param "sojTags"
     if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
@@ -671,7 +671,7 @@ public class CollectionService {
 
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-          Field.of(PLATFORM, platform));
+        Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
     return true;
   }
