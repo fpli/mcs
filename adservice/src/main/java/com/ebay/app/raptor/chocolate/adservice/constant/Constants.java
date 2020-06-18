@@ -47,7 +47,7 @@ public class Constants {
 
   // metrics field
   public static final String CHANNEL_TYPE = "channelType";
-  public static final String PARTNER = "partner";
+  public static final String EMAIL_PARTNER = "emailPartner";
 
   // Redirection constants
   public static final String MKPID = "mkpid";
