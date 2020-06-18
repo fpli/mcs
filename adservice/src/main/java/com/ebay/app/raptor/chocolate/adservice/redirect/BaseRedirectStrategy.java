@@ -6,9 +6,6 @@ import com.ebay.app.raptor.chocolate.adservice.util.MCSCallback;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
-import com.ebay.jaxrs.client.EndpointUri;
-import com.ebay.jaxrs.client.GingerClientBuilder;
-import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
@@ -24,8 +21,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Configuration;
-import javax.ws.rs.core.Response;
 import java.net.*;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -64,7 +59,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
         getParam(parameters, Constants.MKEVT), getParam(parameters, Constants.MKPID));
 
     metrics.meter("RedirectionInput", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()),
-        Field.of(Constants.PARTNER, redirectionEvent.getPartner()));
+        Field.of(Constants.EMAIL_PARTNER, redirectionEvent.getPartner()));
 
     // generate Redirect Url
     generateRedirectUrl(parameters);

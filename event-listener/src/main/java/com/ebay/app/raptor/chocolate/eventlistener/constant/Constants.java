@@ -23,6 +23,7 @@ public class Constants {
   public static final String REFERRER = "referrer";
 
   // Email url params
+  public static final String MKPID = "mkpid";
   public static final String SOJ_TAGS = "sojTags";
   public static final String SOURCE_ID = "emsid";
   public static final String EMAIL_UNIQUE_ID = "euid";

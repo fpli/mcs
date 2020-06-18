@@ -169,13 +169,24 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       adserviceCookie.setAdguid(request, response);
       res = Response.status(Response.Status.OK).build();
 
-      // get channel for metrics
+      // get channel
       String channelType = null;
       Map<String, String[]> params = request.getParameterMap();
       if (params.containsKey(Constants.MKCID) && params.get(Constants.MKCID)[0] != null) {
         channelType = ChannelIdEnum.parse(params.get(Constants.MKCID)[0]).getLogicalChannel().getAvro().toString();
       }
-      metrics.meter("ImpressionInput", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
+
+      // get partner
+      String partner = null;
+      if (params.containsKey(Constants.MKPID) && params.get(Constants.MKPID)[0] != null) {
+        partner = EmailPartnerIdEnum.parse(params.get(Constants.MKPID)[0]);
+      }
+      if (!StringUtils.isEmpty(partner)) {
+        metrics.meter("ImpressionInput", 1, Field.of(Constants.CHANNEL_TYPE, channelType),
+          Field.of(Constants.EMAIL_PARTNER, partner));
+      } else {
+        metrics.meter("ImpressionInput", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
+      }
 
       // call mcs
       Builder builder = mktClient.target(endpoint).path("/impression/").request();
@@ -202,11 +213,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       builder.async().post(Entity.json(mktEvent), new MCSCallback());
       // send 1x1 pixel
       ImageResponseHandler.sendImageResponse(response);
-      String partnerId = null;
-      if (params.containsKey(Constants.MKPID)) {
-        partnerId = params.get(Constants.MKPID)[0];
-      }
-      if (!StringUtils.isEmpty(partnerId) && EmailPartnerIdEnum.ADOBE.getId().equals(partnerId)) {
+
+      // send open events to adobe
+      if (!StringUtils.isEmpty(partner) && EmailPartnerIdEnum.ADOBE.getPartner().equals(partner)) {
         sendOpenEventToAdobe(params);
       }
 
