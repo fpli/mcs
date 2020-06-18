@@ -280,7 +280,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   private void stopTimerAndLogData(long startTime, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("RedirectionSuccess", 1, startTime, additionalFields);
+    metrics.meter("RedirectionSuccess", 1, endTime, additionalFields);
     metrics.mean("RedirectionLatency", endTime - startTime);
   }
 

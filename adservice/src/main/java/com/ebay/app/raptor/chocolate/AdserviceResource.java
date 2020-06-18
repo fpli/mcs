@@ -452,7 +452,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private void stopTimerAndLogData(long startTime, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("ImpressionSuccess", 1, startTime, additionalFields);
+    metrics.meter("ImpressionSuccess", 1, endTime, additionalFields);
     metrics.mean("ImpressionLatency", endTime - startTime);
   }
 }
