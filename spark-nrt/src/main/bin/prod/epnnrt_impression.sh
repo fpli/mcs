@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - EPN Nrt Job
 
-usage="Usage: epnnrt_click.sh [workDir] [resourceDir] [filterTime]"
+usage="Usage: epnnrt_impression.sh [workDir] [resourceDir] [filterTime]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
