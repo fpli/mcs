@@ -9,30 +9,29 @@ log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/done_${log_dt}.log"
 done_file_dir="/datashare/mkttracking/data/epn-nrt/done"
 DT_TODAY=$(date +%Y-%m-%d)
 DONE_FILE="epn_$(date +%Y%m%d -d "`date` - 1 day").done"
+LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/etl/"date="${DT_TODAY}
 
 echo "check if done file has been generated"
 if [ -f "${done_file_dir}/${DONE_FILE}" ]; then
     echo "${DONE_FILE} Done file has been already generated!" | tee -a ${log_file}
 
     echo "check if impression has been processed completely"
-    IMP_LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/etl/"date="${DT_TODAY}
-    impression_today_processed=`ls ${IMP_LOCAL_PATH}'.impression.processed' | wc -l`
+    impression_today_processed=`ls ${LOCAL_PATH}'.impression.processed' | wc -l`
     if [[ impression_today_processed -eq 1 ]]; then
          /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/sendDoneFile.sh ${DONE_FILE} ${log_file}
+
+         if [ $? -ne 0 ]; then
+             echo "Send Chocolate EPN NRT done file error!!" | mail -s "Send Done File ERROR!!!!" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+             exit 1
+         else
+             echo -e "Congrats, chocolate EPN NRT ${DT_TODAY}'s impression data completed" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT_TODAY} IMPRESSION completed" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+         fi
     fi
 
-    if [ $? -ne 0 ]; then
-        echo "Send Chocolate EPN NRT done file error!!" | mail -s "Send Done File ERROR!!!!" DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
-        exit 1
-    else
-        echo "${DONE_FILE} Done file has been already generated!" | tee -a ${log_file}
-        exit 0
-    fi
+    exit 0
 fi
 
 ######################################### Check the file of today is processing ################################
-LOCAL_PATH=/datashare/mkttracking/data/epn-nrt/etl/"date="${DT_TODAY}
-
 today_processed=`ls ${LOCAL_PATH}'.click.processed' | wc -l`
 
 if [[ today_processed -ne 1 ]]; then
@@ -69,7 +68,7 @@ if [ $? -ne 0 ]; then
     echo -e "chocolate EPN NRT ${DT_TODAY}'s data delayed due to sending done file error!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT_TODAY} delayed!!!" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
     exit 1
 else
-    echo -e "Congrats, chocolate EPN NRT ${DT_TODAY}'s data completed" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT_TODAY} completed" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
+    echo -e "Congrats, chocolate EPN NRT ${DT_TODAY}'s click data completed" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "EPN NRT ${DT_TODAY} CLICK completed" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
     #echo -e "Hello world, Today is my first day to send chocolate EPN NRT ${DT_TODAY}'s data completed to you! Nice to meet you ^^" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "Hello World! EPN NRT ${DT_TODAY} completed" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
     touch "${done_file_dir}/${DONE_FILE}"
     exit 0
