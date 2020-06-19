@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 
 public class DumpRotationToRnoTest {
     private static final String VIEW_NAME = "last_update_time";
-    private static final String DESIGNED_DOC_NAME = "default";
+    private static final String DESIGNED_DOC_NAME = "rotation_info";
     private static final String TEMP_FILE_FOLDER = "/tmp/rotation/";
     private static final String TEMP_FILE_PREFIX = "rotation_test_";
     private static CorpRotationCouchbaseClient couchbaseClient;
@@ -149,40 +149,34 @@ public class DumpRotationToRnoTest {
 
     @Test
     public void testGetChangeRotationCount() throws IOException {
-        String esSearchStartTime = "2019-06-06 02:00:00";
-        String esSearchEndTime = "2019-06-06 23:59:59";
-        DumpRotationToTD.setEsRestHighLevelClient(restHighLevelClient);
+        String esSearchStartTime = "2020-06-05 00:00:00";
+        String esSearchEndTime = "2020-06-05 23:59:59";
+        DumpRotationToRno.setEsRestHighLevelClient(restHighLevelClient);
         //test new create rotation count
-        Integer newCreateRotationCount = DumpRotationToTD.getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
+        Integer newCreateRotationCount = DumpRotationToRno.getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_CREATE_ROTATION_KEY);
         Assert.assertEquals("2", newCreateRotationCount.toString());
 
         //test update rotation count
-        Integer updateRotationCount = DumpRotationToTD.getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
+        Integer updateRotationCount = DumpRotationToRno.getChangeRotationQuantity(esSearchStartTime, esSearchEndTime, RotationConstant.ES_UPDATE_ROTATION_KEY);
         Assert.assertEquals("1", updateRotationCount.toString());
     }
 
     @Test
-    public void testThrowException() {
+    public void testThrowException() throws Exception {
         // set initialed cb related info
-        DumpRotationToTD.setBucket(bucket);
+        DumpRotationToRno.setBucket(bucket);
         Properties couchbasePros = new Properties();
         couchbasePros.put("couchbase.corp.rotation.designName", DESIGNED_DOC_NAME);
         couchbasePros.put("couchbase.corp.rotation.viewName", VIEW_NAME);
         couchbasePros.put("chocolate.elasticsearch.url","http://10.148.181.34:9200");
-        DumpRotationToTD.setCouchbasePros(couchbasePros);
+        DumpRotationToRno.setCouchbasePros(couchbasePros);
 
         // set initialed es rest high level client
-        DumpRotationToTD.setEsRestHighLevelClient(restHighLevelClient);
+        DumpRotationToRno.setEsRestHighLevelClient(restHighLevelClient);
 
         // run dump job
         createFolder();
-        Boolean throwException = false;
-        try {
-            DumpRotationToTD.dumpFileFromCouchbase("1459808000000", "1559865599000", TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
-        } catch (IOException e) {
-            throwException = true;
-        }
-        Assert.assertEquals(true, throwException);
+        DumpRotationToRno.dumpFileFromCouchbase("1591286400000", "1591372800000", TEMP_FILE_FOLDER + TEMP_FILE_PREFIX);
     }
 
     private void createFolder() {

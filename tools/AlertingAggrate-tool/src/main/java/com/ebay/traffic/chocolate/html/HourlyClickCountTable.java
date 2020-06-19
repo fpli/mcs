@@ -7,7 +7,7 @@ import java.util.List;
 public class HourlyClickCountTable {
 
   public static String parseProject(List<HourlyClickCount> hourlyClickCounts) {
-    String html = getTtile("Epn hourly report (from hercules-lvs hdfs)") + getHeader();
+    String html = getTtile("EPN Hourly Report (from hercules-lvs hdfs)") + getHeader();
 
     if (hourlyClickCounts == null || hourlyClickCounts.size() == 0) {
       return html;
