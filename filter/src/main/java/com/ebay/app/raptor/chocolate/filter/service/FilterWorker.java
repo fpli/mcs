@@ -24,6 +24,7 @@ import org.apache.kafka.common.protocol.types.SchemaException;
 import org.apache.log4j.Logger;
 import org.springframework.util.StringUtils;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -108,7 +109,7 @@ public class FilterWorker extends Thread {
       while (!shutdownRequested.get()) {
         try {
           long pollStartTime = System.currentTimeMillis();
-          ConsumerRecords<Long, ListenerMessage> records = consumer.poll(POLL_STEP_MS);
+          ConsumerRecords<Long, ListenerMessage> records = consumer.poll(Duration.ofMillis(POLL_STEP_MS));
           metrics.mean("PollLatency", System.currentTimeMillis() - pollStartTime);
           Iterator<ConsumerRecord<Long, ListenerMessage>> iterator = records.iterator();
           int count = 0;
