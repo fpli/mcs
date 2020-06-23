@@ -37,7 +37,7 @@ public class FilterWorker extends Thread {
 
   private static final long POLL_STEP_MS = 100;
   private static final long RESULT_POLL_STEP_MS = 100;
-  private static final long RESULT_POLL_TIMEOUT_MS = 5000;
+  private static final long RESULT_POLL_TIMEOUT_MS = 10000;
   private static final long DEFAULT_PUBLISHER_ID = -1L;
 
   private static final String CHANNEL_ACTION = "channelAction";
@@ -156,6 +156,7 @@ public class FilterWorker extends Thread {
                 outputMessages.put(outMessage.getSnapshotId(), outMessage);
                 received++;
               }
+              end = System.currentTimeMillis();
             }
 
             // rerun filter rules with default geo_id and publisher_id for messages not polled out
