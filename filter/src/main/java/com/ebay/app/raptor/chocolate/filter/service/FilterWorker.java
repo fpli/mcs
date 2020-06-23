@@ -56,7 +56,9 @@ public class FilterWorker extends Thread {
   private final AtomicBoolean shutdownRequested = new AtomicBoolean(false);
 
   private final int maxThreadNum = 10;
-  private final ExecutorService executor = Executors.newFixedThreadPool(maxThreadNum);
+  private final LinkedBlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
+  private final ExecutorService executor = new ThreadPoolExecutor(10, 30,
+    0L, TimeUnit.MILLISECONDS, taskQueue);
   private final CompletionService<FilterMessage> completionService =
     new ExecutorCompletionService<>(executor);
 
@@ -115,6 +117,8 @@ public class FilterWorker extends Thread {
             int threadNum = 0;
             long theadPoolstartTime = System.currentTimeMillis();
             Map<Long, ListenerMessage> inputMessages = new HashMap<>();
+
+            taskQueue.clear();
 
             for (int i = 0; i < maxThreadNum && iterator.hasNext(); i++) {
               ConsumerRecord<Long, ListenerMessage> record = iterator.next();
