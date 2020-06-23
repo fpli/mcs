@@ -36,8 +36,8 @@ public class FilterWorker extends Thread {
   private static final Logger LOG = Logger.getLogger(FilterWorker.class);
 
   private static final long POLL_STEP_MS = 100;
-  private static final long RESULT_POLL_STEP_MS = 500;
-  private static final long RESULT_POLL_TINEOUT_MS = 5000;
+  private static final long RESULT_POLL_STEP_MS = 100;
+  private static final long RESULT_POLL_TIMEOUT_MS = 5000;
   private static final long DEFAULT_PUBLISHER_ID = -1L;
 
   private static final String CHANNEL_ACTION = "channelAction";
@@ -143,7 +143,7 @@ public class FilterWorker extends Thread {
             long start = System.currentTimeMillis();
             long end = start;
             Map<Long, FilterMessage> outputMessages = new HashMap<>();
-            while (received < threadNum && (end - start < RESULT_POLL_TINEOUT_MS)) {
+            while (received < threadNum && (end - start < RESULT_POLL_TIMEOUT_MS)) {
               Future<FilterMessage> resultFuture = completionService.poll(RESULT_POLL_STEP_MS,
                 TimeUnit.MILLISECONDS);
               FilterMessage outMessage;
@@ -187,7 +187,6 @@ public class FilterWorker extends Thread {
               }
             }
 
-            // For messages not polled out successfully,
             metrics.mean("FilterThreadPoolLatency", System.currentTimeMillis() - theadPoolstartTime);
           }
 

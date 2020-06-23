@@ -150,7 +150,7 @@ public class CouchbaseClient {
       } catch (Exception e) {
         metrics.meter("FilterCouchbaseRetry");
         logger.warn("Couchbase query operation timeout, will sleep for 30s to retry", e);
-        Thread.sleep(3000);
+        Thread.sleep(1000);
         ++retry;
       } finally {
         factory.returnClient(cacheClient);
