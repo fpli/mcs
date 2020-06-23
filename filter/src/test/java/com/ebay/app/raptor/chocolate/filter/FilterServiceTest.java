@@ -83,9 +83,9 @@ public class FilterServiceTest {
     ListenerMessage roiMessage = newROIMessage(
         ChannelType.ROI, ChannelAction.ROI, 1L, -1L, -1L);
     ListenerMessage roverRoiMessage = roverROIMessage(
-        ChannelType.ROI, ChannelAction.ROI, 1L, -1L, -1L);
-    producer.send(new ProducerRecord<>("dev_listener", 4L, roiMessage));
-    producer.send(new ProducerRecord<>("dev_listener", 4L, roverRoiMessage));
+        ChannelType.ROI, ChannelAction.ROI, 2L, -1L, -1L);
+    producer.send(new ProducerRecord<>("dev_listener_roi", 1L, roiMessage));
+    producer.send(new ProducerRecord<>("dev_listener_roi", 2L, roverRoiMessage));
 
     producer.flush();
     producer.close();
@@ -135,11 +135,18 @@ public class FilterServiceTest {
         LongDeserializer.class, FilterMessageDeserializer.class);
 
     Map<Long, FilterMessage> filterMessagesROI = pollFromKafkaTopic(
-        consumerROI, Arrays.asList("dev_filter_roi"), 1, 60 * 1000);
-    consumerROI.close();
+      consumerROI, Arrays.asList("dev_filter_roi"), 1, 60 * 1000);
 
     Assert.assertEquals(1, filterMessagesROI.size());
     Assert.assertEquals(1L, filterMessagesROI.get(1L).getSnapshotId().longValue());
     Assert.assertEquals(ChannelAction.ROI, filterMessagesROI.get(1L).getChannelAction());
+
+    Map<Long, FilterMessage> filterMessagesRoverROI = pollFromKafkaTopic(
+      consumerROI, Arrays.asList("dev_filter_new_roi"), 1, 60 * 1000);
+    consumerROI.close();
+
+    Assert.assertEquals(1, filterMessagesRoverROI.size());
+    Assert.assertEquals(2L, filterMessagesRoverROI.get(2L).getSnapshotId().longValue());
+    Assert.assertEquals(ChannelAction.ROI, filterMessagesRoverROI.get(2L).getChannelAction());
   }
 }
