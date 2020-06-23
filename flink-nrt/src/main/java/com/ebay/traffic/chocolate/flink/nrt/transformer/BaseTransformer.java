@@ -254,9 +254,8 @@ public class BaseTransformer {
     return (String) sourceRecord.get(TransformerConstants.GUID);
   }
 
-  // TODO
   public Long getUserId() {
-    return 0L;
+    return (Long) sourceRecord.get(TransformerConstants.USER_ID);
   }
 
   protected String getClntRemoteIp() {

@@ -4,6 +4,7 @@
 
 package com.ebay.traffic.chocolate.flink.nrt.provider;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.provider.mtid.MtIdService;
@@ -38,20 +39,28 @@ public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV4, FilterM
           properties.getProperty(PropertyConstants.ELASTICSEARCH_URL));
     }
 
-    long timeMillis = System.currentTimeMillis();
-    final Future<Long> accountId = MtIdService.getInstance().getAccountId(input.getGuid(), "GUID");
+    if(input.getChannelAction().equals(ChannelAction.CLICK)) {
+      long timeMillis = System.currentTimeMillis();
+      final Future<Long> accountId = MtIdService.getInstance().getAccountId(input.getGuid(), "GUID");
 
-    CompletableFuture.supplyAsync(() -> {
-      try {
-        input.setUserId(accountId.get());
-        ESMetrics.getInstance().mean("MTID_LATENCY", System.currentTimeMillis() - timeMillis);
-        return input;
-      } catch (InterruptedException | ExecutionException e) {
-        // Normally handled explicitly.
-        return null;
-      }
-    }).thenAccept( (FilterMessageV4 outputFilterMessage) -> {
-      resultFuture.complete(Collections.singleton(outputFilterMessage));
-    });
+      CompletableFuture.supplyAsync(() -> {
+        try {
+          Long userId = accountId.get();
+          input.setUserId(userId);
+          if (userId.longValue() != 0) {
+            ESMetrics.getInstance().meter("MTID_GOT_USERID");
+          }
+          ESMetrics.getInstance().mean("MTID_LATENCY", System.currentTimeMillis() - timeMillis);
+          return input;
+        } catch (InterruptedException | ExecutionException e) {
+          ESMetrics.getInstance().meter("MTID_GOT_USERID_ERROR");
+          return input;
+        }
+      }).thenAccept((FilterMessageV4 outputFilterMessage) -> {
+        resultFuture.complete(Collections.singleton(outputFilterMessage));
+      });
+    } else {
+      resultFuture.complete(Collections.singleton(input));
+    }
   }
 }
