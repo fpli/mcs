@@ -288,17 +288,13 @@ public class FilterWorker extends Thread {
     outMessage.setReferer(message.getReferer());
     // set postcode for not EPN Channels
     // checked imk history data, only click has geoid
-    if (message.getChannelType() != ChannelType.EPN && message.getChannelAction() == ChannelAction.CLICK) {
-      if (!isPollFailed) {
-        try {
-          outMessage.setGeoId(LBSClient.getInstance().getPostalCodeByIp(outMessage.getRemoteIp()));
-        } catch (Exception e) {
-          LOG.warn("Exception in call GEO service: ", e);
-          this.metrics.meter("FilterGEOError");
-        }
-      } else {
-        // not change geoid for missing messages
-        outMessage.setGeoId(message.getGeoId());
+    if (message.getChannelType() != ChannelType.EPN && message.getChannelAction() == ChannelAction.CLICK &&
+      !isPollFailed) {
+      try {
+        outMessage.setGeoId(LBSClient.getInstance().getPostalCodeByIp(outMessage.getRemoteIp()));
+      } catch (Exception e) {
+        LOG.warn("Exception in call GEO service: ", e);
+        this.metrics.meter("FilterGEOError");
       }
     }
     // only EPN needs to get publisher id
