@@ -8,7 +8,6 @@ import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
 import com.ebay.app.raptor.chocolate.filter.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
-import com.ebay.traffic.chocolate.kafka.ConsumerListener;
 import com.ebay.traffic.chocolate.kafka.KafkaConsumerFactory;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -22,7 +21,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.protocol.types.SchemaException;
 import org.apache.log4j.Logger;
-import org.springframework.util.StringUtils;
 
 import java.time.Duration;
 import java.util.*;
@@ -52,8 +50,6 @@ public class FilterWorker extends Thread {
   private final Consumer<Long, ListenerMessage> consumer; // in
   private final Producer<Long, FilterMessage> producer; // out
 
-  private final ConsumerListener<Long, ListenerMessage> consumerListener;
-
   // Shutdown signal.
   private final AtomicBoolean shutdownRequested = new AtomicBoolean(false);
 
@@ -74,8 +70,6 @@ public class FilterWorker extends Thread {
 
     this.consumer = KafkaConsumerFactory.create(properties);
     this.producer = KafkaSink.get();
-
-    this.consumerListener = new ConsumerListener<>(consumer);
   }
 
   /**
@@ -98,7 +92,7 @@ public class FilterWorker extends Thread {
     metrics.mean("FilterPassedPPM", 0);
 
     try {
-      consumer.subscribe(Arrays.asList(inputTopic), consumerListener);
+      consumer.subscribe(Arrays.asList(inputTopic));
 
       long flushThreshold = 0;
 
@@ -178,7 +172,7 @@ public class FilterWorker extends Thread {
             producer.flush();
 
             // update consumer offset
-            consumerListener.commitSync();
+            consumer.commitSync();
 
             metrics.mean("FlushLatency", System.currentTimeMillis() - flushStartTime);
 
