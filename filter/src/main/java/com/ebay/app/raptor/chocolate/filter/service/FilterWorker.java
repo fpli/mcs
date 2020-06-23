@@ -123,10 +123,10 @@ public class FilterWorker extends Thread {
             for (int i = 0; i < maxThreadNum && iterator.hasNext(); i++) {
               ConsumerRecord<Long, ListenerMessage> record = iterator.next();
 
-              // cache input messages
-              inputMessages.put(record.key(), record.value());
-
               ListenerMessage message = record.value();
+              // cache input messages
+              inputMessages.put(message.getSnapshotId(), message);
+
               metrics.meter("FilterInputCount", 1, message.getTimestamp(),
                       Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
                       Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
@@ -151,7 +151,7 @@ public class FilterWorker extends Thread {
               Future<FilterMessage> resultFuture = completionService.poll(RESULT_POLL_STEP_MS,
                 TimeUnit.MILLISECONDS);
               FilterMessage outMessage;
-              if (resultFuture != null) {
+              if (resultFuture != null && inputMessages.containsKey(resultFuture.get().getSnapshotId())) {
                 outMessage = resultFuture.get();
                 outputMessages.put(outMessage.getSnapshotId(), outMessage);
                 received++;
@@ -159,12 +159,14 @@ public class FilterWorker extends Thread {
             }
 
             // rerun filter rules with default geo_id and publisher_id for messages not polled out
-            for (Map.Entry<Long, ListenerMessage> entry : inputMessages.entrySet()) {
-              if (!outputMessages.containsKey(entry.getKey())) {
-                metrics.meter("FilterPollResultFailure");
-                LOG.warn("Poll failed, rerun filter rules");
-                FilterMessage missingMessage = processMessage(entry.getValue(), true);
-                outputMessages.put(missingMessage.getSnapshotId(), missingMessage);
+            if (received < threadNum) {
+              for (Map.Entry<Long, ListenerMessage> entry : inputMessages.entrySet()) {
+                if (!outputMessages.containsKey(entry.getKey())) {
+                  metrics.meter("FilterPollResultFailure");
+                  LOG.warn("Poll failed, rerun filter rules");
+                  FilterMessage missingMessage = processMessage(entry.getValue(), true);
+                  outputMessages.put(missingMessage.getSnapshotId(), missingMessage);
+                }
               }
             }
 

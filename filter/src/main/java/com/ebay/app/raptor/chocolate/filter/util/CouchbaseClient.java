@@ -149,7 +149,7 @@ public class CouchbaseClient {
         return DEFAULT_PUBLISHER_ID;
       } catch (Exception e) {
         metrics.meter("FilterCouchbaseRetry");
-        logger.warn("Couchbase query operation timeout, will sleep for 30s to retry", e);
+        logger.warn("Couchbase query operation timeout, will sleep for 1s to retry", e);
         Thread.sleep(1000);
         ++retry;
       } finally {
