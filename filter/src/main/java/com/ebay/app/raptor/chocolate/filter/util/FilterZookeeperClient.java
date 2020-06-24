@@ -21,7 +21,8 @@ import org.apache.curator.framework.recipes.nodes.PersistentEphemeralNode;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.CloseableUtils;
 import org.apache.curator.utils.ZKPaths;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.zookeeper.KeeperException;
 
 import java.io.ByteArrayOutputStream;
@@ -38,7 +39,7 @@ import java.util.function.Consumer;
 public class FilterZookeeperClient {
 
     /** logging instance */
-    private static final Logger logger = Logger.getLogger(FilterZookeeperClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(FilterZookeeperClient.class);
     /**Singleton instance*/
     private static volatile FilterZookeeperClient INSTANCE = null;
     /** Curator client */
@@ -99,7 +100,7 @@ public class FilterZookeeperClient {
         try {
             INSTANCE.start(callback);
         } catch (Exception e) {
-            logger.fatal("Failed to start publisher cache zookeeper client", e);
+            logger.error("Failed to start publisher cache zookeeper client", e);
             throw new RuntimeException(e);
         }
     }

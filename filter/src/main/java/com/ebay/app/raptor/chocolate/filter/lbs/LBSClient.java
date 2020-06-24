@@ -6,7 +6,8 @@ import com.ebay.kernel.util.DomainIpChecker;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -15,7 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 public class LBSClient {
-  private static final Logger logger = Logger.getLogger(LBSClient.class);
+  private static final Logger logger = LoggerFactory.getLogger(LBSClient.class);
   private static LBSClient instance;
   private final Metrics metrics;
   private static Client client;

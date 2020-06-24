@@ -8,10 +8,10 @@ import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleContent;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ import static com.ebay.traffic.chocolate.kafka.KafkaCluster.DELIMITER;
 public class ApplicationOptions extends AbstractApplicationOptions implements KafkaSink.KafkaConfigurable {
 
     /** Private logging instance */
-    private static final Logger logger = Logger.getLogger(ApplicationOptions.class);
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationOptions.class);
 
     /**
      * Singleton instance
@@ -203,7 +203,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     /**Get Couchbase cluster string list*/
     public String getCouchbaseDatasource() {
         if (!properties.containsKey(COUCHBASE_DATASOURCE)) {
-            logger.fatal(COUCHBASE_DATASOURCE + " not found in properties file!");
+            logger.error(COUCHBASE_DATASOURCE + " not found in properties file!");
             throw new UnsupportedOperationException(COUCHBASE_DATASOURCE + " not found in properties file!");
         }
         return properties.getProperty(COUCHBASE_DATASOURCE);
@@ -211,7 +211,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
     public String getNewROITopic() {
         if (!properties.containsKey(ROI_TOPIC)) {
-            logger.fatal(ROI_TOPIC + " not found in properties file!");
+            logger.error(ROI_TOPIC + " not found in properties file!");
             throw new UnsupportedOperationException(ROI_TOPIC + " not found in properties file!");
         }
         return properties.getProperty(ROI_TOPIC);
@@ -223,7 +223,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     public String getZookeeperString() {
         if (zkConnectionString == null) {
             if (!properties.containsKey(ZK_CONNECT_PROPERTY)) {
-                logger.fatal(ZK_CONNECT_PROPERTY + " not found in properties file!");
+                logger.error(ZK_CONNECT_PROPERTY + " not found in properties file!");
                 throw new UnsupportedOperationException(ZK_CONNECT_PROPERTY + " not found in properties file!");
             }
             zkConnectionString = properties.getProperty(ZK_CONNECT_PROPERTY);
@@ -366,7 +366,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     public String getPublisherCacheZkConnectString() {
         if (zkConnectionStringForPublisherCache == null) {
             if (!properties.containsKey(PUBLISHER_CACHE_ZK_CONNECT)) {
-                logger.fatal(PUBLISHER_CACHE_ZK_CONNECT + " not found in properties file!");
+                logger.error(PUBLISHER_CACHE_ZK_CONNECT + " not found in properties file!");
                 throw new UnsupportedOperationException(PUBLISHER_CACHE_ZK_CONNECT
                         + " not found in properties file!");
             }

@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.filter.util;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -12,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CampaignPublisherMappingCache {
     /** Logging instance. */
-    private static final Logger logger = Logger.getLogger(CampaignPublisherMappingCache.class);
+    private static final Logger logger = LoggerFactory.getLogger(CampaignPublisherMappingCache.class);
     /** Static instance */
     private volatile static CampaignPublisherMappingCache INSTANCE = null;
     /** CampaignId - PublisherId cache */
