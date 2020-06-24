@@ -29,11 +29,11 @@ public abstract class AbstractRheosCompatibleApp<IN, OUT> {
 
   private StreamExecutionEnvironment streamExecutionEnvironment;
 
-  private static final long CHECK_POINT_PERIOD = TimeUnit.SECONDS.toMillis(2);
+  private static final long CHECK_POINT_PERIOD = TimeUnit.SECONDS.toMillis(5);
 
   private static final long MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(1);
 
-  private static final long CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(60);
+  private static final long CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(300);
 
   private static final int MAX_CONCURRENT_CHECK_POINTS = 1;
 
@@ -43,7 +43,7 @@ public abstract class AbstractRheosCompatibleApp<IN, OUT> {
     DataStreamSource<IN> tuple2DataStreamSource = streamExecutionEnvironment.addSource(getKafkaConsumer());
     DataStream<OUT> output = transform(tuple2DataStreamSource);
     output.addSink(getKafkaProducer());
-    streamExecutionEnvironment.execute();
+    streamExecutionEnvironment.execute(this.getClass().getSimpleName());
   }
 
   private void prepareBaseExecutionEnvironment() {

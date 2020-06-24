@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.flink.nrt.transformer;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
 import com.ebay.kernel.patternmatch.dawg.Dawg;
 import com.ebay.kernel.patternmatch.dawg.DawgDictionary;
 import com.ebay.traffic.chocolate.flink.nrt.constant.*;
@@ -71,7 +72,7 @@ public class BaseTransformer {
   /**
    * Used to cache method object to improve reflect performance
    */
-  private static final Map<String, Method> FIELD_GET_METHOD_CACHE = new HashMap<>(16);
+  private static final Map<String, Method>  FIELD_GET_METHOD_CACHE = new HashMap<>(16);
 
   /**
    * Map field name to get method name, eg. batch_id -> getBatchId
@@ -95,7 +96,7 @@ public class BaseTransformer {
   protected GenericRecord sourceRecord;
   public static final DecimalFormat BATCH_ID_DECIMAL_FORMAT = new DecimalFormat("00");
 
-  public BaseTransformer(FilterMessage sourceRecord) {
+  public BaseTransformer(FilterMessageV4 sourceRecord) {
     this.sourceRecord = sourceRecord;
   }
 
@@ -253,9 +254,8 @@ public class BaseTransformer {
     return (String) sourceRecord.get(TransformerConstants.GUID);
   }
 
-  // TODO
   public Long getUserId() {
-    return 0L;
+    return (Long) sourceRecord.get(TransformerConstants.USER_ID);
   }
 
   protected String getClntRemoteIp() {

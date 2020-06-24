@@ -6,11 +6,14 @@ package com.ebay.traffic.chocolate.flink.nrt.provider.mtid;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 public class MtIdServiceTest {
 
   @Test
-  public void getAccountId() {
-    String accountId = MtIdService.getInstance().getAccountId("3a391b4b16f0abc16842c351ebd15330","cguid");
+  public void getAccountId() throws Exception {
+    Long accountId = MtIdService.getInstance().getAccountId("aac965841710aa412e54755cffff909d","guid").get();
+    assertEquals(809423400l, accountId.longValue());
     System.out.println(accountId);
   }
 }

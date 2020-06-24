@@ -19,6 +19,8 @@ import java.util.Properties;
 import java.util.Random;
 
 import org.apache.commons.codec.binary.Base64;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJsonProvider;
 
 /**
  * Standard implementation for generation App token using IAFService for V3 and non-raptor platforms.
@@ -50,7 +52,7 @@ public class IAFServiceUtil {
     clientSecret = properties.getProperty(PropertyConstants.OAUTH_CLIENT_SECRET);
     String preAuthHeader = clientId + ":" + clientSecret;
     authHeader = "Basic " + Base64.encodeBase64String(preAuthHeader.getBytes());
-    client = ClientBuilder.newClient();
+    client = ClientBuilder.newClient(new ClientConfig().register(JacksonJsonProvider.class));
     webTarget = client.target(properties.getProperty(PropertyConstants.OAUTH_ENDPOINT));
   }
 
@@ -76,12 +78,11 @@ public class IAFServiceUtil {
 
     Response response = webTarget.request(MediaType.APPLICATION_JSON).header(AUTH_HEADER_NAME, authHeader)
         .post(Entity.entity(OAUTH_POST_BODY, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
-
     Token token = response.readEntity(Token.class);
 
     if (token.getToken() != null) {
       Calendar calendar = Calendar.getInstance();
-      calendar.add(Calendar.SECOND, token.getExires());
+      calendar.add(Calendar.SECOND, token.getExpires());
       expiryTime = generateBufferedExpiration(calendar.getTime());
       appToken = token.getToken();
     }

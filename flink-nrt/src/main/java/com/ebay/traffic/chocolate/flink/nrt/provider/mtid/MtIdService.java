@@ -7,22 +7,30 @@ package com.ebay.traffic.chocolate.flink.nrt.provider.mtid;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.provider.token.IAFServiceUtil;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
+import com.ebay.traffic.monitoring.ESMetrics;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJsonProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 
 
 /**
  * Marketing ID system service
+ *
  * @author xiangli4
  * @since 2020/6/04
  */
 public class MtIdService {
 
-  private MtIdService mtIdService;
+  private static final Logger LOGGER = LoggerFactory.getLogger(MtIdService.class);
+
   private String endpointUri;
   private final String path = "idlink";
 
@@ -47,23 +55,36 @@ public class MtIdService {
 
     endpointUri = properties.getProperty(PropertyConstants.MTID_ENDPOINT);
 
-    client = ClientBuilder.newClient();
+    client = ClientBuilder.newClient(new ClientConfig().register(JacksonJsonProvider.class));
     webTarget = client.target(endpointUri);
   }
 
-  public String getAccountId(String key, String type) {
+  public CompletableFuture<Long> getAccountId(String key, String type) {
     String token = IAFServiceUtil.getInstance().getAppToken();
-    Response response = webTarget.path(path).queryParam("id", key).queryParam("type", type).request()
-        .header("Authorization", "Bearer "+ token).get();
-    IdLinking idLinking = response.readEntity(IdLinking.class);
-    if(idLinking.getIdList()!=null)
-    for (Id id :
-        idLinking.getIdList()) {
-      if(id.getType() == IdType.ACCOUNT.name()) {
-        return id.getIds().get(0);
+    Long accountId = 0l;
+    try {
+      Response response = webTarget.path(path).queryParam("id", key).queryParam("type", type).request()
+          .header("Authorization", "Bearer " + token).get();
+      IdLinking idLinking = response.readEntity(IdLinking.class);
+      if (idLinking.getIdList() != null) {
+        ESMetrics.getInstance().meter("SuccessfullyCallingMTID");
+        for (Id id : idLinking.getIdList()) {
+          if (id != null) {
+            if (id.getType().equalsIgnoreCase(IdType.ACCOUNT.name())) {
+              try {
+                accountId = Long.valueOf(id.getIds().get(0));
+              } catch (NumberFormatException e) {
+                ESMetrics.getInstance().meter("NumberFormatException");
+              }
+            }
+          }
+        }
       }
+    } catch (Exception ex) {
+      ESMetrics.getInstance().meter("ErrorCallingMTID");
+      throw (ex);
     }
-    return "";
+    return CompletableFuture.completedFuture(accountId);
   }
 
 }

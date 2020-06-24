@@ -4,12 +4,14 @@ import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ImkRvrTrckngEventDtlMessage;
 import com.ebay.app.raptor.chocolate.avro.ImkRvrTrckngEventMessage;
 import com.ebay.app.raptor.chocolate.avro.RheosHeader;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.deserialization.DefaultKafkaDeserializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.deserialization.DefaultKafkaSerializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichFlatMapFunction;
 import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichMapFunction;
+import com.ebay.traffic.chocolate.flink.nrt.provider.AsyncDataRequest;
 import com.ebay.traffic.chocolate.flink.nrt.transformer.BaseTransformer;
 import com.ebay.traffic.chocolate.flink.nrt.transformer.TransformerFactory;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
@@ -106,22 +108,14 @@ public class ImkRvrTrckngEventTransformAsyncApp
 
   @Override
   protected DataStream<Tuple3<String, Long, byte[]>> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
-    SingleOutputStreamOperator<FilterMessage> map = dataStreamSource.map(new TransformRichMapFunction());
-    DataStream<FilterMessage> resultStream =
-            AsyncDataStream.unorderedWait(map, new AsyncFunction<FilterMessage, FilterMessage>() {
-              @Override
-              public void asyncInvoke(FilterMessage input, ResultFuture<FilterMessage> resultFuture) throws Exception {
-                String guid = input.getGuid();
-
-              }
-            }, 1000, TimeUnit.MILLISECONDS, 100);
-    return map.flatMap(new TransformRichFlatMapFunction());
+    SingleOutputStreamOperator<FilterMessageV4> map = dataStreamSource.map(new TransformRichMapFunction());
+    DataStream<FilterMessageV4> resultStream =
+            AsyncDataStream.unorderedWait(map, new AsyncDataRequest(), 10000, TimeUnit.MILLISECONDS, 100);
+    return resultStream.flatMap(new TransformRichFlatMapFunction());
   }
 
-
-
   private static class TransformRichMapFunction
-          extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, FilterMessage> {
+          extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, FilterMessageV4> {
     private Schema rheosHeaderSchema;
     private String rheosProducer;
     private String imkEventMessageTopic;
@@ -147,9 +141,9 @@ public class ImkRvrTrckngEventTransformAsyncApp
     }
 
     @Override
-    public FilterMessage map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
+    public FilterMessageV4 map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
       long currentTimeMillis = System.currentTimeMillis();
-      FilterMessage filterMessage = FilterMessage.decodeRheos(rheosHeaderSchema, consumerRecord.value());
+      FilterMessageV4 filterMessage = FilterMessage.decodeRheos(rheosHeaderSchema, consumerRecord.value());
       return filterMessage;
     }
 
@@ -184,7 +178,7 @@ public class ImkRvrTrckngEventTransformAsyncApp
   }
 
   private static class TransformRichFlatMapFunction
-      extends ESMetricsCompatibleRichFlatMapFunction<FilterMessage, Tuple3<String, Long, byte[]>> {
+      extends ESMetricsCompatibleRichFlatMapFunction<FilterMessageV4, Tuple3<String, Long, byte[]>> {
     private Schema rheosHeaderSchema;
     private String rheosProducer;
     private String imkEventMessageTopic;
@@ -210,7 +204,7 @@ public class ImkRvrTrckngEventTransformAsyncApp
     }
 
     @Override
-    public void flatMap(FilterMessage filterMessage,
+    public void flatMap(FilterMessageV4 filterMessage,
                         Collector<Tuple3<String, Long, byte[]>> collector) throws Exception {
       long currentTimeMillis = System.currentTimeMillis();
 
