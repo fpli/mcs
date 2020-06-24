@@ -12,7 +12,8 @@ import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.Validate;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
 import java.util.Map;
@@ -26,7 +27,7 @@ import java.util.concurrent.LinkedBlockingDeque;
  */
 public class CouchbaseClient {
     /**Global logging instance*/
-    private static final Logger logger = Logger.getLogger(CouchbaseClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(CouchbaseClient.class);
     /**Singleton instance*/
     private volatile static CouchbaseClient INSTANCE = null;
     /**Dukes cacheFactory*/

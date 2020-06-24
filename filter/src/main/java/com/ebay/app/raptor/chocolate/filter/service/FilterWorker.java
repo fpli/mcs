@@ -20,7 +20,8 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.protocol.types.SchemaException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.*;
@@ -33,11 +34,11 @@ import static com.ebay.app.raptor.chocolate.filter.service.FilterUtils.*;
  * Created by yliu29 on 2/23/18.
  */
 public class FilterWorker extends Thread {
-  private static final Logger LOG = Logger.getLogger(FilterWorker.class);
+  private static final Logger LOG = LoggerFactory.getLogger(FilterWorker.class);
 
   private static final long POLL_STEP_MS = 100;
   private static final long RESULT_POLL_STEP_MS = 100;
-  private static final long RESULT_POLL_TIMEOUT_MS = 10000;
+  private static final long RESULT_POLL_TIMEOUT_MS = 15000;
   private static final long DEFAULT_PUBLISHER_ID = -1L;
 
   private static final String CHANNEL_ACTION = "channelAction";
@@ -264,6 +265,7 @@ public class FilterWorker extends Thread {
           } else {
             LOG.warn("Exception in worker thread: ", e);
             metrics.meter("FilterError");
+            Thread.sleep(5000);
           }
         }
       }
