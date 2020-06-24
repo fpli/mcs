@@ -918,8 +918,9 @@ public class CollectionService {
     }
 
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
+    // Don't track ubi if it's AR
     Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(!m.find()) {
+    if(!m.find() && !channelAction.equals(ChannelActionEnum.SERVE)) {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
