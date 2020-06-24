@@ -38,7 +38,7 @@ public class FilterWorker extends Thread {
 
   private static final long POLL_STEP_MS = 100;
   private static final long RESULT_POLL_STEP_MS = 100;
-  private static final long RESULT_POLL_TIMEOUT_MS = 15000;
+  private static final long RESULT_POLL_TIMEOUT_MS = 10000;
   private static final long DEFAULT_PUBLISHER_ID = -1L;
 
   private static final String CHANNEL_ACTION = "channelAction";
@@ -56,13 +56,12 @@ public class FilterWorker extends Thread {
   // Shutdown signal.
   private final AtomicBoolean shutdownRequested = new AtomicBoolean(false);
 
-  private final int maxThreadNum = 10;
-  private final LinkedBlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
-  private final ExecutorService executor = new ThreadPoolExecutor(10, 30,
-    0L, TimeUnit.MILLISECONDS, taskQueue);
-  private final CompletionService<FilterMessage> completionService =
-    new ExecutorCompletionService<>(executor);
-
+  private static final int maxThreadNum = 200;
+  private static final ExecutorService executor = Executors.newFixedThreadPool(maxThreadNum);
+  private static final BlockingQueue<Future<FilterMessage>> completionQueue =
+          new EmptyQueue<>();
+  private static final CompletionService<FilterMessage> completionService =
+    new ExecutorCompletionService<>(executor, completionQueue);
 
   public FilterWorker(ChannelType channelType, String inputTopic,
                       Properties properties, String outputTopic,
@@ -115,12 +114,9 @@ public class FilterWorker extends Thread {
           int passed = 0;
           long startTime = System.currentTimeMillis();
           while (iterator.hasNext()) {
-            int threadNum = 0;
             long theadPoolstartTime = System.currentTimeMillis();
             Map<Long, ListenerMessage> inputMessages = new HashMap<>();
-
-            taskQueue.clear();
-
+            List<Future<FilterMessage>> filterFuture = new ArrayList<>();
             for (int i = 0; i < maxThreadNum && iterator.hasNext(); i++) {
               ConsumerRecord<Long, ListenerMessage> record = iterator.next();
 
@@ -139,29 +135,47 @@ public class FilterWorker extends Thread {
                       Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
                       Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
 
-              completionService.submit(() -> processMessage(record.value(), false));
-              threadNum++;
+              Future<FilterMessage> result = completionService.submit(() -> processMessage(message, false));
+              filterFuture.add(result);
             }
 
             // get result
-            int received = 0;
             long start = System.currentTimeMillis();
             long end = start;
             Map<Long, FilterMessage> outputMessages = new HashMap<>();
-            while (received < threadNum && (end - start < RESULT_POLL_TIMEOUT_MS)) {
-              Future<FilterMessage> resultFuture = completionService.poll(RESULT_POLL_STEP_MS,
-                TimeUnit.MILLISECONDS);
-              FilterMessage outMessage;
-              if (resultFuture != null && inputMessages.containsKey(resultFuture.get().getSnapshotId())) {
-                outMessage = resultFuture.get();
-                outputMessages.put(outMessage.getSnapshotId(), outMessage);
-                received++;
+            while ((end - start < RESULT_POLL_TIMEOUT_MS) && (outputMessages.size() < inputMessages.size())) {
+
+              Iterator<Future<FilterMessage>> fi = filterFuture.iterator();
+              while (fi.hasNext()) {
+                Future<FilterMessage> fm = fi.next();
+                if (fm.isDone()) {
+                  FilterMessage m = null;
+                  try {
+                    m = fm.get();
+                  } catch (Exception e) {
+                  }
+                  if (m != null) {
+                    outputMessages.put(m.getSnapshotId(), m);
+                  }
+                  fi.remove();
+                }
               }
+
+              Thread.sleep(RESULT_POLL_STEP_MS);
               end = System.currentTimeMillis();
             }
 
+            Iterator<Future<FilterMessage>> fi = filterFuture.iterator();
+            while (fi.hasNext()) {
+              Future<FilterMessage> fm = fi.next();
+              try {
+                fm.cancel(true);
+              } catch (Exception e) {
+              }
+            }
+
             // rerun filter rules with default geo_id and publisher_id for messages not polled out
-            if (received < threadNum) {
+            if (outputMessages.size() < inputMessages.size()) {
               for (Map.Entry<Long, ListenerMessage> entry : inputMessages.entrySet()) {
                 if (!outputMessages.containsKey(entry.getKey())) {
                   metrics.meter("FilterPollResultFailure");
@@ -297,7 +311,7 @@ public class FilterWorker extends Thread {
     // set postcode for not EPN Channels
     // checked imk history data, only click has geoid
     if (message.getChannelType() != ChannelType.EPN && message.getChannelAction() == ChannelAction.CLICK &&
-      !isPollFailed) {
+      !isPollFailed && (outMessage.getGeoId() == null || outMessage.getGeoId() == 0)) {
       try {
         outMessage.setGeoId(LBSClient.getInstance().getPostalCodeByIp(outMessage.getRemoteIp()));
       } catch (Exception e) {
