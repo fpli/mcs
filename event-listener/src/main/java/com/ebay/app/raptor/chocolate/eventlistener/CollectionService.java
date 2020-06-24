@@ -541,6 +541,14 @@ public class CollectionService {
       referer = endUserContext.getReferer();
     }
 
+    if(StringUtils.isEmpty(referer) && request.getHeader("referer") != null) {
+      referer = request.getHeader("referer");
+    }
+
+    if(StringUtils.isEmpty(referer) && request.getHeader("Referer") != null) {
+      referer = request.getHeader("Referer");
+    }
+
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
       logger.warn(Errors.ERROR_NO_REFERER);
       metrics.meter(Errors.ERROR_NO_REFERER);
