@@ -650,12 +650,7 @@ public class CollectionService {
     }
 
     // add tags all channels need
-    if (channelAction == ChannelActionEnum.SERVE) {
-      addCommonTags(requestContext, uri, referer, agentInfo, type, action, PageIdEnum.AR.getId());
-    } else if (channelAction == ChannelActionEnum.IMPRESSION) {
-      // impression and ar share same page id (adservice page id)
-      addCommonTags(requestContext, uri, referer, agentInfo, type, action, PageIdEnum.AR.getId());
-    } else {
+    if (!channelAction.equals(ChannelActionEnum.SERVE) && !channelAction.equals(ChannelActionEnum.IMPRESSION)) {
       addCommonTags(requestContext, null, referer, agentInfo, type, action, PageIdEnum.EMAIL_OPEN.getId());
     }
 
@@ -918,8 +913,9 @@ public class CollectionService {
     }
 
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
+    // Don't track ubi if it's AR
     Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(!m.find()) {
+    if(!m.find() && !channelAction.equals(ChannelActionEnum.SERVE)) {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
