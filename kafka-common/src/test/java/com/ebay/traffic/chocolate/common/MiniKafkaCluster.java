@@ -152,7 +152,7 @@ public class MiniKafkaCluster {
    */
   public <K, V> Consumer<K, V> createConsumer(Class<?> keyDeserializerClass,
                                               Class<?> valueDeserializerClass) {
-    return createConsumer(keyDeserializerClass, valueDeserializerClass, "testgroupID" + random.nextInt());
+    return createConsumer(keyDeserializerClass, valueDeserializerClass, "testgroupID");
   }
 
   /**
@@ -197,8 +197,6 @@ public class MiniKafkaCluster {
     return props;
   }
 
-  static Random random = new Random();
-
   /**
    * Get consumer properties for the kafka
    *
@@ -209,7 +207,7 @@ public class MiniKafkaCluster {
   public Properties getConsumerProperties(Class<?> keyDeserializerClass,
                                           Class<?> valueDeserializerClass) {
     return getConsumerProperties(keyDeserializerClass,
-            valueDeserializerClass, "testgroupID" + random.nextInt());
+            valueDeserializerClass, "testgroupID");
   }
 
   /**
