@@ -650,12 +650,7 @@ public class CollectionService {
     }
 
     // add tags all channels need
-    if (channelAction == ChannelActionEnum.SERVE) {
-      addCommonTags(requestContext, uri, referer, agentInfo, type, action, PageIdEnum.AR.getId());
-    } else if (channelAction == ChannelActionEnum.IMPRESSION) {
-      // impression and ar share same page id (adservice page id)
-      addCommonTags(requestContext, uri, referer, agentInfo, type, action, PageIdEnum.AR.getId());
-    } else {
+    if (!channelAction.equals(ChannelActionEnum.SERVE) && !channelAction.equals(ChannelActionEnum.IMPRESSION)) {
       addCommonTags(requestContext, null, referer, agentInfo, type, action, PageIdEnum.EMAIL_OPEN.getId());
     }
 
