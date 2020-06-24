@@ -129,7 +129,8 @@ public class CouchbaseClient {
   public long getPublisherID(long campaignId) throws InterruptedException{
     metrics.meter("FilterCouchbaseQuery");
     CacheClient cacheClient = null;
-    while (true) {
+    int retry = 0;
+    while (retry < 3) {
       try {
         long start = System.currentTimeMillis();
         cacheClient = factory.getClient(datasourceName);
@@ -148,12 +149,15 @@ public class CouchbaseClient {
         return DEFAULT_PUBLISHER_ID;
       } catch (Exception e) {
         metrics.meter("FilterCouchbaseRetry");
-        logger.warn("Couchbase query operation timeout, will sleep for 30s to retry", e);
-        Thread.sleep(30000);
+        logger.warn("Couchbase query operation timeout, will sleep for 1s to retry", e);
+        Thread.sleep(1000);
+        ++retry;
       } finally {
         factory.returnClient(cacheClient);
       }
     }
+
+    return DEFAULT_PUBLISHER_ID;
   }
 
   /**

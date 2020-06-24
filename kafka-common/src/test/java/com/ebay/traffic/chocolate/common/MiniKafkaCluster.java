@@ -14,10 +14,7 @@ import scala.Option;
 import scala.collection.JavaConversions;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Created by yliu29 on 3/2/18.
@@ -155,7 +152,7 @@ public class MiniKafkaCluster {
    */
   public <K, V> Consumer<K, V> createConsumer(Class<?> keyDeserializerClass,
                                               Class<?> valueDeserializerClass) {
-    return createConsumer(keyDeserializerClass, valueDeserializerClass, "testgroupID");
+    return createConsumer(keyDeserializerClass, valueDeserializerClass, "testgroupID" + random.nextInt());
   }
 
   /**
@@ -200,6 +197,8 @@ public class MiniKafkaCluster {
     return props;
   }
 
+  static Random random = new Random();
+
   /**
    * Get consumer properties for the kafka
    *
@@ -210,7 +209,7 @@ public class MiniKafkaCluster {
   public Properties getConsumerProperties(Class<?> keyDeserializerClass,
                                           Class<?> valueDeserializerClass) {
     return getConsumerProperties(keyDeserializerClass,
-            valueDeserializerClass, "testgroupID");
+            valueDeserializerClass, "testgroupID" + random.nextInt());
   }
 
   /**
