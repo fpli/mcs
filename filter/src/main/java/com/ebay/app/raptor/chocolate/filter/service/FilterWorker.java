@@ -37,7 +37,7 @@ public class FilterWorker extends Thread {
 
   private static final long POLL_STEP_MS = 100;
   private static final long RESULT_POLL_STEP_MS = 100;
-  private static final long RESULT_POLL_TIMEOUT_MS = 10000;
+  private static final long RESULT_POLL_TIMEOUT_MS = 15000;
   private static final long DEFAULT_PUBLISHER_ID = -1L;
 
   private static final String CHANNEL_ACTION = "channelAction";
@@ -264,6 +264,7 @@ public class FilterWorker extends Thread {
           } else {
             LOG.warn("Exception in worker thread: ", e);
             metrics.meter("FilterError");
+            Thread.sleep(5000);
           }
         }
       }
