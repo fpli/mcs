@@ -161,7 +161,9 @@ public class FilterWorker extends Thread {
                 }
               }
 
-              Thread.sleep(RESULT_POLL_STEP_MS);
+              if (outputMessages.size() < inputMessages.size()) {
+                Thread.sleep(RESULT_POLL_STEP_MS);
+              }
               end = System.currentTimeMillis();
             }
 
