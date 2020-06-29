@@ -36,6 +36,9 @@ public class Constants {
   public static final String YM_INSTC = "yminstc";
   public static final String SMS_ID = "smsid";
 
+  public static final String REFERER_HEADER = "referer";
+  public static final String REFERER_HEADER_UPCASE = "Referer";
+
   // Adobe url params
   public static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   public static final String REDIRECT_SRC_SOJ_SOURCE = "adcamp_locationsrc";
