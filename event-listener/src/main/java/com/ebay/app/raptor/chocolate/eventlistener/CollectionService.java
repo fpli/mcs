@@ -143,6 +143,14 @@ public class CollectionService {
       referer = endUserContext.getReferer();
     }
 
+    if(StringUtils.isEmpty(referer) && request.getHeader(Constants.REFERER_HEADER) != null) {
+      referer = request.getHeader(Constants.REFERER_HEADER);
+    }
+
+    if(StringUtils.isEmpty(referer) && request.getHeader(Constants.REFERER_HEADER_UPCASE) != null) {
+      referer = request.getHeader(Constants.REFERER_HEADER_UPCASE);
+    }
+
     // return 201 for now for the no referer case. Need investigation further.
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null") ) {
       logger.warn(Errors.ERROR_NO_REFERER);
@@ -541,12 +549,12 @@ public class CollectionService {
       referer = endUserContext.getReferer();
     }
 
-    if(StringUtils.isEmpty(referer) && request.getHeader("referer") != null) {
-      referer = request.getHeader("referer");
+    if(StringUtils.isEmpty(referer) && request.getHeader(Constants.REFERER_HEADER) != null) {
+      referer = request.getHeader(Constants.REFERER_HEADER);
     }
 
-    if(StringUtils.isEmpty(referer) && request.getHeader("Referer") != null) {
-      referer = request.getHeader("Referer");
+    if(StringUtils.isEmpty(referer) && request.getHeader(Constants.REFERER_HEADER_UPCASE) != null) {
+      referer = request.getHeader(Constants.REFERER_HEADER_UPCASE);
     }
 
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase("null")) {
