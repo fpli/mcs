@@ -97,10 +97,10 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     } else null
   }
 
-  // for paid search and display, consume capping output meta with suffix .epnnrt, for ROI and SOCIAL_MEDIA, no suffix
+  // by default, no suffix
   @transient lazy val CHANNEL_META_POSTFIX_MAP = Map(
-    "PAID_SEARCH" -> ".epnnrt",
-    "DISPLAY" -> ".epnnrt",
+    "PAID_SEARCH" -> "",
+    "DISPLAY" -> "",
     "ROI" -> "",
     "SOCIAL_MEDIA" -> ""
   )
