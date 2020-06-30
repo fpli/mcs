@@ -149,7 +149,12 @@ public class BaseTransformer {
     Method method = findMethod(fieldName);
     Object value;
     try {
-      value = method.invoke(this);
+      try {
+        value = method.invoke(this);
+      } catch (NullPointerException e) {
+        LOGGER.error("invoke method {} {} failed", fieldName, method);
+        throw new NullPointerException(e.getMessage());
+      }
     } catch (IllegalAccessException | InvocationTargetException e) {
       LOGGER.error("invoke method {} failed", method);
       throw new RuntimeException(e);
