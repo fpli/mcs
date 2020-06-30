@@ -82,7 +82,6 @@ public class MtIdService {
       }
     } catch (Exception ex) {
       ESMetrics.getInstance().meter("ErrorCallingMTID");
-      throw (ex);
     }
     return CompletableFuture.completedFuture(accountId);
   }
