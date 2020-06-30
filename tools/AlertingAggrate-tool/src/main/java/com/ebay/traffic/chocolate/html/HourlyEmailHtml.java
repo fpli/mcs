@@ -1,36 +1,75 @@
 package com.ebay.traffic.chocolate.html;
 
 import com.ebay.traffic.chocolate.parse.EPNReportUtil;
-import com.ebay.traffic.chocolate.pojo.IMKHourlyClickCount;
 import com.ebay.traffic.chocolate.util.*;
-
-import java.util.List;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HourlyEmailHtml {
 
+  private static final Logger logger = LoggerFactory.getLogger(HourlyEmailHtml.class);
+
   public static String getESAlertHtml(String runPeriod) {
-    return Table.parseESAlertProjects(ESAlertUtil.getESAlertInfos(runPeriod), null);
+    try {
+      return Table.parseESAlertProjects(ESAlertUtil.getESAlertInfos(runPeriod), null);
+    }catch (Exception e){
+      logger.error(e.getMessage());
+      return "getESAlertHtml";
+    }
   }
 
   public static String getDoneFileHtml() {
-    return "Done file information\n" + DoneFileTable.parseDoneFileProject(DoneFileUtil.getDoneFileInfos());
+    try {
+      return "Done File Monitor\n" + DoneFileTable.parseDoneFileProject(DoneFileUtil.getDoneFileInfos());
+    } catch (Exception e){
+      logger.error(e.getMessage());
+      return "getDoneFileHtml";
+    }
   }
 
   public static String getRotationAlertHtml() {
-    return "Rotation alert\n" + RotationAlertTable.parseRotationAlertProject(RotationAlertUtil.getRotationAlertInfos());
+    try {
+      return "Rotation Data Monitor\n" + RotationAlertTable.parseRotationAlertProject(RotationAlertUtil.getRotationAlertInfos());
+    } catch (Exception e) {
+      logger.error(e.getMessage());
+      return "getRotationAlertHtml";
+    }
   }
 
   public static String getEPNHourlyReportHtml() {
-    return EPNReportUtil.getHourlyReport();
+    try {
+      return EPNReportUtil.getHourlyReport();
+    }catch (Exception e) {
+      logger.error(e.getMessage());
+      return "getEPNHourlyReportHtml";
+    }
   }
 
   public static String getAzkabanReportHtml() {
-    return AzkabanUtil.getAzkabanReportHtml();
+    try {
+      return AzkabanUtil.getAzkabanReportHtml();
+    }catch (Exception e){
+      logger.error(e.getMessage());
+      return "getAzkabanReportHtml";
+    }
   }
 
   public static String getIMKHourlyCountHtml() {
-    return IMKHourlyCountUtil.getIMKHourlyCountHtml();
+    try {
+      return IMKHourlyCountUtil.getIMKHourlyCountHtml();
+    }catch (Exception e){
+      logger.error(e.getMessage());
+      return "getIMKHourlyCountHtml";
+    }
+  }
+
+  public static String getHourlyEPNClusterFileVerifyHtml() {
+    try {
+      return "EPN Hdfs File Number Monitor \n" + HourlyEPNClusterFileVerifyTable.parseHourlyEPNClusterFileVerifyProject(HourlyEPNClusterFileVerifyUtil.getHourlyEPNClusterFileVerifyInfos());
+    }catch (Exception e){
+      logger.error(e.getMessage());
+      return "getHourlyEPNClusterFileVerifyHtml";
+    }
   }
 
   public static String getHourlyEPNClusterFileVerifyHtml() {

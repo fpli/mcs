@@ -35,7 +35,6 @@ import static com.ebay.traffic.chocolate.flink.nrt.constant.MetricConstants.METR
 
 public class BaseTransformer {
   public static final String GET_METHOD_PREFIX = "get";
-  public static final String SET_METHOD_PREFIX = "set";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseTransformer.class);
 
@@ -64,6 +63,40 @@ public class BaseTransformer {
 
   public static final String MALFORMED_URL = "MalformedUrl";
 
+  private static final Map<String, Integer> USER_AGENT_MAP = new HashMap<String, Integer>() {
+    {
+      put("msie", 2);
+      put("firefox", 5);
+      put("chrome", 11);
+      put("safari", 4);
+      put("opera", 7);
+      put("netscape", 1);
+      put("navigator", 1);
+      put("aol", 3);
+      put("mac", 8);
+      put("msntv", 9);
+      put("webtv", 6);
+      put("trident", 2);
+      put("bingbot", 12);
+      put("adsbot-google", 19);
+      put("ucweb", 25);
+      put("facebookexternalhit", 20);
+      put("dvlvik", 26);
+      put("ahc", 13);
+      put("tubidy", 14);
+      put("roku", 15);
+      put("ymobile", 16);
+      put("pycurl", 17);
+      put("dailyme", 18);
+      put("ebayandroid", 21);
+      put("ebayiphone", 22);
+      put("ebayipad", 23);
+      put("ebaywinphocore", 24);
+      put("NULL_USERAGENT", 10);
+      put("UNKNOWN_USERAGENT", -99);
+    }
+  };
+
   /**
    * Used to cache temp fields
    */
@@ -80,14 +113,6 @@ public class BaseTransformer {
   private static final Function<String, String> FIELD_GET_METHOD_MAP_FUNCTION = fieldName -> {
     String upperCamelCase = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, fieldName);
     return String.format("%s%s", GET_METHOD_PREFIX, upperCamelCase);
-  };
-
-  /**
-   * Map field name to set method name, eg. batch_id -> setBatchId
-   */
-  private static final Function<String, String> FIELD_SET_METHOD_MAP_FUNCTION = fieldName -> {
-    String upperCamelCase = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, fieldName);
-    return String.format("%s%s", SET_METHOD_PREFIX, upperCamelCase);
   };
 
   /**
@@ -264,13 +289,13 @@ public class BaseTransformer {
 
   protected Integer getBrwsrTypeId() {
     String userAgent = (String) sourceRecord.get(TransformerConstants.USER_AGENT);
-    if (StringUtils.isEmpty(userAgent)) {
-      return UserAgentEnum.UNKNOWN_USERAGENT.getId();
-    }
-    String agentStr = userAgent.toLowerCase();
-    for (UserAgentEnum userAgentEnum : UserAgentEnum.values()) {
-      if (agentStr.contains(userAgentEnum.getName())) {
-        return userAgentEnum.getId();
+
+    if (StringUtils.isNotEmpty(userAgent)) {
+      String agentStr = userAgent.toLowerCase();
+      for (Map.Entry<String, Integer> entry : USER_AGENT_MAP.entrySet()) {
+        if (agentStr.contains(entry.getKey())) {
+          return entry.getValue();
+        }
       }
     }
     return UserAgentEnum.UNKNOWN_USERAGENT.getId();

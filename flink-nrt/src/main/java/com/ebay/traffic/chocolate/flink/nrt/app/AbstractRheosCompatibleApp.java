@@ -46,7 +46,7 @@ public abstract class AbstractRheosCompatibleApp<IN, OUT> {
     streamExecutionEnvironment.execute(this.getClass().getSimpleName());
   }
 
-  private void prepareBaseExecutionEnvironment() {
+  protected void prepareBaseExecutionEnvironment() {
     streamExecutionEnvironment.enableCheckpointing(CHECK_POINT_PERIOD);
     streamExecutionEnvironment.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
     streamExecutionEnvironment.getCheckpointConfig().setMinPauseBetweenCheckpoints(MIN_PAUSE_BETWEEN_CHECK_POINTS);

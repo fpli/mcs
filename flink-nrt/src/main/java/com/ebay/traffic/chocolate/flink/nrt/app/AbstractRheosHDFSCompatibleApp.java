@@ -9,7 +9,6 @@ import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.filesystem.BucketAssigner;
 import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink;
-import org.apache.flink.streaming.api.functions.sink.filesystem.bucketassigners.DateTimeBucketAssigner;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 
 import java.util.List;
@@ -22,14 +21,14 @@ import java.util.concurrent.TimeUnit;
  * @author Zhiyuan Wang
  * @since 2020/1/18
  */
-public abstract class BaseRheosHDFSCompatibleApp<IN, OUT> {
+public abstract class AbstractRheosHDFSCompatibleApp<IN, OUT> {
   protected StreamExecutionEnvironment streamExecutionEnvironment;
 
-  private static final long DEFAULT_CHECK_POINT_PERIOD = TimeUnit.SECONDS.toMillis(10);
+  private static final long DEFAULT_CHECK_POINT_PERIOD = TimeUnit.MINUTES.toMillis(3);
 
-  private static final long DEFAULT_MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(1);
+  private static final long DEFAULT_MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(30);
 
-  private static final long DEFAULT_CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(1);
+  private static final long DEFAULT_CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(30);
 
   private static final int DEFAULT_MAX_CONCURRENT_CHECK_POINTS = 1;
 
@@ -39,7 +38,7 @@ public abstract class BaseRheosHDFSCompatibleApp<IN, OUT> {
     DataStreamSource<IN> tuple2DataStreamSource = streamExecutionEnvironment.addSource(getKafkaConsumer());
     DataStream<OUT> output = transform(tuple2DataStreamSource);
     output.addSink(getStreamingFileSink());
-    streamExecutionEnvironment.execute(BaseRheosHDFSCompatibleApp.class.getSimpleName());
+    streamExecutionEnvironment.execute(this.getClass().getSimpleName());
   }
 
   protected void prepareBaseExecutionEnvironment() {

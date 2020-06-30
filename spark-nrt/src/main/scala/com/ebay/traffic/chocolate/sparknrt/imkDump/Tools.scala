@@ -433,13 +433,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     * @return client_id
     */
   def getClientIdFromRoverUrl(uri: String): String = {
-    val path = new URL(uri).getPath()
-    if (path != null && path != "") {
-      val pathArray = path.split("/")
-      if (pathArray.length > 3)
-        return pathArray(3).split("\\?")(0).split("-")(0)
-    }
-    ""
+    "0"
   }
 
 

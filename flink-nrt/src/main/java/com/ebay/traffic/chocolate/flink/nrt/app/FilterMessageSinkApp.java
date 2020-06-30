@@ -1,15 +1,15 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.app.raptor.chocolate.avro.ImkRvrTrckngEventMessage;
+import com.ebay.app.raptor.chocolate.avro.FilterMessage;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
+import com.ebay.traffic.chocolate.flink.nrt.constant.DateConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.deserialization.DefaultKafkaDeserializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichMapFunction;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
-import org.apache.avro.io.BinaryDecoder;
-import org.apache.avro.io.DatumReader;
-import org.apache.avro.io.DecoderFactory;
-import org.apache.avro.specific.SpecificDatumReader;
+import io.ebay.rheos.schema.event.RheosEvent;
+import org.apache.avro.Schema;
 import org.apache.flink.api.common.serialization.BulkWriter;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.fs.Path;
@@ -23,27 +23,30 @@ import org.apache.flink.streaming.api.functions.sink.filesystem.bucketassigners.
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-public class ImkRvrTrckngEventSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, ImkRvrTrckngEventMessage> {
+public class FilterMessageSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, FilterMessageV4> {
 
   public static void main(String[] args) throws Exception {
-    ImkRvrTrckngEventSinkApp transformApp = new ImkRvrTrckngEventSinkApp();
+    FilterMessageSinkApp transformApp = new FilterMessageSinkApp();
     transformApp.run();
   }
 
   @Override
   protected List<String> getConsumerTopics() {
     return  Arrays.asList(PropertyMgr.getInstance()
-                    .loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
+                    .loadProperty(PropertyConstants.FILTER_MESSAGE_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
                     .getProperty(PropertyConstants.TOPIC).split(StringConstants.COMMA));
   }
 
   @Override
   protected Properties getConsumerProperties() {
-    return PropertyMgr.getInstance().loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_SINK_APP_RHEOS_CONSUMER_PROPERTIES);
+    return PropertyMgr.getInstance().loadProperty(PropertyConstants.FILTER_MESSAGE_SINK_APP_RHEOS_CONSUMER_PROPERTIES);
   }
 
   @Override
@@ -53,54 +56,52 @@ public class ImkRvrTrckngEventSinkApp extends AbstractRheosHDFSCompatibleApp<Con
 
   @Override
   protected Path getSinkBasePath() {
-    Properties properties = PropertyMgr.getInstance().loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_SINK_APP_HDFS_PROPERTIES);
+    Properties properties = PropertyMgr.getInstance().loadProperty(PropertyConstants.FILTER_MESSAGE_SINK_APP_HDFS_PROPERTIES);
     return new Path(properties.getProperty(PropertyConstants.PATH));
   }
 
   @Override
-  protected StreamingFileSink<ImkRvrTrckngEventMessage> getStreamingFileSink() {
+  protected StreamingFileSink<FilterMessageV4> getStreamingFileSink() {
     return StreamingFileSink.forBulkFormat(getSinkBasePath(), getSinkWriterFactory()).withBucketAssigner(getSinkBucketAssigner())
             .build();
   }
 
   @Override
-  protected BulkWriter.Factory<ImkRvrTrckngEventMessage> getSinkWriterFactory() {
-    return ParquetAvroWriters.forSpecificRecord(ImkRvrTrckngEventMessage.class);
+  protected BulkWriter.Factory<FilterMessageV4> getSinkWriterFactory() {
+    return ParquetAvroWriters.forSpecificRecord(FilterMessageV4.class);
   }
 
   @Override
-  protected DataStream<ImkRvrTrckngEventMessage> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
+  protected DataStream<FilterMessageV4> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
     return dataStreamSource.map(new TransformRichMapFunction());
   }
 
-  private static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, ImkRvrTrckngEventMessage> {
-    private transient DatumReader<ImkRvrTrckngEventMessage> imkReader;
+  private static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, FilterMessageV4> {
+    private Schema rheosHeaderSchema;
 
     @Override
     public void open(Configuration parameters) throws Exception {
       super.open(parameters);
-      imkReader = new SpecificDatumReader<>(ImkRvrTrckngEventMessage.getClassSchema());
+      rheosHeaderSchema = RheosEvent.BASE_SCHEMA.getField(RheosEvent.RHEOS_HEADER).schema();
     }
 
     @Override
-    public ImkRvrTrckngEventMessage map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
-      BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(consumerRecord.value(), null);
-      ImkRvrTrckngEventMessage datum = new ImkRvrTrckngEventMessage();
-      datum = imkReader.read(datum, decoder);
-      return datum;
+    public FilterMessageV4 map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
+      return FilterMessage.decodeRheos(rheosHeaderSchema, consumerRecord.value());
     }
   }
 
   @Override
-  protected BucketAssigner<ImkRvrTrckngEventMessage, String> getSinkBucketAssigner() {
+  protected BucketAssigner<FilterMessageV4, String> getSinkBucketAssigner() {
     return new CustomEventDateTimeBucketAssigner();
   }
 
-  private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<ImkRvrTrckngEventMessage, String> {
+  private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<FilterMessageV4, String> {
+    public static final DateTimeFormatter EVENT_DT_FORMATTER = DateTimeFormatter.ofPattern(DateConstants.YYYY_MM_DD).withZone(ZoneId.systemDefault());
 
     @Override
-    public String getBucketId(ImkRvrTrckngEventMessage element, Context context) {
-      return StringConstants.BUCKET_PREFIX + element.getEventDt();
+    public String getBucketId(FilterMessageV4 element, Context context) {
+      return StringConstants.BUCKET_PREFIX + EVENT_DT_FORMATTER.format(Instant.ofEpochMilli(element.getTimestamp()));
     }
 
     @Override

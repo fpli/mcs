@@ -48,6 +48,12 @@ public class CouchbaseClient {
 
   private static final String KAFKA_GLOBAL_CONFIG = "KafkaGlobalConfig";
 
+  private static final String SELF_SERVICE_PREFIX = "SelfService_";
+
+  private static final String SELF_SERVICE_METRICS_SUCCESS = "SelfServiceCBSuccess";
+
+  private static final String SELF_SERVICE_METRICS_FAILURE = "SelfServiceCBFailure";
+
   /**
    * Singleton
    */
@@ -133,6 +139,28 @@ public class CouchbaseClient {
   }
 
   /**
+   * Get self-service tracked url
+   */
+  public String getSelfServiceUrl(String id) {
+    CacheClient cacheClient = null;
+    String key = SELF_SERVICE_PREFIX + id;
+    String url = "";
+    try {
+      cacheClient = factory.getClient(datasourceName);
+      JsonDocument document = getBucket(cacheClient).get(key, JsonDocument.class);
+      if (document != null) {
+        url = document.content().get("url").toString();
+        logger.info("Get self-service url. id=" + id + " url=" + url);
+      }
+    } catch (Exception e) {
+      logger.warn("Couchbase get operation exception for self-service", e);
+    } finally {
+      factory.returnClient(cacheClient);
+    }
+    return url;
+  }
+
+  /**
    *  get kafka global config
    */
   public int getKafkaGlobalConfig() {
@@ -153,6 +181,18 @@ public class CouchbaseClient {
   }
 
   /**
+   * Add self-service data
+   */
+  public void addSelfServiceRecord(String id, String url) {
+    try {
+      upsertSelfService(id, url);
+    } catch (Exception e) {
+      metrics.meter(SELF_SERVICE_METRICS_FAILURE);
+      logger.warn("Couchbase upsert operation exception for self-service", e);
+    }
+  }
+
+  /**
    * Couchbase upsert operation, make sure return client to factory when exception
    */
   private void upsert(String guid, String cguid) throws Exception {
@@ -166,6 +206,27 @@ public class CouchbaseClient {
         logger.debug("Adding new mapping. guid=" + guid + " cguid=" + cguid);
       }
       metrics.meter(SYNC_COMMAND);
+    } catch (Exception e) {
+      throw new Exception(e);
+    } finally {
+      factory.returnClient(cacheClient);
+    }
+  }
+
+  /**
+   * Couchbase upsert operation for self-service, make sure return client to factory when exception
+   */
+  private void upsertSelfService(String id, String url) throws Exception {
+    CacheClient cacheClient = null;
+    try {
+      cacheClient = factory.getClient(datasourceName);
+      String key = SELF_SERVICE_PREFIX + id;
+      if (!getBucket(cacheClient).exists(key)) {
+        getBucket(cacheClient).upsert(JsonDocument.create(key, 24 * 60 * 60,
+            JsonObject.create().put("url", url)));
+        logger.info("Adding new self-service record. id=" + id + " url=" + url);
+      }
+      metrics.meter(SELF_SERVICE_METRICS_SUCCESS);
     } catch (Exception e) {
       throw new Exception(e);
     } finally {

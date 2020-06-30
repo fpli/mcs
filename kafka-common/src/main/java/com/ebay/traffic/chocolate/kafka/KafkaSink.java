@@ -88,15 +88,15 @@ public class KafkaSink {
           break;
         case "rheos" + KafkaCluster.DELIMITER + "kafka":
           producer = new KafkaWithFallbackProducer(
-                  new RheosKafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.RHEOS)),
-                  new KafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.KAFKA)),
-                  globalConfig);
+              new RheosKafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.RHEOS)),
+              new KafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.KAFKA)),
+              globalConfig);
           break;
         case "kafka" + KafkaCluster.DELIMITER + "rheos":
           producer = new KafkaWithFallbackProducer(
-                  new KafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.KAFKA)),
-                  new RheosKafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.RHEOS)),
-                  globalConfig);
+              new KafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.KAFKA)),
+              new RheosKafkaProducer(conf.getSinkKafkaProperties(KafkaCluster.RHEOS)),
+              globalConfig);
           break;
         default:
           throw new IllegalArgumentException("Illegal kafka cluster");
