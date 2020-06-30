@@ -354,7 +354,7 @@ public class EventListenerServiceTest {
     assertEquals(8, listenerMessagesPaidSearch.size());
 
     // mrkt email click events
-    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=8&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
+    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=8&mkpid=12&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
@@ -367,7 +367,17 @@ public class EventListenerServiceTest {
     assertEquals(201, response.getStatus());
 
     // site email click events
+    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // no partner
     event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // invalid partner
+    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=7&mkpid=999&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
@@ -565,12 +575,22 @@ public class EventListenerServiceTest {
     assertEquals(5, listenerMessagesEpn.size());
 
     // mrkt email impression events
-    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=8&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=8&mkpid=12&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
     response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
     assertEquals(200, response.getStatus());
 
     // site email impression events
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
+    assertEquals(200, response.getStatus());
+
+    // no partner
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
+    assertEquals(200, response.getStatus());
+
+    // invalid partner
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=999&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
     assertEquals(200, response.getStatus());
   }

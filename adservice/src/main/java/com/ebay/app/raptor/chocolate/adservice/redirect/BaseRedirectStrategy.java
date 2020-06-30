@@ -6,9 +6,6 @@ import com.ebay.app.raptor.chocolate.adservice.util.MCSCallback;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
-import com.ebay.jaxrs.client.EndpointUri;
-import com.ebay.jaxrs.client.GingerClientBuilder;
-import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
@@ -24,8 +21,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Configuration;
-import javax.ws.rs.core.Response;
 import java.net.*;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -63,7 +58,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     redirectionEvent = new RedirectionEvent(getParam(parameters, Constants.MKCID),
         getParam(parameters, Constants.MKEVT), getParam(parameters, Constants.MKPID));
 
-    metrics.meter("RedirectionInput", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()),
+    long startTime = startTimerAndLogData(Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()),
         Field.of(Constants.PARTNER, redirectionEvent.getPartner()));
 
     // generate Redirect Url
@@ -75,6 +70,9 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     if (!redirectionEvent.getIsEbayDomain()) {
       callMcs(request, parameters, mktClient, endpoint);
     }
+
+    stopTimerAndLogData(startTime, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()),
+      Field.of(Constants.PARTNER, redirectionEvent.getPartner()));
 
     return new URIBuilder(redirectionEvent.getRedirectUrl()).build();
   }
@@ -258,6 +256,32 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
       uriBuilder.addParameter(REDIRECT_URL_SOJ_TAG, redirectionEvent.getRedirectUrl())
           .addParameter(REDIRECT_SRC_SOJ_TAG, redirectionEvent.getRedirectSource());
     }
+  }
+
+  /**
+   * Starts the timer and logs some basic info
+   *
+   * @param additionalFields channelType, partner
+   * @return start time
+   */
+  private long startTimerAndLogData(Field<String, Object>... additionalFields) {
+    long startTime = System.currentTimeMillis();
+    logger.debug(String.format("StartTime: %d", startTime));
+    metrics.meter("RedirectionInput", 1, startTime, additionalFields);
+    return startTime;
+  }
+
+  /**
+   * Stops the timer and logs relevant debugging messages
+   *
+   * @param startTime        the start time, so that latency can be calculated
+   * @param additionalFields channelType, partner
+   */
+  private void stopTimerAndLogData(long startTime, Field<String, Object>... additionalFields) {
+    long endTime = System.currentTimeMillis();
+    logger.debug(String.format("EndTime: %d", endTime));
+    metrics.meter("RedirectionSuccess", 1, endTime, additionalFields);
+    metrics.mean("RedirectionLatency", endTime - startTime);
   }
 
 }

@@ -14,10 +14,7 @@ import scala.Option;
 import scala.collection.JavaConversions;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Created by yliu29 on 3/2/18.
