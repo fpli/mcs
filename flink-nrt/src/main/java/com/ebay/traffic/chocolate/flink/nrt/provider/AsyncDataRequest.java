@@ -14,11 +14,11 @@ import org.apache.flink.streaming.api.functions.async.ResultFuture;
 import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.function.Supplier;
 
 /**
  *
@@ -29,17 +29,22 @@ import java.util.function.Supplier;
  */
 public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV4, FilterMessageV4> {
 
-  @Override
-  public void asyncInvoke(FilterMessageV4 input, ResultFuture<FilterMessageV4> resultFuture) throws Exception {
-
+  void initESMetrics() {
     if(ESMetrics.getInstance() == null) {
       Properties properties = PropertyMgr.getInstance()
           .loadProperty(PropertyConstants.APPLICATION_PROPERTIES);
       ESMetrics.init(properties.getProperty(PropertyConstants.ELASTICSEARCH_INDEX_PREFIX),
           properties.getProperty(PropertyConstants.ELASTICSEARCH_URL));
     }
+  }
 
-    if(input.getChannelAction().equals(ChannelAction.CLICK)) {
+  @Override
+  public void asyncInvoke(FilterMessageV4 input, ResultFuture<FilterMessageV4> resultFuture) throws Exception {
+    initESMetrics();
+
+    if( ChannelAction.CLICK.equals(input.getChannelAction())
+        && input.getUserId() != null
+        &&  (Objects.equals(input.getUserId(), 0L) || (Objects.equals(input.getUserId(), -1L)))) {
       long timeMillis = System.currentTimeMillis();
       final Future<Long> accountId = MtIdService.getInstance().getAccountId(input.getGuid(), "GUID");
 
@@ -47,7 +52,7 @@ public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV4, FilterM
         try {
           Long userId = accountId.get();
           input.setUserId(userId);
-          if (userId.longValue() != 0) {
+          if (0 != userId) {
             ESMetrics.getInstance().meter("MTID_GOT_USERID");
           }
           ESMetrics.getInstance().mean("MTID_LATENCY", System.currentTimeMillis() - timeMillis);
@@ -62,5 +67,18 @@ public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV4, FilterM
     } else {
       resultFuture.complete(Collections.singleton(input));
     }
+  }
+
+  /**
+   * Override timeout function. When timeout, go forward returning original messages.
+   * @param input input message
+   * @param resultFuture result future
+   * @throws Exception exception
+   */
+  @Override
+  public void timeout(FilterMessageV4 input, ResultFuture<FilterMessageV4> resultFuture) throws Exception {
+    initESMetrics();
+    ESMetrics.getInstance().meter("ASYNC_IO_TIMEOUT");
+    resultFuture.complete(Collections.singleton(input));
   }
 }
