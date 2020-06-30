@@ -95,7 +95,7 @@ public class ImkRvrTrckngEventTransformAsyncApp
   @Override
   protected FlinkKafkaProducer<Tuple3<String, Long, byte[]>> getKafkaProducer() {
     return new FlinkKafkaProducer<>(getProducerTopic(), new DefaultKafkaSerializationSchema(),
-        getProducerProperties(), FlinkKafkaProducer.Semantic.AT_LEAST_ONCE);
+        getProducerProperties(), FlinkKafkaProducer.Semantic.EXACTLY_ONCE);
   }
 
   @Override
