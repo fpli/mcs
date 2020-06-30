@@ -35,7 +35,6 @@ import static com.ebay.traffic.chocolate.flink.nrt.constant.MetricConstants.METR
 
 public class BaseTransformer {
   public static final String GET_METHOD_PREFIX = "get";
-  public static final String SET_METHOD_PREFIX = "set";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseTransformer.class);
 
@@ -80,14 +79,6 @@ public class BaseTransformer {
   private static final Function<String, String> FIELD_GET_METHOD_MAP_FUNCTION = fieldName -> {
     String upperCamelCase = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, fieldName);
     return String.format("%s%s", GET_METHOD_PREFIX, upperCamelCase);
-  };
-
-  /**
-   * Map field name to set method name, eg. batch_id -> setBatchId
-   */
-  private static final Function<String, String> FIELD_SET_METHOD_MAP_FUNCTION = fieldName -> {
-    String upperCamelCase = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, fieldName);
-    return String.format("%s%s", SET_METHOD_PREFIX, upperCamelCase);
   };
 
   /**

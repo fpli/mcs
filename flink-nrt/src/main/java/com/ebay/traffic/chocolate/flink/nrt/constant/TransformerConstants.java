@@ -27,4 +27,5 @@ public class TransformerConstants {
   public static final String MPUID = "mpuid";
   public static final String TRAN_TYPE = "tranType";
   public static final String SITE_ID = "siteId";
+  public static final String EVENT_TS = "event_ts";
 }

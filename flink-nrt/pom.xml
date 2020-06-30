@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>chocolate-flink-nrt</artifactId>
-    <version>1.7-SNAPSHOT</version>
+    <version>1.11-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>chocolate flink-nrt</name>
 
@@ -184,16 +184,6 @@
                                     </excludes>
                                 </filter>
                             </filters>
-                            <relocations>
-                                <relocation>
-                                    <pattern>org.apache.parquet</pattern>
-                                    <shadedPattern>182.org.apache.parquet</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.avro</pattern>
-                                    <shadedPattern>182.org.apache.avro</shadedPattern>
-                                </relocation>
-                            </relocations>
                         </configuration>
                     </execution>
                 </executions>

@@ -17,6 +17,7 @@ public class BaseTransformerTest {
   @Before
   public void setUp() throws Exception {
     filterMessage = new FilterMessage();
+    transformer = new BaseTransformer(filterMessage);
     ESMetrics.init("test", "localhost");
   }
 

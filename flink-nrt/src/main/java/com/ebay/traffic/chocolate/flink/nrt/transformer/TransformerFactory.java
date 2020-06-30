@@ -5,8 +5,6 @@ import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
 
 /**
- * This class
- *
  * @author Zhiyuan Wang
  * @since 2019/12/8
  */
