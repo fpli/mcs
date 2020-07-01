@@ -287,7 +287,7 @@ public class DefaultChannel implements Channel {
                                    String channelAction, String channelType, String requestUrl) {
     StringBuffer sb = new StringBuffer();
     sb.append(invalid);
-    sb = deriveWarningMessage(sb, request);
+    deriveWarningMessage(sb, request);
     logger.warn(sb.toString());
     logger.warn("Un-managed channel request: " + request.getRequestURL().toString());
     metrics.meter("un-managed", 1, eventTime, Field.of(CHANNEL_ACTION, channelAction),

@@ -103,7 +103,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     try {
       urlObj = new URL(redirectUrl);
     } catch (MalformedURLException e) {
-      logger.warn("Redirect URL is wrong: " + redirectUrl);
+      logger.warn("Error occurred when malformed URL, Redirect URL is wrong!");
       return false;
     }
     if (REDIRECT_SERVER_DOMAIN.equals(urlObj.getHost())) {

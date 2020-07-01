@@ -21,5 +21,4 @@ public class CustomWebSecurityConfigurerAdapter extends WebSecurityConfigurerAda
     http.headers().contentTypeOptions().disable();
     http.headers().xssProtection().disable();
   }
-
 }
