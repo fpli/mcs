@@ -10,6 +10,7 @@ KEY_LOCATION=$5
 ETL_ACCOUNT_LOCATION=$6
 SCP_DONE_FILE=$7
 TOUCH_PROCESS_FILE=$8
+DATA_TYPE=$9
 
 function process_one_meta(){
     meta_file=$1
@@ -64,7 +65,7 @@ function process_one_meta(){
         ####################################### Generate epn nrt processed file #######################################
         if [ $3 = "YES" ]
         then
-            touch "/datashare/mkttracking/data/epn-nrt/etl/date=${date}.processed"
+            touch "/datashare/mkttracking/data/epn-nrt/etl/date=${date}.${DATA_TYPE}.processed"
         fi
 
         if [ ${rcode} -ne 0 ]
