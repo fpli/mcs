@@ -393,7 +393,7 @@ public class CollectionService {
     String action = ChannelActionEnum.CLICK.toString();
     String type = channelType.getLogicalChannel().getAvro().toString();
 
-    // Self-service events, sent to specific topic
+    // Self-service events, send them to couchbase
     if (parameters.containsKey(Constants.SELF_SERVICE) && parameters.containsKey(Constants.SELF_SERVICE_ID)) {
       if ("1".equals(parameters.getFirst(Constants.SELF_SERVICE)) &&
           parameters.getFirst(Constants.SELF_SERVICE_ID) != null) {
