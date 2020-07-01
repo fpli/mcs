@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
+import java.util.HashMap;
 
 /**
  * @Auther YangYang
@@ -29,7 +30,6 @@ public class AdServiceDataSourceConfig {
         String userName = databaseProperties.getBridgeConfig().getUsernameChannel();
         String pass = databaseProperties.getBridgeConfig().getPasswordChannel();
         BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName(databaseProperties.getBridgeConfig().getDriver());
         dataSource.setUrl(databaseProperties.getBridgeConfig().getUrl());
         dataSource.setUsername(userName);
         logger.info("channel name config {} / pass config {}", userName, pass);
