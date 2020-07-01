@@ -61,22 +61,19 @@ public class MtIdService {
 
   public CompletableFuture<Long> getAccountId(String key, String type) {
     String token = IAFServiceUtil.getInstance().getAppToken();
-    Long accountId = 0l;
+    long accountId = 0L;
     try {
       Response response = webTarget.path(path).queryParam("id", key).queryParam("type", type).request()
           .header("Authorization", "Bearer " + token).get();
-      IdLinking idLinking = response.readEntity(IdLinking.class);
-      if (idLinking.getIdList() != null) {
+      Idlink idlink = response.readEntity(Idlink.class);
+
+      if (idlink.getAccount() != null) {
         ESMetrics.getInstance().meter("SuccessfullyCallingMTID");
-        for (Id id : idLinking.getIdList()) {
-          if (id != null) {
-            if (id.getType().equalsIgnoreCase(IdType.ACCOUNT.name())) {
-              try {
-                accountId = Long.valueOf(id.getIds().get(0));
-              } catch (NumberFormatException e) {
-                ESMetrics.getInstance().meter("NumberFormatException");
-              }
-            }
+        if(idlink.getAccount().size() > 0) {
+          try {
+            accountId = Long.parseLong(idlink.getAccount().get(0));
+          } catch (NumberFormatException e) {
+              ESMetrics.getInstance().meter("NumberFormatException");
           }
         }
       }
