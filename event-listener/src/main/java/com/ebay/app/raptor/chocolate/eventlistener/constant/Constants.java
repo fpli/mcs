@@ -18,6 +18,7 @@ public class Constants {
   public static final String PLATFORM_DESKTOP = "dsktop";
   public static final String PLATFORM_UNKNOWN = "UNKNOWN";
   public static final String RVRID = "rvrid";
+  public static final String EPAGE_REFERER = "originalRef";
 
   public static final String MKRVRID = "mkrvrid";
   public static final String REFERRER = "referrer";
