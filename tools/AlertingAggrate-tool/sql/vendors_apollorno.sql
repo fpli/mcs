@@ -20,4 +20,4 @@ set hive.merge.smallfiles.avgsize=128000000;
 set hive.merge.size.per.task=128000000;
 SET hive.auto.convert.join=false;
 
-INSERT OVERWRITE LOCAL DIRECTORY '/home/stack/rotation/apollorno/vendors' select count(vendor_id), count(distinct vendor_id) from choco_data.dw_mpx_vendors;
+INSERT OVERWRITE LOCAL DIRECTORY '/home/_choco_admin/rotation/apollorno/vendors' select count(vendor_id), count(distinct vendor_id) from choco_data.dw_mpx_vendors;

@@ -11,6 +11,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -34,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
@@ -47,10 +47,8 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -82,15 +80,14 @@ public class CollectionService {
 
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
+  private static final String PARTNER = "partner";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
   private static final String PAGE_ID = "pageId";
   private static final String ADGUID_PARAM = "adguid";
   private static final String SITE_ID = "siteId";
   private static final String ROI_SOURCE = "roisrc";
-
-
-
+  private static final String UTF_8 = "UTF-8";
 
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
@@ -332,6 +329,23 @@ public class CollectionService {
       return true;
     }
 
+    // check partner for email click
+    String partner = null;
+    if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
+      // no mkpid, accepted
+      if (!parameters.containsKey(Constants.MKPID) || parameters.get(Constants.MKPID).get(0) == null) {
+        logger.warn(Errors.ERROR_NO_MKPID);
+        metrics.meter("NoMkpidParameter");
+      } else {
+        // invalid mkpid, accepted
+        partner = EmailPartnerIdEnum.parse(parameters.get(Constants.MKPID).get(0));
+        if (StringUtils.isEmpty(partner)) {
+          logger.warn(Errors.ERROR_INVALID_MKPID);
+          metrics.meter("InvalidMkpid");
+        }
+      }
+    }
+
     String landingPageType;
     List<String> pathSegments = uriComponents.getPathSegments();
     if (pathSegments == null || pathSegments.size() == 0) {
@@ -347,8 +361,21 @@ public class CollectionService {
     String action = ChannelActionEnum.CLICK.toString();
     String type = channelType.getLogicalChannel().getAvro().toString();
 
+    // Self-service events, sent to specific topic
+    if (parameters.containsKey(Constants.SELF_SERVICE) && parameters.containsKey(Constants.SELF_SERVICE_ID)) {
+      if ("1".equals(parameters.getFirst(Constants.SELF_SERVICE)) &&
+          parameters.getFirst(Constants.SELF_SERVICE_ID) != null) {
+        metrics.meter("SelfServiceIncoming");
+        CouchbaseClient.getInstance().addSelfServiceRecord(parameters.getFirst(Constants.SELF_SERVICE_ID), targetUrl);
+        metrics.meter("SelfServiceSuccess");
+        
+        return true;
+      }
+    }
+
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+        Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
+        Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     // add tags in url param "sojTags"
     if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
@@ -372,7 +399,7 @@ public class CollectionService {
       processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-          Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+        Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
   }
@@ -517,8 +544,8 @@ public class CollectionService {
     }
 
     // decode referer if necessary. Currently, android is sending rover url encoded.
-    if(referer.startsWith("https%3A%2F%2") || referer.startsWith("http%3A%2F%2")) {
-      referer = URLDecoder.decode( referer, "UTF-8" );
+    if (referer.startsWith("https%3A%2F%2") || referer.startsWith("http%3A%2F%2")) {
+      referer = URLDecoder.decode(referer, "UTF-8");
     }
 
     String userAgent = request.getHeader("User-Agent");
@@ -590,6 +617,23 @@ public class CollectionService {
       return true;
     }
 
+    // check partner for email open
+    String partner = null;
+    if (channelAction == ChannelActionEnum.EMAIL_OPEN) {
+      // no mkpid, accepted
+      if (!parameters.containsKey(Constants.MKPID) || parameters.get(Constants.MKPID).get(0) == null) {
+        logger.warn(Errors.ERROR_NO_MKPID);
+        metrics.meter("NoMkpidParameter");
+      } else {
+        // invalid mkpid, accepted
+        partner = EmailPartnerIdEnum.parse(parameters.get(Constants.MKPID).get(0));
+        if (StringUtils.isEmpty(partner)) {
+          logger.warn(Errors.ERROR_INVALID_MKPID);
+          metrics.meter("InvalidMkpid");
+        }
+      }
+    }
+
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
     String platform = getPlatform(agentInfo);
@@ -598,7 +642,7 @@ public class CollectionService {
     String type = channelType.getLogicalChannel().getAvro().toString();
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PLATFORM, platform));
+        Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
     // add tags in url param "sojTags"
     if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
@@ -627,7 +671,7 @@ public class CollectionService {
 
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-          Field.of(PLATFORM, platform));
+        Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
     return true;
   }
@@ -670,7 +714,7 @@ public class CollectionService {
 
 
   public boolean collectNotification(HttpServletRequest request, IEndUserContext endUserContext,
-                                     ContainerRequestContext requestContext) throws Exception {
+                                     ContainerRequestContext requestContext, Event event) throws Exception {
 
     if (request.getHeader("X-EBAY-C-TRACKING") == null) {
       logError(Errors.ERROR_NO_TRACKING);
@@ -685,34 +729,13 @@ public class CollectionService {
       logError(Errors.ERROR_NO_USER_AGENT);
     }
 
-    // targetUrl is from request
-    String url = new ServletServerHttpRequest(request).getURI().toString();
-
-    // parse channel from uri
-    // illegal url, rejected
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(url).build();
-    if (uriComponents == null) {
-      logError(Errors.ERROR_ILLEGAL_URL);
+    // no page id, reject
+    EventPayload payload = event.getPayload();
+    if (payload.getPageId() == null) {
+      logError(Errors.ERROR_NO_PAGE_ID);
     }
-
-    // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
-    MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
-    if (parameters.size() == 0) {
-      logger.warn(Errors.ERROR_NO_QUERY_PARAMETER);
-      metrics.meter(Errors.ERROR_NO_QUERY_PARAMETER);
-      return true;
-    }
-
-    // no page id, accepted
-    if (!parameters.containsKey(Constants.NOTIFICATION_PAGE_ID) ||
-        parameters.get(Constants.NOTIFICATION_PAGE_ID).get(0) == null) {
-      logger.warn(Errors.ERROR_NO_PAGE_ID);
-      metrics.meter(Errors.ERROR_NO_PAGE_ID);
-      return true;
-    }
-    // parse page id from parameters
-    int pageId = Integer.parseInt(parameters.get(Constants.NOTIFICATION_PAGE_ID).get(0));
+    // get page id from payload
+    int pageId = payload.getPageId();
 
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
@@ -727,12 +750,10 @@ public class CollectionService {
     // add tags all channels need
     addCommonTags(requestContext, "", "", agentInfo, type, action, pageId);
 
-    // add channel specific tags, and produce message for EPN and IMK
-    boolean processFlag = false;
-    processNotification(requestContext, parameters, type, action, pageId);
+    // add channel specific tags
+    processNotification(requestContext, payload, type, action, pageId);
 
-    if (processFlag)
-      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+    stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
           Field.of(PLATFORM, platform), Field.of(PAGE_ID, pageId));
 
     return true;
@@ -838,7 +859,7 @@ public class CollectionService {
         if (statusCode == Response.Status.OK.getStatusCode()) {
           metrics.meter("CollectStatusOK", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
               Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
-        } else if (statusCode >= Response.Status.MOVED_PERMANENTLY.getStatusCode() &
+        } else if (statusCode >= Response.Status.MOVED_PERMANENTLY.getStatusCode() &&
             statusCode < Response.Status.BAD_REQUEST.getStatusCode()) {
           metrics.meter("CollectStatusRedirection", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
               Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
@@ -969,6 +990,9 @@ public class CollectionService {
         if (isFacebookPrefetchEnabled(request))
           requestTracker.addTag("fbprefetch", true, Boolean.class);
 
+        // channel id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKCID, "chnl", String.class);
+
         // source id
         addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
 
@@ -1010,6 +1034,9 @@ public class CollectionService {
         if (isFacebookPrefetchEnabled(request))
           requestTracker.addTag("fbprefetch", true, Boolean.class);
 
+        // channel id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKCID, "chnl", String.class);
+
         // source id
         addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
 
@@ -1039,11 +1066,8 @@ public class CollectionService {
         }
 
         // Adobe email redirect source
-        if (parameters.containsKey(Constants.REDIRECT_SRC_SOJ_SOURCE)
-            && parameters.get(Constants.REDIRECT_SRC_SOJ_SOURCE).get(0) != null) {
-          requestTracker.addTag(Constants.REDIRECT_SRC_SOJ_SOURCE,
-              URLDecoder.decode(parameters.get(Constants.REDIRECT_SRC_SOJ_SOURCE).get(0), "UTF-8"), String.class);
-        }
+        addTagFromUrlQuery(parameters, requestTracker, Constants.REDIRECT_SRC_SOJ_SOURCE, "adcamp_locationsrc",
+            String.class);
 
         //Adobe campaign public user id
         addTagFromUrlQuery(parameters, requestTracker, Constants.ADOBE_CAMP_PUBLIC_USER_ID, "adcamppu", String.class);
@@ -1092,35 +1116,38 @@ public class CollectionService {
   /**
    * Process mobile notification event
    */
-  private void processNotification(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
+  private void processNotification(ContainerRequestContext requestContext, EventPayload payload,
                                    String type, String action, int pageId) {
     try {
       // Ubi tracking
-      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+      IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext
+          .getProperty(IRequestScopeTracker.NAME);
 
       // event family
       requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
 
+      Map<String, String> tags = payload.getTags();
+
       // notification id
-      addTagFromUrlQuery(parameters, requestTracker, Constants.NOTIFICATION_ID, "nid", String.class);
+      addTagFromPayload(tags, requestTracker, Constants.NOTIFICATION_ID);
 
       // notification type
-      addTagFromUrlQuery(parameters, requestTracker, Constants.NOTIFICATION_TYPE, "ntype", String.class);
-
-      // notification type evt
-      addTagFromUrlQuery(parameters, requestTracker, Constants.NOTIFICATION_TYPE_EVT, "evt", String.class);
+      addTagFromPayload(tags, requestTracker, Constants.NOTIFICATION_TYPE);
 
       // notification action
-      addTagFromUrlQuery(parameters, requestTracker, Constants.NOTIFICATION_ACTION, "pnact", String.class);
-
-      // item id
-      addTagFromUrlQuery(parameters, requestTracker, Constants.ITEM_ID, "itm", String.class);
+      addTagFromPayload(tags, requestTracker, Constants.NOTIFICATION_ACTION);
 
       // user name
-      addTagFromUrlQuery(parameters, requestTracker, Constants.USER_NAME, "user_name", String.class);
+      addTagFromPayload(tags, requestTracker, Constants.USER_NAME);
 
       // mc3 canonical message id
-      addTagFromUrlQuery(parameters, requestTracker, Constants.MC3_MSSG_ID, "mc3id", String.class);
+      addTagFromPayload(tags, requestTracker, Constants.MC3_MSSG_ID);
+
+      // item id
+      addTagFromPayload(tags, requestTracker, Constants.ITEM_ID);
+
+      // notification type evt
+      addTagFromPayload(tags, requestTracker, Constants.NOTIFICATION_TYPE_EVT);
 
     } catch (Exception e) {
       logger.warn("Error when tracking ubi for mobile notification tags", e);
@@ -1323,6 +1350,13 @@ public class CollectionService {
     if (parameters.containsKey(Constants.MKRID) && parameters.get(Constants.MKRID).get(0) != null) {
       try {
         String rawRotationId = parameters.get(Constants.MKRID).get(0);
+        // decode rotationId if rotation is encoded
+        // add decodeCnt to avoid looping infinitely
+        int decodeCnt = 0;
+        while (rawRotationId.contains("%") && decodeCnt<5) {
+          rawRotationId = URLDecoder.decode(rawRotationId, UTF_8);
+          decodeCnt = decodeCnt + 1;
+        }
         rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
       } catch (Exception e) {
         logger.warn(Errors.ERROR_INVALID_MKRID);
@@ -1354,6 +1388,17 @@ public class CollectionService {
                                          String urlParam, String tag, Class tagType) {
     if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
       requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
+    }
+  }
+
+  /**
+   * Parse tag from payload map and add to sojourner
+   * @param tags  the name value pair of tags
+   * @param tag     the tag name
+   */
+  private static void addTagFromPayload(Map<String, String> tags, IRequestScopeTracker requestTracker, String tag) {
+    if (tags.containsKey(tag) && !StringUtils.isEmpty(tags.get(tag))) {
+      requestTracker.addTag(tag, tags.get(tag), String.class);
     }
   }
 

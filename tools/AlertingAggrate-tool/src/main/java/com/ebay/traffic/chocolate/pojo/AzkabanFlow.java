@@ -9,6 +9,7 @@ public class AzkabanFlow {
   private String failed;
   private String tatal;
   private String runningTime;
+  private String threshold;
   private String status;
 
   public String getProjectName() {
@@ -65,6 +66,14 @@ public class AzkabanFlow {
 
   public void setRunningTime(String runningTime) {
     this.runningTime = runningTime;
+  }
+
+  public String getThreshold() {
+    return threshold;
+  }
+
+  public void setThreshold(String threshold) {
+    this.threshold = threshold;
   }
 
   public String getStatus() {

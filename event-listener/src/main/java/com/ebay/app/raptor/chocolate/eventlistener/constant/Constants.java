@@ -17,11 +17,13 @@ public class Constants {
   public static final String PLATFORM_MOBILE = "mobile";
   public static final String PLATFORM_DESKTOP = "dsktop";
   public static final String PLATFORM_UNKNOWN = "UNKNOWN";
+  public static final String RVRID = "rvrid";
 
   public static final String MKRVRID = "mkrvrid";
   public static final String REFERRER = "referrer";
 
   // Email url params
+  public static final String MKPID = "mkpid";
   public static final String SOJ_TAGS = "sojTags";
   public static final String SOURCE_ID = "emsid";
   public static final String EMAIL_UNIQUE_ID = "euid";
@@ -39,17 +41,20 @@ public class Constants {
   public static final String REDIRECT_SRC_SOJ_SOURCE = "adcamp_locationsrc";
   public static final String ADOBE_CAMP_PUBLIC_USER_ID = "pu";
 
-  // Mobile Notification params
-  public static final String NOTIFICATION_PAGE_ID = "imp";
+  // Mobile Notification name and soj tags
   public static final String NOTIFICATION_ID = "nid";
   public static final String NOTIFICATION_TYPE = "ntype";
-  public static final String NOTIFICATION_TYPE_EVT = "evt";
   public static final String NOTIFICATION_ACTION = "pnact";
-  public static final String ITEM_ID = "itm";
-  public static final String USER_NAME = "usrname";
+  public static final String USER_NAME = "user_name";
   public static final String MC3_MSSG_ID = "mc3id";
+  public static final String ITEM_ID = "itm";
+  public static final String NOTIFICATION_TYPE_EVT = "evt";
 
   // Redirection header name
   public static final String NODE_REDIRECTION_HEADER_NAME = "x-ebay-tracking-marketing-status-code";
+
+  // Self-service params
+  public static final String SELF_SERVICE = "self_service";
+  public static final String SELF_SERVICE_ID = "self_service_id";
 
 }

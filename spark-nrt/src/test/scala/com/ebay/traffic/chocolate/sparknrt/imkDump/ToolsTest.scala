@@ -112,7 +112,7 @@ class ToolsTest extends FunSuite {
   }
 
   test("test getClientIdFromRoverUrl") {
-    assert(tools.getClientIdFromRoverUrl("https://rover.ebay.com/roverroi/1/711-518-1801-10?mpuid=187937644;223525488837;2288208264012;&siteId=0&BIN-Store=1&ff1=ss&ff2=CHECKOUT") == "711")
+    assert(tools.getClientIdFromRoverUrl("https://rover.ebay.com/roverroi/1/711-518-1801-10?mpuid=187937644;223525488837;2288208264012;&siteId=0&BIN-Store=1&ff1=ss&ff2=CHECKOUT") == "0")
   }
 
   test("test get ROI ids") {

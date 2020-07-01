@@ -685,7 +685,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         })
 
         // select imk columns
-        val imkETLDf = joinKw(channel, imkTransformDf).select(schema_apollo.dfColumns: _*)
+        val imkETLDf = imkTransformDf.select(schema_apollo.dfColumns: _*)
 
         // select dtl columns
         val dtlETLDf = imkTransformDf.select(schema_apollo_dtl.dfColumns: _*)

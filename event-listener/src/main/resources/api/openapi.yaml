@@ -2,8 +2,7 @@
 openapi: 3.0.0
 servers:
   - url: 'http://api.ebay.com/marketingtracking/v1'
-    description: 'Marketing tracking collection services'
-
+    description: Marketing tracking collection services
 info:
   description: >-
     marketing tracking compoent to receive marketing events
@@ -120,29 +119,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Event'
-  /notification:
-    post:
-      summary: Send one notification event to marketing tracking
-      description: Send one notification event to marketing tracking
-      tags:
-        - notification
-      operationId: notification
-      security:
-        - app_scope_auth:
-            - 'https://api.ebay.com/oauth/scope/@public'
-            - 'https://api.ebay.com/oauth/scope/base@public'
-            - 'https://api.ebay.com/oauth/scope/experience@public'
-      responses:
-        '201':
-          description: Created
-        '400':
-          description: Rejected due to message format
-          content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/errorModel'
-        '500':
-          description: The call was unsuccessful due to exceptions on the Server
   /sync:
     post:
       summary: Send sync event to mcs
@@ -192,11 +168,31 @@ components:
       type: object
       properties:
         targetUrl:
-          type: "string"
-          example: "htttps://www.ebay.com/deals"
+          type: string
+          example: 'htttps://www.ebay.com/deals'
         referrer:
-          type: "string"
-          example: "htttps://www.google.com"
+          type: string
+          example: 'htttps://www.google.com'
+        eventName:
+          type: string
+          enum: ['notification']
+        payload:
+          type: object
+          description: Tracking event payload
+          required:
+            - pageId
+          properties:
+            pageId:
+              type: integer
+              format: int32
+              description: page id, mandotary for notification
+              example: 2054081
+            tags:
+              type: object
+              description: Map<String, String> for soj tags
+              additionalProperties:
+                type: string
+
     ROIEvent:
       type: object
       properties:
@@ -233,6 +229,7 @@ components:
             4006: No mkevt
             4007: Invalid mkevt
             4008: Invalid X-EBAY-C-ENDUSERCTX header
+            4011: No page id
             5000: Internal Service Error
           type: number
           description: Value indicates type of error

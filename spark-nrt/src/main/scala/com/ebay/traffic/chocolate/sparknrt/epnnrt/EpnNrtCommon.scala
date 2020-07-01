@@ -42,6 +42,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   //add ebayadservicesites to support impression events which are redirected from adservice to mcs
   lazy val ebayadservicesites: Pattern = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?ebayadservices\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE)
 
+  lazy val CHOCO_TAG = "dashenId"
+  lazy val CB_CHOCO_TAG_PREFIX = "DashenId_"
+
   val cbData = asyncCouchbaseGet(df)
 
   /**
@@ -268,6 +271,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val getUserIdUdf = udf((userId: String, cguid: String) => getUserIdByCguid(userId, cguid))
   val getRelatedInfoFromUriUdf = udf((uri: String, index: Int, key: String) => getRelatedInfoFromUri(uri, index, key))
   val getChannelIdUdf = udf((channelType: String) => getChannelId(channelType))
+  val fixGuidUsingRoverLastClickUdf = udf((guid: String, uri: String) => fixGuidUsingRoverLastClick(guid, uri))
 
   def filter_specific_pub(referer: String, publisher: String): Int = {
     if (publisher.equals("5574651234") && getRefererURLAndDomain(referer, true).endsWith(".bid"))
@@ -1365,5 +1369,46 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     } else {
       true
     }
+  }
+
+  /**
+    * fix guid using rover last click guid if exists
+    * @param guid guid
+    * @param uri uri
+    * @return fixedGuid
+    */
+  def fixGuidUsingRoverLastClick(guid: String, uri: String): String = {
+    var fixedGuid = guid
+    var roverLastClickGuid = ""
+    // rewrite couchbase datasource property
+    CorpCouchbaseClient.dataSource = properties.getProperty("epnnrt.datasource")
+    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+
+    try {
+      val chocoTag = getQueryParam(uri, CHOCO_TAG)
+      if (StringUtils.isNotEmpty(chocoTag)) {
+        val start = System.currentTimeMillis
+        val chocoTagKey = CB_CHOCO_TAG_PREFIX + chocoTag
+        val jsonDocument = bucket.get(chocoTagKey, classOf[JsonDocument])
+        if (jsonDocument != null) {
+          roverLastClickGuid = jsonDocument.content().get("guid").toString
+        }
+        metrics.mean("GetRoverLastGuidCouchbaseLatency", System.currentTimeMillis() - start)
+      }
+    } catch {
+      case e: Exception => {
+        logger.error("Corp Couchbase error while getting chocoTag guid mapping " + e)
+        metrics.meter("CouchbaseError")
+      }
+    } finally {
+      CorpCouchbaseClient.returnClient(cacheClient)
+    }
+
+    if (StringUtils.isNotEmpty(roverLastClickGuid)) {
+      metrics.meter("GetChocoTagGuidMappingFromCB")
+      fixedGuid = roverLastClickGuid
+    }
+
+    fixedGuid
   }
 }
