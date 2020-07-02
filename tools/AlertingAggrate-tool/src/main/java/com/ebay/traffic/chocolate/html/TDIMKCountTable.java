@@ -47,13 +47,13 @@ public class TDIMKCountTable {
         return "<td bgcolor=\"#FFFFFF\">" + "OK" + "</td>";
       }
 
-      return "<td bgcolor=\"#ff0000\">" + "Warning" + "</td>";
+      return "<td bgcolor=\"#ffcc00\">" + "Warning" + "</td>";
     }
 
     if (Integer.parseInt(diff) == 0 && mozart != 0 && hopper != 0) {
       return "<td bgcolor=\"#FFFFFF\">" + "OK" + "</td>";
     } else {
-      return "<td bgcolor=\"#ff0000\">" + "Warning" + "</td>";
+      return "<td bgcolor=\"#ffcc00\">" + "Warning" + "</td>";
     }
   }
 
