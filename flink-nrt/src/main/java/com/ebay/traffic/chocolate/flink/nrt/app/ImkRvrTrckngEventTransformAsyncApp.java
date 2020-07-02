@@ -37,6 +37,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.errors.SerializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
@@ -212,19 +214,37 @@ public class ImkRvrTrckngEventTransformAsyncApp
     public static final String NUM_RECORDS_IN_COUNTER = "NumRecords";
     public static final String NUM_CLICK_IN_COUNTER = "NumClickRecords";
     public static final String NUM_AR_IN_COUNTER = "NumArRecords";
+    public static final String LANDING_PAGE = "LandingPageTypes";
 
     public static final String NUM_RECORDS_IN_RATE = "NumRecordsInResolveRate";
     public static final String CLICK_RATE = "ClickRate";
     public static final String AR_RATE = "ArRate";
 
+
     public static final String INTERNAL_DOMAIN_COUNTER = "ebaySitesReferer";
     public static final String RECORD_LATENCY_GAUGE = "LatencyMetric";
-
+    public static final String PAGE_TYPE = "page_type";
+    public static final String SLASH_I = "i";
+    public static final String SLASH_ITM = "itm";
+    public static final String SLASH_P = "p";
+    public static final String SLASH_B = "b";
+    public static final String PAGE_E = "e";
+    public static final String PAGE_SCH = "sch";
+    public static final String PAGE_DEALS = "deals";
+    public static final String PAGE_HOME = "home";
 
 
     private transient Counter recordCounter;
     private transient Counter clickCounter;
     private transient Counter arCounter;
+    private transient Counter landingPageCounter1;
+    private transient Counter landingPageCounter2;
+    private transient Counter landingPageCounter3;
+    private transient Counter landingPageCounter4;
+    private transient Counter landingPageCounter5;
+    private transient Counter landingPageCounter6;
+    private transient Counter landingPageCounter7;
+    private transient Counter landingPageCounter8;
     private transient Meter recordRate;
     private transient Meter clickRate;
     private transient Meter arRate;
@@ -236,10 +256,19 @@ public class ImkRvrTrckngEventTransformAsyncApp
 
     @Override
     public void open(Configuration config) {
+      // Counter
       recordCounter = getRuntimeContext().getMetricGroup().counter(NUM_RECORDS_IN_COUNTER);
       clickCounter = getRuntimeContext().getMetricGroup().counter(NUM_CLICK_IN_COUNTER);
       arCounter = getRuntimeContext().getMetricGroup().counter(NUM_AR_IN_COUNTER);
-
+      landingPageCounter1 = getRuntimeContext().getMetricGroup().addGroup(SLASH_I).counter(LANDING_PAGE);
+      landingPageCounter2 = getRuntimeContext().getMetricGroup().addGroup(SLASH_ITM).counter(LANDING_PAGE);
+      landingPageCounter3 = getRuntimeContext().getMetricGroup().addGroup(SLASH_P).counter(LANDING_PAGE);
+      landingPageCounter4 = getRuntimeContext().getMetricGroup().addGroup(SLASH_B).counter(LANDING_PAGE);
+      landingPageCounter5 = getRuntimeContext().getMetricGroup().addGroup(PAGE_E).counter(LANDING_PAGE);
+      landingPageCounter6 = getRuntimeContext().getMetricGroup().addGroup(PAGE_SCH).counter(LANDING_PAGE);
+      landingPageCounter7 = getRuntimeContext().getMetricGroup().addGroup(PAGE_DEALS).counter(LANDING_PAGE);
+      landingPageCounter8 = getRuntimeContext().getMetricGroup().addGroup(PAGE_HOME).counter(LANDING_PAGE);
+      // Meter
       recordRate = getRuntimeContext().getMetricGroup().meter(NUM_RECORDS_IN_RATE, new MeterView(recordCounter, 1));
       clickRate = getRuntimeContext().getMetricGroup().meter(CLICK_RATE, new MeterView(clickCounter, 1));
       arRate = getRuntimeContext().getMetricGroup().meter(AR_RATE, new MeterView(arCounter, 1));
@@ -262,12 +291,53 @@ public class ImkRvrTrckngEventTransformAsyncApp
           break;
       }
 
+      switch(getPageType(value)) {
+        case SLASH_I:
+          landingPageCounter1.inc();
+          break;
+        case SLASH_ITM:
+          landingPageCounter2.inc();
+          break;
+        case SLASH_P:
+          landingPageCounter3.inc();
+          break;
+        case SLASH_B:
+          landingPageCounter4.inc();
+          break;
+        case PAGE_E:
+          landingPageCounter5.inc();
+          break;
+        case PAGE_SCH:
+          landingPageCounter6.inc();
+          break;
+        case PAGE_DEALS:
+          landingPageCounter7.inc();
+          break;
+        case PAGE_HOME:
+          landingPageCounter8.inc();
+          break;
+      }
+
+
       if (ebaySites.matcher(value.getReferer()).find()) {
         internalDomainCounter.inc();
         return false;
       }
 
       return true;
+    }
+
+    private String getPageType(FilterMessageV4 value) {
+      String landingPageType = null;
+      UriComponents uriComponents;
+      uriComponents = UriComponentsBuilder.fromUriString(value.getUri()).build();
+      List<String> pathSegments = uriComponents.getPathSegments();
+      if (pathSegments == null || pathSegments.size() == 0) {
+        landingPageType = "home";
+      } else {
+        landingPageType = pathSegments.get(0);
+      }
+      return landingPageType.toLowerCase();
     }
   }
 }
