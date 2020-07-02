@@ -82,14 +82,14 @@ class TestBullseyeUtils extends FlatSpec with Matchers{
 
   //cguid
   "BullseyeUtilBasedCguid" must "work" in {
-    val result = BullseyeUtils.getData(fs,"b3f1325515e0a93fd3d7ac27fffdd2ad", "910" , "200", properties.getProperty("epnnrt.bullseyeUrl"))
-    println(result)
+    val result = BullseyeUtils.getData(fs,"6018ed8b1720a9cc5e628468f7d256a5", "910" , "200", properties.getProperty("epnnrt.bullseyeUrl"))
+    assert(result != None)
   }
 
   it must "can parse response correctly with cguid" in {
-    val result = BullseyeUtils.getLastViewItem(fs,"b3f1325515e0a93fd3d7ac27fffdd2ad", "1555292249112","910" , "200", properties.getProperty("epnnrt.bullseyeUrl"))
-    assert(result._1 == "")
-    assert(result._2 == "")
+    val result = BullseyeUtils.getLastViewItem(fs,"6018ed8b1720a9cc5e628468f7d256a5", "1591169377921","910" , "200", properties.getProperty("epnnrt.bullseyeUrl"))
+    assert(result._1 == "250012780462")
+    assert(result._2 == "2020-06-03 15:29:37.92")
   }
 
 

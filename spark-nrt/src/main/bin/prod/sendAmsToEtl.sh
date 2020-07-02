@@ -7,7 +7,7 @@ USAGE_IMP=epnnrt_scp_imp
 META_SUFFIX=.epnnrt_etl
 
 ETL_HOST=etl_epn_nrt_push@lvsdpeetl015.lvs.ebay.com
-ETL_PATH=/dw/etl/home/prod/land/dw_ams/nrt_test
+ETL_PATH=/dw/etl/home/prod/land/dw_ams/nrt
 ETL_TOKEN=/datashare/mkttracking/tools/rsa_token/nrt_etl_key
 
 
@@ -15,7 +15,7 @@ ETL_TOKEN=/datashare/mkttracking/tools/rsa_token/nrt_etl_key
 
 echo "================================ Send EPN Click Data to ETL ================================"
 
-./scpDataToETLByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO YES
+./scpDataToETLByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO YES click
 rcode_click=$?
 
 if [ $rcode_click -eq 0 ];
@@ -31,7 +31,7 @@ fi
 
 echo "============================= Send EPN Impression Data to ETL ============================="
 
-./scpDataToETLByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO YES
+./scpDataToETLByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${ETL_TOKEN} ${ETL_HOST}:${ETL_PATH} NO YES impression
 rcode_imp=$?
 
 if [ $rcode_imp -eq 0 ];
