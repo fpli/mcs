@@ -23,6 +23,9 @@ import org.apache.flink.api.common.functions.RichFilterFunction;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.metrics.Counter;
+import org.apache.flink.metrics.Gauge;
+import org.apache.flink.metrics.Meter;
+import org.apache.flink.metrics.MeterView;
 import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -205,25 +208,65 @@ public class ImkRvrTrckngEventTransformAsyncApp
   }
 
   private static class FilterEbaySites extends RichFilterFunction<FilterMessageV4> {
-    private transient Counter counter;
+
+    public static final String NUM_RECORDS_IN_COUNTER = "NumRecords";
+    public static final String NUM_CLICK_IN_COUNTER = "NumClickRecords";
+    public static final String NUM_AR_IN_COUNTER = "NumArRecords";
+
+    public static final String NUM_RECORDS_IN_RATE = "NumRecordsInResolveRate";
+    public static final String CLICK_RATE = "ClickRate";
+    public static final String AR_RATE = "ArRate";
+
+    public static final String INTERNAL_DOMAIN_COUNTER = "ebaySitesReferer";
+    public static final String RECORD_LATENCY_GAUGE = "LatencyMetric";
+
+
+
+    private transient Counter recordCounter;
+    private transient Counter clickCounter;
+    private transient Counter arCounter;
+    private transient Meter recordRate;
+    private transient Meter clickRate;
+    private transient Meter arRate;
+    private transient Counter internalDomainCounter;
+    private transient Gauge recordLatency;
+
     private transient Pattern ebaySites;
 
 
     @Override
     public void open(Configuration config) {
-      this.counter = getRuntimeContext().getMetricGroup().counter("ebaySitesReferer");
+      recordCounter = getRuntimeContext().getMetricGroup().counter(NUM_RECORDS_IN_COUNTER);
+      clickCounter = getRuntimeContext().getMetricGroup().counter(NUM_CLICK_IN_COUNTER);
+      arCounter = getRuntimeContext().getMetricGroup().counter(NUM_AR_IN_COUNTER);
+
+      recordRate = getRuntimeContext().getMetricGroup().meter(NUM_RECORDS_IN_RATE, new MeterView(recordCounter, 1));
+      clickRate = getRuntimeContext().getMetricGroup().meter(CLICK_RATE, new MeterView(clickCounter, 1));
+      arRate = getRuntimeContext().getMetricGroup().meter(AR_RATE, new MeterView(arCounter, 1));
+      internalDomainCounter = getRuntimeContext().getMetricGroup().counter(INTERNAL_DOMAIN_COUNTER);
       this.ebaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
     }
 
     @Override
     public boolean filter(FilterMessageV4 value) throws Exception {
-      if (value.getChannelType() == ChannelType.ROI) {
-        return true;
+      recordCounter.inc();
+      recordRate.markEvent();
+      switch (value.getChannelAction()) {
+        case CLICK:
+          clickCounter.inc();
+          clickRate.markEvent();
+          break;
+        case SERVE:
+          arCounter.inc();
+          arRate.markEvent();
+          break;
       }
+
       if (ebaySites.matcher(value.getReferer()).find()) {
-        this.counter.inc();
+        internalDomainCounter.inc();
         return false;
       }
+
       return true;
     }
   }
