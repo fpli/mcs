@@ -211,7 +211,10 @@ public class ImkRvrTrckngEventTransformAsyncApp
 
     @Override
     public void open(Configuration config) {
-      this.counter = getRuntimeContext().getMetricGroup().counter("ebaySitesReferer");
+      this.counter = getRuntimeContext()
+          .getMetricGroup()
+          .addGroup("test_label","1")
+          .counter("ebaySitesReferer");
       this.ebaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
     }
 
