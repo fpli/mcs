@@ -19,6 +19,7 @@ public class Errors {
   public static final String ERROR_INTERNAL_SERVICE = "InternalServiceError";
   public static final String ERROR_NO_TARGET_URL_DEEPLINK = "NoTargetUrlDeeplink";
   public static final String ERROR_INVALID_TARGET_URL_DEEPLINK = "InvalidTargetUrlDeeplink";
+  public static final String ERROR_NO_PAGE_ID = "NoPageId";
 
   public static final String ERROR_NO_MKCID = "No mkcid";
   public static final String ERROR_INVALID_MKCID = "Invalid mkcid.";
@@ -45,6 +46,7 @@ public class Errors {
     ERROR_MAP.put(ERROR_INTERNAL_SERVICE, new ErrorType(5000, ERROR_INTERNAL_SERVICE, "Internal Service Error."));
     ERROR_MAP.put(ERROR_NO_TARGET_URL_DEEPLINK, new ErrorType(4009, ERROR_NO_TARGET_URL_DEEPLINK, "No TargetUrl in Deeplink Url"));
     ERROR_MAP.put(ERROR_INVALID_TARGET_URL_DEEPLINK, new ErrorType(4010, ERROR_INVALID_TARGET_URL_DEEPLINK, "Invalid TargetUrl in Deeplink Url"));
+    ERROR_MAP.put(ERROR_NO_PAGE_ID, new ErrorType(4011, ERROR_NO_PAGE_ID, "No page id"));
   }
 
   public static Map<String, ErrorType> getErrorMap() {

@@ -753,7 +753,7 @@ public class CollectionService {
 
 
   public boolean collectNotification(HttpServletRequest request, IEndUserContext endUserContext,
-                                     ContainerRequestContext requestContext, Event event) throws Exception {
+                                     ContainerRequestContext requestContext, Event event, int pageId) throws Exception {
 
     if (request.getHeader("X-EBAY-C-TRACKING") == null) {
       logError(Errors.ERROR_NO_TRACKING);
@@ -769,9 +769,6 @@ public class CollectionService {
     }
 
     EventPayload payload = event.getPayload();
-
-    // get page id from payload
-    int pageId = payload.getPageId();
 
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
