@@ -395,21 +395,21 @@ public class EventListenerServiceTest {
   @Test
   public void testEPage() throws InterruptedException {
     Event event = new Event();
-    event.setReferrer("https://pages.ebay.com/sitemap.html?mkevt=1&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
-    event.setTargetUrl("https://c.ebay.com/marketingtracking/v1/pixel?mkevt=1&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623&originalRef=http%3A%2F%2Fpages.ebay.com%2Fyamatest.html");
+    event.setReferrer("https://pages.ebay.com/sitemap.html?mkevt=1&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    event.setTargetUrl("https://c.ebay.com/marketingtracking/v1/pixel?mkevt=1&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623&originalRef=https%3A%2F%2Fwww.google.com");
 
     // CRM
     Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
     // No referer
-    event.setTargetUrl("https://c.ebay.com/marketingtracking/v1/pixel?mkevt=1&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    event.setTargetUrl("https://c.ebay.com/marketingtracking/v1/pixel?mkevt=1&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
     // IMK
     event.setReferrer("https://pages.qa.ebay.com/sitemap.html?mkcid=2&mkrid=710-123456-1234-6&mkevt=1");
-    event.setTargetUrl("https://c.qa.ebay.com/marketingtracking/v1/pixel?mkcid=2&mkrid=710-123456-1234-6&mkevt=1&originalRef=http%3A%2F%2Fpages.qa.ebay.com%2Fyamatest.html");
+    event.setTargetUrl("https://c.qa.ebay.com/marketingtracking/v1/pixel?mkcid=2&mkrid=710-123456-1234-6&mkevt=1&originalRef=https%3A%2F%2Fwww.google.com");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
