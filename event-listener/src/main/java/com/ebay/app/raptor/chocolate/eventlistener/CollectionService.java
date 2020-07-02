@@ -768,11 +768,8 @@ public class CollectionService {
       logError(Errors.ERROR_NO_USER_AGENT);
     }
 
-    // no page id, reject
     EventPayload payload = event.getPayload();
-    if (payload.getPageId() == null) {
-      logError(Errors.ERROR_NO_PAGE_ID);
-    }
+
     // get page id from payload
     int pageId = payload.getPageId();
 

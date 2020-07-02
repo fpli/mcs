@@ -173,9 +173,6 @@ components:
         referrer:
           type: string
           example: 'htttps://www.google.com'
-        eventName:
-          type: string
-          enum: ['notification']
         payload:
           type: object
           description: Tracking event payload
@@ -184,7 +181,7 @@ components:
           properties:
             pageId:
               type: integer
-              format: int32
+              format: int64
               description: page id, mandotary for notification
               example: 2054081
             tags:
@@ -229,7 +226,6 @@ components:
             4006: No mkevt
             4007: Invalid mkevt
             4008: Invalid X-EBAY-C-ENDUSERCTX header
-            4011: No page id
             5000: Internal Service Error
           type: number
           description: Value indicates type of error
