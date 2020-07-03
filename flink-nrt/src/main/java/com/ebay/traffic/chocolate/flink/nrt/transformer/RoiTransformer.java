@@ -16,7 +16,7 @@ public class RoiTransformer extends BaseTransformer {
   }
 
   @Override
-  public Integer getDstClientId() {
+  protected Integer getDstClientId() {
     return 0;
   }
 
