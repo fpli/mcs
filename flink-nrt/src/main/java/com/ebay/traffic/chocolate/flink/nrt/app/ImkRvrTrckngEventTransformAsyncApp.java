@@ -232,11 +232,14 @@ public class ImkRvrTrckngEventTransformAsyncApp
     public static final String PAGE_SCH = "sch";
     public static final String PAGE_DEALS = "deals";
     public static final String PAGE_HOME = "home";
+    public static final String LATENCY_METER = "latencyMeter";
+    public static final String LATENCY_COUTER = "latencyCounter";
 
 
     private transient Counter recordCounter;
     private transient Counter clickCounter;
     private transient Counter arCounter;
+    private transient Counter latencyCounter;
     private transient Counter landingPageCounter1;
     private transient Counter landingPageCounter2;
     private transient Counter landingPageCounter3;
@@ -248,6 +251,7 @@ public class ImkRvrTrckngEventTransformAsyncApp
     private transient Meter recordRate;
     private transient Meter clickRate;
     private transient Meter arRate;
+    private transient Meter latencyMeter;
     private transient Counter internalDomainCounter;
     private transient Gauge recordLatency;
 
@@ -260,6 +264,7 @@ public class ImkRvrTrckngEventTransformAsyncApp
       recordCounter = getRuntimeContext().getMetricGroup().counter(NUM_RECORDS_IN_COUNTER);
       clickCounter = getRuntimeContext().getMetricGroup().counter(NUM_CLICK_IN_COUNTER);
       arCounter = getRuntimeContext().getMetricGroup().counter(NUM_AR_IN_COUNTER);
+      latencyCounter = getRuntimeContext().getMetricGroup().counter(LATENCY_COUTER);
       landingPageCounter1 = getRuntimeContext().getMetricGroup().addGroup(SLASH_I).counter(LANDING_PAGE);
       landingPageCounter2 = getRuntimeContext().getMetricGroup().addGroup(SLASH_ITM).counter(LANDING_PAGE);
       landingPageCounter3 = getRuntimeContext().getMetricGroup().addGroup(SLASH_P).counter(LANDING_PAGE);
@@ -272,6 +277,8 @@ public class ImkRvrTrckngEventTransformAsyncApp
       recordRate = getRuntimeContext().getMetricGroup().meter(NUM_RECORDS_IN_RATE, new MeterView(recordCounter, 1));
       clickRate = getRuntimeContext().getMetricGroup().meter(CLICK_RATE, new MeterView(clickCounter, 1));
       arRate = getRuntimeContext().getMetricGroup().meter(AR_RATE, new MeterView(arCounter, 1));
+      latencyMeter = getRuntimeContext().getMetricGroup().meter(LATENCY_METER, new MeterView(latencyCounter, 1));
+
       internalDomainCounter = getRuntimeContext().getMetricGroup().counter(INTERNAL_DOMAIN_COUNTER);
       this.ebaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
     }
@@ -317,8 +324,8 @@ public class ImkRvrTrckngEventTransformAsyncApp
           landingPageCounter8.inc();
           break;
       }
-
-
+      long currentTimeMillis = System.currentTimeMillis();
+      latencyCounter.inc(currentTimeMillis - value.getTimestamp());
       if (ebaySites.matcher(value.getReferer()).find()) {
         internalDomainCounter.inc();
         return false;
