@@ -26,3 +26,4 @@ temp_persist_config_*.xml
 XslTransformObjectCacheConfig64.xml
 TomcatThreadPoolSizeBean
 SensitiveParameters.xml
+/flink-nrt/dependency-reduced-pom.xml

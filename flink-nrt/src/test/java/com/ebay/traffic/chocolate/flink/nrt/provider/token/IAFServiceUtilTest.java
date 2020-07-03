@@ -13,7 +13,6 @@ public class IAFServiceUtilTest {
   @Test
   public void getAppToken() {
     String token = IAFServiceUtil.getInstance().getAppToken();
-    System.out.println(token);
     assertNotNull(token);
   }
 }
