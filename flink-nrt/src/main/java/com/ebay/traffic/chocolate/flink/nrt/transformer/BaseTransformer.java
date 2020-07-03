@@ -152,11 +152,16 @@ public class BaseTransformer {
     Object value;
     try {
       value = method.invoke(this);
-    } catch (IllegalAccessException | InvocationTargetException e) {
-      LOGGER.error("invoke method {} failed", method);
-      throw new RuntimeException(e);
+    } catch (NullPointerException | IllegalAccessException | InvocationTargetException e) {
+      if (e instanceof NullPointerException) {
+        String message = String.format("%s no mapping method, raw message %s", fieldName, this.sourceRecord);
+        throw new NullPointerException(message);
+      } else {
+        String message = String.format("invoke method %s failed, raw message %s", method, this.sourceRecord);
+        throw new RuntimeException(message, e);
+      }
     }
-    Validate.notNull(value, String.format("%s is null", fieldName));
+    Validate.notNull(value, String.format("%s is null, raw message %s", fieldName, this.sourceRecord));
     fieldCache.put(fieldName, value);
     return fieldCache.get(fieldName);
   }
@@ -167,7 +172,7 @@ public class BaseTransformer {
     }
     String methodName = BaseTransformer.FIELD_GET_METHOD_MAP_FUNCTION.apply(fieldName);
     Method method = findMethodByName(methodName);
-    Validate.notNull(method, String.format("cannot find method %s", methodName));
+    Validate.notNull(method, String.format("cannot find method %s, raw message %s", methodName, this.sourceRecord));
     BaseTransformer.FIELD_GET_METHOD_CACHE.put(fieldName, method);
     return BaseTransformer.FIELD_GET_METHOD_CACHE.get(fieldName);
   }
