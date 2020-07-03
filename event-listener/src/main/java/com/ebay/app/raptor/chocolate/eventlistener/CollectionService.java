@@ -425,6 +425,7 @@ public class CollectionService {
       logger.warn("Error timestamp " + roiEvent.getTransactionTimestamp());
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
       roiEvent.setTransactionTimestamp(localTimestamp);
+      transTimestamp = Long.parseLong(localTimestamp);
     }
     // Parse payload fields
     Map<String, String> payloadMap = roiEvent.getPayload();
