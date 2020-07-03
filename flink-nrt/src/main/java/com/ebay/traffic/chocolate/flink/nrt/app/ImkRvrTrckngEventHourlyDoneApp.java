@@ -61,13 +61,13 @@ public class ImkRvrTrckngEventHourlyDoneApp {
 
   private static final long DEFAULT_CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
 
+  private static final int DEFAULT_MAX_CONCURRENT_CHECK_POINTS = 1;
+
   private static String donePath;
 
-  public static String doneFilePrefix;
+  private static String doneFilePrefix;
 
-  public static String doneFileSuffix;
-
-  private static final int DEFAULT_MAX_CONCURRENT_CHECK_POINTS = 1;
+  private static String doneFileSuffix;
 
   public static void main(String[] args) throws Exception {
     ImkRvrTrckngEventHourlyDoneApp transformApp = new ImkRvrTrckngEventHourlyDoneApp();
