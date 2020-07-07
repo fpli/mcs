@@ -599,10 +599,9 @@ public class EventListenerServiceTest {
   public void testNotificationResource() {
     // notification event
     Event event = new Event();
-    event.setEventName(Event.EventNameEnum.NOTIFICATION);
 
     EventPayload payload = new EventPayload();
-    payload.setPageId(2054081);
+    payload.setPageId(2054081L);
     Map<String, String> tags = new HashMap<>();
     tags.put(Constants.NOTIFICATION_ID, "539721811729");
     tags.put(Constants.NOTIFICATION_TYPE, "HOT_ITEM");

@@ -26,8 +26,8 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-06-10T14:58:18.447+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "targetUrl","referrer","eventName","payload" })
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-07-02T09:57:48.715+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "targetUrl","referrer","payload" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -43,42 +43,6 @@ public class Event implements Serializable {
   @JsonProperty("referrer")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String referrer = null;
-  /**
-   * Gets or Sets eventName
-   */
-  public enum EventNameEnum {
-
-    NOTIFICATION("notification");
-    private String value;
-
-    EventNameEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static EventNameEnum fromValue(String text) {
-      for (EventNameEnum b : EventNameEnum.values()) {
-        if (String.valueOf(b.value).equals(text)) {
-          return b;
-        }
-      }
-      return null;
-    }
-
-  }
-  @JsonProperty("eventName")
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  private EventNameEnum eventName = null;
   @JsonProperty("payload")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private EventPayload payload = null;
@@ -108,18 +72,6 @@ public class Event implements Serializable {
     this.referrer = referrer;
   }
   /**
-   * Get eventName
-   * @return eventName
-   **/
-  @ApiModelProperty(value = "")
-  public EventNameEnum getEventName() {
-    return eventName;
-  }
-
-  public void setEventName(EventNameEnum eventName) {
-    this.eventName = eventName;
-  }
-  /**
    * Get payload
    * @return payload
    **/
@@ -141,14 +93,13 @@ public class Event implements Serializable {
     }
     Event event = (Event) o;
     return Objects.equals(this.targetUrl, event.targetUrl) &&
-        Objects.equals(this.referrer, event.referrer) &&
-        Objects.equals(this.eventName, event.eventName) &&
-        Objects.equals(this.payload, event.payload);
+      Objects.equals(this.referrer, event.referrer) &&
+      Objects.equals(this.payload, event.payload);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(targetUrl, referrer, eventName, payload);
+    return Objects.hash(targetUrl, referrer, payload);
   }
 
   @Override
@@ -158,7 +109,6 @@ public class Event implements Serializable {
 
     sb.append("    targetUrl: ").append(toIndentedString(targetUrl)).append("\n");
     sb.append("    referrer: ").append(toIndentedString(referrer)).append("\n");
-    sb.append("    eventName: ").append(toIndentedString(eventName)).append("\n");
     sb.append("    payload: ").append(toIndentedString(payload)).append("\n");
     sb.append("}");
     return sb.toString();

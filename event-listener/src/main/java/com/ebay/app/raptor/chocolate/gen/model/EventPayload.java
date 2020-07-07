@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 @ApiModel(description = "Tracking event payload")
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-06-10T15:06:58.415+08:00[Asia/Shanghai]")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-07-02T09:57:48.715+08:00[Asia/Shanghai]")
 @JsonPropertyOrder({ "pageId","tags" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
@@ -41,7 +41,7 @@ public class EventPayload implements Serializable {
 
   @JsonProperty("pageId")
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private Integer pageId = null;
+  private Long pageId = null;
   @JsonProperty("tags")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private Map<String, String> tags = null;
@@ -51,11 +51,11 @@ public class EventPayload implements Serializable {
    * @return pageId
    **/
   @ApiModelProperty(example = "2054081", value = "page id, mandotary for notification")
-  public Integer getPageId() {
+  public Long getPageId() {
     return pageId;
   }
 
-  public void setPageId(Integer pageId) {
+  public void setPageId(Long pageId) {
     this.pageId = pageId;
   }
   /**
