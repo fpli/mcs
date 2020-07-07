@@ -326,6 +326,9 @@ public class ImkRvrTrckngEventTransformAsyncApp
       }
       long currentTimeMillis = System.currentTimeMillis();
       latencyCounter.inc(currentTimeMillis - value.getTimestamp());
+      if (value.getChannelType() == ChannelType.ROI) {
+        return true;
+      }
       if (ebaySites.matcher(value.getReferer()).find()) {
         internalDomainCounter.inc();
         return false;
