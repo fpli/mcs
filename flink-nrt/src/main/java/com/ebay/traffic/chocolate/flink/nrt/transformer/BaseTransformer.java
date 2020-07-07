@@ -97,6 +97,8 @@ public class BaseTransformer {
     }
   };
 
+  private static final List<String> KEYWORD_PARAMS = Arrays.asList("_nkw", "keyword", "kw");
+
   /**
    * Used to cache temp fields
    */
@@ -149,17 +151,17 @@ public class BaseTransformer {
     Method method = findMethod(fieldName);
     Object value;
     try {
-      try {
-        value = method.invoke(this);
-      } catch (NullPointerException e) {
-        LOGGER.error("invoke method {} {} failed", fieldName, method);
-        throw new NullPointerException(e.getMessage());
+      value = method.invoke(this);
+    } catch (NullPointerException | IllegalAccessException | InvocationTargetException e) {
+      if (e instanceof NullPointerException) {
+        String message = String.format("%s no mapping method, raw message %s", fieldName, this.sourceRecord);
+        throw new NullPointerException(message);
+      } else {
+        String message = String.format("invoke method %s failed, raw message %s", method, this.sourceRecord);
+        throw new RuntimeException(message, e);
       }
-    } catch (IllegalAccessException | InvocationTargetException e) {
-      LOGGER.error("invoke method {} failed", method);
-      throw new RuntimeException(e);
     }
-    Validate.notNull(value, String.format("%s is null", fieldName));
+    Validate.notNull(value, String.format("%s is null, raw message %s", fieldName, this.sourceRecord));
     fieldCache.put(fieldName, value);
     return fieldCache.get(fieldName);
   }
@@ -170,7 +172,7 @@ public class BaseTransformer {
     }
     String methodName = BaseTransformer.FIELD_GET_METHOD_MAP_FUNCTION.apply(fieldName);
     Method method = findMethodByName(methodName);
-    Validate.notNull(method, String.format("cannot find method %s", methodName));
+    Validate.notNull(method, String.format("cannot find method %s, raw message %s", methodName, this.sourceRecord));
     BaseTransformer.FIELD_GET_METHOD_CACHE.put(fieldName, method);
     return BaseTransformer.FIELD_GET_METHOD_CACHE.get(fieldName);
   }
@@ -331,13 +333,13 @@ public class BaseTransformer {
     return (Long) sourceRecord.get(TransformerConstants.DST_ROTATION_ID);
   }
 
-  public Integer getDstClientId() {
+  protected Integer getDstClientId() {
     String tempUriQuery = getTempUriQuery();
     String paramValueFromQuery = getParamValueFromQuery(tempUriQuery, TransformerConstants.MKRID);
     return getClientIdFromRotationId(paramValueFromQuery);
   }
 
-  public String getPblshrId() {
+  protected String getPblshrId() {
     return StringConstants.EMPTY;
   }
 
@@ -360,16 +362,22 @@ public class BaseTransformer {
     return result;
   }
 
+  /**
+   * Campaign Manager changes the url template for all PLA accounts, replace adtype=pla and*adgroupid=65058347419* with
+   * new parameter mkgroupid={adgroupid} and mktype={adtype}. Tracking’s MCS data pipeline job replace back to adtype
+   * and adgroupid and persist into IMK so there won't be impact to downstream like data and science.
+   * See <a href="https://jirap.corp.ebay.com/browse/XC-1464">replace landing page url and rvr_url's mktype and mkgroupid</a>
+   * @return new uri
+   */
   @SuppressWarnings("unchecked")
   protected String getLndngPageUrl() {
-    String channelType = sourceRecord.get(TransformerConstants.CHANNEL_TYPE).toString();
     String uri = (String) sourceRecord.get(TransformerConstants.URI);
     String newUri = StringConstants.EMPTY;
     if (StringUtils.isNotEmpty(uri)) {
       try {
         newUri = uri.replace(TransformerConstants.MKGROUPID, TransformerConstants.ADGROUPID).replace(TransformerConstants.MKTYPE, TransformerConstants.ADTYPE);
       } catch (Exception e) {
-        ESMetrics.getInstance().meter(METRIC_IMK_DUMP_MALFORMED, 1, com.ebay.traffic.monitoring.Field.of("channelType", channelType));
+        ESMetrics.getInstance().meter(METRIC_IMK_DUMP_MALFORMED, 1);
         LOGGER.warn(MALFORMED_URL, e);
       }
     }
@@ -377,7 +385,7 @@ public class BaseTransformer {
   }
 
   @SuppressWarnings("unchecked")
-  public String getUserQuery() {
+  protected String getUserQuery() {
     String referrer = (String) sourceRecord.get(TransformerConstants.REFERER);
     String query = getTempUriQuery();
     String result = StringConstants.EMPTY;
@@ -554,7 +562,7 @@ public class BaseTransformer {
   }
 
   @SuppressWarnings("unchecked")
-  private String getPerfTrackNameValue() {
+  protected String getPerfTrackNameValue() {
     String query = getTempUriQuery();
     StringBuilder buf = new StringBuilder();
     try {
@@ -562,7 +570,7 @@ public class BaseTransformer {
         for (String paramMapString : query.split(StringConstants.AND)) {
           String[] paramStringArray = paramMapString.split(StringConstants.EQUAL);
           if (paramStringArray.length == 2) {
-            buf.append(String.format(StringConstants.CARET, paramMapString));
+            buf.append(StringConstants.CARET).append(paramMapString);
           }
         }
       }
@@ -573,15 +581,11 @@ public class BaseTransformer {
     return buf.toString();
   }
 
-  private static final List<String> KEYWORD_PARAMS = Arrays.asList("_nkw", "keyword", "kw");
-
-
   public String getKeyword() {
     String query = getTempUriQuery();
     return getParamFromQuery(query, KEYWORD_PARAMS);
   }
 
-  // TODO
   public Long getKwId() {
     return -999L;
   }
@@ -656,7 +660,7 @@ public class BaseTransformer {
   }
 
   protected String getUserMapInd() {
-    String userId = String.valueOf(sourceRecord.get(TransformerConstants.USER_ID));
+    String userId = String.valueOf(getUserId());
     if (StringUtils.isEmpty(userId) || userId.equals(StringConstants.ZERO)) {
       return StringConstants.ZERO;
     } else {
@@ -753,7 +757,7 @@ public class BaseTransformer {
   }
 
   @SuppressWarnings("unchecked")
-  public Integer getClientIdFromRotationId(String rotationId) {
+  protected Integer getClientIdFromRotationId(String rotationId) {
     int result = 0;
     try {
       if (StringUtils.isNotEmpty(rotationId)

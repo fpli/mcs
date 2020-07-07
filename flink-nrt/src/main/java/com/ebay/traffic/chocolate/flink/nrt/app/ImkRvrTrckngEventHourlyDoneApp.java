@@ -55,16 +55,19 @@ public class ImkRvrTrckngEventHourlyDoneApp {
 
   protected StreamExecutionEnvironment streamExecutionEnvironment;
 
-  private static final long DEFAULT_CHECK_POINT_PERIOD = TimeUnit.MINUTES.toMillis(1);
+  private static final long DEFAULT_CHECK_POINT_PERIOD = TimeUnit.MINUTES.toMillis(3);
 
-  private static final long DEFAULT_MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(1);
+  private static final long DEFAULT_MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(30);
 
-  private static final long DEFAULT_CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(1);
+  private static final long DEFAULT_CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
 
   private static final int DEFAULT_MAX_CONCURRENT_CHECK_POINTS = 1;
 
-  private static String dataPath = "hdfs://apollo-rno-ns01/apps/b_marketing_tracking/roi_test/imk_rvr_trckng_event";
-  private static String donePath = "hdfs://apollo-rno-ns01/apps/b_marketing_tracking/roi_test/watch";
+  private static String donePath;
+
+  private static String doneFilePrefix;
+
+  private static String doneFileSuffix;
 
   public static void main(String[] args) throws Exception {
     ImkRvrTrckngEventHourlyDoneApp transformApp = new ImkRvrTrckngEventHourlyDoneApp();
@@ -73,35 +76,30 @@ public class ImkRvrTrckngEventHourlyDoneApp {
 
   @SuppressWarnings("rawtypes")
   protected void run() throws Exception {
-//    Properties properties = PropertyMgr.getInstance().loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_HOURLY_DONE_APP_HDFS_PROPERTIES);
-//    dataPath = properties.getProperty(PropertyConstants.DATA_PATH);
-//    donePath = properties.getProperty(PropertyConstants.DONE_PATH);
+    Properties properties = PropertyMgr.getInstance().loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_HOURLY_DONE_APP_HDFS_PROPERTIES);
+    String dataPath = properties.getProperty(PropertyConstants.DATA_PATH);
+    donePath = properties.getProperty(PropertyConstants.DONE_PATH);
+    doneFilePrefix = properties.getProperty(PropertyConstants.DONE_FILE_PREFIX);
+    doneFileSuffix = properties.getProperty(PropertyConstants.DONE_FILE_SUFFIX);
 
     streamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment();
     prepareBaseExecutionEnvironment();
     ParquetMapInputFormat parquetRowInputFormat = new ParquetMapInputFormat(new Path(dataPath), new AvroSchemaConverter().convert(ImkRvrTrckngEventMessage.getClassSchema()));
     parquetRowInputFormat.setNestedFileEnumeration(true);
     DataStream<Map> inputStream = streamExecutionEnvironment.readFile(parquetRowInputFormat, dataPath, FileProcessingMode.PROCESS_CONTINUOUSLY, TimeUnit.MINUTES.toMillis(5));
-    inputStream.map(new MapFunction<Map, LocalDateTime>() {
-      @Override
-      public LocalDateTime map(Map value) {
-        return LocalDateTime.parse((String) value.get(TransformerConstants.EVENT_TS),
-                DateTimeFormatter.ofPattern(DateConstants.YYYY_MM_DD_HH_MM_SS_SSS));
-      }
-    }).windowAll(TumblingProcessingTimeWindows.of(Time.minutes(5))).reduce(new ReduceFunction<LocalDateTime>() {
+    inputStream.map((MapFunction<Map, LocalDateTime>) value -> LocalDateTime.parse((String) value.get(TransformerConstants.EVENT_TS),
+            DateTimeFormatter.ofPattern(DateConstants.YYYY_MM_DD_HH_MM_SS_SSS))).windowAll(TumblingProcessingTimeWindows.of(Time.minutes(5))).reduce(new ReduceFunction<LocalDateTime>() {
       @Override
       public LocalDateTime reduce(LocalDateTime value1, LocalDateTime value2) {
         return value1.isBefore(value2) ? value1 : value2;
       }
     }).addSink(new HourlyDoneCustomSinkFunction());
 
-    streamExecutionEnvironment.execute("ImkRvrTrckngEventHourlyDoneApp");
+    streamExecutionEnvironment.execute(this.getClass().getSimpleName());
   }
 
   private static class HourlyDoneCustomSinkFunction extends RichSinkFunction<LocalDateTime> implements CheckpointedFunction {
     private static final Path PATH = new Path(donePath);
-    public static final String DONE_FILE_PREFIX = "imk_rvr_trckng_event_hourly.done.";
-    public static final String DONE_FILE_SUFFIX = "00000000";
     public static final String LAST_HOURLY_DONE_STATE = "last-hourly-done-state";
     private transient FileSystem fileSystem;
 
@@ -114,7 +112,7 @@ public class ImkRvrTrckngEventHourlyDoneApp {
     private transient LocalDateTime lastHourlyDone;
 
     private String getDoneFileName(String doneDir, LocalDateTime doneFileDatetime) {
-      return doneDir + StringConstants.SLASH + DONE_FILE_PREFIX + doneFileDatetime.format(doneFileDatetimeFormatter) + DONE_FILE_SUFFIX;
+      return doneDir + StringConstants.SLASH + doneFilePrefix + doneFileDatetime.format(doneFileDatetimeFormatter) + doneFileSuffix;
     }
 
     private String getDoneDir(LocalDateTime dateTime) {
@@ -190,8 +188,8 @@ public class ImkRvrTrckngEventHourlyDoneApp {
       }).get();
       return Arrays.stream(fileSystem.listStatus(lastDoneDirFileStatus.getPath()))
               .map(doneFileStatus -> doneFileStatus.getPath().getName())
-              .filter(doneFileName -> doneFileName.startsWith(DONE_FILE_PREFIX)).map(doneFileName -> {
-                String doneFileDatetime = doneFileName.substring(DONE_FILE_PREFIX.length(), doneFileName.length() - DONE_FILE_SUFFIX.length());
+              .filter(doneFileName -> doneFileName.startsWith(doneFilePrefix)).map(doneFileName -> {
+                String doneFileDatetime = doneFileName.substring(doneFilePrefix.length(), doneFileName.length() - doneFileSuffix.length());
                 return LocalDateTime.parse(doneFileDatetime, doneFileDatetimeFormatter);
               }).max(LocalDateTime::compareTo).get();
     }

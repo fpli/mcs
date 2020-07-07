@@ -50,4 +50,6 @@ public class PropertyConstants {
   public static final String IMK_RVR_TRCKNG_EVENT_HOURLY_DONE_APP_HDFS_PROPERTIES = "imk-rvr-trckng-event-hourly-done-app.hdfs.properties";
   public static final String DATA_PATH = "data.path";
   public static final String DONE_PATH = "done.path";
+  public static final String DONE_FILE_PREFIX = "done.file.prefix";
+  public static final String DONE_FILE_SUFFIX = "done.file.suffix";
 }

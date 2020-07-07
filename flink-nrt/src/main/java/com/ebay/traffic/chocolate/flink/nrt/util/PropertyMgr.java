@@ -61,18 +61,4 @@ public class PropertyMgr {
     return allLines;
   }
 
-  public String loadFile(String propertyName) {
-    StringBuilder contentBuilder = new StringBuilder();
-    try (InputStream in = getClass().getClassLoader().getResourceAsStream(propertyEnv.name() + StringConstants.SLASH + propertyName);
-         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(in)))) {
-      String line;
-      while ((line = bufferedReader.readLine()) != null) {
-        contentBuilder.append(line).append("\n");
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    return contentBuilder.toString();
-  }
-
 }
