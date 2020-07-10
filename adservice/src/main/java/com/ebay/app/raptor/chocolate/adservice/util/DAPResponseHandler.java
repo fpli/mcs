@@ -98,7 +98,7 @@ public class DAPResponseHandler {
           throws URISyntaxException {
     ESMetrics.getInstance().meter("sendDAPResponse");
 
-    LOGGER.info("query string {}", request.getQueryString());
+    LOGGER.debug("query string {}", request.getQueryString());
 
     long dapRvrId = getDAPRvrId();
     Map<String, String[]> params = request.getParameterMap();

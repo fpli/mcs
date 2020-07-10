@@ -131,7 +131,7 @@ public class FilterZookeeperClient {
         // Attempt to create the "persistent ephemeral" node.
         driverIdNode = new PersistentEphemeralNode(client, PersistentEphemeralNode.Mode.EPHEMERAL,
                 zkDriverIdNodePath, Hostname.HOSTNAME.getBytes());
-        logger.info("Creating driver ID node " + this.zkDriverIdNodePath + " with value of " + Hostname.HOSTNAME);
+        logger.info("Creating driver ID node " + this.zkDriverIdNodePath);
         driverIdNode.start();
 
         boolean nodeCreated = driverIdNode.waitForInitialCreate(25, TimeUnit.SECONDS);
