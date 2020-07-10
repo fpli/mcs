@@ -255,8 +255,7 @@ public class DefaultChannel implements Channel {
    */
   private StringBuffer deriveWarningMessage(StringBuffer sb,
                                             HttpServletRequest servletRequest) {
-    sb.append(" URL=").append(servletRequest.getRequestURL().toString())
-        .append(" queryStr=").append(servletRequest.getQueryString());
+    sb.append(" URL=").append(servletRequest.getRequestURL().toString());
     return sb;
   }
 
