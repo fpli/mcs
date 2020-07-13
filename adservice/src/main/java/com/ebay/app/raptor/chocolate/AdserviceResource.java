@@ -3,7 +3,10 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
-import com.ebay.app.raptor.chocolate.adservice.constant.*;
+import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
+import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
+import com.ebay.app.raptor.chocolate.adservice.constant.MKEVT;
 import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -42,7 +45,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Resource class
