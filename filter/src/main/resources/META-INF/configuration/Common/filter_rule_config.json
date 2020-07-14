@@ -75,5 +75,11 @@
     "filterRules": [
 
     ]
+  },
+  {
+    "channelType": "FREE_PLA",
+    "filterRules": [
+
+    ]
   }
 ]
