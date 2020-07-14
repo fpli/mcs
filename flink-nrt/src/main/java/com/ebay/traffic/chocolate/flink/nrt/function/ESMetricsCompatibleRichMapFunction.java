@@ -14,15 +14,15 @@ public abstract class ESMetricsCompatibleRichMapFunction<IN, OUT> extends RichMa
 
     @Override
     public void open(Configuration parameters) throws Exception {
-//        Properties properties = PropertyMgr.getInstance()
-//                .loadProperty(PropertyConstants.APPLICATION_PROPERTIES);
-//        ESMetrics.init(properties.getProperty(PropertyConstants.ELASTICSEARCH_INDEX_PREFIX),
-//                properties.getProperty(PropertyConstants.ELASTICSEARCH_URL));
+        Properties properties = PropertyMgr.getInstance()
+                .loadProperty(PropertyConstants.APPLICATION_PROPERTIES);
+        ESMetrics.init(properties.getProperty(PropertyConstants.ELASTICSEARCH_INDEX_PREFIX),
+                properties.getProperty(PropertyConstants.ELASTICSEARCH_URL));
     }
 
     @Override
     public void close() throws Exception {
-//        ESMetrics.getInstance().close();
+        ESMetrics.getInstance().close();
     }
 
     @Override

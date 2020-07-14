@@ -1,12 +1,14 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.app.raptor.chocolate.avro.*;
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.avro.FilterMessage;
+import com.ebay.app.raptor.chocolate.avro.ImkTrckngEventWideMessage;
+import com.ebay.app.raptor.chocolate.avro.RheosHeader;
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.deserialization.DefaultKafkaDeserializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.deserialization.DefaultKafkaSerializationSchema;
-import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichFlatMapFunction;
 import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichMapFunction;
 import com.ebay.traffic.chocolate.flink.nrt.provider.AsyncDataRequest;
 import com.ebay.traffic.chocolate.flink.nrt.transformer.BaseTransformer;
@@ -32,7 +34,6 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
-import org.apache.flink.util.Collector;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.errors.SerializationException;
 import org.slf4j.Logger;
@@ -54,17 +55,17 @@ import java.util.regex.Pattern;
  * @since 2020/1/18
  *
  */
-public class ImkRvrTrckngEventTransformAsyncApp
+public class ImkTrckngEventTransformApp
     extends AbstractRheosCompatibleApp<ConsumerRecord<byte[], byte[]>, Tuple3<String, Long, byte[]>> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ImkRvrTrckngEventTransformAsyncApp.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImkTrckngEventTransformApp.class);
 
   /**
    * App entrance
    * @param args input args
    */
   public static void main(String[] args) {
-    ImkRvrTrckngEventTransformAsyncApp transformApp = new ImkRvrTrckngEventTransformAsyncApp();
+    ImkTrckngEventTransformApp transformApp = new ImkTrckngEventTransformApp();
     try {
       transformApp.run();
     } catch (Exception e) {
@@ -76,14 +77,14 @@ public class ImkRvrTrckngEventTransformAsyncApp
   @Override
   protected List<String> getConsumerTopics() {
     return  Arrays.asList(PropertyMgr.getInstance()
-                    .loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
+                    .loadProperty(PropertyConstants.IMK_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
                     .getProperty(PropertyConstants.TOPIC).split(StringConstants.COMMA));
   }
 
   @Override
   protected Properties getConsumerProperties() {
     return PropertyMgr.getInstance()
-        .loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_CONSUMER_PROPERTIES);
+        .loadProperty(PropertyConstants.IMK_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_CONSUMER_PROPERTIES);
   }
 
   @Override
@@ -106,19 +107,19 @@ public class ImkRvrTrckngEventTransformAsyncApp
   @Override
   protected Properties getProducerProperties() {
     return PropertyMgr.getInstance()
-        .loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES);
+        .loadProperty(PropertyConstants.IMK_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES);
   }
 
   @Override
   protected DataStream<Tuple3<String, Long, byte[]>> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
-    SingleOutputStreamOperator<FilterMessageV4> map = dataStreamSource.map(new TransformRichMapFunction());
-    SingleOutputStreamOperator<FilterMessageV4> filter = map.filter(new FilterEbaySites());
+    SingleOutputStreamOperator<FilterMessageV4> filterMessageStream = dataStreamSource.map(new DecodeFilterMessageFunction());
+    SingleOutputStreamOperator<FilterMessageV4> filter = filterMessageStream.filter(new FilterEbaySites());
     DataStream<FilterMessageV4> resultStream =
             AsyncDataStream.unorderedWait(filter, new AsyncDataRequest(), 10000, TimeUnit.MILLISECONDS, 100);
-    return resultStream.flatMap(new TransformRichFlatMapFunction());
+    return resultStream.map(new TransformFunction());
   }
 
-  private static class TransformRichMapFunction
+  private static class DecodeFilterMessageFunction
           extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, FilterMessageV4> {
     private Schema rheosHeaderSchema;
 
@@ -134,13 +135,11 @@ public class ImkRvrTrckngEventTransformAsyncApp
     }
   }
 
-  private static class TransformRichFlatMapFunction
-      extends ESMetricsCompatibleRichFlatMapFunction<FilterMessageV4, Tuple3<String, Long, byte[]>> {
+  private static class TransformFunction
+      extends ESMetricsCompatibleRichMapFunction<FilterMessageV4, Tuple3<String, Long, byte[]>> {
     private String rheosProducer;
-    private String imkEventMessageTopic;
-    private String imkEventDtlMessageTopic;
-    private int imkEventMessageSchemaId;
-    private int imkEventDtlMessageSchemaId;
+    private String imkEventWideMessageTopic;
+    private int imkEventWideMessageSchemaId;
     private transient EncoderFactory encoderFactory;
 
     @Override
@@ -148,35 +147,24 @@ public class ImkRvrTrckngEventTransformAsyncApp
       super.open(parameters);
       encoderFactory = EncoderFactory.get();
       Properties topicProperties = PropertyMgr.getInstance()
-          .loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES);
+          .loadProperty(PropertyConstants.IMK_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES);
       rheosProducer = topicProperties.getProperty(PropertyConstants.RHEOS_PRODUCER);
-      imkEventMessageTopic = topicProperties.getProperty(PropertyConstants.TOPIC_IMK_RVR_TRCKNG_EVENT);
-      imkEventDtlMessageTopic = topicProperties.getProperty(PropertyConstants.TOPIC_IMK_RVR_TRCKNG_EVENT_DTL);
-      imkEventMessageSchemaId = Integer
-          .parseInt(topicProperties.getProperty(PropertyConstants.SCHEMA_ID_IMK_RVR_TRCKNG_EVENT));
-      imkEventDtlMessageSchemaId = Integer
-          .parseInt(topicProperties.getProperty(PropertyConstants.SCHEMA_ID_IMK_RVR_TRCKNG_EVENT_DTL));
+      imkEventWideMessageTopic = topicProperties.getProperty(PropertyConstants.TOPIC);
+      imkEventWideMessageSchemaId = Integer
+              .parseInt(topicProperties.getProperty(PropertyConstants.SCHEMA_ID_IMK_TRCKNG_EVENT_WDIE));
     }
 
     @Override
-    public void flatMap(FilterMessageV4 filterMessage,
-                        Collector<Tuple3<String, Long, byte[]>> collector) throws Exception {
+    public Tuple3<String, Long, byte[]> map(FilterMessageV4 filterMessage) throws Exception {
       long currentTimeMillis = System.currentTimeMillis();
 
       BaseTransformer concreteTransformer = TransformerFactory.getConcreteTransformer(filterMessage);
+      ImkTrckngEventWideMessage imkTrckngEventWideMessage = new ImkTrckngEventWideMessage();
+      imkTrckngEventWideMessage.setRheosHeader(getRheosHeader(currentTimeMillis, imkEventWideMessageSchemaId));
+      concreteTransformer.transform(imkTrckngEventWideMessage);
 
-      ImkRvrTrckngEventMessage imkRvrTrckngEventMessage = new ImkRvrTrckngEventMessage();
-      imkRvrTrckngEventMessage.setRheosHeader(getRheosHeader(currentTimeMillis, imkEventMessageSchemaId));
-      concreteTransformer.transform(imkRvrTrckngEventMessage);
-
-      ImkRvrTrckngEventDtlMessage imkRvrTrckngEventDtlMessage = new ImkRvrTrckngEventDtlMessage();
-      imkRvrTrckngEventDtlMessage.setRheosHeader(getRheosHeader(currentTimeMillis, imkEventDtlMessageSchemaId));
-      concreteTransformer.transform(imkRvrTrckngEventDtlMessage);
-
-      collector.collect(new Tuple3<>(imkEventMessageTopic, imkRvrTrckngEventMessage.getRvrId(),
-          serializeRheosEvent(getRheosEvent(imkRvrTrckngEventMessage))));
-      collector.collect(new Tuple3<>(imkEventDtlMessageTopic, imkRvrTrckngEventDtlMessage.getRvrId(),
-          serializeRheosEvent(getRheosEvent(imkRvrTrckngEventDtlMessage))));
+      return new Tuple3<>(imkEventWideMessageTopic, imkTrckngEventWideMessage.getRvrId(),
+              serializeRheosEvent(getRheosEvent(imkTrckngEventWideMessage)));
     }
 
     private RheosEvent getRheosEvent(GenericRecord v) {
