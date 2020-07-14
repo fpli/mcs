@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.app.raptor.chocolate.avro.ImkRvrTrckngEventMessage;
+import com.ebay.app.raptor.chocolate.avro.ImkTrckngEventWideMessage;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.deserialization.DefaultKafkaDeserializationSchema;
@@ -27,23 +27,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-public class ImkRvrTrckngEventSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, ImkRvrTrckngEventMessage> {
+public class ImkTrckngEventSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, ImkTrckngEventWideMessage> {
 
   public static void main(String[] args) throws Exception {
-    ImkRvrTrckngEventSinkApp transformApp = new ImkRvrTrckngEventSinkApp();
+    ImkTrckngEventSinkApp transformApp = new ImkTrckngEventSinkApp();
     transformApp.run();
   }
 
   @Override
   protected List<String> getConsumerTopics() {
     return  Arrays.asList(PropertyMgr.getInstance()
-                    .loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
+                    .loadProperty(PropertyConstants.IMK_TRCKNG_EVENT_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
                     .getProperty(PropertyConstants.TOPIC).split(StringConstants.COMMA));
   }
 
   @Override
   protected Properties getConsumerProperties() {
-    return PropertyMgr.getInstance().loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_SINK_APP_RHEOS_CONSUMER_PROPERTIES);
+    return PropertyMgr.getInstance().loadProperty(PropertyConstants.IMK_TRCKNG_EVENT_SINK_APP_RHEOS_CONSUMER_PROPERTIES);
   }
 
   @Override
@@ -53,53 +53,53 @@ public class ImkRvrTrckngEventSinkApp extends AbstractRheosHDFSCompatibleApp<Con
 
   @Override
   protected Path getSinkBasePath() {
-    Properties properties = PropertyMgr.getInstance().loadProperty(PropertyConstants.IMK_RVR_TRCKNG_EVENT_SINK_APP_HDFS_PROPERTIES);
+    Properties properties = PropertyMgr.getInstance().loadProperty(PropertyConstants.IMK_TRCKNG_EVENT_SINK_APP_HDFS_PROPERTIES);
     return new Path(properties.getProperty(PropertyConstants.PATH));
   }
 
   @Override
-  protected StreamingFileSink<ImkRvrTrckngEventMessage> getStreamingFileSink() {
+  protected StreamingFileSink<ImkTrckngEventWideMessage> getStreamingFileSink() {
     return StreamingFileSink.forBulkFormat(getSinkBasePath(), getSinkWriterFactory()).withBucketAssigner(getSinkBucketAssigner())
             .build();
   }
 
   @Override
-  protected BulkWriter.Factory<ImkRvrTrckngEventMessage> getSinkWriterFactory() {
-    return ParquetAvroWriters.forSpecificRecord(ImkRvrTrckngEventMessage.class);
+  protected BulkWriter.Factory<ImkTrckngEventWideMessage> getSinkWriterFactory() {
+    return ParquetAvroWriters.forSpecificRecord(ImkTrckngEventWideMessage.class);
   }
 
   @Override
-  protected DataStream<ImkRvrTrckngEventMessage> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
+  protected DataStream<ImkTrckngEventWideMessage> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
     return dataStreamSource.map(new TransformRichMapFunction());
   }
 
-  private static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, ImkRvrTrckngEventMessage> {
-    private transient DatumReader<ImkRvrTrckngEventMessage> imkReader;
+  private static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, ImkTrckngEventWideMessage> {
+    private transient DatumReader<ImkTrckngEventWideMessage> imkReader;
 
     @Override
     public void open(Configuration parameters) throws Exception {
       super.open(parameters);
-      imkReader = new SpecificDatumReader<>(ImkRvrTrckngEventMessage.getClassSchema());
+      imkReader = new SpecificDatumReader<>(ImkTrckngEventWideMessage.getClassSchema());
     }
 
     @Override
-    public ImkRvrTrckngEventMessage map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
+    public ImkTrckngEventWideMessage map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
       BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(consumerRecord.value(), null);
-      ImkRvrTrckngEventMessage datum = new ImkRvrTrckngEventMessage();
+      ImkTrckngEventWideMessage datum = new ImkTrckngEventWideMessage();
       datum = imkReader.read(datum, decoder);
       return datum;
     }
   }
 
   @Override
-  protected BucketAssigner<ImkRvrTrckngEventMessage, String> getSinkBucketAssigner() {
+  protected BucketAssigner<ImkTrckngEventWideMessage, String> getSinkBucketAssigner() {
     return new CustomEventDateTimeBucketAssigner();
   }
 
-  private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<ImkRvrTrckngEventMessage, String> {
+  private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<ImkTrckngEventWideMessage, String> {
 
     @Override
-    public String getBucketId(ImkRvrTrckngEventMessage element, Context context) {
+    public String getBucketId(ImkTrckngEventWideMessage element, Context context) {
       return StringConstants.BUCKET_PREFIX + element.getEventDt();
     }
 
