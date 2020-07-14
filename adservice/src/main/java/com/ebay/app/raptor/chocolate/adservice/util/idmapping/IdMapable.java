@@ -11,6 +11,7 @@ public interface IdMapable {
 
   String ADGUID_GUID_PREFIX = "a_g_";
   String ADGUID_UID_PREFIX = "a_u_";
+  String GUID_ADGUID_PREFIX = "g_a_";
 
   /**
    * Add adguid -> guid mapping
@@ -33,4 +34,11 @@ public interface IdMapable {
    * @return user id in String. If there is no user id return empty string.
    */
   String getUid(String adguid);
+
+  /**
+   * Get adguid by guid
+   * @param guid guid in cookie
+   * @return adguid in String. If there is no adguid return empty string.
+   */
+  String getAdguid(String guid);
 }

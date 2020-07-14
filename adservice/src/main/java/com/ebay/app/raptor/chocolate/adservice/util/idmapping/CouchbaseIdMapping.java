@@ -32,4 +32,12 @@ public class CouchbaseIdMapping implements IdMapable {
     return "";
   }
 
+  @Override
+  public String getAdguid(String guid) {
+    if(!StringUtil.isNullOrEmpty(guid)) {
+      return CouchbaseClient.getInstance().getAdguidByGuid(guid);
+    }
+    return "";
+  }
+
 }

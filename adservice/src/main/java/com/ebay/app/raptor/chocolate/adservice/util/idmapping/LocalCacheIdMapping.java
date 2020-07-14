@@ -18,6 +18,7 @@ public class LocalCacheIdMapping implements IdMapable {
   public boolean addMapping(String adguid, String guid, String userId) {
     adguidIdMap.put(ADGUID_GUID_PREFIX + adguid, guid);
     adguidIdMap.put(ADGUID_UID_PREFIX + adguid, userId);
+    adguidIdMap.put(GUID_ADGUID_PREFIX + guid, adguid);
     return true;
   }
 
@@ -29,6 +30,11 @@ public class LocalCacheIdMapping implements IdMapable {
   @Override
   public String getUid(String adguid) {
     return adguidIdMap.getOrDefault(ADGUID_UID_PREFIX + adguid, "");
+  }
+
+  @Override
+  public String getAdguid(String guid) {
+    return adguidIdMap.getOrDefault(GUID_ADGUID_PREFIX + guid, "");
   }
 
 }

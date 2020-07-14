@@ -51,6 +51,7 @@ public class CouchbaseClient {
 
   private static final String GUID_MAP_KEY = "guid";
   private static final String UID_MAP_KEY = "uid";
+  private static final String ADGUID_MAP_KEY = "adguid";
 
   private final Metrics metrics = ESMetrics.getInstance();
 
@@ -160,6 +161,25 @@ public class CouchbaseClient {
     return guid;
   }
 
+  /*get adguid by guid*/
+  public String getAdguidByGuid(String guid) {
+    CacheClient cacheClient = null;
+    String adguid = "";
+    try {
+      cacheClient = factory.getClient(datasourceName);
+      JsonDocument document = getBucket(cacheClient).get(IdMapable.GUID_ADGUID_PREFIX + guid, JsonDocument.class);
+      if (document != null) {
+        adguid = document.content().get(ADGUID_MAP_KEY).toString();
+        logger.debug("Get adguid. guid=" + guid + " adguid=" + adguid);
+      }
+    } catch (Exception e) {
+      logger.warn("Couchbase get operation exception", e);
+    } finally {
+      factory.returnClient(cacheClient);
+    }
+    return adguid;
+  }
+
   /**
    * Couchbase upsert operation, make sure return client to factory when exception
    */
@@ -170,20 +190,29 @@ public class CouchbaseClient {
       cacheClient = factory.getClient(datasourceName);
       String adguidGuidKey = IdMapable.ADGUID_GUID_PREFIX + adguid;
       String adguidUidKey = IdMapable.ADGUID_UID_PREFIX + adguid;
+      String guidAdguidKey = IdMapable.GUID_ADGUID_PREFIX + guid;
 
-      //update guid
+      //update adguid to guid mapping
       if ((!getBucket(cacheClient).exists(adguidGuidKey)) && (!StringUtils.isNullOrEmpty(guid))) {
         Map<String, String> guidMap = new HashMap<>();
         guidMap.put(GUID_MAP_KEY, guid);
         getBucket(cacheClient).upsert(JsonDocument.create(adguidGuidKey, EXPIRY, JsonObject.from(guidMap)));
         logger.debug("Adding new mapping. adguid=" + adguid + " guid=" + guid);
       }
-      //update uid
+      //update adguid to uid mapping
       if ((!getBucket(cacheClient).exists(adguidUidKey)) && (!StringUtils.isNullOrEmpty(uid))) {
         Map<String, String> uidMap = new HashMap<>();
         uidMap.put(UID_MAP_KEY, uid);
         getBucket(cacheClient).upsert(JsonDocument.create(adguidUidKey, EXPIRY, JsonObject.from(uidMap)));
         logger.debug("Adding new mapping. adguid=" + adguid + " uid=" + guid);
+      }
+      //update guid to adguid mapping. For reverse mapping.
+      if ((!getBucket(cacheClient).exists(guidAdguidKey)) && (!StringUtils.isNullOrEmpty(guid))
+      && (!StringUtils.isNullOrEmpty(adguid))) {
+        Map<String, String> adguidMap = new HashMap<>();
+        adguidMap.put(ADGUID_MAP_KEY, adguid);
+        getBucket(cacheClient).upsert(JsonDocument.create(guidAdguidKey, EXPIRY, JsonObject.from(adguidMap)));
+        logger.debug("Adding new reverse mapping. guid=" + guid + " adguid=" + adguid);
       }
       upserted = true;
     } catch (Exception e) {

@@ -44,9 +44,11 @@ public class CouchbaseIdMappingTest {
 
     assertEquals("456", idMapping.getGuid("123"));
     assertEquals("12345", idMapping.getUid("123"));
+    assertEquals("123", idMapping.getAdguid("456"));
 
     assertEquals("", idMapping.getGuid("234"));
     assertEquals("12345", idMapping.getUid("234"));
+    assertEquals("", idMapping.getAdguid(""));
 
     assertEquals("456", idMapping.getGuid("345"));
     assertEquals("", idMapping.getUid("345"));
