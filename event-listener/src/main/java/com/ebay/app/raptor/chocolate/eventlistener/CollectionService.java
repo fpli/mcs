@@ -422,7 +422,7 @@ public class CollectionService {
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
     if (channelType == ChannelIdEnum.EPN || channelType == ChannelIdEnum.PAID_SEARCH || channelType == ChannelIdEnum.DAP ||
-        channelType == ChannelIdEnum.SOCIAL_MEDIA)
+        channelType == ChannelIdEnum.SOCIAL_MEDIA || channelType == ChannelIdEnum.FREE_PLA)
       processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext);
     else if (channelType == ChannelIdEnum.SITE_EMAIL)

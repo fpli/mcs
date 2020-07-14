@@ -61,6 +61,11 @@ public enum LogicalChannelEnum {
   SITE_SMS(ChannelType.SITE_SMS, ChannelActionEnum.CLICK),
 
   /**
+   * Free PLA channel
+   */
+  FREE_PLA(ChannelType.FREE_PLA, ChannelActionEnum.CLICK),
+
+  /**
    * ROI channel
    */
   ROI(ChannelType.ROI, ChannelActionEnum.ROI);
