@@ -145,20 +145,20 @@ public class CouchbaseClient {
   /*get uid by adguid*/
   public String getUidByAdguid(String adguid) {
     CacheClient cacheClient = null;
-    String guid = "";
+    String uid = "";
     try {
       cacheClient = factory.getClient(datasourceName);
       JsonDocument document = getBucket(cacheClient).get(IdMapable.ADGUID_UID_PREFIX + adguid, JsonDocument.class);
       if (document != null) {
-        guid = document.content().get(UID_MAP_KEY).toString();
-        logger.debug("Get guid. adguid=" + adguid + " uid=" + guid);
+        uid = document.content().get(UID_MAP_KEY).toString();
+        logger.debug("Get guid. adguid=" + adguid + " uid=" + uid);
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
     } finally {
       factory.returnClient(cacheClient);
     }
-    return guid;
+    return uid;
   }
 
   /*get adguid by guid*/
@@ -180,6 +180,55 @@ public class CouchbaseClient {
     return adguid;
   }
 
+  /*get uid by guid*/
+  public String getUidByGuid(String guid) {
+    CacheClient cacheClient = null;
+    String uid = "";
+    try {
+      cacheClient = factory.getClient(datasourceName);
+      JsonDocument document = getBucket(cacheClient).get(IdMapable.GUID_UID_PREFIX + guid, JsonDocument.class);
+      if (document != null) {
+        uid = document.content().get(UID_MAP_KEY).toString();
+        logger.debug("Get uid. guid=" + guid + " uid=" + uid);
+      }
+    } catch (Exception e) {
+      logger.warn("Couchbase get operation exception", e);
+    } finally {
+      factory.returnClient(cacheClient);
+    }
+    return uid;
+  }
+
+  /*get guid by uid*/
+  public String getGuidByUid(String uid) {
+    CacheClient cacheClient = null;
+    String guid = "";
+    try {
+      cacheClient = factory.getClient(datasourceName);
+      JsonDocument document = getBucket(cacheClient).get(IdMapable.UID_GUID_PREFIX + uid, JsonDocument.class);
+      if (document != null) {
+        guid = document.content().get(GUID_MAP_KEY).toString();
+        logger.debug("Get guid. uid=" + uid + " guid=" + guid);
+      }
+    } catch (Exception e) {
+      logger.warn("Couchbase get operation exception", e);
+    } finally {
+      factory.returnClient(cacheClient);
+    }
+    return guid;
+  }
+
+  private void addSingleMapping(String idKey, String idValue, String mapPrefix, String mapName) {
+    CacheClient cacheClient = factory.getClient(datasourceName);
+    String key = mapPrefix + idKey;
+    if ((!getBucket(cacheClient).exists(key)) && (!StringUtils.isNullOrEmpty(idValue))) {
+      Map<String, String> map = new HashMap<>();
+      map.put(mapName, idValue);
+      getBucket(cacheClient).upsert(JsonDocument.create(key, EXPIRY, JsonObject.from(map)));
+      logger.debug("Adding new mapping. Map type:" + mapPrefix + ", key: " + idKey + ", value: " + idValue);
+    }
+  }
+
   /**
    * Couchbase upsert operation, make sure return client to factory when exception
    */
@@ -188,32 +237,22 @@ public class CouchbaseClient {
     boolean upserted = false;
     try {
       cacheClient = factory.getClient(datasourceName);
-      String adguidGuidKey = IdMapable.ADGUID_GUID_PREFIX + adguid;
-      String adguidUidKey = IdMapable.ADGUID_UID_PREFIX + adguid;
-      String guidAdguidKey = IdMapable.GUID_ADGUID_PREFIX + guid;
 
       //update adguid to guid mapping
-      if ((!getBucket(cacheClient).exists(adguidGuidKey)) && (!StringUtils.isNullOrEmpty(guid))) {
-        Map<String, String> guidMap = new HashMap<>();
-        guidMap.put(GUID_MAP_KEY, guid);
-        getBucket(cacheClient).upsert(JsonDocument.create(adguidGuidKey, EXPIRY, JsonObject.from(guidMap)));
-        logger.debug("Adding new mapping. adguid=" + adguid + " guid=" + guid);
-      }
+      addSingleMapping(adguid, guid, IdMapable.ADGUID_GUID_PREFIX, GUID_MAP_KEY);
+
       //update adguid to uid mapping
-      if ((!getBucket(cacheClient).exists(adguidUidKey)) && (!StringUtils.isNullOrEmpty(uid))) {
-        Map<String, String> uidMap = new HashMap<>();
-        uidMap.put(UID_MAP_KEY, uid);
-        getBucket(cacheClient).upsert(JsonDocument.create(adguidUidKey, EXPIRY, JsonObject.from(uidMap)));
-        logger.debug("Adding new mapping. adguid=" + adguid + " uid=" + guid);
-      }
+      addSingleMapping(adguid, uid, IdMapable.ADGUID_UID_PREFIX, UID_MAP_KEY);
+
       //update guid to adguid mapping. For reverse mapping.
-      if ((!getBucket(cacheClient).exists(guidAdguidKey)) && (!StringUtils.isNullOrEmpty(guid))
-      && (!StringUtils.isNullOrEmpty(adguid))) {
-        Map<String, String> adguidMap = new HashMap<>();
-        adguidMap.put(ADGUID_MAP_KEY, adguid);
-        getBucket(cacheClient).upsert(JsonDocument.create(guidAdguidKey, EXPIRY, JsonObject.from(adguidMap)));
-        logger.debug("Adding new reverse mapping. guid=" + guid + " adguid=" + adguid);
-      }
+      addSingleMapping(guid, adguid, IdMapable.GUID_ADGUID_PREFIX, ADGUID_MAP_KEY);
+
+      //update guid to uid mapping
+      addSingleMapping(guid, uid, IdMapable.GUID_UID_PREFIX, UID_MAP_KEY);
+
+      //update uid to guid mapping
+      addSingleMapping(uid, guid, IdMapable.UID_GUID_PREFIX, GUID_MAP_KEY);
+
       upserted = true;
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);

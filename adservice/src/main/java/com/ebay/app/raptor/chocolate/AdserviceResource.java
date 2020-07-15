@@ -343,7 +343,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   public Response guid() {
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "guid"));
     String adguid = adserviceCookie.readAdguid(request);
-    String guid = idMapping.getGuid(adguid);
+    String guid = idMapping.getGuidByAdguid(adguid);
     return Response.status(Response.Status.OK).entity(guid).build();
   }
 
@@ -356,7 +356,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   public Response userid() {
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "userid"));
     String adguid = adserviceCookie.readAdguid(request);
-    String userid = idMapping.getUid(adguid);
+    String userid = idMapping.getUidByAdguid(adguid);
     return Response.status(Response.Status.OK).entity(userid).build();
   }
 

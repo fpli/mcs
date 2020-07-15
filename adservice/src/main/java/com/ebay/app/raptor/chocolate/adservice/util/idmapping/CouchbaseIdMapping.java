@@ -17,25 +17,41 @@ public class CouchbaseIdMapping implements IdMapable {
   }
 
   @Override
-  public String getGuid(String adguid) {
-    if(!StringUtil.isNullOrEmpty(adguid)) {
-      return CouchbaseClient.getInstance().getGuidByAdguid(adguid);
+  public String getGuidByAdguid(String id) {
+    if(!StringUtil.isNullOrEmpty(id)) {
+      return CouchbaseClient.getInstance().getGuidByAdguid(id);
     }
     return "";
   }
 
   @Override
-  public String getUid(String adguid) {
-    if(!StringUtil.isNullOrEmpty(adguid)) {
-      return CouchbaseClient.getInstance().getUidByAdguid(adguid);
+  public String getUidByAdguid(String id) {
+    if(!StringUtil.isNullOrEmpty(id)) {
+      return CouchbaseClient.getInstance().getUidByAdguid(id);
     }
     return "";
   }
 
   @Override
-  public String getAdguid(String guid) {
-    if(!StringUtil.isNullOrEmpty(guid)) {
-      return CouchbaseClient.getInstance().getAdguidByGuid(guid);
+  public String getAdguidByGuid(String id) {
+    if(!StringUtil.isNullOrEmpty(id)) {
+      return CouchbaseClient.getInstance().getAdguidByGuid(id);
+    }
+    return "";
+  }
+
+  @Override
+  public String getUidByGuid(String id) {
+    if(!StringUtil.isNullOrEmpty(id)) {
+      return CouchbaseClient.getInstance().getUidByGuid(id);
+    }
+    return "";
+  }
+
+  @Override
+  public String getGuidByUid(String id) {
+    if(!StringUtil.isNullOrEmpty(id)) {
+      return CouchbaseClient.getInstance().getGuidByUid(id);
     }
     return "";
   }

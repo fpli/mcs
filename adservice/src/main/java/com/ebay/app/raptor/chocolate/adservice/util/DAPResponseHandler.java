@@ -285,7 +285,7 @@ public class DAPResponseHandler {
    */
   private String getGuid(HttpServletRequest request) {
     String adguid = adserviceCookie.readAdguid(request);
-    String guid = idMapping.getGuid(adguid);
+    String guid = idMapping.getGuidByAdguid(adguid);
     if(StringUtils.isEmpty(guid)) {
       guid = "";
     }
@@ -294,7 +294,7 @@ public class DAPResponseHandler {
 
   private String getUserId(HttpServletRequest request) {
     String adguid = adserviceCookie.readAdguid(request);
-    String encryptedUserid = idMapping.getUid(adguid);
+    String encryptedUserid = idMapping.getUidByAdguid(adguid);
     if(StringUtils.isEmpty(encryptedUserid)) {
       encryptedUserid = "0";
     }
