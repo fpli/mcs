@@ -356,8 +356,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   public Response userid() {
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "userid"));
     String adguid = adserviceCookie.readAdguid(request);
-    String userid = idMapping.getUidByAdguid(adguid);
-    return Response.status(Response.Status.OK).entity(userid).build();
+    String encryptedUserid = idMapping.getUidByAdguid(adguid);
+    return Response.status(Response.Status.OK).entity(encryptedUserid).build();
   }
 
   private void sendOpenEventToAdobe(Map<String, String[]> params) {
