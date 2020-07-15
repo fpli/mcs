@@ -42,22 +42,26 @@ public class CouchbaseIdMappingTest {
     idMapping.addMapping("234", "", "12345");
     idMapping.addMapping("345", "456", "");
 
-    assertEquals("456", idMapping.getGuid("123"));
-    assertEquals("12345", idMapping.getUid("123"));
+    assertEquals("456", idMapping.getGuidByAdguid("123"));
+    assertEquals("12345", idMapping.getUidByAdguid("123"));
+    assertEquals("123", idMapping.getAdguidByGuid("456"));
+    assertEquals("456", idMapping.getGuidByUid("12345"));
+    assertEquals("12345", idMapping.getUidByGuid("456"));
 
-    assertEquals("", idMapping.getGuid("234"));
-    assertEquals("12345", idMapping.getUid("234"));
+    assertEquals("", idMapping.getGuidByAdguid("234"));
+    assertEquals("12345", idMapping.getUidByAdguid("234"));
+    assertEquals("", idMapping.getAdguidByGuid(""));
 
-    assertEquals("456", idMapping.getGuid("345"));
-    assertEquals("", idMapping.getUid("345"));
+    assertEquals("456", idMapping.getGuidByAdguid("345"));
+    assertEquals("", idMapping.getUidByAdguid("345"));
 
 
-    assertEquals("", idMapping.getGuid("2222"));
-    assertEquals("", idMapping.getUid("2222"));
+    assertEquals("", idMapping.getGuidByAdguid("2222"));
+    assertEquals("", idMapping.getUidByAdguid("2222"));
   }
 
   @Test
   public void getGuid() {
-    assertEquals("", idMapping.getGuid("222"));
+    assertEquals("", idMapping.getGuidByAdguid("222"));
   }
 }
