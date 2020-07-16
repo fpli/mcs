@@ -3,6 +3,8 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt
 import java.sql.Timestamp
 import java.util.{Base64, Properties}
 
+import com.ebay.kernel.util.StringUtils
+import .SecretResponse.jsonFormat3
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.JsonParser
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -208,7 +210,7 @@ object BullseyeUtils {
   def getOauthAuthorization(): String = {
     var authorization = ""
     try {
-      val consumerIdAndSecret = properties.getProperty("epnnrt.clientId") + ":" + SecretClient.getSecretByClientId(properties.getProperty("epnnrt.clientId"))
+      val consumerIdAndSecret = properties.getProperty("epnnrt.clientId") + ":" + getSecretByClientId(properties.getProperty("epnnrt.clientId"))
       authorization = Base64.getEncoder().encodeToString(consumerIdAndSecret.getBytes("UTF-8"))
     } catch {
       case e: Exception => {
@@ -230,4 +232,29 @@ object BullseyeUtils {
     implicit val _format: RootJsonFormat[TokenResponse] = jsonFormat3(apply)
   }
 
+  def getSecretByClientId(clientId: String): String = {
+    var secret = ""
+    val secretEndPoint = properties.getProperty("epnnrt.fetchclientsecret.endpoint") + clientId
+    val response = Http(secretEndPoint).method("GET")
+      .asString
+      .body.parseJson
+
+    if (response != null) {
+      secret = response.convertTo[SecretResponse].clientSecret
+    }
+    if (StringUtils.isBlank(secret)) {
+      throw new Exception("fetch client secret failed.")
+    }
+    secret
+  }
+
+  case class SecretResponse(
+                             clientId: String,
+                             clientSecret: String,
+                             expiration: Long
+                           )
+
+  object SecretResponse extends DefaultJsonProtocol {
+    implicit val _format: RootJsonFormat[SecretResponse] = jsonFormat3(apply)
+  }
 }
