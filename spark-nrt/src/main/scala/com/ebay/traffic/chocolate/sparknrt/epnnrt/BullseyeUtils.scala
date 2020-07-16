@@ -207,22 +207,14 @@ object BullseyeUtils {
   // get oauth Authorization
   def getOauthAuthorization(): String = {
     var authorization = ""
-
     try {
-      val secretEndPoint = properties.getProperty("epnnrt.fetchclientsecret.endpoint") + properties.getProperty("epnnrt.clientId")
-      var clientSecret = ""
-      val response = Http(secretEndPoint).method("GET")
-        .asParamMap
-      if (response != null) {
-        clientSecret = response.body("clientSecret")
-      }
-
-      val consumerIdAndSecret = properties.getProperty("epnnrt.clientId") + ":" + clientSecret
+      val consumerIdAndSecret = properties.getProperty("epnnrt.clientId") + ":" + SecretClient.getSecretByClientId(properties.getProperty("epnnrt.clientId"))
       authorization = Base64.getEncoder().encodeToString(consumerIdAndSecret.getBytes("UTF-8"))
     } catch {
-      case e: Exception =>
+      case e: Exception => {
         logger.error("Error when encode consumerId:consumerSecret to String" + e)
         metrics.meter("ErrorEncodeConsumerIdAndSecret", 1)
+      }
     }
 
     authorization
