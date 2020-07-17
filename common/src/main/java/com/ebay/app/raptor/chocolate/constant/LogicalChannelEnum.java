@@ -63,7 +63,7 @@ public enum LogicalChannelEnum {
   /**
    * Free PLA channel
    */
-  FREE_PLA(ChannelType.FREE_PLA, ChannelActionEnum.CLICK),
+  SEARCH_ENGINE_FREE_LISTINGS(ChannelType.SEARCH_ENGINE_FREE_LISTINGS, ChannelActionEnum.CLICK),
 
   /**
    * ROI channel

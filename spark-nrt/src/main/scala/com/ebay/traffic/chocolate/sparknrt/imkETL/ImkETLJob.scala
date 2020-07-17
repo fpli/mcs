@@ -85,8 +85,8 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         "ROI" -> Metadata(params.workDir, "ROI", MetadataEnum.convertToMetadataEnum(properties.getProperty("imkdump.upstream.roi")))
       case "SOCIAL_MEDIA" =>
         "SOCIAL_MEDIA" -> Metadata(params.workDir, "SOCIAL_MEDIA", MetadataEnum.convertToMetadataEnum(properties.getProperty("imkdump.upstream.social")))
-      case "FREE_PLA" =>
-        "FREE_PLA" -> Metadata(params.workDir, "FREE_PLA", MetadataEnum.convertToMetadataEnum(properties.getProperty("imkdump.upstream.free-pla")))
+      case "SEARCH_ENGINE_FREE_LISTINGS" =>
+        "SEARCH_ENGINE_FREE_LISTINGS" -> Metadata(params.workDir, "SEARCH_ENGINE_FREE_LISTINGS", MetadataEnum.convertToMetadataEnum(properties.getProperty("imkdump.upstream.search-engine-free-listings")))
     })
   }
 

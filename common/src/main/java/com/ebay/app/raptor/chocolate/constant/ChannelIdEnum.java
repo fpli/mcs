@@ -66,7 +66,7 @@ public enum ChannelIdEnum {
   /**
    * Channel 28 -- production SITE SMS
    */
-  FREE_PLA("28", LogicalChannelEnum.FREE_PLA, false),
+  SEARCH_ENGINE_FREE_LISTINGS("28", LogicalChannelEnum.SEARCH_ENGINE_FREE_LISTINGS, false),
 
   /**
    * Channel 0 -- production ROI

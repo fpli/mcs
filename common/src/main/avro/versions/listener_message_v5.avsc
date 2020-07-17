@@ -131,7 +131,7 @@
           "NOTIFICATION",
           "MRKT_SMS",
           "SITE_SMS",
-          "FREE_PLA",
+          "SEARCH_ENGINE_FREE_LISTINGS",
           "UNKNOWN"
         ]
       }
