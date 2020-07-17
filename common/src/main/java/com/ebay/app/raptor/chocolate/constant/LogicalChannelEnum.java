@@ -61,7 +61,7 @@ public enum LogicalChannelEnum {
   SITE_SMS(ChannelType.SITE_SMS, ChannelActionEnum.CLICK),
 
   /**
-   * Free PLA channel
+   * Free SEARCH ENGINE FREE LISTINGS channel
    */
   SEARCH_ENGINE_FREE_LISTINGS(ChannelType.SEARCH_ENGINE_FREE_LISTINGS, ChannelActionEnum.CLICK),
 
