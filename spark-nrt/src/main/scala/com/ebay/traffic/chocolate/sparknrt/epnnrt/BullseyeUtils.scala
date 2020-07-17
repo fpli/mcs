@@ -4,10 +4,9 @@ import java.sql.Timestamp
 import java.util.{Base64, Properties}
 
 import com.ebay.kernel.util.StringUtils
-import .SecretResponse.jsonFormat3
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.JsonParser
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.FileSystem
 import org.slf4j.LoggerFactory
 import scalaj.http.{Http, HttpResponse}
 import spray.json._
