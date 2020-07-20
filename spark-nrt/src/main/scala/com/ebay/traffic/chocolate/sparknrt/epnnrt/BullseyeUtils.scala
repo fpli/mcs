@@ -234,15 +234,21 @@ object BullseyeUtils {
   def getSecretByClientId(clientId: String): String = {
     var secret = ""
     val secretEndPoint = properties.getProperty("epnnrt.fetchclientsecret.endpoint") + clientId
-    val response = Http(secretEndPoint).method("GET")
-      .asString
-      .body.parseJson
-
-    if (response != null) {
-      secret = response.convertTo[SecretResponse].clientSecret
+    try {
+      val response = Http(secretEndPoint).method("GET")
+        .asString
+        .body.parseJson
+      if (response != null) {
+        secret = response.convertTo[SecretResponse].clientSecret
+      }
+    } catch {
+      case e: Exception =>
+        metrics.meter("getSecretByClientIdError")
+        logger.error("get client secret failed " + e)
     }
-    if (StringUtils.isBlank(secret)) {
-      throw new Exception("fetch client secret failed.")
+    if (secret == null) {
+      secret = ""
+      metrics.meter("getClientSecretNull")
     }
     secret
   }
@@ -256,4 +262,5 @@ object BullseyeUtils {
   object SecretResponse extends DefaultJsonProtocol {
     implicit val _format: RootJsonFormat[SecretResponse] = jsonFormat3(apply)
   }
+
 }
