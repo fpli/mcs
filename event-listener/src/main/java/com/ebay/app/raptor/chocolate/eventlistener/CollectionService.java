@@ -88,6 +88,8 @@ public class CollectionService {
   private static final String SITE_ID = "siteId";
   private static final String ROI_SOURCE = "roisrc";
   private static final String UTF_8 = "UTF-8";
+  private static final String ROVER_MPRE_PARAM = "mpre";
+  private static final String SOJ_MPRE_TAG = "url_mpre";
 
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
@@ -856,7 +858,7 @@ public class CollectionService {
 
       // target url
       if (!StringUtils.isEmpty(targetUrl)) {
-        requestTracker.addTag("url_mpre", targetUrl, String.class);
+        requestTracker.addTag(SOJ_MPRE_TAG, targetUrl, String.class);
       }
 
       // referer
@@ -1217,7 +1219,18 @@ public class CollectionService {
 
         // target url
         if (!StringUtils.isEmpty(targetUrl)) {
-          requestTracker.addTag("url_mpre", targetUrl, String.class);
+          String mpre = targetUrl;
+          // parse mpre from url if it's rover url
+          // do not use regex matching to improve performance.
+          // This is a temp solution and the number of this kind of click is low.
+          // Don't want to waste time in checking all URLs.
+          if(action.equalsIgnoreCase(ChannelActionEnum.CLICK.name()) && targetUrl.contains("rover.ebay.com")) {
+            UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+            if (uriComponents.getQueryParams().containsKey(ROVER_MPRE_PARAM)) {
+              mpre = uriComponents.getQueryParams().getFirst(ROVER_MPRE_PARAM);
+            }
+          }
+          requestTracker.addTag(SOJ_MPRE_TAG, mpre, String.class);
         }
 
         // referer
