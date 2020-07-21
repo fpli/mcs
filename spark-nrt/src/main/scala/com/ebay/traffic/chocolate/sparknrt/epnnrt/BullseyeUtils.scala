@@ -5,7 +5,7 @@ import java.util.{Base64, Properties}
 
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.JsonParser
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.FileSystem
 import org.slf4j.LoggerFactory
 import scalaj.http.{Http, HttpResponse}
 import spray.json._
@@ -80,7 +80,7 @@ object BullseyeUtils {
     } catch {
       case e: Exception => {
         logger.error("error when parse last view item : CGUID:" + cguid + " response: " + e)
-       // metrics.meter("BullsEyeError", 1)
+        // metrics.meter("BullsEyeError", 1)
         None
       }
     }
@@ -88,7 +88,7 @@ object BullseyeUtils {
 
   def getLastViewItem(fs: FileSystem, cguid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String) = {
     val start = System.currentTimeMillis
-    val result = getData(fs,cguid, modelId, count, bullseyeUrl)
+    val result = getData(fs, cguid, modelId, count, bullseyeUrl)
     metrics.mean("BullsEyeLatency", System.currentTimeMillis - start)
 
     try {
@@ -207,9 +207,8 @@ object BullseyeUtils {
   // get oauth Authorization
   def getOauthAuthorization(): String = {
     var authorization = ""
-
     try {
-      val consumerIdAndSecret = properties.getProperty("epnnrt.clientId") + ":" + properties.getProperty("epnnrt.clientsecret")
+      val consumerIdAndSecret = properties.getProperty("epnnrt.clientId") + ":" + getSecretByClientId(properties.getProperty("epnnrt.clientId"))
       authorization = Base64.getEncoder().encodeToString(consumerIdAndSecret.getBytes("UTF-8"))
     } catch {
       case e: Exception => {
@@ -222,11 +221,45 @@ object BullseyeUtils {
   }
 
   case class TokenResponse(
-                            access_token:String,
-                            token_type:String,
-                            expires_in:Long
+                            access_token: String,
+                            token_type: String,
+                            expires_in: Long
                           )
+
   object TokenResponse extends DefaultJsonProtocol {
     implicit val _format: RootJsonFormat[TokenResponse] = jsonFormat3(apply)
   }
+
+  def getSecretByClientId(clientId: String): String = {
+    var secret = ""
+    val secretEndPoint = properties.getProperty("epnnrt.fetchclientsecret.endpoint") + clientId
+    try {
+      val response = Http(secretEndPoint).method("GET")
+        .asString
+        .body.parseJson
+      if (response != null) {
+        secret = response.convertTo[SecretResponse].clientSecret
+      }
+    } catch {
+      case e: Exception =>
+        metrics.meter("getSecretByClientIdError")
+        logger.error("get client secret failed " + e)
+    }
+    if (secret == null) {
+      secret = ""
+      metrics.meter("getClientSecretNull")
+    }
+    secret
+  }
+
+  case class SecretResponse(
+                             clientId: String,
+                             clientSecret: String,
+                             expiration: Long
+                           )
+
+  object SecretResponse extends DefaultJsonProtocol {
+    implicit val _format: RootJsonFormat[SecretResponse] = jsonFormat3(apply)
+  }
+
 }
