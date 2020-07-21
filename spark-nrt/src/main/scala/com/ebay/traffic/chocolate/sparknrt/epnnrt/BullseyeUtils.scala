@@ -3,7 +3,6 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt
 import java.sql.Timestamp
 import java.util.{Base64, Properties}
 
-import com.ebay.kernel.util.StringUtils
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.JsonParser
 import org.apache.hadoop.fs.FileSystem
