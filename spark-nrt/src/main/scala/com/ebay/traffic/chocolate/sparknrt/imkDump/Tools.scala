@@ -153,7 +153,14 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     var result = ""
     try {
       val map = query.split("&").map( v => {
-        val m =  v.split("=", 2).map(s => URLDecoder.decode(s, "UTF-8"))
+        val m =  v.split("=", 2).map(s =>
+          {
+            // decode twice
+            var decodedValue = URLDecoder.decode(s, "UTF-8")
+            decodedValue = URLDecoder.decode(decodedValue, "UTF-8")
+            decodedValue
+          }
+          )
         m(0) -> m(1)
       }).toMap
       if(map.contains(key)) {
