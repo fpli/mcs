@@ -449,6 +449,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   val getLandingPageDomainUdf: UserDefinedFunction = udf((uri: String) => tools.getDomain(uri))
   val getUserQueryUdf: UserDefinedFunction = udf((referer: String, query: String) => tools.getUserQuery(referer, query))
   val replaceMkgroupidMktypeUdf: UserDefinedFunction = udf((channelType: String, uri: String) => replaceMkgroupidMktype(channelType, uri))
+  val replaceMkgroupidMktypeUdfAndParseMpreFromRover: UserDefinedFunction = udf((channelType: String, uri: String) => replaceMkgroupidMktype(channelType, uri))
   val getDateTimeUdf: UserDefinedFunction = udf((timestamp: Long) => tools.getDateTimeFromTimestamp(timestamp))
   val getPerfTrackNameValueUdf: UserDefinedFunction = udf((query: String) => tools.getPerfTrackNameValue(query))
   val getKeywordUdf: UserDefinedFunction = udf((query: String) => tools.getParamFromQuery(query, tools.keywordParams))
@@ -529,6 +530,27 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         }
       }
     }
+
+    newUri
+  }
+
+  /**
+    * Parse mpre from if it's rover url
+    * @param channelType channel type
+    * @param uri uri
+    * @return mpre
+    */
+  def replaceMkgroupidMktypeAndParseMpreFromRover(channelType:String, uri: String): String = {
+    var newUri = replaceMkgroupidMktype(channelType, uri)
+    // parse mpre if url is rover
+    if (newUri.startsWith("http://rover.ebay.com") || newUri.startsWith("https://rover.ebay.com")) {
+      val query = tools.getQueryString(newUri)
+      val landingPageUrl = tools.getParamValueFromQuery(query, "mpre")
+      if (StringUtils.isNotEmpty(landingPageUrl)) {
+        newUri = landingPageUrl
+      }
+    }
+
     newUri
   }
 
