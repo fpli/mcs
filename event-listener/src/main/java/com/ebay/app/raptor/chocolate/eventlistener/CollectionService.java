@@ -1219,18 +1219,7 @@ public class CollectionService {
 
         // target url
         if (!StringUtils.isEmpty(targetUrl)) {
-          String mpre = targetUrl;
-          // parse mpre from url if it's rover url
-          // do not use regex matching to improve performance.
-          // This is a temp solution and the number of this kind of click is low.
-          // Don't want to waste time in checking all URLs.
-          if(action.equalsIgnoreCase(ChannelActionEnum.CLICK.name()) && targetUrl.contains("rover.ebay.com")) {
-            UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-            if (uriComponents.getQueryParams().containsKey(ROVER_MPRE_PARAM)) {
-              mpre = uriComponents.getQueryParams().getFirst(ROVER_MPRE_PARAM);
-            }
-          }
-          requestTracker.addTag(SOJ_MPRE_TAG, mpre, String.class);
+          requestTracker.addTag(SOJ_MPRE_TAG, targetUrl, String.class);
         }
 
         // referer
