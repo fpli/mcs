@@ -17,6 +17,8 @@ import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.auth.RaptorSecureContext;
+import com.ebay.raptor.geo.context.UserPrefsCtx;
+import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -314,6 +316,12 @@ public class CollectionService {
         metrics.meter(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
         return true;
       }
+    }
+
+    // for search engine free listings, append mkrid
+    if (targetUrl.contains("&" + Constants.MKCID + "=" + ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS.getValue())) {
+      String rotationId = getSearchEngineFreeListingsRotationId(requestContext);
+      targetUrl = targetUrl + "&" + Constants.MKRID + "=" + rotationId;
     }
 
     // parse channel from uri
@@ -1382,6 +1390,12 @@ public class CollectionService {
     }
 
     return platform;
+  }
+
+  private String getSearchEngineFreeListingsRotationId(ContainerRequestContext requestContext) {
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+    int siteId = userPrefsCtx.getGeoContext().getSiteId();
+    return SearchEngineFreeListingsRotationEnum.parse(siteId).getRotation();
   }
 
   /**
