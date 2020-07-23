@@ -97,7 +97,7 @@ class TestImkETLJob extends BaseFunSuite{
 
     job.run()
 
-    List("PAID_SEARCH", "DISPLAY", "ROI", "SOCIAL_MEDIA").foreach(channel => {
+    List("PAID_SEARCH", "DISPLAY", "ROI", "SOCIAL_MEDIA", "SEARCH_ENGINE_FREE_LISTINGS").foreach(channel => {
       List("date=2019-12-23", "date=2019-12-24").foreach(date => {
         val targetFiles = fs.listStatus(new Path(outPutDir + "/" + channel + "/imkDump" + "/" + date)).map(_.getPath.toUri.getPath)
 
@@ -130,7 +130,8 @@ class TestImkETLJob extends BaseFunSuite{
       "PAID_SEARCH" -> MetadataEnum.dedupe,
       "DISPLAY" -> MetadataEnum.dedupe,
       "ROI" -> MetadataEnum.dedupe,
-      "SOCIAL_MEDIA" -> MetadataEnum.dedupe).foreach(kv => {
+      "SOCIAL_MEDIA" -> MetadataEnum.dedupe,
+      "SEARCH_ENGINE_FREE_LISTINGS" -> MetadataEnum.dedupe).foreach(kv => {
       val channel = kv._1
       val usage = kv._2
 

@@ -104,7 +104,8 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     "PAID_SEARCH" -> "",
     "DISPLAY" -> "",
     "ROI" -> "",
-    "SOCIAL_MEDIA" -> ""
+    "SOCIAL_MEDIA" -> "",
+    "SEARCH_ENGINE_FREE_LISTINGS" -> ""
   )
 
   var guidCguidMap: util.HashMap[String, String] = {
