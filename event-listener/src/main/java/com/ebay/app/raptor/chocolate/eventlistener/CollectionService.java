@@ -319,7 +319,7 @@ public class CollectionService {
     }
 
     // for search engine free listings, append mkrid
-    if (targetUrl.contains("&" + Constants.MKCID + "=" + ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS.getValue() + "&")) {
+    if (targetUrl.contains("&" + Constants.MKCID + "=" + ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS.getValue())) {
       String rotationId = getSearchEngineFreeListingsRotationId(requestContext);
       targetUrl = targetUrl + "&" + Constants.MKRID + "=" + rotationId;
     }
