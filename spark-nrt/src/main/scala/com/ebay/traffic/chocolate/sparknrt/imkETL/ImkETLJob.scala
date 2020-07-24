@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.imkETL
 
-import java.net.{InetAddress, URI}
+import java.net.{InetAddress, URI, URLDecoder}
 import java.text.SimpleDateFormat
 import java.util
 import java.util.{Date, Properties}
@@ -550,7 +550,17 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       val query = tools.getQueryString(newUri)
       val landingPageUrl = tools.getParamValueFromQuery(query, "mpre")
       if (StringUtils.isNotEmpty(landingPageUrl)) {
-        newUri = landingPageUrl
+        try{
+          newUri = URLDecoder.decode(landingPageUrl,"UTF-8")
+        } catch {
+          case e: Exception => {
+            if(metrics != null) {
+              metrics.meter("imk.dump.error.parseMpreFromRoverError", 1)
+            }
+            logger.warn("MalformedUrl", e)
+          }
+        }
+
       }
     }
 

@@ -152,19 +152,13 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
   def getParamValueFromQuery(query: String, key: String): String = {
     var result = ""
     try {
-      val map = query.split("&").map( v => {
-        val m =  v.split("=", 2).map(s =>
-          {
-            // decode twice
-            var decodedValue = URLDecoder.decode(s, "UTF-8")
-            decodedValue = URLDecoder.decode(decodedValue, "UTF-8")
-            decodedValue
+      if (StringUtils.isNotEmpty(query)) {
+        query.split("&").foreach(paramMapString => {
+          val paramStringArray = paramMapString.split("=")
+          if (paramStringArray.nonEmpty && paramStringArray(0).trim.equalsIgnoreCase(key) && paramStringArray.length == 2) {
+            result = paramStringArray(1).trim
           }
-          )
-        m(0) -> m(1)
-      }).toMap
-      if(map.contains(key)) {
-        result = map(key)
+        })
       }
     } catch {
       case e: Exception => {
