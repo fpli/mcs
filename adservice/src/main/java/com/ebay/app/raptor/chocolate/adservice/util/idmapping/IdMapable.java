@@ -12,8 +12,8 @@ public interface IdMapable {
   String ADGUID_GUID_PREFIX = "a_g_";
   String ADGUID_UID_PREFIX = "a_u_";
   String GUID_ADGUID_PREFIX = "g_a_";
-  String GUID_UID_PREFIX = "u_a_";
-  String UID_GUID_PREFIX = "a_u_";
+  String GUID_UID_PREFIX = "g_u_";
+  String UID_GUID_PREFIX = "u_g_";
 
   /**
    * Add adguid -> guid mapping
