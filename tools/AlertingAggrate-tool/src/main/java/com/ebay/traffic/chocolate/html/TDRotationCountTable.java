@@ -26,15 +26,15 @@ public class TDRotationCountTable {
 
     if (list.size() > 0) {
       for (int i = 0; i < list.size(); i++) {
-        bodyLine = bodyLine + "<tr><td>" + list.get(i).getTableName() + "</td><td>" + list.get(i).getMozartcount() + "</td><td>" + list.get(i).getHopperCount() + "</td><td>" + list.get(i).getDiff() + "</td>" + getWarnLevel(list.get(i).getDiff()) + "</tr>";
+        bodyLine = bodyLine + "<tr><td>" + list.get(i).getTableName() + "</td><td>" + list.get(i).getMozartcount() + "</td>" + getWarnLevel(list.get(i).getMozartcount()) + "</tr>";
       }
     }
 
     return bodyLine;
   }
 
-  private static String getWarnLevel(String diff) {
-    if (Integer.parseInt(diff) == 0) {
+  private static String getWarnLevel(String count) {
+    if (Integer.parseInt(count) > 0) {
       return "<td bgcolor=\"#FFFFFF\">" + "OK" + "</td>";
     }
 
@@ -42,7 +42,7 @@ public class TDRotationCountTable {
   }
 
   private static String getHeader() {
-    return "<table border='1'><tr width=\"350\" bgcolor=\"#8A8A8A\"><th width=\"300\">table name</th><th width=\"300\">mozart count</th><th width=\"300\">hopper count</th><th width=\"300\">diff(mozart count - hopper count)</th><th width=\"300\">status</th></tr>";
+    return "<table border='1'><tr width=\"350\" bgcolor=\"#8A8A8A\"><th width=\"300\">table name</th><th width=\"300\">mozart count</th><th width=\"300\">status</th></tr>";
   }
 
 }

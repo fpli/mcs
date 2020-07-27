@@ -31,47 +31,25 @@ public class TDIMKCountTable {
 
     if (list.size() > 0) {
       for (int i = 0; i < list.size(); i++) {
-        bodyLine = bodyLine + "<tr><td>" + list.get(i).getChannelName() + "</td><td>" + list.get(i).getMozartcount() + "</td><td>" + list.get(i).getHopperCount() + "</td><td>" + list.get(i).getDiff() + "</td>" + getWarnLevel(list.get(i).getDiff(), list.get(i).getMozartcount(), list.get(i).getHopperCount()) + "</tr>";
+        bodyLine = bodyLine + "<tr><td>" + list.get(i).getChannelName() + "</td><td>" + list.get(i).getMozartcount() + "</td>" + getWarnLevel(list.get(i).getMozartcount()) + "</tr>";
       }
     }
 
     return bodyLine;
   }
 
-  private static String getWarnLevel(String diff, String mozartCount, String hopperCount) {
+  private static String getWarnLevel(String mozartCount) {
     int mozart = Integer.parseInt(mozartCount);
-    int hopper = Integer.parseInt(hopperCount);
 
-    if (rangeAM()) {
-      if (mozart != 0) {
-        return "<td bgcolor=\"#FFFFFF\">" + "OK" + "</td>";
-      }
-
-      return "<td bgcolor=\"#ffcc00\">" + "Warning" + "</td>";
-    }
-
-    if (Integer.parseInt(diff) == 0 && mozart != 0 && hopper != 0) {
+    if (mozart > 0) {
       return "<td bgcolor=\"#FFFFFF\">" + "OK" + "</td>";
     } else {
       return "<td bgcolor=\"#ffcc00\">" + "Warning" + "</td>";
     }
   }
 
-  private static boolean rangeAM() {
-    GregorianCalendar calendar = new GregorianCalendar();
-    int hour = calendar.get(Calendar.HOUR_OF_DAY);
-
-    logger.info("rangeAM: " + hour);
-
-    if (hour <= 12 && hour >= 0) {
-      return true;
-    }
-
-    return false;
-  }
-
   private static String getHeader() {
-    return "<table border='1'><tr width=\"350\" bgcolor=\"#8A8A8A\"><th width=\"300\">channel name</th><th width=\"300\">mozart count</th><th width=\"300\">hopper count</th><th width=\"300\">diff(mozart count - hopper count)</th><th width=\"300\">status</th></tr>";
+    return "<table border='1'><tr width=\"350\" bgcolor=\"#8A8A8A\"><th width=\"300\">channel name</th><th width=\"300\">mozart count</th><th width=\"300\">status</th></tr>";
   }
 
 }
