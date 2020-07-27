@@ -21,8 +21,8 @@ OUTPUT_DIR=/apps/epn-nrt
 
 DRIVER_MEMORY=15g
 EXECUTOR_NUMBER=40
-EXECUTOR_MEMORY=10g
-EXECUTOR_CORES=6
+EXECUTOR_MEMORY=15g
+EXECUTOR_CORES=5
 
 JOB_NAME="Chocolate_EPN_NRT_CLICK"
 
@@ -42,7 +42,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
-    --conf spark.yarn.executor.memoryOverhead=2048 \
+    --conf spark.yarn.executor.memoryOverhead=4096 \
     --conf spark.speculation=true \
     --conf spark.speculation.quantile=0.5 \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
