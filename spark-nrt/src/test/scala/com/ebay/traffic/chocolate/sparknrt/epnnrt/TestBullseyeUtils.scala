@@ -86,11 +86,13 @@ class TestBullseyeUtils extends FlatSpec with Matchers{
     assert(result != None)
   }
 
-  it must "can parse response correctly with cguid" in {
-    val result = BullseyeUtils.getLastViewItem(fs,"6018ed8b1720a9cc5e628468f7d256a5", "1591169377921","910" , "200", properties.getProperty("epnnrt.bullseyeUrl"))
-    assert(result._1 == "250012780462")
-    assert(result._2 == "2020-06-03 15:29:37.92")
+//  it must "can parse response correctly with cguid" in {
+//    val result = BullseyeUtils.getLastViewItem(fs,"6018ed8b1720a9cc5e628468f7d256a5", "1591169377921","910" , "200", properties.getProperty("epnnrt.bullseyeUrl"))
+//    assert(result._1 == "250012780462")
+//    assert(result._2 == "2020-06-03 15:29:37.92")
+//  }
+
+  "FetchClientSecret" must "work" in  {
+    assert(BullseyeUtils.getSecretByClientId(properties.getProperty("epnnrt.clientId")) == "e884b0bd-8f38-4d1d-a161-f85038c3d0f3")
   }
-
-
 }

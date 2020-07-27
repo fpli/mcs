@@ -35,7 +35,7 @@ public class DriverIdServiceImpl implements DriverIdService {
     for (HostnameDriverIdMappingEntity hostnameDriverId : all) {
       if (hostnameDriverId.getHostname().equals(hostname)) {
         int driverId = hostnameDriverId.getDriverId();
-        LOGGER.info("{} {} driver id is {}", hostname, ip, driverId);
+        LOGGER.info("driver id is {}", driverId);
         return driverId;
       }
     }
@@ -55,7 +55,7 @@ public class DriverIdServiceImpl implements DriverIdService {
       throw new IllegalArgumentException("cannot generate a new driver id!");
     }
 
-    LOGGER.info("{} {} driver id is {}", hostname, ip, driverId);
+    LOGGER.info(" driver id is {}", driverId);
 
     return driverId;
   }
@@ -88,7 +88,7 @@ public class DriverIdServiceImpl implements DriverIdService {
 
     // generate failed if this driver id has been inserted in db,
     try {
-      LOGGER.info("try save {} {} {} {} to db", hostname, ip, driverId, currentTimeMillis);
+      LOGGER.info("try save {} {} to db", driverId, currentTimeMillis);
       HostnameDriverIdMappingEntity entity = new HostnameDriverIdMappingEntity();
       entity.setHostname(hostname);
       entity.setIp(ip);

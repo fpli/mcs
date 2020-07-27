@@ -31,8 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
@@ -98,7 +98,7 @@ public class DAPResponseHandler {
           throws URISyntaxException {
     ESMetrics.getInstance().meter("sendDAPResponse");
 
-    LOGGER.info("query string {}", request.getQueryString());
+    LOGGER.debug("query string {}", request.getQueryString());
 
     long dapRvrId = getDAPRvrId();
     Map<String, String[]> params = request.getParameterMap();
@@ -285,7 +285,7 @@ public class DAPResponseHandler {
    */
   private String getGuid(HttpServletRequest request) {
     String adguid = adserviceCookie.readAdguid(request);
-    String guid = idMapping.getGuid(adguid);
+    String guid = idMapping.getGuidByAdguid(adguid);
     if(StringUtils.isEmpty(guid)) {
       guid = "";
     }
@@ -294,7 +294,7 @@ public class DAPResponseHandler {
 
   private String getUserId(HttpServletRequest request) {
     String adguid = adserviceCookie.readAdguid(request);
-    String encryptedUserid = idMapping.getUid(adguid);
+    String encryptedUserid = idMapping.getUidByAdguid(adguid);
     if(StringUtils.isEmpty(encryptedUserid)) {
       encryptedUserid = "0";
     }

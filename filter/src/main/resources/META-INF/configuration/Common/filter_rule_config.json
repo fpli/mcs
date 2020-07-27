@@ -75,5 +75,11 @@
     "filterRules": [
 
     ]
+  },
+  {
+    "channelType": "SEARCH_ENGINE_FREE_LISTINGS",
+    "filterRules": [
+
+    ]
   }
 ]

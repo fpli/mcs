@@ -97,7 +97,7 @@ class TestImkETLJob extends BaseFunSuite{
 
     job.run()
 
-    List("PAID_SEARCH", "DISPLAY", "ROI", "SOCIAL_MEDIA").foreach(channel => {
+    List("PAID_SEARCH", "DISPLAY", "ROI", "SOCIAL_MEDIA", "SEARCH_ENGINE_FREE_LISTINGS").foreach(channel => {
       List("date=2019-12-23", "date=2019-12-24").foreach(date => {
         val targetFiles = fs.listStatus(new Path(outPutDir + "/" + channel + "/imkDump" + "/" + date)).map(_.getPath.toUri.getPath)
 
@@ -130,7 +130,8 @@ class TestImkETLJob extends BaseFunSuite{
       "PAID_SEARCH" -> MetadataEnum.dedupe,
       "DISPLAY" -> MetadataEnum.dedupe,
       "ROI" -> MetadataEnum.dedupe,
-      "SOCIAL_MEDIA" -> MetadataEnum.dedupe).foreach(kv => {
+      "SOCIAL_MEDIA" -> MetadataEnum.dedupe,
+      "SEARCH_ENGINE_FREE_LISTINGS" -> MetadataEnum.dedupe).foreach(kv => {
       val channel = kv._1
       val usage = kv._2
 
@@ -148,5 +149,22 @@ class TestImkETLJob extends BaseFunSuite{
       override def run(): Unit = ???
     }
     job.spark.read.format("csv").option("header", "true").option("delimiter", "\t").load(kwDataTempDir + "/kwData.csv").write.parquet(kwDataDir)
+  }
+
+  test("test parse mpre from rover url") {
+    val job = new ImkETLJob(Parameter(Array(
+      "--mode", "local[8]",
+      "--channel", "PAID_SEARCH,DISPLAY,ROI,SOCIAL_MEDIA",
+      "--workDir", workDir,
+      "--outPutDir", outPutDir,
+      "--partitions", "1",
+      "--elasticsearchUrl", "http://10.148.181.34:9200",
+      "--transformedPrefix", "chocolate_",
+      "--outputFormat", "sequence",
+      "--compressOutPut", "false",
+      "--kwDataDir", kwDataDir
+    )))
+    val mpre = job.replaceMkgroupidMktypeAndParseMpreFromRover("test", "https://rover.ebay.com/rover/1/711-159181-164449-8/1?mpre=http%3A%2F%2Fwww.ebay.com")
+    assert("http://www.ebay.com" == mpre)
   }
 }

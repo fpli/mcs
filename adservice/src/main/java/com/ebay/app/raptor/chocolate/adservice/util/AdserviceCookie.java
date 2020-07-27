@@ -117,7 +117,7 @@ public class AdserviceCookie {
    */
   public String getGuid(HttpServletRequest request) {
     String adguid = readAdguid(request);
-    String guid = idMapping.getGuid(adguid);
+    String guid = idMapping.getGuidByAdguid(adguid);
     if(StringUtils.isEmpty(guid)) {
       guid = "";
     }
@@ -131,7 +131,7 @@ public class AdserviceCookie {
    */
   public String getUserId(HttpServletRequest request) {
     String adguid = readAdguid(request);
-    String encryptedUserid = idMapping.getUid(adguid);
+    String encryptedUserid = idMapping.getUidByAdguid(adguid);
     if(StringUtils.isEmpty(encryptedUserid)) {
       encryptedUserid = "0";
     }

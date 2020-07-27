@@ -111,9 +111,9 @@ class TestEpnNrtClickJob extends BaseFunSuite{
     assert(clickDf.filter(col("CLICK_ID") === 2902129817128329244L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
     assert(clickDf.filter(col("CLICK_ID") === 2902129817128329245L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
 
-    // bullseye token validation
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429251L).select("LAST_VWD_ITEM_ID").first().getString(0) == "250012780462")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429251L).select("LAST_VWD_ITEM_TS").first().getString(0) == "2020-06-03 15:29:37.92")
+//    // bullseye token validation
+//    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429251L).select("LAST_VWD_ITEM_ID").first().getString(0) == "250012780462")
+//    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429251L).select("LAST_VWD_ITEM_TS").first().getString(0) == "2020-06-03 15:29:37.92")
   }
 
   def createTmpMetaFile(): Unit = {

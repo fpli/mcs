@@ -328,7 +328,7 @@ public class ApplicationOptionsParser {
         Validate.isTrue(ipDecimal > 0l, "ipDecimal should be valid");
 
         int driverId = Long.valueOf(ipDecimal % (SnapshotId.MAX_DRIVER_ID + 1l)).intValue() & RANDOM_DRIVER_ID_MASK;
-        logger.info(String.format("ip: %s random driver id mask: %d driver id: %d", Hostname.getIp(), RANDOM_DRIVER_ID_MASK, driverId));
+        logger.info(String.format("random driver id mask: %d driver id: %d", RANDOM_DRIVER_ID_MASK, driverId));
         return driverId;
     }
 

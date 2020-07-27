@@ -88,6 +88,8 @@ public class CollectionService {
   private static final String SITE_ID = "siteId";
   private static final String ROI_SOURCE = "roisrc";
   private static final String UTF_8 = "UTF-8";
+  private static final String ROVER_MPRE_PARAM = "mpre";
+  private static final String SOJ_MPRE_TAG = "url_mpre";
 
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
@@ -473,14 +475,18 @@ public class CollectionService {
       roiEvent.setItemId("");
     }
     // Parse timestamp if it null or invalid, change it to localTimestamp
+    long transTimestamp = 0;
     try {
-      long transTimestamp = Long.valueOf(roiEvent.getTransactionTimestamp());
-      if(transTimestamp < 0)
+      transTimestamp = Long.valueOf(roiEvent.getTransactionTimestamp());
+      if(transTimestamp <= 0) {
         roiEvent.setTransactionTimestamp(localTimestamp);
+        transTimestamp = Long.parseLong(localTimestamp);
+      }
     } catch (Exception e) {
       logger.warn("Error timestamp " + roiEvent.getTransactionTimestamp());
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
       roiEvent.setTransactionTimestamp(localTimestamp);
+      transTimestamp = Long.parseLong(localTimestamp);
     }
     // Parse payload fields
     Map<String, String> payloadMap = roiEvent.getPayload();
@@ -538,11 +544,13 @@ public class CollectionService {
 
     // Write roi event to kafka output topic
     boolean processFlag = processROIEvent(requestContext, targetUrl, referer, parameters, ChannelIdEnum.ROI,
-        ChannelActionEnum.ROI, request, startTime, endUserContext, raptorSecureContext);
+        ChannelActionEnum.ROI, request, transTimestamp, endUserContext, raptorSecureContext);
 
     if (processFlag) {
       metrics.meter("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"),
           Field.of(CHANNEL_TYPE, "New-ROI"), Field.of(ROI_SOURCE, String.valueOf(payloadMap.get(ROI_SOURCE))));
+      // Log the roi lag between transation time and receive time
+      metrics.mean("RoiTransationLag", startTime - transTimestamp, Field.of(CHANNEL_ACTION, "ROI"), Field.of(CHANNEL_TYPE, "ROI"));
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
           ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
     }
@@ -753,7 +761,7 @@ public class CollectionService {
 
 
   public boolean collectNotification(HttpServletRequest request, IEndUserContext endUserContext,
-                                     ContainerRequestContext requestContext, Event event) throws Exception {
+                                     ContainerRequestContext requestContext, Event event, int pageId) throws Exception {
 
     if (request.getHeader("X-EBAY-C-TRACKING") == null) {
       logError(Errors.ERROR_NO_TRACKING);
@@ -768,13 +776,7 @@ public class CollectionService {
       logError(Errors.ERROR_NO_USER_AGENT);
     }
 
-    // no page id, reject
     EventPayload payload = event.getPayload();
-    if (payload.getPageId() == null) {
-      logError(Errors.ERROR_NO_PAGE_ID);
-    }
-    // get page id from payload
-    int pageId = payload.getPageId();
 
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
@@ -856,7 +858,7 @@ public class CollectionService {
 
       // target url
       if (!StringUtils.isEmpty(targetUrl)) {
-        requestTracker.addTag("url_mpre", targetUrl, String.class);
+        requestTracker.addTag(SOJ_MPRE_TAG, targetUrl, String.class);
       }
 
       // referer
@@ -1217,7 +1219,7 @@ public class CollectionService {
 
         // target url
         if (!StringUtils.isEmpty(targetUrl)) {
-          requestTracker.addTag("url_mpre", targetUrl, String.class);
+          requestTracker.addTag(SOJ_MPRE_TAG, targetUrl, String.class);
         }
 
         // referer

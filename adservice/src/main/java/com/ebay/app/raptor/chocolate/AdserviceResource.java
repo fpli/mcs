@@ -3,7 +3,10 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
-import com.ebay.app.raptor.chocolate.adservice.constant.*;
+import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
+import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
+import com.ebay.app.raptor.chocolate.adservice.constant.MKEVT;
 import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -42,7 +45,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Resource class
@@ -343,7 +346,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   public Response guid() {
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "guid"));
     String adguid = adserviceCookie.readAdguid(request);
-    String guid = idMapping.getGuid(adguid);
+    String guid = idMapping.getGuidByAdguid(adguid);
     return Response.status(Response.Status.OK).entity(guid).build();
   }
 
@@ -356,8 +359,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   public Response userid() {
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "userid"));
     String adguid = adserviceCookie.readAdguid(request);
-    String userid = idMapping.getUid(adguid);
-    return Response.status(Response.Status.OK).entity(userid).build();
+    String encryptedUserid = idMapping.getUidByAdguid(adguid);
+    return Response.status(Response.Status.OK).entity(encryptedUserid).build();
   }
 
   private void sendOpenEventToAdobe(Map<String, String[]> params) {

@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.imkETL
 
-import java.net.{InetAddress, URI}
+import java.net.{InetAddress, URI, URLDecoder}
 import java.text.SimpleDateFormat
 import java.util
 import java.util.{Date, Properties}
@@ -85,6 +85,8 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         "ROI" -> Metadata(params.workDir, "ROI", MetadataEnum.convertToMetadataEnum(properties.getProperty("imkdump.upstream.roi")))
       case "SOCIAL_MEDIA" =>
         "SOCIAL_MEDIA" -> Metadata(params.workDir, "SOCIAL_MEDIA", MetadataEnum.convertToMetadataEnum(properties.getProperty("imkdump.upstream.social")))
+      case "SEARCH_ENGINE_FREE_LISTINGS" =>
+        "SEARCH_ENGINE_FREE_LISTINGS" -> Metadata(params.workDir, "SEARCH_ENGINE_FREE_LISTINGS", MetadataEnum.convertToMetadataEnum(properties.getProperty("imkdump.upstream.search-engine-free-listings")))
     })
   }
 
@@ -102,7 +104,8 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     "PAID_SEARCH" -> "",
     "DISPLAY" -> "",
     "ROI" -> "",
-    "SOCIAL_MEDIA" -> ""
+    "SOCIAL_MEDIA" -> "",
+    "SEARCH_ENGINE_FREE_LISTINGS" -> ""
   )
 
   var guidCguidMap: util.HashMap[String, String] = {
@@ -294,7 +297,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       .withColumn("src_rotation_id", col("src_rotation_id"))
       .withColumn("dst_rotation_id", col("dst_rotation_id"))
       .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(col("uri")))
-      .withColumn("lndng_page_url", replaceMkgroupidMktypeUdf(col("channel_type"), col("uri")))
+      .withColumn("lndng_page_url", replaceMkgroupidMktypeUdfAndParseMpreFromRoverUdf(col("channel_type"), col("uri")))
       .withColumn("user_query", getUserQueryUdf(col("referer"), col("temp_uri_query")))
       .withColumn("event_ts", getDateTimeUdf(col("timestamp")))
       .withColumn("perf_track_name_value", getPerfTrackNameValueUdf(col("temp_uri_query")))
@@ -449,6 +452,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   val getLandingPageDomainUdf: UserDefinedFunction = udf((uri: String) => tools.getDomain(uri))
   val getUserQueryUdf: UserDefinedFunction = udf((referer: String, query: String) => tools.getUserQuery(referer, query))
   val replaceMkgroupidMktypeUdf: UserDefinedFunction = udf((channelType: String, uri: String) => replaceMkgroupidMktype(channelType, uri))
+  val replaceMkgroupidMktypeUdfAndParseMpreFromRoverUdf: UserDefinedFunction = udf((channelType: String, uri: String) => replaceMkgroupidMktypeAndParseMpreFromRover(channelType, uri))
   val getDateTimeUdf: UserDefinedFunction = udf((timestamp: Long) => tools.getDateTimeFromTimestamp(timestamp))
   val getPerfTrackNameValueUdf: UserDefinedFunction = udf((query: String) => tools.getPerfTrackNameValue(query))
   val getKeywordUdf: UserDefinedFunction = udf((query: String) => tools.getParamFromQuery(query, tools.keywordParams))
@@ -529,6 +533,37 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         }
       }
     }
+
+    newUri
+  }
+
+  /**
+    * Parse mpre from if it's rover url
+    * @param channelType channel type
+    * @param uri uri
+    * @return mpre
+    */
+  def replaceMkgroupidMktypeAndParseMpreFromRover(channelType:String, uri: String): String = {
+    var newUri = replaceMkgroupidMktype(channelType, uri)
+    // parse mpre if url is rover
+    if (newUri.startsWith("http://rover.ebay.com") || newUri.startsWith("https://rover.ebay.com")) {
+      val query = tools.getQueryString(newUri)
+      val landingPageUrl = tools.getParamValueFromQuery(query, "mpre")
+      if (StringUtils.isNotEmpty(landingPageUrl)) {
+        try{
+          newUri = URLDecoder.decode(landingPageUrl,"UTF-8")
+        } catch {
+          case e: Exception => {
+            if(metrics != null) {
+              metrics.meter("imk.dump.error.parseMpreFromRoverError", 1)
+            }
+            logger.warn("MalformedUrl", e)
+          }
+        }
+
+      }
+    }
+
     newUri
   }
 
