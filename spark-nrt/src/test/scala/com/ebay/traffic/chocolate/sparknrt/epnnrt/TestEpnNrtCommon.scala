@@ -141,7 +141,7 @@ class TestEpnNrtCommon extends BaseFunSuite{
   }
 
   test("Test get date time from timestamp") {
-    val value = epnNrtCommon.getDateTimeFromTimestamp(1552328971000L, "yyyy-MM-dd")
+    val value = epnNrtCommon.getDateTimeFromTimestamp(1552379371000L, "yyyy-MM-dd")
     assert(value.equals("2019-03-12"))
   }
 
