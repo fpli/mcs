@@ -17,6 +17,8 @@ import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.auth.RaptorSecureContext;
+import com.ebay.raptor.geo.context.UserPrefsCtx;
+import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -363,6 +365,13 @@ public class CollectionService {
       return true;
     }
 
+    // for search engine free listings, append mkrid
+    if (channelType == ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS) {
+      String rotationId = getSearchEngineFreeListingsRotationId(requestContext);
+      targetUrl = targetUrl + "&" + Constants.MKRID + "=" + rotationId;
+      parameters = UriComponentsBuilder.fromUriString(targetUrl).build().getQueryParams();
+    }
+
     // check partner for email click
     String partner = null;
     if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
@@ -422,7 +431,7 @@ public class CollectionService {
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
     if (channelType == ChannelIdEnum.EPN || channelType == ChannelIdEnum.PAID_SEARCH || channelType == ChannelIdEnum.DAP ||
-        channelType == ChannelIdEnum.SOCIAL_MEDIA)
+        channelType == ChannelIdEnum.SOCIAL_MEDIA || channelType == ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
       processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext);
     else if (channelType == ChannelIdEnum.SITE_EMAIL)
@@ -1382,6 +1391,12 @@ public class CollectionService {
     }
 
     return platform;
+  }
+
+  private String getSearchEngineFreeListingsRotationId(ContainerRequestContext requestContext) {
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+    int siteId = userPrefsCtx.getGeoContext().getSiteId();
+    return SearchEngineFreeListingsRotationEnum.parse(siteId).getRotation();
   }
 
   /**
