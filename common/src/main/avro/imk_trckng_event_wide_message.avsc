@@ -319,11 +319,13 @@
     },
     {
       "name": "mgvalue",
-      "type": "string"
+      "type": "string",
+      "default": ""
     },
     {
       "name": "mgvalue_rsn_cd",
-      "type": "string"
+      "type": "string",
+      "default": ""
     },
     {
       "name": "cre_date",
