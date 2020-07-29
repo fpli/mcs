@@ -1,0 +1,197 @@
+{
+	"namespace": "com.ebay.app.raptor.chocolate.avro.versions",
+	"type": "record",
+	"name": "BehaviorMessageV0",
+	"pk": ["sessionId"],
+	"fields": [{
+		"name": "guid",
+		"type": "string"
+	},
+	{
+		"name": "adguid",
+		"type": "string"
+	},
+	{
+		"name": "eventTimestamp",
+		"type": "long"
+	},
+	{
+		"name": "sid",
+		"type": ["null","string"]
+	},
+	{
+		"name": "pageId",
+		"type": ["null","int"]
+	},
+	{
+		"name": "pageName",
+		"type": ["null","string"]
+	},
+	{
+		"name": "eventFamily",
+		"type": ["null","string"]
+	},
+	{
+		"name": "eventAction",
+		"type": ["null","string"]
+	},
+	{
+        "name": "userId",
+		"type": ["null","string"]
+	},
+	{
+		"name": "siteId",
+		"type": ["null","string"]
+	},
+	{
+		"name": "sessionId",
+		"type": ["null","string"]
+	},
+	{
+		"name": "snapshotId",
+		"type": ["null","string"],
+		"doc": "Internal used unique id"
+	},
+	{
+		"name": "seqNum",
+		"type": ["null","string"]
+	},
+	{
+        "name": "rdt",
+        "type": ["null","int"]
+	},
+	{
+		"name": "refererHash",
+		"type": ["null","string"]
+	},
+	{
+		"name": "urlQueryString",
+		"type": ["null","string"]
+	},
+	{
+		"name": "webServer",
+		"type": ["null","string"]
+	},
+	{
+        "name": "bot",
+        "type": ["null","int"]
+	},
+	{
+		"name": "clientIP",
+		"type": ["null","string"]
+	},
+	{
+		"name": "remoteIP",
+		"type": ["null","string"]
+	},
+	{
+		"name": "agentInfo",
+		"type": ["null","string"]
+	},
+	{
+        "name": "appId",
+		"type": ["null","string"]
+	},
+	{
+		"name": "appVersion",
+		"type": ["null","string"]
+	}, {
+		"name": "osVersion",
+		"type": ["null","string"]
+	},
+	{
+		"name": "cobrand",
+		"type": ["null","string"]
+	},
+	{
+        "name": "deviceFamily",
+		"type": ["null","string"]
+	},
+	{
+		"name": "deviceType",
+		"type": ["null","string"]
+	},
+	{
+		"name": "browserVersion",
+		"type": ["null","string"]
+	},
+	{
+		"name": "browserFamily",
+		"type": ["null","string"]
+	},
+	{
+        "name": "osFamily",
+		"type": ["null","string"]
+	},
+	{
+		"name": "enrichedOsVersion",
+		"type": ["null","string"]
+	},
+	{
+		"name": "applicationPayload",
+        "type": {
+            "type": "map",
+            "values": "string"
+        }
+	},
+	{
+		"name": "rlogid",
+		"type": ["null","string"]
+	},
+	{
+        "name": "clientData",
+        "type": {
+            "type": "map",
+            "values": "string"
+        }
+	},
+    {
+      "name": "channelAction",
+      "doc": "Internal used event action type",
+      "type": {
+        "name": "ChannelAction",
+        "namespace": "com.ebay.app.raptor.chocolate.avro",
+        "type": "enum",
+        "symbols": [
+          "CLICK",
+          "IMPRESSION",
+          "VIEWABLE",
+          "SERVE",
+          "PAGE_IMP",
+          "VIEW_ITEM",
+          "VIEW_TIME",
+          "APP_FIRST_START",
+          "ROI",
+          "EMAIL_OPEN",
+          "NOTIFICATION"
+        ]
+      }
+    },
+    {
+      "name": "channelType",
+      "doc": "Internal used event channel type",
+      "type": {
+        "name": "ChannelType",
+        "namespace": "com.ebay.app.raptor.chocolate.avro",
+        "type": "enum",
+        "symbols": [
+          "DEFAULT",
+          "EPN",
+          "DISPLAY",
+          "PAID_SEARCH",
+          "SOCIAL_MEDIA",
+          "PAID_SOCIAL",
+          "ROI",
+          "SITE_EMAIL",
+          "MRKT_EMAIL",
+          "NATURAL_SEARCH",
+          "NOTIFICATION",
+          "MRKT_SMS",
+          "SITE_SMS",
+          "SEARCH_ENGINE_FREE_LISTINGS",
+          "UNKNOWN"
+        ]
+      }
+    }
+  ]
+}
