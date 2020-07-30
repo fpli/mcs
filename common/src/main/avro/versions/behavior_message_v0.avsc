@@ -95,7 +95,8 @@
 	{
 		"name": "appVersion",
 		"type": ["null","string"]
-	}, {
+	},
+	{
 		"name": "osVersion",
 		"type": ["null","string"]
 	},
@@ -148,50 +149,12 @@
     {
       "name": "channelAction",
       "doc": "Internal used event action type",
-      "type": {
-        "name": "ChannelAction",
-        "namespace": "com.ebay.app.raptor.chocolate.avro",
-        "type": "enum",
-        "symbols": [
-          "CLICK",
-          "IMPRESSION",
-          "VIEWABLE",
-          "SERVE",
-          "PAGE_IMP",
-          "VIEW_ITEM",
-          "VIEW_TIME",
-          "APP_FIRST_START",
-          "ROI",
-          "EMAIL_OPEN",
-          "NOTIFICATION"
-        ]
-      }
+	  "type": ["string"]
     },
     {
       "name": "channelType",
       "doc": "Internal used event channel type",
-      "type": {
-        "name": "ChannelType",
-        "namespace": "com.ebay.app.raptor.chocolate.avro",
-        "type": "enum",
-        "symbols": [
-          "DEFAULT",
-          "EPN",
-          "DISPLAY",
-          "PAID_SEARCH",
-          "SOCIAL_MEDIA",
-          "PAID_SOCIAL",
-          "ROI",
-          "SITE_EMAIL",
-          "MRKT_EMAIL",
-          "NATURAL_SEARCH",
-          "NOTIFICATION",
-          "MRKT_SMS",
-          "SITE_SMS",
-          "SEARCH_ENGINE_FREE_LISTINGS",
-          "UNKNOWN"
-        ]
-      }
+	  "type": ["string"]
     }
   ]
 }

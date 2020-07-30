@@ -13,8 +13,8 @@ import org.apache.avro.message.SchemaStore;
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = -567591121473590982L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"BehaviorMessageV0\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"adguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"eventTimestamp\",\"type\":\"long\"},{\"name\":\"sid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"pageId\",\"type\":[\"null\",\"int\"]},{\"name\":\"pageName\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"eventFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"eventAction\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"userId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"siteId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"sessionId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"snapshotId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"Internal used unique id\"},{\"name\":\"seqNum\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"rdt\",\"type\":[\"null\",\"int\"]},{\"name\":\"refererHash\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"urlQueryString\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"webServer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"bot\",\"type\":[\"null\",\"int\"]},{\"name\":\"clientIP\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"remoteIP\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"agentInfo\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"appId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"appVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"osVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"cobrand\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"deviceFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"deviceType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"browserVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"browserFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"osFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"enrichedOsVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"applicationPayload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},{\"name\":\"rlogid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"clientData\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},{\"name\":\"channelAction\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelAction\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CLICK\",\"IMPRESSION\",\"VIEWABLE\",\"SERVE\",\"PAGE_IMP\",\"VIEW_ITEM\",\"VIEW_TIME\",\"APP_FIRST_START\",\"ROI\",\"EMAIL_OPEN\",\"NOTIFICATION\"]},\"doc\":\"Internal used event action type\"},{\"name\":\"channelType\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\",\"PAID_SEARCH\",\"SOCIAL_MEDIA\",\"PAID_SOCIAL\",\"ROI\",\"SITE_EMAIL\",\"MRKT_EMAIL\",\"NATURAL_SEARCH\",\"NOTIFICATION\",\"MRKT_SMS\",\"SITE_SMS\",\"SEARCH_ENGINE_FREE_LISTINGS\",\"UNKNOWN\"]},\"doc\":\"Internal used event channel type\"}],\"pk\":[\"sessionId\"]}");
+  private static final long serialVersionUID = -6488423384839824053L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"BehaviorMessageV0\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"adguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"eventTimestamp\",\"type\":\"long\"},{\"name\":\"sid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"pageId\",\"type\":[\"null\",\"int\"]},{\"name\":\"pageName\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"eventFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"eventAction\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"userId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"siteId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"sessionId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"snapshotId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"Internal used unique id\"},{\"name\":\"seqNum\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"rdt\",\"type\":[\"null\",\"int\"]},{\"name\":\"refererHash\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"urlQueryString\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"webServer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"bot\",\"type\":[\"null\",\"int\"]},{\"name\":\"clientIP\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"remoteIP\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"agentInfo\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"appId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"appVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"osVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"cobrand\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"deviceFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"deviceType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"browserVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"browserFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"osFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"enrichedOsVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"applicationPayload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},{\"name\":\"rlogid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"clientData\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},{\"name\":\"channelAction\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"Internal used event action type\"},{\"name\":\"channelType\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"Internal used event channel type\"}],\"pk\":[\"sessionId\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -87,9 +87,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
    private java.lang.String rlogid;
    private java.util.Map<java.lang.String,java.lang.String> clientData;
   /** Internal used event action type */
-   private com.ebay.app.raptor.chocolate.avro.ChannelAction channelAction;
+   private java.lang.Object channelAction;
   /** Internal used event channel type */
-   private com.ebay.app.raptor.chocolate.avro.ChannelType channelType;
+   private java.lang.Object channelType;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -137,7 +137,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
    * @param channelAction Internal used event action type
    * @param channelType Internal used event channel type
    */
-  public BehaviorMessageV0(java.lang.String guid, java.lang.String adguid, java.lang.Long eventTimestamp, java.lang.String sid, java.lang.Integer pageId, java.lang.String pageName, java.lang.String eventFamily, java.lang.String eventAction, java.lang.String userId, java.lang.String siteId, java.lang.String sessionId, java.lang.String snapshotId, java.lang.String seqNum, java.lang.Integer rdt, java.lang.String refererHash, java.lang.String urlQueryString, java.lang.String webServer, java.lang.Integer bot, java.lang.String clientIP, java.lang.String remoteIP, java.lang.String agentInfo, java.lang.String appId, java.lang.String appVersion, java.lang.String osVersion, java.lang.String cobrand, java.lang.String deviceFamily, java.lang.String deviceType, java.lang.String browserVersion, java.lang.String browserFamily, java.lang.String osFamily, java.lang.String enrichedOsVersion, java.util.Map<java.lang.String,java.lang.String> applicationPayload, java.lang.String rlogid, java.util.Map<java.lang.String,java.lang.String> clientData, com.ebay.app.raptor.chocolate.avro.ChannelAction channelAction, com.ebay.app.raptor.chocolate.avro.ChannelType channelType) {
+  public BehaviorMessageV0(java.lang.String guid, java.lang.String adguid, java.lang.Long eventTimestamp, java.lang.String sid, java.lang.Integer pageId, java.lang.String pageName, java.lang.String eventFamily, java.lang.String eventAction, java.lang.String userId, java.lang.String siteId, java.lang.String sessionId, java.lang.String snapshotId, java.lang.String seqNum, java.lang.Integer rdt, java.lang.String refererHash, java.lang.String urlQueryString, java.lang.String webServer, java.lang.Integer bot, java.lang.String clientIP, java.lang.String remoteIP, java.lang.String agentInfo, java.lang.String appId, java.lang.String appVersion, java.lang.String osVersion, java.lang.String cobrand, java.lang.String deviceFamily, java.lang.String deviceType, java.lang.String browserVersion, java.lang.String browserFamily, java.lang.String osFamily, java.lang.String enrichedOsVersion, java.util.Map<java.lang.String,java.lang.String> applicationPayload, java.lang.String rlogid, java.util.Map<java.lang.String,java.lang.String> clientData, java.lang.Object channelAction, java.lang.Object channelType) {
     this.guid = guid;
     this.adguid = adguid;
     this.eventTimestamp = eventTimestamp;
@@ -258,8 +258,8 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
     case 31: applicationPayload = (java.util.Map<java.lang.String,java.lang.String>)value$; break;
     case 32: rlogid = (java.lang.String)value$; break;
     case 33: clientData = (java.util.Map<java.lang.String,java.lang.String>)value$; break;
-    case 34: channelAction = (com.ebay.app.raptor.chocolate.avro.ChannelAction)value$; break;
-    case 35: channelType = (com.ebay.app.raptor.chocolate.avro.ChannelType)value$; break;
+    case 34: channelAction = (java.lang.Object)value$; break;
+    case 35: channelType = (java.lang.Object)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -813,7 +813,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
    * Gets the value of the 'channelAction' field.
    * @return Internal used event action type
    */
-  public com.ebay.app.raptor.chocolate.avro.ChannelAction getChannelAction() {
+  public java.lang.Object getChannelAction() {
     return channelAction;
   }
 
@@ -822,7 +822,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
    * Internal used event action type
    * @param value the value to set.
    */
-  public void setChannelAction(com.ebay.app.raptor.chocolate.avro.ChannelAction value) {
+  public void setChannelAction(java.lang.Object value) {
     this.channelAction = value;
   }
 
@@ -830,7 +830,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
    * Gets the value of the 'channelType' field.
    * @return Internal used event channel type
    */
-  public com.ebay.app.raptor.chocolate.avro.ChannelType getChannelType() {
+  public java.lang.Object getChannelType() {
     return channelType;
   }
 
@@ -839,7 +839,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
    * Internal used event channel type
    * @param value the value to set.
    */
-  public void setChannelType(com.ebay.app.raptor.chocolate.avro.ChannelType value) {
+  public void setChannelType(java.lang.Object value) {
     this.channelType = value;
   }
 
@@ -911,9 +911,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
     private java.lang.String rlogid;
     private java.util.Map<java.lang.String,java.lang.String> clientData;
     /** Internal used event action type */
-    private com.ebay.app.raptor.chocolate.avro.ChannelAction channelAction;
+    private java.lang.Object channelAction;
     /** Internal used event channel type */
-    private com.ebay.app.raptor.chocolate.avro.ChannelType channelType;
+    private java.lang.Object channelType;
 
     /** Creates a new Builder */
     private Builder() {
@@ -2558,7 +2558,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * Internal used event action type
       * @return The value.
       */
-    public com.ebay.app.raptor.chocolate.avro.ChannelAction getChannelAction() {
+    public java.lang.Object getChannelAction() {
       return channelAction;
     }
 
@@ -2568,7 +2568,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @param value The value of 'channelAction'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setChannelAction(com.ebay.app.raptor.chocolate.avro.ChannelAction value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setChannelAction(java.lang.Object value) {
       validate(fields()[34], value);
       this.channelAction = value;
       fieldSetFlags()[34] = true;
@@ -2601,7 +2601,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * Internal used event channel type
       * @return The value.
       */
-    public com.ebay.app.raptor.chocolate.avro.ChannelType getChannelType() {
+    public java.lang.Object getChannelType() {
       return channelType;
     }
 
@@ -2611,7 +2611,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @param value The value of 'channelType'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setChannelType(com.ebay.app.raptor.chocolate.avro.ChannelType value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setChannelType(java.lang.Object value) {
       validate(fields()[35], value);
       this.channelType = value;
       fieldSetFlags()[35] = true;
@@ -2678,8 +2678,8 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
         record.applicationPayload = fieldSetFlags()[31] ? this.applicationPayload : (java.util.Map<java.lang.String,java.lang.String>) defaultValue(fields()[31]);
         record.rlogid = fieldSetFlags()[32] ? this.rlogid : (java.lang.String) defaultValue(fields()[32]);
         record.clientData = fieldSetFlags()[33] ? this.clientData : (java.util.Map<java.lang.String,java.lang.String>) defaultValue(fields()[33]);
-        record.channelAction = fieldSetFlags()[34] ? this.channelAction : (com.ebay.app.raptor.chocolate.avro.ChannelAction) defaultValue(fields()[34]);
-        record.channelType = fieldSetFlags()[35] ? this.channelType : (com.ebay.app.raptor.chocolate.avro.ChannelType) defaultValue(fields()[35]);
+        record.channelAction = fieldSetFlags()[34] ? this.channelAction : (java.lang.Object) defaultValue(fields()[34]);
+        record.channelType = fieldSetFlags()[35] ? this.channelType : (java.lang.Object) defaultValue(fields()[35]);
         return record;
       } catch (java.lang.Exception e) {
         throw new org.apache.avro.AvroRuntimeException(e);
