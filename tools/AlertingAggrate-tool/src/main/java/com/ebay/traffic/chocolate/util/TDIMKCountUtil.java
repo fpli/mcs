@@ -16,14 +16,11 @@ public class TDIMKCountUtil {
   public static ArrayList<TDIMKInfo> getTDIMKInfos() {
     ArrayList<TDIMKInfo> list = new ArrayList<>();
     HashMap<Integer, Integer> mozartMap = getCountMap(getPath("imk_rvr_trckng_event", "mozart"));
-    HashMap<Integer, Integer> hopperMap = getCountMap(getPath("imk_rvr_trckng_event", "hopper"));
 
     for (ChannelType e : ChannelType.values()) {
       TDIMKInfo tdimkInfo = new TDIMKInfo();
       tdimkInfo.setChannelName(e.getName());
       tdimkInfo.setMozartcount(Integer.toString(mozartMap.getOrDefault(e.getIndex(), 0)));
-      tdimkInfo.setHopperCount(Integer.toString(hopperMap.getOrDefault(e.getIndex(), 0)));
-      tdimkInfo.setDiff(ToolsUtil.getDiff(tdimkInfo.getMozartcount(), tdimkInfo.getHopperCount()));
 
       list.add(tdimkInfo);
     }
@@ -39,8 +36,6 @@ public class TDIMKCountUtil {
     TDIMKInfo tdimkInfo = new TDIMKInfo();
     tdimkInfo.setChannelName(type);
     tdimkInfo.setMozartcount(getCount(getPath(tableName, "mozart")));
-    tdimkInfo.setHopperCount(getCount(getPath(tableName, "hopper")));
-    tdimkInfo.setDiff(ToolsUtil.getDiff(tdimkInfo.getMozartcount(), tdimkInfo.getHopperCount()));
 
     return tdimkInfo;
   }

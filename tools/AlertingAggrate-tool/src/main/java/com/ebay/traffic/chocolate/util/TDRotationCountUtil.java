@@ -27,8 +27,6 @@ public class TDRotationCountUtil {
     TDRotationInfo tdRotationInfo = new TDRotationInfo();
     tdRotationInfo.setTableName(tableName);
     tdRotationInfo.setMozartcount(getCount(getPath(tableName, "mozart")));
-    tdRotationInfo.setHopperCount(getCount(getPath(tableName, "hopper")));
-    tdRotationInfo.setDiff(ToolsUtil.getDiff(tdRotationInfo.getMozartcount(), tdRotationInfo.getHopperCount()));
 
     list.add(tdRotationInfo);
   }
