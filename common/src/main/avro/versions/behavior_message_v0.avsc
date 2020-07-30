@@ -149,12 +149,12 @@
     {
       "name": "channelAction",
       "doc": "Internal used event action type",
-	  "type": ["string"]
+	  "type": "string"
     },
     {
       "name": "channelType",
       "doc": "Internal used event channel type",
-	  "type": ["string"]
+	  "type": "string"
     }
   ]
 }
