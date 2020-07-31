@@ -148,13 +148,31 @@
 	},
     {
       "name": "channelAction",
+      "type": "string",
       "doc": "Internal used event action type",
-	  "type": "string"
+      "default": ""
     },
     {
       "name": "channelType",
+      "type": "string",
       "doc": "Internal used event channel type",
-	  "type": "string"
+      "default": ""
+    },
+    {
+      "name": "dispatchId",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "data",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "map",
+          "values": "string"
+        }
+      },
+      "default": []
     }
   ]
 }

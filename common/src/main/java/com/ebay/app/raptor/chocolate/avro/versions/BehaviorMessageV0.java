@@ -13,8 +13,8 @@ import org.apache.avro.message.SchemaStore;
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 5204519691466607605L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"BehaviorMessageV0\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"adguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"eventTimestamp\",\"type\":\"long\"},{\"name\":\"sid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"pageId\",\"type\":[\"null\",\"int\"]},{\"name\":\"pageName\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"eventFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"eventAction\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"userId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"siteId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"sessionId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"snapshotId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"Internal used unique id\"},{\"name\":\"seqNum\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"rdt\",\"type\":[\"null\",\"int\"]},{\"name\":\"refererHash\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"urlQueryString\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"webServer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"bot\",\"type\":[\"null\",\"int\"]},{\"name\":\"clientIP\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"remoteIP\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"agentInfo\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"appId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"appVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"osVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"cobrand\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"deviceFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"deviceType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"browserVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"browserFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"osFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"enrichedOsVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"applicationPayload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},{\"name\":\"rlogid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"clientData\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},{\"name\":\"channelAction\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"Internal used event action type\"},{\"name\":\"channelType\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"Internal used event channel type\"}],\"pk\":[\"sessionId\"]}");
+  private static final long serialVersionUID = -7029825195649791716L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"BehaviorMessageV0\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"adguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"eventTimestamp\",\"type\":\"long\"},{\"name\":\"sid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"pageId\",\"type\":[\"null\",\"int\"]},{\"name\":\"pageName\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"eventFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"eventAction\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"userId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"siteId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"sessionId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"snapshotId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"Internal used unique id\"},{\"name\":\"seqNum\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"rdt\",\"type\":[\"null\",\"int\"]},{\"name\":\"refererHash\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"urlQueryString\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"webServer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"bot\",\"type\":[\"null\",\"int\"]},{\"name\":\"clientIP\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"remoteIP\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"agentInfo\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"appId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"appVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"osVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"cobrand\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"deviceFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"deviceType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"browserVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"browserFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"osFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"enrichedOsVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"applicationPayload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},{\"name\":\"rlogid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"clientData\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},{\"name\":\"channelAction\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"Internal used event action type\",\"default\":\"\"},{\"name\":\"channelType\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"Internal used event channel type\",\"default\":\"\"},{\"name\":\"dispatchId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"data\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},\"default\":[]}],\"pk\":[\"sessionId\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -90,6 +90,8 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
    private java.lang.String channelAction;
   /** Internal used event channel type */
    private java.lang.String channelType;
+   private java.lang.String dispatchId;
+   private java.util.List<java.util.Map<java.lang.String,java.lang.String>> data;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -136,8 +138,10 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
    * @param clientData The new value for clientData
    * @param channelAction Internal used event action type
    * @param channelType Internal used event channel type
+   * @param dispatchId The new value for dispatchId
+   * @param data The new value for data
    */
-  public BehaviorMessageV0(java.lang.String guid, java.lang.String adguid, java.lang.Long eventTimestamp, java.lang.String sid, java.lang.Integer pageId, java.lang.String pageName, java.lang.String eventFamily, java.lang.String eventAction, java.lang.String userId, java.lang.String siteId, java.lang.String sessionId, java.lang.String snapshotId, java.lang.String seqNum, java.lang.Integer rdt, java.lang.String refererHash, java.lang.String urlQueryString, java.lang.String webServer, java.lang.Integer bot, java.lang.String clientIP, java.lang.String remoteIP, java.lang.String agentInfo, java.lang.String appId, java.lang.String appVersion, java.lang.String osVersion, java.lang.String cobrand, java.lang.String deviceFamily, java.lang.String deviceType, java.lang.String browserVersion, java.lang.String browserFamily, java.lang.String osFamily, java.lang.String enrichedOsVersion, java.util.Map<java.lang.String,java.lang.String> applicationPayload, java.lang.String rlogid, java.util.Map<java.lang.String,java.lang.String> clientData, java.lang.String channelAction, java.lang.String channelType) {
+  public BehaviorMessageV0(java.lang.String guid, java.lang.String adguid, java.lang.Long eventTimestamp, java.lang.String sid, java.lang.Integer pageId, java.lang.String pageName, java.lang.String eventFamily, java.lang.String eventAction, java.lang.String userId, java.lang.String siteId, java.lang.String sessionId, java.lang.String snapshotId, java.lang.String seqNum, java.lang.Integer rdt, java.lang.String refererHash, java.lang.String urlQueryString, java.lang.String webServer, java.lang.Integer bot, java.lang.String clientIP, java.lang.String remoteIP, java.lang.String agentInfo, java.lang.String appId, java.lang.String appVersion, java.lang.String osVersion, java.lang.String cobrand, java.lang.String deviceFamily, java.lang.String deviceType, java.lang.String browserVersion, java.lang.String browserFamily, java.lang.String osFamily, java.lang.String enrichedOsVersion, java.util.Map<java.lang.String,java.lang.String> applicationPayload, java.lang.String rlogid, java.util.Map<java.lang.String,java.lang.String> clientData, java.lang.String channelAction, java.lang.String channelType, java.lang.String dispatchId, java.util.List<java.util.Map<java.lang.String,java.lang.String>> data) {
     this.guid = guid;
     this.adguid = adguid;
     this.eventTimestamp = eventTimestamp;
@@ -174,6 +178,8 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
     this.clientData = clientData;
     this.channelAction = channelAction;
     this.channelType = channelType;
+    this.dispatchId = dispatchId;
+    this.data = data;
   }
 
   public org.apache.avro.Schema getSchema() { return SCHEMA$; }
@@ -216,6 +222,8 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
     case 33: return clientData;
     case 34: return channelAction;
     case 35: return channelType;
+    case 36: return dispatchId;
+    case 37: return data;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -260,6 +268,8 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
     case 33: clientData = (java.util.Map<java.lang.String,java.lang.String>)value$; break;
     case 34: channelAction = (java.lang.String)value$; break;
     case 35: channelType = (java.lang.String)value$; break;
+    case 36: dispatchId = (java.lang.String)value$; break;
+    case 37: data = (java.util.List<java.util.Map<java.lang.String,java.lang.String>>)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -844,6 +854,38 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
   }
 
   /**
+   * Gets the value of the 'dispatchId' field.
+   * @return The value of the 'dispatchId' field.
+   */
+  public java.lang.String getDispatchId() {
+    return dispatchId;
+  }
+
+  /**
+   * Sets the value of the 'dispatchId' field.
+   * @param value the value to set.
+   */
+  public void setDispatchId(java.lang.String value) {
+    this.dispatchId = value;
+  }
+
+  /**
+   * Gets the value of the 'data' field.
+   * @return The value of the 'data' field.
+   */
+  public java.util.List<java.util.Map<java.lang.String,java.lang.String>> getData() {
+    return data;
+  }
+
+  /**
+   * Sets the value of the 'data' field.
+   * @param value the value to set.
+   */
+  public void setData(java.util.List<java.util.Map<java.lang.String,java.lang.String>> value) {
+    this.data = value;
+  }
+
+  /**
    * Creates a new BehaviorMessageV0 RecordBuilder.
    * @return A new BehaviorMessageV0 RecordBuilder
    */
@@ -914,6 +956,8 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
     private java.lang.String channelAction;
     /** Internal used event channel type */
     private java.lang.String channelType;
+    private java.lang.String dispatchId;
+    private java.util.List<java.util.Map<java.lang.String,java.lang.String>> data;
 
     /** Creates a new Builder */
     private Builder() {
@@ -1070,6 +1114,14 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
         this.channelType = data().deepCopy(fields()[35].schema(), other.channelType);
         fieldSetFlags()[35] = true;
       }
+      if (isValidValue(fields()[36], other.dispatchId)) {
+        this.dispatchId = data().deepCopy(fields()[36].schema(), other.dispatchId);
+        fieldSetFlags()[36] = true;
+      }
+      if (isValidValue(fields()[37], other.data)) {
+        this.data = data().deepCopy(fields()[37].schema(), other.data);
+        fieldSetFlags()[37] = true;
+      }
     }
 
     /**
@@ -1221,6 +1273,14 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       if (isValidValue(fields()[35], other.channelType)) {
         this.channelType = data().deepCopy(fields()[35].schema(), other.channelType);
         fieldSetFlags()[35] = true;
+      }
+      if (isValidValue(fields()[36], other.dispatchId)) {
+        this.dispatchId = data().deepCopy(fields()[36].schema(), other.dispatchId);
+        fieldSetFlags()[36] = true;
+      }
+      if (isValidValue(fields()[37], other.data)) {
+        this.data = data().deepCopy(fields()[37].schema(), other.data);
+        fieldSetFlags()[37] = true;
       }
     }
 
@@ -2639,6 +2699,84 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       return this;
     }
 
+    /**
+      * Gets the value of the 'dispatchId' field.
+      * @return The value.
+      */
+    public java.lang.String getDispatchId() {
+      return dispatchId;
+    }
+
+    /**
+      * Sets the value of the 'dispatchId' field.
+      * @param value The value of 'dispatchId'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setDispatchId(java.lang.String value) {
+      validate(fields()[36], value);
+      this.dispatchId = value;
+      fieldSetFlags()[36] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'dispatchId' field has been set.
+      * @return True if the 'dispatchId' field has been set, false otherwise.
+      */
+    public boolean hasDispatchId() {
+      return fieldSetFlags()[36];
+    }
+
+
+    /**
+      * Clears the value of the 'dispatchId' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearDispatchId() {
+      dispatchId = null;
+      fieldSetFlags()[36] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'data' field.
+      * @return The value.
+      */
+    public java.util.List<java.util.Map<java.lang.String,java.lang.String>> getData() {
+      return data;
+    }
+
+    /**
+      * Sets the value of the 'data' field.
+      * @param value The value of 'data'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setData(java.util.List<java.util.Map<java.lang.String,java.lang.String>> value) {
+      validate(fields()[37], value);
+      this.data = value;
+      fieldSetFlags()[37] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'data' field has been set.
+      * @return True if the 'data' field has been set, false otherwise.
+      */
+    public boolean hasData() {
+      return fieldSetFlags()[37];
+    }
+
+
+    /**
+      * Clears the value of the 'data' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearData() {
+      data = null;
+      fieldSetFlags()[37] = false;
+      return this;
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public BehaviorMessageV0 build() {
@@ -2680,6 +2818,8 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
         record.clientData = fieldSetFlags()[33] ? this.clientData : (java.util.Map<java.lang.String,java.lang.String>) defaultValue(fields()[33]);
         record.channelAction = fieldSetFlags()[34] ? this.channelAction : (java.lang.String) defaultValue(fields()[34]);
         record.channelType = fieldSetFlags()[35] ? this.channelType : (java.lang.String) defaultValue(fields()[35]);
+        record.dispatchId = fieldSetFlags()[36] ? this.dispatchId : (java.lang.String) defaultValue(fields()[36]);
+        record.data = fieldSetFlags()[37] ? this.data : (java.util.List<java.util.Map<java.lang.String,java.lang.String>>) defaultValue(fields()[37]);
         return record;
       } catch (java.lang.Exception e) {
         throw new org.apache.avro.AvroRuntimeException(e);
