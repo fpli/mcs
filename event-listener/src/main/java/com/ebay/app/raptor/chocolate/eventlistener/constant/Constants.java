@@ -19,6 +19,7 @@ public class Constants {
   public static final String PLATFORM_UNKNOWN = "UNKNOWN";
   public static final String RVRID = "rvrid";
   public static final String EPAGE_REFERER = "originalRef";
+  public static final String ADGUID = "adguid";
 
   public static final String MKRVRID = "mkrvrid";
   public static final String REFERRER = "referrer";
@@ -60,5 +61,13 @@ public class Constants {
   // Self-service params
   public static final String SELF_SERVICE = "self_service";
   public static final String SELF_SERVICE_ID = "self_service_id";
+
+  // Event family and action
+  public static final String EVENT_FAMILY_CRM = "mktcrm";
+  public static final String EVENT_ACTION = "mktc";
+
+  // Metrics name
+  public static final String CHANNEL_ACTION = "channelAction";
+  public static final String CHANNEL_TYPE = "channelType";
 
 }

@@ -70,6 +70,7 @@ public class CollectionService {
   private static final Logger logger = LoggerFactory.getLogger(CollectionService.class);
   private Metrics metrics;
   private ListenerMessageParser parser;
+  private BehaviorMessageParser behaviorMessageParser;
   private static CollectionService instance = null;
 
   @Autowired
@@ -107,6 +108,7 @@ public class CollectionService {
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
+    this.behaviorMessageParser = BehaviorMessageParser.getInstance();
     this.metrics.meter("driver.id", 1, Field.of("ip", Hostname.IP),
             Field.of("driver_id", ApplicationOptionsParser.getDriverIdFromIp()));
   }
@@ -426,7 +428,9 @@ public class CollectionService {
       processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext);
     else if (channelType == ChannelIdEnum.SITE_EMAIL)
-      processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request);
+      processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request, agentInfo,
+          targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+          PageIdEnum.CLICK.getId(), PageIdEnum.CLICK.getName(), 1);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
       processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
     else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS)
@@ -709,7 +713,9 @@ public class CollectionService {
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
     if (channelType == ChannelIdEnum.SITE_EMAIL)
-      processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request);
+      processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request, agentInfo,
+          uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+          PageIdEnum.EMAIL_OPEN.getId(), PageIdEnum.EMAIL_OPEN.getName(), 0);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
       processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
     else
@@ -854,7 +860,7 @@ public class CollectionService {
       requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.AR.getId(), Integer.class);
 
       // event action
-      requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
+      requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
 
       // target url
       if (!StringUtils.isEmpty(targetUrl)) {
@@ -1016,7 +1022,11 @@ public class CollectionService {
    */
   private boolean processSiteEmailEvent(ContainerRequestContext requestContext, String referer,
                                         MultiValueMap<String, String> parameters, String type, String action,
-                                        HttpServletRequest request) {
+                                        HttpServletRequest request, UserAgentInfo agentInfo, String uri, Long startTime,
+                                        ChannelType channelType, ChannelAction channelAction, int pageId,
+                                        String pageName, int rdt) {
+    behaviorMessageParser.parse(request, requestContext, parameters, agentInfo, uri, startTime, channelType,
+        channelAction, pageId, pageName, rdt);
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
@@ -1026,7 +1036,7 @@ public class CollectionService {
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
         // event family
-        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
 
         // fbprefetch
         if (isFacebookPrefetchEnabled(request))
@@ -1070,7 +1080,7 @@ public class CollectionService {
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
         // event family
-        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
 
         // fbprefetch
         if (isFacebookPrefetchEnabled(request))
@@ -1139,7 +1149,7 @@ public class CollectionService {
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
         // event family
-        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
 
         // sms unique id
         addTagFromUrlQuery(parameters, requestTracker, Constants.SMS_ID, "smsid", String.class);
@@ -1166,7 +1176,7 @@ public class CollectionService {
           .getProperty(IRequestScopeTracker.NAME);
 
       // event family
-      requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mktcrm", String.class);
+      requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
 
       Map<String, String> tags = payload.getTags();
 
@@ -1215,7 +1225,7 @@ public class CollectionService {
         requestTracker.addTag(TrackerTagValueUtil.PageIdTag, pageId, Integer.class);
 
         // event action
-        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, "mktc", String.class);
+        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
 
         // target url
         if (!StringUtils.isEmpty(targetUrl)) {
