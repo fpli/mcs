@@ -60,4 +60,33 @@ public class TestMessageSerialization {
     ListenerMessage result1 = deserializer1.deserialize(topic, bytes1);
     Assert.assertTrue(message.equals(result1));
   }
+
+  @Test
+  public void testBehaviorMessageSerialization() throws Exception {
+    final String topic = "marketing.tracking.staging.behavior";
+
+    RheosKafkaProducer<Long, BehaviorMessage> producer =
+        new RheosKafkaProducer<>(loadProperties("rheos-kafka-behavior-producer.properties"));
+
+    BehaviorMessage message = newBehaviorMessage("123");
+    System.out.println(message);
+
+    RheosEventExSerializer serializer = new RheosEventExSerializer();
+    byte[] bytes = serializer.serialize(topic, producer.getRheosEvent(message));
+    System.out.println(bytes);
+
+    RheosBehaviorMessageDeserializer deserializer = new RheosBehaviorMessageDeserializer();
+    BehaviorMessage result = deserializer.deserialize(topic, bytes);
+    System.out.println(result);
+    Assert.assertTrue(message.equals(result));
+
+    BehaviorMessageSerializer serializer1 = new BehaviorMessageSerializer();
+    byte[] bytes1 = serializer1.serialize(topic, message);
+    System.out.println(bytes1);
+
+    BehaviorMessageDeserializer deserializer1 = new BehaviorMessageDeserializer();
+    BehaviorMessage result1 = deserializer1.deserialize(topic, bytes1);
+    System.out.println(result1);
+    Assert.assertTrue(message.equals(result1));
+  }
 }
