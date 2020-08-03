@@ -2,7 +2,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0;
+import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
@@ -92,12 +92,12 @@ public class BehaviorMessageParser {
     return INSTANCE;
   }
 
-  public BehaviorMessageV0 parse(final HttpServletRequest request, ContainerRequestContext requestContext,
+  public BehaviorMessage parse(final HttpServletRequest request, ContainerRequestContext requestContext,
                                  MultiValueMap<String, String> parameters, UserAgentInfo agentInfo, String uri,
                                  Long startTime, final ChannelType channelType, final ChannelAction channelAction,
                                  int pageId, String pageName, int rdt) {
     // set default value
-    BehaviorMessageV0 record = new BehaviorMessageV0("", "", 0L, null, 0, null, null, null, null, null, null, null,
+    BehaviorMessage record = new BehaviorMessage("", "", 0L, null, 0, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
         null, applicationPayload, null, clientData, "", "", "", data);
 
