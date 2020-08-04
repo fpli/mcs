@@ -50,7 +50,7 @@ public class BehaviorMessageParser {
    * tag - param map
    */
   public static final ImmutableMap<String, String> tagParamMap = new ImmutableMap.Builder<String, String>()
-      .put("chnl", "")
+      .put("chnl", "mkcid")
       .put("euid", "euid")
       .put("emid", "bu")
       .put("bu", "bu")
@@ -237,7 +237,10 @@ public class BehaviorMessageParser {
     clientData.put("ContentLength", String.valueOf(domainRequest.getContentLength()));
     clientData.put("nodeId", tracingContext.getNodeId());
     clientData.put("requestGuid", tracingContext.getRequestGuid());
-    clientData.put("Referrer", UrlProcessHelper.getMaskedUrl(domainRequest.getReferrerUrl(), false, true));
+    String referer = UrlProcessHelper.getMaskedUrl(domainRequest.getReferrerUrl(), false, true);
+    if (referer != null) {
+      clientData.put("Referrer", referer);
+    }
     if (domainRequest.getReferrerUrl() != null) {
       record.setRefererHash(String.valueOf(domainRequest.getReferrerUrl().hashCode()));
     }

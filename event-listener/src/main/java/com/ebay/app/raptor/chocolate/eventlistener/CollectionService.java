@@ -99,6 +99,7 @@ public class CollectionService {
 
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
+  private static Pattern strictEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
   private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
 
   // app deeplink sites XC-1797
@@ -1044,7 +1045,7 @@ public class CollectionService {
     Matcher m = ebaysites.matcher(referer.toLowerCase());
     if(!m.find()) {
       // Email open and 3rd party redirection not go to UBI
-      if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
+      if (ChannelAction.EMAIL_OPEN.equals(channelAction) || !strictEbaySites.matcher(uri.toLowerCase()).find()) {
         BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, parameters, agentInfo, uri,
             startTime, channelType, channelAction, pageId, pageName, rdt);
 
