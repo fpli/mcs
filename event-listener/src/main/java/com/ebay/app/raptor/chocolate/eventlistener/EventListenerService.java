@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorMessageParser;
+import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorProducerWrapper;
 import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
 import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -42,6 +43,7 @@ public class EventListenerService {
     BehaviorMessageParser.init();
 
     RheosConsumerWrapper.init(ApplicationOptions.getInstance().getConsumeRheosKafkaProperties());
+    BehaviorProducerWrapper.init(ApplicationOptions.getInstance());
     RoverRheosTopicFilterTask.init(1000);
     RoverRheosTopicFilterTask.getInstance().start();
   }
@@ -50,6 +52,7 @@ public class EventListenerService {
   public void shutdown() {
     try {
       KafkaSink.close();
+      BehaviorProducerWrapper.close();
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
     }

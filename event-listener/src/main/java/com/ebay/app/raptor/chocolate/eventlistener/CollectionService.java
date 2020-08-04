@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
+import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
@@ -71,6 +72,8 @@ public class CollectionService {
   private Metrics metrics;
   private ListenerMessageParser parser;
   private BehaviorMessageParser behaviorMessageParser;
+  private BehaviorProducerWrapper behaviorProducerWrapper;
+  private String behaviorTopic;
   private static CollectionService instance = null;
 
   @Autowired
@@ -111,6 +114,8 @@ public class CollectionService {
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
     this.metrics.meter("driver.id", 1, Field.of("ip", Hostname.IP),
             Field.of("driver_id", ApplicationOptionsParser.getDriverIdFromIp()));
+    this.behaviorProducerWrapper = BehaviorProducerWrapper.getInstance();
+    this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
   }
 
   /**
@@ -1025,38 +1030,49 @@ public class CollectionService {
                                         HttpServletRequest request, UserAgentInfo agentInfo, String uri, Long startTime,
                                         ChannelType channelType, ChannelAction channelAction, int pageId,
                                         String pageName, int rdt) {
-    behaviorMessageParser.parse(request, requestContext, parameters, agentInfo, uri, startTime, channelType,
-        channelAction, pageId, pageName, rdt);
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
     if(!m.find()) {
-      try {
-        // Ubi tracking
-        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+      // Email open and 3rd party redirection not go to UBI
+      if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
+        BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, parameters, agentInfo, uri,
+            startTime, channelType, channelAction, pageId, pageName, rdt);
 
-        // event family
-        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
+        Producer behaviorProducer = behaviorProducerWrapper.getBehaviorProducer();
 
-        // fbprefetch
-        if (isFacebookPrefetchEnabled(request))
-          requestTracker.addTag("fbprefetch", true, Boolean.class);
+        if (message != null) {
+          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId(), message),
+              behaviorProducerWrapper.callback);
+        }
+      } else {
+        try {
+          // Ubi tracking
+          IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-        // channel id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKCID, "chnl", String.class);
+          // event family
+          requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
 
-        // source id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
+          // fbprefetch
+          if (isFacebookPrefetchEnabled(request))
+            requestTracker.addTag("fbprefetch", true, Boolean.class);
 
-        // email unique id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.EMAIL_UNIQUE_ID, "euid", String.class);
+          // channel id
+          addTagFromUrlQuery(parameters, requestTracker, Constants.MKCID, "chnl", String.class);
 
-        // email experienced treatment
-        addTagFromUrlQuery(parameters, requestTracker, Constants.EXPRCD_TRTMT, "ext", String.class);
+          // source id
+          addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
 
-      } catch (Exception e) {
-        logger.warn("Error when tracking ubi for site email click tags", e);
-        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+          // email unique id
+          addTagFromUrlQuery(parameters, requestTracker, Constants.EMAIL_UNIQUE_ID, "euid", String.class);
+
+          // email experienced treatment
+          addTagFromUrlQuery(parameters, requestTracker, Constants.EXPRCD_TRTMT, "ext", String.class);
+
+        } catch (Exception e) {
+          logger.warn("Error when tracking ubi for site email click tags", e);
+          metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+        }
       }
     } else {
       metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
