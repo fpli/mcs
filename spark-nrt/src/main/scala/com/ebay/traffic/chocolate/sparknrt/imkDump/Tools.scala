@@ -322,6 +322,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       case "PAID_SOCIAL" => "20"
       case "ROI" => "0"
       case "NATURAL_SEARCH" => "3"
+      case "SEARCH_ENGINE_FREE_LISTINGS" => "28"
       case _ => "0"
     }
   }
