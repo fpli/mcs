@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.app.raptor.chocolate.avro.versions.UBIEvent;
+import com.ebay.app.raptor.chocolate.avro.UBIEvent;
 import com.ebay.traffic.chocolate.flink.nrt.constant.DateConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
