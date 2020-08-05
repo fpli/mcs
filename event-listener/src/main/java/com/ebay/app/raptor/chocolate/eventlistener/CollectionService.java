@@ -23,6 +23,7 @@ import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
+import com.ebay.traffic.chocolate.kafka.RheosKafkaProducer;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
@@ -74,7 +75,7 @@ public class CollectionService {
   private Metrics metrics;
   private ListenerMessageParser parser;
   private BehaviorMessageParser behaviorMessageParser;
-  private BehaviorProducerWrapper behaviorProducerWrapper;
+  private Producer behaviorProducer;
   private String behaviorTopic;
   private static CollectionService instance = null;
 
@@ -117,7 +118,7 @@ public class CollectionService {
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
     this.metrics.meter("driver.id", 1, Field.of("ip", Hostname.IP),
             Field.of("driver_id", ApplicationOptionsParser.getDriverIdFromIp()));
-    this.behaviorProducerWrapper = BehaviorProducerWrapper.getInstance();
+    this.behaviorProducer = new RheosKafkaProducer(ApplicationOptions.getInstance().getBehaviorRheosProperties());
     this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
   }
 
@@ -1049,11 +1050,9 @@ public class CollectionService {
         BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, parameters, agentInfo, uri,
             startTime, channelType, channelAction, pageId, pageName, rdt);
 
-        Producer behaviorProducer = behaviorProducerWrapper.getBehaviorProducer();
-
         if (message != null) {
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId(), message),
-              behaviorProducerWrapper.callback);
+              KafkaSink.callback);
         }
       } else {
         try {

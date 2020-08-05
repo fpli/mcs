@@ -47,10 +47,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
   private static final String SINK_RHEOS_KAFKA_PROPERTIES_FILE = "event-listener-rheos-producer.properties";
 
-  private static final String BEHAVIOR_KAFKA_PROPERTIES_FILE = "event-listener-behavior-kafka-producer.properties";
-
   private static final String BEHAVIOR_RHEOS_PROPERTIES_FILE = "event-listener-behavior-rheos-producer.properties";
-
 
   /**
    * Out Kafka cluster, can be "kafka", "rheos", "rheos,kafka", "kafka,rheos".
@@ -88,7 +85,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   private static Properties consumeRheosKafkaProperties;
   private static Properties sinkKafkaProperties;
   private static Properties sinkRheosKafkaProperties;
-  private static Properties behaviorKafkaProperties;
   private static Properties behaviorRheosProperties;
 
   private String outKafkaCluster;
@@ -108,9 +104,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     }
     sinkRheosKafkaProperties = loadProperties(SINK_RHEOS_KAFKA_PROPERTIES_FILE);
 
-    if (behaviorKafkaProperties == null) {
-      behaviorKafkaProperties = loadProperties(BEHAVIOR_KAFKA_PROPERTIES_FILE);
-    }
     behaviorRheosProperties = loadProperties(BEHAVIOR_RHEOS_PROPERTIES_FILE);
 
     instance.initKafkaConfigs();
@@ -162,13 +155,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   }
 
   /**
-   * Only for test
-   */
-  public static synchronized void setBehaviorKafkaProperties(Properties properties) {
-    behaviorKafkaProperties = properties;
-  }
-
-  /**
    * Get sink kafka properties
    *
    * @param sinkCluster kafka cluster
@@ -187,12 +173,8 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   /**
    * Get behavior kafka properties
    */
-  public Properties getBehaviorKafkaProperties(KafkaCluster sinkCluster) {
-    if (sinkCluster == KafkaCluster.KAFKA) {
-      return behaviorKafkaProperties;
-    } else {
-      return behaviorRheosProperties;
-    }
+  public Properties getBehaviorRheosProperties() {
+    return behaviorRheosProperties;
   }
 
   /**
