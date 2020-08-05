@@ -7,10 +7,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class PropertyMgr {
   private PropertyEnv propertyEnv;
@@ -59,6 +58,20 @@ public class PropertyMgr {
       throw new RuntimeException(e);
     }
     return allLines;
+  }
+
+  public String loadFile(String propertyName) {
+    StringJoiner joiner = new StringJoiner(StringConstants.LINE_SEPERATOR);
+    try (InputStream in = getClass().getClassLoader().getResourceAsStream(propertyEnv.name() + StringConstants.SLASH + propertyName);
+         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(in)))) {
+      String line;
+      while ((line = bufferedReader.readLine()) != null) {
+        joiner.add(line);
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return joiner.toString();
   }
 
 }

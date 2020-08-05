@@ -27,6 +27,10 @@ public class PropertyConstants {
   public static final String IMK_TRCKNG_EVENT_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "imk-trckng-event-sink-app.rheos.consumer.topic.properties";
   public static final String IMK_TRCKNG_EVENT_SINK_APP_HDFS_PROPERTIES = "imk-trckng-event-sink-app.hdfs.properties";
 
+  public static final String UBI_EVENT_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "ubi-event-sink-app.rheos.consumer.properties";
+  public static final String UBI_EVENT_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "ubi-event-sink-app.rheos.consumer.topic.properties";
+  public static final String UBI_EVENT_SINK_APP_HDFS_PROPERTIES = "ubi-event-sink-app.hdfs.properties";
+
   public static final String FILTER_MESSAGE_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "filter-message-sink-app.rheos.consumer.properties";
   public static final String FILTER_MESSAGE_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "filter-message-sink-app.rheos.consumer.topic.properties";
   public static final String FILTER_MESSAGE_SINK_APP_HDFS_PROPERTIES = "filter-message-sink-app.hdfs.properties";
