@@ -1,4 +1,11 @@
 {
+  "rheosHeader": {
+    "eventCreateTimestamp": 1596592608219,
+    "eventSentTimestamp": 1596592608219,
+    "schemaId": 9366,
+    "eventId": null,
+    "producerId": "marketing-tracking-producer"
+  },
   "guid": "",
   "adguid": "acd12d5b79ac46b7b5eef0d76510cb1e",
   "eventTimestamp": 1596182198056,
@@ -107,8 +114,6 @@
   "channelType": "SITE_EMAIL",
   "dispatchId": "",
   "data": [
-    {
-
-    }
+    {}
   ]
 }

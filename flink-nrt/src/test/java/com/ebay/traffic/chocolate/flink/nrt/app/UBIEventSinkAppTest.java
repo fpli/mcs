@@ -1,16 +1,17 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0;
-import com.ebay.app.raptor.chocolate.avro.versions.UBIEvent;
+import com.ebay.app.raptor.chocolate.avro.UBIEvent;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import io.ebay.rheos.kafka.client.StreamConnectorConfig;
 import io.ebay.rheos.schema.avro.SchemaRegistryAwareAvroSerializerHelper;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.*;
-import org.apache.avro.specific.SpecificDatumReader;
+import org.apache.avro.util.Utf8;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.streaming.api.functions.sink.filesystem.BucketAssigner;
 import org.apache.flink.streaming.api.operators.StreamMap;
@@ -76,11 +77,12 @@ public class UBIEventSinkAppTest {
     OneInputStreamOperatorTestHarness<ConsumerRecord<byte[], byte[]>, UBIEvent> testHarness = new OneInputStreamOperatorTestHarness<>(new StreamMap<>(transformRichMapFunction));
     testHarness.open();
 
-    BehaviorMessageV0 sourceRecord = createSourceMessage();
-    RheosEvent rheosEvent = createRhesoEvent(sourceRecord);
+    String json = PropertyMgr.getInstance().loadFile("email_open.json");
+
+    GenericRecord sourceRecord = createSourceRecord(json);
 
     byte[] key = serializeKey(0L);
-    byte[] value = serializeRheosEvent(rheosEvent);
+    byte[] value = serializeRheosEvent(new RheosEvent(sourceRecord));
 
     testHarness.processElement(new ConsumerRecord<>("marketing.tracking.staging.behavior", 0, 0L, key, value), System.currentTimeMillis());
 
@@ -91,59 +93,36 @@ public class UBIEventSinkAppTest {
     UBIEvent targetRecord = streamRecord.getValue();
     for (Schema.Field field : targetRecord.getSchema().getFields()) {
       String name = field.name();
-      switch (name) {
-        case "applicationPayload":
-          Map<String, String> applicationPayload = sourceRecord.getApplicationPayload();
-          assertEquals(targetRecord.getApplicationPayload(), applicationPayload.entrySet().stream()
-                  .map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining("&")));
-          break;
-        case "clientData":
-          Map<String, String> clientData = sourceRecord.getClientData();
-          assertEquals(targetRecord.getClientData(), clientData.entrySet().stream()
-                  .map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining("&")));
-
-          break;
-        default:
-          assertEquals(targetRecord.get(name), sourceRecord.get(name));
+      Object source = sourceRecord.get(name);
+      Object target = targetRecord.get(name);
+      if (source instanceof Utf8) {
+        assertEquals(target, String.valueOf(source));
+        continue;
       }
+      if (source instanceof HashMap) {
+        HashMap<Utf8, Utf8> source1 = (HashMap<Utf8, Utf8>) source;
+        assertEquals(target, source1.entrySet().stream()
+                .map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining("&")));
+        continue;
+      }
+      assertEquals(target, source);
     }
   }
 
-  private BehaviorMessageV0 createSourceMessage() throws IOException {
-    String json = PropertyMgr.getInstance().loadFile("email_open.json");
-    DatumReader<BehaviorMessageV0> reader = new SpecificDatumReader<>(BehaviorMessageV0.getClassSchema());
-    JsonDecoder decoder = DecoderFactory.get().jsonDecoder(BehaviorMessageV0.getClassSchema(), json);
-
-    BehaviorMessageV0 behaviorMessageV0 = new BehaviorMessageV0();
-    behaviorMessageV0 = reader.read(behaviorMessageV0, decoder);
-    return behaviorMessageV0;
-  }
-
-  private RheosEvent createRhesoEvent(BehaviorMessageV0 behaviorMessageV0) {
+  private GenericRecord createSourceRecord(String json) throws IOException {
     Map<String, Object> map = new HashMap<>();
     map.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, "https://rheos-services.qa.ebay.com");
 
     SchemaRegistryAwareAvroSerializerHelper<GenericRecord> serializerHelper =
             new SchemaRegistryAwareAvroSerializerHelper<>(map, GenericRecord.class);
 
-    int schemaId = serializerHelper.getSchemaId("marketing.tracking.behavior.schema");
-    Schema schema = serializerHelper.getSchema(schemaId);
+    Schema schema = serializerHelper.getSchema(9366);
 
-    RheosEvent rheosEvent = new RheosEvent(schema);
-    long t = System.currentTimeMillis();
-    rheosEvent.setEventCreateTimestamp(t);
-    rheosEvent.setEventSentTimestamp(t);
-    rheosEvent.setProducerId("marketing-tracking-producer");
-    rheosEvent.setSchemaId(schemaId);
-
-    for (Schema.Field field : BehaviorMessageV0.getClassSchema().getFields()) {
-      String fn = field.name();
-      Object fv = behaviorMessageV0.get(fn);
-      if (fv != null) {
-        rheosEvent.put(fn, fv);
-      }
-    }
-    return rheosEvent;
+    DecoderFactory decoderFactory = new DecoderFactory();
+    Decoder decoder = decoderFactory.jsonDecoder(schema, json);
+    DatumReader<GenericData.Record> reader =
+            new GenericDatumReader<>(schema);
+    return reader.read(null, decoder);
   }
 
   private byte[] serializeRheosEvent(RheosEvent data) throws IOException {
