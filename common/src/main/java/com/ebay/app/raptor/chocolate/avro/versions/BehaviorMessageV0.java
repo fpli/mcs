@@ -13,8 +13,8 @@ import org.apache.avro.message.SchemaStore;
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = -7029825195649791716L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"BehaviorMessageV0\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"adguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"eventTimestamp\",\"type\":\"long\"},{\"name\":\"sid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"pageId\",\"type\":[\"null\",\"int\"]},{\"name\":\"pageName\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"eventFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"eventAction\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"userId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"siteId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"sessionId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"snapshotId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"Internal used unique id\"},{\"name\":\"seqNum\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"rdt\",\"type\":[\"null\",\"int\"]},{\"name\":\"refererHash\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"urlQueryString\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"webServer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"bot\",\"type\":[\"null\",\"int\"]},{\"name\":\"clientIP\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"remoteIP\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"agentInfo\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"appId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"appVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"osVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"cobrand\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"deviceFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"deviceType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"browserVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"browserFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"osFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"enrichedOsVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"applicationPayload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},{\"name\":\"rlogid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"clientData\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},{\"name\":\"channelAction\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"Internal used event action type\",\"default\":\"\"},{\"name\":\"channelType\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"Internal used event channel type\",\"default\":\"\"},{\"name\":\"dispatchId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"data\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},\"default\":[]}],\"pk\":[\"sessionId\"]}");
+  private static final long serialVersionUID = -5795598576504812061L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"BehaviorMessageV0\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"adguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"eventTimestamp\",\"type\":\"long\"},{\"name\":\"sid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"pageId\",\"type\":[\"null\",\"int\"]},{\"name\":\"pageName\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"eventFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"eventAction\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"userId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"siteId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"sessionId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"snapshotId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"Internal used unique id\"},{\"name\":\"seqNum\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"rdt\",\"type\":[\"null\",\"int\"]},{\"name\":\"refererHash\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"urlQueryString\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"webServer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"clientIP\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"remoteIP\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"agentInfo\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"appId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"appVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"osVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"cobrand\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"deviceFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"deviceType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"browserVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"browserFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"osFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"enrichedOsVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"applicationPayload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},{\"name\":\"rlogid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"clientData\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},{\"name\":\"channelAction\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"Internal used event action type\",\"default\":\"\"},{\"name\":\"channelType\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"Internal used event channel type\",\"default\":\"\"},{\"name\":\"dispatchId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"data\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}},\"default\":[]}],\"pk\":[\"sessionId\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -69,7 +69,6 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
    private java.lang.String refererHash;
    private java.lang.String urlQueryString;
    private java.lang.String webServer;
-   private java.lang.Integer bot;
    private java.lang.String clientIP;
    private java.lang.String remoteIP;
    private java.lang.String agentInfo;
@@ -119,7 +118,6 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
    * @param refererHash The new value for refererHash
    * @param urlQueryString The new value for urlQueryString
    * @param webServer The new value for webServer
-   * @param bot The new value for bot
    * @param clientIP The new value for clientIP
    * @param remoteIP The new value for remoteIP
    * @param agentInfo The new value for agentInfo
@@ -141,7 +139,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
    * @param dispatchId The new value for dispatchId
    * @param data The new value for data
    */
-  public BehaviorMessageV0(java.lang.String guid, java.lang.String adguid, java.lang.Long eventTimestamp, java.lang.String sid, java.lang.Integer pageId, java.lang.String pageName, java.lang.String eventFamily, java.lang.String eventAction, java.lang.String userId, java.lang.String siteId, java.lang.String sessionId, java.lang.String snapshotId, java.lang.String seqNum, java.lang.Integer rdt, java.lang.String refererHash, java.lang.String urlQueryString, java.lang.String webServer, java.lang.Integer bot, java.lang.String clientIP, java.lang.String remoteIP, java.lang.String agentInfo, java.lang.String appId, java.lang.String appVersion, java.lang.String osVersion, java.lang.String cobrand, java.lang.String deviceFamily, java.lang.String deviceType, java.lang.String browserVersion, java.lang.String browserFamily, java.lang.String osFamily, java.lang.String enrichedOsVersion, java.util.Map<java.lang.String,java.lang.String> applicationPayload, java.lang.String rlogid, java.util.Map<java.lang.String,java.lang.String> clientData, java.lang.String channelAction, java.lang.String channelType, java.lang.String dispatchId, java.util.List<java.util.Map<java.lang.String,java.lang.String>> data) {
+  public BehaviorMessageV0(java.lang.String guid, java.lang.String adguid, java.lang.Long eventTimestamp, java.lang.String sid, java.lang.Integer pageId, java.lang.String pageName, java.lang.String eventFamily, java.lang.String eventAction, java.lang.String userId, java.lang.String siteId, java.lang.String sessionId, java.lang.String snapshotId, java.lang.String seqNum, java.lang.Integer rdt, java.lang.String refererHash, java.lang.String urlQueryString, java.lang.String webServer, java.lang.String clientIP, java.lang.String remoteIP, java.lang.String agentInfo, java.lang.String appId, java.lang.String appVersion, java.lang.String osVersion, java.lang.String cobrand, java.lang.String deviceFamily, java.lang.String deviceType, java.lang.String browserVersion, java.lang.String browserFamily, java.lang.String osFamily, java.lang.String enrichedOsVersion, java.util.Map<java.lang.String,java.lang.String> applicationPayload, java.lang.String rlogid, java.util.Map<java.lang.String,java.lang.String> clientData, java.lang.String channelAction, java.lang.String channelType, java.lang.String dispatchId, java.util.List<java.util.Map<java.lang.String,java.lang.String>> data) {
     this.guid = guid;
     this.adguid = adguid;
     this.eventTimestamp = eventTimestamp;
@@ -159,7 +157,6 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
     this.refererHash = refererHash;
     this.urlQueryString = urlQueryString;
     this.webServer = webServer;
-    this.bot = bot;
     this.clientIP = clientIP;
     this.remoteIP = remoteIP;
     this.agentInfo = agentInfo;
@@ -203,27 +200,26 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
     case 14: return refererHash;
     case 15: return urlQueryString;
     case 16: return webServer;
-    case 17: return bot;
-    case 18: return clientIP;
-    case 19: return remoteIP;
-    case 20: return agentInfo;
-    case 21: return appId;
-    case 22: return appVersion;
-    case 23: return osVersion;
-    case 24: return cobrand;
-    case 25: return deviceFamily;
-    case 26: return deviceType;
-    case 27: return browserVersion;
-    case 28: return browserFamily;
-    case 29: return osFamily;
-    case 30: return enrichedOsVersion;
-    case 31: return applicationPayload;
-    case 32: return rlogid;
-    case 33: return clientData;
-    case 34: return channelAction;
-    case 35: return channelType;
-    case 36: return dispatchId;
-    case 37: return data;
+    case 17: return clientIP;
+    case 18: return remoteIP;
+    case 19: return agentInfo;
+    case 20: return appId;
+    case 21: return appVersion;
+    case 22: return osVersion;
+    case 23: return cobrand;
+    case 24: return deviceFamily;
+    case 25: return deviceType;
+    case 26: return browserVersion;
+    case 27: return browserFamily;
+    case 28: return osFamily;
+    case 29: return enrichedOsVersion;
+    case 30: return applicationPayload;
+    case 31: return rlogid;
+    case 32: return clientData;
+    case 33: return channelAction;
+    case 34: return channelType;
+    case 35: return dispatchId;
+    case 36: return data;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -249,27 +245,26 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
     case 14: refererHash = (java.lang.String)value$; break;
     case 15: urlQueryString = (java.lang.String)value$; break;
     case 16: webServer = (java.lang.String)value$; break;
-    case 17: bot = (java.lang.Integer)value$; break;
-    case 18: clientIP = (java.lang.String)value$; break;
-    case 19: remoteIP = (java.lang.String)value$; break;
-    case 20: agentInfo = (java.lang.String)value$; break;
-    case 21: appId = (java.lang.String)value$; break;
-    case 22: appVersion = (java.lang.String)value$; break;
-    case 23: osVersion = (java.lang.String)value$; break;
-    case 24: cobrand = (java.lang.String)value$; break;
-    case 25: deviceFamily = (java.lang.String)value$; break;
-    case 26: deviceType = (java.lang.String)value$; break;
-    case 27: browserVersion = (java.lang.String)value$; break;
-    case 28: browserFamily = (java.lang.String)value$; break;
-    case 29: osFamily = (java.lang.String)value$; break;
-    case 30: enrichedOsVersion = (java.lang.String)value$; break;
-    case 31: applicationPayload = (java.util.Map<java.lang.String,java.lang.String>)value$; break;
-    case 32: rlogid = (java.lang.String)value$; break;
-    case 33: clientData = (java.util.Map<java.lang.String,java.lang.String>)value$; break;
-    case 34: channelAction = (java.lang.String)value$; break;
-    case 35: channelType = (java.lang.String)value$; break;
-    case 36: dispatchId = (java.lang.String)value$; break;
-    case 37: data = (java.util.List<java.util.Map<java.lang.String,java.lang.String>>)value$; break;
+    case 17: clientIP = (java.lang.String)value$; break;
+    case 18: remoteIP = (java.lang.String)value$; break;
+    case 19: agentInfo = (java.lang.String)value$; break;
+    case 20: appId = (java.lang.String)value$; break;
+    case 21: appVersion = (java.lang.String)value$; break;
+    case 22: osVersion = (java.lang.String)value$; break;
+    case 23: cobrand = (java.lang.String)value$; break;
+    case 24: deviceFamily = (java.lang.String)value$; break;
+    case 25: deviceType = (java.lang.String)value$; break;
+    case 26: browserVersion = (java.lang.String)value$; break;
+    case 27: browserFamily = (java.lang.String)value$; break;
+    case 28: osFamily = (java.lang.String)value$; break;
+    case 29: enrichedOsVersion = (java.lang.String)value$; break;
+    case 30: applicationPayload = (java.util.Map<java.lang.String,java.lang.String>)value$; break;
+    case 31: rlogid = (java.lang.String)value$; break;
+    case 32: clientData = (java.util.Map<java.lang.String,java.lang.String>)value$; break;
+    case 33: channelAction = (java.lang.String)value$; break;
+    case 34: channelType = (java.lang.String)value$; break;
+    case 35: dispatchId = (java.lang.String)value$; break;
+    case 36: data = (java.util.List<java.util.Map<java.lang.String,java.lang.String>>)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -545,22 +540,6 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
    */
   public void setWebServer(java.lang.String value) {
     this.webServer = value;
-  }
-
-  /**
-   * Gets the value of the 'bot' field.
-   * @return The value of the 'bot' field.
-   */
-  public java.lang.Integer getBot() {
-    return bot;
-  }
-
-  /**
-   * Sets the value of the 'bot' field.
-   * @param value the value to set.
-   */
-  public void setBot(java.lang.Integer value) {
-    this.bot = value;
   }
 
   /**
@@ -935,7 +914,6 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
     private java.lang.String refererHash;
     private java.lang.String urlQueryString;
     private java.lang.String webServer;
-    private java.lang.Integer bot;
     private java.lang.String clientIP;
     private java.lang.String remoteIP;
     private java.lang.String agentInfo;
@@ -1038,89 +1016,85 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
         this.webServer = data().deepCopy(fields()[16].schema(), other.webServer);
         fieldSetFlags()[16] = true;
       }
-      if (isValidValue(fields()[17], other.bot)) {
-        this.bot = data().deepCopy(fields()[17].schema(), other.bot);
+      if (isValidValue(fields()[17], other.clientIP)) {
+        this.clientIP = data().deepCopy(fields()[17].schema(), other.clientIP);
         fieldSetFlags()[17] = true;
       }
-      if (isValidValue(fields()[18], other.clientIP)) {
-        this.clientIP = data().deepCopy(fields()[18].schema(), other.clientIP);
+      if (isValidValue(fields()[18], other.remoteIP)) {
+        this.remoteIP = data().deepCopy(fields()[18].schema(), other.remoteIP);
         fieldSetFlags()[18] = true;
       }
-      if (isValidValue(fields()[19], other.remoteIP)) {
-        this.remoteIP = data().deepCopy(fields()[19].schema(), other.remoteIP);
+      if (isValidValue(fields()[19], other.agentInfo)) {
+        this.agentInfo = data().deepCopy(fields()[19].schema(), other.agentInfo);
         fieldSetFlags()[19] = true;
       }
-      if (isValidValue(fields()[20], other.agentInfo)) {
-        this.agentInfo = data().deepCopy(fields()[20].schema(), other.agentInfo);
+      if (isValidValue(fields()[20], other.appId)) {
+        this.appId = data().deepCopy(fields()[20].schema(), other.appId);
         fieldSetFlags()[20] = true;
       }
-      if (isValidValue(fields()[21], other.appId)) {
-        this.appId = data().deepCopy(fields()[21].schema(), other.appId);
+      if (isValidValue(fields()[21], other.appVersion)) {
+        this.appVersion = data().deepCopy(fields()[21].schema(), other.appVersion);
         fieldSetFlags()[21] = true;
       }
-      if (isValidValue(fields()[22], other.appVersion)) {
-        this.appVersion = data().deepCopy(fields()[22].schema(), other.appVersion);
+      if (isValidValue(fields()[22], other.osVersion)) {
+        this.osVersion = data().deepCopy(fields()[22].schema(), other.osVersion);
         fieldSetFlags()[22] = true;
       }
-      if (isValidValue(fields()[23], other.osVersion)) {
-        this.osVersion = data().deepCopy(fields()[23].schema(), other.osVersion);
+      if (isValidValue(fields()[23], other.cobrand)) {
+        this.cobrand = data().deepCopy(fields()[23].schema(), other.cobrand);
         fieldSetFlags()[23] = true;
       }
-      if (isValidValue(fields()[24], other.cobrand)) {
-        this.cobrand = data().deepCopy(fields()[24].schema(), other.cobrand);
+      if (isValidValue(fields()[24], other.deviceFamily)) {
+        this.deviceFamily = data().deepCopy(fields()[24].schema(), other.deviceFamily);
         fieldSetFlags()[24] = true;
       }
-      if (isValidValue(fields()[25], other.deviceFamily)) {
-        this.deviceFamily = data().deepCopy(fields()[25].schema(), other.deviceFamily);
+      if (isValidValue(fields()[25], other.deviceType)) {
+        this.deviceType = data().deepCopy(fields()[25].schema(), other.deviceType);
         fieldSetFlags()[25] = true;
       }
-      if (isValidValue(fields()[26], other.deviceType)) {
-        this.deviceType = data().deepCopy(fields()[26].schema(), other.deviceType);
+      if (isValidValue(fields()[26], other.browserVersion)) {
+        this.browserVersion = data().deepCopy(fields()[26].schema(), other.browserVersion);
         fieldSetFlags()[26] = true;
       }
-      if (isValidValue(fields()[27], other.browserVersion)) {
-        this.browserVersion = data().deepCopy(fields()[27].schema(), other.browserVersion);
+      if (isValidValue(fields()[27], other.browserFamily)) {
+        this.browserFamily = data().deepCopy(fields()[27].schema(), other.browserFamily);
         fieldSetFlags()[27] = true;
       }
-      if (isValidValue(fields()[28], other.browserFamily)) {
-        this.browserFamily = data().deepCopy(fields()[28].schema(), other.browserFamily);
+      if (isValidValue(fields()[28], other.osFamily)) {
+        this.osFamily = data().deepCopy(fields()[28].schema(), other.osFamily);
         fieldSetFlags()[28] = true;
       }
-      if (isValidValue(fields()[29], other.osFamily)) {
-        this.osFamily = data().deepCopy(fields()[29].schema(), other.osFamily);
+      if (isValidValue(fields()[29], other.enrichedOsVersion)) {
+        this.enrichedOsVersion = data().deepCopy(fields()[29].schema(), other.enrichedOsVersion);
         fieldSetFlags()[29] = true;
       }
-      if (isValidValue(fields()[30], other.enrichedOsVersion)) {
-        this.enrichedOsVersion = data().deepCopy(fields()[30].schema(), other.enrichedOsVersion);
+      if (isValidValue(fields()[30], other.applicationPayload)) {
+        this.applicationPayload = data().deepCopy(fields()[30].schema(), other.applicationPayload);
         fieldSetFlags()[30] = true;
       }
-      if (isValidValue(fields()[31], other.applicationPayload)) {
-        this.applicationPayload = data().deepCopy(fields()[31].schema(), other.applicationPayload);
+      if (isValidValue(fields()[31], other.rlogid)) {
+        this.rlogid = data().deepCopy(fields()[31].schema(), other.rlogid);
         fieldSetFlags()[31] = true;
       }
-      if (isValidValue(fields()[32], other.rlogid)) {
-        this.rlogid = data().deepCopy(fields()[32].schema(), other.rlogid);
+      if (isValidValue(fields()[32], other.clientData)) {
+        this.clientData = data().deepCopy(fields()[32].schema(), other.clientData);
         fieldSetFlags()[32] = true;
       }
-      if (isValidValue(fields()[33], other.clientData)) {
-        this.clientData = data().deepCopy(fields()[33].schema(), other.clientData);
+      if (isValidValue(fields()[33], other.channelAction)) {
+        this.channelAction = data().deepCopy(fields()[33].schema(), other.channelAction);
         fieldSetFlags()[33] = true;
       }
-      if (isValidValue(fields()[34], other.channelAction)) {
-        this.channelAction = data().deepCopy(fields()[34].schema(), other.channelAction);
+      if (isValidValue(fields()[34], other.channelType)) {
+        this.channelType = data().deepCopy(fields()[34].schema(), other.channelType);
         fieldSetFlags()[34] = true;
       }
-      if (isValidValue(fields()[35], other.channelType)) {
-        this.channelType = data().deepCopy(fields()[35].schema(), other.channelType);
+      if (isValidValue(fields()[35], other.dispatchId)) {
+        this.dispatchId = data().deepCopy(fields()[35].schema(), other.dispatchId);
         fieldSetFlags()[35] = true;
       }
-      if (isValidValue(fields()[36], other.dispatchId)) {
-        this.dispatchId = data().deepCopy(fields()[36].schema(), other.dispatchId);
+      if (isValidValue(fields()[36], other.data)) {
+        this.data = data().deepCopy(fields()[36].schema(), other.data);
         fieldSetFlags()[36] = true;
-      }
-      if (isValidValue(fields()[37], other.data)) {
-        this.data = data().deepCopy(fields()[37].schema(), other.data);
-        fieldSetFlags()[37] = true;
       }
     }
 
@@ -1198,89 +1172,85 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
         this.webServer = data().deepCopy(fields()[16].schema(), other.webServer);
         fieldSetFlags()[16] = true;
       }
-      if (isValidValue(fields()[17], other.bot)) {
-        this.bot = data().deepCopy(fields()[17].schema(), other.bot);
+      if (isValidValue(fields()[17], other.clientIP)) {
+        this.clientIP = data().deepCopy(fields()[17].schema(), other.clientIP);
         fieldSetFlags()[17] = true;
       }
-      if (isValidValue(fields()[18], other.clientIP)) {
-        this.clientIP = data().deepCopy(fields()[18].schema(), other.clientIP);
+      if (isValidValue(fields()[18], other.remoteIP)) {
+        this.remoteIP = data().deepCopy(fields()[18].schema(), other.remoteIP);
         fieldSetFlags()[18] = true;
       }
-      if (isValidValue(fields()[19], other.remoteIP)) {
-        this.remoteIP = data().deepCopy(fields()[19].schema(), other.remoteIP);
+      if (isValidValue(fields()[19], other.agentInfo)) {
+        this.agentInfo = data().deepCopy(fields()[19].schema(), other.agentInfo);
         fieldSetFlags()[19] = true;
       }
-      if (isValidValue(fields()[20], other.agentInfo)) {
-        this.agentInfo = data().deepCopy(fields()[20].schema(), other.agentInfo);
+      if (isValidValue(fields()[20], other.appId)) {
+        this.appId = data().deepCopy(fields()[20].schema(), other.appId);
         fieldSetFlags()[20] = true;
       }
-      if (isValidValue(fields()[21], other.appId)) {
-        this.appId = data().deepCopy(fields()[21].schema(), other.appId);
+      if (isValidValue(fields()[21], other.appVersion)) {
+        this.appVersion = data().deepCopy(fields()[21].schema(), other.appVersion);
         fieldSetFlags()[21] = true;
       }
-      if (isValidValue(fields()[22], other.appVersion)) {
-        this.appVersion = data().deepCopy(fields()[22].schema(), other.appVersion);
+      if (isValidValue(fields()[22], other.osVersion)) {
+        this.osVersion = data().deepCopy(fields()[22].schema(), other.osVersion);
         fieldSetFlags()[22] = true;
       }
-      if (isValidValue(fields()[23], other.osVersion)) {
-        this.osVersion = data().deepCopy(fields()[23].schema(), other.osVersion);
+      if (isValidValue(fields()[23], other.cobrand)) {
+        this.cobrand = data().deepCopy(fields()[23].schema(), other.cobrand);
         fieldSetFlags()[23] = true;
       }
-      if (isValidValue(fields()[24], other.cobrand)) {
-        this.cobrand = data().deepCopy(fields()[24].schema(), other.cobrand);
+      if (isValidValue(fields()[24], other.deviceFamily)) {
+        this.deviceFamily = data().deepCopy(fields()[24].schema(), other.deviceFamily);
         fieldSetFlags()[24] = true;
       }
-      if (isValidValue(fields()[25], other.deviceFamily)) {
-        this.deviceFamily = data().deepCopy(fields()[25].schema(), other.deviceFamily);
+      if (isValidValue(fields()[25], other.deviceType)) {
+        this.deviceType = data().deepCopy(fields()[25].schema(), other.deviceType);
         fieldSetFlags()[25] = true;
       }
-      if (isValidValue(fields()[26], other.deviceType)) {
-        this.deviceType = data().deepCopy(fields()[26].schema(), other.deviceType);
+      if (isValidValue(fields()[26], other.browserVersion)) {
+        this.browserVersion = data().deepCopy(fields()[26].schema(), other.browserVersion);
         fieldSetFlags()[26] = true;
       }
-      if (isValidValue(fields()[27], other.browserVersion)) {
-        this.browserVersion = data().deepCopy(fields()[27].schema(), other.browserVersion);
+      if (isValidValue(fields()[27], other.browserFamily)) {
+        this.browserFamily = data().deepCopy(fields()[27].schema(), other.browserFamily);
         fieldSetFlags()[27] = true;
       }
-      if (isValidValue(fields()[28], other.browserFamily)) {
-        this.browserFamily = data().deepCopy(fields()[28].schema(), other.browserFamily);
+      if (isValidValue(fields()[28], other.osFamily)) {
+        this.osFamily = data().deepCopy(fields()[28].schema(), other.osFamily);
         fieldSetFlags()[28] = true;
       }
-      if (isValidValue(fields()[29], other.osFamily)) {
-        this.osFamily = data().deepCopy(fields()[29].schema(), other.osFamily);
+      if (isValidValue(fields()[29], other.enrichedOsVersion)) {
+        this.enrichedOsVersion = data().deepCopy(fields()[29].schema(), other.enrichedOsVersion);
         fieldSetFlags()[29] = true;
       }
-      if (isValidValue(fields()[30], other.enrichedOsVersion)) {
-        this.enrichedOsVersion = data().deepCopy(fields()[30].schema(), other.enrichedOsVersion);
+      if (isValidValue(fields()[30], other.applicationPayload)) {
+        this.applicationPayload = data().deepCopy(fields()[30].schema(), other.applicationPayload);
         fieldSetFlags()[30] = true;
       }
-      if (isValidValue(fields()[31], other.applicationPayload)) {
-        this.applicationPayload = data().deepCopy(fields()[31].schema(), other.applicationPayload);
+      if (isValidValue(fields()[31], other.rlogid)) {
+        this.rlogid = data().deepCopy(fields()[31].schema(), other.rlogid);
         fieldSetFlags()[31] = true;
       }
-      if (isValidValue(fields()[32], other.rlogid)) {
-        this.rlogid = data().deepCopy(fields()[32].schema(), other.rlogid);
+      if (isValidValue(fields()[32], other.clientData)) {
+        this.clientData = data().deepCopy(fields()[32].schema(), other.clientData);
         fieldSetFlags()[32] = true;
       }
-      if (isValidValue(fields()[33], other.clientData)) {
-        this.clientData = data().deepCopy(fields()[33].schema(), other.clientData);
+      if (isValidValue(fields()[33], other.channelAction)) {
+        this.channelAction = data().deepCopy(fields()[33].schema(), other.channelAction);
         fieldSetFlags()[33] = true;
       }
-      if (isValidValue(fields()[34], other.channelAction)) {
-        this.channelAction = data().deepCopy(fields()[34].schema(), other.channelAction);
+      if (isValidValue(fields()[34], other.channelType)) {
+        this.channelType = data().deepCopy(fields()[34].schema(), other.channelType);
         fieldSetFlags()[34] = true;
       }
-      if (isValidValue(fields()[35], other.channelType)) {
-        this.channelType = data().deepCopy(fields()[35].schema(), other.channelType);
+      if (isValidValue(fields()[35], other.dispatchId)) {
+        this.dispatchId = data().deepCopy(fields()[35].schema(), other.dispatchId);
         fieldSetFlags()[35] = true;
       }
-      if (isValidValue(fields()[36], other.dispatchId)) {
-        this.dispatchId = data().deepCopy(fields()[36].schema(), other.dispatchId);
+      if (isValidValue(fields()[36], other.data)) {
+        this.data = data().deepCopy(fields()[36].schema(), other.data);
         fieldSetFlags()[36] = true;
-      }
-      if (isValidValue(fields()[37], other.data)) {
-        this.data = data().deepCopy(fields()[37].schema(), other.data);
-        fieldSetFlags()[37] = true;
       }
     }
 
@@ -1951,45 +1921,6 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
     }
 
     /**
-      * Gets the value of the 'bot' field.
-      * @return The value.
-      */
-    public java.lang.Integer getBot() {
-      return bot;
-    }
-
-    /**
-      * Sets the value of the 'bot' field.
-      * @param value The value of 'bot'.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setBot(java.lang.Integer value) {
-      validate(fields()[17], value);
-      this.bot = value;
-      fieldSetFlags()[17] = true;
-      return this;
-    }
-
-    /**
-      * Checks whether the 'bot' field has been set.
-      * @return True if the 'bot' field has been set, false otherwise.
-      */
-    public boolean hasBot() {
-      return fieldSetFlags()[17];
-    }
-
-
-    /**
-      * Clears the value of the 'bot' field.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearBot() {
-      bot = null;
-      fieldSetFlags()[17] = false;
-      return this;
-    }
-
-    /**
       * Gets the value of the 'clientIP' field.
       * @return The value.
       */
@@ -2003,9 +1934,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setClientIP(java.lang.String value) {
-      validate(fields()[18], value);
+      validate(fields()[17], value);
       this.clientIP = value;
-      fieldSetFlags()[18] = true;
+      fieldSetFlags()[17] = true;
       return this;
     }
 
@@ -2014,7 +1945,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'clientIP' field has been set, false otherwise.
       */
     public boolean hasClientIP() {
-      return fieldSetFlags()[18];
+      return fieldSetFlags()[17];
     }
 
 
@@ -2024,7 +1955,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearClientIP() {
       clientIP = null;
-      fieldSetFlags()[18] = false;
+      fieldSetFlags()[17] = false;
       return this;
     }
 
@@ -2042,9 +1973,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setRemoteIP(java.lang.String value) {
-      validate(fields()[19], value);
+      validate(fields()[18], value);
       this.remoteIP = value;
-      fieldSetFlags()[19] = true;
+      fieldSetFlags()[18] = true;
       return this;
     }
 
@@ -2053,7 +1984,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'remoteIP' field has been set, false otherwise.
       */
     public boolean hasRemoteIP() {
-      return fieldSetFlags()[19];
+      return fieldSetFlags()[18];
     }
 
 
@@ -2063,7 +1994,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearRemoteIP() {
       remoteIP = null;
-      fieldSetFlags()[19] = false;
+      fieldSetFlags()[18] = false;
       return this;
     }
 
@@ -2081,9 +2012,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setAgentInfo(java.lang.String value) {
-      validate(fields()[20], value);
+      validate(fields()[19], value);
       this.agentInfo = value;
-      fieldSetFlags()[20] = true;
+      fieldSetFlags()[19] = true;
       return this;
     }
 
@@ -2092,7 +2023,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'agentInfo' field has been set, false otherwise.
       */
     public boolean hasAgentInfo() {
-      return fieldSetFlags()[20];
+      return fieldSetFlags()[19];
     }
 
 
@@ -2102,7 +2033,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearAgentInfo() {
       agentInfo = null;
-      fieldSetFlags()[20] = false;
+      fieldSetFlags()[19] = false;
       return this;
     }
 
@@ -2120,9 +2051,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setAppId(java.lang.String value) {
-      validate(fields()[21], value);
+      validate(fields()[20], value);
       this.appId = value;
-      fieldSetFlags()[21] = true;
+      fieldSetFlags()[20] = true;
       return this;
     }
 
@@ -2131,7 +2062,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'appId' field has been set, false otherwise.
       */
     public boolean hasAppId() {
-      return fieldSetFlags()[21];
+      return fieldSetFlags()[20];
     }
 
 
@@ -2141,7 +2072,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearAppId() {
       appId = null;
-      fieldSetFlags()[21] = false;
+      fieldSetFlags()[20] = false;
       return this;
     }
 
@@ -2159,9 +2090,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setAppVersion(java.lang.String value) {
-      validate(fields()[22], value);
+      validate(fields()[21], value);
       this.appVersion = value;
-      fieldSetFlags()[22] = true;
+      fieldSetFlags()[21] = true;
       return this;
     }
 
@@ -2170,7 +2101,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'appVersion' field has been set, false otherwise.
       */
     public boolean hasAppVersion() {
-      return fieldSetFlags()[22];
+      return fieldSetFlags()[21];
     }
 
 
@@ -2180,7 +2111,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearAppVersion() {
       appVersion = null;
-      fieldSetFlags()[22] = false;
+      fieldSetFlags()[21] = false;
       return this;
     }
 
@@ -2198,9 +2129,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setOsVersion(java.lang.String value) {
-      validate(fields()[23], value);
+      validate(fields()[22], value);
       this.osVersion = value;
-      fieldSetFlags()[23] = true;
+      fieldSetFlags()[22] = true;
       return this;
     }
 
@@ -2209,7 +2140,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'osVersion' field has been set, false otherwise.
       */
     public boolean hasOsVersion() {
-      return fieldSetFlags()[23];
+      return fieldSetFlags()[22];
     }
 
 
@@ -2219,7 +2150,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearOsVersion() {
       osVersion = null;
-      fieldSetFlags()[23] = false;
+      fieldSetFlags()[22] = false;
       return this;
     }
 
@@ -2237,9 +2168,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setCobrand(java.lang.String value) {
-      validate(fields()[24], value);
+      validate(fields()[23], value);
       this.cobrand = value;
-      fieldSetFlags()[24] = true;
+      fieldSetFlags()[23] = true;
       return this;
     }
 
@@ -2248,7 +2179,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'cobrand' field has been set, false otherwise.
       */
     public boolean hasCobrand() {
-      return fieldSetFlags()[24];
+      return fieldSetFlags()[23];
     }
 
 
@@ -2258,7 +2189,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearCobrand() {
       cobrand = null;
-      fieldSetFlags()[24] = false;
+      fieldSetFlags()[23] = false;
       return this;
     }
 
@@ -2276,9 +2207,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setDeviceFamily(java.lang.String value) {
-      validate(fields()[25], value);
+      validate(fields()[24], value);
       this.deviceFamily = value;
-      fieldSetFlags()[25] = true;
+      fieldSetFlags()[24] = true;
       return this;
     }
 
@@ -2287,7 +2218,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'deviceFamily' field has been set, false otherwise.
       */
     public boolean hasDeviceFamily() {
-      return fieldSetFlags()[25];
+      return fieldSetFlags()[24];
     }
 
 
@@ -2297,7 +2228,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearDeviceFamily() {
       deviceFamily = null;
-      fieldSetFlags()[25] = false;
+      fieldSetFlags()[24] = false;
       return this;
     }
 
@@ -2315,9 +2246,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setDeviceType(java.lang.String value) {
-      validate(fields()[26], value);
+      validate(fields()[25], value);
       this.deviceType = value;
-      fieldSetFlags()[26] = true;
+      fieldSetFlags()[25] = true;
       return this;
     }
 
@@ -2326,7 +2257,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'deviceType' field has been set, false otherwise.
       */
     public boolean hasDeviceType() {
-      return fieldSetFlags()[26];
+      return fieldSetFlags()[25];
     }
 
 
@@ -2336,7 +2267,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearDeviceType() {
       deviceType = null;
-      fieldSetFlags()[26] = false;
+      fieldSetFlags()[25] = false;
       return this;
     }
 
@@ -2354,9 +2285,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setBrowserVersion(java.lang.String value) {
-      validate(fields()[27], value);
+      validate(fields()[26], value);
       this.browserVersion = value;
-      fieldSetFlags()[27] = true;
+      fieldSetFlags()[26] = true;
       return this;
     }
 
@@ -2365,7 +2296,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'browserVersion' field has been set, false otherwise.
       */
     public boolean hasBrowserVersion() {
-      return fieldSetFlags()[27];
+      return fieldSetFlags()[26];
     }
 
 
@@ -2375,7 +2306,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearBrowserVersion() {
       browserVersion = null;
-      fieldSetFlags()[27] = false;
+      fieldSetFlags()[26] = false;
       return this;
     }
 
@@ -2393,9 +2324,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setBrowserFamily(java.lang.String value) {
-      validate(fields()[28], value);
+      validate(fields()[27], value);
       this.browserFamily = value;
-      fieldSetFlags()[28] = true;
+      fieldSetFlags()[27] = true;
       return this;
     }
 
@@ -2404,7 +2335,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'browserFamily' field has been set, false otherwise.
       */
     public boolean hasBrowserFamily() {
-      return fieldSetFlags()[28];
+      return fieldSetFlags()[27];
     }
 
 
@@ -2414,7 +2345,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearBrowserFamily() {
       browserFamily = null;
-      fieldSetFlags()[28] = false;
+      fieldSetFlags()[27] = false;
       return this;
     }
 
@@ -2432,9 +2363,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setOsFamily(java.lang.String value) {
-      validate(fields()[29], value);
+      validate(fields()[28], value);
       this.osFamily = value;
-      fieldSetFlags()[29] = true;
+      fieldSetFlags()[28] = true;
       return this;
     }
 
@@ -2443,7 +2374,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'osFamily' field has been set, false otherwise.
       */
     public boolean hasOsFamily() {
-      return fieldSetFlags()[29];
+      return fieldSetFlags()[28];
     }
 
 
@@ -2453,7 +2384,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearOsFamily() {
       osFamily = null;
-      fieldSetFlags()[29] = false;
+      fieldSetFlags()[28] = false;
       return this;
     }
 
@@ -2471,9 +2402,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setEnrichedOsVersion(java.lang.String value) {
-      validate(fields()[30], value);
+      validate(fields()[29], value);
       this.enrichedOsVersion = value;
-      fieldSetFlags()[30] = true;
+      fieldSetFlags()[29] = true;
       return this;
     }
 
@@ -2482,7 +2413,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'enrichedOsVersion' field has been set, false otherwise.
       */
     public boolean hasEnrichedOsVersion() {
-      return fieldSetFlags()[30];
+      return fieldSetFlags()[29];
     }
 
 
@@ -2492,7 +2423,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearEnrichedOsVersion() {
       enrichedOsVersion = null;
-      fieldSetFlags()[30] = false;
+      fieldSetFlags()[29] = false;
       return this;
     }
 
@@ -2510,9 +2441,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setApplicationPayload(java.util.Map<java.lang.String,java.lang.String> value) {
-      validate(fields()[31], value);
+      validate(fields()[30], value);
       this.applicationPayload = value;
-      fieldSetFlags()[31] = true;
+      fieldSetFlags()[30] = true;
       return this;
     }
 
@@ -2521,7 +2452,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'applicationPayload' field has been set, false otherwise.
       */
     public boolean hasApplicationPayload() {
-      return fieldSetFlags()[31];
+      return fieldSetFlags()[30];
     }
 
 
@@ -2531,7 +2462,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearApplicationPayload() {
       applicationPayload = null;
-      fieldSetFlags()[31] = false;
+      fieldSetFlags()[30] = false;
       return this;
     }
 
@@ -2549,9 +2480,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setRlogid(java.lang.String value) {
-      validate(fields()[32], value);
+      validate(fields()[31], value);
       this.rlogid = value;
-      fieldSetFlags()[32] = true;
+      fieldSetFlags()[31] = true;
       return this;
     }
 
@@ -2560,7 +2491,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'rlogid' field has been set, false otherwise.
       */
     public boolean hasRlogid() {
-      return fieldSetFlags()[32];
+      return fieldSetFlags()[31];
     }
 
 
@@ -2570,7 +2501,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearRlogid() {
       rlogid = null;
-      fieldSetFlags()[32] = false;
+      fieldSetFlags()[31] = false;
       return this;
     }
 
@@ -2588,9 +2519,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setClientData(java.util.Map<java.lang.String,java.lang.String> value) {
-      validate(fields()[33], value);
+      validate(fields()[32], value);
       this.clientData = value;
-      fieldSetFlags()[33] = true;
+      fieldSetFlags()[32] = true;
       return this;
     }
 
@@ -2599,7 +2530,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'clientData' field has been set, false otherwise.
       */
     public boolean hasClientData() {
-      return fieldSetFlags()[33];
+      return fieldSetFlags()[32];
     }
 
 
@@ -2609,7 +2540,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearClientData() {
       clientData = null;
-      fieldSetFlags()[33] = false;
+      fieldSetFlags()[32] = false;
       return this;
     }
 
@@ -2629,9 +2560,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setChannelAction(java.lang.String value) {
-      validate(fields()[34], value);
+      validate(fields()[33], value);
       this.channelAction = value;
-      fieldSetFlags()[34] = true;
+      fieldSetFlags()[33] = true;
       return this;
     }
 
@@ -2641,7 +2572,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'channelAction' field has been set, false otherwise.
       */
     public boolean hasChannelAction() {
-      return fieldSetFlags()[34];
+      return fieldSetFlags()[33];
     }
 
 
@@ -2652,7 +2583,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearChannelAction() {
       channelAction = null;
-      fieldSetFlags()[34] = false;
+      fieldSetFlags()[33] = false;
       return this;
     }
 
@@ -2672,9 +2603,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setChannelType(java.lang.String value) {
-      validate(fields()[35], value);
+      validate(fields()[34], value);
       this.channelType = value;
-      fieldSetFlags()[35] = true;
+      fieldSetFlags()[34] = true;
       return this;
     }
 
@@ -2684,7 +2615,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'channelType' field has been set, false otherwise.
       */
     public boolean hasChannelType() {
-      return fieldSetFlags()[35];
+      return fieldSetFlags()[34];
     }
 
 
@@ -2695,7 +2626,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearChannelType() {
       channelType = null;
-      fieldSetFlags()[35] = false;
+      fieldSetFlags()[34] = false;
       return this;
     }
 
@@ -2713,9 +2644,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setDispatchId(java.lang.String value) {
-      validate(fields()[36], value);
+      validate(fields()[35], value);
       this.dispatchId = value;
-      fieldSetFlags()[36] = true;
+      fieldSetFlags()[35] = true;
       return this;
     }
 
@@ -2724,7 +2655,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'dispatchId' field has been set, false otherwise.
       */
     public boolean hasDispatchId() {
-      return fieldSetFlags()[36];
+      return fieldSetFlags()[35];
     }
 
 
@@ -2734,7 +2665,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearDispatchId() {
       dispatchId = null;
-      fieldSetFlags()[36] = false;
+      fieldSetFlags()[35] = false;
       return this;
     }
 
@@ -2752,9 +2683,9 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder setData(java.util.List<java.util.Map<java.lang.String,java.lang.String>> value) {
-      validate(fields()[37], value);
+      validate(fields()[36], value);
       this.data = value;
-      fieldSetFlags()[37] = true;
+      fieldSetFlags()[36] = true;
       return this;
     }
 
@@ -2763,7 +2694,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       * @return True if the 'data' field has been set, false otherwise.
       */
     public boolean hasData() {
-      return fieldSetFlags()[37];
+      return fieldSetFlags()[36];
     }
 
 
@@ -2773,7 +2704,7 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
       */
     public com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0.Builder clearData() {
       data = null;
-      fieldSetFlags()[37] = false;
+      fieldSetFlags()[36] = false;
       return this;
     }
 
@@ -2799,27 +2730,26 @@ public class BehaviorMessageV0 extends org.apache.avro.specific.SpecificRecordBa
         record.refererHash = fieldSetFlags()[14] ? this.refererHash : (java.lang.String) defaultValue(fields()[14]);
         record.urlQueryString = fieldSetFlags()[15] ? this.urlQueryString : (java.lang.String) defaultValue(fields()[15]);
         record.webServer = fieldSetFlags()[16] ? this.webServer : (java.lang.String) defaultValue(fields()[16]);
-        record.bot = fieldSetFlags()[17] ? this.bot : (java.lang.Integer) defaultValue(fields()[17]);
-        record.clientIP = fieldSetFlags()[18] ? this.clientIP : (java.lang.String) defaultValue(fields()[18]);
-        record.remoteIP = fieldSetFlags()[19] ? this.remoteIP : (java.lang.String) defaultValue(fields()[19]);
-        record.agentInfo = fieldSetFlags()[20] ? this.agentInfo : (java.lang.String) defaultValue(fields()[20]);
-        record.appId = fieldSetFlags()[21] ? this.appId : (java.lang.String) defaultValue(fields()[21]);
-        record.appVersion = fieldSetFlags()[22] ? this.appVersion : (java.lang.String) defaultValue(fields()[22]);
-        record.osVersion = fieldSetFlags()[23] ? this.osVersion : (java.lang.String) defaultValue(fields()[23]);
-        record.cobrand = fieldSetFlags()[24] ? this.cobrand : (java.lang.String) defaultValue(fields()[24]);
-        record.deviceFamily = fieldSetFlags()[25] ? this.deviceFamily : (java.lang.String) defaultValue(fields()[25]);
-        record.deviceType = fieldSetFlags()[26] ? this.deviceType : (java.lang.String) defaultValue(fields()[26]);
-        record.browserVersion = fieldSetFlags()[27] ? this.browserVersion : (java.lang.String) defaultValue(fields()[27]);
-        record.browserFamily = fieldSetFlags()[28] ? this.browserFamily : (java.lang.String) defaultValue(fields()[28]);
-        record.osFamily = fieldSetFlags()[29] ? this.osFamily : (java.lang.String) defaultValue(fields()[29]);
-        record.enrichedOsVersion = fieldSetFlags()[30] ? this.enrichedOsVersion : (java.lang.String) defaultValue(fields()[30]);
-        record.applicationPayload = fieldSetFlags()[31] ? this.applicationPayload : (java.util.Map<java.lang.String,java.lang.String>) defaultValue(fields()[31]);
-        record.rlogid = fieldSetFlags()[32] ? this.rlogid : (java.lang.String) defaultValue(fields()[32]);
-        record.clientData = fieldSetFlags()[33] ? this.clientData : (java.util.Map<java.lang.String,java.lang.String>) defaultValue(fields()[33]);
-        record.channelAction = fieldSetFlags()[34] ? this.channelAction : (java.lang.String) defaultValue(fields()[34]);
-        record.channelType = fieldSetFlags()[35] ? this.channelType : (java.lang.String) defaultValue(fields()[35]);
-        record.dispatchId = fieldSetFlags()[36] ? this.dispatchId : (java.lang.String) defaultValue(fields()[36]);
-        record.data = fieldSetFlags()[37] ? this.data : (java.util.List<java.util.Map<java.lang.String,java.lang.String>>) defaultValue(fields()[37]);
+        record.clientIP = fieldSetFlags()[17] ? this.clientIP : (java.lang.String) defaultValue(fields()[17]);
+        record.remoteIP = fieldSetFlags()[18] ? this.remoteIP : (java.lang.String) defaultValue(fields()[18]);
+        record.agentInfo = fieldSetFlags()[19] ? this.agentInfo : (java.lang.String) defaultValue(fields()[19]);
+        record.appId = fieldSetFlags()[20] ? this.appId : (java.lang.String) defaultValue(fields()[20]);
+        record.appVersion = fieldSetFlags()[21] ? this.appVersion : (java.lang.String) defaultValue(fields()[21]);
+        record.osVersion = fieldSetFlags()[22] ? this.osVersion : (java.lang.String) defaultValue(fields()[22]);
+        record.cobrand = fieldSetFlags()[23] ? this.cobrand : (java.lang.String) defaultValue(fields()[23]);
+        record.deviceFamily = fieldSetFlags()[24] ? this.deviceFamily : (java.lang.String) defaultValue(fields()[24]);
+        record.deviceType = fieldSetFlags()[25] ? this.deviceType : (java.lang.String) defaultValue(fields()[25]);
+        record.browserVersion = fieldSetFlags()[26] ? this.browserVersion : (java.lang.String) defaultValue(fields()[26]);
+        record.browserFamily = fieldSetFlags()[27] ? this.browserFamily : (java.lang.String) defaultValue(fields()[27]);
+        record.osFamily = fieldSetFlags()[28] ? this.osFamily : (java.lang.String) defaultValue(fields()[28]);
+        record.enrichedOsVersion = fieldSetFlags()[29] ? this.enrichedOsVersion : (java.lang.String) defaultValue(fields()[29]);
+        record.applicationPayload = fieldSetFlags()[30] ? this.applicationPayload : (java.util.Map<java.lang.String,java.lang.String>) defaultValue(fields()[30]);
+        record.rlogid = fieldSetFlags()[31] ? this.rlogid : (java.lang.String) defaultValue(fields()[31]);
+        record.clientData = fieldSetFlags()[32] ? this.clientData : (java.util.Map<java.lang.String,java.lang.String>) defaultValue(fields()[32]);
+        record.channelAction = fieldSetFlags()[33] ? this.channelAction : (java.lang.String) defaultValue(fields()[33]);
+        record.channelType = fieldSetFlags()[34] ? this.channelType : (java.lang.String) defaultValue(fields()[34]);
+        record.dispatchId = fieldSetFlags()[35] ? this.dispatchId : (java.lang.String) defaultValue(fields()[35]);
+        record.data = fieldSetFlags()[36] ? this.data : (java.util.List<java.util.Map<java.lang.String,java.lang.String>>) defaultValue(fields()[36]);
         return record;
       } catch (java.lang.Exception e) {
         throw new org.apache.avro.AvroRuntimeException(e);

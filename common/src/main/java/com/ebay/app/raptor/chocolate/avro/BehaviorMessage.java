@@ -32,14 +32,14 @@ public class BehaviorMessage extends BehaviorMessageV0 {
   public BehaviorMessage(String guid, String adguid, Long eventTimestamp, String sid, Integer pageId, String pageName,
                          String eventFamily, String eventAction, String userId, String siteId, String sessionId,
                          String snapshotId, String seqNum, Integer rdt, String refererHash, String urlQueryString,
-                         String webServer, Integer bot, String clientIP, String remoteIP, String agentInfo,
+                         String webServer, String clientIP, String remoteIP, String agentInfo,
                          String appId, String appVersion, String osVersion, String cobrand, String deviceFamily,
                          String deviceType, String browserVersion, String browserFamily, String osFamily,
                          String enrichedOsVersion, Map<String,String> applicationPayload, String rlogid,
                          Map<String, String> clientData, String channelAction, String channelType, String dispatchId,
                          List<Map<String,String>> data) {
     super(guid, adguid, eventTimestamp, sid, pageId, pageName, eventFamily, eventAction, userId, siteId, sessionId,
-        snapshotId, seqNum, rdt, refererHash, urlQueryString, webServer, bot, clientIP, remoteIP, agentInfo, appId,
+        snapshotId, seqNum, rdt, refererHash, urlQueryString, webServer, clientIP, remoteIP, agentInfo, appId,
         appVersion, osVersion, cobrand, deviceFamily, deviceType, browserVersion, browserFamily, osFamily,
         enrichedOsVersion, applicationPayload, rlogid, clientData, channelAction, channelType, dispatchId, data);
   }

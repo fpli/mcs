@@ -73,10 +73,6 @@
 		"type": ["null","string"]
 	},
 	{
-        "name": "bot",
-        "type": ["null","int"]
-	},
-	{
 		"name": "clientIP",
 		"type": ["null","string"]
 	},
