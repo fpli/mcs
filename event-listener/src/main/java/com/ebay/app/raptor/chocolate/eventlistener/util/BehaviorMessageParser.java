@@ -6,13 +6,12 @@ import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
-import com.ebay.kernel.context.ServerContext;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
-import com.ebay.platform.dds.api.DeviceInfoProvider;
 import com.ebay.platform.raptor.ddsmodels.DDSResponse;
-import com.ebay.platform.raptor.ddsmodels.DeviceInfo;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.domain.request.api.DomainRequestData;
+import com.ebay.raptor.geo.context.UserPrefsCtx;
+import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
 import com.ebay.tracking.common.util.UrlProcessHelper;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -99,7 +98,7 @@ public class BehaviorMessageParser {
                                  int pageId, String pageName, int rdt) {
     // set default value
     BehaviorMessage record = new BehaviorMessage("", "", 0L, null, 0, null, null, null, null, null, null, null,
-        null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
         null, applicationPayload, null, clientData, "", "", "", data);
 
     RequestTracingContext tracingContext = (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
@@ -117,6 +116,9 @@ public class BehaviorMessageParser {
 
     // source id
     record.setSid(parseTagFromParams(parameters, Constants.SOURCE_ID));
+
+    // user id
+    record.setUserId(parseTagFromParams(parameters, Constants.BEST_GUESS_USER));
 
     // eventTimestamp
     record.setEventTimestamp(startTime);
@@ -189,15 +191,16 @@ public class BehaviorMessageParser {
             Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
       }
     }
+    // buyer access site id
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+    applicationPayload.put("bs", String.valueOf(userPrefsCtx.getGeoContext().getSiteId()));
     applicationPayload.put("Agent", agentInfo.getUserAgentRawData());
     applicationPayload.put("Payload", UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));
 
+    applicationPayload = deleteNullOrEmptyValue(applicationPayload);
     record.setApplicationPayload(applicationPayload);
 
     // device info
-//    DeviceInfoProvider deviceInfoProvider = new DeviceInfoProvider(false);
-//    DeviceInfo deviceInfo = deviceInfoProvider.get(userAgent);
-
     DDSResponse deviceInfo = agentInfo.getDeviceInfo();
     String deviceFamily;
     if (deviceInfo.isTablet()) {
@@ -217,6 +220,7 @@ public class BehaviorMessageParser {
     record.setBrowserFamily(deviceInfo.getBrowser());
     record.setOsVersion(deviceInfo.getDeviceOSVersion());
     record.setOsFamily(deviceInfo.getDeviceOS());
+    record.setEnrichedOsVersion(deviceInfo.getDeviceOSVersion());
 
     // cobrand
     record.setCobrand(String.valueOf(domainRequest.getCoBrandId()));
@@ -230,37 +234,27 @@ public class BehaviorMessageParser {
     clientData.put("Server", domainRequest.getHost());
     record.setWebServer(domainRequest.getHost());
     InetAddress netAddress = getInetAddress();
-    if (netAddress != null) {
-      clientData.put("TMachine", netAddress.getHostAddress());
-    }
+    clientData.put("TMachine", netAddress.getHostAddress());
     clientData.put("TName", domainRequest.getCommandName());
-    String dnsRegion = ServerContext.getDnsRegion();
-    if (dnsRegion == null) {
-      dnsRegion = "";
-    } else {
-      dnsRegion = dnsRegion.trim();
-    }
-    clientData.put("colo", dnsRegion);
     clientData.put("Agent", domainRequest.getUserAgent());
     clientData.put("RemoteIP", domainRequest.getClientIp());
     record.setRemoteIP(domainRequest.getClientIp());
+    record.setClientIP(domainRequest.getClientIp());
     clientData.put("ContentLength", String.valueOf(domainRequest.getContentLength()));
-    clientData.put("nodeId", tracingContext.getNodeId());
-    clientData.put("requestGuid", tracingContext.getRequestGuid());
     String referer = UrlProcessHelper.getMaskedUrl(domainRequest.getReferrerUrl(), false, true);
-    if (referer != null) {
-      clientData.put("Referrer", referer);
-    }
+    clientData.put("Referrer", referer);
     if (domainRequest.getReferrerUrl() != null) {
       record.setRefererHash(String.valueOf(domainRequest.getReferrerUrl().hashCode()));
     }
     clientData.put("AcceptEncoding", domainRequest.getAcceptEncoding());
+
+    clientData = deleteNullOrEmptyValue(clientData);
     record.setClientData(clientData);
 
-    //site id
+    // site id
     record.setSiteId(String.valueOf(domainRequest.getSiteId()));
 
-    //rdt
+    // rdt
     record.setRdt(rdt);
 
     // channel type and action
@@ -286,13 +280,26 @@ public class BehaviorMessageParser {
   /**
    * Get the address of the local host
    */
-  public static InetAddress getInetAddress() {
+  private static InetAddress getInetAddress() {
     try {
       return InetAddress.getLocalHost();
     } catch (UnknownHostException e) {
       logger.error(e.getMessage(), e);
     }
     return null;
+  }
+
+  /**
+   * Delete map entry with null or empty value
+   */
+  private Map<String, String> deleteNullOrEmptyValue(Map<String, String> map) {
+    for (Map.Entry<String, String> entry : map.entrySet()) {
+      if (StringUtils.isEmpty(entry.getValue())) {
+        map.remove(entry.getKey());
+      }
+    }
+
+    return map;
   }
 
 }
