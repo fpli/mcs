@@ -30,6 +30,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.*;
 
@@ -179,6 +180,15 @@ public class BehaviorMessageParser {
       }
     }
     // add other tags
+    if (ChannelAction.CLICK.equals(channelAction)) {
+      try {
+        applicationPayload.put("url_mpre", URLEncoder.encode(uri, "UTF-8"));
+      } catch (UnsupportedEncodingException e) {
+        logger.warn("Tag url_mpre encoding failed", e);
+        metrics.meter("UrlMpreEncodeError", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
+            Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
+      }
+    }
     applicationPayload.put("Agent", agentInfo.getUserAgentRawData());
     applicationPayload.put("Payload", UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));
 
