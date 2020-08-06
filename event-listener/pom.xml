@@ -129,6 +129,10 @@
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-micrometer-starter</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-firemarshall-starter</artifactId>
+    </dependency>
 
     <!--global config-->
     <dependency>

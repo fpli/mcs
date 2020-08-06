@@ -73,7 +73,10 @@
         <groupId>com.ebay.raptorio.component</groupId>
         <artifactId>raptor-metadata-starter</artifactId>
       </dependency>
-
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-firemarshall-starter</artifactId>
+      </dependency>
       <!-- spring boot jetty starter -->
       <dependency>
         <groupId>org.springframework.boot</groupId>
