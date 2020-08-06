@@ -75,6 +75,10 @@
       </dependency>
       <dependency>
         <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-jersey-operational-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
         <artifactId>raptor-firemarshall-starter</artifactId>
       </dependency>
       <!-- spring boot jetty starter -->
