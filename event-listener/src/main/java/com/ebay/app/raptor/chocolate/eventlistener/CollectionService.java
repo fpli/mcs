@@ -100,7 +100,6 @@ public class CollectionService {
 
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
-  private static Pattern strictEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
   private static Pattern roversites = Pattern.compile("^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)", Pattern.CASE_INSENSITIVE);
 
   // app deeplink sites XC-1797
@@ -448,7 +447,9 @@ public class CollectionService {
           targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
           PageIdEnum.CLICK.getId(), PageIdEnum.CLICK.getName(), 1);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
-      processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
+      processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request, agentInfo,
+          targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+          PageIdEnum.CLICK.getId(), PageIdEnum.CLICK.getName(), 1);
     else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS)
       processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
     if (processFlag)
@@ -733,7 +734,9 @@ public class CollectionService {
           uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
           PageIdEnum.EMAIL_OPEN.getId(), PageIdEnum.EMAIL_OPEN.getName(), 0);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
-      processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request);
+      processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request, agentInfo,
+          uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+          PageIdEnum.EMAIL_OPEN.getId(), PageIdEnum.EMAIL_OPEN.getName(), 0);
     else
       processFlag = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext);
@@ -1045,45 +1048,49 @@ public class CollectionService {
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
     if(!m.find()) {
-      // Email open and 3rd party redirection not go to UBI
-      if (ChannelAction.EMAIL_OPEN.equals(channelAction) || !strictEbaySites.matcher(uri.toLowerCase()).find()) {
+      // send to ubi
+      try {
+        // Ubi tracking
+        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+        // event family
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
+
+        // fbprefetch
+        if (isFacebookPrefetchEnabled(request))
+          requestTracker.addTag("fbprefetch", true, Boolean.class);
+
+        // channel id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.MKCID, "chnl", String.class);
+
+        // source id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
+
+        // email unique id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.EMAIL_UNIQUE_ID, "euid", String.class);
+
+        // email experienced treatment
+        addTagFromUrlQuery(parameters, requestTracker, Constants.EXPRCD_TRTMT, "ext", String.class);
+
+      } catch (Exception e) {
+        logger.warn("Error when tracking ubi for site email click tags", e);
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      }
+
+      // email open go to chocolate topic
+      if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
         BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, parameters, agentInfo, uri,
             startTime, channelType, channelAction, pageId, pageName, rdt);
 
         if (message != null) {
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId(), message),
               KafkaSink.callback);
-        }
-      } else {
-        try {
-          // Ubi tracking
-          IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
-
-          // event family
-          requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
-
-          // fbprefetch
-          if (isFacebookPrefetchEnabled(request))
-            requestTracker.addTag("fbprefetch", true, Boolean.class);
-
-          // channel id
-          addTagFromUrlQuery(parameters, requestTracker, Constants.MKCID, "chnl", String.class);
-
-          // source id
-          addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
-
-          // email unique id
-          addTagFromUrlQuery(parameters, requestTracker, Constants.EMAIL_UNIQUE_ID, "euid", String.class);
-
-          // email experienced treatment
-          addTagFromUrlQuery(parameters, requestTracker, Constants.EXPRCD_TRTMT, "ext", String.class);
-
-        } catch (Exception e) {
-          logger.warn("Error when tracking ubi for site email click tags", e);
-          metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
-        }
+          return true;
+        } else
+          return false;
       }
-    } else {
+    }
+    else {
       metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
     }
 
@@ -1095,11 +1102,14 @@ public class CollectionService {
    */
   private boolean processMrktEmailEvent(ContainerRequestContext requestContext, String referer,
                                         MultiValueMap<String, String> parameters, String type, String action,
-                                        HttpServletRequest request) {
+                                        HttpServletRequest request, UserAgentInfo agentInfo, String uri, Long startTime,
+                                        ChannelType channelType, ChannelAction channelAction, int pageId,
+                                        String pageName, int rdt) {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
     if(!m.find()) {
+      // send to ubi
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
@@ -1152,6 +1162,19 @@ public class CollectionService {
       } catch (Exception e) {
         logger.warn("Error when tracking ubi for marketing email click tags", e);
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      }
+
+      // email open go to chocolate topic
+      if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
+        BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, parameters, agentInfo, uri,
+            startTime, channelType, channelAction, pageId, pageName, rdt);
+
+        if (message != null) {
+          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId(), message),
+              KafkaSink.callback);
+          return true;
+        } else
+          return false;
       }
     } else {
       metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));

@@ -49,7 +49,7 @@ public class BehaviorMessageParser {
   /**
    * tag - param map
    */
-  public static final ImmutableMap<String, String> tagParamMap = new ImmutableMap.Builder<String, String>()
+  private static final ImmutableMap<String, String> tagParamMap = new ImmutableMap.Builder<String, String>()
       .put("chnl", "mkcid")
       .put("euid", "euid")
       .put("emid", "bu")
@@ -96,6 +96,9 @@ public class BehaviorMessageParser {
                                  MultiValueMap<String, String> parameters, UserAgentInfo agentInfo, String uri,
                                  Long startTime, final ChannelType channelType, final ChannelAction channelAction,
                                  int pageId, String pageName, int rdt) {
+    // clear maps
+    clearData();
+
     // set default value
     BehaviorMessage record = new BehaviorMessage("", "", 0L, null, 0, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
@@ -152,12 +155,136 @@ public class BehaviorMessageParser {
     record.setUrlQueryString(UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));
 
     // applicationPayload
+    record.setApplicationPayload(getApplicationPayload(parameters, agentInfo, requestContext, uri, domainRequest,
+        channelType, channelAction));
+
+    // device info
+    DDSResponse deviceInfo = agentInfo.getDeviceInfo();
+    record.setDeviceFamily(getDeviceFamily(deviceInfo));
+    record.setDeviceType(deviceInfo.getOsName());
+    record.setBrowserVersion(deviceInfo.getBrowserVersion());
+    record.setBrowserFamily(deviceInfo.getBrowser());
+    record.setOsVersion(deviceInfo.getDeviceOSVersion());
+    record.setOsFamily(deviceInfo.getDeviceOS());
+    record.setEnrichedOsVersion(deviceInfo.getDeviceOSVersion());
+
+    // cobrand
+    record.setCobrand(String.valueOf(domainRequest.getCoBrandId()));
+
+    // rlogid
+    record.setRlogid(tracingContext.getRlogId());
+
+    // client data
+    record.setClientData(getClientData(domainRequest));
+
+    // web server
+    record.setWebServer(domainRequest.getHost());
+
+    // ip
+    record.setRemoteIP(domainRequest.getClientIp());
+    record.setClientIP(domainRequest.getClientIp());
+
+    // referer hash
+    if (domainRequest.getReferrerUrl() != null) {
+      record.setRefererHash(String.valueOf(domainRequest.getReferrerUrl().hashCode()));
+    }
+
+    // site id
+    record.setSiteId(String.valueOf(domainRequest.getSiteId()));
+
+    // rdt
+    record.setRdt(rdt);
+
+    // channel type and action
+    record.setChannelType(channelType.toString());
+    record.setChannelAction(channelAction.toString());
+
+    System.out.println(record);
+
+    return record;
+  }
+
+
+  /**
+   * Get client data
+   */
+  private Map<String, String> getClientData(DomainRequestData domainRequest) {
+    clientData.put("ForwardedFor", domainRequest.getXForwardedFor());
+    clientData.put("Script", domainRequest.getServletPath());
+    clientData.put("Server", domainRequest.getHost());
+    InetAddress netAddress = getInetAddress();
+    clientData.put("TMachine", netAddress.getHostAddress());
+    clientData.put("TName", domainRequest.getCommandName());
+    clientData.put("Agent", domainRequest.getUserAgent());
+    clientData.put("RemoteIP", domainRequest.getClientIp());
+    clientData.put("ContentLength", String.valueOf(domainRequest.getContentLength()));
+    String referer = UrlProcessHelper.getMaskedUrl(domainRequest.getReferrerUrl(), false, true);
+    clientData.put("Referer", referer);
+    clientData.put("AcceptEncoding", domainRequest.getAcceptEncoding());
+
+    return deleteNullOrEmptyValue(clientData);
+  }
+
+  /**
+   * Get device type
+   */
+  private String getDeviceFamily(DDSResponse deviceInfo) {
+    String deviceFamily;
+
+    if (deviceInfo.isTablet()) {
+      deviceFamily = "Tablet";
+    } else if (deviceInfo.isTouchScreen()) {
+      deviceFamily = "TouchScreen";
+    } else if (deviceInfo.isDesktop()) {
+      deviceFamily = "Desktop";
+    } else if (deviceInfo.isMobile()) {
+      deviceFamily = "Mobile";
+    } else {
+      deviceFamily = "Other";
+    }
+
+    return deviceFamily;
+  }
+
+  /**
+   * Get application payload
+   */
+  private Map<String, String> getApplicationPayload(MultiValueMap<String, String> parameters, UserAgentInfo agentInfo,
+                                                    ContainerRequestContext requestContext, String uri,
+                                                    DomainRequestData domainRequest, ChannelType channelType,
+                                                    ChannelAction channelAction) {
     for (Map.Entry<String, String> entry : tagParamMap.entrySet()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
         applicationPayload.put(entry.getKey(), parseTagFromParams(parameters, entry.getValue()));
       }
     }
+
     // add tags in url param "sojTags" into applicationPayload
+    addSojTags(parameters, channelType, channelAction);
+
+    // add other tags
+    if (ChannelAction.CLICK.equals(channelAction)) {
+      try {
+        applicationPayload.put("url_mpre", URLEncoder.encode(uri, "UTF-8"));
+      } catch (UnsupportedEncodingException e) {
+        logger.warn("Tag url_mpre encoding failed", e);
+        metrics.meter("UrlMpreEncodeError", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
+            Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
+      }
+    }
+    // buyer access site id
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+    applicationPayload.put("bs", String.valueOf(userPrefsCtx.getGeoContext().getSiteId()));
+    applicationPayload.put("Agent", agentInfo.getUserAgentRawData());
+    applicationPayload.put("Payload", UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));
+
+    return deleteNullOrEmptyValue(applicationPayload);
+  }
+
+  /**
+   * Add tags in param sojTags
+   */
+  private void addSojTags(MultiValueMap<String, String> parameters, ChannelType channelType, ChannelAction channelAction) {
     if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
       String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
       try {
@@ -181,89 +308,6 @@ public class BehaviorMessageParser {
         }
       }
     }
-    // add other tags
-    if (ChannelAction.CLICK.equals(channelAction)) {
-      try {
-        applicationPayload.put("url_mpre", URLEncoder.encode(uri, "UTF-8"));
-      } catch (UnsupportedEncodingException e) {
-        logger.warn("Tag url_mpre encoding failed", e);
-        metrics.meter("UrlMpreEncodeError", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
-            Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
-      }
-    }
-    // buyer access site id
-    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-    applicationPayload.put("bs", String.valueOf(userPrefsCtx.getGeoContext().getSiteId()));
-    applicationPayload.put("Agent", agentInfo.getUserAgentRawData());
-    applicationPayload.put("Payload", UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));
-
-    applicationPayload = deleteNullOrEmptyValue(applicationPayload);
-    record.setApplicationPayload(applicationPayload);
-
-    // device info
-    DDSResponse deviceInfo = agentInfo.getDeviceInfo();
-    String deviceFamily;
-    if (deviceInfo.isTablet()) {
-      deviceFamily = "Tablet";
-    } else if (deviceInfo.isTouchScreen()) {
-      deviceFamily = "TouchScreen";
-    } else if (deviceInfo.isDesktop()) {
-      deviceFamily = "Desktop";
-    } else if (deviceInfo.isMobile()) {
-      deviceFamily = "Mobile";
-    } else {
-      deviceFamily = "Other";
-    }
-    record.setDeviceFamily(deviceFamily);
-    record.setDeviceType(deviceInfo.getOsName());
-    record.setBrowserVersion(deviceInfo.getBrowserVersion());
-    record.setBrowserFamily(deviceInfo.getBrowser());
-    record.setOsVersion(deviceInfo.getDeviceOSVersion());
-    record.setOsFamily(deviceInfo.getDeviceOS());
-    record.setEnrichedOsVersion(deviceInfo.getDeviceOSVersion());
-
-    // cobrand
-    record.setCobrand(String.valueOf(domainRequest.getCoBrandId()));
-
-    // rlogid
-    record.setRlogid(tracingContext.getRlogId());
-
-    // client data
-    clientData.put("ForwardedFor", domainRequest.getXForwardedFor());
-    clientData.put("Script", domainRequest.getServletPath());
-    clientData.put("Server", domainRequest.getHost());
-    record.setWebServer(domainRequest.getHost());
-    InetAddress netAddress = getInetAddress();
-    clientData.put("TMachine", netAddress.getHostAddress());
-    clientData.put("TName", domainRequest.getCommandName());
-    clientData.put("Agent", domainRequest.getUserAgent());
-    clientData.put("RemoteIP", domainRequest.getClientIp());
-    record.setRemoteIP(domainRequest.getClientIp());
-    record.setClientIP(domainRequest.getClientIp());
-    clientData.put("ContentLength", String.valueOf(domainRequest.getContentLength()));
-    String referer = UrlProcessHelper.getMaskedUrl(domainRequest.getReferrerUrl(), false, true);
-    clientData.put("Referrer", referer);
-    if (domainRequest.getReferrerUrl() != null) {
-      record.setRefererHash(String.valueOf(domainRequest.getReferrerUrl().hashCode()));
-    }
-    clientData.put("AcceptEncoding", domainRequest.getAcceptEncoding());
-
-    clientData = deleteNullOrEmptyValue(clientData);
-    record.setClientData(clientData);
-
-    // site id
-    record.setSiteId(String.valueOf(domainRequest.getSiteId()));
-
-    // rdt
-    record.setRdt(rdt);
-
-    // channel type and action
-    record.setChannelType(channelType.toString());
-    record.setChannelAction(channelAction.toString());
-
-    System.out.println(record);
-
-    return record;
   }
 
   /**
@@ -293,13 +337,26 @@ public class BehaviorMessageParser {
    * Delete map entry with null or empty value
    */
   private Map<String, String> deleteNullOrEmptyValue(Map<String, String> map) {
-    for (Map.Entry<String, String> entry : map.entrySet()) {
+    Set<Map.Entry<String, String>> entrySet = map.entrySet();
+    Iterator<Map.Entry<String, String>> iterator = entrySet.iterator();
+
+    while(iterator.hasNext()) {
+      Map.Entry<String, String> entry = iterator.next();
       if (StringUtils.isEmpty(entry.getValue())) {
-        map.remove(entry.getKey());
+        iterator.remove();
       }
     }
 
     return map;
+  }
+
+  /**
+   * Clear all map and array
+   */
+  private void clearData () {
+    applicationPayload.clear();
+    clientData.clear();
+    data.clear();
   }
 
 }
