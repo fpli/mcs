@@ -228,7 +228,7 @@ public class BehaviorMessageParser {
   }
 
   /**
-   * Get device type
+   * Get device family
    */
   private String getDeviceFamily(DDSResponse deviceInfo) {
     String deviceFamily;
