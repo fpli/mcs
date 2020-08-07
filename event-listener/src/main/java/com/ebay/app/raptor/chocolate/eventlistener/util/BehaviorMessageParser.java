@@ -35,6 +35,8 @@ import java.util.*;
 
 /**
  * Created by jialili1 on 7/29/20
+ *
+ * Parse the request for behavior message
  */
 public class BehaviorMessageParser {
   private static final Logger logger = LoggerFactory.getLogger(BehaviorMessageParser.class);
