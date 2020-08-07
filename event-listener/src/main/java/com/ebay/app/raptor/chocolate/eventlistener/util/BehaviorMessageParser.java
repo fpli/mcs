@@ -110,9 +110,11 @@ public class BehaviorMessageParser {
     // adguid
     String adguid = "";
     Cookie[] cookies = request.getCookies();
-    for (Cookie cookie : cookies) {
-      if (Constants.ADGUID.equalsIgnoreCase(cookie.getName())) {
-        adguid = cookie.getValue();
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if (Constants.ADGUID.equalsIgnoreCase(cookie.getName())) {
+          adguid = cookie.getValue();
+        }
       }
     }
     record.setAdguid(adguid);
@@ -198,8 +200,6 @@ public class BehaviorMessageParser {
     // channel type and action
     record.setChannelType(channelType.toString());
     record.setChannelAction(channelAction.toString());
-
-    System.out.println(record);
 
     return record;
   }

@@ -1083,7 +1083,7 @@ public class CollectionService {
             startTime, channelType, channelAction, pageId, pageName, rdt);
 
         if (message != null) {
-          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId(), message),
+          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
               KafkaSink.callback);
           return true;
         } else
@@ -1170,7 +1170,7 @@ public class CollectionService {
             startTime, channelType, channelAction, pageId, pageName, rdt);
 
         if (message != null) {
-          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId(), message),
+          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
               KafkaSink.callback);
           return true;
         } else
@@ -1526,6 +1526,13 @@ public class CollectionService {
     }
 
     return sessionId;
+  }
+
+  /**
+   * Only for test
+   */
+  public Producer getBehaviorProducer() {
+    return behaviorProducer;
   }
 
 }
