@@ -133,6 +133,9 @@ public class BehaviorEventTransformer {
 
   protected Long getSnapshotid() {
     Utf8 snapshotId = (Utf8) sourceRecord.get(SNAPSHOT_ID);
+    if (snapshotId == null) {
+      return null;
+    }
     try {
       return Long.valueOf(String.valueOf(snapshotId));
     } catch (NumberFormatException e) {
@@ -143,6 +146,9 @@ public class BehaviorEventTransformer {
 
   protected Integer getSeqnum() {
     Utf8 seqNum = (Utf8) sourceRecord.get(SEQ_NUM);
+    if (seqNum == null) {
+      return null;
+    }
     try {
       return Integer.valueOf(String.valueOf(seqNum));
     } catch (NumberFormatException e) {
@@ -153,6 +159,9 @@ public class BehaviorEventTransformer {
 
   protected Integer getSiteid() {
     Utf8 siteId = (Utf8) sourceRecord.get(TransformerConstants.SITE_ID);
+    if (siteId == null) {
+      return null;
+    }
     try {
       return Integer.valueOf(String.valueOf(siteId));
     } catch (NumberFormatException e) {
@@ -172,6 +181,9 @@ public class BehaviorEventTransformer {
 
   protected Long getRefererhash() {
     Utf8 refererHash = (Utf8) sourceRecord.get(REFERER_HASH);
+    if (refererHash == null) {
+      return null;
+    }
     try {
       return Long.valueOf(String.valueOf(refererHash));
     } catch (NumberFormatException e) {
