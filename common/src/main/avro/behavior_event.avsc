@@ -1,0 +1,138 @@
+{
+	"namespace": "com.ebay.app.raptor.chocolate.avro",
+	"type": "record",
+	"name": "BehaviorEvent",
+	"doc": " Behavior event table schema",
+	"pk": ["sessionId"],
+	"fields": [{
+		"name": "guid",
+		"type": "string"
+	},
+	{
+		"name": "adguid",
+		"type": "string"
+	},
+	{
+		"name": "sessionskey",
+      "type": [
+        "null",
+        "long"
+      ]
+	},
+	{
+		"name": "snapshotid",
+      "type": [
+        "null",
+        "long"
+      ]
+	},
+	{
+		"name": "seqnum",
+      "type": [
+        "null",
+        "int"
+      ]
+	},
+	{
+		"name": "siteid",
+      "type": [
+        "null",
+        "int"
+      ]
+	},
+	{
+		"name": "pageid",
+      "type": [
+        "null",
+        "int"
+      ]
+	},
+	{
+		"name": "pagename",
+     "type": [
+        "null",
+        "string"
+      ]
+	},
+	{
+		"name": "refererhash",
+      "type": [
+        "null",
+        "long"
+      ]
+	},
+	{
+		"name": "eventtimestamp",
+		"type": "long"
+	},
+	{
+		"name": "urlquerystring",
+      "type": [
+        "null",
+        "string"
+      ]
+	},
+	{
+        "name": "clientdata",
+        "type": "string"
+	},
+	{
+		"name": "applicationpayload",
+        "type": "string"
+	},
+	{
+		"name": "webserver",
+      "type": [
+        "null",
+        "string"
+      ]
+	},
+	{
+		"name": "referrer",
+      "type": [
+        "null",
+        "string"
+      ]
+	},
+	{
+        "name": "userid",
+      "type": [
+        "null",
+        "string"
+      ]
+	},
+	{
+        "name": "rdt",
+      "type": [
+        "null",
+        "int"
+      ]
+	},
+    {
+      "name": "channeltype",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "channelaction",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "dispatchid",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "data",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "map",
+          "values": "string"
+        }
+      },
+      "default": []
+    }
+  ]
+}
