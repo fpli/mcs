@@ -51,6 +51,8 @@ public class BehaviorEventTransformer {
   private static final String RDT = "rdt";
   private static final String DISPATCH_ID = "dispatchId";
   private static final String DATA = "data";
+  public static final String AGENT = "Agent";
+  public static final String PAYLOAD = "Payload";
 
   /**
    * Original record
@@ -210,6 +212,8 @@ public class BehaviorEventTransformer {
   @SuppressWarnings("unchecked")
   protected String getApplicationpayload() {
     HashMap<Utf8, Utf8> applicationPayload = (HashMap<Utf8, Utf8>) sourceRecord.get(APPLICATION_PAYLOAD);
+    applicationPayload.remove(new Utf8(AGENT));
+    applicationPayload.remove(new Utf8(PAYLOAD));
     return convertMap(applicationPayload);
   }
 

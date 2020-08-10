@@ -69,11 +69,8 @@ public class BehaviorEventTransformerTest {
                     "Server=mktcollectionsvc.vip.ebay.com&RemoteIP=10.249.75.9&ContentLength=211&TName=impression" +
                     "&AcceptEncoding=gzip, deflate, br&ForwardedFor=10.249.75.9&TMachine=10.249.75.54",
             behaviorEvent.getClientdata());
-    assertEquals("ext=56623&Agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 " +
-                    "(KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36&" +
+    assertEquals("ext=56623&" +
                     "bu=43551630917&euid=c527526a795a414cb4ad11bfaba21b5d&emsid=e11051.m44.l1139" +
-                    "&Payload=/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=0&sojTags=bu=bu&bu=43551630917" +
-                    "&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623" +
                     "&emid=43551630917",
             behaviorEvent.getApplicationpayload());
     assertEquals("mktcollectionsvc.vip.ebay.com", behaviorEvent.getWebserver());
@@ -190,11 +187,8 @@ public class BehaviorEventTransformerTest {
 
   @Test
   public void getApplicationpayload() {
-    assertEquals("ext=56623&Agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 " +
-                    "(KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36&" +
+    assertEquals("ext=56623&" +
                     "bu=43551630917&euid=c527526a795a414cb4ad11bfaba21b5d&emsid=e11051.m44.l1139" +
-                    "&Payload=/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=0&sojTags=bu=bu&bu=43551630917" +
-                    "&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623" +
                     "&emid=43551630917",
             behaviorEventTransformer.getApplicationpayload());
   }
