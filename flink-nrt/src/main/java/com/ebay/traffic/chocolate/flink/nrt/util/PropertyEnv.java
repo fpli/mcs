@@ -2,7 +2,8 @@ package com.ebay.traffic.chocolate.flink.nrt.util;
 
 public enum PropertyEnv {
   DEV("DEV"),
-  PROD("PROD");
+  PROD("PROD"),
+  STAGING("STAGING");
 
   private final String name;
 

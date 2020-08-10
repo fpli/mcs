@@ -2,7 +2,7 @@
   "rheosHeader": {
     "eventCreateTimestamp": 1596592608219,
     "eventSentTimestamp": 1596592608219,
-    "schemaId": 9366,
+    "schemaId": 9380,
     "eventId": null,
     "producerId": "marketing-tracking-producer"
   },
@@ -49,7 +49,6 @@
   "webServer": {
     "string": "mktcollectionsvc.vip.ebay.com"
   },
-  "bot": null,
   "clientIP": {
     "string": "10.249.75.9"
   },

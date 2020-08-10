@@ -13,7 +13,7 @@ public class PropertyEnvTest {
 
   @Test
   public void values() {
-    assertArrayEquals(new PropertyEnv[]{PropertyEnv.DEV, PropertyEnv.PROD}, PropertyEnv.values());
+    assertArrayEquals(new PropertyEnv[]{PropertyEnv.DEV, PropertyEnv.PROD, PropertyEnv.STAGING}, PropertyEnv.values());
   }
 
   @Test

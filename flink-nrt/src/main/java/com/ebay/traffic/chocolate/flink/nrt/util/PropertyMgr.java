@@ -1,17 +1,21 @@
 package com.ebay.traffic.chocolate.flink.nrt.util;
 
-import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
+import com.ebay.traffic.chocolate.flink.nrt.constant.FlinkConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
+import org.apache.flink.configuration.ConfigOptions;
+import org.apache.flink.configuration.GlobalConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class PropertyMgr {
+  private static final Logger LOGGER = LoggerFactory.getLogger(PropertyMgr.class);
+
   private PropertyEnv propertyEnv;
 
   public static PropertyMgr getInstance() {
@@ -26,14 +30,22 @@ public class PropertyMgr {
     private static final PropertyMgr instance = new PropertyMgr();
   }
 
+  /**
+   * Determine the runtime environment.
+   * For staging, the rheos-api-endpoint should be https://rhs-streaming-api.staging.vip.ebay.com
+   * For prod, the rheos-api-endpoint should be https://rhs-streaming-api.vip.ebay.com
+   */
   private void initPropertyEnv() {
-    Properties prop = new Properties();
-    try (InputStream in = getClass().getClassLoader().getResourceAsStream(PropertyConstants.APPLICATION_PROPERTIES)) {
-      prop.load(in);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    String rheosApiEndpoint = GlobalConfiguration.loadConfiguration().getString(ConfigOptions
+            .key(FlinkConstants.RHEOS_API_ENDPOINT).stringType().defaultValue(StringConstants.EMPTY));
+    if (rheosApiEndpoint.isEmpty()) {
+      propertyEnv = PropertyEnv.DEV;
+    } else if (rheosApiEndpoint.contains(PropertyEnv.STAGING.getName().toLowerCase())) {
+      propertyEnv = PropertyEnv.STAGING;
+    } else {
+      propertyEnv = PropertyEnv.PROD;
     }
-    propertyEnv = PropertyEnv.valueOf(prop.getProperty(PropertyConstants.PROFILES_ACTIVE).toUpperCase());
+    LOGGER.info("property env is {}", propertyEnv);
   }
 
   public Properties loadProperty(String propertyName) {
