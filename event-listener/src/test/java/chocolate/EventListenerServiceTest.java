@@ -1,6 +1,7 @@
 package chocolate;
 
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
+import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
@@ -24,8 +25,8 @@ import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
 import com.ebay.traffic.monitoring.ESMetrics;
-import org.apache.commons.collections.MapUtils;
 import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.junit.*;
@@ -36,8 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 import javax.inject.Inject;
@@ -45,12 +44,15 @@ import javax.ws.rs.client.*;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.generateQueryString;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
+import static com.ebay.traffic.chocolate.common.TestHelper.loadProperties;
 import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
@@ -501,7 +503,7 @@ public class EventListenerServiceTest {
   }
 
   @Test
-  public void testImpressionResource() throws InterruptedException {
+  public void testImpressionResource() throws Exception {
     Event event = new Event();
     event.setReferrer("www.google.com");
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=2&mkcid=1");
@@ -593,6 +595,16 @@ public class EventListenerServiceTest {
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=999&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
     assertEquals(200, response.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    collectionService.getBehaviorProducer().flush();
+    Consumer<String, BehaviorMessage> consumerEmail =
+        new KafkaConsumer<>(getProperties("event-listener-behavior-rheos-consumer.properties"));
+    Map<String, BehaviorMessage> listenerMessagesEmail = pollFromKafkaTopic(
+        consumerEmail, Arrays.asList("marketing.tracking.staging.behavior"), 4, 30 * 1000);
+    consumerEpn.close();
+    assertTrue(listenerMessagesEmail.size() >= 4);
   }
 
   @Test
@@ -797,5 +809,18 @@ public class EventListenerServiceTest {
     assertEquals("7114261820560", campaignRotationMap.get(495209116L).toString());
     assertEquals("7101540849339260", campaignRotationMap.get(1537903894L).toString());
     assertEquals("-1", campaignRotationMap.get(1537903895L).toString());
+  }
+
+  /**
+   * Load properties
+   * @param fileName
+   */
+  public Properties getProperties(String fileName) throws Exception {
+    File resourcesDirectory = new File("src/test/resources/META-INF/configuration/Dev/config");
+    String resourcePath = resourcesDirectory.getAbsolutePath() + "/";
+    String propertiesFile = resourcePath + fileName;
+    Properties properties = new Properties();
+    properties.load(new FileReader(propertiesFile));
+    return properties;
   }
 }

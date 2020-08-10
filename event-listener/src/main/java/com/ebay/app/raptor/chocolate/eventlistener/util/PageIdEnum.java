@@ -8,25 +8,31 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
  */
 public enum PageIdEnum {
   // for click
-  CLICK(2547208),
+  CLICK(2547208, "event"),
   // for email open
-  EMAIL_OPEN(3962),
+  EMAIL_OPEN(3962, "impression"),
   // for ad request
-  AR(2561745),
+  AR(2561745, "ar"),
   // for roi event
-  ROI(2483445),
+  ROI(2483445, "roi"),
   // Notification Received
-  NOTIFICATION_RECEIVED(2054081),
+  NOTIFICATION_RECEIVED(2054081, "notificationReceived"),
   // Notification Action
-  NOTIFICATION_ACTION(2054060);
+  NOTIFICATION_ACTION(2054060, "notificationAction");
 
   private final int id;
+  private final String name;
 
-  PageIdEnum(int pageId) {
+  PageIdEnum(int pageId, String pageName) {
     id = pageId;
+    name = pageName;
   }
 
   public int getId() {
     return id;
+  }
+
+  public String getName() {
+    return name;
   }
 }
