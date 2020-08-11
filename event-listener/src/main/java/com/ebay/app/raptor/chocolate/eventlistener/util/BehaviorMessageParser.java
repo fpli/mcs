@@ -110,12 +110,17 @@ public class BehaviorMessageParser {
     RequestTracingContext tracingContext = (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
     DomainRequestData domainRequest = (DomainRequestData) requestContext.getProperty(DomainRequestData.NAME);
 
-    // guid, adguid
+    // guid
     String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
-    String adguid = getData(Constants.GUID, trackingHeader);
+    String guid = getData(Constants.GUID, trackingHeader);
+    if (guid != null) {
+      record.setGuid(guid);
+    }
+
+    // adguid
+    String adguid = getData(Constants.ADGUID, trackingHeader);
     if (adguid != null) {
       record.setAdguid(adguid);
-      record.setGuid(adguid);
     }
 
     // source id
