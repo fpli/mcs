@@ -206,7 +206,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
         guid = adguid;
       }
       builder = builder.header("X-EBAY-C-TRACKING",
-          collectionService.constructTrackingHeader(requestContext, guid, channelType));
+          collectionService.constructTrackingHeader(requestContext, guid, adguid, channelType));
 
       // add uri and referer to marketing event body
       MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
@@ -312,7 +312,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     // forward to mcs for writing ubi. The adguid in ubi is to help XID team build adguid into the linking system.
     // construct X-EBAY-C-TRACKING header
     builder = builder.header("X-EBAY-C-TRACKING",
-        collectionService.constructTrackingHeader(requestContext, guid, "sync"));
+        collectionService.constructTrackingHeader(requestContext, guid, adguid,"sync"));
 
     // add uri and referer to marketing event body
     MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();

@@ -69,10 +69,11 @@ public class CollectionService {
    * construct a tracking header. guid is mandatory, if guid is null, create a guid
    * @param requestContext request context
    * @param guid guid from mapping if there is
+   * @param adguid adguid from cookie
    * @param channelType channel type
    * @return a tracking header string
    */
-  public String constructTrackingHeader(ContainerRequestContext requestContext, String guid,
+  public String constructTrackingHeader(ContainerRequestContext requestContext, String guid, String adguid,
                                         String channelType) {
     String cookie = "";
     String rawGuid = guid;
@@ -87,6 +88,9 @@ public class CollectionService {
       }
       logger.warn("No guid");
       metrics.meter("NoGuid", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
+    }
+    if (!StringUtils.isEmpty(adguid)) {
+      cookie += ",adguid=" + adguid;
     }
 
     return cookie;
