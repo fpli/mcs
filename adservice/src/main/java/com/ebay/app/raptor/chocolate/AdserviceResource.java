@@ -169,7 +169,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "impression"));
     Response res = null;
     try {
-      adserviceCookie.setAdguid(request, response);
+      String adguid = adserviceCookie.setAdguid(request, response);
       res = Response.status(Response.Status.OK).build();
 
       // get channel
@@ -200,7 +200,11 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       }
 
       // construct X-EBAY-C-TRACKING header
+      // if guid is empty, set adguid to be guid.
       String guid = adserviceCookie.getGuid(request);
+      if(StringUtils.isEmpty(guid)) {
+        guid = adguid;
+      }
       builder = builder.header("X-EBAY-C-TRACKING",
           collectionService.constructTrackingHeader(requestContext, guid, channelType));
 
