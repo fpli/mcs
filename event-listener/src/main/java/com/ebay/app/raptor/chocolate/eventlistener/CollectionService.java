@@ -368,7 +368,7 @@ public class CollectionService {
     // invalid mkcid, show error and accept
     channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
     if (channelType == null) {
-      logger.warn(Errors.ERROR_INVALID_MKCID);
+      logger.warn(Errors.ERROR_INVALID_MKCID + " {}", targetUrl);
       metrics.meter("InvalidMkcid");
       return true;
     }
@@ -683,7 +683,7 @@ public class CollectionService {
     // invalid mkcid, show error and accept
     channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
     if (channelType == null) {
-      logger.warn(Errors.ERROR_INVALID_MKCID);
+      logger.warn(Errors.ERROR_INVALID_MKCID + " {}", uri);
       metrics.meter("InvalidMkcid");
       return true;
     }
