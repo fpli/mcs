@@ -7,6 +7,7 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
+import com.ebay.kernel.util.HeaderMultiValue;
 import com.ebay.platform.raptor.ddsmodels.DDSResponse;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.domain.request.api.DomainRequestData;
@@ -109,17 +110,18 @@ public class BehaviorMessageParser {
     RequestTracingContext tracingContext = (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
     DomainRequestData domainRequest = (DomainRequestData) requestContext.getProperty(DomainRequestData.NAME);
 
-    // adguid
-    String adguid = "";
-    Cookie[] cookies = request.getCookies();
-    if (cookies != null) {
-      for (Cookie cookie : cookies) {
-        if (Constants.ADGUID.equalsIgnoreCase(cookie.getName())) {
-          adguid = cookie.getValue();
-        }
-      }
+    // guid
+    String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
+    String guid = getData(Constants.GUID, trackingHeader);
+    if (guid != null) {
+      record.setGuid(guid);
     }
-    record.setAdguid(adguid);
+
+    // adguid
+    String adguid = getData(Constants.ADGUID, trackingHeader);
+    if (adguid != null) {
+      record.setAdguid(adguid);
+    }
 
     // source id
     record.setSid(parseTagFromParams(parameters, Constants.SOURCE_ID));
@@ -350,6 +352,20 @@ public class BehaviorMessageParser {
     }
 
     return map;
+  }
+
+  private String getData(String key, String headerValue) {
+    try {
+      HeaderMultiValue headerMultiValue;
+      if (headerValue != null) {
+        headerMultiValue = new HeaderMultiValue(headerValue, "utf-8");
+        return headerMultiValue.get(key);
+      }
+    } catch (UnsupportedEncodingException e) {
+      logger.warn("Failed to parse header {}", headerValue, e);
+    }
+
+    return null;
   }
 
   /**
