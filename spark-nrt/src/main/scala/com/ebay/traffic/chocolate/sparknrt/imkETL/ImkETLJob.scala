@@ -253,8 +253,6 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
             iter
           }).repartition(params.partitions).cache()
 
-//          metrics.meter("imk.dump.out", imkDumpRepartitionDf.count(), Field.of[String, AnyRef]("channelType", channel))
-
           // save to hdfs, for UC4 etl job
           saveDFToFiles(imkDumpRepartitionDf, imkDumpTempDir, "gzip", "csv", "bel")
 
