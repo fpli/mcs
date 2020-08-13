@@ -328,7 +328,7 @@
       <artifactId>raptor-geo-starter</artifactId>
     </dependency>
 
-    <!-- message tracker -->
+    <!-- event emitter -->
     <dependency>
       <groupId>com.ebay.traffic</groupId>
       <artifactId>elements</artifactId>
@@ -345,6 +345,7 @@
       <version>1.2.1</version>
     </dependency>
 
+    <!-- kotlin -->
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
       <artifactId>kotlin-stdlib</artifactId>
