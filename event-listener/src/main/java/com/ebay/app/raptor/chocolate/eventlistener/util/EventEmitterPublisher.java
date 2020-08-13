@@ -1,6 +1,8 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
+import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.platform.raptor.cosadaptor.exceptions.TokenCreationException;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
 import com.ebay.raptor.domain.request.api.DomainRequestData;
@@ -17,12 +19,10 @@ import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 
 import javax.ws.rs.container.ContainerRequestContext;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by jialili1 on 8/12/20
@@ -43,17 +43,18 @@ public class EventEmitterPublisher {
   /**
    * Construct and send events to message tracker
    */
-  public void sendToMessageTracker(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
-                                    ChannelAction channelAction) throws TokenCreationException {
+  public void publishEvent(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
+                           ChannelAction channelAction) {
     MessageEvent messageEvent = new MessageEvent();
 
     RequestTracingContext tracingContext = (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
     DomainRequestData domainRequest = (DomainRequestData) requestContext.getProperty(DomainRequestData.NAME);
 
-    messageEvent.setDispatchId("");
+    messageEvent.setDispatchId(String.valueOf(SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation()));
     messageEvent.setRlogId(tracingContext.getRlogId());
-    messageEvent.setService("Chocolate");
+    messageEvent.setService("CHOCOLATE");
     messageEvent.setServiceHost(domainRequest.getHost());
+    messageEvent.setUpdated(System.currentTimeMillis());
 
     List<Map<String, String>> data = new ArrayList<>();
     Map<String, String> emailData = new HashMap<>();
@@ -90,11 +91,21 @@ public class EventEmitterPublisher {
     messageEvent.setData(data);
 
     // spock token
-    String authToken = tokenGenerator.getToken().getAccessToken();
+    String authToken = "";
+    try {
+      authToken = tokenGenerator.getToken().getAccessToken();
+//      authToken = SecureTokenFactory.getInstance().getPublicAppToken("mktcollectionsvc",
+//          "https://api.ebay.com/oauth/scope/marketing@application").getAccessToken();
+      logger.info(authToken);
+    } catch (TokenCreationException e) {
+      logger.error("Auth token generation for spock failed", e);
+    }
 
     // send event
     try {
-      emitter.emit(messageEvent, authToken);
+      if (!StringUtils.isEmpty(authToken)) {
+        emitter.emit(messageEvent, authToken);
+      }
     } catch(QueueFullException e) {
       logger.error("Event emitter sending error", e);
     }

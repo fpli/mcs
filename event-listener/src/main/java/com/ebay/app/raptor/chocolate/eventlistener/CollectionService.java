@@ -16,7 +16,6 @@ import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
-import com.ebay.platform.raptor.cosadaptor.exceptions.TokenCreationException;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.auth.RaptorSecureContext;
@@ -38,7 +37,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1085,6 +1083,9 @@ public class CollectionService {
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
       }
 
+      // send event to message tracker
+      eventEmitterPublisher.publishEvent(requestContext, parameters, channelAction);
+
       // email open go to chocolate topic
       if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
         BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, parameters, agentInfo, uri,
@@ -1096,13 +1097,6 @@ public class CollectionService {
           return true;
         } else
           return false;
-      }
-
-      // send event to message tracker
-      try {
-        eventEmitterPublisher.sendToMessageTracker(requestContext, parameters, channelAction);
-      } catch (TokenCreationException e) {
-        logger.error("Auth token generation for spock failed", e);
       }
     }
     else {
