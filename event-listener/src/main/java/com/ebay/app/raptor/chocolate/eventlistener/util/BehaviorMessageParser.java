@@ -50,31 +50,6 @@ public class BehaviorMessageParser {
   private List<Map<String, String>> data = new ArrayList<>();
 
   /**
-   * tag - param map
-   */
-  private static final ImmutableMap<String, String> tagParamMap = new ImmutableMap.Builder<String, String>()
-      .put("chnl", "mkcid")
-      .put("euid", "euid")
-      .put("emid", "bu")
-      .put("bu", "bu")
-      .put("crd", "crd")
-      .put("segname", "segname")
-      .put("exe", "exe")
-      .put("ext", "ext")
-      .put("es", "es")
-      .put("ec", "ec")
-      .put("nqc", "nqt")
-      .put("emsid", "emsid")
-      .put("sid", "sid")
-      .put("rpp_cid", "rpp_cid")
-      .put("rank", "rank")
-      .put("cs", "cs")
-      .put("placement-type", "placement-type")
-      .put("adcamppu", "pu")
-      .put("cbtrack", "cbtrack")
-      .build();
-
-  /**
    * Singleton class
    */
   private BehaviorMessageParser() { }
@@ -98,7 +73,7 @@ public class BehaviorMessageParser {
   public BehaviorMessage parse(final HttpServletRequest request, ContainerRequestContext requestContext,
                                  MultiValueMap<String, String> parameters, UserAgentInfo agentInfo, String uri,
                                  Long startTime, final ChannelType channelType, final ChannelAction channelAction,
-                                 int pageId, String pageName, int rdt) {
+                                 Long snapshotId, int pageId, String pageName, int rdt) {
     // clear maps
     clearData();
 
@@ -141,7 +116,6 @@ public class BehaviorMessageParser {
     record.setEventAction(Constants.EVENT_ACTION);
 
     // snapshotId
-    Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
     record.setSnapshotId(String.valueOf(snapshotId));
 
     // fake session info
@@ -257,7 +231,7 @@ public class BehaviorMessageParser {
                                                     ContainerRequestContext requestContext, String uri,
                                                     DomainRequestData domainRequest, ChannelType channelType,
                                                     ChannelAction channelAction) {
-    for (Map.Entry<String, String> entry : tagParamMap.entrySet()) {
+    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
         applicationPayload.put(entry.getKey(), parseTagFromParams(parameters, entry.getValue()));
       }

@@ -6,6 +6,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
 import com.ebay.app.raptor.chocolate.common.Hostname;
+import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
@@ -89,9 +90,6 @@ public class CollectionService {
   @Autowired
   private HttpClientConnectionManager httpClientConnectionManager;
 
-  @Autowired
-  private PlatformEnvProperties platformEnvProperties;
-
   @Inject
   private ISecureTokenManager tokenGenerator;
 
@@ -129,7 +127,7 @@ public class CollectionService {
             Field.of("driver_id", ApplicationOptionsParser.getDriverIdFromIp()));
     this.behaviorProducer = new RheosKafkaProducer(ApplicationOptions.getInstance().getBehaviorRheosProperties());
     this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
-    this.eventEmitterPublisher = new EventEmitterPublisher(platformEnvProperties, tokenGenerator);
+    this.eventEmitterPublisher = new EventEmitterPublisher(tokenGenerator);
   }
 
   /**
@@ -1083,13 +1081,16 @@ public class CollectionService {
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
       }
 
+      Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
+
       // send event to message tracker
-      eventEmitterPublisher.publishEvent(requestContext, parameters, channelAction);
+      eventEmitterPublisher.publishEvent(requestContext, parameters, uri, channelType, channelAction, snapshotId);
 
       // email open go to chocolate topic
       if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
         BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, parameters, agentInfo, uri,
-            startTime, channelType, channelAction, PageIdEnum.EMAIL_OPEN.getId(), PageNameEnum.OPEN.getName(), 0);
+            startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
+            PageNameEnum.OPEN.getName(), 0);
 
         if (message != null) {
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
@@ -1172,10 +1173,16 @@ public class CollectionService {
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
       }
 
+      Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
+
+      // send event to message tracker
+      eventEmitterPublisher.publishEvent(requestContext, parameters, uri, channelType, channelAction, snapshotId);
+
       // email open go to chocolate topic
       if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
         BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, parameters, agentInfo, uri,
-            startTime, channelType, channelAction, PageIdEnum.EMAIL_OPEN.getId(), PageNameEnum.OPEN.getName(), 0);
+            startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
+            PageNameEnum.OPEN.getName(), 0);
 
         if (message != null) {
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),

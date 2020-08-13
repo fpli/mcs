@@ -1,12 +1,15 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
+import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.exceptions.TokenCreationException;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
 import com.ebay.raptor.domain.request.api.DomainRequestData;
-import com.ebay.raptorio.env.PlatformEnvProperties;
+import com.ebay.raptor.geo.context.UserPrefsCtx;
+import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
 import com.ebay.traffic.dsptchtrk.emitter.Environment;
 import com.ebay.traffic.dsptchtrk.emitter.EventEmitter;
@@ -15,6 +18,7 @@ import com.ebay.traffic.dsptchtrk.emitter.QueueFullException;
 import com.ebay.traffic.elements.messagetracker.common.*;
 import com.ebay.traffic.elements.messagetracker.dataobject.MessageEvent;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +26,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 import javax.ws.rs.container.ContainerRequestContext;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -34,9 +41,12 @@ public class EventEmitterPublisher {
   private EventEmitter emitter;
   private ISecureTokenManager tokenGenerator;
 
-  public EventEmitterPublisher(PlatformEnvProperties platformEnvProperties, ISecureTokenManager tokenGenerator)
+  private static final String APP_NAME = "mktcollectionsvc";
+  private static final String CLIENT_SCOPE = "https://api.ebay.com/oauth/scope/marketing@application";
+
+  public EventEmitterPublisher(ISecureTokenManager tokenGenerator)
       throws Exception {
-    this.emitter = EventEmitterFactory.getInstance(getEnv(platformEnvProperties));
+    this.emitter = EventEmitterFactory.getInstance(getEnv());
     this.tokenGenerator = tokenGenerator;
   }
 
@@ -44,13 +54,13 @@ public class EventEmitterPublisher {
    * Construct and send events to message tracker
    */
   public void publishEvent(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
-                           ChannelAction channelAction) {
+                           String targetUrl, ChannelType channelType, ChannelAction channelAction, Long snapshotId) {
     MessageEvent messageEvent = new MessageEvent();
 
     RequestTracingContext tracingContext = (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
     DomainRequestData domainRequest = (DomainRequestData) requestContext.getProperty(DomainRequestData.NAME);
 
-    messageEvent.setDispatchId(String.valueOf(SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation()));
+    messageEvent.setDispatchId(String.valueOf(snapshotId));
     messageEvent.setRlogId(tracingContext.getRlogId());
     messageEvent.setService("CHOCOLATE");
     messageEvent.setServiceHost(domainRequest.getHost());
@@ -83,31 +93,32 @@ public class EventEmitterPublisher {
     addEmailTag(emailData, parameters, MessageConstantsEnum.SEGMENT.getValue(), "segname");
     addEmailTag(emailData, parameters, MessageConstantsEnum.RUN_DATE.getValue(), "crd");
 
-
     emailData.put(MessageConstantsEnum.STATUS.getValue(), EventTypeEnum.SENT.getValue());
-    emailData.put(MessageConstantsEnum.TEMPLATE_ID.getValue(), null);
+
+    // add annotation tags
+    emailData = addTags(emailData, parameters, requestContext, targetUrl, channelType, channelAction);
 
     data.add(emailData);
     messageEvent.setData(data);
 
-    // spock token
+    // generate token for spock
     String authToken = "";
     try {
-      authToken = tokenGenerator.getToken().getAccessToken();
-//      authToken = SecureTokenFactory.getInstance().getPublicAppToken("mktcollectionsvc",
-//          "https://api.ebay.com/oauth/scope/marketing@application").getAccessToken();
-      logger.info(authToken);
+      authToken = tokenGenerator.getPublicAppToken(APP_NAME, CLIENT_SCOPE).getAccessToken();
     } catch (TokenCreationException e) {
       logger.error("Auth token generation for spock failed", e);
+      metrics.meter("TokenGenerationFail");
     }
 
     // send event
     try {
       if (!StringUtils.isEmpty(authToken)) {
         emitter.emit(messageEvent, authToken);
+        metrics.meter("EventEmitterPublishSuccess");
       }
     } catch(QueueFullException e) {
       logger.error("Event emitter sending error", e);
+      metrics.meter("EventEmitterQueueFull");
     }
 
   }
@@ -125,8 +136,8 @@ public class EventEmitterPublisher {
   /**
    * Get environment for event emitter
    */
-  private static Environment getEnv(PlatformEnvProperties platformEnvProperties) throws Exception{
-    String env = platformEnvProperties.getPlatformEnvironment().toLowerCase();
+  private static Environment getEnv() throws Exception{
+    String env = ApplicationOptions.getInstance().getEnvironment();
     logger.info("Platform Environment: {}", env);
 
     Environment environment;
@@ -148,6 +159,83 @@ public class EventEmitterPublisher {
     }
 
     return environment;
+  }
+
+  /**
+   * Get application payload
+   */
+  private Map<String, String> addTags(Map<String, String> emailData, MultiValueMap<String, String> parameters,
+                                                    ContainerRequestContext requestContext, String targetUrl,
+                                                    ChannelType channelType, ChannelAction channelAction) {
+    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
+      addEmailTag(emailData, parameters, MessageConstantsEnum.ANNOTATION_PREFIX.getValue() + "." + entry.getKey(), entry.getValue());
+    }
+
+    // add tags in url param "sojTags" into applicationPayload
+    addSojTags(emailData, parameters, channelType, channelAction);
+
+    // add other tags
+    if (ChannelAction.CLICK.equals(channelAction)) {
+      try {
+        emailData.put("url_mpre", URLEncoder.encode(targetUrl, "UTF-8"));
+      } catch (UnsupportedEncodingException e) {
+        logger.warn("Tag url_mpre encoding failed", e);
+        metrics.meter("UrlMpreEncodeError", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
+            Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
+      }
+    }
+    // buyer access site id
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+    emailData.put(MessageConstantsEnum.ANNOTATION_PREFIX.getValue() + "." + "bs", String.valueOf(userPrefsCtx.getGeoContext().getSiteId()));
+
+    return deleteNullOrEmptyValue(emailData);
+  }
+
+  /**
+   * Add tags in param sojTags
+   */
+  private void addSojTags(Map<String, String> emailData, MultiValueMap<String, String> parameters,
+                          ChannelType channelType, ChannelAction channelAction) {
+    if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
+      String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
+      try {
+        sojTags = URLDecoder.decode(sojTags, "UTF-8");
+      } catch (UnsupportedEncodingException e) {
+        logger.warn("Param sojTags is wrongly encoded", e);
+        metrics.meter("ErrorEncodedSojTags", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
+            Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
+      }
+      if (!StringUtils.isEmpty(sojTags)) {
+        StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
+        while (stToken.hasMoreTokens()) {
+          StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
+          if (sojNvp.countTokens() == 2) {
+            String sojTag = sojNvp.nextToken().trim();
+            String urlParam = sojNvp.nextToken().trim();
+            if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
+              addEmailTag(emailData, parameters, MessageConstantsEnum.ANNOTATION_PREFIX.getValue() + "." + sojTag, urlParam);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Delete map entry with null or empty value
+   */
+  private Map<String, String> deleteNullOrEmptyValue(Map<String, String> map) {
+    Set<Map.Entry<String, String>> entrySet = map.entrySet();
+    Iterator<Map.Entry<String, String>> iterator = entrySet.iterator();
+
+    while(iterator.hasNext()) {
+      Map.Entry<String, String> entry = iterator.next();
+      if (StringUtils.isEmpty(entry.getValue())) {
+        iterator.remove();
+      }
+    }
+
+    return map;
   }
 
 }
