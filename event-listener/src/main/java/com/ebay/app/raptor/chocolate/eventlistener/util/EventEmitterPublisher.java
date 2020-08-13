@@ -95,7 +95,7 @@ public class EventEmitterPublisher {
 
     emailData.put(MessageConstantsEnum.STATUS.getValue(), EventTypeEnum.SENT.getValue());
 
-    // add annotation tags
+    // add other tags
     emailData = addTags(emailData, parameters, requestContext, targetUrl, channelType, channelAction);
 
     data.add(emailData);
@@ -168,7 +168,7 @@ public class EventEmitterPublisher {
                                                     ContainerRequestContext requestContext, String targetUrl,
                                                     ChannelType channelType, ChannelAction channelAction) {
     for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
-      addEmailTag(emailData, parameters, MessageConstantsEnum.ANNOTATION_PREFIX.getValue() + "." + entry.getKey(), entry.getValue());
+      addEmailTag(emailData, parameters, entry.getKey(), entry.getValue());
     }
 
     // add tags in url param "sojTags" into applicationPayload
@@ -186,7 +186,7 @@ public class EventEmitterPublisher {
     }
     // buyer access site id
     UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-    emailData.put(MessageConstantsEnum.ANNOTATION_PREFIX.getValue() + "." + "bs", String.valueOf(userPrefsCtx.getGeoContext().getSiteId()));
+    emailData.put("bs", String.valueOf(userPrefsCtx.getGeoContext().getSiteId()));
 
     return deleteNullOrEmptyValue(emailData);
   }
@@ -213,7 +213,7 @@ public class EventEmitterPublisher {
             String sojTag = sojNvp.nextToken().trim();
             String urlParam = sojNvp.nextToken().trim();
             if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
-              addEmailTag(emailData, parameters, MessageConstantsEnum.ANNOTATION_PREFIX.getValue() + "." + sojTag, urlParam);
+              addEmailTag(emailData, parameters, sojTag, urlParam);
             }
           }
         }
