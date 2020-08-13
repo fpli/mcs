@@ -134,7 +134,7 @@ public class EventEmitterPublisher {
       case "dev":
         environment = Environment.DEV;
         break;
-      case "staging":
+      case "qa":
         environment = Environment.STAGING;
         break;
       case "pre-production":
