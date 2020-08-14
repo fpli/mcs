@@ -44,8 +44,7 @@ public class EventEmitterPublisher {
   private static final String APP_NAME = "mktcollectionsvc";
   private static final String CLIENT_SCOPE = "https://api.ebay.com/oauth/scope/marketing@application";
 
-  public EventEmitterPublisher(ISecureTokenManager tokenGenerator)
-      throws Exception {
+  public EventEmitterPublisher(ISecureTokenManager tokenGenerator) throws Exception {
     this.emitter = EventEmitterFactory.getInstance(getEnv());
     this.tokenGenerator = tokenGenerator;
   }
