@@ -1,5 +1,7 @@
 package com.ebay.app.raptor.chocolate.eventlistener.constant;
 
+import com.google.common.collect.ImmutableMap;
+
 /**
  * @author xiangli4
  */
@@ -70,5 +72,30 @@ public class Constants {
   // Metrics name
   public static final String CHANNEL_ACTION = "channelAction";
   public static final String CHANNEL_TYPE = "channelType";
+
+  /**
+   * Email tag - param map
+   */
+  public static final ImmutableMap<String, String> emailTagParamMap = new ImmutableMap.Builder<String, String>()
+      .put("chnl", "mkcid")
+      .put("euid", "euid")
+      .put("emid", "bu")
+      .put("bu", "bu")
+      .put("crd", "crd")
+      .put("segname", "segname")
+      .put("exe", "exe")
+      .put("ext", "ext")
+      .put("es", "es")
+      .put("ec", "ec")
+      .put("nqc", "nqt")
+      .put("emsid", "emsid")
+      .put("sid", "sid")
+      .put("rpp_cid", "rpp_cid")
+      .put("rank", "rank")
+      .put("cs", "cs")
+      .put("placement-type", "placement-type")
+      .put("adcamppu", "pu")
+      .put("cbtrack", "cbtrack")
+      .build();
 
 }
