@@ -217,7 +217,7 @@ public class BehaviorEventTransformer {
     return convertMap(applicationPayload);
   }
 
-  private String convertMap(HashMap<Utf8, Utf8> value) {
+  private String convertMap(Map<Utf8, Utf8> value) {
     StringJoiner joiner = new StringJoiner(StringConstants.AND);
     value.forEach((k, v) -> joiner.add(k + StringConstants.EQUAL + v));
     return joiner.toString();
@@ -260,13 +260,11 @@ public class BehaviorEventTransformer {
   }
 
   @SuppressWarnings("unchecked")
-  protected List<Map<String, String>> getData() {
+  protected List<String> getData() {
     List<Map<Utf8, Utf8>> data = (List<Map<Utf8, Utf8>>) sourceRecord.get(DATA);
-    List<Map<String, String>> list = new ArrayList<>();
+    List<String> list = new ArrayList<>();
     data.forEach(map -> {
-      Map<String, String> newMap = new HashMap<>();
-      map.forEach((k, v) -> newMap.put(String.valueOf(k), String.valueOf(v)));
-      list.add(newMap);
+      list.add(convertMap(map));
     });
     return list;
   }

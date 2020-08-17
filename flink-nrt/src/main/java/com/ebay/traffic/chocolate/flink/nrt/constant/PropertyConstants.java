@@ -31,6 +31,10 @@ public class PropertyConstants {
   public static final String BEHAVIOR_EVENT_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "behavior-event-sink-app.rheos.consumer.topic.properties";
   public static final String BEHAVIOR_EVENT_SINK_APP_HDFS_PROPERTIES = "behavior-event-sink-app.hdfs.properties";
 
+  public static final String BEHAVIOR_MESSAGE_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "behavior-message-sink-app.rheos.consumer.properties";
+  public static final String BEHAVIOR_MESSAGE_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "behavior-message-sink-app.rheos.consumer.topic.properties";
+  public static final String BEHAVIOR_MESSAGE_SINK_APP_HDFS_PROPERTIES = "behavior-message-sink-app.hdfs.properties";
+
   public static final String FILTER_MESSAGE_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "filter-message-sink-app.rheos.consumer.properties";
   public static final String FILTER_MESSAGE_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "filter-message-sink-app.rheos.consumer.topic.properties";
   public static final String FILTER_MESSAGE_SINK_APP_HDFS_PROPERTIES = "filter-message-sink-app.hdfs.properties";
@@ -58,4 +62,6 @@ public class PropertyConstants {
   public static final String DONE_PATH = "done.path";
   public static final String DONE_FILE_PREFIX = "done.file.prefix";
   public static final String DONE_FILE_SUFFIX = "done.file.suffix";
+
+  public static final String BEHAVIOR_EVENT_DAILY_DONE_APP_HDFS_PROPERTIES = "behavior-event-daily-done-app.hdfs.properties";
 }

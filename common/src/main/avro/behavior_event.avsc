@@ -128,8 +128,7 @@
       "type": {
         "type": "array",
         "items": {
-          "type": "map",
-          "values": "string"
+          "type": "string"
         }
       },
       "default": []
