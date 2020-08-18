@@ -4,13 +4,28 @@
 
 package com.ebay.traffic.chocolate.sparknrt.imk
 
-import com.ebay.traffic.chocolate.sparknrt.imkETL.Parameter
 import scopt.OptionParser
 
+/**
+  * @author Xiang Li
+  * @since 2020/08/18
+  * Input parameter of IMK job
+  * @param appName  app name
+  * @param mode application submit mode
+  * @param inputSource input source table name
+  * @param deltaDir delta lake table dir
+  * @param outPutDir output table dir
+  * @param doneFileDir done file dir of output table
+  * @param doneFilePrefix done file prefix
+  * @param partitions partitions of the output
+  */
 case class Parameter(appName: String = "ImkNrtJob",
                      mode: String = "yarn",
+                     inputSource: String = "",
                      deltaDir: String = "",
                      outPutDir: String = "",
+                     doneFileDir: String = "",
+                     doneFilePrefix: String = "",
                      partitions: Int = 3)
 
 object Parameter {
@@ -28,6 +43,11 @@ object Parameter {
       .valueName("mode")
       .action((cont, param) => param.copy(mode = cont))
 
+    opt[String]("inputSource")
+      .required
+      .valueName("inputSource")
+      .action((cont, param) => param.copy(inputSource = cont))
+
     opt[String]("deltaDir")
       .required
       .valueName("deltaDir")
@@ -37,6 +57,16 @@ object Parameter {
       .required
       .valueName("outPutDir")
       .action((cont, param) => param.copy(outPutDir = cont))
+
+    opt[String]("doneFileDir")
+      .required
+      .valueName("doneFileDir")
+      .action((cont, param) => param.copy(doneFileDir = cont))
+
+    opt[String]("doneFilePrefix")
+      .required
+      .valueName("doneFilePrefix")
+      .action((cont, param) => param.copy(doneFilePrefix = cont))
 
     opt[Int]("partitions")
       .optional
