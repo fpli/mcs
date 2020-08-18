@@ -14,6 +14,7 @@ import com.ebay.traffic.chocolate.sparknrt.basenrt.BaseNrtJob
 import com.ebay.traffic.chocolate.sparknrt.imkETL.Parameter
 import io.delta.tables.DeltaTable
 import org.apache.hadoop.fs.{FileStatus, Path}
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
 
@@ -43,8 +44,9 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
   lazy val doneFilePostfix = "00000000"
 
   lazy val defaultZoneId: ZoneId = ZoneId.systemDefault()
-  lazy val dayFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd").withZone(defaultZoneId)
+  lazy val dayFormatterInDoneFileName: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd").withZone(defaultZoneId)
   lazy val doneFileDatetimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHH").withZone(defaultZoneId)
+  lazy val dtFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
   implicit def dateTimeOrdering: Ordering[ZonedDateTime] = Ordering.fromLessThan(_ isBefore  _)
 
@@ -54,7 +56,7 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
     * @return done file dir by date
     */
   def getDoneDir(dateTime: ZonedDateTime): String = {
-    doneFileDir + "/" + dateTime.format(dayFormatter)
+    doneFileDir + "/" + dateTime.format(dayFormatterInDoneFileName)
   }
 
   /**
@@ -73,7 +75,7 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
   }
 
   /**
-    * Get last done file date time
+    * Get last done file date time. Limitation: when there is delay cross 2 days, this will fail.
     * @return last date time the delta table ever touched done file
     */
   def getLastDoneFileDateTime(dateTime: ZonedDateTime): ZonedDateTime = {
@@ -87,7 +89,7 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
 
     var lastDoneFileDatetime: ZonedDateTime = doneDateHour
 
-    // if today done file dir already exist, just check today's done
+    // if today done file dir already exist, just check today's done, otherwise, check yesterday
     if (fs.exists(todayDoneDir) && fs.listStatus(todayDoneDir).length != 0) {
       lastDoneFileDatetime = getLastDoneFileDatetimeFromDoneFiles(fs.listStatus(todayDoneDir))
     } else {
@@ -101,8 +103,13 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
   /**
     * Read everything need from the source table
     */
-  def readSource(): Unit = {
-
+  def readSource(dateTime: ZonedDateTime): DataFrame = {
+    val fromDateTime = getLastDoneFileDateTime(dateTime)
+    val fromDateString = fromDateTime.format(dtFormatter)
+    val startTimestamp = fromDateTime.toEpochSecond * 1000
+    val sql = "select * from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
+    val sourceDf = sqlsc.sql(sql)
+    sourceDf
   }
 
   /**

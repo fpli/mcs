@@ -34,9 +34,7 @@ abstract class BaseNrtJob(override val jobName: String,
     sys.addShutdownHook(fs.close())
     fs
   }
-
-  @transient lazy val jdbcProperties : Properties = ???
-
+  
   lazy val DATE_COL = "date"
 
   /**

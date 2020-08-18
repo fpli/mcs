@@ -1,0 +1,116 @@
+{
+  "table": "df_tracking_event",
+  "description": "",
+  "columns": [
+    {
+      "name": "guid",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "adguid",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "sessionskey",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "snapshotid",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "seqnum",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "siteid",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "pageid",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "pagename",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "refererhash",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "eventtimestamp",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "urlquerystring",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "clientdata",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "applicationpayload",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "webserver",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "referrer",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "userid",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "rdt",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "channeltype",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "channelaction",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "dispatchid",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "data",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "dt",
+      "dataType": "string",
+      "default": ""
+    }
+  ]
+}

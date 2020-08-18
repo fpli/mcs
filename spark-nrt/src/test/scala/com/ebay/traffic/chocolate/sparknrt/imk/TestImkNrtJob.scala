@@ -12,6 +12,7 @@ import java.time.temporal.ChronoUnit
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.imk.ImkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.imk.Parameter
+import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
@@ -40,7 +41,7 @@ class TestImkNrtJob extends BaseFunSuite{
 
     job = new ImkNrtJob(Parameter(Array(
       "--mode", "local[8]",
-      "--inputSource", "choco_data.tracking_event",
+      "--inputSource", "tracking_event_test",
       "--deltaDir", deltaDir,
       "--outPutDir", outPutDir,
       "--doneFileDir", doneDir,
@@ -96,6 +97,27 @@ class TestImkNrtJob extends BaseFunSuite{
     expect = ZonedDateTime.of(2019, 6, 19, 20, 0, 0, 0, job.defaultZoneId).truncatedTo(ChronoUnit.HOURS)
     assert(actual.equals(expect))
     println(actual)
+    fs.delete(new Path(doneDir), true)
+  }
+
+  test("test read source table") {
+    // prepare done file
+    fs.mkdirs(new Path(doneDir+"/20200817"))
+    val file1 = new File("src/test/resources/touchImkHourlyDone.data/done/imk_rvr_trckng_event_hourly.done.202008170500000000")
+    fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(doneDir + "/20200817/imk_rvr_trckng_event_hourly.done.202008170500000000"))
+    val now = ZonedDateTime.of(2020, 8, 17, 22, 0, 0, 0, ZoneId.systemDefault())
+
+    // prepare master table
+    val sourceFile = new File("src/test/resources/masterTable/master_table.csv")
+
+    val trackingEventTable = TableSchema("df_tracking_event.json")
+
+    val inputDf = job.readFilesAsDF(sourceFile.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
+    inputDf.createTempView("tracking_event_test")
+    inputDf.show
+
+    val df = job.readSource(now)
+    df.show()
     fs.delete(new Path(doneDir), true)
   }
 
