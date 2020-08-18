@@ -87,16 +87,6 @@ abstract class BaseNrtJob(override val jobName: String,
     fs.rename(src, target)
   }
 
-  /**
-    * Read table from DB using JDBC connection properties
-    *
-    * @param table The JDBC table that should be read.
-    *              Note that anything that is valid in a FROM clause of a SQL query can be used.
-    *              For example, instead of a full table you could also use a subquery in parentheses.
-    * @return the dataframe
-    */
-  def readDB(table: String) : DataFrame = {
-    spark.read.jdbc(jdbcProperties.getProperty("url"), table, jdbcProperties)
-  }
+
 
 }

@@ -220,6 +220,10 @@ abstract class BaseSparkJob(val jobName: String,
           .values.map(asRow(_, delimiterMap(delimiter)))
           .map(toDfRow(_, schema)).filter(_ != null), schema)
       }
+      case "delta" => {
+        require(inputPaths.size == 1, "only one path for delta lake source")
+        spark.read.format("delta").load(inputPaths(0))
+      }
     }
     if (broadcastHint) broadcast(df) else df
   }
@@ -351,7 +355,7 @@ abstract class BaseSparkJob(val jobName: String,
                     outputFormat: String = "parquet", delimiter: String = "del",
                     headerHint: Boolean = false, writeMode: SaveMode = SaveMode.Overwrite,
                     partitionColumn: String = null) = {
-    require(Seq("parquet", "csv", "orc").contains(outputFormat),
+    require(Seq("parquet", "csv", "orc", "delta").contains(outputFormat),
       "Unsupported storage format: " + outputFormat)
     require(delimiterMap.contains(delimiter),
       DELIMITER_FAILURE_MESSAGE)
@@ -393,6 +397,9 @@ abstract class BaseSparkJob(val jobName: String,
           writer.option("codec", codec)
         }
         writer.save(outputPath)
+      }
+      case "delta" => {
+        writer.format("delta").save(outputPath)
       }
     }
   }
