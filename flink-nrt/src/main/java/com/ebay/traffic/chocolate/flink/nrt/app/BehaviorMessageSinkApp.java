@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageV0;
+import com.ebay.app.raptor.chocolate.avro.FilterMessage;
+import com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageTableV0;
 import com.ebay.traffic.chocolate.flink.nrt.constant.DateConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
@@ -12,6 +13,10 @@ import io.ebay.rheos.schema.avro.GenericRecordDomainDataDecoder;
 import io.ebay.rheos.schema.avro.RheosEventDeserializer;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.DatumReader;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.flink.api.common.serialization.BulkWriter;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.fs.Path;
@@ -32,7 +37,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-public class BehaviorMessageSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, GenericRecord> {
+public class BehaviorMessageSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, BehaviorMessageTableV0> {
   private static final Logger LOGGER = LoggerFactory.getLogger(BehaviorMessageSinkApp.class);
 
   public static void main(String[] args) throws Exception {
@@ -64,24 +69,25 @@ public class BehaviorMessageSinkApp extends AbstractRheosHDFSCompatibleApp<Consu
   }
 
   @Override
-  protected StreamingFileSink<GenericRecord> getStreamingFileSink() {
+  protected StreamingFileSink<BehaviorMessageTableV0> getStreamingFileSink() {
     return StreamingFileSink.forBulkFormat(getSinkBasePath(), getSinkWriterFactory()).withBucketAssigner(getSinkBucketAssigner())
             .build();
   }
 
   @Override
-  protected BulkWriter.Factory<GenericRecord> getSinkWriterFactory() {
-    return ParquetAvroWriters.forGenericRecord(BehaviorMessageV0.getClassSchema());
+  protected BulkWriter.Factory<BehaviorMessageTableV0> getSinkWriterFactory() {
+    return ParquetAvroWriters.forSpecificRecord(BehaviorMessageTableV0.class);
   }
 
   @Override
-  protected DataStream<GenericRecord> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
+  protected DataStream<BehaviorMessageTableV0> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
     return dataStreamSource.map(new TransformRichMapFunction());
   }
 
-  protected static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, GenericRecord> {
-    private transient GenericRecordDomainDataDecoder decoder;
+  protected static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, BehaviorMessageTableV0> {
+    //    private transient GenericRecordDomainDataDecoder decoder;
     private transient RheosEventDeserializer deserializer;
+    private transient DatumReader<BehaviorMessageTableV0> reader;
 
     @Override
     public void open(Configuration parameters) throws Exception {
@@ -92,29 +98,32 @@ public class BehaviorMessageSinkApp extends AbstractRheosHDFSCompatibleApp<Consu
               .loadProperty(PropertyConstants.BEHAVIOR_MESSAGE_SINK_APP_RHEOS_CONSUMER_PROPERTIES);
       String rheosServiceUrl = properties.getProperty(StreamConnectorConfig.RHEOS_SERVICES_URLS);
       config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, rheosServiceUrl);
-      decoder = new GenericRecordDomainDataDecoder(config);
+//      decoder = new GenericRecordDomainDataDecoder(config);
+      reader = new SpecificDatumReader<>(BehaviorMessageTableV0.getClassSchema());
     }
 
     @Override
-    public GenericRecord map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
-      RheosEvent rheosEvent = deserializer.deserialize(consumerRecord.topic(), consumerRecord.value());
-      return decoder.decode(rheosEvent);
+    public BehaviorMessageTableV0 map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
+      BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(consumerRecord.value(), null);
+      BehaviorMessageTableV0 datum = new BehaviorMessageTableV0();
+      BehaviorMessageTableV0 read = reader.read(datum, decoder);
+      return read;
     }
   }
 
   @Override
-  protected BucketAssigner<GenericRecord, String> getSinkBucketAssigner() {
+  protected BucketAssigner<BehaviorMessageTableV0, String> getSinkBucketAssigner() {
     return new CustomEventDateTimeBucketAssigner();
   }
 
-  private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<GenericRecord, String> {
+  private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<BehaviorMessageTableV0, String> {
     private static final String EVENT_TIMESTAMP = "eventTimestamp";
 
     public static final DateTimeFormatter EVENT_DT_FORMATTER = DateTimeFormatter.ofPattern(DateConstants.YYYY_MM_DD).withZone(ZoneId.systemDefault());
 
     @Override
-    public String getBucketId(GenericRecord element, Context context) {
-      return StringConstants.BUCKET_PREFIX + EVENT_DT_FORMATTER.format(Instant.ofEpochMilli((Long) element.get(EVENT_TIMESTAMP)));
+    public String getBucketId(BehaviorMessageTableV0 element, Context context) {
+      return StringConstants.BUCKET_PREFIX + EVENT_DT_FORMATTER.format(Instant.ofEpochMilli(element.getEventTimestamp()));
     }
 
     @Override
