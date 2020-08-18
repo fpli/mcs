@@ -122,12 +122,6 @@ class TestImkNrtJob extends BaseFunSuite{
   }
 
   test("test imk etl job for parquet output") {
-    val job = new ImkNrtJob(Parameter(Array(
-      "--mode", "local[8]",
-      "--deltaDir", deltaDir,
-      "--outPutDir", outPutDir,
-      "--partitions", "1"
-    )))
 
     job.run()
     job.stop()

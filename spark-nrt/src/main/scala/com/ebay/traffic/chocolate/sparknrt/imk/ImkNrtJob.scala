@@ -102,6 +102,7 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
 
   /**
     * Read everything need from the source table
+    * @param dateTime input date time
     */
   def readSource(dateTime: ZonedDateTime): DataFrame = {
     val fromDateTime = getLastDoneFileDateTime(dateTime)
