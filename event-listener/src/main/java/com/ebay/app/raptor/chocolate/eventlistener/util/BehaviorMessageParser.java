@@ -45,10 +45,6 @@ public class BehaviorMessageParser {
 
   private static BehaviorMessageParser INSTANCE;
 
-  private Map<String, String> applicationPayload = new HashMap<>();
-  private Map<String, String> clientData = new HashMap<>();
-  private List<Map<String, String>> data = new ArrayList<>();
-
   /**
    * Singleton class
    */
@@ -74,8 +70,10 @@ public class BehaviorMessageParser {
                                  MultiValueMap<String, String> parameters, UserAgentInfo agentInfo, String uri,
                                  Long startTime, final ChannelType channelType, final ChannelAction channelAction,
                                  Long snapshotId, int pageId, String pageName, int rdt) {
-    // clear maps
-    clearData();
+
+    Map<String, String> applicationPayload = new HashMap<>();
+    Map<String, String> clientData = new HashMap<>();
+    List<Map<String, String>> data = new ArrayList<>();
 
     // set default value
     BehaviorMessage record = new BehaviorMessage("", "", 0L, null, 0, null, null, null, null, null, null, null,
@@ -135,8 +133,8 @@ public class BehaviorMessageParser {
     record.setUrlQueryString(UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));
 
     // applicationPayload
-    record.setApplicationPayload(getApplicationPayload(parameters, agentInfo, requestContext, uri, domainRequest,
-        channelType, channelAction));
+    record.setApplicationPayload(getApplicationPayload(applicationPayload, parameters, agentInfo, requestContext, uri,
+        domainRequest, channelType, channelAction));
 
     // device info
     DDSResponse deviceInfo = agentInfo.getDeviceInfo();
@@ -155,7 +153,7 @@ public class BehaviorMessageParser {
     record.setRlogid(tracingContext.getRlogId());
 
     // client data
-    record.setClientData(getClientData(domainRequest));
+    record.setClientData(getClientData(clientData, domainRequest));
 
     // web server
     record.setWebServer(domainRequest.getHost());
@@ -186,7 +184,7 @@ public class BehaviorMessageParser {
   /**
    * Get client data
    */
-  private Map<String, String> getClientData(DomainRequestData domainRequest) {
+  private Map<String, String> getClientData(Map<String, String> clientData, DomainRequestData domainRequest) {
     clientData.put("ForwardedFor", domainRequest.getXForwardedFor());
     clientData.put("Script", domainRequest.getServletPath());
     clientData.put("Server", domainRequest.getHost());
@@ -227,7 +225,8 @@ public class BehaviorMessageParser {
   /**
    * Get application payload
    */
-  private Map<String, String> getApplicationPayload(MultiValueMap<String, String> parameters, UserAgentInfo agentInfo,
+  private Map<String, String> getApplicationPayload(Map<String, String> applicationPayload,
+                                                    MultiValueMap<String, String> parameters, UserAgentInfo agentInfo,
                                                     ContainerRequestContext requestContext, String uri,
                                                     DomainRequestData domainRequest, ChannelType channelType,
                                                     ChannelAction channelAction) {
@@ -238,7 +237,7 @@ public class BehaviorMessageParser {
     }
 
     // add tags in url param "sojTags" into applicationPayload
-    addSojTags(parameters, channelType, channelAction);
+    applicationPayload = addSojTags(applicationPayload, parameters, channelType, channelAction);
 
     // add other tags
     if (ChannelAction.CLICK.equals(channelAction)) {
@@ -262,7 +261,8 @@ public class BehaviorMessageParser {
   /**
    * Add tags in param sojTags
    */
-  private void addSojTags(MultiValueMap<String, String> parameters, ChannelType channelType, ChannelAction channelAction) {
+  private Map<String, String> addSojTags(Map<String, String> applicationPayload, MultiValueMap<String, String> parameters,
+                          ChannelType channelType, ChannelAction channelAction) {
     if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
       String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
       try {
@@ -286,6 +286,8 @@ public class BehaviorMessageParser {
         }
       }
     }
+
+    return applicationPayload;
   }
 
   /**
@@ -340,15 +342,6 @@ public class BehaviorMessageParser {
     }
 
     return null;
-  }
-
-  /**
-   * Clear all map and array
-   */
-  private void clearData () {
-    applicationPayload.clear();
-    clientData.clear();
-    data.clear();
   }
 
 }
