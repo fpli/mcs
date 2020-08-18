@@ -196,6 +196,8 @@
     </dependencies>
 
     <build>
+        <!--suppress UnresolvedMavenProperty -->
+        <finalName>${project.artifactId}-${project.version}-${commit.id}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
