@@ -6,16 +6,16 @@ package com.ebay.traffic.chocolate.sparknrt.imk
 
 import java.io.File
 import java.time.format.DateTimeFormatter
-import java.time.{ZoneId, ZonedDateTime}
+import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.time.temporal.ChronoUnit
 
-import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.basenrt.BaseNrtJob
-import com.ebay.traffic.chocolate.sparknrt.imkETL.Parameter
 import io.delta.tables.DeltaTable
 import org.apache.hadoop.fs.{FileStatus, Path}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
+
+import scala.collection.immutable
 
 
 /**
@@ -42,6 +42,8 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
   lazy val doneFileDir: String = params.doneFileDir
   lazy val doneFilePrefix: String = params.doneFilePrefix
   lazy val doneFilePostfix = "00000000"
+  lazy val snapshotid = "snapshotid"
+  lazy val dt = "dt"
 
   lazy val defaultZoneId: ZoneId = ZoneId.systemDefault()
   lazy val dayFormatterInDoneFileName: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd").withZone(defaultZoneId)
@@ -76,9 +78,9 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
 
   /**
     * Get last done file date time. Limitation: when there is delay cross 2 days, this will fail.
-    * @return last date time the delta table ever touched done file
+    * @return last date time the delta table ever touched done file and the delay hours
     */
-  def getLastDoneFileDateTime(dateTime: ZonedDateTime): ZonedDateTime = {
+  def getLastDoneFileDateTimeAndDelay(dateTime: ZonedDateTime): (ZonedDateTime, Long) = {
 
     val doneDateHour = dateTime.truncatedTo(ChronoUnit.HOURS).minusHours(1)
 
@@ -88,6 +90,7 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
     logger.info("doneDateHour {}, todayDoneDir {}, yesterdayDoneDir {}", doneDateHour, todayDoneDir, yesterdayDoneDir)
 
     var lastDoneFileDatetime: ZonedDateTime = doneDateHour
+    var delays = 0L
 
     // if today done file dir already exist, just check today's done, otherwise, check yesterday
     if (fs.exists(todayDoneDir) && fs.listStatus(todayDoneDir).length != 0) {
@@ -96,8 +99,9 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
       fs.mkdirs(todayDoneDir)
       lastDoneFileDatetime = getLastDoneFileDatetimeFromDoneFiles(fs.listStatus(yesterdayDoneDir))
     }
+    delays = ChronoUnit.HOURS.between(lastDoneFileDatetime, doneDateHour)
 
-    lastDoneFileDatetime
+    (lastDoneFileDatetime, delays)
   }
 
   /**
@@ -105,26 +109,65 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
     * @param dateTime input date time
     */
   def readSource(dateTime: ZonedDateTime): DataFrame = {
-    val fromDateTime = getLastDoneFileDateTime(dateTime)
+    val fromDateTime = getLastDoneFileDateTimeAndDelay(dateTime)._1
     val fromDateString = fromDateTime.format(dtFormatter)
     val startTimestamp = fromDateTime.toEpochSecond * 1000
-    val sql = "select * from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
+    val sql = "select snapshotid, channeltype, channelaction, eventtimetamp, dt from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
     val sourceDf = sqlsc.sql(sql)
     sourceDf
   }
 
   /**
-    * Update the delta lake table
+    * Construct done file name
+    * @param doneFileDatetime done file datetime
+    * @return done file name eg. imk_rvr_trckng_event_hourly.done.201904251100000000
     */
-  def updateDelta(): Unit = {
-
+  def getDoneFileName(doneFileDatetime: ZonedDateTime): String = {
+    getDoneDir(doneFileDatetime) + "/" + doneFilePrefix + doneFileDatetime.format(doneFileDatetimeFormatter) + doneFilePostfix
   }
 
   /**
     * Generate done files of delta table
     */
-  def generateDoneFile(): Unit = {
+  def generateDoneFile(sourceDf: DataFrame, lastDoneAndDelay: (ZonedDateTime, Long), inputDateTime: ZonedDateTime): Unit = {
+    // generate done file
+    val minTs = sourceDf.agg(min("eventtimestamp")).head().getLong(0)
+    val instant = Instant.ofEpochMilli(minTs)
+    val minDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
 
+    val delays = lastDoneAndDelay._2
+    val times: immutable.Seq[ZonedDateTime] = (0L until delays)
+      .map(delay => inputDateTime.minusHours(delay))
+      .reverse
+      .filter(dateTime => dateTime.plusHours(1).isBefore(minDateTime))
+
+    times.foreach(dateTime => {
+      val file = getDoneFileName(dateTime)
+      logger.info("touch done file {}", file)
+      val out = fs.create(new Path(file), true)
+      out.close()
+    })
+  }
+
+  /**
+    * Update the delta lake table
+    */
+  def updateDelta(inputDateTime: ZonedDateTime): Unit = {
+
+    val lastDoneAndDelay = getLastDoneFileDateTimeAndDelay(inputDateTime)
+
+    val imkDelta = DeltaTable.forPath(spark, imkDeltaDir)
+    val sourceDf = readSource(lastDoneAndDelay._1)
+
+    // when there are new records, upsert the records
+    imkDelta.as("delta")
+      .merge(sourceDf.as("updates"),
+      s"delta.${snapshotid} = updates.${snapshotid} and delta.${dt} = updates.${dt}")
+      .whenNotMatched()
+      .insertAll()
+      .execute()
+
+    generateDoneFile(sourceDf, lastDoneAndDelay, inputDateTime)
   }
 
   /**
@@ -138,23 +181,6 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
     * Entry of this spark job
     */
   override def run(): Unit = {
-
-    val file = new File("/tmp/delta")
-
-    val path = file.getCanonicalPath
-    println(path)
-    val data = spark.range(0,5)
-    data.printSchema()
-    data.toDF()
-
-    saveDFToFiles(data.toDF(), path, outputFormat = "delta")
-
-    val imkDelta = DeltaTable.forPath(spark, path)
-    imkDelta.toDF.show()
-    val dfImk = imkDelta
-      .update(
-        col("id") < 5,
-        Map("id" -> lit(1)))
-    DeltaTable.forPath(spark, path).toDF.show()
+    
   }
 }

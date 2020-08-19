@@ -78,7 +78,7 @@ class TestImkNrtJob extends BaseFunSuite{
     val file2 = new File("src/test/resources/touchImkHourlyDone.data/done/imk_rvr_trckng_event_hourly.done.201906192000000000")
     fs.copyFromLocalFile(new Path(file2.getAbsolutePath), new Path(doneDir + "/20190619/imk_rvr_trckng_event_hourly.done.201906192000000000"))
 
-    var actual: ZonedDateTime = job.getLastDoneFileDateTime(now)
+    var actual: ZonedDateTime = job.getLastDoneFileDateTimeAndDelay(now)
     var expect: ZonedDateTime = ZonedDateTime.of(2019, 6, 19, 20, 0, 0, 0, job.defaultZoneId).truncatedTo(ChronoUnit.HOURS)
     assert(actual.equals(expect))
     println(actual)
@@ -93,7 +93,7 @@ class TestImkNrtJob extends BaseFunSuite{
     fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(doneDir + "/20190619/imk_rvr_trckng_event_hourly.done.201906191900000000"))
     fs.copyFromLocalFile(new Path(file2.getAbsolutePath), new Path(doneDir + "/20190619/imk_rvr_trckng_event_hourly.done.201906192000000000"))
 
-    actual = job.getLastDoneFileDateTime(now)
+    actual = job.getLastDoneFileDateTimeAndDelay(now)
     expect = ZonedDateTime.of(2019, 6, 19, 20, 0, 0, 0, job.defaultZoneId).truncatedTo(ChronoUnit.HOURS)
     assert(actual.equals(expect))
     println(actual)
