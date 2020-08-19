@@ -82,7 +82,7 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
     */
   def getLastDoneFileDateTimeAndDelay(dateTime: ZonedDateTime): (ZonedDateTime, Long) = {
 
-    val doneDateHour = dateTime.truncatedTo(ChronoUnit.HOURS).minusHours(1)
+    val doneDateHour = dateTime.truncatedTo(ChronoUnit.HOURS)
 
     val todayDoneDir = new Path(getDoneDir(doneDateHour))
     val yesterdayDoneDir = new Path(getDoneDir(doneDateHour.minusDays(1)))
@@ -106,13 +106,13 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
 
   /**
     * Read everything need from the source table
-    * @param dateTime input date time
+    * @param inputDateTime input date time
     */
-  def readSource(dateTime: ZonedDateTime): DataFrame = {
-    val fromDateTime = getLastDoneFileDateTimeAndDelay(dateTime)._1
+  def readSource(inputDateTime: ZonedDateTime): DataFrame = {
+    val fromDateTime = getLastDoneFileDateTimeAndDelay(inputDateTime)._1
     val fromDateString = fromDateTime.format(dtFormatter)
     val startTimestamp = fromDateTime.toEpochSecond * 1000
-    val sql = "select snapshotid, channeltype, channelaction, eventtimetamp, dt from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
+    val sql = "select snapshotid, channeltype, channelaction, eventtimestamp, dt from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
     val sourceDf = sqlsc.sql(sql)
     sourceDf
   }
@@ -128,6 +128,9 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
 
   /**
     * Generate done files of delta table
+    * @param sourceDf the input source from master table
+    * @param lastDoneAndDelay last done datetime and the delayed hours
+    * @param inputDateTime input datetime, it should be now
     */
   def generateDoneFile(sourceDf: DataFrame, lastDoneAndDelay: (ZonedDateTime, Long), inputDateTime: ZonedDateTime): Unit = {
     // generate done file
@@ -181,6 +184,6 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
     * Entry of this spark job
     */
   override def run(): Unit = {
-    
+
   }
 }

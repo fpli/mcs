@@ -78,7 +78,7 @@ class TestImkNrtJob extends BaseFunSuite{
     val file2 = new File("src/test/resources/touchImkHourlyDone.data/done/imk_rvr_trckng_event_hourly.done.201906192000000000")
     fs.copyFromLocalFile(new Path(file2.getAbsolutePath), new Path(doneDir + "/20190619/imk_rvr_trckng_event_hourly.done.201906192000000000"))
 
-    var actual: ZonedDateTime = job.getLastDoneFileDateTimeAndDelay(now)
+    var actual: ZonedDateTime = job.getLastDoneFileDateTimeAndDelay(now)._1
     var expect: ZonedDateTime = ZonedDateTime.of(2019, 6, 19, 20, 0, 0, 0, job.defaultZoneId).truncatedTo(ChronoUnit.HOURS)
     assert(actual.equals(expect))
     println(actual)
@@ -93,7 +93,7 @@ class TestImkNrtJob extends BaseFunSuite{
     fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(doneDir + "/20190619/imk_rvr_trckng_event_hourly.done.201906191900000000"))
     fs.copyFromLocalFile(new Path(file2.getAbsolutePath), new Path(doneDir + "/20190619/imk_rvr_trckng_event_hourly.done.201906192000000000"))
 
-    actual = job.getLastDoneFileDateTimeAndDelay(now)
+    actual = job.getLastDoneFileDateTimeAndDelay(now)._1
     expect = ZonedDateTime.of(2019, 6, 19, 20, 0, 0, 0, job.defaultZoneId).truncatedTo(ChronoUnit.HOURS)
     assert(actual.equals(expect))
     println(actual)
@@ -118,6 +118,50 @@ class TestImkNrtJob extends BaseFunSuite{
 
     val df = job.readSource(now)
     df.show()
+    fs.delete(new Path(doneDir), true)
+  }
+
+  test("test generate done files") {
+
+    // prepare current date and last done file
+    // the last done is 2020-08-16 05
+    fs.mkdirs(new Path(doneDir+"/20200816"))
+    val file1 = new File("src/test/resources/touchImkHourlyDone.data/done/imk_rvr_trckng_event_hourly.done.202008160500000000")
+    fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(doneDir + "/20200816/imk_rvr_trckng_event_hourly.done.202008160500000000"))
+
+    val now = ZonedDateTime.of(2020, 8, 17, 22, 0, 0, 0, ZoneId.systemDefault())
+
+    // prepare master table
+    val sourceFile = new File("src/test/resources/masterTable/master_table.csv")
+
+    val trackingEventTable = TableSchema("df_tracking_event.json")
+    val inputDf = job.readFilesAsDF(sourceFile.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
+    inputDf.createTempView("tracking_event_test")
+
+    // read source df
+    val sourceDf = job.readSource(now)
+    sourceDf.show()
+
+    // generate new done files
+    val lastDoneAndDelay = job.getLastDoneFileDateTimeAndDelay(now)
+    job.generateDoneFile(sourceDf, lastDoneAndDelay, now)
+
+    // verify done files
+    for( i <- 6 to 9 ) {
+      assert(fs.exists(new Path(doneDir+"/20200816/imk_rvr_trckng_event_hourly.done.202008160" + i + "00000000")))
+    }
+    for( i <- 10 to 23 ) {
+      assert(fs.exists(new Path(doneDir+"/20200816/imk_rvr_trckng_event_hourly.done.20200816" + i + "00000000")))
+    }
+
+    for( i <- 0 to 9 ) {
+      assert(fs.exists(new Path(doneDir+"/20200817/imk_rvr_trckng_event_hourly.done.202008170" + i + "00000000")))
+    }
+    for( i <- 10 to 14 ) {
+      assert(fs.exists(new Path(doneDir+"/20200817/imk_rvr_trckng_event_hourly.done.20200817" + i + "00000000")))
+    }
+
+
     fs.delete(new Path(doneDir), true)
   }
 
