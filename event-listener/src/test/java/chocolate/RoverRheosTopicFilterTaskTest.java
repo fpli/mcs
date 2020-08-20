@@ -420,5 +420,9 @@ public class RoverRheosTopicFilterTaskTest {
         when(genericRecord.get("urlQueryString")).thenReturn(new Utf8("/roveropen/0/e12060/7?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869"));
 
         assertEquals("SITE_EMAIL", roverRheosTopicFilterTask.parseChannelType(genericRecord));
+
+        when(genericRecord.get("urlQueryString")).thenReturn(new Utf8("/roveropen"));
+
+        assertNull(roverRheosTopicFilterTask.parseChannelType(genericRecord));
     }
 }
