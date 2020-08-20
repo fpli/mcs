@@ -62,6 +62,11 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static final Metrics metrics = ESMetrics.getInstance();
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
+  public static final int ROVER_CLICK_PAGE_ID = 3084;
+  public static final String EMAIL_OPEN_TOPIC = "behavior.pulsar.customized.page3962";
+  public static final String ROVER_OPEN_PAGE_NAME = "roveropen";
+  public static final String EMAIL_CLICK_TOPIC = "behavior.pulsar.customized.email";
+  public static final String BOT_TOPIC = "behavior.pulsar.misc.bot";
   private static Pattern missingRoverClicksPattern = Pattern.compile("^\\/rover\\/.*\\/.*\\/1\\?.*rvrhostname=.*",
     Pattern.CASE_INSENSITIVE);
   private static final Utf8 empty = new Utf8("");
@@ -226,12 +231,12 @@ public class RoverRheosTopicFilterTask extends Thread {
       }
 
       String pageName = getField(genericRecord, "pageName", null);
-      if (topic.equals("behavior.pulsar.customized.page3962")) {
+      if (topic.equals(EMAIL_OPEN_TOPIC)) {
         if (pageId != PageIdEnum.EMAIL_OPEN.getId()) {
           continue;
         }
         // EMAIL OPEN tracked by Rover
-        if (!"roveropen".equals(pageName)) {
+        if (!ROVER_OPEN_PAGE_NAME.equals(pageName)) {
           continue;
         }
 
@@ -245,7 +250,7 @@ public class RoverRheosTopicFilterTask extends Thread {
         continue;
       }
 
-      if (topic.equals("behavior.pulsar.customized.email")) {
+      if (topic.equals(EMAIL_CLICK_TOPIC)) {
         String channelType = parseChannelType(genericRecord);
         // chocolate click
         if (pageId == PageIdEnum.CLICK.getId()) {
@@ -254,7 +259,7 @@ public class RoverRheosTopicFilterTask extends Thread {
           continue;
         }
         // rover click
-        if (pageId == 3084) {
+        if (pageId == ROVER_CLICK_PAGE_ID) {
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_CLICK.getName(), ChannelAction.CLICK.name(), channelType);
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
           continue;
@@ -262,7 +267,7 @@ public class RoverRheosTopicFilterTask extends Thread {
         continue;
       }
 
-      if (topic.equals("behavior.pulsar.misc.bot")) {
+      if (topic.equals(BOT_TOPIC)) {
         String channelType = parseChannelType(genericRecord);
         // chocolate click bot
         if (pageId == PageIdEnum.CLICK.getId()) {
@@ -271,13 +276,13 @@ public class RoverRheosTopicFilterTask extends Thread {
           continue;
         }
         // rover click bot
-        if (pageId == 3084) {
+        if (pageId == ROVER_CLICK_PAGE_ID) {
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.CLICK_BOT.getName(), ChannelAction.CLICK.name(), channelType);
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
           continue;
         }
         // rover open bot
-        if (pageId == PageIdEnum.EMAIL_OPEN.getId() && "roveropen".equals(pageName)) {
+        if (pageId == PageIdEnum.EMAIL_OPEN.getId() && ROVER_OPEN_PAGE_NAME.equals(pageName)) {
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_OPEN_BOT.getName(), ChannelAction.EMAIL_OPEN.name(), channelType);
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
           continue;
@@ -608,15 +613,12 @@ public class RoverRheosTopicFilterTask extends Thread {
     if (CollectionUtils.isEmpty(strings)) {
       return null;
     }
-    String s = strings.get(strings.size() - 1);
-    switch (s.substring(0, s.indexOf("?"))) {
-      case "7":
-        return ChannelIdEnum.SITE_EMAIL.name();
-      case "8":
-        return ChannelIdEnum.MRKT_EMAIL.name();
-      default:
-        return null;
+    String lastElem = strings.get(strings.size() - 1);
+    if (!lastElem.contains("?")) {
+      return null;
     }
+    ChannelIdEnum parse = ChannelIdEnum.parse(lastElem.substring(0, lastElem.indexOf("?")));
+    return parse == null ? null : parse.name();
   }
 
 
