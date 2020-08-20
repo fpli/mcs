@@ -125,7 +125,7 @@ public class CollectionService {
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
     this.metrics.meter("driver.id", 1, Field.of("ip", Hostname.IP),
             Field.of("driver_id", ApplicationOptionsParser.getDriverIdFromIp()));
-    this.behaviorProducer = new RheosKafkaProducer(ApplicationOptions.getInstance().getBehaviorRheosProperties());
+    this.behaviorProducer = BehaviorKafkaSink.get();
     this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
     this.eventEmitterPublisher = new EventEmitterPublisher(tokenGenerator);
   }

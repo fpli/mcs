@@ -1,28 +1,17 @@
-package chocolate;
+package com.ebay.app.raptor.chocolate.eventlistener;
 
-import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import chocolate.EventListenerServiceTest;
+import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
-import com.ebay.app.raptor.chocolate.eventlistener.RoverRheosTopicFilterTask;
 import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
-import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
-import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
-import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
-import com.ebay.traffic.chocolate.kafka.RheosKafkaProducer;
+import com.ebay.traffic.chocolate.kafka.*;
 import com.ebay.traffic.monitoring.ESMetrics;
 import io.ebay.rheos.schema.avro.GenericRecordDomainDataDecoder;
-import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.Schema;
@@ -37,25 +26,26 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
 public class RoverRheosTopicFilterTaskTest {
+    private MockProducer<Long, ListenerMessage> producer;
+    private MockProducer<Long, BehaviorMessage> behaviorProducer;
+    private RoverRheosTopicFilterTask roverRheosTopicFilterTask;
+    private RheosConsumerWrapper rheosConsumerWrapper;
+    private MockConsumer<byte[], RheosEvent> consumerMcs;
+    private GenericRecordDomainDataDecoder decoder;
 
     @BeforeClass
     public static void initBeforeTest() {
@@ -63,9 +53,23 @@ public class RoverRheosTopicFilterTaskTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         RuntimeContext.setConfigRoot(EventListenerServiceTest.class.getClassLoader().getResource
                 ("META-INF/configuration/Dev/"));
+
+        producer = new MockProducer<>(true, new LongSerializer(), new ListenerMessageSerializer());
+        behaviorProducer = new MockProducer<>(true, new LongSerializer(), new BehaviorMessageSerializer());
+
+        RoverRheosTopicFilterTask.init(1l);
+        roverRheosTopicFilterTask = RoverRheosTopicFilterTask.getInstance();
+
+        Properties rheosConsumerProperties = getProperties("event-listener-rheos-consumer.properties");
+
+        ApplicationOptions.init();
+        RheosConsumerWrapper.init(rheosConsumerProperties);
+        consumerMcs = new MockConsumer<byte[], RheosEvent>(OffsetResetStrategy.EARLIEST);
+        decoder = mock(GenericRecordDomainDataDecoder.class);
+        rheosConsumerWrapper = mock(RheosConsumerWrapper.class);
     }
 
     @AfterClass
@@ -118,6 +122,7 @@ public class RoverRheosTopicFilterTaskTest {
     @Test
     public void testProcessRecords() throws Exception {
         MockProducer<Long, ListenerMessage> producer = new MockProducer<>(true, new LongSerializer(), new ListenerMessageSerializer());
+        MockProducer<Long, BehaviorMessage> behaviorProducer = new MockProducer<>(true, new LongSerializer(), new BehaviorMessageSerializer());
         RoverRheosTopicFilterTask.init(1l);
         RoverRheosTopicFilterTask roverRheosTopicFilterTask = RoverRheosTopicFilterTask.getInstance();
 
@@ -207,9 +212,213 @@ public class RoverRheosTopicFilterTaskTest {
 
 
         //verify open event
-        roverRheosTopicFilterTask.processRecords(rheosConsumerWrapper, producer);
+        roverRheosTopicFilterTask.processRecords(rheosConsumerWrapper, producer, behaviorProducer, "");
         Thread.sleep(5000);
         List<ProducerRecord<Long, ListenerMessage>> history = producer.history();
         assertEquals(3, history.size());
+    }
+
+    private RheosEvent createRheosEvent(int pageId, String pageName, String chnl, String urlQueryString) {
+        RheosEvent roveropen = getRecord(String.valueOf(pageId), pageName);
+        GenericRecord genericRecord = mock(GenericRecord.class);
+        when(decoder.decode(roveropen)).thenReturn(genericRecord);
+
+        when(genericRecord.get("clientData")).thenReturn(new HashMap<Utf8, Utf8>() {
+            {
+                put(new Utf8("urlQueryString"), new Utf8(urlQueryString));
+                put(new Utf8("ForwardFor"), new Utf8("10.149.170.138"));
+                put(new Utf8("referrer"), new Utf8("http://a+.yhs4.search.yahoo.com"));
+            }
+        });
+        when(genericRecord.get("applicationPayload")).thenReturn(new HashMap<Utf8, Utf8>() {
+            {
+                put(new Utf8("chnl"), new Utf8(chnl));
+                put(new Utf8("rvrid"), new Utf8("12345"));
+                put(new Utf8("timestamp"), new Utf8("1573445422467"));
+            }
+        });
+
+        when(genericRecord.get("eventTimestamp")).thenReturn(1234567L);
+        when(genericRecord.get("pageId")).thenReturn(pageId);
+        when(genericRecord.get("pageName")).thenReturn("roveropen");
+        when(genericRecord.get("guid")).thenReturn("59b405c216e0a4e287dc0e85ffff607d");
+        return roveropen;
+    }
+
+    @Test
+    public void testProcessEmailOpenRecords() throws Exception {
+        initConsumer("behavior.pulsar.customized.page3962");
+
+        RheosEvent roveropen1 = createRheosEvent(3962, "roveropen", "7",
+                "/roveropen/0/e12060/7?osub=-1%7E1&crd=20200813220048&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869");
+
+        RheosEvent roveropen2 = createRheosEvent(3963, "roveropen", "7",
+                "/roveropen/0/e12060/7?osub=-1%7E1&crd=20200813220048&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869");
+
+        RheosEvent roveropen3 = createRheosEvent(3962, "impression", "7",
+                "/roveropen/0/e12060/7?osub=-1%7E1&crd=20200813220048&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869");
+
+        RheosEvent roveropen4 = createRheosEvent(3962, "roveropen", "",
+                "/roveropen/0/e12060/7?osub=-1%7E1&crd=20200813220048&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869");
+
+        RheosEvent roveropen5 = createRheosEvent(3962, "roveropen", "",
+                "/roveropen/0/e12060/?osub=-1%7E1&crd=20200813220048&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869");
+
+        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.page3962", 0, 0L,
+                ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen1.get("eventTimestamp")).array(), roveropen1));
+        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.page3962", 0, 1L,
+                ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen2.get("eventTimestamp")).array(), roveropen2));
+        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.page3962", 0, 2L,
+                ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen3.get("eventTimestamp")).array(), roveropen3));
+        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.page3962", 0, 3L,
+                ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen4.get("eventTimestamp")).array(), roveropen4));
+        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.page3962", 0, 4L,
+                ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen5.get("eventTimestamp")).array(), roveropen5));
+
+        roverRheosTopicFilterTask.processRecords(rheosConsumerWrapper, producer, behaviorProducer, "");
+
+        Thread.sleep(5000);
+        List<ProducerRecord<Long, BehaviorMessage>> history = behaviorProducer.history();
+
+        history.forEach(record -> {
+            assertEquals("EMAIL_OPEN", history.get(0).value().getChannelAction());
+            assertEquals("Rover_Open", history.get(0).value().getPageName());
+            assertEquals("SITE_EMAIL", history.get(0).value().getChannelType());
+        });
+    }
+
+    private void initConsumer(String topic) {
+        when(rheosConsumerWrapper.getConsumer()).thenReturn(consumerMcs);
+        when(rheosConsumerWrapper.getDecoder()).thenReturn(decoder);
+        consumerMcs.assign(Collections.singletonList(new TopicPartition(topic, 0)));
+        HashMap<TopicPartition, Long> beginningOffsets = new HashMap<>();
+        beginningOffsets.put(new TopicPartition(topic, 0), 0L);
+        consumerMcs.updateBeginningOffsets(beginningOffsets);
+    }
+
+    @Test
+    public void testProcessEmailClickRecords() throws Exception {
+        initConsumer("behavior.pulsar.customized.email");
+
+        RheosEvent roveropen1 = createRheosEvent(2547208, "", "7",
+                "/roveropen/0/e12060/7?osub=-1%7E1&crd=20200813220048&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869");
+
+        RheosEvent roveropen2 = createRheosEvent(3084, "", "7",
+                "/roveropen/0/e12060/7?osub=-1%7E1&crd=20200813220048&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869");
+
+        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.email", 0, 0L,
+                ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen1.get("eventTimestamp")).array(), roveropen1));
+        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.email", 0, 1L,
+                ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen2.get("eventTimestamp")).array(), roveropen2));
+
+        roverRheosTopicFilterTask.processRecords(rheosConsumerWrapper, producer, behaviorProducer, "");
+
+        Thread.sleep(5000);
+        List<ProducerRecord<Long, BehaviorMessage>> history = behaviorProducer.history();
+
+        assertEquals("CLICK", history.get(0).value().getChannelAction());
+        assertEquals(Integer.valueOf(2547208), history.get(0).value().getPageId());
+        assertEquals("Rover_Click", history.get(1).value().getPageName());
+        assertEquals("SITE_EMAIL", history.get(0).value().getChannelType());
+
+        assertEquals("CLICK", history.get(1).value().getChannelAction());
+        assertEquals(Integer.valueOf(3084), history.get(1).value().getPageId());
+        assertEquals("Rover_Click", history.get(1).value().getPageName());
+        assertEquals("SITE_EMAIL", history.get(1).value().getChannelType());
+    }
+
+    @Test
+    public void testProcessBotRecords() throws Exception {
+        initConsumer("behavior.pulsar.misc.bot");
+
+        RheosEvent chocolateClick = createRheosEvent(2547208, "", "7", "");
+
+        RheosEvent roverClick = createRheosEvent(3084, "", "7", "");
+
+        RheosEvent roveropen = createRheosEvent(3962, "roveropen", "7", "");
+
+        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 0L,
+                ByteBuffer.allocate(Long.BYTES).putLong((long) chocolateClick.get("eventTimestamp")).array(), chocolateClick));
+        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 1L,
+                ByteBuffer.allocate(Long.BYTES).putLong((long) roverClick.get("eventTimestamp")).array(), roverClick));
+        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 2L,
+                ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen.get("eventTimestamp")).array(), roveropen));
+
+        roverRheosTopicFilterTask.processRecords(rheosConsumerWrapper, producer, behaviorProducer, "");
+
+        Thread.sleep(5000);
+        List<ProducerRecord<Long, BehaviorMessage>> history = behaviorProducer.history();
+
+        assertEquals("CLICK", history.get(0).value().getChannelAction());
+        assertEquals(Integer.valueOf(2547208), history.get(0).value().getPageId());
+        assertEquals("Chocolate_Click_Bot", history.get(0).value().getPageName());
+        assertEquals("SITE_EMAIL", history.get(0).value().getChannelType());
+
+        assertEquals("CLICK", history.get(1).value().getChannelAction());
+        assertEquals(Integer.valueOf(3084), history.get(1).value().getPageId());
+        assertEquals("Rover_Click_Bot", history.get(1).value().getPageName());
+        assertEquals("SITE_EMAIL", history.get(1).value().getChannelType());
+
+        assertEquals("EMAIL_OPEN", history.get(2).value().getChannelAction());
+        assertEquals(Integer.valueOf(3962), history.get(2).value().getPageId());
+        assertEquals("Rover_Open_Bot", history.get(2).value().getPageName());
+        assertEquals("SITE_EMAIL", history.get(2).value().getChannelType());
+    }
+
+    @Test
+    public void parseChannelTypeFromUrlQueryString() {
+        assertNull(roverRheosTopicFilterTask.parseChannelType(new Utf8("")));
+        assertNull(roverRheosTopicFilterTask.parseChannelType(new Utf8("/roveropen/0/e12060/10?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869")));
+        assertNull(roverRheosTopicFilterTask.parseChannelType(new Utf8("/roveropen/0/e12060/?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869")));
+        assertNull(roverRheosTopicFilterTask.parseChannelType(new Utf8("/roveropen/0/e12060?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869")));
+        assertEquals("MRKT_EMAIL", roverRheosTopicFilterTask.parseChannelType(new Utf8("/roveropen/0/e12060/8?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869")));
+        assertEquals("SITE_EMAIL", roverRheosTopicFilterTask.parseChannelType(new Utf8("/roveropen/0/e12060/7?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869")));
+    }
+
+    @Test
+    public void parseChannelType() {
+        GenericRecord genericRecord = mock(GenericRecord.class);
+        when(genericRecord.get("applicationPayload")).thenReturn(new HashMap<Utf8, Utf8>() {
+            {
+            }
+        });
+
+        assertNull(roverRheosTopicFilterTask.parseChannelType(genericRecord));
+
+        when(genericRecord.get("applicationPayload")).thenReturn(new HashMap<Utf8, Utf8>() {
+            {
+                put(new Utf8("chnl"), new Utf8("123"));
+            }
+        });
+
+        assertNull(roverRheosTopicFilterTask.parseChannelType(genericRecord));
+
+        when(genericRecord.get("applicationPayload")).thenReturn(new HashMap<Utf8, Utf8>() {
+            {
+                put(new Utf8("chnl"), new Utf8("7"));
+            }
+        });
+
+        assertEquals("SITE_EMAIL", roverRheosTopicFilterTask.parseChannelType(genericRecord));
+
+        when(genericRecord.get("applicationPayload")).thenReturn(new HashMap<Utf8, Utf8>() {
+            {
+                put(new Utf8("chnl"), new Utf8("8"));
+            }
+        });
+
+        assertEquals("MRKT_EMAIL", roverRheosTopicFilterTask.parseChannelType(genericRecord));
+
+        when(genericRecord.get("applicationPayload")).thenReturn(new HashMap<Utf8, Utf8>() {
+            {
+            }
+        });
+        when(genericRecord.get("urlQueryString")).thenReturn(new Utf8("/roveropen/0/e12060/8?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869"));
+
+        assertEquals("MRKT_EMAIL", roverRheosTopicFilterTask.parseChannelType(genericRecord));
+
+        when(genericRecord.get("urlQueryString")).thenReturn(new Utf8("/roveropen/0/e12060/7?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869"));
+
+        assertEquals("SITE_EMAIL", roverRheosTopicFilterTask.parseChannelType(genericRecord));
     }
 }
