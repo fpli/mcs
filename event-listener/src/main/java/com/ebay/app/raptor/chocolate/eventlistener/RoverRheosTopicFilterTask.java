@@ -1,11 +1,12 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
-import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.avro.HttpMethod;
-import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.avro.*;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorKafkaSink;
+import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
+import com.ebay.app.raptor.chocolate.eventlistener.util.PageNameEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -14,11 +15,14 @@ import com.ebay.traffic.monitoring.Metrics;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -26,6 +30,8 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.apache.commons.lang3.StringUtils;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +69,9 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static Long interval = 0L;
   private static RoverRheosTopicFilterTask task = null;
   private static Boolean runFlag = true;
+
+  private Map<String, String> applicationPayload = new HashMap<>();
+  private List<Map<String, String>> data = new ArrayList<>();
 
   /**
    * Singleton
@@ -120,15 +129,16 @@ public class RoverRheosTopicFilterTask extends Thread {
   public void run() {
     RheosConsumerWrapper rheosConsumer = RheosConsumerWrapper.getInstance();
     Producer<Long, ListenerMessage> producer;
+    Producer behaviorProducer = BehaviorKafkaSink.get();
     producer = KafkaSink.get();
-    String kafkaTopic;
+    String behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();;
     Long round = 0L;
 
     while (runFlag) {
       round++;
       if ((round % 10000) == 1) logger.warn(String.format("Round %d from rheos", round));
       try {
-        processRecords(rheosConsumer, producer);
+        processRecords(rheosConsumer, producer, behaviorProducer, behaviorTopic);
       } catch (Exception e) {
         logger.error("Something wrong:", e);
       }
@@ -198,11 +208,13 @@ public class RoverRheosTopicFilterTask extends Thread {
    * @param rheosConsumer Rheos used to consume
    * @param producer      Kafka producer
    */
-  public void processRecords(RheosConsumerWrapper rheosConsumer, Producer<Long, ListenerMessage> producer) {
+  @SuppressWarnings("unchecked")
+  public void processRecords(RheosConsumerWrapper rheosConsumer, Producer<Long, ListenerMessage> producer, Producer behaviorProducer, String behaviorTopic) {
 
     ConsumerRecords<byte[], RheosEvent> consumerRecords;
     consumerRecords = rheosConsumer.getConsumer().poll(interval);
     for (ConsumerRecord<byte[], RheosEvent> consumerRecord : consumerRecords) {
+      String topic = consumerRecord.topic();
       ESMetrics.getInstance().meter(INCOMING);
       GenericRecord genericRecord = rheosConsumer.getDecoder().decode(consumerRecord.value());
       HashMap<Utf8, Utf8> data = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
@@ -210,6 +222,66 @@ public class RoverRheosTopicFilterTask extends Thread {
       if (genericRecord.get("pageId") != null) {
         pageId = (int) genericRecord.get("pageId");
       } else {
+        continue;
+      }
+
+      String pageName = getField(genericRecord, "pageName", null);
+      if (topic.equals("behavior.pulsar.customized.page3962")) {
+        if (pageId != PageIdEnum.EMAIL_OPEN.getId()) {
+          continue;
+        }
+        // EMAIL OPEN tracked by Rover
+        if (!"roveropen".equals(pageName)) {
+          continue;
+        }
+
+        String channelType = parseChannelType(genericRecord);
+        if (StringUtils.isEmpty(channelType)) {
+          continue;
+        }
+
+        BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_OPEN.getName(), ChannelAction.EMAIL_OPEN.name(), channelType);
+        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+        continue;
+      }
+
+      if (topic.equals("behavior.pulsar.customized.email")) {
+        String channelType = parseChannelType(genericRecord);
+        // chocolate click
+        if (pageId == PageIdEnum.CLICK.getId()) {
+          BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.CLICK.getName(), ChannelAction.CLICK.name(), channelType);
+          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+          continue;
+        }
+        // rover click
+        if (pageId == 3084) {
+          BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_CLICK.getName(), ChannelAction.CLICK.name(), channelType);
+          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+          continue;
+        }
+        continue;
+      }
+
+      if (topic.equals("behavior.pulsar.misc.bot")) {
+        String channelType = parseChannelType(genericRecord);
+        // chocolate click bot
+        if (pageId == PageIdEnum.CLICK.getId()) {
+          BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.CHOCOLATE_CLICK_BOT.getName(), ChannelAction.CLICK.name(), channelType);
+          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+          continue;
+        }
+        // rover click bot
+        if (pageId == 3084) {
+          BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.CLICK_BOT.getName(), ChannelAction.CLICK.name(), channelType);
+          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+          continue;
+        }
+        // rover open bot
+        if (pageId == PageIdEnum.EMAIL_OPEN.getId() && "roveropen".equals(pageName)) {
+          BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_OPEN_BOT.getName(), ChannelAction.EMAIL_OPEN.name(), channelType);
+          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+          continue;
+        }
         continue;
       }
 
@@ -456,6 +528,94 @@ public class RoverRheosTopicFilterTask extends Thread {
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
       }
+    }
+  }
+
+  protected Map<String, String> convertMap(Map<Utf8, Utf8> map) {
+    Map<String, String> target = new HashMap<>();
+    map.forEach((k, v) -> {
+      target.put(String.valueOf(k), String.valueOf(v));
+    });
+    return target;
+  }
+
+  @SuppressWarnings("unchecked")
+  protected BehaviorMessage buildMessage(GenericRecord genericRecord, Integer pageId, String pageName, String channelAction, String channelType) {
+    BehaviorMessage record = new BehaviorMessage();
+    record.setGuid(String.valueOf(genericRecord.get("guid")));
+    record.setAdguid(String.valueOf(genericRecord.get("guid")));
+    record.setEventTimestamp((Long) genericRecord.get("eventTimestamp"));
+    record.setSid(getField(genericRecord, "sid", null));
+    record.setPageId(pageId);
+    record.setPageName(pageName);
+    record.setEventFamily(getField(genericRecord, "eventFamily", null));
+    record.setEventAction(getField(genericRecord, "eventAction", null));
+    record.setUserId(getField(genericRecord, "userId", null));
+    record.setSid(getField(genericRecord, "siteId", null));
+    record.setSessionId(getField(genericRecord, "sessionId", null));
+    record.setSnapshotId(String.valueOf(SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation()));
+    record.setSeqNum(getField(genericRecord, "seqNum", null));
+    record.setRdt((Integer) genericRecord.get("rdt"));
+    record.setRefererHash(getField(genericRecord, "refererHash", null));
+    record.setUrlQueryString(getField(genericRecord, "urlQueryString", null));
+    record.setWebServer(getField(genericRecord, "webServer", null));
+    record.setClientIP(getField(genericRecord, "clientIP", null));
+    record.setRemoteIP(getField(genericRecord, "remoteIP", null));
+    record.setAgentInfo(getField(genericRecord, "agentInfo", null));
+    record.setAppId(getField(genericRecord, "appId", null));
+    record.setAppVersion(getField(genericRecord, "appVersion", null));
+    record.setOsVersion(getField(genericRecord, "osVersion", null));
+    record.setCobrand(getField(genericRecord, "cobrand", null));
+    record.setDeviceFamily(getField(genericRecord, "deviceFamily", null));
+    record.setDeviceType(getField(genericRecord, "deviceType", null));
+    record.setBrowserVersion(getField(genericRecord, "browserVersion", null));
+    record.setBrowserFamily(getField(genericRecord, "browserFamily", null));
+    record.setOsFamily(getField(genericRecord, "osFamily", null));
+    record.setEnrichedOsVersion(getField(genericRecord, "enrichedOsVersion", null));
+    record.setApplicationPayload(convertMap(((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD))));
+    record.setRlogid(getField(genericRecord, "rlogid", null));
+    record.setClientData(convertMap((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA)));
+    record.setChannelAction(channelAction);
+    record.setChannelType(channelType);
+    return record;
+  }
+
+  @SuppressWarnings("unchecked")
+  protected String parseChannelType(GenericRecord genericRecord) {
+    HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
+    if (applicationPayload.containsKey(new Utf8("chnl"))) {
+      switch (String.valueOf(applicationPayload.get(new Utf8("chnl")))) {
+        case "7":
+          return ChannelIdEnum.SITE_EMAIL.name();
+        case "8":
+          return ChannelIdEnum.MRKT_EMAIL.name();
+        default:
+          return null;
+      }
+    }
+
+    Utf8 urlQueryString = (Utf8) genericRecord.get("urlQueryString");
+    if (urlQueryString == null) {
+      return null;
+    }
+
+    return parseChannelType(urlQueryString);
+  }
+
+  @Nullable
+  protected String parseChannelType(Utf8 urlQueryString) {
+    List<String> strings = URLEncodedUtils.parsePathSegments(String.valueOf(urlQueryString), StandardCharsets.UTF_8);
+    if (CollectionUtils.isEmpty(strings)) {
+      return null;
+    }
+    String s = strings.get(strings.size() - 1);
+    switch (s.substring(0, s.indexOf("?"))) {
+      case "7":
+        return ChannelIdEnum.SITE_EMAIL.name();
+      case "8":
+        return ChannelIdEnum.MRKT_EMAIL.name();
+      default:
+        return null;
     }
   }
 

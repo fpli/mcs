@@ -41,7 +41,7 @@ public class RheosConsumerWrapper {
   synchronized public static void init(Properties rheosProperties) {
     rheosConsumer = new RheosConsumerWrapper();
     rheosConsumer.consumer = new KafkaConsumer<>(rheosProperties);
-    rheosConsumer.consumer.subscribe(Arrays.asList(ApplicationOptions.getInstance().getConsumeRheosTopic()));
+    rheosConsumer.consumer.subscribe(Arrays.asList(ApplicationOptions.getInstance().getConsumeRheosTopic().split(",")));
     logger.info("Rheos Topic: " + ApplicationOptions.getInstance().getConsumeRheosTopic());
     Map<String, Object> config = new HashMap<>();
     config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, ApplicationOptions.getInstance().getConsumeRheosKafkaServiceUrl());
