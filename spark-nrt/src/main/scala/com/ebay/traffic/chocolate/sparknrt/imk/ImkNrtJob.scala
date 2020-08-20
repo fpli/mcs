@@ -37,7 +37,7 @@ object ImkNrtJob extends App {
 class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mode) {
 
   lazy val inputSource: String = params.inputSource
-  lazy val imkDeltaDir: String = params.deltaDir + "imk"
+  lazy val imkDeltaDir: String = params.deltaDir
   lazy val imkOutputDir: String = params.outPutDir
   lazy val doneFileDir: String = params.doneFileDir
   lazy val doneFilePrefix: String = params.doneFilePrefix
@@ -154,6 +154,7 @@ class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mod
 
   /**
     * Update the delta lake table
+    * @param inputDateTime input date time. It should be now.
     */
   def updateDelta(inputDateTime: ZonedDateTime): Unit = {
 

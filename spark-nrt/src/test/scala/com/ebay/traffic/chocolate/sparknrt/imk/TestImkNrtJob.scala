@@ -19,8 +19,8 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 class TestImkNrtJob extends BaseFunSuite{
 
   private val tmpPath = createTempDir()
-  private val deltaDir = tmpPath + "/apps/delta/tracking-events"
-  private val outPutDir = tmpPath + "/apps/tracking-events"
+  private val deltaDir = tmpPath + "/delta/tracking-events"
+  private val outPutDir = tmpPath + "/tracking-events"
   private val doneDir = tmpPath + "/doneDir"
 
   var job: ImkNrtJob = _
@@ -48,6 +48,13 @@ class TestImkNrtJob extends BaseFunSuite{
       "--doneFilePrefix", "imk_rvr_trckng_event_hourly.done.",
       "--partitions", "1"
     )))
+
+    // prepare master table
+    val sourceFile = new File("src/test/resources/masterTable/master_table.csv")
+
+    val trackingEventTable = TableSchema("df_tracking_event.json")
+    val inputDf = job.readFilesAsDF(sourceFile.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
+    inputDf.createTempView("tracking_event_test")
   }
 
   test("testGetLastDoneFileDatetimeFromFileList") {
@@ -107,15 +114,6 @@ class TestImkNrtJob extends BaseFunSuite{
     fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(doneDir + "/20200817/imk_rvr_trckng_event_hourly.done.202008170500000000"))
     val now = ZonedDateTime.of(2020, 8, 17, 22, 0, 0, 0, ZoneId.systemDefault())
 
-    // prepare master table
-    val sourceFile = new File("src/test/resources/masterTable/master_table.csv")
-
-    val trackingEventTable = TableSchema("df_tracking_event.json")
-
-    val inputDf = job.readFilesAsDF(sourceFile.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
-    inputDf.createTempView("tracking_event_test")
-    inputDf.show
-
     val df = job.readSource(now)
     df.show()
     fs.delete(new Path(doneDir), true)
@@ -130,13 +128,6 @@ class TestImkNrtJob extends BaseFunSuite{
     fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(doneDir + "/20200816/imk_rvr_trckng_event_hourly.done.202008160500000000"))
 
     val now = ZonedDateTime.of(2020, 8, 17, 22, 0, 0, 0, ZoneId.systemDefault())
-
-    // prepare master table
-    val sourceFile = new File("src/test/resources/masterTable/master_table.csv")
-
-    val trackingEventTable = TableSchema("df_tracking_event.json")
-    val inputDf = job.readFilesAsDF(sourceFile.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
-    inputDf.createTempView("tracking_event_test")
 
     // read source df
     val sourceDf = job.readSource(now)
@@ -163,6 +154,31 @@ class TestImkNrtJob extends BaseFunSuite{
 
 
     fs.delete(new Path(doneDir), true)
+  }
+
+  test("test update delta table") {
+
+    // prepare delta table
+    val deltaFileSource = new File("src/test/resources/masterTable/delta_table.csv")
+
+    val trackingEventTable = TableSchema("df_delta_event.json")
+    val inputDf = job.readFilesAsDF(deltaFileSource.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
+
+    inputDf.write.format("delta").mode("overwrite").partitionBy("dt").save(deltaDir)
+
+    // prepare current date and last done file
+    // the last done is 2020-08-17 05
+    fs.mkdirs(new Path(doneDir+"/20200817"))
+    val file1 = new File("src/test/resources/touchImkHourlyDone.data/done/imk_rvr_trckng_event_hourly.done.202008170500000000")
+    fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(doneDir + "/20200817/imk_rvr_trckng_event_hourly.done.202008170500000000"))
+
+    // set current time
+    val now = ZonedDateTime.of(2020, 8, 17, 22, 0, 0, 0, ZoneId.systemDefault())
+
+    // update delta table
+    job.updateDelta(now)
+
+    fs.delete(new Path(deltaDir), true)
   }
 
   test("test imk etl job for parquet output") {
