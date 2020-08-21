@@ -22,6 +22,7 @@ class TestImkNrtJob extends BaseFunSuite{
   private val deltaDir = tmpPath + "/delta/tracking-events"
   private val outPutDir = tmpPath + "/tracking-events"
   private val doneDir = tmpPath + "/doneDir"
+  private val jobDir = tmpPath + "/jobDir"
 
   var job: ImkNrtJob = _
 
@@ -45,6 +46,7 @@ class TestImkNrtJob extends BaseFunSuite{
       "--deltaDir", deltaDir,
       "--outPutDir", outPutDir,
       "--doneFileDir", doneDir,
+      "--jobDir", jobDir,
       "--doneFilePrefix", "imk_rvr_trckng_event_hourly.done.",
       "--partitions", "1"
     )))

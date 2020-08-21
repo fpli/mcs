@@ -25,6 +25,7 @@ case class Parameter(appName: String = "ImkNrtJob",
                      deltaDir: String = "",
                      outPutDir: String = "",
                      doneFileDir: String = "",
+                     jobDir: String = "",
                      doneFilePrefix: String = "",
                      partitions: Int = 3)
 
@@ -62,6 +63,11 @@ object Parameter {
       .required
       .valueName("doneFileDir")
       .action((cont, param) => param.copy(doneFileDir = cont))
+
+    opt[String]("jobDir")
+      .required
+      .valueName("jobDir")
+      .action((cont, param) => param.copy(jobDir = cont))
 
     opt[String]("doneFilePrefix")
       .required

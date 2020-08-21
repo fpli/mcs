@@ -14,6 +14,7 @@ import io.delta.tables.DeltaTable
 import org.apache.hadoop.fs.{FileStatus, Path}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
+import com.ebay.traffic.chocolate.spark.DataFrameFunctions._
 
 import scala.collection.immutable
 
@@ -52,6 +53,8 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
   lazy val dtFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
   implicit def dateTimeOrdering: Ordering[ZonedDateTime] = Ordering.fromLessThan(_ isBefore  _)
+
+  import spark.implicits._
 
   /**
     * Get done file by date
@@ -113,7 +116,7 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
     val fromDateTime = getLastDoneFileDateTimeAndDelay(inputDateTime)._1
     val fromDateString = fromDateTime.format(dtFormatter)
     val startTimestamp = fromDateTime.toEpochSecond * 1000
-    val sql = "select snapshotid, channeltype, channelaction, eventtimestamp, dt from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
+    val sql = "select snapshotid, eventtimestamp, channeltype, channelaction, dt from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
     val sourceDf = sqlsc.sql(sql)
     sourceDf
   }
@@ -129,13 +132,14 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
 
   /**
     * Generate done files of delta table
-    * @param sourceDf the input source from master table
+    * @param diffDf the input source from master table
     * @param lastDoneAndDelay last done datetime and the delayed hours
     * @param inputDateTime input datetime, it should be now
     */
-  def generateDoneFile(sourceDf: DataFrame, lastDoneAndDelay: (ZonedDateTime, Long), inputDateTime: ZonedDateTime): Unit = {
+  def generateDoneFile(diffDf: DataFrame, lastDoneAndDelay: (ZonedDateTime, Long), inputDateTime: ZonedDateTime): Unit = {
     // generate done file
-    val minTs = sourceDf.agg(min("eventtimestamp")).head().getLong(0)
+    diffDf.show()
+    val minTs = diffDf.agg(min("eventtimestamp")).head().getLong(0)
     val instant = Instant.ofEpochMilli(minTs)
     val minDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
 
@@ -162,7 +166,30 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
     val lastDoneAndDelay = getLastDoneFileDateTimeAndDelay(inputDateTime)
 
     val imkDelta = DeltaTable.forPath(spark, imkDeltaDir)
-    val sourceDf = readSource(lastDoneAndDelay._1)
+    imkDelta.toDF.show()
+
+    // get new upserted records dataframe
+    // get last done timestamp
+    val lastDoneTimestamp = lastDoneAndDelay._1.toEpochSecond * 1000L
+    // delta table after last done timestamp, must cache!!
+    val imkDeltaAfterLastDone = imkDelta.toDF
+      .filter($"eventtimestamp" >= lastDoneTimestamp)
+      .withColumnRenamed("snapshotid", "delta_snapshotid")
+      .cache()
+    println("imkDeltaAfterLastDone")
+    imkDeltaAfterLastDone.show()
+
+    // source df after last done timestamp, don't need cache, since it won't change
+    val sourceDf = readSource(lastDoneAndDelay._1).cache()
+    println("sourceDf")
+    sourceDf.show()
+
+    // diff diff, must cache!!
+    val diffDf = sourceDf
+      .join(imkDeltaAfterLastDone, $"snapshotid" === $"delta_snapshotid", "left_anti")
+      .cache(this, params.jobDir + "/diffDf")
+    println("diffDf")
+    diffDf.show()
 
     // when there are new records, upsert the records
     imkDelta.as("delta")
@@ -172,7 +199,8 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
       .insertAll()
       .execute()
 
-    generateDoneFile(sourceDf, lastDoneAndDelay, inputDateTime)
+
+    generateDoneFile(diffDf, lastDoneAndDelay, inputDateTime)
   }
 
   /**

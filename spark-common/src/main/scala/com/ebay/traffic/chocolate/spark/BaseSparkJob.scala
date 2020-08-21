@@ -2,6 +2,8 @@ package com.ebay.traffic.chocolate.spark
 
 import java.sql.{Date, Timestamp}
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
@@ -71,6 +73,22 @@ abstract class BaseSparkJob(val jobName: String,
     */
   @transient lazy val sqlsc = {
     spark.sqlContext;
+  }
+
+  /**
+    * The hadoop conf
+    */
+  @transient lazy val hadoopConf = {
+    new Configuration()
+  }
+
+  /**
+    * The file system
+    */
+  @transient lazy val fs = {
+    val fs = FileSystem.get(hadoopConf)
+    sys.addShutdownHook(fs.close())
+    fs
   }
 
   /**
