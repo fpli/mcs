@@ -19,22 +19,6 @@ import org.apache.spark.sql.DataFrame
 abstract class BaseNrtJob(override val jobName: String,
                                override val mode: String = "yarn", override val enableHiveSupport: Boolean = false)
   extends BaseSparkJob(jobName, mode, enableHiveSupport) {
-
-  /**
-    * The hadoop conf
-    */
-  @transient lazy val hadoopConf: Configuration = {
-    new Configuration()
-  }
-
-  /**
-    * The file system
-    */
-  @transient lazy val fs = {
-    val fs = FileSystem.get(hadoopConf)
-    sys.addShutdownHook(fs.close())
-    fs
-  }
   
   lazy val DATE_COL = "date"
 
@@ -85,7 +69,4 @@ abstract class BaseNrtJob(override val jobName: String,
     val target = new Path(archiveDir, src.getName)
     fs.rename(src, target)
   }
-
-
-
 }

@@ -171,16 +171,15 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
     // get new upserted records dataframe
     // get last done timestamp
     val lastDoneTimestamp = lastDoneAndDelay._1.toEpochSecond * 1000L
-    // delta table after last done timestamp, must cache!!
+    // delta table after last done timestamp
     val imkDeltaAfterLastDone = imkDelta.toDF
       .filter($"eventtimestamp" >= lastDoneTimestamp)
       .withColumnRenamed("snapshotid", "delta_snapshotid")
-      .cache()
     println("imkDeltaAfterLastDone")
     imkDeltaAfterLastDone.show()
 
     // source df after last done timestamp, don't need cache, since it won't change
-    val sourceDf = readSource(lastDoneAndDelay._1).cache()
+    val sourceDf = readSource(lastDoneAndDelay._1)
     println("sourceDf")
     sourceDf.show()
 
