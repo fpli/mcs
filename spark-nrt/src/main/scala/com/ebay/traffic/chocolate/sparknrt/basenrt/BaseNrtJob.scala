@@ -17,7 +17,8 @@ import org.apache.spark.sql.DataFrame
   * Created by xiangli4 on 08/17/20.
   */
 abstract class BaseNrtJob(override val jobName: String,
-                               override val mode: String = "yarn") extends BaseSparkJob(jobName, mode) {
+                               override val mode: String = "yarn", override val enableHiveSupport: Boolean = false)
+  extends BaseSparkJob(jobName, mode, enableHiveSupport) {
 
   /**
     * The hadoop conf

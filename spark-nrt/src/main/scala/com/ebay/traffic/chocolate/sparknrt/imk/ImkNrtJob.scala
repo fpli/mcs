@@ -34,7 +34,8 @@ object ImkNrtJob extends App {
   }
 }
 
-class ImkNrtJob(params: Parameter) extends BaseNrtJob(params.appName, params.mode) {
+class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = true)
+  extends BaseNrtJob(params.appName, params.mode, true) {
 
   lazy val inputSource: String = params.inputSource
   lazy val imkDeltaDir: String = params.deltaDir
