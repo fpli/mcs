@@ -13,6 +13,7 @@ import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.imk.ImkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.imk.Parameter
 import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
+import io.delta.tables.DeltaTable
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
@@ -169,19 +170,24 @@ class TestImkNrtJob extends BaseFunSuite{
 
     inputDf.write.format("delta").mode("overwrite").partitionBy("dt").save(deltaDir)
 
+    val imkDeltaBeforeUpdate = DeltaTable.forPath(job.spark, deltaDir)
+    assert(imkDeltaBeforeUpdate.toDF.count() == 4 )
+
     // prepare current date and last delta done file
     // the last done is 2020-08-17 05
     fs.mkdirs(new Path(deltaDoneDir+"/20200817"))
     val file1 = new File("src/test/resources/touchImkHourlyDone.data/done/imk_rvr_trckng_event_hourly.done.202008170500000000")
     fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(deltaDoneDir + "/20200817/imk_rvr_trckng_event_hourly.done.202008170500000000"))
 
-    // set current time
+    // set current time 2020-08-17 22
     val now = ZonedDateTime.of(2020, 8, 17, 22, 0, 0, 0, ZoneId.systemDefault())
 
     // update delta table
     job.updateDelta(now)
 
     // verification
+    val imkDeltaAfterUpdate = DeltaTable.forPath(job.spark, deltaDir)
+    assert(imkDeltaAfterUpdate.toDF.count() == 14)
 
     fs.delete(new Path(deltaDir), true)
   }
@@ -223,6 +229,38 @@ class TestImkNrtJob extends BaseFunSuite{
   }
 
   test("test update output")  {
+
+    // prepare current date and last done file
+    // the last done of delta is 2020-08-17 05
+    fs.mkdirs(new Path(deltaDoneDir+"/20200817"))
+    val file1 = new File("src/test/resources/touchImkHourlyDone.data/done/imk_rvr_trckng_event_hourly.done.202008170500000000")
+    fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(deltaDoneDir + "/20200817/imk_rvr_trckng_event_hourly.done.202008170500000000"))
+
+    // the last done of output is 2020-08-16 05
+    fs.mkdirs(new Path(outputDoneDir+"/20200816"))
+    val file2 = new File("src/test/resources/touchImkHourlyDone.data/done/imk_rvr_trckng_event_hourly.done.202008160500000000")
+    fs.copyFromLocalFile(new Path(file2.getAbsolutePath), new Path(outputDoneDir + "/20200816/imk_rvr_trckng_event_hourly.done.202008160500000000"))
+
+    // prepare delta table
+    val deltaFileSource = new File("src/test/resources/masterTable/delta_table.csv")
+
+    val trackingEventTable = TableSchema("df_delta_event.json")
+    val inputDf = job.readFilesAsDF(deltaFileSource.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
+
+    inputDf.write.format("delta").mode("overwrite").partitionBy("dt").save(deltaDir)
+
+    val imkDeltaBeforeUpdate = DeltaTable.forPath(job.spark, deltaDir)
+    assert(imkDeltaBeforeUpdate.toDF.count() == 4 )
+
+    // will update data between 2 done file hours
+    // set current time 2020-08-17 22
+    val now = ZonedDateTime.of(2020, 8, 17, 22, 0, 0, 0, ZoneId.systemDefault())
+    job.updateOutput(now)
+
+    // verification
+    val df = job.readFilesAsDF(outPutDir)
+    df.show()
+    assert(df.count() == 1)
 
   }
 
