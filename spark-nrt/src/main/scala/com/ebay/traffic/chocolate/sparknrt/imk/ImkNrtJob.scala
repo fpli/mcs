@@ -52,6 +52,7 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
   lazy val deltaSnapshotid = "delta_snapshotid"
   lazy val eventTimestamp = "eventtimestamp"
   lazy val dt = "dt"
+  lazy val multiplierForMs = 1000L
 
   lazy val defaultZoneId: ZoneId = ZoneId.systemDefault()
   lazy val dayFormatterInDoneFileName: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd").withZone(defaultZoneId)
@@ -65,10 +66,11 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
   /**
     * Get done file by date
     * @param dateTime input date time
+    * @param doneDir the done file dir
     * @return done file dir by date
     */
-  def getDoneDir(dateTime: ZonedDateTime): String = {
-    deltaDoneFileDir + "/" + dateTime.format(dayFormatterInDoneFileName)
+  def getDoneDir(dateTime: ZonedDateTime, doneDir: String): String = {
+    doneDir + "/" + dateTime.format(dayFormatterInDoneFileName)
   }
 
   /**
@@ -88,14 +90,15 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
 
   /**
     * Get last done file date time. Limitation: when there is delay cross 2 days, this will fail.
+    * @param dateTime input date time
     * @return last date time the delta table ever touched done file and the delay hours
     */
-  def getLastDoneFileDateTimeAndDelay(dateTime: ZonedDateTime): (ZonedDateTime, Long) = {
+  def getLastDoneFileDateTimeAndDelay(dateTime: ZonedDateTime, doneDir: String): (ZonedDateTime, Long) = {
 
     val doneDateHour = dateTime.truncatedTo(ChronoUnit.HOURS)
 
-    val todayDoneDir = new Path(getDoneDir(doneDateHour))
-    val yesterdayDoneDir = new Path(getDoneDir(doneDateHour.minusDays(1)))
+    val todayDoneDir = new Path(getDoneDir(doneDateHour, doneDir))
+    val yesterdayDoneDir = new Path(getDoneDir(doneDateHour.minusDays(1),doneDir))
 
     logger.info("doneDateHour {}, todayDoneDir {}, yesterdayDoneDir {}", doneDateHour, todayDoneDir, yesterdayDoneDir)
 
@@ -119,7 +122,7 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
     * @param inputDateTime input date time
     */
   def readSource(inputDateTime: ZonedDateTime): DataFrame = {
-    val fromDateTime = getLastDoneFileDateTimeAndDelay(inputDateTime)._1
+    val fromDateTime = getLastDoneFileDateTimeAndDelay(inputDateTime, deltaDoneFileDir)._1
     val fromDateString = fromDateTime.format(dtFormatter)
     val startTimestamp = fromDateTime.toEpochSecond * 1000
     val sql = "select snapshotid, eventtimestamp, channeltype, channelaction, dt from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
@@ -132,8 +135,8 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
     * @param doneFileDatetime done file datetime
     * @return done file name eg. imk_rvr_trckng_event_hourly.done.201904251100000000
     */
-  def getDoneFileName(doneFileDatetime: ZonedDateTime): String = {
-    getDoneDir(doneFileDatetime) + "/" + doneFilePrefix + doneFileDatetime.format(doneFileDatetimeFormatter) + doneFilePostfix
+  def getDoneFileName(doneFileDatetime: ZonedDateTime, doneFileDir: String): String = {
+    getDoneDir(doneFileDatetime, doneFileDir) + "/" + doneFilePrefix + doneFileDatetime.format(doneFileDatetimeFormatter) + doneFilePostfix
   }
 
   /**
@@ -155,8 +158,27 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
       .filter(dateTime => dateTime.plusHours(1).isBefore(minDateTime))
 
     times.foreach(dateTime => {
-      val file = getDoneFileName(dateTime)
-      logger.info("touch done file {}", file)
+      val file = getDoneFileName(dateTime, deltaDoneFileDir)
+      logger.info("touch delta done file {}", file)
+      val out = fs.create(new Path(file), true)
+      out.close()
+    })
+  }
+
+  /**
+    * Generate done files of output table
+    * @param lastDeltaDoneAndDelay last delta done datetime and the delayed hours
+    * @param lastOutputDoneAndDelay last output done datetime and the delayed hours
+    */
+  def generateOutputDoneFile(lastDeltaDoneAndDelay: (ZonedDateTime, Long), lastOutputDoneAndDelay: (ZonedDateTime, Long)): Unit = {
+    val delays = lastOutputDoneAndDelay._2 - lastDeltaDoneAndDelay._2
+    val times: immutable.Seq[ZonedDateTime] = (0L until delays)
+      .map(delay => lastDeltaDoneAndDelay._1.minusHours(delay))
+      .reverse
+
+    times.foreach(dateTime => {
+      val file = getDoneFileName(dateTime, outputDoneFileDir)
+      logger.info("touch output done file {}", file)
       val out = fs.create(new Path(file), true)
       out.close()
     })
@@ -168,13 +190,13 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
     */
   def updateDelta(inputDateTime: ZonedDateTime): Unit = {
 
-    val lastDoneAndDelay = getLastDoneFileDateTimeAndDelay(inputDateTime)
+    val lastDoneAndDelay = getLastDoneFileDateTimeAndDelay(inputDateTime, deltaDoneFileDir)
 
     val imkDelta = DeltaTable.forPath(spark, imkDeltaDir)
 
     // get new upserted records dataframe
     // get last done timestamp
-    val lastDoneTimestamp = lastDoneAndDelay._1.toEpochSecond * 1000L
+    val lastDoneTimestamp = lastDoneAndDelay._1.toEpochSecond * multiplierForMs
     // delta table after last done timestamp
     val imkDeltaAfterLastDone = imkDelta.toDF
       .filter(col(eventTimestamp).>=(lastDoneTimestamp))
@@ -202,8 +224,56 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
   /**
     * Update final target table. Only when target output done file and delta table done file has diff. Doing this
     * to provide pure insert for output table.
+    * @param inputDateTime input date time. It should be now.
     */
-  def updateOutput(): Unit = {
+  def updateOutput(inputDateTime: ZonedDateTime): Unit = {
+    val lastOutputDoneAndDelay = getLastDoneFileDateTimeAndDelay(inputDateTime, outputDoneFileDir)
+    val lastDeltaDoneAndDelay = getLastDoneFileDateTimeAndDelay(inputDateTime, deltaDoneFileDir)
+
+    // if delta has less delay than output. Which means there is at least one hour complete data in delta can be merged
+    // into out put table
+    if (lastDeltaDoneAndDelay._2 < lastOutputDoneAndDelay._2) {
+      // update output
+      val imkDelta = DeltaTable.forPath(spark, imkDeltaDir)
+
+      val lastOutputDoneTimestamp = lastOutputDoneAndDelay._1.toEpochSecond * multiplierForMs
+      val lastDeltaDoneTimestamp = lastDeltaDoneAndDelay._1.toEpochSecond * multiplierForMs
+
+      // same day
+      if (lastOutputDoneAndDelay._1.getDayOfYear.equals(lastDeltaDoneAndDelay._1.getDayOfYear)) {
+        // delta df between 2 done file
+        val imkDeltaAfterLastOuputDone = imkDelta.toDF
+          .filter(col(eventTimestamp).>=(lastOutputDoneTimestamp))
+          .filter(col(eventTimestamp).<(lastDeltaDoneTimestamp))
+
+        // save to final output
+        this.saveDFToFiles(imkDeltaAfterLastOuputDone, imkOutputDir + "/"
+          + dt + "=" + lastOutputDoneAndDelay._1.format(dtFormatter))
+      }
+      // cross day
+      else {
+        val startTimestampOfTomorrow = lastOutputDoneAndDelay._1.plusDays(1)
+          .toLocalDate.atStartOfDay(defaultZoneId)
+          .toEpochSecond * multiplierForMs
+
+        val imkDeltaAfterLastOuputDoneSameDay = imkDelta.toDF
+          .filter(col(eventTimestamp).>=(lastOutputDoneTimestamp))
+          .filter(col(eventTimestamp).<(startTimestampOfTomorrow))
+        // save to final output, same day
+        this.saveDFToFiles(imkDeltaAfterLastOuputDoneSameDay, imkOutputDir + "/"
+          + dt + "=" + lastOutputDoneAndDelay._1.format(dtFormatter))
+
+        val imkDeltaAfterLastOuputDoneCrossDay = imkDelta.toDF
+          .filter(col(eventTimestamp)>=startTimestampOfTomorrow)
+          .filter(col(eventTimestamp).<(lastDeltaDoneTimestamp))
+        // save to final output, cross day
+        this.saveDFToFiles(imkDeltaAfterLastOuputDoneCrossDay, imkOutputDir + "/"
+          + dt + "=" + lastDeltaDoneAndDelay._1.format(dtFormatter))
+      }
+
+      // generate done file for output table
+      generateOutputDoneFile(lastDeltaDoneAndDelay, lastOutputDoneAndDelay)
+    }
 
   }
 
