@@ -7,13 +7,15 @@ package com.ebay.traffic.chocolate.sparknrt.imk
 import java.time.format.DateTimeFormatter
 import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.time.temporal.ChronoUnit
+
 import com.ebay.traffic.chocolate.sparknrt.basenrt.BaseNrtJob
 import io.delta.tables.DeltaTable
 import org.apache.hadoop.fs.{FileStatus, Path}
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, SaveMode}
 import org.apache.spark.sql.functions._
 import com.ebay.traffic.chocolate.spark.DataFrameFunctions._
 import com.ebay.traffic.chocolate.sparknrt.utils.Utils.simpleUid
+
 import scala.collection.immutable
 
 /**
@@ -248,7 +250,7 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
 
         // save to final output
         this.saveDFToFiles(imkDeltaAfterLastOuputDone, imkOutputDir + "/"
-          + dt + "=" + lastOutputDoneAndDelay._1.format(dtFormatter))
+          + dt + "=" + lastOutputDoneAndDelay._1.format(dtFormatter), writeMode = SaveMode.Append)
       }
       // cross day
       else {
@@ -261,14 +263,14 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
           .filter(col(eventTimestamp).<(startTimestampOfTomorrow))
         // save to final output, same day
         this.saveDFToFiles(imkDeltaAfterLastOuputDoneSameDay, imkOutputDir + "/"
-          + dt + "=" + lastOutputDoneAndDelay._1.format(dtFormatter))
+          + dt + "=" + lastOutputDoneAndDelay._1.format(dtFormatter), writeMode = SaveMode.Append)
 
         val imkDeltaAfterLastOuputDoneCrossDay = imkDelta.toDF
           .filter(col(eventTimestamp)>=startTimestampOfTomorrow)
           .filter(col(eventTimestamp).<(lastDeltaDoneTimestamp))
         // save to final output, cross day
         this.saveDFToFiles(imkDeltaAfterLastOuputDoneCrossDay, imkOutputDir + "/"
-          + dt + "=" + lastDeltaDoneAndDelay._1.format(dtFormatter))
+          + dt + "=" + lastDeltaDoneAndDelay._1.format(dtFormatter), writeMode = SaveMode.Append)
       }
 
       // generate done file for output table
