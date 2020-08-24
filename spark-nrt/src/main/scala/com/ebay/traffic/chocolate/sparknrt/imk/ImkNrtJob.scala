@@ -15,6 +15,7 @@ import org.apache.hadoop.fs.{FileStatus, Path}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import com.ebay.traffic.chocolate.spark.DataFrameFunctions._
+import com.ebay.traffic.chocolate.sparknrt.utils.Utils.simpleUid
 
 import scala.collection.immutable
 
@@ -43,6 +44,7 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
   lazy val imkOutputDir: String = params.outPutDir
   lazy val doneFileDir: String = params.doneFileDir
   lazy val doneFilePrefix: String = params.doneFilePrefix
+  lazy val jobDir: String = params.jobDir + simpleUid() + "/"
   lazy val doneFilePostfix = "00000000"
   lazy val snapshotid = "snapshotid"
   lazy val dt = "dt"
@@ -166,7 +168,6 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
     val lastDoneAndDelay = getLastDoneFileDateTimeAndDelay(inputDateTime)
 
     val imkDelta = DeltaTable.forPath(spark, imkDeltaDir)
-    imkDelta.toDF.show()
 
     // get new upserted records dataframe
     // get last done timestamp
@@ -175,20 +176,14 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
     val imkDeltaAfterLastDone = imkDelta.toDF
       .filter($"eventtimestamp" >= lastDoneTimestamp)
       .withColumnRenamed("snapshotid", "delta_snapshotid")
-    println("imkDeltaAfterLastDone")
-    imkDeltaAfterLastDone.show()
 
     // source df after last done timestamp, don't need cache, since it won't change
     val sourceDf = readSource(lastDoneAndDelay._1)
-    println("sourceDf")
-    sourceDf.show()
 
     // diff diff, must cache!!
     val diffDf = sourceDf
       .join(imkDeltaAfterLastDone, $"snapshotid" === $"delta_snapshotid", "left_anti")
       .cache(this, params.jobDir + "/diffDf")
-    println("diffDf")
-    diffDf.show()
 
     // when there are new records, upsert the records
     imkDelta.as("delta")
@@ -197,7 +192,6 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
       .whenNotMatched()
       .insertAll()
       .execute()
-
 
     generateDoneFile(diffDf, lastDoneAndDelay, inputDateTime)
   }
