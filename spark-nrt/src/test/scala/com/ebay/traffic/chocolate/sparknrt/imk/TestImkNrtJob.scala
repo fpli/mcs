@@ -137,7 +137,7 @@ class TestImkNrtJob extends BaseFunSuite{
 
     // generate new done files
     val lastDoneAndDelay = job.getLastDoneFileDateTimeAndDelay(now)
-    job.generateDoneFile(sourceDf, lastDoneAndDelay, now)
+    job.generateDeltaDoneFile(sourceDf, lastDoneAndDelay, now)
 
     // verify done files
     for( i <- 6 to 9 ) {

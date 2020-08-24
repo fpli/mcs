@@ -15,8 +15,9 @@ import scopt.OptionParser
   * @param inputSource input source table name
   * @param deltaDir delta lake table dir
   * @param outPutDir output table dir
-  * @param doneFileDir done file dir of output table
-  * @param doneFilePrefix done file prefix
+  * @param deltaDoneFileDir done file dir of delta table
+  * @param outputDoneFileDir done file dir of output table
+  * @param doneFilePrefix done file prefix. The prefix must be the same in delta and output
   * @param partitions partitions of the output
   */
 case class Parameter(appName: String = "ImkNrtJob",
@@ -24,7 +25,8 @@ case class Parameter(appName: String = "ImkNrtJob",
                      inputSource: String = "",
                      deltaDir: String = "",
                      outPutDir: String = "",
-                     doneFileDir: String = "",
+                     deltaDoneFileDir: String = "",
+                     outputDoneFileDir: String = "",
                      jobDir: String = "",
                      doneFilePrefix: String = "",
                      partitions: Int = 3)
@@ -59,10 +61,15 @@ object Parameter {
       .valueName("outPutDir")
       .action((cont, param) => param.copy(outPutDir = cont))
 
-    opt[String]("doneFileDir")
+    opt[String]("deltaDoneFileDir")
       .required
-      .valueName("doneFileDir")
-      .action((cont, param) => param.copy(doneFileDir = cont))
+      .valueName("deltaDoneFileDir")
+      .action((cont, param) => param.copy(deltaDoneFileDir = cont))
+
+    opt[String]("outputDoneFileDir")
+      .required
+      .valueName("outputDoneFileDir")
+      .action((cont, param) => param.copy(outputDoneFileDir = cont))
 
     opt[String]("jobDir")
       .required

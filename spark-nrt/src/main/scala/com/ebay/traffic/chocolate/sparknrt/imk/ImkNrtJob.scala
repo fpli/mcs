@@ -4,11 +4,9 @@
 
 package com.ebay.traffic.chocolate.sparknrt.imk
 
-import java.io.File
 import java.time.format.DateTimeFormatter
 import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.time.temporal.ChronoUnit
-
 import com.ebay.traffic.chocolate.sparknrt.basenrt.BaseNrtJob
 import io.delta.tables.DeltaTable
 import org.apache.hadoop.fs.{FileStatus, Path}
@@ -16,9 +14,7 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import com.ebay.traffic.chocolate.spark.DataFrameFunctions._
 import com.ebay.traffic.chocolate.sparknrt.utils.Utils.simpleUid
-
 import scala.collection.immutable
-
 
 /**
   * @author Xiang Li
@@ -36,17 +32,25 @@ object ImkNrtJob extends App {
   }
 }
 
+/**
+  * IMK NRT job
+  * @param params input parameters
+  * @param enableHiveSupport enable hive support for spark sql table query
+  */
 class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = true)
   extends BaseNrtJob(params.appName, params.mode, true) {
 
   lazy val inputSource: String = params.inputSource
   lazy val imkDeltaDir: String = params.deltaDir
   lazy val imkOutputDir: String = params.outPutDir
-  lazy val doneFileDir: String = params.doneFileDir
+  lazy val deltaDoneFileDir: String = params.deltaDoneFileDir
+  lazy val outputDoneFileDir: String = params.outputDoneFileDir
   lazy val doneFilePrefix: String = params.doneFilePrefix
   lazy val jobDir: String = params.jobDir + simpleUid() + "/"
   lazy val doneFilePostfix = "00000000"
   lazy val snapshotid = "snapshotid"
+  lazy val deltaSnapshotid = "delta_snapshotid"
+  lazy val eventTimestamp = "eventtimestamp"
   lazy val dt = "dt"
 
   lazy val defaultZoneId: ZoneId = ZoneId.systemDefault()
@@ -64,7 +68,7 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
     * @return done file dir by date
     */
   def getDoneDir(dateTime: ZonedDateTime): String = {
-    doneFileDir + "/" + dateTime.format(dayFormatterInDoneFileName)
+    deltaDoneFileDir + "/" + dateTime.format(dayFormatterInDoneFileName)
   }
 
   /**
@@ -138,10 +142,9 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
     * @param lastDoneAndDelay last done datetime and the delayed hours
     * @param inputDateTime input datetime, it should be now
     */
-  def generateDoneFile(diffDf: DataFrame, lastDoneAndDelay: (ZonedDateTime, Long), inputDateTime: ZonedDateTime): Unit = {
+  def generateDeltaDoneFile(diffDf: DataFrame, lastDoneAndDelay: (ZonedDateTime, Long), inputDateTime: ZonedDateTime): Unit = {
     // generate done file
-    diffDf.show()
-    val minTs = diffDf.agg(min("eventtimestamp")).head().getLong(0)
+    val minTs = diffDf.agg(min(eventTimestamp)).head().getLong(0)
     val instant = Instant.ofEpochMilli(minTs)
     val minDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
 
@@ -174,15 +177,15 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
     val lastDoneTimestamp = lastDoneAndDelay._1.toEpochSecond * 1000L
     // delta table after last done timestamp
     val imkDeltaAfterLastDone = imkDelta.toDF
-      .filter($"eventtimestamp" >= lastDoneTimestamp)
-      .withColumnRenamed("snapshotid", "delta_snapshotid")
+      .filter(col(eventTimestamp).>=(lastDoneTimestamp))
+      .withColumnRenamed(snapshotid, deltaSnapshotid)
 
     // source df after last done timestamp, don't need cache, since it won't change
     val sourceDf = readSource(lastDoneAndDelay._1)
 
     // diff diff, must cache!!
     val diffDf = sourceDf
-      .join(imkDeltaAfterLastDone, $"snapshotid" === $"delta_snapshotid", "left_anti")
+      .join(imkDeltaAfterLastDone, col(snapshotid).===(col(deltaSnapshotid)), "left_anti")
       .cache(this, params.jobDir + "/diffDf")
 
     // when there are new records, upsert the records
@@ -193,11 +196,12 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
       .insertAll()
       .execute()
 
-    generateDoneFile(diffDf, lastDoneAndDelay, inputDateTime)
+    generateDeltaDoneFile(diffDf, lastDoneAndDelay, inputDateTime)
   }
 
   /**
-    * Update final target table
+    * Update final target table. Only when target output done file and delta table done file has diff. Doing this
+    * to provide pure insert for output table.
     */
   def updateOutput(): Unit = {
 
