@@ -35,5 +35,5 @@ mv /datashare/mkttracking/tools/AlertingAggrate-tool/temp/daily_domain_trend/par
 echo "Finish getting epn report data."
 
 echo "Start AAMain application."
-java -cp /datashare/mkttracking/tools/AlertingAggrate-tool/lib/AlertingAggrate-tool-3.4.2-RELEASE-fat.jar com.ebay.traffic.chocolate.AAMain $DATE 10.89.168.20 lli5@ebay.com,lxiong1@ebay.com,huiclu@ebay.com,zhofan@ebay.com,yliu29@ebay.com,shuangxu@ebay.com,jialili1@ebay.com,xiangli4@ebay.com,fechen@ebay.com,zhiyuawang@ebay.com,zjian@ebay.com daily
+java -cp /datashare/mkttracking/tools/AlertingAggrate-tool/lib/AlertingAggrate-tool-*.jar com.ebay.traffic.chocolate.AAMain $DATE 10.89.168.20 lli5@ebay.com,lxiong1@ebay.com,huiclu@ebay.com,zhofan@ebay.com,yliu29@ebay.com,shuangxu@ebay.com,jialili1@ebay.com,xiangli4@ebay.com,fechen@ebay.com,zhiyuawang@ebay.com,zjian@ebay.com,yyang28@ebay.com,yli19@ebay.com daily
 echo "AAMain application end."
