@@ -24,33 +24,6 @@ function get_current_done(){
 }
 
 
-########################### Send EPN Click Data to Hercules and generate hourly done file ###########################
-
-echo "================ Send EPN click data to Hercules and touch hourly done file ================"
-
-./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${LOCAL_DONE_DATE_FILE_CLICK} ${MIN_TS_FILE_CLICK}
-rcode_check_click=$?
-
-hercules_click_dir=${HERCULES_DIR}'/ams_click/snapshot/click_dt='
-./sendDataToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${META_SUFFIX} ${hercules_click_dir} ${MID_DIR} hercules
-rcode_click=$?
-
-if [ ${rcode_click} -eq 0 ];
-then
-    echo "Successfully send AMS click data to Hercules"
-    if [ ${rcode_check_click} -eq 1 ];
-    then
-        current_done_click=$(get_current_done ${LOCAL_DONE_DATE_FILE_CLICK})
-
-        echo "=================== Start touching click hourly done file: ${done_file_click} ==================="
-        ./touchAmsHourlyDone.sh ${current_done_click} ${LOCAL_DONE_DATE_FILE_CLICK} click hercules
-    fi
-else
-    echo -e "Failed to send EPN NRT click data to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending click data to Hercules!!!" -v DL-eBay-Chocolate-GC@ebay.com
-    exit ${rcode_click}
-fi
-
-
 ######################################## Send EPN Impression Data to Hecules ########################################
 
 echo "============= Send EPN impression data to Hercules and touch hourly done file ============="

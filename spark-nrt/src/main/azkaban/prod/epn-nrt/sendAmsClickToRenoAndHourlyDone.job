@@ -1,0 +1,3 @@
+type=command
+command=bash ./sendAmsSubmitRno.sh "./sendAmsClickToRenoAndHourlyDone.sh"
+failure.emails=jialili1@ebay.com, fechen@ebay.com, xiangli4@ebay.com, yliu29@ebay.com, huiclu@ebay.com, shuangxu@ebay.com, lxiong1@ebay.com, zhofan@ebay.com, zjian@ebay.com, zhiyuawang@ebay.com
