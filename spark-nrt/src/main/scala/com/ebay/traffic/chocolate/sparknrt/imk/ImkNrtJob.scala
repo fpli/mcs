@@ -283,6 +283,8 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
     * Entry of this spark job
     */
   override def run(): Unit = {
-
+    val now = ZonedDateTime.now(defaultZoneId)
+    updateDelta(now)
+    updateOutput(now)
   }
 }
