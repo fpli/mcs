@@ -23,8 +23,10 @@
     <metric projectName="epnNRT" flowName="epnnrt_scheduler" total="10" threshold="1"/>
     <metric projectName="epnNRT" flowName="sendAmsToEtl" total="10" threshold="1"/>
     <metric projectName="epnNRT" flowName="epnnrt_done" total="10" threshold="1"/>
-    <metric projectName="epnNRT" flowName="sendAmsToHerculesAndHourlyDone" total="10" threshold="1"/>
-    <metric projectName="epnNRT" flowName="sendAmsToRenoAndHourlyDone" total="10" threshold="1"/>
+    <metric projectName="epnNRT" flowName="sendAmsClickToHerculesAndHourlyDone" total="10" threshold="1"/>
+    <metric projectName="epnNRT" flowName="sendAmsImpToHerculesAndHourlyDone" total="10" threshold="1"/>
+    <metric projectName="epnNRT" flowName="sendAmsClickToRenoAndHourlyDone" total="10" threshold="1"/>
+    <metric projectName="epnNRT" flowName="sendAmsImpToRenoAndHourlyDone" total="10" threshold="1"/>
   </project>
   <project name="imk-azkaban-monitor">
     <metric projectName="crabJob" flowName="rover_end" total="10" threshold="1"/>
