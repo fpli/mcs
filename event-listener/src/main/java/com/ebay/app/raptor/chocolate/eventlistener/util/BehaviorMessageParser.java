@@ -317,7 +317,7 @@ public class BehaviorMessageParser {
   }
 
   /**
-   * Get user id
+   * Get decrypted user id
    */
   private String getDecryptedUserId(MultiValueMap<String, String> parameters) {
     String bu = parseTagFromParams(parameters, Constants.BEST_GUESS_USER);
