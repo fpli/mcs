@@ -150,6 +150,7 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
   def generateDeltaDoneFile(diffDf: DataFrame, lastDoneAndDelay: (ZonedDateTime, Long), inputDateTime: ZonedDateTime): Unit = {
     // generate done file
     val minTs = diffDf.agg(min(eventTimestamp)).head().getLong(0)
+    println("min ts: " + minTs)
     val instant = Instant.ofEpochMilli(minTs)
     val minDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
 
