@@ -3,10 +3,9 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
-import com.ebay.app.raptor.chocolate.common.SnapshotId;
-import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
+import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.HeaderMultiValue;
 import com.ebay.platform.raptor.ddsmodels.DDSResponse;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
@@ -18,19 +17,16 @@ import com.ebay.tracking.common.util.UrlProcessHelper;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
-import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.*;
 
@@ -132,10 +128,6 @@ public class BehaviorMessageParser {
     // url query string
     record.setUrlQueryString(UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));
 
-    // applicationPayload
-    record.setApplicationPayload(getApplicationPayload(applicationPayload, parameters, agentInfo, requestContext, uri,
-        domainRequest, channelType, channelAction));
-
     // device info
     DDSResponse deviceInfo = agentInfo.getDeviceInfo();
     record.setDeviceFamily(getDeviceFamily(deviceInfo));
@@ -145,6 +137,10 @@ public class BehaviorMessageParser {
     record.setOsVersion(deviceInfo.getDeviceOSVersion());
     record.setOsFamily(deviceInfo.getDeviceOS());
     record.setEnrichedOsVersion(deviceInfo.getDeviceOSVersion());
+
+    // applicationPayload
+    record.setApplicationPayload(getApplicationPayload(applicationPayload, parameters, agentInfo, requestContext, uri,
+        domainRequest, deviceInfo, channelType, channelAction, guid, pageId));
 
     // cobrand
     record.setCobrand(String.valueOf(domainRequest.getCoBrandId()));
@@ -189,14 +185,16 @@ public class BehaviorMessageParser {
     clientData.put("Script", domainRequest.getServletPath());
     clientData.put("Server", domainRequest.getHost());
     InetAddress netAddress = getInetAddress();
-    clientData.put("TMachine", netAddress.getHostAddress());
+    if (netAddress != null) {
+      clientData.put("TMachine", netAddress.getHostAddress());
+    }
     clientData.put("TName", domainRequest.getCommandName());
     clientData.put("Agent", domainRequest.getUserAgent());
     clientData.put("RemoteIP", domainRequest.getClientIp());
     clientData.put("ContentLength", String.valueOf(domainRequest.getContentLength()));
     String referer = UrlProcessHelper.getMaskedUrl(domainRequest.getReferrerUrl(), false, true);
     clientData.put("Referer", referer);
-    clientData.put("AcceptEncoding", domainRequest.getAcceptEncoding());
+    clientData.put("Encoding", domainRequest.getAcceptEncoding());
 
     return deleteNullOrEmptyValue(clientData);
   }
@@ -228,8 +226,10 @@ public class BehaviorMessageParser {
   private Map<String, String> getApplicationPayload(Map<String, String> applicationPayload,
                                                     MultiValueMap<String, String> parameters, UserAgentInfo agentInfo,
                                                     ContainerRequestContext requestContext, String uri,
-                                                    DomainRequestData domainRequest, ChannelType channelType,
-                                                    ChannelAction channelAction) {
+                                                    DomainRequestData domainRequest, DDSResponse deviceInfo,
+                                                    ChannelType channelType, ChannelAction channelAction, String guid,
+                                                    int pageId) {
+    // add tags from parameters
     for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
         applicationPayload.put(entry.getKey(), parseTagFromParams(parameters, entry.getValue()));
@@ -240,22 +240,48 @@ public class BehaviorMessageParser {
     applicationPayload = addSojTags(applicationPayload, parameters, channelType, channelAction);
 
     // add other tags
-    if (ChannelAction.CLICK.equals(channelAction)) {
-      try {
-        applicationPayload.put("url_mpre", URLEncoder.encode(uri, "UTF-8"));
-      } catch (UnsupportedEncodingException e) {
-        logger.warn("Tag url_mpre encoding failed", e);
-        metrics.meter("UrlMpreEncodeError", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
-            Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
-      }
-    }
-    // buyer access site id
-    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-    applicationPayload.put("bs", String.valueOf(userPrefsCtx.getGeoContext().getSiteId()));
     applicationPayload.put("Agent", agentInfo.getUserAgentRawData());
     applicationPayload.put("Payload", UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));
 
-    return deleteNullOrEmptyValue(applicationPayload);
+    // app id
+    applicationPayload.put("app", CollectionServiceUtil.getAppIdFromUserAgent(agentInfo));
+
+    // buyer access site id
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+    applicationPayload.put("bs", String.valueOf(userPrefsCtx.getGeoContext().getSiteId()));
+
+    // facebook prefetch
+    if (isFacebookPrefetchEnabled(requestContext)) {
+      applicationPayload.put("fbprefetch", "true");
+    }
+
+    // guid
+    applicationPayload.put("g", guid);
+
+    // mobile operating system
+    applicationPayload.put("mos", deviceInfo.getDeviceOS());
+
+    // mobile operating system version
+    applicationPayload.put("osv", deviceInfo.getDeviceOSVersion());
+
+    // page id
+    applicationPayload.put("p", String.valueOf(pageId));
+
+    // referer
+    applicationPayload.put("ref", UrlProcessHelper.getMaskedUrl(domainRequest.getReferrerUrl(), false, true));
+
+    // site id
+    applicationPayload.put("t", String.valueOf(domainRequest.getSiteId()));
+
+    // decrypted user id
+    applicationPayload.put("u", getDecryptedUserId(parameters));
+
+    // landing page
+    if (ChannelAction.CLICK.equals(channelAction)) {
+      applicationPayload.put("url_mpre", uri);
+    }
+
+    return encodeTags(deleteNullOrEmptyValue(applicationPayload));
   }
 
   /**
@@ -288,6 +314,19 @@ public class BehaviorMessageParser {
     }
 
     return applicationPayload;
+  }
+
+  /**
+   * Get decrypted user id
+   */
+  private String getDecryptedUserId(MultiValueMap<String, String> parameters) {
+    String bu = parseTagFromParams(parameters, Constants.BEST_GUESS_USER);
+
+    if (!StringUtils.isEmpty(bu)) {
+      return String.valueOf(EncryptUtil.decryptUserId(Long.valueOf(bu)));
+    }
+
+    return null;
   }
 
   /**
@@ -330,6 +369,25 @@ public class BehaviorMessageParser {
     return map;
   }
 
+  /**
+   * Encode tags
+   */
+  private Map<String, String> encodeTags(Map<String, String> inputMap) {
+    Map<String, String> outputMap = new HashMap<>();
+    for (Map.Entry<String, String> entry : inputMap.entrySet()) {
+      if ("Agent".equals(entry.getKey()) || "Payload".equals(entry.getKey())) {
+        outputMap.put(entry.getKey(), entry.getValue());
+      } else {
+        outputMap.put(entry.getKey(), FastURLEncoder.encode(entry.getValue(), "UTF-8"));
+      }
+    }
+
+    return outputMap;
+  }
+
+  /**
+   * Get request header value
+   */
   private String getData(String key, String headerValue) {
     try {
       HeaderMultiValue headerMultiValue;
@@ -342,6 +400,17 @@ public class BehaviorMessageParser {
     }
 
     return null;
+  }
+
+  /**
+   * Soj tag fbprefetch
+   */
+  private static boolean isFacebookPrefetchEnabled(ContainerRequestContext requestContext) {
+    String facebookprefetch = requestContext.getHeaderString("X-Purpose");
+    if (facebookprefetch != null && facebookprefetch.trim().equals("preview")) {
+      return true;
+    }
+    return false;
   }
 
 }
