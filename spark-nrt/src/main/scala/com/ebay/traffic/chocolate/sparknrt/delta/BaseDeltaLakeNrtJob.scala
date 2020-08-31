@@ -209,14 +209,14 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
   }
 
   /**
-    * Function to write file to output dir
+    * Function to write file to output dir. Using partition column for writer to write to specific partition.
     * @param df dataframe to write
     * @param dtString date partition
     */
   def writeToOutput(df: DataFrame, dtString: String): Unit = {
     // save to final output
     this.saveDFToFiles(df, outputDir + "/"
-      + dt + "=" + dtString, writeMode = SaveMode.Append)
+      + dt + "=" + dtString, writeMode = SaveMode.Append, partitionColumn = dt)
   }
 
   /**
@@ -237,39 +237,14 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
       val lastOutputDoneTimestamp = lastOutputDoneAndDelay._1.toEpochSecond * multiplierForMs
       val lastDeltaDoneTimestamp = lastDeltaDoneAndDelay._1.toEpochSecond * multiplierForMs
 
-      // same day
-      if (lastOutputDoneAndDelay._1.getDayOfYear.equals(lastDeltaDoneAndDelay._1.getDayOfYear)) {
-        // delta df between 2 done file
-        val deltaDfAfterLastOuputDone = deltaTable.toDF
-          .filter(col(eventTimestamp).>=(lastOutputDoneTimestamp))
-          .filter(col(eventTimestamp).<(lastDeltaDoneTimestamp))
-
-        // save to final output
-        writeToOutput(deltaDfAfterLastOuputDone, lastOutputDoneAndDelay._1.format(dtFormatter))
-      }
-      // cross day
-      else {
-        val startTimestampOfTomorrow = lastOutputDoneAndDelay._1.plusDays(1)
-          .toLocalDate.atStartOfDay(defaultZoneId)
-          .toEpochSecond * multiplierForMs
-
-        val deltaDfAfterLastOuputDoneSameDay = deltaTable.toDF
-          .filter(col(eventTimestamp).>=(lastOutputDoneTimestamp))
-          .filter(col(eventTimestamp).<(startTimestampOfTomorrow))
-        // save to final output, same day, using output date
-        writeToOutput(deltaDfAfterLastOuputDoneSameDay, lastOutputDoneAndDelay._1.format(dtFormatter))
-
-        val deltaDfAfterLastOuputDoneCrossDay = deltaTable.toDF
-          .filter(col(eventTimestamp)>=startTimestampOfTomorrow)
-          .filter(col(eventTimestamp).<(lastDeltaDoneTimestamp))
-        // save to final output, cross day, using delta date
-        writeToOutput(deltaDfAfterLastOuputDoneCrossDay, lastDeltaDoneAndDelay._1.format(dtFormatter))
-      }
+      val deltaDfAfterLastOuputDone = deltaTable.toDF
+        .filter(col(eventTimestamp).>=(lastOutputDoneTimestamp))
+        .filter(col(eventTimestamp).<(lastDeltaDoneTimestamp))
+      writeToOutput(deltaDfAfterLastOuputDone, lastOutputDoneAndDelay._1.format(dtFormatter))
 
       // generate done file for output table
       generateOutputDoneFile(lastDeltaDoneAndDelay, lastOutputDoneAndDelay)
     }
-
   }
 
   /**

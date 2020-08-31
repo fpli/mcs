@@ -6,7 +6,7 @@ package com.ebay.traffic.chocolate.sparknrt.delta.imk
 
 import java.time.{Instant, ZoneId, ZonedDateTime}
 
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, SaveMode}
 import com.ebay.traffic.chocolate.sparknrt.delta.{BaseDeltaLakeNrtJob, Parameter}
 
 /**
@@ -47,6 +47,17 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     val sql = "select snapshotid, eventtimestamp, channeltype, channelaction, dt from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
     val sourceDf = sqlsc.sql(sql)
     sourceDf
+  }
+
+  /**
+    * Function to write file to output dir
+    * @param df dataframe to write
+    * @param dtString date partition
+    */
+  override def writeToOutput(df: DataFrame, dtString: String): Unit = {
+    // save to final output
+    this.saveDFToFiles(df, outputDir + "/"
+      + dt + "=" + dtString, writeMode = SaveMode.Append)
   }
 
   /**
