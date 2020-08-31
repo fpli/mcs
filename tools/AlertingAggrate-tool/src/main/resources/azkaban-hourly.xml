@@ -40,7 +40,6 @@
     <metric projectName="IMK_DUMP_ROI" flowName="imkScpToETL_ROI" total="10" threshold="1"/>
     <metric projectName="imkETL" flowName="imkETL" total="10" threshold="1"/>
     <metric projectName="PutImkToRenoAndHercules" flowName="putImkHourlyDoneToRenoAndHercules" total="10" threshold="1"/>
-    <metric projectName="putRenoKwLkpToSlc" flowName="putRenoKwLkpToSlc" total="1" threshold="1"/>
   </project>
   <project name="rotation-azkaban-monitor">
     <metric projectName="rotation_daily_update" flowName="rotation_daily_update_end" total="10" threshold="3"/>
