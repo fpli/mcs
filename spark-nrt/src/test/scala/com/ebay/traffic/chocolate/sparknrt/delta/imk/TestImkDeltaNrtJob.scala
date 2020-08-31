@@ -16,7 +16,7 @@ import io.delta.tables.DeltaTable
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
-class TestImkDeltaNrtJob extends BaseFunSuite{
+class TestImkDeltaNrtJob extends BaseFunSuite {
 
   private val tmpPath = createTempDir()
   private val deltaDir = tmpPath + "/delta/tracking-events"
@@ -58,19 +58,19 @@ class TestImkDeltaNrtJob extends BaseFunSuite{
 
     val trackingEventTable = TableSchema("df_tracking_event.json")
     val inputDf = job.readFilesAsDF(sourceFile.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
-    inputDf.createTempView("tracking_event_test")
+    inputDf.createOrReplaceTempView("tracking_event_test")
   }
 
-  test("test IMK update output")  {
+  test("test IMK update output") {
 
     // prepare current date and last done file
     // the last done of delta is 2020-08-17 05
-    fs.mkdirs(new Path(deltaDoneDir+"/20200817"))
+    fs.mkdirs(new Path(deltaDoneDir + "/20200817"))
     val file1 = new File("src/test/resources/touchImkHourlyDone.data/done/imk_rvr_trckng_event_hourly.done.202008170500000000")
     fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(deltaDoneDir + "/20200817/imk_rvr_trckng_event_hourly.done.202008170500000000"))
 
     // the last done of output is 2020-08-16 05
-    fs.mkdirs(new Path(outputDoneDir+"/20200816"))
+    fs.mkdirs(new Path(outputDoneDir + "/20200816"))
     val file2 = new File("src/test/resources/touchImkHourlyDone.data/done/imk_rvr_trckng_event_hourly.done.202008160500000000")
     fs.copyFromLocalFile(new Path(file2.getAbsolutePath), new Path(outputDoneDir + "/20200816/imk_rvr_trckng_event_hourly.done.202008160500000000"))
 
@@ -86,7 +86,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite{
     inputDf.write.format("delta").mode("overwrite").partitionBy("dt").save(deltaDir)
 
     val imkDeltaBeforeUpdate = DeltaTable.forPath(job.spark, deltaDir)
-    assert(imkDeltaBeforeUpdate.toDF.count() == 5 )
+    assert(imkDeltaBeforeUpdate.toDF.count() == 5)
 
     // will update data between 2 done file hours
     // set current time 2020-08-17 22
@@ -102,7 +102,39 @@ class TestImkDeltaNrtJob extends BaseFunSuite{
 
   test("test imk etl job for parquet output") {
 
-//    job.run()
-//    job.stop()
+    val now = ZonedDateTime.now().format(job.dayFormatterInDoneFileName)
+    val yesterday = ZonedDateTime.now().minusDays(1).format(job.dayFormatterInDoneFileName)
+    fs.mkdirs(new Path(deltaDoneDir + "/" + now))
+    fs.mkdirs(new Path(deltaDoneDir + "/" + yesterday))
+    fs.create(new Path(deltaDoneDir + "/" + now + "/imk_rvr_trckng_event_hourly.done." + now + "0100000000"))
+
+    fs.mkdirs(new Path(outputDoneDir + "/" + now))
+    fs.mkdirs(new Path(outputDoneDir + "/" + yesterday))
+    fs.create(new Path(outputDoneDir + "/" + now + "/imk_rvr_trckng_event_hourly.done." + now + "0000000000"))
+
+    // prepare current date and last done file
+    // the last done of delta is 2020-08-17 05
+    fs.mkdirs(new Path(deltaDoneDir + "/20200817"))
+    val file1 = new File("src/test/resources/touchImkHourlyDone.data/done/imk_rvr_trckng_event_hourly.done.202008170500000000")
+    fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(deltaDoneDir + "/20200817/imk_rvr_trckng_event_hourly.done.202008170500000000"))
+
+    // the last done of output is 2020-08-16 05
+    fs.mkdirs(new Path(outputDoneDir + "/20200816"))
+    val file2 = new File("src/test/resources/touchImkHourlyDone.data/done/imk_rvr_trckng_event_hourly.done.202008160500000000")
+    fs.copyFromLocalFile(new Path(file2.getAbsolutePath), new Path(outputDoneDir + "/20200816/imk_rvr_trckng_event_hourly.done.202008160500000000"))
+
+    // prepare delta table
+    // delta table contains 1 record in 2020-08-16,
+    // 1 record in 2020-08-17 before the delta last done,
+    // 4 records in 2020-07-17 after the delta last done
+    val deltaFileSource = new File("src/test/resources/masterTable/delta_table.csv")
+
+    val trackingEventTable = TableSchema("df_delta_event.json")
+    val inputDf = job.readFilesAsDF(deltaFileSource.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
+
+    inputDf.write.format("delta").mode("overwrite").partitionBy("dt").save(deltaDir)
+
+    job.run()
+    job.stop()
   }
 }

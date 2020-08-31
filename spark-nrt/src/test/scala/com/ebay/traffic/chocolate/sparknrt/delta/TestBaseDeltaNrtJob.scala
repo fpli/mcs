@@ -56,7 +56,7 @@ class TestBaseDeltaNrtJob extends BaseFunSuite{
 
     val trackingEventTable = TableSchema("df_tracking_event.json")
     val inputDf = job.readFilesAsDF(sourceFile.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
-    inputDf.createTempView("tracking_event_test")
+    inputDf.createOrReplaceTempView("tracking_event_test")
   }
 
   test("testGetLastDoneFileDatetimeFromFileList") {

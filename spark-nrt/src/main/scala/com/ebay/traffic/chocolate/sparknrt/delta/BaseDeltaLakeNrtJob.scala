@@ -133,23 +133,25 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
     */
   def generateDeltaDoneFile(diffDf: DataFrame, lastDoneAndDelay: (ZonedDateTime, Long), inputDateTime: ZonedDateTime): Unit = {
     // generate done file
-    val minTs = diffDf.agg(min(eventTimestamp)).head().getLong(0)
-    logger.info("minTs: " + minTs)
-    val instant = Instant.ofEpochMilli(minTs)
-    val minDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
+    if(!diffDf.isEmpty) {
+      val minTs = diffDf.agg(min(eventTimestamp)).head().getLong(0)
+      logger.info("minTs: " + minTs)
+      val instant = Instant.ofEpochMilli(minTs)
+      val minDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
 
-    val delays = lastDoneAndDelay._2
-    val times: immutable.Seq[ZonedDateTime] = (0L until delays)
-      .map(delay => inputDateTime.minusHours(delay))
-      .reverse
-      .filter(dateTime => dateTime.plusHours(1).isBefore(minDateTime))
+      val delays = lastDoneAndDelay._2
+      val times: immutable.Seq[ZonedDateTime] = (0L until delays)
+        .map(delay => inputDateTime.minusHours(delay))
+        .reverse
+        .filter(dateTime => dateTime.plusHours(1).isBefore(minDateTime))
 
-    times.foreach(dateTime => {
-      val file = getDoneFileName(dateTime, deltaDoneFileDir)
-      logger.info("touch delta done file {}", file)
-      val out = fs.create(new Path(file), true)
-      out.close()
-    })
+      times.foreach(dateTime => {
+        val file = getDoneFileName(dateTime, deltaDoneFileDir)
+        logger.info("touch delta done file {}", file)
+        val out = fs.create(new Path(file), true)
+        out.close()
+      })
+    }
   }
 
   /**
