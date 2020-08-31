@@ -171,7 +171,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite{
     inputDf.write.format("delta").mode("overwrite").partitionBy("dt").save(deltaDir)
 
     val imkDeltaBeforeUpdate = DeltaTable.forPath(job.spark, deltaDir)
-    assert(imkDeltaBeforeUpdate.toDF.count() == 4 )
+    assert(imkDeltaBeforeUpdate.toDF.count() == 5 )
 
     // prepare current date and last delta done file
     // the last done is 2020-08-17 05
@@ -187,7 +187,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite{
 
     // verification
     val imkDeltaAfterUpdate = DeltaTable.forPath(job.spark, deltaDir)
-    assert(imkDeltaAfterUpdate.toDF.count() == 14)
+    assert(imkDeltaAfterUpdate.toDF.count() == 15)
 
     fs.delete(new Path(deltaDir), true)
   }
@@ -242,6 +242,9 @@ class TestImkDeltaNrtJob extends BaseFunSuite{
     fs.copyFromLocalFile(new Path(file2.getAbsolutePath), new Path(outputDoneDir + "/20200816/imk_rvr_trckng_event_hourly.done.202008160500000000"))
 
     // prepare delta table
+    // delta table contains 1 record in 2020-08-16,
+    // 1 record in 2020-08-17 before the delta last done,
+    // 4 records in 2020-07-17 after the delta last done
     val deltaFileSource = new File("src/test/resources/masterTable/delta_table.csv")
 
     val trackingEventTable = TableSchema("df_delta_event.json")
@@ -250,17 +253,17 @@ class TestImkDeltaNrtJob extends BaseFunSuite{
     inputDf.write.format("delta").mode("overwrite").partitionBy("dt").save(deltaDir)
 
     val imkDeltaBeforeUpdate = DeltaTable.forPath(job.spark, deltaDir)
-    assert(imkDeltaBeforeUpdate.toDF.count() == 4 )
+    assert(imkDeltaBeforeUpdate.toDF.count() == 5 )
 
     // will update data between 2 done file hours
     // set current time 2020-08-17 22
     val now = ZonedDateTime.of(2020, 8, 17, 22, 0, 0, 0, ZoneId.systemDefault())
     job.updateOutput(now)
 
-    // verification
+    // verification. There will be 1 record in output dt=2020-08-16 and 1 record in output dt=2020-08-17
     val df = job.readFilesAsDF(outPutDir)
     df.show()
-    assert(df.count() == 1)
+    assert(df.count() == 2)
 
   }
 

@@ -215,8 +215,7 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
     */
   def writeToOutput(df: DataFrame, dtString: String): Unit = {
     // save to final output
-    this.saveDFToFiles(df, outputDir + "/"
-      + dt + "=" + dtString, writeMode = SaveMode.Append, partitionColumn = dt)
+    this.saveDFToFiles(df, outputDir, writeMode = SaveMode.Append, partitionColumn = dt)
   }
 
   /**
@@ -240,6 +239,7 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
       val deltaDfAfterLastOuputDone = deltaTable.toDF
         .filter(col(eventTimestamp).>=(lastOutputDoneTimestamp))
         .filter(col(eventTimestamp).<(lastDeltaDoneTimestamp))
+      deltaDfAfterLastOuputDone.show()
       writeToOutput(deltaDfAfterLastOuputDone, lastOutputDoneAndDelay._1.format(dtFormatter))
 
       // generate done file for output table
