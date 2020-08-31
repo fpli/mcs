@@ -56,7 +56,8 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     */
   override def writeToOutput(df: DataFrame, dtString: String): Unit = {
     // save to final output
-    this.saveDFToFiles(df, outputDir, writeMode = SaveMode.Append, partitionColumn = dt)
+    this.saveDFToFiles(df, outputPath = outputDir, compressFormat= "gzip", outputFormat = "csv", delimiter = "bel",
+      writeMode = SaveMode.Append, partitionColumn = dt)
   }
 
   /**

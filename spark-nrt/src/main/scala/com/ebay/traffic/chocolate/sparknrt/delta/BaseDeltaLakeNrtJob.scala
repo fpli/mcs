@@ -239,7 +239,6 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
       val deltaDfAfterLastOuputDone = deltaTable.toDF
         .filter(col(eventTimestamp).>=(lastOutputDoneTimestamp))
         .filter(col(eventTimestamp).<(lastDeltaDoneTimestamp))
-      deltaDfAfterLastOuputDone.show()
       writeToOutput(deltaDfAfterLastOuputDone, lastOutputDoneAndDelay._1.format(dtFormatter))
 
       // generate done file for output table
