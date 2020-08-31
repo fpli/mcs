@@ -2,7 +2,7 @@
  * Copyright (c) 2020. eBay inc. All rights reserved.
  */
 
-package com.ebay.traffic.chocolate.sparknrt.imk
+package com.ebay.traffic.chocolate.sparknrt.delta
 
 import scopt.OptionParser
 

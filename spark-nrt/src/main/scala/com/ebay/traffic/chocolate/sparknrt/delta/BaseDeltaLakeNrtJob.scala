@@ -2,7 +2,7 @@
  * Copyright (c) 2020. eBay inc. All rights reserved.
  */
 
-package com.ebay.traffic.chocolate.sparknrt.imk
+package com.ebay.traffic.chocolate.sparknrt.delta
 
 import java.time.format.DateTimeFormatter
 import java.time.{Instant, ZoneId, ZonedDateTime}
@@ -21,30 +21,14 @@ import scala.collection.immutable
 /**
   * @author Xiang Li
   * @since 2020/08/18
-  * Imk NRT job to extract data from master table and sink into IMK table
-  */
-object ImkNrtJob extends App {
-  override def main(args: Array[String]): Unit = {
-    val params = Parameter(args)
-
-    val job = new ImkNrtJob(params)
-
-    job.run()
-    job.stop()
-  }
-}
-
-/**
-  * IMK NRT job
   * @param params input parameters
   * @param enableHiveSupport enable hive support for spark sql table query
   */
-class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = true)
-  extends BaseNrtJob(params.appName, params.mode, true) {
-
+class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Boolean = true)
+  extends BaseNrtJob(params.appName, params.mode, true){
   lazy val inputSource: String = params.inputSource
-  lazy val imkDeltaDir: String = params.deltaDir
-  lazy val imkOutputDir: String = params.outPutDir
+  lazy val deltaDir: String = params.deltaDir
+  lazy val outputDir: String = params.outPutDir
   lazy val deltaDoneFileDir: String = params.deltaDoneFileDir
   lazy val outputDoneFileDir: String = params.outputDoneFileDir
   lazy val doneFilePrefix: String = params.doneFilePrefix
@@ -120,7 +104,7 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
   }
 
   /**
-    * Read everything need from the source table
+    * Read everything need from the source table. Override this function for domain specific tables.
     * @param inputDateTime input date time
     */
   def readSource(inputDateTime: ZonedDateTime): DataFrame = {
@@ -150,7 +134,7 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
   def generateDeltaDoneFile(diffDf: DataFrame, lastDoneAndDelay: (ZonedDateTime, Long), inputDateTime: ZonedDateTime): Unit = {
     // generate done file
     val minTs = diffDf.agg(min(eventTimestamp)).head().getLong(0)
-    println("min ts: " + minTs)
+    logger.info("minTs: " + minTs)
     val instant = Instant.ofEpochMilli(minTs)
     val minDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
 
@@ -195,13 +179,13 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
 
     val lastDoneAndDelay = getLastDoneFileDateTimeAndDelay(inputDateTime, deltaDoneFileDir)
 
-    val imkDelta = DeltaTable.forPath(spark, imkDeltaDir)
+    val deltaTable = DeltaTable.forPath(spark, deltaDir)
 
     // get new upserted records dataframe
     // get last done timestamp
     val lastDoneTimestamp = lastDoneAndDelay._1.toEpochSecond * multiplierForMs
     // delta table after last done timestamp
-    val imkDeltaAfterLastDone = imkDelta.toDF
+    val deltaDfAfterLastDone = deltaTable.toDF
       .filter(col(eventTimestamp).>=(lastDoneTimestamp))
       .withColumnRenamed(snapshotid, deltaSnapshotid)
 
@@ -210,18 +194,29 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
 
     // diff diff, must cache!!
     val diffDf = sourceDf
-      .join(imkDeltaAfterLastDone, col(snapshotid).===(col(deltaSnapshotid)), "left_anti")
+      .join(deltaDfAfterLastDone, col(snapshotid).===(col(deltaSnapshotid)), "left_anti")
       .cache(this, params.jobDir + "/diffDf")
 
     // when there are new records, upsert the records
-    imkDelta.as("delta")
+    deltaTable.as("delta")
       .merge(sourceDf.as("updates"),
-      s"delta.${snapshotid} = updates.${snapshotid} and delta.${dt} = updates.${dt}")
+        s"delta.${snapshotid} = updates.${snapshotid} and delta.${dt} = updates.${dt}")
       .whenNotMatched()
       .insertAll()
       .execute()
 
     generateDeltaDoneFile(diffDf, lastDoneAndDelay, inputDateTime)
+  }
+
+  /**
+    * Function to write file to output dir
+    * @param df dataframe to write
+    * @param dtString date partition
+    */
+  def writeToOutput(df: DataFrame, dtString: String): Unit = {
+    // save to final output
+    this.saveDFToFiles(df, outputDir + "/"
+      + dt + "=" + dtString, writeMode = SaveMode.Append)
   }
 
   /**
@@ -237,7 +232,7 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
     // into out put table
     if (lastDeltaDoneAndDelay._2 < lastOutputDoneAndDelay._2) {
       // update output
-      val imkDelta = DeltaTable.forPath(spark, imkDeltaDir)
+      val deltaTable = DeltaTable.forPath(spark, deltaDir)
 
       val lastOutputDoneTimestamp = lastOutputDoneAndDelay._1.toEpochSecond * multiplierForMs
       val lastDeltaDoneTimestamp = lastDeltaDoneAndDelay._1.toEpochSecond * multiplierForMs
@@ -245,13 +240,12 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
       // same day
       if (lastOutputDoneAndDelay._1.getDayOfYear.equals(lastDeltaDoneAndDelay._1.getDayOfYear)) {
         // delta df between 2 done file
-        val imkDeltaAfterLastOuputDone = imkDelta.toDF
+        val deltaDfAfterLastOuputDone = deltaTable.toDF
           .filter(col(eventTimestamp).>=(lastOutputDoneTimestamp))
           .filter(col(eventTimestamp).<(lastDeltaDoneTimestamp))
 
         // save to final output
-        this.saveDFToFiles(imkDeltaAfterLastOuputDone, imkOutputDir + "/"
-          + dt + "=" + lastOutputDoneAndDelay._1.format(dtFormatter), writeMode = SaveMode.Append)
+        writeToOutput(deltaDfAfterLastOuputDone, lastOutputDoneAndDelay._1.format(dtFormatter))
       }
       // cross day
       else {
@@ -259,19 +253,17 @@ class ImkNrtJob(params: Parameter, override val enableHiveSupport: Boolean = tru
           .toLocalDate.atStartOfDay(defaultZoneId)
           .toEpochSecond * multiplierForMs
 
-        val imkDeltaAfterLastOuputDoneSameDay = imkDelta.toDF
+        val deltaDfAfterLastOuputDoneSameDay = deltaTable.toDF
           .filter(col(eventTimestamp).>=(lastOutputDoneTimestamp))
           .filter(col(eventTimestamp).<(startTimestampOfTomorrow))
-        // save to final output, same day
-        this.saveDFToFiles(imkDeltaAfterLastOuputDoneSameDay, imkOutputDir + "/"
-          + dt + "=" + lastOutputDoneAndDelay._1.format(dtFormatter), writeMode = SaveMode.Append)
+        // save to final output, same day, using output date
+        writeToOutput(deltaDfAfterLastOuputDoneSameDay, lastOutputDoneAndDelay._1.format(dtFormatter))
 
-        val imkDeltaAfterLastOuputDoneCrossDay = imkDelta.toDF
+        val deltaDfAfterLastOuputDoneCrossDay = deltaTable.toDF
           .filter(col(eventTimestamp)>=startTimestampOfTomorrow)
           .filter(col(eventTimestamp).<(lastDeltaDoneTimestamp))
-        // save to final output, cross day
-        this.saveDFToFiles(imkDeltaAfterLastOuputDoneCrossDay, imkOutputDir + "/"
-          + dt + "=" + lastDeltaDoneAndDelay._1.format(dtFormatter), writeMode = SaveMode.Append)
+        // save to final output, cross day, using delta date
+        writeToOutput(deltaDfAfterLastOuputDoneCrossDay, lastDeltaDoneAndDelay._1.format(dtFormatter))
       }
 
       // generate done file for output table
