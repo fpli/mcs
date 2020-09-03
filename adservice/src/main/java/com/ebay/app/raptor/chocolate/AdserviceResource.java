@@ -211,21 +211,24 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       builder = builder.header("X-EBAY-C-TRACKING",
           collectionService.constructTrackingHeader(requestContext, guid, adguid, channelType));
 
-      // call LBS to get buyer access site id
-      int siteId = 0;
-      LBSQueryResult lbsQueryResult = LBSClient.getInstance().getLBSInfo(getRemoteIp(request));
-      if (lbsQueryResult != null) {
-        String country = lbsQueryResult.getIsoCountryCode2();
-        siteId = GeoUtils.getSiteIdByISOCountryCode(country);
-      }
-
-      // add bs tag into url parameter
       URI uri = new ServletServerHttpRequest(request).getURI();
-      URI newUri = new URIBuilder(uri).addParameter(Constants.CHOCO_BUYER_ACCESS_SITE_ID, String.valueOf(siteId)).build();
+
+      // for email open, call LBS to get buyer access site id
+      if (MKEVT.EMAIL_OPEN.getId().equals(params.get(Constants.MKEVT)[0])) {
+        int siteId = 0;
+        LBSQueryResult lbsQueryResult = LBSClient.getInstance().getLBSInfo(getRemoteIp(request));
+        if (lbsQueryResult != null) {
+          String country = lbsQueryResult.getIsoCountryCode2();
+          siteId = GeoUtils.getSiteIdByISOCountryCode(country);
+        }
+
+        // add bs tag into url parameter
+        uri = new URIBuilder(uri).addParameter(Constants.CHOCO_BUYER_ACCESS_SITE_ID, String.valueOf(siteId)).build();
+      }
 
       // add uri and referer to marketing event body
       MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
-      mktEvent.setTargetUrl(newUri.toString());
+      mktEvent.setTargetUrl(uri.toString());
       mktEvent.setReferrer(request.getHeader("Referer"));
 
       // call marketing collection service to send ubi event or send kafka async
@@ -455,7 +458,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   /**
    * Get remote ip
    */
-  private static String getRemoteIp(HttpServletRequest request) {
+  private String getRemoteIp(HttpServletRequest request) {
     String remoteIp = null;
     String xForwardFor = request.getHeader("X-Forwarded-For");
     if (xForwardFor != null && !xForwardFor.isEmpty()) {
