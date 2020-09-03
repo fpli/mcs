@@ -17,11 +17,11 @@ bin=`cd "$bin">/dev/null; pwd`
 WORK_DIR=$1
 RESOURCE_DIR=$2
 FILTER_TIME=$3
-OUTPUT_DIR=/apps/epn-nrt
+OUTPUT_DIR=hdfs://elvisha/apps/epn-nrt
 
 DRIVER_MEMORY=15g
 EXECUTOR_NUMBER=40
-EXECUTOR_MEMORY=15g
+EXECUTOR_MEMORY=18g
 EXECUTOR_CORES=5
 
 JOB_NAME="Chocolate_EPN_NRT_CLICK"
@@ -42,7 +42,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
-    --conf spark.yarn.executor.memoryOverhead=4096 \
+    --conf spark.yarn.executor.memoryOverhead=2048 \
     --conf spark.speculation=true \
     --conf spark.speculation.quantile=0.5 \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
