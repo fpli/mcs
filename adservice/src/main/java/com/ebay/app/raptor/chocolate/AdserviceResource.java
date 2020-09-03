@@ -212,9 +212,12 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
           collectionService.constructTrackingHeader(requestContext, guid, adguid, channelType));
 
       // call LBS to get buyer access site id
+      int siteId = 0;
       LBSQueryResult lbsQueryResult = LBSClient.getInstance().getLBSInfo(getRemoteIp(request));
-      String country = lbsQueryResult.getIsoCountryCode2();
-      int siteId = GeoUtils.getSiteIdByISOCountryCode(country);
+      if (lbsQueryResult != null) {
+        String country = lbsQueryResult.getIsoCountryCode2();
+        siteId = GeoUtils.getSiteIdByISOCountryCode(country);
+      }
 
       // add bs tag into url parameter
       URI uri = new ServletServerHttpRequest(request).getURI();

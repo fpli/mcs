@@ -131,7 +131,8 @@ public class BehaviorMessageParser {
     }
 
     // url query string
-    record.setUrlQueryString(UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));
+    record.setUrlQueryString(UrlProcessHelper.getMaskedUrl(removeBsParam(parameters, uri), domainRequest.isSecure(),
+        false));
 
     // device info
     DDSResponse deviceInfo = agentInfo.getDeviceInfo();
