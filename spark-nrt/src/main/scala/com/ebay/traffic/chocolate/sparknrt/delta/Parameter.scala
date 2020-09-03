@@ -29,6 +29,7 @@ case class Parameter(appName: String = "ImkNrtJob",
                      outputDoneFileDir: String = "",
                      jobDir: String = "",
                      doneFilePrefix: String = "",
+                     elasticsearchUrl: String = "",
                      partitions: Int = 3)
 
 object Parameter {
@@ -80,6 +81,11 @@ object Parameter {
       .required
       .valueName("doneFilePrefix")
       .action((cont, param) => param.copy(doneFilePrefix = cont))
+
+    opt[String]("elasticsearchUrl")
+      .optional
+      .valueName("elasticsearchUrl")
+      .action((cont, param) => param.copy(elasticsearchUrl = cont))
 
     opt[Int]("partitions")
       .optional
