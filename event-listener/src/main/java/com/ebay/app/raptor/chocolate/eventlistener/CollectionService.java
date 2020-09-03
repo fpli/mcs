@@ -452,10 +452,10 @@ public class CollectionService {
       processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext);
     else if (channelType == ChannelIdEnum.SITE_EMAIL)
-      processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request, agentInfo,
+      processFlag = processSiteEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
           targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
-      processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request, agentInfo,
+      processFlag = processMrktEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
           targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
     else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS)
       processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
@@ -737,11 +737,11 @@ public class CollectionService {
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
     if (channelType == ChannelIdEnum.SITE_EMAIL)
-      processFlag = processSiteEmailEvent(requestContext, referer, parameters, type, action, request, agentInfo,
-          uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
+      processFlag = processSiteEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request,
+          agentInfo, uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
-      processFlag = processMrktEmailEvent(requestContext, referer, parameters, type, action, request, agentInfo,
-          uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
+      processFlag = processMrktEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request,
+          agentInfo, uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
     else
       processFlag = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext);
@@ -1044,10 +1044,10 @@ public class CollectionService {
   /**
    * Process site email event
    */
-  private boolean processSiteEmailEvent(ContainerRequestContext requestContext, String referer,
-                                        MultiValueMap<String, String> parameters, String type, String action,
-                                        HttpServletRequest request, UserAgentInfo agentInfo, String uri, Long startTime,
-                                        ChannelType channelType, ChannelAction channelAction) {
+  private boolean processSiteEmailEvent(ContainerRequestContext requestContext, IEndUserContext endUserContext,
+                                        String referer, MultiValueMap<String, String> parameters, String type,
+                                        String action, HttpServletRequest request, UserAgentInfo agentInfo, String uri,
+                                        Long startTime, ChannelType channelType, ChannelAction channelAction) {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
@@ -1088,8 +1088,8 @@ public class CollectionService {
 
       // email open go to chocolate topic
       if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
-        BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, parameters, agentInfo, uri,
-            startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
+        BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, endUserContext, parameters,
+            agentInfo, uri, startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
             PageNameEnum.OPEN.getName(), 0);
 
         if (message != null) {
@@ -1110,10 +1110,10 @@ public class CollectionService {
   /**
    * Process marketing email event
    */
-  private boolean processMrktEmailEvent(ContainerRequestContext requestContext, String referer,
-                                        MultiValueMap<String, String> parameters, String type, String action,
-                                        HttpServletRequest request, UserAgentInfo agentInfo, String uri, Long startTime,
-                                        ChannelType channelType, ChannelAction channelAction) {
+  private boolean processMrktEmailEvent(ContainerRequestContext requestContext, IEndUserContext endUserContext,
+                                        String referer, MultiValueMap<String, String> parameters, String type,
+                                        String action, HttpServletRequest request, UserAgentInfo agentInfo, String uri,
+                                        Long startTime, ChannelType channelType, ChannelAction channelAction) {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
@@ -1180,8 +1180,8 @@ public class CollectionService {
 
       // email open go to chocolate topic
       if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
-        BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, parameters, agentInfo, uri,
-            startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
+        BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, endUserContext, parameters,
+            agentInfo, uri, startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
             PageNameEnum.OPEN.getName(), 0);
 
         if (message != null) {

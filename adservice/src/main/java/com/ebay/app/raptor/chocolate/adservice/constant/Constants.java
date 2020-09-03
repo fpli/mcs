@@ -20,6 +20,7 @@ public class Constants {
   public static final int UDID_MIN_LENGTH = 32;
   public static final String IS_MOB = "ismob";
   public static final String H_LAST_LOGGED_IN_USER_ID = "hLastLoggedInUserId";
+  public static final String CHOCO_BUYER_ACCESS_SITE_ID = "choco_bs";
 
   // DAP constants
   public static final String UNIQUE_DEVICE_ID = "udid";

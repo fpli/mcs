@@ -7,6 +7,8 @@ import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.HeaderMultiValue;
+import com.ebay.kernel.util.RequestUtil;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.DDSResponse;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.domain.request.api.DomainRequestData;
@@ -17,6 +19,8 @@ import com.ebay.tracking.common.util.UrlProcessHelper;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
@@ -26,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.util.*;
@@ -63,9 +68,9 @@ public class BehaviorMessageParser {
   }
 
   public BehaviorMessage parse(final HttpServletRequest request, ContainerRequestContext requestContext,
-                                 MultiValueMap<String, String> parameters, UserAgentInfo agentInfo, String uri,
-                                 Long startTime, final ChannelType channelType, final ChannelAction channelAction,
-                                 Long snapshotId, int pageId, String pageName, int rdt) {
+                               IEndUserContext endUserContext, MultiValueMap<String, String> parameters,
+                               UserAgentInfo agentInfo, String uri, Long startTime, final ChannelType channelType,
+                               final ChannelAction channelAction, Long snapshotId, int pageId, String pageName, int rdt) {
 
     Map<String, String> applicationPayload = new HashMap<>();
     Map<String, String> clientData = new HashMap<>();
@@ -117,7 +122,7 @@ public class BehaviorMessageParser {
     record.setSeqNum("1");
 
     // agent info
-    record.setAgentInfo(agentInfo.getUserAgentRawData());
+    record.setAgentInfo(endUserContext.getUserAgent());
 
     // app info
     record.setAppId(CollectionServiceUtil.getAppIdFromUserAgent(agentInfo));
@@ -126,7 +131,8 @@ public class BehaviorMessageParser {
     }
 
     // url query string
-    record.setUrlQueryString(UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));
+    record.setUrlQueryString(UrlProcessHelper.getMaskedUrl(removeBsParam(parameters, uri), domainRequest.isSecure(),
+        false));
 
     // device info
     DDSResponse deviceInfo = agentInfo.getDeviceInfo();
@@ -149,13 +155,13 @@ public class BehaviorMessageParser {
     record.setRlogid(tracingContext.getRlogId());
 
     // client data
-    record.setClientData(getClientData(clientData, domainRequest));
+    record.setClientData(getClientData(clientData, domainRequest, endUserContext, request));
 
     // web server
     record.setWebServer(domainRequest.getHost());
 
     // ip
-    record.setRemoteIP(domainRequest.getClientIp());
+    record.setRemoteIP(getRemoteIp(request));
     record.setClientIP(domainRequest.getClientIp());
 
     // referer hash
@@ -180,7 +186,8 @@ public class BehaviorMessageParser {
   /**
    * Get client data
    */
-  private Map<String, String> getClientData(Map<String, String> clientData, DomainRequestData domainRequest) {
+  private Map<String, String> getClientData(Map<String, String> clientData, DomainRequestData domainRequest,
+                                            IEndUserContext endUserContext, HttpServletRequest request) {
     clientData.put("ForwardedFor", domainRequest.getXForwardedFor());
     clientData.put("Script", domainRequest.getServletPath());
     clientData.put("Server", domainRequest.getHost());
@@ -189,8 +196,8 @@ public class BehaviorMessageParser {
       clientData.put("TMachine", netAddress.getHostAddress());
     }
     clientData.put("TName", domainRequest.getCommandName());
-    clientData.put("Agent", domainRequest.getUserAgent());
-    clientData.put("RemoteIP", domainRequest.getClientIp());
+    clientData.put("Agent", endUserContext.getUserAgent());
+    clientData.put("RemoteIP", getRemoteIp(request));
     clientData.put("ContentLength", String.valueOf(domainRequest.getContentLength()));
     String referer = UrlProcessHelper.getMaskedUrl(domainRequest.getReferrerUrl(), false, true);
     clientData.put("Referer", referer);
@@ -240,15 +247,16 @@ public class BehaviorMessageParser {
     applicationPayload = addSojTags(applicationPayload, parameters, channelType, channelAction);
 
     // add other tags
-    applicationPayload.put("Agent", agentInfo.getUserAgentRawData());
-    applicationPayload.put("Payload", UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));
-
     // app id
     applicationPayload.put("app", CollectionServiceUtil.getAppIdFromUserAgent(agentInfo));
 
     // buyer access site id
-    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-    applicationPayload.put("bs", String.valueOf(userPrefsCtx.getGeoContext().getSiteId()));
+    if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
+      applicationPayload.put("bs", parseTagFromParams(parameters, Constants.CHOCO_BUYER_ACCESS_SITE_ID));
+    } else {
+      UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+      applicationPayload.put("bs", String.valueOf(userPrefsCtx.getGeoContext().getSiteId()));
+    }
 
     // facebook prefetch
     if (isFacebookPrefetchEnabled(requestContext)) {
@@ -276,10 +284,17 @@ public class BehaviorMessageParser {
     // decrypted user id
     applicationPayload.put("u", getDecryptedUserId(parameters));
 
+    // delete choco_bs param if it exists
+    uri = removeBsParam(parameters, uri);
+
     // landing page
     if (ChannelAction.CLICK.equals(channelAction)) {
       applicationPayload.put("url_mpre", uri);
     }
+
+    // agent and payload
+    applicationPayload.put("Agent", agentInfo.getUserAgentRawData());
+    applicationPayload.put("Payload", UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));
 
     return encodeTags(deleteNullOrEmptyValue(applicationPayload));
   }
@@ -411,6 +426,55 @@ public class BehaviorMessageParser {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Remove one url parameter
+   */
+  private String removeParam(String url, String param) throws URISyntaxException {
+    URIBuilder uriBuilder = new URIBuilder(url);
+    List<NameValuePair> queryParameters = uriBuilder.getQueryParams();
+    for (Iterator<NameValuePair> queryParameterItr = queryParameters.iterator(); queryParameterItr.hasNext(); ) {
+      NameValuePair queryParameter = queryParameterItr.next();
+      if (queryParameter.getName().equals(param)) {
+        queryParameterItr.remove();
+      }
+    }
+    uriBuilder.setParameters(queryParameters);
+
+    return uriBuilder.build().toString();
+  }
+
+  /**
+   * Remove choco_bs param if it exists
+   */
+  private String removeBsParam(MultiValueMap<String, String> parameters, String uri) {
+    if (parameters.containsKey(Constants.CHOCO_BUYER_ACCESS_SITE_ID)) {
+      try {
+        uri = removeParam(uri, Constants.CHOCO_BUYER_ACCESS_SITE_ID);
+      } catch (URISyntaxException e) {
+        logger.warn("Error when deleting choco_bs", e);
+      }
+    }
+
+    return uri;
+  }
+
+  /**
+   * Get remote ip
+   */
+  private String getRemoteIp(HttpServletRequest request) {
+    String remoteIp = null;
+    String xForwardFor = request.getHeader("X-Forwarded-For");
+    if (xForwardFor != null && !xForwardFor.isEmpty()) {
+      remoteIp = xForwardFor.split(",")[0];
+    }
+
+    if (remoteIp == null || remoteIp.isEmpty()) {
+      remoteIp = RequestUtil.getRemoteAddr(request);
+    }
+
+    return remoteIp == null ? "" : remoteIp;
   }
 
 }
