@@ -1,24 +1,19 @@
 package com.ebay.app.raptor.chocolate;
 
+import com.ebay.ads.tracking.filter.AdsTrackingRequestFilter;
 import com.ebay.raptor.dds.jaxrs.DDSTrackingFilter;
 import com.ebay.tracking.filter.TrackingServiceFilter;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import javax.inject.Named;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Feature;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.concurrent.Executor;
 
 /**
  * Resource config class
@@ -81,6 +76,10 @@ public class EventListenerResourceConfig extends Application {
   @Qualifier("user-preferences-filter")
   private ContainerRequestFilter userPreferenceFilter;
 
+  @Autowired
+  @Named("ads-tracking-request-filter")
+  private AdsTrackingRequestFilter adsTrackingRequestFilter;
+
   @Override
   public Set<Class<?>> getClasses() {
     Set<Class<?>> providers = new LinkedHashSet<Class<?>>();
@@ -104,6 +103,7 @@ public class EventListenerResourceConfig extends Application {
     providers.add(userCulturalPrefsFilter);
     providers.add(geoTrackingFilter);
     providers.add(userPreferenceFilter);
+    providers.add(adsTrackingRequestFilter);
 
     return providers;
   }
