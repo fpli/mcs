@@ -214,7 +214,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       URI uri = new ServletServerHttpRequest(request).getURI();
 
       // for email open, call LBS to get buyer access site id
-      if (MKEVT.EMAIL_OPEN.getId().equals(params.get(Constants.MKEVT)[0])) {
+      if (params.containsKey(Constants.MKEVT) && MKEVT.EMAIL_OPEN.getId().equals(params.get(Constants.MKEVT)[0])) {
         int siteId = 0;
         LBSQueryResult lbsQueryResult = LBSClient.getInstance().getLBSInfo(getRemoteIp(request));
         if (lbsQueryResult != null) {
