@@ -137,11 +137,9 @@ public class BehaviorEventSinkMonitorApp extends AbstractRheosHDFSCompatibleApp<
             BehaviorEvent behaviorEvent = new BehaviorEvent();
             behaviorEventTransformer.transform(behaviorEvent);
             //increase latency metrics
-            if(behaviorEvent.getEventtimestamp() != null){
-                latencyCounter.inc(currentTimeMillis - behaviorEvent.getEventtimestamp());
-            }
+            latencyCounter.inc(currentTimeMillis - behaviorEvent.getEventtimestamp());
             if(behaviorEvent.getChanneltype() != null){
-                switch (behaviorEvent.getChanneltype().toString()) {
+                switch (behaviorEvent.getChanneltype()) {
                     case SITE_EMAIL:
                         siteEmailOpenIncomingCounter.inc();
                         break;
