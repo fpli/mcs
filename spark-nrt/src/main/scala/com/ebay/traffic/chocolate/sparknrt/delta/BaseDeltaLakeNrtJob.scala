@@ -40,14 +40,18 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
   lazy val dt = "dt"
   lazy val multiplierForMs = 1000L
 
-  lazy val defaultZoneId: ZoneId = ZoneId.systemDefault()
-  lazy val dayFormatterInDoneFileName: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd").withZone(defaultZoneId)
-  lazy val doneFileDatetimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHH").withZone(defaultZoneId)
-  lazy val dtFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  @transient lazy val defaultZoneId: ZoneId = ZoneId.systemDefault()
+  @transient lazy val dayFormatterInDoneFileName: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd").withZone(defaultZoneId)
+  @transient lazy val doneFileDatetimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHH").withZone(defaultZoneId)
+  @transient lazy val dtFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
   implicit def dateTimeOrdering: Ordering[ZonedDateTime] = Ordering.fromLessThan(_ isBefore  _)
 
   import spark.implicits._
+
+  def comparableTimestamp(): Long = {
+    1
+  }
 
   /**
     * Get done file by date
@@ -234,13 +238,14 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
     if (lastDeltaDoneAndDelay._2 < lastOutputDoneAndDelay._2) {
       // update output
       val deltaTable = DeltaTable.forPath(spark, deltaDir)
-
+      deltaTable.toDF.show()
       val lastOutputDoneTimestamp = lastOutputDoneAndDelay._1.toEpochSecond * multiplierForMs
       val lastDeltaDoneTimestamp = lastDeltaDoneAndDelay._1.toEpochSecond * multiplierForMs
 
       val deltaDfAfterLastOuputDone = deltaTable.toDF
         .filter(col(eventTimestamp).>=(lastOutputDoneTimestamp))
         .filter(col(eventTimestamp).<(lastDeltaDoneTimestamp))
+      deltaDfAfterLastOuputDone.show()
       writeToOutput(deltaDfAfterLastOuputDone, lastOutputDoneAndDelay._1.format(dtFormatter))
 
       // generate done file for output table

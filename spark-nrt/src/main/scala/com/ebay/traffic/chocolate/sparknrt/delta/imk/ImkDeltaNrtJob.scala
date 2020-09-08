@@ -15,6 +15,7 @@ import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, lit, udf}
+import org.apache.spark.sql.types.LongType
 
 import scala.io.Source
 
@@ -57,7 +58,12 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     mapData.map(line => line.split("\\|")(0) -> line.split("\\|")(1)).toMap
   }
 
-  @transient lazy val schema_apollo: TableSchema = TableSchema("df_imk_apollo.json")
+  /**
+    * the delta schema has only one difference, which is the timestamp.
+    * In order to work with super class timestamp comparison logic, the timestamp should be epoch millisecond format.
+    * At the final stage of this job, the timestamp will be reformated to the final table timestamp format.
+    */
+  @transient lazy val schema_apollo: TableSchema = TableSchema("df_imk_delta.json")
 
   import spark.implicits._
 
@@ -71,7 +77,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
   val getUserQueryUdf: UserDefinedFunction = udf((referer: String, query: String) => tools.getUserQuery(referer, query))
   val replaceMkgroupidMktypeUdf: UserDefinedFunction = udf((channelType: String, uri: String) => replaceMkgroupidMktype(channelType, uri))
   val replaceMkgroupidMktypeUdfAndParseMpreFromRoverUdf: UserDefinedFunction = udf((channelType: String, uri: String) => replaceMkgroupidMktypeAndParseMpreFromRover(channelType, uri))
-  val getDateTimeUdf: UserDefinedFunction = udf((timestamp: Long) => tools.getDateTimeFromTimestamp(timestamp))
+  val getDateTimeUdf: UserDefinedFunction = udf((timestamp: String) => tools.getDateTimeFromTimestamp(timestamp))
   val getKeywordUdf: UserDefinedFunction = udf((query: String) => tools.getParamFromQuery(query, tools.keywordParams))
   val getDefaultNullNumParamValueFromUrlUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getDefaultNullNumParamValueFromQuery(query, key))
   val getParamFromQueryUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getParamValueFromQuery(query, key))
@@ -210,7 +216,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre"))))
       .withColumn("lndng_page_url", getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre")))
       .withColumn("user_query", getUserQueryUdf(col("referer"), col("temp_uri_query")))
-      .withColumn("event_ts", getDateTimeUdf(col("event_timestamp")))
+      .withColumn("eventtimestamp", col("eventtimestamp"))
       .withColumn("src_rotation_id", getBrowserTypeUdf(getParamFromQueryUdf(col("applicationpayload"), lit("rotid"))))
       .withColumn("dst_rotation_id", getBrowserTypeUdf(getParamFromQueryUdf(col("applicationpayload"), lit("rotid"))))
       .withColumn("user_map_ind", getParamFromQueryUdf(col("applicationpayload"), lit("u")))
@@ -234,7 +240,8 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     schema_apollo.filterNotColumns(imkDf.columns).foreach(e => {
       imkDf = imkDf.withColumn(e, lit(schema_apollo.defaultValues(e)))
     })
-    sourceDf
+
+    imkDf
   }
 
   /**
@@ -243,8 +250,14 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     * @param dtString date partition
     */
   override def writeToOutput(df: DataFrame, dtString: String): Unit = {
+    // regenerate the final table timestamp format
+    df.show()
+    val finalDf = df
+      .withColumn("event_ts", getDateTimeUdf(col("eventtimestamp")))
+      .drop("eventtimestamp")
     // save to final output
-    this.saveDFToFiles(df, outputPath = outputDir, compressFormat= "gzip", outputFormat = "csv", delimiter = "bel",
+    finalDf.show()
+    this.saveDFToFiles(finalDf, outputPath = outputDir, compressFormat= "gzip", outputFormat = "csv", delimiter = "bel",
       writeMode = SaveMode.Append, partitionColumn = dt)
   }
 

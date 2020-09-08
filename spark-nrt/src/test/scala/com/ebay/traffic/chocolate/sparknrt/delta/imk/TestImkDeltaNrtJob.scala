@@ -54,7 +54,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     )))
 
     // prepare master table
-    val sourceFile = new File("src/test/resources/masterTable/master_table.csv")
+    val sourceFile = new File("src/test/resources/masterTable/imk/master_table.csv")
 
     val trackingEventTable = TableSchema("df_tracking_event.json")
     val inputDf = job.readFilesAsDF(sourceFile.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
@@ -78,9 +78,9 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     // delta table contains 1 record in 2020-08-16,
     // 1 record in 2020-08-17 before the delta last done,
     // 4 records in 2020-07-17 after the delta last done
-    val deltaFileSource = new File("src/test/resources/masterTable/delta_table.csv")
+    val deltaFileSource = new File("src/test/resources/masterTable/imk/delta_table.csv")
 
-    val trackingEventTable = TableSchema("df_delta_event.json")
+    val trackingEventTable = TableSchema("df_imk_delta.json")
     val inputDf = job.readFilesAsDF(deltaFileSource.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
 
     inputDf.write.format("delta").mode("overwrite").partitionBy("dt").save(deltaDir)
@@ -100,7 +100,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
 
   }
 
-  test("test imk etl job for parquet output") {
+  test("test imk entire job") {
 
     val now = ZonedDateTime.now().format(job.dayFormatterInDoneFileName)
     val yesterday = ZonedDateTime.now().minusDays(1).format(job.dayFormatterInDoneFileName)
@@ -127,7 +127,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     // delta table contains 1 record in 2020-08-16,
     // 1 record in 2020-08-17 before the delta last done,
     // 4 records in 2020-07-17 after the delta last done
-    val deltaFileSource = new File("src/test/resources/masterTable/delta_table.csv")
+    val deltaFileSource = new File("src/test/resources/masterTable/imk/delta_table.csv")
 
     val trackingEventTable = TableSchema("df_delta_event.json")
     val inputDf = job.readFilesAsDF(deltaFileSource.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
