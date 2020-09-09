@@ -7,6 +7,7 @@ package com.ebay.traffic.chocolate.sparknrt.delta.imk
 import java.net.URLDecoder
 import java.time.{Instant, ZoneId, ZonedDateTime}
 
+import com.ebay.app.raptor.chocolate.constant.{ChannelActionEnum, ChannelIdEnum}
 import org.apache.spark.sql.{DataFrame, SaveMode}
 import com.ebay.traffic.chocolate.sparknrt.delta.{BaseDeltaLakeNrtJob, Parameter}
 import com.ebay.traffic.chocolate.sparknrt.imkDump.Tools
@@ -15,7 +16,6 @@ import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, lit, udf}
-import org.apache.spark.sql.types.LongType
 
 import scala.io.Source
 
@@ -85,6 +85,8 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
   val getParamFromQueryUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getParamValueFromQuery(query, key))
   val getUserMapIndUdf: UserDefinedFunction = udf((userId: String) => tools.getUserMapInd(userId))
   val getMfeIdUdf: UserDefinedFunction = udf((mfe_name: String) => getMfeIdByMfeName(mfe_name))
+  val getChannelActionEnumUdf: UserDefinedFunction= udf((channelAction: String) => getChannelActionEnum(channelAction))
+  val getChannelTypeEnumUdf: UserDefinedFunction= udf((channelType: String) => getChannelTypeEnum(channelType))
 
   /**
     * get mfe id by mfe name
@@ -188,6 +190,19 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     }
   })
 
+  def getChannelActionEnum(channelAction: String): String = {
+    channelAction match{
+      case "CLICK" => "1"
+      case "SERVE" => "4"
+      case "ROI" => "2"
+      case _ => "1"
+    }
+  }
+
+  def getChannelTypeEnum(channelType: String): String = {
+    ChannelIdEnum.valueOf(channelType).getValue
+  }
+
   /**
     * Read everything need from the source table
     * @param inputDateTime input date time
@@ -208,8 +223,8 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn("snapshotid", col("snapshotid"))
       .withColumn("dt", col("dt"))
       .withColumn("srvd_pstn", lit(0))
-      .withColumn("rvr_cmnd_type_cd", col("channelaction"))
-      .withColumn("rvr_chnl_type_cd", col("channeltype"))
+      .withColumn("rvr_cmnd_type_cd", getChannelActionEnumUdf(col("channelaction")))
+      .withColumn("rvr_chnl_type_cd", getChannelTypeEnumUdf(col("channeltype")))
       .withColumn("cntry_cd", lit(""))
       .withColumn("lang_cd", lit(""))
       .withColumn("trckng_prtnr_id", lit(0))

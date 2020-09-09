@@ -101,8 +101,8 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
   }
 
   test("test imk entire job") {
-
-    val now = ZonedDateTime.now().format(job.dayFormatterInDoneFileName)
+    val mockNow = ZonedDateTime.of(2020, 8, 17, 22, 0, 0, 0, ZoneId.systemDefault())
+    val now = ZonedDateTime.of(2020, 8, 17, 22, 0, 0, 0, ZoneId.systemDefault()).format(job.dayFormatterInDoneFileName)
     val yesterday = ZonedDateTime.now().minusDays(1).format(job.dayFormatterInDoneFileName)
     fs.mkdirs(new Path(deltaDoneDir + "/" + now))
     fs.mkdirs(new Path(deltaDoneDir + "/" + yesterday))
@@ -134,7 +134,12 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
 
     inputDf.write.format("delta").mode("overwrite").partitionBy("dt").save(deltaDir)
 
-    job.run()
-    job.stop()
+    job.updateDelta(mockNow)
+    job.updateOutput(mockNow)
+
+    // verification.
+    val df = job.readFilesAsDF(outPutDir, inputFormat = "csv", delimiter = "bel")
+    df.show()
+    assert(df.count() == 1)
   }
 }
