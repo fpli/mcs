@@ -7,7 +7,6 @@ package com.ebay.traffic.chocolate.sparknrt.delta.imk
 
 import java.io.File
 import java.time.{ZoneId, ZonedDateTime}
-import java.time.temporal.ChronoUnit
 
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.delta.Parameter
@@ -97,7 +96,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     val df = job.readFilesAsDF(outPutDir, inputFormat = "csv", delimiter = "bel")
     df.show()
     assert(df.count() == 2)
-
+    fs.delete(new Path(tmpPath.toString), true)
   }
 
   test("test imk entire job") {
@@ -137,9 +136,11 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     job.updateDelta(mockNow)
     job.updateOutput(mockNow)
 
-    // verification.
+    // verification. There is only one record.
     val df = job.readFilesAsDF(outPutDir, inputFormat = "csv", delimiter = "bel")
     df.show()
     assert(df.count() == 1)
+
+    fs.delete(new Path(tmpPath.toString), true)
   }
 }
