@@ -80,9 +80,9 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   private static final String ENVIRONMENT = "chocolate.event-listener.env";
 
   /**
-   * Static driver ID
+   * default driver ID
    */
-  static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
+  static int driverId;
 
   /**
    * kafka related
@@ -252,7 +252,11 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    * @return the driver ID for the event-listener.
    */
   public int getDriverId() {
-    return DRIVER_ID;
+    return driverId;
+  }
+
+  public void setDriverId(final int driverId) {
+    ApplicationOptions.driverId = driverId;
   }
 
   @Override
