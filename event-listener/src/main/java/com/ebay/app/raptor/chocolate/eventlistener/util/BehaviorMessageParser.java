@@ -43,6 +43,7 @@ import java.util.*;
 public class BehaviorMessageParser {
   private static final Logger logger = LoggerFactory.getLogger(BehaviorMessageParser.class);
   private Metrics metrics = ESMetrics.getInstance();
+  private CobrandParser cobrandParser = new CobrandParser();
 
   private static BehaviorMessageParser INSTANCE;
 
@@ -125,7 +126,8 @@ public class BehaviorMessageParser {
     record.setAgentInfo(endUserContext.getUserAgent());
 
     // app info
-    record.setAppId(CollectionServiceUtil.getAppIdFromUserAgent(agentInfo));
+    String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
+    record.setAppId(appId);
     if (agentInfo.getAppInfo() != null) {
       record.setAppVersion(agentInfo.getAppInfo().getAppVersion());
     }
@@ -149,7 +151,7 @@ public class BehaviorMessageParser {
         domainRequest, deviceInfo, channelType, channelAction, guid, pageId));
 
     // cobrand
-    record.setCobrand(String.valueOf(domainRequest.getCoBrandId()));
+    record.setCobrand(cobrandParser.parse(appId, endUserContext.getUserAgent()));
 
     // rlogid
     record.setRlogid(tracingContext.getRlogId());
