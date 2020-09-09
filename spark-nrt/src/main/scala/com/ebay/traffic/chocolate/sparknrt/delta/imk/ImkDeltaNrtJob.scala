@@ -87,6 +87,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
   val getMfeIdUdf: UserDefinedFunction = udf((mfe_name: String) => getMfeIdByMfeName(mfe_name))
   val getChannelActionEnumUdf: UserDefinedFunction= udf((channelAction: String) => getChannelActionEnum(channelAction))
   val getChannelTypeEnumUdf: UserDefinedFunction= udf((channelType: String) => getChannelTypeEnum(channelType))
+  val decodeUrlUdf: UserDefinedFunction= udf((url: String) => URLDecoder.decode(url, "utf-8"))
 
   /**
     * get mfe id by mfe name
@@ -216,7 +217,8 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     var imkDf = sourceDf
       .filter(col("snapshotid").isNotNull)
       .filter(col("channeltype").isin(imkChannels:_*))
-      .withColumn("temp_uri_query", getQueryParamsUdf(getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre"))))
+      .withColumn("decoded_url", decodeUrlUdf(getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre"))))
+      .withColumn("temp_uri_query", col("decoded_url"))
       .withColumn("batch_id", getBatchIdUdf())
       .withColumn("file_id", lit(0))
       .withColumn("file_schm_vrsn", lit(4))
@@ -238,8 +240,8 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn("rfrr_url", col("referrer"))
       .withColumn("url_encrptd_yn_ind", lit(0))
       .withColumn("pblshr_id", lit(""))
-      .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre"))))
-      .withColumn("lndng_page_url", getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre")))
+      .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(col("decoded_url")))
+      .withColumn("lndng_page_url", col("decoded_url"))
       .withColumn("user_query", getUserQueryUdf(col("referrer"), col("temp_uri_query")))
       .withColumn("rule_bit_flag_strng", lit(""))
       .withColumn("eventtimestamp", col("eventtimestamp"))
@@ -249,7 +251,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn("user_map_ind", getParamFromQueryUdf(col("applicationpayload"), lit("u")))
       .withColumn("dst_client_id", setDefaultValueForDstClientIdUdf(getClientIdUdf(
         col("channeltype"), col("temp_uri_query"), lit("mkrid"),
-        getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre")))))
+        col("decoded_url"))))
       .withColumn("creative_id", lit(-999))
       .withColumn("test_ctrl_flag", lit(0))
       // not in imk will be removed after column selection
@@ -266,7 +268,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn("cart_id", getParamFromQueryUdf(col("applicationpayload"), lit("cart_id")))
       .withColumn("extrnl_cookie", lit(""))
       .withColumn("ebay_site_id", col("siteid"))
-      .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("channeltype"), getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre"))))
+      .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("channeltype"), col("decoded_url")))
       .withColumn("cre_date", lit(""))
       .withColumn("cre_user", lit(""))
       .withColumn("upd_date", lit(""))
