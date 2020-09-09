@@ -16,7 +16,7 @@ public class CobrandParser {
       1115, 1160, 1161, 4290};
   private static String[] startPatternList = {"HTC", "MOT-", "Terra/", "eBayWinPhoCore/"};
   private static String[] indexPatternList = {"iPhone", "iPad", "iPod", "AtomicBrowser/", "Android", "BlackBerry", "BB10",
-      "Symbian", "SymbOS", "Opera Mini", "Opera Mobi", "MIDP", "HTC ", "webOS", "Zune ", " ZuneWP7", "BREW ",
+      "Symbian", "SymbOS", "Opera Mini", "Opera Mobi", "MIDP", " HTC ", "webOS", "Zune ", " ZuneWP7", "BREW ",
       "Maemo Browser"};
   private static String[] matchPatternList = {"Mobile#Safari"};
   private static String[][] multiMatchPatternArray = new String[matchPatternList.length][];
