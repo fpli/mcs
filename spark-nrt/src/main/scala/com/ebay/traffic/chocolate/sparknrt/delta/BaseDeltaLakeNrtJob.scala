@@ -191,9 +191,12 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
     // get last done timestamp
     val lastDoneTimestamp = lastDoneAndDelay._1.toEpochSecond * multiplierForMs
     // delta table after last done timestamp
+    deltaTable.toDF.show()
     val deltaDfAfterLastDone = deltaTable.toDF
       .filter(col(eventTimestamp).>=(lastDoneTimestamp))
       .withColumnRenamed(snapshotid, deltaSnapshotid)
+
+    deltaDfAfterLastDone.show
 
     // source df after last done timestamp, don't need cache, since it won't change
     val sourceDf = readSource(lastDoneAndDelay._1)

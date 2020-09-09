@@ -129,7 +129,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     // 4 records in 2020-07-17 after the delta last done
     val deltaFileSource = new File("src/test/resources/masterTable/imk/delta_table.csv")
 
-    val trackingEventTable = TableSchema("df_delta_event.json")
+    val trackingEventTable = TableSchema("df_imk_delta.json")
     val inputDf = job.readFilesAsDF(deltaFileSource.getAbsolutePath, trackingEventTable.dfSchema, "csv", "comma")
 
     inputDf.write.format("delta").mode("overwrite").partitionBy("dt").save(deltaDir)
