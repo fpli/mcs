@@ -225,7 +225,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       val channel = kv._1
       val singleChannelImkDumpDf = mutable.Map[String, DataFrame]()
       kv._2.foreach(metaIter => {
-        val outputMetas = metaIter._2.map(dateFile => {
+        metaIter._2.foreach(dateFile => {
           val date = dateFile._1
           logger.info("load DataFrame, %s, with files=%s".format(date, dateFile._2.mkString(",")))
           val df = readFilesAsDFEx(dateFile._2)
@@ -251,25 +251,14 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
               tools.metrics.flush()
             }
             iter
-          }).repartition(params.partitions).cache()
-
-          metrics.meter("imk.dump.out", imkDumpRepartitionDf.count(), Field.of[String, AnyRef]("channelType", channel))
-
-          // save to hdfs, for UC4 etl job
-          saveDFToFiles(imkDumpRepartitionDf, imkDumpTempDir, "gzip", "csv", "bel")
-
-          val files = renameFiles(imkDumpOutputDir, imkDumpTempDir, date, channel)
+          }).cache()
 
           if (singleChannelImkDumpDf.contains(date)) {
             singleChannelImkDumpDf.put(date, singleChannelImkDumpDf(date).union(imkDumpRepartitionDf))
           } else {
             singleChannelImkDumpDf.put(date, imkDumpRepartitionDf)
           }
-
-          DateFiles(date, files)
-        }).toArray
-        val outputMetadata = Metadata(params.workDir, channel, MetadataEnum.imkDump)
-        outputMetadata.writeDedupeOutputMeta(MetaFiles(outputMetas), suffixArray)
+        })
       })
       imkDumpDfMap.put(channel, singleChannelImkDumpDf)
     })

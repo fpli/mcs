@@ -17,7 +17,7 @@ bin=`cd "$bin">/dev/null; pwd`
 WORK_DIR=$1
 RESOURCE_DIR=$2
 FILTER_TIME=$3
-OUTPUT_DIR=/apps/epn-nrt
+OUTPUT_DIR=hdfs://elvisha/apps/epn-nrt
 
 DRIVER_MEMORY=15g
 EXECUTOR_NUMBER=40

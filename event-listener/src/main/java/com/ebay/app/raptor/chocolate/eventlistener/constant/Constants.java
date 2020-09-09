@@ -1,5 +1,7 @@
 package com.ebay.app.raptor.chocolate.eventlistener.constant;
 
+import com.google.common.collect.ImmutableMap;
+
 /**
  * @author xiangli4
  */
@@ -20,6 +22,7 @@ public class Constants {
   public static final String RVRID = "rvrid";
   public static final String EPAGE_REFERER = "originalRef";
   public static final String ADGUID = "adguid";
+  public static final String GUID = "guid";
 
   public static final String MKRVRID = "mkrvrid";
   public static final String REFERRER = "referrer";
@@ -37,6 +40,7 @@ public class Constants {
   public static final String YM_MSSG_ID = "ymsid";
   public static final String YM_INSTC = "yminstc";
   public static final String SMS_ID = "smsid";
+  public static final String CHOCO_BUYER_ACCESS_SITE_ID = "choco_bs";
 
   public static final String REFERER_HEADER = "referer";
   public static final String REFERER_HEADER_UPCASE = "Referer";
@@ -69,5 +73,36 @@ public class Constants {
   // Metrics name
   public static final String CHANNEL_ACTION = "channelAction";
   public static final String CHANNEL_TYPE = "channelType";
+
+  /**
+   * Email tag - param map
+   */
+  public static final ImmutableMap<String, String> emailTagParamMap = new ImmutableMap.Builder<String, String>()
+      .put("adcamp_landingpage", "adcamp_landingpage")
+      .put("adcamp_locationsrc", "adcamp_locationsrc")
+      .put("adcamppu", "pu")
+      .put("bu", "bu")
+      .put("cbtrack", "cbtrack")
+      .put("chnl", "mkcid")
+      .put("crd", "crd")
+      .put("cs", "cs")
+      .put("ec", "ec")
+      .put("emid", "bu")
+      .put("emsid", "emsid")
+      .put("es", "es")
+      .put("euid", "euid")
+      .put("exe", "exe")
+      .put("ext", "ext")
+      .put("nqc", "nqc")
+      .put("nqt", "nqt")
+      .put("placement-type", "placement-type")
+      .put("rank", "rank")
+      .put("rpp_cid", "rpp_cid")
+      .put("segname", "segname")
+      .put("sid", "emsid")
+      .put("yminstc", "yminstc")
+      .put("ymmmid", "ymmmid")
+      .put("ymsid", "ymsid")
+      .build();
 
 }

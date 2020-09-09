@@ -75,9 +75,14 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   private static final String COUCHBASE_DATASOURCE = "chocolate.event-listener.couchbase.datasource";
 
   /**
-   * Static driver ID
+   * Environment
    */
-  static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
+  private static final String ENVIRONMENT = "chocolate.event-listener.env";
+
+  /**
+   * default driver ID
+   */
+  static int driverId;
 
   /**
    * kafka related
@@ -247,7 +252,11 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    * @return the driver ID for the event-listener.
    */
   public int getDriverId() {
-    return DRIVER_ID;
+    return driverId;
+  }
+
+  public void setDriverId(final int driverId) {
+    ApplicationOptions.driverId = driverId;
   }
 
   @Override
@@ -261,5 +270,12 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
   public String getCouchbaseDatasource() {
     return ApplicationOptionsParser.getStringProperty(properties, COUCHBASE_DATASOURCE);
+  }
+
+  /**
+   * Get environment
+   */
+  public String getEnvironment() {
+    return ApplicationOptionsParser.getStringProperty(properties, ENVIRONMENT);
   }
 }
