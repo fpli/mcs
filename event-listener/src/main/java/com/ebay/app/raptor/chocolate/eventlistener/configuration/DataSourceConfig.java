@@ -28,13 +28,11 @@ public class DataSourceConfig {
         logger.info("databaseProperties: {}", databaseProperties);
         String userName = databaseProperties.getBridgeConfig().getUsernameChannel();
         String pass = databaseProperties.getBridgeConfig().getPasswordChannel();
-        fideliusClient.create("mktcollectionsvc.mysqlpassword", pass);
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setUrl(databaseProperties.getBridgeConfig().getUrl());
         dataSource.setUsername(userName);
-        dataSource.setPassword(pass);
-//        dataSource.setPassword(fideliusClient.getContent(pass));
-        logger.info("channel name config {} / pass config {} password {}", userName, pass, fideliusClient.getContent("mktcollectionsvc.mysqlpassword"));
+        logger.info("channel name config {} / pass config {}", userName, pass);
+        dataSource.setPassword(fideliusClient.getContent(pass));
         dataSource.setValidationQuery(databaseProperties.getBridgeConfig().getTestStatement());
         return dataSource;
     }
