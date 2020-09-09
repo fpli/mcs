@@ -43,7 +43,7 @@ object ImkDeltaNrtJob extends App {
 class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean = true)
   extends BaseDeltaLakeNrtJob(params, enableHiveSupport) {
 
-  lazy val imkChannels = Set("Paid Search", "Display", "Social Media", "ROI")
+  lazy val imkChannels = Set("PAID_SEARCH", "DISPLAY", "SOCIAL_MEDIA", "ROI").toSeq
   lazy val METRICS_INDEX_PREFIX = "imk-etl-metrics-"
 
   @transient lazy val metrics: Metrics = {
@@ -63,7 +63,9 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     * In order to work with super class timestamp comparison logic, the timestamp should be epoch millisecond format.
     * At the final stage of this job, the timestamp will be reformated to the final table timestamp format.
     */
-  @transient lazy val schema_apollo: TableSchema = TableSchema("df_imk_delta.json")
+  @transient lazy val schema_delta_apollo: TableSchema = TableSchema("df_imk_delta.json")
+  @transient lazy val schema_apollo: TableSchema = TableSchema("df_imk_delta_final.json")
+
 
   import spark.implicits._
 
@@ -77,7 +79,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
   val getUserQueryUdf: UserDefinedFunction = udf((referer: String, query: String) => tools.getUserQuery(referer, query))
   val replaceMkgroupidMktypeUdf: UserDefinedFunction = udf((channelType: String, uri: String) => replaceMkgroupidMktype(channelType, uri))
   val replaceMkgroupidMktypeUdfAndParseMpreFromRoverUdf: UserDefinedFunction = udf((channelType: String, uri: String) => replaceMkgroupidMktypeAndParseMpreFromRover(channelType, uri))
-  val getDateTimeUdf: UserDefinedFunction = udf((timestamp: String) => tools.getDateTimeFromTimestamp(timestamp))
+  val getDateTimeUdf: UserDefinedFunction = udf((timestamp: Long) => tools.getDateTimeFromTimestamp(timestamp))
   val getKeywordUdf: UserDefinedFunction = udf((query: String) => tools.getParamFromQuery(query, tools.keywordParams))
   val getDefaultNullNumParamValueFromUrlUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getDefaultNullNumParamValueFromQuery(query, key))
   val getParamFromQueryUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getParamValueFromQuery(query, key))
@@ -197,30 +199,30 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     val sql = "select * from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
     val sourceDf = sqlsc.sql(sql)
     var imkDf = sourceDf
-      .filter(col("snapshot_id").isNotNull)
-      .filter(col("channel_type").isin(imkChannels))
+      .filter(col("snapshotid").isNotNull)
+      .filter(col("channeltype").isin(imkChannels:_*))
       .withColumn("temp_uri_query", getQueryParamsUdf(getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre"))))
       .withColumn("batch_id", getBatchIdUdf())
-      .withColumn("rvr_id", col("snapshot_id"))
-      .withColumn("event_dt", col("dt"))
-      .withColumn("rvr_cmnd_type_cd", col("channel_action"))
-      .withColumn("rvr_chnl_type_cd", col("channel_type"))
+      .withColumn("rvr_id", col("snapshotid"))
+      .withColumn("dt", col("dt"))
+      .withColumn("rvr_cmnd_type_cd", col("channelaction"))
+      .withColumn("rvr_chnl_type_cd", col("channeltype"))
       .withColumn("cguid", getParamFromQueryUdf(col("applicationpayload"), lit("cguid")))
       .withColumn("guid", col("guid"))
       .withColumn("user_id", getParamFromQueryUdf(col("applicationpayload"), lit("u")))
-      .withColumn("clnt_remote_ip", getBrowserTypeUdf(getParamFromQueryUdf(col("client_data"), lit("RemoteIP"))))
-      .withColumn("brwsr_type_id", getBrowserTypeUdf(getParamFromQueryUdf(col("client_data"), lit("Agent"))))
-      .withColumn("brwsr_name", getParamFromQueryUdf(col("client_data"), lit("Agent")))
-      .withColumn("rfrr_dmn_name", getLandingPageDomainUdf(col("referer")))
-      .withColumn("rfrr_url", col("referer"))
+      .withColumn("clnt_remote_ip", getBrowserTypeUdf(getParamFromQueryUdf(col("clientdata"), lit("RemoteIP"))))
+      .withColumn("brwsr_type_id", getBrowserTypeUdf(getParamFromQueryUdf(col("clientdata"), lit("Agent"))))
+      .withColumn("brwsr_name", getParamFromQueryUdf(col("clientdata"), lit("Agent")))
+      .withColumn("rfrr_dmn_name", getLandingPageDomainUdf(col("referrer")))
+      .withColumn("rfrr_url", col("referrer"))
       .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre"))))
       .withColumn("lndng_page_url", getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre")))
-      .withColumn("user_query", getUserQueryUdf(col("referer"), col("temp_uri_query")))
+      .withColumn("user_query", getUserQueryUdf(col("referrer"), col("temp_uri_query")))
       .withColumn("eventtimestamp", col("eventtimestamp"))
       .withColumn("src_rotation_id", getBrowserTypeUdf(getParamFromQueryUdf(col("applicationpayload"), lit("rotid"))))
       .withColumn("dst_rotation_id", getBrowserTypeUdf(getParamFromQueryUdf(col("applicationpayload"), lit("rotid"))))
       .withColumn("user_map_ind", getParamFromQueryUdf(col("applicationpayload"), lit("u")))
-      .withColumn("dst_client_id", setDefaultValueForDstClientIdUdf(getClientIdUdf(col("channel_type"), col("temp_uri_query"), lit("mkrid"), col("uri"))))
+      .withColumn("dst_client_id", setDefaultValueForDstClientIdUdf(getClientIdUdf(col("channeltype"), col("temp_uri_query"), lit("mkrid"), col("uri"))))
       // not in imk will be removed after column selection
       .withColumn("mfe_name", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
       .withColumn("mfe_id", getMfeIdUdf(getParamFromQueryUdf(col("temp_uri_query"), lit("crlp"))))
@@ -234,13 +236,12 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn("cart_id", getParamFromQueryUdf(col("applicationpayload"), lit("cart_id")))
       .withColumn("ebay_site_id", col("site_id"))
       .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("channel_type"), getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre"))))
-      .na.fill(schema_apollo.defaultValues).cache()
+      .na.fill(schema_delta_apollo.defaultValues).cache()
 
     // set default values for some columns
-    schema_apollo.filterNotColumns(imkDf.columns).foreach(e => {
-      imkDf = imkDf.withColumn(e, lit(schema_apollo.defaultValues(e)))
+    schema_delta_apollo.filterNotColumns(imkDf.columns).foreach(e => {
+      imkDf = imkDf.withColumn(e, lit(schema_delta_apollo.defaultValues(e)))
     })
-
     imkDf
   }
 
@@ -254,7 +255,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     df.show()
     val finalDf = df
       .withColumn("event_ts", getDateTimeUdf(col("eventtimestamp")))
-      .drop("eventtimestamp")
+      .select(schema_apollo.dfColumns: _*)
     // save to final output
     finalDf.show()
     this.saveDFToFiles(finalDf, outputPath = outputDir, compressFormat= "gzip", outputFormat = "csv", delimiter = "bel",

@@ -14,7 +14,6 @@ class ToolsTest extends FunSuite {
   test("test getDateTimeFromTimestamp") {
     assert(tools.getDateFromTimestamp(1531377313068L) == "2018-07-12")
     assert(tools.getDateTimeFromTimestamp(1531377313068L) == "2018-07-12 14:35:13.068")
-    println(tools.getDateTimeFromTimestamp("1597568678000"))
   }
 
   test("test getQueryString") {

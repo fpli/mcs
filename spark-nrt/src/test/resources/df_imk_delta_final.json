@@ -1,0 +1,256 @@
+{
+  "table": "df_imk_apollo",
+  "description": "",
+  "columns": [
+    {
+      "name": "batch_id",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "file_id",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "file_schm_vrsn",
+      "dataType": "integer",
+      "default": 4
+    },
+    {
+      "name": "rvr_id",
+      "dataType": "long",
+      "default": ""
+    },
+    {
+      "name": "dt",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "srvd_pstn",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "rvr_cmnd_type_cd",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "rvr_chnl_type_cd",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "cntry_cd",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "lang_cd",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "trckng_prtnr_id",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "cguid",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "guid",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "user_id",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "clnt_remote_ip",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "brwsr_type_id",
+      "dataType": "integer",
+      "default": -99
+    },
+    {
+      "name": "brwsr_name",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "rfrr_dmn_name",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "rfrr_url",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "url_encrptd_yn_ind",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "pblshr_id",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "lndng_page_dmn_name",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "lndng_page_url",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "user_query",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "rule_bit_flag_strng",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "event_ts",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "dflt_bhrv_id",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "src_rotation_id",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "dst_rotation_id",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "user_map_ind",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "dst_client_id",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "creative_id",
+      "dataType": "long",
+      "default": -999
+    },
+    {
+      "name": "test_ctrl_flag",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "mfe_id",
+      "dataType": "integer",
+      "default": -999
+    },
+    {
+      "name": "kw_id",
+      "dataType": "long",
+      "default": -999
+    },
+    {
+      "name": "keyword",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "mt_id",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "crlp",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "geo_id",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "item_id",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "transaction_type",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "transaction_id",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "cart_id",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "extrnl_cookie",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "ebay_site_id",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "rvr_url",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "cre_date",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "cre_user",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "upd_date",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "upd_user",
+      "dataType": "string",
+      "default": ""
+    }
+  ]
+}
