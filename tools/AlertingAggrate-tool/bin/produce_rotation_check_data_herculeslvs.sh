@@ -17,3 +17,7 @@ echo "end count clients"
 echo "start count vendors"
 /datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -f /datashare/mkttracking/tools/AlertingAggrate-tool/sql/vendors_herculeslvs.sql
 echo "end count vendors"
+
+echo "start count tracking_event"
+/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -f /datashare/mkttracking/tools/AlertingAggrate-tool/sql/tracking_event_herculeslvs.sql
+echo "end count tracking_event"
