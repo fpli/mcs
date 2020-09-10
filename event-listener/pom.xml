@@ -403,16 +403,16 @@
     <!-- SOJ -->
     <dependency>
       <groupId>com.ebay.hadoop.sojourner</groupId>
-      <artifactId>sojourner-core</artifactId>
+      <artifactId>sojourner-common</artifactId>
       <version>0.2.0-hadoop-2.7.1.2</version>
       <exclusions>
         <exclusion>
-          <groupId>com.ebay.apd.legato.soj</groupId>
-          <artifactId>sojournerDomRaw</artifactId>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>plumbum.patch</groupId>
-          <artifactId>hadoop7682</artifactId>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
