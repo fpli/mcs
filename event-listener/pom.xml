@@ -400,6 +400,23 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- SOJ -->
+    <dependency>
+      <groupId>com.ebay.hadoop.sojourner</groupId>
+      <artifactId>sojourner-core</artifactId>
+      <version>0.2.0-hadoop-2.7.1.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.ebay.apd.legato.soj</groupId>
+          <artifactId>sojournerDomRaw</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>plumbum.patch</groupId>
+          <artifactId>hadoop7682</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <dependency>
       <groupId>commons-dbcp</groupId>
       <artifactId>commons-dbcp</artifactId>
