@@ -93,7 +93,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     job.updateOutput(now)
 
     // verification. There will be 1 record in output dt=2020-08-16 and 1 record in output dt=2020-08-17
-    val df = job.readFilesAsDF(outPutDir, inputFormat = "csv", delimiter = "bel")
+    val df = job.readFilesAsDF(outPutDir)
     df.show()
     assert(df.count() == 2)
     fs.delete(new Path(tmpPath.toString), true)
@@ -137,7 +137,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     job.updateOutput(mockNow)
 
     // verification. There is only one record.
-    val df = job.readFilesAsDF(outPutDir, inputFormat = "csv", delimiter = "bel")
+    val df = job.readFilesAsDF(outPutDir)
     df.show()
     assert(df.count() == 1)
 

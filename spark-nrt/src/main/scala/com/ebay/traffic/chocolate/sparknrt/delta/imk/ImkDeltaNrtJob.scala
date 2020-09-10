@@ -5,14 +5,13 @@
 package com.ebay.traffic.chocolate.sparknrt.delta.imk
 
 import java.net.URLDecoder
-import java.time.{Instant, ZoneId, ZonedDateTime}
+import java.time.ZonedDateTime
 
-import com.ebay.app.raptor.chocolate.constant.{ChannelActionEnum, ChannelIdEnum}
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum
 import org.apache.spark.sql.{DataFrame, SaveMode}
 import com.ebay.traffic.chocolate.sparknrt.delta.{BaseDeltaLakeNrtJob, Parameter}
 import com.ebay.traffic.chocolate.sparknrt.imkDump.Tools
 import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
-import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, lit, udf}
@@ -43,15 +42,8 @@ object ImkDeltaNrtJob extends App {
 class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean = true)
   extends BaseDeltaLakeNrtJob(params, enableHiveSupport) {
 
-  lazy val imkChannels = Set("PAID_SEARCH", "DISPLAY", "SOCIAL_MEDIA", "ROI").toSeq
+  private lazy val IMK_CHANNELS: Seq[String] = Set("PAID_SEARCH", "DISPLAY", "SOCIAL_MEDIA", "ROI").toSeq
   lazy val METRICS_INDEX_PREFIX = "imk-etl-metrics-"
-
-  @transient lazy val metrics: Metrics = {
-    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
-      ESMetrics.init(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
-      ESMetrics.getInstance()
-    } else null
-  }
 
   @transient lazy val mfe_name_id_map: Map[String, String] = {
     val mapData = Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("mfe_name_id_map.txt")).getLines
@@ -103,22 +95,6 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
   }
 
   /**
-    * set apollo item_id filed by tfs item_id and roi_item_id
-    * @param roi_item_id roi_item_id
-    * @param item_id item_id
-    * @return apollo item_id
-    */
-  def getApolloItemId(roi_item_id: String, item_id: String): String = {
-    if (StringUtils.isNotEmpty(roi_item_id) && StringUtils.isNumeric(roi_item_id) && roi_item_id.toLong != -999) {
-      roi_item_id
-    } else if (StringUtils.isNotEmpty(item_id) && item_id.length <= 18) {
-      item_id
-    } else{
-      ""
-    }
-  }
-
-  /**
     * Campaign Manager changes the url template for all PLA accounts, replace adtype=pla and*adgroupid=65058347419* with
     * new parameter mkgroupid={adgroupid} and mktype={adtype}. Tracking’s MCS data pipeline job replace back to adtype
     * and adgroupid and persist into IMK so there wont be impact to downstream like data and science.
@@ -135,9 +111,6 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
           .replace("mktype", "adtype")
       } catch {
         case e: Exception => {
-          if (metrics != null) {
-            metrics.meter("imk.dump.malformed", 1, Field.of[String, AnyRef]("channelType", channelType))
-          }
           logger.warn("MalformedUrl", e)
         }
       }
@@ -163,9 +136,6 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
           newUri = URLDecoder.decode(landingPageUrl,"UTF-8")
         } catch {
           case e: Exception => {
-            if(metrics != null) {
-              metrics.meter("imk.dump.error.parseMpreFromRoverError", 1)
-            }
             logger.warn("MalformedUrl", e)
           }
         }
@@ -216,7 +186,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     val sourceDf = sqlsc.sql(sql)
     var imkDf = sourceDf
       .filter(col("snapshotid").isNotNull)
-      .filter(col("channeltype").isin(imkChannels:_*))
+      .filter(col("channeltype").isin(IMK_CHANNELS:_*))
       .withColumn("decoded_url", decodeUrlUdf(getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre"))))
       .withColumn("temp_uri_query", col("decoded_url"))
       .withColumn("batch_id", getBatchIdUdf())
@@ -241,7 +211,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn("url_encrptd_yn_ind", lit(0))
       .withColumn("pblshr_id", lit(""))
       .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(col("decoded_url")))
-      .withColumn("lndng_page_url", col("decoded_url"))
+      .withColumn("lndng_page_url", replaceMkgroupidMktypeUdfAndParseMpreFromRoverUdf(col("channeltype"), col("decoded_url")))
       .withColumn("user_query", getUserQueryUdf(col("referrer"), col("temp_uri_query")))
       .withColumn("rule_bit_flag_strng", lit(""))
       .withColumn("eventtimestamp", col("eventtimestamp"))
@@ -296,8 +266,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .select(schema_apollo.dfColumns: _*)
     // save to final output
     finalDf.show()
-    this.saveDFToFiles(finalDf, outputPath = outputDir, compressFormat= "gzip", outputFormat = "csv", delimiter = "bel",
-      writeMode = SaveMode.Append, partitionColumn = dt)
+    this.saveDFToFiles(finalDf, outputPath = outputDir, writeMode = SaveMode.Append, partitionColumn = dt)
   }
 
   /**
