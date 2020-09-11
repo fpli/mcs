@@ -722,16 +722,6 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
-    // add tags in url param "sojTags"
-    if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
-      addGenericSojTags(requestContext, parameters, referer, type, action);
-    }
-
-    // add tags all channels need
-    if (!channelAction.equals(ChannelActionEnum.SERVE) && !channelAction.equals(ChannelActionEnum.IMPRESSION)) {
-      addCommonTags(requestContext, null, referer, agentInfo, type, action, PageIdEnum.EMAIL_OPEN.getId());
-    }
-
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
     if (channelType == ChannelIdEnum.SITE_EMAIL)
