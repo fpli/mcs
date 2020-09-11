@@ -72,4 +72,12 @@ public class DailyEmailHtml {
     }
   }
 
+  public static String getDailyTrackingEventCompareHtml() {
+    try {
+      return "Tracking Event number compare\n" + DailyTrackingEventCompareTable.parseDailyTrackingEventCompare(DailyTrackingEventCompareUtil.getDailyTrackingEventCompares());
+    } catch (Exception e) {
+      logger.error(e.getMessage());
+      return "getDailyTrackingEventCompareHtml";
+    }
+  }
 }

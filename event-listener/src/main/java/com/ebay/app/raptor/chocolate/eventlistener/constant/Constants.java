@@ -40,6 +40,7 @@ public class Constants {
   public static final String YM_MSSG_ID = "ymsid";
   public static final String YM_INSTC = "yminstc";
   public static final String SMS_ID = "smsid";
+  public static final String CHOCO_BUYER_ACCESS_SITE_ID = "choco_bs";
 
   public static final String REFERER_HEADER = "referer";
   public static final String REFERER_HEADER_UPCASE = "Referer";
@@ -77,26 +78,32 @@ public class Constants {
    * Email tag - param map
    */
   public static final ImmutableMap<String, String> emailTagParamMap = new ImmutableMap.Builder<String, String>()
-      .put("chnl", "mkcid")
-      .put("euid", "euid")
-      .put("emid", "bu")
+      .put("adcamp_landingpage", "adcamp_landingpage")
+      .put("adcamp_locationsrc", "adcamp_locationsrc")
+      .put("adcamppu", "pu")
       .put("bu", "bu")
+      .put("cbtrack", "cbtrack")
+      .put("chnl", "mkcid")
       .put("crd", "crd")
-      .put("segname", "segname")
+      .put("cs", "cs")
+      .put("ec", "ec")
+      .put("emid", "bu")
+      .put("emsid", "emsid")
+      .put("es", "es")
+      .put("euid", "euid")
       .put("exe", "exe")
       .put("ext", "ext")
-      .put("es", "es")
-      .put("ec", "ec")
       .put("nqc", "nqc")
       .put("nqt", "nqt")
-      .put("emsid", "emsid")
-      .put("sid", "emsid")
-      .put("rpp_cid", "rpp_cid")
-      .put("rank", "rank")
-      .put("cs", "cs")
+      .put("osub", "osub")
       .put("placement-type", "placement-type")
-      .put("adcamppu", "pu")
-      .put("cbtrack", "cbtrack")
+      .put("rank", "rank")
+      .put("rpp_cid", "rpp_cid")
+      .put("segname", "segname")
+      .put("sid", "emsid")
+      .put("yminstc", "yminstc")
+      .put("ymmmid", "ymmmid")
+      .put("ymsid", "ymsid")
       .build();
 
 }

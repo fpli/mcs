@@ -52,7 +52,6 @@ import java.util.*;
 
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.generateQueryString;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
-import static com.ebay.traffic.chocolate.common.TestHelper.loadProperties;
 import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
