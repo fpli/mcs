@@ -10,6 +10,7 @@ public class Constants {
 
   public static final String MKCID = "mkcid";
   public static final String MKRID = "mkrid";
+  public static final String MKSRID = "mksrid";
   public static final String CGUID = "cguid";
   public static final String GUID = "guid";
   public static final String RVR_ID = "rvr_id";
@@ -33,6 +34,8 @@ public class Constants {
   public static final int ISO_COUNTRY_CODE_LENGTH = 2;
   public static final String REF_URL = "refURL";
   public static final String ROVER_USERID = "rover_userid";
+  public static final String MPLX_PLACEMENT_ID = "mplx_placement_id";
+  public static final String ADTYPE = "adtype";
 
   // header name
   public static final String USER_AGENT = "User-Agent";
