@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-WORK_DIR=/apps/tracking-events-workdir
+WORK_DIR=hdfs://elvisha/apps/tracking-events-workdir
 CHANNEL=EPN
 USAGE_CLICK=epnnrt_scp_click
 USAGE_IMP=epnnrt_scp_imp
