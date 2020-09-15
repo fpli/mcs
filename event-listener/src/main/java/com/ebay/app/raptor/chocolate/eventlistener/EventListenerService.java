@@ -61,7 +61,6 @@ public class EventListenerService {
     }
 
     KafkaSink.initialize(options, options);
-    BehaviorKafkaSink.initialize(ApplicationOptions.getInstance().getBehaviorRheosProperties());
     ListenerMessageParser.init();
     BehaviorMessageParser.init();
 
