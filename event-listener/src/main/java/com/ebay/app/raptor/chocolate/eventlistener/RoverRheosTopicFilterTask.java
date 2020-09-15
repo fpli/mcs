@@ -75,9 +75,6 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static RoverRheosTopicFilterTask task = null;
   private static Boolean runFlag = true;
 
-  private Map<String, String> applicationPayload = new HashMap<>();
-  private List<Map<String, String>> data = new ArrayList<>();
-
   /**
    * Singleton
    *
@@ -252,12 +249,6 @@ public class RoverRheosTopicFilterTask extends Thread {
 
       if (topic.equals(EMAIL_CLICK_TOPIC)) {
         String channelType = parseChannelType(genericRecord);
-        // chocolate click
-        if (pageId == PageIdEnum.CLICK.getId()) {
-          BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.CLICK.getName(), ChannelAction.CLICK.name(), channelType);
-          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
-          continue;
-        }
         // rover click
         if (pageId == ROVER_CLICK_PAGE_ID) {
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_CLICK.getName(), ChannelAction.CLICK.name(), channelType);
@@ -269,12 +260,6 @@ public class RoverRheosTopicFilterTask extends Thread {
 
       if (topic.equals(BOT_TOPIC)) {
         String channelType = parseChannelType(genericRecord);
-        // chocolate click bot
-        if (pageId == PageIdEnum.CLICK.getId()) {
-          BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.CHOCOLATE_CLICK_BOT.getName(), ChannelAction.CLICK.name(), channelType);
-          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
-          continue;
-        }
         // rover click bot
         if (pageId == ROVER_CLICK_PAGE_ID) {
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.CLICK_BOT.getName(), ChannelAction.CLICK.name(), channelType);

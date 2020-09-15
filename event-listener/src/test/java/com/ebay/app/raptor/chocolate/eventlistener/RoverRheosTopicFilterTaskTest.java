@@ -300,14 +300,9 @@ public class RoverRheosTopicFilterTaskTest {
     public void testProcessEmailClickRecords() throws Exception {
         initConsumer("behavior.pulsar.customized.email");
 
-        RheosEvent roveropen1 = createRheosEvent(2547208, "", "7",
-                "/roveropen/0/e12060/7?osub=-1%7E1&crd=20200813220048&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869");
-
         RheosEvent roveropen2 = createRheosEvent(3084, "", "7",
                 "/roveropen/0/e12060/7?osub=-1%7E1&crd=20200813220048&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869");
 
-        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.email", 0, 0L,
-                ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen1.get("eventTimestamp")).array(), roveropen1));
         consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.email", 0, 1L,
                 ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen2.get("eventTimestamp")).array(), roveropen2));
 
@@ -317,28 +312,19 @@ public class RoverRheosTopicFilterTaskTest {
         List<ProducerRecord<Long, BehaviorMessage>> history = behaviorProducer.history();
 
         assertEquals("CLICK", history.get(0).value().getChannelAction());
-        assertEquals(Integer.valueOf(2547208), history.get(0).value().getPageId());
-        assertEquals("Rover_Click", history.get(1).value().getPageName());
+        assertEquals(Integer.valueOf(3084), history.get(0).value().getPageId());
+        assertEquals("Rover_Click", history.get(0).value().getPageName());
         assertEquals("SITE_EMAIL", history.get(0).value().getChannelType());
-
-        assertEquals("CLICK", history.get(1).value().getChannelAction());
-        assertEquals(Integer.valueOf(3084), history.get(1).value().getPageId());
-        assertEquals("Rover_Click", history.get(1).value().getPageName());
-        assertEquals("SITE_EMAIL", history.get(1).value().getChannelType());
     }
 
     @Test
     public void testProcessBotRecords() throws Exception {
         initConsumer("behavior.pulsar.misc.bot");
 
-        RheosEvent chocolateClick = createRheosEvent(2547208, "", "7", "");
-
         RheosEvent roverClick = createRheosEvent(3084, "", "7", "");
 
         RheosEvent roveropen = createRheosEvent(3962, "roveropen", "7", "");
 
-        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 0L,
-                ByteBuffer.allocate(Long.BYTES).putLong((long) chocolateClick.get("eventTimestamp")).array(), chocolateClick));
         consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 1L,
                 ByteBuffer.allocate(Long.BYTES).putLong((long) roverClick.get("eventTimestamp")).array(), roverClick));
         consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 2L,
@@ -350,19 +336,14 @@ public class RoverRheosTopicFilterTaskTest {
         List<ProducerRecord<Long, BehaviorMessage>> history = behaviorProducer.history();
 
         assertEquals("CLICK", history.get(0).value().getChannelAction());
-        assertEquals(Integer.valueOf(2547208), history.get(0).value().getPageId());
-        assertEquals("Chocolate_Click_Bot", history.get(0).value().getPageName());
+        assertEquals(Integer.valueOf(3084), history.get(0).value().getPageId());
+        assertEquals("Rover_Click_Bot", history.get(0).value().getPageName());
         assertEquals("SITE_EMAIL", history.get(0).value().getChannelType());
 
-        assertEquals("CLICK", history.get(1).value().getChannelAction());
-        assertEquals(Integer.valueOf(3084), history.get(1).value().getPageId());
-        assertEquals("Rover_Click_Bot", history.get(1).value().getPageName());
+        assertEquals("EMAIL_OPEN", history.get(1).value().getChannelAction());
+        assertEquals(Integer.valueOf(3962), history.get(1).value().getPageId());
+        assertEquals("Rover_Open_Bot", history.get(1).value().getPageName());
         assertEquals("SITE_EMAIL", history.get(1).value().getChannelType());
-
-        assertEquals("EMAIL_OPEN", history.get(2).value().getChannelAction());
-        assertEquals(Integer.valueOf(3962), history.get(2).value().getPageId());
-        assertEquals("Rover_Open_Bot", history.get(2).value().getPageName());
-        assertEquals("SITE_EMAIL", history.get(2).value().getChannelType());
     }
 
     @Test

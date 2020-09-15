@@ -13,6 +13,7 @@ public class PageNameEnumTest {
     assertEquals("Open", PageNameEnum.OPEN.getName());
     assertEquals("AdRequest", PageNameEnum.ADREQUEST.getName());
     assertEquals("ThirdParty_Click", PageNameEnum.THIRDPARTY_CLICK.getName());
+    assertEquals("Roi", PageNameEnum.ROI.getName());
     assertEquals("Chocolate_Click_Bot", PageNameEnum.CHOCOLATE_CLICK_BOT.getName());
     assertEquals("Rover_Click", PageNameEnum.ROVER_CLICK.getName());
     assertEquals("Rover_Impression", PageNameEnum.ROVER_IMPRESSION.getName());

@@ -68,6 +68,124 @@ public class BehaviorMessageParser {
     return INSTANCE;
   }
 
+  public BehaviorMessage parseAmsAndImkEvent(final HttpServletRequest request, ContainerRequestContext requestContext,
+                                             IEndUserContext endUserContext, MultiValueMap<String, String> parameters,
+                                             UserAgentInfo agentInfo, String uri, Long startTime, final ChannelType channelType,
+                                             final ChannelAction channelAction, Long snapshotId, int pageId, String pageName, int rdt,
+                                             String guid, String cguid, String userId, String rotationId) {
+
+    Map<String, String> applicationPayload = new HashMap<>();
+    Map<String, String> clientData = new HashMap<>();
+    List<Map<String, String>> data = new ArrayList<>();
+
+    // set default value
+    BehaviorMessage record = new BehaviorMessage("", "", 0L, null, 0, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, applicationPayload, null, clientData, "", "", "", data);
+
+    RequestTracingContext tracingContext = (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
+    DomainRequestData domainRequest = (DomainRequestData) requestContext.getProperty(DomainRequestData.NAME);
+
+    // guid
+    record.setGuid(guid);
+
+    // adguid
+    String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
+    String adguid = getData(Constants.ADGUID, trackingHeader);
+    if (adguid != null) {
+      record.setAdguid(adguid);
+    }
+
+    // source id
+    record.setSid(parseTagFromParams(parameters, Constants.SOURCE_ID));
+
+    record.setUserId(userId);
+
+    // eventTimestamp
+    record.setEventTimestamp(startTime);
+
+    // page info
+    record.setPageId(pageId);
+    record.setPageName(pageName);
+
+    // event family and action
+    record.setEventFamily(Constants.EVENT_FAMILY_CRM);
+    record.setEventAction(Constants.EVENT_ACTION);
+
+    // snapshotId
+    record.setSnapshotId(String.valueOf(snapshotId));
+
+    // fake session info
+    record.setSessionId(String.valueOf(snapshotId));
+    record.setSeqNum("1");
+
+    // agent info
+    record.setAgentInfo(endUserContext.getUserAgent());
+
+    // app info
+    String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
+    record.setAppId(appId);
+    if (agentInfo.getAppInfo() != null) {
+      record.setAppVersion(agentInfo.getAppInfo().getAppVersion());
+    }
+
+    // url query string
+    record.setUrlQueryString(UrlProcessHelper.getMaskedUrl(removeBsParam(parameters, uri), domainRequest.isSecure(),
+            false));
+
+    // device info
+    DDSResponse deviceInfo = agentInfo.getDeviceInfo();
+    record.setDeviceFamily(getDeviceFamily(deviceInfo));
+    record.setDeviceType(deviceInfo.getOsName());
+    record.setBrowserVersion(deviceInfo.getBrowserVersion());
+    record.setBrowserFamily(deviceInfo.getBrowser());
+    record.setOsVersion(deviceInfo.getDeviceOSVersion());
+    record.setOsFamily(deviceInfo.getDeviceOS());
+    record.setEnrichedOsVersion(deviceInfo.getDeviceOSVersion());
+
+    Map<String, String> applicationPayload1 = getApplicationPayload(applicationPayload, parameters, agentInfo, requestContext, uri,
+            domainRequest, deviceInfo, channelType, channelAction, guid, pageId);
+    applicationPayload1.put(Constants.CGUID, cguid);
+    applicationPayload1.put("u", userId);
+    applicationPayload1.put("userid", userId);
+    applicationPayload1.put("rotid", rotationId);
+    // applicationPayload
+    record.setApplicationPayload(applicationPayload1);
+
+    // cobrand
+    record.setCobrand(cobrandParser.parse(appId, endUserContext.getUserAgent()));
+
+    // rlogid
+    record.setRlogid(tracingContext.getRlogId());
+
+    // client data
+    record.setClientData(getClientData(clientData, domainRequest, endUserContext, request));
+
+    // web server
+    record.setWebServer(domainRequest.getHost());
+
+    // ip
+    record.setRemoteIP(getRemoteIp(request));
+    record.setClientIP(domainRequest.getClientIp());
+
+    // referer hash
+    if (domainRequest.getReferrerUrl() != null) {
+      record.setRefererHash(String.valueOf(domainRequest.getReferrerUrl().hashCode()));
+    }
+
+    // site id
+    record.setSiteId(String.valueOf(domainRequest.getSiteId()));
+
+    // rdt
+    record.setRdt(rdt);
+
+    // channel type and action
+    record.setChannelType(channelType.toString());
+    record.setChannelAction(channelAction.toString());
+
+    return record;
+  }
+
   public BehaviorMessage parse(final HttpServletRequest request, ContainerRequestContext requestContext,
                                IEndUserContext endUserContext, MultiValueMap<String, String> parameters,
                                UserAgentInfo agentInfo, String uri, Long startTime, final ChannelType channelType,
