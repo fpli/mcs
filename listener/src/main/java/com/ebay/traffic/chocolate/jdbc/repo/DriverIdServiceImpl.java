@@ -1,6 +1,5 @@
 package com.ebay.traffic.chocolate.jdbc.repo;
 
-import com.ebay.app.raptor.chocolate.common.Hostname;
 import com.ebay.traffic.chocolate.jdbc.model.HostnameDriverIdMappingEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +45,7 @@ public class DriverIdServiceImpl implements DriverIdService {
         hostnameDriverId.setLastQueryTime(new Timestamp(System.currentTimeMillis()));
         driverIdRepository.saveAndFlush(hostnameDriverId);
         int driverId = hostnameDriverId.getDriverId();
-        LOGGER.info("{} {} driver id is {}", Hostname.HOSTNAME, Hostname.getIp(), driverId);
+        LOGGER.info("{} {} driver id is {}", hostname, ip, driverId);
         return driverId;
       }
     }
