@@ -23,7 +23,7 @@
     <slf4j.version>1.7.7</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
     <hadoop.version>2.7.3</hadoop.version>
-    <spark.version>2.4.4</spark.version>
+    <spark.version>2.4.6</spark.version>
     <avro.version>1.8.2</avro.version>
     <parquet.version>1.11.0</parquet.version>
     <zookeeper.version>3.4.6</zookeeper.version>
