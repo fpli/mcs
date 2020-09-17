@@ -50,6 +50,8 @@ public class JettyServerConfiguration {
 
       ListenerOptions options = ListenerOptions.getInstance();
 
+      ListenerInitializer.init(ListenerOptions.getInstance());
+
       int driverId = driverIdService.getDriverId(Hostname.HOSTNAME, Hostname.getIp(), Long.valueOf(SnapshotId.MAX_DRIVER_ID).intValue(), DRIVERID_RETRIES);
       if (driverId != -1) {
         ESMetrics.getInstance().meter("DriverIdFromDB", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", driverId));
@@ -60,8 +62,6 @@ public class JettyServerConfiguration {
         ESMetrics.getInstance().meter("RandomDriverId", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", driverId));
         options.setDriverId(driverId);
       }
-
-      ListenerInitializer.init(ListenerOptions.getInstance());
 
       JettyServletWebServerFactory factory = new JettyServletWebServerFactory(options.getInputHttpPort());
       factory.addServerCustomizers(new JettyServerCustomizer() {
