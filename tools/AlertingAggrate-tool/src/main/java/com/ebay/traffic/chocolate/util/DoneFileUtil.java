@@ -115,9 +115,14 @@ public class DoneFileUtil {
       delay = delay_hour - 2;
     }
 
-    if (delay > 0 && delay <= 12) {
+    int waring_delay_max_value = 12;
+    if (path.contains("hercules")){
+      waring_delay_max_value = 5;
+    }
+
+    if (delay > 0 && delay <= waring_delay_max_value) {
       status = "Warning";
-    } else if (delay > 12) {
+    } else if (delay > waring_delay_max_value) {
       status = "Critical";
     }
 

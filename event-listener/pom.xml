@@ -139,7 +139,7 @@
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>ads-tracking-handler-starter</artifactId>
-      <version>1.0.0-RELEASE</version>
+      <version>1.0.1-RELEASE</version>
     </dependency>
 
     <!--global config-->
@@ -398,6 +398,23 @@
       <artifactId>CouchbaseMock</artifactId>
       <version>1.5.12</version>
       <scope>test</scope>
+    </dependency>
+
+    <!-- SOJ -->
+    <dependency>
+      <groupId>com.ebay.hadoop.sojourner</groupId>
+      <artifactId>sojourner-common</artifactId>
+      <version>0.2.0-hadoop-2.7.1.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>

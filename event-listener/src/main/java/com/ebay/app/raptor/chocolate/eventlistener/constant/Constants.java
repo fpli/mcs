@@ -95,6 +95,7 @@ public class Constants {
       .put("ext", "ext")
       .put("nqc", "nqc")
       .put("nqt", "nqt")
+      .put("osub", "osub")
       .put("placement-type", "placement-type")
       .put("rank", "rank")
       .put("rpp_cid", "rpp_cid")
