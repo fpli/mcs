@@ -249,6 +249,9 @@ public class RoverRheosTopicFilterTask extends Thread {
 
       if (topic.equals(EMAIL_CLICK_TOPIC)) {
         String channelType = parseChannelType(genericRecord);
+        if (!ChannelIdEnum.SITE_EMAIL.name().equals(channelType) && !ChannelIdEnum.MRKT_EMAIL.name().equals(channelType)) {
+          continue;
+        }
         // rover click
         if (pageId == ROVER_CLICK_PAGE_ID) {
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_CLICK.getName(), ChannelAction.CLICK.name(), channelType);
@@ -260,6 +263,9 @@ public class RoverRheosTopicFilterTask extends Thread {
 
       if (topic.equals(BOT_TOPIC)) {
         String channelType = parseChannelType(genericRecord);
+        if (!ChannelIdEnum.SITE_EMAIL.name().equals(channelType) && !ChannelIdEnum.MRKT_EMAIL.name().equals(channelType)) {
+          continue;
+        }
         // rover click bot
         if (pageId == ROVER_CLICK_PAGE_ID) {
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.CLICK_BOT.getName(), ChannelAction.CLICK.name(), channelType);
