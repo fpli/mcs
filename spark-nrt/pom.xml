@@ -284,7 +284,7 @@
           </execution>
         </executions>
       </plugin>
-      <!--placehoder-dont-remove-->
+      <!--scoverage-placehoder-dont-remove-->
     </plugins>
   </build>
 </project>
