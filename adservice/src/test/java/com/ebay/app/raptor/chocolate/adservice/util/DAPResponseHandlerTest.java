@@ -2,6 +2,7 @@ package com.ebay.app.raptor.chocolate.adservice.util;
 
 import com.ebay.app.raptor.chocolate.AdserviceResourceTest;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.constant.Headers;
 import com.ebay.app.raptor.chocolate.adservice.constant.LBSConstants;
 import com.ebay.app.raptor.chocolate.adservice.constant.MKEVT;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
@@ -18,6 +19,7 @@ import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
+import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.glassfish.jersey.server.ContainerRequest;
@@ -38,11 +40,15 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.when;
 
 /**
  * This class
@@ -72,20 +78,20 @@ public class DAPResponseHandlerTest {
   @Test
   public void getSiteId() throws Exception {
     ContainerRequest containerRequest = Mockito.mock(ContainerRequest.class);
-    Mockito.when(containerRequest.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(null);
+    when(containerRequest.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(null);
     assertEquals(Integer.valueOf(0), Whitebox.<Integer>invokeMethod(dapResponseHandler, "getSiteId", containerRequest));
 
     UserPrefsCtx userPrefsCtx = Mockito.mock(UserPrefsCtx.class);
-    Mockito.when(userPrefsCtx.getGeoContext()).thenReturn(null);
-    Mockito.when(containerRequest.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(userPrefsCtx);
+    when(userPrefsCtx.getGeoContext()).thenReturn(null);
+    when(containerRequest.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(userPrefsCtx);
 
     assertEquals(Integer.valueOf(0), Whitebox.<Integer>invokeMethod(dapResponseHandler, "getSiteId", containerRequest));
 
     GeoCtx geoContext = Mockito.mock(GeoCtx.class);
-    Mockito.when(geoContext.getSiteId()).thenReturn(2);
+    when(geoContext.getSiteId()).thenReturn(2);
 
-    Mockito.when(containerRequest.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(userPrefsCtx);
-    Mockito.when(userPrefsCtx.getGeoContext()).thenReturn(geoContext);
+    when(containerRequest.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(userPrefsCtx);
+    when(userPrefsCtx.getGeoContext()).thenReturn(geoContext);
     assertEquals(Integer.valueOf(2), Whitebox.<Integer>invokeMethod(dapResponseHandler, "getSiteId", containerRequest));
   }
 
@@ -117,11 +123,11 @@ public class DAPResponseHandlerTest {
   @Test
   public void getRemoteIp() throws Exception {
     HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
-    Mockito.when(httpServletRequest.getHeader("X-Forwarded-For")).thenReturn("1,2");
+    when(httpServletRequest.getHeader("X-Forwarded-For")).thenReturn("1,2");
     assertEquals("1", Whitebox.<String>invokeMethod(dapResponseHandler, "getRemoteIp", httpServletRequest));
 
-    Mockito.when(httpServletRequest.getHeader("X-Forwarded-For")).thenReturn(null);
-    Mockito.when(httpServletRequest.getRemoteAddr()).thenReturn("10.10");
+    when(httpServletRequest.getHeader("X-Forwarded-For")).thenReturn(null);
+    when(httpServletRequest.getRemoteAddr()).thenReturn("10.10");
     assertEquals("10.10", Whitebox.<String>invokeMethod(dapResponseHandler, "getRemoteIp", httpServletRequest));
   }
 
@@ -145,9 +151,9 @@ public class DAPResponseHandlerTest {
         "getHLastLoggedInUserId", "0"));
     assertNull(Whitebox.<String>invokeMethod(dapResponseHandler,
         "getHLastLoggedInUserId", String.valueOf(1L << 32) + (1L << 32)));
-    assertEquals(IdMapUrlBuilder.hashData("12345", IdMapUrlBuilder.HASH_ALGO_SHA_256),
+    assertEquals(IdMapUrlBuilder.hashData("44539737327", IdMapUrlBuilder.HASH_ALGO_SHA_256),
         Whitebox.<String>invokeMethod(dapResponseHandler,
-            "getHLastLoggedInUserId", "12345"));
+            "getHLastLoggedInUserId", "44539737327"));
   }
 
   @Test
@@ -332,19 +338,19 @@ public class DAPResponseHandlerTest {
   public void getCountryFromBrowserLocale() throws Exception {
     HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
 
-    Mockito.when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn(null);
+    when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn(null);
     assertNull(Whitebox.invokeMethod(dapResponseHandler, "getCountryFromBrowserLocale", httpServletRequest));
 
-    Mockito.when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn(",,");
+    when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn(",,");
     assertNull(Whitebox.invokeMethod(dapResponseHandler, "getCountryFromBrowserLocale", httpServletRequest));
 
-    Mockito.when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn("test");
+    when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn("test");
     assertNull(Whitebox.invokeMethod(dapResponseHandler, "getCountryFromBrowserLocale", httpServletRequest));
 
-    Mockito.when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn("--");
+    when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn("--");
     assertNull(Whitebox.invokeMethod(dapResponseHandler, "getCountryFromBrowserLocale", httpServletRequest));
 
-    Mockito.when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn("en-US");
+    when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn("en-US");
     assertEquals("US", Whitebox.invokeMethod(dapResponseHandler, "getCountryFromBrowserLocale", httpServletRequest));
   }
 
@@ -387,12 +393,12 @@ public class DAPResponseHandlerTest {
     WebTarget webTarget = Mockito.mock(WebTarget.class);
     Invocation.Builder builder = Mockito.mock(Invocation.Builder.class);
 
-    Mockito.when(conf.getProperty(EndpointUri.KEY)).thenReturn("localhost");
-    Mockito.when(builder.get()).thenReturn(response);
-    Mockito.when(webTarget.queryParam(anyString(), anyString())).thenReturn(webTarget);
-    Mockito.when(webTarget.request(MediaType.APPLICATION_JSON)).thenReturn(builder);
-    Mockito.when(client.target(anyString())).thenReturn(webTarget);
-    Mockito.when(client.getConfiguration()).thenReturn(conf);
+    when(conf.getProperty(EndpointUri.KEY)).thenReturn("localhost");
+    when(builder.get()).thenReturn(response);
+    when(webTarget.queryParam(anyString(), anyString())).thenReturn(webTarget);
+    when(webTarget.request(MediaType.APPLICATION_JSON)).thenReturn(builder);
+    when(client.target(anyString())).thenReturn(webTarget);
+    when(client.getConfiguration()).thenReturn(conf);
 
     lbsClient = LBSClient.getInstance();
     Whitebox.setInternalState(lbsClient, "client", client);
@@ -409,11 +415,11 @@ public class DAPResponseHandlerTest {
     assertEquals("623", map.get((LBSConstants.GEO_METRO_CODE)));
     assertEquals("817", map.get((LBSConstants.GEO_AREA_CODE)));
 
-    Mockito.when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn(null);
+    when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn(null);
     map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, "97.77.104.22");
     assertEquals("US", map.get((LBSConstants.GEO_COUNTRY_CODE)));
 
-    Mockito.when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn("de-CH");
+    when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn("de-CH");
     map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, "97.77.104.22");
     assertEquals("CH", map.get((LBSConstants.GEO_COUNTRY_CODE)));
   }
@@ -445,8 +451,8 @@ public class DAPResponseHandlerTest {
     lbsResults.setAllResults(httpResultList);
 
     Response response = Mockito.mock(Response.class);
-    Mockito.when(response.getStatus()).thenReturn(200);
-    Mockito.when(response.readEntity(LBSResults.class)).thenReturn(lbsResults);
+    when(response.getStatus()).thenReturn(200);
+    when(response.readEntity(LBSResults.class)).thenReturn(lbsResults);
     return response;
   }
 
@@ -458,22 +464,31 @@ public class DAPResponseHandlerTest {
 
     Configuration conf = Mockito.mock(Configuration.class);
 
-    Response response = Mockito.mock(Response.class);
+    BufferedReader bufferedReader = org.mockito.Mockito.mock(BufferedReader.class);
+    when(bufferedReader.readLine())
+        .thenReturn("first line")
+        .thenReturn("second line");
+
+    InputStream is = org.mockito.Mockito.mock(InputStream.class);
+    when(is.read()).thenReturn(2);
+
+    Response response = Mockito.mock(Response.class, Mockito.RETURNS_DEEP_STUBS);
     MultivaluedMap<String, Object> headers = null;
-    Mockito.when(response.getHeaders()).thenReturn(headers);
-    Mockito.when(response.getStatus()).thenReturn(Response.Status.OK.getStatusCode());
+    when(response.getHeaders()).thenReturn(headers);
+    when(response.getStatus()).thenReturn(Response.Status.OK.getStatusCode());
+    HttpEntity mockHttpEntity = Mockito.mock(HttpEntity.class);
+
+    when(response.getEntity()).thenReturn(new Object());
 
     WebTarget webTarget = Mockito.mock(WebTarget.class);
     Invocation.Builder builder = Mockito.mock(Invocation.Builder.class);
 
-    Mockito.when(conf.getProperty(EndpointUri.KEY)).thenReturn("localhost");
-    Mockito.when(builder.get()).thenReturn(response);
-    Mockito.when(webTarget.queryParam(anyString(), anyString())).thenReturn(webTarget);
-    Mockito.when(webTarget.request()).thenReturn(builder);
-    Mockito.when(client.target(anyString())).thenReturn(webTarget);
-    Mockito.when(client.getConfiguration()).thenReturn(conf);
-
-    Mockito.when(builder.get()).thenReturn(response);
+    when(conf.getProperty(EndpointUri.KEY)).thenReturn("localhost");
+    when(builder.get()).thenReturn(response);
+    when(webTarget.queryParam(anyString(), anyString())).thenReturn(webTarget);
+    when(webTarget.request()).thenReturn(builder);
+    when(client.target(anyString())).thenReturn(webTarget);
+    when(client.getConfiguration()).thenReturn(conf);
 
     HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
     HttpServletResponse httpServletResponse = Mockito.mock(HttpServletResponse.class);
@@ -487,19 +502,19 @@ public class DAPResponseHandlerTest {
     PowerMockito.mockStatic(GingerClientBuilder.class);
     PowerMockito.when(GingerClientBuilder.newClient(any(Configuration.class))).thenReturn(client);
     Configuration conf = Mockito.mock(Configuration.class);
-    Mockito.when(client.getConfiguration()).thenReturn(conf);
+    when(client.getConfiguration()).thenReturn(conf);
 
     WebTarget webTarget = Mockito.mock(WebTarget.class);
     Invocation.Builder builder = Mockito.mock(Invocation.Builder.class);
-    Mockito.when(builder.header(anyString(), anyString())).thenReturn(builder);
-    Mockito.when(conf.getProperty(EndpointUri.KEY)).thenReturn("localhost");
-    Mockito.when(webTarget.path(anyString())).thenReturn(webTarget);
-    Mockito.when(webTarget.request()).thenReturn(builder);
+    when(builder.header(anyString(), anyString())).thenReturn(builder);
+    when(conf.getProperty(EndpointUri.KEY)).thenReturn("localhost");
+    when(webTarget.path(anyString())).thenReturn(webTarget);
+    when(webTarget.request()).thenReturn(builder);
 
-    Mockito.when(client.target(anyString())).thenReturn(webTarget);
+    when(client.target(anyString())).thenReturn(webTarget);
 
     HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
-    Mockito.when(httpServletRequest.getHeaderNames()).thenReturn(new Enumeration<String>() {
+    when(httpServletRequest.getHeaderNames()).thenReturn(new Enumeration<String>() {
       @Override
       public boolean hasMoreElements() {
         return false;
@@ -511,9 +526,9 @@ public class DAPResponseHandlerTest {
       }
     });
 
-    Mockito.when(httpServletRequest.getRequestURL()).thenReturn(new StringBuffer("localhost"));
+    when(httpServletRequest.getRequestURL()).thenReturn(new StringBuffer("localhost"));
     AsyncInvoker asyncInvoker = Mockito.mock(AsyncInvoker.class);
-    Mockito.when(builder.async()).thenReturn(asyncInvoker);
+    when(builder.async()).thenReturn(asyncInvoker);
 
     MultivaluedHashMap<String, Object> dapResponseHeaders = new MultivaluedHashMap<>();
     dapResponseHeaders.put("ff1", Collections.singletonList("ff1"));

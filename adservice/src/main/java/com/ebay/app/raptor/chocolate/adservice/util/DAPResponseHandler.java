@@ -23,6 +23,7 @@ import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -374,6 +375,8 @@ public class DAPResponseHandler {
 
   private String getBody(Response dapResponse) throws IOException {
     String body;
+    int ttt = dapResponse.getStatus();
+    Object test = dapResponse.getEntity();
     InputStream is = (InputStream) dapResponse.getEntity();
 
     StringBuilder sb = new StringBuilder();
