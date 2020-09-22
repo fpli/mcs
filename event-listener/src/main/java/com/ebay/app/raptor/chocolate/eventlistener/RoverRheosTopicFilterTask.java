@@ -573,6 +573,7 @@ public class RoverRheosTopicFilterTask extends Thread {
     record.setClientData(convertMap((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA)));
     record.setChannelAction(channelAction);
     record.setChannelType(channelType);
+    record.setDispatchId("");
     return record;
   }
 
