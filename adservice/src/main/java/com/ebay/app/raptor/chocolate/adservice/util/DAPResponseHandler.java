@@ -7,7 +7,6 @@ import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.common.DAPRvrId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
-import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
@@ -25,9 +24,8 @@ import com.ebay.traffic.monitoring.Field;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.utils.URIBuilder;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,14 +86,6 @@ public class DAPResponseHandler {
     }
   }
 
-  private static final List<String> BULLSEYE_MODEL_911_ATTRIBUTES = Arrays.asList(
-          BullseyeConstants.LAST_PRODUCTS_PURCHASED,
-          BullseyeConstants.LAST_PRODUCTS_WATCHED,
-          BullseyeConstants.ZIP_CODE,
-          BullseyeConstants.FEEDBACK_SCORE
-  );
-
-  @SuppressWarnings("unchecked")
   public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext)
           throws URISyntaxException {
     ESMetrics.getInstance().meter("sendDAPResponse");
@@ -190,20 +180,6 @@ public class DAPResponseHandler {
     return remoteIp == null ? "" : remoteIp;
   }
 
-  @SuppressWarnings("unchecked")
-  private String getUdid(Map<String, String[]> params) {
-    if (!params.containsKey(Constants.UNIQUE_DEVICE_ID)) {
-      ESMetrics.getInstance().meter("NoUdid", 1, Field.of(Constants.CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()));
-      return null;
-    }
-    String[] strings = params.get(Constants.UNIQUE_DEVICE_ID);
-    if (ArrayUtils.isEmpty(strings)) {
-      ESMetrics.getInstance().meter("NoUdid", 1, Field.of(Constants.CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()));
-      return null;
-    }
-    return strings[0];
-  }
-
   private void setHLastLoggedInUserId(URIBuilder dapUriBuilder, String hLastLoggedInUserId) {
     addParameter(dapUriBuilder, Constants.H_LAST_LOGGED_IN_USER_ID, hLastLoggedInUserId);
   }
@@ -244,27 +220,6 @@ public class DAPResponseHandler {
     }
   }
 
-  private String getDecodedUA(String ua, String udid) {
-    if (StringUtils.isEmpty(ua)) {
-      return null;
-    }
-    if (StringUtils.isEmpty(udid)) {
-      return null;
-    }
-    if (udid.length() < Constants.UDID_MIN_LENGTH) {
-      return null;
-    }
-
-    String decodedUA = null;
-    String key = "" + udid.charAt(1) + udid.charAt(4) + udid.charAt(5) + udid.charAt(8);
-    try {
-      decodedUA = TrackingUtil.decrypt(key, ua);
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage());
-    }
-    return decodedUA;
-  }
-
   private boolean isMobileUserAgent(String userAgent) {
     if (StringUtils.isEmpty(userAgent)) {
       return false;
@@ -279,194 +234,8 @@ public class DAPResponseHandler {
     return false;
   }
 
-  private boolean isMobileSDK(String uaPrime, String udid) {
-    String decodedUaPrime = getDecodedUA(uaPrime, udid);
-    if (StringUtils.isEmpty(decodedUaPrime)) {
-      return false;
-    }
-    return decodedUaPrime.contains("sdkN=mSDK");
-  }
-
-  /**
-   * Get guid from mapping
-   */
-  private String getGuid(HttpServletRequest request) {
-    String adguid = adserviceCookie.readAdguid(request);
-    String guid = idMapping.getGuidByAdguid(adguid);
-    if(StringUtils.isEmpty(guid)) {
-      guid = "";
-    }
-    return guid;
-  }
-
-  private String getUserId(HttpServletRequest request) {
-    String adguid = adserviceCookie.readAdguid(request);
-    String encryptedUserid = idMapping.getUidByAdguid(adguid);
-    if(StringUtils.isEmpty(encryptedUserid)) {
-      encryptedUserid = "0";
-    }
-    return String.valueOf(decryptUserId(encryptedUserid));
-  }
-
-  /**
-   * Decrypt user id from encrypted user id
-   * @param encryptedStr encrypted user id
-   * @return actual user id
-   */
-  public long decryptUserId(String encryptedStr) {
-    long xorConst = 43188348269L;
-
-    long encrypted = 0;
-
-    try {
-      encrypted = Long.parseLong(encryptedStr);
-    }
-    catch (NumberFormatException e) {
-      return -1;
-    }
-
-    long decrypted = 0;
-
-    if(encrypted > 0){
-      decrypted  = encrypted ^ xorConst;
-    }
-
-    return decrypted;
-  }
-
-  private void setCguid(URIBuilder dapUriBuilder, String cguid) {
-    addParameter(dapUriBuilder, Constants.CGUID, cguid);
-  }
-
   private void setGuid(URIBuilder dapUriBuilder, String guid) {
     addParameter(dapUriBuilder, Constants.GUID, guid);
-  }
-
-
-  private void setUserAttributes(URIBuilder dapUriBuilder, Map<String, String> userAttributes) {
-    userAttributes.forEach((key, value) -> addParameter(dapUriBuilder, key, value));
-  }
-
-  /**
-   * Get user attributes from Bullseye Model 910
-   * @param cguid cuid
-   */
-  private Map<String, String> getUserAttributes(String cguid) {
-    if (StringUtils.isEmpty(cguid)) {
-      return new HashMap<>();
-    }
-
-    String msg = getBullseyeUserAttributesResponse(cguid);
-    if (StringUtils.isEmpty(msg)) {
-      return new HashMap<>();
-    }
-
-    Map<String, String> map = new HashMap<>();
-    try {
-      map = parseUserAttributes(msg);
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage());
-    }
-    return map;
-  }
-
-  @SuppressWarnings("unchecked")
-  private String getBullseyeUserAttributesResponse(String cguid) {
-    String msg = null;
-    Configuration config = ConfigurationBuilder.newConfig("beclntsrv.adservice");
-    Client mktClient = GingerClientBuilder.newClient(config);
-    String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
-
-    long startTime = System.currentTimeMillis();
-    try (Response response = mktClient.target(endpoint).path("/timeline")
-            .queryParam("modelid","911")
-            .queryParam(Constants.CGUID, cguid)
-            .queryParam("attrs", StringUtils.join(BULLSEYE_MODEL_911_ATTRIBUTES, StringConstants.COMMA))
-            .request()
-            .get()) {
-      int status = response.getStatus();
-      if (status == Response.Status.OK.getStatusCode()) {
-        msg = response.readEntity(String.class);
-      } else {
-        LOGGER.error("Failed to call Bullseye {}", status);
-      }
-      ESMetrics.getInstance().meter("BullseyeStatus", 1, Field.of("status", status));
-    } catch(Exception e) {
-      LOGGER.error("Failed to call Bullseye {}", e.getMessage());
-      ESMetrics.getInstance().meter("BullseyeException");
-    }
-    ESMetrics.getInstance().mean("BullseyeLatency", System.currentTimeMillis() - startTime);
-    return msg;
-  }
-
-  private Map<String, String> parseUserAttributes(String msg) {
-    JSONArray jsonArray = new JSONArray(msg);
-    if (jsonArray.length() == 0) {
-      return new HashMap<>();
-    }
-    JSONObject first = jsonArray.getJSONObject(0);
-    if (first.isNull("results")) {
-      return new HashMap<>();
-    }
-    JSONObject results = first.getJSONObject("results");
-    if (results.isNull("response")) {
-      return new HashMap<>();
-    }
-    JSONObject bullseyeResponse = results.getJSONObject("response");
-    Map<String, String> map = new HashMap<>();
-    for (String key : bullseyeResponse.keySet()) {
-      extract(map, key, bullseyeResponse.get(key));
-    }
-    return map;
-  }
-
-  private void setLastProducts(Map<String, String> map, String key, Object value) {
-    JSONArray jsonArray = (JSONArray) value;
-    List<String> itemList = new ArrayList<>();
-    for (int i = 0; i < jsonArray.length(); i++) {
-      if (i == 5) {
-        break;
-      }
-      List<Object> list = new ArrayList<>();
-      JSONObject object = (JSONObject) jsonArray.get(i);
-      list.add(object.get("timestamp"));
-      list.add(object.get("productid"));
-      list.add(object.get("itemtitle"));
-      itemList.add(StringUtils.join(list, ":"));
-    }
-    map.put(key, StringUtils.join(itemList, StringConstants.COMMA));
-  }
-
-  @SuppressWarnings("unchecked")
-  private void extract(Map<String, String> dapUriBuilder, String key, Object value) {
-    if (StringConstants.EMPTY.equals(value)) {
-      return;
-    }
-    switch (key) {
-      case BullseyeConstants.ZIP_CODE:
-        dapUriBuilder.put(BullseyeConstants.ZIP_CODE, String.valueOf(value));
-        break;
-      case BullseyeConstants.FEEDBACK_SCORE:
-        dapUriBuilder.put(BullseyeConstants.FEEDBACK_SCORE, String.valueOf(value));
-        break;
-      case BullseyeConstants.LAST_PRODUCTS_PURCHASED:
-        setLastProducts(dapUriBuilder, BullseyeConstants.LAST_PRODUCTS_PURCHASED, value);
-        break;
-      case BullseyeConstants.LAST_PRODUCTS_WATCHED:
-        setLastProducts(dapUriBuilder, BullseyeConstants.LAST_PRODUCTS_WATCHED, value);
-        break;
-      case BullseyeConstants.USER_ID:
-        break;
-      case BullseyeConstants.MODEL_ID:
-        break;
-      default:
-        LOGGER.error("Unknown Attribute {}", key);
-        ESMetrics.getInstance().meter("UnknownAttribute", 1, Field.of("attribute", key));
-    }
-  }
-
-  private void setUdid(URIBuilder dapUriBuilder, String deviceId) {
-    addParameter(dapUriBuilder, Constants.UNIQUE_DEVICE_ID, deviceId);
   }
 
   private void setRvrId(URIBuilder dapUriBuilder, long dapRvrId) {
@@ -612,6 +381,8 @@ public class DAPResponseHandler {
 
   private String getBody(Response dapResponse) throws IOException {
     String body;
+    int ttt = dapResponse.getStatus();
+    Object test = dapResponse.getEntity();
     InputStream is = (InputStream) dapResponse.getEntity();
 
     StringBuilder sb = new StringBuilder();
