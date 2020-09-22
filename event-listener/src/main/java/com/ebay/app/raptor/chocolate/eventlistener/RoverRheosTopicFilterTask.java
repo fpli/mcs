@@ -574,6 +574,8 @@ public class RoverRheosTopicFilterTask extends Thread {
     record.setChannelAction(channelAction);
     record.setChannelType(channelType);
     record.setDispatchId("");
+    List<Map<String, String>> data = new ArrayList<>();
+    record.setData(data);
     return record;
   }
 
