@@ -21,6 +21,7 @@ import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
@@ -93,6 +94,11 @@ public class DAPResponseHandler {
 
     long dapRvrId = getDAPRvrId();
     Map<String, String[]> params = request.getParameterMap();
+
+    String[] adtypes = params.get(Constants.ADTYPE);
+    String adtype = ArrayUtils.isNotEmpty(adtypes) ? adtypes[0] : StringUtils.EMPTY;
+    ESMetrics.getInstance().meter("AdtypeTraffic", 1, Field.of(Constants.ADTYPE, adtype));
+
     String guid = adserviceCookie.getGuid(request);
     String accountId = adserviceCookie.getUserId(request);
     // no need anymore
@@ -451,13 +457,29 @@ public class DAPResponseHandler {
     // set mkevt as 6, overriding existing value if set
     targetUrlBuilder.setParameter(Constants.MKEVT, MKEVT.AD_REQUEST.getId());
     targetUrlBuilder.addParameter(Constants.MKRVRID, String.valueOf(dapRvrId));
-    // add flex fields of dap response headers, these fields start with "ff"
     if (dapResponseHeaders != null) {
+      // add flex fields of dap response headers, these fields start with "ff"
       dapResponseHeaders.forEach((key, values) -> {
         if (key.startsWith("ff")) {
           values.forEach(value -> targetUrlBuilder.addParameter(key, String.valueOf(value)));
         }
       });
+      // if dap response header contains mplx_placement_id, should replace mkrid by mplx_placement_id
+      List<Object> mplxPlacementIds = dapResponseHeaders.get(Constants.MPLX_PLACEMENT_ID);
+      if (CollectionUtils.isNotEmpty(mplxPlacementIds)) {
+        String mplxPlacementId = String.valueOf(mplxPlacementIds.get(0));
+        // set mplx_placement_id as mkrid, and set original mkrid as mksrid
+        if (StringUtils.isNotEmpty(mplxPlacementId)) {
+          String[] mkrids = request.getParameterMap().get(Constants.MKRID);
+          if (ArrayUtils.isNotEmpty(mkrids)) {
+            targetUrlBuilder.addParameter(Constants.MKSRID, mkrids[0]);
+          }
+          targetUrlBuilder.setParameter(Constants.MKRID, mplxPlacementId);
+          String[] adtypes = request.getParameterMap().get(Constants.ADTYPE);
+          String adtype = ArrayUtils.isNotEmpty(adtypes) ? adtypes[0] : StringUtils.EMPTY;
+          ESMetrics.getInstance().meter("ReplaceMkrid", 1, Field.of(Constants.ADTYPE, adtype));
+        }
+      }
     }
     String targetUrl = targetUrlBuilder.build().toString();
     mktEvent.setTargetUrl(targetUrl);

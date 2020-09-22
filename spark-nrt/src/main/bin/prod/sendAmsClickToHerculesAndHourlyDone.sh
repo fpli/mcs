@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-WORK_DIR=/apps/tracking-events-workdir
+WORK_DIR=hdfs://elvisha/apps/tracking-events-workdir
 CHANNEL=EPN
 USAGE_CLICK=epnnrt_scp_click
 USAGE_IMP=epnnrt_scp_imp
@@ -48,31 +48,4 @@ then
 else
     echo -e "Failed to send EPN NRT click data to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending click data to Hercules!!!" -v DL-eBay-Chocolate-GC@ebay.com
     exit ${rcode_click}
-fi
-
-
-######################################## Send EPN Impression Data to Hecules ########################################
-
-echo "============= Send EPN impression data to Hercules and touch hourly done file ============="
-
-./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${LOCAL_DONE_DATE_FILE_IMP} ${MIN_TS_FILE_IMP}
-rcode_check_imp=$?
-
-hercules_imp_dir=${HERCULES_DIR}'/ams_impression/snapshot/imprsn_dt='
-./sendDataToRenoOrHerculesByMeta.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${META_SUFFIX} ${hercules_imp_dir} ${MID_DIR} hercules
-rcode_imp=$?
-
-if [ ${rcode_imp} -eq 0 ];
-then
-    echo "Successfully send AMS impression data to Hercules"
-    if [ ${rcode_check_imp} -eq 1 ];
-    then
-        current_done_imp=$(get_current_done ${LOCAL_DONE_DATE_FILE_IMP})
-
-        echo "================= Start touching impression hourly done file: ${done_file_imp} ================="
-        ./touchAmsHourlyDone.sh ${current_done_imp} ${LOCAL_DONE_DATE_FILE_IMP} imp hercules
-    fi
-else
-    echo -e "Failed to send EPN NRT impression data to Hercules!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[NRT ERROR] Error in sending impression data to Hercules!!!" -v DL-eBay-Chocolate-GC@ebay.com
-    exit ${rcode_imp}
 fi
