@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate.eventlistener;
 import chocolate.EventListenerServiceTest;
 import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
@@ -352,8 +353,8 @@ public class RoverRheosTopicFilterTaskTest {
         assertNull(roverRheosTopicFilterTask.parseChannelType(new Utf8("/roveropen/0/e12060/10?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869")));
         assertNull(roverRheosTopicFilterTask.parseChannelType(new Utf8("/roveropen/0/e12060/?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869")));
         assertNull(roverRheosTopicFilterTask.parseChannelType(new Utf8("/roveropen/0/e12060?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869")));
-        assertEquals("MRKT_EMAIL", roverRheosTopicFilterTask.parseChannelType(new Utf8("/roveropen/0/e12060/8?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869")));
-        assertEquals("SITE_EMAIL", roverRheosTopicFilterTask.parseChannelType(new Utf8("/roveropen/0/e12060/7?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869")));
+        assertEquals(ChannelIdEnum.MRKT_EMAIL, roverRheosTopicFilterTask.parseChannelType(new Utf8("/roveropen/0/e12060/8?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869")));
+        assertEquals(ChannelIdEnum.SITE_EMAIL, roverRheosTopicFilterTask.parseChannelType(new Utf8("/roveropen/0/e12060/7?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869")));
     }
 
     @Test
@@ -380,7 +381,7 @@ public class RoverRheosTopicFilterTaskTest {
             }
         });
 
-        assertEquals("SITE_EMAIL", roverRheosTopicFilterTask.parseChannelType(genericRecord));
+        assertEquals(ChannelIdEnum.SITE_EMAIL, roverRheosTopicFilterTask.parseChannelType(genericRecord));
 
         when(genericRecord.get("applicationPayload")).thenReturn(new HashMap<Utf8, Utf8>() {
             {
@@ -388,7 +389,7 @@ public class RoverRheosTopicFilterTaskTest {
             }
         });
 
-        assertEquals("MRKT_EMAIL", roverRheosTopicFilterTask.parseChannelType(genericRecord));
+        assertEquals(ChannelIdEnum.MRKT_EMAIL, roverRheosTopicFilterTask.parseChannelType(genericRecord));
 
         when(genericRecord.get("applicationPayload")).thenReturn(new HashMap<Utf8, Utf8>() {
             {
@@ -396,11 +397,11 @@ public class RoverRheosTopicFilterTaskTest {
         });
         when(genericRecord.get("urlQueryString")).thenReturn(new Utf8("/roveropen/0/e12060/8?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869"));
 
-        assertEquals("MRKT_EMAIL", roverRheosTopicFilterTask.parseChannelType(genericRecord));
+        assertEquals(ChannelIdEnum.MRKT_EMAIL, roverRheosTopicFilterTask.parseChannelType(genericRecord));
 
         when(genericRecord.get("urlQueryString")).thenReturn(new Utf8("/roveropen/0/e12060/7?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869"));
 
-        assertEquals("SITE_EMAIL", roverRheosTopicFilterTask.parseChannelType(genericRecord));
+        assertEquals(ChannelIdEnum.SITE_EMAIL, roverRheosTopicFilterTask.parseChannelType(genericRecord));
 
         when(genericRecord.get("urlQueryString")).thenReturn(new Utf8("/roveropen"));
 
