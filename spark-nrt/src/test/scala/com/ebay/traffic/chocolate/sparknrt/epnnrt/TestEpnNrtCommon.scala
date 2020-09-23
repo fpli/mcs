@@ -435,4 +435,28 @@ class TestEpnNrtCommon extends BaseFunSuite{
     assert(clickFilterTypeLookupEnum.equals(6))
   }
 
+  test("test roi nq whitelist rule") {
+    val ruleResult = epnNrtCommon.callRoiNqWhitelistRule("5575420559", 1, 1, "www.google.com", 2)
+    assert(ruleResult.equals(1))
+
+    val ruleResultNoReferrer = epnNrtCommon.callRoiNqWhitelistRule("5575420559", 1, 1, "", 2)
+    assert(ruleResultNoReferrer.equals(0))
+  }
+
+  test("test roi not registered rule") {
+    val ruleResult = epnNrtCommon.callRoiNotRegisteredRule("5575420559", 1, 1, "www.google.com", 2)
+    assert(ruleResult.equals(1))
+
+    val ruleResultNoReferrer = epnNrtCommon.callRoiNotRegisteredRule("5575420559", 1, 1, "", 2)
+    assert(ruleResultNoReferrer.equals(0))
+  }
+
+  test("test get roi rule list") {
+    val roiRuleList = epnNrtCommon.getRoiRuleList(2)
+    assert(roiRuleList.take(2).tail.head.getAms_clk_fltr_type_id.equals(13))
+    assert(roiRuleList.take(2).tail.head.getIs_pblshr_advsr_enable_rule.equals(0))
+    assert(roiRuleList.take(2).tail.head.getIs_rule_enable.equals(1))
+    assert(roiRuleList.take(2).tail.head.getRule_result.equals(0))
+  }
+
 }
