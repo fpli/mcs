@@ -29,16 +29,6 @@ object BullseyeUtils {
     } else null
   }
 
-  //TODO try catch metrics  bullseye response time   renew token  retry 2 times
-  def generateToken: JsValue = Http(properties.getProperty("epnnrt.oauthUrl")).method("GET")
-    .param("client_id", properties.getProperty("epnnrt.clientId"))
-    .param("client_secret", properties.getProperty("epnnrt.clientsecret"))
-    .param("grant_type", "client_credentials")
-    .param("scope", "https://api.ebay.com/oauth/scope/@public")
-    .asString
-    .body.parseJson
-
-
   // use new oAuth POST endpoint to get token
   def generateToken2: String = try {
     Http(properties.getProperty("epnnrt.oauthUrl")).method("POST")

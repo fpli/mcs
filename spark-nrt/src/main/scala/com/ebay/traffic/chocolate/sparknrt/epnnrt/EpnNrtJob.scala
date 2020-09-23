@@ -341,16 +341,4 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     if (splitted != null && splitted.nonEmpty) splitted(1)
     else throw new Exception("Invalid date field in metafile.")
   }
-
-  def getTimeStamp(date: String): Long = {
-    try {
-      val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-      sdf.parse(date).getTime
-    } catch {
-      case e: Exception => {
-        logger.error("Error while parsing timestamp " + e)
-        0L
-      }
-    }
-  }
 }
