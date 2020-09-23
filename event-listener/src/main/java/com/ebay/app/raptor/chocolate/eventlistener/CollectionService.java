@@ -298,9 +298,6 @@ public class CollectionService {
       metrics.meter("IncomingSocialAppDeepLink");
 
       UriComponents deeplinkUriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-      if (deeplinkUriComponents == null) {
-        logError(Errors.ERROR_ILLEGAL_URL);
-      }
 
       MultiValueMap<String, String> deeplinkParameters = deeplinkUriComponents.getQueryParams();
       if (deeplinkParameters.size() == 0 || !deeplinkParameters.containsKey(REFERRER)) {
@@ -330,12 +327,7 @@ public class CollectionService {
     }
 
     // parse channel from uri
-    // illegal url, rejected
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    if (uriComponents == null) {
-      logError(Errors.ERROR_ILLEGAL_URL);
-    }
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
 
     // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
@@ -537,11 +529,8 @@ public class CollectionService {
 
     String queryString = CollectionServiceUtil.generateQueryString(roiEvent, payloadMap, localTimestamp, userId);
     String targetUrl = request.getRequestURL() + "?" + queryString;
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    if (uriComponents == null) {
-      logError(Errors.ERROR_ILLEGAL_URL);
-    }
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
 
     // we get referer from header or payload field,
@@ -634,12 +623,7 @@ public class CollectionService {
     // uri is from post body
     String uri = event.getTargetUrl();
 
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(uri).build();
-    if (uriComponents == null) {
-      logger.warn(Errors.ERROR_ILLEGAL_URL);
-      metrics.meter(Errors.ERROR_ILLEGAL_URL);
-    }
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(uri).build();
 
     // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
@@ -835,11 +819,7 @@ public class CollectionService {
     String targetUrl = event.getTargetUrl();
 
     // illegal url, rejected
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    if (uriComponents == null) {
-      logError(Errors.ERROR_ILLEGAL_URL);
-    }
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
 
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
     if (parameters.size() == 0) {
