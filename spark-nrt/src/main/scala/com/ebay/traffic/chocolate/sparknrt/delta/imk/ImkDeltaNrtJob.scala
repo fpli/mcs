@@ -21,7 +21,7 @@ import scala.io.Source
 /**
   * @author Xiang Li
   * @since 2020/08/18
-  * Imk NRT job to extract data from master table and sink into IMK table
+  *        Imk NRT job to extract data from master table and sink into IMK table
   */
 object ImkDeltaNrtJob extends App {
   override def main(args: Array[String]): Unit = {
@@ -36,7 +36,8 @@ object ImkDeltaNrtJob extends App {
 
 /**
   * IMK NRT job
-  * @param params input parameters
+  *
+  * @param params            input parameters
   * @param enableHiveSupport enable hive support for spark sql table query
   */
 class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean = true)
@@ -91,12 +92,13 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
   val getParamFromQueryUdf: UserDefinedFunction = udf((query: String, key: String) => tools.getParamValueFromQuery(query, key))
   val getUserMapIndUdf: UserDefinedFunction = udf((userId: String) => tools.getUserMapInd(userId))
   val getMfeIdUdf: UserDefinedFunction = udf((mfe_name: String) => getMfeIdByMfeName(mfe_name))
-  val getChannelActionEnumUdf: UserDefinedFunction= udf((channelAction: String) => getChannelActionEnum(channelAction))
-  val getChannelTypeEnumUdf: UserDefinedFunction= udf((channelType: String) => getChannelTypeEnum(channelType))
-  val decodeUrlUdf: UserDefinedFunction= udf((url: String) => URLDecoder.decode(url, "utf-8"))
-
+  val getChannelActionEnumUdf: UserDefinedFunction = udf((channelAction: String) => getChannelActionEnum(channelAction))
+  val getChannelTypeEnumUdf: UserDefinedFunction = udf((channelType: String) => getChannelTypeEnum(channelType))
+  val decodeUrlUdf: UserDefinedFunction = udf((url: String) => URLDecoder.decode(url, "utf-8"))
+  val getPerfTrackNameValueUdf: UserDefinedFunction = udf((query: String) => tools.getPerfTrackNameValue(query))
   /**
     * get mfe id by mfe name
+    *
     * @param mfeName mfe name
     * @return
     */
@@ -113,11 +115,12 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     * new parameter mkgroupid={adgroupid} and mktype={adtype}. Tracking’s MCS data pipeline job replace back to adtype
     * and adgroupid and persist into IMK so there wont be impact to downstream like data and science.
     * See <a href="https://jirap.corp.ebay.com/browse/XC-1464">replace landing page url and rvr_url's mktype and mkgroupid</a>
+    *
     * @param channelType channel
-    * @param uri tracking url
+    * @param uri         tracking url
     * @return new tracking url
     */
-  def replaceMkgroupidMktype(channelType:String, uri: String): String = {
+  def replaceMkgroupidMktype(channelType: String, uri: String): String = {
     var newUri = ""
     if (StringUtils.isNotEmpty(uri)) {
       try {
@@ -134,19 +137,20 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
 
   /**
     * Parse mpre from if it's rover url
+    *
     * @param channelType channel type
-    * @param uri uri
+    * @param uri         uri
     * @return mpre
     */
-  def replaceMkgroupidMktypeAndParseMpreFromRover(channelType:String, uri: String): String = {
+  def replaceMkgroupidMktypeAndParseMpreFromRover(channelType: String, uri: String): String = {
     var newUri = replaceMkgroupidMktype(channelType, uri)
     // parse mpre if url is rover
     if (newUri.startsWith("http://rover.ebay.com") || newUri.startsWith("https://rover.ebay.com")) {
       val query = tools.getQueryString(newUri)
       val landingPageUrl = tools.getParamValueFromQuery(query, "mpre")
       if (StringUtils.isNotEmpty(landingPageUrl)) {
-        try{
-          newUri = URLDecoder.decode(landingPageUrl,"UTF-8")
+        try {
+          newUri = URLDecoder.decode(landingPageUrl, "UTF-8")
         } catch {
           case e: Exception => {
             logger.warn("MalformedUrl", e)
@@ -180,11 +184,12 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
   /**
     * Get rvr_cmnd_type_cd. There are 3 types: click, serve, roi.
     * There is no impression in IMK table
+    *
     * @param channelAction Channel Action in String
     * @return number representing the channel action
     */
   def getChannelActionEnum(channelAction: String): String = {
-    channelAction match{
+    channelAction match {
       case "CLICK" => "1"
       case "SERVE" => "4"
       case "ROI" => "2"
@@ -198,17 +203,18 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
 
   /**
     * Read everything need from the source table
+    *
     * @param inputDateTime input date time
     */
   override def readSource(inputDateTime: ZonedDateTime): DataFrame = {
     val fromDateTime = getLastDoneFileDateTimeAndDelay(inputDateTime, deltaDoneFileDir)._1
     val fromDateString = fromDateTime.format(dtFormatter)
     val startTimestamp = fromDateTime.toEpochSecond * 1000
-    val sql = "select * from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
+    val sql = "select * from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp + "'"
     val sourceDf = sqlsc.sql(sql)
     var imkDf = sourceDf
       .filter(col(SNAPSHOT_ID).isNotNull)
-      .filter(col(CHANNEL_TYPE).isin(IMK_CHANNELS:_*))
+      .filter(col(CHANNEL_TYPE).isin(IMK_CHANNELS: _*))
       .withColumn(DECODED_URL, decodeUrlUdf(getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("url_mpre"))))
       .withColumn(TEMP_URI_QUERY, col(DECODED_URL))
       .withColumn("batch_id", getBatchIdUdf())
@@ -265,8 +271,19 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn("cre_user", lit(""))
       .withColumn("upd_date", lit(""))
       .withColumn("upd_user", lit(""))
-      .na.fill(schema_delta_apollo.defaultValues)
-      .cache()
+      .withColumn("flex_field_vrsn_num", lit("0"))
+
+    // flex fields
+    for (i <- 1 to 20) {
+      val columnName = "flex_field_" + i
+      val paramName = "ff" + i
+      imkDf = imkDf.withColumn(columnName, getParamFromQueryUdf(col("temp_uri_query"), lit(paramName)))
+    }
+
+    imkDf = imkDf
+      // perf track name value
+      .withColumn("perf_track_name_value", getPerfTrackNameValueUdf(col("temp_uri_query")))
+      .na.fill(schema_delta_apollo.defaultValues).cache()
 
     // set default values for some columns
     schema_delta_apollo.filterNotColumns(imkDf.columns).foreach(e => {
@@ -277,7 +294,8 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
 
   /**
     * Function to write file to output dir
-    * @param df dataframe to write
+    *
+    * @param df       dataframe to write
     * @param dtString date partition
     */
   override def writeToOutput(df: DataFrame, dtString: String): Unit = {
