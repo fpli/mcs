@@ -446,26 +446,27 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     */
   def getQueryMapFromUrl(uri: String): mutable.Map[String, String] = {
     val result: mutable.Map[String, String] = mutable.Map[String, String]()
-    if (StringUtils.isNotEmpty(uri)) {
-      try {
-        val query = new URL(uri).getQuery
-        if (StringUtils.isNotEmpty(query)) {
-          query.split("&").foreach(paramMapString => {
-            if (StringUtils.isNotEmpty(paramMapString)) {
-              val paramStringArray = paramMapString.split("=")
-              if (paramStringArray.nonEmpty && paramStringArray.length == 2) {
-                result += (paramStringArray(0).trim -> paramStringArray(1).trim)
-              }
+    if (StringUtils.isEmpty(uri)) {
+      return result
+    }
+    try {
+      val query = new URL(uri).getQuery
+      if (StringUtils.isNotEmpty(query)) {
+        query.split("&").foreach(paramMapString => {
+          if (StringUtils.isNotEmpty(paramMapString)) {
+            val paramStringArray = paramMapString.split("=")
+            if (paramStringArray.nonEmpty && paramStringArray.length == 2) {
+              result += (paramStringArray(0).trim -> paramStringArray(1).trim)
             }
-          })
-        }
-      } catch {
-        case e: Exception => {
-          if(metrics != null) {
-            metrics.meter("imk.dump.errorGetQueryMap", 1)
           }
-          logger.warn("ErrorGetQueryMap", e)
+        })
+      }
+    } catch {
+      case e: Exception => {
+        if (metrics != null) {
+          metrics.meter("imk.dump.errorGetQueryMap", 1)
         }
+        logger.warn("ErrorGetQueryMap", e)
       }
     }
     result
@@ -484,10 +485,8 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       for ((k, v) <- search_keyword_map) {
         if (host.contains(k.trim)) {
           v.split("\\|").foreach(keyword => {
-            if (StringUtils.isNotEmpty(keyword)) {
-              if (!queryMap.get(keyword.trim).isEmpty) {
-                return queryMap.get(keyword.trim).get
-              }
+            if (StringUtils.isNotEmpty(keyword) && !queryMap.get(keyword.trim).isEmpty) {
+              return queryMap.get(keyword.trim).get
             }
           })
         }
