@@ -305,7 +305,8 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     val finalDf = df
       .withColumn("event_ts", getDateTimeUdf(col(EVENT_TIMESTAMP)))
       .select(schema_apollo.dfColumns: _*)
-      .dropDuplicates("rvr_id")
+      .dropDuplicates(SNAPSHOT_ID)
+      .withColumnRenamed(SNAPSHOT_ID, "rvr_id")
     // save to final output
     finalDf.show()
     this.saveDFToFiles(finalDf, outputPath = outputDir, writeMode = SaveMode.Append, partitionColumn = dt)
