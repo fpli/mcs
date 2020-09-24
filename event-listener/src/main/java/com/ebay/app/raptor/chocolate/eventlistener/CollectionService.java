@@ -4,8 +4,6 @@ import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
-import com.ebay.app.raptor.chocolate.common.Hostname;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -22,7 +20,6 @@ import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
-import com.ebay.raptorio.env.PlatformEnvProperties;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -47,7 +44,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -302,9 +298,6 @@ public class CollectionService {
       metrics.meter("IncomingSocialAppDeepLink");
 
       UriComponents deeplinkUriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-      if (deeplinkUriComponents == null) {
-        logError(Errors.ERROR_ILLEGAL_URL);
-      }
 
       MultiValueMap<String, String> deeplinkParameters = deeplinkUriComponents.getQueryParams();
       if (deeplinkParameters.size() == 0 || !deeplinkParameters.containsKey(REFERRER)) {
@@ -334,12 +327,7 @@ public class CollectionService {
     }
 
     // parse channel from uri
-    // illegal url, rejected
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    if (uriComponents == null) {
-      logError(Errors.ERROR_ILLEGAL_URL);
-    }
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
 
     // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
@@ -517,7 +505,7 @@ public class CollectionService {
     // Parse payload fields
     Map<String, String> payloadMap = roiEvent.getPayload();
     if(payloadMap == null) {
-      payloadMap = new HashMap<String, String>();
+      payloadMap = new HashMap<>();
     }
 
     // Parse transId
@@ -541,11 +529,8 @@ public class CollectionService {
 
     String queryString = CollectionServiceUtil.generateQueryString(roiEvent, payloadMap, localTimestamp, userId);
     String targetUrl = request.getRequestURL() + "?" + queryString;
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    if (uriComponents == null) {
-      logError(Errors.ERROR_ILLEGAL_URL);
-    }
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
 
     // we get referer from header or payload field,
@@ -638,12 +623,7 @@ public class CollectionService {
     // uri is from post body
     String uri = event.getTargetUrl();
 
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(uri).build();
-    if (uriComponents == null) {
-      logger.warn(Errors.ERROR_ILLEGAL_URL);
-      metrics.meter(Errors.ERROR_ILLEGAL_URL);
-    }
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(uri).build();
 
     // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
@@ -761,10 +741,6 @@ public class CollectionService {
     ListenerMessage message = parser.parse(request, requestContext, startTime, -1L, channelType
         .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, 0L, "");
 
-    // Use the shot snapshot id from requests
-    if (parameters.containsKey(Constants.MKRVRID) && parameters.get(Constants.MKRVRID).get(0) != null) {
-      message.setShortSnapshotId(Long.valueOf(parameters.get(Constants.MKRVRID).get(0)));
-    }
 
     BehaviorMessage behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext, parameters,
             agentInfo, targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), message.getShortSnapshotId(), PageIdEnum.ROI.getId(),
@@ -851,11 +827,7 @@ public class CollectionService {
     String targetUrl = event.getTargetUrl();
 
     // illegal url, rejected
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    if (uriComponents == null) {
-      logError(Errors.ERROR_ILLEGAL_URL);
-    }
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
 
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
     if (parameters.size() == 0) {
