@@ -16,7 +16,7 @@ class TestImkETLJob extends BaseFunSuite{
   private val workDir = tmpPath + "/apps/tracking-events-workdir"
   private val outPutDir = tmpPath + "/apps/tracking-events"
 
-  private val localDir = "src/test/resources/imkETL.data"
+  private val localDir = getTestResourcePath("imkETL.data")
 
   private val kwDataDir = tmpPath + "/apps/kw_lkp/2020-01-05/"
   private val kwDataTempDir = tmpPath + "/apps/kw_lkp/temp/"
@@ -53,23 +53,6 @@ class TestImkETLJob extends BaseFunSuite{
 
     job.run()
 
-    List("PAID_SEARCH", "DISPLAY", "ROI", "SOCIAL_MEDIA").foreach(channel => {
-      List("date=2019-12-23", "date=2019-12-24").foreach(date => {
-        val targetFiles = fs.listStatus(new Path(outPutDir + "/" + channel + "/imkDump" + "/" + date)).map(_.getPath.toUri.getPath)
-
-        val targetFilesByMeta: ArrayBuffer[String] = ArrayBuffer()
-        Metadata(workDir, channel, MetadataEnum.imkDump).readDedupeOutputMeta(".etl").foreach(metaFile => {
-          metaFile._2.foreach(kv => {
-            if (kv._1.equals(date)) {
-              targetFilesByMeta ++= kv._2
-            }
-          })
-        })
-
-        assert(targetFiles.sorted.sameElements(targetFilesByMeta.sorted))
-      })
-    })
-
     List("imkOutput", "dtlOutput", "mgOutput").foreach(dir => {
       List("date=2019-12-23", "date=2019-12-24").foreach(date => {
         // read target file. eg: /imkETL/imkOutput/date=2019-12-23/chocolate_*
@@ -96,23 +79,6 @@ class TestImkETLJob extends BaseFunSuite{
     )))
 
     job.run()
-
-    List("PAID_SEARCH", "DISPLAY", "ROI", "SOCIAL_MEDIA", "SEARCH_ENGINE_FREE_LISTINGS").foreach(channel => {
-      List("date=2019-12-23", "date=2019-12-24").foreach(date => {
-        val targetFiles = fs.listStatus(new Path(outPutDir + "/" + channel + "/imkDump" + "/" + date)).map(_.getPath.toUri.getPath)
-
-        val targetFilesByMeta: ArrayBuffer[String] = ArrayBuffer()
-        Metadata(workDir, channel, MetadataEnum.imkDump).readDedupeOutputMeta(".etl").foreach(metaFile => {
-          metaFile._2.foreach(kv => {
-            if (kv._1.equals(date)) {
-              targetFilesByMeta ++= kv._2
-            }
-          })
-        })
-
-        assert(targetFiles.sorted.sameElements(targetFilesByMeta.sorted))
-      })
-    })
 
     List("imkOutput", "dtlOutput", "mgOutput").foreach(dir => {
       List("date=2019-12-23", "date=2019-12-24").foreach(date => {
