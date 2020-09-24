@@ -72,7 +72,7 @@ class TestDedupeAndSinkListenerUsingCouchbase extends BaseFunSuite {
     message
   }
 
-  test("Test Dedupe and Sink") {
+  test("Test DedupeAndSinkListener") {
 
     val date1 = "2018-01-01"
     val date2 = "2018-01-02"
