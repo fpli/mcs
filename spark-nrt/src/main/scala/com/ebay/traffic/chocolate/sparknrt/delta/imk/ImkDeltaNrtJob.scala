@@ -44,6 +44,22 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
 
   private lazy val IMK_CHANNELS: Seq[String] = Set("PAID_SEARCH", "DISPLAY", "SOCIAL_MEDIA", "ROI").toSeq
   lazy val METRICS_INDEX_PREFIX = "imk-etl-metrics-"
+  lazy val SNAPSHOT_ID = "snapshotid"
+  lazy val CHANNEL_TYPE = "channeltype"
+  lazy val DECODED_URL = "decoded_url"
+  lazy val TEMP_URI_QUERY = "temp_uri_query"
+  lazy val DT = "dt"
+  lazy val CGUID = "cguid"
+  lazy val GUID = "guid"
+  lazy val CLIENT_DATA = "clientdata"
+  lazy val APPLICATION_PAYLOAD = "applicationpayload"
+  lazy val REFERRER = "referrer"
+  lazy val AGENT = "Agent"
+  lazy val ROTID = "rotid"
+  lazy val CRLP = "crlp"
+  lazy val MTID = "mt_id"
+  lazy val EVENT_TIMESTAMP = "eventtimestamp"
+  lazy val GEOID = "geo_id"
 
   @transient lazy val mfe_name_id_map: Map[String, String] = {
     val mapData = Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("mfe_name_id_map.txt")).getLines
@@ -58,9 +74,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
   @transient lazy val schema_delta_apollo: TableSchema = TableSchema("df_imk_delta.json")
   @transient lazy val schema_apollo: TableSchema = TableSchema("df_imk_delta_final.json")
 
-
   import spark.implicits._
-
 
   val tools: Tools = new Tools(METRICS_INDEX_PREFIX, "")
   val getQueryParamsUdf: UserDefinedFunction = udf((uri: String) => tools.getQueryString(uri))
@@ -115,7 +129,6 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
         }
       }
     }
-
     newUri
   }
 
@@ -142,7 +155,6 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
 
       }
     }
-
     newUri
   }
 
@@ -154,6 +166,10 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     }
   })
 
+  /**
+    * Get client id. For ROI, the client id is always 0. No downstream is using it.
+    * For the other channel, the client is parsed from the rotation id.
+    */
   val getClientIdUdf: UserDefinedFunction = udf((channelType: String, tempUriQuery: String, ridParamName: String, uri: String) => {
     channelType match {
       case "ROI" => tools.getClientIdFromRoverUrl(uri)
@@ -161,6 +177,12 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     }
   })
 
+  /**
+    * Get rvr_cmnd_type_cd. There are 3 types: click, serve, roi.
+    * There is no impression in IMK table
+    * @param channelAction Channel Action in String
+    * @return number representing the channel action
+    */
   def getChannelActionEnum(channelAction: String): String = {
     channelAction match{
       case "CLICK" => "1"
@@ -185,60 +207,60 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     val sql = "select * from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
     val sourceDf = sqlsc.sql(sql)
     var imkDf = sourceDf
-      .filter(col("snapshotid").isNotNull)
-      .filter(col("channeltype").isin(IMK_CHANNELS:_*))
-      .withColumn("decoded_url", decodeUrlUdf(getParamFromQueryUdf(col("applicationpayload"), lit("url_mpre"))))
-      .withColumn("temp_uri_query", col("decoded_url"))
+      .filter(col(SNAPSHOT_ID).isNotNull)
+      .filter(col(CHANNEL_TYPE).isin(IMK_CHANNELS:_*))
+      .withColumn(DECODED_URL, decodeUrlUdf(getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("url_mpre"))))
+      .withColumn(TEMP_URI_QUERY, col(DECODED_URL))
       .withColumn("batch_id", getBatchIdUdf())
       .withColumn("file_id", lit(0))
       .withColumn("file_schm_vrsn", lit(4))
-      .withColumn("snapshotid", col("snapshotid"))
-      .withColumn("dt", col("dt"))
+      .withColumn(SNAPSHOT_ID, col(SNAPSHOT_ID))
+      .withColumn(DT, col(DT))
       .withColumn("srvd_pstn", lit(0))
       .withColumn("rvr_cmnd_type_cd", getChannelActionEnumUdf(col("channelaction")))
-      .withColumn("rvr_chnl_type_cd", getChannelTypeEnumUdf(col("channeltype")))
+      .withColumn("rvr_chnl_type_cd", getChannelTypeEnumUdf(col(CHANNEL_TYPE)))
       .withColumn("cntry_cd", lit(""))
       .withColumn("lang_cd", lit(""))
       .withColumn("trckng_prtnr_id", lit(0))
-      .withColumn("cguid", getParamFromQueryUdf(col("applicationpayload"), lit("cguid")))
-      .withColumn("guid", col("guid"))
-      .withColumn("user_id", getParamFromQueryUdf(col("applicationpayload"), lit("u")))
-      .withColumn("clnt_remote_ip", getBrowserTypeUdf(getParamFromQueryUdf(col("clientdata"), lit("RemoteIP"))))
-      .withColumn("brwsr_type_id", getBrowserTypeUdf(getParamFromQueryUdf(col("clientdata"), lit("Agent"))))
-      .withColumn("brwsr_name", getParamFromQueryUdf(col("clientdata"), lit("Agent")))
-      .withColumn("rfrr_dmn_name", getLandingPageDomainUdf(col("referrer")))
-      .withColumn("rfrr_url", col("referrer"))
+      .withColumn(CGUID, getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit(CGUID)))
+      .withColumn(GUID, col(GUID))
+      .withColumn("user_id", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("u")))
+      .withColumn("clnt_remote_ip", getBrowserTypeUdf(getParamFromQueryUdf(col(CLIENT_DATA), lit("RemoteIP"))))
+      .withColumn("brwsr_type_id", getBrowserTypeUdf(getParamFromQueryUdf(col(CLIENT_DATA), lit(AGENT))))
+      .withColumn("brwsr_name", getParamFromQueryUdf(col(CLIENT_DATA), lit(AGENT)))
+      .withColumn("rfrr_dmn_name", getLandingPageDomainUdf(col(REFERRER)))
+      .withColumn("rfrr_url", col(REFERRER))
       .withColumn("url_encrptd_yn_ind", lit(0))
       .withColumn("pblshr_id", lit(""))
-      .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(col("decoded_url")))
-      .withColumn("lndng_page_url", replaceMkgroupidMktypeUdfAndParseMpreFromRoverUdf(col("channeltype"), col("decoded_url")))
-      .withColumn("user_query", getUserQueryUdf(col("referrer"), col("temp_uri_query")))
+      .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(col(DECODED_URL)))
+      .withColumn("lndng_page_url", replaceMkgroupidMktypeUdfAndParseMpreFromRoverUdf(col(CHANNEL_TYPE), col("decoded_url")))
+      .withColumn("user_query", getUserQueryUdf(col(REFERRER), col(TEMP_URI_QUERY)))
       .withColumn("rule_bit_flag_strng", lit(""))
-      .withColumn("eventtimestamp", col("eventtimestamp"))
+      .withColumn(EVENT_TIMESTAMP, col(EVENT_TIMESTAMP))
       .withColumn("dflt_bhrv_id", lit(""))
-      .withColumn("src_rotation_id", getBrowserTypeUdf(getParamFromQueryUdf(col("applicationpayload"), lit("rotid"))))
-      .withColumn("dst_rotation_id", getBrowserTypeUdf(getParamFromQueryUdf(col("applicationpayload"), lit("rotid"))))
-      .withColumn("user_map_ind", getParamFromQueryUdf(col("applicationpayload"), lit("u")))
+      .withColumn("src_rotation_id", getBrowserTypeUdf(getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit(ROTID))))
+      .withColumn("dst_rotation_id", getBrowserTypeUdf(getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit(ROTID))))
+      .withColumn("user_map_ind", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("u")))
       .withColumn("dst_client_id", setDefaultValueForDstClientIdUdf(getClientIdUdf(
-        col("channeltype"), col("temp_uri_query"), lit("mkrid"),
-        col("decoded_url"))))
+        col(CHANNEL_TYPE), col(TEMP_URI_QUERY), lit("mkrid"),
+        col(DECODED_URL))))
       .withColumn("creative_id", lit(-999))
       .withColumn("test_ctrl_flag", lit(0))
       // not in imk will be removed after column selection
-      .withColumn("mfe_name", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
-      .withColumn("mfe_id", getMfeIdUdf(getParamFromQueryUdf(col("temp_uri_query"), lit("crlp"))))
+      .withColumn("mfe_name", getParamFromQueryUdf(col(TEMP_URI_QUERY), lit(CRLP)))
+      .withColumn("mfe_id", getMfeIdUdf(getParamFromQueryUdf(col(TEMP_URI_QUERY), lit(CRLP))))
       .withColumn("kw_id", lit("-999"))
-      .withColumn("keyword", getKeywordUdf(col("temp_uri_query")))
-      .withColumn("mt_id", getDefaultNullNumParamValueFromUrlUdf(col("temp_uri_query"), lit("mt_id")))
-      .withColumn("crlp", getParamFromQueryUdf(col("temp_uri_query"), lit("crlp")))
-      .withColumn("geo_id", getParamFromQueryUdf(col("temp_uri_query"), lit("geo_id")))
-      .withColumn("item_id", getParamFromQueryUdf(col("applicationpayload"), lit("itemid")))
-      .withColumn("transaction_type", getParamFromQueryUdf(col("applicationpayload"), lit("trans_type")))
-      .withColumn("transaction_id", getParamFromQueryUdf(col("applicationpayload"), lit("trans_id")))
-      .withColumn("cart_id", getParamFromQueryUdf(col("applicationpayload"), lit("cart_id")))
+      .withColumn("keyword", getKeywordUdf(col(TEMP_URI_QUERY)))
+      .withColumn(MTID, getDefaultNullNumParamValueFromUrlUdf(col(TEMP_URI_QUERY), lit(MTID)))
+      .withColumn(CRLP, getParamFromQueryUdf(col(TEMP_URI_QUERY), lit(CRLP)))
+      .withColumn(GEOID, getParamFromQueryUdf(col(TEMP_URI_QUERY), lit(GEOID)))
+      .withColumn("item_id", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("itemid")))
+      .withColumn("transaction_type", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("trans_type")))
+      .withColumn("transaction_id", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("trans_id")))
+      .withColumn("cart_id", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("cart_id")))
       .withColumn("extrnl_cookie", lit(""))
       .withColumn("ebay_site_id", col("siteid"))
-      .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col("channeltype"), col("decoded_url")))
+      .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col(CHANNEL_TYPE), col(DECODED_URL)))
       .withColumn("cre_date", lit(""))
       .withColumn("cre_user", lit(""))
       .withColumn("upd_date", lit(""))
@@ -260,10 +282,12 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     */
   override def writeToOutput(df: DataFrame, dtString: String): Unit = {
     // regenerate the final table timestamp format
+    // dedupe by rvr_id
     df.show()
     val finalDf = df
-      .withColumn("event_ts", getDateTimeUdf(col("eventtimestamp")))
+      .withColumn("event_ts", getDateTimeUdf(col(EVENT_TIMESTAMP)))
       .select(schema_apollo.dfColumns: _*)
+      .dropDuplicates("rvr_id")
     // save to final output
     finalDf.show()
     this.saveDFToFiles(finalDf, outputPath = outputDir, writeMode = SaveMode.Append, partitionColumn = dt)
