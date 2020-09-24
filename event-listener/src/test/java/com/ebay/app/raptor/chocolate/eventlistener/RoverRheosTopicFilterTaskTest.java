@@ -143,26 +143,6 @@ public class RoverRheosTopicFilterTaskTest {
         beginningOffsets.put(new TopicPartition("test_topic", 0), 0L);
         consumerMcs.updateBeginningOffsets(beginningOffsets);
 
-        //natural search click events
-        RheosEvent rheosEvent1 = getRecord("3085", "roverns");
-        GenericRecord genericRecord1 = mock(GenericRecord.class);
-        when(decoder.decode(rheosEvent1)).thenReturn(genericRecord1);
-        HashMap<Utf8, Utf8> data1 = new HashMap<Utf8, Utf8>();
-        data1.put(new Utf8("urlQueryString"), new Utf8("/roverns/1/711-13271-9788-0?showdebug=async&mpt=1372189049793&mpcl=http%3A%2F%2Fwww.qa.ebay.com%2F&mpvl=http%3A%2F%2Fa+.yhs4.search.yahoo.com"));
-        data1.put(new Utf8("ForwardFor"), new Utf8("10.149.170.138"));
-        data1.put(new Utf8("referrer"), new Utf8("http://a+.yhs4.search.yahoo.com"));
-
-        HashMap<Utf8, Utf8> data2 = new HashMap<Utf8, Utf8>();
-        data2.put(new Utf8("chnl"), new Utf8("3"));
-        data2.put(new Utf8("rvrid"), new Utf8("12345"));
-        data2.put(new Utf8("timestamp"), new Utf8("1573445422467"));
-
-        when(genericRecord1.get("clientData")).thenReturn(data1);
-        when(genericRecord1.get("applicationPayload")).thenReturn(data2);
-        when(genericRecord1.get("eventTimestamp")).thenReturn(1234567L);
-        when(genericRecord1.get("pageId")).thenReturn(3085);
-        when(genericRecord1.get("guid")).thenReturn("59b405c216e0a4e287dc0e85ffff607d");
-
         //roi events
         RheosEvent rheosEvent2 = getRecord("3086", "roverroi");
         GenericRecord genericRecord2 = mock(GenericRecord.class);
@@ -201,10 +181,6 @@ public class RoverRheosTopicFilterTaskTest {
         when(genericRecord3.get("pageId")).thenReturn(3084);
         when(genericRecord3.get("guid")).thenReturn("59b405c216e0a4e287dc0e85ffff607f");
 
-        //send data to rheos
-        consumerMcs.addRecord(new ConsumerRecord<byte[], RheosEvent>("test_topic", 0, 0L,
-                ByteBuffer.allocate(Long.BYTES).putLong((long) rheosEvent1.get("eventTimestamp")).array(), rheosEvent1));
-
         consumerMcs.addRecord(new ConsumerRecord<byte[], RheosEvent>("test_topic", 0, 1L,
                 ByteBuffer.allocate(Long.BYTES).putLong((long) rheosEvent2.get("eventTimestamp")).array(), rheosEvent2));
 
@@ -216,7 +192,7 @@ public class RoverRheosTopicFilterTaskTest {
         roverRheosTopicFilterTask.processRecords(rheosConsumerWrapper, producer, behaviorProducer, "");
         Thread.sleep(5000);
         List<ProducerRecord<Long, ListenerMessage>> history = producer.history();
-        assertEquals(3, history.size());
+        assertEquals(2, history.size());
     }
 
     private RheosEvent createRheosEvent(int pageId, String pageName, String chnl, String urlQueryString) {
@@ -248,7 +224,7 @@ public class RoverRheosTopicFilterTaskTest {
 
     @Test
     public void testProcessEmailOpenRecords() throws Exception {
-        initConsumer("behavior.pulsar.customized.page3962");
+        initConsumer("marketing.tracking.staging.mcs-auto");
 
         RheosEvent roveropen1 = createRheosEvent(3962, "roveropen", "7",
                 "/roveropen/0/e12060/7?osub=-1%7E1&crd=20200813220048&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869");
@@ -265,15 +241,15 @@ public class RoverRheosTopicFilterTaskTest {
         RheosEvent roveropen5 = createRheosEvent(3962, "roveropen", "",
                 "/roveropen/0/e12060/?osub=-1%7E1&crd=20200813220048&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869");
 
-        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.page3962", 0, 0L,
+        consumerMcs.addRecord(new ConsumerRecord<>("marketing.tracking.staging.mcs-auto", 0, 0L,
                 ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen1.get("eventTimestamp")).array(), roveropen1));
-        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.page3962", 0, 1L,
+        consumerMcs.addRecord(new ConsumerRecord<>("marketing.tracking.staging.mcs-auto", 0, 1L,
                 ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen2.get("eventTimestamp")).array(), roveropen2));
-        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.page3962", 0, 2L,
+        consumerMcs.addRecord(new ConsumerRecord<>("marketing.tracking.staging.mcs-auto", 0, 2L,
                 ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen3.get("eventTimestamp")).array(), roveropen3));
-        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.page3962", 0, 3L,
+        consumerMcs.addRecord(new ConsumerRecord<>("marketing.tracking.staging.mcs-auto", 0, 3L,
                 ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen4.get("eventTimestamp")).array(), roveropen4));
-        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.page3962", 0, 4L,
+        consumerMcs.addRecord(new ConsumerRecord<>("marketing.tracking.staging.mcs-auto", 0, 4L,
                 ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen5.get("eventTimestamp")).array(), roveropen5));
 
         roverRheosTopicFilterTask.processRecords(rheosConsumerWrapper, producer, behaviorProducer, "");
@@ -299,12 +275,12 @@ public class RoverRheosTopicFilterTaskTest {
 
     @Test
     public void testProcessEmailClickRecords() throws Exception {
-        initConsumer("behavior.pulsar.customized.email");
+        initConsumer("marketing.tracking.staging.mcs-auto");
 
         RheosEvent roveropen2 = createRheosEvent(3084, "", "7",
                 "/roveropen/0/e12060/7?osub=-1%7E1&crd=20200813220048&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869");
 
-        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.customized.email", 0, 1L,
+        consumerMcs.addRecord(new ConsumerRecord<>("marketing.tracking.staging.mcs-auto", 0, 1L,
                 ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen2.get("eventTimestamp")).array(), roveropen2));
 
         roverRheosTopicFilterTask.processRecords(rheosConsumerWrapper, producer, behaviorProducer, "");

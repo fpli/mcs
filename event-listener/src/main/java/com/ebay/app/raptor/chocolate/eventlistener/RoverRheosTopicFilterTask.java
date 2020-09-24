@@ -3,7 +3,9 @@ package com.ebay.app.raptor.chocolate.eventlistener;
 import com.ebay.app.raptor.chocolate.avro.*;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorKafkaSink;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageNameEnum;
@@ -16,7 +18,6 @@ import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.Validate;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -56,21 +57,17 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static final String INCOMING_PAGE_ROVER = "IncomingPageRover";
   private static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
   private static final String INCOMING_PAGE_ROI = "IncomingPageRoi";
-  private static final String INCOMING_PAGE_ROVERNS = "IncomingPageRoverNS";
-  private static final String INCOMING_PAGE_NATURAL_SEARCH = "IncomingPageNaturalSearch";
-  private static final String INCOMING_EMAIL_OPEN = "IncomingEmailOpen";
-  private static final String INCOMING_EMAIL_CLICK = "IncomingEmailClick";
-  private static final String INCOMING_EMAIL_OPEN_BOT = "IncomingEmailOpenBot";
-  private static final String INCOMING_EMAIL_CLICK_BOT = "IncomingEmailClickBot";
+  private static final String INCOMING_ROVER_EMAIL_OPEN = "IncomingRoverEmailOpen";
+  private static final String INCOMING_ROVER_EMAIL_OPEN_BOT = "IncomingRoverEmailOpenBot";
+  private static final String INCOMING_ROVER_EMAIL_CLICK_BOT = "IncomingRoverEmailClickBot";
+  private static final String INCOMING_ROVER_CLICK = "IncomingRoverClick";
   private static final long ONE_HOUR = 1000 * 60 * 60;
   private static final Metrics metrics = ESMetrics.getInstance();
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
   public static final int ROVER_CLICK_PAGE_ID = 3084;
-  public static final String EMAIL_OPEN_TOPIC = "behavior.pulsar.customized.page3962";
-  public static final String ROVER_OPEN_PAGE_NAME = "roveropen";
-  public static final String EMAIL_CLICK_TOPIC = "behavior.pulsar.customized.email";
-  public static final String BOT_TOPIC = "behavior.pulsar.misc.bot";
+  private static final String ROVER_OPEN_PAGE_NAME = "roveropen";
+  private static final String BOT_TOPIC = "behavior.pulsar.misc.bot";
   private static Pattern missingRoverClicksPattern = Pattern.compile("^\\/rover\\/.*\\/.*\\/1\\?.*rvrhostname=.*",
     Pattern.CASE_INSENSITIVE);
   private static final Utf8 empty = new Utf8("");
@@ -232,42 +229,6 @@ public class RoverRheosTopicFilterTask extends Thread {
       }
 
       String pageName = getField(genericRecord, "pageName", null);
-      if (topic.equals(EMAIL_OPEN_TOPIC)) {
-        if (pageId != PageIdEnum.EMAIL_OPEN.getId()) {
-          continue;
-        }
-        // EMAIL OPEN tracked by Rover
-        if (!ROVER_OPEN_PAGE_NAME.equals(pageName)) {
-          continue;
-        }
-
-        ChannelIdEnum channelType = parseChannelType(genericRecord);
-        if (ChannelIdEnum.SITE_EMAIL != channelType && ChannelIdEnum.MRKT_EMAIL != channelType) {
-          continue;
-        }
-
-        ESMetrics.getInstance().meter(INCOMING_EMAIL_OPEN);
-
-        BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_OPEN.getName(), ChannelAction.EMAIL_OPEN.name(), channelType.getLogicalChannel().getAvro().name());
-        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
-        continue;
-      }
-
-      if (topic.equals(EMAIL_CLICK_TOPIC)) {
-        ChannelIdEnum channelType = parseChannelType(genericRecord);
-        if (ChannelIdEnum.SITE_EMAIL != channelType && ChannelIdEnum.MRKT_EMAIL != channelType) {
-          continue;
-        }
-        // rover click
-        if (pageId == ROVER_CLICK_PAGE_ID) {
-          ESMetrics.getInstance().meter(INCOMING_EMAIL_CLICK);
-          BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_CLICK.getName(), ChannelAction.CLICK.name(), channelType.getLogicalChannel().getAvro().name());
-          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
-          continue;
-        }
-        continue;
-      }
-
       if (topic.equals(BOT_TOPIC)) {
         ChannelIdEnum channelType = parseChannelType(genericRecord);
         if (ChannelIdEnum.SITE_EMAIL != channelType && ChannelIdEnum.MRKT_EMAIL != channelType) {
@@ -275,14 +236,14 @@ public class RoverRheosTopicFilterTask extends Thread {
         }
         // rover click bot
         if (pageId == ROVER_CLICK_PAGE_ID) {
-          ESMetrics.getInstance().meter(INCOMING_EMAIL_CLICK_BOT);
+          ESMetrics.getInstance().meter(INCOMING_ROVER_EMAIL_CLICK_BOT);
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.CLICK_BOT.getName(), ChannelAction.CLICK.name(), channelType.getLogicalChannel().getAvro().name());
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
           continue;
         }
         // rover open bot
         if (pageId == PageIdEnum.EMAIL_OPEN.getId() && ROVER_OPEN_PAGE_NAME.equals(pageName)) {
-          ESMetrics.getInstance().meter(INCOMING_EMAIL_OPEN_BOT);
+          ESMetrics.getInstance().meter(INCOMING_ROVER_EMAIL_OPEN_BOT);
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_OPEN_BOT.getName(), ChannelAction.EMAIL_OPEN.name(), channelType.getLogicalChannel().getAvro().name());
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
           continue;
@@ -381,6 +342,15 @@ public class RoverRheosTopicFilterTask extends Thread {
           record.setLandingPageUrl(landingPageUrl);
 
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
+        }
+
+        // for non-epn channel, send to unified tracking topic
+        ChannelIdEnum channelType = parseChannelType(genericRecord);
+        if (channelType != null && ChannelIdEnum.EPN != channelType) {
+          String channelTypeStr = channelType.getLogicalChannel().getAvro().name();
+          ESMetrics.getInstance().meter(INCOMING_ROVER_CLICK, 1, Field.of(Constants.CHANNEL_TYPE, channelTypeStr));
+          BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_CLICK.getName(), ChannelAction.CLICK.name(), channelTypeStr);
+          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
         }
       }
       else if(pageId == 3086) {
@@ -486,51 +456,21 @@ public class RoverRheosTopicFilterTask extends Thread {
         }
 
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
+
+        // send roi to unified tracking topic
+        BehaviorMessage roiRecord = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_ROI.getName(), ChannelActionEnum.ROI.getAvro().name(), ChannelIdEnum.ROI.getLogicalChannel().getAvro().name());
+        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, roiRecord.getSnapshotId().getBytes(), record), KafkaSink.callback);
       }
-        else if(pageId == 3085) {
-        ESMetrics.getInstance().meter(INCOMING_PAGE_ROVERNS);
-        HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
-
-        // Page 3085 have events including channel 3 (natural search) and channel 16 (social media)
-        // Now we only send natural search events
-        if (null == applicationPayload.get(new Utf8("chnl"))
-                || applicationPayload.get(new Utf8("chnl")).length() == 0) {
-
-          //click events are not be sent when applicationPayload.chnl is null
-          ESMetrics.getInstance().meter("GetNullRoverNSChannelId");
-          logger.warn("Get null RoverNS channel id");
-
-        } else if (applicationPayload.get(new Utf8("chnl")).toString().equals("3")) {
-          ESMetrics.getInstance().meter(INCOMING_PAGE_NATURAL_SEARCH);
-
-          String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.NATURAL_SEARCH);
-          String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
-
-          ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
-                  0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.NATURAL_SEARCH, HttpMethod.GET, "", false);
-
-          setCommonFields(record, applicationPayload, genericRecord);
-
-          // TODO: Remove this logic after release and everything stable
-          // set short snapshot id to be from Rheos event so that when inserting into TD, it can be deduped by primary index
-          String rvrIdStr = coalesce(applicationPayload.get(new Utf8("rvrid")), empty).toString();
-          if (StringUtils.isNumeric(rvrIdStr)) {
-            record.setShortSnapshotId(Long.valueOf(rvrIdStr));
+        else if(pageId == PageIdEnum.EMAIL_OPEN.getId()) {
+        // EMAIL OPEN tracked by Rover
+        if (ROVER_OPEN_PAGE_NAME.equals(pageName)) {
+          ChannelIdEnum channelType = parseChannelType(genericRecord);
+          if (ChannelIdEnum.SITE_EMAIL == channelType || ChannelIdEnum.MRKT_EMAIL == channelType) {
+            String channelTypeStr = channelType.getLogicalChannel().getAvro().name();
+            ESMetrics.getInstance().meter(INCOMING_ROVER_EMAIL_OPEN, 1, Field.of(Constants.CHANNEL_TYPE, channelTypeStr));
+            BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_OPEN.getName(), ChannelAction.EMAIL_OPEN.name(), channelTypeStr);
+            behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
           }
-
-          String uri = "https://rover.ebay.com" + urlQueryString;
-          record.setUri(uri);
-
-          record.setHttpMethod(HttpMethod.GET);
-
-          // source and destination rotation id parse for natural search
-          Long rotationId = urlQueryString.split("/").length > 3 ? Long.valueOf(urlQueryString.split("/")[3].split("\\?")[0].replace("-", "")) : 0l;
-          record.setSrcRotationId(rotationId);
-          record.setDstRotationId(rotationId);
-
-          record.setCampaignId(-1L);
-          record.setPublisherId(-1L);
-          producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
       }
     }
