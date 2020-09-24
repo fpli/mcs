@@ -96,9 +96,9 @@ do
   orgDate=${file_name:15:10}
   if [ ${orgDate} == ${today} ]
   then
-    echo "hdfs://slickha/${one_file}" >> ${toyday_file}
+    echo "hdfs://slickha${one_file}" >> ${toyday_file}
   else
-    echo "hdfs://slickha/${one_file}" >> ${yesterday_file}
+    echo "hdfs://slickha${one_file}" >> ${yesterday_file}
   fi
 done
 
@@ -236,28 +236,3 @@ done
 echo "crabTransform success copy file size:${success_file_numbers}"
 echo "crabTransform fail copy file size:${fail_file_numbers}"
 echo "copy finish"
-
-echo "======================== Add partition to Hive ========================"
-partition_date=$(date +%Y-%m-%d)
-retry_add=1
-rcode_add=1
-until [[ ${retry_add} -gt 3 ]]
-do
-    /datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; ALTER TABLE choco_data.imk_rvr_trckng_event ADD IF NOT EXISTS PARTITION (dt='${partition_date}')" &&
-    /datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; ALTER TABLE choco_data.imk_rvr_trckng_event_dtl ADD IF NOT EXISTS PARTITION (dt='${partition_date}')" &&
-    /datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; ALTER TABLE im_tracking.imk_rvr_trckng_event ADD IF NOT EXISTS PARTITION (dt='${partition_date}')" &&
-    /datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; ALTER TABLE im_tracking.imk_rvr_trckng_event_dtl ADD IF NOT EXISTS PARTITION (dt='${partition_date}')"
-    rcode_add=$?
-    if [ ${rcode_add} -eq 0 ]
-    then
-        break
-    else
-        echo "Failed to add ${partition_date} partition to hive."
-        retry_add=$(expr ${retry_add} + 1)
-    fi
-done
-if [ ${rcode_add} -ne 0 ]
-then
-    echo -e "Failed to add ${partition_date} partition on hive, please check!!!"
-    exit ${rcode_add}
-fi
