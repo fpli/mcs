@@ -532,7 +532,12 @@ public class EventListenerServiceTest {
 
     // no referer
     event.setReferrer(null);
-    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
+    response = postMcsResponse(impressionPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+
+    // referrer encoded
+    event.setReferrer("https%3A%2F%2Fwww.google.com");
+    response = postMcsResponse(impressionPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
 
     // no query parameter
@@ -552,6 +557,15 @@ public class EventListenerServiceTest {
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4007, errorMessage.getErrorCode());
+
+    // mkevt=3, 6
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkcid=1&mkevt=3");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
+    assertEquals(200, response.getStatus());
+
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkcid=1&mkevt=6");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
+    assertEquals(200, response.getStatus());
 
     // no mkcid
     // service will pass but no message to kafka
@@ -573,7 +587,7 @@ public class EventListenerServiceTest {
     Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
       consumerEpn, Arrays.asList("dev_listened-epn"), 4, 30 * 1000);
     consumerEpn.close();
-    assertEquals(5, listenerMessagesEpn.size());
+    assertEquals(8, listenerMessagesEpn.size());
 
     // mrkt email impression events
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=8&mkpid=12&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");

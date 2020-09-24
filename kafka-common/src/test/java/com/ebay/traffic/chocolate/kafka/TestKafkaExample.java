@@ -8,7 +8,7 @@ import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.*;
-;import java.io.IOException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 
