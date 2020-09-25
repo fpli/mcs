@@ -581,7 +581,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getValidParam(id: String): String = {
-    if (id == null && id.equals("")) {
+    if (StringUtils.isEmpty(id)) {
       return ""
     }
     val arr = id.toCharArray
