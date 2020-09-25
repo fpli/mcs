@@ -459,7 +459,7 @@ public class RoverRheosTopicFilterTask extends Thread {
 
         // send roi to unified tracking topic
         BehaviorMessage roiRecord = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_ROI.getName(), ChannelActionEnum.ROI.getAvro().name(), ChannelIdEnum.ROI.getLogicalChannel().getAvro().name());
-        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, roiRecord.getSnapshotId().getBytes(), record), KafkaSink.callback);
+        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, roiRecord.getSnapshotId().getBytes(), roiRecord), KafkaSink.callback);
       }
         else if(pageId == PageIdEnum.EMAIL_OPEN.getId()) {
         // EMAIL OPEN tracked by Rover
