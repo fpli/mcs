@@ -746,7 +746,7 @@ public class CollectionService {
             agentInfo, targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), message.getShortSnapshotId(), PageIdEnum.ROI.getId(),
             PageNameEnum.ROI.getName(), 0, message.getGuid(), message.getCguid(), userId,
             String.valueOf(message.getDstRotationId()));
-    behaviorProducer.send(new ProducerRecord<>(behaviorTopic, behaviorMessage.getSnapshotId().getBytes(), behaviorMessage),
+    behaviorProducer.send(new ProducerRecord<>(behaviorTopic, behaviorMessage.getSnapshotId(), behaviorMessage),
             KafkaSink.callback);
 
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
@@ -974,7 +974,7 @@ public class CollectionService {
           break;
       }
       if (behaviorMessage != null) {
-        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, behaviorMessage.getSnapshotId().getBytes(), behaviorMessage),
+        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, behaviorMessage.getSnapshotId(), behaviorMessage),
                 KafkaSink.callback);
       }
     }
