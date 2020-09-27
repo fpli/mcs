@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
 import com.ebay.app.raptor.chocolate.common.DAPRvrId;
 import com.ebay.app.raptor.chocolate.common.Hostname;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorKafkaSink;
 import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorMessageParser;
 import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
 import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
@@ -60,6 +61,7 @@ public class EventListenerService {
     }
 
     KafkaSink.initialize(options, options);
+    BehaviorKafkaSink.initialize(ApplicationOptions.getInstance().getBehaviorRheosProperties());
     ListenerMessageParser.init();
     BehaviorMessageParser.init();
 
@@ -72,6 +74,7 @@ public class EventListenerService {
   public void shutdown() {
     try {
       KafkaSink.close();
+      BehaviorKafkaSink.close();
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
     }

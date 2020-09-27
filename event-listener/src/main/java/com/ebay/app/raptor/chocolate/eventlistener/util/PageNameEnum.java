@@ -16,7 +16,10 @@ public enum PageNameEnum {
   ADREQUEST("AdRequest"),
   // third party click
   THIRDPARTY_CLICK("ThirdParty_Click"),
-
+  // roi
+  ROI("Roi"),
+  // chocolate click bot
+  CHOCOLATE_CLICK_BOT("Chocolate_Click_Bot"),
   // rover click
   ROVER_CLICK("Rover_Click"),
   // rover impression
@@ -30,7 +33,9 @@ public enum PageNameEnum {
   // rover click bot
   CLICK_BOT("Rover_Click_Bot"),
   // rover open bot
-  ROVER_OPEN_BOT("Rover_Open_Bot");
+  ROVER_OPEN_BOT("Rover_Open_Bot"),
+  // rover roi
+  ROVER_ROI("Rover_Roi");
 
   private final String name;
 
