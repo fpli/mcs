@@ -325,14 +325,12 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
   override def writeToOutput(df: DataFrame, dtString: String): Unit = {
     // regenerate the final table timestamp format
     // dedupe by rvr_id
-    df.show()
     val finalDf = df
       .withColumn("event_ts", getDateTimeUdf(col(EVENT_TIMESTAMP)))
       .select(schema_apollo.dfColumns: _*)
       .dropDuplicates(SNAPSHOT_ID)
       .withColumnRenamed(SNAPSHOT_ID, "rvr_id")
     // save to final output
-    finalDf.show()
     this.saveDFToFiles(finalDf, outputPath = outputDir, writeMode = SaveMode.Append, partitionColumn = dt)
   }
 
