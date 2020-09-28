@@ -11,8 +11,8 @@ import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
 
 @SpringBootApplication
 @ComponentScan(value = "com.ebay.traffic.chocolate")
-@EntityScan("com.ebay.traffic.chocolate")
-@EnableJpaRepositories("com.ebay.traffic.chocolate")
+@EntityScan("com.ebay.traffic.chocolate.jdbc.model")
+@EnableJpaRepositories("com.ebay.traffic.chocolate.jdbc.repo")
 @EnableConfigurationProperties({
         DatabaseProperties.class
 })

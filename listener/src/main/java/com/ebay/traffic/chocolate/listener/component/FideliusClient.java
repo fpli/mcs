@@ -6,6 +6,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,7 @@ import java.util.Objects;
  * @Author YangYang
  */
 @Component
+@DependsOn({"com.ebay.jaxrs.client.config.GingerClientInitializer", "com.ebay.raptor.esams.autoconfigure.EsamsInitializer"})
 public class FideliusClient {
     private static final String URI_OBJECTS = "/objects/chocolis/";
 
