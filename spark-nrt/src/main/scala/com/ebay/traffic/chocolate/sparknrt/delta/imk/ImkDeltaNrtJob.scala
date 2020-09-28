@@ -22,6 +22,14 @@ import scala.io.Source
   * @author Xiang Li
   * @since 2020/08/18
   *        Imk NRT job to extract data from master table and sink into IMK table
+  * Before first running. Initialize the delta table by the schema.
+  * 1. Debug this class ut to generate a parquet with delta table schema
+  * 2. Upload this this parquet file to apollo
+  * 3. Run spark shell locally to create a delta table
+  * 3.1 read df from the parquet
+  * 3.2 withColumn("dt", lit(some date))
+  * 3.3 df.write.format("delta").mode("overwrite").partitionBy("dt").save("your path")
+  * After all above done, we have a complete env to start the job
   */
 object ImkDeltaNrtJob extends App {
   override def main(args: Array[String]): Unit = {
@@ -197,8 +205,24 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     }
   }
 
+  /**
+    * Get channel id enum. By historical reason, display and dap are mixed. Need to handle the exception.
+    * @param channelType input channel type in string
+    * @return channel id
+    */
   def getChannelTypeEnum(channelType: String): String = {
-    ChannelIdEnum.valueOf(channelType).getValue
+    if(channelType.equals("DISPLAY")) {
+      return "4"
+    }
+    var channelId = "2"
+    try {
+      channelId = ChannelIdEnum.valueOf(channelType).getValue
+    } catch {
+      case e: Exception => {
+        logger.warn("Wrong channel type: " + channelType, e)
+      }
+    }
+    channelId
   }
 
   /**
