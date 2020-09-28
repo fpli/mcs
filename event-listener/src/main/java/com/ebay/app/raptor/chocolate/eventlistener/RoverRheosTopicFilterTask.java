@@ -239,14 +239,18 @@ public class RoverRheosTopicFilterTask extends Thread {
         if (pageId == ROVER_CLICK_PAGE_ID) {
           ESMetrics.getInstance().meter(INCOMING_ROVER_EMAIL_CLICK_BOT, 1, Field.of(Constants.CHANNEL_TYPE, channelTypeStr));
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.CLICK_BOT.getName(), ChannelAction.CLICK.name(), channelType.getLogicalChannel().getAvro().name());
-          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+          if (record != null) {
+            behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+          }
           continue;
         }
         // rover open bot
         if (pageId == PageIdEnum.EMAIL_OPEN.getId() && ROVER_OPEN_PAGE_NAME.equals(pageName)) {
           ESMetrics.getInstance().meter(INCOMING_ROVER_EMAIL_OPEN_BOT, 1, Field.of(Constants.CHANNEL_TYPE, channelTypeStr));
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_OPEN_BOT.getName(), ChannelAction.EMAIL_OPEN.name(), channelType.getLogicalChannel().getAvro().name());
-          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+          if (record != null) {
+            behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+          }
           continue;
         }
         continue;
@@ -351,7 +355,9 @@ public class RoverRheosTopicFilterTask extends Thread {
           String channelTypeStr = channelType.getLogicalChannel().getAvro().name();
           ESMetrics.getInstance().meter(INCOMING_ROVER_CLICK, 1, Field.of(Constants.CHANNEL_TYPE, channelTypeStr));
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_CLICK.getName(), ChannelAction.CLICK.name(), channelTypeStr);
-          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+          if (record != null) {
+            behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+          }
         }
       }
       else if(pageId == 3086) {
@@ -460,7 +466,9 @@ public class RoverRheosTopicFilterTask extends Thread {
 
         // send roi to unified tracking topic
         BehaviorMessage roiRecord = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_ROI.getName(), ChannelActionEnum.ROI.getAvro().name(), ChannelIdEnum.ROI.getLogicalChannel().getAvro().name());
-        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, roiRecord.getSnapshotId().getBytes(), roiRecord), KafkaSink.callback);
+        if (roiRecord != null) {
+          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, roiRecord.getSnapshotId().getBytes(), roiRecord), KafkaSink.callback);
+        }
       }
         else if(pageId == PageIdEnum.EMAIL_OPEN.getId()) {
         // EMAIL OPEN tracked by Rover
@@ -470,7 +478,9 @@ public class RoverRheosTopicFilterTask extends Thread {
             String channelTypeStr = channelType.getLogicalChannel().getAvro().name();
             ESMetrics.getInstance().meter(INCOMING_ROVER_EMAIL_OPEN, 1, Field.of(Constants.CHANNEL_TYPE, channelTypeStr));
             BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_OPEN.getName(), ChannelAction.EMAIL_OPEN.name(), channelTypeStr);
-            behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+            if (record != null) {
+              behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
+            }
           }
         }
       }
@@ -487,46 +497,51 @@ public class RoverRheosTopicFilterTask extends Thread {
 
   @SuppressWarnings("unchecked")
   protected BehaviorMessage buildMessage(GenericRecord genericRecord, Integer pageId, String pageName, String channelAction, String channelType) {
-    BehaviorMessage record = new BehaviorMessage();
-    record.setGuid(String.valueOf(genericRecord.get("guid")));
-    record.setAdguid(String.valueOf(genericRecord.get("guid")));
-    record.setEventTimestamp((Long) genericRecord.get("eventTimestamp"));
-    record.setSid(getField(genericRecord, "sid", null));
-    record.setPageId(pageId);
-    record.setPageName(pageName);
-    record.setEventFamily(getField(genericRecord, "eventFamily", null));
-    record.setEventAction(getField(genericRecord, "eventAction", null));
-    record.setUserId(getField(genericRecord, "userId", null));
-    record.setSiteId(getField(genericRecord, "siteId", null));
-    record.setSessionId(getField(genericRecord, "sessionId", null));
-    record.setSnapshotId(String.valueOf(SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation()));
-    record.setSeqNum(getField(genericRecord, "seqNum", null));
-    record.setRdt((Integer) genericRecord.get("rdt"));
-    record.setRefererHash(getField(genericRecord, "refererHash", null));
-    record.setUrlQueryString(getField(genericRecord, "urlQueryString", null));
-    record.setWebServer(getField(genericRecord, "webServer", null));
-    record.setClientIP(getField(genericRecord, "clientIP", null));
-    record.setRemoteIP(getField(genericRecord, "remoteIP", null));
-    record.setAgentInfo(getField(genericRecord, "agentInfo", null));
-    record.setAppId(getField(genericRecord, "appId", null));
-    record.setAppVersion(getField(genericRecord, "appVersion", null));
-    record.setOsVersion(getField(genericRecord, "osVersion", null));
-    record.setCobrand(getField(genericRecord, "cobrand", null));
-    record.setDeviceFamily(getField(genericRecord, "deviceFamily", null));
-    record.setDeviceType(getField(genericRecord, "deviceType", null));
-    record.setBrowserVersion(getField(genericRecord, "browserVersion", null));
-    record.setBrowserFamily(getField(genericRecord, "browserFamily", null));
-    record.setOsFamily(getField(genericRecord, "osFamily", null));
-    record.setEnrichedOsVersion(getField(genericRecord, "enrichedOsVersion", null));
-    record.setApplicationPayload(convertMap(((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD))));
-    record.setRlogid(getField(genericRecord, "rlogid", null));
-    record.setClientData(convertMap((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA)));
-    record.setChannelAction(channelAction);
-    record.setChannelType(channelType);
-    record.setDispatchId("");
-    List<Map<String, String>> data = new ArrayList<>();
-    record.setData(data);
-    return record;
+    try {
+      BehaviorMessage record = new BehaviorMessage();
+      record.setGuid(String.valueOf(genericRecord.get("guid")));
+      record.setAdguid(String.valueOf(genericRecord.get("guid")));
+      record.setEventTimestamp((Long) genericRecord.get("eventTimestamp"));
+      record.setSid(getField(genericRecord, "sid", null));
+      record.setPageId(pageId);
+      record.setPageName(pageName);
+      record.setEventFamily(getField(genericRecord, "eventFamily", null));
+      record.setEventAction(getField(genericRecord, "eventAction", null));
+      record.setUserId(getField(genericRecord, "userId", null));
+      record.setSiteId(getField(genericRecord, "siteId", null));
+      record.setSessionId(getField(genericRecord, "sessionId", null));
+      record.setSnapshotId(String.valueOf(SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation()));
+      record.setSeqNum(getField(genericRecord, "seqNum", null));
+      record.setRdt((Integer) genericRecord.get("rdt"));
+      record.setRefererHash(getField(genericRecord, "refererHash", null));
+      record.setUrlQueryString(getField(genericRecord, "urlQueryString", null));
+      record.setWebServer(getField(genericRecord, "webServer", null));
+      record.setClientIP(getField(genericRecord, "clientIP", null));
+      record.setRemoteIP(getField(genericRecord, "remoteIP", null));
+      record.setAgentInfo(getField(genericRecord, "agentInfo", null));
+      record.setAppId(getField(genericRecord, "appId", null));
+      record.setAppVersion(getField(genericRecord, "appVersion", null));
+      record.setOsVersion(getField(genericRecord, "osVersion", null));
+      record.setCobrand(getField(genericRecord, "cobrand", null));
+      record.setDeviceFamily(getField(genericRecord, "deviceFamily", null));
+      record.setDeviceType(getField(genericRecord, "deviceType", null));
+      record.setBrowserVersion(getField(genericRecord, "browserVersion", null));
+      record.setBrowserFamily(getField(genericRecord, "browserFamily", null));
+      record.setOsFamily(getField(genericRecord, "osFamily", null));
+      record.setEnrichedOsVersion(getField(genericRecord, "enrichedOsVersion", null));
+      record.setApplicationPayload(convertMap(((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD))));
+      record.setRlogid(getField(genericRecord, "rlogid", null));
+      record.setClientData(convertMap((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA)));
+      record.setChannelAction(channelAction);
+      record.setChannelType(channelType);
+      record.setDispatchId("");
+      List<Map<String, String>> data = new ArrayList<>();
+      record.setData(data);
+      return record;
+    } catch (Exception e) {
+      logger.warn("Failed to parse behavior message", e);
+      return null;
+    }
   }
 
   @SuppressWarnings("unchecked")
