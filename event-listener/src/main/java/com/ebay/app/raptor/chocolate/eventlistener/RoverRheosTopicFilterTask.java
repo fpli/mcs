@@ -539,7 +539,7 @@ public class RoverRheosTopicFilterTask extends Thread {
       record.setData(data);
       return record;
     } catch (Exception e) {
-      logger.warn("Failed to parse behavior message", e);
+      logger.warn("Failed to parse behavior message {} {}", genericRecord, e.getMessage());
       return null;
     }
   }
