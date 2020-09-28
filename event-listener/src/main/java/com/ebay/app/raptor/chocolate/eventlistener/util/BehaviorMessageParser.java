@@ -185,7 +185,7 @@ public class BehaviorMessageParser {
 
       return record;
     } catch (Exception e) {
-      logger.warn("Failed to parse behavior message", e);
+      logger.warn("Failed to parse behavior message {} {}", uri, e.getMessage());
       return null;
     }
   }
