@@ -32,6 +32,8 @@ class EpnNrtClickJob(params: Parameter) extends BaseEpnNrtJob(params, params.app
   lazy val epnNrtResultMetaClickDir = workDir + "/meta/EPN/output/epnnrt_click/"
   lazy val epnNrtScpMetaClickDir = workDir + "/meta/EPN/output/epnnrt_scp_click/"
 
+  lazy val clickDir = "/click/"
+
   @transient lazy val schema_epn_click_table = TableSchema("df_epn_click.json")
 
   @transient lazy val batchSize: Int = {
@@ -125,13 +127,13 @@ class EpnNrtClickJob(params: Parameter) extends BaseEpnNrtJob(params, params.app
           var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
           clickDf = clickDf.repartition(params.partitions)
 
-          saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
+          saveDFToFiles(clickDf, epnNrtTempDir + clickDir, "gzip", "csv", "tab")
 
-          val countClickDf = readFilesAsDF(epnNrtTempDir + "/click/", schema_epn_click_table.dfSchema, "csv", "tab", false)
+          val countClickDf = readFilesAsDF(epnNrtTempDir + clickDir, schema_epn_click_table.dfSchema, "csv", "tab", false)
 
           metrics.meter("SuccessfulCount", countClickDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "CLICK"))
 
-          val clickFiles = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
+          val clickFiles = renameFile(outputDir + clickDir, epnNrtTempDir + clickDir, date, "dw_ams.ams_clicks_cs_")
 
 
           //5. write the epn-nrt meta output file to hdfs

@@ -44,6 +44,10 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
   lazy val archiveDir = workDir + "/meta/EPN/output/archive/"
 
+  lazy val impressionDir = "/impression/"
+
+  lazy val clickDir = "/click/"
+
 
   @transient lazy val schema_epn_click_table = TableSchema("df_epn_click.json")
 
@@ -168,14 +172,14 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           //3. build impression dataframe  save dataframe to files and rename files
           var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
           impressionDf = impressionDf.repartition(params.partitions)
-           saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
+           saveDFToFiles(impressionDf, epnNrtTempDir + impressionDir, "gzip", "csv", "tab")
 
-          val countImpDf = readFilesAsDF(epnNrtTempDir + "/impression/", schema_epn_impression_table.dfSchema, "csv", "tab", false)
+          val countImpDf = readFilesAsDF(epnNrtTempDir + impressionDir, schema_epn_impression_table.dfSchema, "csv", "tab", false)
 
           metrics.meter("SuccessfulCount", countImpDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 
           //write to EPN NRT output meta files
-          val imp_files = renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
+          val imp_files = renameFile(outputDir + impressionDir, epnNrtTempDir + impressionDir, date, "dw_ams.ams_imprsn_cntnr_cs_")
           val imp_metaFile = new MetaFiles(Array(DateFiles(date, imp_files)))
 
           retry(3) {
@@ -214,13 +218,13 @@ class EpnNrtJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
           clickDf = clickDf.repartition(params.partitions)
 
-          saveDFToFiles(clickDf, epnNrtTempDir + "/click/", "gzip", "csv", "tab")
+          saveDFToFiles(clickDf, epnNrtTempDir + clickDir, "gzip", "csv", "tab")
 
-          val countClickDf = readFilesAsDF(epnNrtTempDir + "/click/", schema_epn_click_table.dfSchema, "csv", "tab", false)
+          val countClickDf = readFilesAsDF(epnNrtTempDir + clickDir, schema_epn_click_table.dfSchema, "csv", "tab", false)
 
           metrics.meter("SuccessfulCount", countClickDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "CLICK"))
 
-          val clickFiles = renameFile(outputDir + "/click/", epnNrtTempDir + "/click/", date, "dw_ams.ams_clicks_cs_")
+          val clickFiles = renameFile(outputDir + clickDir, epnNrtTempDir + clickDir, date, "dw_ams.ams_clicks_cs_")
 
 
           //5. write the epn-nrt meta output file to hdfs
