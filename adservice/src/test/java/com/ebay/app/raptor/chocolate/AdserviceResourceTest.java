@@ -101,11 +101,23 @@ public class AdserviceResourceTest {
 
   @Test
   public void ar() {
-//    Response response = client.target(svcEndPoint).path(AR_PATH+"?siteId=0&ff8=2600242&ff9=max&adm=1&gbh=10022&adtype=2&size=300x600&pgroup=459125&mkcid=4&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&rvr_id=3223821930815456&ZipCode=default&cguid=aeeee67816d0a4d0bb744efef26d8f0a&guid=a5283d6816c0a99b6de1b3aafcbad5af")
-//        .request()
-//        .accept(MediaType.APPLICATION_JSON_TYPE)
-//        .get();
-//    assertEquals(200, response.getStatus());
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put("mkevt", "6");
+    parameters.put("mkcid", "4");
+    parameters.put("mkrid", "524042");
+    parameters.put("mpt", "123");
+    parameters.put("ff18", "mWeb");
+    parameters.put("siteid", "0");
+    parameters.put("icep_siteid", "0");
+    parameters.put("ipn", "admin");
+    parameters.put("adtype", "3");
+    parameters.put("size", "320x50");
+    parameters.put("pgroup", "524042");
+    parameters.put("mpvc", "123");
+
+    // Common site email redirect
+    Response response = getAdserviceResponse(AR_PATH, parameters);
+    assertEquals(200, response.getStatus());
   }
 
   @Test

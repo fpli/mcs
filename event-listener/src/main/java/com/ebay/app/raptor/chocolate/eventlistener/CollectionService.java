@@ -4,8 +4,6 @@ import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
-import com.ebay.app.raptor.chocolate.common.Hostname;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -22,7 +20,6 @@ import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
-import com.ebay.raptorio.env.PlatformEnvProperties;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -47,7 +44,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -123,7 +119,7 @@ public class CollectionService {
     this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
-    this.behaviorProducer = new RheosKafkaProducer(ApplicationOptions.getInstance().getBehaviorRheosProperties());
+    this.behaviorProducer = BehaviorKafkaSink.get();
     this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
     this.eventEmitterPublisher = new EventEmitterPublisher(tokenGenerator);
   }
@@ -302,9 +298,6 @@ public class CollectionService {
       metrics.meter("IncomingSocialAppDeepLink");
 
       UriComponents deeplinkUriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-      if (deeplinkUriComponents == null) {
-        logError(Errors.ERROR_ILLEGAL_URL);
-      }
 
       MultiValueMap<String, String> deeplinkParameters = deeplinkUriComponents.getQueryParams();
       if (deeplinkParameters.size() == 0 || !deeplinkParameters.containsKey(REFERRER)) {
@@ -334,12 +327,7 @@ public class CollectionService {
     }
 
     // parse channel from uri
-    // illegal url, rejected
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    if (uriComponents == null) {
-      logError(Errors.ERROR_ILLEGAL_URL);
-    }
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
 
     // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
@@ -448,7 +436,7 @@ public class CollectionService {
     if (channelType == ChannelIdEnum.EPN || channelType == ChannelIdEnum.PAID_SEARCH || channelType == ChannelIdEnum.DAP ||
         channelType == ChannelIdEnum.SOCIAL_MEDIA || channelType == ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
       processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType, channelAction,
-          request, startTime, endUserContext, raptorSecureContext);
+          request, startTime, endUserContext, raptorSecureContext, agentInfo);
     else if (channelType == ChannelIdEnum.SITE_EMAIL)
       processFlag = processSiteEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
           targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
@@ -517,7 +505,7 @@ public class CollectionService {
     // Parse payload fields
     Map<String, String> payloadMap = roiEvent.getPayload();
     if(payloadMap == null) {
-      payloadMap = new HashMap<String, String>();
+      payloadMap = new HashMap<>();
     }
 
     // Parse transId
@@ -541,11 +529,8 @@ public class CollectionService {
 
     String queryString = CollectionServiceUtil.generateQueryString(roiEvent, payloadMap, localTimestamp, userId);
     String targetUrl = request.getRequestURL() + "?" + queryString;
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    if (uriComponents == null) {
-      logError(Errors.ERROR_ILLEGAL_URL);
-    }
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
 
     // we get referer from header or payload field,
@@ -570,7 +555,7 @@ public class CollectionService {
 
     // Write roi event to kafka output topic
     boolean processFlag = processROIEvent(requestContext, targetUrl, referer, parameters, ChannelIdEnum.ROI,
-        ChannelActionEnum.ROI, request, transTimestamp, endUserContext, raptorSecureContext);
+        ChannelActionEnum.ROI, request, transTimestamp, endUserContext, raptorSecureContext, agentInfo);
 
     if (processFlag) {
       metrics.meter("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"),
@@ -638,12 +623,7 @@ public class CollectionService {
     // uri is from post body
     String uri = event.getTargetUrl();
 
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(uri).build();
-    if (uriComponents == null) {
-      logger.warn(Errors.ERROR_ILLEGAL_URL);
-      metrics.meter(Errors.ERROR_ILLEGAL_URL);
-    }
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(uri).build();
 
     // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
@@ -732,7 +712,7 @@ public class CollectionService {
           agentInfo, uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
     else
       processFlag = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
-          request, startTime, endUserContext, raptorSecureContext);
+          request, startTime, endUserContext, raptorSecureContext, agentInfo);
 
     if (processFlag)
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
@@ -747,7 +727,7 @@ public class CollectionService {
   private boolean processROIEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
                                         MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                         ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
-                                        IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
+                                        IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext, UserAgentInfo agentInfo) {
 
     // get user id from auth token if it's user token, else we get from end user ctx
     String userId;
@@ -761,9 +741,14 @@ public class CollectionService {
     ListenerMessage message = parser.parse(request, requestContext, startTime, -1L, channelType
         .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, 0L, "");
 
-    // Use the shot snapshot id from requests
-    if (parameters.containsKey(Constants.MKRVRID) && parameters.get(Constants.MKRVRID).get(0) != null) {
-      message.setShortSnapshotId(Long.valueOf(parameters.get(Constants.MKRVRID).get(0)));
+
+    BehaviorMessage behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext, parameters,
+            agentInfo, targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), message.getShortSnapshotId(), PageIdEnum.ROI.getId(),
+            PageNameEnum.ROI.getName(), 0, message.getGuid(), message.getCguid(), userId,
+            String.valueOf(message.getDstRotationId()));
+    if (behaviorMessage != null) {
+      behaviorProducer.send(new ProducerRecord<>(behaviorTopic, behaviorMessage.getSnapshotId().getBytes(), behaviorMessage),
+              KafkaSink.callback);
     }
 
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
@@ -844,11 +829,7 @@ public class CollectionService {
     String targetUrl = event.getTargetUrl();
 
     // illegal url, rejected
-    UriComponents uriComponents;
-    uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    if (uriComponents == null) {
-      logError(Errors.ERROR_ILLEGAL_URL);
-    }
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
 
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
     if (parameters.size() == 0) {
@@ -904,7 +885,7 @@ public class CollectionService {
   private boolean processAmsAndImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
                                         MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                         ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
-                                        IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext) {
+                                        IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext, UserAgentInfo agentInfo) {
 
     // logic to filter internal redirection in node, https://jirap.corp.ebay.com/browse/XC-2361
     // currently we only observe the issue in vi pool in mweb case if the url does not contain title of the item
@@ -974,6 +955,30 @@ public class CollectionService {
     // Use the shot snapshot id from requests
     if (parameters.containsKey(Constants.MKRVRID) && parameters.get(Constants.MKRVRID).get(0) != null) {
       message.setShortSnapshotId(Long.valueOf(parameters.get(Constants.MKRVRID).get(0)));
+    }
+
+    if (channelType != ChannelIdEnum.EPN) {
+      BehaviorMessage behaviorMessage = null;
+      switch (channelAction) {
+        case CLICK:
+          behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext, parameters,
+                  agentInfo, targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), message.getShortSnapshotId(), PageIdEnum.CLICK.getId(),
+                  PageNameEnum.CLICK.getName(), 0, message.getGuid(), message.getCguid(), userId,
+                  String.valueOf(rotationId));
+          break;
+        case SERVE:
+          behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext, parameters,
+                  agentInfo, targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), message.getShortSnapshotId(), PageIdEnum.AR.getId(),
+                  PageNameEnum.ADREQUEST.getName(), 0, message.getGuid(), message.getCguid(), userId,
+                  String.valueOf(rotationId));
+          break;
+        default:
+          break;
+      }
+      if (behaviorMessage != null) {
+        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, behaviorMessage.getSnapshotId().getBytes(), behaviorMessage),
+                KafkaSink.callback);
+      }
     }
 
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
