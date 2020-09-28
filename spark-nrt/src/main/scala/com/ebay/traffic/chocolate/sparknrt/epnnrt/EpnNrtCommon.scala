@@ -47,6 +47,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   lazy val ERROR_URLDECODER_PARAM_PATTERN = "Error URLDecoder param %s param=%s%s"
 
+  lazy val ERROR_QUERY_PARAMETERS_PATTERN = "Error query parameters %s param=%s%s"
+
   lazy val JSON_STRING_STATUS_ENUM = "\"status_enum\":"
 
   lazy val JSON_STRING_AMS_PUBLISHER_ID = "{\"ams_publisher_id\":\""
@@ -487,11 +489,11 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         }
       } catch {
         case e: ArrayIndexOutOfBoundsException => {
-          logger.error("Error query parameters %s param=%s%s".format(uri, param, e))
+          logger.error(ERROR_QUERY_PARAMETERS_PATTERN.format(uri, param, e))
           return ""
         }
         case e: NullPointerException => {
-          logger.error("Error query parameters %s param=%s%s".format(uri, param, e))
+          logger.error(ERROR_QUERY_PARAMETERS_PATTERN.format(uri, param, e))
           return ""
         }
         case e: IllegalArgumentException => {
