@@ -112,7 +112,7 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
     * @param inputDateTime input date time
     */
   def readSource(inputDateTime: ZonedDateTime): DataFrame = {
-    val fromDateTime = getLastDoneFileDateTimeAndDelay(inputDateTime, deltaDoneFileDir)._1
+    val fromDateTime = getLastDoneFileDateTimeAndDelay(inputDateTime, deltaDoneFileDir)._1.plusHours(1)
     val fromDateString = fromDateTime.format(dtFormatter)
     val startTimestamp = fromDateTime.toEpochSecond * 1000
     val sql = "select snapshotid, eventtimestamp, channeltype, channelaction, dt from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
@@ -189,14 +189,14 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
 
     // get new upserted records dataframe
     // get last done timestamp
-    val lastDoneTimestamp = lastDoneAndDelay._1.toEpochSecond * multiplierForMs
+    val lastDoneTimestamp = lastDoneAndDelay._1.plusHours(1).toEpochSecond * multiplierForMs
     // delta table after last done timestamp
     val deltaDfAfterLastDone = deltaTable.toDF
       .filter(col(eventTimestamp).>=(lastDoneTimestamp))
       .withColumnRenamed(snapshotid, deltaSnapshotid)
 
     // source df after last done timestamp, don't need cache, since it won't change
-    val sourceDf = readSource(lastDoneAndDelay._1)
+    val sourceDf = readSource(lastDoneAndDelay._1.plusHours(1))
 
     // diff diff, must cache!!
     val diffDf = sourceDf
@@ -238,8 +238,8 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
     if (lastDeltaDoneAndDelay._2 < lastOutputDoneAndDelay._2) {
       // update output
       val deltaTable = DeltaTable.forPath(spark, deltaDir)
-      val lastOutputDoneTimestamp = lastOutputDoneAndDelay._1.toEpochSecond * multiplierForMs
-      val lastDeltaDoneTimestamp = lastDeltaDoneAndDelay._1.toEpochSecond * multiplierForMs
+      val lastOutputDoneTimestamp = lastOutputDoneAndDelay._1.plusHours(1).toEpochSecond * multiplierForMs
+      val lastDeltaDoneTimestamp = lastDeltaDoneAndDelay._1.plusHours(1).toEpochSecond * multiplierForMs
 
       val deltaDfAfterLastOuputDone = deltaTable.toDF
         .filter(col(eventTimestamp).>=(lastOutputDoneTimestamp))

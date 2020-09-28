@@ -124,8 +124,8 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
 
     // prepare delta table
     // delta table contains 1 record in 2020-08-16,
-    // 1 record in 2020-08-17 before the delta last done,
-    // 4 records in 2020-07-17 after the delta last done
+    // 4 record in 2020-08-17 before the delta last done,
+    // 1 records in 2020-07-17 after the delta last done, timestamp is 1597665600865
     val deltaFileSource = new File("src/test/resources/masterTable/imk/delta_table.csv")
 
     val trackingEventTable = TableSchema("df_imk_delta.json")
@@ -139,7 +139,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     // verification. There is only one record.
     val df = job.readFilesAsDF(outPutDir)
     df.show()
-    assert(df.count() == 1)
+    assert(df.count() == 4)
 
     fs.delete(new Path(tmpPath.toString), true)
   }
