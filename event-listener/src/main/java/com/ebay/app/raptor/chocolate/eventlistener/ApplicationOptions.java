@@ -255,8 +255,8 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     return driverId;
   }
 
-  public void setDriverId(final int driverId) {
-    ApplicationOptions.driverId = driverId;
+  public void setDriverId(final int newDriverId) {
+    driverId = newDriverId;
   }
 
   @Override
