@@ -60,7 +60,7 @@ class TestCalCrabTransformWatermark extends BaseFunSuite {
     assert(!fs.exists(new Path(outPutDir + "/crabTransformWatermark")))
 
 //    assert(job.readFileContent(new Path(outPutDir + "/crabTransformWatermark"), fs).equals("1567350689871"))
-    assert(job.readFileContent(new Path(outPutDir + "/imkCrabTransformWatermark"), fs).equals("1567322202591"))
+    assert(job.readFileContent(new Path(outPutDir + "/imkCrabTransformWatermark"), fs).equals("1567351002591"))
     assert(job.readFileContent(new Path(outPutDir + "/dedupAndSinkWatermark_PAID_SEARCH"), fs).equals("1569720941824"))
     assert(job.readFileContent(new Path(outPutDir + "/dedupAndSinkWatermark_ROI"), fs).equals("1569720941824"))
     assert(job.readFileContent(new Path(outPutDir + "/dedupAndSinkWatermark_crabDedupe"), fs).equals("1569720943443"))
