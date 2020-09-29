@@ -255,7 +255,7 @@
           </execution>
         </executions>
       </plugin>
-      <!--scoverage-placehoder-->
+      <!--scoverage-placehoder-dont-remove-->
     </plugins>
   </build>
 </project>
