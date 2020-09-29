@@ -231,9 +231,10 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     * @param inputDateTime input date time
     */
   override def readSource(inputDateTime: ZonedDateTime): DataFrame = {
-    val fromDateTime = getLastDoneFileDateTimeAndDelay(inputDateTime, deltaDoneFileDir)._1
+    //plus 1 hour as done file logic
+    val fromDateTime = getLastDoneFileDateTimeAndDelay(inputDateTime, deltaDoneFileDir)._1.plusHours(1)
     val fromDateString = fromDateTime.format(dtFormatter)
-    val startTimestamp = fromDateTime.toEpochSecond * 1000
+    val startTimestamp = fromDateTime.toEpochSecond * multiplierForMs
     val sql = "select * from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp + "'"
     val sourceDf = sqlsc.sql(sql)
     var imkDf = sourceDf

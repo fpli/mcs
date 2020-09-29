@@ -109,14 +109,16 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
 
   /**
     * Read everything need from the source table. Override this function for domain specific tables.
+    * The input is the date time of done file. So that we need to plus one hour to get correct timestamp.
     * @param inputDateTime input date time
     */
   def readSource(inputDateTime: ZonedDateTime): DataFrame = {
     //plus 1 hour as done file logic
     val fromDateTime = getLastDoneFileDateTimeAndDelay(inputDateTime, deltaDoneFileDir)._1.plusHours(1)
     val fromDateString = fromDateTime.format(dtFormatter)
-    val startTimestamp = fromDateTime.toEpochSecond * 1000
+    val startTimestamp = fromDateTime.toEpochSecond * multiplierForMs
     val sql = "select snapshotid, eventtimestamp, channeltype, channelaction, dt from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
+    logger.info("sqlToSelectSource: " + sql)
     val sourceDf = sqlsc.sql(sql)
     sourceDf
   }
@@ -198,7 +200,7 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
       .withColumnRenamed(snapshotid, deltaSnapshotid)
 
     // source df from master table after last done timestamp, don't need cache, since it won't change
-    val sourceDf = readSource(inputDateTime)
+    val sourceDf = readSource(lastDoneAndDelay._1)
 
     // diff diff, must cache!!
     val diffDf = sourceDf
