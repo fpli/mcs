@@ -13,7 +13,7 @@ class ToolsTest extends FunSuite {
   
   test("test getDateTimeFromTimestamp") {
     assert(tools.getDateFromTimestamp(1531377313068L) == "2018-07-12")
-    assert(tools.getDateTimeFromTimestamp(1531377313068L) == "2018-07-12 14:35:13.068")
+    assert(tools.getDateTimeFromTimestamp(1531377313068L) == "2018-07-12 06:35:13.068")
   }
 
   test("test getQueryString") {
