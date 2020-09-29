@@ -95,21 +95,21 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     // verification. There will be 1 record in output dt=2020-08-16 and 1 record in output dt=2020-08-17
     val df = job.readFilesAsDF(outPutDir)
     df.show()
-    assert(df.count() == 1)
+    // 1 in 2020-08-16, 1 in 2020-08-17
+    assert(df.count() == 2)
     fs.delete(new Path(tmpPath.toString), true)
   }
 
   test("test imk entire job") {
     val mockNow = ZonedDateTime.of(2020, 8, 17, 22, 0, 0, 0, ZoneId.systemDefault())
     val now = ZonedDateTime.of(2020, 8, 17, 22, 0, 0, 0, ZoneId.systemDefault()).format(job.dayFormatterInDoneFileName)
-    val yesterday = ZonedDateTime.now().minusDays(1).format(job.dayFormatterInDoneFileName)
+    val yesterday = mockNow.minusDays(1).format(job.dayFormatterInDoneFileName)
     fs.mkdirs(new Path(deltaDoneDir + "/" + now))
     fs.mkdirs(new Path(deltaDoneDir + "/" + yesterday))
     fs.create(new Path(deltaDoneDir + "/" + now + "/imk_rvr_trckng_event_hourly.done." + now + "0100000000"))
 
     fs.mkdirs(new Path(outputDoneDir + "/" + now))
     fs.mkdirs(new Path(outputDoneDir + "/" + yesterday))
-    fs.create(new Path(outputDoneDir + "/" + now + "/imk_rvr_trckng_event_hourly.done." + now + "0000000000"))
 
     // prepare current date and last done file
     // the last done of delta is 2020-08-17 05
@@ -136,10 +136,11 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     job.updateDelta(mockNow)
     job.updateOutput(mockNow)
 
-    // verification. There is only one record.
+    // verification
     val df = job.readFilesAsDF(outPutDir)
     df.show()
-    assert(df.count() == 4)
+    // 1 in 2020-08-16, 4 in 2020-08-17
+    assert(df.count() == 5)
 
     fs.delete(new Path(tmpPath.toString), true)
   }

@@ -128,7 +128,6 @@ class TestBaseDeltaNrtJob extends BaseFunSuite{
     fs.mkdirs(new Path(deltaDoneDir+"/20200816"))
     val file1 = new File("src/test/resources/touchImkHourlyDone.data/done/imk_rvr_trckng_event_hourly.done.202008160500000000")
     fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(deltaDoneDir + "/20200816/imk_rvr_trckng_event_hourly.done.202008160500000000"))
-
     val now = ZonedDateTime.of(2020, 8, 17, 22, 0, 0, 0, ZoneId.systemDefault())
 
     // read source df
@@ -260,8 +259,9 @@ class TestBaseDeltaNrtJob extends BaseFunSuite{
     // verification. There will be 1 record in output dt=2020-08-16 and 1 record in output dt=2020-08-17
     val df = job.readFilesAsDF(outPutDir)
     df.show()
-    assert(df.count() == 1)
-
+    assert(df.count() == 2)
+    // done file catch up with delta table
+    assert(fs.exists(new Path(outputDoneDir+"/20200817/imk_rvr_trckng_event_hourly.done.202008170500000000")))
   }
 
   test("test imk etl job for parquet output") {
