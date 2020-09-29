@@ -13,6 +13,7 @@ class TestCrabDedupeJob extends BaseFunSuite{
   private val workDir = tmpPath + "/apps/tracking-events-workdir"
   private val inputDir = tmpPath + "/apps/tracking-events-workdir/crabScp/dest"
   private val outputDir = tmpPath + "/apps/tracking-events"
+  private val localDir = getTestResourcePath("crabDedupe.data")
 
   @transient private lazy val hadoopConf = {
     new Configuration()
@@ -25,7 +26,7 @@ class TestCrabDedupeJob extends BaseFunSuite{
   }
 
   override def beforeAll(): Unit = {
-    fs.copyFromLocalFile(new Path(new File("src/test/resources/crabDedupe.data/imk_rvr_trckng_testData.csv").getAbsolutePath), new Path(inputDir + "/imk_rvr_trckng_testData.csv"))
+    fs.copyFromLocalFile(new Path(new File(localDir + "/imk_rvr_trckng_testData.csv").getAbsolutePath), new Path(inputDir + "/imk_rvr_trckng_testData.csv"))
   }
 
   test("Test crabDedupeJob") {

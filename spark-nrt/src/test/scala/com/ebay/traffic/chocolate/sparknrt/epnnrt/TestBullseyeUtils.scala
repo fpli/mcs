@@ -38,7 +38,7 @@ class TestBullseyeUtils extends FlatSpec with Matchers{
     val mockResponse = HttpResponse(response, 200, Map())
     val results = BullseyeUtils.getLastViewItemByResponse("1555292153683", mockResponse)
     assert(results._1 == "103")
-    assert(results._2 == "2019-04-15 09:35:53.68")
+    assert(results._2 == "2019-04-15 01:35:53.68")
   }
 
   "can parse response correctly to filter null result" must "work" in {
@@ -55,7 +55,7 @@ class TestBullseyeUtils extends FlatSpec with Matchers{
     val mockResponse = HttpResponse(response, 200, Map())
     val results = BullseyeUtils.getLastViewItemByResponse("1555292249113", mockResponse)
     assert(results._1 == "102")
-    assert(results._2 == "2019-04-15 09:36:31.25")
+    assert(results._2 == "2019-04-15 01:36:31.25")
   }
 
   "can parse multiple response correctly" must "work" in {
@@ -77,7 +77,7 @@ class TestBullseyeUtils extends FlatSpec with Matchers{
     val mockResponse = HttpResponse(response, 200, Map())
     val results = BullseyeUtils.getLastViewItemByResponse("1555290059224", mockResponse)
     assert(results._1 == "104")
-    assert(results._2 == "2019-04-15 09:00:59.22")
+    assert(results._2 == "2019-04-15 01:00:59.22")
   }
 
   //cguid
