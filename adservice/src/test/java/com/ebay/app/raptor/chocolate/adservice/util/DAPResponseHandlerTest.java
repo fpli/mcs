@@ -77,22 +77,24 @@ public class DAPResponseHandlerTest {
 
   @Test
   public void getSiteId() throws Exception {
-    ContainerRequest containerRequest = Mockito.mock(ContainerRequest.class);
-    when(containerRequest.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(null);
-    assertEquals(Integer.valueOf(0), Whitebox.<Integer>invokeMethod(dapResponseHandler, "getSiteId", containerRequest));
+    Client client = Mockito.mock(Client.class);
+    Configuration conf = Mockito.mock(Configuration.class);
+    Response response = prepareResponse();
+    WebTarget webTarget = Mockito.mock(WebTarget.class);
+    Invocation.Builder builder = Mockito.mock(Invocation.Builder.class);
 
-    UserPrefsCtx userPrefsCtx = Mockito.mock(UserPrefsCtx.class);
-    when(userPrefsCtx.getGeoContext()).thenReturn(null);
-    when(containerRequest.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(userPrefsCtx);
+    when(conf.getProperty(EndpointUri.KEY)).thenReturn("localhost");
+    when(builder.get()).thenReturn(response);
+    when(webTarget.queryParam(anyString(), anyString())).thenReturn(webTarget);
+    when(webTarget.request(MediaType.APPLICATION_JSON)).thenReturn(builder);
+    when(client.target(anyString())).thenReturn(webTarget);
+    when(client.getConfiguration()).thenReturn(conf);
 
-    assertEquals(Integer.valueOf(0), Whitebox.<Integer>invokeMethod(dapResponseHandler, "getSiteId", containerRequest));
+    lbsClient = LBSClient.getInstance();
+    Whitebox.setInternalState(lbsClient, "client", client);
 
-    GeoCtx geoContext = Mockito.mock(GeoCtx.class);
-    when(geoContext.getSiteId()).thenReturn(2);
-
-    when(containerRequest.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(userPrefsCtx);
-    when(userPrefsCtx.getGeoContext()).thenReturn(geoContext);
-    assertEquals(Integer.valueOf(2), Whitebox.<Integer>invokeMethod(dapResponseHandler, "getSiteId", containerRequest));
+    LBSQueryResult lbsQueryResult = lbsClient.getLBSInfo("97.77.104.22");
+    assertEquals(Integer.valueOf(0), Whitebox.<Integer>invokeMethod(dapResponseHandler, "getSiteId", lbsQueryResult));
   }
 
   @Test
@@ -403,9 +405,11 @@ public class DAPResponseHandlerTest {
     lbsClient = LBSClient.getInstance();
     Whitebox.setInternalState(lbsClient, "client", client);
 
+    LBSQueryResult lbsQueryResult = lbsClient.getLBSInfo("97.77.104.22");
+
     HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
 
-    Map<String, String> map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, "97.77.104.22");
+    Map<String, String> map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, lbsQueryResult);
     assertEquals("US", map.get((LBSConstants.GEO_COUNTRY_CODE)));
     assertEquals("TX", map.get((LBSConstants.GEO_DMA)));
     assertEquals("ft worth", map.get((LBSConstants.GEO_CITY)));
@@ -416,11 +420,11 @@ public class DAPResponseHandlerTest {
     assertEquals("817", map.get((LBSConstants.GEO_AREA_CODE)));
 
     when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn(null);
-    map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, "97.77.104.22");
+    map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, lbsQueryResult);
     assertEquals("US", map.get((LBSConstants.GEO_COUNTRY_CODE)));
 
     when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn("de-CH");
-    map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, "97.77.104.22");
+    map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, lbsQueryResult);
     assertEquals("CH", map.get((LBSConstants.GEO_COUNTRY_CODE)));
   }
 
