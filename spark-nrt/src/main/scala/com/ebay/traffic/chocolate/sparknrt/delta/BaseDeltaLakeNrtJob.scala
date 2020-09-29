@@ -112,7 +112,8 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
     * @param inputDateTime input date time
     */
   def readSource(inputDateTime: ZonedDateTime): DataFrame = {
-    val fromDateTime = getLastDoneFileDateTimeAndDelay(inputDateTime, deltaDoneFileDir)._1.plusHours(1)
+    // dont add 1 hour here, since the inputDateTime has already did
+    val fromDateTime = getLastDoneFileDateTimeAndDelay(inputDateTime, deltaDoneFileDir)._1
     val fromDateString = fromDateTime.format(dtFormatter)
     val startTimestamp = fromDateTime.toEpochSecond * 1000
     val sql = "select snapshotid, eventtimestamp, channeltype, channelaction, dt from " + inputSource + " where dt >= '" + fromDateString + "' and eventtimestamp >='" + startTimestamp +"'"
@@ -193,6 +194,7 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
     // delta table after last done timestamp
     val deltaDfAfterLastDone = deltaTable.toDF
       .filter(col(eventTimestamp).>=(lastDoneTimestamp))
+      .filter(col(dt).>=(lastDoneAndDelay._1.plusHours(1).format(dtFormatter)))
       .withColumnRenamed(snapshotid, deltaSnapshotid)
 
     // source df after last done timestamp, don't need cache, since it won't change
@@ -242,6 +244,7 @@ class BaseDeltaLakeNrtJob (params: Parameter, override val enableHiveSupport: Bo
       val lastDeltaDoneTimestamp = lastDeltaDoneAndDelay._1.plusHours(1).toEpochSecond * multiplierForMs
 
       val deltaDfAfterLastOuputDone = deltaTable.toDF
+        .filter(col(dt).>=(lastDeltaDoneAndDelay._1.plusHours(1).format(dtFormatter)))
         .filter(col(eventTimestamp).>=(lastOutputDoneTimestamp))
         .filter(col(eventTimestamp).<(lastDeltaDoneTimestamp))
       writeToOutput(deltaDfAfterLastOuputDone, lastOutputDoneAndDelay._1.format(dtFormatter))

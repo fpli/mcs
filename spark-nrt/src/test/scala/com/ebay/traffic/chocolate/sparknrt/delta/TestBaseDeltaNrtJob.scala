@@ -241,7 +241,7 @@ class TestBaseDeltaNrtJob extends BaseFunSuite{
     // prepare delta table
     // delta table contains 1 record in 2020-08-16,
     // 1 record in 2020-08-17 before the delta last done,
-    // 4 records in 2020-07-17 after the delta last done
+    // 3 records in 2020-07-17 after the delta last done
     val deltaFileSource = new File("src/test/resources/masterTable/delta_table.csv")
 
     val trackingEventTable = TableSchema("df_delta_event.json")
@@ -260,7 +260,7 @@ class TestBaseDeltaNrtJob extends BaseFunSuite{
     // verification. There will be 1 record in output dt=2020-08-16 and 1 record in output dt=2020-08-17
     val df = job.readFilesAsDF(outPutDir)
     df.show()
-    assert(df.count() == 2)
+    assert(df.count() == 1)
 
   }
 

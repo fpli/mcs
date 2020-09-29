@@ -76,7 +76,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     // prepare delta table
     // delta table contains 1 record in 2020-08-16,
     // 1 record in 2020-08-17 before the delta last done,
-    // 4 records in 2020-07-17 after the delta last done
+    // 3 records in 2020-07-17 after the delta last done
     val deltaFileSource = new File("src/test/resources/masterTable/imk/delta_table.csv")
 
     val trackingEventTable = TableSchema("df_imk_delta.json")
@@ -85,7 +85,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     inputDf.write.format("delta").mode("overwrite").partitionBy("dt").save(deltaDir)
 
     val imkDeltaBeforeUpdate = DeltaTable.forPath(job.spark, deltaDir)
-    assert(imkDeltaBeforeUpdate.toDF.count() == 5)
+    assert(imkDeltaBeforeUpdate.toDF.count() == 6)
 
     // will update data between 2 done file hours
     // set current time 2020-08-17 22
@@ -95,7 +95,7 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     // verification. There will be 1 record in output dt=2020-08-16 and 1 record in output dt=2020-08-17
     val df = job.readFilesAsDF(outPutDir)
     df.show()
-    assert(df.count() == 2)
+    assert(df.count() == 1)
     fs.delete(new Path(tmpPath.toString), true)
   }
 
