@@ -141,7 +141,8 @@ class TestImkDeltaNrtJob extends BaseFunSuite {
     df.show()
     // 1 in 2020-08-16, 4 in 2020-08-17
     assert(df.count() == 5)
-
+    // done file catch up with delta table
+    assert(fs.exists(new Path(outputDoneDir+"/20200817/imk_rvr_trckng_event_hourly.done.202008170500000000")))
     fs.delete(new Path(tmpPath.toString), true)
   }
 }
