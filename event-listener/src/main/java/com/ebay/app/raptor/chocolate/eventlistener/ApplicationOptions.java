@@ -82,7 +82,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   /**
    * default driver ID
    */
-  static int driverId;
+  private int driverId;
 
   /**
    * kafka related
