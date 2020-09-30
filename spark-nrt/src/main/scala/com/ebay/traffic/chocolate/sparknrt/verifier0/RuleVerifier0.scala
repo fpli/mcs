@@ -232,10 +232,6 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
 
   }
 
-  def verifyEpnDetails(df: DataFrame, outputPath: String) = {
-
-  }
-
   def verifyEpn() = {
 
     // Load today's epn data
@@ -247,8 +243,6 @@ class RuleVerifier0(params: Parameter) extends BaseSparkNrtJob(params.appName, p
 
     if (params.epnQuickCheck) {
       verifyEpnQuick(dfToday, params.outputPath + "/epn/")
-    } else {
-      verifyEpnDetails(dfToday, params.outputPath + "/epn/")
     }
 
   }
