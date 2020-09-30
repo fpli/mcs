@@ -33,6 +33,14 @@ public class PropertyConstants {
   public static final String BEHAVIOR_EVENT_SINK_APP_RHEOS_CONSUMER_MONITOR_PROPERTIES = "behavior-event-sink-app.rheos.consumer.monitor.properties";
   public static final String BEHAVIOR_EVENT_SINK_APP_HDFS_MONITOR_PROPERTIES = "behavior-event-sink-app.hdfs.monitor.properties";
 
+  public static final String BEHAVIOR_EVENT_SINK2_APP_RHEOS_CONSUMER_PROPERTIES = "behavior-event-sink2-app.rheos.consumer.properties";
+  public static final String BEHAVIOR_EVENT_SINK2_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "behavior-event-sink2-app.rheos.consumer.topic.properties";
+  public static final String BEHAVIOR_EVENT_SINK2_APP_HDFS_PROPERTIES = "behavior-event-sink2-app.hdfs.properties";
+
+  public static final String BEHAVIOR_EVENT_SINK3_APP_RHEOS_CONSUMER_PROPERTIES = "behavior-event-sink3-app.rheos.consumer.properties";
+  public static final String BEHAVIOR_EVENT_SINK3_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "behavior-event-sink3-app.rheos.consumer.topic.properties";
+  public static final String BEHAVIOR_EVENT_SINK3_APP_HDFS_PROPERTIES = "behavior-event-sink3-app.hdfs.properties";
+
   public static final String BEHAVIOR_MESSAGE_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "behavior-message-sink-app.rheos.consumer.properties";
   public static final String BEHAVIOR_MESSAGE_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "behavior-message-sink-app.rheos.consumer.topic.properties";
   public static final String BEHAVIOR_MESSAGE_SINK_APP_HDFS_PROPERTIES = "behavior-message-sink-app.hdfs.properties";
