@@ -13,9 +13,9 @@
 #           /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event
 #           /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event_dtl
 # Schedule: /3 * ? * *
-# Test case：
-#./distcpImkToRenoAndHercules.sh /apps/tracking-events/test/imkTransform/imkOutput /apps/tracking-events/test/crabTransform/imkOutput /apps/b_marketing_tracking/roi_test/test/imk_rvr_trckng_event /apps/b_marketing_tracking/test/imk_rvr_trckng_event false true
-#./distcpImkToRenoAndHercules.sh /apps/tracking-events/test/imkTransform/dtlOutput /apps/tracking-events/test/crabTransform/dtlOutput /apps/b_marketing_tracking/roi_test/test/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/test/imk_rvr_trckng_event_dtl true true
+# case：
+#./distcpImkToRenoAndHercules.sh /apps/tracking-events/imkTransform/imkOutput /apps/tracking-events/crabTransform/imkOutput /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event false true
+#./distcpImkToRenoAndHercules.sh /apps/tracking-events/imkTransform/dtlOutput /apps/tracking-events/crabTransform/dtlOutput /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event_dtl true true
 
 set -x
 
@@ -26,7 +26,7 @@ if [ $# -le 1 ]; then
   exit 1
 fi
 
-export HADOOP_USER_NAME=hdfs
+export HADOOP_USER_NAME=chocolate
 whoami
 IMK_SRC_DIR=$1
 CRAB_SRC_DIR=$2
@@ -36,7 +36,6 @@ IMK_IS_REMOVE_DATA=$5
 CRAB_IS_REMOVE_DATA=$6
 
 TRAFFIC_MONITOR_PATH="/apps/tracking-events/imkTransform/trafficMonitor"
-#TRAFFIC_MONITOR_PATH="/apps/tracking-events/test/imkTransform/trafficMonitor"
 
 if [ "${IMK_IS_REMOVE_DATA}" == "true" ]
 then
