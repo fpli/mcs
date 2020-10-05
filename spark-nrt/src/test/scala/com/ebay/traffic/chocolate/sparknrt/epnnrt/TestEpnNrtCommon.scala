@@ -141,7 +141,7 @@ class TestEpnNrtCommon extends BaseFunSuite{
   }
 
   test("Test get date time from timestamp") {
-    val value = epnNrtCommon.getDateTimeFromTimestamp(1552328971000L, "yyyy-MM-dd")
+    val value = epnNrtCommon.getDateTimeFromTimestamp(1552379371000L, "yyyy-MM-dd")
     assert(value.equals("2019-03-12"))
   }
 
@@ -199,9 +199,21 @@ class TestEpnNrtCommon extends BaseFunSuite{
   }
 
   test("test get user query text") {
-    val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_ff2=10044&uq=2&xxx=4&pub=2"
-    val res = epnNrtCommon.getUserQueryTxt(uri, "uq")
+    val up_uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_ff2=10044&uq=2&xxx=4&pub=2&ext=1&satitle=sample"
+    val res = epnNrtCommon.getUserQueryTxt(up_uri, "uq")
     assert(res.equals("2"))
+
+    val impression_uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_ff2=10044&xxx=4&pub=2&ext=1&satitle=sample"
+    val impression_res = epnNrtCommon.getUserQueryTxt(impression_uri, "impression")
+    assert(impression_res.equals(""))
+
+    val ext_uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_ff2=10044&xxx=4&pub=2&ext=1&satitle=sample"
+    val ext_res = epnNrtCommon.getUserQueryTxt(ext_uri, "ext")
+    assert(ext_res.equals("1"))
+
+    val satitle_uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_ff2=10044&xxx=4&pub=2&satitle=sample"
+    val satitle_res = epnNrtCommon.getUserQueryTxt(satitle_uri, "satitle")
+    assert(satitle_res.equals("sample"))
   }
 
   test("test get error query param") {
@@ -397,6 +409,13 @@ class TestEpnNrtCommon extends BaseFunSuite{
 
   test("test get channel id from channel type") {
     assert(epnNrtCommon.getChannelId("EPN") == "1" )
+    assert(epnNrtCommon.getChannelId("DISPLAY") == "4" )
+    assert(epnNrtCommon.getChannelId("PAID_SEARCH") == "2" )
+    assert(epnNrtCommon.getChannelId("SOCIAL_MEDIA") == "16" )
+    assert(epnNrtCommon.getChannelId("PAID_SOCIAL") == "20" )
+    assert(epnNrtCommon.getChannelId("ROI") == "0" )
+    assert(epnNrtCommon.getChannelId("NATURAL_SEARCH") == "3" )
+    assert(epnNrtCommon.getChannelId("") == "0" )
   }
 
   test("test filter long term ebay sites ref") {
@@ -409,6 +428,35 @@ class TestEpnNrtCommon extends BaseFunSuite{
     assert(true == epnNrtCommon.filterLongTermEbaySitesRef(roverUri, nonEbaySitesRef))
     assert(false == epnNrtCommon.filterLongTermEbaySitesRef(mcsUri, ebaySitesRef))
     assert(true == epnNrtCommon.filterLongTermEbaySitesRef(mcsUri, nonEbaySitesRef))
+  }
+
+  test("test click filter type lookup") {
+    val clickFilterTypeLookupEnum = epnNrtCommon.clickFilterTypeLookup(4, 2)
+    assert(clickFilterTypeLookupEnum.equals(6))
+  }
+
+  test("test roi nq whitelist rule") {
+    val ruleResult = epnNrtCommon.callRoiNqWhitelistRule("5575420559", 1, 1, "www.google.com", 2)
+    assert(ruleResult.equals(1))
+
+    val ruleResultNoReferrer = epnNrtCommon.callRoiNqWhitelistRule("5575420559", 1, 1, "", 2)
+    assert(ruleResultNoReferrer.equals(0))
+  }
+
+  test("test roi not registered rule") {
+    val ruleResult = epnNrtCommon.callRoiNotRegisteredRule("5575420559", 1, 1, "www.google.com", 2)
+    assert(ruleResult.equals(1))
+
+    val ruleResultNoReferrer = epnNrtCommon.callRoiNotRegisteredRule("5575420559", 1, 1, "", 2)
+    assert(ruleResultNoReferrer.equals(0))
+  }
+
+  test("test get roi rule list") {
+    val roiRuleList = epnNrtCommon.getRoiRuleList(2)
+    assert(roiRuleList.take(2).tail.head.getAms_clk_fltr_type_id.equals(13))
+    assert(roiRuleList.take(2).tail.head.getIs_pblshr_advsr_enable_rule.equals(0))
+    assert(roiRuleList.take(2).tail.head.getIs_rule_enable.equals(1))
+    assert(roiRuleList.take(2).tail.head.getRule_result.equals(0))
   }
 
 }

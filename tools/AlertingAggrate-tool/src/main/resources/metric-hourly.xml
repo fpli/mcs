@@ -3,7 +3,7 @@
     <project name="Chocolate-RT-all-channels-data" id="1">
         <metric name="Listener Latency" value="AverageLatency" source="chocolate-metrics" condition="" threshold="300" thresholdFactor="2.0" computeType="avg" alert="false"/>
         <metric name="Filter Kafka Lag" value="FilterKafkaConsumerLag" source="chocolate-metrics" condition="" thresholdFactor="2.0" threshold="100" computeType="avg" alert="false"/>
-        <metric name="Dedupe kafka lag" value="SparkKafkaConsumerLag" source="chocolate-metrics" condition="" thresholdFactor="2.0" threshold="5000" computeType="avg" alert="false"/>
+        <metric name="Dedupe kafka lag" value="SparkKafkaConsumerLag" source="chocolate-metrics" condition="" thresholdFactor="6.0" threshold="5000" computeType="avg" alert="false"/>
     </project>
     <project name="Chocolate-RT-epn-data" id="2">
         <metric name="Filter Latency" value="FilterLatency" source="chocolate-metrics" condition="channelType:epn" threshold="1000" thresholdFactor="10.0" computeType="avg" alert="false"/>

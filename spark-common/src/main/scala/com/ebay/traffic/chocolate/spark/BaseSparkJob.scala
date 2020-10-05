@@ -26,6 +26,8 @@ abstract class BaseSparkJob(val jobName: String,
 
   lazy val ORC_FILTER_PUSHDOWN = "spark.sql.orc.filterPushdown"
 
+  lazy val CSV_FORMAT = "com.databricks.spark.csv"
+
   /**
     * Whether the spark job is in local mode
     */
@@ -206,7 +208,7 @@ abstract class BaseSparkJob(val jobName: String,
         spark.conf.set(ORC_FILTER_PUSHDOWN, "true")
         spark.read.orc(inputPaths: _*)
       }
-      case "csv" => spark.read.format("com.databricks.spark.csv")
+      case "csv" => spark.read.format(CSV_FORMAT)
         .option("delimiter", delimiterMap(delimiter))
         .schema(schema)
         .load(inputPaths: _*)
@@ -317,7 +319,7 @@ abstract class BaseSparkJob(val jobName: String,
         spark.conf.set("orc.compress", compressFormat)
       }
       case "csv" => {
-        writer.format("com.databricks.spark.csv")
+        writer.format(CSV_FORMAT)
           .option("delimiter", delimiterMap(delimiter))
           .option("escape", null)
           .option("quoteMode", "NONE")
@@ -373,7 +375,7 @@ abstract class BaseSparkJob(val jobName: String,
         writer.format(outputFormat).save(outputPath)
       }
       case "csv" => {
-        writer.format("com.databricks.spark.csv")
+        writer.format(CSV_FORMAT)
           .option("delimiter", delimiterMap(delimiter))
           .option("header", headerHint.toString)
           .option("escape", null)

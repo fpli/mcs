@@ -69,7 +69,8 @@ public class LBSClient {
         queryResult = getFirstLBSResult(results);
       } else {
         String msg = lbsResponse.readEntity(String.class);
-        LOGGER.error("LBS service returns: " + msg);
+//        LOGGER.error("LBS service returns: " + msg);
+        LOGGER.error("call LBS service return error, check carefully please! ");
       }
       metrics.meter("LBSStatus", 1, Field.of("status", status));
     } catch (Exception e) {

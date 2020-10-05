@@ -11,6 +11,9 @@ public interface IdMapable {
 
   String ADGUID_GUID_PREFIX = "a_g_";
   String ADGUID_UID_PREFIX = "a_u_";
+  String GUID_ADGUID_PREFIX = "g_a_";
+  String GUID_UID_PREFIX = "g_u_";
+  String UID_GUID_PREFIX = "u_g_";
 
   /**
    * Add adguid -> guid mapping
@@ -22,15 +25,36 @@ public interface IdMapable {
 
   /**
    * Get guid by adguid
-   * @param adguid adguid in cookie
+   * @param id adguid in cookie
    * @return guid in String. If there is no guid return empty string.
    */
-  String getGuid(String adguid);
+  String getGuidByAdguid(String id);
 
   /**
    * Get user id by adguid
-   * @param adguid adguid in cookie
+   * @param id adguid in cookie
    * @return user id in String. If there is no user id return empty string.
    */
-  String getUid(String adguid);
+  String getUidByAdguid(String id);
+
+  /**
+   * Get adguid by guid
+   * @param id guid in cookie
+   * @return adguid in String. If there is no adguid return empty string.
+   */
+  String getAdguidByGuid(String id);
+
+  /**
+   * Get uid by guid
+   * @param id guid in cookie
+   * @return uid in String. If there is no uid return empty string.
+   */
+  String getUidByGuid(String id);
+
+  /**
+   * Get guid by uid
+   * @param id uid in cookie
+   * @return guid in String. If there is no guid return empty string.
+   */
+  String getGuidByUid(String id);
 }

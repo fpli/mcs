@@ -10,7 +10,8 @@ import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,7 +29,7 @@ import java.util.Properties;
 @Configuration
 @Singleton
 public class FilterService {
-  private static final Logger logger = Logger.getLogger(FilterService.class);
+  private static final Logger logger = LoggerFactory.getLogger(FilterService.class);
 
   private static final String FRONTIER_URL = "chocolate.filter.monitoring.url";
   private static final String FRONTIER_APPSVC = "chocolate.filter.monitoring.appSvc";
@@ -38,21 +39,21 @@ public class FilterService {
   private static final String METRICS_INDEX_PREFIX = "chocolate.filter.elasticsearch.index.prefix";
   private List<FilterWorker> workers = new ArrayList<>();
 
-  FilterService() {
-    Properties log4jProps = new Properties();
-
-    try (InputStream stategyRegistryConfigStream = new URL(
-        RuntimeContext.getConfigRoot(), "log4j.properties")
-        .openStream()) {
-      log4jProps.load(stategyRegistryConfigStream);
-      PropertyConfigurator.configure(log4jProps);
-
-    } catch (IOException e) {
-      BasicConfigurator.configure();
-      logger.error("Fail to read " + RuntimeContext.getConfigRoot()
-          + "log4j.properties, use default configure instead", e);
-    }
-  }
+//  FilterService() {
+//    Properties log4jProps = new Properties();
+//
+//    try (InputStream stategyRegistryConfigStream = new URL(
+//        RuntimeContext.getConfigRoot(), "log4j.properties")
+//        .openStream()) {
+//      log4jProps.load(stategyRegistryConfigStream);
+//      PropertyConfigurator.configure(log4jProps);
+//
+//    } catch (IOException e) {
+//      BasicConfigurator.configure();
+//      logger.error("Fail to read " + RuntimeContext.getConfigRoot()
+//          + "log4j.properties, use default configure instead", e);
+//    }
+//  }
 
   @PostConstruct
   public void postInit() throws Exception {
@@ -102,7 +103,7 @@ public class FilterService {
       KafkaSink.close();
       CouchbaseClient.close();
     } catch (IOException e) {
-      logger.error(e);
+      logger.error("Shut down error", e);
     }
   }
 }

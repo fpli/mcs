@@ -1,6 +1,7 @@
 package chocolate;
 
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
+import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
@@ -24,8 +25,8 @@ import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
 import com.ebay.traffic.monitoring.ESMetrics;
-import org.apache.commons.collections.MapUtils;
 import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.junit.*;
@@ -36,8 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 import javax.inject.Inject;
@@ -45,6 +44,8 @@ import javax.ws.rs.client.*;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -393,6 +394,38 @@ public class EventListenerServiceTest {
   }
 
   @Test
+  public void testEPage() throws InterruptedException {
+    Event event = new Event();
+    event.setReferrer("https://pages.ebay.com/sitemap.html?mkevt=1&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    event.setTargetUrl("https://c.ebay.com/marketingtracking/v1/pixel?mkevt=1&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623&originalRef=https%3A%2F%2Fwww.google.com");
+
+    // CRM
+    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // No referer
+    event.setTargetUrl("https://c.ebay.com/marketingtracking/v1/pixel?mkevt=1&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // IMK
+    event.setReferrer("https://pages.qa.ebay.com/sitemap.html?mkcid=2&mkrid=710-123456-1234-6&mkevt=1");
+    event.setTargetUrl("https://c.qa.ebay.com/marketingtracking/v1/pixel?mkcid=2&mkrid=710-123456-1234-6&mkevt=1&originalRef=https%3A%2F%2Fwww.google.com");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
+      LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
+      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 1, 30 * 1000);
+    consumerPaidSearch.close();
+    assertEquals(1, listenerMessagesPaidSearch.size());
+  }
+
+  @Test
   public void testSelfService() {
     Event event = new Event();
     event.setTargetUrl("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=25&smsid=111&self_service=1&self_service_id=123");
@@ -469,7 +502,7 @@ public class EventListenerServiceTest {
   }
 
   @Test
-  public void testImpressionResource() throws InterruptedException {
+  public void testImpressionResource() throws Exception {
     Event event = new Event();
     event.setReferrer("www.google.com");
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=2&mkcid=1");
@@ -499,7 +532,12 @@ public class EventListenerServiceTest {
 
     // no referer
     event.setReferrer(null);
-    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
+    response = postMcsResponse(impressionPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+
+    // referrer encoded
+    event.setReferrer("https%3A%2F%2Fwww.google.com");
+    response = postMcsResponse(impressionPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
 
     // no query parameter
@@ -519,6 +557,15 @@ public class EventListenerServiceTest {
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4007, errorMessage.getErrorCode());
+
+    // mkevt=3, 6
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkcid=1&mkevt=3");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
+    assertEquals(200, response.getStatus());
+
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkcid=1&mkevt=6");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
+    assertEquals(200, response.getStatus());
 
     // no mkcid
     // service will pass but no message to kafka
@@ -540,7 +587,7 @@ public class EventListenerServiceTest {
     Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
       consumerEpn, Arrays.asList("dev_listened-epn"), 4, 30 * 1000);
     consumerEpn.close();
-    assertEquals(5, listenerMessagesEpn.size());
+    assertEquals(8, listenerMessagesEpn.size());
 
     // mrkt email impression events
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=8&mkpid=12&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
@@ -561,16 +608,25 @@ public class EventListenerServiceTest {
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=999&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
     assertEquals(200, response.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    collectionService.getBehaviorProducer().flush();
+    Consumer<String, BehaviorMessage> consumerEmail =
+        new KafkaConsumer<>(getProperties("event-listener-behavior-rheos-consumer.properties"));
+    Map<String, BehaviorMessage> listenerMessagesEmail = pollFromKafkaTopic(
+        consumerEmail, Arrays.asList("marketing.tracking.staging.behavior"), 4, 30 * 1000);
+    consumerEpn.close();
+    assertTrue(listenerMessagesEmail.size() >= 4);
   }
 
   @Test
   public void testNotificationResource() {
     // notification event
     Event event = new Event();
-    event.setEventName(Event.EventNameEnum.NOTIFICATION);
 
     EventPayload payload = new EventPayload();
-    payload.setPageId(2054081);
+    payload.setPageId(2054081L);
     Map<String, String> tags = new HashMap<>();
     tags.put(Constants.NOTIFICATION_ID, "539721811729");
     tags.put(Constants.NOTIFICATION_TYPE, "HOT_ITEM");
@@ -766,5 +822,18 @@ public class EventListenerServiceTest {
     assertEquals("7114261820560", campaignRotationMap.get(495209116L).toString());
     assertEquals("7101540849339260", campaignRotationMap.get(1537903894L).toString());
     assertEquals("-1", campaignRotationMap.get(1537903895L).toString());
+  }
+
+  /**
+   * Load properties
+   * @param fileName
+   */
+  public Properties getProperties(String fileName) throws Exception {
+    File resourcesDirectory = new File("src/test/resources/META-INF/configuration/Dev/config");
+    String resourcePath = resourcesDirectory.getAbsolutePath() + "/";
+    String propertiesFile = resourcePath + fileName;
+    Properties properties = new Properties();
+    properties.load(new FileReader(propertiesFile));
+    return properties;
   }
 }

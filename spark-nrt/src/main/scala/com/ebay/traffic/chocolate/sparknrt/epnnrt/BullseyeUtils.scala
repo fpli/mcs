@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
 import java.sql.Timestamp
-import java.util.Properties
+import java.util.{Base64, Properties}
 
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.JsonParser
@@ -29,21 +29,12 @@ object BullseyeUtils {
     } else null
   }
 
-  //TODO try catch metrics  bullseye response time   renew token  retry 2 times
-  def generateToken: JsValue = Http(properties.getProperty("epnnrt.oauthUrl")).method("GET")
-    .param("client_id", properties.getProperty("epnnrt.clientId"))
-    .param("client_secret", properties.getProperty("epnnrt.clientsecret"))
-    .param("grant_type", "client_credentials")
-    .param("scope", "https://api.ebay.com/oauth/scope/@public")
-    .asString
-    .body.parseJson
-
+  // use new oAuth POST endpoint to get token
   def generateToken2: String = try {
-    Http(properties.getProperty("epnnrt.oauthUrl")).method("GET")
-      .param("client_id", properties.getProperty("epnnrt.clientId"))
-      .param("client_secret", properties.getProperty("epnnrt.clientsecret"))
-      .param("grant_type", "client_credentials")
-      .param("scope", "https://api.ebay.com/oauth/scope/@public")
+    Http(properties.getProperty("epnnrt.oauthUrl")).method("POST")
+      .header("Authorization", "Basic " + getOauthAuthorization())
+      .header("Content-Type", properties.getProperty("epnnrt.contenttype"))
+      .postData(properties.getProperty("epnnrt.oauthbody"))
       .asString
       .body.parseJson.convertTo[TokenResponse].access_token
   } catch {
@@ -72,19 +63,6 @@ object BullseyeUtils {
       else {
         logger.error(s"bullseye response for cguid $cguid with error: $response")
         token = generateToken2
-        if (token != null) {
-          val output = fs.create(new Path(bullseyeTokenFile), true)
-          try {
-            output.writeBytes(token.toString())
-            output.writeBytes(System.getProperty("line.separator"))
-          } catch {
-            case e: Exception =>{
-              logger.warn("Error when writing bullseye token to HDFS")
-            }
-          } finally {
-            output.close()
-          }
-        }
         logger.warn(s"get new token: $token")
         metrics.meter("BullsEyeError", 1)
         None
@@ -113,39 +91,39 @@ object BullseyeUtils {
             //normally there is one result
             val list = new JsonParser().parse(responseBody).getAsJsonArray.get(0).getAsJsonObject.get("results").
               getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
-            if (list.size() > 0) {
-              for (i <- 0 until list.size()) {
+            (0 until list.size())
+              .foreach(i => {
                 var item_id = list.get(i).getAsJsonObject.get("item_id").toString
-                if (!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong) {
+                val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
+                if (isItemIdValid(timestamp, item_id, lastViewTime)) {
                   item_id = item_id.replace("\"", "")
-                  val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
+                  val date = new Timestamp(lastViewTime).toString
                   metrics.meter("SuccessfulGet", 1)
                   return (item_id, date)
                 }
-              }
-            }
+              })
           } else {
             //for multiple response results
             var maxLastViwTime = Long.MinValue
             var itemId = ""
-            for (i <- 0 until result_list.size()) {
-              val list = new JsonParser().parse(responseBody).getAsJsonArray.get(i).getAsJsonObject.get("results").
-                getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
-              if (list.size() > 0) {
+            (0 until result_list.size())
+              .foreach(i => {
+                val list = new JsonParser().parse(responseBody).getAsJsonArray.get(i).getAsJsonObject.get("results").
+                  getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
                 import util.control.Breaks._
                 breakable {
-                  for (i <- 0 until list.size()) {
-                    val item_Id = list.get(i).getAsJsonObject.get("item_id").toString
-                    val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
-                    if (!item_Id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong && lastViewTime > maxLastViwTime) {
-                      itemId = item_Id.replace("\"", "")
-                      maxLastViwTime = lastViewTime
-                      break()
-                    }
-                  }
+                  (0 until list.size())
+                    .foreach(i => {
+                      val item_Id = list.get(i).getAsJsonObject.get("item_id").toString
+                      val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
+                      if (isItemIdValid(timestamp, maxLastViwTime, item_Id, lastViewTime)) {
+                        itemId = item_Id.replace("\"", "")
+                        maxLastViwTime = lastViewTime
+                        break()
+                      }
+                    })
                 }
-              }
-            }
+              })
             if (maxLastViwTime > 0) {
               metrics.meter("SuccessfulGet", 1)
               return (itemId, new Timestamp(maxLastViwTime).toString)
@@ -173,37 +151,37 @@ object BullseyeUtils {
           if (result_list.size() == 1) {
             val list = new JsonParser().parse(responseBody).getAsJsonArray.get(0).getAsJsonObject.get("results").
               getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
-            if (list.size() > 0) {
-              for (i <- 0 until list.size()) {
+            (0 until list.size())
+              .foreach(i => {
                 var item_id = list.get(i).getAsJsonObject.get("item_id").toString
-                if (!item_id.equalsIgnoreCase("null") && list.get(i).getAsJsonObject.get("timestamp").toString.toLong <= timestamp.toLong) {
+                val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
+                if (isItemIdValid(timestamp, item_id, lastViewTime)) {
                   item_id = item_id.replace("\"", "")
-                  val date = new Timestamp(list.get(i).getAsJsonObject.get("timestamp").toString.toLong).toString
+                  val date = new Timestamp(lastViewTime).toString
                   return (item_id, date)
                 }
-              }
-            }
+              })
           } else {
             var maxLastViwTime = Long.MinValue
             var itemId = ""
-            for (i <- 0 until result_list.size()) {
-              val list = new JsonParser().parse(responseBody).getAsJsonArray.get(i).getAsJsonObject.get("results").
-                getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
-              if (list.size() > 0) {
+            (0 until result_list.size())
+              .foreach(i => {
+                val list = new JsonParser().parse(responseBody).getAsJsonArray.get(i).getAsJsonObject.get("results").
+                  getAsJsonObject.get("response").getAsJsonObject.get("view_item_list").getAsJsonArray
                 import util.control.Breaks._
                 breakable {
-                  for (i <- 0 until list.size()) {
-                    val item_Id = list.get(i).getAsJsonObject.get("item_id").toString
-                    val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
-                    if (!item_Id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong && lastViewTime > maxLastViwTime) {
-                      itemId = item_Id.replace("\"", "")
-                      maxLastViwTime = lastViewTime
-                      break()
-                    }
-                  }
+                  (0 until list.size())
+                    .foreach(i => {
+                      val item_Id = list.get(i).getAsJsonObject.get("item_id").toString
+                      val lastViewTime = list.get(i).getAsJsonObject.get("timestamp").toString.toLong
+                      if (isItemIdValid(timestamp, maxLastViwTime, item_Id, lastViewTime)) {
+                        itemId = item_Id.replace("\"", "")
+                        maxLastViwTime = lastViewTime
+                        break()
+                      }
+                    })
                 }
-              }
-            }
+              })
             if (maxLastViwTime > 0) {
               return (itemId, new Timestamp(maxLastViwTime).toString)
             }
@@ -216,13 +194,37 @@ object BullseyeUtils {
     }
   }
 
+  private def isItemIdValid(timestamp: String, maxLastViwTime: Long, item_Id: String, lastViewTime: Long) = {
+    !item_Id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong && lastViewTime > maxLastViwTime
+  }
+
+  private def isItemIdValid(timestamp: String, item_id: String, lastViewTime: Long) = {
+    !item_id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong
+  }
+
+  // get oauth Authorization
+  def getOauthAuthorization(): String = {
+    var authorization = ""
+
+    try {
+      val consumerIdAndSecret = properties.getProperty("epnnrt.clientId") + ":" + properties.getProperty("epnnrt.clientsecret")
+      authorization = Base64.getEncoder().encodeToString(consumerIdAndSecret.getBytes("UTF-8"))
+    } catch {
+      case e: Exception => {
+        logger.error("Error when encode consumerId:consumerSecret to String" + e)
+        metrics.meter("ErrorEncodeConsumerIdAndSecret", 1)
+      }
+    }
+
+    authorization
+  }
+
   case class TokenResponse(
                             access_token:String,
                             token_type:String,
-                            expires_in:Long,
-                            refresh_token:String
+                            expires_in:Long
                           )
   object TokenResponse extends DefaultJsonProtocol {
-    implicit val _format: RootJsonFormat[TokenResponse] = jsonFormat4(apply)
+    implicit val _format: RootJsonFormat[TokenResponse] = jsonFormat3(apply)
   }
 }

@@ -1,6 +1,8 @@
 package com.ebay.app.raptor.chocolate;
 
+import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.error.LocalizedErrorFactoryV3;
+import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
@@ -9,6 +11,8 @@ import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.raptor.opentracing.Tags;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -16,6 +20,8 @@ import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
@@ -56,6 +62,16 @@ public class EventListenerResource implements EventsApi {
   @Context
   private ContainerRequestContext requestContext;
 
+  private Metrics metrics;
+
+  /**
+   * Initialize function
+   */
+  @PostConstruct
+  public void postInit() {
+    this.metrics = ESMetrics.getInstance();
+  }
+
   /**
    * Collect clicks from upstream raptor, nodejs and native app
    * @param body json body containing referrerUrl and targetUrl
@@ -68,11 +84,23 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res = null;
       try {
-        if (body.getEventName() == null) {
+        if (body.getPayload() != null) {
+          if (body.getPayload().getPageId() != null) {
+            int pageId = body.getPayload().getPageId().intValue();
+            // notification events
+            if (pageId == PageIdEnum.NOTIFICATION_RECEIVED.getId() ||
+                pageId == PageIdEnum.NOTIFICATION_ACTION.getId()) {
+              collectionService.collectNotification(request, userCtxProvider.get(), requestContext, body, pageId);
+            }
+          } else {
+            logger.warn(Errors.ERROR_NO_PAGE_ID);
+            metrics.meter(Errors.ERROR_NO_PAGE_ID);
+            throw new Exception(Errors.ERROR_NO_PAGE_ID);
+          }
+        } else {
+          // click events
           collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(),
               requestContext, body);
-        } else if (body.getEventName().getValue().equals(Event.EventNameEnum.NOTIFICATION.toString())) {
-          collectionService.collectNotification(request, userCtxProvider.get(), requestContext, body);
         }
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");

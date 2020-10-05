@@ -14,7 +14,11 @@ public enum PageIdEnum {
   // for ad request
   AR(2561745),
   // for roi event
-  ROI(2483445);
+  ROI(2483445),
+  // Notification Received
+  NOTIFICATION_RECEIVED(2054081),
+  // Notification Action
+  NOTIFICATION_ACTION(2054060);
 
   private final int id;
 
@@ -25,4 +29,5 @@ public enum PageIdEnum {
   public int getId() {
     return id;
   }
+
 }

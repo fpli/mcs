@@ -165,15 +165,17 @@ public class ListenerMessageParser {
 
     StringBuilder headersBuilder = new StringBuilder();
 
-    Map<String, String> headers = new HashMap<>();
-    for (Enumeration<String> e = clientRequest.getHeaderNames(); e.hasMoreElements(); ) {
-      String headerName = e.nextElement();
-      // skip auth header
-      if (headerName.equalsIgnoreCase("Authorization")) {
-        continue;
+    if(clientRequest.getHeaderNames() != null) {
+      Map<String, String> headers = new HashMap<>();
+      for (Enumeration<String> e = clientRequest.getHeaderNames(); e.hasMoreElements(); ) {
+        String headerName = e.nextElement();
+        // skip auth header
+        if (headerName.equalsIgnoreCase("Authorization")) {
+          continue;
+        }
+        headers.put(headerName, clientRequest.getHeader(headerName));
+        headersBuilder.append("|").append(headerName).append(": ").append(clientRequest.getHeader(headerName));
       }
-      headers.put(headerName, clientRequest.getHeader(headerName));
-      headersBuilder.append("|").append(headerName).append(": ").append(clientRequest.getHeader(headerName));
     }
 
     if (!StringUtils.isEmpty(headersBuilder.toString())) headersBuilder.deleteCharAt(0);

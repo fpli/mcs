@@ -61,6 +61,11 @@ public enum LogicalChannelEnum {
   SITE_SMS(ChannelType.SITE_SMS, ChannelActionEnum.CLICK),
 
   /**
+   * Free SEARCH ENGINE FREE LISTINGS channel
+   */
+  SEARCH_ENGINE_FREE_LISTINGS(ChannelType.SEARCH_ENGINE_FREE_LISTINGS, ChannelActionEnum.CLICK),
+
+  /**
    * ROI channel
    */
   ROI(ChannelType.ROI, ChannelActionEnum.ROI);

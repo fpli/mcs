@@ -1,9 +1,13 @@
 package com.ebay.app.raptor.chocolate;
 
-
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
-import com.ebay.app.raptor.chocolate.adservice.constant.*;
+import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
+import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
+import com.ebay.app.raptor.chocolate.adservice.constant.MKEVT;
+import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
+import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
 import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -11,8 +15,10 @@ import com.ebay.app.raptor.chocolate.gen.api.*;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
+import com.ebay.kernel.util.RequestUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
+import com.ebay.raptor.geo.utils.GeoUtils;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
@@ -42,7 +48,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Resource class
@@ -166,7 +172,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "impression"));
     Response res = null;
     try {
-      adserviceCookie.setAdguid(request, response);
+      String adguid = adserviceCookie.setAdguid(request, response);
       res = Response.status(Response.Status.OK).build();
 
       // get channel
@@ -197,13 +203,32 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       }
 
       // construct X-EBAY-C-TRACKING header
+      // if guid is empty, set adguid to be guid.
       String guid = adserviceCookie.getGuid(request);
+      if(StringUtils.isEmpty(guid)) {
+        guid = adguid;
+      }
       builder = builder.header("X-EBAY-C-TRACKING",
-          collectionService.constructTrackingHeader(requestContext, guid, channelType));
+          collectionService.constructTrackingHeader(requestContext, guid, adguid, channelType));
+
+      URI uri = new ServletServerHttpRequest(request).getURI();
+
+      // for email open, call LBS to get buyer access site id
+      if (params.containsKey(Constants.MKEVT) && MKEVT.EMAIL_OPEN.getId().equals(params.get(Constants.MKEVT)[0])) {
+        int siteId = 0;
+        LBSQueryResult lbsQueryResult = LBSClient.getInstance().getLBSInfo(getRemoteIp(request));
+        if (lbsQueryResult != null) {
+          String country = lbsQueryResult.getIsoCountryCode2();
+          siteId = GeoUtils.getSiteIdByISOCountryCode(country);
+        }
+
+        // add bs tag into url parameter
+        uri = new URIBuilder(uri).addParameter(Constants.CHOCO_BUYER_ACCESS_SITE_ID, String.valueOf(siteId)).build();
+      }
 
       // add uri and referer to marketing event body
       MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
-      mktEvent.setTargetUrl(new ServletServerHttpRequest(request).getURI().toString());
+      mktEvent.setTargetUrl(uri.toString());
       mktEvent.setReferrer(request.getHeader("Referer"));
 
       // call marketing collection service to send ubi event or send kafka async
@@ -305,7 +330,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     // forward to mcs for writing ubi. The adguid in ubi is to help XID team build adguid into the linking system.
     // construct X-EBAY-C-TRACKING header
     builder = builder.header("X-EBAY-C-TRACKING",
-        collectionService.constructTrackingHeader(requestContext, guid, "sync"));
+        collectionService.constructTrackingHeader(requestContext, guid, adguid,"sync"));
 
     // add uri and referer to marketing event body
     MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
@@ -343,7 +368,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   public Response guid() {
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "guid"));
     String adguid = adserviceCookie.readAdguid(request);
-    String guid = idMapping.getGuid(adguid);
+    String guid = idMapping.getGuidByAdguid(adguid);
     return Response.status(Response.Status.OK).entity(guid).build();
   }
 
@@ -356,8 +381,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   public Response userid() {
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "userid"));
     String adguid = adserviceCookie.readAdguid(request);
-    String userid = idMapping.getUid(adguid);
-    return Response.status(Response.Status.OK).entity(userid).build();
+    String encryptedUserid = idMapping.getUidByAdguid(adguid);
+    return Response.status(Response.Status.OK).entity(encryptedUserid).build();
   }
 
   private void sendOpenEventToAdobe(Map<String, String[]> params) {
@@ -428,6 +453,23 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       }
     });
     return cf;
+  }
+
+  /**
+   * Get remote ip
+   */
+  private String getRemoteIp(HttpServletRequest request) {
+    String remoteIp = null;
+    String xForwardFor = request.getHeader("X-Forwarded-For");
+    if (xForwardFor != null && !xForwardFor.isEmpty()) {
+      remoteIp = xForwardFor.split(",")[0];
+    }
+
+    if (remoteIp == null || remoteIp.isEmpty()) {
+      remoteIp = RequestUtil.getRemoteAddr(request);
+    }
+
+    return remoteIp == null ? "" : remoteIp;
   }
 
   /**

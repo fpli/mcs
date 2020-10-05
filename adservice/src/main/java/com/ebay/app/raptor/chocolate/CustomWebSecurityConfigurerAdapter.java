@@ -15,11 +15,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @Order(1)
 public class CustomWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-    http.headers().frameOptions().disable();
-    http.headers().contentTypeOptions().disable();
-    http.headers().xssProtection().disable();
-  }
-
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.headers().frameOptions().disable();
+        http.headers().contentTypeOptions().disable();
+        http.headers().xssProtection().disable();
+    }
 }

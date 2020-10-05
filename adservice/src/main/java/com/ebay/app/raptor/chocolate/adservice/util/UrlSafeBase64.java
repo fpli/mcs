@@ -60,48 +60,6 @@ public class UrlSafeBase64 {
     return encodedStr;
   }
 
-  /**
-   * return decoded array of bytes
-   * 
-   * @param strData
-   *            strData a base64-encoded string
-   * @return decoded byte array
-   */
-
-  static public byte[] decode(String strData) {
-    char[] data = strData.toCharArray();
-
-    int len = ((data.length + 3) / 4) * 3;
-
-    if (data.length > 0 && (data[data.length - 1] == endingCharAsterisk || data[data.length - 1] == endingCharEqual)) {
-      --len;
-    }
-
-    if (data.length > 1 && (data[data.length - 2] == endingCharAsterisk || data[data.length - 2] == endingCharEqual)) {
-      --len;
-    }
-
-    byte[] out = new byte[len];
-    int shift = 0; // # of excess bits stored in accum
-    int accum = 0; // excess bits
-    int index = 0;
-    for (int ix = 0; ix < data.length; ix++) {
-      int value = codes[data[ix] & 0xFF]; // ignore high byte of char
-      if (value >= 0) { // skip over non-code
-        accum <<= 6; // bits shift up by 6 each time thru
-        shift += 6; // loop, with new bits being put in
-        accum |= value; // at the bottom.
-        if (shift >= 8) { // whenever there are 8 or more shifted in,
-          shift -= 8; // write them out (from the top, leaving any
-          out[index++] = // excess at the bottom for next iteration.
-          (byte) ((accum >> shift) & 0xff);
-        }
-      }
-    }
-
-    return out;
-  }
-
   // eBay uses non-statndard ending character '*' instead of '='
   private static char endingCharAsterisk = '*';
 

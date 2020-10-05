@@ -1026,6 +1026,32 @@ public class TestHelper {
     return message;
   }
 
+  public static BehaviorMessage newBehaviorMessage(String snapshotId) {
+    Map<String, String> applicationPayload = new HashMap<>();
+    Map<String, String> clientData = new HashMap<>();
+    List<Map<String, String>> data = new ArrayList<>();
+
+    BehaviorMessage message = new BehaviorMessage();
+    message.setGuid("");
+    message.setAdguid("adguid");
+    message.setEventTimestamp(System.currentTimeMillis());
+    message.setPageId(3962);
+    message.setSessionId(snapshotId);
+    message.setSnapshotId(snapshotId);
+    message.setSeqNum("1");
+    message.setUrlQueryString("/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=0&sojTags=bu=bu&bu=43551630917" +
+        "&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    message.setRemoteIP("127.0.0.1");
+    message.setChannelType(ChannelType.SITE_EMAIL.toString());
+    message.setChannelAction(ChannelAction.EMAIL_OPEN.toString());
+    message.setDispatchId("dispatchId");
+    message.setApplicationPayload(applicationPayload);
+    message.setClientData(clientData);
+    message.setData(data);
+
+    return message;
+  }
+
   /**
    * Load properties from file
    *

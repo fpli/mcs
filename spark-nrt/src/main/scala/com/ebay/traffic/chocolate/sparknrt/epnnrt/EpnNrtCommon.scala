@@ -45,6 +45,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   lazy val CHOCO_TAG = "dashenId"
   lazy val CB_CHOCO_TAG_PREFIX = "DashenId_"
 
+  lazy val ERROR_URLDECODER_PARAM_PATTERN = "Error URLDecoder param %s param=%s%s"
+
+  lazy val ERROR_QUERY_PARAMETERS_PATTERN = "Error query parameters %s param=%s%s"
+
+  lazy val JSON_STRING_STATUS_ENUM = "\"status_enum\":"
+
+  lazy val JSON_STRING_AMS_PUBLISHER_ID = "{\"ams_publisher_id\":\""
+
   val cbData = asyncCouchbaseGet(df)
 
   /**
@@ -334,20 +342,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         val location = getValueFromRequest(responseHeader, "Location")
         if (location.equalsIgnoreCase(""))
           return ""
-        val url = new URL(location)
-        if (url.getHost.equalsIgnoreCase("rover.ebay.com") || url.getHost.equalsIgnoreCase("r.ebay.com"))
-          removeParams(location)
-        else {
-          var res = getQueryParam(location, "mpre")
-          if (res.equalsIgnoreCase(""))
-            res = getQueryParam(location, "loc")
-          if (res.equalsIgnoreCase(""))
-            res = getQueryParam(location, "url")
-          if (res.equalsIgnoreCase(""))
-            removeParams(location)
-          else
-            removeParams(res)
-        }
+        getLandingPageUrlNameFromLocation(location)
       } catch {
         case e: MalformedURLException => {
           logger.error("Error parse landing page url from Location: " + e)
@@ -362,6 +357,23 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       }
     } else {
       return landingPageUrl
+    }
+  }
+
+  private def getLandingPageUrlNameFromLocation(location: String) = {
+    val url = new URL(location)
+    if (url.getHost.equalsIgnoreCase("rover.ebay.com") || url.getHost.equalsIgnoreCase("r.ebay.com"))
+      removeParams(location)
+    else {
+      var res = getQueryParam(location, "mpre")
+      if (res.equalsIgnoreCase(""))
+        res = getQueryParam(location, "loc")
+      if (res.equalsIgnoreCase(""))
+        res = getQueryParam(location, "url")
+      if (res.equalsIgnoreCase(""))
+        removeParams(location)
+      else
+        removeParams(res)
     }
   }
 
@@ -477,23 +489,23 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         }
       } catch {
         case e: ArrayIndexOutOfBoundsException => {
-          logger.error("Error query parameters " + uri + " param=" + param + e)
+          logger.error(ERROR_QUERY_PARAMETERS_PATTERN.format(uri, param, e))
           return ""
         }
         case e: NullPointerException => {
-          logger.error("Error query parameters " + uri + " param=" + param + e)
+          logger.error(ERROR_QUERY_PARAMETERS_PATTERN.format(uri, param, e))
           return ""
         }
         case e: IllegalArgumentException => {
-          logger.error("Error URLDecoder param " + uri + " param=" + param + e)
+          logger.error(ERROR_URLDECODER_PARAM_PATTERN.format(uri, param, e))
           return ""
         }
         case e: MalformedURLException => {
-          logger.error("Error URLDecoder param " + uri + " param=" + param + e)
+          logger.error(ERROR_URLDECODER_PARAM_PATTERN.format(uri, param, e))
           return ""
         }
         case e: Exception => {
-          logger.error("Error URLDecoder param " + uri + " param=" + param + e)
+          logger.error(ERROR_URLDECODER_PARAM_PATTERN.format(uri, param, e))
           return ""
         }
       }
@@ -516,7 +528,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         return empty
       }
       case e: NumberFormatException => {
-        logger.error("RotationId " + rotationId + " is not accepted " + e)
+        logger.error("RotationId %s is not accepted %s".format(rotationId, e))
         return empty
       }
     }
@@ -577,48 +589,50 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getValidParam(id: String): String = {
-    if (id != null || !id.equals("")) {
-      val arr = id.toCharArray
-      var pos = 0
-      var flag = true
-      var break = false
+    if (StringUtils.isEmpty(id)) {
+      return ""
+    }
+    val arr = id.toCharArray
+    var pos = 0
+    var flag = true
+    var break = false
 
-      var i = 0
-      var j = arr.length - 1
-      var res = ""
+    var i = 0
+    var j = arr.length - 1
+    var res = ""
 
-      while (flag) {
-        while (i < arr.length && !Character.isDigit(arr(i))) {
-          i = i + 1
-        }
-        while (j >= 0 && !Character.isDigit(arr(j))) {
-          j = j - 1
-        }
-        try{
-          res = id.substring(i, j + 1)
-          flag = false
-        }catch {
-          case e: Exception => {
-            return ""
-          }
-        }
+    while (flag) {
+      while (i < arr.length && !Character.isDigit(arr(i))) {
+        i = i + 1
       }
-
-      val resArr = res.toCharArray
-
-      for (i <- resArr.indices) {
-        if (!Character.isDigit(resArr(i)))
-          break = true
-        if (Character.isDigit(resArr(i)) && !break)
-          pos = pos + 1
+      while (j >= 0 && !Character.isDigit(arr(j))) {
+        j = j - 1
       }
-
       try {
-        return res.substring(0, pos)
+        res = id.substring(i, j + 1)
+        flag = false
       } catch {
         case e: Exception => {
           return ""
         }
+      }
+    }
+
+    val resArr = res.toCharArray
+
+    resArr.indices
+      .foreach(i => {
+        if (!Character.isDigit(resArr(i)))
+          break = true
+        if (Character.isDigit(resArr(i)) && !break)
+          pos = pos + 1
+      })
+
+    try {
+      return res.substring(0, pos)
+    } catch {
+      case e: Exception => {
+        return ""
       }
     }
 
@@ -774,9 +788,8 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         roiRuleList(4).setRule_result(callRoiMissingReferrerUrlRule(roiRuleList(4).getIs_rule_enable, roiRuleList(4).getIs_pblshr_advsr_enable_rule, referer_domain))
         roiRuleList(5).setRule_result(callRoiNotRegisteredRule(publisherId, roiRuleList(5).getIs_rule_enable, roiRuleList(5).getIs_pblshr_advsr_enable_rule, referer_domain, traffic_source_code))
 
-        for (i <- roiRuleList.indices) {
-          temp_roi_values = temp_roi_values + (roiRuleList(i).getRule_result << i)
-        }
+        roiRuleList.indices
+          .foreach(i => temp_roi_values = temp_roi_values + (roiRuleList(i).getRule_result << i))
       }
     }
     roiRuleValues = temp_roi_values + (google_fltr_do_flag << 6)
@@ -786,7 +799,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
     val advrtsrId = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)(1)
     // add UC4 logical rt_rule_9 here
-    if (roi_fltr_yn_ind == 0 && rt_rule_9 == 1 && (traffic_source_code == ams_clk_fltr_type_map(12) || traffic_source_code == ams_clk_fltr_type_map(13))) {
+    if (isRtRule9(traffic_source_code, rt_rule_9, roi_fltr_yn_ind)) {
       var list = getAdvClickFilterMap(publisherId)
       list = list.filter(e => e.getAms_advertiser_id.equalsIgnoreCase(advrtsrId) &&
         (e.getAms_clk_fltr_type_id.equalsIgnoreCase("12") || e.getAms_clk_fltr_type_id.equalsIgnoreCase("13")))
@@ -794,7 +807,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         roi_fltr_yn_ind = 1
     }
     // add UC4 logical rt_rule_15 here
-    if (roi_fltr_yn_ind == 0 && rt_rule_15 == 1 && (traffic_source_code == ams_clk_fltr_type_map(14) || traffic_source_code == ams_clk_fltr_type_map(15))) {
+    if (isRtRule15(traffic_source_code, rt_rule_15, roi_fltr_yn_ind)) {
       var list = getAdvClickFilterMap(publisherId)
       list = list.filter(e => e.getAms_advertiser_id.equalsIgnoreCase(advrtsrId) &&
         (e.getAms_clk_fltr_type_id.equalsIgnoreCase("14") || e.getAms_clk_fltr_type_id.equalsIgnoreCase("15")))
@@ -803,6 +816,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
 
     (roiRuleValues, roi_fltr_yn_ind)
+  }
+
+  private def isRtRule15(traffic_source_code: Int, rt_rule_15: Int, roi_fltr_yn_ind: Int) = {
+    roi_fltr_yn_ind == 0 && rt_rule_15 == 1 && (traffic_source_code == ams_clk_fltr_type_map(14) || traffic_source_code == ams_clk_fltr_type_map(15))
+  }
+
+  private def isRtRule9(traffic_source_code: Int, rt_rule_9: Int, roi_fltr_yn_ind: Int) = {
+    roi_fltr_yn_ind == 0 && rt_rule_9 == 1 && (traffic_source_code == ams_clk_fltr_type_map(12) || traffic_source_code == ams_clk_fltr_type_map(13))
   }
 
   def getGoogleFltrDoFlag(referer_domain: String, publisherId: String): Int = {
@@ -855,35 +876,39 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def callRoiRuleCommon(publisherId: String, is_rule_enable: Int, is_pblshr_advsr_enable_rule: Int, referer_domain: String, dimensionLookupConstants: String, traffic_source_code: Int): Int = {
     var result = 0
-    if (is_rule_enable == 1 && is_pblshr_advsr_enable_rule == 1) {
-      if (traffic_source_code == 0 || traffic_source_code == 2) {
-        if (referer_domain.equals(""))
+    if (is_rule_enable != 1) {
+      return result
+    }
+    if (is_pblshr_advsr_enable_rule != 1) {
+      return result
+    }
+    if (traffic_source_code != 0 && traffic_source_code != 2) {
+      return result
+    }
+    if (referer_domain.equals("")) {
+      return result
+    }
+    val pubdomainlist = amsPubDomainLookup(publisherId, dimensionLookupConstants)
+    if (pubdomainlist.isEmpty) {
+      result = 1
+      return result
+    }
+    result = 1
+    var loop = true
+    var clean_ref_url = referer_domain.trim.toLowerCase
+    if (!clean_ref_url.startsWith("."))
+      clean_ref_url = ".".concat(clean_ref_url)
+    pubdomainlist.foreach(e => {
+      if (loop) {
+        var domain_entry = e.getUrl_domain.trim
+        if (!domain_entry.startsWith("."))
+          domain_entry = ".".concat(domain_entry)
+        if (clean_ref_url.endsWith(domain_entry.toLowerCase)) {
           result = 0
-        else {
-          val pubdomainlist = amsPubDomainLookup(publisherId, dimensionLookupConstants)
-          if (pubdomainlist.isEmpty)
-            result = 1
-          else {
-            result = 1
-            var loop = true
-            var clean_ref_url = referer_domain.trim.toLowerCase
-            if (!clean_ref_url.startsWith("."))
-              clean_ref_url = ".".concat(clean_ref_url)
-            pubdomainlist.foreach(e => {
-              if (loop) {
-                var domain_entry = e.getUrl_domain.trim
-                if (!domain_entry.startsWith("."))
-                  domain_entry = ".".concat(domain_entry)
-                if (clean_ref_url.endsWith(domain_entry.toLowerCase)) {
-                  result = 0
-                  loop = false
-                }
-              }
-            })
-          }
+          loop = false
         }
       }
-    }
+    })
     result
   }
 
@@ -1005,25 +1030,57 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     if (!res(1).equals("")) {
       config_flag = res(1).toInt & 1
     }
-    if (action.equalsIgnoreCase("click") && google_fltr_do_flag == 1)
+    if (isReasonCode10(action, google_fltr_do_flag))
       rsn_cd = ReasonCodeEnum.REASON_CODE10.getReasonCode
-    else if (publisherId == null || publisherId.equalsIgnoreCase("") || publisherId.equalsIgnoreCase("999"))
+    else if (isReasonCode3(publisherId))
       rsn_cd = ReasonCodeEnum.REASON_CODE3.getReasonCode
-    else if (campaign_sts == null || campaign_sts.equalsIgnoreCase("2") || campaign_sts.equalsIgnoreCase(""))
+    else if (isReasonCode7(campaign_sts))
       rsn_cd = ReasonCodeEnum.REASON_CODE7.getReasonCode
-    else if (action.equalsIgnoreCase("click") && ams_fltr_roi_value == 1)
+    else if (isReasonCode8(action, ams_fltr_roi_value))
       rsn_cd = ReasonCodeEnum.REASON_CODE8.getReasonCode
-    else if (progPubMapStatus == null || progPubMapStatus.equals(""))
+    else if (isReasonCode2(progPubMapStatus))
       rsn_cd = ReasonCodeEnum.REASON_CODE2.getReasonCode
-    else if (publisherStatus == null || !publisherStatus.equalsIgnoreCase("1"))
+    else if (isReasonCode4(publisherStatus))
       rsn_cd = ReasonCodeEnum.REASON_CODE4.getReasonCode
-    else if (progPubMapStatus != null && !progPubMapStatus.equalsIgnoreCase("1"))
+    else if (isReasonCode5(progPubMapStatus))
       rsn_cd = ReasonCodeEnum.REASON_CODE5.getReasonCode
-    else if (config_flag == 1 && filter_yn_ind == 1)
+    else if (isReasonCode6(config_flag, filter_yn_ind))
       rsn_cd = ReasonCodeEnum.REASON_CODE6.getReasonCode
     else
       rsn_cd = ReasonCodeEnum.REASON_CODE0.getReasonCode
     rsn_cd
+  }
+
+  private def isReasonCode6(config_flag: Int, filter_yn_ind: Int) = {
+    config_flag == 1 && filter_yn_ind == 1
+  }
+
+  private def isReasonCode5(progPubMapStatus: String) = {
+    progPubMapStatus != null && !progPubMapStatus.equalsIgnoreCase("1")
+  }
+
+  private def isReasonCode4(publisherStatus: String) = {
+    publisherStatus == null || !publisherStatus.equalsIgnoreCase("1")
+  }
+
+  private def isReasonCode2(progPubMapStatus: String) = {
+    progPubMapStatus == null || progPubMapStatus.equals("")
+  }
+
+  private def isReasonCode8(action: String, ams_fltr_roi_value: Int) = {
+    action.equalsIgnoreCase("click") && ams_fltr_roi_value == 1
+  }
+
+  private def isReasonCode7(campaign_sts: String) = {
+    campaign_sts == null || campaign_sts.equalsIgnoreCase("2") || campaign_sts.equalsIgnoreCase("")
+  }
+
+  private def isReasonCode3(publisherId: String) = {
+    publisherId == null || publisherId.equalsIgnoreCase("") || publisherId.equalsIgnoreCase("999")
+  }
+
+  private def isReasonCode10(action: String, google_fltr_do_flag: Int) = {
+    action.equalsIgnoreCase("click") && google_fltr_do_flag == 1
   }
 
   def getPublisherStatus(publisherId: String): String = {
@@ -1094,7 +1151,6 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     (publisher_map, campaign_map, prog_map, clickFilter_map, pubDomain_map)
   }
 
-
   def batchGetPublisherStatus(list: Array[String]): HashMap[String, String] = {
     var res = new HashMap[String, String]
     val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
@@ -1108,7 +1164,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         }).toList.toBlocking.single
       for (i <- 0 until jsonDocuments.size()) {
         val jsonString = String.valueOf(
-          "{\"ams_publisher_id\":\"" + jsonDocuments.get(i).content().get("ams_publisher_id") + "\"," +
+          JSON_STRING_AMS_PUBLISHER_ID + jsonDocuments.get(i).content().get("ams_publisher_id") + "\"," +
             "\"application_status_enum\":" + "\"" + jsonDocuments.get(i).content().get("application_status_enum") + "\"" + "}")
         val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
         // val publisherInfo = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherInfo])
@@ -1149,7 +1205,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         //val campaign_sts = new Gson().fromJson(String.valueOf(jsonDocuments.get(i).content()), classOf[PublisherCampaignInfo])
         val jsonString = String.valueOf(
           "{\"ams_publisher_campaign_id\":\"" + jsonDocuments.get(i).content().get("ams_publisher_campaign_id") + "\"," +
-            "\"status_enum\":" + "\"" + jsonDocuments.get(i).content().get("status_enum") + "\"" + "}")
+            JSON_STRING_STATUS_ENUM + "\"" + jsonDocuments.get(i).content().get("status_enum") + "\"" + "}")
         val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
         val campaign_sts = new Gson().fromJson(jsonObj, classOf[PublisherCampaignInfo])
         if (campaign_sts != null)
@@ -1189,7 +1245,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         val jsonString = String.valueOf(
           "{\"ams_program_id\":\"" + jsonDocuments.get(i).content().get("ams_program_id") + "\"," +
             "\"ams_publisher_id\":\"" + jsonDocuments.get(i).content().get("ams_publisher_id") + "\"," +
-            "\"status_enum\":" + "\"" + jsonDocuments.get(i).content().get("status_enum") + "\"" + "}")
+            JSON_STRING_STATUS_ENUM + "\"" + jsonDocuments.get(i).content().get("status_enum") + "\"" + "}")
         val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
         val progPubMap = new Gson().fromJson(jsonObj, classOf[ProgPubMapInfo])
 
@@ -1230,10 +1286,10 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         var objectList: ListBuffer[PubAdvClickFilterMapInfo] = ListBuffer.empty[PubAdvClickFilterMapInfo]
         for (j <- 0 until jsonArrayDocuments.get(i).content().size()) {
           val jsonString = String.valueOf(
-            "{\"ams_publisher_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_publisher_id") + "\"," +
+            JSON_STRING_AMS_PUBLISHER_ID + jsonArrayDocuments.get(i).content().getObject(j).get("ams_publisher_id") + "\"," +
               "\"ams_advertiser_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_advertiser_id") + "\"," +
               "\"ams_clk_fltr_type_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_clk_fltr_type_id") + "\"," +
-              "\"status_enum\":" + "\"" + jsonArrayDocuments.get(i).content().getObject(j).get("status_enum") + "\"" + "}")
+              JSON_STRING_STATUS_ENUM + "\"" + jsonArrayDocuments.get(i).content().getObject(j).get("status_enum") + "\"" + "}")
           val jsonObj = new JsonParser().parse(jsonString).getAsJsonObject()
           // objectList += new Gson().fromJson(String.valueOf(jsonArrayDocuments.get(i).content().get(j)), classOf[PubAdvClickFilterMapInfo])
           objectList += new Gson().fromJson(jsonObj, classOf[PubAdvClickFilterMapInfo])
@@ -1273,7 +1329,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
         for (j <- 0 until jsonArrayDocuments.get(i).content().size()) {
           // objectList += new Gson().fromJson(String.valueOf(jsonArrayDocuments.get(i).content().get(j)), classOf[PubDomainInfo])
           val jsonString = String.valueOf(
-            "{\"ams_publisher_id\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("ams_publisher_id") + "\"," +
+            JSON_STRING_AMS_PUBLISHER_ID + jsonArrayDocuments.get(i).content().getObject(j).get("ams_publisher_id") + "\"," +
               "\"url_domain\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("url_domain") + "\"," +
               "\"whitelist_status_enum\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("whitelist_status_enum") + "\"," +
               "\"domain_status_enum\":\"" + jsonArrayDocuments.get(i).content().getObject(j).get("domain_status_enum") + "\"," +
