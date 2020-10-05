@@ -1,10 +1,8 @@
 package com.ebay.traffic.chocolate.flink.nrt.function;
 
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
-import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import com.ebay.traffic.monitoring.ESMetrics;
-import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
 

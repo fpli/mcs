@@ -13,6 +13,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 
+/**
+ * This class can determine the runtime environment automatically, and also provide some useful methods to get variables
+ * from property files.
+ *
+ * @author Zhiyuan Wang
+ * @since 2020/9/15
+ */
 public class PropertyMgr {
   private static final Logger LOGGER = LoggerFactory.getLogger(PropertyMgr.class);
 
@@ -48,6 +55,12 @@ public class PropertyMgr {
     LOGGER.info("property env is {}", propertyEnv);
   }
 
+  /**
+   * Read property files from config path.
+   *
+   * @param propertyName property file name
+   * @return property object
+   */
   public Properties loadProperty(String propertyName) {
     Properties prop = new Properties();
     try (InputStream in = getClass().getClassLoader().getResourceAsStream(propertyEnv.name() + StringConstants.SLASH + propertyName)) {
@@ -58,6 +71,12 @@ public class PropertyMgr {
     return prop;
   }
 
+  /**
+   * Read property files from config path, and split content into list
+   *
+   * @param propertyName property file name
+   * @return file content list
+   */
   public List<String> loadAllLines(String propertyName) {
     List<String> allLines = new ArrayList<>();
     try (InputStream in = getClass().getClassLoader().getResourceAsStream(propertyEnv.name() + StringConstants.SLASH + propertyName);
@@ -72,6 +91,12 @@ public class PropertyMgr {
     return allLines;
   }
 
+  /**
+   * Read property files from config path.
+   *
+   * @param propertyName property file name
+   * @return file content
+   */
   public String loadFile(String propertyName) {
     StringJoiner joiner = new StringJoiner(StringConstants.LINE_SEPERATOR);
     try (InputStream in = getClass().getClassLoader().getResourceAsStream(propertyEnv.name() + StringConstants.SLASH + propertyName);

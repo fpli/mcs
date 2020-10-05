@@ -30,6 +30,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * Receive filter messages from Kafka topics, and sink parquet files to HDFS directly.
+ *
+ * @author Zhiyuan Wang
+ * @since 2020/1/18
+ */
 public class FilterMessageSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, FilterMessageV4> {
 
   public static void main(String[] args) throws Exception {
@@ -76,8 +82,8 @@ public class FilterMessageSinkApp extends AbstractRheosHDFSCompatibleApp<Consume
     return dataStreamSource.map(new TransformRichMapFunction());
   }
 
-  private static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, FilterMessageV4> {
-    private Schema rheosHeaderSchema;
+  protected static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, FilterMessageV4> {
+    private transient Schema rheosHeaderSchema;
 
     @Override
     public void open(Configuration parameters) throws Exception {
@@ -96,6 +102,19 @@ public class FilterMessageSinkApp extends AbstractRheosHDFSCompatibleApp<Consume
     return new CustomEventDateTimeBucketAssigner();
   }
 
+  /**
+   * Assigns to buckets based on event timestamp.
+   *
+   * <p>The {@code CustomEventDateTimeBucketAssigner} will create directories of the following form:
+   * {@code /{basePath}/{dateTimePath}/}. The {@code basePath} is the path
+   * that was specified as a base path when creating the
+   * {@link org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink}.
+   * The {@code dateTimePath} is determined based on the event timestamp.
+   *
+   *
+   * <p>This will create for example the following bucket path:
+   * {@code /base/dt=1976-12-31/}
+   */
   private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<FilterMessageV4, String> {
     public static final DateTimeFormatter EVENT_DT_FORMATTER = DateTimeFormatter.ofPattern(DateConstants.YYYY_MM_DD).withZone(ZoneId.systemDefault());
 

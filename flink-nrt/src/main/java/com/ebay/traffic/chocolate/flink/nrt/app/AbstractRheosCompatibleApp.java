@@ -1,41 +1,40 @@
-/*
- * Copyright (c) 2020. eBay inc. All rights reserved.
- */
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
 import org.apache.flink.streaming.api.CheckpointingMode;
-import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
+import org.apache.flink.streaming.api.functions.sink.SinkFunction;
+import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Receive messages from rheos topics, apply ETL and send messages to another topics.
- * @param <IN> Type of the elements in the DataStream created from the this source
- * @param <OUT> The type of the elements in this stream.
+ * Receive messages from rheos topics, apply ETL and send output messages to another topics.
  *
+ * @param <IN>  Type of the elements in the DataStream created from the this source
+ * @param <OUT> The type of the elements in this stream.
  * @author Zhiyuan Wang
  * @since 2020/1/18
- *
  */
 public abstract class AbstractRheosCompatibleApp<IN, OUT> {
 
-  private StreamExecutionEnvironment streamExecutionEnvironment;
+  protected StreamExecutionEnvironment streamExecutionEnvironment;
 
-  private static final long CHECK_POINT_PERIOD = TimeUnit.SECONDS.toMillis(5);
+  // Time interval between state checkpoints in milliseconds
+  protected static final long CHECK_POINT_PERIOD = TimeUnit.SECONDS.toMillis(5);
 
-  private static final long MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(1);
+  // The minimal pause before the next checkpoint is triggered
+  protected static final long MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(1);
 
-  private static final long CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(300);
+  // The checkpoint timeout, in milliseconds
+  protected static final long CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(300);
 
-  private static final int MAX_CONCURRENT_CHECK_POINTS = 1;
+  // The maximum number of concurrent checkpoint attempts
+  protected static final int MAX_CONCURRENT_CHECK_POINTS = 1;
 
   void run() throws Exception {
     streamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -56,32 +55,52 @@ public abstract class AbstractRheosCompatibleApp<IN, OUT> {
         .enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
   }
 
+  /**
+   * Override this method to define ETL logic
+   *
+   * @param dataStreamSource source data stream
+   * @return target data stream
+   */
   protected abstract DataStream<OUT> transform(DataStreamSource<IN> dataStreamSource);
 
-  protected abstract FlinkKafkaConsumer<IN> getKafkaConsumer();
-
-  protected abstract FlinkKafkaProducer<OUT> getKafkaProducer();
+  /**
+   * Override this method to define Kafka consumer
+   *
+   * @return Kafka consumer
+   */
+  protected abstract SourceFunction<IN> getKafkaConsumer();
 
   /**
-   * Get consumer topics from config file
+   * Override this method to define Kafka producer
+   *
+   * @return Kafka producer
+   */
+  protected abstract SinkFunction<OUT> getKafkaProducer();
+
+  /**
+   * Oerride this method to get the actual consumer topics from config file
+   *
    * @return kafka consumer topics
    */
   protected abstract List<String> getConsumerTopics();
 
   /**
-   * Get properties from config file
+   * Override this method to get the actual consumer properties from config file
+   *
    * @return kafka consumer properties
    */
   protected abstract Properties getConsumerProperties();
 
   /**
-   * Get producer topics from config file
+   * Override this method to get the actual get producer topics from config file
+   *
    * @return kafka producer topics
    */
   protected abstract String getProducerTopic();
 
   /**
-   * Get producer properties from config file
+   * Override this method to get producer properties from config file
+   *
    * @return kafka producer properties
    */
   protected abstract Properties getProducerProperties();

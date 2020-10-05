@@ -6,6 +6,9 @@ package com.ebay.traffic.chocolate.flink.nrt.provider.token;
 
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
+import org.apache.commons.codec.binary.Base64;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJsonProvider;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -18,10 +21,6 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
 
-import org.apache.commons.codec.binary.Base64;
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJsonProvider;
-
 /**
  * Standard implementation for generation App token using IAFService for V3 and non-raptor platforms.
  *
@@ -30,8 +29,8 @@ import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJsonProvi
  */
 public class IAFServiceUtil {
   private static IAFServiceUtil instance = new IAFServiceUtil();
-  private static volatile String appToken;
-  private static volatile Date expiryTime;
+  private volatile String appToken;
+  private volatile Date expiryTime;
   private static final int EXPIRATION_BUFFER_TIME_IN_MINS = 15;
 
   private static Client client;

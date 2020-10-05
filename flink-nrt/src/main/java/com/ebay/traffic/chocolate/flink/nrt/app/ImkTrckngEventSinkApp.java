@@ -27,6 +27,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * Receive imk tracking event messages and sink them to HDFS directly.
+ *
+ * @author Zhiyuan Wang
+ * @since 2020/1/18
+ */
 public class ImkTrckngEventSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, ImkTrckngEventWideMessage> {
 
   public static void main(String[] args) throws Exception {
@@ -73,7 +79,7 @@ public class ImkTrckngEventSinkApp extends AbstractRheosHDFSCompatibleApp<Consum
     return dataStreamSource.map(new TransformRichMapFunction());
   }
 
-  private static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, ImkTrckngEventWideMessage> {
+  protected static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, ImkTrckngEventWideMessage> {
     private transient DatumReader<ImkTrckngEventWideMessage> imkReader;
 
     @Override
@@ -96,6 +102,19 @@ public class ImkTrckngEventSinkApp extends AbstractRheosHDFSCompatibleApp<Consum
     return new CustomEventDateTimeBucketAssigner();
   }
 
+  /**
+   * Assigns to buckets based on event timestamp.
+   *
+   * <p>The {@code CustomEventDateTimeBucketAssigner} will create directories of the following form:
+   * {@code /{basePath}/{dateTimePath}/}. The {@code basePath} is the path
+   * that was specified as a base path when creating the
+   * {@link org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink}.
+   * The {@code dateTimePath} is determined based on the event timestamp.
+   *
+   *
+   * <p>This will create for example the following bucket path:
+   * {@code /base/dt=1976-12-31/}
+   */
   private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<ImkTrckngEventWideMessage, String> {
 
     @Override

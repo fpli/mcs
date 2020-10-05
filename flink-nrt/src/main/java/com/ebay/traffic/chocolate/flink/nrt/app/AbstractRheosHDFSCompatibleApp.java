@@ -7,9 +7,10 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.streaming.api.functions.sink.filesystem.BucketAssigner;
 import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
+import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
 import java.util.List;
 import java.util.Properties;
@@ -52,7 +53,7 @@ public abstract class AbstractRheosHDFSCompatibleApp<IN, OUT> {
 
   protected abstract DataStream<OUT> transform(DataStreamSource<IN> dataStreamSource);
 
-  protected abstract FlinkKafkaConsumer<IN> getKafkaConsumer();
+  protected abstract SourceFunction<IN> getKafkaConsumer();
 
   /**
    * Get consumer topics from config file
@@ -66,7 +67,7 @@ public abstract class AbstractRheosHDFSCompatibleApp<IN, OUT> {
    */
   protected abstract Properties getConsumerProperties();
 
-  protected StreamingFileSink<OUT> getStreamingFileSink() {
+  protected SinkFunction<OUT> getStreamingFileSink() {
     return StreamingFileSink.forBulkFormat(getSinkBasePath(), getSinkWriterFactory()).withBucketAssigner(getSinkBucketAssigner())
             .build();
   }

@@ -6,6 +6,12 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 import javax.annotation.Nullable;
 
+/**
+ * The default implementation just serializes the key to byte array.
+ *
+ * @author Zhiyuan Wang
+ * @since 2020/1/18
+ */
 public class DefaultKafkaSerializationSchema implements KafkaSerializationSchema<Tuple3<String, Long, byte[]>> {
 
   @Override

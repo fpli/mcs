@@ -49,11 +49,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
- * Receive messages from rheos topics, apply IMK ETL and send messages to another topics.
+ * Receive messages from filter topics, apply IMK ETL and send messages to another topic.
  *
  * @author Zhiyuan Wang
  * @since 2020/1/18
- *
  */
 public class ImkTrckngEventTransformApp
     extends AbstractRheosCompatibleApp<ConsumerRecord<byte[], byte[]>, Tuple3<String, Long, byte[]>> {
@@ -62,16 +61,12 @@ public class ImkTrckngEventTransformApp
 
   /**
    * App entrance
+   *
    * @param args input args
    */
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
     ImkTrckngEventTransformApp transformApp = new ImkTrckngEventTransformApp();
-    try {
-      transformApp.run();
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage());
-      System.exit(1);
-    }
+    transformApp.run();
   }
 
   @Override
@@ -119,9 +114,12 @@ public class ImkTrckngEventTransformApp
     return resultStream.map(new TransformFunction());
   }
 
-  private static class DecodeFilterMessageFunction
+  /**
+   * Decode Kafka message to filter message
+   */
+  protected static class DecodeFilterMessageFunction
           extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, FilterMessageV4> {
-    private Schema rheosHeaderSchema;
+    private transient Schema rheosHeaderSchema;
 
     @Override
     public void open(Configuration parameters) throws Exception {
@@ -135,7 +133,10 @@ public class ImkTrckngEventTransformApp
     }
   }
 
-  private static class TransformFunction
+  /**
+   * Apply ETL on filter message
+   */
+  protected static class TransformFunction
       extends ESMetricsCompatibleRichMapFunction<FilterMessageV4, Tuple3<String, Long, byte[]>> {
     private String rheosProducer;
     private String imkEventWideMessageTopic;
@@ -197,7 +198,7 @@ public class ImkTrckngEventTransformApp
     }
   }
 
-  private static class FilterEbaySites extends RichFilterFunction<FilterMessageV4> {
+  protected static class FilterEbaySites extends RichFilterFunction<FilterMessageV4> {
 
     public static final String NUM_RECORDS_IN_COUNTER = "NumRecords";
     public static final String NUM_CLICK_IN_COUNTER = "NumClickRecords";
@@ -284,6 +285,8 @@ public class ImkTrckngEventTransformApp
           arCounter.inc();
           arRate.markEvent();
           break;
+        default:
+          break;
       }
 
       switch(getPageType(value)) {
@@ -310,6 +313,8 @@ public class ImkTrckngEventTransformApp
           break;
         case PAGE_HOME:
           landingPageCounter8.inc();
+          break;
+        default:
           break;
       }
       long currentTimeMillis = System.currentTimeMillis();

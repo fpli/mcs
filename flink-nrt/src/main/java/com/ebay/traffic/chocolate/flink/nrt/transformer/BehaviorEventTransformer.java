@@ -1,7 +1,8 @@
 package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
 import com.ebay.app.raptor.chocolate.avro.BehaviorEvent;
-import com.ebay.traffic.chocolate.flink.nrt.constant.*;
+import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
+import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
 import com.google.common.base.CaseFormat;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
@@ -15,6 +16,12 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
 
+/**
+ * Transformer for unified tracking events.
+ *
+ * @author Zhiyuan Wang
+ * @since 2020/8/10
+ */
 public class BehaviorEventTransformer {
   public static final String GET_METHOD_PREFIX = "get";
 

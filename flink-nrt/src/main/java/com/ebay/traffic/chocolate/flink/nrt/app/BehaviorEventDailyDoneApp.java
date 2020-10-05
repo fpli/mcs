@@ -7,7 +7,6 @@ import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.core.fs.Path;
-import org.apache.flink.formats.parquet.ParquetMapInputFormat;
 import org.apache.flink.formats.parquet.ParquetRowInputFormat;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.TimeCharacteristic;
@@ -23,7 +22,6 @@ import org.apache.parquet.avro.AvroSchemaConverter;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -34,18 +32,23 @@ import java.util.concurrent.TimeUnit;
  * @since 2020/1/18
  */
 public class BehaviorEventDailyDoneApp {
-  public static final String EVENTTIMESTAMP = "eventtimestamp";
-  public static final String STATE_NAME = "behavior-event-current-daily-done";
-  protected StreamExecutionEnvironment streamExecutionEnvironment;
+  private static final String EVENTTIMESTAMP = "eventtimestamp";
+  private static final String STATE_NAME = "behavior-event-current-daily-done";
+  private StreamExecutionEnvironment streamExecutionEnvironment;
 
+  // Time interval between state checkpoints in milliseconds
   private static final long DEFAULT_CHECK_POINT_PERIOD = TimeUnit.MINUTES.toMillis(10);
 
+  // The minimal pause before the next checkpoint is triggered
   private static final long DEFAULT_MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(30);
 
+  /// The checkpoint timeout, in milliseconds
   private static final long DEFAULT_CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(30);
 
+  // The size of the generated windows
   private static final Time DEFAULT_PROCESSING_TIME_WINDOWS = Time.minutes(5);
 
+  // The maximum number of concurrent checkpoint attempts
   private static final int DEFAULT_MAX_CONCURRENT_CHECK_POINTS = 1;
 
   public static void main(String[] args) throws Exception {
@@ -53,16 +56,10 @@ public class BehaviorEventDailyDoneApp {
     transformApp.run();
   }
 
-  @SuppressWarnings("rawtypes")
-  private static LocalDateTime toLocalDateTime(Map value) {
-    return LocalDateTime.ofInstant(Instant.ofEpochMilli((Long) value.get(EVENTTIMESTAMP)), ZoneId.systemDefault());
-  }
-
-  private static LocalDateTime compare(LocalDateTime value1, LocalDateTime value2) {
-    return value1.isBefore(value2) ? value1 : value2;
-  }
-
-  @SuppressWarnings("rawtypes")
+  /**
+   * Monitor the input files, and find the earliest timestamp
+   * @throws Exception which occurs during job execution.
+   */
   protected void run() throws Exception {
     Properties properties = PropertyMgr.getInstance().loadProperty(PropertyConstants.BEHAVIOR_EVENT_DAILY_DONE_APP_HDFS_PROPERTIES);
     String dataPath = properties.getProperty(PropertyConstants.DATA_PATH);
@@ -75,16 +72,12 @@ public class BehaviorEventDailyDoneApp {
     ParquetRowInputFormat parquetRowInputFormat = new ParquetRowInputFormat(new Path(dataPath), new AvroSchemaConverter().convert(BehaviorEvent.getClassSchema()));
     parquetRowInputFormat.setNestedFileEnumeration(true);
 
+    // Periodically scans the path for new data
     DataStream<Row> inputStream = streamExecutionEnvironment.readFile(parquetRowInputFormat, dataPath, FileProcessingMode.PROCESS_CONTINUOUSLY, TimeUnit.MINUTES.toMillis(5));
 
-    inputStream.map((MapFunction<Row, LocalDateTime>) value -> {
-      int pos = BehaviorEvent.getClassSchema().getField(EVENTTIMESTAMP).pos();
-      return LocalDateTime.ofInstant(Instant.ofEpochMilli((Long) value.getField(pos)), ZoneId.systemDefault());
-    })
+    inputStream.map(new LocalDateTimeMapFunction())
             .windowAll(TumblingProcessingTimeWindows.of(DEFAULT_PROCESSING_TIME_WINDOWS))
-            .reduce((ReduceFunction<LocalDateTime>) (value1, value2) -> {
-              return value1.isBefore(value2) ? value1 : value2;
-            })
+            .reduce(new LocalDateTimeReduceFunction())
             .addSink(new DailyDoneSinkFunction(STATE_NAME, donePath, doneFilePrefix, doneFileSuffix));
 
     streamExecutionEnvironment.execute(this.getClass().getSimpleName());
@@ -100,4 +93,18 @@ public class BehaviorEventDailyDoneApp {
     streamExecutionEnvironment.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
   }
 
+  protected static class LocalDateTimeReduceFunction implements ReduceFunction<LocalDateTime> {
+    @Override
+    public LocalDateTime reduce(LocalDateTime value1, LocalDateTime value2) throws Exception {
+      return value1.isBefore(value2) ? value1 : value2;
+    }
+  }
+
+  protected static class LocalDateTimeMapFunction implements MapFunction<Row, LocalDateTime> {
+    @Override
+    public LocalDateTime map(Row value) throws Exception {
+      int pos = BehaviorEvent.getClassSchema().getField(EVENTTIMESTAMP).pos();
+      return LocalDateTime.ofInstant(Instant.ofEpochMilli((Long) value.getField(pos)), ZoneId.systemDefault());
+    }
+  }
 }

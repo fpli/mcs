@@ -1,10 +1,11 @@
 package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
 
 /**
+ * Determine the specific transformer.
+ *
  * @author Zhiyuan Wang
  * @since 2019/12/8
  */

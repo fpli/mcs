@@ -14,10 +14,7 @@ import io.ebay.rheos.schema.avro.RheosEventDeserializer;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.flink.api.common.serialization.BulkWriter;
-import org.apache.flink.configuration.CheckpointingOptions;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.GlobalConfiguration;
-import org.apache.flink.configuration.TaskManagerOptions;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
 import org.apache.flink.formats.parquet.avro.ParquetAvroWriters;
@@ -36,6 +33,12 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+/**
+ * Receive behavior messages, apply etl, and sink parquet files to HDFS.
+ *
+ * @author Zhiyuan Wang
+ * @since 2020/9/14
+ */
 public class BehaviorEventSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, BehaviorEvent> {
   private static final Logger LOGGER = LoggerFactory.getLogger(BehaviorEventSinkApp.class);
 
@@ -115,7 +118,20 @@ public class BehaviorEventSinkApp extends AbstractRheosHDFSCompatibleApp<Consume
     return new CustomEventDateTimeBucketAssigner();
   }
 
-  private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<BehaviorEvent, String> {
+  /**
+   * Assigns to buckets based on event timestamp.
+   *
+   * <p>The {@code CustomEventDateTimeBucketAssigner} will create directories of the following form:
+   * {@code /{basePath}/{dateTimePath}/}. The {@code basePath} is the path
+   * that was specified as a base path when creating the
+   * {@link org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink}.
+   * The {@code dateTimePath} is determined based on the event timestamp.
+   *
+   *
+   * <p>This will create for example the following bucket path:
+   * {@code /base/dt=1976-12-31/}
+   */
+  protected static class CustomEventDateTimeBucketAssigner implements BucketAssigner<BehaviorEvent, String> {
     public static final DateTimeFormatter EVENT_DT_FORMATTER = DateTimeFormatter.ofPattern(DateConstants.YYYY_MM_DD).withZone(ZoneId.systemDefault());
 
     @Override

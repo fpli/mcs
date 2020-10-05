@@ -27,7 +27,7 @@ public class BehaviorEventTransformerTest {
 
   @Before
   public void setUp() throws Exception {
-    String json = PropertyMgr.getInstance().loadFile("email_open.json");
+    String json = PropertyMgr.getInstance().loadFile("behavior-message.json");
     sourceRecord = createSourceRecord(json);
     behaviorEventTransformer = new BehaviorEventTransformer(sourceRecord);
   }
@@ -82,10 +82,6 @@ public class BehaviorEventTransformerTest {
     assertEquals("", behaviorEvent.getDispatchid());
     assertEquals(1, behaviorEvent.getData().size());
     assertTrue(behaviorEvent.getData().iterator().next().isEmpty());
-  }
-
-  @Test
-  public void getField() {
   }
 
   @Test

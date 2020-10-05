@@ -25,7 +25,9 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 /**
- * Generate daily done files.
+ * Generate daily done files base on current event timestamp and last done file.
+ * If the current timestamp is 2020-01-01 00:01:00, and the last done file is 2020-12-29, that means all data before
+ * 2020-01-01 00:01:00 is ready, so it's safe to generate done files for 2020-12-30 and 2020-12-31.
  *
  * @author Zhiyuan Wang
  * @since 2020/1/18

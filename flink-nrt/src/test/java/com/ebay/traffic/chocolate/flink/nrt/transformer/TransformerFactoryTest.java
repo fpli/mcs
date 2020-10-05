@@ -5,7 +5,7 @@ import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class TransformerFactoryTest {
   private FilterMessage filterMessage;

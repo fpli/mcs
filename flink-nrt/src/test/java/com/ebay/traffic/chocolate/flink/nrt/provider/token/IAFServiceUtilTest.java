@@ -6,7 +6,7 @@ package com.ebay.traffic.chocolate.flink.nrt.provider.token;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 public class IAFServiceUtilTest {
 

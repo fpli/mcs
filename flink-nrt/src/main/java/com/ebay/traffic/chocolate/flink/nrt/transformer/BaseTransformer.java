@@ -2,7 +2,6 @@ package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
 import com.ebay.kernel.patternmatch.dawg.Dawg;
 import com.ebay.kernel.patternmatch.dawg.DawgDictionary;
@@ -21,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.time.Instant;
@@ -33,6 +31,12 @@ import java.util.function.Function;
 
 import static com.ebay.traffic.chocolate.flink.nrt.constant.MetricConstants.METRIC_IMK_DUMP_MALFORMED;
 
+/**
+ * Transformer for all events.
+ *
+ * @author Zhiyuan Wang
+ * @since 2020/1/8
+ */
 public class BaseTransformer {
   public static final String GET_METHOD_PREFIX = "get";
 
@@ -526,7 +530,7 @@ public class BaseTransformer {
         }
       } catch (Exception e) {
         ESMetrics.getInstance().meter(METRIC_IMK_DUMP_MALFORMED, 1);
-        LOGGER.warn("MalformedUrl", e);
+        LOGGER.warn(MALFORMED_URL, e);
       }
     }
     return query;
