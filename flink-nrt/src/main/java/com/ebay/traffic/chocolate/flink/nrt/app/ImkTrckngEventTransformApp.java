@@ -4,7 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ImkTrckngEventWideMessage;
 import com.ebay.app.raptor.chocolate.avro.RheosHeader;
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV5;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.deserialization.DefaultKafkaDeserializationSchema;
@@ -107,9 +107,9 @@ public class ImkTrckngEventTransformApp
 
   @Override
   protected DataStream<Tuple3<String, Long, byte[]>> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
-    SingleOutputStreamOperator<FilterMessageV4> filterMessageStream = dataStreamSource.map(new DecodeFilterMessageFunction());
-    SingleOutputStreamOperator<FilterMessageV4> filter = filterMessageStream.filter(new FilterEbaySites());
-    DataStream<FilterMessageV4> resultStream =
+    SingleOutputStreamOperator<FilterMessageV5> filterMessageStream = dataStreamSource.map(new DecodeFilterMessageFunction());
+    SingleOutputStreamOperator<FilterMessageV5> filter = filterMessageStream.filter(new FilterEbaySites());
+    DataStream<FilterMessageV5> resultStream =
             AsyncDataStream.unorderedWait(filter, new AsyncDataRequest(), 10000, TimeUnit.MILLISECONDS, 100);
     return resultStream.map(new TransformFunction());
   }
@@ -118,7 +118,7 @@ public class ImkTrckngEventTransformApp
    * Decode Kafka message to filter message
    */
   protected static class DecodeFilterMessageFunction
-          extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, FilterMessageV4> {
+          extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, FilterMessageV5> {
     private transient Schema rheosHeaderSchema;
 
     @Override
@@ -128,7 +128,7 @@ public class ImkTrckngEventTransformApp
     }
 
     @Override
-    public FilterMessageV4 map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
+    public FilterMessageV5 map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
       return FilterMessage.decodeRheos(rheosHeaderSchema, consumerRecord.value());
     }
   }
@@ -137,7 +137,7 @@ public class ImkTrckngEventTransformApp
    * Apply ETL on filter message
    */
   protected static class TransformFunction
-      extends ESMetricsCompatibleRichMapFunction<FilterMessageV4, Tuple3<String, Long, byte[]>> {
+      extends ESMetricsCompatibleRichMapFunction<FilterMessageV5, Tuple3<String, Long, byte[]>> {
     private String rheosProducer;
     private String imkEventWideMessageTopic;
     private int imkEventWideMessageSchemaId;
@@ -156,7 +156,7 @@ public class ImkTrckngEventTransformApp
     }
 
     @Override
-    public Tuple3<String, Long, byte[]> map(FilterMessageV4 filterMessage) throws Exception {
+    public Tuple3<String, Long, byte[]> map(FilterMessageV5 filterMessage) throws Exception {
       long currentTimeMillis = System.currentTimeMillis();
 
       BaseTransformer concreteTransformer = TransformerFactory.getConcreteTransformer(filterMessage);
@@ -198,7 +198,7 @@ public class ImkTrckngEventTransformApp
     }
   }
 
-  protected static class FilterEbaySites extends RichFilterFunction<FilterMessageV4> {
+  protected static class FilterEbaySites extends RichFilterFunction<FilterMessageV5> {
 
     public static final String NUM_RECORDS_IN_COUNTER = "NumRecords";
     public static final String NUM_CLICK_IN_COUNTER = "NumClickRecords";
@@ -273,7 +273,7 @@ public class ImkTrckngEventTransformApp
     }
 
     @Override
-    public boolean filter(FilterMessageV4 value) throws Exception {
+    public boolean filter(FilterMessageV5 value) throws Exception {
       recordCounter.inc();
       recordRate.markEvent();
       switch (value.getChannelAction()) {
@@ -330,7 +330,7 @@ public class ImkTrckngEventTransformApp
       return true;
     }
 
-    private String getPageType(FilterMessageV4 value) {
+    private String getPageType(FilterMessageV5 value) {
       String landingPageType = null;
       UriComponents uriComponents;
       uriComponents = UriComponentsBuilder.fromUriString(value.getUri()).build();

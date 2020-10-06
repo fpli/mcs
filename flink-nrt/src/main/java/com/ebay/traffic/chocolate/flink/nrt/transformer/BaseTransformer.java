@@ -127,7 +127,7 @@ public class BaseTransformer {
   protected GenericRecord sourceRecord;
   public static final DecimalFormat BATCH_ID_DECIMAL_FORMAT = new DecimalFormat("00");
 
-  public BaseTransformer(FilterMessageV4 sourceRecord) {
+  public BaseTransformer(GenericRecord sourceRecord) {
     this.sourceRecord = sourceRecord;
   }
 

@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.flink.nrt.transformer;
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -13,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class RoiTransformer extends BaseTransformer {
 
-  public RoiTransformer(final FilterMessageV4 sourceRecord) {
+  public RoiTransformer(final GenericRecord sourceRecord) {
     super(sourceRecord);
   }
 

@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV5;
 import com.ebay.traffic.chocolate.flink.nrt.constant.DateConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
@@ -36,7 +36,7 @@ import java.util.Properties;
  * @author Zhiyuan Wang
  * @since 2020/1/18
  */
-public class FilterMessageSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, FilterMessageV4> {
+public class FilterMessageSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, FilterMessageV5> {
 
   public static void main(String[] args) throws Exception {
     FilterMessageSinkApp transformApp = new FilterMessageSinkApp();
@@ -67,22 +67,22 @@ public class FilterMessageSinkApp extends AbstractRheosHDFSCompatibleApp<Consume
   }
 
   @Override
-  protected StreamingFileSink<FilterMessageV4> getStreamingFileSink() {
+  protected StreamingFileSink<FilterMessageV5> getStreamingFileSink() {
     return StreamingFileSink.forBulkFormat(getSinkBasePath(), getSinkWriterFactory()).withBucketAssigner(getSinkBucketAssigner())
             .build();
   }
 
   @Override
-  protected BulkWriter.Factory<FilterMessageV4> getSinkWriterFactory() {
-    return ParquetAvroWriters.forSpecificRecord(FilterMessageV4.class);
+  protected BulkWriter.Factory<FilterMessageV5> getSinkWriterFactory() {
+    return ParquetAvroWriters.forSpecificRecord(FilterMessageV5.class);
   }
 
   @Override
-  protected DataStream<FilterMessageV4> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
+  protected DataStream<FilterMessageV5> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
     return dataStreamSource.map(new TransformRichMapFunction());
   }
 
-  protected static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, FilterMessageV4> {
+  protected static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, FilterMessageV5> {
     private transient Schema rheosHeaderSchema;
 
     @Override
@@ -92,13 +92,13 @@ public class FilterMessageSinkApp extends AbstractRheosHDFSCompatibleApp<Consume
     }
 
     @Override
-    public FilterMessageV4 map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
+    public FilterMessageV5 map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
       return FilterMessage.decodeRheos(rheosHeaderSchema, consumerRecord.value());
     }
   }
 
   @Override
-  protected BucketAssigner<FilterMessageV4, String> getSinkBucketAssigner() {
+  protected BucketAssigner<FilterMessageV5, String> getSinkBucketAssigner() {
     return new CustomEventDateTimeBucketAssigner();
   }
 
@@ -115,11 +115,11 @@ public class FilterMessageSinkApp extends AbstractRheosHDFSCompatibleApp<Consume
    * <p>This will create for example the following bucket path:
    * {@code /base/dt=1976-12-31/}
    */
-  private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<FilterMessageV4, String> {
+  private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<FilterMessageV5, String> {
     public static final DateTimeFormatter EVENT_DT_FORMATTER = DateTimeFormatter.ofPattern(DateConstants.YYYY_MM_DD).withZone(ZoneId.systemDefault());
 
     @Override
-    public String getBucketId(FilterMessageV4 element, Context context) {
+    public String getBucketId(FilterMessageV5 element, Context context) {
       return StringConstants.BUCKET_PREFIX + EVENT_DT_FORMATTER.format(Instant.ofEpochMilli(element.getTimestamp()));
     }
 

@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
+import org.apache.avro.generic.GenericRecord;
 
 /**
  * Transformer for display events.
@@ -10,7 +11,7 @@ import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
  * @since 2020/1/8
  */
 public class DisplayTransformer extends BaseTransformer {
-  public DisplayTransformer(final FilterMessageV4 sourceRecord) {
+  public DisplayTransformer(final GenericRecord sourceRecord) {
     super(sourceRecord);
   }
 

@@ -5,7 +5,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.provider;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV5;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.provider.mtid.MtIdService;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
@@ -27,7 +27,7 @@ import java.util.concurrent.Future;
  * @author xiangli4
  * @since 2020/6/09
  */
-public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV4, FilterMessageV4> {
+public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV5, FilterMessageV5> {
 
   void initESMetrics() {
     if(ESMetrics.getInstance() == null) {
@@ -39,7 +39,7 @@ public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV4, FilterM
   }
 
   @Override
-  public void asyncInvoke(FilterMessageV4 input, ResultFuture<FilterMessageV4> resultFuture) throws Exception {
+  public void asyncInvoke(FilterMessageV5 input, ResultFuture<FilterMessageV5> resultFuture) throws Exception {
     initESMetrics();
 
     if( ChannelAction.CLICK.equals(input.getChannelAction())
@@ -61,7 +61,7 @@ public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV4, FilterM
           ESMetrics.getInstance().meter("MTID_GOT_USERID_ERROR");
           return input;
         }
-      }).thenAccept((FilterMessageV4 outputFilterMessage) -> {
+      }).thenAccept((FilterMessageV5 outputFilterMessage) -> {
         resultFuture.complete(Collections.singleton(outputFilterMessage));
       });
     } else {
@@ -76,7 +76,7 @@ public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV4, FilterM
    * @throws Exception exception
    */
   @Override
-  public void timeout(FilterMessageV4 input, ResultFuture<FilterMessageV4> resultFuture) throws Exception {
+  public void timeout(FilterMessageV5 input, ResultFuture<FilterMessageV5> resultFuture) throws Exception {
     initESMetrics();
     ESMetrics.getInstance().meter("ASYNC_IO_TIMEOUT");
     resultFuture.complete(Collections.singleton(input));

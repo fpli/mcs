@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV5;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import io.ebay.rheos.kafka.client.StreamConnectorConfig;
 import io.ebay.rheos.schema.avro.SchemaRegistryAwareAvroSerializerHelper;
@@ -77,7 +77,7 @@ public class FilterMessageSinkAppTest {
   @Test
   public void transformRichMapFunction() throws Exception {
     FilterMessageSinkApp.TransformRichMapFunction transformRichMapFunction = new FilterMessageSinkApp.TransformRichMapFunction();
-    OneInputStreamOperatorTestHarness<ConsumerRecord<byte[], byte[]>, FilterMessageV4> testHarness = new OneInputStreamOperatorTestHarness<>(new StreamMap<>(transformRichMapFunction));
+    OneInputStreamOperatorTestHarness<ConsumerRecord<byte[], byte[]>, FilterMessageV5> testHarness = new OneInputStreamOperatorTestHarness<>(new StreamMap<>(transformRichMapFunction));
     testHarness.open();
 
     String json = PropertyMgr.getInstance().loadFile("filter-message.json");
@@ -91,9 +91,9 @@ public class FilterMessageSinkAppTest {
 
     ConcurrentLinkedQueue<Object> output = testHarness.getOutput();
     assertEquals(1, output.size());
-    StreamRecord<FilterMessageV4> streamRecord = (StreamRecord<FilterMessageV4>) output.poll();
+    StreamRecord<FilterMessageV5> streamRecord = (StreamRecord<FilterMessageV5>) output.poll();
     assertNotNull(streamRecord);
-    FilterMessageV4 behaviorEvent = streamRecord.getValue();
+    FilterMessageV5 behaviorEvent = streamRecord.getValue();
     assertEquals(Long.valueOf(2333219813745L), behaviorEvent.getSnapshotId());
   }
 
@@ -143,9 +143,9 @@ public class FilterMessageSinkAppTest {
 
   @Test
   public void getSinkBucketAssigner() {
-    BucketAssigner<FilterMessageV4, String> sinkBucketAssigner = filterMessageSinkApp.getSinkBucketAssigner();
+    BucketAssigner<FilterMessageV5, String> sinkBucketAssigner = filterMessageSinkApp.getSinkBucketAssigner();
     ZonedDateTime of = ZonedDateTime.of(2020, 8, 4, 7, 30, 0, 0, ZoneId.systemDefault());
-    FilterMessageV4 element = Mockito.mock(FilterMessageV4.class);
+    FilterMessageV5 element = Mockito.mock(FilterMessageV5.class);
     Mockito.when(element.getTimestamp()).thenReturn(of.toInstant().toEpochMilli());
     BucketAssigner.Context context = Mockito.mock(BucketAssigner.Context.class);
     assertEquals("dt=2020-08-04", sinkBucketAssigner.getBucketId(element, context));
@@ -160,13 +160,13 @@ public class FilterMessageSinkAppTest {
 
   @Test
   public void getSinkWriterFactory() {
-    BulkWriter.Factory<FilterMessageV4> sinkWriterFactory = filterMessageSinkApp.getSinkWriterFactory();
+    BulkWriter.Factory<FilterMessageV5> sinkWriterFactory = filterMessageSinkApp.getSinkWriterFactory();
     assertEquals("org.apache.flink.formats.parquet.ParquetWriterFactory", sinkWriterFactory.getClass().getName());
   }
 
   @Test
   public void getStreamingFileSink() {
-    StreamingFileSink<FilterMessageV4> streamingFileSink = filterMessageSinkApp.getStreamingFileSink();
+    StreamingFileSink<FilterMessageV5> streamingFileSink = filterMessageSinkApp.getStreamingFileSink();
     assertEquals("org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink", streamingFileSink.getClass().getName());
   }
 }
