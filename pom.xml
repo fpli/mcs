@@ -9,7 +9,7 @@
   </parent>
   <groupId>com.ebay.traffic</groupId>
   <artifactId>chocolate</artifactId>
-  <version>3.6.1-RELEASE</version>
+  <version>3.7.0-RELEASE</version>
   <name>chocolate</name>
   <packaging>pom</packaging>
 
@@ -23,9 +23,9 @@
     <slf4j.version>1.7.7</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
     <hadoop.version>2.7.3</hadoop.version>
-    <spark.version>2.3.0</spark.version>
+    <spark.version>2.4.6</spark.version>
     <avro.version>1.8.2</avro.version>
-    <parquet.version>1.8.2</parquet.version>
+    <parquet.version>1.11.0</parquet.version>
     <zookeeper.version>3.4.6</zookeeper.version>
     <curator.version>4.0.1</curator.version>
     <couchbase.client.version>2.7.11</couchbase.client.version>
@@ -274,6 +274,12 @@
         <groupId>com.ebay.raptorio.component</groupId>
         <artifactId>raptor-dawg-dictionary</artifactId>
         <version>0.4.0-RELEASE</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.delta</groupId>
+        <artifactId>delta-core_2.11</artifactId>
+        <version>0.5.0</version>
       </dependency>
 
       <dependency>

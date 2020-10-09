@@ -75,7 +75,6 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     mapData.map(line => line.split(",")(0) -> line.split(",")(1)).toMap
   }
 
-
   def getDateTimeFromTimestamp(timestamp: Long): String = {
     val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
     df.format(timestamp)
@@ -168,7 +167,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
         logger.warn("MalformedUrl", e)
       }
     }
-    return result
+    result
   }
 
   /**

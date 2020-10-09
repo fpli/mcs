@@ -1,15 +1,25 @@
-package com.ebay.traffic.chocolate.sparknrt
+/*
+ * Copyright (c) 2020. eBay inc. All rights reserved.
+ */
+
+package com.ebay.traffic.chocolate.sparknrt.basenrt
+
+import java.util.Properties
 
 import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs._
+import org.apache.spark.sql.DataFrame
+
+
 
 /**
-  * Created by xiangli4 on 4/11/18.
+  * Created by xiangli4 on 08/17/20.
   */
-abstract class BaseSparkNrtJob(override val jobName: String,
-                               override val mode: String = "yarn") extends BaseSparkJob(jobName, mode) {
-
+abstract class BaseNrtJob(override val jobName: String,
+                               override val mode: String = "yarn", override val enableHiveSupport: Boolean = false)
+  extends BaseSparkJob(jobName, mode, enableHiveSupport) {
+  
   lazy val DATE_COL = "date"
 
   /**
@@ -19,17 +29,17 @@ abstract class BaseSparkNrtJob(override val jobName: String,
     * @param date current handled date
     * @return files array handled
     */
-  def renameFiles(outputDir: String, sparkDir: String, date: String) = {
+  def renameFiles(outputDir: String, sparkDir: String, date: String): Array[String] = {
     // rename result to output dir
     val dateOutputPath = new Path(outputDir + "/" + date)
     var max = -1
     if (fs.exists(dateOutputPath)) {
       val outputStatus = fs.listStatus(dateOutputPath)
-      if (outputStatus.length > 0) {
+      if (outputStatus.nonEmpty) {
         max = outputStatus.map(status => {
           val name = status.getPath.getName
           Integer.valueOf(name.substring(5, name.indexOf(".")))
-        }).sortBy(i => i).last
+        }).maxBy(i => i)
       }
     } else {
       fs.mkdirs(dateOutputPath)
@@ -59,5 +69,4 @@ abstract class BaseSparkNrtJob(override val jobName: String,
     val target = new Path(archiveDir, src.getName)
     fs.rename(src, target)
   }
-
 }

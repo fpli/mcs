@@ -1,0 +1,31 @@
+{
+  "table": "df_tracking_event",
+  "description": "",
+  "columns": [
+    {
+      "name": "snapshotid",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "eventtimestamp",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "channeltype",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "channelaction",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "dt",
+      "dataType": "string",
+      "default": ""
+    }
+  ]
+}

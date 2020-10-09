@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.ebay.traffic</groupId>
     <artifactId>chocolate</artifactId>
-    <version>3.6.1-RELEASE</version>
+    <version>3.7.0-RELEASE</version>
     <relativePath>..</relativePath>
   </parent>
   <groupId>com.ebay.traffic</groupId>
@@ -76,17 +76,17 @@
       <version>${parquet.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.apache.parquet</groupId>
-      <artifactId>parquet-hadoop</artifactId>
-      <version>${parquet.version}</version>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.apache.parquet</groupId>-->
+<!--      <artifactId>parquet-hadoop</artifactId>-->
+<!--      <version>${parquet.version}</version>-->
+<!--    </dependency>-->
 
-    <dependency>
-      <groupId>org.apache.parquet</groupId>
-      <artifactId>parquet-column</artifactId>
-      <version>${parquet.version}</version>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.apache.parquet</groupId>-->
+<!--      <artifactId>parquet-column</artifactId>-->
+<!--      <version>${parquet.version}</version>-->
+<!--    </dependency>-->
 
     <dependency>
       <groupId>org.apache.kafka</groupId>
@@ -184,6 +184,12 @@
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-dawg-dictionary</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.delta</groupId>
+      <artifactId>delta-core_2.11</artifactId>
+      <version>0.5.0</version>
     </dependency>
 
   </dependencies>
