@@ -256,7 +256,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn(CGUID, col(GUID))
       .withColumn(GUID, col(GUID))
       .withColumn("user_id", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("u")))
-      .withColumn("clnt_remote_ip", getBrowserTypeUdf(getParamFromQueryUdf(col(CLIENT_DATA), lit("RemoteIP"))))
+      .withColumn("clnt_remote_ip", getParamFromQueryUdf(col(CLIENT_DATA), lit("RemoteIP")))
       .withColumn("brwsr_type_id", getBrowserTypeUdf(getParamFromQueryUdf(col(CLIENT_DATA), lit(AGENT))))
       .withColumn("brwsr_name", getParamFromQueryUdf(col(CLIENT_DATA), lit(AGENT)))
       .withColumn("rfrr_dmn_name", getLandingPageDomainUdf(col(REFERRER)))
