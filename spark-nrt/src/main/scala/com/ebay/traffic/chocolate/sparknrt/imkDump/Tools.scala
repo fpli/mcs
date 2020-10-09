@@ -167,7 +167,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
         logger.warn("MalformedUrl", e)
       }
     }
-    return result
+    result
   }
 
   /**
