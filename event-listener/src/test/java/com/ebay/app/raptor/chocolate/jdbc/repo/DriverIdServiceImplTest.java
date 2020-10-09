@@ -2,6 +2,7 @@ package com.ebay.app.raptor.chocolate.jdbc.repo;
 
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
 import junit.framework.TestCase;
+import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -23,6 +24,7 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest(classes = EventListenerApplication.class)
+@FixMethodOrder()
 public class DriverIdServiceImplTest extends TestCase {
   @Rule
   public ExpectedException thrown = ExpectedException.none();

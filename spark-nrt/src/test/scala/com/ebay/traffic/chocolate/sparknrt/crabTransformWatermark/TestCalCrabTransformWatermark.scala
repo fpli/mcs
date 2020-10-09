@@ -19,7 +19,7 @@ class TestCalCrabTransformWatermark extends BaseFunSuite {
   private val outPutDir = tmpPath + "/outPutDir"
   private val channels = "PAID_SEARCH,ROI,crabDedupe"
 
-  private val localDir = "src/test/resources/crabTransformWatermark.data"
+  private val localDir = getTestResourcePath("crabTransformWatermark.data")
 
   private val crabDir = "crab"
   private val imkDir = "imk"

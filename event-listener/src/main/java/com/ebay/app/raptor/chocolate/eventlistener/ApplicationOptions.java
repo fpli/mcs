@@ -82,7 +82,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   /**
    * default driver ID
    */
-  static int driverId;
+  private int driverId;
 
   /**
    * kafka related
@@ -255,8 +255,8 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     return driverId;
   }
 
-  public void setDriverId(final int driverId) {
-    ApplicationOptions.driverId = driverId;
+  public void setDriverId(final int newDriverId) {
+    driverId = newDriverId;
   }
 
   @Override
