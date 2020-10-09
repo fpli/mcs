@@ -4,8 +4,8 @@
   "columns": [
     {
       "name": "batch_id",
-      "dataType": "string",
-      "default": ""
+      "dataType": "integer",
+      "default": 0
     },
     {
       "name": "file_id",
@@ -34,12 +34,12 @@
     },
     {
       "name": "rvr_cmnd_type_cd",
-      "dataType": "string",
+      "dataType": "integer",
       "default": ""
     },
     {
       "name": "rvr_chnl_type_cd",
-      "dataType": "string",
+      "dataType": "integer",
       "default": ""
     },
     {
@@ -104,7 +104,7 @@
     },
     {
       "name": "pblshr_id",
-      "dataType": "string",
+      "dataType": "long",
       "default": ""
     },
     {
@@ -149,7 +149,7 @@
     },
     {
       "name": "user_map_ind",
-      "dataType": "string",
+      "dataType": "integer",
       "default": ""
     },
     {
@@ -184,8 +184,8 @@
     },
     {
       "name": "mt_id",
-      "dataType": "string",
-      "default": ""
+      "dataType": "long",
+      "default": 0
     },
     {
       "name": "crlp",
@@ -194,12 +194,12 @@
     },
     {
       "name": "geo_id",
-      "dataType": "string",
+      "dataType": "long",
       "default": ""
     },
     {
       "name": "item_id",
-      "dataType": "string",
+      "dataType": "long",
       "default": ""
     },
     {
@@ -209,12 +209,12 @@
     },
     {
       "name": "transaction_id",
-      "dataType": "string",
+      "dataType": "long",
       "default": ""
     },
     {
       "name": "cart_id",
-      "dataType": "string",
+      "dataType": "long",
       "default": ""
     },
     {
@@ -224,7 +224,7 @@
     },
     {
       "name": "ebay_site_id",
-      "dataType": "string",
+      "dataType": "long",
       "default": ""
     },
     {
