@@ -72,7 +72,7 @@ public class BehaviorMessageParser {
                                              IEndUserContext endUserContext, MultiValueMap<String, String> parameters,
                                              UserAgentInfo agentInfo, String uri, Long startTime, final ChannelType channelType,
                                              final ChannelAction channelAction, Long snapshotId, int pageId, String pageName, int rdt,
-                                             String guid, String cguid, String userId, String rotationId) {
+                                             String referer, String guid, String cguid, String userId, String rotationId) {
     try {
       Map<String, String> applicationPayload = new HashMap<>();
       Map<String, String> clientData = new HashMap<>();
@@ -159,7 +159,7 @@ public class BehaviorMessageParser {
       record.setRlogid(tracingContext.getRlogId());
 
       // client data
-      record.setClientData(getClientData(clientData, domainRequest, endUserContext, request));
+      record.setClientData(getClientData(clientData, domainRequest, endUserContext, request, referer));
 
       // web server
       record.setWebServer(domainRequest.getHost());
@@ -192,7 +192,7 @@ public class BehaviorMessageParser {
 
   public BehaviorMessage parse(final HttpServletRequest request, ContainerRequestContext requestContext,
                                IEndUserContext endUserContext, MultiValueMap<String, String> parameters,
-                               UserAgentInfo agentInfo, String uri, Long startTime, final ChannelType channelType,
+                               UserAgentInfo agentInfo, String referrer, String uri, Long startTime, final ChannelType channelType,
                                final ChannelAction channelAction, Long snapshotId, int pageId, String pageName, int rdt) {
 
     Map<String, String> applicationPayload = new HashMap<>();
@@ -279,7 +279,7 @@ public class BehaviorMessageParser {
     record.setRlogid(tracingContext.getRlogId());
 
     // client data
-    record.setClientData(getClientData(clientData, domainRequest, endUserContext, request));
+    record.setClientData(getClientData(clientData, domainRequest, endUserContext, request, referrer));
 
     // web server
     record.setWebServer(domainRequest.getHost());
@@ -311,7 +311,7 @@ public class BehaviorMessageParser {
    * Get client data
    */
   private Map<String, String> getClientData(Map<String, String> clientData, DomainRequestData domainRequest,
-                                            IEndUserContext endUserContext, HttpServletRequest request) {
+                                            IEndUserContext endUserContext, HttpServletRequest request, String referrer) {
     clientData.put("ForwardedFor", domainRequest.getXForwardedFor());
     clientData.put("Script", domainRequest.getServletPath());
     clientData.put("Server", domainRequest.getHost());
@@ -323,8 +323,12 @@ public class BehaviorMessageParser {
     clientData.put("Agent", endUserContext.getUserAgent());
     clientData.put("RemoteIP", getRemoteIp(request));
     clientData.put("ContentLength", String.valueOf(domainRequest.getContentLength()));
-    String referer = UrlProcessHelper.getMaskedUrl(domainRequest.getReferrerUrl(), false, true);
-    clientData.put("Referer", referer);
+    String ref = referrer;
+    if(StringUtils.isEmpty(ref)) {
+      ref = UrlProcessHelper.getMaskedUrl(domainRequest.getReferrerUrl(), false, true);
+    }
+
+    clientData.put("Referer", ref);
     clientData.put("Encoding", domainRequest.getAcceptEncoding());
 
     return deleteNullOrEmptyValue(clientData);
@@ -411,10 +415,8 @@ public class BehaviorMessageParser {
     // delete choco_bs param if it exists
     uri = removeBsParam(parameters, uri);
 
-    // landing page
-    if (ChannelAction.CLICK.equals(channelAction)) {
-      applicationPayload.put("url_mpre", uri);
-    }
+    // landing page and tracking url
+    applicationPayload.put("url_mpre", uri);
 
     // agent and payload
     applicationPayload.put("Agent", agentInfo.getUserAgentRawData());

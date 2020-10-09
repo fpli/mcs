@@ -744,7 +744,7 @@ public class CollectionService {
 
     BehaviorMessage behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext, parameters,
             agentInfo, targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), message.getShortSnapshotId(), PageIdEnum.ROI.getId(),
-            PageNameEnum.ROI.getName(), 0, message.getGuid(), message.getCguid(), userId,
+            PageNameEnum.ROI.getName(), 0, referer, message.getGuid(), message.getCguid(), userId,
             String.valueOf(message.getDstRotationId()));
     if (behaviorMessage != null) {
       behaviorProducer.send(new ProducerRecord<>(behaviorTopic, behaviorMessage.getSnapshotId().getBytes(), behaviorMessage),
@@ -963,13 +963,13 @@ public class CollectionService {
         case CLICK:
           behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext, parameters,
                   agentInfo, targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), message.getShortSnapshotId(), PageIdEnum.CLICK.getId(),
-                  PageNameEnum.CLICK.getName(), 0, message.getGuid(), message.getCguid(), userId,
+                  PageNameEnum.CLICK.getName(), 0, referer, message.getGuid(), message.getCguid(), userId,
                   String.valueOf(rotationId));
           break;
         case SERVE:
           behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext, parameters,
                   agentInfo, targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), message.getShortSnapshotId(), PageIdEnum.AR.getId(),
-                  PageNameEnum.ADREQUEST.getName(), 0, message.getGuid(), message.getCguid(), userId,
+                  PageNameEnum.ADREQUEST.getName(), 0, referer, message.getGuid(), message.getCguid(), userId,
                   String.valueOf(rotationId));
           break;
         default:
@@ -1082,7 +1082,7 @@ public class CollectionService {
       } else if (ChannelAction.EMAIL_OPEN.equals(channelAction)){
       // send email open to behavior topic
         BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, endUserContext, parameters,
-            agentInfo, uri, startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
+            agentInfo, referer, uri, startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
             PageNameEnum.OPEN.getName(), 0);
 
         if (message != null) {
@@ -1174,7 +1174,7 @@ public class CollectionService {
       } else if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
         // send email open to chocolate topic
         BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, endUserContext, parameters,
-            agentInfo, uri, startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
+            agentInfo, uri, referer, startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
             PageNameEnum.OPEN.getName(), 0);
 
         if (message != null) {
