@@ -1174,7 +1174,7 @@ public class CollectionService {
       } else if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
         // send email open to chocolate topic
         BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, endUserContext, parameters,
-            agentInfo, uri, referer, startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
+            agentInfo, referer, uri, startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
             PageNameEnum.OPEN.getName(), 0);
 
         if (message != null) {
