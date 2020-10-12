@@ -1,0 +1,118 @@
+{
+  "rheosHeader": {
+    "eventCreateTimestamp": 1596592608219,
+    "eventSentTimestamp": 1596592608219,
+    "schemaId": 9380,
+    "eventId": null,
+    "producerId": "marketing-tracking-producer"
+  },
+  "guid": "",
+  "adguid": "acd12d5b79ac46b7b5eef0d76510cb1e",
+  "eventTimestamp": 1596182198056,
+  "sid": {
+    "string": "e11051.m44.l1139"
+  },
+  "pageId": {
+    "int": 3962
+  },
+  "pageName": {
+    "string": "impression"
+  },
+  "eventFamily": {
+    "string": "mktcrm"
+  },
+  "eventAction": {
+    "string": "mktc"
+  },
+  "userId": {
+    "string": "43551630917"
+  },
+  "siteId": {
+    "string": "0"
+  },
+  "sessionId": {
+    "string": "6694873385117159424"
+  },
+  "snapshotId": {
+    "string": "6694873385117159424"
+  },
+  "seqNum": {
+    "string": "1"
+  },
+  "rdt": {
+    "int": 0
+  },
+  "refererHash": null,
+  "urlQueryString": {
+    "string": "/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=0&sojTags=bu=bu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623"
+  },
+  "webServer": {
+    "string": "mktcollectionsvc.vip.ebay.com"
+  },
+  "clientIP": {
+    "string": "10.249.75.9"
+  },
+  "remoteIP": {
+    "string": "10.249.75.9"
+  },
+  "agentInfo": {
+    "string": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36"
+  },
+  "appId": {
+    "string": ""
+  },
+  "appVersion": null,
+  "osVersion": {
+    "string": "10_14_6"
+  },
+  "cobrand": {
+    "string": "cobrand"
+  },
+  "deviceFamily": {
+    "string": "Desktop"
+  },
+  "deviceType": {
+    "string": "OS X - 10_14_6 "
+  },
+  "browserVersion": {
+    "string": "83.0.4103.97"
+  },
+  "browserFamily": {
+    "string": "Chrome"
+  },
+  "osFamily": {
+    "string": "OS X"
+  },
+  "enrichedOsVersion": {
+    "string": "10_14_6"
+  },
+  "applicationPayload": {
+    "ext": "56623",
+    "Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
+    "bu": "43551630917",
+    "euid": "c527526a795a414cb4ad11bfaba21b5d",
+    "emsid": "e11051.m44.l1139",
+    "Payload": "/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=0&sojTags=bu=bu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623",
+    "emid": "43551630917"
+  },
+  "rlogid": {
+    "string": "klwfiko%60esjjhtufYcfs%3C%3DOH%2BTKF%2B65065%3B3%3E-173a3df51c9-0x2332"
+  },
+  "clientData": {
+    "Script": "marketingtracking",
+    "Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36,GingerClient/0.11.0-RELEASE",
+    "Server": "mktcollectionsvc.vip.ebay.com",
+    "RemoteIP": "10.249.75.9",
+    "ContentLength": "211",
+    "TName": "impression",
+    "AcceptEncoding": "gzip, deflate, br",
+    "ForwardedFor": "10.249.75.9",
+    "TMachine": "10.249.75.54"
+  },
+  "channelAction": "EMAIL_OEPN",
+  "channelType": "SITE_EMAIL",
+  "dispatchId": "",
+  "data": [
+    {}
+  ]
+}

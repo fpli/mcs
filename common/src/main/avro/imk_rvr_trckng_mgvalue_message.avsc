@@ -1,0 +1,81 @@
+{
+  "namespace": "com.ebay.app.raptor.chocolate.avro",
+  "type": "record",
+  "name": "ImkRvrTrckngMgvalueMessage",
+  "pk": [
+    "rvr_id"
+  ],
+  "fields": [
+    {
+      "name": "rheosHeader",
+      "type": {
+        "type": "record",
+        "name": "RheosHeader",
+        "fields": [
+          {
+            "name": "eventCreateTimestamp",
+            "type": "long"
+          },
+          {
+            "name": "eventSentTimestamp",
+            "type": "long"
+          },
+          {
+            "name": "schemaId",
+            "type": "int"
+          },
+          {
+            "name": "eventId",
+            "type": [
+              "null",
+              {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            ]
+          },
+          {
+            "name": "producerId",
+            "type": {
+              "type": "string",
+              "avro.java.string": "String"
+            }
+          }
+        ]
+      },
+      "doc": "Rheos header - This is  mandatory for every schema in Rheos "
+    },
+    {
+      "name": "rvr_id",
+      "type": "long"
+    },
+    {
+      "name": "event_dt",
+      "type": "string"
+    },
+    {
+      "name": "mgvalue",
+      "type": "string"
+    },
+    {
+      "name": "mgvalue_rsn_cd",
+      "type": "string"
+    },
+    {
+      "name": "cre_date",
+      "type": "string"
+    },
+    {
+      "name": "cre_user",
+      "type": "string"
+    },
+    {
+      "name": "upd_date",
+      "type": "string"
+    },
+    {
+      "name": "upd_user",
+      "type": "string"
+    }
+  ]
+}

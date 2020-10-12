@@ -1,0 +1,347 @@
+{
+  "namespace": "com.ebay.app.raptor.chocolate.avro",
+  "type": "record",
+  "name": "ImkTrckngEventWideMessage",
+  "pk": [
+    "rvr_id"
+  ],
+  "fields": [
+    {
+      "name": "rheosHeader",
+      "type": {
+        "type": "record",
+        "name": "RheosHeader",
+        "fields": [
+          {
+            "name": "eventCreateTimestamp",
+            "type": "long"
+          },
+          {
+            "name": "eventSentTimestamp",
+            "type": "long"
+          },
+          {
+            "name": "schemaId",
+            "type": "int"
+          },
+          {
+            "name": "eventId",
+            "type": [
+              "null",
+              {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            ]
+          },
+          {
+            "name": "producerId",
+            "type": {
+              "type": "string",
+              "avro.java.string": "String"
+            }
+          }
+        ]
+      },
+      "doc": "Rheos header - This is  mandatory for every schema in Rheos "
+    },
+    {
+      "name": "batch_id",
+      "type": "string"
+    },
+    {
+      "name": "file_id",
+      "type": "int"
+    },
+    {
+      "name": "file_schm_vrsn",
+      "type": "int"
+    },
+    {
+      "name": "rvr_id",
+      "type": "long"
+    },
+    {
+      "name": "event_dt",
+      "type": "string"
+    },
+    {
+      "name": "srvd_pstn",
+      "type": "int"
+    },
+    {
+      "name": "rvr_cmnd_type_cd",
+      "type": "string"
+    },
+    {
+      "name": "rvr_chnl_type_cd",
+      "type": "string"
+    },
+    {
+      "name": "cntry_cd",
+      "type": "string"
+    },
+    {
+      "name": "lang_cd",
+      "type": "string"
+    },
+    {
+      "name": "trckng_prtnr_id",
+      "type": "int"
+    },
+    {
+      "name": "cguid",
+      "type": "string"
+    },
+    {
+      "name": "guid",
+      "type": "string"
+    },
+    {
+      "name": "user_id",
+      "type": "long"
+    },
+    {
+      "name": "clnt_remote_ip",
+      "type": "string"
+    },
+    {
+      "name": "brwsr_type_id",
+      "type": "int"
+    },
+    {
+      "name": "brwsr_name",
+      "type": "string"
+    },
+    {
+      "name": "rfrr_dmn_name",
+      "type": "string"
+    },
+    {
+      "name": "rfrr_url",
+      "type": "string"
+    },
+    {
+      "name": "url_encrptd_yn_ind",
+      "type": "int"
+    },
+    {
+      "name": "pblshr_id",
+      "type": "string"
+    },
+    {
+      "name": "lndng_page_dmn_name",
+      "type": "string"
+    },
+    {
+      "name": "lndng_page_url",
+      "type": "string"
+    },
+    {
+      "name": "user_query",
+      "type": "string"
+    },
+    {
+      "name": "rule_bit_flag_strng",
+      "type": "string"
+    },
+    {
+      "name": "event_ts",
+      "type": "string"
+    },
+    {
+      "name": "dflt_bhrv_id",
+      "type": "int"
+    },
+    {
+      "name": "src_rotation_id",
+      "type": "long"
+    },
+    {
+      "name": "dst_rotation_id",
+      "type": "long"
+    },
+    {
+      "name": "user_map_ind",
+      "type": "string"
+    },
+    {
+      "name": "dst_client_id",
+      "type": "int"
+    },
+    {
+      "name": "creative_id",
+      "type": "long"
+    },
+    {
+      "name": "test_ctrl_flag",
+      "type": "int"
+    },
+    {
+      "name": "mfe_id",
+      "type": "int"
+    },
+    {
+      "name": "kw_id",
+      "type": "long"
+    },
+    {
+      "name": "keyword",
+      "type": "string"
+    },
+    {
+      "name": "mt_id",
+      "type": "string"
+    },
+    {
+      "name": "crlp",
+      "type": "string"
+    },
+    {
+      "name": "geo_id",
+      "type": "string"
+    },
+    {
+      "name": "item_id",
+      "type": "string"
+    },
+    {
+      "name": "transaction_type",
+      "type": "string"
+    },
+    {
+      "name": "transaction_id",
+      "type": "string"
+    },
+    {
+      "name": "cart_id",
+      "type": "string"
+    },
+    {
+      "name": "extrnl_cookie",
+      "type": "string"
+    },
+    {
+      "name": "ebay_site_id",
+      "type": "string"
+    },
+    {
+      "name": "rvr_url",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_vrsn_num",
+      "type": "int"
+    },
+    {
+      "name": "flex_field_1",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_2",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_3",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_4",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_5",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_6",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_7",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_8",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_9",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_10",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_11",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_12",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_13",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_14",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_15",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_16",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_17",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_18",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_19",
+      "type": "string"
+    },
+    {
+      "name": "flex_field_20",
+      "type": "string"
+    },
+    {
+      "name": "perf_track_name_value",
+      "type": "string"
+    },
+    {
+      "name": "mgvalue",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "mgvalue_rsn_cd",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "cre_date",
+      "type": "string"
+    },
+    {
+      "name": "cre_user",
+      "type": "string"
+    },
+    {
+      "name": "upd_date",
+      "type": "string"
+    },
+    {
+      "name": "upd_user",
+      "type": "string"
+    }
+  ]
+}
