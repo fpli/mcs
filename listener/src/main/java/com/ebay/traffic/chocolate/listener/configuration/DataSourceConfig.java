@@ -28,11 +28,10 @@ public class DataSourceConfig {
         logger.info("databaseProperties: {}", databaseProperties);
         String userName = databaseProperties.getBridgeConfig().getUsernameChannel();
         String pass = databaseProperties.getBridgeConfig().getPasswordChannel();
-        fideliusClient.create("chocolis.mysqlpassword", pass);
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setUrl(databaseProperties.getBridgeConfig().getUrl());
         dataSource.setUsername(userName);
-        logger.info("channel name config {} / pass config {} {}", userName, pass, fideliusClient.getContent("chocolis.mysqlpassword"));
+        logger.info("channel name config {} / pass config {}", userName, pass);
         dataSource.setPassword(fideliusClient.getContent("chocolis.mysqlpassword"));
         dataSource.setValidationQuery(databaseProperties.getBridgeConfig().getTestStatement());
         return dataSource;
