@@ -140,6 +140,12 @@
         <groupId>com.ebay.cratchit</groupId>
         <artifactId>cratchit</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.ebay.app.raptor.chocolate</groupId>
+            <artifactId>common</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <!-- test dependencies -->
