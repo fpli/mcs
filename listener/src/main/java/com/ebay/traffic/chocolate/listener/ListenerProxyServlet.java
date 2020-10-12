@@ -79,7 +79,6 @@ public class ListenerProxyServlet extends AsyncProxyServlet.Transparent {
     metrics.meter(PROXY_FAILURE, 0);
     metrics.meter(CLIENT_FAILURE, 0);
     metrics.meter(MALFORMED_URL, 0);
-    metrics.meter("driver.id", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", ApplicationOptionsParser.getDriverIdFromIp()));
     // init couchbase client at startup
     CouchbaseClient.getInstance();
     super.init();

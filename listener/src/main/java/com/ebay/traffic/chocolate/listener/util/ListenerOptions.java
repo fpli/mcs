@@ -77,7 +77,7 @@ public class ListenerOptions extends AbstractApplicationOptions implements
     private Set<String> roverCoreSites;
 
     /** Static driver ID */
-    static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
+    static int driverId;
 
     /**
      * Application options to load file from
@@ -185,7 +185,11 @@ public class ListenerOptions extends AbstractApplicationOptions implements
      * @return the driver ID for the listener.
      */
     public int getDriverId() {
-        return DRIVER_ID;
+        return driverId;
+    }
+
+    public void setDriverId(int driverId) {
+        ListenerOptions.driverId = driverId;
     }
 
     /**
