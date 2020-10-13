@@ -226,6 +226,16 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
   }
 
   /**
+    * Filter records that having internal referer. ROI is excluded because they should from internal.
+    */
+  val judegNotEbaySitesUdf: UserDefinedFunction = udf((channelType: String, referer: String) => {
+    channelType match {
+      case "ROI" => true
+      case _ => tools.judgeNotEbaySites(referer)
+    }
+  })
+
+  /**
     * Read everything need from the source table
     *
     * @param inputDateTime input date time
@@ -330,6 +340,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn("event_ts", getDateTimeUdf(col(EVENT_TIMESTAMP)))
       .select(schema_apollo.dfColumns: _*)
       .dropDuplicates(SNAPSHOT_ID)
+      .filter(judegNotEbaySitesUdf(col("channel_type"), col("referer")))
       .withColumnRenamed(SNAPSHOT_ID, "rvr_id")
     // save to final output
     this.saveDFToFiles(finalDf, outputPath = outputDir, writeMode = SaveMode.Append, partitionColumn = dt)
