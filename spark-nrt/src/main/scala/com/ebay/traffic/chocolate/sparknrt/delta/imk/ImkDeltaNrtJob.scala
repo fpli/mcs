@@ -69,6 +69,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
   lazy val MTID = "mt_id"
   lazy val EVENT_TIMESTAMP = "eventtimestamp"
   lazy val GEOID = "geo_id"
+  lazy val LANDING_PAGE_URL = "lndng_page_url"
 
   @transient lazy val mfe_name_id_map: Map[String, String] = {
     val mapData = Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("mfe_name_id_map.txt")).getLines
@@ -235,6 +236,41 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
     }
   })
 
+  val getItemIdUdf: UserDefinedFunction = udf((channelType: String, tempUriQuery: String, uri: String) => {
+    channelType match {
+      case "ROI" => tools.getRoiIdFromUrlQuery(1, tempUriQuery)
+      case _ => tools.getItemIdFromUri(uri)
+    }
+  })
+
+  val getRoiItemIdUdf: UserDefinedFunction = udf((channelType: String, tempUriQuery: String, uri: String) => {
+    channelType match {
+      case "ROI" => tools.getRoiIdFromUrlQuery(1, tempUriQuery)
+      case _ => ""
+    }
+  })
+
+  val getTransactionIdUdf: UserDefinedFunction = udf((channelType: String, index: Int, tempUriQuery: String) => {
+    channelType match {
+      case "ROI" => tools.getRoiIdFromUrlQuery(index, tempUriQuery)
+      case _ => ""
+    }
+  })
+
+  val getTransactionTypeUdf: UserDefinedFunction = udf((channelType: String, tempUriQuery: String, tranType: String) => {
+    channelType match {
+      case "ROI" => tools.getParamValueFromQuery(tempUriQuery, tranType)
+      case _ => ""
+    }
+  })
+
+  val getCartIdUdf: UserDefinedFunction = udf((channelType: String, index: Int, tempUriQuery: String) => {
+    channelType match {
+      case "ROI" => tools.getRoiIdFromUrlQuery(index, tempUriQuery)
+      case _ => ""
+    }
+  })
+
   /**
     * Read everything need from the source table
     *
@@ -274,7 +310,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn("url_encrptd_yn_ind", lit(0))
       .withColumn("pblshr_id", lit(""))
       .withColumn("lndng_page_dmn_name", getLandingPageDomainUdf(col(DECODED_URL)))
-      .withColumn("lndng_page_url", replaceMkgroupidMktypeUdfAndParseMpreFromRoverUdf(col(CHANNEL_TYPE), col("decoded_url")))
+      .withColumn(LANDING_PAGE_URL, replaceMkgroupidMktypeUdfAndParseMpreFromRoverUdf(col(CHANNEL_TYPE), col("decoded_url")))
       .withColumn("user_query", getUserQueryUdf(col(REFERRER), col(TEMP_URI_QUERY)))
       .withColumn("rule_bit_flag_strng", lit(""))
       .withColumn(EVENT_TIMESTAMP, col(EVENT_TIMESTAMP))
@@ -295,10 +331,11 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn(MTID, getDefaultNullNumParamValueFromUrlUdf(col(TEMP_URI_QUERY), lit(MTID)))
       .withColumn(CRLP, getParamFromQueryUdf(col(TEMP_URI_QUERY), lit(CRLP)))
       .withColumn(GEOID, getParamFromQueryUdf(col(TEMP_URI_QUERY), lit(GEOID)))
-      .withColumn("item_id", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("itemid")))
-      .withColumn("transaction_type", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("trans_type")))
-      .withColumn("transaction_id", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("trans_id")))
-      .withColumn("cart_id", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("cart_id")))
+      .withColumn("item_id", getItemIdUdf(col(CHANNEL_TYPE), col(TEMP_URI_QUERY), col(LANDING_PAGE_URL)))
+      .withColumn("roi_item_id", getRoiItemIdUdf(col(CHANNEL_TYPE), col(TEMP_URI_QUERY), col(LANDING_PAGE_URL)))
+      .withColumn("transaction_type", getTransactionTypeUdf(col(CHANNEL_TYPE), col(TEMP_URI_QUERY), lit("tranType")))
+      .withColumn("transaction_id", getTransactionIdUdf(col(CHANNEL_TYPE), lit(2), col(TEMP_URI_QUERY)))
+      .withColumn("cart_id", getCartIdUdf(col(CHANNEL_TYPE), lit(3), col(TEMP_URI_QUERY)))
       .withColumn("extrnl_cookie", lit(""))
       .withColumn("ebay_site_id", col("siteid"))
       .withColumn("rvr_url", replaceMkgroupidMktypeUdf(col(CHANNEL_TYPE), col(DECODED_URL)))
