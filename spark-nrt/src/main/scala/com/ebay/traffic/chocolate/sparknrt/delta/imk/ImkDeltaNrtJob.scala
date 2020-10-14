@@ -279,8 +279,8 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn("rule_bit_flag_strng", lit(""))
       .withColumn(EVENT_TIMESTAMP, col(EVENT_TIMESTAMP))
       .withColumn("dflt_bhrv_id", lit(""))
-      .withColumn("src_rotation_id", getBrowserTypeUdf(getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit(ROTID))))
-      .withColumn("dst_rotation_id", getBrowserTypeUdf(getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit(ROTID))))
+      .withColumn("src_rotation_id", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit(ROTID)))
+      .withColumn("dst_rotation_id", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit(ROTID)))
       .withColumn("user_map_ind", getParamFromQueryUdf(col(APPLICATION_PAYLOAD), lit("u")))
       .withColumn("dst_client_id", setDefaultValueForDstClientIdUdf(getClientIdUdf(
         col(CHANNEL_TYPE), col(TEMP_URI_QUERY), lit("mkrid"),
