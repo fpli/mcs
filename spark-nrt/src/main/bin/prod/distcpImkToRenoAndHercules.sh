@@ -10,12 +10,12 @@
 #           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event
 #           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl
 #           Hercules
-#           /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event
-#           /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event_dtl
+#           /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event/snapshot
+#           /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event_dtl/snapshot
 # Schedule: /3 * ? * *
 # case：
-#./distcpImkToRenoAndHercules.sh /apps/tracking-events/imkTransform/imkOutput /apps/tracking-events/crabTransform/imkOutput /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event false true
-#./distcpImkToRenoAndHercules.sh /apps/tracking-events/imkTransform/dtlOutput /apps/tracking-events/crabTransform/dtlOutput /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl /apps/b_marketing_tracking/IMK_RVR_TRCKNG_EVENT/imk_rvr_trckng_event_dtl true true
+#./distcpImkToRenoAndHercules.sh /apps/tracking-events/imkTransform/imkOutput /apps/tracking-events/crabTransform/imkOutput /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event/snapshot false true
+#./distcpImkToRenoAndHercules.sh /apps/tracking-events/imkTransform/dtlOutput /apps/tracking-events/crabTransform/dtlOutput /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl /sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event_dtl/snapshot true true
 
 set -x
 

@@ -179,6 +179,8 @@ function process_meta_file(){
   done
 }
 
+cd /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod
+
 ./putAmsHourlyDoneToRenoAndHercules.sh ${TYPE}
 
 cd ${LOCAL_TMP_DIR}
@@ -203,5 +205,5 @@ else
     exit 1
 fi
 
-echo "distcpImkToRenoAndHercules copy finish"
+echo "distcpAmsToRenoAndHercules copy finish"
 

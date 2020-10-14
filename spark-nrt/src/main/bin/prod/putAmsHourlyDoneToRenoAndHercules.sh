@@ -61,7 +61,7 @@ then
   fi
 
   echo "================ hercules click touch hourly done file ================"
-  .checkAmsHourlyDone/.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${HERCULES_META_SUFFIX} ${HERCULES_LOCAL_DONE_DATE_FILE_CLICK} ${HERCULES_MIN_TS_FILE_CLICK}
+  ./checkAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${HERCULES_META_SUFFIX} ${HERCULES_LOCAL_DONE_DATE_FILE_CLICK} ${HERCULES_MIN_TS_FILE_CLICK}
   rcode_check_click=$?
   if [ ${rcode_check_click} -eq 1 ];
   then
