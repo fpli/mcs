@@ -73,9 +73,9 @@ public class DoneFileUtil {
 
   private static List<String> getFileList(String pattern, String path) {
     if (path.contains("apollo")) {
-      return ApolloHdfsClient.getDoneFileList(path, LocalDate.now().toString(), pattern);
+      return DoneFileReadUtil.getDoneFileList("/datashare/mkttracking/tools/AlertingAggrate-tool/temp/apollo_files/apollo_done_files.txt", pattern);
     } else if (path.contains("hercules")) {
-      return HerculesHdfsClient.getDoneFileList("/datashare/mkttracking/tools/AlertingAggrate-tool/temp/hercules_files/hercules_done_files.txt", LocalDate.now().toString(), pattern);
+      return DoneFileReadUtil.getDoneFileList("/datashare/mkttracking/tools/AlertingAggrate-tool/temp/hercules_files/hercules_done_files.txt", pattern);
     } else {
       return null;
     }

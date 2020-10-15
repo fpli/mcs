@@ -3,9 +3,15 @@
 DIFF=1
 DATE=`date --date=$DIFF" days ago" +%Y.%m.%d`
 
-echo "Start getting hourly done file for hercules-lvs cluster."
+echo "Start getting hourly done file for apollo-rno cluster."
 DATE1=`date +%Y%m%d`
 DATE2=`date --date=$DIFF" days ago" +%Y%m%d`
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls viewfs://apollo-rno/apps/b_marketing_tracking/watch/$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "apollo-rno" > /datashare/mkttracking/tools/AlertingAggrate-tool/temp/apollo_files/apollo_done_files.txt
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls viewfs://apollo-rno/apps/b_marketing_tracking/watch/$DATE2 | grep -v "^$" | awk '{print $NF}' | grep "apollo-rno" >> /datashare/mkttracking/tools/AlertingAggrate-tool/temp/apollo_files/apollo_done_files.txt
+echo "Finish getting hourly done file for apollo-rno cluster."
+
+
+echo "Start getting hourly done file for hercules-lvs cluster."
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -ls hdfs://hercules/apps/b_marketing_tracking/watch/$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "hercules" > /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hercules_files/hercules_done_files.txt
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -ls hdfs://hercules/apps/b_marketing_tracking/watch/$DATE2 | grep -v "^$" | awk '{print $NF}' | grep "hercules" >> /datashare/mkttracking/tools/AlertingAggrate-tool/temp/hercules_files/hercules_done_files.txt
 echo "Finish getting hourly done file for hercules-lvs cluster."
@@ -44,5 +50,5 @@ cat ${filePath}channel_name=SocialMedia/*.csv > ${filePath}channel_name=SocialMe
 echo "Finish getting imk hourly count."
 
 echo "Start AAMain application."
-java -cp /datashare/mkttracking/tools/AlertingAggrate-tool/lib/AlertingAggrate-tool-*.jar com.ebay.traffic.chocolate.AAMain $DATE 10.89.168.20 lli5@ebay.com,lxiong1@ebay.com,huiclu@ebay.com,zhofan@ebay.com,yliu29@ebay.com,shuangxu@ebay.com,jialili1@ebay.com,xiangli4@ebay.com,fechen@ebay.com,zhiyuawang@ebay.com,zjian@ebay.com,yyang28@ebay.com,yli19@ebay.com hourly
+java -cp /datashare/mkttracking/tools/AlertingAggrate-tool/lib/AlertingAggrate-tool-*.jar com.ebay.traffic.chocolate.AAMain $DATE mx.vip.ebay.com lli5@ebay.com,lxiong1@ebay.com,huiclu@ebay.com,zhofan@ebay.com,yliu29@ebay.com,shuangxu@ebay.com,jialili1@ebay.com,xiangli4@ebay.com,fechen@ebay.com,zhiyuawang@ebay.com,zjian@ebay.com,yyang28@ebay.com,yli19@ebay.com hourly
 echo "AAMain application end."

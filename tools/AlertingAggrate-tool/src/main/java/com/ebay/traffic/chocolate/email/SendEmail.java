@@ -4,10 +4,7 @@ import com.ebay.traffic.chocolate.parse.HTMLParse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.Properties;
@@ -47,12 +44,14 @@ public class SendEmail {
     }
 
     String[] users = toEmail.split(",");
-    for (String user : users) {
-      send(user);
+    if(users == null || users.length ==0){
+      logger.error("Email recipient is empty");
+      return;
     }
+    send(users);
   }
 
-  public void send(String emailAccount) {
+  public void send(String[] users) {
 
     // sender email address
     String from = "dl-ebay-performance-marketing-oncall@ebay.com";
@@ -73,9 +72,14 @@ public class SendEmail {
       // Set From: header
       message.setFrom(new InternetAddress(from));
 
+      Address[] recipients = new Address[users.length];
+      for (int i=0;i< users.length;i++){
+        recipients[i] = new InternetAddress(users[i]);
+      }
+
       // Set To: header
-      message.addRecipient(Message.RecipientType.TO,
-        new InternetAddress(emailAccount));
+      message.addRecipients(Message.RecipientType.TO,
+              recipients);
 
       // Set Subject: header
       switch (runPeriod) {
@@ -93,9 +97,11 @@ public class SendEmail {
       // set message entity
       message.setContent(HTMLParse.parse(runPeriod), "text/html");
 
-      logger.info("Start to sent message to: " + emailAccount);
+      logger.info("Start to sent message to: " + toEmail);
+      System.out.println("Start to sent message to: " + toEmail);
       Transport.send(message);
-      logger.info("Sent message to: " + emailAccount + " successfully.");
+      logger.info("Sent message to: " + toEmail + " successfully.");
+      System.out.println("Sent message to: " + toEmail + " successfully.");
     } catch (MessagingException mex) {
       logger.info(mex.getMessage());
     }
