@@ -344,6 +344,7 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn("upd_date", lit(""))
       .withColumn("upd_user", lit(""))
       .withColumn("flex_field_vrsn_num", lit("0"))
+      .filter(judegNotEbaySitesUdf(col(CHANNEL_TYPE), col(REFERRER)))
 
     // flex fields
     for (i <- 1 to 20) {
@@ -377,7 +378,6 @@ class ImkDeltaNrtJob(params: Parameter, override val enableHiveSupport: Boolean 
       .withColumn("event_ts", getDateTimeUdf(col(EVENT_TIMESTAMP)))
       .select(schema_apollo.dfColumns: _*)
       .dropDuplicates(SNAPSHOT_ID)
-      .filter(judegNotEbaySitesUdf(col(CHANNEL_TYPE), col("referer")))
       .withColumnRenamed(SNAPSHOT_ID, "rvr_id")
     // save to final output
     this.saveDFToFiles(finalDf, outputPath = outputDir, writeMode = SaveMode.Append, partitionColumn = dt)

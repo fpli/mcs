@@ -402,6 +402,9 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     * @return is or not
     */
   def judgeNotEbaySites(referrer: String): Boolean = {
+    if(StringUtils.isEmpty(referrer)) {
+      return true
+    }
     val matcher = ebaySites.matcher(referrer)
     if (matcher.find()) {
       if(metrics != null)
