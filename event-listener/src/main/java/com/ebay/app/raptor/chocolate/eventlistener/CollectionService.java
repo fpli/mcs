@@ -1079,19 +1079,18 @@ public class CollectionService {
           logger.warn("Error when tracking ubi for site email click tags", e);
           metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
         }
-      } else if (ChannelAction.EMAIL_OPEN.equals(channelAction)){
-      // send email open to behavior topic
-        BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, endUserContext, parameters,
-            agentInfo, referer, uri, startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
-            PageNameEnum.OPEN.getName(), 0);
-
-        if (message != null) {
-          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
-              KafkaSink.callback);
-          return true;
-        } else
-          return false;
       }
+
+      // send email open/click to behavior topic
+      BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, endUserContext, parameters,
+          agentInfo, referer, uri, startTime, channelType, channelAction, snapshotId, 0);
+
+      if (message != null) {
+        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
+            KafkaSink.callback);
+        return true;
+      } else
+        return false;
     }
     else {
       metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
@@ -1171,19 +1170,18 @@ public class CollectionService {
           logger.warn("Error when tracking ubi for marketing email click tags", e);
           metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
         }
-      } else if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
-        // send email open to chocolate topic
-        BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, endUserContext, parameters,
-            agentInfo, referer, uri, startTime, channelType, channelAction, snapshotId, PageIdEnum.EMAIL_OPEN.getId(),
-            PageNameEnum.OPEN.getName(), 0);
-
-        if (message != null) {
-          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
-              KafkaSink.callback);
-          return true;
-        } else
-          return false;
       }
+
+      // send email open/click to chocolate topic
+      BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, endUserContext, parameters,
+          agentInfo, referer, uri, startTime, channelType, channelAction, snapshotId, 0);
+
+      if (message != null) {
+        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
+            KafkaSink.callback);
+        return true;
+      } else
+        return false;
     } else {
       metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
     }

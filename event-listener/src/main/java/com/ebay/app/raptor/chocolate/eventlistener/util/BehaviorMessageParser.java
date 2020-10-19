@@ -193,7 +193,7 @@ public class BehaviorMessageParser {
   public BehaviorMessage parse(final HttpServletRequest request, ContainerRequestContext requestContext,
                                IEndUserContext endUserContext, MultiValueMap<String, String> parameters,
                                UserAgentInfo agentInfo, String referrer, String uri, Long startTime, final ChannelType channelType,
-                               final ChannelAction channelAction, Long snapshotId, int pageId, String pageName, int rdt) {
+                               final ChannelAction channelAction, Long snapshotId, int rdt) {
 
     Map<String, String> applicationPayload = new HashMap<>();
     Map<String, String> clientData = new HashMap<>();
@@ -229,9 +229,20 @@ public class BehaviorMessageParser {
     // eventTimestamp
     record.setEventTimestamp(startTime);
 
+    int pageId = 0;
     // page info
-    record.setPageId(pageId);
-    record.setPageName(pageName);
+    switch(channelAction) {
+      case EMAIL_OPEN:
+        pageId = PageIdEnum.EMAIL_OPEN.getId();
+        record.setPageId(pageId);
+        record.setPageName(PageNameEnum.OPEN.getName());
+        break;
+      case CLICK:
+        pageId= PageIdEnum.CLICK.getId();
+        record.setPageId(pageId);
+        record.setPageName(PageNameEnum.CLICK.getName());
+        break;
+    }
 
     // event family and action
     record.setEventFamily(Constants.EVENT_FAMILY_CRM);

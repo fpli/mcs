@@ -202,16 +202,18 @@ public class RoverRheosTopicFilterTaskTest {
 
         when(genericRecord.get("clientData")).thenReturn(new HashMap<Utf8, Utf8>() {
             {
-                put(new Utf8("urlQueryString"), new Utf8(urlQueryString));
+                put(new Utf8("urlQueryString"), new Utf8("abc"));
                 put(new Utf8("ForwardFor"), new Utf8("10.149.170.138"));
                 put(new Utf8("referrer"), new Utf8("http://a+.yhs4.search.yahoo.com"));
             }
         });
         when(genericRecord.get("applicationPayload")).thenReturn(new HashMap<Utf8, Utf8>() {
             {
+                put(new Utf8("urlQueryString"), new Utf8(urlQueryString));
                 put(new Utf8("chnl"), new Utf8(chnl));
                 put(new Utf8("rvrid"), new Utf8("12345"));
                 put(new Utf8("timestamp"), new Utf8("1573445422467"));
+                put(new Utf8("urlQueryString"), new Utf8(urlQueryString));
             }
         });
 
@@ -289,6 +291,7 @@ public class RoverRheosTopicFilterTaskTest {
         List<ProducerRecord<Long, BehaviorMessage>> history = behaviorProducer.history();
 
         assertEquals("CLICK", history.get(0).value().getChannelAction());
+        assertEquals("/roveropen/0/e12060/7?osub=-1%7E1&crd=20200813220048&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869", history.get(0).value().getUrlQueryString());
         assertEquals(Integer.valueOf(3084), history.get(0).value().getPageId());
         assertEquals("Rover_Click", history.get(0).value().getPageName());
         assertEquals("SITE_EMAIL", history.get(0).value().getChannelType());
@@ -298,7 +301,7 @@ public class RoverRheosTopicFilterTaskTest {
     public void testProcessBotRecords() throws Exception {
         initConsumer("behavior.pulsar.misc.bot");
 
-        RheosEvent roverClick = createRheosEvent(3084, "", "7", "");
+        RheosEvent roverClick = createRheosEvent(3084, "", "7", "/rover/xxx");
 
         RheosEvent roveropen = createRheosEvent(3962, "roveropen", "7", "");
 
@@ -313,6 +316,7 @@ public class RoverRheosTopicFilterTaskTest {
         List<ProducerRecord<Long, BehaviorMessage>> history = behaviorProducer.history();
 
         assertEquals("CLICK", history.get(0).value().getChannelAction());
+        assertEquals("/rover/xxx", history.get(0).value().getUrlQueryString());
         assertEquals(Integer.valueOf(3084), history.get(0).value().getPageId());
         assertEquals("Rover_Click_Bot", history.get(0).value().getPageName());
         assertEquals("SITE_EMAIL", history.get(0).value().getChannelType());

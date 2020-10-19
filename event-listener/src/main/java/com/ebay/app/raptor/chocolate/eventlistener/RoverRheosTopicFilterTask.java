@@ -75,6 +75,7 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static Long interval = 0L;
   private static RoverRheosTopicFilterTask task = null;
   private static Boolean runFlag = true;
+  private static String ROVER_HOST = "https://rover.ebay.com";
 
   /**
    * Singleton
@@ -291,7 +292,7 @@ public class RoverRheosTopicFilterTask extends Thread {
 
           setCommonFields(record, applicationPayload, genericRecord);
 
-          String uri = "https://rover.ebay.com" + urlQueryString;
+          String uri = ROVER_HOST + urlQueryString;
           record.setUri(uri);
           // Set the channel type + HTTP headers + channel action
           record.setChannelType(ChannelType.EPN);
@@ -384,7 +385,7 @@ public class RoverRheosTopicFilterTask extends Thread {
           record.setShortSnapshotId(Long.valueOf(rvrIdStr));
         }
 
-        String uri = "https://rover.ebay.com" + urlQueryString;
+        String uri = ROVER_HOST + urlQueryString;
         record.setUri(uri);
 
         record.setHttpMethod(HttpMethod.GET);
@@ -467,6 +468,13 @@ public class RoverRheosTopicFilterTask extends Thread {
         // send roi to unified tracking topic
         BehaviorMessage roiRecord = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_ROI.getName(), ChannelActionEnum.ROI.getAvro().name(), ChannelIdEnum.ROI.getLogicalChannel().getAvro().name());
         if (roiRecord != null) {
+          /* set snapshot id to be the original one from ubi.
+          since for ROI events, we requested rover team to record rvr_id */
+          roiRecord.setSnapshotId(rvrIdStr);
+          // set url_mpre for ROI. As from ubi, we don't have final landing page recorded from rover.
+          Map<String, String> payload = roiRecord.getApplicationPayload();
+          payload.put("url_mpre", ROVER_HOST + roiRecord.getUrlQueryString());
+          roiRecord.setApplicationPayload(payload);
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, roiRecord.getSnapshotId().getBytes(), roiRecord), KafkaSink.callback);
         }
       }
@@ -499,6 +507,7 @@ public class RoverRheosTopicFilterTask extends Thread {
   protected BehaviorMessage buildMessage(GenericRecord genericRecord, Integer pageId, String pageName, String channelAction, String channelType) {
     try {
       BehaviorMessage record = new BehaviorMessage();
+      Map<String, String> applicationPayload = convertMap(((Map<Utf8, Utf8>)genericRecord.get(APPLICATION_PAYLOAD)));
       record.setGuid(String.valueOf(genericRecord.get("guid")));
       record.setAdguid(String.valueOf(genericRecord.get("guid")));
       record.setEventTimestamp((Long) genericRecord.get("eventTimestamp"));
@@ -514,7 +523,9 @@ public class RoverRheosTopicFilterTask extends Thread {
       record.setSeqNum(getField(genericRecord, "seqNum", null));
       record.setRdt((Integer) genericRecord.get("rdt"));
       record.setRefererHash(getField(genericRecord, "refererHash", null));
-      record.setUrlQueryString(getField(genericRecord, "urlQueryString", null));
+      // directly get from urlQueryString is not correct. should get from applicationPayload
+      String urlQueryString = applicationPayload.get("urlQueryString");
+      record.setUrlQueryString(urlQueryString);
       record.setWebServer(getField(genericRecord, "webServer", null));
       record.setClientIP(getField(genericRecord, "clientIP", null));
       record.setRemoteIP(getField(genericRecord, "remoteIP", null));
@@ -529,7 +540,7 @@ public class RoverRheosTopicFilterTask extends Thread {
       record.setBrowserFamily(getField(genericRecord, "browserFamily", null));
       record.setOsFamily(getField(genericRecord, "osFamily", null));
       record.setEnrichedOsVersion(getField(genericRecord, "enrichedOsVersion", null));
-      record.setApplicationPayload(convertMap(((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD))));
+      record.setApplicationPayload(applicationPayload);
       record.setRlogid(getField(genericRecord, "rlogid", null));
       record.setClientData(convertMap((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA)));
       record.setChannelAction(channelAction);
