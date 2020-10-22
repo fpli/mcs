@@ -76,4 +76,9 @@ public class PropertyConstants {
   public static final String DONE_FILE_SUFFIX = "done.file.suffix";
 
   public static final String BEHAVIOR_EVENT_DAILY_DONE_APP_HDFS_PROPERTIES = "behavior-event-daily-done-app.hdfs.properties";
+
+  public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_CONSUMER_PROPERTIES = "unified-tracking-bot-transform-app.rheos.consumer.properties";
+  public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "unified-tracking-bot-transform-app.rheos.consumer.topic.properties";
+  public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES = "unified-tracking-bot-transform-app.rheos.producer.properties";
+  public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES = "unified-tracking-bot-transform-app.rheos.producer.topic.properties";
 }

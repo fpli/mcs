@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.flink.nrt.util;
 
-import com.ebay.traffic.chocolate.flink.nrt.constant.FlinkConstants;
+import com.ebay.traffic.chocolate.flink.nrt.constant.RheosConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import org.apache.flink.configuration.ConfigOptions;
 import org.apache.flink.configuration.GlobalConfiguration;
@@ -44,7 +44,7 @@ public class PropertyMgr {
    */
   private void initPropertyEnv() {
     String rheosApiEndpoint = GlobalConfiguration.loadConfiguration().getString(ConfigOptions
-            .key(FlinkConstants.RHEOS_API_ENDPOINT).stringType().defaultValue(StringConstants.EMPTY));
+            .key(RheosConstants.RHEOS_API_ENDPOINT).stringType().defaultValue(StringConstants.EMPTY));
     if (rheosApiEndpoint.isEmpty()) {
       propertyEnv = PropertyEnv.DEV;
     } else if (rheosApiEndpoint.contains(PropertyEnv.STAGING.getName().toLowerCase())) {

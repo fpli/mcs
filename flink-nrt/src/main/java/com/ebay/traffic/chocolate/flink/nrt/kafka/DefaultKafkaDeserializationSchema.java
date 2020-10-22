@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.flink.nrt.deserialization;
+package com.ebay.traffic.chocolate.flink.nrt.kafka;
 
 import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
