@@ -58,7 +58,7 @@ HOST_NAME=`hostname -f`
 RENO_DISTCP_DIR='/datashare/mkttracking/tools/apache/distcp/apollo'
 echo "HOST_NAME ：${HOST_NAME}"
 echo "RENO_DISTCP_DIR ：${RENO_DISTCP_DIR}"
-dt_hour=$(date -d '1 hour ago' +%Y-%m-%d%H)
+dt_hour=$(date +%Y-%m-%d%H)
 dt=${dt_hour:0:10}
 today=${dt}
 yesterday=$(date --date="${today} -1days" +%Y-%m-%d)
@@ -96,7 +96,9 @@ do
   if [ ${orgDate} == ${today} ]
   then
     echo "hdfs://slickha${one_file}" >> ${toyday_file}
-  else
+  fi
+  if [ ${orgDate} == ${yesterday} ]
+  then
     echo "hdfs://slickha${one_file}" >> ${yesterday_file}
   fi
 done
@@ -111,7 +113,9 @@ do
   if [ ${orgDate} == ${today} ]
   then
     echo "hdfs://slickha${one_file}" >> ${toyday_file}
-  else
+  fi
+  if [ ${orgDate} == ${yesterday} ]
+  then
     echo "hdfs://slickha${one_file}" >> ${yesterday_file}
   fi
 done
