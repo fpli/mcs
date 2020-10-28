@@ -47,12 +47,13 @@ public class PropertyMgr {
             .key(RheosConstants.RHEOS_API_ENDPOINT).stringType().defaultValue(StringConstants.EMPTY));
     if (rheosApiEndpoint.isEmpty()) {
       propertyEnv = PropertyEnv.DEV;
-    } else if (rheosApiEndpoint.contains(PropertyEnv.STAGING.getName().toLowerCase())) {
-      propertyEnv = PropertyEnv.STAGING;
-    } else {
-      propertyEnv = PropertyEnv.PROD;
+      return;
     }
-    LOGGER.info("property env is {}", propertyEnv);
+    if (rheosApiEndpoint.contains(PropertyEnv.STAGING.getName().toLowerCase())) {
+      propertyEnv = PropertyEnv.STAGING;
+      return;
+    }
+    propertyEnv = PropertyEnv.PROD;
   }
 
   /**
@@ -66,7 +67,7 @@ public class PropertyMgr {
     try (InputStream in = getClass().getClassLoader().getResourceAsStream(propertyEnv.name() + StringConstants.SLASH + propertyName)) {
       prop.load(in);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalArgumentException(e);
     }
     return prop;
   }
@@ -86,7 +87,7 @@ public class PropertyMgr {
         allLines.add(line);
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalArgumentException(e);
     }
     return allLines;
   }
@@ -106,7 +107,7 @@ public class PropertyMgr {
         joiner.add(line);
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalArgumentException(e);
     }
     return joiner.toString();
   }

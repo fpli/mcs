@@ -25,7 +25,7 @@ public abstract class AbstractRheosCompatibleApp<IN, OUT> {
   protected StreamExecutionEnvironment streamExecutionEnvironment;
 
   // Time interval between state checkpoints in milliseconds
-  protected static final long CHECK_POINT_PERIOD = TimeUnit.SECONDS.toMillis(5);
+  protected static final long CHECK_POINT_PERIOD = TimeUnit.SECONDS.toMillis(180);
 
   // The minimal pause before the next checkpoint is triggered
   protected static final long MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(1);

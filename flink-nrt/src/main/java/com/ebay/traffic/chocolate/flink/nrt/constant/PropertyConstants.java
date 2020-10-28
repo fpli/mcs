@@ -81,4 +81,11 @@ public class PropertyConstants {
   public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "unified-tracking-bot-transform-app.rheos.consumer.topic.properties";
   public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES = "unified-tracking-bot-transform-app.rheos.producer.properties";
   public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES = "unified-tracking-bot-transform-app.rheos.producer.topic.properties";
+
+  public static final String FLINK_LOG_COLLECTION_RHEOS_PRODUCER_TOPIC_PROPERTIES = "flink-log-collection.rheos.producer.topic.properties";
+  public static final String FLINK_LOG_COLLECTION_RHEOS_PRODUCER_PROPERTIES = "flink-log-collection.rheos.producer.properties";
+
+  public static final String LOG_SINK_APP_ES_PROPERTIES = "log-sink-app.es.properties";
+  public static final String LOG_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "log-sink-app.rheos.consumer.topic.properties";
+  public static final String LOG_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "log-sink-app.rheos.consumer.properties";
 }

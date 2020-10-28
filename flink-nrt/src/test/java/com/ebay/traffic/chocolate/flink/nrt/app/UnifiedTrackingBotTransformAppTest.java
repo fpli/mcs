@@ -12,8 +12,7 @@ import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.util.Utf8;
 import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.streaming.api.operators.StreamFilter;
-import org.apache.flink.streaming.api.operators.StreamMap;
+import org.apache.flink.streaming.api.operators.StreamFlatMap;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
@@ -26,8 +25,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -100,73 +100,6 @@ public class UnifiedTrackingBotTransformAppTest {
     assertEquals(properties, unifiedTrackingBotTransformApp.getProducerProperties());
   }
 
-  @SuppressWarnings("unchecked")
-  @Test
-  public void filter() throws Exception {
-    StreamFilter<GenericRecord> operator = new StreamFilter<>(new UnifiedTrackingBotTransformApp.FilterFunction());
-    OneInputStreamOperatorTestHarness<GenericRecord, GenericRecord> testHarness = new OneInputStreamOperatorTestHarness<>(operator);
-    testHarness.open();
-
-    GenericRecord genericRecord1 = createRheosEvent();
-
-    GenericRecord genericRecord2 = createRheosEvent();
-    genericRecord2.put("pageId", 3084);
-    genericRecord2.put("applicationPayload", new HashMap<Utf8, Utf8>() {
-      {
-        put(new Utf8("chnl"), new Utf8("1"));
-      }
-    });
-
-    GenericRecord genericRecord3 = createRheosEvent();
-    genericRecord3.put("pageId", 3084);
-    genericRecord3.put("applicationPayload", new HashMap<Utf8, Utf8>() {
-      {
-        put(new Utf8("chnl"), new Utf8("7"));
-      }
-    });
-
-    GenericRecord genericRecord4 = createRheosEvent();
-    genericRecord4.put("pageId", 3962);
-    genericRecord4.put("applicationPayload", new HashMap<Utf8, Utf8>() {
-      {
-        put(new Utf8("chnl"), new Utf8("7"));
-      }
-    });
-
-    GenericRecord genericRecord5 = createRheosEvent();
-    genericRecord5.put("pageId", 3962);
-    genericRecord5.put("pageName", "roveropen");
-    genericRecord5.put("applicationPayload", new HashMap<Utf8, Utf8>() {
-      {
-        put(new Utf8("chnl"), new Utf8("7"));
-      }
-    });
-
-
-    testHarness.processElement(genericRecord1, System.currentTimeMillis());
-    testHarness.processElement(genericRecord2, System.currentTimeMillis());
-    testHarness.processElement(genericRecord3, System.currentTimeMillis());
-    testHarness.processElement(genericRecord4, System.currentTimeMillis());
-    testHarness.processElement(genericRecord5, System.currentTimeMillis());
-
-    List<GenericRecord> expected = new ArrayList<>();
-    expected.add(genericRecord3);
-    expected.add(genericRecord5);
-
-
-    List<GenericRecord> actual = new ArrayList<>();
-    testHarness.getOutput().forEach(elem -> actual.add(((StreamRecord<GenericRecord>) elem).getValue()));
-    for (int i = 0; i < actual.size(); i++) {
-      GenericRecord genericRecord = actual.get(i);
-      for (Schema.Field a : genericRecord.getSchema().getFields()) {
-        String fn = a.name();
-        Object vaue = genericRecord.get(fn);
-        Object o = expected.get(i).get(a.name());
-        assertEquals(vaue, o);
-      }
-    }
-  }
-
   private RheosEvent createRheosEvent() {
     Map<String, Object> config = new HashMap<>();
     config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, "https://rheos-services.qa.ebay.com");
@@ -181,36 +114,13 @@ public class UnifiedTrackingBotTransformAppTest {
     rheosEvent.setEventCreateTimestamp(currentTimeMillis);
     rheosEvent.setEventSentTimestamp(currentTimeMillis);
     rheosEvent.setProducerId("");
-    return rheosEvent;
-  }
-
-  @SuppressWarnings("unchecked")
-  @Test
-  public void decode() throws Exception {
-    UnifiedTrackingBotTransformApp.DecodeFunction decodeFilterMessageFunction = new UnifiedTrackingBotTransformApp.DecodeFunction();
-    OneInputStreamOperatorTestHarness<ConsumerRecord<byte[], byte[]>, GenericRecord> testHarness = new OneInputStreamOperatorTestHarness<>(new StreamMap<>(decodeFilterMessageFunction));
-    testHarness.open();
-
-    GenericRecord rheosEvent = createRheosEvent();
-    long currentTimeMillis = System.currentTimeMillis();
-    rheosEvent.put("urlQueryString", String.format("test-value-%d", currentTimeMillis));
-    rheosEvent.put("guid", "");
+    rheosEvent.setProducerId("");
+    rheosEvent.put("guid", new Utf8(""));
     rheosEvent.put("eventTimestamp", currentTimeMillis);
-    Map<String, String> map = new HashMap<>();
+    Map<Utf8, Utf8> map = new HashMap<>();
     rheosEvent.put("applicationPayload", map);
     rheosEvent.put("clientData", map);
-
-    byte[] key = serializeKey(0L);
-    byte[] value = serializeRheosEvent(rheosEvent);
-
-    testHarness.processElement(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 0L, key, value), System.currentTimeMillis());
-
-    ConcurrentLinkedQueue<Object> output = testHarness.getOutput();
-    assertEquals(1, output.size());
-    StreamRecord<GenericRecord> streamRecord = (StreamRecord<GenericRecord>) output.poll();
-    assertNotNull(streamRecord);
-    GenericRecord behaviorEvent = streamRecord.getValue();
-    assertEquals(new Utf8(String.format("test-value-%d", currentTimeMillis)), behaviorEvent.get("urlQueryString"));
+    return rheosEvent;
   }
 
   private byte[] serializeRheosEvent(GenericRecord data) throws IOException {
@@ -244,42 +154,62 @@ public class UnifiedTrackingBotTransformAppTest {
   @SuppressWarnings("unchecked")
   @Test
   public void transform() throws Exception {
-    UnifiedTrackingBotTransformApp.TransformFunction transformFunction = new UnifiedTrackingBotTransformApp.TransformFunction();
-    OneInputStreamOperatorTestHarness<GenericRecord, Tuple3<String, Long, byte[]>> testHarness = new OneInputStreamOperatorTestHarness<>(new StreamMap<>(transformFunction));
+    UnifiedTrackingBotTransformApp.TransformFlatMapFunction transformFunction = new UnifiedTrackingBotTransformApp.TransformFlatMapFunction();
+    OneInputStreamOperatorTestHarness<ConsumerRecord<byte[], byte[]>, Tuple3<String, Long, byte[]>> testHarness = new OneInputStreamOperatorTestHarness<>(new StreamFlatMap<>(transformFunction));
     testHarness.open();
 
-    Map<String, Object> config = new HashMap<>();
-    config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, "https://rheos-services.qa.ebay.com");
-    SchemaRegistryAwareAvroSerializerHelper<GenericRecord> serializerHelper =
-            new SchemaRegistryAwareAvroSerializerHelper<>(config, GenericRecord.class);
-    int schemaId = serializerHelper.getSchemaId("behavior.pulsar.sojevent.schema");
-    Schema schema = serializerHelper.getSchema(schemaId);
-
     long currentTimeMillis = System.currentTimeMillis();
-    RheosEvent rheosEvent = new RheosEvent(schema);
-    rheosEvent.setSchemaId(schemaId);
-    rheosEvent.setEventCreateTimestamp(currentTimeMillis);
-    rheosEvent.setEventSentTimestamp(currentTimeMillis);
-    rheosEvent.setProducerId("");
-    rheosEvent.put("urlQueryString", new Utf8(String.format("test-value-%d", currentTimeMillis)));
-    rheosEvent.put("pageId", 3962);
-    rheosEvent.put("guid", new Utf8(""));
-    rheosEvent.put("eventTimestamp", currentTimeMillis);
-    Map<Utf8, Utf8> map = new HashMap<>();
-    map.put(new Utf8("chnl"), new Utf8("7"));
-    rheosEvent.put("applicationPayload", map);
-    rheosEvent.put("clientData", map);
 
-    testHarness.processElement(rheosEvent, System.currentTimeMillis());
+    RheosEvent rheosEvent1 = createRheosEvent();
+
+    RheosEvent rheosEvent2 = createRheosEvent();
+    rheosEvent2.put("urlQueryString", new Utf8(String.format("test-value-%d", currentTimeMillis)));
+    rheosEvent2.put("pageId", 3084);
+    Map<Utf8, Utf8> map2 = new HashMap<>();
+    map2.put(new Utf8("chnl"), new Utf8("1"));
+    rheosEvent2.put("applicationPayload", map2);
+    rheosEvent2.put("clientData", map2);
+
+    RheosEvent rheosEvent3 = createRheosEvent();
+    rheosEvent3.put("urlQueryString", new Utf8(String.format("test-value-%d", currentTimeMillis)));
+    rheosEvent3.put("pageId", 3084);
+    Map<Utf8, Utf8> map3 = new HashMap<>();
+    map3.put(new Utf8("chnl"), new Utf8("7"));
+    rheosEvent3.put("applicationPayload", map3);
+    rheosEvent3.put("clientData", map3);
+
+    RheosEvent rheosEvent4 = createRheosEvent();
+    rheosEvent4.put("urlQueryString", new Utf8(String.format("test-value-%d", currentTimeMillis)));
+    rheosEvent4.put("pageId", 3962);
+    Map<Utf8, Utf8> map4 = new HashMap<>();
+    map4.put(new Utf8("chnl"), new Utf8("7"));
+    rheosEvent4.put("applicationPayload", map4);
+    rheosEvent4.put("clientData", map4);
+
+    RheosEvent rheosEvent5 = createRheosEvent();
+    rheosEvent5.put("urlQueryString", new Utf8(String.format("test-value-%d", currentTimeMillis)));
+    rheosEvent5.put("pageId", 3962);
+    rheosEvent5.put("pageName", "roveropen");
+    Map<Utf8, Utf8> map5 = new HashMap<>();
+    map5.put(new Utf8("chnl"), new Utf8("7"));
+    rheosEvent5.put("applicationPayload", map5);
+    rheosEvent5.put("clientData", map5);
+
+    testHarness.processElement(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 0L, serializeKey(1L), serializeRheosEvent(rheosEvent1)), System.currentTimeMillis());
+    testHarness.processElement(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 0L, serializeKey(2L), serializeRheosEvent(rheosEvent2)), System.currentTimeMillis());
+    testHarness.processElement(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 0L, serializeKey(3L), serializeRheosEvent(rheosEvent3)), System.currentTimeMillis());
+    testHarness.processElement(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 0L, serializeKey(4L), serializeRheosEvent(rheosEvent4)), System.currentTimeMillis());
+    testHarness.processElement(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 0L, serializeKey(5L), serializeRheosEvent(rheosEvent5)), System.currentTimeMillis());
 
     ConcurrentLinkedQueue<Object> output = testHarness.getOutput();
-    assertEquals(1, output.size());
-    StreamRecord<Tuple3<String, Long, byte[]>> streamRecord = (StreamRecord<Tuple3<String, Long, byte[]>>) output.poll();
-    assertNotNull(streamRecord);
-    Tuple3<String, Long, byte[]> first = streamRecord.getValue();
+    assertEquals(2, output.size());
 
-    assertEquals("marketing.tracking.staging.behavior", first.f0);
-    assertEquals(Long.valueOf(-1L), first.f1);
+    List<Long> actual = output.stream().map(record -> ((StreamRecord<Tuple3<String, Long, byte[]>>) record).getValue().f1).collect(Collectors.toList());
+
+    List<Long> expected = new ArrayList<>();
+    expected.add(-1L);
+    expected.add(-1L);
+    assertEquals(expected, actual);
   }
 
   @Test

@@ -3,8 +3,8 @@ package com.ebay.traffic.chocolate.flink.nrt.app;
 import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
-import com.ebay.traffic.chocolate.flink.nrt.constant.RheosConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
+import com.ebay.traffic.chocolate.flink.nrt.constant.RheosConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
@@ -23,14 +23,14 @@ import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.util.Utf8;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.flink.api.common.functions.RichFilterFunction;
-import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
+import org.apache.flink.util.Collector;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.errors.SerializationException;
@@ -106,41 +106,66 @@ public class UnifiedTrackingBotTransformApp
 
   @Override
   protected DataStream<Tuple3<String, Long, byte[]>> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
-    return dataStreamSource.map(new DecodeFunction()).filter(new FilterFunction()).map(new TransformFunction());
+    return dataStreamSource.flatMap(new TransformFlatMapFunction());
   }
 
-  /**
-   * Decode Kafka message to generic record
-   */
-  protected static class DecodeFunction extends RichMapFunction<ConsumerRecord<byte[], byte[]>, GenericRecord> {
+  protected static class TransformFlatMapFunction extends RichFlatMapFunction<ConsumerRecord<byte[], byte[]>, Tuple3<String, Long, byte[]>> {
     private transient GenericRecordDomainDataDecoder decoder;
     private transient RheosEventDeserializer deserializer;
+    private transient EncoderFactory encoderFactory;
+    private int schemaId;
+    private transient Schema schema;
+    private String producer;
+    private String topic;
 
     @Override
     public void open(Configuration parameters) throws Exception {
-      super.open(parameters);
       deserializer = new RheosEventDeserializer();
       Map<String, Object> config = new HashMap<>();
-      Properties properties = PropertyMgr.getInstance()
+      Properties consumerProperties = PropertyMgr.getInstance()
               .loadProperty(PropertyConstants.UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_CONSUMER_PROPERTIES);
-      String rheosServiceUrl = properties.getProperty(StreamConnectorConfig.RHEOS_SERVICES_URLS);
+      String rheosServiceUrl = consumerProperties.getProperty(StreamConnectorConfig.RHEOS_SERVICES_URLS);
       config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, rheosServiceUrl);
       decoder = new GenericRecordDomainDataDecoder(config);
+      encoderFactory = EncoderFactory.get();
+      Properties producerProperties = PropertyMgr.getInstance()
+              .loadProperty(PropertyConstants.UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES);
+      config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, rheosServiceUrl);
+      SchemaRegistryAwareAvroSerializerHelper<GenericRecord> serializerHelper =
+              new SchemaRegistryAwareAvroSerializerHelper<>(config, GenericRecord.class);
+      String schemaName = (String) producerProperties.get(RheosConstants.RHEOS_TOPIC_SCHEMA);
+      schemaId = serializerHelper.getSchemaId(schemaName);
+      schema = serializerHelper.getSchema(schemaName);
+      producer = (String) producerProperties.get(RheosConstants.RHEOS_PRODUCER);
+      Properties topicProperties = PropertyMgr.getInstance()
+              .loadProperty(PropertyConstants.UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES);
+      topic = topicProperties.getProperty(PropertyConstants.TOPIC);
     }
 
     @Override
-    public GenericRecord map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
-      RheosEvent rheosEvent = deserializer.deserialize(consumerRecord.topic(), consumerRecord.value());
-      return decoder.decode(rheosEvent);
+    public void flatMap(ConsumerRecord<byte[], byte[]> consumerRecord, Collector<Tuple3<String, Long, byte[]>> out) throws Exception {
+      RheosEvent sourceRheosEvent = deserializer.deserialize(consumerRecord.topic(), consumerRecord.value());
+      GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
+      boolean isValid = filter(sourceRecord);
+      if (!isValid) {
+        return;
+      }
+      int pageId = (int) sourceRecord.get(TransformerConstants.PAGE_ID);
+      String pageName = getField(sourceRecord, TransformerConstants.PAGE_NAME, null);
+      ChannelIdEnum channelType = parseChannelType(sourceRecord);
+      String channelTypeStr = Objects.requireNonNull(channelType).getLogicalChannel().getAvro().name();
+      String channelActionStr = pageId == PAGE_ID_ROVER_CLICK ? ChannelAction.CLICK.name() : ChannelAction.EMAIL_OPEN.name();
+      BehaviorMessage behaviorMessage = buildMessage(sourceRecord, pageId, pageName, channelActionStr, channelTypeStr);
+      RheosEvent rheosEvent = getRheosEvent(behaviorMessage);
+      out.collect(new Tuple3<>(topic, DEFAULT_SNAPSHOT_ID, serializeRheosEvent(rheosEvent)));
     }
-  }
 
-  /**
-   * Currently, we only need click and email-opens of site_email and marketing_email
-   */
-  protected static class FilterFunction extends RichFilterFunction<GenericRecord> {
-    @Override
-    public boolean filter(GenericRecord sourceRecord) throws Exception {
+    /**
+     * Currently, we only need click and email-opens of site_email and marketing_email
+     * @param sourceRecord bot record
+     * @return send to unified tracking or not
+     */
+    private boolean filter(GenericRecord sourceRecord) {
       if (sourceRecord.get(TransformerConstants.PAGE_ID) == null) {
         return false;
       }
@@ -157,49 +182,6 @@ public class UnifiedTrackingBotTransformApp
       }
       // only need rover email open
       return pageId == PAGE_ID_EMAIL_OPEN && PAGE_NAME_ROVER_EMAIL_OPEN.equals(pageName);
-    }
-  }
-
-  /**
-   * Convert generic record to unified tracking message
-   */
-  protected static class TransformFunction extends RichMapFunction<GenericRecord, Tuple3<String, Long, byte[]>> {
-    private transient EncoderFactory encoderFactory;
-    private int schemaId;
-    private transient Schema schema;
-    private String producer;
-    private String topic;
-
-    @Override
-    public void open(Configuration parameters) throws Exception {
-      super.open(parameters);
-      encoderFactory = EncoderFactory.get();
-      Map<String, Object> config = new HashMap<>();
-      Properties producerProperties = PropertyMgr.getInstance()
-              .loadProperty(PropertyConstants.UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES);
-      String rheosServiceUrl = producerProperties.getProperty(StreamConnectorConfig.RHEOS_SERVICES_URLS);
-      config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, rheosServiceUrl);
-      SchemaRegistryAwareAvroSerializerHelper<GenericRecord> serializerHelper =
-              new SchemaRegistryAwareAvroSerializerHelper<>(config, GenericRecord.class);
-      String schemaName = (String) producerProperties.get(RheosConstants.RHEOS_TOPIC_SCHEMA);
-      schemaId = serializerHelper.getSchemaId(schemaName);
-      schema = serializerHelper.getSchema(schemaName);
-      producer = (String) producerProperties.get(RheosConstants.RHEOS_PRODUCER);
-      Properties topicProperties = PropertyMgr.getInstance()
-              .loadProperty(PropertyConstants.UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES);
-      topic = topicProperties.getProperty(PropertyConstants.TOPIC);
-    }
-
-    @Override
-    public Tuple3<String, Long, byte[]> map(GenericRecord sourceRecord) throws Exception {
-      int pageId = (int) sourceRecord.get(TransformerConstants.PAGE_ID);
-      String pageName = getField(sourceRecord, TransformerConstants.PAGE_NAME, null);
-      ChannelIdEnum channelType = parseChannelType(sourceRecord);
-      String channelTypeStr = Objects.requireNonNull(channelType).getLogicalChannel().getAvro().name();
-      String channelActionStr = pageId == PAGE_ID_ROVER_CLICK ? ChannelAction.CLICK.name() : ChannelAction.EMAIL_OPEN.name();
-      BehaviorMessage behaviorMessage = buildMessage(sourceRecord, pageId, pageName, channelActionStr, channelTypeStr);
-      RheosEvent rheosEvent = getRheosEvent(behaviorMessage);
-      return new Tuple3<>(topic, DEFAULT_SNAPSHOT_ID, serializeRheosEvent(rheosEvent));
     }
 
     public RheosEvent getRheosEvent(GenericRecord v) {
