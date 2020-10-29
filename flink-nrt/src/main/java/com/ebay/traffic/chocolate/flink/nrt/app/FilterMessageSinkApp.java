@@ -5,7 +5,7 @@ import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV5;
 import com.ebay.traffic.chocolate.flink.nrt.constant.DateConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
-import com.ebay.traffic.chocolate.flink.nrt.deserialization.DefaultKafkaDeserializationSchema;
+import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichMapFunction;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import io.ebay.rheos.schema.event.RheosEvent;
