@@ -1,0 +1,307 @@
+{
+  "type": "record",
+  "name": "UnifiedTrackingEvent",
+  "namespace": "com.ebay.app.raptor.chocolate.avro.versions",
+  "doc": " Unified tracking topic schema",
+  "fields": [
+    {
+      "name": "rheosHeader",
+      "type": {
+        "type": "record",
+        "name": "RheosHeader",
+        "fields": [
+          {
+            "name": "eventCreateTimestamp",
+            "type": "long"
+          },
+          {
+            "name": "eventSentTimestamp",
+            "type": "long"
+          },
+          {
+            "name": "schemaId",
+            "type": "int"
+          },
+          {
+            "name": "eventId",
+            "type": [
+              "null",
+              {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            ]
+          },
+          {
+            "name": "producerId",
+            "type": {
+              "type": "string",
+              "avro.java.string": "String"
+            }
+          }
+        ]
+      },
+      "doc": "Rheos header"
+    },
+    {
+    	"name": "producer_event_id",
+    	"type": "string",
+      "doc" : "ID of the event by producer"
+   	},
+    {
+    	"name": "event_ts",
+    	"type": "long",
+        "doc" : "Event received timestamp"
+    },
+    {
+      "name": "rlog_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "tracking_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc":"ID to associate user behavior and dilivery",
+      "default": ""
+    },
+    {
+      "name": "user_id",
+      "type": [
+        "null",
+        "long"
+      ],
+      "doc":"Oracle id",
+      "default": ""
+    },
+    {
+      "name": "public_user_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc":"public user id",
+      "default": ""
+    },
+    {
+      "name": "encrypted_user_id",
+      "type": [
+        "null",
+        "long"
+      ],
+      "doc":"Encrypted user id in email open and click url",
+      "default": ""
+    },
+    {
+      "name": "guid",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "idfa",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "gadid",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "device_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "channel_type",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "action_type",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "partner_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "campaign_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "rotation_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "site_id",
+      "type": [
+        "null",
+        "int"
+      ],
+      "default": ""
+    },
+    {
+      "name": "url",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "referer",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "user_agent",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "device_family",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "device_type",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "browser_family",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "browser_version",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "os_family",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "os_version",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "app_version",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "server",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "remote_ip",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "page_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "geo_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "is_bot",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+		"name": "payload",
+        "type": {
+            "type": "map",
+            "values": "string"
+        }
+	  }
+  ]
+}
