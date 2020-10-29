@@ -14,8 +14,8 @@ import org.apache.avro.message.SchemaStore;
 /**  Unified tracking topic schema */
 @org.apache.avro.specific.AvroGenerated
 public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 2748033851222870868L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UnifiedTrackingEvent\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"doc\":\" Unified tracking topic schema\",\"fields\":[{\"name\":\"rheosHeader\",\"type\":{\"type\":\"record\",\"name\":\"RheosHeader\",\"fields\":[{\"name\":\"eventCreateTimestamp\",\"type\":\"long\"},{\"name\":\"eventSentTimestamp\",\"type\":\"long\"},{\"name\":\"schemaId\",\"type\":\"int\"},{\"name\":\"eventId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"producerId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}]},\"doc\":\"Rheos header\"},{\"name\":\"producer_event_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by producer\"},{\"name\":\"event_ts\",\"type\":\"long\",\"doc\":\"Event received timestamp\"},{\"name\":\"rlog_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"tracking_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"ID to associate user behavior and dilivery\",\"default\":\"\"},{\"name\":\"user_id\",\"type\":[\"null\",\"long\"],\"doc\":\"Oracle id\",\"default\":\"\"},{\"name\":\"public_user_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"public user id\",\"default\":\"\"},{\"name\":\"encrypted_user_id\",\"type\":[\"null\",\"long\"],\"doc\":\"Encrypted user id in email open and click url\",\"default\":\"\"},{\"name\":\"guid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"idfa\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"gadid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"device_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"channel_type\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"action_type\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"partner_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"campaign_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"rotation_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"site_id\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"url\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"referer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"user_agent\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"device_family\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"device_type\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browser_family\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browser_version\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"os_family\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"os_version\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"app_version\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"server\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"remote_ip\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"page_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"geo_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"is_bot\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"payload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}}]}");
+  private static final long serialVersionUID = 5870317428942769082L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UnifiedTrackingEvent\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"doc\":\" Unified tracking topic schema\",\"fields\":[{\"name\":\"rheosHeader\",\"type\":{\"type\":\"record\",\"name\":\"RheosHeader\",\"fields\":[{\"name\":\"eventCreateTimestamp\",\"type\":\"long\"},{\"name\":\"eventSentTimestamp\",\"type\":\"long\"},{\"name\":\"schemaId\",\"type\":\"int\"},{\"name\":\"eventId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"producerId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}]},\"doc\":\"Rheos header\"},{\"name\":\"producer_event_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by producer\"},{\"name\":\"event_ts\",\"type\":\"long\",\"doc\":\"Event received timestamp\"},{\"name\":\"rlog_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"tracking_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"ID to associate user behavior and dilivery\",\"default\":\"\"},{\"name\":\"user_id\",\"type\":[\"null\",\"long\"],\"doc\":\"Oracle id\",\"default\":\"\"},{\"name\":\"public_user_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"public user id\",\"default\":\"\"},{\"name\":\"encrypted_user_id\",\"type\":[\"null\",\"long\"],\"doc\":\"Encrypted user id in email open and click url\",\"default\":\"\"},{\"name\":\"guid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"idfa\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"gadid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"device_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"channel_type\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"action_type\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"partner_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"campaign_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"rotation_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"site_id\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"url\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"referer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"user_agent\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"device_family\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"device_type\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browser_family\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browser_version\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"os_family\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"os_version\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"app_version\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"server\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"remote_ip\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"page_id\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"geo_id\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"is_bot\",\"type\":\"boolean\",\"default\":\"false\"},{\"name\":\"payload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -89,9 +89,9 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
    private java.lang.String app_version;
    private java.lang.String server;
    private java.lang.String remote_ip;
-   private java.lang.String page_id;
-   private java.lang.String geo_id;
-   private java.lang.String is_bot;
+   private java.lang.Integer page_id;
+   private java.lang.Integer geo_id;
+   private boolean is_bot;
    private java.util.Map<java.lang.String,java.lang.String> payload;
 
   /**
@@ -138,7 +138,7 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
    * @param is_bot The new value for is_bot
    * @param payload The new value for payload
    */
-  public UnifiedTrackingEvent(com.ebay.app.raptor.chocolate.avro.versions.RheosHeader rheosHeader, java.lang.String producer_event_id, java.lang.Long event_ts, java.lang.String rlog_id, java.lang.String tracking_id, java.lang.Long user_id, java.lang.String public_user_id, java.lang.Long encrypted_user_id, java.lang.String guid, java.lang.String idfa, java.lang.String gadid, java.lang.String device_id, java.lang.String channel_type, java.lang.String action_type, java.lang.String partner_id, java.lang.String campaign_id, java.lang.String rotation_id, java.lang.Integer site_id, java.lang.String url, java.lang.String referer, java.lang.String user_agent, java.lang.String device_family, java.lang.String device_type, java.lang.String browser_family, java.lang.String browser_version, java.lang.String os_family, java.lang.String os_version, java.lang.String app_version, java.lang.String server, java.lang.String remote_ip, java.lang.String page_id, java.lang.String geo_id, java.lang.String is_bot, java.util.Map<java.lang.String,java.lang.String> payload) {
+  public UnifiedTrackingEvent(com.ebay.app.raptor.chocolate.avro.versions.RheosHeader rheosHeader, java.lang.String producer_event_id, java.lang.Long event_ts, java.lang.String rlog_id, java.lang.String tracking_id, java.lang.Long user_id, java.lang.String public_user_id, java.lang.Long encrypted_user_id, java.lang.String guid, java.lang.String idfa, java.lang.String gadid, java.lang.String device_id, java.lang.String channel_type, java.lang.String action_type, java.lang.String partner_id, java.lang.String campaign_id, java.lang.String rotation_id, java.lang.Integer site_id, java.lang.String url, java.lang.String referer, java.lang.String user_agent, java.lang.String device_family, java.lang.String device_type, java.lang.String browser_family, java.lang.String browser_version, java.lang.String os_family, java.lang.String os_version, java.lang.String app_version, java.lang.String server, java.lang.String remote_ip, java.lang.Integer page_id, java.lang.Integer geo_id, java.lang.Boolean is_bot, java.util.Map<java.lang.String,java.lang.String> payload) {
     this.rheosHeader = rheosHeader;
     this.producer_event_id = producer_event_id;
     this.event_ts = event_ts;
@@ -251,9 +251,9 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
     case 27: app_version = (java.lang.String)value$; break;
     case 28: server = (java.lang.String)value$; break;
     case 29: remote_ip = (java.lang.String)value$; break;
-    case 30: page_id = (java.lang.String)value$; break;
-    case 31: geo_id = (java.lang.String)value$; break;
-    case 32: is_bot = (java.lang.String)value$; break;
+    case 30: page_id = (java.lang.Integer)value$; break;
+    case 31: geo_id = (java.lang.Integer)value$; break;
+    case 32: is_bot = (java.lang.Boolean)value$; break;
     case 33: payload = (java.util.Map<java.lang.String,java.lang.String>)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
@@ -750,7 +750,7 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
    * Gets the value of the 'page_id' field.
    * @return The value of the 'page_id' field.
    */
-  public java.lang.String getPageId() {
+  public java.lang.Integer getPageId() {
     return page_id;
   }
 
@@ -758,7 +758,7 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
    * Sets the value of the 'page_id' field.
    * @param value the value to set.
    */
-  public void setPageId(java.lang.String value) {
+  public void setPageId(java.lang.Integer value) {
     this.page_id = value;
   }
 
@@ -766,7 +766,7 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
    * Gets the value of the 'geo_id' field.
    * @return The value of the 'geo_id' field.
    */
-  public java.lang.String getGeoId() {
+  public java.lang.Integer getGeoId() {
     return geo_id;
   }
 
@@ -774,7 +774,7 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
    * Sets the value of the 'geo_id' field.
    * @param value the value to set.
    */
-  public void setGeoId(java.lang.String value) {
+  public void setGeoId(java.lang.Integer value) {
     this.geo_id = value;
   }
 
@@ -782,7 +782,7 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
    * Gets the value of the 'is_bot' field.
    * @return The value of the 'is_bot' field.
    */
-  public java.lang.String getIsBot() {
+  public java.lang.Boolean getIsBot() {
     return is_bot;
   }
 
@@ -790,7 +790,7 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
    * Sets the value of the 'is_bot' field.
    * @param value the value to set.
    */
-  public void setIsBot(java.lang.String value) {
+  public void setIsBot(java.lang.Boolean value) {
     this.is_bot = value;
   }
 
@@ -880,9 +880,9 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
     private java.lang.String app_version;
     private java.lang.String server;
     private java.lang.String remote_ip;
-    private java.lang.String page_id;
-    private java.lang.String geo_id;
-    private java.lang.String is_bot;
+    private java.lang.Integer page_id;
+    private java.lang.Integer geo_id;
+    private boolean is_bot;
     private java.util.Map<java.lang.String,java.lang.String> payload;
 
     /** Creates a new Builder */
@@ -2421,7 +2421,7 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
       * Gets the value of the 'page_id' field.
       * @return The value.
       */
-    public java.lang.String getPageId() {
+    public java.lang.Integer getPageId() {
       return page_id;
     }
 
@@ -2430,7 +2430,7 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
       * @param value The value of 'page_id'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingEvent.Builder setPageId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingEvent.Builder setPageId(java.lang.Integer value) {
       validate(fields()[30], value);
       this.page_id = value;
       fieldSetFlags()[30] = true;
@@ -2460,7 +2460,7 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
       * Gets the value of the 'geo_id' field.
       * @return The value.
       */
-    public java.lang.String getGeoId() {
+    public java.lang.Integer getGeoId() {
       return geo_id;
     }
 
@@ -2469,7 +2469,7 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
       * @param value The value of 'geo_id'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingEvent.Builder setGeoId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingEvent.Builder setGeoId(java.lang.Integer value) {
       validate(fields()[31], value);
       this.geo_id = value;
       fieldSetFlags()[31] = true;
@@ -2499,7 +2499,7 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
       * Gets the value of the 'is_bot' field.
       * @return The value.
       */
-    public java.lang.String getIsBot() {
+    public java.lang.Boolean getIsBot() {
       return is_bot;
     }
 
@@ -2508,7 +2508,7 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
       * @param value The value of 'is_bot'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingEvent.Builder setIsBot(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingEvent.Builder setIsBot(boolean value) {
       validate(fields()[32], value);
       this.is_bot = value;
       fieldSetFlags()[32] = true;
@@ -2529,7 +2529,6 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingEvent.Builder clearIsBot() {
-      is_bot = null;
       fieldSetFlags()[32] = false;
       return this;
     }
@@ -2612,9 +2611,9 @@ public class UnifiedTrackingEvent extends org.apache.avro.specific.SpecificRecor
         record.app_version = fieldSetFlags()[27] ? this.app_version : (java.lang.String) defaultValue(fields()[27]);
         record.server = fieldSetFlags()[28] ? this.server : (java.lang.String) defaultValue(fields()[28]);
         record.remote_ip = fieldSetFlags()[29] ? this.remote_ip : (java.lang.String) defaultValue(fields()[29]);
-        record.page_id = fieldSetFlags()[30] ? this.page_id : (java.lang.String) defaultValue(fields()[30]);
-        record.geo_id = fieldSetFlags()[31] ? this.geo_id : (java.lang.String) defaultValue(fields()[31]);
-        record.is_bot = fieldSetFlags()[32] ? this.is_bot : (java.lang.String) defaultValue(fields()[32]);
+        record.page_id = fieldSetFlags()[30] ? this.page_id : (java.lang.Integer) defaultValue(fields()[30]);
+        record.geo_id = fieldSetFlags()[31] ? this.geo_id : (java.lang.Integer) defaultValue(fields()[31]);
+        record.is_bot = fieldSetFlags()[32] ? this.is_bot : (java.lang.Boolean) defaultValue(fields()[32]);
         record.payload = fieldSetFlags()[33] ? this.payload : (java.util.Map<java.lang.String,java.lang.String>) defaultValue(fields()[33]);
         return record;
       } catch (java.lang.Exception e) {

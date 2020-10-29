@@ -277,7 +277,7 @@
       "name": "page_id",
       "type": [
         "null",
-        "string"
+        "int"
       ],
       "default": ""
     },
@@ -285,16 +285,14 @@
       "name": "geo_id",
       "type": [
         "null",
-        "string"
+        "int"
       ],
       "default": ""
     },
     {
       "name": "is_bot",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": "boolean",
+      "default" : "false"
     },
     {
 		"name": "payload",
