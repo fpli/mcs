@@ -2,6 +2,8 @@ package com.ebay.traffic.chocolate.flink.nrt.app;
 
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import io.ebay.rheos.kafka.client.StreamConnectorConfig;
+import io.ebay.rheos.schema.avro.GenericRecordDomainDataDecoder;
+import io.ebay.rheos.schema.avro.RheosEventDeserializer;
 import io.ebay.rheos.schema.avro.SchemaRegistryAwareAvroSerializerHelper;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.Schema;
@@ -34,10 +36,18 @@ import static org.mockito.Mockito.when;
 
 public class UnifiedTrackingBotTransformAppTest {
   private UnifiedTrackingBotTransformApp unifiedTrackingBotTransformApp;
+  private SchemaRegistryAwareAvroSerializerHelper<GenericRecord> serializerHelper;
+  private GenericRecordDomainDataDecoder decoder;
+  private RheosEventDeserializer deserializer;
 
   @Before
   public void setUp() throws Exception {
     unifiedTrackingBotTransformApp = new UnifiedTrackingBotTransformApp();
+    Map<String, Object> config = new HashMap<>();
+    config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, "https://rheos-services.qa.ebay.com");
+    serializerHelper = new SchemaRegistryAwareAvroSerializerHelper<>(config, GenericRecord.class);
+    deserializer = new RheosEventDeserializer();
+    decoder = new GenericRecordDomainDataDecoder(config);
   }
 
   @Test
@@ -101,10 +111,6 @@ public class UnifiedTrackingBotTransformAppTest {
   }
 
   private RheosEvent createRheosEvent() {
-    Map<String, Object> config = new HashMap<>();
-    config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, "https://rheos-services.qa.ebay.com");
-    SchemaRegistryAwareAvroSerializerHelper<GenericRecord> serializerHelper =
-            new SchemaRegistryAwareAvroSerializerHelper<>(config, GenericRecord.class);
     int schemaId = serializerHelper.getSchemaId("behavior.pulsar.sojevent.schema");
     Schema schema = serializerHelper.getSchema(schemaId);
 
@@ -204,12 +210,13 @@ public class UnifiedTrackingBotTransformAppTest {
     ConcurrentLinkedQueue<Object> output = testHarness.getOutput();
     assertEquals(2, output.size());
 
-    List<Long> actual = output.stream().map(record -> ((StreamRecord<Tuple3<String, Long, byte[]>>) record).getValue().f1).collect(Collectors.toList());
+    StreamRecord<Tuple3<String, Long, byte[]>> first = (StreamRecord<Tuple3<String, Long, byte[]>>) output.poll();
+    assertEquals(Long.valueOf(-1L), first.getValue().f1);
+    assertEquals("Rover_Click_Bot", String.valueOf(deserializeGenericRecord("marketing.tracking.staging.behavior", first.getValue().f2).get("pageName")));
 
-    List<Long> expected = new ArrayList<>();
-    expected.add(-1L);
-    expected.add(-1L);
-    assertEquals(expected, actual);
+    StreamRecord<Tuple3<String, Long, byte[]>> secord = (StreamRecord<Tuple3<String, Long, byte[]>>) output.poll();
+    assertEquals(Long.valueOf(-1L), secord.getValue().f1);
+    assertEquals("Rover_Open_Bot", String.valueOf(deserializeGenericRecord("marketing.tracking.staging.behavior", secord.getValue().f2).get("pageName")));
   }
 
   @Test
@@ -265,5 +272,10 @@ public class UnifiedTrackingBotTransformAppTest {
     when(genericRecord.get("urlQueryString")).thenReturn(new Utf8("/roveropen"));
 
     assertNull(UnifiedTrackingBotTransformApp.parseChannelType(genericRecord));
+  }
+
+  private GenericRecord deserializeGenericRecord(String topic, byte[] value) {
+    RheosEvent sourceRheosEvent = deserializer.deserialize(topic, value);
+    return decoder.decode(sourceRheosEvent);
   }
 }

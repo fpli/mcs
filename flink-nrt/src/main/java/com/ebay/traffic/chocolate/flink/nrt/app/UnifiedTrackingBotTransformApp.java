@@ -57,6 +57,8 @@ public class UnifiedTrackingBotTransformApp
   private static final int PAGE_ID_EMAIL_OPEN = 3962;
   private static final String PAGE_NAME_ROVER_EMAIL_OPEN = "roveropen";
   private static final long DEFAULT_SNAPSHOT_ID = -1L;
+  private static final String PAGE_NAME_ROVER_CLICK_BOT = "Rover_Click_Bot";
+  private static final String PAGE_NAME_ROVER_OPEN_BOT = "Rover_Open_Bot";
 
   public static void main(String[] args) throws Exception {
     UnifiedTrackingBotTransformApp transformApp = new UnifiedTrackingBotTransformApp();
@@ -151,10 +153,17 @@ public class UnifiedTrackingBotTransformApp
         return;
       }
       int pageId = (int) sourceRecord.get(TransformerConstants.PAGE_ID);
-      String pageName = getField(sourceRecord, TransformerConstants.PAGE_NAME, null);
+      String pageName;
+      String channelActionStr;
+      if (pageId == PAGE_ID_ROVER_CLICK) {
+        pageName = PAGE_NAME_ROVER_CLICK_BOT;
+        channelActionStr = ChannelAction.CLICK.name();
+      } else {
+        pageName = PAGE_NAME_ROVER_OPEN_BOT;
+        channelActionStr = ChannelAction.EMAIL_OPEN.name();
+      }
       ChannelIdEnum channelType = parseChannelType(sourceRecord);
       String channelTypeStr = Objects.requireNonNull(channelType).getLogicalChannel().getAvro().name();
-      String channelActionStr = pageId == PAGE_ID_ROVER_CLICK ? ChannelAction.CLICK.name() : ChannelAction.EMAIL_OPEN.name();
       BehaviorMessage behaviorMessage = buildMessage(sourceRecord, pageId, pageName, channelActionStr, channelTypeStr);
       RheosEvent rheosEvent = getRheosEvent(behaviorMessage);
       out.collect(new Tuple3<>(topic, DEFAULT_SNAPSHOT_ID, serializeRheosEvent(rheosEvent)));
