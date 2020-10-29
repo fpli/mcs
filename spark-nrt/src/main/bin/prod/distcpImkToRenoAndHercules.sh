@@ -144,13 +144,31 @@ if [ -n "${today_all_files}" ]; then
   echo "distcp today_all_files_number"
   if [[ ${today_all_files_number} -gt 1 ]]; then
     hadoop jar chocolate-distcp-1.0-SNAPSHOT.jar -files core-site-target.xml,hdfs-site-target.xml,b_marketing_tracking_clients_PROD.keytab -copyFromInsecureToSecure -targetprinc b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM -targetkeytab b_marketing_tracking_clients_PROD.keytab -skipcrccheck -update ${today_all_files} ${RENO_DEST_PATH}
+    distcp_result_code=$?
+    echo "distcp_result_code:${distcp_result_code}"
+    if [ ${distcp_result_code} -ne 0 ]; then
+      echo "Fail to distcp from local to Apollo, please check!!!"
+      exit ${distcp_result_code};
+    fi
   else
     file_name=$(basename "${today_all_files}")
     hadoop jar chocolate-distcp-1.0-SNAPSHOT.jar -files core-site-target.xml,hdfs-site-target.xml,b_marketing_tracking_clients_PROD.keytab -copyFromInsecureToSecure -targetprinc b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM -targetkeytab b_marketing_tracking_clients_PROD.keytab -skipcrccheck -update ${today_all_files} ${RENO_DEST_PATH}/${file_name}
+    distcp_result_code=$?
+    echo "distcp_result_code:${distcp_result_code}"
+    if [ ${distcp_result_code} -ne 0 ]; then
+      echo "Fail to distcp from local to Apollo, please check!!!"
+      exit ${distcp_result_code};
+    fi
   fi
   /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls "${RENO_DEST_DIR}/dt=${today}" | grep -v "^$" | awk '{print $NF}' | grep "chocolate_"  >> ${apollo_file}
   # Apollo RNO to Hercules
   /datashare/mkttracking/tools/cake/bin/datamove_apollo_rno_to_hercules.sh ${RNO_PATH} ${HERCULES_PATH} ${JOB_NAME} ${ENV_PATH}
+  datamove_result_code=$?
+  echo "datamove_result_code:${datamove_result_code}"
+  if [ ${datamove_result_code} -ne 0 ]; then
+    echo "Fail to datamove from Apollo to Hercules, please check!!!"
+    exit ${datamove_result_code};
+  fi
 else
   echo "No file need to copy"
 fi
@@ -175,13 +193,31 @@ if [ -n "${yesterday_all_files}" ]; then
   echo "distcp yesterday_all_files"
   if [[ ${yesterday_all_files_number} -gt 1 ]]; then
     hadoop jar chocolate-distcp-1.0-SNAPSHOT.jar -files core-site-target.xml,hdfs-site-target.xml,b_marketing_tracking_clients_PROD.keytab -copyFromInsecureToSecure -targetprinc b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM -targetkeytab b_marketing_tracking_clients_PROD.keytab -skipcrccheck -update ${yesterday_all_files} ${RENO_DEST_PATH}
+    distcp_result_code=$?
+    echo "distcp_result_code:${distcp_result_code}"
+    if [ ${distcp_result_code} -ne 0 ]; then
+      echo "Fail to distcp from local to Apollo, please check!!!"
+      exit ${distcp_result_code};
+    fi
   else
     file_name=$(basename "${yesterday_all_files}")
     hadoop jar chocolate-distcp-1.0-SNAPSHOT.jar -files core-site-target.xml,hdfs-site-target.xml,b_marketing_tracking_clients_PROD.keytab -copyFromInsecureToSecure -targetprinc b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM -targetkeytab b_marketing_tracking_clients_PROD.keytab -skipcrccheck -update ${yesterday_all_files} ${RENO_DEST_PATH}/${file_name}
+    distcp_result_code=$?
+    echo "distcp_result_code:${distcp_result_code}"
+    if [ ${distcp_result_code} -ne 0 ]; then
+      echo "Fail to distcp from local to Apollo, please check!!!"
+      exit ${distcp_result_code};
+    fi
   fi
   /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls "${RENO_DEST_DIR}/dt=${yesterday}" | grep -v "^$" | awk '{print $NF}' | grep "chocolate_"  >> ${apollo_file}
   # Apollo RNO to Hercules
   /datashare/mkttracking/tools/cake/bin/datamove_apollo_rno_to_hercules.sh ${RNO_PATH} ${HERCULES_PATH} ${JOB_NAME} ${ENV_PATH}
+  datamove_result_code=$?
+  echo "datamove_result_code:${datamove_result_code}"
+  if [ ${datamove_result_code} -ne 0 ]; then
+    echo "Fail to datamove from Apollo to Hercules, please check!!!"
+    exit ${datamove_result_code};
+  fi
 else
   echo "No file need to copy"
 fi

@@ -55,7 +55,7 @@ RENO_DISTCP_DIR='/datashare/mkttracking/tools/apache/distcp/apollo'
 LOCAL_TMP_DIR='/datashare/mkttracking/data/epn-nrt/distcpTmp'
 echo "HOST_NAME ：${HOST_NAME}"
 echo "RENO_DISTCP_DIR ：${RENO_DISTCP_DIR}"
-dt_hour=$(date -d '1 hour ago' +%Y-%m-%d%H)
+dt_hour=$(date +%Y-%m-%d%H)
 dt=${dt_hour:0:10}
 today=${dt}
 yesterday=$(date --date="${today} -1days" +%Y-%m-%d)
@@ -99,9 +99,20 @@ if [ ${meta_yesterday_files_nums} -gt ${reno_yesterday_files_nums} ]
 then
   /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p "${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}"
   hadoop jar chocolate-distcp-1.0-SNAPSHOT.jar -files core-site-target.xml,hdfs-site-target.xml,b_marketing_tracking_clients_PROD.keytab -copyFromInsecureToSecure -targetprinc b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM -targetkeytab b_marketing_tracking_clients_PROD.keytab -skipcrccheck -update ${META_PATH} ${RENO_DEST_PATH}
+  distcp_result_code=$?
+  echo "distcp_result_code:${distcp_result_code}"
+  if [ ${distcp_result_code} -ne 0 ]; then
+    echo "Fail to distcp from local to Apollo, please check!!!"
+    exit ${distcp_result_code};
+  fi
   # Apollo RNO to Hercules
   /datashare/mkttracking/tools/cake/bin/datamove_apollo_rno_to_hercules.sh ${RNO_PATH} ${HERCULES_PATH} ${JOB_NAME} ${ENV_PATH}
-
+  datamove_result_code=$?
+  echo "datamove_result_code:${datamove_result_code}"
+  if [ ${datamove_result_code} -ne 0 ]; then
+    echo "Fail to datamove from Apollo to Hercules, please check!!!"
+    exit ${datamove_result_code};
+  fi
   /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls "${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams > ${apollo_file}
   /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls "${HERCULES_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams > ${hercules_file}
 fi
@@ -127,9 +138,20 @@ if [ ${meta_today_files_nums} -gt ${reno_today_files_nums} ]
 then
   /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p "${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today}"
   hadoop jar chocolate-distcp-1.0-SNAPSHOT.jar -files core-site-target.xml,hdfs-site-target.xml,b_marketing_tracking_clients_PROD.keytab -copyFromInsecureToSecure -targetprinc b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM -targetkeytab b_marketing_tracking_clients_PROD.keytab -skipcrccheck -update ${META_PATH} ${RENO_DEST_PATH}
+  distcp_result_code=$?
+  echo "distcp_result_code:${distcp_result_code}"
+  if [ ${distcp_result_code} -ne 0 ]; then
+    echo "Fail to distcp from local to Apollo, please check!!!"
+    exit ${distcp_result_code};
+  fi
   # Apollo RNO to Hercules
   /datashare/mkttracking/tools/cake/bin/datamove_apollo_rno_to_hercules.sh ${RNO_PATH} ${HERCULES_PATH} ${JOB_NAME} ${ENV_PATH}
-
+  datamove_result_code=$?
+  echo "datamove_result_code:${datamove_result_code}"
+  if [ ${datamove_result_code} -ne 0 ]; then
+    echo "Fail to datamove from Apollo to Hercules, please check!!!"
+    exit ${datamove_result_code};
+  fi
   /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls "${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams >> ${apollo_file}
   /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls "${HERCULES_DEST_DIR}/${DEST_DIR_PREFIX}=${today}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams >> ${hercules_file}
 fi
