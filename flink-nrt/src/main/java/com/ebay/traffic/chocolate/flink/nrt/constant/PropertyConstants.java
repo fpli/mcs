@@ -4,6 +4,10 @@ public class PropertyConstants {
   public static final String ELASTICSEARCH_INDEX_PREFIX = "elasticsearch.index.prefix";
   public static final String ELASTICSEARCH_URL = "elasticsearch.url";
 
+  public static final String SHERLOCKIO_NAMESPACE = "sherlockio.namespace";
+  public static final String SHERLOCKIO_ENDPOINT = "sherlockio.endpoint";
+  public static final String SHERLOCKIO_USER = "sherlockio.user";
+
   public static final String TOPIC = "topic";
   public static final String TOPIC_IMK_TRCKNG_EVENT_WIDE = "topic";
   public static final String TOPIC_IMK_RVR_TRCKNG_EVENT = "topic.imk-rvr-trckng-event";
