@@ -566,29 +566,12 @@ public class BehaviorMessageParser {
   }
 
   /**
-   * Remove one url parameter
-   */
-  private String removeParam(String url, String param) throws URISyntaxException {
-    URIBuilder uriBuilder = new URIBuilder(url);
-    List<NameValuePair> queryParameters = uriBuilder.getQueryParams();
-    for (Iterator<NameValuePair> queryParameterItr = queryParameters.iterator(); queryParameterItr.hasNext(); ) {
-      NameValuePair queryParameter = queryParameterItr.next();
-      if (queryParameter.getName().equals(param)) {
-        queryParameterItr.remove();
-      }
-    }
-    uriBuilder.setParameters(queryParameters);
-
-    return uriBuilder.build().toString();
-  }
-
-  /**
    * Remove choco_bs param if it exists
    */
   private String removeBsParam(MultiValueMap<String, String> parameters, String uri) {
     if (parameters.containsKey(Constants.CHOCO_BUYER_ACCESS_SITE_ID)) {
       try {
-        uri = removeParam(uri, Constants.CHOCO_BUYER_ACCESS_SITE_ID);
+        uri = UrlUtil.removeParam(uri, Constants.CHOCO_BUYER_ACCESS_SITE_ID);
       } catch (URISyntaxException e) {
         logger.warn("Error when deleting choco_bs", e);
       }
