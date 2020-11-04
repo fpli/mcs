@@ -414,15 +414,21 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
+    // get target url from originalUrl parameter
+    event.setReferrer("https://pages.qa.ebay.com/");
+    event.setTargetUrl("https://c.qa.ebay.com/marketingtracking/v1/pixel?mkcid=2&mkrid=710-123456-1234-6&mkevt=1&originalRef=https%3A%2F%2Fwww.google.com&originalUrl=https%3A%2F%2Fpages.qa.ebay.com%2Fsitemap.html");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
     // validate kafka message
     Thread.sleep(3000);
     KafkaSink.get().flush();
     Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
       LongDeserializer.class, ListenerMessageDeserializer.class);
     Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
-      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 1, 30 * 1000);
+      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 2, 30 * 1000);
     consumerPaidSearch.close();
-    assertEquals(1, listenerMessagesPaidSearch.size());
+    assertEquals(2, listenerMessagesPaidSearch.size());
   }
 
   @Test
