@@ -1,48 +1,9 @@
 {
   "type": "record",
-  "name": "UnifiedTrackingEvent",
+  "name": "UnifiedTrackingRheosEvent",
   "namespace": "com.ebay.app.raptor.chocolate.avro.versions",
   "doc": " Unified tracking topic schema",
   "fields": [
-    {
-      "name": "rheosHeader",
-      "type": {
-        "type": "record",
-        "name": "RheosHeader",
-        "fields": [
-          {
-            "name": "eventCreateTimestamp",
-            "type": "long"
-          },
-          {
-            "name": "eventSentTimestamp",
-            "type": "long"
-          },
-          {
-            "name": "schemaId",
-            "type": "int"
-          },
-          {
-            "name": "eventId",
-            "type": [
-              "null",
-              {
-                "type": "string",
-                "avro.java.string": "String"
-              }
-            ]
-          },
-          {
-            "name": "producerId",
-            "type": {
-              "type": "string",
-              "avro.java.string": "String"
-            }
-          }
-        ]
-      },
-      "doc": "Rheos header"
-    },
     {
     	"name": "producer_event_id",
     	"type": "string",
@@ -51,7 +12,12 @@
     {
     	"name": "event_ts",
     	"type": "long",
-        "doc" : "Event received timestamp"
+      "doc" : "Event received timestamp at the collection service"
+    },
+    {
+      "name": "producer_event_ts",
+      "type": "long",
+      "doc" : "Event created timestamp at producer side"
     },
     {
       "name": "rlog_id",
