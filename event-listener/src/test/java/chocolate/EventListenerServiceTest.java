@@ -414,7 +414,7 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
-    // get target url from originUrl parameter
+    // get target url from originalUrl parameter
     event.setReferrer("https://pages.qa.ebay.com/");
     event.setTargetUrl("https://c.qa.ebay.com/marketingtracking/v1/pixel?mkcid=2&mkrid=710-123456-1234-6&mkevt=1&originalRef=https%3A%2F%2Fwww.google.com&originalUrl=https%3A%2F%2Fpages.qa.ebay.com%2Fsitemap.html");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
