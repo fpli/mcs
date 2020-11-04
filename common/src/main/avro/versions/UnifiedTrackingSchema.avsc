@@ -5,22 +5,27 @@
   "doc": " Unified tracking topic schema",
   "fields": [
     {
-    	"name": "producer_event_id",
+      "name": "eventId",
+      "type": "string",
+      "doc" : "ID of the event by tracking collection service"
+    },
+    {
+    	"name": "producerEventId",
     	"type": "string",
       "doc" : "ID of the event by producer"
    	},
     {
-    	"name": "event_ts",
+    	"name": "eventTs",
     	"type": "long",
       "doc" : "Event received timestamp at the collection service"
     },
     {
-      "name": "producer_event_ts",
+      "name": "producerEventTs",
       "type": "long",
       "doc" : "Event created timestamp at producer side"
     },
     {
-      "name": "rlog_id",
+      "name": "rlogId",
       "type": [
         "null",
         "string"
@@ -28,7 +33,7 @@
       "default": ""
     },
     {
-      "name": "tracking_id",
+      "name": "trackingId",
       "type": [
         "null",
         "string"
@@ -37,7 +42,7 @@
       "default": ""
     },
     {
-      "name": "user_id",
+      "name": "userId",
       "type": [
         "null",
         "long"
@@ -46,7 +51,7 @@
       "default": ""
     },
     {
-      "name": "public_user_id",
+      "name": "publicUserId",
       "type": [
         "null",
         "string"
@@ -55,7 +60,7 @@
       "default": ""
     },
     {
-      "name": "encrypted_user_id",
+      "name": "encryptedUserId",
       "type": [
         "null",
         "long"
@@ -88,7 +93,7 @@
       "default": ""
     },
     {
-      "name": "device_id",
+      "name": "deviceId",
       "type": [
         "null",
         "string"
@@ -96,7 +101,7 @@
       "default": ""
     },
     {
-      "name": "channel_type",
+      "name": "channelType",
       "type": [
         "null",
         "string"
@@ -104,7 +109,7 @@
       "default": ""
     },
     {
-      "name": "action_type",
+      "name": "actionType",
       "type": [
         "null",
         "string"
@@ -112,7 +117,7 @@
       "default": ""
     },
     {
-      "name": "partner_id",
+      "name": "partnerId",
       "type": [
         "null",
         "string"
@@ -120,7 +125,7 @@
       "default": ""
     },
     {
-      "name": "campaign_id",
+      "name": "campaignId",
       "type": [
         "null",
         "string"
@@ -128,7 +133,7 @@
       "default": ""
     },
     {
-      "name": "rotation_id",
+      "name": "rotationId",
       "type": [
         "null",
         "string"
@@ -136,7 +141,7 @@
       "default": ""
     },
     {
-      "name": "site_id",
+      "name": "siteId",
       "type": [
         "null",
         "int"
@@ -160,7 +165,7 @@
       "default": ""
     },
     {
-      "name": "user_agent",
+      "name": "userAgent",
       "type": [
         "null",
         "string"
@@ -168,7 +173,7 @@
       "default": ""
     },
     {
-      "name": "device_family",
+      "name": "deviceFamily",
       "type": [
         "null",
         "string"
@@ -176,7 +181,7 @@
       "default": ""
     },
     {
-      "name": "device_type",
+      "name": "deviceType",
       "type": [
         "null",
         "string"
@@ -184,7 +189,7 @@
       "default": ""
     },
     {
-      "name": "browser_family",
+      "name": "browserFamily",
       "type": [
         "null",
         "string"
@@ -192,7 +197,7 @@
       "default": ""
     },
     {
-      "name": "browser_version",
+      "name": "browserVersion",
       "type": [
         "null",
         "string"
@@ -200,7 +205,7 @@
       "default": ""
     },
     {
-      "name": "os_family",
+      "name": "osFamily",
       "type": [
         "null",
         "string"
@@ -208,7 +213,7 @@
       "default": ""
     },
     {
-      "name": "os_version",
+      "name": "osVersion",
       "type": [
         "null",
         "string"
@@ -216,7 +221,15 @@
       "default": ""
     },
     {
-      "name": "app_version",
+      "name": "appVersion",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "service",
       "type": [
         "null",
         "string"
@@ -232,7 +245,7 @@
       "default": ""
     },
     {
-      "name": "remote_ip",
+      "name": "remoteIp",
       "type": [
         "null",
         "string"
@@ -240,7 +253,7 @@
       "default": ""
     },
     {
-      "name": "page_id",
+      "name": "pageId",
       "type": [
         "null",
         "int"
@@ -248,7 +261,7 @@
       "default": ""
     },
     {
-      "name": "geo_id",
+      "name": "geoId",
       "type": [
         "null",
         "int"
@@ -256,7 +269,7 @@
       "default": ""
     },
     {
-      "name": "is_bot",
+      "name": "isBot",
       "type": "boolean",
       "default" : "false"
     },

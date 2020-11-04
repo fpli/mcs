@@ -14,8 +14,8 @@ import org.apache.avro.message.SchemaStore;
 /**  Unified tracking topic schema */
 @org.apache.avro.specific.AvroGenerated
 public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 7239952115226335931L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UnifiedTrackingRheosEvent\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"doc\":\" Unified tracking topic schema\",\"fields\":[{\"name\":\"producer_event_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by producer\"},{\"name\":\"event_ts\",\"type\":\"long\",\"doc\":\"Event received timestamp at the collection service\"},{\"name\":\"producer_event_ts\",\"type\":\"long\",\"doc\":\"Event created timestamp at producer side\"},{\"name\":\"rlog_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"tracking_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"ID to associate user behavior and dilivery\",\"default\":\"\"},{\"name\":\"user_id\",\"type\":[\"null\",\"long\"],\"doc\":\"Oracle id\",\"default\":\"\"},{\"name\":\"public_user_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"public user id\",\"default\":\"\"},{\"name\":\"encrypted_user_id\",\"type\":[\"null\",\"long\"],\"doc\":\"Encrypted user id in email open and click url\",\"default\":\"\"},{\"name\":\"guid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"idfa\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"gadid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"device_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"channel_type\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"action_type\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"partner_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"campaign_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"rotation_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"site_id\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"url\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"referer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"user_agent\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"device_family\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"device_type\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browser_family\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browser_version\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"os_family\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"os_version\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"app_version\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"server\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"remote_ip\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"page_id\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"geo_id\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"is_bot\",\"type\":\"boolean\",\"default\":\"false\"},{\"name\":\"payload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}}]}");
+  private static final long serialVersionUID = 7352137945967607512L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UnifiedTrackingRheosEvent\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"doc\":\" Unified tracking topic schema\",\"fields\":[{\"name\":\"eventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by tracking collection service\"},{\"name\":\"producerEventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by producer\"},{\"name\":\"eventTs\",\"type\":\"long\",\"doc\":\"Event received timestamp at the collection service\"},{\"name\":\"producerEventTs\",\"type\":\"long\",\"doc\":\"Event created timestamp at producer side\"},{\"name\":\"rlogId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"trackingId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"ID to associate user behavior and dilivery\",\"default\":\"\"},{\"name\":\"userId\",\"type\":[\"null\",\"long\"],\"doc\":\"Oracle id\",\"default\":\"\"},{\"name\":\"publicUserId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"public user id\",\"default\":\"\"},{\"name\":\"encryptedUserId\",\"type\":[\"null\",\"long\"],\"doc\":\"Encrypted user id in email open and click url\",\"default\":\"\"},{\"name\":\"guid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"idfa\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"gadid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"channelType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"actionType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"partnerId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"campaignId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"rotationId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"siteId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"url\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"referer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"userAgent\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"appVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"service\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"server\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"remoteIp\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"pageId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"geoId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"isBot\",\"type\":\"boolean\",\"default\":\"false\"},{\"name\":\"payload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -52,46 +52,49 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
     return DECODER.decode(b);
   }
 
+  /** ID of the event by tracking collection service */
+   private java.lang.String eventId;
   /** ID of the event by producer */
-   private java.lang.String producer_event_id;
+   private java.lang.String producerEventId;
   /** Event received timestamp at the collection service */
-   private long event_ts;
+   private long eventTs;
   /** Event created timestamp at producer side */
-   private long producer_event_ts;
-   private java.lang.String rlog_id;
+   private long producerEventTs;
+   private java.lang.String rlogId;
   /** ID to associate user behavior and dilivery */
-   private java.lang.String tracking_id;
+   private java.lang.String trackingId;
   /** Oracle id */
-   private java.lang.Long user_id;
+   private java.lang.Long userId;
   /** public user id */
-   private java.lang.String public_user_id;
+   private java.lang.String publicUserId;
   /** Encrypted user id in email open and click url */
-   private java.lang.Long encrypted_user_id;
+   private java.lang.Long encryptedUserId;
    private java.lang.String guid;
    private java.lang.String idfa;
    private java.lang.String gadid;
-   private java.lang.String device_id;
-   private java.lang.String channel_type;
-   private java.lang.String action_type;
-   private java.lang.String partner_id;
-   private java.lang.String campaign_id;
-   private java.lang.String rotation_id;
-   private java.lang.Integer site_id;
+   private java.lang.String deviceId;
+   private java.lang.String channelType;
+   private java.lang.String actionType;
+   private java.lang.String partnerId;
+   private java.lang.String campaignId;
+   private java.lang.String rotationId;
+   private java.lang.Integer siteId;
    private java.lang.String url;
    private java.lang.String referer;
-   private java.lang.String user_agent;
-   private java.lang.String device_family;
-   private java.lang.String device_type;
-   private java.lang.String browser_family;
-   private java.lang.String browser_version;
-   private java.lang.String os_family;
-   private java.lang.String os_version;
-   private java.lang.String app_version;
+   private java.lang.String userAgent;
+   private java.lang.String deviceFamily;
+   private java.lang.String deviceType;
+   private java.lang.String browserFamily;
+   private java.lang.String browserVersion;
+   private java.lang.String osFamily;
+   private java.lang.String osVersion;
+   private java.lang.String appVersion;
+   private java.lang.String service;
    private java.lang.String server;
-   private java.lang.String remote_ip;
-   private java.lang.Integer page_id;
-   private java.lang.Integer geo_id;
-   private boolean is_bot;
+   private java.lang.String remoteIp;
+   private java.lang.Integer pageId;
+   private java.lang.Integer geoId;
+   private boolean isBot;
    private java.util.Map<java.lang.String,java.lang.String> payload;
 
   /**
@@ -103,75 +106,79 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
 
   /**
    * All-args constructor.
-   * @param producer_event_id ID of the event by producer
-   * @param event_ts Event received timestamp at the collection service
-   * @param producer_event_ts Event created timestamp at producer side
-   * @param rlog_id The new value for rlog_id
-   * @param tracking_id ID to associate user behavior and dilivery
-   * @param user_id Oracle id
-   * @param public_user_id public user id
-   * @param encrypted_user_id Encrypted user id in email open and click url
+   * @param eventId ID of the event by tracking collection service
+   * @param producerEventId ID of the event by producer
+   * @param eventTs Event received timestamp at the collection service
+   * @param producerEventTs Event created timestamp at producer side
+   * @param rlogId The new value for rlogId
+   * @param trackingId ID to associate user behavior and dilivery
+   * @param userId Oracle id
+   * @param publicUserId public user id
+   * @param encryptedUserId Encrypted user id in email open and click url
    * @param guid The new value for guid
    * @param idfa The new value for idfa
    * @param gadid The new value for gadid
-   * @param device_id The new value for device_id
-   * @param channel_type The new value for channel_type
-   * @param action_type The new value for action_type
-   * @param partner_id The new value for partner_id
-   * @param campaign_id The new value for campaign_id
-   * @param rotation_id The new value for rotation_id
-   * @param site_id The new value for site_id
+   * @param deviceId The new value for deviceId
+   * @param channelType The new value for channelType
+   * @param actionType The new value for actionType
+   * @param partnerId The new value for partnerId
+   * @param campaignId The new value for campaignId
+   * @param rotationId The new value for rotationId
+   * @param siteId The new value for siteId
    * @param url The new value for url
    * @param referer The new value for referer
-   * @param user_agent The new value for user_agent
-   * @param device_family The new value for device_family
-   * @param device_type The new value for device_type
-   * @param browser_family The new value for browser_family
-   * @param browser_version The new value for browser_version
-   * @param os_family The new value for os_family
-   * @param os_version The new value for os_version
-   * @param app_version The new value for app_version
+   * @param userAgent The new value for userAgent
+   * @param deviceFamily The new value for deviceFamily
+   * @param deviceType The new value for deviceType
+   * @param browserFamily The new value for browserFamily
+   * @param browserVersion The new value for browserVersion
+   * @param osFamily The new value for osFamily
+   * @param osVersion The new value for osVersion
+   * @param appVersion The new value for appVersion
+   * @param service The new value for service
    * @param server The new value for server
-   * @param remote_ip The new value for remote_ip
-   * @param page_id The new value for page_id
-   * @param geo_id The new value for geo_id
-   * @param is_bot The new value for is_bot
+   * @param remoteIp The new value for remoteIp
+   * @param pageId The new value for pageId
+   * @param geoId The new value for geoId
+   * @param isBot The new value for isBot
    * @param payload The new value for payload
    */
-  public UnifiedTrackingRheosEvent(java.lang.String producer_event_id, java.lang.Long event_ts, java.lang.Long producer_event_ts, java.lang.String rlog_id, java.lang.String tracking_id, java.lang.Long user_id, java.lang.String public_user_id, java.lang.Long encrypted_user_id, java.lang.String guid, java.lang.String idfa, java.lang.String gadid, java.lang.String device_id, java.lang.String channel_type, java.lang.String action_type, java.lang.String partner_id, java.lang.String campaign_id, java.lang.String rotation_id, java.lang.Integer site_id, java.lang.String url, java.lang.String referer, java.lang.String user_agent, java.lang.String device_family, java.lang.String device_type, java.lang.String browser_family, java.lang.String browser_version, java.lang.String os_family, java.lang.String os_version, java.lang.String app_version, java.lang.String server, java.lang.String remote_ip, java.lang.Integer page_id, java.lang.Integer geo_id, java.lang.Boolean is_bot, java.util.Map<java.lang.String,java.lang.String> payload) {
-    this.producer_event_id = producer_event_id;
-    this.event_ts = event_ts;
-    this.producer_event_ts = producer_event_ts;
-    this.rlog_id = rlog_id;
-    this.tracking_id = tracking_id;
-    this.user_id = user_id;
-    this.public_user_id = public_user_id;
-    this.encrypted_user_id = encrypted_user_id;
+  public UnifiedTrackingRheosEvent(java.lang.String eventId, java.lang.String producerEventId, java.lang.Long eventTs, java.lang.Long producerEventTs, java.lang.String rlogId, java.lang.String trackingId, java.lang.Long userId, java.lang.String publicUserId, java.lang.Long encryptedUserId, java.lang.String guid, java.lang.String idfa, java.lang.String gadid, java.lang.String deviceId, java.lang.String channelType, java.lang.String actionType, java.lang.String partnerId, java.lang.String campaignId, java.lang.String rotationId, java.lang.Integer siteId, java.lang.String url, java.lang.String referer, java.lang.String userAgent, java.lang.String deviceFamily, java.lang.String deviceType, java.lang.String browserFamily, java.lang.String browserVersion, java.lang.String osFamily, java.lang.String osVersion, java.lang.String appVersion, java.lang.String service, java.lang.String server, java.lang.String remoteIp, java.lang.Integer pageId, java.lang.Integer geoId, java.lang.Boolean isBot, java.util.Map<java.lang.String,java.lang.String> payload) {
+    this.eventId = eventId;
+    this.producerEventId = producerEventId;
+    this.eventTs = eventTs;
+    this.producerEventTs = producerEventTs;
+    this.rlogId = rlogId;
+    this.trackingId = trackingId;
+    this.userId = userId;
+    this.publicUserId = publicUserId;
+    this.encryptedUserId = encryptedUserId;
     this.guid = guid;
     this.idfa = idfa;
     this.gadid = gadid;
-    this.device_id = device_id;
-    this.channel_type = channel_type;
-    this.action_type = action_type;
-    this.partner_id = partner_id;
-    this.campaign_id = campaign_id;
-    this.rotation_id = rotation_id;
-    this.site_id = site_id;
+    this.deviceId = deviceId;
+    this.channelType = channelType;
+    this.actionType = actionType;
+    this.partnerId = partnerId;
+    this.campaignId = campaignId;
+    this.rotationId = rotationId;
+    this.siteId = siteId;
     this.url = url;
     this.referer = referer;
-    this.user_agent = user_agent;
-    this.device_family = device_family;
-    this.device_type = device_type;
-    this.browser_family = browser_family;
-    this.browser_version = browser_version;
-    this.os_family = os_family;
-    this.os_version = os_version;
-    this.app_version = app_version;
+    this.userAgent = userAgent;
+    this.deviceFamily = deviceFamily;
+    this.deviceType = deviceType;
+    this.browserFamily = browserFamily;
+    this.browserVersion = browserVersion;
+    this.osFamily = osFamily;
+    this.osVersion = osVersion;
+    this.appVersion = appVersion;
+    this.service = service;
     this.server = server;
-    this.remote_ip = remote_ip;
-    this.page_id = page_id;
-    this.geo_id = geo_id;
-    this.is_bot = is_bot;
+    this.remoteIp = remoteIp;
+    this.pageId = pageId;
+    this.geoId = geoId;
+    this.isBot = isBot;
     this.payload = payload;
   }
 
@@ -179,40 +186,42 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
   // Used by DatumWriter.  Applications should not call.
   public java.lang.Object get(int field$) {
     switch (field$) {
-    case 0: return producer_event_id;
-    case 1: return event_ts;
-    case 2: return producer_event_ts;
-    case 3: return rlog_id;
-    case 4: return tracking_id;
-    case 5: return user_id;
-    case 6: return public_user_id;
-    case 7: return encrypted_user_id;
-    case 8: return guid;
-    case 9: return idfa;
-    case 10: return gadid;
-    case 11: return device_id;
-    case 12: return channel_type;
-    case 13: return action_type;
-    case 14: return partner_id;
-    case 15: return campaign_id;
-    case 16: return rotation_id;
-    case 17: return site_id;
-    case 18: return url;
-    case 19: return referer;
-    case 20: return user_agent;
-    case 21: return device_family;
-    case 22: return device_type;
-    case 23: return browser_family;
-    case 24: return browser_version;
-    case 25: return os_family;
-    case 26: return os_version;
-    case 27: return app_version;
-    case 28: return server;
-    case 29: return remote_ip;
-    case 30: return page_id;
-    case 31: return geo_id;
-    case 32: return is_bot;
-    case 33: return payload;
+    case 0: return eventId;
+    case 1: return producerEventId;
+    case 2: return eventTs;
+    case 3: return producerEventTs;
+    case 4: return rlogId;
+    case 5: return trackingId;
+    case 6: return userId;
+    case 7: return publicUserId;
+    case 8: return encryptedUserId;
+    case 9: return guid;
+    case 10: return idfa;
+    case 11: return gadid;
+    case 12: return deviceId;
+    case 13: return channelType;
+    case 14: return actionType;
+    case 15: return partnerId;
+    case 16: return campaignId;
+    case 17: return rotationId;
+    case 18: return siteId;
+    case 19: return url;
+    case 20: return referer;
+    case 21: return userAgent;
+    case 22: return deviceFamily;
+    case 23: return deviceType;
+    case 24: return browserFamily;
+    case 25: return browserVersion;
+    case 26: return osFamily;
+    case 27: return osVersion;
+    case 28: return appVersion;
+    case 29: return service;
+    case 30: return server;
+    case 31: return remoteIp;
+    case 32: return pageId;
+    case 33: return geoId;
+    case 34: return isBot;
+    case 35: return payload;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -221,177 +230,196 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
   @SuppressWarnings(value="unchecked")
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
-    case 0: producer_event_id = (java.lang.String)value$; break;
-    case 1: event_ts = (java.lang.Long)value$; break;
-    case 2: producer_event_ts = (java.lang.Long)value$; break;
-    case 3: rlog_id = (java.lang.String)value$; break;
-    case 4: tracking_id = (java.lang.String)value$; break;
-    case 5: user_id = (java.lang.Long)value$; break;
-    case 6: public_user_id = (java.lang.String)value$; break;
-    case 7: encrypted_user_id = (java.lang.Long)value$; break;
-    case 8: guid = (java.lang.String)value$; break;
-    case 9: idfa = (java.lang.String)value$; break;
-    case 10: gadid = (java.lang.String)value$; break;
-    case 11: device_id = (java.lang.String)value$; break;
-    case 12: channel_type = (java.lang.String)value$; break;
-    case 13: action_type = (java.lang.String)value$; break;
-    case 14: partner_id = (java.lang.String)value$; break;
-    case 15: campaign_id = (java.lang.String)value$; break;
-    case 16: rotation_id = (java.lang.String)value$; break;
-    case 17: site_id = (java.lang.Integer)value$; break;
-    case 18: url = (java.lang.String)value$; break;
-    case 19: referer = (java.lang.String)value$; break;
-    case 20: user_agent = (java.lang.String)value$; break;
-    case 21: device_family = (java.lang.String)value$; break;
-    case 22: device_type = (java.lang.String)value$; break;
-    case 23: browser_family = (java.lang.String)value$; break;
-    case 24: browser_version = (java.lang.String)value$; break;
-    case 25: os_family = (java.lang.String)value$; break;
-    case 26: os_version = (java.lang.String)value$; break;
-    case 27: app_version = (java.lang.String)value$; break;
-    case 28: server = (java.lang.String)value$; break;
-    case 29: remote_ip = (java.lang.String)value$; break;
-    case 30: page_id = (java.lang.Integer)value$; break;
-    case 31: geo_id = (java.lang.Integer)value$; break;
-    case 32: is_bot = (java.lang.Boolean)value$; break;
-    case 33: payload = (java.util.Map<java.lang.String,java.lang.String>)value$; break;
+    case 0: eventId = (java.lang.String)value$; break;
+    case 1: producerEventId = (java.lang.String)value$; break;
+    case 2: eventTs = (java.lang.Long)value$; break;
+    case 3: producerEventTs = (java.lang.Long)value$; break;
+    case 4: rlogId = (java.lang.String)value$; break;
+    case 5: trackingId = (java.lang.String)value$; break;
+    case 6: userId = (java.lang.Long)value$; break;
+    case 7: publicUserId = (java.lang.String)value$; break;
+    case 8: encryptedUserId = (java.lang.Long)value$; break;
+    case 9: guid = (java.lang.String)value$; break;
+    case 10: idfa = (java.lang.String)value$; break;
+    case 11: gadid = (java.lang.String)value$; break;
+    case 12: deviceId = (java.lang.String)value$; break;
+    case 13: channelType = (java.lang.String)value$; break;
+    case 14: actionType = (java.lang.String)value$; break;
+    case 15: partnerId = (java.lang.String)value$; break;
+    case 16: campaignId = (java.lang.String)value$; break;
+    case 17: rotationId = (java.lang.String)value$; break;
+    case 18: siteId = (java.lang.Integer)value$; break;
+    case 19: url = (java.lang.String)value$; break;
+    case 20: referer = (java.lang.String)value$; break;
+    case 21: userAgent = (java.lang.String)value$; break;
+    case 22: deviceFamily = (java.lang.String)value$; break;
+    case 23: deviceType = (java.lang.String)value$; break;
+    case 24: browserFamily = (java.lang.String)value$; break;
+    case 25: browserVersion = (java.lang.String)value$; break;
+    case 26: osFamily = (java.lang.String)value$; break;
+    case 27: osVersion = (java.lang.String)value$; break;
+    case 28: appVersion = (java.lang.String)value$; break;
+    case 29: service = (java.lang.String)value$; break;
+    case 30: server = (java.lang.String)value$; break;
+    case 31: remoteIp = (java.lang.String)value$; break;
+    case 32: pageId = (java.lang.Integer)value$; break;
+    case 33: geoId = (java.lang.Integer)value$; break;
+    case 34: isBot = (java.lang.Boolean)value$; break;
+    case 35: payload = (java.util.Map<java.lang.String,java.lang.String>)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
 
   /**
-   * Gets the value of the 'producer_event_id' field.
-   * @return ID of the event by producer
+   * Gets the value of the 'eventId' field.
+   * @return ID of the event by tracking collection service
    */
-  public java.lang.String getProducerEventId() {
-    return producer_event_id;
+  public java.lang.String getEventId() {
+    return eventId;
   }
 
   /**
-   * Sets the value of the 'producer_event_id' field.
+   * Sets the value of the 'eventId' field.
+   * ID of the event by tracking collection service
+   * @param value the value to set.
+   */
+  public void setEventId(java.lang.String value) {
+    this.eventId = value;
+  }
+
+  /**
+   * Gets the value of the 'producerEventId' field.
+   * @return ID of the event by producer
+   */
+  public java.lang.String getProducerEventId() {
+    return producerEventId;
+  }
+
+  /**
+   * Sets the value of the 'producerEventId' field.
    * ID of the event by producer
    * @param value the value to set.
    */
   public void setProducerEventId(java.lang.String value) {
-    this.producer_event_id = value;
+    this.producerEventId = value;
   }
 
   /**
-   * Gets the value of the 'event_ts' field.
+   * Gets the value of the 'eventTs' field.
    * @return Event received timestamp at the collection service
    */
   public java.lang.Long getEventTs() {
-    return event_ts;
+    return eventTs;
   }
 
   /**
-   * Sets the value of the 'event_ts' field.
+   * Sets the value of the 'eventTs' field.
    * Event received timestamp at the collection service
    * @param value the value to set.
    */
   public void setEventTs(java.lang.Long value) {
-    this.event_ts = value;
+    this.eventTs = value;
   }
 
   /**
-   * Gets the value of the 'producer_event_ts' field.
+   * Gets the value of the 'producerEventTs' field.
    * @return Event created timestamp at producer side
    */
   public java.lang.Long getProducerEventTs() {
-    return producer_event_ts;
+    return producerEventTs;
   }
 
   /**
-   * Sets the value of the 'producer_event_ts' field.
+   * Sets the value of the 'producerEventTs' field.
    * Event created timestamp at producer side
    * @param value the value to set.
    */
   public void setProducerEventTs(java.lang.Long value) {
-    this.producer_event_ts = value;
+    this.producerEventTs = value;
   }
 
   /**
-   * Gets the value of the 'rlog_id' field.
-   * @return The value of the 'rlog_id' field.
+   * Gets the value of the 'rlogId' field.
+   * @return The value of the 'rlogId' field.
    */
   public java.lang.String getRlogId() {
-    return rlog_id;
+    return rlogId;
   }
 
   /**
-   * Sets the value of the 'rlog_id' field.
+   * Sets the value of the 'rlogId' field.
    * @param value the value to set.
    */
   public void setRlogId(java.lang.String value) {
-    this.rlog_id = value;
+    this.rlogId = value;
   }
 
   /**
-   * Gets the value of the 'tracking_id' field.
+   * Gets the value of the 'trackingId' field.
    * @return ID to associate user behavior and dilivery
    */
   public java.lang.String getTrackingId() {
-    return tracking_id;
+    return trackingId;
   }
 
   /**
-   * Sets the value of the 'tracking_id' field.
+   * Sets the value of the 'trackingId' field.
    * ID to associate user behavior and dilivery
    * @param value the value to set.
    */
   public void setTrackingId(java.lang.String value) {
-    this.tracking_id = value;
+    this.trackingId = value;
   }
 
   /**
-   * Gets the value of the 'user_id' field.
+   * Gets the value of the 'userId' field.
    * @return Oracle id
    */
   public java.lang.Long getUserId() {
-    return user_id;
+    return userId;
   }
 
   /**
-   * Sets the value of the 'user_id' field.
+   * Sets the value of the 'userId' field.
    * Oracle id
    * @param value the value to set.
    */
   public void setUserId(java.lang.Long value) {
-    this.user_id = value;
+    this.userId = value;
   }
 
   /**
-   * Gets the value of the 'public_user_id' field.
+   * Gets the value of the 'publicUserId' field.
    * @return public user id
    */
   public java.lang.String getPublicUserId() {
-    return public_user_id;
+    return publicUserId;
   }
 
   /**
-   * Sets the value of the 'public_user_id' field.
+   * Sets the value of the 'publicUserId' field.
    * public user id
    * @param value the value to set.
    */
   public void setPublicUserId(java.lang.String value) {
-    this.public_user_id = value;
+    this.publicUserId = value;
   }
 
   /**
-   * Gets the value of the 'encrypted_user_id' field.
+   * Gets the value of the 'encryptedUserId' field.
    * @return Encrypted user id in email open and click url
    */
   public java.lang.Long getEncryptedUserId() {
-    return encrypted_user_id;
+    return encryptedUserId;
   }
 
   /**
-   * Sets the value of the 'encrypted_user_id' field.
+   * Sets the value of the 'encryptedUserId' field.
    * Encrypted user id in email open and click url
    * @param value the value to set.
    */
   public void setEncryptedUserId(java.lang.Long value) {
-    this.encrypted_user_id = value;
+    this.encryptedUserId = value;
   }
 
   /**
@@ -443,115 +471,115 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
   }
 
   /**
-   * Gets the value of the 'device_id' field.
-   * @return The value of the 'device_id' field.
+   * Gets the value of the 'deviceId' field.
+   * @return The value of the 'deviceId' field.
    */
   public java.lang.String getDeviceId() {
-    return device_id;
+    return deviceId;
   }
 
   /**
-   * Sets the value of the 'device_id' field.
+   * Sets the value of the 'deviceId' field.
    * @param value the value to set.
    */
   public void setDeviceId(java.lang.String value) {
-    this.device_id = value;
+    this.deviceId = value;
   }
 
   /**
-   * Gets the value of the 'channel_type' field.
-   * @return The value of the 'channel_type' field.
+   * Gets the value of the 'channelType' field.
+   * @return The value of the 'channelType' field.
    */
   public java.lang.String getChannelType() {
-    return channel_type;
+    return channelType;
   }
 
   /**
-   * Sets the value of the 'channel_type' field.
+   * Sets the value of the 'channelType' field.
    * @param value the value to set.
    */
   public void setChannelType(java.lang.String value) {
-    this.channel_type = value;
+    this.channelType = value;
   }
 
   /**
-   * Gets the value of the 'action_type' field.
-   * @return The value of the 'action_type' field.
+   * Gets the value of the 'actionType' field.
+   * @return The value of the 'actionType' field.
    */
   public java.lang.String getActionType() {
-    return action_type;
+    return actionType;
   }
 
   /**
-   * Sets the value of the 'action_type' field.
+   * Sets the value of the 'actionType' field.
    * @param value the value to set.
    */
   public void setActionType(java.lang.String value) {
-    this.action_type = value;
+    this.actionType = value;
   }
 
   /**
-   * Gets the value of the 'partner_id' field.
-   * @return The value of the 'partner_id' field.
+   * Gets the value of the 'partnerId' field.
+   * @return The value of the 'partnerId' field.
    */
   public java.lang.String getPartnerId() {
-    return partner_id;
+    return partnerId;
   }
 
   /**
-   * Sets the value of the 'partner_id' field.
+   * Sets the value of the 'partnerId' field.
    * @param value the value to set.
    */
   public void setPartnerId(java.lang.String value) {
-    this.partner_id = value;
+    this.partnerId = value;
   }
 
   /**
-   * Gets the value of the 'campaign_id' field.
-   * @return The value of the 'campaign_id' field.
+   * Gets the value of the 'campaignId' field.
+   * @return The value of the 'campaignId' field.
    */
   public java.lang.String getCampaignId() {
-    return campaign_id;
+    return campaignId;
   }
 
   /**
-   * Sets the value of the 'campaign_id' field.
+   * Sets the value of the 'campaignId' field.
    * @param value the value to set.
    */
   public void setCampaignId(java.lang.String value) {
-    this.campaign_id = value;
+    this.campaignId = value;
   }
 
   /**
-   * Gets the value of the 'rotation_id' field.
-   * @return The value of the 'rotation_id' field.
+   * Gets the value of the 'rotationId' field.
+   * @return The value of the 'rotationId' field.
    */
   public java.lang.String getRotationId() {
-    return rotation_id;
+    return rotationId;
   }
 
   /**
-   * Sets the value of the 'rotation_id' field.
+   * Sets the value of the 'rotationId' field.
    * @param value the value to set.
    */
   public void setRotationId(java.lang.String value) {
-    this.rotation_id = value;
+    this.rotationId = value;
   }
 
   /**
-   * Gets the value of the 'site_id' field.
-   * @return The value of the 'site_id' field.
+   * Gets the value of the 'siteId' field.
+   * @return The value of the 'siteId' field.
    */
   public java.lang.Integer getSiteId() {
-    return site_id;
+    return siteId;
   }
 
   /**
-   * Sets the value of the 'site_id' field.
+   * Sets the value of the 'siteId' field.
    * @param value the value to set.
    */
   public void setSiteId(java.lang.Integer value) {
-    this.site_id = value;
+    this.siteId = value;
   }
 
   /**
@@ -587,131 +615,147 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
   }
 
   /**
-   * Gets the value of the 'user_agent' field.
-   * @return The value of the 'user_agent' field.
+   * Gets the value of the 'userAgent' field.
+   * @return The value of the 'userAgent' field.
    */
   public java.lang.String getUserAgent() {
-    return user_agent;
+    return userAgent;
   }
 
   /**
-   * Sets the value of the 'user_agent' field.
+   * Sets the value of the 'userAgent' field.
    * @param value the value to set.
    */
   public void setUserAgent(java.lang.String value) {
-    this.user_agent = value;
+    this.userAgent = value;
   }
 
   /**
-   * Gets the value of the 'device_family' field.
-   * @return The value of the 'device_family' field.
+   * Gets the value of the 'deviceFamily' field.
+   * @return The value of the 'deviceFamily' field.
    */
   public java.lang.String getDeviceFamily() {
-    return device_family;
+    return deviceFamily;
   }
 
   /**
-   * Sets the value of the 'device_family' field.
+   * Sets the value of the 'deviceFamily' field.
    * @param value the value to set.
    */
   public void setDeviceFamily(java.lang.String value) {
-    this.device_family = value;
+    this.deviceFamily = value;
   }
 
   /**
-   * Gets the value of the 'device_type' field.
-   * @return The value of the 'device_type' field.
+   * Gets the value of the 'deviceType' field.
+   * @return The value of the 'deviceType' field.
    */
   public java.lang.String getDeviceType() {
-    return device_type;
+    return deviceType;
   }
 
   /**
-   * Sets the value of the 'device_type' field.
+   * Sets the value of the 'deviceType' field.
    * @param value the value to set.
    */
   public void setDeviceType(java.lang.String value) {
-    this.device_type = value;
+    this.deviceType = value;
   }
 
   /**
-   * Gets the value of the 'browser_family' field.
-   * @return The value of the 'browser_family' field.
+   * Gets the value of the 'browserFamily' field.
+   * @return The value of the 'browserFamily' field.
    */
   public java.lang.String getBrowserFamily() {
-    return browser_family;
+    return browserFamily;
   }
 
   /**
-   * Sets the value of the 'browser_family' field.
+   * Sets the value of the 'browserFamily' field.
    * @param value the value to set.
    */
   public void setBrowserFamily(java.lang.String value) {
-    this.browser_family = value;
+    this.browserFamily = value;
   }
 
   /**
-   * Gets the value of the 'browser_version' field.
-   * @return The value of the 'browser_version' field.
+   * Gets the value of the 'browserVersion' field.
+   * @return The value of the 'browserVersion' field.
    */
   public java.lang.String getBrowserVersion() {
-    return browser_version;
+    return browserVersion;
   }
 
   /**
-   * Sets the value of the 'browser_version' field.
+   * Sets the value of the 'browserVersion' field.
    * @param value the value to set.
    */
   public void setBrowserVersion(java.lang.String value) {
-    this.browser_version = value;
+    this.browserVersion = value;
   }
 
   /**
-   * Gets the value of the 'os_family' field.
-   * @return The value of the 'os_family' field.
+   * Gets the value of the 'osFamily' field.
+   * @return The value of the 'osFamily' field.
    */
   public java.lang.String getOsFamily() {
-    return os_family;
+    return osFamily;
   }
 
   /**
-   * Sets the value of the 'os_family' field.
+   * Sets the value of the 'osFamily' field.
    * @param value the value to set.
    */
   public void setOsFamily(java.lang.String value) {
-    this.os_family = value;
+    this.osFamily = value;
   }
 
   /**
-   * Gets the value of the 'os_version' field.
-   * @return The value of the 'os_version' field.
+   * Gets the value of the 'osVersion' field.
+   * @return The value of the 'osVersion' field.
    */
   public java.lang.String getOsVersion() {
-    return os_version;
+    return osVersion;
   }
 
   /**
-   * Sets the value of the 'os_version' field.
+   * Sets the value of the 'osVersion' field.
    * @param value the value to set.
    */
   public void setOsVersion(java.lang.String value) {
-    this.os_version = value;
+    this.osVersion = value;
   }
 
   /**
-   * Gets the value of the 'app_version' field.
-   * @return The value of the 'app_version' field.
+   * Gets the value of the 'appVersion' field.
+   * @return The value of the 'appVersion' field.
    */
   public java.lang.String getAppVersion() {
-    return app_version;
+    return appVersion;
   }
 
   /**
-   * Sets the value of the 'app_version' field.
+   * Sets the value of the 'appVersion' field.
    * @param value the value to set.
    */
   public void setAppVersion(java.lang.String value) {
-    this.app_version = value;
+    this.appVersion = value;
+  }
+
+  /**
+   * Gets the value of the 'service' field.
+   * @return The value of the 'service' field.
+   */
+  public java.lang.String getService() {
+    return service;
+  }
+
+  /**
+   * Sets the value of the 'service' field.
+   * @param value the value to set.
+   */
+  public void setService(java.lang.String value) {
+    this.service = value;
   }
 
   /**
@@ -731,67 +775,67 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
   }
 
   /**
-   * Gets the value of the 'remote_ip' field.
-   * @return The value of the 'remote_ip' field.
+   * Gets the value of the 'remoteIp' field.
+   * @return The value of the 'remoteIp' field.
    */
   public java.lang.String getRemoteIp() {
-    return remote_ip;
+    return remoteIp;
   }
 
   /**
-   * Sets the value of the 'remote_ip' field.
+   * Sets the value of the 'remoteIp' field.
    * @param value the value to set.
    */
   public void setRemoteIp(java.lang.String value) {
-    this.remote_ip = value;
+    this.remoteIp = value;
   }
 
   /**
-   * Gets the value of the 'page_id' field.
-   * @return The value of the 'page_id' field.
+   * Gets the value of the 'pageId' field.
+   * @return The value of the 'pageId' field.
    */
   public java.lang.Integer getPageId() {
-    return page_id;
+    return pageId;
   }
 
   /**
-   * Sets the value of the 'page_id' field.
+   * Sets the value of the 'pageId' field.
    * @param value the value to set.
    */
   public void setPageId(java.lang.Integer value) {
-    this.page_id = value;
+    this.pageId = value;
   }
 
   /**
-   * Gets the value of the 'geo_id' field.
-   * @return The value of the 'geo_id' field.
+   * Gets the value of the 'geoId' field.
+   * @return The value of the 'geoId' field.
    */
   public java.lang.Integer getGeoId() {
-    return geo_id;
+    return geoId;
   }
 
   /**
-   * Sets the value of the 'geo_id' field.
+   * Sets the value of the 'geoId' field.
    * @param value the value to set.
    */
   public void setGeoId(java.lang.Integer value) {
-    this.geo_id = value;
+    this.geoId = value;
   }
 
   /**
-   * Gets the value of the 'is_bot' field.
-   * @return The value of the 'is_bot' field.
+   * Gets the value of the 'isBot' field.
+   * @return The value of the 'isBot' field.
    */
   public java.lang.Boolean getIsBot() {
-    return is_bot;
+    return isBot;
   }
 
   /**
-   * Sets the value of the 'is_bot' field.
+   * Sets the value of the 'isBot' field.
    * @param value the value to set.
    */
   public void setIsBot(java.lang.Boolean value) {
-    this.is_bot = value;
+    this.isBot = value;
   }
 
   /**
@@ -842,46 +886,49 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
   public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<UnifiedTrackingRheosEvent>
     implements org.apache.avro.data.RecordBuilder<UnifiedTrackingRheosEvent> {
 
+    /** ID of the event by tracking collection service */
+    private java.lang.String eventId;
     /** ID of the event by producer */
-    private java.lang.String producer_event_id;
+    private java.lang.String producerEventId;
     /** Event received timestamp at the collection service */
-    private long event_ts;
+    private long eventTs;
     /** Event created timestamp at producer side */
-    private long producer_event_ts;
-    private java.lang.String rlog_id;
+    private long producerEventTs;
+    private java.lang.String rlogId;
     /** ID to associate user behavior and dilivery */
-    private java.lang.String tracking_id;
+    private java.lang.String trackingId;
     /** Oracle id */
-    private java.lang.Long user_id;
+    private java.lang.Long userId;
     /** public user id */
-    private java.lang.String public_user_id;
+    private java.lang.String publicUserId;
     /** Encrypted user id in email open and click url */
-    private java.lang.Long encrypted_user_id;
+    private java.lang.Long encryptedUserId;
     private java.lang.String guid;
     private java.lang.String idfa;
     private java.lang.String gadid;
-    private java.lang.String device_id;
-    private java.lang.String channel_type;
-    private java.lang.String action_type;
-    private java.lang.String partner_id;
-    private java.lang.String campaign_id;
-    private java.lang.String rotation_id;
-    private java.lang.Integer site_id;
+    private java.lang.String deviceId;
+    private java.lang.String channelType;
+    private java.lang.String actionType;
+    private java.lang.String partnerId;
+    private java.lang.String campaignId;
+    private java.lang.String rotationId;
+    private java.lang.Integer siteId;
     private java.lang.String url;
     private java.lang.String referer;
-    private java.lang.String user_agent;
-    private java.lang.String device_family;
-    private java.lang.String device_type;
-    private java.lang.String browser_family;
-    private java.lang.String browser_version;
-    private java.lang.String os_family;
-    private java.lang.String os_version;
-    private java.lang.String app_version;
+    private java.lang.String userAgent;
+    private java.lang.String deviceFamily;
+    private java.lang.String deviceType;
+    private java.lang.String browserFamily;
+    private java.lang.String browserVersion;
+    private java.lang.String osFamily;
+    private java.lang.String osVersion;
+    private java.lang.String appVersion;
+    private java.lang.String service;
     private java.lang.String server;
-    private java.lang.String remote_ip;
-    private java.lang.Integer page_id;
-    private java.lang.Integer geo_id;
-    private boolean is_bot;
+    private java.lang.String remoteIp;
+    private java.lang.Integer pageId;
+    private java.lang.Integer geoId;
+    private boolean isBot;
     private java.util.Map<java.lang.String,java.lang.String> payload;
 
     /** Creates a new Builder */
@@ -895,141 +942,149 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
      */
     private Builder(com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder other) {
       super(other);
-      if (isValidValue(fields()[0], other.producer_event_id)) {
-        this.producer_event_id = data().deepCopy(fields()[0].schema(), other.producer_event_id);
+      if (isValidValue(fields()[0], other.eventId)) {
+        this.eventId = data().deepCopy(fields()[0].schema(), other.eventId);
         fieldSetFlags()[0] = true;
       }
-      if (isValidValue(fields()[1], other.event_ts)) {
-        this.event_ts = data().deepCopy(fields()[1].schema(), other.event_ts);
+      if (isValidValue(fields()[1], other.producerEventId)) {
+        this.producerEventId = data().deepCopy(fields()[1].schema(), other.producerEventId);
         fieldSetFlags()[1] = true;
       }
-      if (isValidValue(fields()[2], other.producer_event_ts)) {
-        this.producer_event_ts = data().deepCopy(fields()[2].schema(), other.producer_event_ts);
+      if (isValidValue(fields()[2], other.eventTs)) {
+        this.eventTs = data().deepCopy(fields()[2].schema(), other.eventTs);
         fieldSetFlags()[2] = true;
       }
-      if (isValidValue(fields()[3], other.rlog_id)) {
-        this.rlog_id = data().deepCopy(fields()[3].schema(), other.rlog_id);
+      if (isValidValue(fields()[3], other.producerEventTs)) {
+        this.producerEventTs = data().deepCopy(fields()[3].schema(), other.producerEventTs);
         fieldSetFlags()[3] = true;
       }
-      if (isValidValue(fields()[4], other.tracking_id)) {
-        this.tracking_id = data().deepCopy(fields()[4].schema(), other.tracking_id);
+      if (isValidValue(fields()[4], other.rlogId)) {
+        this.rlogId = data().deepCopy(fields()[4].schema(), other.rlogId);
         fieldSetFlags()[4] = true;
       }
-      if (isValidValue(fields()[5], other.user_id)) {
-        this.user_id = data().deepCopy(fields()[5].schema(), other.user_id);
+      if (isValidValue(fields()[5], other.trackingId)) {
+        this.trackingId = data().deepCopy(fields()[5].schema(), other.trackingId);
         fieldSetFlags()[5] = true;
       }
-      if (isValidValue(fields()[6], other.public_user_id)) {
-        this.public_user_id = data().deepCopy(fields()[6].schema(), other.public_user_id);
+      if (isValidValue(fields()[6], other.userId)) {
+        this.userId = data().deepCopy(fields()[6].schema(), other.userId);
         fieldSetFlags()[6] = true;
       }
-      if (isValidValue(fields()[7], other.encrypted_user_id)) {
-        this.encrypted_user_id = data().deepCopy(fields()[7].schema(), other.encrypted_user_id);
+      if (isValidValue(fields()[7], other.publicUserId)) {
+        this.publicUserId = data().deepCopy(fields()[7].schema(), other.publicUserId);
         fieldSetFlags()[7] = true;
       }
-      if (isValidValue(fields()[8], other.guid)) {
-        this.guid = data().deepCopy(fields()[8].schema(), other.guid);
+      if (isValidValue(fields()[8], other.encryptedUserId)) {
+        this.encryptedUserId = data().deepCopy(fields()[8].schema(), other.encryptedUserId);
         fieldSetFlags()[8] = true;
       }
-      if (isValidValue(fields()[9], other.idfa)) {
-        this.idfa = data().deepCopy(fields()[9].schema(), other.idfa);
+      if (isValidValue(fields()[9], other.guid)) {
+        this.guid = data().deepCopy(fields()[9].schema(), other.guid);
         fieldSetFlags()[9] = true;
       }
-      if (isValidValue(fields()[10], other.gadid)) {
-        this.gadid = data().deepCopy(fields()[10].schema(), other.gadid);
+      if (isValidValue(fields()[10], other.idfa)) {
+        this.idfa = data().deepCopy(fields()[10].schema(), other.idfa);
         fieldSetFlags()[10] = true;
       }
-      if (isValidValue(fields()[11], other.device_id)) {
-        this.device_id = data().deepCopy(fields()[11].schema(), other.device_id);
+      if (isValidValue(fields()[11], other.gadid)) {
+        this.gadid = data().deepCopy(fields()[11].schema(), other.gadid);
         fieldSetFlags()[11] = true;
       }
-      if (isValidValue(fields()[12], other.channel_type)) {
-        this.channel_type = data().deepCopy(fields()[12].schema(), other.channel_type);
+      if (isValidValue(fields()[12], other.deviceId)) {
+        this.deviceId = data().deepCopy(fields()[12].schema(), other.deviceId);
         fieldSetFlags()[12] = true;
       }
-      if (isValidValue(fields()[13], other.action_type)) {
-        this.action_type = data().deepCopy(fields()[13].schema(), other.action_type);
+      if (isValidValue(fields()[13], other.channelType)) {
+        this.channelType = data().deepCopy(fields()[13].schema(), other.channelType);
         fieldSetFlags()[13] = true;
       }
-      if (isValidValue(fields()[14], other.partner_id)) {
-        this.partner_id = data().deepCopy(fields()[14].schema(), other.partner_id);
+      if (isValidValue(fields()[14], other.actionType)) {
+        this.actionType = data().deepCopy(fields()[14].schema(), other.actionType);
         fieldSetFlags()[14] = true;
       }
-      if (isValidValue(fields()[15], other.campaign_id)) {
-        this.campaign_id = data().deepCopy(fields()[15].schema(), other.campaign_id);
+      if (isValidValue(fields()[15], other.partnerId)) {
+        this.partnerId = data().deepCopy(fields()[15].schema(), other.partnerId);
         fieldSetFlags()[15] = true;
       }
-      if (isValidValue(fields()[16], other.rotation_id)) {
-        this.rotation_id = data().deepCopy(fields()[16].schema(), other.rotation_id);
+      if (isValidValue(fields()[16], other.campaignId)) {
+        this.campaignId = data().deepCopy(fields()[16].schema(), other.campaignId);
         fieldSetFlags()[16] = true;
       }
-      if (isValidValue(fields()[17], other.site_id)) {
-        this.site_id = data().deepCopy(fields()[17].schema(), other.site_id);
+      if (isValidValue(fields()[17], other.rotationId)) {
+        this.rotationId = data().deepCopy(fields()[17].schema(), other.rotationId);
         fieldSetFlags()[17] = true;
       }
-      if (isValidValue(fields()[18], other.url)) {
-        this.url = data().deepCopy(fields()[18].schema(), other.url);
+      if (isValidValue(fields()[18], other.siteId)) {
+        this.siteId = data().deepCopy(fields()[18].schema(), other.siteId);
         fieldSetFlags()[18] = true;
       }
-      if (isValidValue(fields()[19], other.referer)) {
-        this.referer = data().deepCopy(fields()[19].schema(), other.referer);
+      if (isValidValue(fields()[19], other.url)) {
+        this.url = data().deepCopy(fields()[19].schema(), other.url);
         fieldSetFlags()[19] = true;
       }
-      if (isValidValue(fields()[20], other.user_agent)) {
-        this.user_agent = data().deepCopy(fields()[20].schema(), other.user_agent);
+      if (isValidValue(fields()[20], other.referer)) {
+        this.referer = data().deepCopy(fields()[20].schema(), other.referer);
         fieldSetFlags()[20] = true;
       }
-      if (isValidValue(fields()[21], other.device_family)) {
-        this.device_family = data().deepCopy(fields()[21].schema(), other.device_family);
+      if (isValidValue(fields()[21], other.userAgent)) {
+        this.userAgent = data().deepCopy(fields()[21].schema(), other.userAgent);
         fieldSetFlags()[21] = true;
       }
-      if (isValidValue(fields()[22], other.device_type)) {
-        this.device_type = data().deepCopy(fields()[22].schema(), other.device_type);
+      if (isValidValue(fields()[22], other.deviceFamily)) {
+        this.deviceFamily = data().deepCopy(fields()[22].schema(), other.deviceFamily);
         fieldSetFlags()[22] = true;
       }
-      if (isValidValue(fields()[23], other.browser_family)) {
-        this.browser_family = data().deepCopy(fields()[23].schema(), other.browser_family);
+      if (isValidValue(fields()[23], other.deviceType)) {
+        this.deviceType = data().deepCopy(fields()[23].schema(), other.deviceType);
         fieldSetFlags()[23] = true;
       }
-      if (isValidValue(fields()[24], other.browser_version)) {
-        this.browser_version = data().deepCopy(fields()[24].schema(), other.browser_version);
+      if (isValidValue(fields()[24], other.browserFamily)) {
+        this.browserFamily = data().deepCopy(fields()[24].schema(), other.browserFamily);
         fieldSetFlags()[24] = true;
       }
-      if (isValidValue(fields()[25], other.os_family)) {
-        this.os_family = data().deepCopy(fields()[25].schema(), other.os_family);
+      if (isValidValue(fields()[25], other.browserVersion)) {
+        this.browserVersion = data().deepCopy(fields()[25].schema(), other.browserVersion);
         fieldSetFlags()[25] = true;
       }
-      if (isValidValue(fields()[26], other.os_version)) {
-        this.os_version = data().deepCopy(fields()[26].schema(), other.os_version);
+      if (isValidValue(fields()[26], other.osFamily)) {
+        this.osFamily = data().deepCopy(fields()[26].schema(), other.osFamily);
         fieldSetFlags()[26] = true;
       }
-      if (isValidValue(fields()[27], other.app_version)) {
-        this.app_version = data().deepCopy(fields()[27].schema(), other.app_version);
+      if (isValidValue(fields()[27], other.osVersion)) {
+        this.osVersion = data().deepCopy(fields()[27].schema(), other.osVersion);
         fieldSetFlags()[27] = true;
       }
-      if (isValidValue(fields()[28], other.server)) {
-        this.server = data().deepCopy(fields()[28].schema(), other.server);
+      if (isValidValue(fields()[28], other.appVersion)) {
+        this.appVersion = data().deepCopy(fields()[28].schema(), other.appVersion);
         fieldSetFlags()[28] = true;
       }
-      if (isValidValue(fields()[29], other.remote_ip)) {
-        this.remote_ip = data().deepCopy(fields()[29].schema(), other.remote_ip);
+      if (isValidValue(fields()[29], other.service)) {
+        this.service = data().deepCopy(fields()[29].schema(), other.service);
         fieldSetFlags()[29] = true;
       }
-      if (isValidValue(fields()[30], other.page_id)) {
-        this.page_id = data().deepCopy(fields()[30].schema(), other.page_id);
+      if (isValidValue(fields()[30], other.server)) {
+        this.server = data().deepCopy(fields()[30].schema(), other.server);
         fieldSetFlags()[30] = true;
       }
-      if (isValidValue(fields()[31], other.geo_id)) {
-        this.geo_id = data().deepCopy(fields()[31].schema(), other.geo_id);
+      if (isValidValue(fields()[31], other.remoteIp)) {
+        this.remoteIp = data().deepCopy(fields()[31].schema(), other.remoteIp);
         fieldSetFlags()[31] = true;
       }
-      if (isValidValue(fields()[32], other.is_bot)) {
-        this.is_bot = data().deepCopy(fields()[32].schema(), other.is_bot);
+      if (isValidValue(fields()[32], other.pageId)) {
+        this.pageId = data().deepCopy(fields()[32].schema(), other.pageId);
         fieldSetFlags()[32] = true;
       }
-      if (isValidValue(fields()[33], other.payload)) {
-        this.payload = data().deepCopy(fields()[33].schema(), other.payload);
+      if (isValidValue(fields()[33], other.geoId)) {
+        this.geoId = data().deepCopy(fields()[33].schema(), other.geoId);
         fieldSetFlags()[33] = true;
+      }
+      if (isValidValue(fields()[34], other.isBot)) {
+        this.isBot = data().deepCopy(fields()[34].schema(), other.isBot);
+        fieldSetFlags()[34] = true;
+      }
+      if (isValidValue(fields()[35], other.payload)) {
+        this.payload = data().deepCopy(fields()[35].schema(), other.payload);
+        fieldSetFlags()[35] = true;
       }
     }
 
@@ -1039,479 +1094,530 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
      */
     private Builder(com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent other) {
             super(SCHEMA$);
-      if (isValidValue(fields()[0], other.producer_event_id)) {
-        this.producer_event_id = data().deepCopy(fields()[0].schema(), other.producer_event_id);
+      if (isValidValue(fields()[0], other.eventId)) {
+        this.eventId = data().deepCopy(fields()[0].schema(), other.eventId);
         fieldSetFlags()[0] = true;
       }
-      if (isValidValue(fields()[1], other.event_ts)) {
-        this.event_ts = data().deepCopy(fields()[1].schema(), other.event_ts);
+      if (isValidValue(fields()[1], other.producerEventId)) {
+        this.producerEventId = data().deepCopy(fields()[1].schema(), other.producerEventId);
         fieldSetFlags()[1] = true;
       }
-      if (isValidValue(fields()[2], other.producer_event_ts)) {
-        this.producer_event_ts = data().deepCopy(fields()[2].schema(), other.producer_event_ts);
+      if (isValidValue(fields()[2], other.eventTs)) {
+        this.eventTs = data().deepCopy(fields()[2].schema(), other.eventTs);
         fieldSetFlags()[2] = true;
       }
-      if (isValidValue(fields()[3], other.rlog_id)) {
-        this.rlog_id = data().deepCopy(fields()[3].schema(), other.rlog_id);
+      if (isValidValue(fields()[3], other.producerEventTs)) {
+        this.producerEventTs = data().deepCopy(fields()[3].schema(), other.producerEventTs);
         fieldSetFlags()[3] = true;
       }
-      if (isValidValue(fields()[4], other.tracking_id)) {
-        this.tracking_id = data().deepCopy(fields()[4].schema(), other.tracking_id);
+      if (isValidValue(fields()[4], other.rlogId)) {
+        this.rlogId = data().deepCopy(fields()[4].schema(), other.rlogId);
         fieldSetFlags()[4] = true;
       }
-      if (isValidValue(fields()[5], other.user_id)) {
-        this.user_id = data().deepCopy(fields()[5].schema(), other.user_id);
+      if (isValidValue(fields()[5], other.trackingId)) {
+        this.trackingId = data().deepCopy(fields()[5].schema(), other.trackingId);
         fieldSetFlags()[5] = true;
       }
-      if (isValidValue(fields()[6], other.public_user_id)) {
-        this.public_user_id = data().deepCopy(fields()[6].schema(), other.public_user_id);
+      if (isValidValue(fields()[6], other.userId)) {
+        this.userId = data().deepCopy(fields()[6].schema(), other.userId);
         fieldSetFlags()[6] = true;
       }
-      if (isValidValue(fields()[7], other.encrypted_user_id)) {
-        this.encrypted_user_id = data().deepCopy(fields()[7].schema(), other.encrypted_user_id);
+      if (isValidValue(fields()[7], other.publicUserId)) {
+        this.publicUserId = data().deepCopy(fields()[7].schema(), other.publicUserId);
         fieldSetFlags()[7] = true;
       }
-      if (isValidValue(fields()[8], other.guid)) {
-        this.guid = data().deepCopy(fields()[8].schema(), other.guid);
+      if (isValidValue(fields()[8], other.encryptedUserId)) {
+        this.encryptedUserId = data().deepCopy(fields()[8].schema(), other.encryptedUserId);
         fieldSetFlags()[8] = true;
       }
-      if (isValidValue(fields()[9], other.idfa)) {
-        this.idfa = data().deepCopy(fields()[9].schema(), other.idfa);
+      if (isValidValue(fields()[9], other.guid)) {
+        this.guid = data().deepCopy(fields()[9].schema(), other.guid);
         fieldSetFlags()[9] = true;
       }
-      if (isValidValue(fields()[10], other.gadid)) {
-        this.gadid = data().deepCopy(fields()[10].schema(), other.gadid);
+      if (isValidValue(fields()[10], other.idfa)) {
+        this.idfa = data().deepCopy(fields()[10].schema(), other.idfa);
         fieldSetFlags()[10] = true;
       }
-      if (isValidValue(fields()[11], other.device_id)) {
-        this.device_id = data().deepCopy(fields()[11].schema(), other.device_id);
+      if (isValidValue(fields()[11], other.gadid)) {
+        this.gadid = data().deepCopy(fields()[11].schema(), other.gadid);
         fieldSetFlags()[11] = true;
       }
-      if (isValidValue(fields()[12], other.channel_type)) {
-        this.channel_type = data().deepCopy(fields()[12].schema(), other.channel_type);
+      if (isValidValue(fields()[12], other.deviceId)) {
+        this.deviceId = data().deepCopy(fields()[12].schema(), other.deviceId);
         fieldSetFlags()[12] = true;
       }
-      if (isValidValue(fields()[13], other.action_type)) {
-        this.action_type = data().deepCopy(fields()[13].schema(), other.action_type);
+      if (isValidValue(fields()[13], other.channelType)) {
+        this.channelType = data().deepCopy(fields()[13].schema(), other.channelType);
         fieldSetFlags()[13] = true;
       }
-      if (isValidValue(fields()[14], other.partner_id)) {
-        this.partner_id = data().deepCopy(fields()[14].schema(), other.partner_id);
+      if (isValidValue(fields()[14], other.actionType)) {
+        this.actionType = data().deepCopy(fields()[14].schema(), other.actionType);
         fieldSetFlags()[14] = true;
       }
-      if (isValidValue(fields()[15], other.campaign_id)) {
-        this.campaign_id = data().deepCopy(fields()[15].schema(), other.campaign_id);
+      if (isValidValue(fields()[15], other.partnerId)) {
+        this.partnerId = data().deepCopy(fields()[15].schema(), other.partnerId);
         fieldSetFlags()[15] = true;
       }
-      if (isValidValue(fields()[16], other.rotation_id)) {
-        this.rotation_id = data().deepCopy(fields()[16].schema(), other.rotation_id);
+      if (isValidValue(fields()[16], other.campaignId)) {
+        this.campaignId = data().deepCopy(fields()[16].schema(), other.campaignId);
         fieldSetFlags()[16] = true;
       }
-      if (isValidValue(fields()[17], other.site_id)) {
-        this.site_id = data().deepCopy(fields()[17].schema(), other.site_id);
+      if (isValidValue(fields()[17], other.rotationId)) {
+        this.rotationId = data().deepCopy(fields()[17].schema(), other.rotationId);
         fieldSetFlags()[17] = true;
       }
-      if (isValidValue(fields()[18], other.url)) {
-        this.url = data().deepCopy(fields()[18].schema(), other.url);
+      if (isValidValue(fields()[18], other.siteId)) {
+        this.siteId = data().deepCopy(fields()[18].schema(), other.siteId);
         fieldSetFlags()[18] = true;
       }
-      if (isValidValue(fields()[19], other.referer)) {
-        this.referer = data().deepCopy(fields()[19].schema(), other.referer);
+      if (isValidValue(fields()[19], other.url)) {
+        this.url = data().deepCopy(fields()[19].schema(), other.url);
         fieldSetFlags()[19] = true;
       }
-      if (isValidValue(fields()[20], other.user_agent)) {
-        this.user_agent = data().deepCopy(fields()[20].schema(), other.user_agent);
+      if (isValidValue(fields()[20], other.referer)) {
+        this.referer = data().deepCopy(fields()[20].schema(), other.referer);
         fieldSetFlags()[20] = true;
       }
-      if (isValidValue(fields()[21], other.device_family)) {
-        this.device_family = data().deepCopy(fields()[21].schema(), other.device_family);
+      if (isValidValue(fields()[21], other.userAgent)) {
+        this.userAgent = data().deepCopy(fields()[21].schema(), other.userAgent);
         fieldSetFlags()[21] = true;
       }
-      if (isValidValue(fields()[22], other.device_type)) {
-        this.device_type = data().deepCopy(fields()[22].schema(), other.device_type);
+      if (isValidValue(fields()[22], other.deviceFamily)) {
+        this.deviceFamily = data().deepCopy(fields()[22].schema(), other.deviceFamily);
         fieldSetFlags()[22] = true;
       }
-      if (isValidValue(fields()[23], other.browser_family)) {
-        this.browser_family = data().deepCopy(fields()[23].schema(), other.browser_family);
+      if (isValidValue(fields()[23], other.deviceType)) {
+        this.deviceType = data().deepCopy(fields()[23].schema(), other.deviceType);
         fieldSetFlags()[23] = true;
       }
-      if (isValidValue(fields()[24], other.browser_version)) {
-        this.browser_version = data().deepCopy(fields()[24].schema(), other.browser_version);
+      if (isValidValue(fields()[24], other.browserFamily)) {
+        this.browserFamily = data().deepCopy(fields()[24].schema(), other.browserFamily);
         fieldSetFlags()[24] = true;
       }
-      if (isValidValue(fields()[25], other.os_family)) {
-        this.os_family = data().deepCopy(fields()[25].schema(), other.os_family);
+      if (isValidValue(fields()[25], other.browserVersion)) {
+        this.browserVersion = data().deepCopy(fields()[25].schema(), other.browserVersion);
         fieldSetFlags()[25] = true;
       }
-      if (isValidValue(fields()[26], other.os_version)) {
-        this.os_version = data().deepCopy(fields()[26].schema(), other.os_version);
+      if (isValidValue(fields()[26], other.osFamily)) {
+        this.osFamily = data().deepCopy(fields()[26].schema(), other.osFamily);
         fieldSetFlags()[26] = true;
       }
-      if (isValidValue(fields()[27], other.app_version)) {
-        this.app_version = data().deepCopy(fields()[27].schema(), other.app_version);
+      if (isValidValue(fields()[27], other.osVersion)) {
+        this.osVersion = data().deepCopy(fields()[27].schema(), other.osVersion);
         fieldSetFlags()[27] = true;
       }
-      if (isValidValue(fields()[28], other.server)) {
-        this.server = data().deepCopy(fields()[28].schema(), other.server);
+      if (isValidValue(fields()[28], other.appVersion)) {
+        this.appVersion = data().deepCopy(fields()[28].schema(), other.appVersion);
         fieldSetFlags()[28] = true;
       }
-      if (isValidValue(fields()[29], other.remote_ip)) {
-        this.remote_ip = data().deepCopy(fields()[29].schema(), other.remote_ip);
+      if (isValidValue(fields()[29], other.service)) {
+        this.service = data().deepCopy(fields()[29].schema(), other.service);
         fieldSetFlags()[29] = true;
       }
-      if (isValidValue(fields()[30], other.page_id)) {
-        this.page_id = data().deepCopy(fields()[30].schema(), other.page_id);
+      if (isValidValue(fields()[30], other.server)) {
+        this.server = data().deepCopy(fields()[30].schema(), other.server);
         fieldSetFlags()[30] = true;
       }
-      if (isValidValue(fields()[31], other.geo_id)) {
-        this.geo_id = data().deepCopy(fields()[31].schema(), other.geo_id);
+      if (isValidValue(fields()[31], other.remoteIp)) {
+        this.remoteIp = data().deepCopy(fields()[31].schema(), other.remoteIp);
         fieldSetFlags()[31] = true;
       }
-      if (isValidValue(fields()[32], other.is_bot)) {
-        this.is_bot = data().deepCopy(fields()[32].schema(), other.is_bot);
+      if (isValidValue(fields()[32], other.pageId)) {
+        this.pageId = data().deepCopy(fields()[32].schema(), other.pageId);
         fieldSetFlags()[32] = true;
       }
-      if (isValidValue(fields()[33], other.payload)) {
-        this.payload = data().deepCopy(fields()[33].schema(), other.payload);
+      if (isValidValue(fields()[33], other.geoId)) {
+        this.geoId = data().deepCopy(fields()[33].schema(), other.geoId);
         fieldSetFlags()[33] = true;
+      }
+      if (isValidValue(fields()[34], other.isBot)) {
+        this.isBot = data().deepCopy(fields()[34].schema(), other.isBot);
+        fieldSetFlags()[34] = true;
+      }
+      if (isValidValue(fields()[35], other.payload)) {
+        this.payload = data().deepCopy(fields()[35].schema(), other.payload);
+        fieldSetFlags()[35] = true;
       }
     }
 
     /**
-      * Gets the value of the 'producer_event_id' field.
-      * ID of the event by producer
+      * Gets the value of the 'eventId' field.
+      * ID of the event by tracking collection service
       * @return The value.
       */
-    public java.lang.String getProducerEventId() {
-      return producer_event_id;
+    public java.lang.String getEventId() {
+      return eventId;
     }
 
     /**
-      * Sets the value of the 'producer_event_id' field.
-      * ID of the event by producer
-      * @param value The value of 'producer_event_id'.
+      * Sets the value of the 'eventId' field.
+      * ID of the event by tracking collection service
+      * @param value The value of 'eventId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setProducerEventId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setEventId(java.lang.String value) {
       validate(fields()[0], value);
-      this.producer_event_id = value;
+      this.eventId = value;
       fieldSetFlags()[0] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'producer_event_id' field has been set.
-      * ID of the event by producer
-      * @return True if the 'producer_event_id' field has been set, false otherwise.
+      * Checks whether the 'eventId' field has been set.
+      * ID of the event by tracking collection service
+      * @return True if the 'eventId' field has been set, false otherwise.
       */
-    public boolean hasProducerEventId() {
+    public boolean hasEventId() {
       return fieldSetFlags()[0];
     }
 
 
     /**
-      * Clears the value of the 'producer_event_id' field.
-      * ID of the event by producer
+      * Clears the value of the 'eventId' field.
+      * ID of the event by tracking collection service
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearProducerEventId() {
-      producer_event_id = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearEventId() {
+      eventId = null;
       fieldSetFlags()[0] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'event_ts' field.
-      * Event received timestamp at the collection service
+      * Gets the value of the 'producerEventId' field.
+      * ID of the event by producer
       * @return The value.
       */
-    public java.lang.Long getEventTs() {
-      return event_ts;
+    public java.lang.String getProducerEventId() {
+      return producerEventId;
     }
 
     /**
-      * Sets the value of the 'event_ts' field.
-      * Event received timestamp at the collection service
-      * @param value The value of 'event_ts'.
+      * Sets the value of the 'producerEventId' field.
+      * ID of the event by producer
+      * @param value The value of 'producerEventId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setEventTs(long value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setProducerEventId(java.lang.String value) {
       validate(fields()[1], value);
-      this.event_ts = value;
+      this.producerEventId = value;
       fieldSetFlags()[1] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'event_ts' field has been set.
-      * Event received timestamp at the collection service
-      * @return True if the 'event_ts' field has been set, false otherwise.
+      * Checks whether the 'producerEventId' field has been set.
+      * ID of the event by producer
+      * @return True if the 'producerEventId' field has been set, false otherwise.
       */
-    public boolean hasEventTs() {
+    public boolean hasProducerEventId() {
       return fieldSetFlags()[1];
     }
 
 
     /**
-      * Clears the value of the 'event_ts' field.
-      * Event received timestamp at the collection service
+      * Clears the value of the 'producerEventId' field.
+      * ID of the event by producer
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearEventTs() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearProducerEventId() {
+      producerEventId = null;
       fieldSetFlags()[1] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'producer_event_ts' field.
-      * Event created timestamp at producer side
+      * Gets the value of the 'eventTs' field.
+      * Event received timestamp at the collection service
       * @return The value.
       */
-    public java.lang.Long getProducerEventTs() {
-      return producer_event_ts;
+    public java.lang.Long getEventTs() {
+      return eventTs;
     }
 
     /**
-      * Sets the value of the 'producer_event_ts' field.
-      * Event created timestamp at producer side
-      * @param value The value of 'producer_event_ts'.
+      * Sets the value of the 'eventTs' field.
+      * Event received timestamp at the collection service
+      * @param value The value of 'eventTs'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setProducerEventTs(long value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setEventTs(long value) {
       validate(fields()[2], value);
-      this.producer_event_ts = value;
+      this.eventTs = value;
       fieldSetFlags()[2] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'producer_event_ts' field has been set.
-      * Event created timestamp at producer side
-      * @return True if the 'producer_event_ts' field has been set, false otherwise.
+      * Checks whether the 'eventTs' field has been set.
+      * Event received timestamp at the collection service
+      * @return True if the 'eventTs' field has been set, false otherwise.
       */
-    public boolean hasProducerEventTs() {
+    public boolean hasEventTs() {
       return fieldSetFlags()[2];
     }
 
 
     /**
-      * Clears the value of the 'producer_event_ts' field.
-      * Event created timestamp at producer side
+      * Clears the value of the 'eventTs' field.
+      * Event received timestamp at the collection service
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearProducerEventTs() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearEventTs() {
       fieldSetFlags()[2] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'rlog_id' field.
+      * Gets the value of the 'producerEventTs' field.
+      * Event created timestamp at producer side
       * @return The value.
       */
-    public java.lang.String getRlogId() {
-      return rlog_id;
+    public java.lang.Long getProducerEventTs() {
+      return producerEventTs;
     }
 
     /**
-      * Sets the value of the 'rlog_id' field.
-      * @param value The value of 'rlog_id'.
+      * Sets the value of the 'producerEventTs' field.
+      * Event created timestamp at producer side
+      * @param value The value of 'producerEventTs'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setRlogId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setProducerEventTs(long value) {
       validate(fields()[3], value);
-      this.rlog_id = value;
+      this.producerEventTs = value;
       fieldSetFlags()[3] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'rlog_id' field has been set.
-      * @return True if the 'rlog_id' field has been set, false otherwise.
+      * Checks whether the 'producerEventTs' field has been set.
+      * Event created timestamp at producer side
+      * @return True if the 'producerEventTs' field has been set, false otherwise.
       */
-    public boolean hasRlogId() {
+    public boolean hasProducerEventTs() {
       return fieldSetFlags()[3];
     }
 
 
     /**
-      * Clears the value of the 'rlog_id' field.
+      * Clears the value of the 'producerEventTs' field.
+      * Event created timestamp at producer side
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearRlogId() {
-      rlog_id = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearProducerEventTs() {
       fieldSetFlags()[3] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'tracking_id' field.
-      * ID to associate user behavior and dilivery
+      * Gets the value of the 'rlogId' field.
       * @return The value.
       */
-    public java.lang.String getTrackingId() {
-      return tracking_id;
+    public java.lang.String getRlogId() {
+      return rlogId;
     }
 
     /**
-      * Sets the value of the 'tracking_id' field.
-      * ID to associate user behavior and dilivery
-      * @param value The value of 'tracking_id'.
+      * Sets the value of the 'rlogId' field.
+      * @param value The value of 'rlogId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setTrackingId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setRlogId(java.lang.String value) {
       validate(fields()[4], value);
-      this.tracking_id = value;
+      this.rlogId = value;
       fieldSetFlags()[4] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'tracking_id' field has been set.
-      * ID to associate user behavior and dilivery
-      * @return True if the 'tracking_id' field has been set, false otherwise.
+      * Checks whether the 'rlogId' field has been set.
+      * @return True if the 'rlogId' field has been set, false otherwise.
       */
-    public boolean hasTrackingId() {
+    public boolean hasRlogId() {
       return fieldSetFlags()[4];
     }
 
 
     /**
-      * Clears the value of the 'tracking_id' field.
-      * ID to associate user behavior and dilivery
+      * Clears the value of the 'rlogId' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearTrackingId() {
-      tracking_id = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearRlogId() {
+      rlogId = null;
       fieldSetFlags()[4] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'user_id' field.
-      * Oracle id
+      * Gets the value of the 'trackingId' field.
+      * ID to associate user behavior and dilivery
       * @return The value.
       */
-    public java.lang.Long getUserId() {
-      return user_id;
+    public java.lang.String getTrackingId() {
+      return trackingId;
     }
 
     /**
-      * Sets the value of the 'user_id' field.
-      * Oracle id
-      * @param value The value of 'user_id'.
+      * Sets the value of the 'trackingId' field.
+      * ID to associate user behavior and dilivery
+      * @param value The value of 'trackingId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setUserId(java.lang.Long value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setTrackingId(java.lang.String value) {
       validate(fields()[5], value);
-      this.user_id = value;
+      this.trackingId = value;
       fieldSetFlags()[5] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'user_id' field has been set.
-      * Oracle id
-      * @return True if the 'user_id' field has been set, false otherwise.
+      * Checks whether the 'trackingId' field has been set.
+      * ID to associate user behavior and dilivery
+      * @return True if the 'trackingId' field has been set, false otherwise.
       */
-    public boolean hasUserId() {
+    public boolean hasTrackingId() {
       return fieldSetFlags()[5];
     }
 
 
     /**
-      * Clears the value of the 'user_id' field.
-      * Oracle id
+      * Clears the value of the 'trackingId' field.
+      * ID to associate user behavior and dilivery
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearUserId() {
-      user_id = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearTrackingId() {
+      trackingId = null;
       fieldSetFlags()[5] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'public_user_id' field.
-      * public user id
+      * Gets the value of the 'userId' field.
+      * Oracle id
       * @return The value.
       */
-    public java.lang.String getPublicUserId() {
-      return public_user_id;
+    public java.lang.Long getUserId() {
+      return userId;
     }
 
     /**
-      * Sets the value of the 'public_user_id' field.
-      * public user id
-      * @param value The value of 'public_user_id'.
+      * Sets the value of the 'userId' field.
+      * Oracle id
+      * @param value The value of 'userId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setPublicUserId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setUserId(java.lang.Long value) {
       validate(fields()[6], value);
-      this.public_user_id = value;
+      this.userId = value;
       fieldSetFlags()[6] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'public_user_id' field has been set.
-      * public user id
-      * @return True if the 'public_user_id' field has been set, false otherwise.
+      * Checks whether the 'userId' field has been set.
+      * Oracle id
+      * @return True if the 'userId' field has been set, false otherwise.
       */
-    public boolean hasPublicUserId() {
+    public boolean hasUserId() {
       return fieldSetFlags()[6];
     }
 
 
     /**
-      * Clears the value of the 'public_user_id' field.
-      * public user id
+      * Clears the value of the 'userId' field.
+      * Oracle id
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearPublicUserId() {
-      public_user_id = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearUserId() {
+      userId = null;
       fieldSetFlags()[6] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'encrypted_user_id' field.
-      * Encrypted user id in email open and click url
+      * Gets the value of the 'publicUserId' field.
+      * public user id
       * @return The value.
       */
-    public java.lang.Long getEncryptedUserId() {
-      return encrypted_user_id;
+    public java.lang.String getPublicUserId() {
+      return publicUserId;
     }
 
     /**
-      * Sets the value of the 'encrypted_user_id' field.
-      * Encrypted user id in email open and click url
-      * @param value The value of 'encrypted_user_id'.
+      * Sets the value of the 'publicUserId' field.
+      * public user id
+      * @param value The value of 'publicUserId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setEncryptedUserId(java.lang.Long value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setPublicUserId(java.lang.String value) {
       validate(fields()[7], value);
-      this.encrypted_user_id = value;
+      this.publicUserId = value;
       fieldSetFlags()[7] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'encrypted_user_id' field has been set.
-      * Encrypted user id in email open and click url
-      * @return True if the 'encrypted_user_id' field has been set, false otherwise.
+      * Checks whether the 'publicUserId' field has been set.
+      * public user id
+      * @return True if the 'publicUserId' field has been set, false otherwise.
       */
-    public boolean hasEncryptedUserId() {
+    public boolean hasPublicUserId() {
       return fieldSetFlags()[7];
     }
 
 
     /**
-      * Clears the value of the 'encrypted_user_id' field.
+      * Clears the value of the 'publicUserId' field.
+      * public user id
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearPublicUserId() {
+      publicUserId = null;
+      fieldSetFlags()[7] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'encryptedUserId' field.
+      * Encrypted user id in email open and click url
+      * @return The value.
+      */
+    public java.lang.Long getEncryptedUserId() {
+      return encryptedUserId;
+    }
+
+    /**
+      * Sets the value of the 'encryptedUserId' field.
+      * Encrypted user id in email open and click url
+      * @param value The value of 'encryptedUserId'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setEncryptedUserId(java.lang.Long value) {
+      validate(fields()[8], value);
+      this.encryptedUserId = value;
+      fieldSetFlags()[8] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'encryptedUserId' field has been set.
+      * Encrypted user id in email open and click url
+      * @return True if the 'encryptedUserId' field has been set, false otherwise.
+      */
+    public boolean hasEncryptedUserId() {
+      return fieldSetFlags()[8];
+    }
+
+
+    /**
+      * Clears the value of the 'encryptedUserId' field.
       * Encrypted user id in email open and click url
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearEncryptedUserId() {
-      encrypted_user_id = null;
-      fieldSetFlags()[7] = false;
+      encryptedUserId = null;
+      fieldSetFlags()[8] = false;
       return this;
     }
 
@@ -1529,9 +1635,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setGuid(java.lang.String value) {
-      validate(fields()[8], value);
+      validate(fields()[9], value);
       this.guid = value;
-      fieldSetFlags()[8] = true;
+      fieldSetFlags()[9] = true;
       return this;
     }
 
@@ -1540,7 +1646,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'guid' field has been set, false otherwise.
       */
     public boolean hasGuid() {
-      return fieldSetFlags()[8];
+      return fieldSetFlags()[9];
     }
 
 
@@ -1550,7 +1656,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearGuid() {
       guid = null;
-      fieldSetFlags()[8] = false;
+      fieldSetFlags()[9] = false;
       return this;
     }
 
@@ -1568,9 +1674,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setIdfa(java.lang.String value) {
-      validate(fields()[9], value);
+      validate(fields()[10], value);
       this.idfa = value;
-      fieldSetFlags()[9] = true;
+      fieldSetFlags()[10] = true;
       return this;
     }
 
@@ -1579,7 +1685,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'idfa' field has been set, false otherwise.
       */
     public boolean hasIdfa() {
-      return fieldSetFlags()[9];
+      return fieldSetFlags()[10];
     }
 
 
@@ -1589,7 +1695,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearIdfa() {
       idfa = null;
-      fieldSetFlags()[9] = false;
+      fieldSetFlags()[10] = false;
       return this;
     }
 
@@ -1607,9 +1713,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setGadid(java.lang.String value) {
-      validate(fields()[10], value);
+      validate(fields()[11], value);
       this.gadid = value;
-      fieldSetFlags()[10] = true;
+      fieldSetFlags()[11] = true;
       return this;
     }
 
@@ -1618,7 +1724,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'gadid' field has been set, false otherwise.
       */
     public boolean hasGadid() {
-      return fieldSetFlags()[10];
+      return fieldSetFlags()[11];
     }
 
 
@@ -1628,280 +1734,280 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearGadid() {
       gadid = null;
-      fieldSetFlags()[10] = false;
-      return this;
-    }
-
-    /**
-      * Gets the value of the 'device_id' field.
-      * @return The value.
-      */
-    public java.lang.String getDeviceId() {
-      return device_id;
-    }
-
-    /**
-      * Sets the value of the 'device_id' field.
-      * @param value The value of 'device_id'.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setDeviceId(java.lang.String value) {
-      validate(fields()[11], value);
-      this.device_id = value;
-      fieldSetFlags()[11] = true;
-      return this;
-    }
-
-    /**
-      * Checks whether the 'device_id' field has been set.
-      * @return True if the 'device_id' field has been set, false otherwise.
-      */
-    public boolean hasDeviceId() {
-      return fieldSetFlags()[11];
-    }
-
-
-    /**
-      * Clears the value of the 'device_id' field.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearDeviceId() {
-      device_id = null;
       fieldSetFlags()[11] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'channel_type' field.
+      * Gets the value of the 'deviceId' field.
       * @return The value.
       */
-    public java.lang.String getChannelType() {
-      return channel_type;
+    public java.lang.String getDeviceId() {
+      return deviceId;
     }
 
     /**
-      * Sets the value of the 'channel_type' field.
-      * @param value The value of 'channel_type'.
+      * Sets the value of the 'deviceId' field.
+      * @param value The value of 'deviceId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setChannelType(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setDeviceId(java.lang.String value) {
       validate(fields()[12], value);
-      this.channel_type = value;
+      this.deviceId = value;
       fieldSetFlags()[12] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'channel_type' field has been set.
-      * @return True if the 'channel_type' field has been set, false otherwise.
+      * Checks whether the 'deviceId' field has been set.
+      * @return True if the 'deviceId' field has been set, false otherwise.
       */
-    public boolean hasChannelType() {
+    public boolean hasDeviceId() {
       return fieldSetFlags()[12];
     }
 
 
     /**
-      * Clears the value of the 'channel_type' field.
+      * Clears the value of the 'deviceId' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearChannelType() {
-      channel_type = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearDeviceId() {
+      deviceId = null;
       fieldSetFlags()[12] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'action_type' field.
+      * Gets the value of the 'channelType' field.
       * @return The value.
       */
-    public java.lang.String getActionType() {
-      return action_type;
+    public java.lang.String getChannelType() {
+      return channelType;
     }
 
     /**
-      * Sets the value of the 'action_type' field.
-      * @param value The value of 'action_type'.
+      * Sets the value of the 'channelType' field.
+      * @param value The value of 'channelType'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setActionType(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setChannelType(java.lang.String value) {
       validate(fields()[13], value);
-      this.action_type = value;
+      this.channelType = value;
       fieldSetFlags()[13] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'action_type' field has been set.
-      * @return True if the 'action_type' field has been set, false otherwise.
+      * Checks whether the 'channelType' field has been set.
+      * @return True if the 'channelType' field has been set, false otherwise.
       */
-    public boolean hasActionType() {
+    public boolean hasChannelType() {
       return fieldSetFlags()[13];
     }
 
 
     /**
-      * Clears the value of the 'action_type' field.
+      * Clears the value of the 'channelType' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearActionType() {
-      action_type = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearChannelType() {
+      channelType = null;
       fieldSetFlags()[13] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'partner_id' field.
+      * Gets the value of the 'actionType' field.
       * @return The value.
       */
-    public java.lang.String getPartnerId() {
-      return partner_id;
+    public java.lang.String getActionType() {
+      return actionType;
     }
 
     /**
-      * Sets the value of the 'partner_id' field.
-      * @param value The value of 'partner_id'.
+      * Sets the value of the 'actionType' field.
+      * @param value The value of 'actionType'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setPartnerId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setActionType(java.lang.String value) {
       validate(fields()[14], value);
-      this.partner_id = value;
+      this.actionType = value;
       fieldSetFlags()[14] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'partner_id' field has been set.
-      * @return True if the 'partner_id' field has been set, false otherwise.
+      * Checks whether the 'actionType' field has been set.
+      * @return True if the 'actionType' field has been set, false otherwise.
       */
-    public boolean hasPartnerId() {
+    public boolean hasActionType() {
       return fieldSetFlags()[14];
     }
 
 
     /**
-      * Clears the value of the 'partner_id' field.
+      * Clears the value of the 'actionType' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearPartnerId() {
-      partner_id = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearActionType() {
+      actionType = null;
       fieldSetFlags()[14] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'campaign_id' field.
+      * Gets the value of the 'partnerId' field.
       * @return The value.
       */
-    public java.lang.String getCampaignId() {
-      return campaign_id;
+    public java.lang.String getPartnerId() {
+      return partnerId;
     }
 
     /**
-      * Sets the value of the 'campaign_id' field.
-      * @param value The value of 'campaign_id'.
+      * Sets the value of the 'partnerId' field.
+      * @param value The value of 'partnerId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setCampaignId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setPartnerId(java.lang.String value) {
       validate(fields()[15], value);
-      this.campaign_id = value;
+      this.partnerId = value;
       fieldSetFlags()[15] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'campaign_id' field has been set.
-      * @return True if the 'campaign_id' field has been set, false otherwise.
+      * Checks whether the 'partnerId' field has been set.
+      * @return True if the 'partnerId' field has been set, false otherwise.
       */
-    public boolean hasCampaignId() {
+    public boolean hasPartnerId() {
       return fieldSetFlags()[15];
     }
 
 
     /**
-      * Clears the value of the 'campaign_id' field.
+      * Clears the value of the 'partnerId' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearCampaignId() {
-      campaign_id = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearPartnerId() {
+      partnerId = null;
       fieldSetFlags()[15] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'rotation_id' field.
+      * Gets the value of the 'campaignId' field.
       * @return The value.
       */
-    public java.lang.String getRotationId() {
-      return rotation_id;
+    public java.lang.String getCampaignId() {
+      return campaignId;
     }
 
     /**
-      * Sets the value of the 'rotation_id' field.
-      * @param value The value of 'rotation_id'.
+      * Sets the value of the 'campaignId' field.
+      * @param value The value of 'campaignId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setRotationId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setCampaignId(java.lang.String value) {
       validate(fields()[16], value);
-      this.rotation_id = value;
+      this.campaignId = value;
       fieldSetFlags()[16] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'rotation_id' field has been set.
-      * @return True if the 'rotation_id' field has been set, false otherwise.
+      * Checks whether the 'campaignId' field has been set.
+      * @return True if the 'campaignId' field has been set, false otherwise.
       */
-    public boolean hasRotationId() {
+    public boolean hasCampaignId() {
       return fieldSetFlags()[16];
     }
 
 
     /**
-      * Clears the value of the 'rotation_id' field.
+      * Clears the value of the 'campaignId' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearRotationId() {
-      rotation_id = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearCampaignId() {
+      campaignId = null;
       fieldSetFlags()[16] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'site_id' field.
+      * Gets the value of the 'rotationId' field.
       * @return The value.
       */
-    public java.lang.Integer getSiteId() {
-      return site_id;
+    public java.lang.String getRotationId() {
+      return rotationId;
     }
 
     /**
-      * Sets the value of the 'site_id' field.
-      * @param value The value of 'site_id'.
+      * Sets the value of the 'rotationId' field.
+      * @param value The value of 'rotationId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setSiteId(java.lang.Integer value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setRotationId(java.lang.String value) {
       validate(fields()[17], value);
-      this.site_id = value;
+      this.rotationId = value;
       fieldSetFlags()[17] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'site_id' field has been set.
-      * @return True if the 'site_id' field has been set, false otherwise.
+      * Checks whether the 'rotationId' field has been set.
+      * @return True if the 'rotationId' field has been set, false otherwise.
       */
-    public boolean hasSiteId() {
+    public boolean hasRotationId() {
       return fieldSetFlags()[17];
     }
 
 
     /**
-      * Clears the value of the 'site_id' field.
+      * Clears the value of the 'rotationId' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearRotationId() {
+      rotationId = null;
+      fieldSetFlags()[17] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'siteId' field.
+      * @return The value.
+      */
+    public java.lang.Integer getSiteId() {
+      return siteId;
+    }
+
+    /**
+      * Sets the value of the 'siteId' field.
+      * @param value The value of 'siteId'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setSiteId(java.lang.Integer value) {
+      validate(fields()[18], value);
+      this.siteId = value;
+      fieldSetFlags()[18] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'siteId' field has been set.
+      * @return True if the 'siteId' field has been set, false otherwise.
+      */
+    public boolean hasSiteId() {
+      return fieldSetFlags()[18];
+    }
+
+
+    /**
+      * Clears the value of the 'siteId' field.
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearSiteId() {
-      site_id = null;
-      fieldSetFlags()[17] = false;
+      siteId = null;
+      fieldSetFlags()[18] = false;
       return this;
     }
 
@@ -1919,9 +2025,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setUrl(java.lang.String value) {
-      validate(fields()[18], value);
+      validate(fields()[19], value);
       this.url = value;
-      fieldSetFlags()[18] = true;
+      fieldSetFlags()[19] = true;
       return this;
     }
 
@@ -1930,7 +2036,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'url' field has been set, false otherwise.
       */
     public boolean hasUrl() {
-      return fieldSetFlags()[18];
+      return fieldSetFlags()[19];
     }
 
 
@@ -1940,7 +2046,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearUrl() {
       url = null;
-      fieldSetFlags()[18] = false;
+      fieldSetFlags()[19] = false;
       return this;
     }
 
@@ -1958,9 +2064,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setReferer(java.lang.String value) {
-      validate(fields()[19], value);
+      validate(fields()[20], value);
       this.referer = value;
-      fieldSetFlags()[19] = true;
+      fieldSetFlags()[20] = true;
       return this;
     }
 
@@ -1969,7 +2075,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'referer' field has been set, false otherwise.
       */
     public boolean hasReferer() {
-      return fieldSetFlags()[19];
+      return fieldSetFlags()[20];
     }
 
 
@@ -1979,319 +2085,358 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearReferer() {
       referer = null;
-      fieldSetFlags()[19] = false;
-      return this;
-    }
-
-    /**
-      * Gets the value of the 'user_agent' field.
-      * @return The value.
-      */
-    public java.lang.String getUserAgent() {
-      return user_agent;
-    }
-
-    /**
-      * Sets the value of the 'user_agent' field.
-      * @param value The value of 'user_agent'.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setUserAgent(java.lang.String value) {
-      validate(fields()[20], value);
-      this.user_agent = value;
-      fieldSetFlags()[20] = true;
-      return this;
-    }
-
-    /**
-      * Checks whether the 'user_agent' field has been set.
-      * @return True if the 'user_agent' field has been set, false otherwise.
-      */
-    public boolean hasUserAgent() {
-      return fieldSetFlags()[20];
-    }
-
-
-    /**
-      * Clears the value of the 'user_agent' field.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearUserAgent() {
-      user_agent = null;
       fieldSetFlags()[20] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'device_family' field.
+      * Gets the value of the 'userAgent' field.
       * @return The value.
       */
-    public java.lang.String getDeviceFamily() {
-      return device_family;
+    public java.lang.String getUserAgent() {
+      return userAgent;
     }
 
     /**
-      * Sets the value of the 'device_family' field.
-      * @param value The value of 'device_family'.
+      * Sets the value of the 'userAgent' field.
+      * @param value The value of 'userAgent'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setDeviceFamily(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setUserAgent(java.lang.String value) {
       validate(fields()[21], value);
-      this.device_family = value;
+      this.userAgent = value;
       fieldSetFlags()[21] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'device_family' field has been set.
-      * @return True if the 'device_family' field has been set, false otherwise.
+      * Checks whether the 'userAgent' field has been set.
+      * @return True if the 'userAgent' field has been set, false otherwise.
       */
-    public boolean hasDeviceFamily() {
+    public boolean hasUserAgent() {
       return fieldSetFlags()[21];
     }
 
 
     /**
-      * Clears the value of the 'device_family' field.
+      * Clears the value of the 'userAgent' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearDeviceFamily() {
-      device_family = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearUserAgent() {
+      userAgent = null;
       fieldSetFlags()[21] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'device_type' field.
+      * Gets the value of the 'deviceFamily' field.
       * @return The value.
       */
-    public java.lang.String getDeviceType() {
-      return device_type;
+    public java.lang.String getDeviceFamily() {
+      return deviceFamily;
     }
 
     /**
-      * Sets the value of the 'device_type' field.
-      * @param value The value of 'device_type'.
+      * Sets the value of the 'deviceFamily' field.
+      * @param value The value of 'deviceFamily'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setDeviceType(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setDeviceFamily(java.lang.String value) {
       validate(fields()[22], value);
-      this.device_type = value;
+      this.deviceFamily = value;
       fieldSetFlags()[22] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'device_type' field has been set.
-      * @return True if the 'device_type' field has been set, false otherwise.
+      * Checks whether the 'deviceFamily' field has been set.
+      * @return True if the 'deviceFamily' field has been set, false otherwise.
       */
-    public boolean hasDeviceType() {
+    public boolean hasDeviceFamily() {
       return fieldSetFlags()[22];
     }
 
 
     /**
-      * Clears the value of the 'device_type' field.
+      * Clears the value of the 'deviceFamily' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearDeviceType() {
-      device_type = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearDeviceFamily() {
+      deviceFamily = null;
       fieldSetFlags()[22] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'browser_family' field.
+      * Gets the value of the 'deviceType' field.
       * @return The value.
       */
-    public java.lang.String getBrowserFamily() {
-      return browser_family;
+    public java.lang.String getDeviceType() {
+      return deviceType;
     }
 
     /**
-      * Sets the value of the 'browser_family' field.
-      * @param value The value of 'browser_family'.
+      * Sets the value of the 'deviceType' field.
+      * @param value The value of 'deviceType'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setBrowserFamily(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setDeviceType(java.lang.String value) {
       validate(fields()[23], value);
-      this.browser_family = value;
+      this.deviceType = value;
       fieldSetFlags()[23] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'browser_family' field has been set.
-      * @return True if the 'browser_family' field has been set, false otherwise.
+      * Checks whether the 'deviceType' field has been set.
+      * @return True if the 'deviceType' field has been set, false otherwise.
       */
-    public boolean hasBrowserFamily() {
+    public boolean hasDeviceType() {
       return fieldSetFlags()[23];
     }
 
 
     /**
-      * Clears the value of the 'browser_family' field.
+      * Clears the value of the 'deviceType' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearBrowserFamily() {
-      browser_family = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearDeviceType() {
+      deviceType = null;
       fieldSetFlags()[23] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'browser_version' field.
+      * Gets the value of the 'browserFamily' field.
       * @return The value.
       */
-    public java.lang.String getBrowserVersion() {
-      return browser_version;
+    public java.lang.String getBrowserFamily() {
+      return browserFamily;
     }
 
     /**
-      * Sets the value of the 'browser_version' field.
-      * @param value The value of 'browser_version'.
+      * Sets the value of the 'browserFamily' field.
+      * @param value The value of 'browserFamily'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setBrowserVersion(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setBrowserFamily(java.lang.String value) {
       validate(fields()[24], value);
-      this.browser_version = value;
+      this.browserFamily = value;
       fieldSetFlags()[24] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'browser_version' field has been set.
-      * @return True if the 'browser_version' field has been set, false otherwise.
+      * Checks whether the 'browserFamily' field has been set.
+      * @return True if the 'browserFamily' field has been set, false otherwise.
       */
-    public boolean hasBrowserVersion() {
+    public boolean hasBrowserFamily() {
       return fieldSetFlags()[24];
     }
 
 
     /**
-      * Clears the value of the 'browser_version' field.
+      * Clears the value of the 'browserFamily' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearBrowserVersion() {
-      browser_version = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearBrowserFamily() {
+      browserFamily = null;
       fieldSetFlags()[24] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'os_family' field.
+      * Gets the value of the 'browserVersion' field.
       * @return The value.
       */
-    public java.lang.String getOsFamily() {
-      return os_family;
+    public java.lang.String getBrowserVersion() {
+      return browserVersion;
     }
 
     /**
-      * Sets the value of the 'os_family' field.
-      * @param value The value of 'os_family'.
+      * Sets the value of the 'browserVersion' field.
+      * @param value The value of 'browserVersion'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setOsFamily(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setBrowserVersion(java.lang.String value) {
       validate(fields()[25], value);
-      this.os_family = value;
+      this.browserVersion = value;
       fieldSetFlags()[25] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'os_family' field has been set.
-      * @return True if the 'os_family' field has been set, false otherwise.
+      * Checks whether the 'browserVersion' field has been set.
+      * @return True if the 'browserVersion' field has been set, false otherwise.
       */
-    public boolean hasOsFamily() {
+    public boolean hasBrowserVersion() {
       return fieldSetFlags()[25];
     }
 
 
     /**
-      * Clears the value of the 'os_family' field.
+      * Clears the value of the 'browserVersion' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearOsFamily() {
-      os_family = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearBrowserVersion() {
+      browserVersion = null;
       fieldSetFlags()[25] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'os_version' field.
+      * Gets the value of the 'osFamily' field.
       * @return The value.
       */
-    public java.lang.String getOsVersion() {
-      return os_version;
+    public java.lang.String getOsFamily() {
+      return osFamily;
     }
 
     /**
-      * Sets the value of the 'os_version' field.
-      * @param value The value of 'os_version'.
+      * Sets the value of the 'osFamily' field.
+      * @param value The value of 'osFamily'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setOsVersion(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setOsFamily(java.lang.String value) {
       validate(fields()[26], value);
-      this.os_version = value;
+      this.osFamily = value;
       fieldSetFlags()[26] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'os_version' field has been set.
-      * @return True if the 'os_version' field has been set, false otherwise.
+      * Checks whether the 'osFamily' field has been set.
+      * @return True if the 'osFamily' field has been set, false otherwise.
       */
-    public boolean hasOsVersion() {
+    public boolean hasOsFamily() {
       return fieldSetFlags()[26];
     }
 
 
     /**
-      * Clears the value of the 'os_version' field.
+      * Clears the value of the 'osFamily' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearOsVersion() {
-      os_version = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearOsFamily() {
+      osFamily = null;
       fieldSetFlags()[26] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'app_version' field.
+      * Gets the value of the 'osVersion' field.
       * @return The value.
       */
-    public java.lang.String getAppVersion() {
-      return app_version;
+    public java.lang.String getOsVersion() {
+      return osVersion;
     }
 
     /**
-      * Sets the value of the 'app_version' field.
-      * @param value The value of 'app_version'.
+      * Sets the value of the 'osVersion' field.
+      * @param value The value of 'osVersion'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setAppVersion(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setOsVersion(java.lang.String value) {
       validate(fields()[27], value);
-      this.app_version = value;
+      this.osVersion = value;
       fieldSetFlags()[27] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'app_version' field has been set.
-      * @return True if the 'app_version' field has been set, false otherwise.
+      * Checks whether the 'osVersion' field has been set.
+      * @return True if the 'osVersion' field has been set, false otherwise.
       */
-    public boolean hasAppVersion() {
+    public boolean hasOsVersion() {
       return fieldSetFlags()[27];
     }
 
 
     /**
-      * Clears the value of the 'app_version' field.
+      * Clears the value of the 'osVersion' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearOsVersion() {
+      osVersion = null;
+      fieldSetFlags()[27] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'appVersion' field.
+      * @return The value.
+      */
+    public java.lang.String getAppVersion() {
+      return appVersion;
+    }
+
+    /**
+      * Sets the value of the 'appVersion' field.
+      * @param value The value of 'appVersion'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setAppVersion(java.lang.String value) {
+      validate(fields()[28], value);
+      this.appVersion = value;
+      fieldSetFlags()[28] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'appVersion' field has been set.
+      * @return True if the 'appVersion' field has been set, false otherwise.
+      */
+    public boolean hasAppVersion() {
+      return fieldSetFlags()[28];
+    }
+
+
+    /**
+      * Clears the value of the 'appVersion' field.
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearAppVersion() {
-      app_version = null;
-      fieldSetFlags()[27] = false;
+      appVersion = null;
+      fieldSetFlags()[28] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'service' field.
+      * @return The value.
+      */
+    public java.lang.String getService() {
+      return service;
+    }
+
+    /**
+      * Sets the value of the 'service' field.
+      * @param value The value of 'service'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setService(java.lang.String value) {
+      validate(fields()[29], value);
+      this.service = value;
+      fieldSetFlags()[29] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'service' field has been set.
+      * @return True if the 'service' field has been set, false otherwise.
+      */
+    public boolean hasService() {
+      return fieldSetFlags()[29];
+    }
+
+
+    /**
+      * Clears the value of the 'service' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearService() {
+      service = null;
+      fieldSetFlags()[29] = false;
       return this;
     }
 
@@ -2309,9 +2454,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setServer(java.lang.String value) {
-      validate(fields()[28], value);
+      validate(fields()[30], value);
       this.server = value;
-      fieldSetFlags()[28] = true;
+      fieldSetFlags()[30] = true;
       return this;
     }
 
@@ -2320,7 +2465,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'server' field has been set, false otherwise.
       */
     public boolean hasServer() {
-      return fieldSetFlags()[28];
+      return fieldSetFlags()[30];
     }
 
 
@@ -2330,162 +2475,162 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearServer() {
       server = null;
-      fieldSetFlags()[28] = false;
-      return this;
-    }
-
-    /**
-      * Gets the value of the 'remote_ip' field.
-      * @return The value.
-      */
-    public java.lang.String getRemoteIp() {
-      return remote_ip;
-    }
-
-    /**
-      * Sets the value of the 'remote_ip' field.
-      * @param value The value of 'remote_ip'.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setRemoteIp(java.lang.String value) {
-      validate(fields()[29], value);
-      this.remote_ip = value;
-      fieldSetFlags()[29] = true;
-      return this;
-    }
-
-    /**
-      * Checks whether the 'remote_ip' field has been set.
-      * @return True if the 'remote_ip' field has been set, false otherwise.
-      */
-    public boolean hasRemoteIp() {
-      return fieldSetFlags()[29];
-    }
-
-
-    /**
-      * Clears the value of the 'remote_ip' field.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearRemoteIp() {
-      remote_ip = null;
-      fieldSetFlags()[29] = false;
-      return this;
-    }
-
-    /**
-      * Gets the value of the 'page_id' field.
-      * @return The value.
-      */
-    public java.lang.Integer getPageId() {
-      return page_id;
-    }
-
-    /**
-      * Sets the value of the 'page_id' field.
-      * @param value The value of 'page_id'.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setPageId(java.lang.Integer value) {
-      validate(fields()[30], value);
-      this.page_id = value;
-      fieldSetFlags()[30] = true;
-      return this;
-    }
-
-    /**
-      * Checks whether the 'page_id' field has been set.
-      * @return True if the 'page_id' field has been set, false otherwise.
-      */
-    public boolean hasPageId() {
-      return fieldSetFlags()[30];
-    }
-
-
-    /**
-      * Clears the value of the 'page_id' field.
-      * @return This builder.
-      */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearPageId() {
-      page_id = null;
       fieldSetFlags()[30] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'geo_id' field.
+      * Gets the value of the 'remoteIp' field.
       * @return The value.
       */
-    public java.lang.Integer getGeoId() {
-      return geo_id;
+    public java.lang.String getRemoteIp() {
+      return remoteIp;
     }
 
     /**
-      * Sets the value of the 'geo_id' field.
-      * @param value The value of 'geo_id'.
+      * Sets the value of the 'remoteIp' field.
+      * @param value The value of 'remoteIp'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setGeoId(java.lang.Integer value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setRemoteIp(java.lang.String value) {
       validate(fields()[31], value);
-      this.geo_id = value;
+      this.remoteIp = value;
       fieldSetFlags()[31] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'geo_id' field has been set.
-      * @return True if the 'geo_id' field has been set, false otherwise.
+      * Checks whether the 'remoteIp' field has been set.
+      * @return True if the 'remoteIp' field has been set, false otherwise.
       */
-    public boolean hasGeoId() {
+    public boolean hasRemoteIp() {
       return fieldSetFlags()[31];
     }
 
 
     /**
-      * Clears the value of the 'geo_id' field.
+      * Clears the value of the 'remoteIp' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearGeoId() {
-      geo_id = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearRemoteIp() {
+      remoteIp = null;
       fieldSetFlags()[31] = false;
       return this;
     }
 
     /**
-      * Gets the value of the 'is_bot' field.
+      * Gets the value of the 'pageId' field.
       * @return The value.
       */
-    public java.lang.Boolean getIsBot() {
-      return is_bot;
+    public java.lang.Integer getPageId() {
+      return pageId;
     }
 
     /**
-      * Sets the value of the 'is_bot' field.
-      * @param value The value of 'is_bot'.
+      * Sets the value of the 'pageId' field.
+      * @param value The value of 'pageId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setIsBot(boolean value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setPageId(java.lang.Integer value) {
       validate(fields()[32], value);
-      this.is_bot = value;
+      this.pageId = value;
       fieldSetFlags()[32] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'is_bot' field has been set.
-      * @return True if the 'is_bot' field has been set, false otherwise.
+      * Checks whether the 'pageId' field has been set.
+      * @return True if the 'pageId' field has been set, false otherwise.
       */
-    public boolean hasIsBot() {
+    public boolean hasPageId() {
       return fieldSetFlags()[32];
     }
 
 
     /**
-      * Clears the value of the 'is_bot' field.
+      * Clears the value of the 'pageId' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearPageId() {
+      pageId = null;
+      fieldSetFlags()[32] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'geoId' field.
+      * @return The value.
+      */
+    public java.lang.Integer getGeoId() {
+      return geoId;
+    }
+
+    /**
+      * Sets the value of the 'geoId' field.
+      * @param value The value of 'geoId'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setGeoId(java.lang.Integer value) {
+      validate(fields()[33], value);
+      this.geoId = value;
+      fieldSetFlags()[33] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'geoId' field has been set.
+      * @return True if the 'geoId' field has been set, false otherwise.
+      */
+    public boolean hasGeoId() {
+      return fieldSetFlags()[33];
+    }
+
+
+    /**
+      * Clears the value of the 'geoId' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearGeoId() {
+      geoId = null;
+      fieldSetFlags()[33] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'isBot' field.
+      * @return The value.
+      */
+    public java.lang.Boolean getIsBot() {
+      return isBot;
+    }
+
+    /**
+      * Sets the value of the 'isBot' field.
+      * @param value The value of 'isBot'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setIsBot(boolean value) {
+      validate(fields()[34], value);
+      this.isBot = value;
+      fieldSetFlags()[34] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'isBot' field has been set.
+      * @return True if the 'isBot' field has been set, false otherwise.
+      */
+    public boolean hasIsBot() {
+      return fieldSetFlags()[34];
+    }
+
+
+    /**
+      * Clears the value of the 'isBot' field.
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearIsBot() {
-      fieldSetFlags()[32] = false;
+      fieldSetFlags()[34] = false;
       return this;
     }
 
@@ -2503,9 +2648,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setPayload(java.util.Map<java.lang.String,java.lang.String> value) {
-      validate(fields()[33], value);
+      validate(fields()[35], value);
       this.payload = value;
-      fieldSetFlags()[33] = true;
+      fieldSetFlags()[35] = true;
       return this;
     }
 
@@ -2514,7 +2659,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'payload' field has been set, false otherwise.
       */
     public boolean hasPayload() {
-      return fieldSetFlags()[33];
+      return fieldSetFlags()[35];
     }
 
 
@@ -2524,7 +2669,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearPayload() {
       payload = null;
-      fieldSetFlags()[33] = false;
+      fieldSetFlags()[35] = false;
       return this;
     }
 
@@ -2533,40 +2678,42 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
     public UnifiedTrackingRheosEvent build() {
       try {
         UnifiedTrackingRheosEvent record = new UnifiedTrackingRheosEvent();
-        record.producer_event_id = fieldSetFlags()[0] ? this.producer_event_id : (java.lang.String) defaultValue(fields()[0]);
-        record.event_ts = fieldSetFlags()[1] ? this.event_ts : (java.lang.Long) defaultValue(fields()[1]);
-        record.producer_event_ts = fieldSetFlags()[2] ? this.producer_event_ts : (java.lang.Long) defaultValue(fields()[2]);
-        record.rlog_id = fieldSetFlags()[3] ? this.rlog_id : (java.lang.String) defaultValue(fields()[3]);
-        record.tracking_id = fieldSetFlags()[4] ? this.tracking_id : (java.lang.String) defaultValue(fields()[4]);
-        record.user_id = fieldSetFlags()[5] ? this.user_id : (java.lang.Long) defaultValue(fields()[5]);
-        record.public_user_id = fieldSetFlags()[6] ? this.public_user_id : (java.lang.String) defaultValue(fields()[6]);
-        record.encrypted_user_id = fieldSetFlags()[7] ? this.encrypted_user_id : (java.lang.Long) defaultValue(fields()[7]);
-        record.guid = fieldSetFlags()[8] ? this.guid : (java.lang.String) defaultValue(fields()[8]);
-        record.idfa = fieldSetFlags()[9] ? this.idfa : (java.lang.String) defaultValue(fields()[9]);
-        record.gadid = fieldSetFlags()[10] ? this.gadid : (java.lang.String) defaultValue(fields()[10]);
-        record.device_id = fieldSetFlags()[11] ? this.device_id : (java.lang.String) defaultValue(fields()[11]);
-        record.channel_type = fieldSetFlags()[12] ? this.channel_type : (java.lang.String) defaultValue(fields()[12]);
-        record.action_type = fieldSetFlags()[13] ? this.action_type : (java.lang.String) defaultValue(fields()[13]);
-        record.partner_id = fieldSetFlags()[14] ? this.partner_id : (java.lang.String) defaultValue(fields()[14]);
-        record.campaign_id = fieldSetFlags()[15] ? this.campaign_id : (java.lang.String) defaultValue(fields()[15]);
-        record.rotation_id = fieldSetFlags()[16] ? this.rotation_id : (java.lang.String) defaultValue(fields()[16]);
-        record.site_id = fieldSetFlags()[17] ? this.site_id : (java.lang.Integer) defaultValue(fields()[17]);
-        record.url = fieldSetFlags()[18] ? this.url : (java.lang.String) defaultValue(fields()[18]);
-        record.referer = fieldSetFlags()[19] ? this.referer : (java.lang.String) defaultValue(fields()[19]);
-        record.user_agent = fieldSetFlags()[20] ? this.user_agent : (java.lang.String) defaultValue(fields()[20]);
-        record.device_family = fieldSetFlags()[21] ? this.device_family : (java.lang.String) defaultValue(fields()[21]);
-        record.device_type = fieldSetFlags()[22] ? this.device_type : (java.lang.String) defaultValue(fields()[22]);
-        record.browser_family = fieldSetFlags()[23] ? this.browser_family : (java.lang.String) defaultValue(fields()[23]);
-        record.browser_version = fieldSetFlags()[24] ? this.browser_version : (java.lang.String) defaultValue(fields()[24]);
-        record.os_family = fieldSetFlags()[25] ? this.os_family : (java.lang.String) defaultValue(fields()[25]);
-        record.os_version = fieldSetFlags()[26] ? this.os_version : (java.lang.String) defaultValue(fields()[26]);
-        record.app_version = fieldSetFlags()[27] ? this.app_version : (java.lang.String) defaultValue(fields()[27]);
-        record.server = fieldSetFlags()[28] ? this.server : (java.lang.String) defaultValue(fields()[28]);
-        record.remote_ip = fieldSetFlags()[29] ? this.remote_ip : (java.lang.String) defaultValue(fields()[29]);
-        record.page_id = fieldSetFlags()[30] ? this.page_id : (java.lang.Integer) defaultValue(fields()[30]);
-        record.geo_id = fieldSetFlags()[31] ? this.geo_id : (java.lang.Integer) defaultValue(fields()[31]);
-        record.is_bot = fieldSetFlags()[32] ? this.is_bot : (java.lang.Boolean) defaultValue(fields()[32]);
-        record.payload = fieldSetFlags()[33] ? this.payload : (java.util.Map<java.lang.String,java.lang.String>) defaultValue(fields()[33]);
+        record.eventId = fieldSetFlags()[0] ? this.eventId : (java.lang.String) defaultValue(fields()[0]);
+        record.producerEventId = fieldSetFlags()[1] ? this.producerEventId : (java.lang.String) defaultValue(fields()[1]);
+        record.eventTs = fieldSetFlags()[2] ? this.eventTs : (java.lang.Long) defaultValue(fields()[2]);
+        record.producerEventTs = fieldSetFlags()[3] ? this.producerEventTs : (java.lang.Long) defaultValue(fields()[3]);
+        record.rlogId = fieldSetFlags()[4] ? this.rlogId : (java.lang.String) defaultValue(fields()[4]);
+        record.trackingId = fieldSetFlags()[5] ? this.trackingId : (java.lang.String) defaultValue(fields()[5]);
+        record.userId = fieldSetFlags()[6] ? this.userId : (java.lang.Long) defaultValue(fields()[6]);
+        record.publicUserId = fieldSetFlags()[7] ? this.publicUserId : (java.lang.String) defaultValue(fields()[7]);
+        record.encryptedUserId = fieldSetFlags()[8] ? this.encryptedUserId : (java.lang.Long) defaultValue(fields()[8]);
+        record.guid = fieldSetFlags()[9] ? this.guid : (java.lang.String) defaultValue(fields()[9]);
+        record.idfa = fieldSetFlags()[10] ? this.idfa : (java.lang.String) defaultValue(fields()[10]);
+        record.gadid = fieldSetFlags()[11] ? this.gadid : (java.lang.String) defaultValue(fields()[11]);
+        record.deviceId = fieldSetFlags()[12] ? this.deviceId : (java.lang.String) defaultValue(fields()[12]);
+        record.channelType = fieldSetFlags()[13] ? this.channelType : (java.lang.String) defaultValue(fields()[13]);
+        record.actionType = fieldSetFlags()[14] ? this.actionType : (java.lang.String) defaultValue(fields()[14]);
+        record.partnerId = fieldSetFlags()[15] ? this.partnerId : (java.lang.String) defaultValue(fields()[15]);
+        record.campaignId = fieldSetFlags()[16] ? this.campaignId : (java.lang.String) defaultValue(fields()[16]);
+        record.rotationId = fieldSetFlags()[17] ? this.rotationId : (java.lang.String) defaultValue(fields()[17]);
+        record.siteId = fieldSetFlags()[18] ? this.siteId : (java.lang.Integer) defaultValue(fields()[18]);
+        record.url = fieldSetFlags()[19] ? this.url : (java.lang.String) defaultValue(fields()[19]);
+        record.referer = fieldSetFlags()[20] ? this.referer : (java.lang.String) defaultValue(fields()[20]);
+        record.userAgent = fieldSetFlags()[21] ? this.userAgent : (java.lang.String) defaultValue(fields()[21]);
+        record.deviceFamily = fieldSetFlags()[22] ? this.deviceFamily : (java.lang.String) defaultValue(fields()[22]);
+        record.deviceType = fieldSetFlags()[23] ? this.deviceType : (java.lang.String) defaultValue(fields()[23]);
+        record.browserFamily = fieldSetFlags()[24] ? this.browserFamily : (java.lang.String) defaultValue(fields()[24]);
+        record.browserVersion = fieldSetFlags()[25] ? this.browserVersion : (java.lang.String) defaultValue(fields()[25]);
+        record.osFamily = fieldSetFlags()[26] ? this.osFamily : (java.lang.String) defaultValue(fields()[26]);
+        record.osVersion = fieldSetFlags()[27] ? this.osVersion : (java.lang.String) defaultValue(fields()[27]);
+        record.appVersion = fieldSetFlags()[28] ? this.appVersion : (java.lang.String) defaultValue(fields()[28]);
+        record.service = fieldSetFlags()[29] ? this.service : (java.lang.String) defaultValue(fields()[29]);
+        record.server = fieldSetFlags()[30] ? this.server : (java.lang.String) defaultValue(fields()[30]);
+        record.remoteIp = fieldSetFlags()[31] ? this.remoteIp : (java.lang.String) defaultValue(fields()[31]);
+        record.pageId = fieldSetFlags()[32] ? this.pageId : (java.lang.Integer) defaultValue(fields()[32]);
+        record.geoId = fieldSetFlags()[33] ? this.geoId : (java.lang.Integer) defaultValue(fields()[33]);
+        record.isBot = fieldSetFlags()[34] ? this.isBot : (java.lang.Boolean) defaultValue(fields()[34]);
+        record.payload = fieldSetFlags()[35] ? this.payload : (java.util.Map<java.lang.String,java.lang.String>) defaultValue(fields()[35]);
         return record;
       } catch (java.lang.Exception e) {
         throw new org.apache.avro.AvroRuntimeException(e);
