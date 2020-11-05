@@ -28,8 +28,8 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-11-04T12:51:59.600+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "eventId","producerEventId","producerEventTs","rlogId","trackingId","userId","publicUserId","encryptedUserId","guid","idfa","gadid","deviceId","channelType","actionType","partnerId","campaignId","rotationId","siteId","url","referer","userAgent","service","server","remoteIp","pageId","geoId","payload" })
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-11-05T14:27:43.824+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "producerEventId","producerEventTs","rlogId","trackingId","userId","encryptedUserId","guid","idfa","gadid","channelType","actionType","partnerId","campaignId","rotationId","siteId","langCd","url","referer","userAgent","service","server","remoteIp","pageId","geoId","payload" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -39,9 +39,6 @@ private static final long serialVersionUID = 1L;
 
 
 
-    @JsonProperty("eventId")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String eventId = null;
     @JsonProperty("producerEventId")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String producerEventId = null;
@@ -57,9 +54,6 @@ private static final long serialVersionUID = 1L;
     @JsonProperty("userId")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String userId = null;
-    @JsonProperty("publicUserId")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String publicUserId = null;
     @JsonProperty("encryptedUserId")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String encryptedUserId = null;
@@ -72,9 +66,6 @@ private static final long serialVersionUID = 1L;
     @JsonProperty("gadid")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String gadid = null;
-    @JsonProperty("deviceId")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String deviceId = null;
     @JsonProperty("channelType")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String channelType = null;
@@ -93,6 +84,9 @@ private static final long serialVersionUID = 1L;
     @JsonProperty("siteId")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer siteId = null;
+    @JsonProperty("langCd")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String langCd = null;
     @JsonProperty("url")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String url = null;
@@ -121,18 +115,6 @@ private static final long serialVersionUID = 1L;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Map<String, String> payload = null;
 
-/**
-    * Unified event id at tracking level
-* @return eventId
-    **/
-    @ApiModelProperty(example = "18c244e5-0ee3-4b0e-b283-4efb379bee44", value = "Unified event id at tracking level")
-public String getEventId() {
-    return eventId;
-    }
-
-public void setEventId(String eventId) {
-        this.eventId = eventId;
-        }
 /**
     * Event id at producer level
 * @return producerEventId
@@ -194,18 +176,6 @@ public void setUserId(String userId) {
         this.userId = userId;
         }
 /**
-    * Public user id
-* @return publicUserId
-    **/
-    @ApiModelProperty(example = "1626162", value = "Public user id")
-public String getPublicUserId() {
-    return publicUserId;
-    }
-
-public void setPublicUserId(String publicUserId) {
-        this.publicUserId = publicUserId;
-        }
-/**
     * Encrypted user id
 * @return encryptedUserId
     **/
@@ -252,18 +222,6 @@ public String getGadid() {
 
 public void setGadid(String gadid) {
         this.gadid = gadid;
-        }
-/**
-    * This is ebay mobile app generated unique id for each app installation. It is usually used in request header X-EBAY3PP-DEVICE-ID for each API call.
-* @return deviceId
-    **/
-    @ApiModelProperty(example = "035911ea-467d-4056-903b-65cf44f5633b", value = "This is ebay mobile app generated unique id for each app installation. It is usually used in request header X-EBAY3PP-DEVICE-ID for each API call.")
-public String getDeviceId() {
-    return deviceId;
-    }
-
-public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
         }
 /**
     * Channel identifier
@@ -336,6 +294,18 @@ public Integer getSiteId() {
 
 public void setSiteId(Integer siteId) {
         this.siteId = siteId;
+        }
+/**
+    * language code
+* @return langCd
+    **/
+    @ApiModelProperty(example = "EN-US", value = "language code")
+public String getLangCd() {
+    return langCd;
+    }
+
+public void setLangCd(String langCd) {
+        this.langCd = langCd;
         }
 /**
     * Tracking url
@@ -454,24 +424,22 @@ public void setPayload(Map<String, String> payload) {
     return false;
     }
         UnifiedTrackingEvent unifiedTrackingEvent = (UnifiedTrackingEvent) o;
-        return Objects.equals(this.eventId, unifiedTrackingEvent.eventId) &&
-        Objects.equals(this.producerEventId, unifiedTrackingEvent.producerEventId) &&
+        return Objects.equals(this.producerEventId, unifiedTrackingEvent.producerEventId) &&
         Objects.equals(this.producerEventTs, unifiedTrackingEvent.producerEventTs) &&
         Objects.equals(this.rlogId, unifiedTrackingEvent.rlogId) &&
         Objects.equals(this.trackingId, unifiedTrackingEvent.trackingId) &&
         Objects.equals(this.userId, unifiedTrackingEvent.userId) &&
-        Objects.equals(this.publicUserId, unifiedTrackingEvent.publicUserId) &&
         Objects.equals(this.encryptedUserId, unifiedTrackingEvent.encryptedUserId) &&
         Objects.equals(this.guid, unifiedTrackingEvent.guid) &&
         Objects.equals(this.idfa, unifiedTrackingEvent.idfa) &&
         Objects.equals(this.gadid, unifiedTrackingEvent.gadid) &&
-        Objects.equals(this.deviceId, unifiedTrackingEvent.deviceId) &&
         Objects.equals(this.channelType, unifiedTrackingEvent.channelType) &&
         Objects.equals(this.actionType, unifiedTrackingEvent.actionType) &&
         Objects.equals(this.partnerId, unifiedTrackingEvent.partnerId) &&
         Objects.equals(this.campaignId, unifiedTrackingEvent.campaignId) &&
         Objects.equals(this.rotationId, unifiedTrackingEvent.rotationId) &&
         Objects.equals(this.siteId, unifiedTrackingEvent.siteId) &&
+        Objects.equals(this.langCd, unifiedTrackingEvent.langCd) &&
         Objects.equals(this.url, unifiedTrackingEvent.url) &&
         Objects.equals(this.referer, unifiedTrackingEvent.referer) &&
         Objects.equals(this.userAgent, unifiedTrackingEvent.userAgent) &&
@@ -485,7 +453,7 @@ public void setPayload(Map<String, String> payload) {
 
     @Override
     public int hashCode() {
-    return Objects.hash(eventId, producerEventId, producerEventTs, rlogId, trackingId, userId, publicUserId, encryptedUserId, guid, idfa, gadid, deviceId, channelType, actionType, partnerId, campaignId, rotationId, siteId, url, referer, userAgent, service, server, remoteIp, pageId, geoId, payload);
+    return Objects.hash(producerEventId, producerEventTs, rlogId, trackingId, userId, encryptedUserId, guid, idfa, gadid, channelType, actionType, partnerId, campaignId, rotationId, siteId, langCd, url, referer, userAgent, service, server, remoteIp, pageId, geoId, payload);
     }
 
     @Override
@@ -493,24 +461,22 @@ public void setPayload(Map<String, String> payload) {
       StringBuilder sb = new StringBuilder();
       sb.append("class UnifiedTrackingEvent {\n");
       
-      sb.append("    eventId: ").append(toIndentedString(eventId)).append("\n");
       sb.append("    producerEventId: ").append(toIndentedString(producerEventId)).append("\n");
       sb.append("    producerEventTs: ").append(toIndentedString(producerEventTs)).append("\n");
       sb.append("    rlogId: ").append(toIndentedString(rlogId)).append("\n");
       sb.append("    trackingId: ").append(toIndentedString(trackingId)).append("\n");
       sb.append("    userId: ").append(toIndentedString(userId)).append("\n");
-      sb.append("    publicUserId: ").append(toIndentedString(publicUserId)).append("\n");
       sb.append("    encryptedUserId: ").append(toIndentedString(encryptedUserId)).append("\n");
       sb.append("    guid: ").append(toIndentedString(guid)).append("\n");
       sb.append("    idfa: ").append(toIndentedString(idfa)).append("\n");
       sb.append("    gadid: ").append(toIndentedString(gadid)).append("\n");
-      sb.append("    deviceId: ").append(toIndentedString(deviceId)).append("\n");
       sb.append("    channelType: ").append(toIndentedString(channelType)).append("\n");
       sb.append("    actionType: ").append(toIndentedString(actionType)).append("\n");
       sb.append("    partnerId: ").append(toIndentedString(partnerId)).append("\n");
       sb.append("    campaignId: ").append(toIndentedString(campaignId)).append("\n");
       sb.append("    rotationId: ").append(toIndentedString(rotationId)).append("\n");
       sb.append("    siteId: ").append(toIndentedString(siteId)).append("\n");
+      sb.append("    langCd: ").append(toIndentedString(langCd)).append("\n");
       sb.append("    url: ").append(toIndentedString(url)).append("\n");
       sb.append("    referer: ").append(toIndentedString(referer)).append("\n");
       sb.append("    userAgent: ").append(toIndentedString(userAgent)).append("\n");

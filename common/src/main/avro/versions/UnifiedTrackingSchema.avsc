@@ -149,6 +149,14 @@
       "default": ""
     },
     {
+      "name": "langCd",
+      "type": [
+        "null",
+        "int"
+      ],
+      "default": ""
+    },
+    {
       "name": "url",
       "type": [
         "null",

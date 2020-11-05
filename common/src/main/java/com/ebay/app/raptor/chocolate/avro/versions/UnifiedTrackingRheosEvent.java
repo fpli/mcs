@@ -14,8 +14,8 @@ import org.apache.avro.message.SchemaStore;
 /**  Unified tracking topic schema */
 @org.apache.avro.specific.AvroGenerated
 public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 7352137945967607512L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UnifiedTrackingRheosEvent\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"doc\":\" Unified tracking topic schema\",\"fields\":[{\"name\":\"eventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by tracking collection service\"},{\"name\":\"producerEventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by producer\"},{\"name\":\"eventTs\",\"type\":\"long\",\"doc\":\"Event received timestamp at the collection service\"},{\"name\":\"producerEventTs\",\"type\":\"long\",\"doc\":\"Event created timestamp at producer side\"},{\"name\":\"rlogId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"trackingId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"ID to associate user behavior and dilivery\",\"default\":\"\"},{\"name\":\"userId\",\"type\":[\"null\",\"long\"],\"doc\":\"Oracle id\",\"default\":\"\"},{\"name\":\"publicUserId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"public user id\",\"default\":\"\"},{\"name\":\"encryptedUserId\",\"type\":[\"null\",\"long\"],\"doc\":\"Encrypted user id in email open and click url\",\"default\":\"\"},{\"name\":\"guid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"idfa\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"gadid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"channelType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"actionType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"partnerId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"campaignId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"rotationId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"siteId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"url\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"referer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"userAgent\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"appVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"service\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"server\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"remoteIp\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"pageId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"geoId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"isBot\",\"type\":\"boolean\",\"default\":\"false\"},{\"name\":\"payload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}}]}");
+  private static final long serialVersionUID = 3616032115862734864L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UnifiedTrackingRheosEvent\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"doc\":\" Unified tracking topic schema\",\"fields\":[{\"name\":\"eventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by tracking collection service\"},{\"name\":\"producerEventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by producer\"},{\"name\":\"eventTs\",\"type\":\"long\",\"doc\":\"Event received timestamp at the collection service\"},{\"name\":\"producerEventTs\",\"type\":\"long\",\"doc\":\"Event created timestamp at producer side\"},{\"name\":\"rlogId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"trackingId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"ID to associate user behavior and dilivery\",\"default\":\"\"},{\"name\":\"userId\",\"type\":[\"null\",\"long\"],\"doc\":\"Oracle id\",\"default\":\"\"},{\"name\":\"publicUserId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"public user id\",\"default\":\"\"},{\"name\":\"encryptedUserId\",\"type\":[\"null\",\"long\"],\"doc\":\"Encrypted user id in email open and click url\",\"default\":\"\"},{\"name\":\"guid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"idfa\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"gadid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"channelType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"actionType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"partnerId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"campaignId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"rotationId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"siteId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"langCd\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"url\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"referer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"userAgent\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"appVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"service\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"server\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"remoteIp\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"pageId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"geoId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"isBot\",\"type\":\"boolean\",\"default\":\"false\"},{\"name\":\"payload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -79,6 +79,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
    private java.lang.String campaignId;
    private java.lang.String rotationId;
    private java.lang.Integer siteId;
+   private java.lang.Integer langCd;
    private java.lang.String url;
    private java.lang.String referer;
    private java.lang.String userAgent;
@@ -125,6 +126,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
    * @param campaignId The new value for campaignId
    * @param rotationId The new value for rotationId
    * @param siteId The new value for siteId
+   * @param langCd The new value for langCd
    * @param url The new value for url
    * @param referer The new value for referer
    * @param userAgent The new value for userAgent
@@ -143,7 +145,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
    * @param isBot The new value for isBot
    * @param payload The new value for payload
    */
-  public UnifiedTrackingRheosEvent(java.lang.String eventId, java.lang.String producerEventId, java.lang.Long eventTs, java.lang.Long producerEventTs, java.lang.String rlogId, java.lang.String trackingId, java.lang.Long userId, java.lang.String publicUserId, java.lang.Long encryptedUserId, java.lang.String guid, java.lang.String idfa, java.lang.String gadid, java.lang.String deviceId, java.lang.String channelType, java.lang.String actionType, java.lang.String partnerId, java.lang.String campaignId, java.lang.String rotationId, java.lang.Integer siteId, java.lang.String url, java.lang.String referer, java.lang.String userAgent, java.lang.String deviceFamily, java.lang.String deviceType, java.lang.String browserFamily, java.lang.String browserVersion, java.lang.String osFamily, java.lang.String osVersion, java.lang.String appVersion, java.lang.String service, java.lang.String server, java.lang.String remoteIp, java.lang.Integer pageId, java.lang.Integer geoId, java.lang.Boolean isBot, java.util.Map<java.lang.String,java.lang.String> payload) {
+  public UnifiedTrackingRheosEvent(java.lang.String eventId, java.lang.String producerEventId, java.lang.Long eventTs, java.lang.Long producerEventTs, java.lang.String rlogId, java.lang.String trackingId, java.lang.Long userId, java.lang.String publicUserId, java.lang.Long encryptedUserId, java.lang.String guid, java.lang.String idfa, java.lang.String gadid, java.lang.String deviceId, java.lang.String channelType, java.lang.String actionType, java.lang.String partnerId, java.lang.String campaignId, java.lang.String rotationId, java.lang.Integer siteId, java.lang.Integer langCd, java.lang.String url, java.lang.String referer, java.lang.String userAgent, java.lang.String deviceFamily, java.lang.String deviceType, java.lang.String browserFamily, java.lang.String browserVersion, java.lang.String osFamily, java.lang.String osVersion, java.lang.String appVersion, java.lang.String service, java.lang.String server, java.lang.String remoteIp, java.lang.Integer pageId, java.lang.Integer geoId, java.lang.Boolean isBot, java.util.Map<java.lang.String,java.lang.String> payload) {
     this.eventId = eventId;
     this.producerEventId = producerEventId;
     this.eventTs = eventTs;
@@ -163,6 +165,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
     this.campaignId = campaignId;
     this.rotationId = rotationId;
     this.siteId = siteId;
+    this.langCd = langCd;
     this.url = url;
     this.referer = referer;
     this.userAgent = userAgent;
@@ -205,23 +208,24 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
     case 16: return campaignId;
     case 17: return rotationId;
     case 18: return siteId;
-    case 19: return url;
-    case 20: return referer;
-    case 21: return userAgent;
-    case 22: return deviceFamily;
-    case 23: return deviceType;
-    case 24: return browserFamily;
-    case 25: return browserVersion;
-    case 26: return osFamily;
-    case 27: return osVersion;
-    case 28: return appVersion;
-    case 29: return service;
-    case 30: return server;
-    case 31: return remoteIp;
-    case 32: return pageId;
-    case 33: return geoId;
-    case 34: return isBot;
-    case 35: return payload;
+    case 19: return langCd;
+    case 20: return url;
+    case 21: return referer;
+    case 22: return userAgent;
+    case 23: return deviceFamily;
+    case 24: return deviceType;
+    case 25: return browserFamily;
+    case 26: return browserVersion;
+    case 27: return osFamily;
+    case 28: return osVersion;
+    case 29: return appVersion;
+    case 30: return service;
+    case 31: return server;
+    case 32: return remoteIp;
+    case 33: return pageId;
+    case 34: return geoId;
+    case 35: return isBot;
+    case 36: return payload;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -249,23 +253,24 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
     case 16: campaignId = (java.lang.String)value$; break;
     case 17: rotationId = (java.lang.String)value$; break;
     case 18: siteId = (java.lang.Integer)value$; break;
-    case 19: url = (java.lang.String)value$; break;
-    case 20: referer = (java.lang.String)value$; break;
-    case 21: userAgent = (java.lang.String)value$; break;
-    case 22: deviceFamily = (java.lang.String)value$; break;
-    case 23: deviceType = (java.lang.String)value$; break;
-    case 24: browserFamily = (java.lang.String)value$; break;
-    case 25: browserVersion = (java.lang.String)value$; break;
-    case 26: osFamily = (java.lang.String)value$; break;
-    case 27: osVersion = (java.lang.String)value$; break;
-    case 28: appVersion = (java.lang.String)value$; break;
-    case 29: service = (java.lang.String)value$; break;
-    case 30: server = (java.lang.String)value$; break;
-    case 31: remoteIp = (java.lang.String)value$; break;
-    case 32: pageId = (java.lang.Integer)value$; break;
-    case 33: geoId = (java.lang.Integer)value$; break;
-    case 34: isBot = (java.lang.Boolean)value$; break;
-    case 35: payload = (java.util.Map<java.lang.String,java.lang.String>)value$; break;
+    case 19: langCd = (java.lang.Integer)value$; break;
+    case 20: url = (java.lang.String)value$; break;
+    case 21: referer = (java.lang.String)value$; break;
+    case 22: userAgent = (java.lang.String)value$; break;
+    case 23: deviceFamily = (java.lang.String)value$; break;
+    case 24: deviceType = (java.lang.String)value$; break;
+    case 25: browserFamily = (java.lang.String)value$; break;
+    case 26: browserVersion = (java.lang.String)value$; break;
+    case 27: osFamily = (java.lang.String)value$; break;
+    case 28: osVersion = (java.lang.String)value$; break;
+    case 29: appVersion = (java.lang.String)value$; break;
+    case 30: service = (java.lang.String)value$; break;
+    case 31: server = (java.lang.String)value$; break;
+    case 32: remoteIp = (java.lang.String)value$; break;
+    case 33: pageId = (java.lang.Integer)value$; break;
+    case 34: geoId = (java.lang.Integer)value$; break;
+    case 35: isBot = (java.lang.Boolean)value$; break;
+    case 36: payload = (java.util.Map<java.lang.String,java.lang.String>)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -580,6 +585,22 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
    */
   public void setSiteId(java.lang.Integer value) {
     this.siteId = value;
+  }
+
+  /**
+   * Gets the value of the 'langCd' field.
+   * @return The value of the 'langCd' field.
+   */
+  public java.lang.Integer getLangCd() {
+    return langCd;
+  }
+
+  /**
+   * Sets the value of the 'langCd' field.
+   * @param value the value to set.
+   */
+  public void setLangCd(java.lang.Integer value) {
+    this.langCd = value;
   }
 
   /**
@@ -913,6 +934,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
     private java.lang.String campaignId;
     private java.lang.String rotationId;
     private java.lang.Integer siteId;
+    private java.lang.Integer langCd;
     private java.lang.String url;
     private java.lang.String referer;
     private java.lang.String userAgent;
@@ -1018,73 +1040,77 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
         this.siteId = data().deepCopy(fields()[18].schema(), other.siteId);
         fieldSetFlags()[18] = true;
       }
-      if (isValidValue(fields()[19], other.url)) {
-        this.url = data().deepCopy(fields()[19].schema(), other.url);
+      if (isValidValue(fields()[19], other.langCd)) {
+        this.langCd = data().deepCopy(fields()[19].schema(), other.langCd);
         fieldSetFlags()[19] = true;
       }
-      if (isValidValue(fields()[20], other.referer)) {
-        this.referer = data().deepCopy(fields()[20].schema(), other.referer);
+      if (isValidValue(fields()[20], other.url)) {
+        this.url = data().deepCopy(fields()[20].schema(), other.url);
         fieldSetFlags()[20] = true;
       }
-      if (isValidValue(fields()[21], other.userAgent)) {
-        this.userAgent = data().deepCopy(fields()[21].schema(), other.userAgent);
+      if (isValidValue(fields()[21], other.referer)) {
+        this.referer = data().deepCopy(fields()[21].schema(), other.referer);
         fieldSetFlags()[21] = true;
       }
-      if (isValidValue(fields()[22], other.deviceFamily)) {
-        this.deviceFamily = data().deepCopy(fields()[22].schema(), other.deviceFamily);
+      if (isValidValue(fields()[22], other.userAgent)) {
+        this.userAgent = data().deepCopy(fields()[22].schema(), other.userAgent);
         fieldSetFlags()[22] = true;
       }
-      if (isValidValue(fields()[23], other.deviceType)) {
-        this.deviceType = data().deepCopy(fields()[23].schema(), other.deviceType);
+      if (isValidValue(fields()[23], other.deviceFamily)) {
+        this.deviceFamily = data().deepCopy(fields()[23].schema(), other.deviceFamily);
         fieldSetFlags()[23] = true;
       }
-      if (isValidValue(fields()[24], other.browserFamily)) {
-        this.browserFamily = data().deepCopy(fields()[24].schema(), other.browserFamily);
+      if (isValidValue(fields()[24], other.deviceType)) {
+        this.deviceType = data().deepCopy(fields()[24].schema(), other.deviceType);
         fieldSetFlags()[24] = true;
       }
-      if (isValidValue(fields()[25], other.browserVersion)) {
-        this.browserVersion = data().deepCopy(fields()[25].schema(), other.browserVersion);
+      if (isValidValue(fields()[25], other.browserFamily)) {
+        this.browserFamily = data().deepCopy(fields()[25].schema(), other.browserFamily);
         fieldSetFlags()[25] = true;
       }
-      if (isValidValue(fields()[26], other.osFamily)) {
-        this.osFamily = data().deepCopy(fields()[26].schema(), other.osFamily);
+      if (isValidValue(fields()[26], other.browserVersion)) {
+        this.browserVersion = data().deepCopy(fields()[26].schema(), other.browserVersion);
         fieldSetFlags()[26] = true;
       }
-      if (isValidValue(fields()[27], other.osVersion)) {
-        this.osVersion = data().deepCopy(fields()[27].schema(), other.osVersion);
+      if (isValidValue(fields()[27], other.osFamily)) {
+        this.osFamily = data().deepCopy(fields()[27].schema(), other.osFamily);
         fieldSetFlags()[27] = true;
       }
-      if (isValidValue(fields()[28], other.appVersion)) {
-        this.appVersion = data().deepCopy(fields()[28].schema(), other.appVersion);
+      if (isValidValue(fields()[28], other.osVersion)) {
+        this.osVersion = data().deepCopy(fields()[28].schema(), other.osVersion);
         fieldSetFlags()[28] = true;
       }
-      if (isValidValue(fields()[29], other.service)) {
-        this.service = data().deepCopy(fields()[29].schema(), other.service);
+      if (isValidValue(fields()[29], other.appVersion)) {
+        this.appVersion = data().deepCopy(fields()[29].schema(), other.appVersion);
         fieldSetFlags()[29] = true;
       }
-      if (isValidValue(fields()[30], other.server)) {
-        this.server = data().deepCopy(fields()[30].schema(), other.server);
+      if (isValidValue(fields()[30], other.service)) {
+        this.service = data().deepCopy(fields()[30].schema(), other.service);
         fieldSetFlags()[30] = true;
       }
-      if (isValidValue(fields()[31], other.remoteIp)) {
-        this.remoteIp = data().deepCopy(fields()[31].schema(), other.remoteIp);
+      if (isValidValue(fields()[31], other.server)) {
+        this.server = data().deepCopy(fields()[31].schema(), other.server);
         fieldSetFlags()[31] = true;
       }
-      if (isValidValue(fields()[32], other.pageId)) {
-        this.pageId = data().deepCopy(fields()[32].schema(), other.pageId);
+      if (isValidValue(fields()[32], other.remoteIp)) {
+        this.remoteIp = data().deepCopy(fields()[32].schema(), other.remoteIp);
         fieldSetFlags()[32] = true;
       }
-      if (isValidValue(fields()[33], other.geoId)) {
-        this.geoId = data().deepCopy(fields()[33].schema(), other.geoId);
+      if (isValidValue(fields()[33], other.pageId)) {
+        this.pageId = data().deepCopy(fields()[33].schema(), other.pageId);
         fieldSetFlags()[33] = true;
       }
-      if (isValidValue(fields()[34], other.isBot)) {
-        this.isBot = data().deepCopy(fields()[34].schema(), other.isBot);
+      if (isValidValue(fields()[34], other.geoId)) {
+        this.geoId = data().deepCopy(fields()[34].schema(), other.geoId);
         fieldSetFlags()[34] = true;
       }
-      if (isValidValue(fields()[35], other.payload)) {
-        this.payload = data().deepCopy(fields()[35].schema(), other.payload);
+      if (isValidValue(fields()[35], other.isBot)) {
+        this.isBot = data().deepCopy(fields()[35].schema(), other.isBot);
         fieldSetFlags()[35] = true;
+      }
+      if (isValidValue(fields()[36], other.payload)) {
+        this.payload = data().deepCopy(fields()[36].schema(), other.payload);
+        fieldSetFlags()[36] = true;
       }
     }
 
@@ -1170,73 +1196,77 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
         this.siteId = data().deepCopy(fields()[18].schema(), other.siteId);
         fieldSetFlags()[18] = true;
       }
-      if (isValidValue(fields()[19], other.url)) {
-        this.url = data().deepCopy(fields()[19].schema(), other.url);
+      if (isValidValue(fields()[19], other.langCd)) {
+        this.langCd = data().deepCopy(fields()[19].schema(), other.langCd);
         fieldSetFlags()[19] = true;
       }
-      if (isValidValue(fields()[20], other.referer)) {
-        this.referer = data().deepCopy(fields()[20].schema(), other.referer);
+      if (isValidValue(fields()[20], other.url)) {
+        this.url = data().deepCopy(fields()[20].schema(), other.url);
         fieldSetFlags()[20] = true;
       }
-      if (isValidValue(fields()[21], other.userAgent)) {
-        this.userAgent = data().deepCopy(fields()[21].schema(), other.userAgent);
+      if (isValidValue(fields()[21], other.referer)) {
+        this.referer = data().deepCopy(fields()[21].schema(), other.referer);
         fieldSetFlags()[21] = true;
       }
-      if (isValidValue(fields()[22], other.deviceFamily)) {
-        this.deviceFamily = data().deepCopy(fields()[22].schema(), other.deviceFamily);
+      if (isValidValue(fields()[22], other.userAgent)) {
+        this.userAgent = data().deepCopy(fields()[22].schema(), other.userAgent);
         fieldSetFlags()[22] = true;
       }
-      if (isValidValue(fields()[23], other.deviceType)) {
-        this.deviceType = data().deepCopy(fields()[23].schema(), other.deviceType);
+      if (isValidValue(fields()[23], other.deviceFamily)) {
+        this.deviceFamily = data().deepCopy(fields()[23].schema(), other.deviceFamily);
         fieldSetFlags()[23] = true;
       }
-      if (isValidValue(fields()[24], other.browserFamily)) {
-        this.browserFamily = data().deepCopy(fields()[24].schema(), other.browserFamily);
+      if (isValidValue(fields()[24], other.deviceType)) {
+        this.deviceType = data().deepCopy(fields()[24].schema(), other.deviceType);
         fieldSetFlags()[24] = true;
       }
-      if (isValidValue(fields()[25], other.browserVersion)) {
-        this.browserVersion = data().deepCopy(fields()[25].schema(), other.browserVersion);
+      if (isValidValue(fields()[25], other.browserFamily)) {
+        this.browserFamily = data().deepCopy(fields()[25].schema(), other.browserFamily);
         fieldSetFlags()[25] = true;
       }
-      if (isValidValue(fields()[26], other.osFamily)) {
-        this.osFamily = data().deepCopy(fields()[26].schema(), other.osFamily);
+      if (isValidValue(fields()[26], other.browserVersion)) {
+        this.browserVersion = data().deepCopy(fields()[26].schema(), other.browserVersion);
         fieldSetFlags()[26] = true;
       }
-      if (isValidValue(fields()[27], other.osVersion)) {
-        this.osVersion = data().deepCopy(fields()[27].schema(), other.osVersion);
+      if (isValidValue(fields()[27], other.osFamily)) {
+        this.osFamily = data().deepCopy(fields()[27].schema(), other.osFamily);
         fieldSetFlags()[27] = true;
       }
-      if (isValidValue(fields()[28], other.appVersion)) {
-        this.appVersion = data().deepCopy(fields()[28].schema(), other.appVersion);
+      if (isValidValue(fields()[28], other.osVersion)) {
+        this.osVersion = data().deepCopy(fields()[28].schema(), other.osVersion);
         fieldSetFlags()[28] = true;
       }
-      if (isValidValue(fields()[29], other.service)) {
-        this.service = data().deepCopy(fields()[29].schema(), other.service);
+      if (isValidValue(fields()[29], other.appVersion)) {
+        this.appVersion = data().deepCopy(fields()[29].schema(), other.appVersion);
         fieldSetFlags()[29] = true;
       }
-      if (isValidValue(fields()[30], other.server)) {
-        this.server = data().deepCopy(fields()[30].schema(), other.server);
+      if (isValidValue(fields()[30], other.service)) {
+        this.service = data().deepCopy(fields()[30].schema(), other.service);
         fieldSetFlags()[30] = true;
       }
-      if (isValidValue(fields()[31], other.remoteIp)) {
-        this.remoteIp = data().deepCopy(fields()[31].schema(), other.remoteIp);
+      if (isValidValue(fields()[31], other.server)) {
+        this.server = data().deepCopy(fields()[31].schema(), other.server);
         fieldSetFlags()[31] = true;
       }
-      if (isValidValue(fields()[32], other.pageId)) {
-        this.pageId = data().deepCopy(fields()[32].schema(), other.pageId);
+      if (isValidValue(fields()[32], other.remoteIp)) {
+        this.remoteIp = data().deepCopy(fields()[32].schema(), other.remoteIp);
         fieldSetFlags()[32] = true;
       }
-      if (isValidValue(fields()[33], other.geoId)) {
-        this.geoId = data().deepCopy(fields()[33].schema(), other.geoId);
+      if (isValidValue(fields()[33], other.pageId)) {
+        this.pageId = data().deepCopy(fields()[33].schema(), other.pageId);
         fieldSetFlags()[33] = true;
       }
-      if (isValidValue(fields()[34], other.isBot)) {
-        this.isBot = data().deepCopy(fields()[34].schema(), other.isBot);
+      if (isValidValue(fields()[34], other.geoId)) {
+        this.geoId = data().deepCopy(fields()[34].schema(), other.geoId);
         fieldSetFlags()[34] = true;
       }
-      if (isValidValue(fields()[35], other.payload)) {
-        this.payload = data().deepCopy(fields()[35].schema(), other.payload);
+      if (isValidValue(fields()[35], other.isBot)) {
+        this.isBot = data().deepCopy(fields()[35].schema(), other.isBot);
         fieldSetFlags()[35] = true;
+      }
+      if (isValidValue(fields()[36], other.payload)) {
+        this.payload = data().deepCopy(fields()[36].schema(), other.payload);
+        fieldSetFlags()[36] = true;
       }
     }
 
@@ -2012,6 +2042,45 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
     }
 
     /**
+      * Gets the value of the 'langCd' field.
+      * @return The value.
+      */
+    public java.lang.Integer getLangCd() {
+      return langCd;
+    }
+
+    /**
+      * Sets the value of the 'langCd' field.
+      * @param value The value of 'langCd'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setLangCd(java.lang.Integer value) {
+      validate(fields()[19], value);
+      this.langCd = value;
+      fieldSetFlags()[19] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'langCd' field has been set.
+      * @return True if the 'langCd' field has been set, false otherwise.
+      */
+    public boolean hasLangCd() {
+      return fieldSetFlags()[19];
+    }
+
+
+    /**
+      * Clears the value of the 'langCd' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearLangCd() {
+      langCd = null;
+      fieldSetFlags()[19] = false;
+      return this;
+    }
+
+    /**
       * Gets the value of the 'url' field.
       * @return The value.
       */
@@ -2025,9 +2094,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setUrl(java.lang.String value) {
-      validate(fields()[19], value);
+      validate(fields()[20], value);
       this.url = value;
-      fieldSetFlags()[19] = true;
+      fieldSetFlags()[20] = true;
       return this;
     }
 
@@ -2036,7 +2105,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'url' field has been set, false otherwise.
       */
     public boolean hasUrl() {
-      return fieldSetFlags()[19];
+      return fieldSetFlags()[20];
     }
 
 
@@ -2046,7 +2115,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearUrl() {
       url = null;
-      fieldSetFlags()[19] = false;
+      fieldSetFlags()[20] = false;
       return this;
     }
 
@@ -2064,9 +2133,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setReferer(java.lang.String value) {
-      validate(fields()[20], value);
+      validate(fields()[21], value);
       this.referer = value;
-      fieldSetFlags()[20] = true;
+      fieldSetFlags()[21] = true;
       return this;
     }
 
@@ -2075,7 +2144,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'referer' field has been set, false otherwise.
       */
     public boolean hasReferer() {
-      return fieldSetFlags()[20];
+      return fieldSetFlags()[21];
     }
 
 
@@ -2085,7 +2154,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearReferer() {
       referer = null;
-      fieldSetFlags()[20] = false;
+      fieldSetFlags()[21] = false;
       return this;
     }
 
@@ -2103,9 +2172,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setUserAgent(java.lang.String value) {
-      validate(fields()[21], value);
+      validate(fields()[22], value);
       this.userAgent = value;
-      fieldSetFlags()[21] = true;
+      fieldSetFlags()[22] = true;
       return this;
     }
 
@@ -2114,7 +2183,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'userAgent' field has been set, false otherwise.
       */
     public boolean hasUserAgent() {
-      return fieldSetFlags()[21];
+      return fieldSetFlags()[22];
     }
 
 
@@ -2124,7 +2193,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearUserAgent() {
       userAgent = null;
-      fieldSetFlags()[21] = false;
+      fieldSetFlags()[22] = false;
       return this;
     }
 
@@ -2142,9 +2211,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setDeviceFamily(java.lang.String value) {
-      validate(fields()[22], value);
+      validate(fields()[23], value);
       this.deviceFamily = value;
-      fieldSetFlags()[22] = true;
+      fieldSetFlags()[23] = true;
       return this;
     }
 
@@ -2153,7 +2222,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'deviceFamily' field has been set, false otherwise.
       */
     public boolean hasDeviceFamily() {
-      return fieldSetFlags()[22];
+      return fieldSetFlags()[23];
     }
 
 
@@ -2163,7 +2232,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearDeviceFamily() {
       deviceFamily = null;
-      fieldSetFlags()[22] = false;
+      fieldSetFlags()[23] = false;
       return this;
     }
 
@@ -2181,9 +2250,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setDeviceType(java.lang.String value) {
-      validate(fields()[23], value);
+      validate(fields()[24], value);
       this.deviceType = value;
-      fieldSetFlags()[23] = true;
+      fieldSetFlags()[24] = true;
       return this;
     }
 
@@ -2192,7 +2261,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'deviceType' field has been set, false otherwise.
       */
     public boolean hasDeviceType() {
-      return fieldSetFlags()[23];
+      return fieldSetFlags()[24];
     }
 
 
@@ -2202,7 +2271,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearDeviceType() {
       deviceType = null;
-      fieldSetFlags()[23] = false;
+      fieldSetFlags()[24] = false;
       return this;
     }
 
@@ -2220,9 +2289,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setBrowserFamily(java.lang.String value) {
-      validate(fields()[24], value);
+      validate(fields()[25], value);
       this.browserFamily = value;
-      fieldSetFlags()[24] = true;
+      fieldSetFlags()[25] = true;
       return this;
     }
 
@@ -2231,7 +2300,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'browserFamily' field has been set, false otherwise.
       */
     public boolean hasBrowserFamily() {
-      return fieldSetFlags()[24];
+      return fieldSetFlags()[25];
     }
 
 
@@ -2241,7 +2310,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearBrowserFamily() {
       browserFamily = null;
-      fieldSetFlags()[24] = false;
+      fieldSetFlags()[25] = false;
       return this;
     }
 
@@ -2259,9 +2328,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setBrowserVersion(java.lang.String value) {
-      validate(fields()[25], value);
+      validate(fields()[26], value);
       this.browserVersion = value;
-      fieldSetFlags()[25] = true;
+      fieldSetFlags()[26] = true;
       return this;
     }
 
@@ -2270,7 +2339,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'browserVersion' field has been set, false otherwise.
       */
     public boolean hasBrowserVersion() {
-      return fieldSetFlags()[25];
+      return fieldSetFlags()[26];
     }
 
 
@@ -2280,7 +2349,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearBrowserVersion() {
       browserVersion = null;
-      fieldSetFlags()[25] = false;
+      fieldSetFlags()[26] = false;
       return this;
     }
 
@@ -2298,9 +2367,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setOsFamily(java.lang.String value) {
-      validate(fields()[26], value);
+      validate(fields()[27], value);
       this.osFamily = value;
-      fieldSetFlags()[26] = true;
+      fieldSetFlags()[27] = true;
       return this;
     }
 
@@ -2309,7 +2378,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'osFamily' field has been set, false otherwise.
       */
     public boolean hasOsFamily() {
-      return fieldSetFlags()[26];
+      return fieldSetFlags()[27];
     }
 
 
@@ -2319,7 +2388,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearOsFamily() {
       osFamily = null;
-      fieldSetFlags()[26] = false;
+      fieldSetFlags()[27] = false;
       return this;
     }
 
@@ -2337,9 +2406,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setOsVersion(java.lang.String value) {
-      validate(fields()[27], value);
+      validate(fields()[28], value);
       this.osVersion = value;
-      fieldSetFlags()[27] = true;
+      fieldSetFlags()[28] = true;
       return this;
     }
 
@@ -2348,7 +2417,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'osVersion' field has been set, false otherwise.
       */
     public boolean hasOsVersion() {
-      return fieldSetFlags()[27];
+      return fieldSetFlags()[28];
     }
 
 
@@ -2358,7 +2427,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearOsVersion() {
       osVersion = null;
-      fieldSetFlags()[27] = false;
+      fieldSetFlags()[28] = false;
       return this;
     }
 
@@ -2376,9 +2445,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setAppVersion(java.lang.String value) {
-      validate(fields()[28], value);
+      validate(fields()[29], value);
       this.appVersion = value;
-      fieldSetFlags()[28] = true;
+      fieldSetFlags()[29] = true;
       return this;
     }
 
@@ -2387,7 +2456,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'appVersion' field has been set, false otherwise.
       */
     public boolean hasAppVersion() {
-      return fieldSetFlags()[28];
+      return fieldSetFlags()[29];
     }
 
 
@@ -2397,7 +2466,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearAppVersion() {
       appVersion = null;
-      fieldSetFlags()[28] = false;
+      fieldSetFlags()[29] = false;
       return this;
     }
 
@@ -2415,9 +2484,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setService(java.lang.String value) {
-      validate(fields()[29], value);
+      validate(fields()[30], value);
       this.service = value;
-      fieldSetFlags()[29] = true;
+      fieldSetFlags()[30] = true;
       return this;
     }
 
@@ -2426,7 +2495,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'service' field has been set, false otherwise.
       */
     public boolean hasService() {
-      return fieldSetFlags()[29];
+      return fieldSetFlags()[30];
     }
 
 
@@ -2436,7 +2505,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearService() {
       service = null;
-      fieldSetFlags()[29] = false;
+      fieldSetFlags()[30] = false;
       return this;
     }
 
@@ -2454,9 +2523,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setServer(java.lang.String value) {
-      validate(fields()[30], value);
+      validate(fields()[31], value);
       this.server = value;
-      fieldSetFlags()[30] = true;
+      fieldSetFlags()[31] = true;
       return this;
     }
 
@@ -2465,7 +2534,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'server' field has been set, false otherwise.
       */
     public boolean hasServer() {
-      return fieldSetFlags()[30];
+      return fieldSetFlags()[31];
     }
 
 
@@ -2475,7 +2544,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearServer() {
       server = null;
-      fieldSetFlags()[30] = false;
+      fieldSetFlags()[31] = false;
       return this;
     }
 
@@ -2493,9 +2562,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setRemoteIp(java.lang.String value) {
-      validate(fields()[31], value);
+      validate(fields()[32], value);
       this.remoteIp = value;
-      fieldSetFlags()[31] = true;
+      fieldSetFlags()[32] = true;
       return this;
     }
 
@@ -2504,7 +2573,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'remoteIp' field has been set, false otherwise.
       */
     public boolean hasRemoteIp() {
-      return fieldSetFlags()[31];
+      return fieldSetFlags()[32];
     }
 
 
@@ -2514,7 +2583,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearRemoteIp() {
       remoteIp = null;
-      fieldSetFlags()[31] = false;
+      fieldSetFlags()[32] = false;
       return this;
     }
 
@@ -2532,9 +2601,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setPageId(java.lang.Integer value) {
-      validate(fields()[32], value);
+      validate(fields()[33], value);
       this.pageId = value;
-      fieldSetFlags()[32] = true;
+      fieldSetFlags()[33] = true;
       return this;
     }
 
@@ -2543,7 +2612,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'pageId' field has been set, false otherwise.
       */
     public boolean hasPageId() {
-      return fieldSetFlags()[32];
+      return fieldSetFlags()[33];
     }
 
 
@@ -2553,7 +2622,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearPageId() {
       pageId = null;
-      fieldSetFlags()[32] = false;
+      fieldSetFlags()[33] = false;
       return this;
     }
 
@@ -2571,9 +2640,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setGeoId(java.lang.Integer value) {
-      validate(fields()[33], value);
+      validate(fields()[34], value);
       this.geoId = value;
-      fieldSetFlags()[33] = true;
+      fieldSetFlags()[34] = true;
       return this;
     }
 
@@ -2582,7 +2651,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'geoId' field has been set, false otherwise.
       */
     public boolean hasGeoId() {
-      return fieldSetFlags()[33];
+      return fieldSetFlags()[34];
     }
 
 
@@ -2592,7 +2661,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearGeoId() {
       geoId = null;
-      fieldSetFlags()[33] = false;
+      fieldSetFlags()[34] = false;
       return this;
     }
 
@@ -2610,9 +2679,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setIsBot(boolean value) {
-      validate(fields()[34], value);
+      validate(fields()[35], value);
       this.isBot = value;
-      fieldSetFlags()[34] = true;
+      fieldSetFlags()[35] = true;
       return this;
     }
 
@@ -2621,7 +2690,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'isBot' field has been set, false otherwise.
       */
     public boolean hasIsBot() {
-      return fieldSetFlags()[34];
+      return fieldSetFlags()[35];
     }
 
 
@@ -2630,7 +2699,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearIsBot() {
-      fieldSetFlags()[34] = false;
+      fieldSetFlags()[35] = false;
       return this;
     }
 
@@ -2648,9 +2717,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return This builder.
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setPayload(java.util.Map<java.lang.String,java.lang.String> value) {
-      validate(fields()[35], value);
+      validate(fields()[36], value);
       this.payload = value;
-      fieldSetFlags()[35] = true;
+      fieldSetFlags()[36] = true;
       return this;
     }
 
@@ -2659,7 +2728,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @return True if the 'payload' field has been set, false otherwise.
       */
     public boolean hasPayload() {
-      return fieldSetFlags()[35];
+      return fieldSetFlags()[36];
     }
 
 
@@ -2669,7 +2738,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       */
     public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearPayload() {
       payload = null;
-      fieldSetFlags()[35] = false;
+      fieldSetFlags()[36] = false;
       return this;
     }
 
@@ -2697,23 +2766,24 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
         record.campaignId = fieldSetFlags()[16] ? this.campaignId : (java.lang.String) defaultValue(fields()[16]);
         record.rotationId = fieldSetFlags()[17] ? this.rotationId : (java.lang.String) defaultValue(fields()[17]);
         record.siteId = fieldSetFlags()[18] ? this.siteId : (java.lang.Integer) defaultValue(fields()[18]);
-        record.url = fieldSetFlags()[19] ? this.url : (java.lang.String) defaultValue(fields()[19]);
-        record.referer = fieldSetFlags()[20] ? this.referer : (java.lang.String) defaultValue(fields()[20]);
-        record.userAgent = fieldSetFlags()[21] ? this.userAgent : (java.lang.String) defaultValue(fields()[21]);
-        record.deviceFamily = fieldSetFlags()[22] ? this.deviceFamily : (java.lang.String) defaultValue(fields()[22]);
-        record.deviceType = fieldSetFlags()[23] ? this.deviceType : (java.lang.String) defaultValue(fields()[23]);
-        record.browserFamily = fieldSetFlags()[24] ? this.browserFamily : (java.lang.String) defaultValue(fields()[24]);
-        record.browserVersion = fieldSetFlags()[25] ? this.browserVersion : (java.lang.String) defaultValue(fields()[25]);
-        record.osFamily = fieldSetFlags()[26] ? this.osFamily : (java.lang.String) defaultValue(fields()[26]);
-        record.osVersion = fieldSetFlags()[27] ? this.osVersion : (java.lang.String) defaultValue(fields()[27]);
-        record.appVersion = fieldSetFlags()[28] ? this.appVersion : (java.lang.String) defaultValue(fields()[28]);
-        record.service = fieldSetFlags()[29] ? this.service : (java.lang.String) defaultValue(fields()[29]);
-        record.server = fieldSetFlags()[30] ? this.server : (java.lang.String) defaultValue(fields()[30]);
-        record.remoteIp = fieldSetFlags()[31] ? this.remoteIp : (java.lang.String) defaultValue(fields()[31]);
-        record.pageId = fieldSetFlags()[32] ? this.pageId : (java.lang.Integer) defaultValue(fields()[32]);
-        record.geoId = fieldSetFlags()[33] ? this.geoId : (java.lang.Integer) defaultValue(fields()[33]);
-        record.isBot = fieldSetFlags()[34] ? this.isBot : (java.lang.Boolean) defaultValue(fields()[34]);
-        record.payload = fieldSetFlags()[35] ? this.payload : (java.util.Map<java.lang.String,java.lang.String>) defaultValue(fields()[35]);
+        record.langCd = fieldSetFlags()[19] ? this.langCd : (java.lang.Integer) defaultValue(fields()[19]);
+        record.url = fieldSetFlags()[20] ? this.url : (java.lang.String) defaultValue(fields()[20]);
+        record.referer = fieldSetFlags()[21] ? this.referer : (java.lang.String) defaultValue(fields()[21]);
+        record.userAgent = fieldSetFlags()[22] ? this.userAgent : (java.lang.String) defaultValue(fields()[22]);
+        record.deviceFamily = fieldSetFlags()[23] ? this.deviceFamily : (java.lang.String) defaultValue(fields()[23]);
+        record.deviceType = fieldSetFlags()[24] ? this.deviceType : (java.lang.String) defaultValue(fields()[24]);
+        record.browserFamily = fieldSetFlags()[25] ? this.browserFamily : (java.lang.String) defaultValue(fields()[25]);
+        record.browserVersion = fieldSetFlags()[26] ? this.browserVersion : (java.lang.String) defaultValue(fields()[26]);
+        record.osFamily = fieldSetFlags()[27] ? this.osFamily : (java.lang.String) defaultValue(fields()[27]);
+        record.osVersion = fieldSetFlags()[28] ? this.osVersion : (java.lang.String) defaultValue(fields()[28]);
+        record.appVersion = fieldSetFlags()[29] ? this.appVersion : (java.lang.String) defaultValue(fields()[29]);
+        record.service = fieldSetFlags()[30] ? this.service : (java.lang.String) defaultValue(fields()[30]);
+        record.server = fieldSetFlags()[31] ? this.server : (java.lang.String) defaultValue(fields()[31]);
+        record.remoteIp = fieldSetFlags()[32] ? this.remoteIp : (java.lang.String) defaultValue(fields()[32]);
+        record.pageId = fieldSetFlags()[33] ? this.pageId : (java.lang.Integer) defaultValue(fields()[33]);
+        record.geoId = fieldSetFlags()[34] ? this.geoId : (java.lang.Integer) defaultValue(fields()[34]);
+        record.isBot = fieldSetFlags()[35] ? this.isBot : (java.lang.Boolean) defaultValue(fields()[35]);
+        record.payload = fieldSetFlags()[36] ? this.payload : (java.util.Map<java.lang.String,java.lang.String>) defaultValue(fields()[36]);
         return record;
       } catch (java.lang.Exception e) {
         throw new org.apache.avro.AvroRuntimeException(e);

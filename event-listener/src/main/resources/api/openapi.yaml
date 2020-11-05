@@ -196,10 +196,6 @@ components:
     UnifiedTrackingEvent:
       type: object
       properties:
-        eventId:
-          type: string
-          description: 'Unified event id at tracking level'
-          example: '18c244e5-0ee3-4b0e-b283-4efb379bee44'
         producerEventId:
           type: string
           description: 'Event id at producer level'
@@ -220,10 +216,6 @@ components:
           type: string
           description: 'Oracle id'
           example: '1626162'
-        publicUserId:
-          type: string
-          description: 'Public user id'
-          example: '1626162'
         encryptedUserId:
           type: string
           description: 'Encrypted user id'
@@ -239,10 +231,6 @@ components:
         gadid:
           type: string
           description: 'android ad identifier'
-          example: '035911ea-467d-4056-903b-65cf44f5633b'
-        deviceId:
-          type: string
-          description: 'This is ebay mobile app generated unique id for each app installation. It is usually used in request header X-EBAY3PP-DEVICE-ID for each API call.'
           example: '035911ea-467d-4056-903b-65cf44f5633b'
         channelType:
           type: string
@@ -268,6 +256,10 @@ components:
           type: integer
           description: 'eBay site id'
           example: '0'
+        langCd:
+          type: string
+          description: 'language code'
+          example: 'EN-US'
         url:
           type: string
           description: 'Tracking url'
