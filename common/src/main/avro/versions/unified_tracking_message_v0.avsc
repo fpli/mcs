@@ -229,6 +229,14 @@
       "default": ""
     },
     {
+      "name": "appId",
+      "type": [
+        "null",
+        "int"
+      ],
+      "default": ""
+    },
+    {
       "name": "service",
       "type": [
         "null",
