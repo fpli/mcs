@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-11-05T16:22:49.021+08:00[Asia/Shanghai]")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-11-05T17:00:37.616+08:00[Asia/Shanghai]")
 @JsonPropertyOrder({ "producerEventId","producerEventTs","rlogId","trackingId","userId","publicUserId","encryptedUserId","guid","idfa","gadid","deviceId","channelType","actionType","partnerId","campaignId","siteId","url","referer","userAgent","service","server","remoteIp","pageId","geoId","payload" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
@@ -44,7 +44,7 @@ public class UnifiedTrackingEvent implements Serializable {
   private String producerEventId = null;
   @JsonProperty("producerEventTs")
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private String producerEventTs = null;
+  private Long producerEventTs = null;
   @JsonProperty("rlogId")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String rlogId = null;
@@ -132,11 +132,11 @@ public class UnifiedTrackingEvent implements Serializable {
    * @return producerEventTs
    **/
   @ApiModelProperty(example = "1604463171000", value = "Timestamp when the producer calls the tracking service")
-  public String getProducerEventTs() {
+  public Long getProducerEventTs() {
     return producerEventTs;
   }
 
-  public void setProducerEventTs(String producerEventTs) {
+  public void setProducerEventTs(Long producerEventTs) {
     this.producerEventTs = producerEventTs;
   }
   /**

@@ -201,7 +201,7 @@ components:
           description: 'Event id at producer level'
           example: '18c244e5-0ee3-4b0e-b283-4efb379bee44'
         producerEventTs:
-          type: string
+          type: long
           description: 'Timestamp when the producer calls the tracking service'
           example: '1604463171000'
         rlogId:
