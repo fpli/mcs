@@ -13,23 +13,23 @@ import org.apache.avro.message.SchemaStore;
 @SuppressWarnings("all")
 /**  Unified tracking topic schema */
 @org.apache.avro.specific.AvroGenerated
-public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 7352137945967607512L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UnifiedTrackingRheosEvent\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"doc\":\" Unified tracking topic schema\",\"fields\":[{\"name\":\"eventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by tracking collection service\"},{\"name\":\"producerEventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by producer\"},{\"name\":\"eventTs\",\"type\":\"long\",\"doc\":\"Event received timestamp at the collection service\"},{\"name\":\"producerEventTs\",\"type\":\"long\",\"doc\":\"Event created timestamp at producer side\"},{\"name\":\"rlogId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"trackingId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"ID to associate user behavior and dilivery\",\"default\":\"\"},{\"name\":\"userId\",\"type\":[\"null\",\"long\"],\"doc\":\"Oracle id\",\"default\":\"\"},{\"name\":\"publicUserId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"public user id\",\"default\":\"\"},{\"name\":\"encryptedUserId\",\"type\":[\"null\",\"long\"],\"doc\":\"Encrypted user id in email open and click url\",\"default\":\"\"},{\"name\":\"guid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"idfa\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"gadid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"channelType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"actionType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"partnerId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"campaignId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"rotationId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"siteId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"url\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"referer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"userAgent\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"appVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"service\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"server\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"remoteIp\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"pageId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"geoId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"isBot\",\"type\":\"boolean\",\"default\":\"false\"},{\"name\":\"payload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}}]}");
+public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
+  private static final long serialVersionUID = 1667000319050880284L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UnifiedTrackingMessageV0\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"doc\":\" Unified tracking topic schema\",\"fields\":[{\"name\":\"eventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by tracking collection service\"},{\"name\":\"producerEventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by producer\"},{\"name\":\"eventTs\",\"type\":\"long\",\"doc\":\"Event received timestamp at the collection service\"},{\"name\":\"producerEventTs\",\"type\":\"long\",\"doc\":\"Event created timestamp at producer side\"},{\"name\":\"rlogId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"trackingId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"ID to associate user behavior and dilivery\",\"default\":\"\"},{\"name\":\"userId\",\"type\":[\"null\",\"long\"],\"doc\":\"Oracle id\",\"default\":\"\"},{\"name\":\"publicUserId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"public user id\",\"default\":\"\"},{\"name\":\"encryptedUserId\",\"type\":[\"null\",\"long\"],\"doc\":\"Encrypted user id in email open and click url\",\"default\":\"\"},{\"name\":\"guid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"idfa\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"gadid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"channelType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"actionType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"partnerId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"campaignId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"rotationId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"siteId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"url\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"referer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"userAgent\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"appVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"service\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"server\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"remoteIp\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"pageId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"geoId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"isBot\",\"type\":\"boolean\",\"default\":\"false\"},{\"name\":\"payload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
 
-  private static final BinaryMessageEncoder<UnifiedTrackingRheosEvent> ENCODER =
-      new BinaryMessageEncoder<UnifiedTrackingRheosEvent>(MODEL$, SCHEMA$);
+  private static final BinaryMessageEncoder<UnifiedTrackingMessageV0> ENCODER =
+      new BinaryMessageEncoder<UnifiedTrackingMessageV0>(MODEL$, SCHEMA$);
 
-  private static final BinaryMessageDecoder<UnifiedTrackingRheosEvent> DECODER =
-      new BinaryMessageDecoder<UnifiedTrackingRheosEvent>(MODEL$, SCHEMA$);
+  private static final BinaryMessageDecoder<UnifiedTrackingMessageV0> DECODER =
+      new BinaryMessageDecoder<UnifiedTrackingMessageV0>(MODEL$, SCHEMA$);
 
   /**
    * Return the BinaryMessageDecoder instance used by this class.
    */
-  public static BinaryMessageDecoder<UnifiedTrackingRheosEvent> getDecoder() {
+  public static BinaryMessageDecoder<UnifiedTrackingMessageV0> getDecoder() {
     return DECODER;
   }
 
@@ -37,17 +37,17 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
    * Create a new BinaryMessageDecoder instance for this class that uses the specified {@link SchemaStore}.
    * @param resolver a {@link SchemaStore} used to find schemas by fingerprint
    */
-  public static BinaryMessageDecoder<UnifiedTrackingRheosEvent> createDecoder(SchemaStore resolver) {
-    return new BinaryMessageDecoder<UnifiedTrackingRheosEvent>(MODEL$, SCHEMA$, resolver);
+  public static BinaryMessageDecoder<UnifiedTrackingMessageV0> createDecoder(SchemaStore resolver) {
+    return new BinaryMessageDecoder<UnifiedTrackingMessageV0>(MODEL$, SCHEMA$, resolver);
   }
 
-  /** Serializes this UnifiedTrackingRheosEvent to a ByteBuffer. */
+  /** Serializes this UnifiedTrackingMessageV0 to a ByteBuffer. */
   public java.nio.ByteBuffer toByteBuffer() throws java.io.IOException {
     return ENCODER.encode(this);
   }
 
-  /** Deserializes a UnifiedTrackingRheosEvent from a ByteBuffer. */
-  public static UnifiedTrackingRheosEvent fromByteBuffer(
+  /** Deserializes a UnifiedTrackingMessageV0 from a ByteBuffer. */
+  public static UnifiedTrackingMessageV0 fromByteBuffer(
       java.nio.ByteBuffer b) throws java.io.IOException {
     return DECODER.decode(b);
   }
@@ -102,7 +102,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
    * to their default values from the schema.  If that is desired then
    * one should use <code>newBuilder()</code>.
    */
-  public UnifiedTrackingRheosEvent() {}
+  public UnifiedTrackingMessageV0() {}
 
   /**
    * All-args constructor.
@@ -143,7 +143,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
    * @param isBot The new value for isBot
    * @param payload The new value for payload
    */
-  public UnifiedTrackingRheosEvent(java.lang.String eventId, java.lang.String producerEventId, java.lang.Long eventTs, java.lang.Long producerEventTs, java.lang.String rlogId, java.lang.String trackingId, java.lang.Long userId, java.lang.String publicUserId, java.lang.Long encryptedUserId, java.lang.String guid, java.lang.String idfa, java.lang.String gadid, java.lang.String deviceId, java.lang.String channelType, java.lang.String actionType, java.lang.String partnerId, java.lang.String campaignId, java.lang.String rotationId, java.lang.Integer siteId, java.lang.String url, java.lang.String referer, java.lang.String userAgent, java.lang.String deviceFamily, java.lang.String deviceType, java.lang.String browserFamily, java.lang.String browserVersion, java.lang.String osFamily, java.lang.String osVersion, java.lang.String appVersion, java.lang.String service, java.lang.String server, java.lang.String remoteIp, java.lang.Integer pageId, java.lang.Integer geoId, java.lang.Boolean isBot, java.util.Map<java.lang.String,java.lang.String> payload) {
+  public UnifiedTrackingMessageV0(java.lang.String eventId, java.lang.String producerEventId, java.lang.Long eventTs, java.lang.Long producerEventTs, java.lang.String rlogId, java.lang.String trackingId, java.lang.Long userId, java.lang.String publicUserId, java.lang.Long encryptedUserId, java.lang.String guid, java.lang.String idfa, java.lang.String gadid, java.lang.String deviceId, java.lang.String channelType, java.lang.String actionType, java.lang.String partnerId, java.lang.String campaignId, java.lang.String rotationId, java.lang.Integer siteId, java.lang.String url, java.lang.String referer, java.lang.String userAgent, java.lang.String deviceFamily, java.lang.String deviceType, java.lang.String browserFamily, java.lang.String browserVersion, java.lang.String osFamily, java.lang.String osVersion, java.lang.String appVersion, java.lang.String service, java.lang.String server, java.lang.String remoteIp, java.lang.Integer pageId, java.lang.Integer geoId, java.lang.Boolean isBot, java.util.Map<java.lang.String,java.lang.String> payload) {
     this.eventId = eventId;
     this.producerEventId = producerEventId;
     this.eventTs = eventTs;
@@ -855,36 +855,36 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
   }
 
   /**
-   * Creates a new UnifiedTrackingRheosEvent RecordBuilder.
-   * @return A new UnifiedTrackingRheosEvent RecordBuilder
+   * Creates a new UnifiedTrackingMessageV0 RecordBuilder.
+   * @return A new UnifiedTrackingMessageV0 RecordBuilder
    */
-  public static com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder newBuilder() {
-    return new com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder();
+  public static com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder newBuilder() {
+    return new com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder();
   }
 
   /**
-   * Creates a new UnifiedTrackingRheosEvent RecordBuilder by copying an existing Builder.
+   * Creates a new UnifiedTrackingMessageV0 RecordBuilder by copying an existing Builder.
    * @param other The existing builder to copy.
-   * @return A new UnifiedTrackingRheosEvent RecordBuilder
+   * @return A new UnifiedTrackingMessageV0 RecordBuilder
    */
-  public static com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder newBuilder(com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder other) {
-    return new com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder(other);
+  public static com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder newBuilder(com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder other) {
+    return new com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder(other);
   }
 
   /**
-   * Creates a new UnifiedTrackingRheosEvent RecordBuilder by copying an existing UnifiedTrackingRheosEvent instance.
+   * Creates a new UnifiedTrackingMessageV0 RecordBuilder by copying an existing UnifiedTrackingMessageV0 instance.
    * @param other The existing instance to copy.
-   * @return A new UnifiedTrackingRheosEvent RecordBuilder
+   * @return A new UnifiedTrackingMessageV0 RecordBuilder
    */
-  public static com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder newBuilder(com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent other) {
-    return new com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder(other);
+  public static com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder newBuilder(com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0 other) {
+    return new com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder(other);
   }
 
   /**
-   * RecordBuilder for UnifiedTrackingRheosEvent instances.
+   * RecordBuilder for UnifiedTrackingMessageV0 instances.
    */
-  public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<UnifiedTrackingRheosEvent>
-    implements org.apache.avro.data.RecordBuilder<UnifiedTrackingRheosEvent> {
+  public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<UnifiedTrackingMessageV0>
+    implements org.apache.avro.data.RecordBuilder<UnifiedTrackingMessageV0> {
 
     /** ID of the event by tracking collection service */
     private java.lang.String eventId;
@@ -940,7 +940,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
      * Creates a Builder by copying an existing Builder.
      * @param other The existing Builder to copy.
      */
-    private Builder(com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder other) {
+    private Builder(com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder other) {
       super(other);
       if (isValidValue(fields()[0], other.eventId)) {
         this.eventId = data().deepCopy(fields()[0].schema(), other.eventId);
@@ -1089,10 +1089,10 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
     }
 
     /**
-     * Creates a Builder by copying an existing UnifiedTrackingRheosEvent instance
+     * Creates a Builder by copying an existing UnifiedTrackingMessageV0 instance
      * @param other The existing instance to copy.
      */
-    private Builder(com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent other) {
+    private Builder(com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0 other) {
             super(SCHEMA$);
       if (isValidValue(fields()[0], other.eventId)) {
         this.eventId = data().deepCopy(fields()[0].schema(), other.eventId);
@@ -1255,7 +1255,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'eventId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setEventId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setEventId(java.lang.String value) {
       validate(fields()[0], value);
       this.eventId = value;
       fieldSetFlags()[0] = true;
@@ -1277,7 +1277,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * ID of the event by tracking collection service
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearEventId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearEventId() {
       eventId = null;
       fieldSetFlags()[0] = false;
       return this;
@@ -1298,7 +1298,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'producerEventId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setProducerEventId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setProducerEventId(java.lang.String value) {
       validate(fields()[1], value);
       this.producerEventId = value;
       fieldSetFlags()[1] = true;
@@ -1320,7 +1320,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * ID of the event by producer
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearProducerEventId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearProducerEventId() {
       producerEventId = null;
       fieldSetFlags()[1] = false;
       return this;
@@ -1341,7 +1341,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'eventTs'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setEventTs(long value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setEventTs(long value) {
       validate(fields()[2], value);
       this.eventTs = value;
       fieldSetFlags()[2] = true;
@@ -1363,7 +1363,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Event received timestamp at the collection service
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearEventTs() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearEventTs() {
       fieldSetFlags()[2] = false;
       return this;
     }
@@ -1383,7 +1383,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'producerEventTs'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setProducerEventTs(long value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setProducerEventTs(long value) {
       validate(fields()[3], value);
       this.producerEventTs = value;
       fieldSetFlags()[3] = true;
@@ -1405,7 +1405,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Event created timestamp at producer side
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearProducerEventTs() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearProducerEventTs() {
       fieldSetFlags()[3] = false;
       return this;
     }
@@ -1423,7 +1423,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'rlogId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setRlogId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setRlogId(java.lang.String value) {
       validate(fields()[4], value);
       this.rlogId = value;
       fieldSetFlags()[4] = true;
@@ -1443,7 +1443,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'rlogId' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearRlogId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearRlogId() {
       rlogId = null;
       fieldSetFlags()[4] = false;
       return this;
@@ -1464,7 +1464,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'trackingId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setTrackingId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setTrackingId(java.lang.String value) {
       validate(fields()[5], value);
       this.trackingId = value;
       fieldSetFlags()[5] = true;
@@ -1486,7 +1486,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * ID to associate user behavior and dilivery
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearTrackingId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearTrackingId() {
       trackingId = null;
       fieldSetFlags()[5] = false;
       return this;
@@ -1507,7 +1507,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'userId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setUserId(java.lang.Long value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setUserId(java.lang.Long value) {
       validate(fields()[6], value);
       this.userId = value;
       fieldSetFlags()[6] = true;
@@ -1529,7 +1529,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Oracle id
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearUserId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearUserId() {
       userId = null;
       fieldSetFlags()[6] = false;
       return this;
@@ -1550,7 +1550,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'publicUserId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setPublicUserId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setPublicUserId(java.lang.String value) {
       validate(fields()[7], value);
       this.publicUserId = value;
       fieldSetFlags()[7] = true;
@@ -1572,7 +1572,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * public user id
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearPublicUserId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearPublicUserId() {
       publicUserId = null;
       fieldSetFlags()[7] = false;
       return this;
@@ -1593,7 +1593,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'encryptedUserId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setEncryptedUserId(java.lang.Long value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setEncryptedUserId(java.lang.Long value) {
       validate(fields()[8], value);
       this.encryptedUserId = value;
       fieldSetFlags()[8] = true;
@@ -1615,7 +1615,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Encrypted user id in email open and click url
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearEncryptedUserId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearEncryptedUserId() {
       encryptedUserId = null;
       fieldSetFlags()[8] = false;
       return this;
@@ -1634,7 +1634,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'guid'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setGuid(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setGuid(java.lang.String value) {
       validate(fields()[9], value);
       this.guid = value;
       fieldSetFlags()[9] = true;
@@ -1654,7 +1654,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'guid' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearGuid() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearGuid() {
       guid = null;
       fieldSetFlags()[9] = false;
       return this;
@@ -1673,7 +1673,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'idfa'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setIdfa(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setIdfa(java.lang.String value) {
       validate(fields()[10], value);
       this.idfa = value;
       fieldSetFlags()[10] = true;
@@ -1693,7 +1693,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'idfa' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearIdfa() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearIdfa() {
       idfa = null;
       fieldSetFlags()[10] = false;
       return this;
@@ -1712,7 +1712,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'gadid'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setGadid(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setGadid(java.lang.String value) {
       validate(fields()[11], value);
       this.gadid = value;
       fieldSetFlags()[11] = true;
@@ -1732,7 +1732,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'gadid' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearGadid() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearGadid() {
       gadid = null;
       fieldSetFlags()[11] = false;
       return this;
@@ -1751,7 +1751,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'deviceId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setDeviceId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setDeviceId(java.lang.String value) {
       validate(fields()[12], value);
       this.deviceId = value;
       fieldSetFlags()[12] = true;
@@ -1771,7 +1771,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'deviceId' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearDeviceId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearDeviceId() {
       deviceId = null;
       fieldSetFlags()[12] = false;
       return this;
@@ -1790,7 +1790,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'channelType'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setChannelType(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setChannelType(java.lang.String value) {
       validate(fields()[13], value);
       this.channelType = value;
       fieldSetFlags()[13] = true;
@@ -1810,7 +1810,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'channelType' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearChannelType() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearChannelType() {
       channelType = null;
       fieldSetFlags()[13] = false;
       return this;
@@ -1829,7 +1829,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'actionType'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setActionType(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setActionType(java.lang.String value) {
       validate(fields()[14], value);
       this.actionType = value;
       fieldSetFlags()[14] = true;
@@ -1849,7 +1849,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'actionType' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearActionType() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearActionType() {
       actionType = null;
       fieldSetFlags()[14] = false;
       return this;
@@ -1868,7 +1868,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'partnerId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setPartnerId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setPartnerId(java.lang.String value) {
       validate(fields()[15], value);
       this.partnerId = value;
       fieldSetFlags()[15] = true;
@@ -1888,7 +1888,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'partnerId' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearPartnerId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearPartnerId() {
       partnerId = null;
       fieldSetFlags()[15] = false;
       return this;
@@ -1907,7 +1907,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'campaignId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setCampaignId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setCampaignId(java.lang.String value) {
       validate(fields()[16], value);
       this.campaignId = value;
       fieldSetFlags()[16] = true;
@@ -1927,7 +1927,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'campaignId' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearCampaignId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearCampaignId() {
       campaignId = null;
       fieldSetFlags()[16] = false;
       return this;
@@ -1946,7 +1946,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'rotationId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setRotationId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setRotationId(java.lang.String value) {
       validate(fields()[17], value);
       this.rotationId = value;
       fieldSetFlags()[17] = true;
@@ -1966,7 +1966,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'rotationId' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearRotationId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearRotationId() {
       rotationId = null;
       fieldSetFlags()[17] = false;
       return this;
@@ -1985,7 +1985,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'siteId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setSiteId(java.lang.Integer value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setSiteId(java.lang.Integer value) {
       validate(fields()[18], value);
       this.siteId = value;
       fieldSetFlags()[18] = true;
@@ -2005,7 +2005,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'siteId' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearSiteId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearSiteId() {
       siteId = null;
       fieldSetFlags()[18] = false;
       return this;
@@ -2024,7 +2024,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'url'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setUrl(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setUrl(java.lang.String value) {
       validate(fields()[19], value);
       this.url = value;
       fieldSetFlags()[19] = true;
@@ -2044,7 +2044,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'url' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearUrl() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearUrl() {
       url = null;
       fieldSetFlags()[19] = false;
       return this;
@@ -2063,7 +2063,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'referer'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setReferer(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setReferer(java.lang.String value) {
       validate(fields()[20], value);
       this.referer = value;
       fieldSetFlags()[20] = true;
@@ -2083,7 +2083,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'referer' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearReferer() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearReferer() {
       referer = null;
       fieldSetFlags()[20] = false;
       return this;
@@ -2102,7 +2102,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'userAgent'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setUserAgent(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setUserAgent(java.lang.String value) {
       validate(fields()[21], value);
       this.userAgent = value;
       fieldSetFlags()[21] = true;
@@ -2122,7 +2122,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'userAgent' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearUserAgent() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearUserAgent() {
       userAgent = null;
       fieldSetFlags()[21] = false;
       return this;
@@ -2141,7 +2141,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'deviceFamily'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setDeviceFamily(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setDeviceFamily(java.lang.String value) {
       validate(fields()[22], value);
       this.deviceFamily = value;
       fieldSetFlags()[22] = true;
@@ -2161,7 +2161,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'deviceFamily' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearDeviceFamily() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearDeviceFamily() {
       deviceFamily = null;
       fieldSetFlags()[22] = false;
       return this;
@@ -2180,7 +2180,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'deviceType'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setDeviceType(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setDeviceType(java.lang.String value) {
       validate(fields()[23], value);
       this.deviceType = value;
       fieldSetFlags()[23] = true;
@@ -2200,7 +2200,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'deviceType' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearDeviceType() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearDeviceType() {
       deviceType = null;
       fieldSetFlags()[23] = false;
       return this;
@@ -2219,7 +2219,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'browserFamily'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setBrowserFamily(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setBrowserFamily(java.lang.String value) {
       validate(fields()[24], value);
       this.browserFamily = value;
       fieldSetFlags()[24] = true;
@@ -2239,7 +2239,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'browserFamily' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearBrowserFamily() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearBrowserFamily() {
       browserFamily = null;
       fieldSetFlags()[24] = false;
       return this;
@@ -2258,7 +2258,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'browserVersion'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setBrowserVersion(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setBrowserVersion(java.lang.String value) {
       validate(fields()[25], value);
       this.browserVersion = value;
       fieldSetFlags()[25] = true;
@@ -2278,7 +2278,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'browserVersion' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearBrowserVersion() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearBrowserVersion() {
       browserVersion = null;
       fieldSetFlags()[25] = false;
       return this;
@@ -2297,7 +2297,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'osFamily'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setOsFamily(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setOsFamily(java.lang.String value) {
       validate(fields()[26], value);
       this.osFamily = value;
       fieldSetFlags()[26] = true;
@@ -2317,7 +2317,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'osFamily' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearOsFamily() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearOsFamily() {
       osFamily = null;
       fieldSetFlags()[26] = false;
       return this;
@@ -2336,7 +2336,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'osVersion'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setOsVersion(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setOsVersion(java.lang.String value) {
       validate(fields()[27], value);
       this.osVersion = value;
       fieldSetFlags()[27] = true;
@@ -2356,7 +2356,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'osVersion' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearOsVersion() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearOsVersion() {
       osVersion = null;
       fieldSetFlags()[27] = false;
       return this;
@@ -2375,7 +2375,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'appVersion'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setAppVersion(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setAppVersion(java.lang.String value) {
       validate(fields()[28], value);
       this.appVersion = value;
       fieldSetFlags()[28] = true;
@@ -2395,7 +2395,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'appVersion' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearAppVersion() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearAppVersion() {
       appVersion = null;
       fieldSetFlags()[28] = false;
       return this;
@@ -2414,7 +2414,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'service'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setService(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setService(java.lang.String value) {
       validate(fields()[29], value);
       this.service = value;
       fieldSetFlags()[29] = true;
@@ -2434,7 +2434,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'service' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearService() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearService() {
       service = null;
       fieldSetFlags()[29] = false;
       return this;
@@ -2453,7 +2453,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'server'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setServer(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setServer(java.lang.String value) {
       validate(fields()[30], value);
       this.server = value;
       fieldSetFlags()[30] = true;
@@ -2473,7 +2473,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'server' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearServer() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearServer() {
       server = null;
       fieldSetFlags()[30] = false;
       return this;
@@ -2492,7 +2492,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'remoteIp'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setRemoteIp(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setRemoteIp(java.lang.String value) {
       validate(fields()[31], value);
       this.remoteIp = value;
       fieldSetFlags()[31] = true;
@@ -2512,7 +2512,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'remoteIp' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearRemoteIp() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearRemoteIp() {
       remoteIp = null;
       fieldSetFlags()[31] = false;
       return this;
@@ -2531,7 +2531,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'pageId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setPageId(java.lang.Integer value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setPageId(java.lang.Integer value) {
       validate(fields()[32], value);
       this.pageId = value;
       fieldSetFlags()[32] = true;
@@ -2551,7 +2551,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'pageId' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearPageId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearPageId() {
       pageId = null;
       fieldSetFlags()[32] = false;
       return this;
@@ -2570,7 +2570,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'geoId'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setGeoId(java.lang.Integer value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setGeoId(java.lang.Integer value) {
       validate(fields()[33], value);
       this.geoId = value;
       fieldSetFlags()[33] = true;
@@ -2590,7 +2590,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'geoId' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearGeoId() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearGeoId() {
       geoId = null;
       fieldSetFlags()[33] = false;
       return this;
@@ -2609,7 +2609,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'isBot'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setIsBot(boolean value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setIsBot(boolean value) {
       validate(fields()[34], value);
       this.isBot = value;
       fieldSetFlags()[34] = true;
@@ -2629,7 +2629,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'isBot' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearIsBot() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearIsBot() {
       fieldSetFlags()[34] = false;
       return this;
     }
@@ -2647,7 +2647,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * @param value The value of 'payload'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder setPayload(java.util.Map<java.lang.String,java.lang.String> value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setPayload(java.util.Map<java.lang.String,java.lang.String> value) {
       validate(fields()[35], value);
       this.payload = value;
       fieldSetFlags()[35] = true;
@@ -2667,7 +2667,7 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
       * Clears the value of the 'payload' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosEvent.Builder clearPayload() {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearPayload() {
       payload = null;
       fieldSetFlags()[35] = false;
       return this;
@@ -2675,9 +2675,9 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
 
     @Override
     @SuppressWarnings("unchecked")
-    public UnifiedTrackingRheosEvent build() {
+    public UnifiedTrackingMessageV0 build() {
       try {
-        UnifiedTrackingRheosEvent record = new UnifiedTrackingRheosEvent();
+        UnifiedTrackingMessageV0 record = new UnifiedTrackingMessageV0();
         record.eventId = fieldSetFlags()[0] ? this.eventId : (java.lang.String) defaultValue(fields()[0]);
         record.producerEventId = fieldSetFlags()[1] ? this.producerEventId : (java.lang.String) defaultValue(fields()[1]);
         record.eventTs = fieldSetFlags()[2] ? this.eventTs : (java.lang.Long) defaultValue(fields()[2]);
@@ -2722,8 +2722,8 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
   }
 
   @SuppressWarnings("unchecked")
-  private static final org.apache.avro.io.DatumWriter<UnifiedTrackingRheosEvent>
-    WRITER$ = (org.apache.avro.io.DatumWriter<UnifiedTrackingRheosEvent>)MODEL$.createDatumWriter(SCHEMA$);
+  private static final org.apache.avro.io.DatumWriter<UnifiedTrackingMessageV0>
+    WRITER$ = (org.apache.avro.io.DatumWriter<UnifiedTrackingMessageV0>)MODEL$.createDatumWriter(SCHEMA$);
 
   @Override public void writeExternal(java.io.ObjectOutput out)
     throws java.io.IOException {
@@ -2731,8 +2731,8 @@ public class UnifiedTrackingRheosEvent extends org.apache.avro.specific.Specific
   }
 
   @SuppressWarnings("unchecked")
-  private static final org.apache.avro.io.DatumReader<UnifiedTrackingRheosEvent>
-    READER$ = (org.apache.avro.io.DatumReader<UnifiedTrackingRheosEvent>)MODEL$.createDatumReader(SCHEMA$);
+  private static final org.apache.avro.io.DatumReader<UnifiedTrackingMessageV0>
+    READER$ = (org.apache.avro.io.DatumReader<UnifiedTrackingMessageV0>)MODEL$.createDatumReader(SCHEMA$);
 
   @Override public void readExternal(java.io.ObjectInput in)
     throws java.io.IOException {
