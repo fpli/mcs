@@ -7,6 +7,7 @@ import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
+import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.raptor.opentracing.SpanEventHelper;
@@ -70,6 +71,17 @@ public class EventListenerResource implements EventsApi {
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
+  }
+
+  /**
+   * Collect marketing tracking event.
+   * @param body json body of the unified tracking schema event.
+   *             It does not contain all columns cause some of them can be parsed in the collection service.
+   * @return Response telling it's successful or not
+   */
+  @Override
+  public Response track(UnifiedTrackingEvent body) {
+    return null;
   }
 
   /**
