@@ -196,10 +196,6 @@ components:
     UnifiedTrackingEvent:
       type: object
       properties:
-        eventId:
-          type: string
-          description: 'Unified event id at tracking level'
-          example: '18c244e5-0ee3-4b0e-b283-4efb379bee44'
         producerEventId:
           type: string
           description: 'Event id at producer level'
@@ -260,10 +256,6 @@ components:
           type: string
           description: 'Campaign id'
           example: '2231121'
-        rotationId:
-          type: string
-          description: 'Rotation id for compatability'
-          example: '711-232312-244132-1213'
         siteId:
           type: integer
           description: 'eBay site id'
