@@ -1,9 +1,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
-import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
-import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.avro.*;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -13,6 +10,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
+import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
@@ -77,6 +75,8 @@ public class CollectionService {
   private BehaviorMessageParser behaviorMessageParser;
   private Producer behaviorProducer;
   private String behaviorTopic;
+  private Producer unifiedTrackingProducer;
+  private String unifiedTrackingTopic;
   private static CollectionService instance = null;
   private EventEmitterPublisher eventEmitterPublisher;
 
@@ -121,6 +121,8 @@ public class CollectionService {
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
     this.behaviorProducer = BehaviorKafkaSink.get();
     this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
+    this.unifiedTrackingProducer = new RheosKafkaProducer(ApplicationOptions.getInstance().getUnifiedTrackingRheosProperties());
+    this.unifiedTrackingTopic = ApplicationOptions.getInstance().getUnifiedTrackingTopic();
     this.eventEmitterPublisher = new EventEmitterPublisher(tokenGenerator);
   }
 
@@ -888,6 +890,23 @@ public class CollectionService {
     }
 
     return true;
+  }
+
+  /**
+   * Collect unified tracking event and publish to kafka
+   *
+   * @param event               post body event
+   * @return OK or Error message
+   */
+  public boolean collectUnifiedTrackingEvent(UnifiedTrackingEvent event, ContainerRequestContext requestContext) {
+    UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(event, requestContext);
+
+    if (message != null) {
+      unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
+          KafkaSink.callback);
+      return true;
+    } else
+      return false;
   }
 
   /**
