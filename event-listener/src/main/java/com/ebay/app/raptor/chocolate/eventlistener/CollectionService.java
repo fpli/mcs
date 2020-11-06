@@ -441,8 +441,16 @@ public class CollectionService {
       if (payload != null) {
         String checkoutAPIClickTs = payload.getCheckoutAPIClickTs();
         if (!StringUtils.isEmpty(checkoutAPIClickTs)) {
-          checkoutAPIClickFlag = true;
-          startTime = Long.parseLong(checkoutAPIClickTs);
+            try {
+                long checkoutAPIClickTimestamp = Long.parseLong(checkoutAPIClickTs);
+                if (checkoutAPIClickTimestamp > 0) {
+                    checkoutAPIClickFlag = true;
+                    startTime = checkoutAPIClickTimestamp;
+                }
+            } catch (Exception e) {
+                logger.warn("Error click timestamp from Checkout API" + checkoutAPIClickTs);
+                metrics.meter("ErrorCheckoutAPIClickTimestamp", 1);
+            }
         }
       }
     }
