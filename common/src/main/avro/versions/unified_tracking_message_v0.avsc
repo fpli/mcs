@@ -232,7 +232,7 @@
       "name": "appId",
       "type": [
         "null",
-        "int"
+        "string"
       ],
       "default": ""
     },

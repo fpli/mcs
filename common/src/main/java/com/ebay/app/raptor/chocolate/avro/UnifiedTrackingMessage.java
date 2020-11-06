@@ -34,7 +34,7 @@ public class UnifiedTrackingMessage extends UnifiedTrackingMessageV0 {
                                 String partnerId, String campaignId, String rotationId, Integer siteId, String url,
                                 String referer, String userAgent, String deviceFamily, String deviceType,
                                 String browserFamily, String browserVersion, String osFamily, String osVersion,
-                                String appVersion, Integer appId, String service, String server, String remoteIp,
+                                String appVersion, String appId, String service, String server, String remoteIp,
                                 Integer pageId, Integer geoId, Boolean isBot, Map<String,String> payload) {
     super(eventId, producerEventId, eventTs, producerEventTs, rlogId, trackingId, userId, publicUserId, encryptedUserId,
         guid, idfa, gadid, deviceId, channelType, actionType, partnerId, campaignId, rotationId, siteId, url, referer,
