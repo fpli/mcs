@@ -84,24 +84,10 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res = null;
       try {
-        if (body.getPayload() != null) {
-          if (body.getPayload().getPageId() != null) {
-            int pageId = body.getPayload().getPageId().intValue();
-            // notification events
-            if (pageId == PageIdEnum.NOTIFICATION_RECEIVED.getId() ||
-                pageId == PageIdEnum.NOTIFICATION_ACTION.getId()) {
-              collectionService.collectNotification(request, userCtxProvider.get(), requestContext, body, pageId);
-            }
-          } else {
-            logger.warn(Errors.ERROR_NO_PAGE_ID);
-            metrics.meter(Errors.ERROR_NO_PAGE_ID);
-            throw new Exception(Errors.ERROR_NO_PAGE_ID);
-          }
-        } else {
-          // click events
-          collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(),
-              requestContext, body);
-        }
+        // click events
+        collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(),
+                requestContext, body);
+
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {

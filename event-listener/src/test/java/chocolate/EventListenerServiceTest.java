@@ -830,6 +830,33 @@ public class EventListenerServiceTest {
     assertEquals("-1", campaignRotationMap.get(1537903895L).toString());
   }
 
+  @Test
+  public void testCheckoutAPIClickEventsResource() {
+    Event event = new Event();
+    event.setReferrer("");
+    event.setTargetUrl("http://www.ebay.com/itm/184157407508?mkevt=1&mkcid=1");
+    EventPayload eventPayload = new EventPayload();
+    eventPayload.setCheckoutAPIClickTs("1604566345000");
+    event.setPayload(eventPayload);
+
+    // success request
+    // iphone
+    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // desktop
+    response = postMcsResponse(eventsPath, endUserCtxDesktop, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // android
+    response = postMcsResponse(eventsPath, endUserCtxAndroid, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // mweb
+    response = postMcsResponse(eventsPath, endUserCtxMweb, tracking, event);
+    assertEquals(201, response.getStatus());
+  }
+
   /**
    * Load properties
    * @param fileName

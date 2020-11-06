@@ -434,6 +434,19 @@ public class CollectionService {
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
         Field.of(LANDING_PAGE_TYPE, landingPageType));
 
+    // update startTime if the click comes from checkoutAPI
+    boolean checkoutAPIClickFlag = false;
+    if (channelType == ChannelIdEnum.EPN) {
+      EventPayload payload = event.getPayload();
+      if (payload != null) {
+        String checkoutAPIClickTs = payload.getCheckoutAPIClickTs();
+        if (!StringUtils.isEmpty(checkoutAPIClickTs)) {
+          checkoutAPIClickFlag = true;
+          startTime = Long.parseLong(checkoutAPIClickTs);
+        }
+      }
+    }
+
     // add tags in url param "sojTags"
     if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
       addGenericSojTags(requestContext, parameters, referer, type, action);
@@ -457,8 +470,8 @@ public class CollectionService {
     else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS)
       processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
     if (processFlag)
-      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+      stopTimerAndLogData(startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+              Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
   }
@@ -573,7 +586,7 @@ public class CollectionService {
           Field.of(CHANNEL_TYPE, "New-ROI"), Field.of(ROI_SOURCE, String.valueOf(payloadMap.get(ROI_SOURCE))));
       // Log the roi lag between transation time and receive time
       metrics.mean("RoiTransationLag", startTime - transTimestamp, Field.of(CHANNEL_ACTION, "ROI"), Field.of(CHANNEL_TYPE, "ROI"));
-      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
+      stopTimerAndLogData(startTime, false, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
           ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
     }
     return true;
@@ -726,7 +739,7 @@ public class CollectionService {
           request, startTime, endUserContext, raptorSecureContext, agentInfo);
 
     if (processFlag)
-      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+      stopTimerAndLogData(startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
     return true;
@@ -808,7 +821,7 @@ public class CollectionService {
     // add channel specific tags
     processNotification(requestContext, payload, type, action, pageId);
 
-    stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+    stopTimerAndLogData(startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
           Field.of(PLATFORM, platform), Field.of(PAGE_ID, pageId));
 
     return true;
@@ -1432,13 +1445,18 @@ public class CollectionService {
    * Stops the timer and logs relevant debugging messages
    *
    * @param startTime        the start time, so that latency can be calculated
+   * @param checkoutAPIClickFlag  checkoutAPIClickFlag, if true, add checkoutAPIClickFlag in metrics to distinguish from other events
    * @param additionalFields channelAction, channelType, platform, landing page type
    */
-  private void stopTimerAndLogData(long startTime, Field<String, Object>... additionalFields) {
+  private void stopTimerAndLogData(long startTime, boolean checkoutAPIClickFlag, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
     metrics.meter("CollectionServiceSuccess", 1, startTime, additionalFields);
-    metrics.mean("CollectionServiceAverageLatency", endTime - startTime);
+    if (checkoutAPIClickFlag) {
+      metrics.mean("CollectionServiceCheckoutAPIClickAndROIAverageLatency", endTime - startTime);
+    } else {
+      metrics.mean("CollectionServiceAverageLatency", endTime - startTime);
+    }
   }
 
   /**
