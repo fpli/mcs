@@ -15,10 +15,7 @@ import org.apache.kafka.common.errors.ProducerFencedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -90,6 +87,7 @@ public class RheosKafkaProducer<K, V extends GenericRecord> implements Producer<
     rheosEvent.setEventSentTimestamp(t);
     rheosEvent.setProducerId(producerName);
     rheosEvent.setSchemaId(schemaId);
+    rheosEvent.setEventId(UUID.randomUUID().toString());
 
     for (Schema.Field field : v.getSchema().getFields()) {
       String fn = field.name();

@@ -271,19 +271,30 @@ public class CollectionService {
     String targetUrl = event.getTargetUrl();
 
     // For e page, the real target url is in the referer
+    // Since Chrome strict policy, referer may be cut off, so use 'originalUrl' parameter first as target url
     // if referer is existed, it will be in the target url (request body) parameter
     if (ePageSites.matcher(targetUrl.toLowerCase()).find()) {
       metrics.meter("ePageIncoming");
 
       String originalReferer = "";
+      String targetPath = "";
       UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
       if (uriComponents != null && uriComponents.getQueryParams() != null) {
         originalReferer = uriComponents.getQueryParams().getFirst(Constants.EPAGE_REFERER);
+        targetPath = uriComponents.getQueryParams().getFirst(Constants.EPAGE_URL);
       }
 
-      targetUrl = referer;
+      if (!StringUtils.isEmpty(targetPath)) {
+        URIBuilder uriBuilder = new URIBuilder(URLDecoder.decode(targetPath, "UTF-8"));
+        uriBuilder.addParameters(new URIBuilder(targetUrl).getQueryParams());
+        targetUrl = UrlUtil.removeParam(uriBuilder.build().toString(), Constants.EPAGE_URL);
+      } else {
+        targetUrl = referer;
+      }
+
       if (!StringUtils.isEmpty(originalReferer)) {
         referer = URLDecoder.decode(originalReferer, "UTF-8");
+        targetUrl = UrlUtil.removeParam(targetUrl, Constants.EPAGE_REFERER);
       } else {
         logger.warn(Errors.ERROR_NO_REFERER);
         metrics.meter(Errors.ERROR_NO_REFERER);
