@@ -1453,7 +1453,7 @@ public class CollectionService {
    * Stops the timer and logs relevant debugging messages
    *
    * @param startTime        the start time, so that latency can be calculated
-   * @param checkoutAPIClickFlag  checkoutAPIClickFlag, if true, add checkoutAPIClickFlag in metrics to distinguish from other events
+   * @param checkoutAPIClickFlag  checkoutAPIClickFlag, if true, add another metrics to distinguish from other events
    * @param additionalFields channelAction, channelType, platform, landing page type
    */
   private void stopTimerAndLogData(long startTime, boolean checkoutAPIClickFlag, Field<String, Object>... additionalFields) {
