@@ -1046,6 +1046,9 @@ public class CollectionService {
         }
         requestTracker.addTag("gclid", gclid, String.class);
 
+        //producereventts
+        requestTracker.addTag("producereventts", startTime, Long.class);
+
       } catch (Exception e) {
         logger.warn("Error when tracking ubi for imk", e);
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
@@ -1403,6 +1406,11 @@ public class CollectionService {
       // user ID
       if (isLongNumeric(userId)) {
         requestTracker.addTag("userid", userId, String.class);
+      }
+
+      // Transaction Time
+      if (isLongNumeric(roiEvent.getTransactionTimestamp())) {
+        requestTracker.addTag("producereventts", Long.parseLong(roiEvent.getTransactionTimestamp()), Long.class);
       }
     } catch (Exception e) {
       logger.warn("Error when tracking ubi for roi event", e);
