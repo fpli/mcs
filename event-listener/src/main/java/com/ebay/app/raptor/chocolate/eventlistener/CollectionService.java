@@ -898,8 +898,8 @@ public class CollectionService {
    * @param event               post body event
    * @return OK or Error message
    */
-  public boolean collectUnifiedTrackingEvent(UnifiedTrackingEvent event, ContainerRequestContext requestContext) {
-    UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(event, requestContext);
+  public boolean collectUnifiedTrackingEvent(UnifiedTrackingEvent event) {
+    UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(event);
 
     if (message != null) {
       unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),

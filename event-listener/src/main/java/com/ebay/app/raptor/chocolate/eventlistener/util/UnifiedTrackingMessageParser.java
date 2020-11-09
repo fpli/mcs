@@ -4,6 +4,9 @@ import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.platform.raptor.ddsmodels.DDSResponse;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
+import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
+import com.ebay.userlookup.UserLookup;
+import com.ebay.userlookup.common.ClientException;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;
@@ -25,8 +28,9 @@ public class UnifiedTrackingMessageParser {
 
   /**
    * Parse message to unified tracking message
+   * For UEP cases
    */
-  public static UnifiedTrackingMessage parse(UnifiedTrackingEvent event, ContainerRequestContext requestContext) {
+  public static UnifiedTrackingMessage parse(UnifiedTrackingEvent event) {
     Map<String, String> payload = new HashMap<>();
 
     // set default value
@@ -49,7 +53,7 @@ public class UnifiedTrackingMessageParser {
 
     // user id
     record.setUserId(Long.parseLong(event.getUserId()));
-    record.setPublicUserId(event.getPublicUserId());
+    record.setPublicUserId(event.getUserId());
     record.setEncryptedUserId(Long.parseLong(event.getEncryptedUserId()));
 
     // guid
@@ -59,7 +63,7 @@ public class UnifiedTrackingMessageParser {
     record.setIdfa(event.getIdfa());
     record.setGadid(event.getGadid());
     record.setUserAgent(event.getUserAgent());
-    UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
+    UserAgentInfo agentInfo = new UserAgentParser().parse(event.getUserAgent());
     DDSResponse deviceInfo = agentInfo.getDeviceInfo();
     if (deviceInfo != null) {
       record.setDeviceFamily(getDeviceFamily(deviceInfo));
@@ -118,6 +122,8 @@ public class UnifiedTrackingMessageParser {
     return record;
   }
 
+
+
   /**
    * Get device family
    */
@@ -137,5 +143,20 @@ public class UnifiedTrackingMessageParser {
     }
 
     return deviceFamily;
+  }
+
+  /**
+   * Get public user id
+   */
+  private static String getPublicUserId(String userId) {
+    String publicUserId = "";
+
+    try {
+      new UserLookup().getPublicUserId(Long.parseLong(userId));
+    } catch (ClientException e) {
+      logger.warn("Get public user id error.", e);
+    }
+
+    return publicUserId;
   }
 }

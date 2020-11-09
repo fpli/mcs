@@ -88,7 +88,7 @@ public class EventListenerResource implements EventsApi {
       Response res = null;
       try {
         // click events
-        collectionService.collectUnifiedTrackingEvent(body, requestContext);
+        collectionService.collectUnifiedTrackingEvent(body);
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
