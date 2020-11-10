@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-11-05T17:00:37.616+08:00[Asia/Shanghai]")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-11-10T11:22:34.818+08:00[Asia/Shanghai]")
 @JsonPropertyOrder({ "producerEventId","producerEventTs","rlogId","trackingId","userId","publicUserId","encryptedUserId","guid","idfa","gadid","deviceId","channelType","actionType","partnerId","campaignId","siteId","url","referer","userAgent","service","server","remoteIp","pageId","geoId","payload" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 

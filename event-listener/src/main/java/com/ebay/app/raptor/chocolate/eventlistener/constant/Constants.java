@@ -43,6 +43,7 @@ public class Constants {
   public static final String YM_INSTC = "yminstc";
   public static final String SMS_ID = "smsid";
   public static final String CHOCO_BUYER_ACCESS_SITE_ID = "choco_bs";
+  public static final String SEND_TRACKING_ID = "send.tracking.id";
 
   public static final String REFERER_HEADER = "referer";
   public static final String REFERER_HEADER_UPCASE = "Referer";

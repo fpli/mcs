@@ -201,9 +201,10 @@ components:
           description: 'Event id at producer level'
           example: '18c244e5-0ee3-4b0e-b283-4efb379bee44'
         producerEventTs:
-          type: long
+          type: integer
+          format: int64
           description: 'Timestamp when the producer calls the tracking service'
-          example: '1604463171000'
+          example: 1604463171000
         rlogId:
           type: string
           description: 'rlogId'
@@ -259,7 +260,7 @@ components:
         siteId:
           type: integer
           description: 'eBay site id'
-          example: '0'
+          example: 0
         url:
           type: string
           description: 'Tracking url'
@@ -287,11 +288,11 @@ components:
         pageId:
           type: integer
           description: 'Corresponding page id in sojourner'
-          example: '3084'
+          example: 3084
         geoId:
           type: integer
           description: 'Geo id of the end user'
-          example: '1'
+          example: 1
         payload:
           type: object
           description: Tracking event payload
