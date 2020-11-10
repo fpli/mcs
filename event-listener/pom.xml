@@ -148,12 +148,12 @@
       <artifactId>raptor-globalconfig-starter</artifactId>
     </dependency>
 
-    <!-- user lookup -->
-    <dependency>
-      <groupId>com.ebay.lookup</groupId>
-      <artifactId>userlookup</artifactId>
-      <version>2.0.9</version>
-    </dependency>
+    <!--&lt;!&ndash; user lookup &ndash;&gt;-->
+    <!--<dependency>-->
+      <!--<groupId>com.ebay.lookup</groupId>-->
+      <!--<artifactId>userlookup</artifactId>-->
+      <!--<version>2.0.9</version>-->
+    <!--</dependency>-->
 
     <!-- spring boot jetty starter -->
     <dependency>
@@ -429,11 +429,11 @@
       <artifactId>commons-dbcp</artifactId>
       <version>1.4</version>
     </dependency>
-    <dependency>
-      <groupId>org.ebayopensource.ginger</groupId>
-      <artifactId>ebay-jaxrs-client</artifactId>
-      <version>2.9.7-RELEASE</version>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.ebayopensource.ginger</groupId>-->
+      <!--<artifactId>ebay-jaxrs-client</artifactId>-->
+      <!--<version>2.9.7-RELEASE</version>-->
+    <!--</dependency>-->
 
   </dependencies>
 
