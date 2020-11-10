@@ -434,6 +434,9 @@ public class CollectionService {
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
         Field.of(LANDING_PAGE_TYPE, landingPageType));
 
+    // this attribute is used to log actual process time for incoming event in mcs
+    long eventProcessStartTime = startTime;
+
     // update startTime if the click comes from checkoutAPI
     boolean checkoutAPIClickFlag = false;
     if (channelType == ChannelIdEnum.EPN) {
@@ -478,7 +481,7 @@ public class CollectionService {
     else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS)
       processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
     if (processFlag)
-      stopTimerAndLogData(startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+      stopTimerAndLogData(eventProcessStartTime, startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
               Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
@@ -594,7 +597,7 @@ public class CollectionService {
           Field.of(CHANNEL_TYPE, "New-ROI"), Field.of(ROI_SOURCE, String.valueOf(payloadMap.get(ROI_SOURCE))));
       // Log the roi lag between transation time and receive time
       metrics.mean("RoiTransationLag", startTime - transTimestamp, Field.of(CHANNEL_ACTION, "ROI"), Field.of(CHANNEL_TYPE, "ROI"));
-      stopTimerAndLogData(startTime, false, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
+      stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
           ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
     }
     return true;
@@ -747,7 +750,7 @@ public class CollectionService {
           request, startTime, endUserContext, raptorSecureContext, agentInfo);
 
     if (processFlag)
-      stopTimerAndLogData(startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+      stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
     return true;
@@ -829,7 +832,7 @@ public class CollectionService {
     // add channel specific tags
     processNotification(requestContext, payload, type, action, pageId);
 
-    stopTimerAndLogData(startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+    stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
           Field.of(PLATFORM, platform), Field.of(PAGE_ID, pageId));
 
     return true;
@@ -1460,18 +1463,19 @@ public class CollectionService {
   /**
    * Stops the timer and logs relevant debugging messages
    *
-   * @param startTime        the start time, so that latency can be calculated
+   * @param eventProcessStartTime     actual process start time for incoming event, so that latency can be calculated
+   * @param eventProducerStartTime    actual producer event time, add this to distinguish the click from checkout api
    * @param checkoutAPIClickFlag  checkoutAPIClickFlag, if true, add another metrics to distinguish from other events
    * @param additionalFields channelAction, channelType, platform, landing page type
    */
-  private void stopTimerAndLogData(long startTime, boolean checkoutAPIClickFlag, Field<String, Object>... additionalFields) {
+  private void stopTimerAndLogData(long eventProcessStartTime, long eventProducerStartTime, boolean checkoutAPIClickFlag, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("CollectionServiceSuccess", 1, startTime, additionalFields);
+    metrics.meter("CollectionServiceSuccess", 1, eventProcessStartTime, additionalFields);
     if (checkoutAPIClickFlag) {
-      metrics.mean("CollectionServiceCheckoutAPIClickAndROIAverageLatency", endTime - startTime);
+      metrics.mean("CollectionServiceCheckoutAPIClickAndROIAverageLatency", endTime - eventProducerStartTime);
     } else {
-      metrics.mean("CollectionServiceAverageLatency", endTime - startTime);
+      metrics.mean("CollectionServiceAverageLatency", endTime - eventProcessStartTime);
     }
   }
 
