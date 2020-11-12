@@ -11,8 +11,8 @@ import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
 import com.ebay.raptor.domain.request.api.DomainRequestData;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
-//import com.ebay.userlookup.UserLookup;
-//import com.ebay.userlookup.common.ClientException;
+import com.ebay.userlookup.UserLookup;
+import com.ebay.userlookup.common.ClientException;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;
@@ -61,9 +61,9 @@ public class UnifiedTrackingMessageParser {
     record.setTrackingId(event.getTrackingId());
 
     // user id
-    record.setUserId(Long.parseLong(event.getUserId()));
-    record.setPublicUserId(event.getUserId());
-    record.setEncryptedUserId(Long.parseLong(event.getEncryptedUserId()));
+    record.setUserId(event.getUserId());
+    record.setPublicUserId(event.getPublicUserId());
+    record.setEncryptedUserId(event.getEncryptedUserId());
 
     // guid
     record.setGuid(event.getGuid());
@@ -177,9 +177,9 @@ public class UnifiedTrackingMessageParser {
     record.setUserAgent(endUserContext.getUserAgent());
     record = setDeviceInfo(record, agentInfo);
 //    record.setDeviceId(event.getDeviceId());
-//    if (agentInfo.getAppInfo() != null) {
-//      record.setAppVersion(agentInfo.getAppInfo().getAppVersion());
-//    }
+    if (agentInfo.getAppInfo() != null) {
+      record.setAppVersion(agentInfo.getAppInfo().getAppVersion());
+    }
 
     // channel type
     record.setChannelType(channelType.toString());
@@ -251,20 +251,20 @@ public class UnifiedTrackingMessageParser {
     return "";
   }
 
-//  /**
-//   * Get public user id
-//   */
-//  private static String getPublicUserId(Long userId) {
-//    String publicUserId = "";
-//
-//    try {
-//      new UserLookup().getPublicUserId(userId);
-//    } catch (ClientException e) {
-//      logger.warn("Get public user id error.", e);
-//    }
-//
-//    return publicUserId;
-//  }
+  /**
+   * Get public user id
+   */
+  private static String getPublicUserId(Long userId) {
+    String publicUserId = "";
+
+    try {
+      publicUserId = new UserLookup().getPublicUserId(userId);
+    } catch (ClientException e) {
+      logger.warn("Get public user id error.", e);
+    }
+
+    return publicUserId;
+  }
 
   /**
    * Get partner id
