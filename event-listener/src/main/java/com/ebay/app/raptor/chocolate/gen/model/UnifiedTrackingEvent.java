@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-11-10T11:22:34.818+08:00[Asia/Shanghai]")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-11-12T10:14:00.153+08:00[Asia/Shanghai]")
 @JsonPropertyOrder({ "producerEventId","producerEventTs","rlogId","trackingId","userId","publicUserId","encryptedUserId","guid","idfa","gadid","deviceId","channelType","actionType","partnerId","campaignId","siteId","url","referer","userAgent","service","server","remoteIp","pageId","geoId","payload" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
@@ -53,13 +53,13 @@ public class UnifiedTrackingEvent implements Serializable {
   private String trackingId = null;
   @JsonProperty("userId")
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private String userId = null;
+  private Long userId = null;
   @JsonProperty("publicUserId")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String publicUserId = null;
   @JsonProperty("encryptedUserId")
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private String encryptedUserId = null;
+  private Long encryptedUserId = null;
   @JsonProperty("guid")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String guid = null;
@@ -168,11 +168,11 @@ public class UnifiedTrackingEvent implements Serializable {
    * @return userId
    **/
   @ApiModelProperty(example = "1626162", value = "Oracle id")
-  public String getUserId() {
+  public Long getUserId() {
     return userId;
   }
 
-  public void setUserId(String userId) {
+  public void setUserId(Long userId) {
     this.userId = userId;
   }
   /**
@@ -192,11 +192,11 @@ public class UnifiedTrackingEvent implements Serializable {
    * @return encryptedUserId
    **/
   @ApiModelProperty(example = "542525556", value = "Encrypted user id")
-  public String getEncryptedUserId() {
+  public Long getEncryptedUserId() {
     return encryptedUserId;
   }
 
-  public void setEncryptedUserId(String encryptedUserId) {
+  public void setEncryptedUserId(Long encryptedUserId) {
     this.encryptedUserId = encryptedUserId;
   }
   /**

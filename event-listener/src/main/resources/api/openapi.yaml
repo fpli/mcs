@@ -214,7 +214,8 @@ components:
           description: 'Id used to associate the marketing system behavior and the user behavior'
           example: '0AD3335D-36089192FCC-017529D1F00D-00000000027EEF2B'
         userId:
-          type: string
+          type: integer
+          format: int64
           description: 'Oracle id'
           example: '1626162'
         publicUserId:
@@ -222,7 +223,8 @@ components:
           description: 'Public user id'
           example: '1626162'
         encryptedUserId:
-          type: string
+          type: integer
+          format: int64
           description: 'Encrypted user id'
           example: '542525556'
         guid:
