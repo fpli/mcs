@@ -31,13 +31,13 @@ public class UnifiedTrackingMessage extends UnifiedTrackingMessageV0 {
   public UnifiedTrackingMessage(String eventId, String producerEventId, Long eventTs, Long producerEventTs, String rlogId,
                                 String trackingId, Long userId, String publicUserId, Long encryptedUserId, String guid,
                                 String idfa, String gadid, String deviceId, String channelType, String actionType,
-                                String partnerId, String campaignId, String rotationId, Integer siteId, String url,
+                                String partner, String campaignId, String rotationId, Integer siteId, String url,
                                 String referer, String userAgent, String deviceFamily, String deviceType,
                                 String browserFamily, String browserVersion, String osFamily, String osVersion,
                                 String appVersion, String appId, String service, String server, String remoteIp,
                                 Integer pageId, Integer geoId, Boolean isBot, Map<String,String> payload) {
     super(eventId, producerEventId, eventTs, producerEventTs, rlogId, trackingId, userId, publicUserId, encryptedUserId,
-        guid, idfa, gadid, deviceId, channelType, actionType, partnerId, campaignId, rotationId, siteId, url, referer,
+        guid, idfa, gadid, deviceId, channelType, actionType, partner, campaignId, rotationId, siteId, url, referer,
         userAgent, deviceFamily, deviceType, browserFamily, browserVersion, osFamily, osVersion, appVersion, appId,
         service, server, remoteIp, pageId, geoId, isBot, payload);
   }

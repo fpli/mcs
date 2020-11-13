@@ -14,8 +14,8 @@ import org.apache.avro.message.SchemaStore;
 /**  Unified tracking topic schema */
 @org.apache.avro.specific.AvroGenerated
 public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 3838231162218598773L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UnifiedTrackingMessageV0\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"doc\":\" Unified tracking topic schema\",\"fields\":[{\"name\":\"eventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by tracking collection service\"},{\"name\":\"producerEventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by producer\"},{\"name\":\"eventTs\",\"type\":\"long\",\"doc\":\"Event received timestamp at the collection service\"},{\"name\":\"producerEventTs\",\"type\":\"long\",\"doc\":\"Event created timestamp at producer side\"},{\"name\":\"rlogId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"trackingId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"ID to associate user behavior and dilivery\",\"default\":\"\"},{\"name\":\"userId\",\"type\":[\"null\",\"long\"],\"doc\":\"Oracle id\",\"default\":\"\"},{\"name\":\"publicUserId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"public user id\",\"default\":\"\"},{\"name\":\"encryptedUserId\",\"type\":[\"null\",\"long\"],\"doc\":\"Encrypted user id in email open and click url\",\"default\":\"\"},{\"name\":\"guid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"idfa\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"gadid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"channelType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"actionType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"partnerId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"campaignId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"rotationId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"siteId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"url\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"referer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"userAgent\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"appVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"appId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"service\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"server\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"remoteIp\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"pageId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"geoId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"isBot\",\"type\":\"boolean\",\"default\":\"false\"},{\"name\":\"payload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}}]}");
+  private static final long serialVersionUID = -2501168095235966560L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UnifiedTrackingMessageV0\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"doc\":\" Unified tracking topic schema\",\"fields\":[{\"name\":\"eventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by tracking collection service\"},{\"name\":\"producerEventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"doc\":\"ID of the event by producer\"},{\"name\":\"eventTs\",\"type\":\"long\",\"doc\":\"Event received timestamp at the collection service\"},{\"name\":\"producerEventTs\",\"type\":\"long\",\"doc\":\"Event created timestamp at producer side\"},{\"name\":\"rlogId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"trackingId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"ID to associate user behavior and dilivery\",\"default\":\"\"},{\"name\":\"userId\",\"type\":[\"null\",\"long\"],\"doc\":\"Oracle id\",\"default\":\"\"},{\"name\":\"publicUserId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"public user id\",\"default\":\"\"},{\"name\":\"encryptedUserId\",\"type\":[\"null\",\"long\"],\"doc\":\"Encrypted user id in email open and click url\",\"default\":\"\"},{\"name\":\"guid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"idfa\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"gadid\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"channelType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"actionType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"partner\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"campaignId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"rotationId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"siteId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"url\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"referer\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"userAgent\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"deviceType\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"browserVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osFamily\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"osVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"appVersion\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"appId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"service\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"server\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"remoteIp\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":\"\"},{\"name\":\"pageId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"geoId\",\"type\":[\"null\",\"int\"],\"default\":\"\"},{\"name\":\"isBot\",\"type\":\"boolean\",\"default\":\"false\"},{\"name\":\"payload\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"avro.java.string\":\"String\"}}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -75,7 +75,7 @@ public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificR
    private java.lang.String deviceId;
    private java.lang.String channelType;
    private java.lang.String actionType;
-   private java.lang.String partnerId;
+   private java.lang.String partner;
    private java.lang.String campaignId;
    private java.lang.String rotationId;
    private java.lang.Integer siteId;
@@ -122,7 +122,7 @@ public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificR
    * @param deviceId The new value for deviceId
    * @param channelType The new value for channelType
    * @param actionType The new value for actionType
-   * @param partnerId The new value for partnerId
+   * @param partner The new value for partner
    * @param campaignId The new value for campaignId
    * @param rotationId The new value for rotationId
    * @param siteId The new value for siteId
@@ -145,7 +145,7 @@ public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificR
    * @param isBot The new value for isBot
    * @param payload The new value for payload
    */
-  public UnifiedTrackingMessageV0(java.lang.String eventId, java.lang.String producerEventId, java.lang.Long eventTs, java.lang.Long producerEventTs, java.lang.String rlogId, java.lang.String trackingId, java.lang.Long userId, java.lang.String publicUserId, java.lang.Long encryptedUserId, java.lang.String guid, java.lang.String idfa, java.lang.String gadid, java.lang.String deviceId, java.lang.String channelType, java.lang.String actionType, java.lang.String partnerId, java.lang.String campaignId, java.lang.String rotationId, java.lang.Integer siteId, java.lang.String url, java.lang.String referer, java.lang.String userAgent, java.lang.String deviceFamily, java.lang.String deviceType, java.lang.String browserFamily, java.lang.String browserVersion, java.lang.String osFamily, java.lang.String osVersion, java.lang.String appVersion, java.lang.String appId, java.lang.String service, java.lang.String server, java.lang.String remoteIp, java.lang.Integer pageId, java.lang.Integer geoId, java.lang.Boolean isBot, java.util.Map<java.lang.String,java.lang.String> payload) {
+  public UnifiedTrackingMessageV0(java.lang.String eventId, java.lang.String producerEventId, java.lang.Long eventTs, java.lang.Long producerEventTs, java.lang.String rlogId, java.lang.String trackingId, java.lang.Long userId, java.lang.String publicUserId, java.lang.Long encryptedUserId, java.lang.String guid, java.lang.String idfa, java.lang.String gadid, java.lang.String deviceId, java.lang.String channelType, java.lang.String actionType, java.lang.String partner, java.lang.String campaignId, java.lang.String rotationId, java.lang.Integer siteId, java.lang.String url, java.lang.String referer, java.lang.String userAgent, java.lang.String deviceFamily, java.lang.String deviceType, java.lang.String browserFamily, java.lang.String browserVersion, java.lang.String osFamily, java.lang.String osVersion, java.lang.String appVersion, java.lang.String appId, java.lang.String service, java.lang.String server, java.lang.String remoteIp, java.lang.Integer pageId, java.lang.Integer geoId, java.lang.Boolean isBot, java.util.Map<java.lang.String,java.lang.String> payload) {
     this.eventId = eventId;
     this.producerEventId = producerEventId;
     this.eventTs = eventTs;
@@ -161,7 +161,7 @@ public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificR
     this.deviceId = deviceId;
     this.channelType = channelType;
     this.actionType = actionType;
-    this.partnerId = partnerId;
+    this.partner = partner;
     this.campaignId = campaignId;
     this.rotationId = rotationId;
     this.siteId = siteId;
@@ -204,7 +204,7 @@ public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificR
     case 12: return deviceId;
     case 13: return channelType;
     case 14: return actionType;
-    case 15: return partnerId;
+    case 15: return partner;
     case 16: return campaignId;
     case 17: return rotationId;
     case 18: return siteId;
@@ -249,7 +249,7 @@ public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificR
     case 12: deviceId = (java.lang.String)value$; break;
     case 13: channelType = (java.lang.String)value$; break;
     case 14: actionType = (java.lang.String)value$; break;
-    case 15: partnerId = (java.lang.String)value$; break;
+    case 15: partner = (java.lang.String)value$; break;
     case 16: campaignId = (java.lang.String)value$; break;
     case 17: rotationId = (java.lang.String)value$; break;
     case 18: siteId = (java.lang.Integer)value$; break;
@@ -524,19 +524,19 @@ public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificR
   }
 
   /**
-   * Gets the value of the 'partnerId' field.
-   * @return The value of the 'partnerId' field.
+   * Gets the value of the 'partner' field.
+   * @return The value of the 'partner' field.
    */
-  public java.lang.String getPartnerId() {
-    return partnerId;
+  public java.lang.String getPartner() {
+    return partner;
   }
 
   /**
-   * Sets the value of the 'partnerId' field.
+   * Sets the value of the 'partner' field.
    * @param value the value to set.
    */
-  public void setPartnerId(java.lang.String value) {
-    this.partnerId = value;
+  public void setPartner(java.lang.String value) {
+    this.partner = value;
   }
 
   /**
@@ -930,7 +930,7 @@ public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificR
     private java.lang.String deviceId;
     private java.lang.String channelType;
     private java.lang.String actionType;
-    private java.lang.String partnerId;
+    private java.lang.String partner;
     private java.lang.String campaignId;
     private java.lang.String rotationId;
     private java.lang.Integer siteId;
@@ -1024,8 +1024,8 @@ public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificR
         this.actionType = data().deepCopy(fields()[14].schema(), other.actionType);
         fieldSetFlags()[14] = true;
       }
-      if (isValidValue(fields()[15], other.partnerId)) {
-        this.partnerId = data().deepCopy(fields()[15].schema(), other.partnerId);
+      if (isValidValue(fields()[15], other.partner)) {
+        this.partner = data().deepCopy(fields()[15].schema(), other.partner);
         fieldSetFlags()[15] = true;
       }
       if (isValidValue(fields()[16], other.campaignId)) {
@@ -1180,8 +1180,8 @@ public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificR
         this.actionType = data().deepCopy(fields()[14].schema(), other.actionType);
         fieldSetFlags()[14] = true;
       }
-      if (isValidValue(fields()[15], other.partnerId)) {
-        this.partnerId = data().deepCopy(fields()[15].schema(), other.partnerId);
+      if (isValidValue(fields()[15], other.partner)) {
+        this.partner = data().deepCopy(fields()[15].schema(), other.partner);
         fieldSetFlags()[15] = true;
       }
       if (isValidValue(fields()[16], other.campaignId)) {
@@ -1886,40 +1886,40 @@ public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificR
     }
 
     /**
-      * Gets the value of the 'partnerId' field.
+      * Gets the value of the 'partner' field.
       * @return The value.
       */
-    public java.lang.String getPartnerId() {
-      return partnerId;
+    public java.lang.String getPartner() {
+      return partner;
     }
 
     /**
-      * Sets the value of the 'partnerId' field.
-      * @param value The value of 'partnerId'.
+      * Sets the value of the 'partner' field.
+      * @param value The value of 'partner'.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setPartnerId(java.lang.String value) {
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder setPartner(java.lang.String value) {
       validate(fields()[15], value);
-      this.partnerId = value;
+      this.partner = value;
       fieldSetFlags()[15] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'partnerId' field has been set.
-      * @return True if the 'partnerId' field has been set, false otherwise.
+      * Checks whether the 'partner' field has been set.
+      * @return True if the 'partner' field has been set, false otherwise.
       */
-    public boolean hasPartnerId() {
+    public boolean hasPartner() {
       return fieldSetFlags()[15];
     }
 
 
     /**
-      * Clears the value of the 'partnerId' field.
+      * Clears the value of the 'partner' field.
       * @return This builder.
       */
-    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearPartnerId() {
-      partnerId = null;
+    public com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0.Builder clearPartner() {
+      partner = null;
       fieldSetFlags()[15] = false;
       return this;
     }
@@ -2762,7 +2762,7 @@ public class UnifiedTrackingMessageV0 extends org.apache.avro.specific.SpecificR
         record.deviceId = fieldSetFlags()[12] ? this.deviceId : (java.lang.String) defaultValue(fields()[12]);
         record.channelType = fieldSetFlags()[13] ? this.channelType : (java.lang.String) defaultValue(fields()[13]);
         record.actionType = fieldSetFlags()[14] ? this.actionType : (java.lang.String) defaultValue(fields()[14]);
-        record.partnerId = fieldSetFlags()[15] ? this.partnerId : (java.lang.String) defaultValue(fields()[15]);
+        record.partner = fieldSetFlags()[15] ? this.partner : (java.lang.String) defaultValue(fields()[15]);
         record.campaignId = fieldSetFlags()[16] ? this.campaignId : (java.lang.String) defaultValue(fields()[16]);
         record.rotationId = fieldSetFlags()[17] ? this.rotationId : (java.lang.String) defaultValue(fields()[17]);
         record.siteId = fieldSetFlags()[18] ? this.siteId : (java.lang.Integer) defaultValue(fields()[18]);

@@ -86,7 +86,7 @@ public class UnifiedTrackingMessageParser {
     record.setActionType(event.getActionType());
 
     // partner id
-    record.setPartnerId(event.getPartnerId());
+    record.setPartner(event.getPartner());
 
     // campaign id
     record.setCampaignId(event.getCampaignId());
@@ -188,7 +188,7 @@ public class UnifiedTrackingMessageParser {
     record.setActionType(channelAction.toString());
 
     // partner id
-    record.setPartnerId(getPartnerId());
+    record.setPartner(getPartnerId());
 
     // campaign id
     record.setCampaignId(getCampaignId());

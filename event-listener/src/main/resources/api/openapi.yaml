@@ -251,7 +251,7 @@ components:
           type: string
           description: 'Action identifier'
           example: 'CLICK'
-        partnerId:
+        partner:
           type: string
           description: 'For epn publisher id, for display partner id. For CM, we have adobe, SMTP, Send Grid...'
           example: '16352125'

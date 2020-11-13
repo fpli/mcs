@@ -28,8 +28,8 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-11-12T10:14:00.153+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "producerEventId","producerEventTs","rlogId","trackingId","userId","publicUserId","encryptedUserId","guid","idfa","gadid","deviceId","channelType","actionType","partnerId","campaignId","siteId","url","referer","userAgent","service","server","remoteIp","pageId","geoId","payload" })
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-11-13T18:13:47.457+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "producerEventId","producerEventTs","rlogId","trackingId","userId","publicUserId","encryptedUserId","guid","idfa","gadid","deviceId","channelType","actionType","partner","campaignId","siteId","url","referer","userAgent","service","server","remoteIp","pageId","geoId","payload" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -78,9 +78,9 @@ public class UnifiedTrackingEvent implements Serializable {
   @JsonProperty("actionType")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String actionType = null;
-  @JsonProperty("partnerId")
+  @JsonProperty("partner")
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private String partnerId = null;
+  private String partner = null;
   @JsonProperty("campaignId")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String campaignId = null;
@@ -273,15 +273,15 @@ public class UnifiedTrackingEvent implements Serializable {
   }
   /**
    * For epn publisher id, for display partner id. For CM, we have adobe, SMTP, Send Grid...
-   * @return partnerId
+   * @return partner
    **/
   @ApiModelProperty(example = "16352125", value = "For epn publisher id, for display partner id. For CM, we have adobe, SMTP, Send Grid...")
-  public String getPartnerId() {
-    return partnerId;
+  public String getPartner() {
+    return partner;
   }
 
-  public void setPartnerId(String partnerId) {
-    this.partnerId = partnerId;
+  public void setPartner(String partner) {
+    this.partner = partner;
   }
   /**
    * Campaign id
@@ -437,7 +437,7 @@ public class UnifiedTrackingEvent implements Serializable {
         Objects.equals(this.deviceId, unifiedTrackingEvent.deviceId) &&
         Objects.equals(this.channelType, unifiedTrackingEvent.channelType) &&
         Objects.equals(this.actionType, unifiedTrackingEvent.actionType) &&
-        Objects.equals(this.partnerId, unifiedTrackingEvent.partnerId) &&
+        Objects.equals(this.partner, unifiedTrackingEvent.partner) &&
         Objects.equals(this.campaignId, unifiedTrackingEvent.campaignId) &&
         Objects.equals(this.siteId, unifiedTrackingEvent.siteId) &&
         Objects.equals(this.url, unifiedTrackingEvent.url) &&
@@ -453,7 +453,7 @@ public class UnifiedTrackingEvent implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(producerEventId, producerEventTs, rlogId, trackingId, userId, publicUserId, encryptedUserId, guid, idfa, gadid, deviceId, channelType, actionType, partnerId, campaignId, siteId, url, referer, userAgent, service, server, remoteIp, pageId, geoId, payload);
+    return Objects.hash(producerEventId, producerEventTs, rlogId, trackingId, userId, publicUserId, encryptedUserId, guid, idfa, gadid, deviceId, channelType, actionType, partner, campaignId, siteId, url, referer, userAgent, service, server, remoteIp, pageId, geoId, payload);
   }
 
   @Override
@@ -474,7 +474,7 @@ public class UnifiedTrackingEvent implements Serializable {
     sb.append("    deviceId: ").append(toIndentedString(deviceId)).append("\n");
     sb.append("    channelType: ").append(toIndentedString(channelType)).append("\n");
     sb.append("    actionType: ").append(toIndentedString(actionType)).append("\n");
-    sb.append("    partnerId: ").append(toIndentedString(partnerId)).append("\n");
+    sb.append("    partner: ").append(toIndentedString(partner)).append("\n");
     sb.append("    campaignId: ").append(toIndentedString(campaignId)).append("\n");
     sb.append("    siteId: ").append(toIndentedString(siteId)).append("\n");
     sb.append("    url: ").append(toIndentedString(url)).append("\n");

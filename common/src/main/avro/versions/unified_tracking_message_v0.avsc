@@ -117,7 +117,7 @@
       "default": ""
     },
     {
-      "name": "partnerId",
+      "name": "partner",
       "type": [
         "null",
         "string"
