@@ -4,10 +4,13 @@ import com.ebay.app.raptor.chocolate.avro.BehaviorEvent;
 import com.ebay.traffic.chocolate.flink.nrt.constant.DateConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
+import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
+import com.ebay.traffic.chocolate.flink.nrt.function.SherlockioMetricsCompatibleRichMapFunction;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
-import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichMapFunction;
 import com.ebay.traffic.chocolate.flink.nrt.transformer.BehaviorEventTransformer;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
+import com.ebay.traffic.monitoring.Field;
+import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics;
 import io.ebay.rheos.kafka.client.StreamConnectorConfig;
 import io.ebay.rheos.schema.avro.GenericRecordDomainDataDecoder;
 import io.ebay.rheos.schema.avro.RheosEventDeserializer;
@@ -41,6 +44,9 @@ import java.util.*;
  */
 public class BehaviorEventSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, BehaviorEvent> {
   private static final Logger LOGGER = LoggerFactory.getLogger(BehaviorEventSinkApp.class);
+
+  private static final String INCOMING = "BehaviorEventIncoming";
+  private static final String LATENCY = "BehaviorEventLatency";
 
   public static void main(String[] args) throws Exception {
     BehaviorEventSinkApp sinkApp = new BehaviorEventSinkApp();
@@ -86,9 +92,11 @@ public class BehaviorEventSinkApp extends AbstractRheosHDFSCompatibleApp<Consume
     return dataStreamSource.map(new TransformRichMapFunction());
   }
 
-  protected static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, BehaviorEvent> {
+  protected static class TransformRichMapFunction extends SherlockioMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, BehaviorEvent> {
     private transient GenericRecordDomainDataDecoder decoder;
     private transient RheosEventDeserializer deserializer;
+    private SherlockioMetrics sherlockioMetrics;
+
 
     @Override
     public void open(Configuration parameters) throws Exception {
@@ -100,15 +108,20 @@ public class BehaviorEventSinkApp extends AbstractRheosHDFSCompatibleApp<Consume
       String rheosServiceUrl = properties.getProperty(StreamConnectorConfig.RHEOS_SERVICES_URLS);
       config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, rheosServiceUrl);
       decoder = new GenericRecordDomainDataDecoder(config);
+      sherlockioMetrics = SherlockioMetrics.getInstance();
+      sherlockioMetrics.setJobName(PropertyConstants.BEHAVIOR_EVENT_SINK_APP_JOBNAME);
     }
 
     @Override
     public BehaviorEvent map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
+      Long currentTimestamp = System.currentTimeMillis();
       RheosEvent rheosEvent = deserializer.deserialize(consumerRecord.topic(), consumerRecord.value());
       GenericRecord sourceRecord = decoder.decode(rheosEvent);
       BehaviorEventTransformer behaviorEventTransformer = new BehaviorEventTransformer(sourceRecord);
       BehaviorEvent behaviorEvent = new BehaviorEvent();
       behaviorEventTransformer.transform(behaviorEvent);
+      sherlockioMetrics.meter(INCOMING, 1, Field.of(TransformerConstants.CHANNEL_TYPE, behaviorEvent.getChanneltype()), Field.of(TransformerConstants.CHANNEL_ACTION, behaviorEvent.getChannelaction()));
+      sherlockioMetrics.meanByHistogram(LATENCY, currentTimestamp - behaviorEvent.getEventtimestamp(), Field.of(TransformerConstants.CHANNEL_TYPE, behaviorEvent.getChanneltype()), Field.of(TransformerConstants.CHANNEL_ACTION, behaviorEvent.getChannelaction()));
       return behaviorEvent;
     }
   }
