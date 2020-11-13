@@ -627,62 +627,6 @@ public class EventListenerServiceTest {
   }
 
   @Test
-  public void testNotificationResource() {
-    // notification event
-    Event event = new Event();
-
-    EventPayload payload = new EventPayload();
-    payload.setPageId(2054081L);
-    Map<String, String> tags = new HashMap<>();
-    tags.put(Constants.NOTIFICATION_ID, "539721811729");
-    tags.put(Constants.NOTIFICATION_TYPE, "HOT_ITEM");
-    tags.put(Constants.USER_NAME, "91334560c9v");
-    tags.put(Constants.MC3_MSSG_ID, "1:763c4c33-b389-4016-b38e-83e29f82a1ba:2:70322535");
-    tags.put(Constants.NOTIFICATION_ACTION, "1");
-    tags.put(Constants.ITEM_ID, "122931100413");
-    tags.put(Constants.NOTIFICATION_TYPE_EVT, "WATCHITM");
-    payload.setTags(tags);
-    event.setPayload(payload);
-
-    // success request
-    // iphone
-    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
-    assertEquals(201, response.getStatus());
-
-    // desktop
-    response = postMcsResponse(eventsPath, endUserCtxDesktop, tracking, event);
-    assertEquals(201, response.getStatus());
-
-    // android
-    response = postMcsResponse(eventsPath, endUserCtxAndroid, tracking, event);
-    assertEquals(201, response.getStatus());
-
-    // mweb
-    response = postMcsResponse(eventsPath, endUserCtxMweb, tracking, event);
-    assertEquals(201, response.getStatus());
-
-    // no X-EBAY-C-ENDUSERCTX
-    response = postMcsResponse(eventsPath, null, tracking, event);
-    assertEquals(200, response.getStatus());
-    ErrorType errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4001, errorMessage.getErrorCode());
-
-    // no X-EBAY-C-TRACKING
-    response = postMcsResponse(eventsPath, endUserCtxiPhone, null, event);
-    assertEquals(200, response.getStatus());
-    errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4002, errorMessage.getErrorCode());
-
-    // no page id
-    payload.setPageId(null);
-    event.setPayload(payload);
-    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
-    assertEquals(200, response.getStatus());
-    errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4011, errorMessage.getErrorCode());
-  }
-
-  @Test
   public void testVersion() {
     Response response = client.target(svcEndPoint).path(versionPath)
       .request()
@@ -828,6 +772,33 @@ public class EventListenerServiceTest {
     assertEquals("7114261820560", campaignRotationMap.get(495209116L).toString());
     assertEquals("7101540849339260", campaignRotationMap.get(1537903894L).toString());
     assertEquals("-1", campaignRotationMap.get(1537903895L).toString());
+  }
+
+  @Test
+  public void testCheckoutAPIClickEventsResource() {
+    Event event = new Event();
+    event.setReferrer("");
+    event.setTargetUrl("http://www.ebay.com/itm/184157407508?mkevt=1&mkcid=1");
+    EventPayload eventPayload = new EventPayload();
+    eventPayload.setCheckoutAPIClickTs("1604566345000");
+    event.setPayload(eventPayload);
+
+    // success request
+    // iphone
+    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // desktop
+    response = postMcsResponse(eventsPath, endUserCtxDesktop, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // android
+    response = postMcsResponse(eventsPath, endUserCtxAndroid, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // mweb
+    response = postMcsResponse(eventsPath, endUserCtxMweb, tracking, event);
+    assertEquals(201, response.getStatus());
   }
 
   /**
