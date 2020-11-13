@@ -4,12 +4,9 @@ import com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageTableV0;
 import com.ebay.traffic.chocolate.flink.nrt.constant.DateConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
-import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichMapFunction;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
-import com.ebay.traffic.monitoring.Field;
-import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.DecoderFactory;
@@ -42,7 +39,6 @@ import java.util.*;
  */
 public class BehaviorMessageSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, BehaviorMessageTableV0> {
   private static final Logger LOGGER = LoggerFactory.getLogger(BehaviorMessageSinkApp.class);
-
 
   public static void main(String[] args) throws Exception {
     BehaviorMessageSinkApp sinkApp = new BehaviorMessageSinkApp();
