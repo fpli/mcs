@@ -57,4 +57,5 @@ public class TransformerConstants {
   public static final String ENRICHED_OS_VERSION = "enrichedOsVersion";
   public static final String RLOGID = "rlogid";
   public static final String CHNL = "chnl";
+  public static final String PAGE_TYPE = "pageType";
 }

@@ -131,6 +131,7 @@ public class UnifiedTrackingBotTransformApp
     private String topic;
     private SherlockioMetrics sherlockioMetrics;
 
+
     @Override
     public void open(Configuration parameters) throws Exception {
       super.open(parameters);
@@ -155,6 +156,7 @@ public class UnifiedTrackingBotTransformApp
               .loadProperty(PropertyConstants.UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES);
       topic = topicProperties.getProperty(PropertyConstants.TOPIC);
       sherlockioMetrics = SherlockioMetrics.getInstance();
+      sherlockioMetrics.setJobName(PropertyConstants.UNIFIED_TRACKING_BOT_TRANSFORM_APP_JOBNAME);
     }
 
     @Override

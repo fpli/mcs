@@ -4,9 +4,12 @@ import com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageTableV0;
 import com.ebay.traffic.chocolate.flink.nrt.constant.DateConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
+import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
-import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichMapFunction;
+import com.ebay.traffic.chocolate.flink.nrt.function.SherlockioMetricsCompatibleRichMapFunction;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
+import com.ebay.traffic.monitoring.Field;
+import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.DecoderFactory;
@@ -39,6 +42,9 @@ import java.util.*;
  */
 public class BehaviorMessageSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, BehaviorMessageTableV0> {
   private static final Logger LOGGER = LoggerFactory.getLogger(BehaviorMessageSinkApp.class);
+  private static final String INCOMING = "BehaviorMessageIncoming";
+  private static final String LATENCY = "BehaviorMessageLatency";
+
 
   public static void main(String[] args) throws Exception {
     BehaviorMessageSinkApp sinkApp = new BehaviorMessageSinkApp();
@@ -84,20 +90,27 @@ public class BehaviorMessageSinkApp extends AbstractRheosHDFSCompatibleApp<Consu
     return dataStreamSource.map(new TransformRichMapFunction());
   }
 
-  protected static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, BehaviorMessageTableV0> {
+  protected static class TransformRichMapFunction extends SherlockioMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, BehaviorMessageTableV0> {
     private transient DatumReader<BehaviorMessageTableV0> reader;
+    private SherlockioMetrics sherlockioMetrics;
 
     @Override
     public void open(Configuration parameters) throws Exception {
       super.open(parameters);
       reader = new SpecificDatumReader<>(BehaviorMessageTableV0.getClassSchema());
+      sherlockioMetrics = SherlockioMetrics.getInstance();
+      sherlockioMetrics.setJobName(PropertyConstants.BEHAVIOR_MESSAGE_SINK_APP_JOBNAME);
     }
 
     @Override
     public BehaviorMessageTableV0 map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
+      Long currentTimestamp = System.currentTimeMillis();
       BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(consumerRecord.value(), null);
       BehaviorMessageTableV0 datum = new BehaviorMessageTableV0();
-      return reader.read(datum, decoder);
+      BehaviorMessageTableV0 result = reader.read(datum, decoder);
+      sherlockioMetrics.meter(INCOMING, 1, Field.of(TransformerConstants.CHANNEL_TYPE, result.getChannelType()), Field.of(TransformerConstants.CHANNEL_ACTION, result.getChannelAction()));
+      sherlockioMetrics.meanByHistogram(LATENCY, currentTimestamp - result.getEventTimestamp(), Field.of(TransformerConstants.CHANNEL_TYPE, result.getChannelType()), Field.of(TransformerConstants.CHANNEL_ACTION, result.getChannelAction()));
+      return result;
     }
   }
 
