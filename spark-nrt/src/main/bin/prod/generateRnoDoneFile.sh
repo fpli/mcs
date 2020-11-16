@@ -18,7 +18,7 @@ RNO_DATA_FILE_PATH='viewfs://apollo-rno/apps/b_marketing_tracking/unified_tracki
 LOCAL_MODIFICATION_TS_FILE='modification_ts'
 
 cur_dir=$(dirname "$0")
-cur_dir=$(cd "$bin">/dev/null; pwd)
+cur_dir=$(cd "${cur_dir}">/dev/null; pwd)
 
 last_modification_ts=$(cat "${cur_dir}/${LOCAL_MODIFICATION_TS_FILE}")
 current_modification_ts=$(/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -stat %Y "${RNO_DATA_FILE_PATH}/dt=${DT}")
