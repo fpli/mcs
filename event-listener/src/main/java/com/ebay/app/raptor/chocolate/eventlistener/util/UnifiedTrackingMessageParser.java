@@ -320,7 +320,7 @@ public class UnifiedTrackingMessageParser {
       campaignId = StringUtils.substringBetween(parameters.getFirst(Constants.SOURCE_ID), "e", ".");
     } else if (ChannelType.MRKT_EMAIL.equals(channelType)) {
       if (!StringUtils.isEmpty(parameters.getFirst(Constants.SEGMENT_NAME))) {
-        campaignId = parameters.getFirst(Constants.SEGMENT_NAME).trim().substring(0, 64);
+        campaignId = parameters.getFirst(Constants.SEGMENT_NAME).trim();
       }
     }
 
