@@ -4,6 +4,10 @@ public class PropertyConstants {
   public static final String ELASTICSEARCH_INDEX_PREFIX = "elasticsearch.index.prefix";
   public static final String ELASTICSEARCH_URL = "elasticsearch.url";
 
+  public static final String SHERLOCKIO_NAMESPACE = "sherlockio.namespace";
+  public static final String SHERLOCKIO_ENDPOINT = "sherlockio.endpoint";
+  public static final String SHERLOCKIO_USER = "sherlockio.user";
+
   public static final String TOPIC = "topic";
   public static final String TOPIC_IMK_TRCKNG_EVENT_WIDE = "topic";
   public static final String TOPIC_IMK_RVR_TRCKNG_EVENT = "topic.imk-rvr-trckng-event";
@@ -22,6 +26,7 @@ public class PropertyConstants {
   public static final String IMK_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "imk-trckng-event-transform-app.rheos.consumer.topic.properties";
   public static final String IMK_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES = "imk-trckng-event-transform-app.rheos.producer.properties";
   public static final String IMK_TRCKNG_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES = "imk-trckng-event-transform-app.rheos.producer.topic.properties";
+  public static final String IMK_TRCKNG_EVENT_TRANSFORM_APP_JOBNAME = "ImkTrckngEventTransformApp";
 
   public static final String IMK_TRCKNG_EVENT_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "imk-trckng-event-sink-app.rheos.consumer.properties";
   public static final String IMK_TRCKNG_EVENT_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "imk-trckng-event-sink-app.rheos.consumer.topic.properties";
@@ -32,6 +37,7 @@ public class PropertyConstants {
   public static final String BEHAVIOR_EVENT_SINK_APP_HDFS_PROPERTIES = "behavior-event-sink-app.hdfs.properties";
   public static final String BEHAVIOR_EVENT_SINK_APP_RHEOS_CONSUMER_MONITOR_PROPERTIES = "behavior-event-sink-app.rheos.consumer.monitor.properties";
   public static final String BEHAVIOR_EVENT_SINK_APP_HDFS_MONITOR_PROPERTIES = "behavior-event-sink-app.hdfs.monitor.properties";
+  public static final String BEHAVIOR_EVENT_SINK_APP_JOBNAME = "BehaviorEventSinkApp";
 
   public static final String BEHAVIOR_EVENT_SINK2_APP_RHEOS_CONSUMER_PROPERTIES = "behavior-event-sink2-app.rheos.consumer.properties";
   public static final String BEHAVIOR_EVENT_SINK2_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "behavior-event-sink2-app.rheos.consumer.topic.properties";
@@ -46,6 +52,7 @@ public class PropertyConstants {
   public static final String BEHAVIOR_MESSAGE_SINK_APP_HDFS_PROPERTIES = "behavior-message-sink-app.hdfs.properties";
   public static final String BEHAVIOR_MESSAGE_SINK_APP_RHEOS_CONSUMER_MONITOR_PROPERTIES = "behavior-message-sink-app.rheos.consumer.monitor.properties";
   public static final String BEHAVIOR_MESSAGE_SINK_APP_HDFS_MONITOR_PROPERTIES = "behavior-message-sink-app.hdfs.monitor.properties";
+  public static final String BEHAVIOR_MESSAGE_SINK_APP_JOBNAME = "BehaviorMessageSinkApp";
 
   public static final String FILTER_MESSAGE_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "filter-message-sink-app.rheos.consumer.properties";
   public static final String FILTER_MESSAGE_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "filter-message-sink-app.rheos.consumer.topic.properties";
@@ -81,6 +88,7 @@ public class PropertyConstants {
   public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "unified-tracking-bot-transform-app.rheos.consumer.topic.properties";
   public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES = "unified-tracking-bot-transform-app.rheos.producer.properties";
   public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES = "unified-tracking-bot-transform-app.rheos.producer.topic.properties";
+  public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_JOBNAME = "UnifiedTrackingBotTransformApp";
 
   public static final String FLINK_LOG_COLLECTION_RHEOS_PRODUCER_TOPIC_PROPERTIES = "flink-log-collection.rheos.producer.topic.properties";
   public static final String FLINK_LOG_COLLECTION_RHEOS_PRODUCER_PROPERTIES = "flink-log-collection.rheos.producer.properties";

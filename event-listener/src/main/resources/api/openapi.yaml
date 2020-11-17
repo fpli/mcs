@@ -312,8 +312,6 @@ components:
         payload:
           type: object
           description: Tracking event payload
-          required:
-            - pageId
           properties:
             pageId:
               type: integer
@@ -325,6 +323,11 @@ components:
               description: Map<String, String> for soj tags
               additionalProperties:
                 type: string
+            checkoutAPIClickTs:
+              type: string
+              description: checkoutAPIClickTs, mandotary for click from checkoutAPI
+              example: "1576108800000"
+
 
     ROIEvent:
       type: object

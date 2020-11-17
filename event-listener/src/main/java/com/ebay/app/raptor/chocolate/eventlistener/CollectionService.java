@@ -436,6 +436,30 @@ public class CollectionService {
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
         Field.of(LANDING_PAGE_TYPE, landingPageType));
 
+    // this attribute is used to log actual process time for incoming event in mcs
+    long eventProcessStartTime = startTime;
+
+    // update startTime if the click comes from checkoutAPI
+    boolean checkoutAPIClickFlag = false;
+    if (channelType == ChannelIdEnum.EPN) {
+      EventPayload payload = event.getPayload();
+      if (payload != null) {
+        String checkoutAPIClickTs = payload.getCheckoutAPIClickTs();
+        if (!StringUtils.isEmpty(checkoutAPIClickTs)) {
+            try {
+                long checkoutAPIClickTimestamp = Long.parseLong(checkoutAPIClickTs);
+                if (checkoutAPIClickTimestamp > 0) {
+                    checkoutAPIClickFlag = true;
+                    startTime = checkoutAPIClickTimestamp;
+                }
+            } catch (Exception e) {
+                logger.warn("Error click timestamp from Checkout API" + checkoutAPIClickTs);
+                metrics.meter("ErrorCheckoutAPIClickTimestamp", 1);
+            }
+        }
+      }
+    }
+
     // add tags in url param "sojTags"
     if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
       addGenericSojTags(requestContext, parameters, referer, type, action);
@@ -459,8 +483,8 @@ public class CollectionService {
     else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS)
       processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
     if (processFlag)
-      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+      stopTimerAndLogData(eventProcessStartTime, startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+              Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
   }
@@ -575,7 +599,7 @@ public class CollectionService {
           Field.of(CHANNEL_TYPE, "New-ROI"), Field.of(ROI_SOURCE, String.valueOf(payloadMap.get(ROI_SOURCE))));
       // Log the roi lag between transation time and receive time
       metrics.mean("RoiTransationLag", startTime - transTimestamp, Field.of(CHANNEL_ACTION, "ROI"), Field.of(CHANNEL_TYPE, "ROI"));
-      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
+      stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
           ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
     }
     return true;
@@ -728,7 +752,7 @@ public class CollectionService {
           request, startTime, endUserContext, raptorSecureContext, agentInfo);
 
     if (processFlag)
-      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+      stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
     return true;
@@ -810,7 +834,7 @@ public class CollectionService {
     // add channel specific tags
     processNotification(requestContext, payload, type, action, pageId);
 
-    stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+    stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
           Field.of(PLATFORM, platform), Field.of(PAGE_ID, pageId));
 
     return true;
@@ -1043,6 +1067,9 @@ public class CollectionService {
           gclid = parameters.get(Constants.GCLID).get(0);
         }
         requestTracker.addTag("gclid", gclid, String.class);
+
+        //producereventts
+        requestTracker.addTag("producereventts", startTime, Long.class);
 
       } catch (Exception e) {
         logger.warn("Error when tracking ubi for imk", e);
@@ -1418,6 +1445,11 @@ public class CollectionService {
       if (isLongNumeric(userId)) {
         requestTracker.addTag("userid", userId, String.class);
       }
+
+      // Transaction Time
+      if (isLongNumeric(roiEvent.getTransactionTimestamp())) {
+        requestTracker.addTag("producereventts", Long.parseLong(roiEvent.getTransactionTimestamp()), Long.class);
+      }
     } catch (Exception e) {
       logger.warn("Error when tracking ubi for roi event", e);
       metrics.meter("ErrorWriteRoiEventToUBI");
@@ -1466,14 +1498,20 @@ public class CollectionService {
   /**
    * Stops the timer and logs relevant debugging messages
    *
-   * @param startTime        the start time, so that latency can be calculated
+   * @param eventProcessStartTime     actual process start time for incoming event, so that latency can be calculated
+   * @param eventProducerStartTime    actual producer event time, add this to distinguish the click from checkout api
+   * @param checkoutAPIClickFlag  checkoutAPIClickFlag, if true, add another metrics to distinguish from other events
    * @param additionalFields channelAction, channelType, platform, landing page type
    */
-  private void stopTimerAndLogData(long startTime, Field<String, Object>... additionalFields) {
+  private void stopTimerAndLogData(long eventProcessStartTime, long eventProducerStartTime, boolean checkoutAPIClickFlag, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("CollectionServiceSuccess", 1, startTime, additionalFields);
-    metrics.mean("CollectionServiceAverageLatency", endTime - startTime);
+    metrics.meter("CollectionServiceSuccess", 1, eventProcessStartTime, additionalFields);
+    if (checkoutAPIClickFlag) {
+      metrics.mean("CollectionServiceCheckoutAPIClickAndROIAverageLatency", endTime - eventProducerStartTime);
+    } else {
+      metrics.mean("CollectionServiceAverageLatency", endTime - eventProcessStartTime);
+    }
   }
 
   /**

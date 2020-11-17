@@ -10,6 +10,9 @@ import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaSerializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
+import com.ebay.traffic.chocolate.flink.nrt.function.SherlockioMetricsCompatibleRichFlatMapFunction;
+import com.ebay.traffic.monitoring.Field;
+import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics;
 import io.ebay.rheos.kafka.client.StreamConnectorConfig;
 import io.ebay.rheos.schema.avro.GenericRecordDomainDataDecoder;
 import io.ebay.rheos.schema.avro.RheosEventDeserializer;
@@ -59,6 +62,13 @@ public class UnifiedTrackingBotTransformApp
   private static final long DEFAULT_SNAPSHOT_ID = -1L;
   private static final String PAGE_NAME_ROVER_CLICK_BOT = "Rover_Click_Bot";
   private static final String PAGE_NAME_ROVER_OPEN_BOT = "Rover_Open_Bot";
+  private static final String INVALID_INCOMING = "InvalidIncoming";
+  private static final String VALID_INCOMING = "ValidIncoming";
+  private static final String BOT_EVENT_LATENCY = "BotEventLatency";
+  private static final String BOT_EVENT_LATENCY_HISTOGRAM = "BotEventLatencyHistogram";
+  private static final String EMPTY_PAGE_ID = "EmptyPageID";
+  private static final String OTHER_CHANNEL_EVENTS = "OtherChannelEvents";
+
 
   public static void main(String[] args) throws Exception {
     UnifiedTrackingBotTransformApp transformApp = new UnifiedTrackingBotTransformApp();
@@ -111,7 +121,7 @@ public class UnifiedTrackingBotTransformApp
     return dataStreamSource.flatMap(new TransformFlatMapFunction());
   }
 
-  protected static class TransformFlatMapFunction extends RichFlatMapFunction<ConsumerRecord<byte[], byte[]>, Tuple3<String, Long, byte[]>> {
+  protected static class TransformFlatMapFunction extends SherlockioMetricsCompatibleRichFlatMapFunction<ConsumerRecord<byte[], byte[]>, Tuple3<String, Long, byte[]>> {
     private transient GenericRecordDomainDataDecoder decoder;
     private transient RheosEventDeserializer deserializer;
     private transient EncoderFactory encoderFactory;
@@ -119,9 +129,12 @@ public class UnifiedTrackingBotTransformApp
     private transient Schema schema;
     private String producer;
     private String topic;
+    private SherlockioMetrics sherlockioMetrics;
+
 
     @Override
     public void open(Configuration parameters) throws Exception {
+      super.open(parameters);
       deserializer = new RheosEventDeserializer();
       Map<String, Object> config = new HashMap<>();
       Properties consumerProperties = PropertyMgr.getInstance()
@@ -142,6 +155,8 @@ public class UnifiedTrackingBotTransformApp
       Properties topicProperties = PropertyMgr.getInstance()
               .loadProperty(PropertyConstants.UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES);
       topic = topicProperties.getProperty(PropertyConstants.TOPIC);
+      sherlockioMetrics = SherlockioMetrics.getInstance();
+      sherlockioMetrics.setJobName(PropertyConstants.UNIFIED_TRACKING_BOT_TRANSFORM_APP_JOBNAME);
     }
 
     @Override
@@ -150,6 +165,7 @@ public class UnifiedTrackingBotTransformApp
       GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
       boolean isValid = filter(sourceRecord);
       if (!isValid) {
+        sherlockioMetrics.meter(INVALID_INCOMING);
         return;
       }
       int pageId = (int) sourceRecord.get(TransformerConstants.PAGE_ID);
@@ -164,7 +180,11 @@ public class UnifiedTrackingBotTransformApp
       }
       ChannelIdEnum channelType = parseChannelType(sourceRecord);
       String channelTypeStr = Objects.requireNonNull(channelType).getLogicalChannel().getAvro().name();
+      sherlockioMetrics.meter(VALID_INCOMING, 1, Field.of(TransformerConstants.PAGE_ID, pageId), Field.of(TransformerConstants.PAGE_NAME, pageName), Field.of(TransformerConstants.CHANNEL_TYPE, channelTypeStr), Field.of(TransformerConstants.CHANNEL_ACTION, channelActionStr));
+      Long currentTimestamp = System.currentTimeMillis();
       BehaviorMessage behaviorMessage = buildMessage(sourceRecord, pageId, pageName, channelActionStr, channelTypeStr);
+      sherlockioMetrics.mean(BOT_EVENT_LATENCY, currentTimestamp - behaviorMessage.getEventTimestamp(), Field.of(TransformerConstants.CHANNEL_TYPE, channelTypeStr), Field.of(TransformerConstants.CHANNEL_ACTION, channelActionStr));
+      sherlockioMetrics.meanByHistogram(BOT_EVENT_LATENCY_HISTOGRAM, currentTimestamp - behaviorMessage.getEventTimestamp(), Field.of(TransformerConstants.CHANNEL_TYPE, channelTypeStr), Field.of(TransformerConstants.CHANNEL_ACTION, channelActionStr));
       RheosEvent rheosEvent = getRheosEvent(behaviorMessage);
       out.collect(new Tuple3<>(topic, DEFAULT_SNAPSHOT_ID, serializeRheosEvent(rheosEvent)));
     }
@@ -176,6 +196,7 @@ public class UnifiedTrackingBotTransformApp
      */
     private boolean filter(GenericRecord sourceRecord) {
       if (sourceRecord.get(TransformerConstants.PAGE_ID) == null) {
+        sherlockioMetrics.meter(EMPTY_PAGE_ID);
         return false;
       }
       int pageId = (int) sourceRecord.get(TransformerConstants.PAGE_ID);
@@ -183,6 +204,7 @@ public class UnifiedTrackingBotTransformApp
       ChannelIdEnum channelType = parseChannelType(sourceRecord);
       // only need site_email and marketing_email events
       if (ChannelIdEnum.SITE_EMAIL != channelType && ChannelIdEnum.MRKT_EMAIL != channelType) {
+        sherlockioMetrics.meter(OTHER_CHANNEL_EVENTS);
         return false;
       }
       // only need rover click
