@@ -221,7 +221,7 @@ public class UnifiedTrackingMessageParser {
     record.setGeoId(getGeoID(requestContext, parameters, channelType, channelAction));
 
     // payload
-    record.setPayload(getPayload(payload, parameters, requestContext, channelType, channelAction));
+    record.setPayload(getPayload(payload, parameters, requestContext, url, channelType, channelAction));
 
     return record;
   }
@@ -405,7 +405,7 @@ public class UnifiedTrackingMessageParser {
    * Get payload
    */
   private static Map<String, String> getPayload(Map<String, String> payload, MultiValueMap<String, String> parameters,
-                                         ContainerRequestContext requestContext, ChannelType channelType,
+                                         ContainerRequestContext requestContext, String url, ChannelType channelType,
                                          ChannelAction channelAction) {
     // add tags from parameters
     for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
@@ -430,6 +430,9 @@ public class UnifiedTrackingMessageParser {
     if (isFacebookPrefetchEnabled(requestContext)) {
       payload.put("fbprefetch", "true");
     }
+
+    // landing page and tracking url
+    payload.put("url_mpre", url);
 
     return encodeTags(deleteNullOrEmptyValue(payload));
   }
