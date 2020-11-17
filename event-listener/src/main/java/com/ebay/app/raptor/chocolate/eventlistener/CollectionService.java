@@ -1111,6 +1111,14 @@ public class CollectionService {
         }
       }
 
+      // send to unified tracking topic
+      UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
+          agentInfo, parameters, uri, referer, channelType, channelAction);
+      if (utpMessage != null) {
+        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
+            utpMessage), KafkaSink.callback);
+      }
+
       // send email open/click to behavior topic
       BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, endUserContext, parameters,
           agentInfo, referer, uri, startTime, channelType, channelAction, snapshotId, 0);
@@ -1200,6 +1208,14 @@ public class CollectionService {
           logger.warn("Error when tracking ubi for marketing email click tags", e);
           metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
         }
+      }
+
+      // send to unified tracking topic
+      UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
+          agentInfo, parameters, uri, referer, channelType, channelAction);
+      if (utpMessage != null) {
+        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
+            utpMessage), KafkaSink.callback);
       }
 
       // send email open/click to chocolate topic

@@ -13,6 +13,7 @@ public class Constants {
   public static final String MKEVT = "mkevt";
   public static final String VALID_MKEVT_CLICK = "1";
   public static final String CAMPID = "campid";
+  public static final String CAMPAIGN_ID = "campaignid";
   public static final String MKSID = "mksid";
   public static final String PLATFORM_NATIVE_APP = "nativeApp";
   public static final String PLATFORM_TABLET = "tablet";
@@ -43,7 +44,7 @@ public class Constants {
   public static final String YM_INSTC = "yminstc";
   public static final String SMS_ID = "smsid";
   public static final String CHOCO_BUYER_ACCESS_SITE_ID = "choco_bs";
-  public static final String SEND_TRACKING_ID = "send.tracking.id";
+  public static final String TRACKING_ID = "tracking.id";
 
   public static final String REFERER_HEADER = "referer";
   public static final String REFERER_HEADER_UPCASE = "Referer";
