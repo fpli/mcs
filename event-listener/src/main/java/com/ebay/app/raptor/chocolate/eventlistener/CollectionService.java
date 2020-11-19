@@ -101,6 +101,7 @@ public class CollectionService {
   private static final String UTF_8 = "UTF-8";
   private static final String ROVER_MPRE_PARAM = "mpre";
   private static final String SOJ_MPRE_TAG = "url_mpre";
+  private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
 
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
@@ -464,7 +465,12 @@ public class CollectionService {
     }
 
     // add tags all channels need
-    addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, PageIdEnum.CLICK.getId());
+    // Don't track ubi if the click is from Checkout API
+    if (!isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)) {
+      addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, PageIdEnum.CLICK.getId());
+    } else {
+      metrics.meter("CheckoutAPIClick", 1);
+    }
 
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
@@ -586,7 +592,12 @@ public class CollectionService {
     }
 
     // write roi event tags into ubi
-    addRoiSojTags(requestContext, payloadMap, roiEvent, userId);
+    // Don't write into ubi if roi is from Checkout API
+    if (!isROIFromCheckoutAPI(payloadMap, endUserContext)) {
+      addRoiSojTags(requestContext, payloadMap, roiEvent, userId);
+    } else {
+      metrics.meter("CheckoutAPIROI", 1);
+    }
 
     // Write roi event to kafka output topic
     boolean processFlag = processROIEvent(requestContext, targetUrl, referer, parameters, ChannelIdEnum.ROI,
@@ -1018,8 +1029,9 @@ public class CollectionService {
 
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
     // Don't track ubi if it's AR
+    // Don't track ubi if the click is from Checkout API
     Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(!m.find() && !channelAction.equals(ChannelActionEnum.SERVE)) {
+    if(!m.find() && !channelAction.equals(ChannelActionEnum.SERVE) && !isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)) {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
@@ -1581,6 +1593,43 @@ public class CollectionService {
     }
 
     return sessionId;
+  }
+
+  /**
+   * Determine whether the click is from Checkout API
+   * If so, don't track into ubi
+   */
+  private Boolean isClickFromCheckoutAPI(ChannelType channelType, IEndUserContext endUserContext) {
+    Boolean isClickFromCheckoutAPI = false;
+    try {
+      if (channelType == ChannelType.EPN && endUserContext.getUserAgent().equals(CHECKOUT_API_USER_AGENT)) {
+        isClickFromCheckoutAPI = true;
+      }
+    } catch (Exception e) {
+      logger.error("Determine whether the click from Checkout API error");
+      metrics.meter("DetermineCheckoutAPIClickError", 1);
+    }
+    return isClickFromCheckoutAPI;
+  }
+
+  /**
+   * Determine whether the roi is from Checkout API
+   * If so, don't track into ubi
+   */
+  private Boolean isROIFromCheckoutAPI(Map<String, String> roiPayloadMap, IEndUserContext endUserContext) {
+    Boolean isROIFromCheckoutAPI = false;
+    try {
+      if (roiPayloadMap.containsKey(ROI_SOURCE)) {
+        if (roiPayloadMap.get(ROI_SOURCE).equals(String.valueOf(RoiSourceEnum.CHECKOUT_SOURCE.getId()))
+                && endUserContext.getUserAgent().equals(CHECKOUT_API_USER_AGENT)) {
+          isROIFromCheckoutAPI = true;
+        }
+      }
+    } catch (Exception e) {
+      logger.error("Determine whether the roi from Checkout API error");
+      metrics.meter("DetermineCheckoutAPIROIError", 1);
+    }
+    return isROIFromCheckoutAPI;
   }
 
   /**
