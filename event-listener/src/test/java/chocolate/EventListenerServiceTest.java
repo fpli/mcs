@@ -796,7 +796,6 @@ public class EventListenerServiceTest {
     eventPayload.setCheckoutAPIClickTs("1604566345000");
     event.setPayload(eventPayload);
 
-    // success request
     Response response = postMcsResponse(eventsPath, endUserCtxCheckoutAPI, tracking, event);
     assertEquals(201, response.getStatus());
 
