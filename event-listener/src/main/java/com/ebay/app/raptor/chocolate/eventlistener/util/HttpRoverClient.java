@@ -2,17 +2,24 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
-import org.apache.http.Header;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.protocol.HttpContext;
+import io.netty.handler.codec.http.HttpHeaders;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
+import org.asynchttpclient.*;
+import org.asynchttpclient.util.HttpConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+
+import static org.asynchttpclient.Dsl.asyncHttpClient;
+import static org.asynchttpclient.Dsl.config;
 
 /**
  * @author xiangli4
@@ -25,42 +32,158 @@ import javax.annotation.PostConstruct;
 public class HttpRoverClient {
   private static final Logger logger = LoggerFactory.getLogger(HttpRoverClient.class);
   private Metrics metrics;
+  private AsyncHttpClient asyncHttpClient;
+  private String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
 
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
+    AsyncHttpClientConfig config = config()
+        .setRequestTimeout(80)
+        .setConnectTimeout(80)
+        .setReadTimeout(80)
+        .build();
+    this.asyncHttpClient = asyncHttpClient(config);
   }
 
-  public void forwardRequestToRover(CloseableHttpClient client, HttpGet httpGet, HttpContext httpContext) {
-    // ask rover not to redirect
+  private String generateTimestampForCookie() {
+    LocalDateTime now = LocalDateTime.now();
+
+    // GUID, CGUID has 2 years expiration time
+    LocalDateTime expiration = now.plusYears(2);
+
+    // the last 8 hex number is the unix timestamp in seconds
+    long timeInSeconds = expiration.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1000;
+    return Long.toHexString(timeInSeconds);
+  }
+
+  public void forwardRequestToRover(String targetUrl, HttpServletRequest request) {
     try {
-      CloseableHttpResponse response = client.execute(httpGet, httpContext);
-      if (response.getStatusLine().getStatusCode() == 301 ) {
-        metrics.meter("ForwardRoverRedirect");
-        String headers = "";
-        for (Header header : httpGet.getAllHeaders()) {
-          headers = headers + header.toString() + ",";
+      URIBuilder uriBuilder = new URIBuilder(targetUrl);
+      List<NameValuePair> queryParameters = uriBuilder.getQueryParams();
+      Set<String> queryNames = new HashSet<>();
+      for (Iterator<NameValuePair> queryParameterItr = queryParameters.iterator(); queryParameterItr.hasNext(); ) {
+        NameValuePair queryParameter = queryParameterItr.next();
+        //remove mpre if necessary. When there is mpre, rover won't overwrite guid by udid
+        if (queryParameter.getName().equals("mpre")) {
+          queryParameterItr.remove();
         }
-        logger.warn("ForwardRoverRedirect req. URI: " + httpGet.getURI() + ", headers: " + headers);
-      } else if (response.getStatusLine().getStatusCode() == 200 ) {
-        metrics.meter("ForwardRoverSuccess");
-      } else {
-        metrics.meter("ForwardRoverFail");
-        String headers = "";
-        for (Header header : httpGet.getAllHeaders()) {
-          headers = headers + header.toString() + ",";
+        queryNames.add(queryParameter.getName());
+      }
+      uriBuilder.setParameters(queryParameters);
+      uriBuilder.setHost(ROVER_INTERNAL_VIP);
+
+      String guid = "";
+      String cguid = "";
+      String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
+      for (String seg : trackingHeader.split(",")) {
+        String[] keyValue = seg.split("=");
+        if (keyValue.length == 2) {
+          if (keyValue[0].equalsIgnoreCase("guid")) {
+            guid = keyValue[1];
+          }
+          if (keyValue[0].equalsIgnoreCase("cguid")) {
+            cguid = keyValue[1];
+          }
         }
-        logger.warn("ForwardRoverFail req. URI: " + httpGet.getURI() + ", headers: " + headers);
       }
-      response.close();
-    } catch (Exception ex) {
-      logger.warn("Forward rover exception", ex);
-      String headers = "";
-      for (Header header : httpGet.getAllHeaders()) {
-        headers = headers + header.toString() + ",";
+      // add udid parameter from tracking header's guid if udid is not in rover url. The udid will be set as guid by rover later
+      if (!queryNames.contains("udid")) {
+        if (!guid.isEmpty()) {
+          uriBuilder.addParameter("udid", guid);
+        }
       }
-      logger.warn("ForwardException req. URI: " + httpGet.getURI() + ", headers: " + headers);
-      metrics.meter("ForwardRoverException");
+
+      // add nrd=1 if not exist
+      if (!queryNames.contains("nrd")) {
+        uriBuilder.addParameter("nrd", "1");
+      }
+
+      // add mcs=1 for marking mcs forwarding
+      uriBuilder.addParameter("mcs", "1");
+
+      final String rebuiltRoverUrl = uriBuilder.build().toString();
+
+      RequestBuilder requestBuilder = new RequestBuilder();
+      final Enumeration<String> headers = request.getHeaderNames();
+      while (headers.hasMoreElements()) {
+        final String header = headers.nextElement();
+        if (header.equalsIgnoreCase("x-forwarded-for") ||
+            header.equalsIgnoreCase("user-agent")) {
+          final Enumeration<String> values = request.getHeaders(header);
+          //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
+          requestBuilder.addHeader(header, values.nextElement());
+        }
+      }
+
+      // add guid and cguid in request cookie header
+      if (!guid.isEmpty() || !cguid.isEmpty()) {
+        String cookie = "npii=";
+        String timestamp = generateTimestampForCookie();
+        if (!guid.isEmpty())
+          cookie += "btguid/" + guid + timestamp + "^";
+        if (!cguid.isEmpty())
+          cookie += "cguid/" + cguid + timestamp + "^";
+        requestBuilder.addHeader("Cookie", cookie);
+      }
+
+      requestBuilder.setMethod(HttpConstants.Methods.GET);
+      requestBuilder.setUrl(rebuiltRoverUrl);
+      Request roverRequest = requestBuilder.build();
+
+      asyncHttpClient.prepareRequest(roverRequest).execute(new AsyncHandler<Integer>() {
+        private Integer status;
+
+        @Override
+        public State onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+          status = responseStatus.getStatusCode();
+          if (status == HttpConstants.ResponseStatusCodes.MOVED_PERMANENTLY_301) {
+            metrics.meter("ForwardRoverRedirect");
+            String headers = "";
+            for (Map.Entry<String, String> header : roverRequest.getHeaders()) {
+              headers = headers + header.toString() + ",";
+            }
+            logger.warn("ForwardRoverRedirect req. URI: " + request.getRequestURL() + ", headers: " + headers);
+          } else if (status == HttpConstants.ResponseStatusCodes.OK_200) {
+            metrics.meter("ForwardRoverSuccess");
+          } else {
+            metrics.meter("ForwardRoverFail");
+            String headers = "";
+            for (Map.Entry<String, String> header : roverRequest.getHeaders()) {
+              headers = headers + header.toString() + ",";
+            }
+            logger.warn("ForwardRoverFail req. URI: " + request.getRequestURL() + ", headers: " + headers);
+          }
+          return State.ABORT;
+        }
+
+        @Override
+        public State onHeadersReceived(HttpHeaders httpHeaders) throws Exception {
+          return null;
+        }
+
+        @Override
+        public State onBodyPartReceived(HttpResponseBodyPart httpResponseBodyPart) throws Exception {
+          return null;
+        }
+
+        @Override
+        public void onThrowable(Throwable t) {
+          metrics.meter("ForwardRoverException");
+          String headers = "";
+          for (Map.Entry<String, String> header : roverRequest.getHeaders()) {
+            headers = headers + header.toString() + ",";
+          }
+          logger.warn("ForwardRoverException req. URI: " + request.getRequestURL() + ", headers: " + headers);
+        }
+
+        @Override
+        public Integer onCompleted() throws Exception {
+          return null;
+        }
+      });
+    }catch (Exception e) {
+
     }
   }
 }

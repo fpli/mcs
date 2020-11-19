@@ -23,19 +23,13 @@ import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import com.ebay.traffic.chocolate.kafka.RheosKafkaProducer;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.protocol.HttpContext;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.slf4j.Logger;
+import org.asynchttpclient.AsyncHttpClient;
+ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
@@ -56,7 +50,8 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import org.asynchttpclient.*;
+import static org.asynchttpclient.Dsl.*;
 import static com.ebay.app.raptor.chocolate.eventlistener.constant.Constants.REFERRER;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 
@@ -79,6 +74,8 @@ public class CollectionService {
   private String behaviorTopic;
   private static CollectionService instance = null;
   private EventEmitterPublisher eventEmitterPublisher;
+  private String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
+  private AsyncHttpClient asyncHttpClient;
 
   @Autowired
   private HttpRoverClient roverClient;
@@ -122,6 +119,12 @@ public class CollectionService {
     this.behaviorProducer = BehaviorKafkaSink.get();
     this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
     this.eventEmitterPublisher = new EventEmitterPublisher(tokenGenerator);
+    AsyncHttpClientConfig config = config()
+        .setRequestTimeout(80)
+        .setConnectTimeout(80)
+        .setReadTimeout(80)
+        .build();
+    this.asyncHttpClient = asyncHttpClient(config);
   }
 
   /**
@@ -189,78 +192,8 @@ public class CollectionService {
     // legacy rover deeplink case. Forward it to rover. We control this at our backend in case mobile app miss it
     Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
     if (roverSitesMatcher.find()) {
+      roverClient.forwardRequestToRover(referer, request);
 
-      URIBuilder uriBuilder = new URIBuilder(referer);
-      List<NameValuePair> queryParameters = uriBuilder.getQueryParams();
-      Set<String> queryNames = new HashSet<>();
-      for (Iterator<NameValuePair> queryParameterItr = queryParameters.iterator(); queryParameterItr.hasNext();) {
-        NameValuePair queryParameter = queryParameterItr.next();
-        //remove mpre if necessary. When there is mpre, rover won't overwrite guid by udid
-        if (queryParameter.getName().equals("mpre")) {
-          queryParameterItr.remove();
-        }
-        queryNames.add(queryParameter.getName());
-      }
-      uriBuilder.setParameters(queryParameters);
-
-      String guid = "";
-      String cguid = "";
-      String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
-      for (String seg : trackingHeader.split(",")) {
-        String[] keyValue = seg.split("=");
-        if (keyValue.length == 2) {
-          if (keyValue[0].equalsIgnoreCase("guid")) {
-            guid = keyValue[1];
-          }
-          if (keyValue[0].equalsIgnoreCase("cguid")) {
-            cguid = keyValue[1];
-          }
-        }
-      }
-      // add udid parameter from tracking header's guid if udid is not in rover url. The udid will be set as guid by rover later
-      if (!queryNames.contains("udid")) {
-        if (!guid.isEmpty()) {
-          uriBuilder.addParameter("udid", guid);
-        }
-      }
-
-      // add nrd=1 if not exist
-      if(!queryNames.contains("nrd")) {
-        uriBuilder.addParameter("nrd", "1");
-      }
-
-      // add mcs=1 for marking mcs forwarding
-      uriBuilder.addParameter("mcs", "1");
-
-      final String rebuiltRoverUrl = uriBuilder.build().toString();
-
-      CloseableHttpClient client = httpClientConnectionManager.getHttpClient();
-      HttpContext context = HttpClientContext.create();
-      HttpGet httpGet = new HttpGet(rebuiltRoverUrl);
-
-      final Enumeration<String> headers = request.getHeaderNames();
-      while (headers.hasMoreElements()) {
-        final String header = headers.nextElement();
-        if (header.equalsIgnoreCase("x-forwarded-for") ||
-            header.equalsIgnoreCase("user-agent") ) {
-          final Enumeration<String> values = request.getHeaders(header);
-          //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
-          httpGet.addHeader(header, values.nextElement());
-        }
-      }
-
-      // add guid and cguid in request cookie header
-      if (!guid.isEmpty() || !cguid.isEmpty()) {
-        String cookie = "npii=";
-        String timestamp = generateTimestampForCookie();
-        if (!guid.isEmpty())
-          cookie += "btguid/" + guid + timestamp + "^";
-        if (!cguid.isEmpty())
-          cookie += "cguid/" + cguid + timestamp + "^";
-        httpGet.addHeader("Cookie", cookie);
-      }
-
-      roverClient.forwardRequestToRover(client, httpGet, context);
       return true;
     }
 
