@@ -10,11 +10,13 @@ import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
 import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
+import com.ebay.app.raptor.chocolate.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.gen.api.*;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
+import com.ebay.kernel.util.Base64;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
@@ -85,6 +87,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   @Qualifier("cb")
   private IdMapable idMapping;
 
+  @Autowired
+  private GdprConsentHandler gdprConsentHandler;
+
   private Metrics metrics;
 
   private static final String METRIC_ADD_MAPPING_SUCCESS = "METRIC_ADD_MAPPING_SUCCESS";
@@ -133,9 +138,14 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     }
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "ar"));
     Response res = null;
+
+    GdprConsentHandler.GdprConsentDomain gdprConsentDomain = gdprConsentHandler.handleGdprConsentForAr(request);
+
     try {
-      adserviceCookie.setAdguid(request, response);
-      collectionService.collectAr(request, response, requestContext);
+      if (gdprConsentDomain.isAllowedSetCookie()) {
+        adserviceCookie.setAdguid(request, response);
+      }
+      collectionService.collectAr(request, response, requestContext, gdprConsentDomain);
       if (HttpServletResponse.SC_MOVED_PERMANENTLY == response.getStatus()) {
         Response.ResponseBuilder responseBuilder = Response.status(Response.Status.MOVED_PERMANENTLY);
         for (String headerName : response.getHeaderNames()) {

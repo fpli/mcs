@@ -36,6 +36,7 @@ public class Constants {
   public static final String ROVER_USERID = "rover_userid";
   public static final String MPLX_PLACEMENT_ID = "mplx_placement_id";
   public static final String ADTYPE = "adtype";
+  public static final String CONSENT_FLAG = "cf";
 
   // header name
   public static final String USER_AGENT = "User-Agent";

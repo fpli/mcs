@@ -7,6 +7,7 @@ import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.common.DAPRvrId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.component.GdprConsentHandler;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
@@ -16,16 +17,12 @@ import com.ebay.kernel.presentation.UrlUtils;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.kernel.util.guid.Guid;
-import com.ebay.raptor.geo.context.GeoCtx;
-import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.geo.utils.GeoUtils;
-import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,8 +84,8 @@ public class DAPResponseHandler {
     }
   }
 
-  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext)
-          throws URISyntaxException {
+  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext,
+                              GdprConsentHandler.GdprConsentDomain consentDomain) throws URISyntaxException {
     ESMetrics.getInstance().meter("sendDAPResponse");
 
     LOGGER.debug("query string {}", request.getQueryString());
@@ -121,15 +118,26 @@ public class DAPResponseHandler {
 
     URIBuilder dapUriBuilder = new URIBuilder();
 
+    //non-relation with gdpr consent.
     setSiteId(dapUriBuilder, siteId);
     setRequestParameters(dapUriBuilder, params);
     setRvrId(dapUriBuilder, dapRvrId);
-    setReferrer(dapUriBuilder, referrer);
-    setGeoInfo(dapUriBuilder, lbsParameters);
-    setIsMobile(dapUriBuilder, isMobile);
-    setGuid(dapUriBuilder, guid);
-    setRoverUserid(dapUriBuilder, accountId);
-    setHLastLoggedInUserId(dapUriBuilder, hLastLoggedInUserId);
+    //Contextual parameters
+    if (consentDomain.isAllowedUseContextualInfo()) {
+      setReferrer(dapUriBuilder, referrer);
+      setGeoInfo(dapUriBuilder, lbsParameters);
+      setIsMobile(dapUriBuilder, isMobile);
+    }
+    //personalized parameters
+    if (consentDomain.isAllowedShowPersonalizedAds()) {
+      setGuid(dapUriBuilder, guid);
+      setRoverUserid(dapUriBuilder, accountId);
+      setHLastLoggedInUserId(dapUriBuilder, hLastLoggedInUserId);
+    }
+    //consent flag
+    if (consentDomain.isTcfCompliantMode()) {
+      setConsentFlag(dapUriBuilder, consentDomain.getConsentFlagForDapParam());
+    }
 
     // call dap to get response
     MultivaluedMap<String, Object> dapResponseHeaders = callDAPResponse(dapUriBuilder.build().toString(), request, response);
@@ -618,5 +626,12 @@ public class DAPResponseHandler {
 
   private LBSQueryResult getLbsInfo(String remoteIp) {
     return LBSClient.getInstance().getLBSInfo(remoteIp);
+  }
+
+  private void setConsentFlag(URIBuilder dapUriBuilder, String consentParam) {
+    if (StringUtils.isBlank(consentParam)) {
+      return;
+    }
+    addParameter(dapUriBuilder, Constants.CONSENT_FLAG, consentParam);
   }
 }

@@ -8,6 +8,7 @@ import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -59,9 +60,9 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public boolean collectAr(HttpServletRequest request, HttpServletResponse response,
-                           ContainerRequestContext requestContext) throws Exception {
-    dapResponseHandler.sendDAPResponse(request, response, requestContext);
+  public boolean collectAr(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext,
+                           GdprConsentHandler.GdprConsentDomain gdprConsentDomain) throws Exception {
+    dapResponseHandler.sendDAPResponse(request, response, requestContext, gdprConsentDomain);
     return true;
   }
 
