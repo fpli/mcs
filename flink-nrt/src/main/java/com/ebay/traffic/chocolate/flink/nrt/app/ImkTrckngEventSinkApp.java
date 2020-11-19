@@ -119,7 +119,7 @@ public class ImkTrckngEventSinkApp extends AbstractRheosHDFSCompatibleApp<Consum
 
     @Override
     public String getBucketId(ImkTrckngEventWideMessage element, Context context) {
-      return StringConstants.BUCKET_PREFIX + element.getEventDt();
+      return StringConstants.DATE_BUCKET_PREFIX + element.getEventDt();
     }
 
     @Override

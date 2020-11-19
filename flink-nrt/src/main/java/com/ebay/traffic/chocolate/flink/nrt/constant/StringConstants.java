@@ -13,6 +13,7 @@ public class StringConstants {
   public static final String ZERO = "0";
   public static final String FOUR = "4";
   public static final String SEMICOLON = ";";
-  public static final String BUCKET_PREFIX = "dt=";
+  public static final String DATE_BUCKET_PREFIX = "dt=";
   public static final String QUESTION_MARK = "?";
+  public static final String HOUR_BUCKET_PREFIX = "hour=";
 }
