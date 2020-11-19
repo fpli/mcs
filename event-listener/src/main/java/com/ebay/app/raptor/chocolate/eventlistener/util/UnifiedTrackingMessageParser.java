@@ -46,7 +46,7 @@ public class UnifiedTrackingMessageParser {
    * Parse message to unified tracking message
    * For UEP cases
    */
-  public static UnifiedTrackingMessage parse(UnifiedTrackingEvent event) {
+  public static UnifiedTrackingMessage parse(UnifiedTrackingEvent event, UserLookup userLookup) {
     Map<String, String> payload = new HashMap<>();
 
     // set default value
@@ -69,7 +69,7 @@ public class UnifiedTrackingMessageParser {
 
     // user id
     record.setUserId(event.getUserId());
-    record.setPublicUserId(event.getPublicUserId());
+    record.setPublicUserId(getPublicUserId(userLookup, event.getUserId()));
     record.setEncryptedUserId(event.getEncryptedUserId());
 
     // guid
@@ -132,8 +132,8 @@ public class UnifiedTrackingMessageParser {
    */
   public static UnifiedTrackingMessage parse(ContainerRequestContext requestContext, HttpServletRequest request,
                                              IEndUserContext endUserContext, UserAgentInfo agentInfo,
-                                             MultiValueMap<String, String> parameters, String url, String referer,
-                                             ChannelType channelType, ChannelAction channelAction) {
+                                             UserLookup userLookup, MultiValueMap<String, String> parameters, String url,
+                                             String referer, ChannelType channelType, ChannelAction channelAction) {
     Map<String, String> payload = new HashMap<>();
 
     // set default value
@@ -166,7 +166,7 @@ public class UnifiedTrackingMessageParser {
       record.setEncryptedUserId(Long.parseLong(bu));
       Long uerId = EncryptUtil.decryptUserId(Long.parseLong(bu));
       record.setUserId(uerId);
-//      record.setPublicUserId(getPublicUserId(uerId));
+      record.setPublicUserId(getPublicUserId(userLookup, uerId));
     }
 
     // guid
@@ -272,11 +272,11 @@ public class UnifiedTrackingMessageParser {
   /**
    * Get public user id
    */
-  private static String getPublicUserId(Long userId) {
+  private static String getPublicUserId(UserLookup userLookup, Long userId) {
     String publicUserId = "";
 
     try {
-      publicUserId = new UserLookup().getPublicUserId(userId);
+      publicUserId = userLookup.getPublicUserId(userId);
     } catch (ClientException e) {
       logger.warn("Get public user id error.", e);
     }

@@ -65,9 +65,9 @@ public class EventListenerService {
     ListenerMessageParser.init();
     BehaviorMessageParser.init();
 
-//    RheosConsumerWrapper.init(ApplicationOptions.getInstance().getConsumeRheosKafkaProperties());
-//    RoverRheosTopicFilterTask.init(1000);
-//    RoverRheosTopicFilterTask.getInstance().start();
+    RheosConsumerWrapper.init(ApplicationOptions.getInstance().getConsumeRheosKafkaProperties());
+    RoverRheosTopicFilterTask.init(1000);
+    RoverRheosTopicFilterTask.getInstance().start();
   }
 
   @PreDestroy

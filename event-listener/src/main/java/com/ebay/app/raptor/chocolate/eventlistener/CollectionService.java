@@ -25,6 +25,7 @@ import com.ebay.traffic.chocolate.kafka.RheosKafkaProducer;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
+import com.ebay.userlookup.UserLookup;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -88,6 +89,9 @@ public class CollectionService {
 
   @Inject
   private ISecureTokenManager tokenGenerator;
+
+  @Inject
+  private UserLookup userLookup;
 
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
@@ -923,7 +927,7 @@ public class CollectionService {
    * @return OK or Error message
    */
   public boolean collectUnifiedTrackingEvent(UnifiedTrackingEvent event) {
-    UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(event);
+    UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(event, userLookup);
 
     if (message != null) {
       unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
@@ -1140,7 +1144,7 @@ public class CollectionService {
 
       // send to unified tracking topic
       UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
-          agentInfo, parameters, uri, referer, channelType, channelAction);
+          agentInfo, userLookup, parameters, uri, referer, channelType, channelAction);
       if (utpMessage != null) {
         unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
             utpMessage), KafkaSink.callback);
@@ -1239,7 +1243,7 @@ public class CollectionService {
 
       // send to unified tracking topic
       UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
-          agentInfo, parameters, uri, referer, channelType, channelAction);
+          agentInfo, userLookup, parameters, uri, referer, channelType, channelAction);
       if (utpMessage != null) {
         unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
             utpMessage), KafkaSink.callback);
