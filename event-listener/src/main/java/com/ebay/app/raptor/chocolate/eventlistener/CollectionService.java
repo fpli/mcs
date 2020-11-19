@@ -293,14 +293,14 @@ public class CollectionService {
       if (!StringUtils.isEmpty(targetPath)) {
         URIBuilder uriBuilder = new URIBuilder(URLDecoder.decode(targetPath, "UTF-8"));
         uriBuilder.addParameters(new URIBuilder(targetUrl).getQueryParams());
-        targetUrl = UrlUtil.removeParam(uriBuilder.build().toString(), Constants.EPAGE_URL);
+        targetUrl = HttpRequestUtil.removeParam(uriBuilder.build().toString(), Constants.EPAGE_URL);
       } else {
         targetUrl = referer;
       }
 
       if (!StringUtils.isEmpty(originalReferer)) {
         referer = URLDecoder.decode(originalReferer, "UTF-8");
-        targetUrl = UrlUtil.removeParam(targetUrl, Constants.EPAGE_REFERER);
+        targetUrl = HttpRequestUtil.removeParam(targetUrl, Constants.EPAGE_REFERER);
       } else {
         logger.warn(Errors.ERROR_NO_REFERER);
         metrics.meter(Errors.ERROR_NO_REFERER);

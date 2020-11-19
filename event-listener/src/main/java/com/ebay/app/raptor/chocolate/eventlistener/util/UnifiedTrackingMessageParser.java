@@ -69,7 +69,7 @@ public class UnifiedTrackingMessageParser {
 
     // user id
     record.setUserId(event.getUserId());
-    record.setPublicUserId(getPublicUserId(userLookup, event.getUserId()));
+    record.setPublicUserId(event.getPublicUserId());
     record.setEncryptedUserId(event.getEncryptedUserId());
 
     // guid
@@ -166,12 +166,12 @@ public class UnifiedTrackingMessageParser {
       record.setEncryptedUserId(Long.parseLong(bu));
       Long uerId = EncryptUtil.decryptUserId(Long.parseLong(bu));
       record.setUserId(uerId);
-      record.setPublicUserId(getPublicUserId(userLookup, uerId));
+//      record.setPublicUserId(getPublicUserId(userLookup, uerId));
     }
 
     // guid
     String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
-    String guid = UrlUtil.getHeaderValue(trackingHeader, Constants.GUID);
+    String guid = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.GUID);
     if (guid != null) {
       record.setGuid(guid);
     }
@@ -212,7 +212,7 @@ public class UnifiedTrackingMessageParser {
     record.setServer(domainRequest.getHost());
 
     // remote ip
-    record.setRemoteIp(UrlUtil.getRemoteIp(request));
+    record.setRemoteIp(HttpRequestUtil.getRemoteIp(request));
 
     // page id
     record.setPageId(getPageId(channelType, channelAction));
@@ -297,7 +297,7 @@ public class UnifiedTrackingMessageParser {
         // Do we really need to get publisher id here?
       }
     } else if (ChannelType.PAID_SEARCH.equals(channelType)) {
-      // TODO
+      // partner definition unknown
     } else if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType)) {
       partner = parameters.getFirst(Constants.MKPID);
     }
@@ -362,7 +362,7 @@ public class UnifiedTrackingMessageParser {
     int geoId;
 
     if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
-      geoId = Integer.parseInt(UrlUtil.parseTagFromParams(parameters, Constants.CHOCO_BUYER_ACCESS_SITE_ID));
+      geoId = Integer.parseInt(HttpRequestUtil.parseTagFromParams(parameters, Constants.CHOCO_BUYER_ACCESS_SITE_ID));
     } else {
       UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
       geoId = userPrefsCtx.getGeoContext().getCountryId();
@@ -410,7 +410,7 @@ public class UnifiedTrackingMessageParser {
     // add tags from parameters
     for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
-        payload.put(entry.getKey(), UrlUtil.parseTagFromParams(parameters, entry.getValue()));
+        payload.put(entry.getKey(), HttpRequestUtil.parseTagFromParams(parameters, entry.getValue()));
       }
     }
 
@@ -420,7 +420,7 @@ public class UnifiedTrackingMessageParser {
     // add other tags
     // buyer access site id
     if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
-      payload.put("bs", UrlUtil.parseTagFromParams(parameters, Constants.CHOCO_BUYER_ACCESS_SITE_ID));
+      payload.put("bs", HttpRequestUtil.parseTagFromParams(parameters, Constants.CHOCO_BUYER_ACCESS_SITE_ID));
     } else {
       UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
       payload.put("bs", String.valueOf(userPrefsCtx.getGeoContext().getSiteId()));
@@ -459,7 +459,7 @@ public class UnifiedTrackingMessageParser {
             String sojTag = sojNvp.nextToken().trim();
             String urlParam = sojNvp.nextToken().trim();
             if (!org.springframework.util.StringUtils.isEmpty(urlParam) && !org.springframework.util.StringUtils.isEmpty(sojTag)) {
-              applicationPayload.put(sojTag, UrlUtil.parseTagFromParams(parameters, urlParam));
+              applicationPayload.put(sojTag, HttpRequestUtil.parseTagFromParams(parameters, urlParam));
             }
           }
         }
@@ -515,7 +515,7 @@ public class UnifiedTrackingMessageParser {
   private static String removeBsParam(MultiValueMap<String, String> parameters, String uri) {
     if (parameters.containsKey(Constants.CHOCO_BUYER_ACCESS_SITE_ID)) {
       try {
-        uri = UrlUtil.removeParam(uri, Constants.CHOCO_BUYER_ACCESS_SITE_ID);
+        uri = HttpRequestUtil.removeParam(uri, Constants.CHOCO_BUYER_ACCESS_SITE_ID);
       } catch (URISyntaxException e) {
         logger.warn("Error when deleting choco_bs", e);
       }

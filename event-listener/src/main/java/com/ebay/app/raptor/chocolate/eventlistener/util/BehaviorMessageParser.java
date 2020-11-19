@@ -7,7 +7,6 @@ import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.HeaderMultiValue;
-import com.ebay.kernel.util.RequestUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.DDSResponse;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
@@ -19,8 +18,6 @@ import com.ebay.tracking.common.util.UrlProcessHelper;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
@@ -571,7 +568,7 @@ public class BehaviorMessageParser {
   private String removeBsParam(MultiValueMap<String, String> parameters, String uri) {
     if (parameters.containsKey(Constants.CHOCO_BUYER_ACCESS_SITE_ID)) {
       try {
-        uri = UrlUtil.removeParam(uri, Constants.CHOCO_BUYER_ACCESS_SITE_ID);
+        uri = HttpRequestUtil.removeParam(uri, Constants.CHOCO_BUYER_ACCESS_SITE_ID);
       } catch (URISyntaxException e) {
         logger.warn("Error when deleting choco_bs", e);
       }
@@ -591,7 +588,7 @@ public class BehaviorMessageParser {
     }
 
     if (remoteIp == null || remoteIp.isEmpty()) {
-      remoteIp = RequestUtil.getRemoteAddr(request);
+      remoteIp = com.ebay.kernel.util.RequestUtil.getRemoteAddr(request);
     }
 
     return remoteIp == null ? "" : remoteIp;

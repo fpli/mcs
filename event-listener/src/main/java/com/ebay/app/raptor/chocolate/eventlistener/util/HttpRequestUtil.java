@@ -17,8 +17,8 @@ import java.util.List;
 /**
  * Created by jialili1 on 11/2/20
  */
-public class UrlUtil {
-  private static final Logger logger = LoggerFactory.getLogger(UrlUtil.class);
+public class HttpRequestUtil {
+  private static final Logger logger = LoggerFactory.getLogger(HttpRequestUtil.class);
 
   /**
    * Remove one url parameter
