@@ -28,7 +28,6 @@ import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.asynchttpclient.AsyncHttpClient;
  import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +49,6 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.asynchttpclient.*;
-import static org.asynchttpclient.Dsl.*;
 import static com.ebay.app.raptor.chocolate.eventlistener.constant.Constants.REFERRER;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 
@@ -75,7 +72,6 @@ public class CollectionService {
   private static CollectionService instance = null;
   private EventEmitterPublisher eventEmitterPublisher;
   private String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
-  private AsyncHttpClient asyncHttpClient;
 
   @Autowired
   private HttpRoverClient roverClient;
@@ -119,12 +115,6 @@ public class CollectionService {
     this.behaviorProducer = BehaviorKafkaSink.get();
     this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
     this.eventEmitterPublisher = new EventEmitterPublisher(tokenGenerator);
-    AsyncHttpClientConfig config = config()
-        .setRequestTimeout(80)
-        .setConnectTimeout(80)
-        .setReadTimeout(80)
-        .build();
-    this.asyncHttpClient = asyncHttpClient(config);
   }
 
   /**
@@ -192,7 +182,7 @@ public class CollectionService {
     // legacy rover deeplink case. Forward it to rover. We control this at our backend in case mobile app miss it
     Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
     if (roverSitesMatcher.find()) {
-      roverClient.forwardRequestToRover(referer, request);
+      roverClient.forwardRequestToRover(referer, ROVER_INTERNAL_VIP, request);
 
       return true;
     }

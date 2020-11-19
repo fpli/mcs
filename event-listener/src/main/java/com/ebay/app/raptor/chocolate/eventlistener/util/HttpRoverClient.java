@@ -33,15 +33,15 @@ public class HttpRoverClient {
   private static final Logger logger = LoggerFactory.getLogger(HttpRoverClient.class);
   private Metrics metrics;
   private AsyncHttpClient asyncHttpClient;
-  private String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
+  private static final int TIMEOUT=200;
 
   @PostConstruct
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
     AsyncHttpClientConfig config = config()
-        .setRequestTimeout(80)
-        .setConnectTimeout(80)
-        .setReadTimeout(80)
+        .setRequestTimeout(TIMEOUT)
+        .setConnectTimeout(TIMEOUT)
+        .setReadTimeout(TIMEOUT)
         .build();
     this.asyncHttpClient = asyncHttpClient(config);
   }
@@ -57,7 +57,21 @@ public class HttpRoverClient {
     return Long.toHexString(timeInSeconds);
   }
 
-  public void forwardRequestToRover(String targetUrl, HttpServletRequest request) {
+  private String buildDebugLog(Request roverRequest, String prefix) {
+    StringBuilder headers = new StringBuilder();
+    for (Map.Entry<String, String> header : roverRequest.getHeaders()) {
+      headers.append(header.toString()).append(",");
+    }
+    return prefix + roverRequest.getUrl() + ", headers: " + headers;
+  }
+
+  /**
+   * Forward deeplink URL to rover
+   * @param targetUrl original rover URL
+   * @param request http request
+   * @param internalHost internal hostevent-listener/src/main/java/com/ebay/app/raptor/chocolate/eventlistener/util/HttpRoverClient.java
+   */
+  public void forwardRequestToRover(String targetUrl, String internalHost, HttpServletRequest request) {
     try {
       URIBuilder uriBuilder = new URIBuilder(targetUrl);
       List<NameValuePair> queryParameters = uriBuilder.getQueryParams();
@@ -71,7 +85,7 @@ public class HttpRoverClient {
         queryNames.add(queryParameter.getName());
       }
       uriBuilder.setParameters(queryParameters);
-      uriBuilder.setHost(ROVER_INTERNAL_VIP);
+      uriBuilder.setHost(internalHost);
 
       String guid = "";
       String cguid = "";
@@ -133,26 +147,17 @@ public class HttpRoverClient {
 
       asyncHttpClient.prepareRequest(roverRequest).execute(new AsyncHandler<Integer>() {
         private Integer status;
-
         @Override
         public State onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
           status = responseStatus.getStatusCode();
           if (status == HttpConstants.ResponseStatusCodes.MOVED_PERMANENTLY_301) {
             metrics.meter("ForwardRoverRedirect");
-            String headers = "";
-            for (Map.Entry<String, String> header : roverRequest.getHeaders()) {
-              headers = headers + header.toString() + ",";
-            }
-            logger.warn("ForwardRoverRedirect req. URI: " + request.getRequestURL() + ", headers: " + headers);
+            logger.warn(buildDebugLog(roverRequest, "ForwardRoverRedirect req. URI: "));
           } else if (status == HttpConstants.ResponseStatusCodes.OK_200) {
             metrics.meter("ForwardRoverSuccess");
           } else {
             metrics.meter("ForwardRoverFail");
-            String headers = "";
-            for (Map.Entry<String, String> header : roverRequest.getHeaders()) {
-              headers = headers + header.toString() + ",";
-            }
-            logger.warn("ForwardRoverFail req. URI: " + request.getRequestURL() + ", headers: " + headers);
+            logger.warn(buildDebugLog(roverRequest, "ForwardRoverFail req. URI: "));
           }
           return State.ABORT;
         }
@@ -170,11 +175,7 @@ public class HttpRoverClient {
         @Override
         public void onThrowable(Throwable t) {
           metrics.meter("ForwardRoverException");
-          String headers = "";
-          for (Map.Entry<String, String> header : roverRequest.getHeaders()) {
-            headers = headers + header.toString() + ",";
-          }
-          logger.warn("ForwardRoverException req. URI: " + request.getRequestURL() + ", headers: " + headers);
+          logger.warn(buildDebugLog(roverRequest, "ForwardRoverException req. URI: "));
         }
 
         @Override
@@ -182,8 +183,9 @@ public class HttpRoverClient {
           return null;
         }
       });
-    }catch (Exception e) {
-
+    } catch (Exception e) {
+      metrics.meter("ForwardRoverExceptionOther");
+      logger.warn(e.getMessage());
     }
   }
 }
