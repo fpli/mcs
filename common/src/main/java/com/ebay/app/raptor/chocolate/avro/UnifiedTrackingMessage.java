@@ -1,28 +1,22 @@
 package com.ebay.app.raptor.chocolate.avro;
 
-import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0;
+import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosMessage;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.*;
 import org.apache.avro.specific.SpecificDatumReader;
-import org.apache.avro.specific.SpecificDatumWriter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
 /**
  * Created by jialili1 on 11/5/20
  */
-public class UnifiedTrackingMessage extends UnifiedTrackingMessageV0 {
+public class UnifiedTrackingMessage extends UnifiedTrackingRheosMessage {
 
   // Avro reader (threadsafe, therefore static)
   private final static DatumReader<UnifiedTrackingMessage> reader = new SpecificDatumReader<>(
-      getClassSchema());
-
-  // Avro writer (threadsafe, therefore static)
-  private final static DatumWriter<UnifiedTrackingMessage> writer = new SpecificDatumWriter<>(
       getClassSchema());
 
   public UnifiedTrackingMessage() {
@@ -42,12 +36,6 @@ public class UnifiedTrackingMessage extends UnifiedTrackingMessageV0 {
         service, server, remoteIp, pageId, geoId, isBot, payload);
   }
 
-  public static UnifiedTrackingMessage readFromJSON(String json) throws IOException {
-    JsonDecoder decoder = DecoderFactory.get().jsonDecoder(getClassSchema(), json);
-
-    return decode(decoder);
-  }
-
   public static UnifiedTrackingMessage decodeRheos(Schema rheosHeaderSchema,
                                                    byte[] data) throws IOException {
     DatumReader<GenericRecord> rheosHeaderReader = new GenericDatumReader<>(
@@ -65,17 +53,5 @@ public class UnifiedTrackingMessage extends UnifiedTrackingMessageV0 {
     datum = reader.read(datum, decoder);
 
     return datum;
-  }
-
-  public String writeToJSON() throws IOException {
-    return new String(writeToBytes());
-  }
-
-  public byte[] writeToBytes() throws IOException {
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    JsonEncoder encoder = EncoderFactory.get().jsonEncoder(getClassSchema(), out);
-    this.writer.write(this, encoder);
-    encoder.flush();
-    return out.toByteArray();
   }
 }

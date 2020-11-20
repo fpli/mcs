@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "name": "UnifiedTrackingMessageV0",
+  "name": "UnifiedTrackingRheosMessage",
   "namespace": "com.ebay.app.raptor.chocolate.avro.versions",
   "doc": " Unified tracking topic schema",
   "fields": [
