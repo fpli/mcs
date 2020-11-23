@@ -486,9 +486,6 @@ public class CollectionService {
           targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
     else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS)
       processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
-    if (processFlag)
-      stopTimerAndLogData(eventProcessStartTime, startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-              Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     // send to unified tracking topic
     // send email channels first
@@ -501,6 +498,10 @@ public class CollectionService {
             utpMessage), KafkaSink.callback);
       }
     }
+
+    if (processFlag)
+      stopTimerAndLogData(eventProcessStartTime, startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+              Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
   }
@@ -766,6 +767,18 @@ public class CollectionService {
     else
       processFlag = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext, agentInfo);
+
+    // send to unified tracking topic
+    // send email channels first
+    if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
+      UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
+          raptorSecureContext, agentInfo, userLookup, parameters, uri, referer,
+          channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
+      if (utpMessage != null) {
+        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
+            utpMessage), KafkaSink.callback);
+      }
+    }
 
     if (processFlag)
       stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),

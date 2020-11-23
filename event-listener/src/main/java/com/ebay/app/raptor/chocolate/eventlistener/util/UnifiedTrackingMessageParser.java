@@ -9,6 +9,7 @@ import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
+import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
 import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.raptor.domain.request.api.DomainRequestData;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
@@ -50,18 +51,12 @@ public class UnifiedTrackingMessageParser {
     Map<String, String> payload = new HashMap<>();
 
     // set default value
-    UnifiedTrackingMessage record = new UnifiedTrackingMessage("", "", 0L, 0L,
-        "", "", 0L, "", 0L, "", "", "", "",
-        "", "", "", "", "", 0, "", "", "",
-        "", "", "", "", "", "", "", "",
-        "", "", "", 0, 0, false, payload);
+    UnifiedTrackingMessage record = setDefaultAndCommonValues(payload, new UserAgentParser().parse(event.getUserAgent()));
 
     // event id
-    record.setEventId(UUID.randomUUID().toString());
     record.setProducerEventId(event.getProducerEventId());
 
     // event timestamp
-    record.setEventTs(System.currentTimeMillis());
     record.setProducerEventTs(event.getProducerEventTs());
 
     record.setRlogId(event.getRlogId());
@@ -75,20 +70,11 @@ public class UnifiedTrackingMessageParser {
     // guid
     record.setGuid(event.getGuid());
 
-    // device and app info
+    // device info
     record.setIdfa(event.getIdfa());
     record.setGadid(event.getGadid());
     record.setDeviceId(event.getDeviceId());
     record.setUserAgent(event.getUserAgent());
-    DeviceInfoParser deviceInfoParser = new DeviceInfoParser(event.getUserAgent()).parse();
-    record.setDeviceFamily(deviceInfoParser.getDeviceFamily());
-    record.setDeviceType(deviceInfoParser.getDeviceType());
-    record.setBrowserFamily(deviceInfoParser.getBrowserFamily());
-    record.setBrowserVersion(deviceInfoParser.getBrowserVersion());
-    record.setOsFamily(deviceInfoParser.getOsFamily());
-    record.setOsVersion(deviceInfoParser.getOsVersion());
-    UserAgentInfo agentInfo = deviceInfoParser.getAgentInfo();
-    record = getAppInfo(record, agentInfo);
 
     // channel type
     record.setChannelType(event.getChannelType());
@@ -144,21 +130,15 @@ public class UnifiedTrackingMessageParser {
     Map<String, String> payload = new HashMap<>();
 
     // set default value
-    UnifiedTrackingMessage record = new UnifiedTrackingMessage("", "", 0L, 0L,
-        "", "", 0L, "", 0L, "", "", "", "",
-        "", "", "", "", "", 0, "", "", "",
-        "", "", "", "", "", "", "", "",
-        "", "", "", 0, 0, false, payload);
+    UnifiedTrackingMessage record = setDefaultAndCommonValues(payload, agentInfo);
 
     DomainRequestData domainRequest = (DomainRequestData) requestContext.getProperty(DomainRequestData.NAME);
     RequestTracingContext tracingContext = (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
 
     // event id
-    record.setEventId(UUID.randomUUID().toString());
     record.setProducerEventId(getProducerEventId(parameters, channelType));
 
     // event timestamp
-    record.setEventTs(System.currentTimeMillis());
     record.setProducerEventTs(request.getSession().getCreationTime());
 
     // rlog id
@@ -183,19 +163,11 @@ public class UnifiedTrackingMessageParser {
       record.setGuid(guid);
     }
 
-    // device and app info
+    // device info
 //    record.setIdfa(event.getIdfa());
 //    record.setGadid(event.getGadid());
     record.setDeviceId(endUserContext.getDeviceId());
     record.setUserAgent(endUserContext.getUserAgent());
-    DeviceInfoParser deviceInfoParser = new DeviceInfoParser(agentInfo).parse();
-    record.setDeviceFamily(deviceInfoParser.getDeviceFamily());
-    record.setDeviceType(deviceInfoParser.getDeviceType());
-    record.setBrowserFamily(deviceInfoParser.getBrowserFamily());
-    record.setBrowserVersion(deviceInfoParser.getBrowserVersion());
-    record.setOsFamily(deviceInfoParser.getOsFamily());
-    record.setOsVersion(deviceInfoParser.getOsVersion());
-    record = getAppInfo(record, agentInfo);
 
     // channel type
     record.setChannelType(channelType.toString());
@@ -228,13 +200,48 @@ public class UnifiedTrackingMessageParser {
     record.setRemoteIp(HttpRequestUtil.getRemoteIp(request));
 
     // page id
-    record.setPageId(getPageId(channelType, channelAction));
+    record.setPageId(PageIdEnum.getPageIdByAction(channelAction));
 
     // user geo id
     record.setGeoId(getGeoID(requestContext, parameters, channelType, channelAction));
 
     // payload
     record.setPayload(getPayload(payload, parameters, requestContext, url, channelType, channelAction));
+
+    return record;
+  }
+
+  /**
+   * Parse common logic
+   */
+  private static UnifiedTrackingMessage setDefaultAndCommonValues( Map<String, String> payload, UserAgentInfo agentInfo) {
+    // set default value
+    UnifiedTrackingMessage record = new UnifiedTrackingMessage("", "", 0L, 0L,
+        "", "", 0L, "", 0L, "", "", "", "",
+        "", "", "", "", "", 0, "", "", "",
+        "", "", "", "", "", "", "", "",
+        "", "", "", 0, 0, false, payload);
+
+    // event id
+    record.setEventId(UUID.randomUUID().toString());
+
+    // event timestamp
+    record.setEventTs(System.currentTimeMillis());
+
+    // device info
+    DeviceInfoParser deviceInfoParser = new DeviceInfoParser().parse(agentInfo);
+    record.setDeviceFamily(deviceInfoParser.getDeviceFamily());
+    record.setDeviceType(deviceInfoParser.getDeviceType());
+    record.setBrowserFamily(deviceInfoParser.getBrowserFamily());
+    record.setBrowserVersion(deviceInfoParser.getBrowserVersion());
+    record.setOsFamily(deviceInfoParser.getOsFamily());
+    record.setOsVersion(deviceInfoParser.getOsVersion());
+
+    // app info
+    record.setAppId(CollectionServiceUtil.getAppIdFromUserAgent(agentInfo));
+    if (agentInfo.getAppInfo() != null) {
+      record.setAppVersion(agentInfo.getAppInfo().getAppVersion());
+    }
 
     return record;
   }
@@ -320,33 +327,6 @@ public class UnifiedTrackingMessageParser {
   }
 
   /**
-   * Get page id
-   */
-  private static int getPageId(ChannelType channelType, ChannelAction channelAction) {
-    int pageId = -1;
-
-    if (ChannelType.ROI.equals(channelType)) {
-      pageId = PageIdEnum.ROI.getId();
-    }
-
-    switch (channelAction) {
-      case CLICK:
-        pageId = PageIdEnum.CLICK.getId();
-        break;
-      case EMAIL_OPEN:
-        pageId = PageIdEnum.EMAIL_OPEN.getId();
-        break;
-      case SERVE:
-        pageId = PageIdEnum.AR.getId();
-        break;
-      default:
-        logger.warn("No valid page Id.");
-    }
-
-    return pageId;
-  }
-
-  /**
    * Get geo id
    */
   private static int getGeoID(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
@@ -381,19 +361,6 @@ public class UnifiedTrackingMessageParser {
     }
 
     return 0;
-  }
-
-  /**
-   * Set app info
-   */
-  private static UnifiedTrackingMessage getAppInfo(UnifiedTrackingMessage record, UserAgentInfo agentInfo) {
-    String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
-    record.setAppId(appId);
-    if (agentInfo.getAppInfo() != null) {
-      record.setAppVersion(agentInfo.getAppInfo().getAppVersion());
-    }
-
-    return record;
   }
 
   /**

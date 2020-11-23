@@ -8,7 +8,6 @@ import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
  * Created by jialili1 on 11/20/20
  */
 public class DeviceInfoParser {
-  private UserAgentInfo agentInfo;
   private DDSResponse deviceInfo;
   private String deviceFamily;
   private String deviceType;
@@ -17,15 +16,7 @@ public class DeviceInfoParser {
   private String osFamily;
   private String osVersion;
 
-  public DeviceInfoParser(String userAgent) {
-    this.agentInfo = new UserAgentParser().parse(userAgent);
-  }
-
-  public DeviceInfoParser(UserAgentInfo agentInfo) {
-    this.agentInfo = agentInfo;
-  }
-
-  public DeviceInfoParser parse() {
+  public DeviceInfoParser parse(UserAgentInfo agentInfo) {
     this.deviceInfo = agentInfo.getDeviceInfo();
     if (deviceInfo != null) {
       this.deviceFamily = getDeviceFamily(deviceInfo);
@@ -58,10 +49,6 @@ public class DeviceInfoParser {
     }
 
     return deviceFamily;
-  }
-
-  public UserAgentInfo getAgentInfo() {
-    return agentInfo;
   }
 
   public DDSResponse getDeviceInfo() {

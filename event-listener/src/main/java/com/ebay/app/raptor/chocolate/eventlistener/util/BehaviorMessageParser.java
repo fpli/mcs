@@ -7,6 +7,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.HeaderMultiValue;
+import com.ebay.kernel.util.RequestUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.DDSResponse;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
@@ -588,7 +589,7 @@ public class BehaviorMessageParser {
     }
 
     if (remoteIp == null || remoteIp.isEmpty()) {
-      remoteIp = com.ebay.kernel.util.RequestUtil.getRemoteAddr(request);
+      remoteIp = RequestUtil.getRemoteAddr(request);
     }
 
     return remoteIp == null ? "" : remoteIp;
