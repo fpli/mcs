@@ -183,7 +183,6 @@ public class CollectionService {
     Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
     if (roverSitesMatcher.find()) {
       roverClient.forwardRequestToRover(referer, ROVER_INTERNAL_VIP, request);
-
       return true;
     }
 

@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
+import com.ebay.kernel.util.StringUtils;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -17,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import javax.ws.rs.core.Response;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
@@ -46,6 +48,15 @@ public class HttpRoverClient {
     this.asyncHttpClient = asyncHttpClient(config);
   }
 
+  // For unit test
+  void setAsyncHttpClient(AsyncHttpClient asyncHttpClient) {
+    this.asyncHttpClient = asyncHttpClient;
+  }
+
+  void setMetrics(Metrics metrics) {
+    this.metrics = metrics;
+  }
+
   private String generateTimestampForCookie() {
     LocalDateTime now = LocalDateTime.now();
 
@@ -68,10 +79,12 @@ public class HttpRoverClient {
   /**
    * Forward deeplink URL to rover
    * @param targetUrl original rover URL
-   * @param request http request
-   * @param internalHost internal hostevent-listener/src/main/java/com/ebay/app/raptor/chocolate/eventlistener/util/HttpRoverClient.java
+   * @param internalHost internal host
+   * @param request incoming http request
+   * @return Future object
    */
-  public void forwardRequestToRover(String targetUrl, String internalHost, HttpServletRequest request) {
+  public ListenableFuture<Integer> forwardRequestToRover(String targetUrl, String internalHost,
+                                                         HttpServletRequest request) {
     try {
       URIBuilder uriBuilder = new URIBuilder(targetUrl);
       List<NameValuePair> queryParameters = uriBuilder.getQueryParams();
@@ -87,20 +100,35 @@ public class HttpRoverClient {
       uriBuilder.setParameters(queryParameters);
       uriBuilder.setHost(internalHost);
 
+      RequestBuilder requestBuilder = new RequestBuilder();
+
       String guid = "";
       String cguid = "";
       String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
-      for (String seg : trackingHeader.split(",")) {
-        String[] keyValue = seg.split("=");
-        if (keyValue.length == 2) {
-          if (keyValue[0].equalsIgnoreCase("guid")) {
-            guid = keyValue[1];
-          }
-          if (keyValue[0].equalsIgnoreCase("cguid")) {
-            cguid = keyValue[1];
+      if(!StringUtils.isEmpty(trackingHeader)) {
+        for (String seg : trackingHeader.split(",")) {
+          String[] keyValue = seg.split("=");
+          if (keyValue.length == 2) {
+            if (keyValue[0].equalsIgnoreCase("guid")) {
+              guid = keyValue[1];
+            }
+            if (keyValue[0].equalsIgnoreCase("cguid")) {
+              cguid = keyValue[1];
+            }
           }
         }
       }
+      // add guid and cguid in request cookie header
+      if (!guid.isEmpty() || !cguid.isEmpty()) {
+        String cookie = "npii=";
+        String timestamp = generateTimestampForCookie();
+        if (!guid.isEmpty())
+          cookie += "btguid/" + guid + timestamp + "^";
+        if (!cguid.isEmpty())
+          cookie += "cguid/" + cguid + timestamp + "^";
+        requestBuilder.addHeader("Cookie", cookie);
+      }
+
       // add udid parameter from tracking header's guid if udid is not in rover url. The udid will be set as guid by rover later
       if (!queryNames.contains("udid")) {
         if (!guid.isEmpty()) {
@@ -118,34 +146,24 @@ public class HttpRoverClient {
 
       final String rebuiltRoverUrl = uriBuilder.build().toString();
 
-      RequestBuilder requestBuilder = new RequestBuilder();
       final Enumeration<String> headers = request.getHeaderNames();
-      while (headers.hasMoreElements()) {
-        final String header = headers.nextElement();
-        if (header.equalsIgnoreCase("x-forwarded-for") ||
-            header.equalsIgnoreCase("user-agent")) {
-          final Enumeration<String> values = request.getHeaders(header);
-          //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
-          requestBuilder.addHeader(header, values.nextElement());
+      if(headers!=null) {
+        while (headers.hasMoreElements()) {
+          final String header = headers.nextElement();
+          if (header.equalsIgnoreCase("x-forwarded-for") ||
+              header.equalsIgnoreCase("user-agent")) {
+            final Enumeration<String> values = request.getHeaders(header);
+            //just pass one header value to rover. Multiple value will cause parse exception on [] brackets.
+            requestBuilder.addHeader(header, values.nextElement());
+          }
         }
-      }
-
-      // add guid and cguid in request cookie header
-      if (!guid.isEmpty() || !cguid.isEmpty()) {
-        String cookie = "npii=";
-        String timestamp = generateTimestampForCookie();
-        if (!guid.isEmpty())
-          cookie += "btguid/" + guid + timestamp + "^";
-        if (!cguid.isEmpty())
-          cookie += "cguid/" + cguid + timestamp + "^";
-        requestBuilder.addHeader("Cookie", cookie);
       }
 
       requestBuilder.setMethod(HttpConstants.Methods.GET);
       requestBuilder.setUrl(rebuiltRoverUrl);
       Request roverRequest = requestBuilder.build();
 
-      asyncHttpClient.prepareRequest(roverRequest).execute(new AsyncHandler<Integer>() {
+      return asyncHttpClient.prepareRequest(roverRequest).execute(new AsyncHandler<Integer>() {
         private Integer status;
         @Override
         public State onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
@@ -180,12 +198,13 @@ public class HttpRoverClient {
 
         @Override
         public Integer onCompleted() throws Exception {
-          return null;
+          return Response.Status.OK.getStatusCode();
         }
       });
     } catch (Exception e) {
       metrics.meter("ForwardRoverExceptionOther");
       logger.warn(e.getMessage());
     }
+    return null;
   }
 }
