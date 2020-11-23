@@ -43,7 +43,7 @@ public class BehaviorEventDailyDoneApp {
   private static final long DEFAULT_MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(30);
 
   /// The checkpoint timeout, in milliseconds
-  private static final long DEFAULT_CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(30);
+  private static final long DEFAULT_CHECK_POINT_TIMEOUT = TimeUnit.MINUTES.toMillis(5);
 
   // The size of the generated windows
   private static final Time DEFAULT_PROCESSING_TIME_WINDOWS = Time.minutes(5);

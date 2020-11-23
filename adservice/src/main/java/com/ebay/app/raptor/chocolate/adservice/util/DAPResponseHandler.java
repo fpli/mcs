@@ -18,6 +18,7 @@ import com.ebay.kernel.util.RequestUtil;
 import com.ebay.kernel.util.guid.Guid;
 import com.ebay.raptor.geo.context.GeoCtx;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
+import com.ebay.raptor.geo.utils.GeoUtils;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
@@ -105,12 +106,13 @@ public class DAPResponseHandler {
     // Map<String, String> userAttributes = getUserAttributes(cguid);
     String referrer = request.getHeader(Constants.REFERER);
     String remoteIp = getRemoteIp(request);
-    Map<String, String> lbsParameters = getLBSParameters(request, remoteIp);
+    LBSQueryResult lbsQueryResult = getLbsInfo(remoteIp);
+    Map<String, String> lbsParameters = getLBSParameters(request, lbsQueryResult);
     String hLastLoggedInUserId = getHLastLoggedInUserId(accountId);
     String userAgent = request.getHeader(Constants.USER_AGENT);
     String uaPrime = getUaPrime(params);
     boolean isMobile = isMobileUserAgent(userAgent);
-    int siteId = getSiteId(requestContext);
+    int siteId = getSiteId(lbsQueryResult);
 
     LOGGER.debug("dapRvrId: {} guid: {} accountId: {} referrer: {} remoteIp: {} " +
                     "lbsParameters: {} hLastLoggedInUserId: {} userAgent: {} uaPrime: {} isMobile: {} siteId: {}",
@@ -139,16 +141,14 @@ public class DAPResponseHandler {
     sendToMCS(request, dapRvrId, guid, guid, dapResponseHeaders);
   }
 
-  private int getSiteId(ContainerRequestContext requestContext) {
-    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-    if (userPrefsCtx == null) {
+  private int getSiteId(LBSQueryResult lbsQueryResult) {
+    if (lbsQueryResult == null) {
       return 0;
     }
-    GeoCtx geoContext = userPrefsCtx.getGeoContext();
-    if (geoContext == null) {
-      return 0;
-    }
-    return geoContext.getSiteId();
+    int siteId = 0;
+    String country = lbsQueryResult.getIsoCountryCode2();
+    siteId = GeoUtils.getSiteIdByISOCountryCode(country);
+    return siteId;
   }
 
   private void setSiteId(URIBuilder dapUriBuilder, int siteId) {
@@ -592,10 +592,9 @@ public class DAPResponseHandler {
   /**
    * Get geo info from location base service and pass all the info to DAP
    */
-  private Map<String, String> getLBSParameters(HttpServletRequest request, String remoteIp) {
+  private Map<String, String> getLBSParameters(HttpServletRequest request, LBSQueryResult lbsResponse) {
     Map<String, String> map = new HashMap<>();
 
-    LBSQueryResult lbsResponse = LBSClient.getInstance().getLBSInfo(remoteIp);
     if (lbsResponse == null) {
       return map;
     }
@@ -615,5 +614,9 @@ public class DAPResponseHandler {
 
     map.put(LBSConstants.GEO_COUNTRY_CODE, countryFromBrowserLocale);
     return map;
+  }
+
+  private LBSQueryResult getLbsInfo(String remoteIp) {
+    return LBSClient.getInstance().getLBSInfo(remoteIp);
   }
 }

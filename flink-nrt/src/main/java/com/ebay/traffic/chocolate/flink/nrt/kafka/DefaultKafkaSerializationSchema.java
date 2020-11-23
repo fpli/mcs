@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.flink.nrt.deserialization;
+package com.ebay.traffic.chocolate.flink.nrt.kafka;
 
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;

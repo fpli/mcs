@@ -28,4 +28,34 @@ public class TransformerConstants {
   public static final String TRAN_TYPE = "tranType";
   public static final String SITE_ID = "siteId";
   public static final String EVENT_TS = "event_ts";
+
+  public static final String APPLICATION_PAYLOAD = "applicationPayload";
+  public static final String CLIENT_DATA = "clientData";
+  public static final String PAGE_ID = "pageId";
+  public static final String PAGE_NAME = "pageName";
+  public static final String EVENT_TIMESTAMP = "eventTimestamp";
+  public static final String SID = "sid";
+  public static final String EVENT_FAMILY = "eventFamily";
+  public static final String EVENT_ACTION = "eventAction";
+  public static final String SESSION_ID = "sessionId";
+  public static final String SEQ_NUM = "seqNum";
+  public static final String RDT = "rdt";
+  public static final String REFERER_HASH = "refererHash";
+  public static final String URL_QUERY_STRING = "urlQueryString";
+  public static final String WEB_SERVER = "webServer";
+  public static final String CLIENT_IP = "clientIP";
+  public static final String AGENT_INFO = "agentInfo";
+  public static final String APP_ID = "appId";
+  public static final String APP_VERSION = "appVersion";
+  public static final String OS_VERSION = "osVersion";
+  public static final String COBRAND = "cobrand";
+  public static final String DEVICE_FAMILY = "deviceFamily";
+  public static final String DEVICE_TYPE = "deviceType";
+  public static final String BROWSER_VERSION = "browserVersion";
+  public static final String BROWSER_FAMILY = "browserFamily";
+  public static final String OS_FAMILY = "osFamily";
+  public static final String ENRICHED_OS_VERSION = "enrichedOsVersion";
+  public static final String RLOGID = "rlogid";
+  public static final String CHNL = "chnl";
+  public static final String PAGE_TYPE = "pageType";
 }

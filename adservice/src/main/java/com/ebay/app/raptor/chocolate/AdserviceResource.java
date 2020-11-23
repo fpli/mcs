@@ -211,7 +211,16 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       builder = builder.header("X-EBAY-C-TRACKING",
           collectionService.constructTrackingHeader(requestContext, guid, adguid, channelType));
 
-      URI uri = new ServletServerHttpRequest(request).getURI();
+      // add parameters separately to handle special characters
+      URIBuilder uri = new URIBuilder(request.getRequestURL().toString());
+      Map<String, String[]> parameterMap = request.getParameterMap();
+      Iterator<Map.Entry<String, String[]>> iter = parameterMap.entrySet().iterator();
+      while (iter.hasNext()) {
+        Map.Entry<String, String[]> entry = iter.next();
+        for (String value : entry.getValue()) {
+          uri.addParameter(entry.getKey(), value);
+        }
+      }
 
       // for email open, call LBS to get buyer access site id
       if (params.containsKey(Constants.MKEVT) && MKEVT.EMAIL_OPEN.getId().equals(params.get(Constants.MKEVT)[0])) {
@@ -223,12 +232,12 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
         }
 
         // add bs tag into url parameter
-        uri = new URIBuilder(uri).addParameter(Constants.CHOCO_BUYER_ACCESS_SITE_ID, String.valueOf(siteId)).build();
+        uri.addParameter(Constants.CHOCO_BUYER_ACCESS_SITE_ID, String.valueOf(siteId));
       }
 
       // add uri and referer to marketing event body
       MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
-      mktEvent.setTargetUrl(uri.toString());
+      mktEvent.setTargetUrl(uri.build().toString());
       mktEvent.setReferrer(request.getHeader("Referer"));
 
       // call marketing collection service to send ubi event or send kafka async
@@ -246,6 +255,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
     } catch (Exception e) {
       try {
+        logger.warn("Impression request process failed, url: {}", request.getRequestURL().append("?")
+            .append(request.getQueryString()).toString());
         res = Response.status(Response.Status.BAD_REQUEST).build();
       } catch (Exception ex) {
         logger.warn(ex.getMessage(), ex);
