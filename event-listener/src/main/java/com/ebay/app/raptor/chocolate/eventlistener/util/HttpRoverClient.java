@@ -36,6 +36,19 @@ public class HttpRoverClient {
   private Metrics metrics;
   private AsyncHttpClient asyncHttpClient;
   private static final int TIMEOUT=200;
+  private static final int EXPIRE_COOKIE = 2;
+  private static final int MILLISECOND_DIVISOR = 1000;
+  private static final String UDID = "udid";
+  private static final String NOT_REDIRECT = "nrd";
+  private static final String MCS_FLAG = "mcs";
+  private static final String FLAG_TRUE = "1";
+  private static final String GUID_CONNECTOR = "^";
+  private static final String GUID = "guid";
+  private static final String CGUID = "cguid";
+  private static final String NPII_PREFIX = "npii_";
+  private static final String BTGUID_PREFIX = "btguid/";
+  private static final String CGUID_PREFIX = "cguid/";
+
 
   @PostConstruct
   public void postInit() {
@@ -61,10 +74,10 @@ public class HttpRoverClient {
     LocalDateTime now = LocalDateTime.now();
 
     // GUID, CGUID has 2 years expiration time
-    LocalDateTime expiration = now.plusYears(2);
+    LocalDateTime expiration = now.plusYears(EXPIRE_COOKIE);
 
     // the last 8 hex number is the unix timestamp in seconds
-    long timeInSeconds = expiration.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1000;
+    long timeInSeconds = expiration.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / MILLISECOND_DIVISOR;
     return Long.toHexString(timeInSeconds);
   }
 
@@ -109,10 +122,10 @@ public class HttpRoverClient {
         for (String seg : trackingHeader.split(",")) {
           String[] keyValue = seg.split("=");
           if (keyValue.length == 2) {
-            if (keyValue[0].equalsIgnoreCase("guid")) {
+            if (keyValue[0].equalsIgnoreCase(GUID)) {
               guid = keyValue[1];
             }
-            if (keyValue[0].equalsIgnoreCase("cguid")) {
+            if (keyValue[0].equalsIgnoreCase(CGUID)) {
               cguid = keyValue[1];
             }
           }
@@ -120,29 +133,29 @@ public class HttpRoverClient {
       }
       // add guid and cguid in request cookie header
       if (!guid.isEmpty() || !cguid.isEmpty()) {
-        String cookie = "npii=";
+        String cookie = NPII_PREFIX;
         String timestamp = generateTimestampForCookie();
         if (!guid.isEmpty())
-          cookie += "btguid/" + guid + timestamp + "^";
+          cookie += BTGUID_PREFIX + guid + timestamp + GUID_CONNECTOR;
         if (!cguid.isEmpty())
-          cookie += "cguid/" + cguid + timestamp + "^";
+          cookie += CGUID_PREFIX + cguid + timestamp + GUID_CONNECTOR;
         requestBuilder.addHeader("Cookie", cookie);
       }
 
       // add udid parameter from tracking header's guid if udid is not in rover url. The udid will be set as guid by rover later
-      if (!queryNames.contains("udid")) {
+      if (!queryNames.contains(UDID)) {
         if (!guid.isEmpty()) {
-          uriBuilder.addParameter("udid", guid);
+          uriBuilder.addParameter(UDID, guid);
         }
       }
 
       // add nrd=1 if not exist
-      if (!queryNames.contains("nrd")) {
-        uriBuilder.addParameter("nrd", "1");
+      if (!queryNames.contains(NOT_REDIRECT)) {
+        uriBuilder.addParameter(NOT_REDIRECT, FLAG_TRUE);
       }
 
       // add mcs=1 for marking mcs forwarding
-      uriBuilder.addParameter("mcs", "1");
+      uriBuilder.addParameter(MCS_FLAG, FLAG_TRUE);
 
       final String rebuiltRoverUrl = uriBuilder.build().toString();
 
