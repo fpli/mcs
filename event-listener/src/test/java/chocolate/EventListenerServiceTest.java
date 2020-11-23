@@ -11,6 +11,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
+import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
@@ -92,6 +93,7 @@ public class EventListenerServiceTest {
   private static String roiPath;
   private static String versionPath;
   private static String syncPath;
+  private static String trackPath;
 
   private static String endUserCtxiPhone;
   private static String endUserCtxAndroid;
@@ -149,6 +151,7 @@ public class EventListenerServiceTest {
     roiPath = "/marketingtracking/v1/roi";
     versionPath = "/marketingtracking/v1/getVersion";
     syncPath = "/marketingtracking/v1/sync";
+    trackPath = "/marketingtracking/v1/track";
 
     endUserCtxiPhone = "ip=10.148.184.210," +
       "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
@@ -241,6 +244,11 @@ public class EventListenerServiceTest {
     builder.header(Constants.NODE_REDIRECTION_HEADER_NAME, statusCode);
 
     return builder.header("Authorization", token).accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
+  }
+
+  private Response postMcsResponse(String path, UnifiedTrackingEvent event) {
+    return client.target(svcEndPoint).path(path).request().header("Authorization", token).
+        accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
   }
 
   @Test
@@ -798,6 +806,17 @@ public class EventListenerServiceTest {
 
     // mweb
     response = postMcsResponse(eventsPath, endUserCtxMweb, tracking, event);
+    assertEquals(201, response.getStatus());
+  }
+
+  @Test
+  public void testTrackResource() {
+    UnifiedTrackingEvent event = new UnifiedTrackingEvent();
+    event.setProducerEventId("123");
+    event.setProducerEventTs(System.currentTimeMillis());
+    Map<String, String> payload = new HashMap<>();
+    event.setPayload(payload);
+    Response response = postMcsResponse(trackPath, event);
     assertEquals(201, response.getStatus());
   }
 
