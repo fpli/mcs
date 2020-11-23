@@ -1,0 +1,95 @@
+package com.ebay.app.raptor.chocolate.eventlistener.util;
+
+import com.ebay.platform.raptor.ddsmodels.DDSResponse;
+import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
+import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
+
+/**
+ * Created by jialili1 on 11/20/20
+ */
+public class DeviceInfoParser {
+  private UserAgentInfo agentInfo;
+  private DDSResponse deviceInfo;
+  private String deviceFamily;
+  private String deviceType;
+  private String browserFamily;
+  private String browserVersion;
+  private String osFamily;
+  private String osVersion;
+
+  public DeviceInfoParser(String userAgent) {
+    this.agentInfo = new UserAgentParser().parse(userAgent);
+  }
+
+  public DeviceInfoParser(UserAgentInfo agentInfo) {
+    this.agentInfo = agentInfo;
+  }
+
+  public DeviceInfoParser parse() {
+    this.deviceInfo = agentInfo.getDeviceInfo();
+    if (deviceInfo != null) {
+      this.deviceFamily = getDeviceFamily(deviceInfo);
+      this.deviceType = deviceInfo.getOsName();
+      this.browserFamily = deviceInfo.getBrowser();
+      this.browserVersion = deviceInfo.getBrowserVersion();
+      this.osFamily = deviceInfo.getDeviceOS();
+      this.osVersion = deviceInfo.getDeviceOSVersion();
+    }
+
+    return this;
+  }
+
+  /**
+   * Get device family
+   */
+  private static String getDeviceFamily(DDSResponse deviceInfo) {
+    String deviceFamily;
+
+    if (deviceInfo.isTablet()) {
+      deviceFamily = "Tablet";
+    } else if (deviceInfo.isTouchScreen()) {
+      deviceFamily = "TouchScreen";
+    } else if (deviceInfo.isDesktop()) {
+      deviceFamily = "Desktop";
+    } else if (deviceInfo.isMobile()) {
+      deviceFamily = "Mobile";
+    } else {
+      deviceFamily = "Other";
+    }
+
+    return deviceFamily;
+  }
+
+  public UserAgentInfo getAgentInfo() {
+    return agentInfo;
+  }
+
+  public DDSResponse getDeviceInfo() {
+    return deviceInfo;
+  }
+
+  public String getDeviceFamily() {
+    return deviceFamily;
+  }
+
+  public String getDeviceType() {
+    return deviceType;
+  }
+
+  public String getBrowserFamily() {
+    return browserFamily;
+  }
+
+  public String getBrowserVersion() {
+    return browserVersion;
+  }
+
+  public String getOsFamily() {
+    return osFamily;
+  }
+
+  public String getOsVersion() {
+    return osVersion;
+  }
+
+}

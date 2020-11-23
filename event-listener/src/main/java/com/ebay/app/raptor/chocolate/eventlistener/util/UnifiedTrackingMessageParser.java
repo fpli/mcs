@@ -8,14 +8,14 @@ import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
-import com.ebay.platform.raptor.ddsmodels.DDSResponse;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
-import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
+import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.raptor.domain.request.api.DomainRequestData;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
 import com.ebay.traffic.chocolate.ActionTypeEnum;
+import com.ebay.traffic.chocolate.ServiceEnum;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.userlookup.UserLookup;
 import com.ebay.userlookup.common.ClientException;
@@ -80,8 +80,14 @@ public class UnifiedTrackingMessageParser {
     record.setGadid(event.getGadid());
     record.setDeviceId(event.getDeviceId());
     record.setUserAgent(event.getUserAgent());
-    UserAgentInfo agentInfo = new UserAgentParser().parse(event.getUserAgent());
-    record = getDeviceInfo(record, agentInfo);
+    DeviceInfoParser deviceInfoParser = new DeviceInfoParser(event.getUserAgent()).parse();
+    record.setDeviceFamily(deviceInfoParser.getDeviceFamily());
+    record.setDeviceType(deviceInfoParser.getDeviceType());
+    record.setBrowserFamily(deviceInfoParser.getBrowserFamily());
+    record.setBrowserVersion(deviceInfoParser.getBrowserVersion());
+    record.setOsFamily(deviceInfoParser.getOsFamily());
+    record.setOsVersion(deviceInfoParser.getOsVersion());
+    UserAgentInfo agentInfo = deviceInfoParser.getAgentInfo();
     record = getAppInfo(record, agentInfo);
 
     // channel type
@@ -131,9 +137,10 @@ public class UnifiedTrackingMessageParser {
    * For user behavior events directly coming to MCS
    */
   public static UnifiedTrackingMessage parse(ContainerRequestContext requestContext, HttpServletRequest request,
-                                             IEndUserContext endUserContext, UserAgentInfo agentInfo,
-                                             UserLookup userLookup, MultiValueMap<String, String> parameters, String url,
-                                             String referer, ChannelType channelType, ChannelAction channelAction) {
+                                             IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
+                                             UserAgentInfo agentInfo, UserLookup userLookup,
+                                             MultiValueMap<String, String> parameters, String url, String referer,
+                                             ChannelType channelType, ChannelAction channelAction) {
     Map<String, String> payload = new HashMap<>();
 
     // set default value
@@ -164,10 +171,10 @@ public class UnifiedTrackingMessageParser {
     String bu = parameters.getFirst(Constants.BEST_GUESS_USER);
     if (!StringUtils.isEmpty(bu)) {
       record.setEncryptedUserId(Long.parseLong(bu));
-      Long uerId = EncryptUtil.decryptUserId(Long.parseLong(bu));
-      record.setUserId(uerId);
-//      record.setPublicUserId(getPublicUserId(userLookup, uerId));
     }
+    long userId = getUserId(raptorSecureContext, endUserContext, bu, channelType);
+    record.setUserId(userId);
+//      record.setPublicUserId(getPublicUserId(userLookup, uerId));
 
     // guid
     String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
@@ -181,7 +188,13 @@ public class UnifiedTrackingMessageParser {
 //    record.setGadid(event.getGadid());
     record.setDeviceId(endUserContext.getDeviceId());
     record.setUserAgent(endUserContext.getUserAgent());
-    record = getDeviceInfo(record, agentInfo);
+    DeviceInfoParser deviceInfoParser = new DeviceInfoParser(agentInfo).parse();
+    record.setDeviceFamily(deviceInfoParser.getDeviceFamily());
+    record.setDeviceType(deviceInfoParser.getDeviceType());
+    record.setBrowserFamily(deviceInfoParser.getBrowserFamily());
+    record.setBrowserVersion(deviceInfoParser.getBrowserVersion());
+    record.setOsFamily(deviceInfoParser.getOsFamily());
+    record.setOsVersion(deviceInfoParser.getOsVersion());
     record = getAppInfo(record, agentInfo);
 
     // channel type
@@ -206,7 +219,7 @@ public class UnifiedTrackingMessageParser {
     record.setReferer(referer);
 
     // service
-    record.setService("CHOCOLATE");
+    record.setService(ServiceEnum.CHOCOLATE.getValue());
 
     // server
     record.setServer(domainRequest.getHost());
@@ -235,27 +248,6 @@ public class UnifiedTrackingMessageParser {
     }
 
     return channelAction.toString();
-  }
-
-  /**
-   * Get device family
-   */
-  private static String getDeviceFamily(DDSResponse deviceInfo) {
-    String deviceFamily;
-
-    if (deviceInfo.isTablet()) {
-      deviceFamily = "Tablet";
-    } else if (deviceInfo.isTouchScreen()) {
-      deviceFamily = "TouchScreen";
-    } else if (deviceInfo.isDesktop()) {
-      deviceFamily = "Desktop";
-    } else if (deviceInfo.isMobile()) {
-      deviceFamily = "Mobile";
-    } else {
-      deviceFamily = "Other";
-    }
-
-    return deviceFamily;
   }
 
   /**
@@ -372,20 +364,23 @@ public class UnifiedTrackingMessageParser {
   }
 
   /**
-   * Set device info
+   * Get user id
    */
-  private static UnifiedTrackingMessage getDeviceInfo(UnifiedTrackingMessage record, UserAgentInfo agentInfo) {
-    DDSResponse deviceInfo = agentInfo.getDeviceInfo();
-    if (deviceInfo != null) {
-      record.setDeviceFamily(getDeviceFamily(deviceInfo));
-      record.setDeviceType(deviceInfo.getOsName());
-      record.setBrowserFamily(deviceInfo.getBrowser());
-      record.setBrowserVersion(deviceInfo.getBrowserVersion());
-      record.setOsFamily(deviceInfo.getDeviceOS());
-      record.setOsVersion(deviceInfo.getDeviceOSVersion());
+  private static long getUserId(RaptorSecureContext raptorSecureContext, IEndUserContext endUserContext,
+                                String bu, ChannelType channelType) {
+    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType)) {
+      if (!StringUtils.isEmpty(bu)) {
+        return EncryptUtil.decryptUserId(Long.parseLong(bu));
+      }
+    } else {
+      if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
+        return Long.parseLong(raptorSecureContext.getSubjectImmutableId());
+      } else {
+        return endUserContext.getOrigUserOracleId();
+      }
     }
 
-    return record;
+    return 0;
   }
 
   /**
@@ -405,8 +400,8 @@ public class UnifiedTrackingMessageParser {
    * Get payload
    */
   private static Map<String, String> getPayload(Map<String, String> payload, MultiValueMap<String, String> parameters,
-                                         ContainerRequestContext requestContext, String url, ChannelType channelType,
-                                         ChannelAction channelAction) {
+                                                ContainerRequestContext requestContext, String url,
+                                                ChannelType channelType, ChannelAction channelAction) {
     // add tags from parameters
     for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
