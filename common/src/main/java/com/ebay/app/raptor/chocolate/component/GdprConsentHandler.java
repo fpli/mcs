@@ -50,6 +50,7 @@ public class GdprConsentHandler {
                 gdprConsentDomain.setAllowedSetCookie(false);
                 gdprConsentDomain.setAllowedShowPersonalizedAds(false);
                 gdprConsentDomain.setAllowedUseContextualInfo(false);
+                gdprConsentDomain.setAllowedUseGeoInfo(false);
                 gdprConsentDomain.setConsentFlagForDapParam(null);
                 gdprConsentDomain.setTcfCompliantMode(true);
                 String consentParam = request.getParameter(gdprConsentParameter);
@@ -73,6 +74,13 @@ public class GdprConsentHandler {
                             return gdprConsentDomain;
                         }
 
+                        if (purposesConsent.contains(2)) {
+                            gdprConsentDomain.setAllowedUseGeoInfo(true);
+                            gdprConsentDomain.setAllowedUseContextualInfo(true);
+                            metrics.meter(GdprConsentConstant.ALLOWED_USE_GEO);
+                            metrics.meter(GdprConsentConstant.ALLOWED_USE_CONTEXTUAL);
+                        }
+
                         if (purposesConsent.contains(3)) {
                             gdprConsentDomain.setAllowedUseContextualInfo(true);
                             gdprConsentDomain.setAllowedSetCookie(true);
@@ -80,7 +88,16 @@ public class GdprConsentHandler {
                             metrics.meter(GdprConsentConstant.ALLOWED_USE_CONTEXTUAL);
                         }
 
-                        if (purposesConsent.contains(4) || purposesConsent.contains(7)) {
+                        if (purposesConsent.contains(4)) {
+                            gdprConsentDomain.setAllowedUseContextualInfo(true);
+                            gdprConsentDomain.setAllowedShowPersonalizedAds(true);
+                            gdprConsentDomain.setAllowedUseGeoInfo(true);
+                            metrics.meter(GdprConsentConstant.ALLOWED_USE_GEO);
+                            metrics.meter(GdprConsentConstant.ALLOWED_SHOW_PERSONALIZED_ADS);
+                            metrics.meter(GdprConsentConstant.ALLOWED_USE_CONTEXTUAL);
+                        }
+
+                        if (purposesConsent.contains(7)) {
                             gdprConsentDomain.setAllowedUseContextualInfo(true);
                             gdprConsentDomain.setAllowedShowPersonalizedAds(true);
                             metrics.meter(GdprConsentConstant.ALLOWED_SHOW_PERSONALIZED_ADS);
@@ -94,6 +111,7 @@ public class GdprConsentHandler {
                 gdprConsentDomain.setAllowedSetCookie(true);
                 gdprConsentDomain.setAllowedShowPersonalizedAds(true);
                 gdprConsentDomain.setAllowedUseContextualInfo(true);
+                gdprConsentDomain.setAllowedUseGeoInfo(true);
                 gdprConsentDomain.setTcfCompliantMode(false);
             }
         } catch (TCStringDecodeException e) {
@@ -156,10 +174,14 @@ public class GdprConsentHandler {
 
     public class GdprConsentDomain {
         private boolean tcfCompliantMode;
+
         private boolean allowedSetCookie;
         private boolean allowedShowPersonalizedAds;
+        //the implication is contextual fields exclude geo fields
         private boolean allowedUseContextualInfo;
+        private boolean allowedUseGeoInfo;
         private String consentFlagForDapParam;
+
         private boolean allowedStoredContextualData;
         private boolean allowedStoredPersonalizedData;
 
@@ -217,6 +239,14 @@ public class GdprConsentHandler {
 
         public void setTcfCompliantMode(boolean tcfCompliantMode) {
             this.tcfCompliantMode = tcfCompliantMode;
+        }
+
+        public boolean isAllowedUseGeoInfo() {
+            return allowedUseGeoInfo;
+        }
+
+        public void setAllowedUseGeoInfo(boolean allowedUseGeoInfo) {
+            this.allowedUseGeoInfo = allowedUseGeoInfo;
         }
     }
 }

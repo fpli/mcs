@@ -125,16 +125,18 @@ public class DAPResponseHandler {
     //Contextual parameters
     if (consentDomain.isAllowedUseContextualInfo()) {
       setReferrer(dapUriBuilder, referrer);
-      setGeoInfo(dapUriBuilder, lbsParameters);
       setIsMobile(dapUriBuilder, isMobile);
     }
-    //personalized parameters
+    if (consentDomain.isAllowedUseGeoInfo()) {
+      setGeoInfo(dapUriBuilder, lbsParameters);
+    }
+     //personalized parameters
     if (consentDomain.isAllowedShowPersonalizedAds()) {
       setGuid(dapUriBuilder, guid);
       setRoverUserid(dapUriBuilder, accountId);
       setHLastLoggedInUserId(dapUriBuilder, hLastLoggedInUserId);
     }
-    //consent flag
+    //consent flag when tcf compliant mode
     if (consentDomain.isTcfCompliantMode()) {
       setConsentFlag(dapUriBuilder, consentDomain.getConsentFlagForDapParam());
     }
