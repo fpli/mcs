@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;
@@ -15,8 +16,8 @@ import com.ebay.raptor.domain.request.api.DomainRequestData;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
-import com.ebay.traffic.chocolate.ActionTypeEnum;
-import com.ebay.traffic.chocolate.ServiceEnum;
+import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
+import com.ebay.traffic.chocolate.utp.common.ServiceEnum;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.userlookup.UserLookup;
 import com.ebay.userlookup.common.ClientException;
@@ -40,6 +41,7 @@ import java.util.*;
 public class UnifiedTrackingMessageParser {
   private static final Logger logger = LoggerFactory.getLogger(UnifiedTrackingMessageParser.class);
   private static Metrics metrics = ESMetrics.getInstance();
+  private static CobrandParser cobrandParser = new CobrandParser();
 
   private UnifiedTrackingMessageParser() {}
 
@@ -167,7 +169,8 @@ public class UnifiedTrackingMessageParser {
 //    record.setIdfa(event.getIdfa());
 //    record.setGadid(event.getGadid());
     record.setDeviceId(endUserContext.getDeviceId());
-    record.setUserAgent(endUserContext.getUserAgent());
+    String userAgent = endUserContext.getUserAgent();
+    record.setUserAgent(userAgent);
 
     // channel type
     record.setChannelType(channelType.toString());
@@ -180,6 +183,9 @@ public class UnifiedTrackingMessageParser {
 
     // campaign id
     record.setCampaignId(getCampaignId(parameters, channelType));
+
+    // rotation id
+    record.setRotationId(getRotationId(parameters));
 
     // site id
     record.setSiteId(domainRequest.getSiteId());
@@ -206,7 +212,8 @@ public class UnifiedTrackingMessageParser {
     record.setGeoId(getGeoID(requestContext, parameters, channelType, channelAction));
 
     // payload
-    record.setPayload(getPayload(payload, parameters, requestContext, url, channelType, channelAction));
+    String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
+    record.setPayload(getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction));
 
     return record;
   }
@@ -327,6 +334,32 @@ public class UnifiedTrackingMessageParser {
   }
 
   /**
+   * Get rotation id
+   */
+  private static String getRotationId(MultiValueMap<String, String> parameters) {
+    String rotationId = "";
+    if (parameters.containsKey(Constants.MKRID) && parameters.get(Constants.MKRID).get(0) != null) {
+      try {
+        String rawRotationId = parameters.get(Constants.MKRID).get(0);
+        // decode rotationId if rotation is encoded
+        // add decodeCnt to avoid looping infinitely
+        int decodeCnt = 0;
+        while (rawRotationId.contains("%") && decodeCnt<5) {
+          rawRotationId = URLDecoder.decode(rawRotationId, "UTF-8");
+          decodeCnt = decodeCnt + 1;
+        }
+        rotationId = rawRotationId.replaceAll("-", "");
+      } catch (Exception e) {
+        logger.warn(Errors.ERROR_INVALID_MKRID);
+      }
+    } else {
+      logger.warn(Errors.ERROR_NO_MKRID);
+    }
+
+    return rotationId;
+  }
+
+  /**
    * Get geo id
    */
   private static int getGeoID(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
@@ -367,8 +400,8 @@ public class UnifiedTrackingMessageParser {
    * Get payload
    */
   private static Map<String, String> getPayload(Map<String, String> payload, MultiValueMap<String, String> parameters,
-                                                ContainerRequestContext requestContext, String url,
-                                                ChannelType channelType, ChannelAction channelAction) {
+                                                ContainerRequestContext requestContext, String url, String userAgent,
+                                                String appId, ChannelType channelType, ChannelAction channelAction) {
     // add tags from parameters
     for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
@@ -387,6 +420,9 @@ public class UnifiedTrackingMessageParser {
       UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
       payload.put("bs", String.valueOf(userPrefsCtx.getGeoContext().getSiteId()));
     }
+
+    // cobrand
+    payload.put("cobrand", cobrandParser.parse(appId, userAgent));
 
     // facebook prefetch
     if (isFacebookPrefetchEnabled(requestContext)) {
