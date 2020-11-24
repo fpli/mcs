@@ -22,6 +22,7 @@ import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.RheosKafkaProducer;
+import com.ebay.traffic.chocolate.kafka.UnifiedTrackingKafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
@@ -125,7 +126,7 @@ public class CollectionService {
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
     this.behaviorProducer = BehaviorKafkaSink.get();
     this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
-    this.unifiedTrackingProducer = new RheosKafkaProducer(ApplicationOptions.getInstance().getUnifiedTrackingRheosProperties());
+    this.unifiedTrackingProducer = UnifiedTrackingKafkaSink.get();
     this.unifiedTrackingTopic = ApplicationOptions.getInstance().getUnifiedTrackingTopic();
     this.eventEmitterPublisher = new EventEmitterPublisher(tokenGenerator);
   }
@@ -495,7 +496,7 @@ public class CollectionService {
           channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
       if (utpMessage != null) {
         unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
-            utpMessage), KafkaSink.callback);
+            utpMessage), UnifiedTrackingKafkaSink.callback);
       }
     }
 
@@ -776,7 +777,7 @@ public class CollectionService {
           channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
       if (utpMessage != null) {
         unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
-            utpMessage), KafkaSink.callback);
+            utpMessage), UnifiedTrackingKafkaSink.callback);
       }
     }
 
@@ -951,15 +952,19 @@ public class CollectionService {
    * @param event               post body event
    * @return OK or Error message
    */
-  public boolean collectUnifiedTrackingEvent(UnifiedTrackingEvent event) {
+  public void collectUnifiedTrackingEvent(UnifiedTrackingEvent event) {
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, event.getActionType()),
+        Field.of(CHANNEL_TYPE, event.getChannelType()));
+
     UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(event, userLookup);
 
     if (message != null) {
       unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
-          KafkaSink.callback);
-      return true;
-    } else
-      return false;
+          UnifiedTrackingKafkaSink.callback);
+    }
+
+    stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, event.getActionType()),
+        Field.of(CHANNEL_TYPE, event.getChannelType()));
   }
 
   /**

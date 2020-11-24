@@ -61,7 +61,10 @@ public class UnifiedTrackingMessageParser {
     // event timestamp
     record.setProducerEventTs(event.getProducerEventTs());
 
+    // rlogid
     record.setRlogId(event.getRlogId());
+
+    // tracking id
     record.setTrackingId(event.getTrackingId());
 
     // user id

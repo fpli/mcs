@@ -37,13 +37,11 @@ public enum PageIdEnum {
 
 
   static {
-    // Create the mapping, checking duplicates as we go.
     Map<ChannelAction, Integer> map = new HashMap<>();
     for (PageIdEnum p : PageIdEnum.values()) {
       map.put(p.getAction(), p.getId());
     }
 
-    // now that we have a mapping, create the immutable construct.
     MAP = Collections.unmodifiableMap(map);
   }
 
