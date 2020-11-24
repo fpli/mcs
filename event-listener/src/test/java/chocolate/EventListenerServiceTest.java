@@ -11,6 +11,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
+import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
@@ -92,12 +93,14 @@ public class EventListenerServiceTest {
   private static String roiPath;
   private static String versionPath;
   private static String syncPath;
+  private static String trackPath;
 
   private static String endUserCtxiPhone;
   private static String endUserCtxAndroid;
   private static String endUserCtxDesktop;
   private static String endUserCtxMweb;
   private static String endUserCtxNoReferer;
+  private static String endUserCtxCheckoutAPI;
 
   private static String tracking;
 
@@ -149,6 +152,7 @@ public class EventListenerServiceTest {
     roiPath = "/marketingtracking/v1/roi";
     versionPath = "/marketingtracking/v1/getVersion";
     syncPath = "/marketingtracking/v1/sync";
+    trackPath = "/marketingtracking/v1/track";
 
     endUserCtxiPhone = "ip=10.148.184.210," +
       "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
@@ -205,6 +209,17 @@ public class EventListenerServiceTest {
       "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
       "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
       "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
+    endUserCtxCheckoutAPI = "ip=10.148.184.210," +
+      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
+      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
+      "userAgent=checkoutApi," +
+      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
+      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
+      ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
+      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
+      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
+      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
+      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
 
     tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
       "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
@@ -241,6 +256,11 @@ public class EventListenerServiceTest {
     builder.header(Constants.NODE_REDIRECTION_HEADER_NAME, statusCode);
 
     return builder.header("Authorization", token).accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
+  }
+
+  private Response postMcsResponse(String path, UnifiedTrackingEvent event) {
+    return client.target(svcEndPoint).path(path).request().header("Authorization", token).
+        accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
   }
 
   @Test
@@ -775,7 +795,8 @@ public class EventListenerServiceTest {
   }
 
   @Test
-  public void testCheckoutAPIClickEventsResource() {
+  public void testCheckoutAPIClickAndRoiEventsResource() {
+    // Test Checkout api click
     Event event = new Event();
     event.setReferrer("");
     event.setTargetUrl("http://www.ebay.com/itm/184157407508?mkevt=1&mkcid=1");
@@ -783,21 +804,41 @@ public class EventListenerServiceTest {
     eventPayload.setCheckoutAPIClickTs("1604566345000");
     event.setPayload(eventPayload);
 
-    // success request
-    // iphone
-    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    Response response = postMcsResponse(eventsPath, endUserCtxCheckoutAPI, tracking, event);
     assertEquals(201, response.getStatus());
 
-    // desktop
-    response = postMcsResponse(eventsPath, endUserCtxDesktop, tracking, event);
-    assertEquals(201, response.getStatus());
+    // Test Checkout api ROI
+    ROIEvent roiEvent = new ROIEvent();
+    roiEvent.setItemId("192658398245");
+    roiEvent.setTransType("BIN-FP");
+    roiEvent.setUniqueTransactionId("1677235978009");
+    roiEvent.setTransactionTimestamp("1504566344000");
 
-    // android
-    response = postMcsResponse(eventsPath, endUserCtxAndroid, tracking, event);
-    assertEquals(201, response.getStatus());
+    Map<String, String> payload = new HashMap<String, String>();
+    payload.put("roisrc", "2");
+    payload.put("api", "1");
+    payload.put("BIN-FP", "1");
+    payload.put("siteId", "0");
+    roiEvent.setPayload(payload);
 
-    // mweb
-    response = postMcsResponse(eventsPath, endUserCtxMweb, tracking, event);
+    Response response1 = client.target(svcEndPoint).path(roiPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxCheckoutAPI)
+            .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(roiEvent));
+    assertEquals(201, response1.getStatus());
+  }
+
+  @Test
+  public void testTrackResource() {
+    UnifiedTrackingEvent event = new UnifiedTrackingEvent();
+    event.setProducerEventId("123");
+    event.setProducerEventTs(System.currentTimeMillis());
+    Map<String, String> payload = new HashMap<>();
+    event.setPayload(payload);
+    Response response = postMcsResponse(trackPath, event);
     assertEquals(201, response.getStatus());
   }
 

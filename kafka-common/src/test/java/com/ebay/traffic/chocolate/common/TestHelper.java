@@ -1052,6 +1052,19 @@ public class TestHelper {
     return message;
   }
 
+  public static UnifiedTrackingMessage newUnifiedTrackingMessage(String eventId) {
+    Map<String, String> payload = new HashMap<>();
+
+    UnifiedTrackingMessage message = new UnifiedTrackingMessage();
+    message.setEventId(eventId);
+    message.setProducerEventId("123");
+    message.setEventTs(System.currentTimeMillis());
+    message.setProducerEventTs(System.currentTimeMillis());
+    message.setPayload(payload);
+
+    return message;
+  }
+
   /**
    * Load properties from file
    *
