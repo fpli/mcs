@@ -26,4 +26,4 @@ temp_persist_config_*.xml
 XslTransformObjectCacheConfig64.xml
 TomcatThreadPoolSizeBean
 SensitiveParameters.xml
-emitter.log
+emitter*.log*
