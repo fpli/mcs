@@ -304,7 +304,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       }
       Set<String> keySet = parameters.keySet();
       for (String key : keySet) {
-        if (Arrays.asList(Constants.TARGET_URL_PARMS).contains(key)) {
+        if (Arrays.asList(Constants.getTargetUrlParms()).contains(key)) {
           continue;
         }
         uriBuilder.addParameter(key, parameters.getFirst(key));
@@ -450,7 +450,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     }
     return uriBuilder;
   }
-  
+
   /**
    * utility method for callback
    *
