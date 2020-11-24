@@ -1,15 +1,15 @@
 package com.ebay.app.raptor.chocolate.adservice;
 
+import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
+import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.redirect.AdobeRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.redirect.RedirectContext;
 import com.ebay.app.raptor.chocolate.adservice.redirect.ThirdpartyRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
-import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
-import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
-import com.ebay.app.raptor.chocolate.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
@@ -61,7 +61,7 @@ public class CollectionService {
    * @return OK or Error message
    */
   public boolean collectAr(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext,
-                           GdprConsentHandler.GdprConsentDomain gdprConsentDomain) throws Exception {
+                           GdprConsentDomain gdprConsentDomain) throws Exception {
     dapResponseHandler.sendDAPResponse(request, response, requestContext, gdprConsentDomain);
     return true;
   }

@@ -297,6 +297,12 @@
     <dependency>
       <groupId>com.ebay</groupId>
       <artifactId>compliance-evaluator-io</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.skyscreamer</groupId>
+          <artifactId>jsonassert</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- OpenApi / Swagger processing -->

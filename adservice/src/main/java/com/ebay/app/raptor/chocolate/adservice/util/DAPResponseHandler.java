@@ -7,7 +7,7 @@ import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.common.DAPRvrId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
-import com.ebay.app.raptor.chocolate.component.GdprConsentHandler;
+import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
@@ -85,7 +85,7 @@ public class DAPResponseHandler {
   }
 
   public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext,
-                              GdprConsentHandler.GdprConsentDomain consentDomain) throws URISyntaxException {
+                              GdprConsentDomain consentDomain) throws URISyntaxException {
     ESMetrics.getInstance().meter("sendDAPResponse");
 
     LOGGER.debug("query string {}", request.getQueryString());
@@ -129,6 +129,8 @@ public class DAPResponseHandler {
     }
     if (consentDomain.isAllowedUseGeoInfo()) {
       setGeoInfo(dapUriBuilder, lbsParameters);
+    } else if (consentDomain.isAllowedUseLegallyRequiredField()) {
+      setGeoCountryCode(dapUriBuilder, lbsParameters);
     }
      //personalized parameters
     if (consentDomain.isAllowedShowPersonalizedAds()) {
@@ -597,6 +599,19 @@ public class DAPResponseHandler {
 
   private void setGeoInfo(URIBuilder dapuUriBuilder, Map<String, String> lbsParameters) {
     lbsParameters.forEach((key, value) -> addParameter(dapuUriBuilder, key, value));
+  }
+
+  /**
+   * when gdpr compliant mode and purpose is p1&p3,Geo info not be allowed pass to DAP but legally required,
+   * geo country code is legally required here.
+   * */
+  private void setGeoCountryCode(URIBuilder dapUriBuilder, Map<String, String> lbsParameters) {
+    if (lbsParameters != null) {
+      String geoCountryCode = lbsParameters.get("GeoCountryCode");
+      if (StringUtils.isNotBlank(geoCountryCode)) {
+        addParameter(dapUriBuilder, "GeoCountryCode", geoCountryCode);
+      }
+    }
   }
 
   /**
