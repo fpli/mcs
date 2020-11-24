@@ -961,10 +961,10 @@ public class CollectionService {
     if (message != null) {
       unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
           UnifiedTrackingKafkaSink.callback);
+      
+      stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, event.getActionType()),
+          Field.of(CHANNEL_TYPE, event.getChannelType()));
     }
-
-    stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, event.getActionType()),
-        Field.of(CHANNEL_TYPE, event.getChannelType()));
   }
 
   /**
