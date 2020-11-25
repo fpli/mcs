@@ -74,7 +74,7 @@ public class CollectionServiceUtil {
       } else if (uaInfo.requestedFromLargeDevice() && uaInfo.getDeviceInfo().osiOS() && uaInfo.requestIsNativeApp()) {
         //ipad
         appId = IPAD_APPID;
-      } else if (uaInfo.getDeviceInfo().osAndroid() && uaInfo.requestIsNativeApp()) {
+      } else if (uaInfo.getDeviceInfo() != null && uaInfo.getDeviceInfo().osAndroid() && uaInfo.requestIsNativeApp()) {
         //android
         appId = ANDROID_APPID;
       }

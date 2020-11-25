@@ -1,7 +1,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
-import com.ebay.app.raptor.chocolate.common.DAPRvrId;
 import com.ebay.app.raptor.chocolate.common.Hostname;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorKafkaSink;
@@ -10,6 +9,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
 import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.app.raptor.chocolate.jdbc.repo.DriverIdServiceImpl;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
+import com.ebay.traffic.chocolate.kafka.UnifiedTrackingKafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import org.slf4j.Logger;
@@ -62,6 +62,7 @@ public class EventListenerService {
 
     KafkaSink.initialize(options, options);
     BehaviorKafkaSink.initialize(ApplicationOptions.getInstance().getBehaviorRheosProperties());
+    UnifiedTrackingKafkaSink.initialize(ApplicationOptions.getInstance().getUnifiedTrackingRheosProperties());
     ListenerMessageParser.init();
     BehaviorMessageParser.init();
 
@@ -75,6 +76,7 @@ public class EventListenerService {
     try {
       KafkaSink.close();
       BehaviorKafkaSink.close();
+      UnifiedTrackingKafkaSink.close();
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
     }

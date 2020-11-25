@@ -81,7 +81,29 @@ public class EventListenerResource implements EventsApi {
    */
   @Override
   public Response track(UnifiedTrackingEvent body) {
-    return null;
+    Tracer tracer = GlobalTracer.get();
+    try (Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "UnifiedTracking")
+        .startActive(true)) {
+      Span span = scope.span();
+      Response res = null;
+      try {
+        collectionService.collectUnifiedTrackingEvent(body);
+        res = Response.status(Response.Status.CREATED).build();
+        Tags.STATUS.set(span, "0");
+      } catch (Exception e) {
+        logger.warn("UTP message process error.", e);
+        Tags.STATUS.set(span, "0");
+        // show warning in cal
+        SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
+        try {
+          res = errorFactoryV3.makeWarnResponse(e.getMessage());
+        } catch (Exception ex) {
+          logger.warn(e.getMessage(), request.toString(), body);
+          logger.warn(ex.getMessage(), ex);
+        }
+      }
+      return res;
+    }
   }
 
   /**

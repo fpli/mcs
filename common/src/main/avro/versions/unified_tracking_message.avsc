@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "name": "UnifiedTrackingRheosEvent",
+  "name": "UnifiedTrackingRheosMessage",
   "namespace": "com.ebay.app.raptor.chocolate.avro.versions",
   "doc": " Unified tracking topic schema",
   "fields": [
@@ -117,7 +117,7 @@
       "default": ""
     },
     {
-      "name": "partnerId",
+      "name": "partner",
       "type": [
         "null",
         "string"
@@ -222,6 +222,14 @@
     },
     {
       "name": "appVersion",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "appId",
       "type": [
         "null",
         "string"

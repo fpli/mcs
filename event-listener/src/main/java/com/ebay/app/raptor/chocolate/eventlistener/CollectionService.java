@@ -1,18 +1,18 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
-import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
-import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.avro.*;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.eventlistener.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
+import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
+import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
@@ -23,10 +23,11 @@ import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import com.ebay.traffic.chocolate.kafka.RheosKafkaProducer;
+import com.ebay.traffic.chocolate.kafka.UnifiedTrackingKafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
+import com.ebay.userlookup.UserLookup;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -44,6 +45,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -77,6 +79,8 @@ public class CollectionService {
   private BehaviorMessageParser behaviorMessageParser;
   private Producer behaviorProducer;
   private String behaviorTopic;
+  private Producer unifiedTrackingProducer;
+  private String unifiedTrackingTopic;
   private static CollectionService instance = null;
   private EventEmitterPublisher eventEmitterPublisher;
 
@@ -88,6 +92,12 @@ public class CollectionService {
 
   @Inject
   private ISecureTokenManager tokenGenerator;
+
+  @Inject
+  private UserLookup userLookup;
+
+  @Autowired
+  private GdprConsentHandler gdprConsentHandler;
 
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
@@ -123,6 +133,8 @@ public class CollectionService {
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
     this.behaviorProducer = BehaviorKafkaSink.get();
     this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
+    this.unifiedTrackingProducer = UnifiedTrackingKafkaSink.get();
+    this.unifiedTrackingTopic = ApplicationOptions.getInstance().getUnifiedTrackingTopic();
     this.eventEmitterPublisher = new EventEmitterPublisher(tokenGenerator);
   }
 
@@ -289,14 +301,14 @@ public class CollectionService {
       if (!StringUtils.isEmpty(targetPath)) {
         URIBuilder uriBuilder = new URIBuilder(URLDecoder.decode(targetPath, "UTF-8"));
         uriBuilder.addParameters(new URIBuilder(targetUrl).getQueryParams());
-        targetUrl = UrlUtil.removeParam(uriBuilder.build().toString(), Constants.EPAGE_URL);
+        targetUrl = HttpRequestUtil.removeParam(uriBuilder.build().toString(), Constants.EPAGE_URL);
       } else {
         targetUrl = referer;
       }
 
       if (!StringUtils.isEmpty(originalReferer)) {
         referer = URLDecoder.decode(originalReferer, "UTF-8");
-        targetUrl = UrlUtil.removeParam(targetUrl, Constants.EPAGE_REFERER);
+        targetUrl = HttpRequestUtil.removeParam(targetUrl, Constants.EPAGE_REFERER);
       } else {
         logger.warn(Errors.ERROR_NO_REFERER);
         metrics.meter(Errors.ERROR_NO_REFERER);
@@ -472,7 +484,6 @@ public class CollectionService {
     } else {
       metrics.meter("CheckoutAPIClick", 1);
     }
-
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
     if (channelType == ChannelIdEnum.EPN || channelType == ChannelIdEnum.PAID_SEARCH || channelType == ChannelIdEnum.DAP ||
@@ -487,6 +498,14 @@ public class CollectionService {
           targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
     else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS)
       processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
+
+    // send to unified tracking topic
+    // send email channels first
+    if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
+      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+          targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
+    }
+
     if (processFlag)
       stopTimerAndLogData(eventProcessStartTime, startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
               Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
@@ -761,6 +780,13 @@ public class CollectionService {
       processFlag = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext, agentInfo);
 
+    // send to unified tracking topic
+    // send email channels first
+    if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
+      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+          uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
+    }
+
     if (processFlag)
       stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
@@ -927,6 +953,47 @@ public class CollectionService {
   }
 
   /**
+   * Collect unified tracking event and publish to kafka
+   *
+   * @param event               post body event
+   * @return OK or Error message
+   */
+  public void collectUnifiedTrackingEvent(UnifiedTrackingEvent event) {
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, event.getActionType()),
+        Field.of(CHANNEL_TYPE, event.getChannelType()));
+
+    UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(event, userLookup);
+
+    if (message != null) {
+      unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
+          UnifiedTrackingKafkaSink.callback);
+
+      stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, event.getActionType()),
+          Field.of(CHANNEL_TYPE, event.getChannelType()));
+      }
+  }
+
+  /**
+   * Process unified tracking user behavior events
+   */
+  private void processUnifiedTrackingEvent(ContainerRequestContext requestContext, HttpServletRequest request,
+                                           IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
+                                           UserAgentInfo agentInfo, MultiValueMap<String, String> parameters, String url,
+                                           String referer, ChannelType channelType, ChannelAction channelAction) {
+    try {
+      UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
+          raptorSecureContext, agentInfo, userLookup, parameters, url, referer, channelType, channelAction);
+      if (utpMessage != null) {
+        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
+            utpMessage), UnifiedTrackingKafkaSink.callback);
+      }
+    } catch (Exception e) {
+      logger.warn("UTP message process error.", e);
+      metrics.meter("UTPMessageError");
+    }
+  }
+
+  /**
    * Process AMS and IMK events
    */
   private boolean processAmsAndImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
@@ -994,6 +1061,10 @@ public class CollectionService {
     if (channelType == ChannelIdEnum.EPN) {
       snid = parseSessionId(parameters);
     }
+
+    GdprConsentDomain gdprConsentDomain = gdprConsentHandler.handleGdprConsent(targetUrl ,channelType);
+    boolean allowedStoredPersonalizedData = gdprConsentDomain.isAllowedStoredPersonalizedData();
+    boolean allowedStoredContextualData = gdprConsentDomain.isAllowedStoredContextualData();
 
     // Parse the response
     ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
@@ -1079,6 +1150,20 @@ public class CollectionService {
     String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
 
     if (message != null) {
+      if (!allowedStoredContextualData) {
+        message.setRemoteIp(null);
+        message.setUserAgent(null);
+        message.setGeoId(0L);
+        message.setUdid("");
+        message.setLangCd("");
+        message.setReferer("");
+        message.setUri("");
+      }
+      if (!allowedStoredPersonalizedData) {
+        message.setUserId(0L);
+        message.setGuid("");
+        message.setCguid("");
+      }
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       return true;
     } else
