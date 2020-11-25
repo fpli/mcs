@@ -1,5 +1,7 @@
 package com.ebay.app.raptor.chocolate.adservice.constant;
 
+import java.util.Arrays;
+
 /**
  * @author Zhiyuan Wang
  * @since 2019/10/26
@@ -63,7 +65,7 @@ public class Constants {
   private static final String[] TARGET_URL_PARMS = {"mpre", "loc", "url", "URL"};
 
   public static String[] getTargetUrlParms(){
-    return TARGET_URL_PARMS;
+    return Arrays.copyOf(TARGET_URL_PARMS, TARGET_URL_PARMS.length);
   }
 }
 
