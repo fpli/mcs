@@ -55,14 +55,14 @@ public class ListenerMessageParser {
    * @param snid           snid
    * @return ListenerMessage object
    */
-  public ListenerMessage parse(
-      final HttpServletRequest clientRequest, final ContainerRequestContext requestContext, Long startTime, Long campaignId,
-      final ChannelType channelType, final ChannelActionEnum action, String userId, IEndUserContext endUserContext,
-      String uri, String referer, long rotationId, String snid) {
-
+  public ListenerMessage parse(final HttpServletRequest clientRequest, final ContainerRequestContext requestContext,
+                               Long startTime, Long campaignId, final ChannelType channelType, final ChannelActionEnum action,
+                               String userId, IEndUserContext endUserContext, String uri, String referer, long rotationId, String snid) {
     // set default values to prevent unable to serialize message exception
-    ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
-      0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
+    ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "",
+            "", "", "", "", 0L, "", "", -1L, -1L,
+            0L, "", 0L, 0L, "", "", "",
+            ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
 
     // user id
     record.setUserId(Long.valueOf(userId));
@@ -70,8 +70,7 @@ public class ListenerMessageParser {
     // guid, cguid from tracking header
     String trackingHeader = clientRequest.getHeader("X-EBAY-C-TRACKING");
     if (!org.springframework.util.StringUtils.isEmpty(trackingHeader)) {
-      for (String seg : trackingHeader.split(",")
-        ) {
+      for (String seg : trackingHeader.split(",")) {
         String[] keyValue = seg.split("=");
         if (keyValue.length == 2) {
           if (keyValue[0].equalsIgnoreCase("guid")) {
@@ -85,7 +84,7 @@ public class ListenerMessageParser {
     }
 
     // Overwrite cguid using guid for ePN channel in mcs to avoid the impact on capping rules related to cguid  XC-2125
-    if (channelType == ChannelType.EPN && StringUtils.isEmpty(record.getCguid()) ) {
+    if (channelType == ChannelType.EPN && StringUtils.isEmpty(record.getCguid())) {
       record.setCguid(record.getGuid());
     }
 
@@ -108,7 +107,7 @@ public class ListenerMessageParser {
       record.setGeoId((long) userPrefsCtx.getGeoContext().getCountryId());
 
       // site id
-      record.setSiteId((long)userPrefsCtx.getGeoContext().getSiteId());
+      record.setSiteId((long) userPrefsCtx.getGeoContext().getSiteId());
 
     } catch (Exception e) {
       logger.error("Parse geo info error");
