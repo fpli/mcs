@@ -24,7 +24,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import java.net.*;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -119,7 +118,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
    */
   public String getTargetLocation(MultiValueMap<String, String> parameters) {
     String result = null;
-    for (String targetUrlParm : Constants.getTargetUrlParms()) {
+    for (String targetUrlParm : Constants.TARGET_URL_PARMS) {
       // get target location
       if (parameters.containsKey(targetUrlParm)) {
         result = parameters.get(targetUrlParm).get(0);
@@ -138,11 +137,11 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
                        String endpoint) throws URISyntaxException{
     // build mcs target url, add all original parameter for ubi events except target url parameter
     URIBuilder uriBuilder = new URIBuilder(redirectionEvent.getRedirectUrl());
-    parameters.forEach((key, val) -> {
-      if (!Arrays.asList(Constants.getTargetUrlParms()).contains(key)) {
-        uriBuilder.addParameter(key, val.get(0));
+    for (String paramter : parameters.keySet()) {
+      if (!Arrays.asList(Constants.TARGET_URL_PARMS).contains(paramter)) {
+        uriBuilder.addParameter(paramter, parameters.get(paramter).get(0));
       }
-    });
+    }
 
     // Adobe needs additional parameters
     addAdobeParams(uriBuilder);
@@ -189,7 +188,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
 
         Set<String> keySet = parameters.keySet();
         for (String key : keySet) {
-          if (Arrays.asList(Constants.getTargetUrlParms()).contains(key)) {
+          if (Arrays.asList(Constants.TARGET_URL_PARMS).contains(key)) {
             continue;
           }
           uriBuilder.addParameter(key, parameters.getFirst(key));

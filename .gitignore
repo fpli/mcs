@@ -1,4 +1,3 @@
-.gitignore
 *.class
 .idea
 *.iml
@@ -28,4 +27,3 @@ XslTransformObjectCacheConfig64.xml
 TomcatThreadPoolSizeBean
 SensitiveParameters.xml
 emitter*.log*
-event-listener/var/

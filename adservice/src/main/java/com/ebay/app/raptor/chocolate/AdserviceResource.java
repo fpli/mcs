@@ -2,7 +2,6 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
-import com.ebay.app.raptor.chocolate.adservice.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
@@ -13,7 +12,6 @@ import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.gen.api.*;
-import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
@@ -87,9 +85,6 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   @Qualifier("cb")
   private IdMapable idMapping;
 
-  @Autowired
-  private GdprConsentHandler gdprConsentHandler;
-
   private Metrics metrics;
 
   private static final String METRIC_ADD_MAPPING_SUCCESS = "METRIC_ADD_MAPPING_SUCCESS";
@@ -138,14 +133,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     }
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "ar"));
     Response res = null;
-
-    GdprConsentDomain gdprConsentDomain = gdprConsentHandler.handleGdprConsent(request);
-
     try {
-      if (gdprConsentDomain.isAllowedSetCookie()) {
-        adserviceCookie.setAdguid(request, response);
-      }
-      collectionService.collectAr(request, response, requestContext, gdprConsentDomain);
+      adserviceCookie.setAdguid(request, response);
+      collectionService.collectAr(request, response, requestContext);
       if (HttpServletResponse.SC_MOVED_PERMANENTLY == response.getStatus()) {
         Response.ResponseBuilder responseBuilder = Response.status(Response.Status.MOVED_PERMANENTLY);
         for (String headerName : response.getHeaderNames()) {
@@ -304,7 +294,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       }
       Set<String> keySet = parameters.keySet();
       for (String key : keySet) {
-        if (Arrays.asList(Constants.getTargetUrlParms()).contains(key)) {
+        if (Arrays.asList(Constants.TARGET_URL_PARMS).contains(key)) {
           continue;
         }
         uriBuilder.addParameter(key, parameters.getFirst(key));
@@ -450,7 +440,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     }
     return uriBuilder;
   }
-
+  
   /**
    * utility method for callback
    *

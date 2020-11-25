@@ -4,7 +4,6 @@ import com.ebay.app.raptor.chocolate.avro.*;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
-import com.ebay.app.raptor.chocolate.eventlistener.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
@@ -12,7 +11,6 @@ import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
-import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
@@ -23,6 +21,7 @@ import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
+import com.ebay.traffic.chocolate.kafka.RheosKafkaProducer;
 import com.ebay.traffic.chocolate.kafka.UnifiedTrackingKafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
@@ -45,7 +44,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -95,9 +93,6 @@ public class CollectionService {
 
   @Inject
   private UserLookup userLookup;
-
-  @Autowired
-  private GdprConsentHandler gdprConsentHandler;
 
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
@@ -477,7 +472,12 @@ public class CollectionService {
     }
 
     // add tags all channels need
-    addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, PageIdEnum.CLICK.getId());
+    // Don't track ubi if the click is from Checkout API
+    if (!isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)) {
+      addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, PageIdEnum.CLICK.getId());
+    } else {
+      metrics.meter("CheckoutAPIClick", 1);
+    }
 
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
@@ -972,7 +972,7 @@ public class CollectionService {
     if (message != null) {
       unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
           UnifiedTrackingKafkaSink.callback);
-
+      
       stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, event.getActionType()),
           Field.of(CHANNEL_TYPE, event.getChannelType()));
     }
@@ -1046,10 +1046,6 @@ public class CollectionService {
     if (channelType == ChannelIdEnum.EPN) {
       snid = parseSessionId(parameters);
     }
-
-    GdprConsentDomain gdprConsentDomain = gdprConsentHandler.handleGdprConsent(targetUrl ,channelType);
-    boolean allowedStoredPersonalizedData = gdprConsentDomain.isAllowedStoredPersonalizedData();
-    boolean allowedStoredContextualData = gdprConsentDomain.isAllowedStoredContextualData();
 
     // Parse the response
     ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
@@ -1135,23 +1131,6 @@ public class CollectionService {
     String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
 
     if (message != null) {
-      if (!allowedStoredContextualData) {
-        message.setRemoteIp(null);
-        message.setUserAgent(null);
-        message.setGeoId(null);
-        message.setUdid(null);
-        message.setLangCd(null);
-        message.setReferer(null);
-//        message.setPublisherId(null);
-//        message.setCampaignId(null);
-        message.setUri(null);
-        message.setHttpMethod(null);
-      }
-      if (!allowedStoredPersonalizedData) {
-        message.setUserId(null);
-        message.setGuid(null);
-        message.setCguid(null);
-      }
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       return true;
     } else
