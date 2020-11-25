@@ -36,6 +36,7 @@ public class Constants {
   public static final String ROVER_USERID = "rover_userid";
   public static final String MPLX_PLACEMENT_ID = "mplx_placement_id";
   public static final String ADTYPE = "adtype";
+  public static final String CONSENT_FLAG = "cf";
 
   // header name
   public static final String USER_AGENT = "User-Agent";
@@ -59,7 +60,10 @@ public class Constants {
   public static final String LOCTATION = "loc";
   public static final String REDIRECT = "redirect";
   public static final String SOJ_TAGS = "sojTags";
-  public static final String[] TARGET_URL_PARMS = {"mpre", "loc", "url", "URL"};
+  private static final String[] TARGET_URL_PARMS = {"mpre", "loc", "url", "URL"};
 
+  public static String[] getTargetUrlParms(){
+    return TARGET_URL_PARMS;
+  }
 }
 
