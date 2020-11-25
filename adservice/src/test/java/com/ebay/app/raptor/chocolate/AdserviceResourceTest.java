@@ -426,27 +426,4 @@ public class AdserviceResourceTest {
     assertEquals(200, response.getStatus());
     parameters.put("adobeParams", "id,p1,p2,p3,p4");
   }
-
-  @Test
-  public void arWithGdprConsent() {
-    Map<String, String> parameters = new HashMap<>();
-    parameters.put("mkevt", "6");
-    parameters.put("mkcid", "4");
-    parameters.put("mkrid", "524042");
-    parameters.put("mpt", "123");
-    parameters.put("ff18", "mWeb");
-    parameters.put("siteid", "0");
-    parameters.put("icep_siteid", "0");
-    parameters.put("ipn", "admin");
-    parameters.put("adtype", "3");
-    parameters.put("size", "320x50");
-    parameters.put("pgroup", "524042");
-    parameters.put("mpvc", "123");
-    parameters.put("gdpr", "1");
-    parameters.put("gdpr_consent", "CO9HbRYO9HbRYMEAAAENAwCAAPwAAAAAAAAAAAAAAAAA.IGLtV_T9fb2vj-_Z99_tkeYwf95y3p-wzhheMs-8NyZeH_B4Wv2MyvBX4JiQKGRgksjLBAQdtHGlcTQgBwIlViTLMYk2MjzNKJrJEilsbO2dYGD9Pn8HT3ZCY70-vv__7v3ff_3g");
-
-    // Common site email redirect
-    Response response = getAdserviceResponse(AR_PATH, parameters);
-    assertEquals(200, response.getStatus());
-  }
 }
