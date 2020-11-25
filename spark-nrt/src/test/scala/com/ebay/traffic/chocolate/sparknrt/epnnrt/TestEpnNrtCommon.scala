@@ -459,4 +459,10 @@ class TestEpnNrtCommon extends BaseFunSuite{
     assert(roiRuleList.take(2).tail.head.getRule_result.equals(0))
   }
 
+  test("test custom id") {
+    val uri = "https://www.ebay.com/?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&campid=5338757545&trackingPartnerCode=9&customid=123456789&nrd=1&api=1&toolid=11006"
+    val res = epnNrtCommon.getQueryParam(uri, "toolid")
+    assert(res.equals("11006"))
+  }
+
 }
