@@ -1152,19 +1152,16 @@ public class CollectionService {
       if (!allowedStoredContextualData) {
         message.setRemoteIp(null);
         message.setUserAgent(null);
-        message.setGeoId(null);
-        message.setUdid(null);
-        message.setLangCd(null);
-        message.setReferer(null);
-//        message.setPublisherId(null);
-//        message.setCampaignId(null);
-        message.setUri(null);
-        message.setHttpMethod(null);
+        message.setGeoId(0L);
+        message.setUdid("");
+        message.setLangCd("");
+        message.setReferer("");
+        message.setUri("");
       }
       if (!allowedStoredPersonalizedData) {
-        message.setUserId(null);
-        message.setGuid(null);
-        message.setCguid(null);
+        message.setUserId(0L);
+        message.setGuid("");
+        message.setCguid("");
       }
       producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       return true;
