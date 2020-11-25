@@ -56,10 +56,10 @@ public class UnifiedTrackingMessageParser {
     UnifiedTrackingMessage record = setDefaultAndCommonValues(payload, new UserAgentParser().parse(event.getUserAgent()));
 
     // event id
-    record.setProducerEventId(event.getProducerEventId());
+    record.setProducerEventId(coalesce(event.getProducerEventId(), ""));
 
     // event timestamp
-    record.setProducerEventTs(event.getProducerEventTs());
+    record.setProducerEventTs(coalesce(event.getProducerEventTs(), 0L));
 
     // rlogid
     record.setRlogId(event.getRlogId());
@@ -118,7 +118,7 @@ public class UnifiedTrackingMessageParser {
     record.setGeoId(event.getGeoId());
 
     // payload
-    record.setPayload(event.getPayload());
+    record.setPayload(deleteNullOrEmptyValue(event.getPayload()));
 
     return record;
   }
@@ -144,7 +144,7 @@ public class UnifiedTrackingMessageParser {
     record.setProducerEventId(getProducerEventId(parameters, channelType));
 
     // event timestamp
-    record.setProducerEventTs(request.getSession().getCreationTime());
+    record.setProducerEventTs(request.getSession().getLastAccessedTime());
 
     // rlog id
     record.setRlogId(tracingContext.getRlogId());
@@ -272,7 +272,7 @@ public class UnifiedTrackingMessageParser {
    */
   private static String getProducerEventId(MultiValueMap<String, String> parameters, ChannelType channelType) {
     if (ChannelType.SITE_EMAIL.equals(channelType)) {
-      return parameters.getFirst(Constants.EMAIL_UNIQUE_ID);
+      return HttpRequestUtil.parseTagFromParams(parameters, Constants.EMAIL_UNIQUE_ID);
     }
 
     return "";
@@ -355,8 +355,6 @@ public class UnifiedTrackingMessageParser {
       } catch (Exception e) {
         logger.warn(Errors.ERROR_INVALID_MKRID);
       }
-    } else {
-      logger.warn(Errors.ERROR_NO_MKRID);
     }
 
     return rotationId;
@@ -367,10 +365,13 @@ public class UnifiedTrackingMessageParser {
    */
   private static int getGeoID(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
                               ChannelType channelType, ChannelAction channelAction) {
-    int geoId;
+    int geoId = 0;
 
     if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
-      geoId = Integer.parseInt(HttpRequestUtil.parseTagFromParams(parameters, Constants.CHOCO_BUYER_ACCESS_SITE_ID));
+      String choco_bs = HttpRequestUtil.parseTagFromParams(parameters, Constants.CHOCO_BUYER_ACCESS_SITE_ID);
+      if (!StringUtils.isEmpty(choco_bs)) {
+        geoId = Integer.parseInt(choco_bs);
+      }
     } else {
       UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
       geoId = userPrefsCtx.getGeoContext().getCountryId();
@@ -495,6 +496,7 @@ public class UnifiedTrackingMessageParser {
 
   /**
    * Delete map entry with null or empty value
+   * in case null value cause incompatibility
    */
   private static Map<String, String> deleteNullOrEmptyValue(Map<String, String> map) {
     Set<Map.Entry<String, String>> entrySet = map.entrySet();
@@ -502,7 +504,7 @@ public class UnifiedTrackingMessageParser {
 
     while(iterator.hasNext()) {
       Map.Entry<String, String> entry = iterator.next();
-      if (org.springframework.util.StringUtils.isEmpty(entry.getValue())) {
+      if (StringUtils.isEmpty(entry.getValue())) {
         iterator.remove();
       }
     }
@@ -523,5 +525,12 @@ public class UnifiedTrackingMessageParser {
     }
 
     return uri;
+  }
+
+  /**
+   * Coalesce to set default value in case of null value
+   */
+  private static <T> T coalesce(T a, T b) {
+    return a == null ? b : a;
   }
 }
