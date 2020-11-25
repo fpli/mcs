@@ -91,6 +91,7 @@ public class EventListenerResource implements EventsApi {
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
+        logger.warn("UTP message process error.", e);
         Tags.STATUS.set(span, "0");
         // show warning in cal
         SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());

@@ -497,13 +497,8 @@ public class CollectionService {
     // send to unified tracking topic
     // send email channels first
     if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
-      UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
-          raptorSecureContext, agentInfo, userLookup, parameters, targetUrl, referer,
-          channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
-      if (utpMessage != null) {
-        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
-            utpMessage), UnifiedTrackingKafkaSink.callback);
-      }
+      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+          targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
     }
 
     if (processFlag)
@@ -783,13 +778,8 @@ public class CollectionService {
     // send to unified tracking topic
     // send email channels first
     if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
-      UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
-          raptorSecureContext, agentInfo, userLookup, parameters, uri, referer,
-          channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
-      if (utpMessage != null) {
-        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
-            utpMessage), UnifiedTrackingKafkaSink.callback);
-      }
+      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+          uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
     }
 
     if (processFlag)
@@ -972,9 +962,29 @@ public class CollectionService {
     if (message != null) {
       unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
           UnifiedTrackingKafkaSink.callback);
-      
+
       stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, event.getActionType()),
           Field.of(CHANNEL_TYPE, event.getChannelType()));
+      }
+  }
+
+  /**
+   * Process unified tracking user behavior events
+   */
+  private void processUnifiedTrackingEvent(ContainerRequestContext requestContext, HttpServletRequest request,
+                                           IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
+                                           UserAgentInfo agentInfo, MultiValueMap<String, String> parameters, String url,
+                                           String referer, ChannelType channelType, ChannelAction channelAction) {
+    try {
+      UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
+          raptorSecureContext, agentInfo, userLookup, parameters, url, referer, channelType, channelAction);
+      if (utpMessage != null) {
+        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
+            utpMessage), UnifiedTrackingKafkaSink.callback);
+      }
+    } catch (Exception e) {
+      logger.warn("UTP message process error.", e);
+      metrics.meter("UTPMessageError");
     }
   }
 
