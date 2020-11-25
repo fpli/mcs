@@ -957,20 +957,15 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, event.getActionType()),
         Field.of(CHANNEL_TYPE, event.getChannelType()));
 
-    try {
-      UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(event, userLookup);
+    UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(event, userLookup);
 
-      if (message != null) {
-        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
-            UnifiedTrackingKafkaSink.callback);
+    if (message != null) {
+      unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
+          UnifiedTrackingKafkaSink.callback);
 
-        stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, event.getActionType()),
+      stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, event.getActionType()),
           Field.of(CHANNEL_TYPE, event.getChannelType()));
       }
-    } catch (Exception e) {
-      logger.warn("UTP message process error.", e);
-      metrics.meter("UTPMessageError");
-    }
   }
 
   /**
