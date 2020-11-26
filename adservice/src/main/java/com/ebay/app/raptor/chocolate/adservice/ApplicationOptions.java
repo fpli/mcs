@@ -45,7 +45,7 @@ public class ApplicationOptions extends AbstractApplicationOptions {
   /**
    * Static driver ID
    */
-  static int DRIVER_ID;
+  private int DRIVER_ID;
 
   /**
    * Application options to load from internal jar

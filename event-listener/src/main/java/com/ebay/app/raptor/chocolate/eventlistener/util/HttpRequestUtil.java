@@ -75,7 +75,7 @@ public class HttpRequestUtil {
    * Parse tag from url query string
    */
   public static String parseTagFromParams(MultiValueMap<String, String> parameters, String param) {
-    if (parameters.containsKey(param) && parameters.get(param).get(0) != null) {
+    if (parameters.containsKey(param) && parameters.getFirst(param) != null) {
       return parameters.getFirst(param);
     }
 
