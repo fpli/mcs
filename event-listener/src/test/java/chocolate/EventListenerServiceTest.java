@@ -263,6 +263,22 @@ public class EventListenerServiceTest {
         accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
   }
 
+  private Response postMcsResponseWithStatusCode(String path, String endUserCtx, String tracking, Event event, String marketingStatusCode) {
+    // add headers
+    Invocation.Builder builder = client.target(svcEndPoint).path(path).request();
+    if (!StringUtils.isEmpty(endUserCtx)) {
+      builder = builder.header("X-EBAY-C-ENDUSERCTX", endUserCtx);
+    }
+    if (!StringUtils.isEmpty(tracking)) {
+      builder = builder.header("X-EBAY-C-TRACKING", tracking);
+    }
+    if (!StringUtils.isEmpty(marketingStatusCode)) {
+      builder = builder.header("X-EBAY-TRACKING-MARKETING-STATUS-CODE", marketingStatusCode);
+    }
+
+    return builder.header("Authorization", token).accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
+  }
+
   @Test
   public void testEventsResource() throws InterruptedException {
     Event event = new Event();
