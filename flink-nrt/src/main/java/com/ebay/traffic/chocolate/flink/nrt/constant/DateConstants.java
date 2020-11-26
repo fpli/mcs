@@ -5,4 +5,5 @@ public class DateConstants {
   public static final String YYYY_MM_DD = "yyyy-MM-dd";
   public static final String YYYYMMDD = "yyyyMMdd";
   public static final String YYYYMMDDHH = "yyyyMMddHH";
+  public static final String HH = "HH";
 }
