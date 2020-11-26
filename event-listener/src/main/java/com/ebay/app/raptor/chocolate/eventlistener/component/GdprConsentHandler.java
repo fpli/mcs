@@ -75,6 +75,8 @@ public class GdprConsentHandler {
                     IntIterable purposesConsent = tcString.getPurposesConsent();
 
                     if (purposesConsent != null && !purposesConsent.isEmpty()) {
+                        logger.info("Purpose Consent is {}", purposesConsent.toString());
+
                         //1 is necessary
                         if (!purposesConsent.contains(1)) {
                             return gdprConsentDomain;

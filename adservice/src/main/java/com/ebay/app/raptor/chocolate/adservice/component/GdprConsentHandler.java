@@ -56,6 +56,7 @@ public class GdprConsentHandler {
                     //Special Purposes
                     IntIterable specialFeatureOptIns = tcString.getSpecialFeatureOptIns();
                     if (!purposesConsent.isEmpty()) {
+                        logger.info("Purpose Consent is {}", purposesConsent.toString());
                         //construct consent flag for call DAP
                         JSONObject jsonObject = new JSONObject();
                         JSONObject gdpr = new JSONObject();
@@ -74,16 +75,12 @@ public class GdprConsentHandler {
                             gdprConsentDomain.setAllowedUseGeoInfo(true);
                             gdprConsentDomain.setAllowedUseContextualInfo(true);
                             gdprConsentDomain.setAllowedUseLegallyRequiredField(true);
-                            metrics.meter(GdprConsentConstant.ALLOWED_USE_GEO);
-                            metrics.meter(GdprConsentConstant.ALLOWED_USE_CONTEXTUAL);
                         }
                         //allowed set the adguid cookie
                         if (purposesConsent.contains(3)) {
                             gdprConsentDomain.setAllowedUseContextualInfo(true);
                             gdprConsentDomain.setAllowedSetCookie(true);
                             gdprConsentDomain.setAllowedUseLegallyRequiredField(true);
-                            metrics.meter(GdprConsentConstant.ALLOWED_SET_COOKIES);
-                            metrics.meter(GdprConsentConstant.ALLOWED_USE_CONTEXTUAL);
                         }
                         // show a non-personalized ad - pass adguid or guid downstream, we used allowed_show_personalized_ads to agent
                         if (purposesConsent.contains(4)) {
@@ -91,21 +88,31 @@ public class GdprConsentHandler {
                             gdprConsentDomain.setAllowedShowPersonalizedAds(true);
                             gdprConsentDomain.setAllowedUseGeoInfo(true);
                             gdprConsentDomain.setAllowedUseLegallyRequiredField(true);
-                            metrics.meter(GdprConsentConstant.ALLOWED_USE_GEO);
-                            metrics.meter(GdprConsentConstant.ALLOWED_SHOW_PERSONALIZED_ADS);
-                            metrics.meter(GdprConsentConstant.ALLOWED_USE_CONTEXTUAL);
                         }
                         // show a personalized ad and allowed pass contextual fields but Geo
                         if (purposesConsent.contains(7)) {
                             gdprConsentDomain.setAllowedUseContextualInfo(true);
                             gdprConsentDomain.setAllowedShowPersonalizedAds(true);
-                            metrics.meter(GdprConsentConstant.ALLOWED_SHOW_PERSONALIZED_ADS);
-                            metrics.meter(GdprConsentConstant.ALLOWED_USE_CONTEXTUAL);
                         }
                     }
                     //else treat every user as an anonymous user.
                 }
                 //else treat every user as an anonymous user.
+                if (gdprConsentDomain.isAllowedSetCookie()) {
+                    metrics.meter(GdprConsentConstant.ALLOWED_SET_COOKIES);
+                }
+                if (gdprConsentDomain.isAllowedUseContextualInfo()) {
+                    metrics.meter(GdprConsentConstant.ALLOWED_USE_CONTEXTUAL);
+                }
+                if (gdprConsentDomain.isAllowedUseGeoInfo()) {
+                    metrics.meter(GdprConsentConstant.ALLOWED_USE_GEO);
+                }
+                if (gdprConsentDomain.isAllowedShowPersonalizedAds()) {
+                    metrics.meter(GdprConsentConstant.ALLOWED_SHOW_PERSONALIZED_ADS);
+                }
+                if (gdprConsentDomain.isAllowedUseLegallyRequiredField()) {
+                    metrics.meter(GdprConsentConstant.ALLOWED_USE_LELALLY_REQUIRED);
+                }
             } else {
                 gdprConsentDomain.setAllowedSetCookie(true);
                 gdprConsentDomain.setAllowedShowPersonalizedAds(true);
