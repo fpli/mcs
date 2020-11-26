@@ -310,8 +310,6 @@ public class UTPRoverEventTransformApp
       out.collect(new Tuple3<>(this.topic, DEFAULT_SNAPSHOT_ID, serializeRheosEvent(rheosEvent)));
     }
 
-
-
     public RheosEvent getRheosEvent(GenericRecord v) {
       RheosEvent rheosEvent = new RheosEvent(schema);
       long t = System.currentTimeMillis();
