@@ -294,7 +294,7 @@ public class UTPRoverEventTransformApp
       builder.setOsVersion(GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, ENRICHED_OS_VERSION));
       builder.setAppId(GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, APP_ID));
       builder.setAppVersion(GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, APP_VERSION));
-      builder.setService(null);
+      builder.setService(StringConstants.EMPTY);
       builder.setServer(System.getenv("HOSTNAME"));
       builder.setRemoteIp(clientData.getOrDefault(REMOTE_IP, StringConstants.EMPTY));
       builder.setPageId(pageId);
