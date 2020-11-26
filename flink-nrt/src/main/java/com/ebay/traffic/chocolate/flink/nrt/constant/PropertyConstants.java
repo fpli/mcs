@@ -96,4 +96,8 @@ public class PropertyConstants {
   public static final String LOG_SINK_APP_ES_PROPERTIES = "log-sink-app.es.properties";
   public static final String LOG_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "log-sink-app.rheos.consumer.topic.properties";
   public static final String LOG_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "log-sink-app.rheos.consumer.properties";
+
+  public static final String UTP_EVENT_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "utp-event-sink-app.rheos.consumer.properties";
+  public static final String UTP_EVENT_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "utp-event-sink-app.rheos.consumer.topic.properties";
+  public static final String UTP_EVENT_SINK_APP_HDFS_PROPERTIES = "utp-event-sink-app.hdfs.properties";
 }

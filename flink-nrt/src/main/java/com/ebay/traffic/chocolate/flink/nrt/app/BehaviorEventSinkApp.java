@@ -149,7 +149,7 @@ public class BehaviorEventSinkApp extends AbstractRheosHDFSCompatibleApp<Consume
 
     @Override
     public String getBucketId(BehaviorEvent element, Context context) {
-      return StringConstants.BUCKET_PREFIX + EVENT_DT_FORMATTER.format(Instant.ofEpochMilli(element.getEventtimestamp()));
+      return StringConstants.DATE_BUCKET_PREFIX + EVENT_DT_FORMATTER.format(Instant.ofEpochMilli(element.getEventtimestamp()));
     }
 
     @Override

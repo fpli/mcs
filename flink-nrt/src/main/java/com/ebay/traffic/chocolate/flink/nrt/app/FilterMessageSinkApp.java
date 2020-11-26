@@ -120,7 +120,7 @@ public class FilterMessageSinkApp extends AbstractRheosHDFSCompatibleApp<Consume
 
     @Override
     public String getBucketId(FilterMessageV5 element, Context context) {
-      return StringConstants.BUCKET_PREFIX + EVENT_DT_FORMATTER.format(Instant.ofEpochMilli(element.getTimestamp()));
+      return StringConstants.DATE_BUCKET_PREFIX + EVENT_DT_FORMATTER.format(Instant.ofEpochMilli(element.getTimestamp()));
     }
 
     @Override

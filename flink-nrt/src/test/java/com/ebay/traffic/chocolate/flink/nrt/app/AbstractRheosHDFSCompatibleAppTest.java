@@ -98,7 +98,7 @@ public class AbstractRheosHDFSCompatibleAppTest {
 
       @Override
       public String getBucketId(GenericRecord element, Context context) {
-        return StringConstants.BUCKET_PREFIX + element.get("event_dt");
+        return StringConstants.DATE_BUCKET_PREFIX + element.get("event_dt");
       }
 
       @Override

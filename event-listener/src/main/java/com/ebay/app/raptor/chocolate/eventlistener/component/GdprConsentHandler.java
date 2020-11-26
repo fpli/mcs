@@ -33,7 +33,6 @@ public class GdprConsentHandler {
     private static final String gdprConsentParameter = "gdpr_consent";
 
     Logger logger = LoggerFactory.getLogger(GdprConsentHandler.class);
-    Metrics metrics = ESMetrics.getInstance();
 
     /**
      * some fields not be allowed put into kafka messages based on GDPR consent.
@@ -43,6 +42,8 @@ public class GdprConsentHandler {
      * @return
      */
     public GdprConsentDomain handleGdprConsent(String targetUrl, ChannelIdEnum channel) {
+        Metrics metrics = ESMetrics.getInstance();
+
         GdprConsentDomain gdprConsentDomain = new GdprConsentDomain();
         gdprConsentDomain.setAllowedStoredContextualData(true);
         gdprConsentDomain.setAllowedStoredPersonalizedData(true);
@@ -74,6 +75,8 @@ public class GdprConsentHandler {
                     IntIterable purposesConsent = tcString.getPurposesConsent();
 
                     if (purposesConsent != null && !purposesConsent.isEmpty()) {
+                        logger.info("Purpose Consent is {}", purposesConsent.toString());
+
                         //1 is necessary
                         if (!purposesConsent.contains(1)) {
                             return gdprConsentDomain;

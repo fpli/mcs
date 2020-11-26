@@ -1,21 +1,24 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.app.raptor.chocolate.avro.versions.BehaviorMessageTableV0;
+import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0;
 import com.ebay.traffic.chocolate.flink.nrt.constant.DateConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
-import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichMapFunction;
+import com.ebay.traffic.chocolate.flink.nrt.parquet.CompressionParquetAvroWriters;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
+import io.ebay.rheos.schema.event.RheosEvent;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.specific.SpecificDatumReader;
+import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.serialization.BulkWriter;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
-import org.apache.flink.formats.parquet.avro.ParquetAvroWriters;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.functions.sink.filesystem.BucketAssigner;
@@ -23,38 +26,41 @@ import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSin
 import org.apache.flink.streaming.api.functions.sink.filesystem.bucketassigners.SimpleVersionedStringSerializer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 /**
- * Receive behavior messages, and sink parquet files to HDFS directly.
+ * Receive utp messages, and sink parquet files to HDFS directly.
  *
  * @author Zhiyuan Wang
- * @since 2020/9/14
+ * @since 2020/11/18
  */
-public class BehaviorMessageSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, BehaviorMessageTableV0> {
-  private static final Logger LOGGER = LoggerFactory.getLogger(BehaviorMessageSinkApp.class);
+public class UTPEventSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, UnifiedTrackingMessageV0> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(UTPEventSinkApp.class);
 
   public static void main(String[] args) throws Exception {
-    BehaviorMessageSinkApp sinkApp = new BehaviorMessageSinkApp();
+    UTPEventSinkApp sinkApp = new UTPEventSinkApp();
     sinkApp.run();
   }
 
   @Override
   protected List<String> getConsumerTopics() {
     return  Arrays.asList(PropertyMgr.getInstance()
-                    .loadProperty(PropertyConstants.BEHAVIOR_MESSAGE_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
+                    .loadProperty(PropertyConstants.UTP_EVENT_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
                     .getProperty(PropertyConstants.TOPIC).split(StringConstants.COMMA));
   }
 
   @Override
   protected Properties getConsumerProperties() {
-    return PropertyMgr.getInstance().loadProperty(PropertyConstants.BEHAVIOR_MESSAGE_SINK_APP_RHEOS_CONSUMER_PROPERTIES);
+    return PropertyMgr.getInstance().loadProperty(PropertyConstants.UTP_EVENT_SINK_APP_RHEOS_CONSUMER_PROPERTIES);
   }
 
   @Override
@@ -64,45 +70,49 @@ public class BehaviorMessageSinkApp extends AbstractRheosHDFSCompatibleApp<Consu
 
   @Override
   protected Path getSinkBasePath() {
-    Properties properties = PropertyMgr.getInstance().loadProperty(PropertyConstants.BEHAVIOR_MESSAGE_SINK_APP_HDFS_PROPERTIES);
+    Properties properties = PropertyMgr.getInstance().loadProperty(PropertyConstants.UTP_EVENT_SINK_APP_HDFS_PROPERTIES);
     return new Path(properties.getProperty(PropertyConstants.PATH));
   }
 
   @Override
-  protected StreamingFileSink<BehaviorMessageTableV0> getStreamingFileSink() {
+  protected StreamingFileSink<UnifiedTrackingMessageV0> getStreamingFileSink() {
     return StreamingFileSink.forBulkFormat(getSinkBasePath(), getSinkWriterFactory()).withBucketAssigner(getSinkBucketAssigner())
             .build();
   }
 
   @Override
-  protected BulkWriter.Factory<BehaviorMessageTableV0> getSinkWriterFactory() {
-    return ParquetAvroWriters.forSpecificRecord(BehaviorMessageTableV0.class);
+  protected BulkWriter.Factory<UnifiedTrackingMessageV0> getSinkWriterFactory() {
+    return CompressionParquetAvroWriters.forSpecificRecord(UnifiedTrackingMessageV0.class, CompressionCodecName.SNAPPY);
   }
 
   @Override
-  protected DataStream<BehaviorMessageTableV0> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
+  protected DataStream<UnifiedTrackingMessageV0> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
     return dataStreamSource.map(new TransformRichMapFunction());
   }
 
-  protected static class TransformRichMapFunction extends ESMetricsCompatibleRichMapFunction<ConsumerRecord<byte[], byte[]>, BehaviorMessageTableV0> {
-    private transient DatumReader<BehaviorMessageTableV0> reader;
+  protected static class TransformRichMapFunction extends RichMapFunction<ConsumerRecord<byte[], byte[]>, UnifiedTrackingMessageV0> {
+    private transient DatumReader<UnifiedTrackingMessageV0> reader;
+    private transient DatumReader<GenericRecord> rheosHeaderReader;
 
     @Override
     public void open(Configuration parameters) throws Exception {
       super.open(parameters);
-      reader = new SpecificDatumReader<>(BehaviorMessageTableV0.getClassSchema());
+      reader = new SpecificDatumReader<>(UnifiedTrackingMessageV0.getClassSchema());
+      rheosHeaderReader = new GenericDatumReader<>(RheosEvent.BASE_SCHEMA.getField(RheosEvent.RHEOS_HEADER).schema());
     }
 
     @Override
-    public BehaviorMessageTableV0 map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
+    public UnifiedTrackingMessageV0 map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
       BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(consumerRecord.value(), null);
-      BehaviorMessageTableV0 datum = new BehaviorMessageTableV0();
+      UnifiedTrackingMessageV0 datum = new UnifiedTrackingMessageV0();
+      // skips the rheos header
+      rheosHeaderReader.read(null, decoder);
       return reader.read(datum, decoder);
     }
   }
 
   @Override
-  protected BucketAssigner<BehaviorMessageTableV0, String> getSinkBucketAssigner() {
+  protected BucketAssigner<UnifiedTrackingMessageV0, String> getSinkBucketAssigner() {
     return new CustomEventDateTimeBucketAssigner();
   }
 
@@ -110,21 +120,26 @@ public class BehaviorMessageSinkApp extends AbstractRheosHDFSCompatibleApp<Consu
    * Assigns to buckets based on event timestamp.
    *
    * <p>The {@code CustomEventDateTimeBucketAssigner} will create directories of the following form:
-   * {@code /{basePath}/{dateTimePath}/}. The {@code basePath} is the path
+   * {@code /{basePath}/{dateTimePath}/{hourPath}. The {@code basePath} is the path
    * that was specified as a base path when creating the
-   * {@link org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink}.
-   * The {@code dateTimePath} is determined based on the event timestamp.
+   * {@link StreamingFileSink}.
+   * The {@code dateTimePath} and {hourPath} is determined based on the event timestamp.
    *
    *
    * <p>This will create for example the following bucket path:
-   * {@code /base/dt=1976-12-31/}
+   * {@code /base/dt=1976-12-31/hour=01}
    */
-  private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<BehaviorMessageTableV0, String> {
+  private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<UnifiedTrackingMessageV0, String> {
     public static final DateTimeFormatter EVENT_DT_FORMATTER = DateTimeFormatter.ofPattern(DateConstants.YYYY_MM_DD).withZone(ZoneId.systemDefault());
+    public static final DateTimeFormatter HOUR_FORMATTER = DateTimeFormatter.ofPattern(DateConstants.HH).withZone(ZoneId.systemDefault());
 
     @Override
-    public String getBucketId(BehaviorMessageTableV0 element, Context context) {
-      return StringConstants.DATE_BUCKET_PREFIX + EVENT_DT_FORMATTER.format(Instant.ofEpochMilli(element.getEventTimestamp()));
+    public String getBucketId(UnifiedTrackingMessageV0 element, Context context) {
+      Long eventTs = element.getEventTs();
+      Instant instant = Instant.ofEpochMilli(eventTs);
+      String eventDt = EVENT_DT_FORMATTER.format(instant);
+      String hour = HOUR_FORMATTER.format(instant);
+      return StringConstants.DATE_BUCKET_PREFIX + eventDt + StringConstants.SLASH + StringConstants.HOUR_BUCKET_PREFIX + hour;
     }
 
     @Override
