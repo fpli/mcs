@@ -27,7 +27,6 @@ public class GdprConsentHandler {
     private static final String gdprConsentParameter = "gdpr_consent";
 
     Logger logger = LoggerFactory.getLogger(GdprConsentHandler.class);
-    Metrics metrics = ESMetrics.getInstance();
 
     /**
      * for adservice ar
@@ -36,6 +35,7 @@ public class GdprConsentHandler {
      * @return GdprConsentDomain
      */
     public GdprConsentDomain handleGdprConsent(HttpServletRequest request) {
+        Metrics metrics = ESMetrics.getInstance();
         GdprConsentDomain gdprConsentDomain = new GdprConsentDomain();
         String gdprParam = request.getParameter(gdprParameter);
         try {
