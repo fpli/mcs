@@ -7,6 +7,7 @@ public class StringConstants {
   public static final String LINE_SEPERATOR = "\n";
   public static final String HYPHEN = "-";
   public static final String SLASH = "/";
+  public static final String BACKSLASH = "\\";
   public static final String COMMA = ",";
   public static final String CARET = "^";
   public static final String ONE = "1";
