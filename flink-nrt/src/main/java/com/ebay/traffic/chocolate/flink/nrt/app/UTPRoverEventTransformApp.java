@@ -83,6 +83,7 @@ public class UTPRoverEventTransformApp
   public static final String EMID = "emid";
   public static final String ADCAMPPU = "adcamppu";
   public static final String GUID = "guid";
+  private static final String ROVER_HOST = "https://rover.ebay.com";
 
   public static void main(String[] args) throws Exception {
     UTPRoverEventTransformApp transformApp = new UTPRoverEventTransformApp();
@@ -283,6 +284,7 @@ public class UTPRoverEventTransformApp
       } else {
         builder.setSiteId(0);
       }
+      System.out.println("topic is " + topic + " urlQueryString is " + urlQueryString);
       builder.setUrl(urlQueryString.toString());
       builder.setReferer(clientData.getOrDefault(REFERER, StringConstants.EMPTY));
       builder.setUserAgent(clientData.getOrDefault(AGENT, StringConstants.EMPTY));
