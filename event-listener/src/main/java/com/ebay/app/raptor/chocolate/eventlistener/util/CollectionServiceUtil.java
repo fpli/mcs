@@ -66,6 +66,8 @@ public class CollectionServiceUtil {
   // ebay item page
   private static Pattern ebayItemPage = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/(?=itm\\/).*)", Pattern.CASE_INSENSITIVE);
 
+  // ebay item no title page
+  private static Pattern ebayItemNoTitlePage = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/(?=itm\\/[0-9]+\\?).*)", Pattern.CASE_INSENSITIVE);
 
   /**
    * get app id from user agent info
@@ -174,6 +176,7 @@ public class CollectionServiceUtil {
 
   /**
    * Determine whether the click is a duplicate click from /itm page, if so, we will filter it.
+   * The duplication will happen when there is no title in itm click url on mobile phone web from non-special sites
    * No filter for bot clicks
    * No filter for user clicks from special sites
    * No filter for dweb+Tablet user clicks
@@ -184,7 +187,7 @@ public class CollectionServiceUtil {
                                              String targetUrl, boolean requestIsFromBot, boolean requestIsMobile, boolean requestIsMobileWeb) {
     boolean isDulicateItemClick = false;
 
-    if (ebayItemPage.matcher(targetUrl).find()) {
+    if (ebayItemNoTitlePage.matcher(targetUrl).find()) {
        Matcher ebaySpecialSitesMatcher = ebaySpecialSites.matcher(targetUrl);
 
        if (!userAgent.toLowerCase().contains(BOT_USER_AGENT) && !requestIsFromBot &&

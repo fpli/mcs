@@ -24,6 +24,23 @@ public class CollectionServiceUtilTest {
                 , "https://www.ebay.co.uk/scp/233622232591?mkevt=1", false, true, true);
         assertEquals(false, isDuplicateItemClick);
 
+        // item page with title
+        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
+                , "https://www.ebay.com/itm/asdfwerw/233622232591?mkevt=1", false, true, true);
+        assertEquals(false, isDuplicateItemClick);
+
+        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
+                , "https://www.ebay.com/itm/233622232591/233622232591?mkevt=1", false, true, true);
+        assertEquals(false, isDuplicateItemClick);
+
+        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
+                , "https://www.ebay.com/itm/23362adfawerqwet/233622232591?mkevt=1", false, true, true);
+        assertEquals(false, isDuplicateItemClick);
+
+        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
+                , "https://www.ebay.com/itm/adfawerqwe321434/233622232591?mkevt=1", false, true, true);
+        assertEquals(false, isDuplicateItemClick);
+
         // bot click
         isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)"
                 , "https://www.ebay.com/itm/233622232591?mkevt=1", false, true, true);
@@ -65,6 +82,15 @@ public class CollectionServiceUtilTest {
         isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
                 , "https://www.ebay.com/itm/233622232591?mkevt=1", false, true, true);
         assertEquals(true, isDuplicateItemClick);
+
+        // other marketing status code
+        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("200", "checkoutApi"
+                , "https://www.ebay.com/itm/233622232591?mkevt=1", false, true, true);
+        assertEquals(false, isDuplicateItemClick);
+
+        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("404", "checkoutApi"
+                , "https://www.ebay.com/itm/233622232591?mkevt=1", false, true, true);
+        assertEquals(false, isDuplicateItemClick);
 
         // throw exception
         isDuplicateItemClick = false;

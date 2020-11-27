@@ -1695,8 +1695,7 @@ public class CollectionService {
    */
   private void sendClickToDuplicateItmClickTopic(Producer<Long, ListenerMessage> producer, ListenerMessage message) {
     producer.send(new ProducerRecord<>(duplicateItmClickTopic, message.getSnapshotId(), message), KafkaSink.callback);
-    metrics.meter("DuplicateItmClick", 1, message.getTimestamp(),
-            Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+    metrics.meter("DuplicateItmClick", 1, Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
             Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
   }
 
