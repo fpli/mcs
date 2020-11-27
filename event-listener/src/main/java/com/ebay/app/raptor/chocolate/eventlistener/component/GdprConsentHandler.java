@@ -1,7 +1,10 @@
 package com.ebay.app.raptor.chocolate.eventlistener.component;
 
+import com.alibaba.fastjson.JSON;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
 import com.ebay.app.raptor.chocolate.constant.GdprConsentConstant;
+import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
@@ -13,7 +16,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.net.URISyntaxException;
@@ -33,6 +36,13 @@ public class GdprConsentHandler {
     private static final String gdprConsentParameter = "gdpr_consent";
 
     Logger logger = LoggerFactory.getLogger(GdprConsentHandler.class);
+
+    private CouchbaseClient couchbaseClient;
+
+    @Autowired
+    public void init() {
+        couchbaseClient = CouchbaseClient.getInstance();
+    }
 
     /**
      * some fields not be allowed put into kafka messages based on GDPR consent.
@@ -73,20 +83,29 @@ public class GdprConsentHandler {
                     TCString tcString = TCString.decode(gdprConsent);
                     //Purpose consent
                     IntIterable purposesConsent = tcString.getPurposesConsent();
+                    IntIterable vendorConsent = tcString.getVendorConsent();
+                    String purposeVendorIdString = couchbaseClient.get(CouchbaseKeyConstant.PURPOSE_VENDOR_ID);
+                    logger.info("Purpose vendor id list is {} ", purposeVendorIdString);
+                    if (StringUtils.isNotBlank(purposeVendorIdString) && vendorConsent != null) {
+                        List<Integer> vendorIds = JSON.parseArray(purposeVendorIdString, Integer.class);
+                        boolean containsAll = !vendorIds.stream().map(vendorConsent::contains).collect(Collectors.toSet()).contains(false);
+                        //vendor consent have to contain all of purpose vendor ids
+                        if (containsAll) {
+                            if (purposesConsent != null && !purposesConsent.isEmpty()) {
+                                logger.info("Purpose Consent is {}", purposesConsent.toString());
 
-                    if (purposesConsent != null && !purposesConsent.isEmpty()) {
-                        logger.info("Purpose Consent is {}", purposesConsent.toString());
+                                //1 is necessary
+                                if (!purposesConsent.contains(1)) {
+                                    return gdprConsentDomain;
+                                }
 
-                        //1 is necessary
-                        if (!purposesConsent.contains(1)) {
-                            return gdprConsentDomain;
-                        }
-
-                        if (purposesConsent.contains(7)) {
-                            gdprConsentDomain.setAllowedStoredPersonalizedData(true);
-                            gdprConsentDomain.setAllowedStoredContextualData(true);
-                            metrics.meter(GdprConsentConstant.ALLOWED_STORED_CONTEXTUAL);
-                            metrics.meter(GdprConsentConstant.ALLOWED_STORED_PERSONALIZED);
+                                if (purposesConsent.contains(7)) {
+                                    gdprConsentDomain.setAllowedStoredPersonalizedData(true);
+                                    gdprConsentDomain.setAllowedStoredContextualData(true);
+                                    metrics.meter(GdprConsentConstant.ALLOWED_STORED_CONTEXTUAL);
+                                    metrics.meter(GdprConsentConstant.ALLOWED_STORED_PERSONALIZED);
+                                }
+                            }
                         }
                     }
                 }
