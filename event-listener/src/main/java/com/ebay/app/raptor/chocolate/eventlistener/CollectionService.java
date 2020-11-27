@@ -111,7 +111,6 @@ public class CollectionService {
   private static final String ROVER_MPRE_PARAM = "mpre";
   private static final String SOJ_MPRE_TAG = "url_mpre";
   private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
-  private static final String BOT_USER_AGENT = "bot";
 
   // do not filter /ulk XC-1541
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
