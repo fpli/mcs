@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0;
+import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosMessage;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import io.ebay.rheos.kafka.client.StreamConnectorConfig;
 import io.ebay.rheos.schema.avro.SchemaRegistryAwareAvroSerializerHelper;
@@ -79,13 +79,13 @@ public class UTPEventSinkAppTest {
 
   @Test
   public void getSinkWriterFactory() {
-    BulkWriter.Factory<UnifiedTrackingMessageV0> sinkWriterFactory = utpEventSinkApp.getSinkWriterFactory();
+    BulkWriter.Factory<UnifiedTrackingRheosMessage> sinkWriterFactory = utpEventSinkApp.getSinkWriterFactory();
     assertEquals("org.apache.flink.formats.parquet.ParquetWriterFactory", sinkWriterFactory.getClass().getName());
   }
 
   @Test
   public void getStreamingFileSink() {
-    StreamingFileSink<UnifiedTrackingMessageV0> streamingFileSink = utpEventSinkApp.getStreamingFileSink();
+    StreamingFileSink<UnifiedTrackingRheosMessage> streamingFileSink = utpEventSinkApp.getStreamingFileSink();
     assertEquals("org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink", streamingFileSink.getClass().getName());
   }
 
@@ -93,7 +93,7 @@ public class UTPEventSinkAppTest {
   @Test
   public void transformRichMapFunction() throws Exception {
     UTPEventSinkApp.TransformRichMapFunction transformRichMapFunction = new UTPEventSinkApp.TransformRichMapFunction();
-    OneInputStreamOperatorTestHarness<ConsumerRecord<byte[], byte[]>, UnifiedTrackingMessageV0> testHarness = new OneInputStreamOperatorTestHarness<>(new StreamMap<>(transformRichMapFunction));
+    OneInputStreamOperatorTestHarness<ConsumerRecord<byte[], byte[]>, UnifiedTrackingRheosMessage> testHarness = new OneInputStreamOperatorTestHarness<>(new StreamMap<>(transformRichMapFunction));
     testHarness.open();
 
     String json = PropertyMgr.getInstance().loadFile("unified-tracking-event-message.json");
@@ -107,9 +107,9 @@ public class UTPEventSinkAppTest {
 
     ConcurrentLinkedQueue<Object> output = testHarness.getOutput();
     assertEquals(1, output.size());
-    StreamRecord<UnifiedTrackingMessageV0> streamRecord = (StreamRecord<UnifiedTrackingMessageV0>) output.poll();
+    StreamRecord<UnifiedTrackingRheosMessage> streamRecord = (StreamRecord<UnifiedTrackingRheosMessage>) output.poll();
     assertNotNull(streamRecord);
-    UnifiedTrackingMessageV0 behaviorEvent = streamRecord.getValue();
+    UnifiedTrackingRheosMessage behaviorEvent = streamRecord.getValue();
     assertEquals("123", behaviorEvent.getEventId());
   }
 
@@ -158,9 +158,9 @@ public class UTPEventSinkAppTest {
   }
   @Test
   public void getSinkBucketAssigner() {
-    BucketAssigner<UnifiedTrackingMessageV0, String> sinkBucketAssigner = utpEventSinkApp.getSinkBucketAssigner();
+    BucketAssigner<UnifiedTrackingRheosMessage, String> sinkBucketAssigner = utpEventSinkApp.getSinkBucketAssigner();
     ZonedDateTime of = ZonedDateTime.of(2020, 8, 4, 7, 30, 0, 0, ZoneId.systemDefault());
-    UnifiedTrackingMessageV0 element = Mockito.mock(UnifiedTrackingMessageV0.class);
+    UnifiedTrackingRheosMessage element = Mockito.mock(UnifiedTrackingRheosMessage.class);
     Mockito.when(element.getEventTs()).thenReturn(of.toInstant().toEpochMilli());
     BucketAssigner.Context context = Mockito.mock(BucketAssigner.Context.class);
     assertEquals("dt=2020-08-04/hour=07", sinkBucketAssigner.getBucketId(element, context));
