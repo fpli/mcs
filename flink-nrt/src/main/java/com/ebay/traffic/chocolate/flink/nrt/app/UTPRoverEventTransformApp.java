@@ -168,9 +168,6 @@ public class UTPRoverEventTransformApp
     public void flatMap(ConsumerRecord<byte[], byte[]> consumerRecord, Collector<Tuple3<String, Long, byte[]>> out) throws Exception {
       RheosEvent sourceRheosEvent = deserializer.deserialize(consumerRecord.topic(), consumerRecord.value());
       GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
-      if (sourceRecord != null) {
-        throw new IllegalArgumentException("sourceRecord is " + sourceRecord);
-      }
       Integer pageId = (Integer) sourceRecord.get(TransformerConstants.PAGE_ID);
       if (pageId == null) {
         return;
@@ -287,7 +284,9 @@ public class UTPRoverEventTransformApp
       } else {
         builder.setSiteId(0);
       }
-      System.out.println("topic is " + topic + " urlQueryString is " + urlQueryString);
+      if (sourceRecord != null) {
+        throw new IllegalArgumentException("sourceRecord is " + sourceRecord);
+      }
       builder.setUrl(urlQueryString.toString());
       builder.setReferer(clientData.getOrDefault(REFERER, StringConstants.EMPTY));
       builder.setUserAgent(clientData.getOrDefault(AGENT, StringConstants.EMPTY));
