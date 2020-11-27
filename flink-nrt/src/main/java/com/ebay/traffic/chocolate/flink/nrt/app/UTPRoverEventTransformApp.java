@@ -5,6 +5,7 @@ import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.RheosConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
+import com.ebay.traffic.chocolate.flink.nrt.function.SherlockioMetricsCompatibleRichFlatMapFunction;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaSerializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.util.GenericRecordUtils;
@@ -12,6 +13,8 @@ import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import com.ebay.traffic.chocolate.flink.nrt.util.UDF;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
+import com.ebay.traffic.monitoring.Field;
+import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import io.ebay.rheos.kafka.client.StreamConnectorConfig;
@@ -131,7 +134,7 @@ public class UTPRoverEventTransformApp
     return dataStreamSource.flatMap(new TransformFlatMapFunction());
   }
 
-  protected static class TransformFlatMapFunction extends RichFlatMapFunction<ConsumerRecord<byte[], byte[]>, Tuple3<String, Long, byte[]>> {
+  protected static class TransformFlatMapFunction extends SherlockioMetricsCompatibleRichFlatMapFunction<ConsumerRecord<byte[], byte[]>, Tuple3<String, Long, byte[]>> {
     private transient GenericRecordDomainDataDecoder decoder;
     private transient RheosEventDeserializer deserializer;
     private transient EncoderFactory encoderFactory;
@@ -139,6 +142,7 @@ public class UTPRoverEventTransformApp
     private transient Schema schema;
     private String producer;
     private String topic;
+    private transient SherlockioMetrics sherlockioMetrics;
 
     @Override
     public void open(Configuration parameters) throws Exception {
@@ -162,25 +166,34 @@ public class UTPRoverEventTransformApp
       Properties topicProperties = PropertyMgr.getInstance()
               .loadProperty(PropertyConstants.UTP_ROVER_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES);
       topic = topicProperties.getProperty(PropertyConstants.TOPIC);
+      sherlockioMetrics = SherlockioMetrics.getInstance();
+      sherlockioMetrics.setJobName("UTPRoverEventTransformApp");
     }
 
     @Override
     public void flatMap(ConsumerRecord<byte[], byte[]> consumerRecord, Collector<Tuple3<String, Long, byte[]>> out) throws Exception {
-      RheosEvent sourceRheosEvent = deserializer.deserialize(consumerRecord.topic(), consumerRecord.value());
+      String consumerTopic = consumerRecord.topic();
+      RheosEvent sourceRheosEvent = deserializer.deserialize(consumerTopic, consumerRecord.value());
       GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
       Integer pageId = (Integer) sourceRecord.get(TransformerConstants.PAGE_ID);
       if (pageId == null) {
+        sherlockioMetrics.meter("NoPageId", 1, Field.of("topic", consumerTopic));
         return;
       }
       if (pageId != PAGE_ID_ROVER_CLICK && pageId != PAGE_ID_EMAIL_OPEN) {
+        sherlockioMetrics.meter("NotEmailClickOpen", 1, Field.of("topic", consumerTopic));
         return;
       }
-      Utf8 urlQueryString = (Utf8) sourceRecord.get(TransformerConstants.URL_QUERY_STRING);
+
+      Map<String, String> applicationPayload = GenericRecordUtils.getMap(sourceRecord, TransformerConstants.APPLICATION_PAYLOAD);
+      String urlQueryString = applicationPayload.get(TransformerConstants.URL_QUERY_STRING);
       if (urlQueryString == null) {
+        sherlockioMetrics.meter("NoUrlQueryString", 1, Field.of("topic", consumerTopic));
         return;
       }
-      String channelId = UDF.parseChannelId(urlQueryString.toString());
+      String channelId = UDF.parseChannelId(urlQueryString);
       if (StringUtils.isEmpty(channelId)) {
+        sherlockioMetrics.meter("NoChannelId", 1, Field.of("topic", consumerTopic));
         return;
       }
 
@@ -190,19 +203,21 @@ public class UTPRoverEventTransformApp
       } else if (channelId.equals(MRKT_EMAIL_CHANNEL_ID)) {
         channelType = ChannelTypeEnum.MRKT_EMAIL;
       } else {
+        sherlockioMetrics.meter("NotEmail", 1, Field.of("topic", consumerTopic));
         return;
       }
 
       Utf8 pageName = (Utf8) sourceRecord.get(TransformerConstants.PAGE_NAME);
       if (pageName == null) {
+        sherlockioMetrics.meter("NoPageName", 1, Field.of("topic", consumerTopic));
         return;
       }
       if (pageId == PAGE_ID_EMAIL_OPEN && !PAGE_NAME_ROVER_EMAIL_OPEN.equals(pageName.toString())) {
+        sherlockioMetrics.meter("NotRoveropen", 1, Field.of("topic", consumerTopic));
         return;
       }
 
       ActionTypeEnum actionType = pageId == PAGE_ID_ROVER_CLICK ? ActionTypeEnum.CLICK : ActionTypeEnum.OPEN;
-      Map<String, String> applicationPayload = GenericRecordUtils.getMap(sourceRecord, TransformerConstants.APPLICATION_PAYLOAD);
       Map<String, String> clientData = GenericRecordUtils.getMap(sourceRecord, TransformerConstants.CLIENT_DATA);
 
       UnifiedTrackingRheosMessage.Builder builder = UnifiedTrackingRheosMessage.newBuilder();
@@ -284,10 +299,7 @@ public class UTPRoverEventTransformApp
       } else {
         builder.setSiteId(0);
       }
-      if (sourceRecord != null) {
-        throw new IllegalArgumentException("sourceRecord is " + sourceRecord);
-      }
-      builder.setUrl(urlQueryString.toString());
+      builder.setUrl(ROVER_HOST + urlQueryString);
       builder.setReferer(clientData.getOrDefault(REFERER, StringConstants.EMPTY));
       builder.setUserAgent(clientData.getOrDefault(AGENT, StringConstants.EMPTY));
       builder.setDeviceFamily(GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, DEVICE_FAMILY));
@@ -302,7 +314,8 @@ public class UTPRoverEventTransformApp
       builder.setServer(System.getenv("HOSTNAME"));
       builder.setRemoteIp(clientData.getOrDefault(REMOTE_IP, StringConstants.EMPTY));
       builder.setPageId(pageId);
-      builder.setIsBot(consumerRecord.topic().equals(BEHAVIOR_PULSAR_MISC_BOT));
+      boolean isBot = consumerTopic.equals(BEHAVIOR_PULSAR_MISC_BOT);
+      builder.setIsBot(isBot);
       int geoId = 0;
       if (applicationPayload.containsKey(UC)) {
         Integer integer = Ints.tryParse(applicationPayload.get(UC));
@@ -311,6 +324,9 @@ public class UTPRoverEventTransformApp
       builder.setGeoId(geoId);
       builder.setPayload(applicationPayload);
       RheosEvent rheosEvent = getRheosEvent(builder.build());
+
+      sherlockioMetrics.meter("UTPRoverEvent", 1, Field.of("channelType", channelType), Field.of("actionType", actionType), Field.of("isBot", isBot));
+
       out.collect(new Tuple3<>(this.topic, DEFAULT_SNAPSHOT_ID, serializeRheosEvent(rheosEvent)));
     }
 
