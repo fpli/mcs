@@ -166,8 +166,11 @@ public class UTPRoverEventTransformApp
 
     @Override
     public void flatMap(ConsumerRecord<byte[], byte[]> consumerRecord, Collector<Tuple3<String, Long, byte[]>> out) throws Exception {
-      RheosEvent sourceRheosEvent = deserializer.deserialize(topic, consumerRecord.value());
+      RheosEvent sourceRheosEvent = deserializer.deserialize(consumerRecord.topic(), consumerRecord.value());
       GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
+      if (sourceRecord != null) {
+        throw new IllegalArgumentException("sourceRecord is " + sourceRecord);
+      }
       Integer pageId = (Integer) sourceRecord.get(TransformerConstants.PAGE_ID);
       if (pageId == null) {
         return;
