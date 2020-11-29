@@ -1,6 +1,5 @@
 package com.ebay.app.raptor.chocolate.adservice.component;
 
-import com.alibaba.fastjson.JSON;
 import com.ebay.app.raptor.chocolate.adservice.util.CouchbaseClient;
 import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
 import com.ebay.app.raptor.chocolate.constant.GdprConsentConstant;
@@ -12,6 +11,7 @@ import com.iabtcf.decoder.TCString;
 import com.iabtcf.exceptions.TCStringDecodeException;
 import com.iabtcf.utils.IntIterable;
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,7 +56,11 @@ public class GdprConsentHandler {
         logger.info("enableTcfComplianceMode {}", enableTcfComplianceModeString);
         boolean enableTcfComplianceMode = false;
         if (StringUtils.isNotBlank(enableTcfComplianceModeString)) {
-            enableTcfComplianceMode = JSON.parseObject(enableTcfComplianceModeString, Boolean.class);
+            try {
+                enableTcfComplianceMode = new ObjectMapper().readValue(enableTcfComplianceModeString, Boolean.class);
+            } catch (IOException e) {
+                logger.error("enableTcfComplianceMode format error, take a look please.");
+            }
         }
         try {
             if (StringUtils.isNotBlank(gdprParam) && gdprParam.equals("1") && enableTcfComplianceMode) {
@@ -74,7 +79,7 @@ public class GdprConsentHandler {
                     String purposeVendorIdString = couchbaseClient.get(CouchbaseKeyConstant.PURPOSE_VENDOR_ID);
                     logger.info("Purpose vendor id list is {} ", purposeVendorIdString);
                     if (StringUtils.isNotBlank(purposeVendorIdString) && vendorConsent != null) {
-                        List<Integer> vendorIds = JSON.parseArray(purposeVendorIdString, Integer.class);
+                        List<Integer> vendorIds = new ObjectMapper().readValue(purposeVendorIdString, List.class);
                         boolean containsAll = !vendorIds.stream().map(vendorConsent::contains).collect(Collectors.toSet()).contains(false);
                         //vendor consent have to contain all of purpose vendor ids
                         if (containsAll) {
@@ -150,7 +155,7 @@ public class GdprConsentHandler {
                 gdprConsentDomain.setTcfCompliantMode(false);
                 gdprConsentDomain.setAllowedUseLegallyRequiredField(true);
             }
-        } catch (TCStringDecodeException e) {
+        } catch (TCStringDecodeException | IOException e) {
             metrics.meter(GdprConsentConstant.DECODE_CONSENT_ERROR);
             logger.warn("Occurred Exception when decode Consent, " + e);
         }

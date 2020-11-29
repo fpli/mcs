@@ -1,6 +1,5 @@
 package com.ebay.app.raptor.chocolate.eventlistener.component;
 
-import com.alibaba.fastjson.JSON;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
 import com.ebay.app.raptor.chocolate.constant.GdprConsentConstant;
@@ -14,11 +13,13 @@ import com.iabtcf.utils.IntIterable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
@@ -87,7 +88,7 @@ public class GdprConsentHandler {
                     String purposeVendorIdString = couchbaseClient.get(CouchbaseKeyConstant.PURPOSE_VENDOR_ID);
                     logger.info("Purpose vendor id list is {} ", purposeVendorIdString);
                     if (StringUtils.isNotBlank(purposeVendorIdString) && vendorConsent != null) {
-                        List<Integer> vendorIds = JSON.parseArray(purposeVendorIdString, Integer.class);
+                        List<Integer> vendorIds = new ObjectMapper().readValue(purposeVendorIdString, List.class);
                         boolean containsAll = !vendorIds.stream().map(vendorConsent::contains).collect(Collectors.toSet()).contains(false);
                         //vendor consent have to contain all of purpose vendor ids
                         if (containsAll) {
@@ -110,7 +111,7 @@ public class GdprConsentHandler {
                     }
                 }
             }
-        } catch (TCStringDecodeException e) {
+        } catch (TCStringDecodeException | IOException e) {
             metrics.meter(GdprConsentConstant.DECODE_CONSENT_ERROR);
             logger.warn("Occurred Exception when decode Consent, " + e);
         }
