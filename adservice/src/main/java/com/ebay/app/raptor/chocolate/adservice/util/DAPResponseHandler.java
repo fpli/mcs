@@ -70,13 +70,6 @@ public class DAPResponseHandler {
   @Qualifier("cb")
   private IdMapable idMapping;
 
-  private CouchbaseClient couchbaseClient;
-
-  @Autowired
-  private void init(){
-    couchbaseClient = CouchbaseClient.getInstance();
-  }
-
   static {
     List<String> mobileUserAgent = new ArrayList<>();
     try {
@@ -334,7 +327,7 @@ public class DAPResponseHandler {
     String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
     String targetUri = endpoint + dapUri;
     boolean enable = false;
-    String enableString = couchbaseClient.get(CouchbaseKeyConstant.ENABLE_DAP_HANDLER_LOG);
+    String enableString = CouchbaseClient.getInstance().get(CouchbaseKeyConstant.ENABLE_DAP_HANDLER_LOG);
     try {
       if (StringUtils.isNotBlank(enableString)) {
         enable = new ObjectMapper().readValue(enableString, Boolean.class);
