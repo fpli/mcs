@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -56,6 +57,7 @@ import java.util.*;
  * @since 2019/9/24
  */
 @Component
+@DependsOn("AdserviceService")
 public class DAPResponseHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(DAPResponseHandler.class);
 
