@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
  * @author yyang28
  */
 @Component
+@DependsOn("AdserviceService")
 public class GdprConsentHandler {
     private static final String gdprParameter = "gdpr";
     private static final String gdprConsentParameter = "gdpr_consent";
