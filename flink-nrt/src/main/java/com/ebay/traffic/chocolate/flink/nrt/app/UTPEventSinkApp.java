@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingMessageV0;
+import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosMessage;
 import com.ebay.traffic.chocolate.flink.nrt.constant.DateConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
@@ -19,6 +19,7 @@ import org.apache.flink.api.common.serialization.BulkWriter;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
+import org.apache.flink.formats.parquet.avro.ParquetAvroWriters;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.functions.sink.filesystem.BucketAssigner;
@@ -43,7 +44,7 @@ import java.util.Properties;
  * @author Zhiyuan Wang
  * @since 2020/11/18
  */
-public class UTPEventSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, UnifiedTrackingMessageV0> {
+public class UTPEventSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerRecord<byte[], byte[]>, UnifiedTrackingRheosMessage> {
   private static final Logger LOGGER = LoggerFactory.getLogger(UTPEventSinkApp.class);
 
   public static void main(String[] args) throws Exception {
@@ -75,36 +76,36 @@ public class UTPEventSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerReco
   }
 
   @Override
-  protected StreamingFileSink<UnifiedTrackingMessageV0> getStreamingFileSink() {
+  protected StreamingFileSink<UnifiedTrackingRheosMessage> getStreamingFileSink() {
     return StreamingFileSink.forBulkFormat(getSinkBasePath(), getSinkWriterFactory()).withBucketAssigner(getSinkBucketAssigner())
             .build();
   }
 
   @Override
-  protected BulkWriter.Factory<UnifiedTrackingMessageV0> getSinkWriterFactory() {
-    return CompressionParquetAvroWriters.forSpecificRecord(UnifiedTrackingMessageV0.class, CompressionCodecName.SNAPPY);
+  protected BulkWriter.Factory<UnifiedTrackingRheosMessage> getSinkWriterFactory() {
+    return ParquetAvroWriters.forSpecificRecord(UnifiedTrackingRheosMessage.class);
   }
 
   @Override
-  protected DataStream<UnifiedTrackingMessageV0> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
+  protected DataStream<UnifiedTrackingRheosMessage> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
     return dataStreamSource.map(new TransformRichMapFunction());
   }
 
-  protected static class TransformRichMapFunction extends RichMapFunction<ConsumerRecord<byte[], byte[]>, UnifiedTrackingMessageV0> {
-    private transient DatumReader<UnifiedTrackingMessageV0> reader;
+  protected static class TransformRichMapFunction extends RichMapFunction<ConsumerRecord<byte[], byte[]>, UnifiedTrackingRheosMessage> {
+    private transient DatumReader<UnifiedTrackingRheosMessage> reader;
     private transient DatumReader<GenericRecord> rheosHeaderReader;
 
     @Override
     public void open(Configuration parameters) throws Exception {
       super.open(parameters);
-      reader = new SpecificDatumReader<>(UnifiedTrackingMessageV0.getClassSchema());
+      reader = new SpecificDatumReader<>(UnifiedTrackingRheosMessage.getClassSchema());
       rheosHeaderReader = new GenericDatumReader<>(RheosEvent.BASE_SCHEMA.getField(RheosEvent.RHEOS_HEADER).schema());
     }
 
     @Override
-    public UnifiedTrackingMessageV0 map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
+    public UnifiedTrackingRheosMessage map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
       BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(consumerRecord.value(), null);
-      UnifiedTrackingMessageV0 datum = new UnifiedTrackingMessageV0();
+      UnifiedTrackingRheosMessage datum = new UnifiedTrackingRheosMessage();
       // skips the rheos header
       rheosHeaderReader.read(null, decoder);
       return reader.read(datum, decoder);
@@ -112,7 +113,7 @@ public class UTPEventSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerReco
   }
 
   @Override
-  protected BucketAssigner<UnifiedTrackingMessageV0, String> getSinkBucketAssigner() {
+  protected BucketAssigner<UnifiedTrackingRheosMessage, String> getSinkBucketAssigner() {
     return new CustomEventDateTimeBucketAssigner();
   }
 
@@ -129,12 +130,12 @@ public class UTPEventSinkApp extends AbstractRheosHDFSCompatibleApp<ConsumerReco
    * <p>This will create for example the following bucket path:
    * {@code /base/dt=1976-12-31/hour=01}
    */
-  private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<UnifiedTrackingMessageV0, String> {
+  private static class CustomEventDateTimeBucketAssigner implements BucketAssigner<UnifiedTrackingRheosMessage, String> {
     public static final DateTimeFormatter EVENT_DT_FORMATTER = DateTimeFormatter.ofPattern(DateConstants.YYYY_MM_DD).withZone(ZoneId.systemDefault());
     public static final DateTimeFormatter HOUR_FORMATTER = DateTimeFormatter.ofPattern(DateConstants.HH).withZone(ZoneId.systemDefault());
 
     @Override
-    public String getBucketId(UnifiedTrackingMessageV0 element, Context context) {
+    public String getBucketId(UnifiedTrackingRheosMessage element, Context context) {
       Long eventTs = element.getEventTs();
       Instant instant = Instant.ofEpochMilli(eventTs);
       String eventDt = EVENT_DT_FORMATTER.format(instant);
