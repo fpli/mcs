@@ -64,7 +64,8 @@ public class Constants {
   public static final String NOTIFICATION_TYPE_EVT = "evt";
 
   // Redirection header name
-  public static final String NODE_REDIRECTION_HEADER_NAME = "x-ebay-tracking-marketing-status-code";
+  public static final String NODE_REDIRECTION_HEADER_NAME = "X-EBAY-TRACKING-MARKETING-STATUS-CODE";
+  public static final String NODE_REDIRECTION_STATUS_CODE = "301";
 
   // Self-service params
   public static final String SELF_SERVICE = "self_service";

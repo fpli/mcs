@@ -78,6 +78,7 @@ public class CollectionService {
   private String behaviorTopic;
   private Producer unifiedTrackingProducer;
   private String unifiedTrackingTopic;
+  public String duplicateItmClickTopic;
   private static CollectionService instance = null;
   private EventEmitterPublisher eventEmitterPublisher;
   private String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
@@ -133,6 +134,7 @@ public class CollectionService {
     this.unifiedTrackingProducer = UnifiedTrackingKafkaSink.get();
     this.unifiedTrackingTopic = ApplicationOptions.getInstance().getUnifiedTrackingTopic();
     this.eventEmitterPublisher = new EventEmitterPublisher(tokenGenerator);
+    this.duplicateItmClickTopic = ApplicationOptions.getInstance().getDuplicateItmClickTopic();
   }
 
   /**
@@ -410,18 +412,32 @@ public class CollectionService {
     } else {
       metrics.meter("CheckoutAPIClick", 1);
     }
+
+    // Determine whether the click is a duplicate click
+    // If duplicate click, then drop into duplicateItmClickTopic
+    // If not, drop into normal topic
+    boolean isDuplicateClick = false;
+    try {
+      isDuplicateClick = CollectionServiceUtil.isDuplicateItmClick(request.getHeader(Constants.NODE_REDIRECTION_HEADER_NAME),
+              endUserContext.getUserAgent(), targetUrl, agentInfo.requestIsFromBot(), agentInfo.isMobile(), agentInfo.requestIsMobileWeb());
+    } catch (Exception e) {
+      logger.error("Determine whether the click is duplicate item click error");
+      metrics.meter("DetermineDuplicateItmClickError", 1);
+    }
+
+
     // add channel specific tags, and produce message for EPN and IMK
     boolean processFlag = false;
     if (channelType == ChannelIdEnum.EPN || channelType == ChannelIdEnum.PAID_SEARCH || channelType == ChannelIdEnum.DAP ||
         channelType == ChannelIdEnum.SOCIAL_MEDIA || channelType == ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
       processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType, channelAction,
-          request, startTime, endUserContext, raptorSecureContext, agentInfo);
+          request, startTime, endUserContext, raptorSecureContext, agentInfo, isDuplicateClick);
     else if (channelType == ChannelIdEnum.SITE_EMAIL)
       processFlag = processSiteEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
-          targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
+          targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), isDuplicateClick);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
       processFlag = processMrktEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
-          targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
+          targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), isDuplicateClick);
     else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS)
       processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
 
@@ -698,13 +714,13 @@ public class CollectionService {
     boolean processFlag = false;
     if (channelType == ChannelIdEnum.SITE_EMAIL)
       processFlag = processSiteEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request,
-          agentInfo, uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
+          agentInfo, uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), false);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
       processFlag = processMrktEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request,
-          agentInfo, uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
+          agentInfo, uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), false);
     else
       processFlag = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
-          request, startTime, endUserContext, raptorSecureContext, agentInfo);
+          request, startTime, endUserContext, raptorSecureContext, agentInfo, false);
 
     // send to unified tracking topic
     // send email channels first
@@ -925,7 +941,7 @@ public class CollectionService {
   private boolean processAmsAndImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
                                         MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                         ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
-                                        IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext, UserAgentInfo agentInfo) {
+                                        IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext, UserAgentInfo agentInfo, boolean isDuplicateClick) {
 
     // logic to filter internal redirection in node, https://jirap.corp.ebay.com/browse/XC-2361
     // currently we only observe the issue in vi pool in mweb case if the url does not contain title of the item
@@ -1090,7 +1106,15 @@ public class CollectionService {
         message.setGuid("");
         message.setCguid("");
       }
-      producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
+
+      // If the click is a duplicate click from itm page, then drop into duplicateItmClickTopic
+      // else drop into normal topic
+      if (isDuplicateClick) {
+        sendClickToDuplicateItmClickTopic(producer, message);
+      } else {
+        producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
+      }
+
       return true;
     } else
       return false;
@@ -1102,7 +1126,7 @@ public class CollectionService {
   private boolean processSiteEmailEvent(ContainerRequestContext requestContext, IEndUserContext endUserContext,
                                         String referer, MultiValueMap<String, String> parameters, String type,
                                         String action, HttpServletRequest request, UserAgentInfo agentInfo, String uri,
-                                        Long startTime, ChannelType channelType, ChannelAction channelAction) {
+                                        Long startTime, ChannelType channelType, ChannelAction channelAction, boolean isDuplicateClick) {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
@@ -1148,8 +1172,18 @@ public class CollectionService {
           agentInfo, referer, uri, startTime, channelType, channelAction, snapshotId, 0);
 
       if (message != null) {
-        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
-            KafkaSink.callback);
+        // If the click is a duplicate click from itm page, then drop into duplicateItmClickTopic
+        // else drop into normal topic
+        if (isDuplicateClick) {
+          Producer<Long, ListenerMessage> producer = KafkaSink.get();
+          ListenerMessage listenerMessage = parser.parse(request, requestContext, startTime, 0L, channelType
+                  , ChannelActionEnum.CLICK, message.getUserId(), endUserContext, uri, referer, 0L, "");
+          sendClickToDuplicateItmClickTopic(producer, listenerMessage);
+        } else {
+          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
+                  KafkaSink.callback);
+        }
+
         return true;
       } else
         return false;
@@ -1167,7 +1201,7 @@ public class CollectionService {
   private boolean processMrktEmailEvent(ContainerRequestContext requestContext, IEndUserContext endUserContext,
                                         String referer, MultiValueMap<String, String> parameters, String type,
                                         String action, HttpServletRequest request, UserAgentInfo agentInfo, String uri,
-                                        Long startTime, ChannelType channelType, ChannelAction channelAction) {
+                                        Long startTime, ChannelType channelType, ChannelAction channelAction, boolean isDuplicateClick) {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
@@ -1239,8 +1273,18 @@ public class CollectionService {
           agentInfo, referer, uri, startTime, channelType, channelAction, snapshotId, 0);
 
       if (message != null) {
-        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
-            KafkaSink.callback);
+        // If the click is a duplicate click from itm page, then drop into duplicateItmClickTopic
+        // else drop into normal topic
+        if (isDuplicateClick) {
+          Producer<Long, ListenerMessage> producer = KafkaSink.get();
+          ListenerMessage listenerMessage = parser.parse(request, requestContext, startTime, 0L, channelType
+                  , ChannelActionEnum.CLICK, message.getUserId(), endUserContext, uri, referer, 0L, "");
+          sendClickToDuplicateItmClickTopic(producer, listenerMessage);
+        } else {
+          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
+                  KafkaSink.callback);
+        }
+
         return true;
       } else
         return false;
@@ -1642,6 +1686,16 @@ public class CollectionService {
       metrics.meter("DetermineCheckoutAPIROIError", 1);
     }
     return isROIFromCheckoutAPI;
+  }
+
+  /**
+   * If the click is a duplicate click from itm page, then drop into duplicateItmClickTopic
+   * else drop into normal topic
+   */
+  private void sendClickToDuplicateItmClickTopic(Producer<Long, ListenerMessage> producer, ListenerMessage message) {
+    producer.send(new ProducerRecord<>(duplicateItmClickTopic, message.getSnapshotId(), message), KafkaSink.callback);
+    metrics.meter("DuplicateItmClick", 1, Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+            Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
   }
 
   /**

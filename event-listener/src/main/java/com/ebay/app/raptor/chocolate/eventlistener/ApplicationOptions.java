@@ -87,6 +87,11 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   private static final String ENVIRONMENT = "chocolate.event-listener.env";
 
   /**
+   * Duplicate Itm Click Kafka Topic
+   */
+  private static final String DUPLICATE_ITM_CLICK_TOPIC = "chocolate.event-listener.kafka.producer.duplicateclick.topic";
+
+  /**
    * default driver ID
    */
   private int driverId;
@@ -301,5 +306,16 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    */
   public String getEnvironment() {
     return ApplicationOptionsParser.getStringProperty(properties, ENVIRONMENT);
+  }
+
+  /**
+   * Get Duplicate Itm Click Topic
+   */
+  public String getDuplicateItmClickTopic() {
+    if (!properties.containsKey(DUPLICATE_ITM_CLICK_TOPIC)) {
+      logger.error(DUPLICATE_ITM_CLICK_TOPIC + " not found in properties file!");
+      throw new UnsupportedOperationException(DUPLICATE_ITM_CLICK_TOPIC + " not found in properties file!");
+    }
+    return properties.getProperty(DUPLICATE_ITM_CLICK_TOPIC);
   }
 }
