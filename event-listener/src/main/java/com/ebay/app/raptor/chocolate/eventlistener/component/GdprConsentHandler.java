@@ -87,6 +87,9 @@ public class GdprConsentHandler {
                     IntIterable vendorConsent = tcString.getVendorConsent();
                     String purposeVendorIdString = couchbaseClient.get(CouchbaseKeyConstant.PURPOSE_VENDOR_ID);
                     logger.info("Purpose vendor id list is {} ", purposeVendorIdString);
+                    if (StringUtils.isBlank(purposeVendorIdString)) {
+                        logger.warn("Can't get purposeVendorID from CB, take a look please.");
+                    }
                     if (StringUtils.isNotBlank(purposeVendorIdString) && vendorConsent != null) {
                         List<Integer> vendorIds = new ObjectMapper().readValue(purposeVendorIdString, List.class);
                         boolean containsAll = !vendorIds.stream().map(vendorConsent::contains).collect(Collectors.toSet()).contains(false);

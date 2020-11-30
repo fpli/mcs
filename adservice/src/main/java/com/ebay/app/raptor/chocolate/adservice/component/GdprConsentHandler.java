@@ -20,6 +20,8 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,6 +80,9 @@ public class GdprConsentHandler {
                     IntIterable vendorConsent = tcString.getVendorConsent();
                     String purposeVendorIdString = couchbaseClient.get(CouchbaseKeyConstant.PURPOSE_VENDOR_ID);
                     logger.info("Purpose vendor id list is {} ", purposeVendorIdString);
+                    if (StringUtils.isBlank(purposeVendorIdString)) {
+                        logger.warn("Can't get purposeVendorID from CB, take a look please.");
+                    }
                     if (StringUtils.isNotBlank(purposeVendorIdString) && vendorConsent != null) {
                         List<Integer> vendorIds = new ObjectMapper().readValue(purposeVendorIdString, List.class);
                         boolean containsAll = !vendorIds.stream().map(vendorConsent::contains).collect(Collectors.toSet()).contains(false);
@@ -95,7 +100,7 @@ public class GdprConsentHandler {
                                 jsonObject.put("gdpr", gdpr);
                                 purposesConsent.forEach(integer -> gdpr.put("p" + integer, 1));
                                 specialFeatureOptIns.forEach(integer -> gdpr.put("sp" + integer, 1));
-                                gdprConsentDomain.setConsentFlagForDapParam(Base64.encode(jsonObject.toString().getBytes()));
+                                gdprConsentDomain.setConsentFlagForDapParam(Base64.encode(jsonObject.toString().getBytes(StandardCharsets.UTF_8)));
 
                                 //to get what we can do base the rules
                                 //1 is basic of all
