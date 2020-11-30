@@ -167,6 +167,9 @@ function process_meta_file(){
       meta_file_name=$(basename "${one_meta}")
       rm -f ${meta_file_name}
       hdfs dfs -get ${one_meta}
+      if [ ! -f "${meta_file_name}" ]; then
+        continue;
+      fi
       python /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/readMetaFile.py ${meta_file_name} ${output_file}
       rcode=$?
       if [ ${rcode} -ne 0 ]
