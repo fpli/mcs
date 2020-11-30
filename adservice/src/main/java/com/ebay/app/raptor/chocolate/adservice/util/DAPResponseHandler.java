@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -57,7 +56,6 @@ import java.util.*;
  * @since 2019/9/24
  */
 @Component
-@DependsOn("AdserviceService")
 public class DAPResponseHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(DAPResponseHandler.class);
 
@@ -71,6 +69,13 @@ public class DAPResponseHandler {
   @Autowired
   @Qualifier("cb")
   private IdMapable idMapping;
+
+  public CouchbaseClient couchbaseClient;
+
+  @Autowired
+  private void init() {
+    couchbaseClient = CouchbaseClient.getInstance();
+  }
 
   static {
     List<String> mobileUserAgent = new ArrayList<>();
@@ -329,7 +334,7 @@ public class DAPResponseHandler {
     String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
     String targetUri = endpoint + dapUri;
     boolean enable = false;
-    String enableString = CouchbaseClient.getInstance().get(CouchbaseKeyConstant.ENABLE_DAP_HANDLER_LOG);
+    String enableString = couchbaseClient.get(CouchbaseKeyConstant.ENABLE_DAP_HANDLER_LOG);
     try {
       if (StringUtils.isNotBlank(enableString)) {
         enable = new ObjectMapper().readValue(enableString, Boolean.class);

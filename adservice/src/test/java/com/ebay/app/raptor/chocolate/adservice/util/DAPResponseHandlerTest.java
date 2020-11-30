@@ -2,9 +2,7 @@ package com.ebay.app.raptor.chocolate.adservice.util;
 
 import com.ebay.app.raptor.chocolate.AdserviceResourceTest;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
-import com.ebay.app.raptor.chocolate.adservice.constant.Headers;
 import com.ebay.app.raptor.chocolate.adservice.constant.LBSConstants;
-import com.ebay.app.raptor.chocolate.adservice.constant.MKEVT;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSHttpResult;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
@@ -14,15 +12,10 @@ import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.kernel.constants.KernelConstants;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.kernel.util.FastURLEncoder;
-import com.ebay.raptor.geo.context.GeoCtx;
-import com.ebay.raptor.geo.context.UserPrefsCtx;
-import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Field;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
-import org.glassfish.jersey.server.ContainerRequest;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,15 +26,12 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.*;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.*;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -472,6 +462,7 @@ public class DAPResponseHandlerTest {
     when(bufferedReader.readLine())
         .thenReturn("first line")
         .thenReturn("second line");
+    dapResponseHandler.couchbaseClient = Mockito.mock(CouchbaseClient.class);
 
     InputStream is = org.mockito.Mockito.mock(InputStream.class);
     when(is.read()).thenReturn(2);
