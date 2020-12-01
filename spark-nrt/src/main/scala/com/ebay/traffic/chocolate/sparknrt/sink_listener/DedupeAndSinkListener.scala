@@ -295,7 +295,7 @@ class DedupeAndSinkListener(params: Parameter)
     */
   private def metric(message: ListenerMessage) = {
     if (metrics != null) {
-      metrics.meter("DedupeEpnListenerInputCount", 1, message.getTimestamp,
+      metrics.meter("DedupeListenerInputCount", 1, message.getTimestamp,
         Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
         Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
     }
@@ -338,7 +338,7 @@ class DedupeAndSinkListener(params: Parameter)
   def writeMessage(writer: ParquetWriter[GenericRecord], message: ListenerMessage)  = {
     writer.write(message)
     if (metrics != null) {
-      metrics.meter("DedupeEpnListener-Temp-Output", 1, message.getTimestamp,
+      metrics.meter("DedupeListener-Temp-Output", 1, message.getTimestamp,
         Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
         Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
     }
