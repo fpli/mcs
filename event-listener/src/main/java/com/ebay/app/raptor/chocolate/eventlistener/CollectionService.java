@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.*;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.constant.CommonConstant;
 import com.ebay.app.raptor.chocolate.eventlistener.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
@@ -1099,8 +1100,8 @@ public class CollectionService {
 
     if (message != null) {
       if (!allowedStoredContextualData) {
-        message.setRemoteIp(null);
-        message.setUserAgent(null);
+        message.setRemoteIp("");
+        message.setUserAgent("");
         message.setGeoId(0L);
         message.setUdid("");
         message.setLangCd("");
@@ -1109,8 +1110,8 @@ public class CollectionService {
       }
       if (!allowedStoredPersonalizedData) {
         message.setUserId(0L);
-        message.setGuid("");
-        message.setCguid("");
+        message.setGuid(CommonConstant.EMPTY_GUID);
+        message.setCguid(CommonConstant.EMPTY_GUID);
       }
 
       // If the click is a duplicate click from itm page, then drop into duplicateItmClickTopic
