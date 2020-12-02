@@ -400,19 +400,6 @@ public class CollectionService {
       }
     }
 
-    // add tags in url param "sojTags"
-    if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
-      addGenericSojTags(requestContext, parameters, referer, type, action);
-    }
-
-    // add tags all channels need
-    // Don't track ubi if the click is from Checkout API
-    if (!isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)) {
-      addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, PageIdEnum.CLICK.getId());
-    } else {
-      metrics.meter("CheckoutAPIClick", 1);
-    }
-
     // Determine whether the click is a duplicate click
     // If duplicate click, then drop into duplicateItmClickTopic
     // If not, drop into normal topic
@@ -423,6 +410,23 @@ public class CollectionService {
     } catch (Exception e) {
       logger.error("Determine whether the click is duplicate item click error");
       metrics.meter("DetermineDuplicateItmClickError", 1);
+    }
+
+    // add tags in url param "sojTags"
+    // Don't track ubi if the click is a duplicate itm click
+    if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null && !isDuplicateClick) {
+      addGenericSojTags(requestContext, parameters, referer, type, action);
+    }
+
+    // add tags all channels need
+    // Don't track ubi if the click is from Checkout API
+    if (!isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)) {
+      // Don't track ubi if the click is a duplicate itm click
+      if (!isDuplicateClick) {
+        addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, PageIdEnum.CLICK.getId());
+      }
+    } else {
+      metrics.meter("CheckoutAPIClick", 1);
     }
 
 
@@ -439,7 +443,7 @@ public class CollectionService {
       processFlag = processMrktEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
           targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), isDuplicateClick);
     else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS)
-      processFlag = processSMSEvent(requestContext, referer, parameters, type, action);
+      processFlag = processSMSEvent(requestContext, referer, parameters, type, action, isDuplicateClick);
 
     // send to unified tracking topic
     // send email channels first
@@ -1044,8 +1048,10 @@ public class CollectionService {
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
     // Don't track ubi if it's AR
     // Don't track ubi if the click is from Checkout API
+    // Don't track ubi if the click is a duplicate itm click
     Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(!m.find() && !channelAction.equals(ChannelActionEnum.SERVE) && !isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)) {
+    if(!m.find() && !channelAction.equals(ChannelActionEnum.SERVE) && !isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)
+            && !isDuplicateClick) {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
@@ -1137,7 +1143,8 @@ public class CollectionService {
       eventEmitterPublisher.publishEvent(requestContext, parameters, uri, channelType, channelAction, snapshotId);
 
       // send click event to ubi
-      if (ChannelAction.CLICK.equals(channelAction)) {
+      // Don't track ubi if the click is a duplicate itm click
+      if (ChannelAction.CLICK.equals(channelAction) && !isDuplicateClick) {
         try {
           // Ubi tracking
           IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
@@ -1212,7 +1219,8 @@ public class CollectionService {
       eventEmitterPublisher.publishEvent(requestContext, parameters, uri, channelType, channelAction, snapshotId);
 
       // send click event to ubi
-      if (ChannelAction.CLICK.equals(channelAction)) {
+      // Don't track ubi if the click is a duplicate itm click
+      if (ChannelAction.CLICK.equals(channelAction) && !isDuplicateClick) {
         try {
           // Ubi tracking
           IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
@@ -1299,11 +1307,12 @@ public class CollectionService {
    * Process SMS event
    */
   private boolean processSMSEvent(ContainerRequestContext requestContext, String referer,
-                                        MultiValueMap<String, String> parameters, String type, String action) {
+                                        MultiValueMap<String, String> parameters, String type, String action, boolean isDuplicateClick) {
 
     // Tracking ubi only when refer domain is not ebay.
+    // Don't track ubi if the click is a duplicate itm click
     Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(!m.find()) {
+    if(!m.find() && !isDuplicateClick) {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
