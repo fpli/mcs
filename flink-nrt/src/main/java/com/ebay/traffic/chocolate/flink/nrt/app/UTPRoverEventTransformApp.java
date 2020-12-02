@@ -13,6 +13,7 @@ import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import com.ebay.traffic.chocolate.flink.nrt.util.UDF;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
+import com.ebay.traffic.chocolate.utp.common.ServiceEnum;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics;
 import com.google.common.primitives.Ints;
@@ -76,7 +77,8 @@ public class UTPRoverEventTransformApp
   public static final String DEVICE_TYPE = "deviceType";
   public static final String DEVICE_FAMILY = "deviceFamily";
   public static final String REFERER = "Referer";
-  public static final String AGENT = "Agent";
+  public static final String TMACHINE = "TMachine";
+  public static final String AGENT = "agent";
   public static final String EMSID = "emsid";
   public static final String SEGNAME = "segname";
   public static final String SID = "sid";
@@ -146,6 +148,7 @@ public class UTPRoverEventTransformApp
 
     @Override
     public void open(Configuration parameters) throws Exception {
+      super.open(parameters);
       deserializer = new RheosEventDeserializer();
       Map<String, Object> config = new HashMap<>();
       Properties consumerProperties = PropertyMgr.getInstance()
@@ -188,7 +191,10 @@ public class UTPRoverEventTransformApp
       Map<String, String> applicationPayload = GenericRecordUtils.getMap(sourceRecord, TransformerConstants.APPLICATION_PAYLOAD);
       String urlQueryString = applicationPayload.get(TransformerConstants.URL_QUERY_STRING);
       if (urlQueryString == null) {
-        sherlockioMetrics.meter("NoUrlQueryString", 1, Field.of("topic", consumerTopic));
+        urlQueryString = ((Utf8)sourceRecord.get(TransformerConstants.URL_QUERY_STRING)).toString();
+        if (urlQueryString == null) {
+          sherlockioMetrics.meter("NoUrlQueryString", 1, Field.of("topic", consumerTopic));
+        }
         return;
       }
       String channelId = UDF.parseChannelId(urlQueryString);
@@ -230,7 +236,7 @@ public class UTPRoverEventTransformApp
       }
 
       Long eventTimestamp = (Long) sourceRecord.get(TransformerConstants.EVENT_TIMESTAMP);
-      builder.setEventTs(eventTimestamp);
+      builder.setEventTs(System.currentTimeMillis());
       builder.setProducerEventTs(eventTimestamp);
       builder.setRlogId(GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.RLOGID));
       builder.setTrackingId(StringConstants.EMPTY);
@@ -273,6 +279,7 @@ public class UTPRoverEventTransformApp
 
       builder.setChannelType(channelType.getValue());
       builder.setActionType(actionType.getValue());
+      sherlockioMetrics.meter("IncomingAction", 1, Field.of("actionType", actionType.getValue()));
       builder.setPartner(StringConstants.EMPTY);
 
       if (channelType == ChannelTypeEnum.MRKT_EMAIL) {
@@ -310,8 +317,8 @@ public class UTPRoverEventTransformApp
       builder.setOsVersion(GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, ENRICHED_OS_VERSION));
       builder.setAppId(GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, APP_ID));
       builder.setAppVersion(GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, APP_VERSION));
-      builder.setService(StringConstants.EMPTY);
-      builder.setServer(System.getenv("HOSTNAME"));
+      builder.setService("ROVER");
+      builder.setServer(clientData.getOrDefault(TMACHINE, StringConstants.EMPTY));
       builder.setRemoteIp(clientData.getOrDefault(REMOTE_IP, StringConstants.EMPTY));
       builder.setPageId(pageId);
       boolean isBot = consumerTopic.equals(BEHAVIOR_PULSAR_MISC_BOT);
