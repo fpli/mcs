@@ -50,6 +50,8 @@ public class UnifiedTrackingMessageParser {
    * For UEP cases
    */
   public static UnifiedTrackingMessage parse(UnifiedTrackingEvent event, UserLookup userLookup) {
+    logger.debug(event.toString());
+
     Map<String, String> payload = new HashMap<>();
 
     // set default value

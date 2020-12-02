@@ -61,4 +61,8 @@
         <appender-ref ref="CAL" />
     </root>
 
+    <logger name="com.ebay.app.raptor.chocolate.eventlistener.util.UnifiedTrackingMessageParser" level="debug" additivity="false">
+        <appender-ref ref="KafkaAppender"/>
+    </logger>
+
 </configuration>
