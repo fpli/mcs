@@ -12,7 +12,9 @@ public enum RoiSourceEnum {
   // for email open
   CHECKOUT_SOURCE(2),
   // for ad request
-  APP_SOURCE(3);
+  APP_SOURCE(3),
+  // for the Roi Source which call MCS directly
+  DIRECT_SOURCE(4);
 
   private final int id;
 
