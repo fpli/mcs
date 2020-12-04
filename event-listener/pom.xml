@@ -148,13 +148,6 @@
       <artifactId>raptor-globalconfig-starter</artifactId>
     </dependency>
 
-    <!-- utp common -->
-    <dependency>
-      <groupId>com.ebay.traffic</groupId>
-      <artifactId>chocolate-utp-common</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-
     <!-- spring boot jetty starter -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

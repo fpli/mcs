@@ -90,6 +90,14 @@
       <artifactId>json</artifactId>
       <version>20190722</version>
     </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.traffic</groupId>
+      <artifactId>chocolate-utp-common</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
