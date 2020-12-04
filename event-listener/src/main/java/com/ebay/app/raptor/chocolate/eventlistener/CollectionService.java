@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.avro.*;
+import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -1188,6 +1189,8 @@ public class CollectionService {
           Producer<Long, ListenerMessage> producer = KafkaSink.get();
           ListenerMessage listenerMessage = parser.parse(request, requestContext, startTime, 0L, channelType
                   , ChannelActionEnum.CLICK, message.getUserId(), endUserContext, uri, referer, 0L, "");
+          listenerMessage.setSnapshotId(snapshotId);
+          listenerMessage.setShortSnapshotId(0L);
           sendClickToDuplicateItmClickTopic(producer, listenerMessage);
         } else {
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
@@ -1290,6 +1293,8 @@ public class CollectionService {
           Producer<Long, ListenerMessage> producer = KafkaSink.get();
           ListenerMessage listenerMessage = parser.parse(request, requestContext, startTime, 0L, channelType
                   , ChannelActionEnum.CLICK, message.getUserId(), endUserContext, uri, referer, 0L, "");
+          listenerMessage.setSnapshotId(snapshotId);
+          listenerMessage.setShortSnapshotId(0L);
           sendClickToDuplicateItmClickTopic(producer, listenerMessage);
         } else {
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
