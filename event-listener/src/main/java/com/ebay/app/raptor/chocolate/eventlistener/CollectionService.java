@@ -1026,10 +1026,12 @@ public class CollectionService {
       BehaviorMessage behaviorMessage = null;
       switch (channelAction) {
         case CLICK:
-          behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext, parameters,
-                  agentInfo, targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), message.getShortSnapshotId(), PageIdEnum.CLICK.getId(),
-                  PageNameEnum.CLICK.getName(), 0, referer, message.getGuid(), message.getCguid(), userId,
-                  String.valueOf(rotationId));
+          if (!isDuplicateClick) {
+            behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext, parameters,
+                    agentInfo, targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), message.getShortSnapshotId(), PageIdEnum.CLICK.getId(),
+                    PageNameEnum.CLICK.getName(), 0, referer, message.getGuid(), message.getCguid(), userId,
+                    String.valueOf(rotationId));
+          }
           break;
         case SERVE:
           behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext, parameters,
