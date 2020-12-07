@@ -1110,6 +1110,7 @@ public class CollectionService {
         message.setLangCd("");
         message.setReferer("");
         message.setUri("");
+        message.setRequestHeaders("");
       }
       if (!allowedStoredPersonalizedData) {
         message.setUserId(0L);
