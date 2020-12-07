@@ -671,6 +671,6 @@ public class DAPResponseHandler {
     if (StringUtils.isBlank(consentParam)) {
       return;
     }
-    addParameter(dapUriBuilder, Constants.CONSENT_FLAG, consentParam);
+    dapUriBuilder.setParameter(Constants.CONSENT_FLAG, consentParam);
   }
 }
