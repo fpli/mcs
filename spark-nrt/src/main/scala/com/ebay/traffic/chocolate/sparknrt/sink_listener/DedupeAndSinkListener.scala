@@ -303,23 +303,24 @@ class DedupeAndSinkListener(params: Parameter)
 
   /**
     * Dedupe in meta and compare last meta
+    * Don't dedupe in DedupeAndSinkListener
     */
   def dedupeThisAndLastMeta(date: String): DateFiles = {
     // dedupe current df
     var df = readFilesAsDF(baseDir + "/" + date)
 
-    df = df.dropDuplicates(SHORT_SNAPSHOT_ID_COL)
-    val dedupeCompMeta = metadata.readDedupeCompMeta
-    if (dedupeCompMeta != null && dedupeCompMeta.contains(date)) {
-      val input = dedupeCompMeta.get(date).get
-      val dfDedupe = readFilesAsDFEx(input)
-        .select($"short_snapshot_id")
-        .withColumnRenamed(SHORT_SNAPSHOT_ID_COL, "short_snapshot_id_1")
-
-      df = df.join(dfDedupe, $"short_snapshot_id" === $"short_snapshot_id_1", "left_outer")
-        .filter($"short_snapshot_id_1".isNull)
-        .drop("short_snapshot_id_1")
-    }
+//    df = df.dropDuplicates(SHORT_SNAPSHOT_ID_COL)
+//    val dedupeCompMeta = metadata.readDedupeCompMeta
+//    if (dedupeCompMeta != null && dedupeCompMeta.contains(date)) {
+//      val input = dedupeCompMeta.get(date).get
+//      val dfDedupe = readFilesAsDFEx(input)
+//        .select($"short_snapshot_id")
+//        .withColumnRenamed(SHORT_SNAPSHOT_ID_COL, "short_snapshot_id_1")
+//
+//      df = df.join(dfDedupe, $"short_snapshot_id" === $"short_snapshot_id_1", "left_outer")
+//        .filter($"short_snapshot_id_1".isNull)
+//        .drop("short_snapshot_id_1")
+//    }
 
     // reduce the number of file
     df = df.repartition(params.partitions)
