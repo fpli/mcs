@@ -10,6 +10,8 @@ import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.MessageConstantsEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -35,6 +37,8 @@ public class UepPayloadHelper {
   public static final String PLACEMENT_POS = "plmtPos";
   public static final String RECO_ID = "recoId";
   public static final String RECO_POS = "recoPos";
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(UepPayloadHelper.class);
 
   private String getOrDefault(String input) {
     if (input == null) {
@@ -93,7 +97,8 @@ public class UepPayloadHelper {
     try {
       msgListString = new ObjectMapper().writeValueAsString(mesgLists);
     } catch (JsonProcessingException ex) {
-      //TODO: logging
+      LOGGER.error("Error parsing mesgLists into json string: " + mesgLists.toString());
+      LOGGER.error(ex.getMessage());
     }
     payload.put("annotation.mesg.list", msgListString);
     return payload;

@@ -1,4 +1,4 @@
-package chocolate.util;
+package com.ebay.app.raptor.chocolate.util;
 
 import org.junit.Test;
 

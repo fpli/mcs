@@ -226,10 +226,7 @@ public class UnifiedTrackingMessageParser {
         getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction);
     // append UEP payload
     if(uepPayload != null && uepPayload.size() > 0) {
-      for (Map.Entry<String, String> entry :
-          uepPayload.entrySet()) {
-        fullPayload.put(entry.getKey(), entry.getValue());
-      }
+      fullPayload.putAll(uepPayload);
     }
     record.setPayload(fullPayload);
 
