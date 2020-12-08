@@ -205,6 +205,18 @@ public class CollectionServiceTest {
     // no user agent
     Mockito.when(mockHttpServletRequest.getHeader("User-Agent")).thenReturn(null);
     assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, event));
+
+    //non display channel
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=2&mkcid=1&gdpr=1");
+    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, event));
+
+    //display channel no consent
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=2&mkcid=4&gdpr=1");
+    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, event));
+
+     //display channel and valid consent
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=2&mkcid=4&gdpr=1&gdpr_consent=CO9hy3tO9hy3tKpAAAENAwCAAPJAAAAAAAAAALAAABAAAAAA.IGLtV_T9fb2vj-_Z99_tkeYwf95y3p-wzhheMs-8NyZeH_B4Wv2MyvBX4JiQKGRgksjLBAQdtHGlcTQgBwIlViTLMYk2MjzNKJrJEilsbO2dYGD9Pn8HT3ZCY70-vv__7v3ff_3g");
+    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, event));
   }
 
   @Test(expected = Exception.class)

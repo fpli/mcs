@@ -10,11 +10,11 @@ if [ -z "${HADOOP_CONF_DIR}" ]; then
 fi
 
 if [ -z "${SPARK_HOME}" ]; then
-  export SPARK_HOME=/apache/spark-2.3.0-bin-hadoop2.7/
+  export SPARK_HOME=/apache/spark/
 fi
 
 if [ -z "${SPARK_CONF_DIR}" ]; then
-  export SPARK_CONF_DIR=/apache/spark-2.3.0-bin-hadoop2.7/conf
+  export SPARK_CONF_DIR=/apache/spark/conf
 fi
 
 SPARK_EVENTLOG_DIR=hdfs://choco-cent-1659401.slc07.dev.ebayc3.com:8020/spark-history-logs/chocolate/logs

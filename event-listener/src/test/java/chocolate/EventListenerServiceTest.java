@@ -101,6 +101,10 @@ public class EventListenerServiceTest {
   private static String endUserCtxMweb;
   private static String endUserCtxNoReferer;
   private static String endUserCtxCheckoutAPI;
+  private static String endUserCtxNoUserAgent;
+  private static String endUserCtxiPad;
+  private static String endUserCtxMobileTabletWeb;
+  private static String endUserCtxBot;
 
   private static String tracking;
 
@@ -220,6 +224,50 @@ public class EventListenerServiceTest {
       "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
       "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
       "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
+      endUserCtxNoUserAgent = "ip=10.148.184.210," +
+      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
+      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
+      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
+      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
+      ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
+      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
+      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
+      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
+      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
+      endUserCtxiPad = "ip=10.148.184.210," +
+      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
+      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
+      "userAgent=eBayiPad%2F6.7.0," +
+      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
+      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
+      ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
+      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
+      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
+      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
+      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
+      endUserCtxMobileTabletWeb = "ip=10.148.184.210," +
+      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
+      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
+      "userAgent=Mozilla%2F5.0%20%28iPad%3B%20CPU%20OS%2010_3_3%20like%20Mac%20OS%20X%29%20AppleWebKit%2F603.1.30%20%28KHTML%2C%20like%20Gecko%29%20GSA%2F68.0.234683655%20Mobile%2F14G60%20Safari%2F602.1," +
+      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
+      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
+      ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
+      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
+      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
+      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
+      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
+      endUserCtxBot = "ip=10.148.184.210," +
+      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
+      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
+      "userAgent=Mozilla%2F5.0%20%28Linux%3B%20Android%206.0.1%3B%20Nexus%205X%20Build%2FMMB29P%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F85.0.4183.135%20Mobile%20Safari%2F537.36%20%28compatible%3B%20Googlebot%2F2.1%3B%20%2Bhttp%3A%2F%2Fwww.google.com%2Fbot.html%29," +
+      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
+      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
+      ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
+      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
+      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
+      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
+      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
+
 
     tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
       "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
@@ -261,6 +309,22 @@ public class EventListenerServiceTest {
   private Response postMcsResponse(String path, UnifiedTrackingEvent event) {
     return client.target(svcEndPoint).path(path).request().header("Authorization", token).
         accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
+  }
+
+  private Response postMcsResponseWithStatusCode(String path, String endUserCtx, String tracking, Event event, String marketingStatusCode) {
+    // add headers
+    Invocation.Builder builder = client.target(svcEndPoint).path(path).request();
+    if (!StringUtils.isEmpty(endUserCtx)) {
+      builder = builder.header("X-EBAY-C-ENDUSERCTX", endUserCtx);
+    }
+    if (!StringUtils.isEmpty(tracking)) {
+      builder = builder.header("X-EBAY-C-TRACKING", tracking);
+    }
+    if (!StringUtils.isEmpty(marketingStatusCode)) {
+      builder = builder.header("X-EBAY-TRACKING-MARKETING-STATUS-CODE", marketingStatusCode);
+    }
+
+    return builder.header("Authorization", token).accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
   }
 
   @Test
@@ -840,6 +904,70 @@ public class EventListenerServiceTest {
     event.setPayload(payload);
     Response response = postMcsResponse(trackPath, event);
     assertEquals(201, response.getStatus());
+  }
+
+  @Test
+  public void testClickResourceWithDuplicateClick() {
+    String marketingStatusCode = "301";
+    Event event = new Event();
+    event.setReferrer("www.google.com");
+    event.setTargetUrl("http://www.ebay.com/itm/184157407508?mkevt=1&mkcid=1&mkrid=711-53200-19255-0");
+
+    // null user agent
+    Response nullUserAgentResponse = postMcsResponseWithStatusCode(eventsPath, endUserCtxNoUserAgent, tracking, event, marketingStatusCode);
+    assertEquals(201, nullUserAgentResponse.getStatus());
+
+    // user clicks from non-special sites and mobile phone web
+    Response response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, response.getStatus());
+
+    // user clicks from native app
+    Response nativeAppIphoneResponse = postMcsResponseWithStatusCode(eventsPath, endUserCtxiPhone, tracking, event, marketingStatusCode);
+    assertEquals(201, nativeAppIphoneResponse.getStatus());
+
+    // user clicks from native app
+    Response nativeAppAndroidResponse = postMcsResponseWithStatusCode(eventsPath, endUserCtxAndroid, tracking, event, marketingStatusCode);
+    assertEquals(201, nativeAppAndroidResponse.getStatus());
+
+    // user clicks from tablet
+    Response iPadResponse = postMcsResponseWithStatusCode(eventsPath, endUserCtxiPad, tracking, event, marketingStatusCode);
+    assertEquals(201, iPadResponse.getStatus());
+
+    Response mobileTabletWebResponse = postMcsResponseWithStatusCode(eventsPath, endUserCtxMobileTabletWeb, tracking, event, marketingStatusCode);
+    assertEquals(201, mobileTabletWebResponse.getStatus());
+
+    // user clicks from dweb
+    Response dwebResponse = postMcsResponseWithStatusCode(eventsPath, endUserCtxDesktop, tracking, event, marketingStatusCode);
+    assertEquals(201, dwebResponse.getStatus());
+
+    // bot click
+    Response botClickResponse = postMcsResponseWithStatusCode(eventsPath, endUserCtxBot, tracking, event, marketingStatusCode);
+    assertEquals(201, botClickResponse.getStatus());
+
+    // user clicks from special sites
+    event.setTargetUrl("https://www.ebay.com.my/itm/233622232591?mkevt=1&mkcid=2&mkrid=711-53200-19255-0");
+    Response specialSitesClickResponse = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, specialSitesClickResponse.getStatus());
+
+    // non-itm page
+    event.setTargetUrl("https://www.ebay.com/i/233622232591?mkevt=1&mkcid=2&mkrid=711-53200-19255-0");
+    Response nonItmClickEventResponse = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, nonItmClickEventResponse.getStatus());
+
+    // itm page with title
+    event.setTargetUrl("https://www.ebay.com/itm/afdfwerwe/233622232591?mkevt=1&mkcid=2&mkrid=711-53200-19255-0");
+    Response itmWithTitleClickEventResponse = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, itmWithTitleClickEventResponse.getStatus());
+
+    // other marketing status code
+    marketingStatusCode = "200";
+    event.setTargetUrl("http://www.ebay.com/itm/184157407508?mkevt=1&mkcid=1&mkrid=711-53200-19255-0");
+    Response validClickResponse = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, validClickResponse.getStatus());
+
+    marketingStatusCode = "404";
+    Response invalidClickResponse = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, invalidClickResponse.getStatus());
   }
 
   /**

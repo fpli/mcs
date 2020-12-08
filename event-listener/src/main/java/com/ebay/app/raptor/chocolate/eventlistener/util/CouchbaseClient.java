@@ -1,7 +1,9 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.couchbase.client.java.Bucket;
+import com.couchbase.client.java.document.Document;
 import com.couchbase.client.java.document.JsonDocument;
+import com.couchbase.client.java.document.StringDocument;
 import com.couchbase.client.java.document.json.JsonObject;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.dukes.CacheClient;
@@ -16,6 +18,7 @@ import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Couchbase client wrapper. Couchbase client is thread-safe
@@ -233,6 +236,47 @@ public class CouchbaseClient {
       factory.returnClient(cacheClient);
     }
   }
+
+  /***
+   * put key -> val ,default exp 15 days
+   * @param key String
+   * @param val String
+   * @return {@link StringDocument}
+   */
+  public Document<String> put(String key, String val) {
+    return put(key, val, 15 * 24 * 60 * 60);
+  }
+
+  /**
+   * @param key    String
+   * @param val    String
+   * @param expiry second
+   * @return {@link StringDocument}
+   */
+  public Document<String> put(String key, String val, int expiry) {
+    CacheClient cacheClient = null;
+    Document<String> document;
+    try {
+      cacheClient = factory.getClient(datasourceName);
+      document = getBucket(cacheClient).upsert(StringDocument.create(key, expiry, val), 3000, TimeUnit.MILLISECONDS);
+    } finally {
+      factory.returnClient(cacheClient);
+    }
+    return document;
+  }
+
+  public String get(String key) {
+    CacheClient cacheClient = null;
+    StringDocument document;
+    try {
+      cacheClient = factory.getClient(datasourceName);
+      document = getBucket(cacheClient).get(StringDocument.create(key), 3000, TimeUnit.MILLISECONDS);
+    } finally {
+      factory.returnClient(cacheClient);
+    }
+    return document == null ? null : document.content();
+  }
+
 
   /**
    * Trick function, get Bucket from cacheClient
