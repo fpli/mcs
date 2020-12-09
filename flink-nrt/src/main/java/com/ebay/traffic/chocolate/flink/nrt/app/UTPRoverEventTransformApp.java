@@ -236,7 +236,7 @@ public class UTPRoverEventTransformApp
       }
 
       Long eventTimestamp = (Long) sourceRecord.get(TransformerConstants.EVENT_TIMESTAMP);
-      builder.setEventTs(System.currentTimeMillis());
+      builder.setEventTs(eventTimestamp);
       builder.setProducerEventTs(eventTimestamp);
       builder.setRlogId(GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.RLOGID));
       builder.setTrackingId(StringConstants.EMPTY);

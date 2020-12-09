@@ -155,7 +155,7 @@ public class UnifiedTrackingMessageParser {
     record.setRlogId(tracingContext.getRlogId());
 
     // tracking id
-    record.setTrackingId(parameters.getFirst(Constants.TRACKING_ID));
+    record.setTrackingId(parameters.getFirst(UepPayloadHelper.TRACKING_ID));
 
     // user id
     String bu = parameters.getFirst(Constants.BEST_GUESS_USER);

@@ -10,6 +10,7 @@ import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.MessageConstantsEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.primitives.Longs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriComponents;
@@ -58,10 +59,13 @@ public class UepPayloadHelper {
   public Map<String, String> getUepPayload(String url, ActionTypeEnum actionTypeEnum) {
     Map<String, String> payload = new HashMap<>();
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(url).build();
-    if (StringUtils.isNumeric(uriComponents.getQueryParams().getFirst(BEST_GUESS_USER)) &&
-        uriComponents.getQueryParams().getFirst(BEST_GUESS_USER) != null) {
-      payload.put(MessageConstantsEnum.USER_ID.getValue(), String.valueOf(
-          EncryptUtil.decryptUserId(Long.parseLong(uriComponents.getQueryParams().getFirst(BEST_GUESS_USER)))));
+    if (uriComponents.getQueryParams().getFirst(BEST_GUESS_USER) != null &&
+        StringUtils.isNumeric(uriComponents.getQueryParams().getFirst(BEST_GUESS_USER))) {
+      Long encryptedUserId = Longs.tryParse(uriComponents.getQueryParams().getFirst(BEST_GUESS_USER));
+      if (encryptedUserId != null) {
+        long userId = EncryptUtil.decryptUserId(encryptedUserId);
+        payload.put(MessageConstantsEnum.USER_ID.getValue(), String.valueOf(userId));
+      }
     } else {
       payload.put(MessageConstantsEnum.USER_ID.getValue(), "0");
     }
