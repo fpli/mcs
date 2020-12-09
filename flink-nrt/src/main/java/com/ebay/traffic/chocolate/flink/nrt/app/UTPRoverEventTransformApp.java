@@ -335,10 +335,7 @@ public class UTPRoverEventTransformApp
       // set UEP payloads
       Map<String, String> uepPayload = uepPayloadHelper.getUepPayload(finalUrl, actionType);
       if(uepPayload != null && uepPayload.size() > 0) {
-        for (Map.Entry<String, String> entry :
-            uepPayload.entrySet()) {
-          applicationPayload.put(entry.getKey(), entry.getValue());
-        }
+        applicationPayload.putAll(uepPayload);
       }
       builder.setPayload(applicationPayload);
       RheosEvent rheosEvent = getRheosEvent(builder.build());
