@@ -5,12 +5,12 @@
 package com.ebay.app.raptor.chocolate.utp;
 
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
-import com.ebay.kernel.util.StringUtils;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.MessageConstantsEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.Longs;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriComponents;
@@ -59,9 +59,9 @@ public class UepPayloadHelper {
   public Map<String, String> getUepPayload(String url, ActionTypeEnum actionTypeEnum) {
     Map<String, String> payload = new HashMap<>();
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(url).build();
-    if (uriComponents.getQueryParams().getFirst(BEST_GUESS_USER) != null &&
-        StringUtils.isNumeric(uriComponents.getQueryParams().getFirst(BEST_GUESS_USER))) {
-      Long encryptedUserId = Longs.tryParse(uriComponents.getQueryParams().getFirst(BEST_GUESS_USER));
+    String bu = uriComponents.getQueryParams().getFirst(BEST_GUESS_USER);
+    if (StringUtils.isNotEmpty(bu)) {
+      Long encryptedUserId = Longs.tryParse(bu);
       if (encryptedUserId != null) {
         long userId = EncryptUtil.decryptUserId(encryptedUserId);
         payload.put(MessageConstantsEnum.USER_ID.getValue(), String.valueOf(userId));
