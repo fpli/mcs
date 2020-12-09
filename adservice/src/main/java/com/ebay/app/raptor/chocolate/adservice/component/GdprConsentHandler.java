@@ -117,7 +117,6 @@ public class GdprConsentHandler {
                                 }
                                 //allowed set the adguid cookie
                                 if (purposesConsent.contains(3)) {
-                                    gdprConsentDomain.setAllowedUseContextualInfo(true);
                                     gdprConsentDomain.setAllowedSetCookie(true);
                                     gdprConsentDomain.setAllowedUseLegallyRequiredField(true);
                                 }
@@ -128,10 +127,9 @@ public class GdprConsentHandler {
                                     gdprConsentDomain.setAllowedUseGeoInfo(true);
                                     gdprConsentDomain.setAllowedUseLegallyRequiredField(true);
                                 }
-                                // show a personalized ad and allowed pass contextual fields but Geo
-                                if (purposesConsent.contains(7)) {
-                                    gdprConsentDomain.setAllowedUseContextualInfo(true);
-                                    gdprConsentDomain.setAllowedShowPersonalizedAds(true);
+                                // only basic fields and legally required.
+                                if (purposesConsent.contains(7) || purposesConsent.contains(10) || specialFeatureOptIns.contains(2)) {
+                                    gdprConsentDomain.setAllowedUseLegallyRequiredField(true);
                                 }
                             }
                             //else treat every user as an anonymous user.

@@ -129,8 +129,8 @@ public class DAPResponseHandler {
 
     URIBuilder dapUriBuilder = new URIBuilder();
 
-    //non-relation with gdpr consent.
-    setSiteId(dapUriBuilder, siteId);
+    //another siteid is always available in tag, so remove this one
+    //setSiteId(dapUriBuilder, siteId);
     setRequestParameters(dapUriBuilder, params);
     setRvrId(dapUriBuilder, dapRvrId);
     //Contextual parameters
@@ -138,6 +138,7 @@ public class DAPResponseHandler {
       setReferrer(dapUriBuilder, referrer);
       setIsMobile(dapUriBuilder, isMobile);
     }
+    //Geo and legally required
     if (consentDomain.isAllowedUseGeoInfo()) {
       setGeoInfo(dapUriBuilder, lbsParameters);
     } else if (consentDomain.isAllowedUseLegallyRequiredField()) {
