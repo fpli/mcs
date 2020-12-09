@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice.component;
 
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -13,12 +14,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @Component
+@DependsOn("AdserviceService")
 public class EsrXidClient {
     Logger logger = LoggerFactory.getLogger(EsrXidClient.class);
 
@@ -40,6 +43,9 @@ public class EsrXidClient {
         if (StringUtils.isBlank(guid)) {
             return userId;
         }
+
+        ESMetrics.getInstance().meter("totalRequestEsrxidCount");
+
         //pguid equals guid here
         HttpGet httpGet = new HttpGet(esrXidEndpointUrl + "pguid/" + guid);
         try (CloseableHttpResponse response = closeableHttpClient.execute(httpGet)) {
@@ -56,6 +62,7 @@ public class EsrXidClient {
                     JSONObject accountObj = accounts.getJSONObject(0);
                     if (accountObj != null) {
                         userId = accountObj.getString("id");
+                        ESMetrics.getInstance().meter("succeedGetUidFromEsrxid");
                     }
                 }
             }
