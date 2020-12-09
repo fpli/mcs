@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.adservice.util;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.adservice.component.EsrXidClient;
 import com.ebay.app.raptor.chocolate.adservice.constant.*;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
@@ -75,6 +76,9 @@ public class DAPResponseHandler {
   public CouchbaseClient couchbaseClient;
 
   @Autowired
+  private EsrXidClient esrXidClient;
+
+  @Autowired
   private void init() {
     couchbaseClient = CouchbaseClient.getInstance();
   }
@@ -110,6 +114,11 @@ public class DAPResponseHandler {
 
     String guid = adserviceCookie.getGuid(request);
     String accountId = adserviceCookie.getUserId(request);
+    // obtain userId from ersxid.
+    if (StringUtils.isNotBlank(guid) && StringUtils.isBlank(accountId)) {
+      accountId = esrXidClient.getUserIdByGuid(guid);
+    }
+
     // no need anymore
     // Map<String, String> userAttributes = getUserAttributes(cguid);
     String referrer = request.getHeader(Constants.REFERER);
