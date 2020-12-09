@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
 import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosMessage;
+import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.RheosConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
@@ -13,7 +14,6 @@ import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import com.ebay.traffic.chocolate.flink.nrt.util.UDF;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
-import com.ebay.traffic.chocolate.utp.common.ServiceEnum;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics;
 import com.google.common.primitives.Ints;
@@ -31,7 +31,6 @@ import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.util.Utf8;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -89,6 +88,7 @@ public class UTPRoverEventTransformApp
   public static final String ADCAMPPU = "adcamppu";
   public static final String GUID = "guid";
   private static final String ROVER_HOST = "https://rover.ebay.com";
+  private static UepPayloadHelper uepPayloadHelper = new UepPayloadHelper();
 
   public static void main(String[] args) throws Exception {
     UTPRoverEventTransformApp transformApp = new UTPRoverEventTransformApp();
@@ -236,7 +236,7 @@ public class UTPRoverEventTransformApp
       }
 
       Long eventTimestamp = (Long) sourceRecord.get(TransformerConstants.EVENT_TIMESTAMP);
-      builder.setEventTs(System.currentTimeMillis());
+      builder.setEventTs(eventTimestamp);
       builder.setProducerEventTs(eventTimestamp);
       builder.setRlogId(GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.RLOGID));
       builder.setTrackingId(StringConstants.EMPTY);
@@ -306,7 +306,8 @@ public class UTPRoverEventTransformApp
       } else {
         builder.setSiteId(0);
       }
-      builder.setUrl(ROVER_HOST + urlQueryString);
+      String finalUrl = ROVER_HOST + urlQueryString;
+      builder.setUrl(finalUrl);
       builder.setReferer(clientData.getOrDefault(REFERER, StringConstants.EMPTY));
       builder.setUserAgent(clientData.getOrDefault(AGENT, StringConstants.EMPTY));
       builder.setDeviceFamily(GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, DEVICE_FAMILY));
@@ -328,7 +329,14 @@ public class UTPRoverEventTransformApp
         Integer integer = Ints.tryParse(applicationPayload.get(UC));
         geoId = integer == null ? 0 : integer;
       }
+
       builder.setGeoId(geoId);
+
+      // set UEP payloads
+      Map<String, String> uepPayload = uepPayloadHelper.getUepPayload(finalUrl, actionType);
+      if(uepPayload != null && uepPayload.size() > 0) {
+        applicationPayload.putAll(uepPayload);
+      }
       builder.setPayload(applicationPayload);
       RheosEvent rheosEvent = getRheosEvent(builder.build());
 

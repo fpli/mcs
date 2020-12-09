@@ -1,4 +1,4 @@
-package com.ebay.app.raptor.chocolate.eventlistener.util;
+package com.ebay.app.raptor.chocolate.util;
 
 /**
  * Created by jialili1 on 8/25/20

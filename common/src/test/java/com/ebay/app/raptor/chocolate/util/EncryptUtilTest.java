@@ -1,6 +1,5 @@
-package chocolate.util;
+package com.ebay.app.raptor.chocolate.util;
 
-import com.ebay.app.raptor.chocolate.eventlistener.util.EncryptUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

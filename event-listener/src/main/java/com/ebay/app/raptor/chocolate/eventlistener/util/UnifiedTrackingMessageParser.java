@@ -6,6 +6,8 @@ import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
+import com.ebay.app.raptor.chocolate.util.EncryptUtil;
+import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -42,6 +44,7 @@ public class UnifiedTrackingMessageParser {
   private static final Logger logger = LoggerFactory.getLogger(UnifiedTrackingMessageParser.class);
   private static Metrics metrics = ESMetrics.getInstance();
   private static CobrandParser cobrandParser = new CobrandParser();
+  private static UepPayloadHelper uepPayloadHelper = new UepPayloadHelper();
 
   private UnifiedTrackingMessageParser() {}
 
@@ -152,7 +155,7 @@ public class UnifiedTrackingMessageParser {
     record.setRlogId(tracingContext.getRlogId());
 
     // tracking id
-    record.setTrackingId(parameters.getFirst(Constants.TRACKING_ID));
+    record.setTrackingId(parameters.getFirst(UepPayloadHelper.TRACKING_ID));
 
     // user id
     String bu = parameters.getFirst(Constants.BEST_GUESS_USER);
@@ -181,7 +184,8 @@ public class UnifiedTrackingMessageParser {
     record.setChannelType(channelType.toString());
 
     // action type
-    record.setActionType(getActionType(channelAction));
+    String actionType = getActionType(channelAction);
+    record.setActionType(actionType);
 
     // partner id
     record.setPartner(getPartner(parameters, channelType));
@@ -218,7 +222,15 @@ public class UnifiedTrackingMessageParser {
 
     // payload
     String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
-    record.setPayload(getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction));
+    // format UEP payload
+    Map<String, String> uepPayload = uepPayloadHelper.getUepPayload(url, ActionTypeEnum.valueOf(actionType));
+    Map<String, String> fullPayload =
+        getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction);
+    // append UEP payload
+    if(uepPayload != null && uepPayload.size() > 0) {
+      fullPayload.putAll(uepPayload);
+    }
+    record.setPayload(fullPayload);
 
     return record;
   }
