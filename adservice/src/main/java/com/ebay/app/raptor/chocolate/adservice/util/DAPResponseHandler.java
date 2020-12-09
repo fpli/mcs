@@ -120,37 +120,35 @@ public class DAPResponseHandler {
     String userAgent = request.getHeader(Constants.USER_AGENT);
     String uaPrime = getUaPrime(params);
     boolean isMobile = isMobileUserAgent(userAgent);
-    int siteId = getSiteId(lbsQueryResult);
 
     LOGGER.debug("dapRvrId: {} guid: {} accountId: {} referrer: {} remoteIp: {} " +
-                    "lbsParameters: {} hLastLoggedInUserId: {} userAgent: {} uaPrime: {} isMobile: {} siteId: {}",
+                    "lbsParameters: {} hLastLoggedInUserId: {} userAgent: {} uaPrime: {} isMobile: {}",
             dapRvrId, guid, accountId, referrer, remoteIp, lbsParameters,
-            hLastLoggedInUserId, userAgent, uaPrime, isMobile, siteId);
+            hLastLoggedInUserId, userAgent, uaPrime, isMobile);
 
     URIBuilder dapUriBuilder = new URIBuilder();
 
-    //another siteid is always available in tag, so remove this one
-    //setSiteId(dapUriBuilder, siteId);
+    // another siteid is always available in tag, so we don't need set siteId here.
     setRequestParameters(dapUriBuilder, params);
     setRvrId(dapUriBuilder, dapRvrId);
-    //Contextual parameters
+    // Contextual parameters
     if (consentDomain.isAllowedUseContextualInfo()) {
       setReferrer(dapUriBuilder, referrer);
       setIsMobile(dapUriBuilder, isMobile);
     }
-    //Geo and legally required
+    // Geo and legally required
     if (consentDomain.isAllowedUseGeoInfo()) {
       setGeoInfo(dapUriBuilder, lbsParameters);
     } else if (consentDomain.isAllowedUseLegallyRequiredField()) {
       setGeoCountryCode(dapUriBuilder, lbsParameters);
     }
-     //personalized parameters
+     // personalized parameters
     if (consentDomain.isAllowedShowPersonalizedAds()) {
       setGuid(dapUriBuilder, guid);
       setRoverUserid(dapUriBuilder, accountId);
       setHLastLoggedInUserId(dapUriBuilder, hLastLoggedInUserId);
     }
-    //consent flag when tcf compliant mode
+    // consent flag when tcf compliant mode
     if (consentDomain.isTcfCompliantMode()) {
       setConsentFlag(dapUriBuilder, consentDomain.getConsentFlagForDapParam());
     }
@@ -163,20 +161,6 @@ public class DAPResponseHandler {
       guid = Constants.EMPTY_GUID;
     }
     sendToMCS(request, dapRvrId, guid, guid, dapResponseHeaders);
-  }
-
-  private int getSiteId(LBSQueryResult lbsQueryResult) {
-    if (lbsQueryResult == null) {
-      return 0;
-    }
-    int siteId = 0;
-    String country = lbsQueryResult.getIsoCountryCode2();
-    siteId = GeoUtils.getSiteIdByISOCountryCode(country);
-    return siteId;
-  }
-
-  private void setSiteId(URIBuilder dapUriBuilder, int siteId) {
-    addParameter(dapUriBuilder, Constants.SITE_ID, String.valueOf(siteId));
   }
 
   private String getUaPrime(Map<String, String[]> params) {
