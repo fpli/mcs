@@ -1,6 +1,7 @@
 package com.ebay.app.raptor.chocolate.adservice.util;
 
 import com.ebay.app.raptor.chocolate.AdserviceResourceTest;
+import com.ebay.app.raptor.chocolate.adservice.component.EsrXidClient;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.LBSConstants;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
@@ -26,6 +27,7 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -63,38 +65,6 @@ public class DAPResponseHandlerTest {
   @Before
   public void setUp() throws Exception {
     dapResponseHandler = new DAPResponseHandler();
-  }
-
-  @Test
-  public void getSiteId() throws Exception {
-    Client client = Mockito.mock(Client.class);
-    Configuration conf = Mockito.mock(Configuration.class);
-    Response response = prepareResponse();
-    WebTarget webTarget = Mockito.mock(WebTarget.class);
-    Invocation.Builder builder = Mockito.mock(Invocation.Builder.class);
-
-    when(conf.getProperty(EndpointUri.KEY)).thenReturn("localhost");
-    when(builder.get()).thenReturn(response);
-    when(webTarget.queryParam(anyString(), anyString())).thenReturn(webTarget);
-    when(webTarget.request(MediaType.APPLICATION_JSON)).thenReturn(builder);
-    when(client.target(anyString())).thenReturn(webTarget);
-    when(client.getConfiguration()).thenReturn(conf);
-
-    lbsClient = LBSClient.getInstance();
-    Whitebox.setInternalState(lbsClient, "client", client);
-
-    LBSQueryResult lbsQueryResult = lbsClient.getLBSInfo("97.77.104.22");
-    assertEquals(Integer.valueOf(0), Whitebox.<Integer>invokeMethod(dapResponseHandler, "getSiteId", lbsQueryResult));
-  }
-
-  @Test
-  public void setSiteId() throws Exception {
-    URIBuilder dapUriBuilder = new URIBuilder();
-    Whitebox.<String>invokeMethod(dapResponseHandler, "setSiteId", dapUriBuilder, 2);
-    List<NameValuePair> collect = dapUriBuilder.getQueryParams().stream()
-        .filter(nameValuePair -> nameValuePair.getName().equals(Constants.SITE_ID))
-        .collect(Collectors.toList());
-    assertEquals("2", collect.get(0).getValue());
   }
 
   @Test
@@ -532,5 +502,4 @@ public class DAPResponseHandlerTest {
 
     Mockito.verify(asyncInvoker).post(anyObject(), any(InvocationCallback.class));
   }
-
 }
