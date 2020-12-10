@@ -68,6 +68,7 @@ public class EsrXidClient {
             }
         } catch (IOException e) {
             logger.error("call esrXid error, " + e);
+            ESMetrics.getInstance().meter("FailedGetUidFromEsrxid");
         }
         return userId;
     }
