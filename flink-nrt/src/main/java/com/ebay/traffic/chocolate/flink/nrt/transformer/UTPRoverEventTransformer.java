@@ -44,7 +44,6 @@ public class UTPRoverEventTransformer {
   private ChannelTypeEnum channelType;
   private ActionTypeEnum actionTypeEnum;
   private Map<String, String> sojTags;
-  private Map<String, String> clientData;
   private final boolean isValid;
 
   private static final UepPayloadHelper UEP_PAYLOAD_HELPER = new UepPayloadHelper();
@@ -203,7 +202,6 @@ public class UTPRoverEventTransformer {
   private void initFields() {
     actionTypeEnum = parseActionType();
     sojTags = PulsarParseUtils.getSojTagsFromUrlQueryString(urlQueryString);
-    clientData = GenericRecordUtils.getMap(sourceRecord, TransformerConstants.CLIENT_DATA);
   }
 
   public void transform(SpecificRecordBase trackingEvent) {
