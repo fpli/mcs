@@ -420,7 +420,7 @@ public class UTPRoverEventTransformer {
   }
 
   protected String getRemoteIp() {
-    return clientData.getOrDefault(REMOTE_IP, StringConstants.EMPTY);
+    return applicationPayload.getOrDefault(TransformerConstants.REMOTE_IP, StringConstants.EMPTY);
   }
 
   protected int getPageId() {
