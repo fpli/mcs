@@ -164,7 +164,8 @@ public class PulsarParseUtils {
       if (sojNvp.countTokens() == 2) {
         String sojTag = sojNvp.nextToken().trim();
         String urlParam = sojNvp.nextToken().trim();
-        if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
+        if (StringUtils.isNotEmpty(urlParam) && StringUtils.isNotEmpty(sojTag) && parameters.containsKey(urlParam)
+                && parameters.getFirst(urlParam) != null) {
           sojTagsMap.put(sojTag, parameters.getFirst(urlParam));
         }
       }
