@@ -152,7 +152,7 @@ public class PulsarParseUtils {
     String sojTags = parameters.get(TransformerConstants.SOJ_TAGS).get(0);
     try {
       sojTags = URLDecoder.decode(sojTags, StandardCharsets.UTF_8.name());
-    } catch (UnsupportedEncodingException e) {
+    } catch (UnsupportedEncodingException | IllegalArgumentException e) {
       return sojTagsMap;
     }
     if (StringUtils.isEmpty(sojTags)) {
