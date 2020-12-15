@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.jetty.server.Request;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -151,7 +150,7 @@ public class UnifiedTrackingMessageParser {
     record.setProducerEventId(getProducerEventId(parameters, channelType));
 
     // event timestamp
-    record.setProducerEventTs(getProducerEventTs(request));
+    record.setProducerEventTs(System.currentTimeMillis());
 
     // rlog id
     record.setRlogId(tracingContext.getRlogId());
@@ -293,22 +292,6 @@ public class UnifiedTrackingMessageParser {
     }
 
     return "";
-  }
-
-  /**
-   * Get producer event timestamp
-   */
-  private static long getProducerEventTs(HttpServletRequest request) {
-    long timestamp = System.currentTimeMillis();
-
-//    try {
-//      timestamp = ((Request) request).getTimeStamp();
-//    } catch (ClassCastException e) {
-//      // ideally only touch this part in unit test
-//      logger.warn("Cannot get request start time, use system time instead. ", e);
-//    }
-
-    return timestamp;
   }
 
   /**

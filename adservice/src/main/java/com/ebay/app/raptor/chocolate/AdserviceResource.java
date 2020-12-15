@@ -17,6 +17,7 @@ import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
+import com.ebay.jaxrs.client.config.bean.spi.JaxrsClientBaseConfigBean;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
@@ -200,6 +201,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
       long startTime = startTimerAndLogData(Field.of(Constants.CHANNEL_TYPE, channelType),
           Field.of(Constants.PARTNER, partner));
+
+      // disable Ginger Client to append Ginger agent to the user agent header
+      mktClient.property(JaxrsClientBaseConfigBean.SEND_USER_AGENT, false);
 
       // call mcs
       Builder builder = mktClient.target(endpoint).path("/impression/").request();
