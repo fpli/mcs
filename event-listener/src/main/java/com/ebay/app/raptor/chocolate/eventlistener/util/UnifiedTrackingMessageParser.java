@@ -231,7 +231,7 @@ public class UnifiedTrackingMessageParser {
     if(uepPayload != null && uepPayload.size() > 0) {
       fullPayload.putAll(uepPayload);
     }
-    record.setPayload(fullPayload);
+    record.setPayload(deleteNullOrEmptyValue(fullPayload));
 
     return record;
   }
@@ -446,7 +446,7 @@ public class UnifiedTrackingMessageParser {
       payload.put("url_mpre", url);
     }
 
-    return encodeTags(deleteNullOrEmptyValue(payload));
+    return encodeTags(payload);
   }
 
   /**
