@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 
 public class UTPRoverEventTransformer {
@@ -95,7 +96,7 @@ public class UTPRoverEventTransformer {
   /**
    * Used to cache method object to improve reflect performance
    */
-  private static final Map<String, Method>  FIELD_GET_METHOD_CACHE = new HashMap<>(16);
+  private static final Map<String, Method>  FIELD_GET_METHOD_CACHE = new ConcurrentHashMap<>(16);
 
   /**
    * Map field name to get method name, eg. batch_id -> getBatchId
@@ -227,7 +228,7 @@ public class UTPRoverEventTransformer {
     try {
       value = method.invoke(this);
     } catch (NullPointerException | IllegalAccessException | InvocationTargetException e) {
-      String message = String.format("invoke method %s failed, raw message %s", method, this.sourceRecord);
+      String message = String.format("%s invoke method %s failed, raw message %s", fieldName, method, this.sourceRecord);
       throw new IllegalArgumentException(message, e);
     }
     Validate.notNull(value, String.format("%s is null, raw message %s", fieldName, this.sourceRecord));
