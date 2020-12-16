@@ -1143,7 +1143,9 @@ public class CollectionService {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(!m.find()) {
+
+    // Email open should not be filtered by referer
+    if(ChannelAction.EMAIL_OPEN.equals(channelAction) || !m.find()) {
       Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
 
       // send click and open event to message tracker
@@ -1221,7 +1223,9 @@ public class CollectionService {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(!m.find()) {
+
+    // Email open should not be filtered by referer
+    if(ChannelAction.EMAIL_OPEN.equals(channelAction) || !m.find()) {
       Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
 
       // send click and open event to message tracker
