@@ -1,12 +1,14 @@
 package com.ebay.traffic.chocolate.sparknrt.imkETL
 
 import java.io.{ByteArrayOutputStream, File}
-
 import com.ebay.traffic.chocolate.spark.{BaseFunSuite, BaseSparkJob}
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.compress.CompressionCodecFactory
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.types.{BooleanType, IntegerType, LongType, StringType, StructField, StructType}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -62,6 +64,49 @@ class TestImkETLJob extends BaseFunSuite{
     })
 
     job.stop()
+  }
+
+  test("test judegNotEbaySitesUdf") {
+    val job = new ImkETLJob(Parameter(Array(
+      "--mode", "local[8]",
+      "--channel", "PAID_SEARCH,DISPLAY,ROI,SOCIAL_MEDIA",
+      "--workDir", workDir,
+      "--outPutDir", outPutDir,
+      "--partitions", "1",
+      "--elasticsearchUrl", "http://10.148.181.34:9200",
+      "--transformedPrefix", "chocolate_",
+      "--outputFormat", "sequence",
+      "--compressOutPut", "false",
+      "--kwDataDir", kwDataDir
+    )))
+
+    val data = Seq(
+      Row(1, "ROI", "http://www.ebay.com"),
+      Row(2, "DISPLAY", "http://www.ebay.com"),
+      Row(3, "DISPLAY", "https://ebay.mtag.io/"),
+      Row(4, "DISPLAY", "https://ebay.pissedconsumer.com/"),
+      Row(5, "DISPLAY", null),
+      Row(6, "PAID_SEARCH", null),
+      Row(7, "PAID_SEARCH", "https://ebay.pissedconsumer.com/")
+    )
+
+    val schema = List(
+      StructField("id", IntegerType, nullable = true),
+      StructField("channel_type", StringType, nullable = true),
+      StructField("referer", StringType, nullable = true)
+    )
+
+    val df: DataFrame = job.spark.createDataFrame(
+      job.spark.sparkContext.parallelize(data),
+      StructType(schema)
+    )
+
+    val results = df.filter(job.judegNotEbaySitesUdf(col("channel_type"), col("referer"))).select(col("id")).collectAsList()
+    assert(results.get(0).getInt(0) == 1)
+    assert(results.get(1).getInt(0) == 3)
+    assert(results.get(2).getInt(0) == 4)
+    assert(results.get(3).getInt(0) == 5)
+    assert(results.get(4).getInt(0) == 6)
   }
 
   test("test imk etl job for sequence output") {

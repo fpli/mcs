@@ -320,9 +320,27 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
   val judegNotEbaySitesUdf: UserDefinedFunction = udf((channelType: String, referer: String) => {
     channelType match {
       case "ROI" => true
+      case "DISPLAY" => judgeNotEbaySitesForDisplay(referer)
       case _ => tools.judgeNotEbaySites(referer)
     }
   })
+
+  /**
+   * The regex pattern will treat ebay.xxx.xx as ebay domain, for short term, just add ebay.mtag.io and
+   * ebay.pissedconsumer.com to whitelist
+   * @param referer referer
+   * @return not ebay site or not
+   */
+  def judgeNotEbaySitesForDisplay(referer: String): Boolean = {
+    if(StringUtils.isEmpty(referer)) {
+      return tools.judgeNotEbaySites(referer)
+    }
+    if(referer.equals("https://ebay.mtag.io/") || referer.equals("https://ebay.pissedconsumer.com/")) {
+      true
+    } else {
+      tools.judgeNotEbaySites(referer)
+    }
+  }
 
   val getClientIdUdf: UserDefinedFunction = udf((channelType: String, tempUriQuery: String, ridParamName: String, uri: String) => {
     channelType match {
