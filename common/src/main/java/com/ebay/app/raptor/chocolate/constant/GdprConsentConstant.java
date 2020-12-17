@@ -1,7 +1,8 @@
 package com.ebay.app.raptor.chocolate.constant;
 
 public class GdprConsentConstant {
-    public static String TOTAL_TRAFFIC_OF_GDPR = "totalTrafficOfGdpr";
+    public static String TOTAL_TRAFFIC_OF_GDPR_MCS = "totalTrafficOfGdprMcs";
+    public static String TOTAL_TRAFFIC_OF_GDPR_Adservice = "totalTrafficOfGdprAdservice";
     public static String ALLOWED_SHOW_PERSONALIZED_ADS = "allowedShowPersonalizedAds";
     public static String ALLOWED_SET_COOKIES = "allowedSetCookies";
     public static String ALLOWED_USE_CONTEXTUAL = "allowedUseContextualInfo";

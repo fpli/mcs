@@ -21,7 +21,6 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,7 +67,7 @@ public class GdprConsentHandler {
         }
         try {
             if (StringUtils.isNotBlank(gdprParam) && gdprParam.equals("1") && enableTcfComplianceMode) {
-                metrics.meter(GdprConsentConstant.TOTAL_TRAFFIC_OF_GDPR);
+                metrics.meter(GdprConsentConstant.TOTAL_TRAFFIC_OF_GDPR_Adservice);
                 gdprConsentDomain.setAllowedSetCookie(false);
                 gdprConsentDomain.setAllowedShowPersonalizedAds(false);
                 gdprConsentDomain.setAllowedUseContextualInfo(false);
