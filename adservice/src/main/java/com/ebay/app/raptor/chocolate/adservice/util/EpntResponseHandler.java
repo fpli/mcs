@@ -167,7 +167,6 @@ public class EpntResponseHandler {
             response.setHeader(Headers.ETAG, (String) headers.getFirst(Headers.ETAG));
             response.setHeader(Headers.ACCESS_CONTROL_ALLOW_ORIGIN, (String) headers.getFirst(Headers.ACCESS_CONTROL_ALLOW_ORIGIN));
             response.setHeader(Headers.X_CONTENT_TYPE_OPTIONS, (String) headers.getFirst(Headers.X_CONTENT_TYPE_OPTIONS));
-            response.setHeader(Headers.X_FRAME_OPTIONS, (String) headers.getFirst(Headers.X_FRAME_OPTIONS));
             response.setHeader(Headers.VARY, (String) headers.getFirst(Headers.VARY));
             response.setHeader(Headers.CONTENT_SECURITY_POLICY_REPORT_ONLY, (String) headers.getFirst(Headers.CONTENT_SECURITY_POLICY_REPORT_ONLY));
             os.write(data);
