@@ -20,6 +20,7 @@ import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ServiceEnum;
+import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.userlookup.UserLookup;
 import com.ebay.userlookup.common.ClientException;
@@ -149,7 +150,7 @@ public class UnifiedTrackingMessageParser {
     record.setProducerEventId(getProducerEventId(parameters, channelType));
 
     // event timestamp
-    record.setProducerEventTs(request.getSession().getLastAccessedTime());
+    record.setProducerEventTs(System.currentTimeMillis());
 
     // rlog id
     record.setRlogId(tracingContext.getRlogId());
@@ -218,7 +219,7 @@ public class UnifiedTrackingMessageParser {
     record.setPageId(PageIdEnum.getPageIdByAction(channelAction));
 
     // user geo id
-    record.setGeoId(getGeoID(requestContext, parameters, channelType, channelAction));
+    record.setGeoId(getGeoID(requestContext));
 
     // payload
     String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
@@ -230,7 +231,7 @@ public class UnifiedTrackingMessageParser {
     if(uepPayload != null && uepPayload.size() > 0) {
       fullPayload.putAll(uepPayload);
     }
-    record.setPayload(fullPayload);
+    record.setPayload(deleteNullOrEmptyValue(fullPayload));
 
     return record;
   }
@@ -241,10 +242,11 @@ public class UnifiedTrackingMessageParser {
   private static UnifiedTrackingMessage setDefaultAndCommonValues( Map<String, String> payload, UserAgentInfo agentInfo) {
     // set default value
     UnifiedTrackingMessage record = new UnifiedTrackingMessage("", "", 0L, 0L,
-        "", "", 0L, "", 0L, "", "", "", "",
-        "", "", "", "", "", 0, "", "", "",
-        "", "", "", "", "", "", "", "",
-        "", "", "", 0, 0, false, payload);
+        null, null, 0L, null, 0L, null, null, null,
+        null, null, null, null, null, null, 0, null,
+        null, null, null, null, null, null, null,
+        null, null, null, null, null, null, 0, 0,
+        false, payload);
 
     // event id
     record.setEventId(UUID.randomUUID().toString());
@@ -322,7 +324,7 @@ public class UnifiedTrackingMessageParser {
     } else if (ChannelType.PAID_SEARCH.equals(channelType)) {
       // partner definition unknown
     } else if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType)) {
-      partner = parameters.getFirst(Constants.MKPID);
+      partner = EmailPartnerIdEnum.parse(parameters.getFirst(Constants.MKPID));
     }
 
     return partner;
@@ -377,19 +379,11 @@ public class UnifiedTrackingMessageParser {
   /**
    * Get geo id
    */
-  private static int getGeoID(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
-                              ChannelType channelType, ChannelAction channelAction) {
-    int geoId = 0;
+  private static int getGeoID(ContainerRequestContext requestContext) {
+    int geoId;
 
-    if (ChannelAction.EMAIL_OPEN.equals(channelAction)) {
-      String choco_bs = HttpRequestUtil.parseTagFromParams(parameters, Constants.CHOCO_BUYER_ACCESS_SITE_ID);
-      if (!StringUtils.isEmpty(choco_bs)) {
-        geoId = Integer.parseInt(choco_bs);
-      }
-    } else {
-      UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-      geoId = userPrefsCtx.getGeoContext().getCountryId();
-    }
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+    geoId = userPrefsCtx.getGeoContext().getCountryId();
 
     return geoId;
   }
@@ -448,9 +442,11 @@ public class UnifiedTrackingMessageParser {
     }
 
     // landing page and tracking url
-    payload.put("url_mpre", url);
+    if (ChannelAction.CLICK.equals(channelAction)) {
+      payload.put("url_mpre", url);
+    }
 
-    return encodeTags(deleteNullOrEmptyValue(payload));
+    return encodeTags(payload);
   }
 
   /**

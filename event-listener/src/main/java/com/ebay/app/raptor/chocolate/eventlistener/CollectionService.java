@@ -926,11 +926,17 @@ public class CollectionService {
                                            UserAgentInfo agentInfo, MultiValueMap<String, String> parameters, String url,
                                            String referer, ChannelType channelType, ChannelAction channelAction) {
     try {
-      UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
-          raptorSecureContext, agentInfo, userLookup, parameters, url, referer, channelType, channelAction);
-      if (utpMessage != null) {
-        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
-            utpMessage), UnifiedTrackingKafkaSink.callback);
+      Matcher m = ebaysites.matcher(referer.toLowerCase());
+      if (ChannelAction.EMAIL_OPEN.equals(channelAction) || !m.find()) {
+        UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
+            raptorSecureContext, agentInfo, userLookup, parameters, url, referer, channelType, channelAction);
+        if (utpMessage != null) {
+          unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
+              utpMessage), UnifiedTrackingKafkaSink.callback);
+        }
+      } else {
+        metrics.meter("UTPInternalDomainRef", 1, Field.of(CHANNEL_ACTION, channelAction.toString()),
+            Field.of(CHANNEL_TYPE, channelType.toString()));
       }
     } catch (Exception e) {
       logger.warn("UTP message process error.", e);
@@ -1137,7 +1143,9 @@ public class CollectionService {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(!m.find()) {
+
+    // Email open should not be filtered by referer
+    if(ChannelAction.EMAIL_OPEN.equals(channelAction) || !m.find()) {
       Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
 
       // send click and open event to message tracker
@@ -1215,7 +1223,9 @@ public class CollectionService {
 
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
-    if(!m.find()) {
+
+    // Email open should not be filtered by referer
+    if(ChannelAction.EMAIL_OPEN.equals(channelAction) || !m.find()) {
       Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
 
       // send click and open event to message tracker
