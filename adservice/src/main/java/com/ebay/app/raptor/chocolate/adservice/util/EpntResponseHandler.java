@@ -170,7 +170,6 @@ public class EpntResponseHandler {
             response.setHeader(Headers.X_FRAME_OPTIONS, (String) headers.getFirst(Headers.X_FRAME_OPTIONS));
             response.setHeader(Headers.VARY, (String) headers.getFirst(Headers.VARY));
             response.setHeader(Headers.CONTENT_SECURITY_POLICY_REPORT_ONLY, (String) headers.getFirst(Headers.CONTENT_SECURITY_POLICY_REPORT_ONLY));
-            response.setStatus(HttpServletResponse.SC_OK);
             os.write(data);
         } catch (Exception e) {
             res = Response.status(Response.Status.BAD_REQUEST).build();
