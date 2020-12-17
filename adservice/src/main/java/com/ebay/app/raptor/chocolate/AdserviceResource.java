@@ -438,7 +438,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   }
 
   /**
-   * Get personalization ads for ebay parter network by placement parameters
+   * Get personalization ads for ebay partner network by placement parameters
    * @return response
    */
   @Override
