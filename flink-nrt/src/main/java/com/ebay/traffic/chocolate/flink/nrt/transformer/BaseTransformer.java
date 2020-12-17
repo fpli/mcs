@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import static com.ebay.traffic.chocolate.flink.nrt.constant.MetricConstants.METRIC_IMK_DUMP_MALFORMED;
@@ -106,12 +107,12 @@ public class BaseTransformer {
   /**
    * Used to cache temp fields
    */
-  private final Map<String, Object> fieldCache = new HashMap<>(16);
+  private final Map<String, Object> fieldCache = new ConcurrentHashMap<>(16);
 
   /**
    * Used to cache method object to improve reflect performance
    */
-  private static final Map<String, Method>  FIELD_GET_METHOD_CACHE = new HashMap<>(16);
+  private static final Map<String, Method>  FIELD_GET_METHOD_CACHE = new ConcurrentHashMap<>(16);
 
   /**
    * Map field name to get method name, eg. batch_id -> getBatchId
