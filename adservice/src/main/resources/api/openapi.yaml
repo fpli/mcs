@@ -207,25 +207,21 @@ paths:
           name: cpid
           schema:
             type: string
-          required: true
           description: ePN campaign id
         - in: query
           name: l
           schema:
             type: string
-          required: true
           description: ePN style placementLayout
         - in: query
           name: ft
           schema:
             type: string
-          required: true
           description: ePN style font
         - in: query
           name: tc
           schema:
             type: string
-          required: true
           description: ePN style titleColor
         - in: query
           name: clp
@@ -241,7 +237,6 @@ paths:
           name: k
           schema:
             type: string
-          required: true
           description: ePN search query keyword
         - in: query
           name: ctids
@@ -252,7 +247,6 @@ paths:
           name: mkpid
           schema:
             type: string
-          required: true
           description: ePN search query marketplaceId
         - in: query
           name: ur
