@@ -165,6 +165,27 @@ public class ImkTrckngEventTransformAppTest {
     testMessage8.setUri("https://www.qa.ebay.com");
     testMessage8.setReferer("www.ebay.com/ulk/sch/?_nkw=iphone+cases&mkevt=1&mkrid=123&mkcid=2&keyword=testkeyword&crlp=123&MT_ID=1geo_id=123&rlsatarget=123&adpos=1&device=m&loc=1&poi=1&abcId=1&cmpgn=123&sitelnk=123&test=XiangMobile");
 
+    FilterMessageV5 testMessage9 = FilterMessageV5.newBuilder(filterMessage).build();
+    testMessage9.setSnapshotId(9L);
+    testMessage9.setChannelType(ChannelType.DISPLAY);
+    testMessage9.setChannelAction(ChannelAction.CLICK);
+    testMessage9.setUri("https://www.qa.ebay.com");
+    testMessage9.setReferer("https://ebay.mtag.io/");
+
+    FilterMessageV5 testMessage10 = FilterMessageV5.newBuilder(filterMessage).build();
+    testMessage10.setSnapshotId(10L);
+    testMessage10.setChannelType(ChannelType.DISPLAY);
+    testMessage10.setChannelAction(ChannelAction.IMPRESSION);
+    testMessage10.setUri("https://www.qa.ebay.com");
+    testMessage10.setReferer("https://ebay.mtag.io/");
+
+    FilterMessageV5 testMessage11 = FilterMessageV5.newBuilder(filterMessage).build();
+    testMessage11.setSnapshotId(11L);
+    testMessage11.setChannelType(ChannelType.DISPLAY);
+    testMessage11.setChannelAction(ChannelAction.CLICK);
+    testMessage11.setUri("https://www.qa.ebay.com");
+    testMessage11.setReferer("https://ebay.pissedconsumer.com/");
+
     testHarness.processElement(testMessage1, System.currentTimeMillis());
     testHarness.processElement(testMessage2, System.currentTimeMillis());
     testHarness.processElement(testMessage3, System.currentTimeMillis());
@@ -173,6 +194,9 @@ public class ImkTrckngEventTransformAppTest {
     testHarness.processElement(testMessage6, System.currentTimeMillis());
     testHarness.processElement(testMessage7, System.currentTimeMillis());
     testHarness.processElement(testMessage8, System.currentTimeMillis());
+    testHarness.processElement(testMessage9, System.currentTimeMillis());
+    testHarness.processElement(testMessage10, System.currentTimeMillis());
+    testHarness.processElement(testMessage11, System.currentTimeMillis());
 
     List<FilterMessageV5> expected = new ArrayList<>();
     expected.add(testMessage1);
@@ -181,6 +205,9 @@ public class ImkTrckngEventTransformAppTest {
     expected.add(testMessage6);
     expected.add(testMessage7);
     expected.add(testMessage8);
+    expected.add(testMessage9);
+    expected.add(testMessage10);
+    expected.add(testMessage11);
 
     List<FilterMessageV5> actual = new ArrayList<>();
     testHarness.getOutput().forEach(elem -> actual.add(((StreamRecord<FilterMessageV5>) elem).getValue()));

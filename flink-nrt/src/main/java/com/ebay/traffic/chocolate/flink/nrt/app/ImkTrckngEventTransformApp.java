@@ -7,6 +7,7 @@ import com.ebay.app.raptor.chocolate.avro.RheosHeader;
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV5;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
+import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaSerializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.function.ESMetricsCompatibleRichMapFunction;
@@ -14,6 +15,8 @@ import com.ebay.traffic.chocolate.flink.nrt.provider.AsyncDataRequest;
 import com.ebay.traffic.chocolate.flink.nrt.transformer.BaseTransformer;
 import com.ebay.traffic.chocolate.flink.nrt.transformer.TransformerFactory;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
+import com.ebay.traffic.monitoring.Field;
+import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumWriter;
@@ -198,6 +201,7 @@ public class ImkTrckngEventTransformApp
     }
   }
 
+  @SuppressWarnings("unchecked")
   protected static class FilterEbaySites extends RichFilterFunction<FilterMessageV5> {
 
     public static final String NUM_RECORDS_IN_COUNTER = "NumRecords";
@@ -246,6 +250,7 @@ public class ImkTrckngEventTransformApp
 
     private transient Pattern ebaySites;
 
+    private transient SherlockioMetrics sherlockioMetrics;
 
     @Override
     public void open(Configuration config) {
@@ -270,6 +275,13 @@ public class ImkTrckngEventTransformApp
 
       internalDomainCounter = getRuntimeContext().getMetricGroup().counter(INTERNAL_DOMAIN_COUNTER);
       this.ebaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
+
+      Properties properties = PropertyMgr.getInstance()
+              .loadProperty(PropertyConstants.APPLICATION_PROPERTIES);
+      SherlockioMetrics.init(properties.getProperty(PropertyConstants.SHERLOCKIO_NAMESPACE),
+              properties.getProperty(PropertyConstants.SHERLOCKIO_ENDPOINT), properties.getProperty(PropertyConstants.SHERLOCKIO_USER));
+      sherlockioMetrics = SherlockioMetrics.getInstance();
+      sherlockioMetrics.setJobName("ImkTrckngEventTransformApp");
     }
 
     @Override
@@ -322,6 +334,20 @@ public class ImkTrckngEventTransformApp
       if (value.getChannelType() == ChannelType.ROI) {
         return true;
       }
+
+      if (value.getChannelType() == ChannelType.DISPLAY) {
+        if ("https://ebay.mtag.io/".equals(value.getReferer())) {
+          LOGGER.info("receive mtag");
+          sherlockioMetrics.meter("mtag", 1, Field.of(TransformerConstants.CHANNEL_TYPE, value.getChannelType()), Field.of(TransformerConstants.CHANNEL_ACTION, value.getChannelAction()));
+          return true;
+        }
+        if ("https://ebay.pissedconsumer.com/".equals(value.getReferer())) {
+          LOGGER.info("receive pissedconsumer");
+          sherlockioMetrics.meter("pissedconsumer", 1, Field.of(TransformerConstants.CHANNEL_TYPE, value.getChannelType()), Field.of(TransformerConstants.CHANNEL_ACTION, value.getChannelAction()));
+          return true;
+        }
+      }
+
       if (ebaySites.matcher(value.getReferer()).find()) {
         internalDomainCounter.inc();
         return false;
