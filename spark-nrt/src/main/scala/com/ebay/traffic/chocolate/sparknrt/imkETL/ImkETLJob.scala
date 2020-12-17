@@ -336,6 +336,9 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       return tools.judgeNotEbaySites(referer)
     }
     if(referer.equals("https://ebay.mtag.io/") || referer.equals("https://ebay.pissedconsumer.com/")) {
+      if (metrics != null) {
+        metrics.meter("imk.dump.judgeNotEbaySitesWhitelist", 1)
+      }
       true
     } else {
       tools.judgeNotEbaySites(referer)
