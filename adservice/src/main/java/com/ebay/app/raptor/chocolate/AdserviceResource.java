@@ -60,7 +60,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Path("/v1")
 @Consumes(MediaType.APPLICATION_JSON)
-public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, GuidApi, UseridApi, SyncApi {
+public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, GuidApi, UseridApi, SyncApi, EpntApi {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceResource.class);
   @Autowired
   private CollectionService collectionService;
@@ -99,6 +99,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private static final String METRIC_NO_MKRID_IN_AR = "METRIC_NO_MKRID_IN_AR";
   private static final String METRIC_INCOMING_REQUEST = "METRIC_INCOMING_REQUEST";
   private static final String METRIC_NO_MKRID_IN_IMPRESSION = "METRIC_NO_MKRID_IN_IMPRESSION";
+  private static final String METRIC_NO_CONFIGID_IN_EPNT = "METRIC_NO_CONFIGID_IN_EPNT";
   private static final String METRIC_ERROR_IN_ASYNC_MODEL = "METRIC_ERROR_IN_ASYNC_MODEL";
   private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId",
       "ap_oid", "data"};
@@ -404,6 +405,55 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     String adguid = adserviceCookie.readAdguid(request);
     String encryptedUserid = idMapping.getUidByAdguid(adguid);
     return Response.status(Response.Status.OK).entity(encryptedUserid).build();
+  }
+
+  /**
+   * Get config information for ebay partner network by config id
+   * @return response
+   */
+  @Override
+  public Response config(String configid) {
+    if(null == configid) {
+      metrics.meter(METRIC_NO_CONFIGID_IN_EPNT);
+      return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+
+    Response res = null;
+    try {
+      adserviceCookie.setAdguid(request, response);
+      res = collectionService.collectEpntConfigRedirect(configid, response);
+    } catch (Exception e) {
+      logger.warn(e.getMessage(), e);
+      try {
+        res = Response.status(Response.Status.BAD_REQUEST).build();
+      } catch (Exception ex) {
+        logger.warn(ex.getMessage(), ex);
+      }
+    }
+    return res;
+  }
+
+  /**
+   * Get personalization ads for ebay parter network by placement parameters
+   * @return response
+   */
+  @Override
+  public Response placement(String st, String cpid, String l, String ft, String tc, String clp, Integer mi,
+                            String k, Integer ctids, String mkpid, String ur, String cts, String sf, String pid, String ad_v) {
+    Response res = null;
+    try {
+      adserviceCookie.setAdguid(request, response);
+      res = collectionService.collectEpntPlacementRedirect(request, response);
+    } catch (Exception e) {
+      logger.warn(e.getMessage(), e);
+      try {
+        res = Response.status(Response.Status.BAD_REQUEST).build();
+      } catch (Exception ex) {
+        logger.warn(ex.getMessage(), ex);
+      }
+    }
+
+    return res;
   }
 
   private void sendOpenEventToAdobe(Map<String, String[]> params) {

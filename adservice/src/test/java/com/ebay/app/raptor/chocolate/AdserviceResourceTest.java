@@ -12,6 +12,7 @@ import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.commons.collections.MapUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,6 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Map;
+import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -63,6 +65,9 @@ public class AdserviceResourceTest {
   private static final String SYNC_PATH = "/marketingtracking/v1/sync";
   private static final String GUID_PATH = "/marketingtracking/v1/guid";
   private static final String USERID_PATH = "/marketingtracking/v1/uid";
+  private static final String CONFIG_PATH  = "/marketingtracking/v1/config/%s";
+  private static final String PLACEMENT_PATH = "/marketingtracking/v1/placement";
+
 
   @Autowired
   private CollectionService collectionService;
@@ -447,6 +452,42 @@ public class AdserviceResourceTest {
 
     // Common site email redirect
     Response response = getAdserviceResponse(AR_PATH, parameters);
+    assertEquals(200, response.getStatus());
+  }
+
+  @Test
+  public void config() {
+    String configUrl = String.format(CONFIG_PATH, "5c92a47d74493605fd7fc51c");
+
+    Response response = client.target(svcEndPoint).path(configUrl)
+            .request()
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .get();
+    assertEquals(200, response.getStatus());
+  }
+
+  @Test
+  public void placement() throws URISyntaxException {
+    URIBuilder uriBuilder = new URIBuilder(svcEndPoint + PLACEMENT_PATH)
+            .addParameter("st", "ACTIVE")
+            .addParameter("cpid", "5338209972")
+            .addParameter("l", "900x220")
+            .addParameter("ft", "Montserrat")
+            .addParameter("tc", "939196")
+            .addParameter("clp", "true")
+            .addParameter("mi", "10")
+            .addParameter("k", "iphone")
+            .addParameter("ctids", "0")
+            .addParameter("mkpid", "EBAY-US")
+            .addParameter("ur", "true")
+            .addParameter("cts", "true")
+            .addParameter("sf", "false")
+            .addParameter("pid", "1582013175997-0-1062982")
+            .addParameter("ad_v", "2");
+    Response response = client.target(uriBuilder.build())
+            .request()
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .get();
     assertEquals(200, response.getStatus());
   }
 }
