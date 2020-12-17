@@ -67,7 +67,7 @@ public class GdprConsentHandler {
         }
         try {
             if (StringUtils.isNotBlank(gdprParam) && gdprParam.equals("1") && enableTcfComplianceMode) {
-                metrics.meter(GdprConsentConstant.TOTAL_TRAFFIC_OF_GDPR_Adservice);
+                metrics.meter(GdprConsentConstant.TOTAL_TRAFFIC_OF_GDPR_ADSVC);
                 gdprConsentDomain.setAllowedSetCookie(false);
                 gdprConsentDomain.setAllowedShowPersonalizedAds(false);
                 gdprConsentDomain.setAllowedUseContextualInfo(false);
