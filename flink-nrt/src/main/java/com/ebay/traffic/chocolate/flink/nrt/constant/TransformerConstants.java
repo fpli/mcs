@@ -71,4 +71,6 @@ public class TransformerConstants {
   public static final String EMID = "emid";
   public static final String ADCAMPPU = "adcamppu";
   public static final String RHEOS_HEADER = "rheosHeader";
+  public static final String TRACKING_ID = "trkId";
+  public static final String BEST_GUESS_USER_ID = "bu";
 }
