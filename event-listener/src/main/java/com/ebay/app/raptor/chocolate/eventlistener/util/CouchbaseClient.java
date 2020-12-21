@@ -112,7 +112,7 @@ public class CouchbaseClient {
   /**
    * add mapping pair into couchbase
    */
-  public void addMappingRecord(String guid, String cguid) {
+  /*public void addMappingRecord(String guid, String cguid) {
     // in listener we don't want to hang if we have exception in CB
     //flushBuffer();
     try {
@@ -120,7 +120,7 @@ public class CouchbaseClient {
     } catch (Exception e) {
       logger.warn("Couchbase upsert operation exception", e);
     }
-  }
+  }*/
 
   /*get cguid by guid*/
   public String getCguid(String guid) {
@@ -192,27 +192,6 @@ public class CouchbaseClient {
     } catch (Exception e) {
       metrics.meter(SELF_SERVICE_METRICS_FAILURE);
       logger.warn("Couchbase upsert operation exception for self-service", e);
-    }
-  }
-
-  /**
-   * Couchbase upsert operation, make sure return client to factory when exception
-   */
-  private void upsert(String guid, String cguid) throws Exception {
-    CacheClient cacheClient = null;
-    try {
-      cacheClient = factory.getClient(datasourceName);
-      if (!getBucket(cacheClient).exists(guid)) {
-        Map<String, String> cguidMap = new HashMap<>();
-        cguidMap.put("cguid", cguid);
-        getBucket(cacheClient).upsert(JsonDocument.create(guid, 3 * 24 * 60 * 60, JsonObject.from(cguidMap)));
-        logger.debug("Adding new mapping. guid=" + guid + " cguid=" + cguid);
-      }
-      metrics.meter(SYNC_COMMAND);
-    } catch (Exception e) {
-      throw new Exception(e);
-    } finally {
-      factory.returnClient(cacheClient);
     }
   }
 

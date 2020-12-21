@@ -44,8 +44,6 @@ public class Constants {
   public static final String REFERER = "Referer";
   public static final String HTTP_ACCEPT_LANGUAGE = "Accept-Language";
 
-  // cookie length
-  public static final int CGUID_LENGTH = 32;
   public static final int GUID_LENGTH = 32;
 
   // default guid

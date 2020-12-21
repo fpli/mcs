@@ -15,10 +15,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import javax.ws.rs.core.Response;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
@@ -116,7 +116,6 @@ public class HttpRoverClient {
       RequestBuilder requestBuilder = new RequestBuilder();
 
       String guid = "";
-      String cguid = "";
       String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
       if(!StringUtils.isEmpty(trackingHeader)) {
         for (String seg : trackingHeader.split(",")) {
@@ -125,20 +124,15 @@ public class HttpRoverClient {
             if (keyValue[0].equalsIgnoreCase(GUID)) {
               guid = keyValue[1];
             }
-            if (keyValue[0].equalsIgnoreCase(CGUID)) {
-              cguid = keyValue[1];
-            }
           }
         }
       }
       // add guid and cguid in request cookie header
-      if (!guid.isEmpty() || !cguid.isEmpty()) {
+      if (!StringUtils.isBlank(guid)) {
         String cookie = NPII_PREFIX;
         String timestamp = generateTimestampForCookie();
         if (!guid.isEmpty())
           cookie += BTGUID_PREFIX + guid + timestamp + GUID_CONNECTOR;
-        if (!cguid.isEmpty())
-          cookie += CGUID_PREFIX + cguid + timestamp + GUID_CONNECTOR;
         requestBuilder.addHeader("Cookie", cookie);
       }
 
@@ -179,7 +173,7 @@ public class HttpRoverClient {
       return asyncHttpClient.prepareRequest(roverRequest).execute(new AsyncHandler<Integer>() {
         private Integer status;
         @Override
-        public State onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+        public State onStatusReceived(HttpResponseStatus responseStatus) {
           status = responseStatus.getStatusCode();
           if (status == HttpConstants.ResponseStatusCodes.MOVED_PERMANENTLY_301) {
             metrics.meter("ForwardRoverRedirect");
@@ -194,7 +188,7 @@ public class HttpRoverClient {
         }
 
         @Override
-        public State onHeadersReceived(HttpHeaders httpHeaders) throws Exception {
+        public State onHeadersReceived(HttpHeaders httpHeaders) {
           return null;
         }
 

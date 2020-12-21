@@ -207,17 +207,9 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   }
 
   /**
-   * Construct X-EBAY-C-TRACKING header with guid and cguid
+   * Construct X-EBAY-C-TRACKING header with guid
    */
   private String constructCookieHeader() {
-    String cguid = "";
-    try {
-      cguid = new Guid().nextPaddedGUID();
-    } catch (UnknownHostException e) {
-      logger.warn("Create Cguid failure: ", e);
-      metrics.meter("CreateCGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()));
-    }
-
     String guid = "";
     try {
       guid = new Guid().nextPaddedGUID();
@@ -225,8 +217,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
       logger.warn("Create guid failure: ", e);
       metrics.meter("CreateGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()));
     }
-
-    return "guid=" + guid + "," + "cguid=" + cguid;
+    return "guid=" + guid;
   }
 
   /**

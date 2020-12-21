@@ -777,14 +777,9 @@ public class CollectionService {
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
     String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
 
-    if (message != null) {
-      producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
-      return true;
-    } else {
-      return false;
-    }
+    producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
+    return true;
   }
-
 
   public boolean collectNotification(HttpServletRequest request, IEndUserContext endUserContext,
                                      ContainerRequestContext requestContext, Event event, int pageId) throws Exception {
@@ -1527,18 +1522,6 @@ public class CollectionService {
     }
   }
 
-
-  private String generateTimestampForCookie() {
-    LocalDateTime now = LocalDateTime.now();
-
-    // GUID, CGUID has 2 years expiration time
-    LocalDateTime expiration = now.plusYears(2);
-
-    // the last 8 hex number is the unix timestamp in seconds
-    long timeInSeconds = expiration.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1000;
-    return Long.toHexString(timeInSeconds);
-  }
-
   /**
    * log error, log metric and throw error with error key
    *
@@ -1620,11 +1603,11 @@ public class CollectionService {
         // decode rotationId if rotation is encoded
         // add decodeCnt to avoid looping infinitely
         int decodeCnt = 0;
-        while (rawRotationId.contains("%") && decodeCnt<5) {
+        while (rawRotationId.contains("%") && decodeCnt < 5) {
           rawRotationId = URLDecoder.decode(rawRotationId, UTF_8);
           decodeCnt = decodeCnt + 1;
         }
-        rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
+        rotationId = Long.parseLong(rawRotationId.replaceAll("-", ""));
       } catch (Exception e) {
         logger.warn(Errors.ERROR_INVALID_MKRID);
         metrics.meter("InvalidMkrid");
@@ -1642,10 +1625,7 @@ public class CollectionService {
    */
   private static boolean isFacebookPrefetchEnabled(HttpServletRequest request) {
     String facebookprefetch = request.getHeader("X-Purpose");
-    if (facebookprefetch != null && facebookprefetch.trim().equals("preview")) {
-      return true;
-    }
-    return false;
+    return facebookprefetch != null && facebookprefetch.trim().equals("preview");
   }
 
   /**

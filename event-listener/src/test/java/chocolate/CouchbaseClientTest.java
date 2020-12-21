@@ -1,6 +1,5 @@
 package chocolate;
 
-import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
@@ -32,15 +31,9 @@ public class CouchbaseClientTest {
     }
 
     @AfterClass
-    public static void tearDown(){
+    public static void tearDown() {
         CouchbaseClientMock.tearDown();
         CouchbaseClient.close();
-    }
-
-    @Test
-    public void testAddMappingRecord() {
-        couchbaseClient.addMappingRecord("guidtest123", "cguidtest123");
-        assertEquals("cguidtest123", couchbaseClient.getCguid("guidtest123"));
     }
 
     @Test
