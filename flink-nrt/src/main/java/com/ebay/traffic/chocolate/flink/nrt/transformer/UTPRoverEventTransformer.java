@@ -231,7 +231,7 @@ public class UTPRoverEventTransformer {
       String message = String.format("%s invoke method %s failed, raw message %s", fieldName, method, this.sourceRecord);
       throw new IllegalArgumentException(message, e);
     }
-    Validate.notNull(value, String.format("%s is null, raw message %s", fieldName, this.sourceRecord));
+
     return value;
   }
 
@@ -277,11 +277,11 @@ public class UTPRoverEventTransformer {
   }
 
   protected String getRlogId() {
-    return GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.RLOGID);
+    return GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.RLOGID);
   }
   
   protected String getTrackingId() {
-    return StringConstants.EMPTY;
+    return PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, TransformerConstants.TRACKING_ID);
   }
 
   @SuppressWarnings("UnstableApiUsage")
@@ -295,17 +295,22 @@ public class UTPRoverEventTransformer {
   }
 
   protected String getPublicUserId() {
-    String adcamppu = applicationPayload.get(TransformerConstants.ADCAMPPU);
-    return StringUtils.isNotEmpty(adcamppu) ? adcamppu.trim() : StringConstants.EMPTY;
+    return null;
   }
 
   @SuppressWarnings("UnstableApiUsage")
   protected long getEncryptedUserId() {
-    String emid = sojTags.get(TransformerConstants.EMID);
-    if (emid == null) {
+    String encryptedUserId = sojTags.get(TransformerConstants.EMID);
+    if (encryptedUserId == null) {
+      encryptedUserId = PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString,
+          TransformerConstants.BEST_GUESS_USER_ID);
+    }
+
+    if (encryptedUserId == null) {
       return 0L;
     }
-    Long parse = Longs.tryParse(emid);
+
+    Long parse = Longs.tryParse(encryptedUserId);
     return parse != null ? parse : 0L;
   }
 
@@ -315,15 +320,15 @@ public class UTPRoverEventTransformer {
   }
 
   protected String getIdfa() {
-    return applicationPayload.getOrDefault(TransformerConstants.IDFA, StringConstants.EMPTY);
+    return applicationPayload.get(TransformerConstants.IDFA);
   }
 
   protected String getGadid() {
-    return applicationPayload.getOrDefault(TransformerConstants.GADID, StringConstants.EMPTY);
+    return applicationPayload.get(TransformerConstants.GADID);
   }
 
   protected String getDeviceId() {
-    return applicationPayload.getOrDefault(TransformerConstants.UDID, StringConstants.EMPTY);
+    return applicationPayload.get(TransformerConstants.UDID);
   }
 
   protected String getChannelType() {
@@ -337,23 +342,21 @@ public class UTPRoverEventTransformer {
   protected String getPartner() {
     String partnerId = PulsarParseUtils.getPartnerIdFromUrlQueryString(urlQueryString);
     if (StringUtils.isEmpty(partnerId)) {
-      return StringConstants.EMPTY;
+      return null;
     }
-    String parse = EmailPartnerIdEnum.parse(partnerId);
-    return parse != null ? parse : StringConstants.EMPTY;
+    return EmailPartnerIdEnum.parse(partnerId);
   }
 
   protected String getCampaignId() {
     if (channelType == ChannelTypeEnum.MRKT_EMAIL) {
-      return applicationPayload.getOrDefault(TransformerConstants.SEGNAME, StringConstants.EMPTY);
+      return applicationPayload.get(TransformerConstants.SEGNAME);
     }
-    String emsid = PulsarParseUtils.substring(applicationPayload.get(TransformerConstants.EMSID), "e", ".mle");
-    String campaignId = emsid != null ? emsid : PulsarParseUtils.substring(applicationPayload.get(TransformerConstants.SID), "e", ".mle");
-    return campaignId == null ? StringConstants.EMPTY : campaignId;
+    
+    return PulsarParseUtils.substring(applicationPayload.get(TransformerConstants.SID), "e", ".mle");
   }
 
   protected String getRotationId() {
-    return StringConstants.EMPTY;
+    return null;
   }
 
   @SuppressWarnings("UnstableApiUsage")
@@ -371,43 +374,43 @@ public class UTPRoverEventTransformer {
   }
 
   protected String getReferer() {
-    return applicationPayload.getOrDefault(REFERER, StringConstants.EMPTY);
+    return applicationPayload.get(REFERER);
   }
 
   protected String getUserAgent() {
-    return applicationPayload.getOrDefault(TransformerConstants.AGENT, StringConstants.EMPTY);
+    return applicationPayload.get(TransformerConstants.AGENT);
   }
 
   protected String getDeviceFamily() {
-    return GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.DEVICE_FAMILY);
+    return GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.DEVICE_FAMILY);
   }
 
   protected String getDeviceType() {
-    return GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.DEVICE_TYPE);
+    return GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.DEVICE_TYPE);
   }
 
   protected String getBrowserVersion() {
-    return GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.BROWSER_VERSION);
+    return GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.BROWSER_VERSION);
   }
 
   protected String getBrowserFamily() {
-    return GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.BROWSER_FAMILY);
+    return GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.BROWSER_FAMILY);
   }
 
   protected String getOsFamily() {
-    return GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.OS_FAMILY);
+    return GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.OS_FAMILY);
   }
 
   protected String getOsVersion() {
-    return GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.ENRICHED_OS_VERSION);
+    return GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.ENRICHED_OS_VERSION);
   }
 
   protected String getAppId() {
-    return GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.APP_ID);
+    return GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.APP_ID);
   }
 
   protected String getAppVersion() {
-    return GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.APP_VERSION);
+    return GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.APP_VERSION);
   }
 
   protected String getService() {
@@ -415,11 +418,11 @@ public class UTPRoverEventTransformer {
   }
 
   protected String getServer() {
-    return GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.WEB_SERVER);
+    return GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.WEB_SERVER);
   }
 
   protected String getRemoteIp() {
-    return applicationPayload.getOrDefault(TransformerConstants.REMOTE_IP, StringConstants.EMPTY);
+    return applicationPayload.getOrDefault(REMOTE_IP, StringConstants.EMPTY);
   }
 
   protected int getPageId() {
@@ -465,11 +468,14 @@ public class UTPRoverEventTransformer {
       }
     }
 
-    for (String key : Arrays.asList("cobrand", "fbprefetch", "url_mpre", "bs")) {
+    for (String key : Arrays.asList("fbprefetch", "url_mpre", "bs")) {
       if (applicationPayload.containsKey(key)) {
         payload.put(key, applicationPayload.get(key));
       }
     }
+
+    payload.put("cobrand", GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.COBRAND));
+
     return payload;
   }
 

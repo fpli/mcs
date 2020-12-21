@@ -23,8 +23,8 @@ import java.util.Properties;
 import static org.junit.Assert.*;
 
 public class UTPRoverEventTransformerTest {
-  private static final String MRKT_EMAIL_URL_QUERY_STRING = "/roveropen/4/0/8?osub=b104444a19d75f58b856404c3b16d970%7ETE75001_T_AGM_CT1&crd=20201205091000&sojTags=emid%3Dbu%2Cut%3Dut%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cosub%3Dosub&ch=osgood&segname=TE75001_T_AGM_CT1&bu=43212588313";
-  private static final String SITE_EMAIL_URL_QUERY_STRING = "/roveropen/4/0/7?osub=b104444a19d75f58b856404c3b16d970%7ETE75001_T_AGM_CT1&crd=20201205091000&sojTags=emid%3Dbu%2Cut%3Dut%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cosub%3Dosub&ch=osgood&segname=TE75001_T_AGM_CT1&bu=43212588313";
+  private static final String MRKT_EMAIL_URL_QUERY_STRING = "/roveropen/4/0/8?osub=b104444a19d75f58b856404c3b16d970%7ETE75001_T_AGM_CT1&crd=20201205091000&sojTags=emid%3Dbu%2Cut%3Dut%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cosub%3Dosub&ch=osgood&segname=TE75001_T_AGM_CT1&bu=43212588313&trkId=456";
+  private static final String SITE_EMAIL_URL_QUERY_STRING = "/roveropen/4/0/7?osub=b104444a19d75f58b856404c3b16d970%7ETE75001_T_AGM_CT1&crd=20201205091000&sojTags=emid%3Dbu%2Cut%3Dut%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cosub%3Dosub&ch=osgood&segname=TE75001_T_AGM_CT1&bu=43212588313&trkId=123";
 
   private static Schema schema;
   private GenericRecord genericRecord;
@@ -99,7 +99,7 @@ public class UTPRoverEventTransformerTest {
 
   @Test
   public void getRlogId() {
-    assertEquals("", transformer.getRlogId());
+    assertNull(transformer.getRlogId());
     genericRecord.put("rlogid", new Utf8("123456"));
     transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
     assertEquals("123456", transformer.getRlogId());
@@ -107,7 +107,7 @@ public class UTPRoverEventTransformerTest {
 
   @Test
   public void getTrackingId() {
-    assertEquals("", transformer.getTrackingId());
+    assertEquals("456", transformer.getTrackingId());
   }
 
   @Test
@@ -125,12 +125,7 @@ public class UTPRoverEventTransformerTest {
 
   @Test
   public void getPublicUserId() {
-    assertEquals("", transformer.getPublicUserId());
-
-    applicationMap.put(new Utf8("adcamppu"), new Utf8("1234546"));
-    genericRecord.put("applicationPayload", applicationMap);
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
-    assertEquals("1234546", transformer.getPublicUserId());
+    assertNull(transformer.getPublicUserId());
   }
 
   @Test
@@ -184,18 +179,12 @@ public class UTPRoverEventTransformerTest {
 
   @Test
   public void getCampaignId() {
-    assertEquals("", transformer.getCampaignId());
+    assertNull(transformer.getCampaignId());
 
     applicationMap.put(new Utf8("segname"), new Utf8("123456"));
     genericRecord.put("applicationPayload", applicationMap);
     transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
     assertEquals("123456", transformer.getCampaignId());
-
-    applicationMap.put(new Utf8("emsid"), new Utf8("e11051.m44.l1139"));
-    genericRecord.put("applicationPayload", applicationMap);
-    genericRecord.put("urlQueryString", new Utf8(SITE_EMAIL_URL_QUERY_STRING));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
-    assertEquals("11051", transformer.getCampaignId());
 
     applicationMap.put(new Utf8("sid"), new Utf8("e11051.m44.l1139"));
     genericRecord.put("applicationPayload", applicationMap);
@@ -206,7 +195,7 @@ public class UTPRoverEventTransformerTest {
 
   @Test
   public void getRotationId() {
-    assertEquals("", transformer.getRotationId());
+    assertNull(transformer.getRotationId());
   }
 
   @Test

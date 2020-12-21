@@ -172,4 +172,21 @@ public class PulsarParseUtils {
     }
     return sojTagsMap;
   }
+
+  /**
+   * Get parameter value from urlQueryString
+   * @param urlQueryString urlQueryString
+   * @param parameter parameter name
+   * @return parameter value
+   */
+  public static String getParameterFromUrlQueryString(String urlQueryString, String parameter) {
+    try {
+      String url = URLDecoder.decode(urlQueryString, StandardCharsets.UTF_8.name());
+      UriComponents uriComponents = UriComponentsBuilder.fromUriString(url).build();
+
+      return uriComponents.getQueryParams().getFirst(parameter);
+    } catch (UnsupportedEncodingException | IllegalArgumentException e) {
+      return null;
+    }
+  }
 }
