@@ -5,6 +5,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
+import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
@@ -18,7 +19,9 @@ import com.ebay.raptor.domain.request.api.DomainRequestData;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
+import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
+import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ServiceEnum;
 import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
 import com.ebay.traffic.monitoring.Field;
@@ -37,6 +40,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
+import java.util.regex.Matcher;
+
+import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 
 /**
  * Created by jialili1 on 11/5/20
@@ -59,7 +65,7 @@ public class UnifiedTrackingMessageParser {
     Map<String, String> payload = new HashMap<>();
 
     // set default value
-    UnifiedTrackingMessage record = setDefaultAndCommonValues(payload, new UserAgentParser().parse(event.getUserAgent()));
+    UnifiedTrackingMessage record = setDefaultAndCommonValues(payload, new UserAgentParser().parse(event.getUserAgent()), System.currentTimeMillis());
 
     // event id
     record.setProducerEventId(coalesce(event.getProducerEventId(), ""));
@@ -137,11 +143,16 @@ public class UnifiedTrackingMessageParser {
                                              IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
                                              UserAgentInfo agentInfo, UserLookup userLookup,
                                              MultiValueMap<String, String> parameters, String url, String referer,
-                                             ChannelType channelType, ChannelAction channelAction) {
+                                             ChannelType channelType, ChannelAction channelAction,
+                                             boolean isROIFromCheckoutAPI, ROIEvent roiEvent, long snapshotId,
+                                             long shortSnapshotId, long startTime) {
     Map<String, String> payload = new HashMap<>();
 
     // set default value
-    UnifiedTrackingMessage record = setDefaultAndCommonValues(payload, agentInfo);
+    UnifiedTrackingMessage record = setDefaultAndCommonValues(payload, agentInfo, startTime);
+
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+    payload.put("lang_cd", userPrefsCtx.getLangLocale().toLanguageTag());
 
     DomainRequestData domainRequest = (DomainRequestData) requestContext.getProperty(DomainRequestData.NAME);
     RequestTracingContext tracingContext = (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
@@ -182,7 +193,7 @@ public class UnifiedTrackingMessageParser {
     record.setUserAgent(userAgent);
 
     // channel type
-    record.setChannelType(channelType.toString());
+    record.setChannelType(getChannelType(channelType).getValue());
 
     // action type
     String actionType = getActionType(channelAction);
@@ -195,7 +206,8 @@ public class UnifiedTrackingMessageParser {
     record.setCampaignId(getCampaignId(parameters, channelType));
 
     // rotation id
-    record.setRotationId(getRotationId(parameters));
+    String rotationId = getRotationId(parameters);
+    record.setRotationId(rotationId);
 
     // site id
     record.setSiteId(domainRequest.getSiteId());
@@ -216,7 +228,8 @@ public class UnifiedTrackingMessageParser {
     record.setRemoteIp(HttpRequestUtil.getRemoteIp(request));
 
     // page id
-    record.setPageId(PageIdEnum.getPageIdByAction(channelAction));
+    int pageId = PageIdEnum.getPageIdByAction(channelAction);
+    record.setPageId(pageId);
 
     // user geo id
     record.setGeoId(getGeoID(requestContext));
@@ -226,7 +239,8 @@ public class UnifiedTrackingMessageParser {
     // format UEP payload
     Map<String, String> uepPayload = uepPayloadHelper.getUepPayload(url, ActionTypeEnum.valueOf(actionType));
     Map<String, String> fullPayload =
-        getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction);
+        getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction, referer, pageId, rotationId, snapshotId, shortSnapshotId, roiEvent, isROIFromCheckoutAPI, userId, startTime);
+
     // append UEP payload
     if(uepPayload != null && uepPayload.size() > 0) {
       fullPayload.putAll(uepPayload);
@@ -236,10 +250,31 @@ public class UnifiedTrackingMessageParser {
     return record;
   }
 
+  private static ChannelTypeEnum getChannelType(ChannelType channelType) {
+    switch (channelType) {
+      case PAID_SEARCH:
+        return ChannelTypeEnum.PLA;
+      case DISPLAY:
+        return ChannelTypeEnum.DISPLAY;
+      case SOCIAL_MEDIA:
+        return ChannelTypeEnum.SOCIAL;
+      case PAID_SOCIAL:
+        return ChannelTypeEnum.SOCIAL;
+      case SEARCH_ENGINE_FREE_LISTINGS:
+        return ChannelTypeEnum.SEARCH_ENGINE_FREE_LISTINGS;
+      case MRKT_EMAIL:
+        return ChannelTypeEnum.MRKT_EMAIL;
+      case SITE_EMAIL:
+        return ChannelTypeEnum.SITE_EMAIL;
+      default:
+        return ChannelTypeEnum.GENERIC;
+    }
+  }
+
   /**
    * Parse common logic
    */
-  private static UnifiedTrackingMessage setDefaultAndCommonValues( Map<String, String> payload, UserAgentInfo agentInfo) {
+  private static UnifiedTrackingMessage setDefaultAndCommonValues(Map<String, String> payload, UserAgentInfo agentInfo, long eventTs) {
     // set default value
     UnifiedTrackingMessage record = new UnifiedTrackingMessage("", "", 0L, 0L,
         null, null, 0L, null, 0L, null, null, null,
@@ -252,7 +287,7 @@ public class UnifiedTrackingMessageParser {
     record.setEventId(UUID.randomUUID().toString());
 
     // event timestamp
-    record.setEventTs(System.currentTimeMillis());
+    record.setEventTs(eventTs);
 
     // device info
     DeviceInfoParser deviceInfoParser = new DeviceInfoParser().parse(agentInfo);
@@ -413,16 +448,26 @@ public class UnifiedTrackingMessageParser {
    */
   private static Map<String, String> getPayload(Map<String, String> payload, MultiValueMap<String, String> parameters,
                                                 ContainerRequestContext requestContext, String url, String userAgent,
-                                                String appId, ChannelType channelType, ChannelAction channelAction) {
+                                                String appId, ChannelType channelType, ChannelAction channelAction,
+                                                String referer, int pageId, String rotationId, long snapshotId,
+                                                long shortSnapshotId, ROIEvent roiEvent, boolean isROIFromCheckoutAPI,
+                                                long userId, long eventTs) {
     // add tags from parameters
     for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
         payload.put(entry.getKey(), HttpRequestUtil.parseTagFromParams(parameters, entry.getValue()));
       }
     }
+    if (channelAction != ChannelAction.ROI) {
+      // add tags in url param "sojTags" into applicationPayload
+      addSojTags(payload, parameters, channelType, channelAction);
+      addCommonTags(payload, pageId, url, referer, appId);
+      addTags(payload, parameters, rotationId, snapshotId, shortSnapshotId, eventTs);
+    }
 
-    // add tags in url param "sojTags" into applicationPayload
-    payload = addSojTags(payload, parameters, channelType, channelAction);
+    if (channelAction == ChannelAction.ROI && !isROIFromCheckoutAPI) {
+      addRoiSojTags(payload, roiEvent, String.valueOf(userId));
+    }
 
     // add other tags
     // buyer access site id
@@ -447,6 +492,27 @@ public class UnifiedTrackingMessageParser {
     }
 
     return encodeTags(payload);
+  }
+
+  private static void addTags(Map<String, String> payload, MultiValueMap<String, String> parameters, String rotationId, long snapshotId, long shortSnapshotId, long eventTs) {
+    payload.put(TrackerTagValueUtil.EventFamilyTag, "mkt");
+    payload.put("rotid", String.valueOf(rotationId));
+
+    String searchKeyword = "";
+    if (parameters.containsKey(Constants.SEARCH_KEYWORD) && parameters.get(Constants.SEARCH_KEYWORD).get(0) != null) {
+      searchKeyword = parameters.get(Constants.SEARCH_KEYWORD).get(0);
+    }
+    payload.put("keyword", searchKeyword);
+    payload.put("rvrid", String.valueOf(shortSnapshotId));
+    payload.put("snapshotid", String.valueOf(snapshotId));
+
+    String gclid = "";
+    if (parameters.containsKey(Constants.GCLID) && parameters.get(Constants.GCLID).get(0) != null) {
+      gclid = parameters.get(Constants.GCLID).get(0);
+    }
+    payload.put("gclid", gclid);
+
+    payload.put("producereventts", String.valueOf(eventTs));
   }
 
   /**
@@ -479,6 +545,33 @@ public class UnifiedTrackingMessageParser {
     }
 
     return applicationPayload;
+  }
+
+  private static void addCommonTags(Map<String, String> applicationPayload, Integer pageId, String url, String referer, String appId) {
+    applicationPayload.put(TrackerTagValueUtil.PageIdTag, String.valueOf(pageId));
+    applicationPayload.put(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION);
+    applicationPayload.put("url_mpre", url);
+    applicationPayload.put("ref", referer);
+    applicationPayload.put("app", appId);
+  }
+
+  private static void addRoiSojTags(Map<String, String> payloadMap, ROIEvent roiEvent, String userId) {
+    payloadMap.put(TrackerTagValueUtil.PageIdTag, String.valueOf(PageIdEnum.ROI.getId()));
+    if(isLongNumeric(roiEvent.getItemId())) {
+      payloadMap.put("itm", roiEvent.getItemId());
+    }
+    if (!org.springframework.util.StringUtils.isEmpty(roiEvent.getTransType())) {
+      payloadMap.put("tt", roiEvent.getTransType());
+    }
+    if (isLongNumeric(roiEvent.getUniqueTransactionId())) {
+      payloadMap.put("roi_bti", roiEvent.getUniqueTransactionId());
+    }
+    if (isLongNumeric(userId)) {
+      payloadMap.put("userid", userId);
+    }
+    if (isLongNumeric(roiEvent.getTransactionTimestamp())) {
+      payloadMap.put("producereventts", roiEvent.getTransactionTimestamp());
+    }
   }
 
   /**
