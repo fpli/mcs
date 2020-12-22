@@ -56,7 +56,7 @@ public class UTPRoverEventTransformerTest {
     genericRecord.put("urlQueryString", new Utf8(MRKT_EMAIL_URL_QUERY_STRING));
     genericRecord.put("eventTimestamp", 123456789L);
     genericRecord.put("guid", new Utf8("test-guid"));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
   }
 
   @Test
@@ -87,21 +87,29 @@ public class UTPRoverEventTransformerTest {
     applicationMap.put(new Utf8("euid"), new Utf8("1234546"));
     genericRecord.put("urlQueryString", new Utf8(MRKT_EMAIL_URL_QUERY_STRING));
     genericRecord.put("applicationPayload", applicationMap);
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("", transformer.getProducerEventId());
 
     applicationMap.put(new Utf8("euid"), new Utf8("1234546"));
     genericRecord.put("urlQueryString", new Utf8("/roveropen/4/0/7?osub=b104444a19d75f58b856404c3b16d970%7ETE75001_T_AGM_CT1&crd=20201205091000&sojTags=emid%3Dbu%2Cut%3Dut%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cosub%3Dosub&ch=osgood&segname=TE75001_T_AGM_CT1&bu=43212588313"));
     genericRecord.put("applicationPayload", applicationMap);
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("1234546", transformer.getProducerEventId());
+
+    genericRecord.put("pageId", 3086);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
+    assertEquals("", transformer.getProducerEventId());
+
+    applicationMap.put(new Utf8("rvrid"), new Utf8("123"));
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
+    assertEquals("123", transformer.getProducerEventId());
   }
 
   @Test
   public void getRlogId() {
     assertNull(transformer.getRlogId());
     genericRecord.put("rlogid", new Utf8("123456"));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("123456", transformer.getRlogId());
   }
 
@@ -115,11 +123,11 @@ public class UTPRoverEventTransformerTest {
     assertEquals(0L, transformer.getUserId());
 
     genericRecord.put("userId", new Utf8("userId"));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals(0L, transformer.getUserId());
 
     genericRecord.put("userId", new Utf8("123"));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals(123L, transformer.getUserId());
   }
 
@@ -142,7 +150,7 @@ public class UTPRoverEventTransformerTest {
   public void getIdfa() {
     applicationMap.put(new Utf8("idfa"), new Utf8("1234546"));
     genericRecord.put("applicationPayload", applicationMap);
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("1234546", transformer.getIdfa());
   }
 
@@ -150,7 +158,7 @@ public class UTPRoverEventTransformerTest {
   public void getGadid() {
     applicationMap.put(new Utf8("gadid"), new Utf8("1234546"));
     genericRecord.put("applicationPayload", applicationMap);
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("1234546", transformer.getGadid());
   }
 
@@ -158,7 +166,7 @@ public class UTPRoverEventTransformerTest {
   public void getDeviceId() {
     applicationMap.put(new Utf8("udid"), new Utf8("1234546"));
     genericRecord.put("applicationPayload", applicationMap);
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("1234546", transformer.getDeviceId());
   }
 
@@ -183,13 +191,13 @@ public class UTPRoverEventTransformerTest {
 
     applicationMap.put(new Utf8("segname"), new Utf8("123456"));
     genericRecord.put("applicationPayload", applicationMap);
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("123456", transformer.getCampaignId());
 
     applicationMap.put(new Utf8("sid"), new Utf8("e11051.m44.l1139"));
     genericRecord.put("applicationPayload", applicationMap);
     genericRecord.put("urlQueryString", new Utf8(SITE_EMAIL_URL_QUERY_STRING));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("11051", transformer.getCampaignId());
   }
 
@@ -225,56 +233,56 @@ public class UTPRoverEventTransformerTest {
   @Test
   public void getDeviceFamily() {
     genericRecord.put("deviceFamily", new Utf8("test"));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("test", transformer.getDeviceFamily());
   }
 
   @Test
   public void getDeviceType() {
     genericRecord.put("deviceType", new Utf8("test"));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("test", transformer.getDeviceType());
   }
 
   @Test
   public void getBrowserVersion() {
     genericRecord.put("browserVersion", new Utf8("test"));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("test", transformer.getBrowserVersion());
   }
 
   @Test
   public void getBrowserFamily() {
     genericRecord.put("browserFamily", new Utf8("test"));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("test", transformer.getBrowserFamily());
   }
 
   @Test
   public void getOsFamily() {
     genericRecord.put("osFamily", new Utf8("test"));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("test", transformer.getOsFamily());
   }
 
   @Test
   public void getOsVersion() {
     genericRecord.put("enrichedOsVersion", new Utf8("test"));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("test", transformer.getOsVersion());
   }
 
   @Test
   public void getAppId() {
     genericRecord.put("appId", new Utf8("test"));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("test", transformer.getAppId());
   }
 
   @Test
   public void getAppVersion() {
     genericRecord.put("appVersion", new Utf8("test"));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("test", transformer.getAppVersion());
   }
 
@@ -286,7 +294,7 @@ public class UTPRoverEventTransformerTest {
   @Test
   public void getServer() {
     genericRecord.put("webServer", new Utf8("rover.ebay.com"));
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals("rover.ebay.com", transformer.getServer());
   }
 
@@ -306,19 +314,19 @@ public class UTPRoverEventTransformerTest {
 
     applicationMap.put(new Utf8("uc"), new Utf8("uc"));
     genericRecord.put("applicationPayload", applicationMap);
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals(0, transformer.getGeoId());
 
     applicationMap.put(new Utf8("uc"), new Utf8("1"));
     genericRecord.put("applicationPayload", applicationMap);
-    transformer = new UTPRoverEventTransformer("", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
     assertEquals(1, transformer.getGeoId());
   }
 
   @Test
   public void getIsBot() {
     assertFalse(transformer.getIsBot());
-    transformer = new UTPRoverEventTransformer("behavior.pulsar.misc.bot", 0L, genericRecord, rheosEvent);
+    transformer = new UTPRoverEventTransformer("behavior.pulsar.misc.bot", 0, 0L, genericRecord, rheosEvent);
     assertTrue(transformer.getIsBot());
   }
 

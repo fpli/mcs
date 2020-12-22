@@ -73,4 +73,5 @@ public class TransformerConstants {
   public static final String RHEOS_HEADER = "rheosHeader";
   public static final String TRACKING_ID = "trkId";
   public static final String BEST_GUESS_USER_ID = "bu";
+  public static final String RVRID = "rvrid";
 }

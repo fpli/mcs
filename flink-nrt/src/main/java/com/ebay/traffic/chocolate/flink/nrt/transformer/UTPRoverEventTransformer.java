@@ -35,13 +35,13 @@ import java.util.function.UnaryOperator;
 
 public class UTPRoverEventTransformer {
   private final String sourceTopic;
+  private final int partition;
   private final long offset;
   private final GenericRecord sourceRecord;
   private final RheosEvent sourceRheosEvent;
   private Integer pageId;
   protected Map<String, String> applicationPayload;
   private String urlQueryString;
-  private String channelId;
   private ChannelTypeEnum channelType;
   private ActionTypeEnum actionTypeEnum;
   private Map<String, String> sojTags;
@@ -51,6 +51,7 @@ public class UTPRoverEventTransformer {
 
   private static final String USER_ID = "userId";
   private static final int PAGE_ID_ROVER_CLICK = 3084;
+  private static final int PAGE_ID_ROI = 3086;
   private static final int PAGE_ID_EMAIL_OPEN = 3962;
   private static final String PAGE_NAME_ROVER_EMAIL_OPEN = "roveropen";
   private static final String SITE_EMAIL_CHANNEL_ID = "7";
@@ -106,8 +107,9 @@ public class UTPRoverEventTransformer {
     return String.format("%s%s", GET_METHOD_PREFIX, upperCamelCase);
   };
 
-  public UTPRoverEventTransformer(String sourceTopic, long offset, GenericRecord sourceRecord, RheosEvent sourceRheosEvent) {
+  public UTPRoverEventTransformer(String sourceTopic, int partition, long offset, GenericRecord sourceRecord, RheosEvent sourceRheosEvent) {
     this.sourceTopic = sourceTopic;
+    this.partition = partition;
     this.offset = offset;
     this.sourceRecord = sourceRecord;
     this.sourceRheosEvent = sourceRheosEvent;
@@ -128,8 +130,8 @@ public class UTPRoverEventTransformer {
       SherlockioMetrics.getInstance().meter("NoPageId", 1, Field.of(TOPIC, sourceTopic));
       return false;
     }
-    if (pageId != PAGE_ID_ROVER_CLICK && pageId != PAGE_ID_EMAIL_OPEN) {
-      SherlockioMetrics.getInstance().meter("NotEmailClickOpen", 1, Field.of(TOPIC, sourceTopic));
+    if (pageId != PAGE_ID_ROVER_CLICK && pageId != PAGE_ID_EMAIL_OPEN && pageId != PAGE_ID_ROI) {
+      SherlockioMetrics.getInstance().meter("NotEmailClickOpenROI", 1, Field.of(TOPIC, sourceTopic));
       return false;
     }
 
@@ -140,27 +142,33 @@ public class UTPRoverEventTransformer {
       return false;
     }
 
-    channelId = PulsarParseUtils.getChannelIdFromUrlQueryString(urlQueryString);
-    if (StringUtils.isEmpty(channelId)) {
-      SherlockioMetrics.getInstance().meter("NoChannelId", 1, Field.of(TOPIC, sourceTopic));
-      return false;
+    if (pageId == PAGE_ID_ROI) {
+      channelType = ChannelTypeEnum.GENERIC;
+      return true;
+    } else {
+      String channelId = PulsarParseUtils.getChannelIdFromUrlQueryString(urlQueryString);
+      if (StringUtils.isEmpty(channelId)) {
+        SherlockioMetrics.getInstance().meter("NoChannelId", 1, Field.of(TOPIC, sourceTopic));
+        return false;
+      }
+
+      channelType = parseChannelType(channelId);
+      if (channelType == null) {
+        SherlockioMetrics.getInstance().meter("NotEmail", 1, Field.of(TOPIC, sourceTopic));
+        return false;
+      }
+
+      String pageName = parsePageName();
+      if (pageName == null) {
+        SherlockioMetrics.getInstance().meter("NoPageName", 1, Field.of(TOPIC, sourceTopic));
+        return false;
+      }
+      if (pageId == PAGE_ID_EMAIL_OPEN && !PAGE_NAME_ROVER_EMAIL_OPEN.equals(pageName)) {
+        SherlockioMetrics.getInstance().meter("NotRoveropen", 1, Field.of(TOPIC, sourceTopic));
+        return false;
+      }
     }
 
-    channelType = parseChannelType();
-    if (channelType == null) {
-      SherlockioMetrics.getInstance().meter("NotEmail", 1, Field.of(TOPIC, sourceTopic));
-      return false;
-    }
-
-    String pageName = parsePageName();
-    if (pageName == null) {
-      SherlockioMetrics.getInstance().meter("NoPageName", 1, Field.of(TOPIC, sourceTopic));
-      return false;
-    }
-    if (pageId == PAGE_ID_EMAIL_OPEN && !PAGE_NAME_ROVER_EMAIL_OPEN.equals(pageName)) {
-      SherlockioMetrics.getInstance().meter("NotRoveropen", 1, Field.of(TOPIC, sourceTopic));
-      return false;
-    }
     return true;
   }
 
@@ -180,7 +188,7 @@ public class UTPRoverEventTransformer {
     return utf8 == null ? null : utf8.toString();
   }
 
-  private ChannelTypeEnum parseChannelType() {
+  private ChannelTypeEnum parseChannelType(String channelId) {
     if (channelId == null) {
       return null;
     }
@@ -194,7 +202,16 @@ public class UTPRoverEventTransformer {
   }
 
   private ActionTypeEnum parseActionType() {
-    return pageId == PAGE_ID_ROVER_CLICK ? ActionTypeEnum.CLICK : ActionTypeEnum.OPEN;
+    switch (pageId) {
+      case PAGE_ID_ROVER_CLICK:
+        return ActionTypeEnum.CLICK;
+      case PAGE_ID_EMAIL_OPEN:
+        return ActionTypeEnum.OPEN;
+      case PAGE_ID_ROI:
+        return ActionTypeEnum.ROI;
+      default:
+        throw new IllegalArgumentException(String.format("Invalid pageId %d", pageId));
+    }
   }
 
   /**
@@ -265,6 +282,9 @@ public class UTPRoverEventTransformer {
     if (channelType == ChannelTypeEnum.SITE_EMAIL) {
       return applicationPayload.getOrDefault(TransformerConstants.EUID, StringConstants.EMPTY);
     }
+    if (actionTypeEnum == ActionTypeEnum.ROI) {
+      return applicationPayload.getOrDefault(TransformerConstants.RVRID, StringConstants.EMPTY);
+    }
     return StringConstants.EMPTY;
   }
 
@@ -273,7 +293,7 @@ public class UTPRoverEventTransformer {
   }
 
   protected long getProducerEventTs() {
-    return  (Long) sourceRecord.get(TransformerConstants.EVENT_TIMESTAMP);
+    return getEventTs();
   }
 
   protected String getRlogId() {
@@ -281,6 +301,9 @@ public class UTPRoverEventTransformer {
   }
   
   protected String getTrackingId() {
+    if (actionTypeEnum == ActionTypeEnum.ROI) {
+      return null;
+    }
     return PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, TransformerConstants.TRACKING_ID);
   }
 
@@ -300,6 +323,9 @@ public class UTPRoverEventTransformer {
 
   @SuppressWarnings("UnstableApiUsage")
   protected long getEncryptedUserId() {
+    if (actionTypeEnum == ActionTypeEnum.ROI) {
+      return 0L;
+    }
     String encryptedUserId = sojTags.get(TransformerConstants.EMID);
     if (encryptedUserId == null) {
       encryptedUserId = PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString,
@@ -340,6 +366,9 @@ public class UTPRoverEventTransformer {
   }
 
   protected String getPartner() {
+    if (actionTypeEnum == ActionTypeEnum.ROI) {
+      return null;
+    }
     String partnerId = PulsarParseUtils.getPartnerIdFromUrlQueryString(urlQueryString);
     if (StringUtils.isEmpty(partnerId)) {
       return null;
@@ -348,6 +377,9 @@ public class UTPRoverEventTransformer {
   }
 
   protected String getCampaignId() {
+    if (actionTypeEnum == ActionTypeEnum.ROI) {
+      return null;
+    }
     if (channelType == ChannelTypeEnum.MRKT_EMAIL) {
       return applicationPayload.get(TransformerConstants.SEGNAME);
     }
@@ -356,6 +388,10 @@ public class UTPRoverEventTransformer {
   }
 
   protected String getRotationId() {
+    if (actionTypeEnum == ActionTypeEnum.ROI) {
+      return urlQueryString.split("/").length > 3 ?
+              urlQueryString.split("/")[3].split("\\?")[0].replace("-", "") : null;
+    }
     return null;
   }
 
@@ -443,23 +479,32 @@ public class UTPRoverEventTransformer {
   }
 
   protected Map<String, String> getPayload() {
-    Map<String, String> payload = new HashMap<>();
-    // drop unused tags
-    payload.putAll(getRequiredPayload());
-    // add soj tags
-    payload.putAll(sojTags);
-    // add uep tags
-    Map<String, String> uepPayload = UEP_PAYLOAD_HELPER.getUepPayload(String.format("%s%s", ROVER_HOST, urlQueryString), actionTypeEnum);
-    if (MapUtils.isNotEmpty(uepPayload)) {
-      payload.putAll(uepPayload);
+    Map<String, String> payload = getDataQualityPayload();
+    if (channelType == ChannelTypeEnum.MRKT_EMAIL || channelType == ChannelTypeEnum.SITE_EMAIL) {
+      // drop unused tags
+      payload.putAll(getEmailTags());
+      // add soj tags
+      payload.putAll(sojTags);
+      // add uep tags
+      Map<String, String> uepPayload = UEP_PAYLOAD_HELPER.getUepPayload(String.format("%s%s", ROVER_HOST, urlQueryString), actionTypeEnum);
+      if (MapUtils.isNotEmpty(uepPayload)) {
+        payload.putAll(uepPayload);
+      }
     }
-    // add data quality tags
-    Map<String, String> debugPayload = getDataQualityPayload();
-    payload.putAll(debugPayload);
+    if (actionTypeEnum == ActionTypeEnum.ROI) {
+      payload.put("p", String.valueOf(pageId));
+      payload.put("itm", String.valueOf(pageId));
+
+      for (String key : Arrays.asList("itm", "tt", "roi_bti", "userid", "producereventts")) {
+        if (applicationPayload.containsKey(key)) {
+          payload.put(key, applicationPayload.get(key));
+        }
+      }
+    }
     return payload;
   }
 
-  private Map<String, String> getRequiredPayload() {
+  private Map<String, String> getEmailTags() {
     Map<String, String> payload = new HashMap<>();
 
     for (String key : EMAIL_TAG_PARAM_MAP.keySet()) {
@@ -481,6 +526,8 @@ public class UTPRoverEventTransformer {
 
   private Map<String, String> getDataQualityPayload() {
     Map<String, String> dqTags = new HashMap<>();
+    dqTags.put("dq-pulsar-topic", String.valueOf(sourceTopic));
+    dqTags.put("dq-pulsar-partition", String.valueOf(partition));
     dqTags.put("dq-pulsar-offset", String.valueOf(offset));
     dqTags.put("dq-pulsar-eventCreateTimestamp", String.valueOf(sourceRheosEvent.getEventCreateTimestamp()));
     dqTags.put("dq-pulsar-eventSendTimestamp", String.valueOf(sourceRheosEvent.getEventSentTimestamp()));

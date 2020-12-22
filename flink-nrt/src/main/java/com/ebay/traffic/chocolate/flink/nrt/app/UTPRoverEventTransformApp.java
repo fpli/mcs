@@ -135,8 +135,7 @@ public class UTPRoverEventTransformApp
       String consumerTopic = consumerRecord.topic();
       RheosEvent sourceRheosEvent = deserializer.deserialize(consumerTopic, consumerRecord.value());
       GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
-      UTPRoverEventTransformer transformer = new UTPRoverEventTransformer(consumerRecord.topic(),
-              consumerRecord.offset(), sourceRecord, sourceRheosEvent);
+      UTPRoverEventTransformer transformer = new UTPRoverEventTransformer(consumerRecord.topic(), consumerRecord.partition(), consumerRecord.offset(), sourceRecord, sourceRheosEvent);
       if (!transformer.isValid()) {
         return;
       }
