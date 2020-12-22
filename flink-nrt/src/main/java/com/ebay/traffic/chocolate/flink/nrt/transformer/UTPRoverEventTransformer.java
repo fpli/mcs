@@ -490,6 +490,7 @@ public class UTPRoverEventTransformer {
       if (MapUtils.isNotEmpty(uepPayload)) {
         payload.putAll(uepPayload);
       }
+      return payload;
     }
     if (actionTypeEnum == ActionTypeEnum.ROI) {
       payload.put("p", String.valueOf(pageId));
@@ -500,6 +501,7 @@ public class UTPRoverEventTransformer {
           payload.put(key, applicationPayload.get(key));
         }
       }
+      return payload;
     }
     return payload;
   }
