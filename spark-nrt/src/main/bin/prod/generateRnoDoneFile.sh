@@ -42,7 +42,7 @@ echo "CURRENT_TIMESTAMP=${CURRENT_TIMESTAMP}"
 echo "ALERT_TIMESTAMP=${ALERT_TIMESTAMP}"
 
 if [[ ${CURRENT_TIMESTAMP} -gt ${ALERT_TIMESTAMP} ]]; then
-     echo -e "${DONE_FILE} Done file on Apollo-RNO not generated, please check!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "TRACKING EVENT Apollo-RNO ${DT} delayed!!!" -v DL-eBay-Chocolate-GC@ebay.com
+     echo -e "${DONE_FILE} Done file on Apollo-RNO not generated, please check!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "TRACKING EVENT Apollo-RNO delayed!!!" -v Marketing-Tracking-oncall@ebay.com
      exit 1
 fi
 
