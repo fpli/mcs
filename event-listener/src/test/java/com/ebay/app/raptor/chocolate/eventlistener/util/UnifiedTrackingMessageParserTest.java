@@ -3,7 +3,6 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingMessage;
-import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
@@ -13,9 +12,7 @@ import com.ebay.raptor.geo.context.GeoCtx;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
-import com.ebay.userlookup.UserLookup;
 import edu.emory.mathcs.backport.java.util.Arrays;
-import edu.emory.mathcs.backport.java.util.Collections;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.util.LinkedMultiValueMap;
@@ -72,7 +69,7 @@ public class UnifiedTrackingMessageParserTest {
     long shortSnapshotId = 0L;
 
     UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext, raptorSecureContext, agentInfo,
-            null, parameters, url, referer, channelType, channelAction, isROIFromCheckoutAPI, null,
+            null, parameters, url, referer, channelType, channelAction, null,
             snapshotId, shortSnapshotId, currentTimeMillis);
 
     assertNotNull(message.getEventId());

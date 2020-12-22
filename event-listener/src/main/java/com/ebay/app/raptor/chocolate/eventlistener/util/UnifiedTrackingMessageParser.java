@@ -40,7 +40,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
-import java.util.regex.Matcher;
 
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 
@@ -144,7 +143,7 @@ public class UnifiedTrackingMessageParser {
                                              UserAgentInfo agentInfo, UserLookup userLookup,
                                              MultiValueMap<String, String> parameters, String url, String referer,
                                              ChannelType channelType, ChannelAction channelAction,
-                                             boolean isROIFromCheckoutAPI, ROIEvent roiEvent, long snapshotId,
+                                             ROIEvent roiEvent, long snapshotId,
                                              long shortSnapshotId, long startTime) {
     Map<String, String> payload = new HashMap<>();
 
@@ -239,7 +238,7 @@ public class UnifiedTrackingMessageParser {
     // format UEP payload
     Map<String, String> uepPayload = uepPayloadHelper.getUepPayload(url, ActionTypeEnum.valueOf(actionType));
     Map<String, String> fullPayload =
-        getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction, referer, pageId, rotationId, snapshotId, shortSnapshotId, roiEvent, isROIFromCheckoutAPI, userId, startTime);
+        getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction, rotationId, snapshotId, shortSnapshotId, roiEvent, userId, startTime);
 
     // append UEP payload
     if(uepPayload != null && uepPayload.size() > 0) {
@@ -449,8 +448,8 @@ public class UnifiedTrackingMessageParser {
   private static Map<String, String> getPayload(Map<String, String> payload, MultiValueMap<String, String> parameters,
                                                 ContainerRequestContext requestContext, String url, String userAgent,
                                                 String appId, ChannelType channelType, ChannelAction channelAction,
-                                                String referer, int pageId, String rotationId, long snapshotId,
-                                                long shortSnapshotId, ROIEvent roiEvent, boolean isROIFromCheckoutAPI,
+                                                String rotationId, long snapshotId,
+                                                long shortSnapshotId, ROIEvent roiEvent,
                                                 long userId, long eventTs) {
     // add tags from parameters
     for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
@@ -461,11 +460,10 @@ public class UnifiedTrackingMessageParser {
     if (channelAction != ChannelAction.ROI) {
       // add tags in url param "sojTags" into applicationPayload
       addSojTags(payload, parameters, channelType, channelAction);
-      addCommonTags(payload, pageId, url, referer, appId);
       addTags(payload, parameters, rotationId, snapshotId, shortSnapshotId, eventTs);
     }
 
-    if (channelAction == ChannelAction.ROI && !isROIFromCheckoutAPI) {
+    if (channelAction == ChannelAction.ROI) {
       addRoiSojTags(payload, roiEvent, String.valueOf(userId));
     }
 
@@ -495,7 +493,6 @@ public class UnifiedTrackingMessageParser {
   }
 
   private static void addTags(Map<String, String> payload, MultiValueMap<String, String> parameters, String rotationId, long snapshotId, long shortSnapshotId, long eventTs) {
-    payload.put(TrackerTagValueUtil.EventFamilyTag, "mkt");
     payload.put("rotid", String.valueOf(rotationId));
 
     String searchKeyword = "";
@@ -545,14 +542,6 @@ public class UnifiedTrackingMessageParser {
     }
 
     return applicationPayload;
-  }
-
-  private static void addCommonTags(Map<String, String> applicationPayload, Integer pageId, String url, String referer, String appId) {
-    applicationPayload.put(TrackerTagValueUtil.PageIdTag, String.valueOf(pageId));
-    applicationPayload.put(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION);
-    applicationPayload.put("url_mpre", url);
-    applicationPayload.put("ref", referer);
-    applicationPayload.put("app", appId);
   }
 
   private static void addRoiSojTags(Map<String, String> payloadMap, ROIEvent roiEvent, String userId) {
