@@ -58,4 +58,20 @@ public class TransformerConstants {
   public static final String RLOGID = "rlogid";
   public static final String CHNL = "chnl";
   public static final String PAGE_TYPE = "pageType";
+  public static final String SOJ_TAGS = "sojTags";
+  public static final String EUID = "euid";
+  public static final String UC = "uc";
+  public static final String TMACHINE = "TMachine";
+  public static final String AGENT = "Agent";
+  public static final String EMSID = "emsid";
+  public static final String SEGNAME = "segname";
+  public static final String UDID = "udid";
+  public static final String GADID = "gadid";
+  public static final String IDFA = "idfa";
+  public static final String EMID = "emid";
+  public static final String ADCAMPPU = "adcamppu";
+  public static final String RHEOS_HEADER = "rheosHeader";
+  public static final String TRACKING_ID = "trkId";
+  public static final String BEST_GUESS_USER_ID = "bu";
+  public static final String RVRID = "rvrid";
 }

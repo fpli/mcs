@@ -18,4 +18,8 @@ public class GenericRecordUtils {
   public static String getStringFieldOrEmpty(GenericRecord genericRecord, String key) {
     return genericRecord.get(key) == null ? StringConstants.EMPTY : genericRecord.get(key).toString();
   }
+
+  public static String getStringFieldOrNull(GenericRecord genericRecord, String key) {
+    return genericRecord.get(key) == null ? null: genericRecord.get(key).toString();
+  }
 }

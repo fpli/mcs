@@ -73,7 +73,7 @@ public class GdprConsentHandler {
         }
         try {
             if (StringUtils.isNotBlank(parametersMap.get(gdprParameter)) && parametersMap.get(gdprParameter).equals("1")) {
-                metrics.meter(GdprConsentConstant.TOTAL_TRAFFIC_OF_GDPR);
+                metrics.meter(GdprConsentConstant.TOTAL_TRAFFIC_OF_GDPR_MCS);
                 gdprConsentDomain.setAllowedStoredContextualData(false);
                 gdprConsentDomain.setAllowedStoredPersonalizedData(false);
                 gdprConsentDomain.setTcfCompliantMode(true);

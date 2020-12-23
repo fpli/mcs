@@ -1,7 +1,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.avro.*;
-import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -448,7 +447,7 @@ public class CollectionService {
     // send email channels first
     if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
       processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-          targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
+          targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), null, 0L, 0L, startTime);
     }
 
     if (processFlag)
@@ -558,7 +557,8 @@ public class CollectionService {
 
     // write roi event tags into ubi
     // Don't write into ubi if roi is from Checkout API
-    if (!isROIFromCheckoutAPI(payloadMap, endUserContext)) {
+    Boolean isRoiFromCheckoutAPI = isROIFromCheckoutAPI(payloadMap, endUserContext);
+    if (!isRoiFromCheckoutAPI) {
       addRoiSojTags(requestContext, payloadMap, roiEvent, userId);
     } else {
       metrics.meter("CheckoutAPIROI", 1);
@@ -566,7 +566,7 @@ public class CollectionService {
 
     // Write roi event to kafka output topic
     boolean processFlag = processROIEvent(requestContext, targetUrl, referer, parameters, ChannelIdEnum.ROI,
-        ChannelActionEnum.ROI, request, transTimestamp, endUserContext, raptorSecureContext, agentInfo);
+        ChannelActionEnum.ROI, request, transTimestamp, endUserContext, raptorSecureContext, agentInfo, isRoiFromCheckoutAPI, roiEvent);
 
     if (processFlag) {
       metrics.meter("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"),
@@ -729,7 +729,7 @@ public class CollectionService {
     // send email channels first
     if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
       processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-          uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro());
+          uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), null, 0L, 0L, startTime);
     }
 
     if (processFlag)
@@ -743,9 +743,9 @@ public class CollectionService {
    * Process ROI events
    */
   private boolean processROIEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
-                                        MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
-                                        ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
-                                        IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext, UserAgentInfo agentInfo) {
+                                  MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
+                                  ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
+                                  IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext, UserAgentInfo agentInfo, boolean isRoiFromCheckoutAPI, ROIEvent roiEvent) {
 
     // get user id from auth token if it's user token, else we get from end user ctx
     String userId;
@@ -768,6 +768,11 @@ public class CollectionService {
       behaviorProducer.send(new ProducerRecord<>(behaviorTopic, behaviorMessage.getSnapshotId().getBytes(), behaviorMessage),
               KafkaSink.callback);
     }
+
+    // TODO Don't write into ubi if roi is from Checkout API, but still write into IMK
+    processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+            targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+            roiEvent, message.getSnapshotId(), message.getShortSnapshotId(), startTime);
 
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
     String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
@@ -921,22 +926,25 @@ public class CollectionService {
   /**
    * Process unified tracking user behavior events
    */
+  @SuppressWarnings("unchecked")
   private void processUnifiedTrackingEvent(ContainerRequestContext requestContext, HttpServletRequest request,
                                            IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
                                            UserAgentInfo agentInfo, MultiValueMap<String, String> parameters, String url,
-                                           String referer, ChannelType channelType, ChannelAction channelAction) {
+                                           String referer, ChannelType channelType, ChannelAction channelAction,
+                                           ROIEvent roiEvent, long snapshotId, long shortSnapshotId, long startTime) {
     try {
       Matcher m = ebaysites.matcher(referer.toLowerCase());
-      if (ChannelAction.EMAIL_OPEN.equals(channelAction) || !m.find()) {
+      if (ChannelAction.EMAIL_OPEN.equals(channelAction) || ChannelAction.ROI.equals(channelAction) || !m.find()) {
         UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
-            raptorSecureContext, agentInfo, userLookup, parameters, url, referer, channelType, channelAction);
+                raptorSecureContext, agentInfo, userLookup, parameters, url, referer, channelType, channelAction,
+                roiEvent, snapshotId, shortSnapshotId, startTime);
         if (utpMessage != null) {
           unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
-              utpMessage), UnifiedTrackingKafkaSink.callback);
+                  utpMessage), UnifiedTrackingKafkaSink.callback);
         }
       } else {
         metrics.meter("UTPInternalDomainRef", 1, Field.of(CHANNEL_ACTION, channelAction.toString()),
-            Field.of(CHANNEL_TYPE, channelType.toString()));
+                Field.of(CHANNEL_TYPE, channelType.toString()));
       }
     } catch (Exception e) {
       logger.warn("UTP message process error.", e);
@@ -1050,6 +1058,12 @@ public class CollectionService {
         behaviorProducer.send(new ProducerRecord<>(behaviorTopic, behaviorMessage.getSnapshotId().getBytes(), behaviorMessage),
                 KafkaSink.callback);
       }
+    }
+
+    if (channelType != ChannelIdEnum.EPN && !isDuplicateClick) {
+      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+              targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+              null, message.getSnapshotId(), message.getShortSnapshotId(), startTime);
     }
 
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.

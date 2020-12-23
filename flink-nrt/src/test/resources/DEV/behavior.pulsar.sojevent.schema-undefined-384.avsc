@@ -1,0 +1,405 @@
+{
+  "type": "record",
+  "name": "SojEvent",
+  "namespace": "behavior.pulsar.sojevent",
+  "doc": " tags not included but in UbiEvent: current_impr_id, source_impr_id, staticPageType, reservedForFuture, eventAttr, oldSessionSkey, seqNum, sessionStartDt, sojDataDt, version",
+  "fields": [
+    {
+      "name": "rheosHeader",
+      "type": {
+        "type": "record",
+        "name": "RheosHeader",
+        "fields": [
+          {
+            "name": "eventCreateTimestamp",
+            "type": "long"
+          },
+          {
+            "name": "eventSentTimestamp",
+            "type": "long"
+          },
+          {
+            "name": "schemaId",
+            "type": "int"
+          },
+          {
+            "name": "eventId",
+            "type": [
+              "null",
+              {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            ]
+          },
+          {
+            "name": "producerId",
+            "type": {
+              "type": "string",
+              "avro.java.string": "String"
+            }
+          }
+        ]
+      },
+      "doc": "Rheos header"
+    },
+    {
+      "name": "guid",
+      "type": "string"
+    },
+    {
+      "name": "eventTimestamp",
+      "type": "long",
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from timestamp, publish time"
+    },
+    {
+      "name": "eventCaptureTime",
+      "type": [
+        "null",
+        "long"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=mobile specific, map from mtsts, used for mobile case"
+    },
+    {
+      "name": "requestCorrelationId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=request correlation id, map from tag rq"
+    },
+    {
+      "name": "cguid",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=correlation guid, map from tag n"
+    },
+    {
+      "name": "sid",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=Sojourner key for source id"
+    },
+    {
+      "name": "pageId",
+      "type": [
+        "null",
+        "int"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag p"
+    },
+    {
+      "name": "pageName",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "pageFamily",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag pgf"
+    },
+    {
+      "name": "eventFamily",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from efam of pulsar event, event family"
+    },
+    {
+      "name": "eventAction",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from eactn of pulsar event, event action"
+    },
+    {
+      "name": "userId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag u/bu"
+    },
+    {
+      "name": "clickId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=Click Id, map from tag c"
+    },
+    {
+      "name": "siteId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=Site ID, map from tag t"
+    },
+    {
+      "name": "sessionId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag snid"
+    },
+    {
+      "name": "seqNum",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag snsq"
+    },
+    {
+      "name": "ciid",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "siid",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "rdt",
+      "type": [
+        "null",
+        "int"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=1 indicates that the command redirected to another URL"
+    },
+    {
+      "name": "regu",
+      "type": [
+        "null",
+        "int"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=indicating that this is a registered user, map from tag regU"
+    },
+    {
+      "name": "iframe",
+      "type": [
+        "null",
+        "boolean"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag _ifrm"
+    },
+    {
+      "name": "refererHash",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag r"
+    },
+    {
+      "name": "sqr",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=search keyword, map from tag sQr"
+    },
+    {
+      "name": "itemId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag itm/item"
+    },
+    {
+      "name": "flags",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag flgs"
+    },
+    {
+      "name": "urlQueryString",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag Referer"
+    },
+    {
+      "name": "webServer",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=web server, map from Server"
+    },
+    {
+      "name": "cookies",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag ck/C"
+    },
+    {
+      "name": "bot",
+      "type": [
+        "null",
+        "int"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag bott"
+    },
+    {
+      "name": "clientIP",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "remoteIP",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag RemoteIP"
+    },
+    {
+      "name": "agentInfo",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from tag Agent"
+    },
+    {
+      "name": "appId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=application ID, map from tag app"
+    },
+    {
+      "name": "appVersion",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=application version, map from mav"
+    },
+    {
+      "name": "osVersion",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=operation system version, map from osv"
+    },
+    {
+      "name": "trafficSource",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from trffc_src"
+    },
+    {
+      "name": "cobrand",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from cbrnd"
+    },
+    {
+      "name": "deviceFamily",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from dd_d"
+    },
+    {
+      "name": "deviceType",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from dd_dc"
+    },
+    {
+      "name": "browserVersion",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from dd_bv"
+    },
+    {
+      "name": "browserFamily",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from dd_bf"
+    },
+    {
+      "name": "osFamily",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from dd_os"
+    },
+    {
+      "name": "enrichedOsVersion",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "dataClassification=Internal|isEncrypted=false|description=map from dd_osv"
+    },
+    {
+      "name": "applicationPayload",
+      "type": {
+        "type": "map",
+        "values": "string"
+      }
+    },
+    {
+      "name": "rlogid",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "CAL request log id",
+      "default": null,
+      "avro.java.string": "String"
+    },
+    {
+      "name": "clientData",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "doc": "Includes ForwardFor, ContentLength, Script, Server, Encoding, TMachine, TStamp, TName, TStatus, TDuration, TPayload"
+    }
+  ]
+}
