@@ -493,8 +493,6 @@ public class UnifiedTrackingMessageParser {
   }
 
   private static void addTags(Map<String, String> payload, MultiValueMap<String, String> parameters, String rotationId, long snapshotId, long shortSnapshotId, long eventTs) {
-    payload.put("rotid", String.valueOf(rotationId));
-
     String searchKeyword = "";
     if (parameters.containsKey(Constants.SEARCH_KEYWORD) && parameters.get(Constants.SEARCH_KEYWORD).get(0) != null) {
       searchKeyword = parameters.get(Constants.SEARCH_KEYWORD).get(0);
