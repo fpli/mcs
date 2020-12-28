@@ -192,7 +192,8 @@ public class UnifiedTrackingMessageParser {
     record.setUserAgent(userAgent);
 
     // channel type
-    record.setChannelType(getChannelType(channelType).getValue());
+    ChannelTypeEnum channelTypeEnum = getChannelType(channelType);
+    record.setChannelType(channelTypeEnum.getValue());
 
     // action type
     String actionType = getActionType(channelAction);
@@ -236,7 +237,8 @@ public class UnifiedTrackingMessageParser {
     // payload
     String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
     // format UEP payload
-    Map<String, String> uepPayload = uepPayloadHelper.getUepPayload(url, ActionTypeEnum.valueOf(actionType));
+    Map<String, String> uepPayload =
+        uepPayloadHelper.getUepPayload(url, ActionTypeEnum.valueOf(actionType), channelTypeEnum);
     Map<String, String> fullPayload =
         getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction, rotationId, snapshotId, shortSnapshotId, roiEvent, userId, startTime);
 
