@@ -107,4 +107,13 @@ public class UnifiedTrackingMessageParserTest {
     assertFalse(message.getIsBot());
     assertEquals("xx-YY", message.getPayload().get("lang_cd"));
   }
+
+  @Test
+  public void testBot() {
+    assertTrue(UnifiedTrackingMessageParser.isBot("googleBot"));
+    assertTrue(UnifiedTrackingMessageParser.isBot("yahooProxy"));
+    assertTrue(UnifiedTrackingMessageParser.isBot("Spiderman"));
+    assertFalse(UnifiedTrackingMessageParser.isBot("eBayAndroid/6.7.2"));
+    assertFalse(UnifiedTrackingMessageParser.isBot(""));
+  }
 }

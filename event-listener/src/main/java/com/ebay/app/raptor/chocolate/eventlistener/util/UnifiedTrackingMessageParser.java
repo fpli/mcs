@@ -135,6 +135,22 @@ public class UnifiedTrackingMessageParser {
   }
 
   /**
+   * Bot detection by device type
+   * @param userAgent user agent
+   */
+  public static boolean isBot(String userAgent)  {
+    // isBot. Basic bot detection by user agent.
+    if(StringUtils.isNotEmpty(userAgent) && (
+        userAgent.toLowerCase().contains("bot") ||
+            userAgent.toLowerCase().contains("proxy") ||
+            userAgent.toLowerCase().contains("spider")
+    )) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Parse message to unified tracking message
    * For user behavior events directly coming to MCS
    */
@@ -218,8 +234,12 @@ public class UnifiedTrackingMessageParser {
     // referer
     record.setReferer(referer);
 
-    // service
-    record.setService(ServiceEnum.CHOCOLATE.getValue());
+    // service. Rover send all clicks covered in IMK TFS to chocolate.
+    if(url.startsWith("https://rover.ebay.com") || url.startsWith("http://rover.ebay.com")) {
+      record.setService(ServiceEnum.ROVER.getValue());
+    } else {
+      record.setService(ServiceEnum.CHOCOLATE.getValue());
+    }
 
     // server
     record.setServer(domainRequest.getHost());
@@ -233,6 +253,9 @@ public class UnifiedTrackingMessageParser {
 
     // user geo id
     record.setGeoId(getGeoID(requestContext));
+
+    // isBot. Basic bot detection by user agent.
+    record.setIsBot(isBot(userAgent));
 
     // payload
     String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
