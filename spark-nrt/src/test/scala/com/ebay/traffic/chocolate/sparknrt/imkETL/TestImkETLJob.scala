@@ -88,7 +88,8 @@ class TestImkETLJob extends BaseFunSuite{
       Row(5, "DISPLAY", null),
       Row(6, "PAID_SEARCH", null),
       Row(7, "PAID_SEARCH", "https://ebay.pissedconsumer.com/"),
-      Row(8, "DISPLAY", "https://ebay.mtag.io/abcdefg")
+      Row(8, "DISPLAY", "https://ebay.mtag.io/abcdefg"),
+      Row(9, "DISPLAY", "https://ebay.mtag.io?abcdefg")
     )
 
     val schema = List(
@@ -109,6 +110,7 @@ class TestImkETLJob extends BaseFunSuite{
     assert(results.get(3).getInt(0) == 5)
     assert(results.get(4).getInt(0) == 6)
     assert(results.get(5).getInt(0) == 8)
+    assert(results.get(6).getInt(0) == 9)
   }
 
   test("test imk etl job for sequence output") {
