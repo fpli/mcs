@@ -424,7 +424,6 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
     Response res = null;
     try {
-      adserviceCookie.setAdguid(request, response);
       res = collectionService.collectEpntConfigRedirect(configid, response);
     } catch (Exception e) {
       logger.warn(e.getMessage(), e);
@@ -445,9 +444,16 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   public Response placement(String st, String cpid, String l, String ft, String tc, String clp, Integer mi,
                             String k, Integer ctids, String mkpid, String ur, String cts, String sf, String pid, String ad_v) {
     Response res = null;
+
+    // add GDPR filter when call DAP to get personalization ads
+    GdprConsentDomain gdprConsentDomain = gdprConsentHandler.handleGdprConsent(request);
+
     try {
-      adserviceCookie.setAdguid(request, response);
-      res = collectionService.collectEpntPlacementRedirect(request, response);
+      if (gdprConsentDomain.isAllowedSetCookie()) {
+        adserviceCookie.setAdguid(request, response);
+      }
+
+      res = collectionService.collectEpntPlacementRedirect(request, response, gdprConsentDomain);
     } catch (Exception e) {
       logger.warn(e.getMessage(), e);
       try {

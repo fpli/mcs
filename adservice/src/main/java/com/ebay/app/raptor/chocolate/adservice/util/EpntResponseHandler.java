@@ -1,11 +1,15 @@
 package com.ebay.app.raptor.chocolate.adservice.util;
 
+import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.Headers;
 import com.ebay.app.raptor.chocolate.adservice.constant.StringConstants;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
+import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
+import com.ebay.kernel.constants.KernelConstants;
+import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import org.apache.commons.lang3.StringUtils;
@@ -116,7 +120,7 @@ public class EpntResponseHandler {
     /**
      * Call Epnt placement interface and return response
      */
-    public Response callEpntPlacementResponse(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public Response callEpntPlacementResponse(HttpServletRequest request, HttpServletResponse response, GdprConsentDomain gdprConsentDomain) throws Exception {
         Response res = null;
 
         Client epntPlacementClient = getEpntServiceClient(EPNT_PLACEMENT_SERVICE_CLIENTKEY);
@@ -126,7 +130,7 @@ public class EpntResponseHandler {
         String guid = adserviceCookie.getGuid(request);
         String userId = adserviceCookie.getUserId(request);
 
-        URI targetUri = generateEpntPlacementUri(epntPlacementEndpoint, params, userId, guid);
+        URI targetUri = generateEpntPlacementUri(epntPlacementEndpoint, params, userId, guid, gdprConsentDomain);
         LOGGER.info("call Epnt Placement {}",targetUri.toString());
 
         long startTime = System.currentTimeMillis();
@@ -183,27 +187,25 @@ public class EpntResponseHandler {
 
     /**
      * Generate epnt placement URI
-     * the paramter get from request's parameters, append userid and guid to URI
+     * get URI parameter from request's parameters, append userid and guid to URI
      * @param parameters
      * @param userId
      * @param guid
      * @return epnt placement URI
      */
-    public URI generateEpntPlacementUri(String epntPlacementEndpoint, Map<String, String[]> parameters, String userId, String guid) throws URISyntaxException {
+    public URI generateEpntPlacementUri(String epntPlacementEndpoint, Map<String, String[]> parameters,
+                                        String userId, String guid, GdprConsentDomain gdprConsentDomain) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(epntPlacementEndpoint);
 
         for (String param: parameters.keySet()) {
             uriBuilder.addParameter(param, parameters.get(param)[0]);
         }
 
-        // append userId to epnt URI for personalization
-        if (!StringUtils.isEmpty(userId)) {
-            uriBuilder.addParameter("userId", userId);
-        }
-
-        // append guid to epnt URI for personalization
-        if (!StringUtils.isEmpty(guid)) {
-            uriBuilder.addParameter("guid", guid);
+        // personalized parameters
+        if (gdprConsentDomain.isAllowedShowPersonalizedAds()) {
+            // append userId and guid to epnt URI for personalization
+            setGuid(uriBuilder, guid);
+            setUserId(uriBuilder, userId);
         }
 
         return uriBuilder.build();
@@ -243,6 +245,24 @@ public class EpntResponseHandler {
         }
         body = sb.toString();
         return body;
+    }
+
+    private void setUserId(URIBuilder uriBuilder, String userId) {
+        addParameter(uriBuilder, Constants.USER_ID, userId);
+    }
+
+    private void setGuid(URIBuilder uriBuilder, String guid) {
+        addParameter(uriBuilder, Constants.GUID, guid);
+    }
+
+    private void addParameter(URIBuilder uriBuilder, String key, String value) {
+        if (StringUtils.isEmpty(key)) {
+            return;
+        }
+        if (StringUtils.isEmpty(value)) {
+            return;
+        }
+        uriBuilder.addParameter(key, FastURLEncoder.encode(value.trim(), KernelConstants.UTF8_ENCODING));
     }
 }
 
