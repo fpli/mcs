@@ -49,15 +49,15 @@ if [[ ${rc} != 0 ]]; then
    exit ${rc}
 else
    echo "=============== dump  data from couchbase done  ===========" | tee -a ${log_file}
-   echo `date`"=====================================================dumpFromCouchbase is completed======================================================" | tee -a ${log_file}
+   echo `date`"=====================================================dumpFromCouchbase is completed======================================================"
 fi
 
 HDP=/user/b_marketing_tracking/rotation/rno_daily
 HDP_UPDATE_ROTATIONS=/user/b_marketing_tracking/rotation/rno_daily/new_update/rotations
 HDP_UPDATE_CAMPAIGNS=/user/b_marketing_tracking/rotation/rno_daily/new_update/campaigns
 
-echo `date`"=====================================================Apollo_rno -- LoadData started======================================================" | tee -a ${log_file}
-echo `date`"------ Apollo_rno -- LoadData started~~~" | tee -a ${log_file}
+echo `date`"=====================================================Apollo_rno -- LoadData started======================================================"
+echo `date`"------ Apollo_rno -- LoadData started~~~"
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -rm -r ${HDP_UPDATE_ROTATIONS}
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -mkdir ${HDP_UPDATE_ROTATIONS}
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -copyFromLocal ${OUTPUT_PATH}*'_rotations.txt' ${HDP_UPDATE_ROTATIONS}
@@ -69,14 +69,22 @@ echo `date`"------ Apollo_rno -- LoadData started~~~" | tee -a ${log_file}
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -rm -r ${HDP}/dt=${DT}
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -put ${OUTPUT_PATH} ${HDP}
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -ls ${HDP}/dt=${DT}
-echo `date`"=====================================================Apollo_rno -- LoadData Ended======================================================" | tee -a ${log_file}
+
+rc=$?
+if [[ $rc != 0 ]]; then
+    echo " ===== rotation daily dump job END With ERROR =====" | tee -a ${log_file}
+    exit $rc
+else
+    echo " ===== Apollo_rno -- LoadData Ended =====" | tee -a ${log_file}
+fi
+
 
 HDP_HERCULES=hdfs://hercules/apps/b_marketing_tracking/rotation/hercules_daily
 HDP_UPDATE_ROTATIONS_HERCULES=hdfs://hercules/sys/edw/imk/im_tracking/rotation/dw_mpx_rotations_ups/snapshot
 HDP_UPDATE_CAMPAIGNS_HERCULES=hdfs://hercules/sys/edw/imk/im_tracking/rotation/dw_mpx_campaigns_ups/snapshot
 
-echo `date`"=====================================================Hercules -- LoadData started======================================================" | tee -a ${log_file}
-echo `date`"------ Hercules -- LoadData started~~~" | tee -a ${log_file}
+echo `date`"=====================================================Hercules -- LoadData started======================================================"
+echo `date`"------ Hercules -- LoadData started~~~"
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -rm ${HDP_UPDATE_ROTATIONS_HERCULES}/*
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -copyFromLocal ${OUTPUT_PATH}*'_rotations.txt' ${HDP_UPDATE_ROTATIONS_HERCULES}
 
@@ -86,4 +94,11 @@ echo `date`"------ Hercules -- LoadData started~~~" | tee -a ${log_file}
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -rm -r ${HDP_HERCULES}/dt=${DT}
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -put ${OUTPUT_PATH} ${HDP_HERCULES}
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -ls ${HDP_HERCULES}/dt=${DT}
-echo `date`"=====================================================Hercules -- LoadData Ended======================================================" | tee -a ${log_file}
+
+rc=$?
+if [[ $rc != 0 ]]; then
+    echo " ===== rotation daily dump job END With ERROR =====" | tee -a ${log_file}
+    exit $rc
+else
+    echo " ===== Hercules -- LoadData Ended =====" | tee -a ${log_file}
+fi
