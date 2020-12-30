@@ -337,12 +337,12 @@ public class ImkTrckngEventTransformApp
       }
 
       if (value.getChannelType() == ChannelType.DISPLAY) {
-        if (StringUtils.isNotEmpty(value.getReferer()) && value.getReferer().startsWith("https://ebay.mtag.io/")) {
+        if (StringUtils.isNotEmpty(value.getReferer()) && value.getReferer().startsWith("https://ebay.mtag.io")) {
           LOGGER.info("receive mtag");
           sherlockioMetrics.meter("mtag", 1, Field.of(TransformerConstants.CHANNEL_TYPE, value.getChannelType()), Field.of(TransformerConstants.CHANNEL_ACTION, value.getChannelAction()));
           return true;
         }
-        if (StringUtils.isNotEmpty(value.getReferer()) && value.getReferer().startsWith("https://ebay.pissedconsumer.com/")) {
+        if (StringUtils.isNotEmpty(value.getReferer()) && value.getReferer().startsWith("https://ebay.pissedconsumer.com")) {
           LOGGER.info("receive pissedconsumer");
           sherlockioMetrics.meter("pissedconsumer", 1, Field.of(TransformerConstants.CHANNEL_TYPE, value.getChannelType()), Field.of(TransformerConstants.CHANNEL_ACTION, value.getChannelAction()));
           return true;
