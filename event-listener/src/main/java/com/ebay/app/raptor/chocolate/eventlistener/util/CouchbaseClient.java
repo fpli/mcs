@@ -16,8 +16,6 @@ import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -107,38 +105,6 @@ public class CouchbaseClient {
       }
     }
     return INSTANCE;
-  }
-
-  /**
-   * add mapping pair into couchbase
-   */
-  /*public void addMappingRecord(String guid, String cguid) {
-    // in listener we don't want to hang if we have exception in CB
-    //flushBuffer();
-    try {
-      upsert(guid, cguid);
-    } catch (Exception e) {
-      logger.warn("Couchbase upsert operation exception", e);
-    }
-  }*/
-
-  /*get cguid by guid*/
-  public String getCguid(String guid) {
-    CacheClient cacheClient = null;
-    String cguid = "";
-    try {
-      cacheClient = factory.getClient(datasourceName);
-      JsonDocument document = getBucket(cacheClient).get(guid, JsonDocument.class);
-      if (document != null) {
-        cguid = document.content().get("cguid").toString();
-        logger.debug("Get cguid. guid=" + guid + " cguid=" + cguid);
-      }
-    } catch (Exception e) {
-      logger.warn("Couchbase get operation exception", e);
-    } finally {
-      factory.returnClient(cacheClient);
-    }
-    return cguid;
   }
 
   /**

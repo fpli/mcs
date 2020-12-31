@@ -44,10 +44,8 @@ public class HttpRoverClient {
   private static final String FLAG_TRUE = "1";
   private static final String GUID_CONNECTOR = "^";
   private static final String GUID = "guid";
-  private static final String CGUID = "cguid";
   private static final String NPII_PREFIX = "npii_";
   private static final String BTGUID_PREFIX = "btguid/";
-  private static final String CGUID_PREFIX = "cguid/";
 
 
   @PostConstruct
