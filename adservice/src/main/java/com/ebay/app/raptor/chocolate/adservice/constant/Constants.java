@@ -13,7 +13,6 @@ public class Constants {
   public static final String MKCID = "mkcid";
   public static final String MKRID = "mkrid";
   public static final String MKSRID = "mksrid";
-  public static final String CGUID = "cguid";
   public static final String GUID = "guid";
   public static final String RVR_ID = "rvr_id";
   public static final String MKEVT = "mkevt";
