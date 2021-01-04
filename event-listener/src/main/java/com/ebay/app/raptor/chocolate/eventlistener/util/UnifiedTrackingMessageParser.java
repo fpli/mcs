@@ -3,7 +3,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingMessage;
-import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
@@ -135,6 +135,22 @@ public class UnifiedTrackingMessageParser {
   }
 
   /**
+   * Bot detection by device type
+   * @param userAgent user agent
+   */
+  public static boolean isBot(String userAgent)  {
+    // isBot. Basic bot detection by user agent.
+    if(StringUtils.isNotEmpty(userAgent) && (
+        userAgent.toLowerCase().contains("bot") ||
+            userAgent.toLowerCase().contains("proxy") ||
+            userAgent.toLowerCase().contains("spider")
+    )) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Parse message to unified tracking message
    * For user behavior events directly coming to MCS
    */
@@ -192,7 +208,8 @@ public class UnifiedTrackingMessageParser {
     record.setUserAgent(userAgent);
 
     // channel type
-    record.setChannelType(getChannelType(channelType).getValue());
+    ChannelTypeEnum channelTypeEnum = getChannelType(channelType);
+    record.setChannelType(channelTypeEnum.getValue());
 
     // action type
     String actionType = getActionType(channelAction);
@@ -217,8 +234,12 @@ public class UnifiedTrackingMessageParser {
     // referer
     record.setReferer(referer);
 
-    // service
-    record.setService(ServiceEnum.CHOCOLATE.getValue());
+    // service. Rover send all clicks covered in IMK TFS to chocolate.
+    if(url.startsWith("https://rover.ebay.com") || url.startsWith("http://rover.ebay.com")) {
+      record.setService(ServiceEnum.ROVER.getValue());
+    } else {
+      record.setService(ServiceEnum.CHOCOLATE.getValue());
+    }
 
     // server
     record.setServer(domainRequest.getHost());
@@ -233,10 +254,14 @@ public class UnifiedTrackingMessageParser {
     // user geo id
     record.setGeoId(getGeoID(requestContext));
 
+    // isBot. Basic bot detection by user agent.
+    record.setIsBot(isBot(userAgent));
+
     // payload
     String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
     // format UEP payload
-    Map<String, String> uepPayload = uepPayloadHelper.getUepPayload(url, ActionTypeEnum.valueOf(actionType));
+    Map<String, String> uepPayload =
+        uepPayloadHelper.getUepPayload(url, ActionTypeEnum.valueOf(actionType), channelTypeEnum);
     Map<String, String> fullPayload =
         getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction, rotationId, snapshotId, shortSnapshotId, roiEvent, userId, startTime);
 

@@ -3,7 +3,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
-import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;

@@ -4,8 +4,10 @@
 
 package com.ebay.app.raptor.chocolate.utp;
 
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
+import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.MessageConstantsEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,10 +18,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author Xiang Li
@@ -38,6 +40,27 @@ public class UepPayloadHelper {
   public static final String PLACEMENT_POS = "plmtPos";
   public static final String RECO_ID = "recoId";
   public static final String RECO_POS = "recoPos";
+  public static final String IS_UEP = "isUEP";
+  // for ORS migration
+  public static final String EMAIL = "EMAIL";
+  public static final String MESSAGE_CENTER = "MESSAGE_CENTER";
+  public static final String TIMESTAMP_CREATED = "timestamp.created";
+  public static final String TIMESTAMP_UPDATED = "timestamp.updated";
+  public static final String STATUS_SENT = "SENT";
+  public static final String C_URL = "cUrl";
+  public static final String ANNOTATION_MESSAGE_NAME = "annotation.message.name";
+  public static final String ANNOTATION_CANVAS_UNIQ_ID = "annotation.canvas.uniq.id";
+  private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMddHHmmss");
+  private static final SimpleDateFormat eventDateStringFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+  private static final String WHITELIST_PATTERN_MARKETING_EMAIL_PA = "TE1798";
+  private static final String WHITELIST_PATTERN_MARKETING_EMAIL_ESPRESSO = "TE7";
+  private static final String WHITELIST_EXACTMATCH_SITE_EMAIL_AXO = "11403";
+  private static final String WHITELIST_EXACTMATCH_SITE_EMAIL_SS = "11021";
+  private static final String MESSAGE_PA = "PA";
+  private static final String MESSAGE_ESPRESSO = "ESPRESSO";
+  private static final String MESSAGE_AXO = "AXO";
+  private static final String MESSAGE_SS = "SAVEDSEARCH";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(UepPayloadHelper.class);
 
@@ -56,7 +79,7 @@ public class UepPayloadHelper {
    * @param actionTypeEnum action type
    * @return the payload
    */
-  public Map<String, String> getUepPayload(String url, ActionTypeEnum actionTypeEnum) {
+  public Map<String, String> getUepPayload(String url, ActionTypeEnum actionTypeEnum, ChannelTypeEnum channelTypeEnum) {
     Map<String, String> payload = new HashMap<>();
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(url).build();
     String bu = uriComponents.getQueryParams().getFirst(BEST_GUESS_USER);
@@ -70,12 +93,89 @@ public class UepPayloadHelper {
       payload.put(MessageConstantsEnum.USER_ID.getValue(), "0");
     }
 
-    payload.put(MessageConstantsEnum.TRACKING_ID.getValue(),
-        getOrDefault(uriComponents.getQueryParams().getFirst(TRACKING_ID)));
+    // for ORS shor-tem migration
+    // channel.name
+    if(channelTypeEnum.getValue().contains(EMAIL)) {
+      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), EMAIL);
+    } else if(channelTypeEnum.getValue().contains(MESSAGE_CENTER)) {
+      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), MESSAGE_CENTER);
+    } else {
+      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), channelTypeEnum.getValue());
+    }
+    // annotation.message.name
+    String segmentCode = uriComponents.getQueryParams().getFirst(Constants.SEGMENT_NAME);
+    if (segmentCode != null) {
+      if (segmentCode.contains(WHITELIST_PATTERN_MARKETING_EMAIL_PA)) {
+        payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_PA);
+      }
+      else if (segmentCode.contains(WHITELIST_PATTERN_MARKETING_EMAIL_ESPRESSO)) {
+        payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_ESPRESSO);
+      }
+      else if (segmentCode.equalsIgnoreCase(WHITELIST_EXACTMATCH_SITE_EMAIL_AXO)) {
+        payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_AXO);
+      }
+      else if (segmentCode.equalsIgnoreCase(WHITELIST_EXACTMATCH_SITE_EMAIL_SS)) {
+        payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_SS);
+      }
+    }
+    // rundate
+    String actualRunDateString = "";
+    String runDate = "";
+    try {
+      actualRunDateString = uriComponents.getQueryParams().getFirst("crd");
+      if(StringUtils.isNotEmpty(actualRunDateString)) {
+        Date tempRunDate = dateFormatter.parse(actualRunDateString);
+        runDate = eventDateStringFormatter.format(tempRunDate);
+        payload.put(MessageConstantsEnum.RUN_DATE.getValue(), runDate);
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Rundate is malformed" + actualRunDateString, e);
+    }
+    // annotation.canvas.uniq.id
+    if(channelTypeEnum.equals(ChannelTypeEnum.SITE_EMAIL)
+        || channelTypeEnum.equals(ChannelTypeEnum.SITE_MESSAGE_CENTER)) {
+      payload.put(ANNOTATION_CANVAS_UNIQ_ID,
+          getOrDefault(uriComponents.getQueryParams().getFirst(Constants.EMAIL_UNIQUE_ID)));
+    } else if(channelTypeEnum.equals(ChannelTypeEnum.MRKT_EMAIL)
+        || channelTypeEnum.equals(ChannelTypeEnum.MRKT_MESSAGE_CENTER)) {
+      payload.put(ANNOTATION_CANVAS_UNIQ_ID, runDate);
+    }
+    // interaction.type
+    payload.put(MessageConstantsEnum.INTERACTION_TYPE.getValue(), actionTypeEnum.getValue());
+    // timestamp.created, use current ts
+    long ts = System.currentTimeMillis();
+    payload.put(TIMESTAMP_CREATED, String.valueOf(ts));
+    // timestamp.updated, use current ts
+    payload.put(TIMESTAMP_UPDATED, String.valueOf(ts));
+    // status, all SENT for click/open
+    payload.put(MessageConstantsEnum.STATUS.getValue(), STATUS_SENT);
+
+    // cUrl
+    try {
+      payload.put(C_URL, URLEncoder.encode(url, "UTF-8"));
+    } catch (UnsupportedEncodingException e) {
+      LOGGER.warn("Unsupported encoding: " + url, e);
+    }
+    // tag_item, no need
+    // tag_intrId, no need
+    // tag_intrUnsub, no need
+    // TODO: cnv.id TBD
+    // tracking id
+    String trackingId = getOrDefault(uriComponents.getQueryParams().getFirst(TRACKING_ID));
+    payload.put(MessageConstantsEnum.TRACKING_ID.getValue(), trackingId);
+    // isUep
+    if(StringUtils.isNotEmpty(trackingId)) {
+      payload.put(IS_UEP, String.valueOf(true));
+    } else {
+      payload.put(IS_UEP, String.valueOf(false));
+    }
+
+    // experiment ids
     payload.put("exe", getOrDefault(uriComponents.getQueryParams().getFirst(EXPERIMENT_ID)));
     payload.put("ext", getOrDefault(uriComponents.getQueryParams().getFirst(TREATMENT_ID)));
     payload.put("trt", getOrDefault(uriComponents.getQueryParams().getFirst(EXPERIMENT_TYPE)));
 
+    // message list
     MesgList mesgList = new MesgList();
     mesgList.mobTrkId = uriComponents.getQueryParams().getFirst(MOB_TRK_ID);
     if (actionTypeEnum.equals(ActionTypeEnum.CLICK)) {

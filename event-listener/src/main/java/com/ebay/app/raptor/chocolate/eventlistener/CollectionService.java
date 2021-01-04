@@ -6,7 +6,7 @@ import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.CommonConstant;
 import com.ebay.app.raptor.chocolate.eventlistener.component.GdprConsentHandler;
-import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
@@ -54,7 +54,7 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static com.ebay.app.raptor.chocolate.eventlistener.constant.Constants.REFERRER;
+import static com.ebay.app.raptor.chocolate.constant.Constants.REFERRER;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 
 /**

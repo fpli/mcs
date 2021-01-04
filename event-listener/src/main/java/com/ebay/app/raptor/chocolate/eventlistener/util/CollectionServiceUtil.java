@@ -1,6 +1,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
-import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
@@ -11,8 +11,6 @@ import java.net.URLEncoder;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.ebay.app.raptor.chocolate.eventlistener.constant.Constants.REFERRER;
 
 /**
  * @author xiangli4
