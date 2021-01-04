@@ -1,10 +1,9 @@
 package com.ebay.app.raptor.chocolate.adservice.util;
 
 import com.ebay.app.raptor.chocolate.AdserviceResourceTest;
+import com.ebay.app.raptor.chocolate.adservice.component.EsrXidClient;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
-import com.ebay.app.raptor.chocolate.adservice.constant.Headers;
 import com.ebay.app.raptor.chocolate.adservice.constant.LBSConstants;
-import com.ebay.app.raptor.chocolate.adservice.constant.MKEVT;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSHttpResult;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
@@ -14,15 +13,10 @@ import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.kernel.constants.KernelConstants;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.kernel.util.FastURLEncoder;
-import com.ebay.raptor.geo.context.GeoCtx;
-import com.ebay.raptor.geo.context.UserPrefsCtx;
-import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Field;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
-import org.glassfish.jersey.server.ContainerRequest;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,15 +27,13 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.*;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.*;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -73,36 +65,6 @@ public class DAPResponseHandlerTest {
   @Before
   public void setUp() throws Exception {
     dapResponseHandler = new DAPResponseHandler();
-  }
-
-  @Test
-  public void getSiteId() throws Exception {
-    ContainerRequest containerRequest = Mockito.mock(ContainerRequest.class);
-    when(containerRequest.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(null);
-    assertEquals(Integer.valueOf(0), Whitebox.<Integer>invokeMethod(dapResponseHandler, "getSiteId", containerRequest));
-
-    UserPrefsCtx userPrefsCtx = Mockito.mock(UserPrefsCtx.class);
-    when(userPrefsCtx.getGeoContext()).thenReturn(null);
-    when(containerRequest.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(userPrefsCtx);
-
-    assertEquals(Integer.valueOf(0), Whitebox.<Integer>invokeMethod(dapResponseHandler, "getSiteId", containerRequest));
-
-    GeoCtx geoContext = Mockito.mock(GeoCtx.class);
-    when(geoContext.getSiteId()).thenReturn(2);
-
-    when(containerRequest.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(userPrefsCtx);
-    when(userPrefsCtx.getGeoContext()).thenReturn(geoContext);
-    assertEquals(Integer.valueOf(2), Whitebox.<Integer>invokeMethod(dapResponseHandler, "getSiteId", containerRequest));
-  }
-
-  @Test
-  public void setSiteId() throws Exception {
-    URIBuilder dapUriBuilder = new URIBuilder();
-    Whitebox.<String>invokeMethod(dapResponseHandler, "setSiteId", dapUriBuilder, 2);
-    List<NameValuePair> collect = dapUriBuilder.getQueryParams().stream()
-        .filter(nameValuePair -> nameValuePair.getName().equals(Constants.SITE_ID))
-        .collect(Collectors.toList());
-    assertEquals("2", collect.get(0).getValue());
   }
 
   @Test
@@ -403,9 +365,11 @@ public class DAPResponseHandlerTest {
     lbsClient = LBSClient.getInstance();
     Whitebox.setInternalState(lbsClient, "client", client);
 
+    LBSQueryResult lbsQueryResult = lbsClient.getLBSInfo("97.77.104.22");
+
     HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
 
-    Map<String, String> map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, "97.77.104.22");
+    Map<String, String> map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, lbsQueryResult);
     assertEquals("US", map.get((LBSConstants.GEO_COUNTRY_CODE)));
     assertEquals("TX", map.get((LBSConstants.GEO_DMA)));
     assertEquals("ft worth", map.get((LBSConstants.GEO_CITY)));
@@ -416,11 +380,11 @@ public class DAPResponseHandlerTest {
     assertEquals("817", map.get((LBSConstants.GEO_AREA_CODE)));
 
     when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn(null);
-    map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, "97.77.104.22");
+    map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, lbsQueryResult);
     assertEquals("US", map.get((LBSConstants.GEO_COUNTRY_CODE)));
 
     when(httpServletRequest.getHeader(Constants.HTTP_ACCEPT_LANGUAGE)).thenReturn("de-CH");
-    map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, "97.77.104.22");
+    map = Whitebox.invokeMethod(dapResponseHandler, "getLBSParameters", httpServletRequest, lbsQueryResult);
     assertEquals("CH", map.get((LBSConstants.GEO_COUNTRY_CODE)));
   }
 
@@ -468,6 +432,7 @@ public class DAPResponseHandlerTest {
     when(bufferedReader.readLine())
         .thenReturn("first line")
         .thenReturn("second line");
+    dapResponseHandler.couchbaseClient = Mockito.mock(CouchbaseClient.class);
 
     InputStream is = org.mockito.Mockito.mock(InputStream.class);
     when(is.read()).thenReturn(2);
@@ -537,5 +502,4 @@ public class DAPResponseHandlerTest {
 
     Mockito.verify(asyncInvoker).post(anyObject(), any(InvocationCallback.class));
   }
-
 }

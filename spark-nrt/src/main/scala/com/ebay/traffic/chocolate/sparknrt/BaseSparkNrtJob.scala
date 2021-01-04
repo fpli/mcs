@@ -10,22 +10,6 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 abstract class BaseSparkNrtJob(override val jobName: String,
                                override val mode: String = "yarn") extends BaseSparkJob(jobName, mode) {
 
-  /**
-    * The hadoop conf
-    */
-  @transient lazy val hadoopConf = {
-    new Configuration()
-  }
-
-  /**
-    * The file system
-    */
-  @transient lazy val fs = {
-    val fs = FileSystem.get(hadoopConf)
-    sys.addShutdownHook(fs.close())
-    fs
-  }
-
   lazy val DATE_COL = "date"
 
   /**

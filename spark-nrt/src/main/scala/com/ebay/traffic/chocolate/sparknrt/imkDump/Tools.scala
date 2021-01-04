@@ -75,7 +75,6 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     mapData.map(line => line.split(",")(0) -> line.split(",")(1)).toMap
   }
 
-
   def getDateTimeFromTimestamp(timestamp: Long): String = {
     val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
     df.format(timestamp)
@@ -168,7 +167,7 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
         logger.warn("MalformedUrl", e)
       }
     }
-    return result
+    result
   }
 
   /**
@@ -403,6 +402,9 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     * @return is or not
     */
   def judgeNotEbaySites(referrer: String): Boolean = {
+    if(StringUtils.isEmpty(referrer)) {
+      return true
+    }
     val matcher = ebaySites.matcher(referrer)
     if (matcher.find()) {
       if(metrics != null)
@@ -446,26 +448,27 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     */
   def getQueryMapFromUrl(uri: String): mutable.Map[String, String] = {
     val result: mutable.Map[String, String] = mutable.Map[String, String]()
-    if (StringUtils.isNotEmpty(uri)) {
-      try {
-        val query = new URL(uri).getQuery
-        if (StringUtils.isNotEmpty(query)) {
-          query.split("&").foreach(paramMapString => {
-            if (StringUtils.isNotEmpty(paramMapString)) {
-              val paramStringArray = paramMapString.split("=")
-              if (paramStringArray.nonEmpty && paramStringArray.length == 2) {
-                result += (paramStringArray(0).trim -> paramStringArray(1).trim)
-              }
+    if (StringUtils.isEmpty(uri)) {
+      return result
+    }
+    try {
+      val query = new URL(uri).getQuery
+      if (StringUtils.isNotEmpty(query)) {
+        query.split("&").foreach(paramMapString => {
+          if (StringUtils.isNotEmpty(paramMapString)) {
+            val paramStringArray = paramMapString.split("=")
+            if (paramStringArray.nonEmpty && paramStringArray.length == 2) {
+              result += (paramStringArray(0).trim -> paramStringArray(1).trim)
             }
-          })
-        }
-      } catch {
-        case e: Exception => {
-          if(metrics != null) {
-            metrics.meter("imk.dump.errorGetQueryMap", 1)
           }
-          logger.warn("ErrorGetQueryMap", e)
+        })
+      }
+    } catch {
+      case e: Exception => {
+        if (metrics != null) {
+          metrics.meter("imk.dump.errorGetQueryMap", 1)
         }
+        logger.warn("ErrorGetQueryMap", e)
       }
     }
     result
@@ -484,10 +487,8 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       for ((k, v) <- search_keyword_map) {
         if (host.contains(k.trim)) {
           v.split("\\|").foreach(keyword => {
-            if (StringUtils.isNotEmpty(keyword)) {
-              if (!queryMap.get(keyword.trim).isEmpty) {
-                return queryMap.get(keyword.trim).get
-              }
+            if (StringUtils.isNotEmpty(keyword) && !queryMap.get(keyword.trim).isEmpty) {
+              return queryMap.get(keyword.trim).get
             }
           })
         }

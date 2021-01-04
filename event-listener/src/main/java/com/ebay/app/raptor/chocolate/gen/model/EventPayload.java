@@ -29,7 +29,7 @@ import com.fasterxml.jackson.annotation.*;
 
 @ApiModel(description = "Tracking event payload")
 @javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-07-02T09:57:48.715+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "pageId","tags" })
+@JsonPropertyOrder({ "pageId","tags","checkoutAPIClickTs" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -45,6 +45,10 @@ public class EventPayload implements Serializable {
   @JsonProperty("tags")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private Map<String, String> tags = null;
+  @JsonProperty("checkoutAPIClickTs")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private String checkoutAPIClickTs = null;
+
 
   /**
    * page id, mandotary for notification
@@ -70,6 +74,21 @@ public class EventPayload implements Serializable {
   public void setTags(Map<String, String> tags) {
     this.tags = tags;
   }
+
+  /**
+   * checkoutAPIClickTs, mandotary for the click from checkoutAPI
+   * @return checkoutAPIClickTs
+   **/
+  @ApiModelProperty(example = "1604475015939", value = "checkoutAPIClickTs, mandotary for click from checkoutAPI")
+  public String getCheckoutAPIClickTs() {
+    return checkoutAPIClickTs;
+  }
+
+  public void setCheckoutAPIClickTs(String checkoutAPIClickTs) {
+    this.checkoutAPIClickTs = checkoutAPIClickTs;
+  }
+
+
   @Override
   public boolean equals(java.lang.Object o) {
     if (this == o) {
@@ -80,12 +99,13 @@ public class EventPayload implements Serializable {
     }
     EventPayload eventPayload = (EventPayload) o;
     return Objects.equals(this.pageId, eventPayload.pageId) &&
-        Objects.equals(this.tags, eventPayload.tags);
+        Objects.equals(this.tags, eventPayload.tags) &&
+            Objects.equals(this.checkoutAPIClickTs, eventPayload.checkoutAPIClickTs);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(pageId, tags);
+    return Objects.hash(pageId, tags, checkoutAPIClickTs);
   }
 
   @Override
@@ -95,6 +115,7 @@ public class EventPayload implements Serializable {
 
     sb.append("    pageId: ").append(toIndentedString(pageId)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
+    sb.append("    checkoutAPIClickTs: ").append(toIndentedString(checkoutAPIClickTs)).append("\n");
     sb.append("}");
     return sb.toString();
   }

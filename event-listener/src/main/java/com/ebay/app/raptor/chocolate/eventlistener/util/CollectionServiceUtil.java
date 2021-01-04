@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
@@ -8,8 +9,8 @@ import org.springframework.util.StringUtils;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
-
-import static com.ebay.app.raptor.chocolate.eventlistener.constant.Constants.REFERRER;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author xiangli4
@@ -55,6 +56,16 @@ public class CollectionServiceUtil {
   private static final String ITEM_ID = "itemId";
   private static final String ROI_SOURCE = "roisrc";
   private static final String MPUID = "mpuid";
+  private static final String BOT_USER_AGENT = "bot";
+
+  // do not dedupe the item clicks from ebay special sites
+  private static Pattern ebaySpecialSites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(befr|benl+\\.)?(qa\\.)?ebay\\.(be|nl|pl|ie|ph|com\\.hk|com\\.my|com\\.sg)($|/.*)", Pattern.CASE_INSENSITIVE);
+
+  // ebay item page
+  private static Pattern ebayItemPage = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/(?=itm\\/).*)", Pattern.CASE_INSENSITIVE);
+
+  // ebay item no title page
+  private static Pattern ebayItemNoTitlePage = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/(?=itm\\/[0-9]+\\?).*)", Pattern.CASE_INSENSITIVE);
 
   /**
    * get app id from user agent info
@@ -74,7 +85,7 @@ public class CollectionServiceUtil {
       } else if (uaInfo.requestedFromLargeDevice() && uaInfo.getDeviceInfo().osiOS() && uaInfo.requestIsNativeApp()) {
         //ipad
         appId = IPAD_APPID;
-      } else if (uaInfo.getDeviceInfo().osAndroid() && uaInfo.requestIsNativeApp()) {
+      } else if (uaInfo.getDeviceInfo() != null && uaInfo.getDeviceInfo().osAndroid() && uaInfo.requestIsNativeApp()) {
         //android
         appId = ANDROID_APPID;
       }
@@ -159,5 +170,35 @@ public class CollectionServiceUtil {
 
   private static boolean isEncodedUrl(String url) {
     return (url.startsWith("https%3A%2F%2F") || url.startsWith("http%3A%2F%2F"));
+  }
+
+  /**
+   * Determine whether the click is a duplicate click from /itm page, if so, we will filter it.
+   * The duplication will happen when there is no title in itm click url on mobile phone web from non-special sites
+   * No filter for bot clicks
+   * No filter for user clicks from special sites
+   * No filter for dweb+Tablet user clicks
+   * No filter for native app user clicks
+   * Filter 301 for user clicks from non-special sites and mobile phone web
+   */
+   public static boolean isDuplicateItmClick(String marketingStatusCode, String userAgent,
+                                             String targetUrl, boolean requestIsFromBot, boolean requestIsMobile, boolean requestIsMobileWeb) {
+    boolean isDulicateItemClick = false;
+
+    if (ebayItemNoTitlePage.matcher(targetUrl).find()) {
+       Matcher ebaySpecialSitesMatcher = ebaySpecialSites.matcher(targetUrl);
+
+       if (!userAgent.toLowerCase().contains(BOT_USER_AGENT) && !requestIsFromBot &&
+               !ebaySpecialSitesMatcher.find() &&
+               requestIsMobile && requestIsMobileWeb) {
+
+         if (!StringUtils.isEmpty(marketingStatusCode) && marketingStatusCode.equals(Constants.NODE_REDIRECTION_STATUS_CODE)) {
+           isDulicateItemClick = true;
+         }
+
+       }
+    }
+
+    return isDulicateItemClick;
   }
 }

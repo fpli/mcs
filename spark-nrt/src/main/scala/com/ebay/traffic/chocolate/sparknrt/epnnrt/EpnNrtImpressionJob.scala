@@ -32,6 +32,8 @@ class EpnNrtImpressionJob(params: Parameter) extends BaseEpnNrtJob(params, param
   lazy val epnNrtResultMetaImpDir = workDir + "/meta/EPN/output/epnnrt_imp/"
   lazy val epnNrtScpMetaImpDir = workDir + "/meta/EPN/output/epnnrt_scp_imp/"
 
+  lazy val IMPRESSION_DIR = "/impression/"
+
   @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression.json")
 
   @transient lazy val batchSize: Int = {
@@ -124,14 +126,14 @@ class EpnNrtImpressionJob(params: Parameter) extends BaseEpnNrtJob(params, param
           //3. build impression dataframe  save dataframe to files and rename files
           var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
           impressionDf = impressionDf.repartition(params.partitions)
-          saveDFToFiles(impressionDf, epnNrtTempDir + "/impression/", "gzip", "csv", "tab")
+          saveDFToFiles(impressionDf, epnNrtTempDir + IMPRESSION_DIR, "gzip", "csv", "tab")
 
-          val countImpDf = readFilesAsDF(epnNrtTempDir + "/impression/", schema_epn_impression_table.dfSchema, "csv", "tab", false)
+          val countImpDf = readFilesAsDF(epnNrtTempDir + IMPRESSION_DIR, schema_epn_impression_table.dfSchema, "csv", "tab", false)
 
           metrics.meter("SuccessfulCount", countImpDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 
           //write to EPN NRT output meta files
-          val imp_files = renameFile(outputDir + "/impression/", epnNrtTempDir + "/impression/", date, "dw_ams.ams_imprsn_cntnr_cs_")
+          val imp_files = renameFile(outputDir + IMPRESSION_DIR, epnNrtTempDir + IMPRESSION_DIR, date, "dw_ams.ams_imprsn_cntnr_cs_")
           val imp_metaFile = new MetaFiles(Array(DateFiles(date, imp_files)))
 
           retry(3) {

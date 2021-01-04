@@ -5,6 +5,7 @@ import com.ebay.raptor.dds.jaxrs.DDSTrackingFilter;
 import com.ebay.tracking.filter.TrackingServiceFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import javax.inject.Named;
@@ -21,6 +22,7 @@ import java.util.Set;
  * @author xiangli4
  */
 @Configuration
+@ComponentScan(basePackages = "com.ebay.userlookup")
 @ApplicationPath("/marketingtracking")
 public class EventListenerResourceConfig extends Application {
 

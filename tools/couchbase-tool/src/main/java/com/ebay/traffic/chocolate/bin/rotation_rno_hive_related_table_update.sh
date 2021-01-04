@@ -18,8 +18,8 @@ echo `date`"-------- Apollo-rno LoadData ${DS} started~~~" | tee -a ${log_file}
 
 rc=$?
 if [[ $rc != 0 ]]; then
-    echo `date`"===  Apollo-Rno ${DS} Table Job error ==="
+    echo `date`"===  Apollo-Rno ${DS} Table Job error ===" | tee -a ${log_file}
     exit $rc
 else
-    echo `date`" =============== Apollo-Rno ${DS} Table Job End ==========="
+    echo `date`" =============== Apollo-Rno ${DS} Table Job End ===========" | tee -a ${log_file}
 fi

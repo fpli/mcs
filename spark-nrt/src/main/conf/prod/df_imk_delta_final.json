@@ -1,0 +1,366 @@
+{
+  "table": "df_imk_apollo",
+  "description": "",
+  "columns": [
+    {
+      "name": "batch_id",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "file_id",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "file_schm_vrsn",
+      "dataType": "integer",
+      "default": 4
+    },
+    {
+      "name": "snapshotid",
+      "dataType": "long",
+      "default": ""
+    },
+    {
+      "name": "dt",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "srvd_pstn",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "rvr_cmnd_type_cd",
+      "dataType": "integer",
+      "default": ""
+    },
+    {
+      "name": "rvr_chnl_type_cd",
+      "dataType": "integer",
+      "default": ""
+    },
+    {
+      "name": "cntry_cd",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "lang_cd",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "trckng_prtnr_id",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "cguid",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "guid",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "user_id",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "clnt_remote_ip",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "brwsr_type_id",
+      "dataType": "integer",
+      "default": -99
+    },
+    {
+      "name": "brwsr_name",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "rfrr_dmn_name",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "rfrr_url",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "url_encrptd_yn_ind",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "pblshr_id",
+      "dataType": "long",
+      "default": ""
+    },
+    {
+      "name": "lndng_page_dmn_name",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "lndng_page_url",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "user_query",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "rule_bit_flag_strng",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "event_ts",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "dflt_bhrv_id",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "src_rotation_id",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "dst_rotation_id",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "user_map_ind",
+      "dataType": "integer",
+      "default": ""
+    },
+    {
+      "name": "dst_client_id",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "creative_id",
+      "dataType": "long",
+      "default": -999
+    },
+    {
+      "name": "test_ctrl_flag",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "mfe_id",
+      "dataType": "integer",
+      "default": -999
+    },
+    {
+      "name": "kw_id",
+      "dataType": "long",
+      "default": -999
+    },
+    {
+      "name": "keyword",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "mt_id",
+      "dataType": "long",
+      "default": 0
+    },
+    {
+      "name": "crlp",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "geo_id",
+      "dataType": "long",
+      "default": ""
+    },
+    {
+      "name": "item_id",
+      "dataType": "long",
+      "default": ""
+    },
+    {
+      "name": "transaction_type",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "transaction_id",
+      "dataType": "long",
+      "default": ""
+    },
+    {
+      "name": "cart_id",
+      "dataType": "long",
+      "default": ""
+    },
+    {
+      "name": "extrnl_cookie",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "ebay_site_id",
+      "dataType": "long",
+      "default": ""
+    },
+    {
+      "name": "rvr_url",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_vrsn_num",
+      "dataType": "integer",
+      "default": 0
+    },
+    {
+      "name": "flex_field_1",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_2",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_3",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_4",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_5",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_6",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_7",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_8",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_9",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_10",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_11",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_12",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_13",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_14",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_15",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_16",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_17",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_18",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_19",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "flex_field_20",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "perf_track_name_value",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "cre_date",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "cre_user",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "upd_date",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "upd_user",
+      "dataType": "string",
+      "default": ""
+    }
+  ]
+}

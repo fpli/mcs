@@ -9,6 +9,35 @@ info:
   version: 1.0.0
   title: service-tracking-events
 paths:
+  /track:
+    post:
+      summary: Send one marketing event to track
+      description: Send one marketing event to track
+      tags:
+        - track
+      operationId: track
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Rejected due to message format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorModel'
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnifiedTrackingEvent'
   /roi:
     post:
       summary: Send roi event to marketing tracking
@@ -40,7 +69,7 @@ paths:
               $ref: '#/components/schemas/ROIEvent'
   /events:
     post:
-      summary: Send one event to marketing tracking
+      summary: Send one click event to marketing tracking
       description: Send one event to marketing tracking
       tags:
         - events
@@ -164,6 +193,113 @@ components:
             'https://api.ebay.com/oauth/scope/base@public': This scope would allow base public access.
             'https://api.ebay.com/oauth/scope/experience@public': This scope would allow experience public access.
   schemas:
+    UnifiedTrackingEvent:
+      type: object
+      properties:
+        producerEventId:
+          type: string
+          description: 'Event id at producer level'
+          example: '18c244e5-0ee3-4b0e-b283-4efb379bee44'
+        producerEventTs:
+          type: integer
+          format: int64
+          description: 'Timestamp when the producer calls the tracking service'
+          example: 1604463171000
+        rlogId:
+          type: string
+          description: 'rlogId'
+          example: 't6klaook%60b0%3D%3C%3Dpieojbnkmcc4%3B(5574425-1759175a140-0x1902'
+        trackingId:
+          type: string
+          description: 'Id used to associate the marketing system behavior and the user behavior'
+          example: '0AD3335D-36089192FCC-017529D1F00D-00000000027EEF2B'
+        userId:
+          type: integer
+          format: int64
+          description: 'Oracle id'
+          example: '1626162'
+        publicUserId:
+          type: string
+          description: 'Public user id'
+          example: '1626162'
+        encryptedUserId:
+          type: integer
+          format: int64
+          description: 'Encrypted user id'
+          example: '542525556'
+        guid:
+          type: string
+          description: 'guid'
+          example: '8b34ef1d1740a4d724970d78eec8ee4c'
+        idfa:
+          type: string
+          description: 'ios identifier'
+          example: '30255BCE-4CDA-4F62-91DC-4758FDFF8512'
+        gadid:
+          type: string
+          description: 'android ad identifier'
+          example: '035911ea-467d-4056-903b-65cf44f5633b'
+        deviceId:
+          type: string
+          description: 'This is ebay mobile app generated unique id for each app installation. It is usually used in request header X-EBAY3PP-DEVICE-ID for each API call.'
+          example: '035911ea-467d-4056-903b-65cf44f5633b'
+        channelType:
+          type: string
+          description: 'Channel identifier'
+          example: 'MRKT_EMAIL'
+        actionType:
+          type: string
+          description: 'Action identifier'
+          example: 'CLICK'
+        partner:
+          type: string
+          description: 'For epn publisher id, for display partner id. For CM, we have adobe, SMTP, Send Grid...'
+          example: '16352125'
+        campaignId:
+          type: string
+          description: 'Campaign id'
+          example: '2231121'
+        siteId:
+          type: integer
+          description: 'eBay site id'
+          example: 0
+        url:
+          type: string
+          description: 'Tracking url'
+          example: 'https://www.ebay.com/i/1312121?mkevt=1&mkcid=2'
+        referer:
+          type: string
+          description: 'Referer of the tracking request'
+          example: 'https://www.google.com/'
+        userAgent:
+          type: string
+          description: 'Client full user agent name'
+          example: 'Chrome: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
+        service:
+          type: string
+          description: 'Service name of the producer'
+          example: 'Chocolate'
+        server:
+          type: string
+          description: 'The server which is calling the tracking service'
+          example: 'rnochocolis-123.stratus.ebay.com'
+        remoteIp:
+          type: string
+          description: 'End user remote IP'
+          example: '202.76.240.67'
+        pageId:
+          type: integer
+          description: 'Corresponding page id in sojourner'
+          example: 3084
+        geoId:
+          type: integer
+          description: 'Geo id of the end user'
+          example: 1
+        payload:
+          type: object
+          description: Tracking event payload
+          additionalProperties:
+            type: string
     Event:
       type: object
       properties:
@@ -176,8 +312,6 @@ components:
         payload:
           type: object
           description: Tracking event payload
-          required:
-            - pageId
           properties:
             pageId:
               type: integer
@@ -189,6 +323,11 @@ components:
               description: Map<String, String> for soj tags
               additionalProperties:
                 type: string
+            checkoutAPIClickTs:
+              type: string
+              description: checkoutAPIClickTs, mandotary for click from checkoutAPI
+              example: "1576108800000"
+
 
     ROIEvent:
       type: object

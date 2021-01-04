@@ -7,6 +7,7 @@ import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
+import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.raptor.opentracing.SpanEventHelper;
@@ -73,6 +74,39 @@ public class EventListenerResource implements EventsApi {
   }
 
   /**
+   * Collect marketing tracking event.
+   * @param body json body of the unified tracking schema event.
+   *             It does not contain all columns cause some of them can be parsed in the collection service.
+   * @return Response telling it's successful or not
+   */
+  @Override
+  public Response track(UnifiedTrackingEvent body) {
+    Tracer tracer = GlobalTracer.get();
+    try (Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "UnifiedTracking")
+        .startActive(true)) {
+      Span span = scope.span();
+      Response res = null;
+      try {
+        collectionService.collectUnifiedTrackingEvent(body);
+        res = Response.status(Response.Status.CREATED).build();
+        Tags.STATUS.set(span, "0");
+      } catch (Exception e) {
+        logger.warn(String.format("UTP message process error %s", body), e);
+        Tags.STATUS.set(span, "0");
+        // show warning in cal
+        SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
+        try {
+          res = errorFactoryV3.makeWarnResponse(e.getMessage());
+        } catch (Exception ex) {
+          logger.warn(e.getMessage(), request.toString(), body);
+          logger.warn(ex.getMessage(), ex);
+        }
+      }
+      return res;
+    }
+  }
+
+  /**
    * Collect clicks from upstream raptor, nodejs and native app
    * @param body json body containing referrerUrl and targetUrl
    * @return Response telling it's successful or not
@@ -84,24 +118,10 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res = null;
       try {
-        if (body.getPayload() != null) {
-          if (body.getPayload().getPageId() != null) {
-            int pageId = body.getPayload().getPageId().intValue();
-            // notification events
-            if (pageId == PageIdEnum.NOTIFICATION_RECEIVED.getId() ||
-                pageId == PageIdEnum.NOTIFICATION_ACTION.getId()) {
-              collectionService.collectNotification(request, userCtxProvider.get(), requestContext, body, pageId);
-            }
-          } else {
-            logger.warn(Errors.ERROR_NO_PAGE_ID);
-            metrics.meter(Errors.ERROR_NO_PAGE_ID);
-            throw new Exception(Errors.ERROR_NO_PAGE_ID);
-          }
-        } else {
-          // click events
-          collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(),
-              requestContext, body);
-        }
+        // click events
+        collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(),
+                requestContext, body);
+
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {

@@ -1,6 +1,8 @@
 package com.ebay.traffic.chocolate.sparknrt.crabTransformWatermark
 
 import java.io.File
+import java.time.{ZoneId, ZonedDateTime}
+import java.time.format.DateTimeFormatter
 
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import org.apache.hadoop.conf.Configuration
@@ -19,7 +21,7 @@ class TestCalCrabTransformWatermark extends BaseFunSuite {
   private val outPutDir = tmpPath + "/outPutDir"
   private val channels = "PAID_SEARCH,ROI,crabDedupe"
 
-  private val localDir = "src/test/resources/crabTransformWatermark.data"
+  private val localDir = getTestResourcePath("crabTransformWatermark.data")
 
   private val crabDir = "crab"
   private val imkDir = "imk"
@@ -60,7 +62,10 @@ class TestCalCrabTransformWatermark extends BaseFunSuite {
     assert(!fs.exists(new Path(outPutDir + "/crabTransformWatermark")))
 
 //    assert(job.readFileContent(new Path(outPutDir + "/crabTransformWatermark"), fs).equals("1567350689871"))
-    assert(job.readFileContent(new Path(outPutDir + "/imkCrabTransformWatermark"), fs).equals("1567351002591"))
+    assert(job.readFileContent(new Path(outPutDir + "/imkCrabTransformWatermark"), fs)
+      .equals(ZonedDateTime.parse("2019-09-01 23:16:42.591",
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+          .withZone(ZoneId.systemDefault())).toInstant.toEpochMilli.toString))
     assert(job.readFileContent(new Path(outPutDir + "/dedupAndSinkWatermark_PAID_SEARCH"), fs).equals("1569720941824"))
     assert(job.readFileContent(new Path(outPutDir + "/dedupAndSinkWatermark_ROI"), fs).equals("1569720941824"))
     assert(job.readFileContent(new Path(outPutDir + "/dedupAndSinkWatermark_crabDedupe"), fs).equals("1569720943443"))

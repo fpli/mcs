@@ -1,0 +1,108 @@
+{
+  "rheosHeader": {
+    "eventCreateTimestamp": 1601821010593,
+    "eventSentTimestamp": 1601821010593,
+    "schemaId": 10325,
+    "eventId": null,
+    "producerId": "marketing-tracking-producer-ssl"
+  },
+  "eventId": "123",
+  "producerEventId": "456",
+  "eventTs": 1605776912045,
+  "producerEventTs": 1605776912045,
+  "rlogId": {
+    "string": ""
+  },
+  "trackingId": {
+    "string": ""
+  },
+  "userId": {
+    "long": 123
+  },
+  "publicUserId": {
+    "string": ""
+  },
+  "encryptedUserId": {
+    "long": 123
+  },
+  "guid": {
+    "string": ""
+  },
+  "idfa": {
+    "string": ""
+  },
+  "gadid": {
+    "string": ""
+  },
+  "deviceId": {
+    "string": ""
+  },
+  "channelType": {
+    "string": "DISPLAY"
+  },
+  "actionType": {
+    "string": "DISPLAY"
+  },
+  "partner": {
+    "string": "CHOCOLATE"
+  },
+  "campaignId": {
+    "string": ""
+  },
+  "rotationId": {
+    "string": ""
+  },
+  "siteId": {
+    "int": 0
+  },
+  "url": {
+    "string": ""
+  },
+  "referer": {
+    "string": ""
+  },
+  "userAgent": {
+    "string": ""
+  },
+  "deviceFamily": {
+    "string": ""
+  },
+  "deviceType": {
+    "string": ""
+  },
+  "browserFamily": {
+    "string": ""
+  },
+  "browserVersion": {
+    "string": ""
+  },
+  "osFamily": {
+    "string": ""
+  },
+  "osVersion": {
+    "string": ""
+  },
+  "appVersion": {
+    "string": ""
+  },
+  "appId": {
+    "string": ""
+  },
+  "service": {
+    "string": ""
+  },
+  "server": {
+    "string": ""
+  },
+  "remoteIp": {
+    "string": ""
+  },
+  "pageId": {
+    "int": 1
+  },
+  "geoId": {
+    "int": 1
+  },
+  "isBot": true,
+  "payload": {}
+}

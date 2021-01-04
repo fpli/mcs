@@ -49,6 +49,8 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
   private static final String BEHAVIOR_RHEOS_PROPERTIES_FILE = "event-listener-behavior-rheos-producer.properties";
 
+  private static final String UNIFIED_TRACKING_RHEOS_PROPERTIES_FILE = "event-listener-unified-tracking-rheos-producer.properties";
+
   /**
    * Out Kafka cluster, can be "kafka", "rheos", "rheos,kafka", "kafka,rheos".
    */
@@ -70,6 +72,11 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   private static final String RHEOS_OUT_BEHAVIOR_TOPIC = "chocolate.event-listener.kafka.producer.behavior.topic";
 
   /**
+   * unified tracking topic
+   */
+  private static final String RHEOS_OUT_UNIFIED_TRACKING_TOPIC = "chocolate.event-listener.kafka.producer.unified.tracking.topic";
+
+  /**
    * couchbase data source
    */
   private static final String COUCHBASE_DATASOURCE = "chocolate.event-listener.couchbase.datasource";
@@ -80,9 +87,14 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   private static final String ENVIRONMENT = "chocolate.event-listener.env";
 
   /**
+   * Duplicate Itm Click Kafka Topic
+   */
+  private static final String DUPLICATE_ITM_CLICK_TOPIC = "chocolate.event-listener.kafka.producer.duplicateclick.topic";
+
+  /**
    * default driver ID
    */
-  static int driverId;
+  private int driverId;
 
   /**
    * kafka related
@@ -91,6 +103,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   private static Properties sinkKafkaProperties;
   private static Properties sinkRheosKafkaProperties;
   private static Properties behaviorRheosProperties;
+  private static Properties unifiedTrackingRheosProperties;
 
   private String outKafkaCluster;
   private Map<ChannelType, String> outKafkaConfigMap = new HashMap<>();
@@ -110,6 +123,8 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     sinkRheosKafkaProperties = loadProperties(SINK_RHEOS_KAFKA_PROPERTIES_FILE);
 
     behaviorRheosProperties = loadProperties(BEHAVIOR_RHEOS_PROPERTIES_FILE);
+
+    unifiedTrackingRheosProperties = loadProperties(UNIFIED_TRACKING_RHEOS_PROPERTIES_FILE);
 
     instance.initKafkaConfigs();
   }
@@ -176,10 +191,17 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   }
 
   /**
-   * Get behavior kafka properties
+   * Get behavior rheos properties
    */
   public Properties getBehaviorRheosProperties() {
     return behaviorRheosProperties;
+  }
+
+  /**
+   * Get unified tracking rheos properties
+   */
+  public Properties getUnifiedTrackingRheosProperties() {
+    return unifiedTrackingRheosProperties;
   }
 
   /**
@@ -206,6 +228,13 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    */
   public String getProduceBehaviorTopic() {
     return ApplicationOptionsParser.getStringProperty(properties, RHEOS_OUT_BEHAVIOR_TOPIC);
+  }
+
+  /**
+   * Get produce unified tracking topic
+   */
+  public String getUnifiedTrackingTopic() {
+    return ApplicationOptionsParser.getStringProperty(properties, RHEOS_OUT_UNIFIED_TRACKING_TOPIC);
   }
 
   /**
@@ -255,8 +284,8 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     return driverId;
   }
 
-  public void setDriverId(final int driverId) {
-    ApplicationOptions.driverId = driverId;
+  public void setDriverId(final int newDriverId) {
+    driverId = newDriverId;
   }
 
   @Override
@@ -277,5 +306,16 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    */
   public String getEnvironment() {
     return ApplicationOptionsParser.getStringProperty(properties, ENVIRONMENT);
+  }
+
+  /**
+   * Get Duplicate Itm Click Topic
+   */
+  public String getDuplicateItmClickTopic() {
+    if (!properties.containsKey(DUPLICATE_ITM_CLICK_TOPIC)) {
+      logger.error(DUPLICATE_ITM_CLICK_TOPIC + " not found in properties file!");
+      throw new UnsupportedOperationException(DUPLICATE_ITM_CLICK_TOPIC + " not found in properties file!");
+    }
+    return properties.getProperty(DUPLICATE_ITM_CLICK_TOPIC);
   }
 }

@@ -1,6 +1,13 @@
 package com.ebay.traffic.chocolate.init;
 
+import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
+import com.ebay.app.raptor.chocolate.common.Hostname;
+import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.traffic.chocolate.jdbc.repo.DriverIdServiceImpl;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
+import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.NetworkTrafficServerConnector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -19,12 +26,18 @@ import java.net.URL;
 
 @Configuration
 public class JettyServerConfiguration {
+  private static final Logger logger = Logger.getLogger(JettyServerConfiguration.class);
 
   private static final String LISTENER_OPTIONS = "chocolate-listener.xml";
+  private static final int DRIVERID_RETRIES = 10;
 
   @Autowired
   Environment env;
 
+  @Autowired
+  private DriverIdServiceImpl driverIdService;
+
+  @SuppressWarnings("unchecked")
   @Bean
   public ConfigurableServletWebServerFactory webServerFactory() throws IOException
   {
@@ -38,6 +51,17 @@ public class JettyServerConfiguration {
       ListenerOptions options = ListenerOptions.getInstance();
 
       ListenerInitializer.init(ListenerOptions.getInstance());
+
+      int driverId = driverIdService.getDriverId(Hostname.HOSTNAME, Hostname.getIp(), Long.valueOf(SnapshotId.MAX_DRIVER_ID).intValue(), DRIVERID_RETRIES);
+      if (driverId != -1) {
+        ESMetrics.getInstance().meter("DriverIdFromDB", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", driverId));
+        options.setDriverId(driverId);
+      } else {
+        driverId = ApplicationOptionsParser.getDriverIdFromIp();
+        logger.error("get driver id from db failed, try to generate random driver id");
+        ESMetrics.getInstance().meter("RandomDriverId", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", driverId));
+        options.setDriverId(driverId);
+      }
 
       JettyServletWebServerFactory factory = new JettyServletWebServerFactory(options.getInputHttpPort());
       factory.addServerCustomizers(new JettyServerCustomizer() {

@@ -3,7 +3,8 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
-import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
+import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.HeaderMultiValue;
@@ -19,8 +20,6 @@ import com.ebay.tracking.common.util.UrlProcessHelper;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
@@ -68,10 +67,132 @@ public class BehaviorMessageParser {
     return INSTANCE;
   }
 
+  public BehaviorMessage parseAmsAndImkEvent(final HttpServletRequest request, ContainerRequestContext requestContext,
+                                             IEndUserContext endUserContext, MultiValueMap<String, String> parameters,
+                                             UserAgentInfo agentInfo, String uri, Long startTime, final ChannelType channelType,
+                                             final ChannelAction channelAction, Long snapshotId, int pageId, String pageName, int rdt,
+                                             String referer, String guid, String cguid, String userId, String rotationId) {
+    try {
+      Map<String, String> applicationPayload = new HashMap<>();
+      Map<String, String> clientData = new HashMap<>();
+      List<Map<String, String>> data = new ArrayList<>();
+
+      // set default value
+      BehaviorMessage record = new BehaviorMessage("", "", 0L, null, 0, null, null, null, null, null, null, null,
+              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              null, applicationPayload, null, clientData, "", "", "", data);
+
+      RequestTracingContext tracingContext = (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
+      DomainRequestData domainRequest = (DomainRequestData) requestContext.getProperty(DomainRequestData.NAME);
+
+      // guid
+      record.setGuid(guid);
+
+      // adguid
+      String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
+      String adguid = getData(Constants.ADGUID, trackingHeader);
+      if (adguid != null) {
+        record.setAdguid(adguid);
+      }
+
+      // source id
+      record.setSid(parseTagFromParams(parameters, Constants.SOURCE_ID));
+
+      record.setUserId(userId);
+
+      // eventTimestamp
+      record.setEventTimestamp(startTime);
+
+      // page info
+      record.setPageId(pageId);
+      record.setPageName(pageName);
+
+      // event family and action
+      record.setEventFamily(Constants.EVENT_FAMILY_CRM);
+      record.setEventAction(Constants.EVENT_ACTION);
+
+      // snapshotId
+      record.setSnapshotId(String.valueOf(snapshotId));
+
+      // fake session info
+      record.setSessionId(String.valueOf(snapshotId));
+      record.setSeqNum("1");
+
+      // agent info
+      record.setAgentInfo(endUserContext.getUserAgent());
+
+      // app info
+      String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
+      record.setAppId(appId);
+      if (agentInfo.getAppInfo() != null) {
+        record.setAppVersion(agentInfo.getAppInfo().getAppVersion());
+      }
+
+      // url query string
+      record.setUrlQueryString(UrlProcessHelper.getMaskedUrl(removeBsParam(parameters, uri), domainRequest.isSecure(),
+              false));
+
+      // device info
+      DDSResponse deviceInfo = agentInfo.getDeviceInfo();
+      record.setDeviceFamily(getDeviceFamily(deviceInfo));
+      record.setDeviceType(deviceInfo.getOsName());
+      record.setBrowserVersion(deviceInfo.getBrowserVersion());
+      record.setBrowserFamily(deviceInfo.getBrowser());
+      record.setOsVersion(deviceInfo.getDeviceOSVersion());
+      record.setOsFamily(deviceInfo.getDeviceOS());
+      record.setEnrichedOsVersion(deviceInfo.getDeviceOSVersion());
+
+      Map<String, String> applicationPayload1 = getApplicationPayload(applicationPayload, parameters, agentInfo, requestContext, uri,
+              domainRequest, deviceInfo, channelType, channelAction, guid, pageId);
+      applicationPayload1.put(Constants.CGUID, cguid);
+      applicationPayload1.put("u", userId);
+      applicationPayload1.put("userid", userId);
+      applicationPayload1.put("rotid", rotationId);
+      // applicationPayload
+      record.setApplicationPayload(applicationPayload1);
+
+      // cobrand
+      record.setCobrand(cobrandParser.parse(appId, endUserContext.getUserAgent()));
+
+      // rlogid
+      record.setRlogid(tracingContext.getRlogId());
+
+      // client data
+      record.setClientData(getClientData(clientData, domainRequest, endUserContext, request, referer));
+
+      // web server
+      record.setWebServer(domainRequest.getHost());
+
+      // ip
+      record.setRemoteIP(getRemoteIp(request));
+      record.setClientIP(domainRequest.getClientIp());
+
+      // referer hash
+      if (domainRequest.getReferrerUrl() != null) {
+        record.setRefererHash(String.valueOf(domainRequest.getReferrerUrl().hashCode()));
+      }
+
+      // site id
+      record.setSiteId(String.valueOf(domainRequest.getSiteId()));
+
+      // rdt
+      record.setRdt(rdt);
+
+      // channel type and action
+      record.setChannelType(channelType.toString());
+      record.setChannelAction(channelAction.toString());
+
+      return record;
+    } catch (Exception e) {
+      logger.warn("Failed to parse behavior message {} {}", uri, e.getMessage());
+      return null;
+    }
+  }
+
   public BehaviorMessage parse(final HttpServletRequest request, ContainerRequestContext requestContext,
                                IEndUserContext endUserContext, MultiValueMap<String, String> parameters,
-                               UserAgentInfo agentInfo, String uri, Long startTime, final ChannelType channelType,
-                               final ChannelAction channelAction, Long snapshotId, int pageId, String pageName, int rdt) {
+                               UserAgentInfo agentInfo, String referrer, String uri, Long startTime, final ChannelType channelType,
+                               final ChannelAction channelAction, Long snapshotId, int rdt) {
 
     Map<String, String> applicationPayload = new HashMap<>();
     Map<String, String> clientData = new HashMap<>();
@@ -107,9 +228,20 @@ public class BehaviorMessageParser {
     // eventTimestamp
     record.setEventTimestamp(startTime);
 
+    int pageId = 0;
     // page info
-    record.setPageId(pageId);
-    record.setPageName(pageName);
+    switch(channelAction) {
+      case EMAIL_OPEN:
+        pageId = PageIdEnum.EMAIL_OPEN.getId();
+        record.setPageId(pageId);
+        record.setPageName(PageNameEnum.OPEN.getName());
+        break;
+      case CLICK:
+        pageId= PageIdEnum.CLICK.getId();
+        record.setPageId(pageId);
+        record.setPageName(PageNameEnum.CLICK.getName());
+        break;
+    }
 
     // event family and action
     record.setEventFamily(Constants.EVENT_FAMILY_CRM);
@@ -157,7 +289,7 @@ public class BehaviorMessageParser {
     record.setRlogid(tracingContext.getRlogId());
 
     // client data
-    record.setClientData(getClientData(clientData, domainRequest, endUserContext, request));
+    record.setClientData(getClientData(clientData, domainRequest, endUserContext, request, referrer));
 
     // web server
     record.setWebServer(domainRequest.getHost());
@@ -189,7 +321,7 @@ public class BehaviorMessageParser {
    * Get client data
    */
   private Map<String, String> getClientData(Map<String, String> clientData, DomainRequestData domainRequest,
-                                            IEndUserContext endUserContext, HttpServletRequest request) {
+                                            IEndUserContext endUserContext, HttpServletRequest request, String referrer) {
     clientData.put("ForwardedFor", domainRequest.getXForwardedFor());
     clientData.put("Script", domainRequest.getServletPath());
     clientData.put("Server", domainRequest.getHost());
@@ -201,8 +333,12 @@ public class BehaviorMessageParser {
     clientData.put("Agent", endUserContext.getUserAgent());
     clientData.put("RemoteIP", getRemoteIp(request));
     clientData.put("ContentLength", String.valueOf(domainRequest.getContentLength()));
-    String referer = UrlProcessHelper.getMaskedUrl(domainRequest.getReferrerUrl(), false, true);
-    clientData.put("Referer", referer);
+    String ref = referrer;
+    if(StringUtils.isEmpty(ref)) {
+      ref = UrlProcessHelper.getMaskedUrl(domainRequest.getReferrerUrl(), false, true);
+    }
+
+    clientData.put("Referer", ref);
     clientData.put("Encoding", domainRequest.getAcceptEncoding());
 
     return deleteNullOrEmptyValue(clientData);
@@ -289,10 +425,8 @@ public class BehaviorMessageParser {
     // delete choco_bs param if it exists
     uri = removeBsParam(parameters, uri);
 
-    // landing page
-    if (ChannelAction.CLICK.equals(channelAction)) {
-      applicationPayload.put("url_mpre", uri);
-    }
+    // landing page and tracking url
+    applicationPayload.put("url_mpre", uri);
 
     // agent and payload
     applicationPayload.put("Agent", agentInfo.getUserAgentRawData());
@@ -431,29 +565,12 @@ public class BehaviorMessageParser {
   }
 
   /**
-   * Remove one url parameter
-   */
-  private String removeParam(String url, String param) throws URISyntaxException {
-    URIBuilder uriBuilder = new URIBuilder(url);
-    List<NameValuePair> queryParameters = uriBuilder.getQueryParams();
-    for (Iterator<NameValuePair> queryParameterItr = queryParameters.iterator(); queryParameterItr.hasNext(); ) {
-      NameValuePair queryParameter = queryParameterItr.next();
-      if (queryParameter.getName().equals(param)) {
-        queryParameterItr.remove();
-      }
-    }
-    uriBuilder.setParameters(queryParameters);
-
-    return uriBuilder.build().toString();
-  }
-
-  /**
    * Remove choco_bs param if it exists
    */
   private String removeBsParam(MultiValueMap<String, String> parameters, String uri) {
     if (parameters.containsKey(Constants.CHOCO_BUYER_ACCESS_SITE_ID)) {
       try {
-        uri = removeParam(uri, Constants.CHOCO_BUYER_ACCESS_SITE_ID);
+        uri = HttpRequestUtil.removeParam(uri, Constants.CHOCO_BUYER_ACCESS_SITE_ID);
       } catch (URISyntaxException e) {
         logger.warn("Error when deleting choco_bs", e);
       }

@@ -1,12 +1,15 @@
 package com.ebay.app.raptor.chocolate.adservice.util;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.adservice.component.EsrXidClient;
 import com.ebay.app.raptor.chocolate.adservice.constant.*;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.common.DAPRvrId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
+import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
@@ -16,20 +19,19 @@ import com.ebay.kernel.presentation.UrlUtils;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.kernel.util.guid.Guid;
-import com.ebay.raptor.geo.context.GeoCtx;
-import com.ebay.raptor.geo.context.UserPrefsCtx;
-import com.ebay.raptor.kernel.util.RaptorConstants;
+import com.ebay.raptor.geo.utils.GeoUtils;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.utils.URIBuilder;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -56,6 +58,7 @@ import java.util.*;
  * @since 2019/9/24
  */
 @Component
+@DependsOn("AdserviceService")
 public class DAPResponseHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(DAPResponseHandler.class);
 
@@ -69,6 +72,16 @@ public class DAPResponseHandler {
   @Autowired
   @Qualifier("cb")
   private IdMapable idMapping;
+
+  public CouchbaseClient couchbaseClient;
+
+  @Autowired
+  private EsrXidClient esrXidClient;
+
+  @Autowired
+  private void init() {
+    couchbaseClient = CouchbaseClient.getInstance();
+  }
 
   static {
     List<String> mobileUserAgent = new ArrayList<>();
@@ -86,8 +99,8 @@ public class DAPResponseHandler {
     }
   }
 
-  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext)
-          throws URISyntaxException {
+  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext,
+                              GdprConsentDomain consentDomain) throws URISyntaxException {
     ESMetrics.getInstance().meter("sendDAPResponse");
 
     LOGGER.debug("query string {}", request.getQueryString());
@@ -101,33 +114,53 @@ public class DAPResponseHandler {
 
     String guid = adserviceCookie.getGuid(request);
     String accountId = adserviceCookie.getUserId(request);
+    // obtain userId from ersxid.
+    if (StringUtils.isNotBlank(guid) && StringUtils.isBlank(accountId)) {
+      accountId = esrXidClient.getUserIdByGuid(guid);
+    }
+
     // no need anymore
     // Map<String, String> userAttributes = getUserAttributes(cguid);
     String referrer = request.getHeader(Constants.REFERER);
     String remoteIp = getRemoteIp(request);
-    Map<String, String> lbsParameters = getLBSParameters(request, remoteIp);
+    LBSQueryResult lbsQueryResult = getLbsInfo(remoteIp);
+    Map<String, String> lbsParameters = getLBSParameters(request, lbsQueryResult);
     String hLastLoggedInUserId = getHLastLoggedInUserId(accountId);
     String userAgent = request.getHeader(Constants.USER_AGENT);
     String uaPrime = getUaPrime(params);
     boolean isMobile = isMobileUserAgent(userAgent);
-    int siteId = getSiteId(requestContext);
 
     LOGGER.debug("dapRvrId: {} guid: {} accountId: {} referrer: {} remoteIp: {} " +
-                    "lbsParameters: {} hLastLoggedInUserId: {} userAgent: {} uaPrime: {} isMobile: {} siteId: {}",
+                    "lbsParameters: {} hLastLoggedInUserId: {} userAgent: {} uaPrime: {} isMobile: {}",
             dapRvrId, guid, accountId, referrer, remoteIp, lbsParameters,
-            hLastLoggedInUserId, userAgent, uaPrime, isMobile, siteId);
+            hLastLoggedInUserId, userAgent, uaPrime, isMobile);
 
     URIBuilder dapUriBuilder = new URIBuilder();
 
-    setSiteId(dapUriBuilder, siteId);
+    // another siteid is always available in tag, so we don't need set siteId here.
     setRequestParameters(dapUriBuilder, params);
     setRvrId(dapUriBuilder, dapRvrId);
-    setReferrer(dapUriBuilder, referrer);
-    setGeoInfo(dapUriBuilder, lbsParameters);
-    setIsMobile(dapUriBuilder, isMobile);
-    setGuid(dapUriBuilder, guid);
-    setRoverUserid(dapUriBuilder, accountId);
-    setHLastLoggedInUserId(dapUriBuilder, hLastLoggedInUserId);
+    // Contextual parameters
+    if (consentDomain.isAllowedUseContextualInfo()) {
+      setReferrer(dapUriBuilder, referrer);
+      setIsMobile(dapUriBuilder, isMobile);
+    }
+    // Geo and legally required
+    if (consentDomain.isAllowedUseGeoInfo()) {
+      setGeoInfo(dapUriBuilder, lbsParameters);
+    } else if (consentDomain.isAllowedUseLegallyRequiredField()) {
+      setGeoCountryCode(dapUriBuilder, lbsParameters);
+    }
+     // personalized parameters
+    if (consentDomain.isAllowedShowPersonalizedAds()) {
+      setGuid(dapUriBuilder, guid);
+      setRoverUserid(dapUriBuilder, accountId);
+      setHLastLoggedInUserId(dapUriBuilder, hLastLoggedInUserId);
+    }
+    // consent flag when tcf compliant mode
+    if (consentDomain.isTcfCompliantMode()) {
+      setConsentFlag(dapUriBuilder, consentDomain.getConsentFlagForDapParam());
+    }
 
     // call dap to get response
     MultivaluedMap<String, Object> dapResponseHeaders = callDAPResponse(dapUriBuilder.build().toString(), request, response);
@@ -137,22 +170,6 @@ public class DAPResponseHandler {
       guid = Constants.EMPTY_GUID;
     }
     sendToMCS(request, dapRvrId, guid, guid, dapResponseHeaders);
-  }
-
-  private int getSiteId(ContainerRequestContext requestContext) {
-    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-    if (userPrefsCtx == null) {
-      return 0;
-    }
-    GeoCtx geoContext = userPrefsCtx.getGeoContext();
-    if (geoContext == null) {
-      return 0;
-    }
-    return geoContext.getSiteId();
-  }
-
-  private void setSiteId(URIBuilder dapUriBuilder, int siteId) {
-    addParameter(dapUriBuilder, Constants.SITE_ID, String.valueOf(siteId));
   }
 
   private String getUaPrime(Map<String, String[]> params) {
@@ -312,7 +329,18 @@ public class DAPResponseHandler {
     Client client = GingerClientBuilder.newClient(config);
     String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
     String targetUri = endpoint + dapUri;
-    LOGGER.debug("call DAP {}", targetUri);
+    boolean enable = false;
+    String enableString = couchbaseClient.get(CouchbaseKeyConstant.ENABLE_DAP_HANDLER_LOG);
+    try {
+      if (StringUtils.isNotBlank(enableString)) {
+        enable = new ObjectMapper().readValue(enableString, Boolean.class);
+      }
+    } catch (IOException e) {
+      LOGGER.warn("Can't get enableDapHandlerLog from cb, take a look please.");
+    }
+    if (enable) {
+      LOGGER.info("call DAP {}", targetUri);
+    }
     long startTime = System.currentTimeMillis();
     String body = null;
     int status = -1;
@@ -590,12 +618,24 @@ public class DAPResponseHandler {
   }
 
   /**
+   * when gdpr compliant mode and purpose is p1&p3,Geo info not be allowed pass to DAP but legally required,
+   * geo country code is legally required here.
+   * */
+  private void setGeoCountryCode(URIBuilder dapUriBuilder, Map<String, String> lbsParameters) {
+    if (lbsParameters != null) {
+      String geoCountryCode = lbsParameters.get("GeoCountryCode");
+      if (StringUtils.isNotBlank(geoCountryCode)) {
+        addParameter(dapUriBuilder, "GeoCountryCode", geoCountryCode);
+      }
+    }
+  }
+
+  /**
    * Get geo info from location base service and pass all the info to DAP
    */
-  private Map<String, String> getLBSParameters(HttpServletRequest request, String remoteIp) {
+  private Map<String, String> getLBSParameters(HttpServletRequest request, LBSQueryResult lbsResponse) {
     Map<String, String> map = new HashMap<>();
 
-    LBSQueryResult lbsResponse = LBSClient.getInstance().getLBSInfo(remoteIp);
     if (lbsResponse == null) {
       return map;
     }
@@ -615,5 +655,16 @@ public class DAPResponseHandler {
 
     map.put(LBSConstants.GEO_COUNTRY_CODE, countryFromBrowserLocale);
     return map;
+  }
+
+  private LBSQueryResult getLbsInfo(String remoteIp) {
+    return LBSClient.getInstance().getLBSInfo(remoteIp);
+  }
+
+  private void setConsentFlag(URIBuilder dapUriBuilder, String consentParam) {
+    if (StringUtils.isBlank(consentParam)) {
+      return;
+    }
+    dapUriBuilder.setParameter(Constants.CONSENT_FLAG, consentParam);
   }
 }

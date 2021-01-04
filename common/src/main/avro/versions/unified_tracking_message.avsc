@@ -1,0 +1,292 @@
+{
+  "type": "record",
+  "name": "UnifiedTrackingRheosMessage",
+  "namespace": "com.ebay.app.raptor.chocolate.avro.versions",
+  "doc": " Unified tracking topic schema",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc" : "ID of the event by tracking collection service"
+    },
+    {
+    	"name": "producerEventId",
+    	"type": "string",
+      "doc" : "ID of the event by producer"
+   	},
+    {
+    	"name": "eventTs",
+    	"type": "long",
+      "doc" : "Event received timestamp at the collection service"
+    },
+    {
+      "name": "producerEventTs",
+      "type": "long",
+      "doc" : "Event created timestamp at producer side"
+    },
+    {
+      "name": "rlogId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "trackingId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc":"ID to associate user behavior and dilivery",
+      "default": ""
+    },
+    {
+      "name": "userId",
+      "type": [
+        "null",
+        "long"
+      ],
+      "doc":"Oracle id",
+      "default": ""
+    },
+    {
+      "name": "publicUserId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc":"public user id",
+      "default": ""
+    },
+    {
+      "name": "encryptedUserId",
+      "type": [
+        "null",
+        "long"
+      ],
+      "doc":"Encrypted user id in email open and click url",
+      "default": ""
+    },
+    {
+      "name": "guid",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "idfa",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "gadid",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "deviceId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "channelType",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "actionType",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "partner",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "campaignId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "rotationId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "siteId",
+      "type": [
+        "null",
+        "int"
+      ],
+      "default": ""
+    },
+    {
+      "name": "url",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "referer",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "userAgent",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "deviceFamily",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "deviceType",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "browserFamily",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "browserVersion",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "osFamily",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "osVersion",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "appVersion",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "appId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "service",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "server",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "remoteIp",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": ""
+    },
+    {
+      "name": "pageId",
+      "type": [
+        "null",
+        "int"
+      ],
+      "default": ""
+    },
+    {
+      "name": "geoId",
+      "type": [
+        "null",
+        "int"
+      ],
+      "default": ""
+    },
+    {
+      "name": "isBot",
+      "type": "boolean",
+      "default" : "false"
+    },
+    {
+		"name": "payload",
+        "type": {
+            "type": "map",
+            "values": "string"
+        }
+	  }
+  ]
+}

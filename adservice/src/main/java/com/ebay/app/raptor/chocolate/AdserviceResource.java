@@ -2,6 +2,7 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
+import com.ebay.app.raptor.chocolate.adservice.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
@@ -12,9 +13,11 @@ import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.gen.api.*;
+import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
+import com.ebay.jaxrs.client.config.bean.spi.JaxrsClientBaseConfigBean;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
@@ -85,6 +88,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   @Qualifier("cb")
   private IdMapable idMapping;
 
+  @Autowired
+  private GdprConsentHandler gdprConsentHandler;
+
   private Metrics metrics;
 
   private static final String METRIC_ADD_MAPPING_SUCCESS = "METRIC_ADD_MAPPING_SUCCESS";
@@ -133,9 +139,14 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     }
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "ar"));
     Response res = null;
+
+    GdprConsentDomain gdprConsentDomain = gdprConsentHandler.handleGdprConsent(request);
+
     try {
-      adserviceCookie.setAdguid(request, response);
-      collectionService.collectAr(request, response, requestContext);
+      if (gdprConsentDomain.isAllowedSetCookie()) {
+        adserviceCookie.setAdguid(request, response);
+      }
+      collectionService.collectAr(request, response, requestContext, gdprConsentDomain);
       if (HttpServletResponse.SC_MOVED_PERMANENTLY == response.getStatus()) {
         Response.ResponseBuilder responseBuilder = Response.status(Response.Status.MOVED_PERMANENTLY);
         for (String headerName : response.getHeaderNames()) {
@@ -191,6 +202,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       long startTime = startTimerAndLogData(Field.of(Constants.CHANNEL_TYPE, channelType),
           Field.of(Constants.PARTNER, partner));
 
+      // disable Ginger Client to append Ginger agent to the user agent header
+      mktClient.property(JaxrsClientBaseConfigBean.SEND_USER_AGENT, false);
+
       // call mcs
       Builder builder = mktClient.target(endpoint).path("/impression/").request();
 
@@ -211,7 +225,16 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       builder = builder.header("X-EBAY-C-TRACKING",
           collectionService.constructTrackingHeader(requestContext, guid, adguid, channelType));
 
-      URI uri = new ServletServerHttpRequest(request).getURI();
+      // add parameters separately to handle special characters
+      URIBuilder uri = new URIBuilder(request.getRequestURL().toString());
+      Map<String, String[]> parameterMap = request.getParameterMap();
+      Iterator<Map.Entry<String, String[]>> iter = parameterMap.entrySet().iterator();
+      while (iter.hasNext()) {
+        Map.Entry<String, String[]> entry = iter.next();
+        for (String value : entry.getValue()) {
+          uri.addParameter(entry.getKey(), value);
+        }
+      }
 
       // for email open, call LBS to get buyer access site id
       if (params.containsKey(Constants.MKEVT) && MKEVT.EMAIL_OPEN.getId().equals(params.get(Constants.MKEVT)[0])) {
@@ -223,12 +246,12 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
         }
 
         // add bs tag into url parameter
-        uri = new URIBuilder(uri).addParameter(Constants.CHOCO_BUYER_ACCESS_SITE_ID, String.valueOf(siteId)).build();
+        uri.addParameter(Constants.CHOCO_BUYER_ACCESS_SITE_ID, String.valueOf(siteId));
       }
 
       // add uri and referer to marketing event body
       MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
-      mktEvent.setTargetUrl(uri.toString());
+      mktEvent.setTargetUrl(uri.build().toString());
       mktEvent.setReferrer(request.getHeader("Referer"));
 
       // call marketing collection service to send ubi event or send kafka async
@@ -246,6 +269,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
     } catch (Exception e) {
       try {
+        logger.warn("Impression request process failed, url: {}", request.getRequestURL().append("?")
+            .append(request.getQueryString()).toString());
         res = Response.status(Response.Status.BAD_REQUEST).build();
       } catch (Exception ex) {
         logger.warn(ex.getMessage(), ex);
@@ -283,7 +308,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       }
       Set<String> keySet = parameters.keySet();
       for (String key : keySet) {
-        if (Arrays.asList(Constants.TARGET_URL_PARMS).contains(key)) {
+        if (Arrays.asList(Constants.getTargetUrlParms()).contains(key)) {
           continue;
         }
         uriBuilder.addParameter(key, parameters.getFirst(key));
@@ -429,7 +454,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     }
     return uriBuilder;
   }
-  
+
   /**
    * utility method for callback
    *
