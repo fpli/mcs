@@ -4,6 +4,7 @@
 
 package com.ebay.app.raptor.chocolate.utp;
 
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
@@ -102,7 +103,7 @@ public class UepPayloadHelper {
       payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), channelTypeEnum.getValue());
     }
     // annotation.message.name
-    String segmentCode = uriComponents.getQueryParams().getFirst("segname");
+    String segmentCode = uriComponents.getQueryParams().getFirst(Constants.SEGMENT_NAME);
     if (segmentCode != null) {
       if (segmentCode.contains(WHITELIST_PATTERN_MARKETING_EMAIL_PA)) {
         payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_PA);
@@ -133,7 +134,8 @@ public class UepPayloadHelper {
     // annotation.canvas.uniq.id
     if(channelTypeEnum.equals(ChannelTypeEnum.SITE_EMAIL)
         || channelTypeEnum.equals(ChannelTypeEnum.SITE_MESSAGE_CENTER)) {
-      payload.put(ANNOTATION_CANVAS_UNIQ_ID, getOrDefault(uriComponents.getQueryParams().getFirst("euid")));
+      payload.put(ANNOTATION_CANVAS_UNIQ_ID,
+          getOrDefault(uriComponents.getQueryParams().getFirst(Constants.EMAIL_UNIQUE_ID)));
     } else if(channelTypeEnum.equals(ChannelTypeEnum.MRKT_EMAIL)
         || channelTypeEnum.equals(ChannelTypeEnum.MRKT_MESSAGE_CENTER)) {
       payload.put(ANNOTATION_CANVAS_UNIQ_ID, runDate);
