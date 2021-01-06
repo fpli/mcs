@@ -1,4 +1,4 @@
-set mapreduce.job.queuename=hdlq-data-default;
+set mapreduce.job.queuename=hdlq-data-batch-low;
 set hive.optimize.index.filter=false;
 set mapreduce.job.split.metainfo.maxsize=-1;
 set hive.vectorized.execution.enabled = true;
@@ -473,4 +473,3 @@ where ROTATION_BRAND_IND = 0 and ROTATION_DESC_TXT is null;
 insert overwrite table im_tracking.dw_mpx_rotations
 select *
 from im_tracking.dw_mpx_rotations_temp_two;
-

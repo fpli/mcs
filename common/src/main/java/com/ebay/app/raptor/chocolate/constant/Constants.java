@@ -1,4 +1,8 @@
-package com.ebay.app.raptor.chocolate.eventlistener.constant;
+/*
+ * Copyright (c) 2021. eBay inc. All rights reserved.
+ */
+
+package com.ebay.app.raptor.chocolate.constant;
 
 import com.google.common.collect.ImmutableMap;
 

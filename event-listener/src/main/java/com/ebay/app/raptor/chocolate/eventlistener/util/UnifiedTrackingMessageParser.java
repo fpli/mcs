@@ -3,7 +3,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingMessage;
-import com.ebay.app.raptor.chocolate.eventlistener.constant.Constants;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
@@ -135,6 +135,22 @@ public class UnifiedTrackingMessageParser {
   }
 
   /**
+   * Bot detection by device type
+   * @param userAgent user agent
+   */
+  public static boolean isBot(String userAgent)  {
+    // isBot. Basic bot detection by user agent.
+    if(StringUtils.isNotEmpty(userAgent) && (
+        userAgent.toLowerCase().contains("bot") ||
+            userAgent.toLowerCase().contains("proxy") ||
+            userAgent.toLowerCase().contains("spider")
+    )) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Parse message to unified tracking message
    * For user behavior events directly coming to MCS
    */
@@ -192,7 +208,8 @@ public class UnifiedTrackingMessageParser {
     record.setUserAgent(userAgent);
 
     // channel type
-    record.setChannelType(getChannelType(channelType).getValue());
+    ChannelTypeEnum channelTypeEnum = getChannelType(channelType);
+    record.setChannelType(channelTypeEnum.getValue());
 
     // action type
     String actionType = getActionType(channelAction);
@@ -217,8 +234,12 @@ public class UnifiedTrackingMessageParser {
     // referer
     record.setReferer(referer);
 
-    // service
-    record.setService(ServiceEnum.CHOCOLATE.getValue());
+    // service. Rover send all clicks covered in IMK TFS to chocolate.
+    if(url.startsWith("https://rover.ebay.com") || url.startsWith("http://rover.ebay.com")) {
+      record.setService(ServiceEnum.ROVER.getValue());
+    } else {
+      record.setService(ServiceEnum.CHOCOLATE.getValue());
+    }
 
     // server
     record.setServer(domainRequest.getHost());
@@ -233,12 +254,16 @@ public class UnifiedTrackingMessageParser {
     // user geo id
     record.setGeoId(getGeoID(requestContext));
 
+    // isBot. Basic bot detection by user agent.
+    record.setIsBot(isBot(userAgent));
+
     // payload
     String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
     // format UEP payload
-    Map<String, String> uepPayload = uepPayloadHelper.getUepPayload(url, ActionTypeEnum.valueOf(actionType));
+    Map<String, String> uepPayload =
+        uepPayloadHelper.getUepPayload(url, ActionTypeEnum.valueOf(actionType), channelTypeEnum);
     Map<String, String> fullPayload =
-        getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction, rotationId, snapshotId, shortSnapshotId, roiEvent, userId, startTime);
+        getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction, snapshotId, shortSnapshotId, roiEvent, userId, startTime);
 
     // append UEP payload
     if(uepPayload != null && uepPayload.size() > 0) {
@@ -448,7 +473,7 @@ public class UnifiedTrackingMessageParser {
   private static Map<String, String> getPayload(Map<String, String> payload, MultiValueMap<String, String> parameters,
                                                 ContainerRequestContext requestContext, String url, String userAgent,
                                                 String appId, ChannelType channelType, ChannelAction channelAction,
-                                                String rotationId, long snapshotId,
+                                                long snapshotId,
                                                 long shortSnapshotId, ROIEvent roiEvent,
                                                 long userId, long eventTs) {
     // add tags from parameters
@@ -460,11 +485,11 @@ public class UnifiedTrackingMessageParser {
     if (channelAction != ChannelAction.ROI) {
       // add tags in url param "sojTags" into applicationPayload
       addSojTags(payload, parameters, channelType, channelAction);
-      addTags(payload, parameters, rotationId, snapshotId, shortSnapshotId, eventTs);
+      addTags(payload, parameters, snapshotId, shortSnapshotId, eventTs);
     }
 
     if (channelAction == ChannelAction.ROI) {
-      addRoiSojTags(payload, roiEvent, String.valueOf(userId));
+      addRoiSojTags(payload, roiEvent, String.valueOf(userId), snapshotId, shortSnapshotId);
     }
 
     // add other tags
@@ -492,9 +517,7 @@ public class UnifiedTrackingMessageParser {
     return encodeTags(payload);
   }
 
-  private static void addTags(Map<String, String> payload, MultiValueMap<String, String> parameters, String rotationId, long snapshotId, long shortSnapshotId, long eventTs) {
-    payload.put("rotid", String.valueOf(rotationId));
-
+  private static void addTags(Map<String, String> payload, MultiValueMap<String, String> parameters, long snapshotId, long shortSnapshotId, long eventTs) {
     String searchKeyword = "";
     if (parameters.containsKey(Constants.SEARCH_KEYWORD) && parameters.get(Constants.SEARCH_KEYWORD).get(0) != null) {
       searchKeyword = parameters.get(Constants.SEARCH_KEYWORD).get(0);
@@ -544,8 +567,12 @@ public class UnifiedTrackingMessageParser {
     return applicationPayload;
   }
 
-  private static void addRoiSojTags(Map<String, String> payloadMap, ROIEvent roiEvent, String userId) {
+  private static void addRoiSojTags(Map<String, String> payloadMap, ROIEvent roiEvent, String userId, long snapshotId, long shortSnapshotId) {
     payloadMap.put(TrackerTagValueUtil.PageIdTag, String.valueOf(PageIdEnum.ROI.getId()));
+
+    payloadMap.put("rvrid", String.valueOf(shortSnapshotId));
+    payloadMap.put("snapshotid", String.valueOf(snapshotId));
+
     if(isLongNumeric(roiEvent.getItemId())) {
       payloadMap.put("itm", roiEvent.getItemId());
     }

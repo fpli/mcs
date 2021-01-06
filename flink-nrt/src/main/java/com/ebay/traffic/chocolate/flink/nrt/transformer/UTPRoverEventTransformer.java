@@ -486,7 +486,8 @@ public class UTPRoverEventTransformer {
       // add soj tags
       payload.putAll(sojTags);
       // add uep tags
-      Map<String, String> uepPayload = UEP_PAYLOAD_HELPER.getUepPayload(String.format("%s%s", ROVER_HOST, urlQueryString), actionTypeEnum);
+      Map<String, String> uepPayload =
+          UEP_PAYLOAD_HELPER.getUepPayload(String.format("%s%s", ROVER_HOST, urlQueryString), actionTypeEnum, channelType);
       if (MapUtils.isNotEmpty(uepPayload)) {
         payload.putAll(uepPayload);
       }
@@ -501,6 +502,9 @@ public class UTPRoverEventTransformer {
           payload.put(key, applicationPayload.get(key));
         }
       }
+      String rvrId = applicationPayload.getOrDefault("rvrid", StringConstants.EMPTY);
+      payload.put("rvrid", rvrId);
+      payload.put("snapshotid", rvrId);
       return payload;
     }
     return payload;

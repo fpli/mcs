@@ -1,4 +1,4 @@
-set mapreduce.job.queuename=hdlq-data-default;
+set mapreduce.job.queuename=hdlq-data-batch-low;
 set hive.optimize.index.filter=false;
 set mapreduce.job.split.metainfo.maxsize=-1;
 set hive.vectorized.execution.enabled = true;
@@ -19,7 +19,7 @@ SET hive.exec.max.dynamic.partitions.pernode=100000;
 set hive.merge.smallfiles.avgsize=128000000;
 set hive.merge.size.per.task=128000000;
 SET hive.auto.convert.join=false;
-set mapred.task.timeout= 1200000;
+set mapred.task.timeout=1200000;
 
 
 insert overwrite table im_tracking.dw_mpx_rotations_w_mc_volatile
@@ -102,4 +102,3 @@ where ori.client_id is null;
 insert overwrite table im_tracking.dw_mpx_clients
 select *
 from im_tracking.dw_mpx_clients_temp;
-
