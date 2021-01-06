@@ -1,4 +1,4 @@
-set mapreduce.job.queuename=hdlq-commrce-default;
+set mapreduce.job.queuename=hdlq-commrce-product-high-mem;
 set hive.optimize.index.filter=false;
 set mapreduce.job.split.metainfo.maxsize=-1;
 set hive.vectorized.execution.enabled = true;
@@ -101,4 +101,3 @@ where ori.client_id is null;
 insert overwrite table choco_data.dw_mpx_clients
 select *
 from choco_data.dw_mpx_clients_temp;
-
