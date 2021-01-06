@@ -219,8 +219,8 @@ public class CollectionService {
    * @param request
    * @return response
    */
-  public Response collectEpntPlacementRedirect(HttpServletRequest request, HttpServletResponse response, GdprConsentDomain gdprConsentDomain) throws Exception {
-    return epntResponseHandler.callEpntPlacementResponse(request, response, gdprConsentDomain);
+  public Response collectEpntPlacementRedirect(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    return epntResponseHandler.callEpntPlacementResponse(request, response);
   }
 
 }

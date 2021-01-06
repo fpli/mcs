@@ -97,12 +97,7 @@ public class EpntResponseHandler {
             byte[] data = body.getBytes(encoding);
             // Set content headers and then write content to response
             response.setHeader(Headers.CONTENT_TYPE, (String) headers.getFirst(Headers.CONTENT_TYPE));
-            response.setHeader(Headers.X_XSS_PROTECTION, (String) headers.getFirst(Headers.X_XSS_PROTECTION));
-            response.setHeader(Headers.ETAG, (String) headers.getFirst(Headers.ETAG));
             response.setHeader(Headers.ACCESS_CONTROL_ALLOW_ORIGIN, (String) headers.getFirst(Headers.ACCESS_CONTROL_ALLOW_ORIGIN));
-            response.setHeader(Headers.X_CONTENT_TYPE_OPTIONS, (String) headers.getFirst(Headers.X_CONTENT_TYPE_OPTIONS));
-            response.setHeader(Headers.X_FRAME_OPTIONS, (String) headers.getFirst(Headers.X_FRAME_OPTIONS));
-            response.setHeader(Headers.VARY, (String) headers.getFirst(Headers.VARY));
             response.setHeader(Headers.CONTENT_SECURITY_POLICY_REPORT_ONLY, (String) headers.getFirst(Headers.CONTENT_SECURITY_POLICY_REPORT_ONLY));
             os.write(data);
         } catch (Exception e) {
@@ -120,7 +115,7 @@ public class EpntResponseHandler {
     /**
      * Call Epnt placement interface and return response
      */
-    public Response callEpntPlacementResponse(HttpServletRequest request, HttpServletResponse response, GdprConsentDomain gdprConsentDomain) throws Exception {
+    public Response callEpntPlacementResponse(HttpServletRequest request, HttpServletResponse response) throws Exception {
         Response res = null;
 
         Client epntPlacementClient = getEpntServiceClient(EPNT_PLACEMENT_SERVICE_CLIENTKEY);
@@ -130,7 +125,7 @@ public class EpntResponseHandler {
         String guid = adserviceCookie.getGuid(request);
         String userId = adserviceCookie.getUserId(request);
 
-        URI targetUri = generateEpntPlacementUri(epntPlacementEndpoint, params, userId, guid, gdprConsentDomain);
+        URI targetUri = generateEpntPlacementUri(epntPlacementEndpoint, params, userId, guid);
         LOGGER.info("call Epnt Placement {}",targetUri.toString());
 
         long startTime = System.currentTimeMillis();
@@ -167,11 +162,7 @@ public class EpntResponseHandler {
             byte[] data = body.getBytes(encoding);
             // Set content headers and then write content to response
             response.setHeader(Headers.CONTENT_TYPE, (String) headers.getFirst(Headers.CONTENT_TYPE));
-            response.setHeader(Headers.X_XSS_PROTECTION, (String) headers.getFirst(Headers.X_XSS_PROTECTION));
-            response.setHeader(Headers.ETAG, (String) headers.getFirst(Headers.ETAG));
             response.setHeader(Headers.ACCESS_CONTROL_ALLOW_ORIGIN, (String) headers.getFirst(Headers.ACCESS_CONTROL_ALLOW_ORIGIN));
-            response.setHeader(Headers.X_CONTENT_TYPE_OPTIONS, (String) headers.getFirst(Headers.X_CONTENT_TYPE_OPTIONS));
-            response.setHeader(Headers.VARY, (String) headers.getFirst(Headers.VARY));
             response.setHeader(Headers.CONTENT_SECURITY_POLICY_REPORT_ONLY, (String) headers.getFirst(Headers.CONTENT_SECURITY_POLICY_REPORT_ONLY));
             os.write(data);
         } catch (Exception e) {
@@ -194,19 +185,16 @@ public class EpntResponseHandler {
      * @return epnt placement URI
      */
     public URI generateEpntPlacementUri(String epntPlacementEndpoint, Map<String, String[]> parameters,
-                                        String userId, String guid, GdprConsentDomain gdprConsentDomain) throws URISyntaxException {
+                                        String userId, String guid) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(epntPlacementEndpoint);
 
         for (String param: parameters.keySet()) {
             uriBuilder.addParameter(param, parameters.get(param)[0]);
         }
 
-        // personalized parameters
-        if (gdprConsentDomain.isAllowedShowPersonalizedAds()) {
-            // append userId and guid to epnt URI for personalization
-            setGuid(uriBuilder, guid);
-            setUserId(uriBuilder, userId);
-        }
+        // append userId and guid to epnt URI for personalization
+        setGuid(uriBuilder, guid);
+        setUserId(uriBuilder, userId);
 
         return uriBuilder.build();
     }
