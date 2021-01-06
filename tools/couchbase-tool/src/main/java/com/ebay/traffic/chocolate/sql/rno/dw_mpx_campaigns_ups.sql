@@ -1,4 +1,4 @@
-set mapreduce.job.queuename=hdlq-commrce-default;
+set mapreduce.job.queuename=hdlq-commrce-product-high-mem;
 set hive.optimize.index.filter=false;
 set mapreduce.job.split.metainfo.maxsize=-1;
 set hive.vectorized.execution.enabled = true;
@@ -27,7 +27,7 @@ msck repair table choco_data.dw_mpx_campaigns_ups;
 insert overwrite table choco_data.dw_mpx_campaigns_ups_distinct
 select origin.campaign_id,
        origin.campaign_name,
-       nvl(origin.client_id, -999),
+       nvl(origin.client_id,-999),
        origin.cre_date,
        origin.cre_user,
        origin.upd_user
