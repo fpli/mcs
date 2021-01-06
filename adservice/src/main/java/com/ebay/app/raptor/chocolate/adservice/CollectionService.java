@@ -60,9 +60,9 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public boolean collectAr(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext,
+  public boolean collectAr(HttpServletRequest request, HttpServletResponse response,
                            GdprConsentDomain gdprConsentDomain) throws Exception {
-    dapResponseHandler.sendDAPResponse(request, response, requestContext, gdprConsentDomain);
+    dapResponseHandler.sendDAPResponse(request, response, gdprConsentDomain);
     return true;
   }
 

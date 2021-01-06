@@ -98,8 +98,8 @@ public class DAPResponseHandler {
     }
   }
 
-  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext,
-                              GdprConsentDomain consentDomain) throws URISyntaxException {
+  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, GdprConsentDomain consentDomain)
+          throws URISyntaxException {
     ESMetrics.getInstance().meter("sendDAPResponse");
 
     LOGGER.debug("query string {}", request.getQueryString());
