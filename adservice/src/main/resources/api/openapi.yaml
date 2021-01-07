@@ -169,27 +169,6 @@ paths:
           description: Rejected
         '500':
           description: The call was unsuccessful due to exceptions on the Server
-  /config/{configid}:
-    get:
-      summary: Get Epn Config Information
-      description: Get config information for ebay partner network by config id
-      tags:
-        - config
-      operationId: config
-      parameters:
-        - in: path
-          name: configid
-          schema:
-            type: string
-          required: true
-          description: Ebay partner network config id
-      responses:
-        '200':
-          description: Success
-        '400':
-          description: Rejected
-        '500':
-          description: The call was unsuccessful due to exceptions on the Server
   /placement:
     get:
       summary: Get Epn Personalization Ads
@@ -207,21 +186,25 @@ paths:
           name: cpid
           schema:
             type: string
+          required: true
           description: ePN campaign id
         - in: query
           name: l
           schema:
             type: string
+          required: true
           description: ePN style placementLayout
         - in: query
           name: ft
           schema:
             type: string
+          required: true
           description: ePN style font
         - in: query
           name: tc
           schema:
             type: string
+          required: true
           description: ePN style titleColor
         - in: query
           name: clp
@@ -237,6 +220,7 @@ paths:
           name: k
           schema:
             type: string
+          required: true
           description: ePN search query keyword
         - in: query
           name: ctids
@@ -247,6 +231,7 @@ paths:
           name: mkpid
           schema:
             type: string
+          required: true
           description: ePN search query marketplaceId
         - in: query
           name: ur

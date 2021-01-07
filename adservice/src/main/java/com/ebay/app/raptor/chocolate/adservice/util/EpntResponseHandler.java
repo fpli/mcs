@@ -40,7 +40,6 @@ import java.util.Map;
 public class EpntResponseHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(EpntResponseHandler.class);
 
-    private static final String EPNT_CONFIG_SERVICE_CLIENTKEY = "epntconfig.adservice";
     private static final String EPNT_PLACEMENT_SERVICE_CLIENTKEY = "epntplacement.adservice";
 
     @Autowired
@@ -49,67 +48,6 @@ public class EpntResponseHandler {
     @Autowired
     @Qualifier("cb")
     private IdMapable idMapping;
-
-
-    /**
-     * Call Epnt config interface and return response
-     */
-    public Response callEpntConfigResponse(String configid, HttpServletResponse response){
-        Response res = null;
-
-        Client epntConfigClient = getEpntServiceClient(EPNT_CONFIG_SERVICE_CLIENTKEY);
-        String epntConfigEndpoint = getEpntServiceEndpoint(epntConfigClient);
-
-        String targetUri = String.format(epntConfigEndpoint, configid);
-        LOGGER.info("call Epnt Config {}", targetUri);
-
-        long startTime = System.currentTimeMillis();
-        MultivaluedMap<String, Object> headers = null;
-        String body = null;
-        int status = -1;
-        try (Response epntConfigResponse = epntConfigClient.target(targetUri).request().get()) {
-            status = epntConfigResponse.getStatus();
-            body = getBody(epntConfigResponse);
-            headers = epntConfigResponse.getHeaders();
-        } catch (Exception e) {
-            res = Response.status(Response.Status.BAD_REQUEST).build();
-            LOGGER.error("Failed to call Epnt Config {}", e.getMessage());
-            ESMetrics.getInstance().meter("EpntConfigException");
-            return res;
-        }
-
-        ESMetrics.getInstance().meter("EpntConfigStatus", 1, Field.of("status", status));
-
-        if (status != Response.Status.OK.getStatusCode()) {
-            res = Response.status(Response.Status.BAD_REQUEST).build();
-            LOGGER.error("Failed to call Epnt Config {}", status);
-            ESMetrics.getInstance().meter("EpntConfigException");
-            return res;
-        }
-
-        try (OutputStream os = response.getOutputStream()) {
-            res = Response.status(Response.Status.OK).build();
-
-            String encoding = StandardCharsets.UTF_8.name();
-            if (body == null) {
-                body = StringConstants.EMPTY;
-            }
-            byte[] data = body.getBytes(encoding);
-            // Set content headers and then write content to response
-            response.setHeader(Headers.CONTENT_TYPE, (String) headers.getFirst(Headers.CONTENT_TYPE));
-            response.setHeader(Headers.ACCESS_CONTROL_ALLOW_ORIGIN, (String) headers.getFirst(Headers.ACCESS_CONTROL_ALLOW_ORIGIN));
-            response.setHeader(Headers.CONTENT_SECURITY_POLICY_REPORT_ONLY, (String) headers.getFirst(Headers.CONTENT_SECURITY_POLICY_REPORT_ONLY));
-            os.write(data);
-        } catch (Exception e) {
-            res = Response.status(Response.Status.BAD_REQUEST).build();
-            LOGGER.error("Failed to send response {}", e.getMessage());
-            ESMetrics.getInstance().meter("EpntConfigException");
-        }
-
-
-        ESMetrics.getInstance().mean("EpntConfigLatency", System.currentTimeMillis() - startTime);
-        return res;
-    }
 
 
     /**

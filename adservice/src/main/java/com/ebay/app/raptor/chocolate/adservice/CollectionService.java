@@ -204,16 +204,6 @@ public class CollectionService {
   }
 
   /**
-   * Call epnt config api and return response
-   *
-   * @param configId
-   * @return reponse
-   */
-  public Response collectEpntConfigRedirect(String configId, HttpServletResponse response){
-    return epntResponseHandler.callEpntConfigResponse(configId, response);
-  }
-
-  /**
    * Call epnt placement api and return response
    *
    * @param request

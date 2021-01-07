@@ -65,7 +65,6 @@ public class AdserviceResourceTest {
   private static final String SYNC_PATH = "/marketingtracking/v1/sync";
   private static final String GUID_PATH = "/marketingtracking/v1/guid";
   private static final String USERID_PATH = "/marketingtracking/v1/uid";
-  private static final String CONFIG_PATH  = "/marketingtracking/v1/config/%s";
   private static final String PLACEMENT_PATH = "/marketingtracking/v1/placement";
 
 
@@ -452,17 +451,6 @@ public class AdserviceResourceTest {
 
     // Common site email redirect
     Response response = getAdserviceResponse(AR_PATH, parameters);
-    assertEquals(200, response.getStatus());
-  }
-
-  @Test
-  public void config() {
-    String configUrl = String.format(CONFIG_PATH, "5c92a47d74493605fd7fc51c");
-
-    Response response = client.target(svcEndPoint).path(configUrl)
-            .request()
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .get();
     assertEquals(200, response.getStatus());
   }
 

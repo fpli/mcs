@@ -12,17 +12,6 @@ import javax.ws.rs.core.Response;
 @javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2019-12-18T14:38:58.843+08:00[Asia/Shanghai]")
 public interface EpntApi {
     @GET
-    @Path("/config/{configid}")
-    @ApiOperation(value = "Get Epn Config Information", notes = "Get config information for ebay partner network by config id", tags={  })
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success", response = Void.class),
-            @ApiResponse(code = 400, message = "Rejected", response = Void.class),
-            @ApiResponse(code = 500, message = "The call was unsuccessful due to exceptions on the Server", response = Void.class) }
-    )
-
-    Response config(@PathParam("configid") @ApiParam("Ebay partner network config id") String configid);
-
-    @GET
     @Path("/placement")
     @ApiOperation(value = "Get Epn Personalization Ads", notes = "Get personalization ads for ebay parter network by placement parameters", tags={  })
     @ApiResponses(value = {
