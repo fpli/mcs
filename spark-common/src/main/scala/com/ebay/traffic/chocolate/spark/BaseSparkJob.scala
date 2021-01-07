@@ -403,7 +403,7 @@ abstract class BaseSparkJob(val jobName: String,
           .option("escape", null)
           .option("quote", "\u0000")
           .option("quoteMode", "NONE")
-          .option("nullValue", "")
+          .option("nullValue", "\u0000")
           .option("emptyValue", "\u0000")
           .option("charset", "UTF8")
 
