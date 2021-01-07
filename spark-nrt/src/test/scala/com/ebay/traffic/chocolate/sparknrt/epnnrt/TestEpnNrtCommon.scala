@@ -260,6 +260,7 @@ class TestEpnNrtCommon extends BaseFunSuite{
     assert(res.equals("112"))
     assert(epnNrtCommon.getItemId("http://www.ebay.com/itm/aaa/123") == "123")
     assert(epnNrtCommon.getItemId("http://www.ebay.com/itm/123") == "123")
+    assert(epnNrtCommon.getItemId("http://www.ebay.com/itm/123a") == "")
     assert(epnNrtCommon.getItemId("http://www.ebay.com/itm/aaa/123a") == "")
     assert(epnNrtCommon.getItemId("http://www.ebay.com/i/aaa/123") == "123")
     val uri2 = "www.ebay.com/itm/123"
