@@ -401,11 +401,9 @@ abstract class BaseSparkJob(val jobName: String,
           .option("delimiter", delimiterMap(delimiter))
           .option("header", headerHint.toString)
           .option("escape", null)
-          .option("quote", "\u0000")
+          .option("quote", "")
           .option("quoteMode", "NONE")
-          .option("nullValue", "\u0000")
-          .option("emptyValue", "\u0000")
-          .option("charset", "UTF8")
+          .option("nullValue", "")
 
         if (compressFormat != null && !compressFormat.isEmpty && compressFormat != "uncompressed") {
           // acceptable values include: bzip2, gzip, lz4, snappy
