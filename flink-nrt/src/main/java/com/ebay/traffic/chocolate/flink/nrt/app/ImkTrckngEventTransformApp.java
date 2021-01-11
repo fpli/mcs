@@ -24,6 +24,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.EncoderFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.functions.RichFilterFunction;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
@@ -336,12 +337,12 @@ public class ImkTrckngEventTransformApp
       }
 
       if (value.getChannelType() == ChannelType.DISPLAY) {
-        if ("https://ebay.mtag.io/".equals(value.getReferer())) {
+        if (StringUtils.isNotEmpty(value.getReferer()) && value.getReferer().startsWith("https://ebay.mtag.io")) {
           LOGGER.info("receive mtag");
           sherlockioMetrics.meter("mtag", 1, Field.of(TransformerConstants.CHANNEL_TYPE, value.getChannelType()), Field.of(TransformerConstants.CHANNEL_ACTION, value.getChannelAction()));
           return true;
         }
-        if ("https://ebay.pissedconsumer.com/".equals(value.getReferer())) {
+        if (StringUtils.isNotEmpty(value.getReferer()) && value.getReferer().startsWith("https://ebay.pissedconsumer.com")) {
           LOGGER.info("receive pissedconsumer");
           sherlockioMetrics.meter("pissedconsumer", 1, Field.of(TransformerConstants.CHANNEL_TYPE, value.getChannelType()), Field.of(TransformerConstants.CHANNEL_ACTION, value.getChannelAction()));
           return true;

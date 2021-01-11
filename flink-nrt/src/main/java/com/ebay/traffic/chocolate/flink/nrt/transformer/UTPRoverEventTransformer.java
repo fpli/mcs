@@ -509,6 +509,9 @@ public class UTPRoverEventTransformer {
           payload.put(key, applicationPayload.get(key));
         }
       }
+      String rvrId = applicationPayload.getOrDefault("rvrid", StringConstants.EMPTY);
+      payload.put("rvrid", rvrId);
+      payload.put("snapshotid", rvrId);
       return payload;
     }
     return payload;

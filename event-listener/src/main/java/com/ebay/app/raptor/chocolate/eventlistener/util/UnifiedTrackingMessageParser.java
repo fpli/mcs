@@ -263,7 +263,7 @@ public class UnifiedTrackingMessageParser {
     Map<String, String> uepPayload =
         uepPayloadHelper.getUepPayload(url, ActionTypeEnum.valueOf(actionType), channelTypeEnum);
     Map<String, String> fullPayload =
-        getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction, rotationId, snapshotId, shortSnapshotId, roiEvent, userId, startTime);
+        getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction, snapshotId, shortSnapshotId, roiEvent, userId, startTime);
 
     // append UEP payload
     if(uepPayload != null && uepPayload.size() > 0) {
@@ -473,7 +473,7 @@ public class UnifiedTrackingMessageParser {
   private static Map<String, String> getPayload(Map<String, String> payload, MultiValueMap<String, String> parameters,
                                                 ContainerRequestContext requestContext, String url, String userAgent,
                                                 String appId, ChannelType channelType, ChannelAction channelAction,
-                                                String rotationId, long snapshotId,
+                                                long snapshotId,
                                                 long shortSnapshotId, ROIEvent roiEvent,
                                                 long userId, long eventTs) {
     // add tags from parameters
@@ -485,11 +485,11 @@ public class UnifiedTrackingMessageParser {
     if (channelAction != ChannelAction.ROI) {
       // add tags in url param "sojTags" into applicationPayload
       addSojTags(payload, parameters, channelType, channelAction);
-      addTags(payload, parameters, rotationId, snapshotId, shortSnapshotId, eventTs);
+      addTags(payload, parameters, snapshotId, shortSnapshotId, eventTs);
     }
 
     if (channelAction == ChannelAction.ROI) {
-      addRoiSojTags(payload, roiEvent, String.valueOf(userId));
+      addRoiSojTags(payload, roiEvent, String.valueOf(userId), snapshotId, shortSnapshotId);
     }
 
     // add other tags
@@ -517,9 +517,7 @@ public class UnifiedTrackingMessageParser {
     return encodeTags(payload);
   }
 
-  private static void addTags(Map<String, String> payload, MultiValueMap<String, String> parameters, String rotationId, long snapshotId, long shortSnapshotId, long eventTs) {
-    payload.put("rotid", String.valueOf(rotationId));
-
+  private static void addTags(Map<String, String> payload, MultiValueMap<String, String> parameters, long snapshotId, long shortSnapshotId, long eventTs) {
     String searchKeyword = "";
     if (parameters.containsKey(Constants.SEARCH_KEYWORD) && parameters.get(Constants.SEARCH_KEYWORD).get(0) != null) {
       searchKeyword = parameters.get(Constants.SEARCH_KEYWORD).get(0);
@@ -569,8 +567,12 @@ public class UnifiedTrackingMessageParser {
     return applicationPayload;
   }
 
-  private static void addRoiSojTags(Map<String, String> payloadMap, ROIEvent roiEvent, String userId) {
+  private static void addRoiSojTags(Map<String, String> payloadMap, ROIEvent roiEvent, String userId, long snapshotId, long shortSnapshotId) {
     payloadMap.put(TrackerTagValueUtil.PageIdTag, String.valueOf(PageIdEnum.ROI.getId()));
+
+    payloadMap.put("rvrid", String.valueOf(shortSnapshotId));
+    payloadMap.put("snapshotid", String.valueOf(snapshotId));
+
     if(isLongNumeric(roiEvent.getItemId())) {
       payloadMap.put("itm", roiEvent.getItemId());
     }

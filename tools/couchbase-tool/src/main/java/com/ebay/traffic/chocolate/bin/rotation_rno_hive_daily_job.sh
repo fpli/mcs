@@ -57,6 +57,7 @@ else
 fi
 
 
+
 echo `date`" =============== Apollo-Rno Done File Start ==================" | tee -a ${log_file}
 TOUCH_DT=$(date +%Y%m%d -d "`date` -1 day")
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop dfs -touchz viewfs://apollo-rno/apps/b_marketing_tracking/watch/${TOUCH_DT}/rotation_daily.done.${TOUCH_DT}
@@ -71,8 +72,8 @@ fi
 
 rc=$?
 if [[ $rc != 0 ]]; then
-    echo " ===== rotation daily update rno hive table END With ERROR ====="  | tee -a ${log_file}
+    echo " ===== rotation daily update rno hive table END With ERROR =====" | tee -a ${log_file}
     exit $rc
 else
-    echo " =============== Daily Update Rotation Rno Hive Table Job End ==========="  | tee -a ${log_file}
+    echo -e " Rotation Rno Hive table ${DT}'s data completed"  | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "Rotation Rno ${DT} completed" -v DL-eBay-Chocolate-GC@ebay.com | tee -a ${log_file}
 fi
