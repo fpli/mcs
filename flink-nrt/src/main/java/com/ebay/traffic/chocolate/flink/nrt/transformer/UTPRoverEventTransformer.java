@@ -169,7 +169,7 @@ public class UTPRoverEventTransformer {
         return false;
       }
 
-      //
+      // only keep core site rover events
       String server = GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.WEB_SERVER);
       if(!roverCoreSites.contains(server)) {
         return false;
