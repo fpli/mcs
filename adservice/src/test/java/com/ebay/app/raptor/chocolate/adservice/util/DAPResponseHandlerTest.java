@@ -243,16 +243,16 @@ public class DAPResponseHandlerTest {
 
   @Test
   public void constructTrackingHeader() throws Exception {
-    String head1 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "", "");
+    String head1 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "");
     assertTrue(head1.contains("guid="));
 
-    String head2 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "1234", "");
+    String head2 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "");
     assertTrue(head2.contains("guid="));
 
-    String head3 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "", "5678");
+    String head3 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "5678");
     assertTrue(head3.contains("guid=5678"));
 
-    String head4 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "1234", "5678");
+    String head4 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "5678");
     assertTrue(head4.contains("guid=5678"));
   }
 
@@ -493,7 +493,7 @@ public class DAPResponseHandlerTest {
     MultivaluedHashMap<String, Object> dapResponseHeaders = new MultivaluedHashMap<>();
     dapResponseHeaders.put("ff1", Collections.singletonList("ff1"));
 
-    Whitebox.invokeMethod(dapResponseHandler, "sendToMCS", httpServletRequest, 1L, "", "", dapResponseHeaders);
+    Whitebox.invokeMethod(dapResponseHandler, "sendToMCS", httpServletRequest, 1L, "", dapResponseHeaders);
 
     Mockito.verify(asyncInvoker).post(anyObject(), any(InvocationCallback.class));
   }
