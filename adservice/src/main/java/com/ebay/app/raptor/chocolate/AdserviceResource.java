@@ -146,7 +146,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       if (gdprConsentDomain.isAllowedSetCookie()) {
         adserviceCookie.setAdguid(request, response);
       }
-      collectionService.collectAr(request, response, requestContext, gdprConsentDomain);
+      collectionService.collectAr(request, response, gdprConsentDomain);
       if (HttpServletResponse.SC_MOVED_PERMANENTLY == response.getStatus()) {
         Response.ResponseBuilder responseBuilder = Response.status(Response.Status.MOVED_PERMANENTLY);
         for (String headerName : response.getHeaderNames()) {

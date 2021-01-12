@@ -24,7 +24,7 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
       .withColumn("CHNL_ID", common.getChannelIdUdf(col("channel_type")))
       .withColumn("CRLTN_GUID_TXT", col("cguid"))
       .withColumn("GUID_TXT", common.fixGuidUsingRoverLastClickUdf(col("guid"), col("uri")))
-      .withColumn("USER_ID", common.getUserIdUdf(col("user_id"), col("cguid")))
+      .withColumn("USER_ID", common.getUserIdUdf(col("user_id"), col("guid")))
       .withColumn("CLNT_RMT_IP", col("remote_ip"))
       .withColumn("BRWSR_TYPE_NUM",  common.get_browser_type_udf(col("user_agent")))
       .withColumn("BRWSR_NAME", col("user_agent"))

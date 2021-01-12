@@ -11,12 +11,13 @@ import org.asynchttpclient.ListenableFuture;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
+
 import javax.servlet.http.HttpServletRequest;
 import java.util.Vector;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 public class HttpRoverClientTest {

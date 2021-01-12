@@ -187,7 +187,7 @@ public class MessageObjectParser {
                 result = splits[1].substring(0, 32);
             }
         }
-        if (result == null && location != null && !location.isEmpty() && guid == "cguid") {
+        if (result == null && location != null && !location.isEmpty() && guid.equals("cguid")) {
             String[] splits = location.split(guid + "=");
             if (splits.length > 1) {
                 result = splits[1].substring(0, 32);

@@ -5,8 +5,8 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.CommonConstant;
-import com.ebay.app.raptor.chocolate.eventlistener.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.eventlistener.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
@@ -32,7 +32,7 @@ import com.ebay.userlookup.UserLookup;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
- import org.slf4j.Logger;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
@@ -49,11 +49,13 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import static com.ebay.app.raptor.chocolate.constant.Constants.REFERRER;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 
@@ -777,14 +779,9 @@ public class CollectionService {
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
     String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
 
-    if (message != null) {
-      producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
-      return true;
-    } else {
-      return false;
-    }
+    producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
+    return true;
   }
-
 
   public boolean collectNotification(HttpServletRequest request, IEndUserContext endUserContext,
                                      ContainerRequestContext requestContext, Event event, int pageId) throws Exception {
@@ -1527,18 +1524,6 @@ public class CollectionService {
     }
   }
 
-
-  private String generateTimestampForCookie() {
-    LocalDateTime now = LocalDateTime.now();
-
-    // GUID, CGUID has 2 years expiration time
-    LocalDateTime expiration = now.plusYears(2);
-
-    // the last 8 hex number is the unix timestamp in seconds
-    long timeInSeconds = expiration.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1000;
-    return Long.toHexString(timeInSeconds);
-  }
-
   /**
    * log error, log metric and throw error with error key
    *
@@ -1620,11 +1605,11 @@ public class CollectionService {
         // decode rotationId if rotation is encoded
         // add decodeCnt to avoid looping infinitely
         int decodeCnt = 0;
-        while (rawRotationId.contains("%") && decodeCnt<5) {
+        while (rawRotationId.contains("%") && decodeCnt < 5) {
           rawRotationId = URLDecoder.decode(rawRotationId, UTF_8);
           decodeCnt = decodeCnt + 1;
         }
-        rotationId = Long.valueOf(rawRotationId.replaceAll("-", ""));
+        rotationId = Long.parseLong(rawRotationId.replaceAll("-", ""));
       } catch (Exception e) {
         logger.warn(Errors.ERROR_INVALID_MKRID);
         metrics.meter("InvalidMkrid");
@@ -1642,10 +1627,7 @@ public class CollectionService {
    */
   private static boolean isFacebookPrefetchEnabled(HttpServletRequest request) {
     String facebookprefetch = request.getHeader("X-Purpose");
-    if (facebookprefetch != null && facebookprefetch.trim().equals("preview")) {
-      return true;
-    }
-    return false;
+    return facebookprefetch != null && facebookprefetch.trim().equals("preview");
   }
 
   /**

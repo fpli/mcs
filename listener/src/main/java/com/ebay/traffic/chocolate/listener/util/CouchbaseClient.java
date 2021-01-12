@@ -115,6 +115,7 @@ public class CouchbaseClient {
   /**
    * add mapping pair into couchbase
    */
+  @Deprecated
   public void addMappingRecord(String guid, String cguid) {
     // in listener we don't want to hang if we have exception in CB
     //flushBuffer();

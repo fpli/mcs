@@ -76,16 +76,8 @@ public class ListenerMessageParser {
           if (keyValue[0].equalsIgnoreCase("guid")) {
             record.setGuid(keyValue[1]);
           }
-          if (keyValue[0].equalsIgnoreCase("cguid")) {
-            record.setCguid(keyValue[1]);
-          }
         }
       }
-    }
-
-    // Overwrite cguid using guid for ePN channel in mcs to avoid the impact on capping rules related to cguid  XC-2125
-    if (channelType == ChannelType.EPN && StringUtils.isEmpty(record.getCguid())) {
-      record.setCguid(record.getGuid());
     }
 
     // remote ip

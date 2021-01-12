@@ -19,7 +19,6 @@ import com.ebay.kernel.presentation.UrlUtils;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.kernel.util.guid.Guid;
-import com.ebay.raptor.geo.utils.GeoUtils;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import org.apache.commons.collections.CollectionUtils;
@@ -99,8 +98,8 @@ public class DAPResponseHandler {
     }
   }
 
-  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, ContainerRequestContext requestContext,
-                              GdprConsentDomain consentDomain) throws URISyntaxException {
+  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, GdprConsentDomain consentDomain)
+          throws URISyntaxException {
     ESMetrics.getInstance().meter("sendDAPResponse");
 
     LOGGER.debug("query string {}", request.getQueryString());
@@ -115,7 +114,7 @@ public class DAPResponseHandler {
     String guid = adserviceCookie.getGuid(request);
     String accountId = adserviceCookie.getUserId(request);
     // obtain userId from ersxid.
-    if (StringUtils.isNotBlank(guid) && StringUtils.isBlank(accountId)) {
+    if (StringUtils.isNotBlank(guid) && "0".equals(accountId)) {
       accountId = esrXidClient.getUserIdByGuid(guid);
     }
 
@@ -169,7 +168,7 @@ public class DAPResponseHandler {
     if(StringUtils.isEmpty(guid)) {
       guid = Constants.EMPTY_GUID;
     }
-    sendToMCS(request, dapRvrId, guid, guid, dapResponseHeaders);
+    sendToMCS(request, dapRvrId, guid, dapResponseHeaders);
   }
 
   private String getUaPrime(Map<String, String[]> params) {
@@ -296,7 +295,7 @@ public class DAPResponseHandler {
         return;
       }
       // skip unused parameters
-      if (key.equals(Constants.IPN) || key.equals("cguid") || key.equals("guid") || key.equals("rover_userid")) {
+      if (key.equals(Constants.IPN) || key.equals("guid") || key.equals("rover_userid")) {
         return;
       }
       // skip marketing tracking parameters
@@ -424,7 +423,7 @@ public class DAPResponseHandler {
     return body;
   }
 
-  private String constructTrackingHeader(String rawCguid, String rawGuid) {
+  private String constructTrackingHeader(String rawGuid) {
     String cookie = "";
     if (!StringUtils.isEmpty(rawGuid)) {
       cookie += "guid=" + rawGuid;
@@ -437,12 +436,6 @@ public class DAPResponseHandler {
       }
       LOGGER.warn("No guid");
     }
-    if (!StringUtils.isEmpty(rawCguid)) {
-      cookie += ",cguid=" + rawCguid;
-    } else {
-      LOGGER.warn("No cguid");
-    }
-
     return cookie;
   }
 
@@ -450,7 +443,7 @@ public class DAPResponseHandler {
    * Send to MCS to track this request
    */
   @SuppressWarnings("unchecked")
-  private void sendToMCS(HttpServletRequest request, long dapRvrId, String cguid, String guid, MultivaluedMap<String, Object> dapResponseHeaders) throws URISyntaxException {
+  private void sendToMCS(HttpServletRequest request, long dapRvrId, String guid, MultivaluedMap<String, Object> dapResponseHeaders) throws URISyntaxException {
     ESMetrics.getInstance().meter("StartSendToMCS");
     Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
     Client mktClient = GingerClientBuilder.newClient(config);
@@ -469,7 +462,7 @@ public class DAPResponseHandler {
     }
 
     // construct X-EBAY-C-TRACKING header
-    String trackingHeader = constructTrackingHeader(cguid, guid);
+    String trackingHeader = constructTrackingHeader(guid);
     builder = builder.header("X-EBAY-C-TRACKING", trackingHeader);
     LOGGER.debug("set MCS X-EBAY-C-TRACKING {}", trackingHeader);
 
