@@ -4,7 +4,6 @@ import java.util.Properties
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
-import org.junit.Ignore
 import org.scalatest.{FlatSpec, Matchers}
 import scalaj.http.HttpResponse
 

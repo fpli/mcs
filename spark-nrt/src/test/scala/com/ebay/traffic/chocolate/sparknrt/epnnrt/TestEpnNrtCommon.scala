@@ -475,4 +475,8 @@ class TestEpnNrtCommon extends BaseFunSuite{
     assert(res.equals("11006"))
   }
 
+  test("test get user id by xid") {
+    val userId = epnNrtCommon.getUserIdByGuid("", "cae9425d175aa89d92d16ad00152f95b")
+    assert(userId.equals(""))
+  }
 }
