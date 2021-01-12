@@ -571,14 +571,33 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getItemId(uri: String): String = {
-    val array = Array("icep_item", "icep_itemid", "icep_item_id", "item", "itemid")
-    for (i <- 0 until array.length) {
-      val value = getQueryParam(uri, array(i))
-      if (!value.equals("")) {
-        if (StringUtils.isNumeric(value))
-          return value
-        logger.error("Error in parsing the item id: " + value)
-        return extractValidId(value)
+    if (uri != null && ebaysites.matcher(uri.toLowerCase()).find()) {
+      var path = ""
+      try {
+        path = new URL(uri).getPath
+        if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
+          val itemId = path.substring(path.lastIndexOf("/") + 1)
+          if (StringUtils.isNumeric(itemId)) {
+            return itemId
+          }
+        }
+      } catch {
+        case e: Exception => {
+            logger.error("Error parse the item id from " + uri + e)
+            metrics.meter("ParseItemIdFromUriError")
+            return ""
+        }
+      }
+    } else {
+      val array = Array("icep_item", "icep_itemid", "icep_item_id", "item", "itemid")
+      for (i <- 0 until array.length) {
+        val value = getQueryParam(uri, array(i))
+        if (!value.equals("")) {
+          if (StringUtils.isNumeric(value))
+            return value
+          logger.error("Error in parsing the item id: " + value)
+          return extractValidId(value)
+        }
       }
     }
     ""

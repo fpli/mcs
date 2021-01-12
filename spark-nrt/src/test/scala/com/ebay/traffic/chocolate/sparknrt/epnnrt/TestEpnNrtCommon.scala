@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt
 
 import java.io.PrintWriter
-
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.couchbase.{CorpCouchbaseClient, CouchbaseClientMock}
 import org.apache.spark.sql.types._
@@ -259,6 +258,17 @@ class TestEpnNrtCommon extends BaseFunSuite{
     val uri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&icep_item_id=QW112/&uq=2&xxx=4&pub=2"
     val res = epnNrtCommon.getItemId(uri)
     assert(res.equals("112"))
+    assert(epnNrtCommon.getItemId("http://www.ebay.com/itm/aaa/123") == "123")
+    assert(epnNrtCommon.getItemId("http://www.ebay.com/itm/123") == "123")
+    assert(epnNrtCommon.getItemId("http://www.ebay.com/itm/123a") == "")
+    assert(epnNrtCommon.getItemId("http://www.ebay.com/itm/aaa/123a") == "")
+    assert(epnNrtCommon.getItemId("http://www.ebay.com/i/aaa/123") == "123")
+    val uri2 = "www.ebay.com/itm/123"
+    assert(epnNrtCommon.getItemId(uri2) == "")
+    val uri3 = "http//www.ebay.com/itm/123"
+    assert(epnNrtCommon.getItemId(uri3) == "")
+    val uri4 = "htp://www.ebay.com/itm/123"
+    assert(epnNrtCommon.getItemId(uri4) == "")
   }
 
   test("test get tool Id while invalid tool Id") {
