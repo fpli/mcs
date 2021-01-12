@@ -46,7 +46,8 @@ import java.util.regex.Pattern;
  */
 public class CollectionServiceUtil {
 
-  private static String MOBILE_WEB_APPID = "3564";
+  private static String MOBILE_PHONE_WEB_APPID = "3564";
+  private static String MOBILE_TABLET_WEB_APPID = "1115";
   private static String IPHONE_APPID = "1462";
   private static String IPAD_APPID = "2878";
   private static String ANDROID_APPID = "2571";
@@ -76,17 +77,20 @@ public class CollectionServiceUtil {
   public static String getAppIdFromUserAgent(UserAgentInfo uaInfo) {
     String appId = "";
     if (uaInfo != null) {
-      if (uaInfo.requestedFromSmallDevice() && uaInfo.requestIsWeb()) {
-        //mweb
-        appId = MOBILE_WEB_APPID;
+      if (uaInfo.isMobile() && uaInfo.requestIsMobileWeb() && !uaInfo.requestIsTabletWeb()) {
+        // mobile phone web
+        appId = MOBILE_PHONE_WEB_APPID;
+      } else if (uaInfo.isMobile() && !uaInfo.requestIsMobileWeb() && uaInfo.requestIsTabletWeb()) {
+        // mobile tablet web
+        appId = MOBILE_TABLET_WEB_APPID;
       } else if (uaInfo.requestedFromSmallDevice() && uaInfo.getDeviceInfo().osiOS() && uaInfo.requestIsNativeApp()) {
-        //iphone
+        // iphone
         appId = IPHONE_APPID;
       } else if (uaInfo.requestedFromLargeDevice() && uaInfo.getDeviceInfo().osiOS() && uaInfo.requestIsNativeApp()) {
-        //ipad
+        // ipad
         appId = IPAD_APPID;
       } else if (uaInfo.getDeviceInfo() != null && uaInfo.getDeviceInfo().osAndroid() && uaInfo.requestIsNativeApp()) {
-        //android
+        // android
         appId = ANDROID_APPID;
       }
     }
