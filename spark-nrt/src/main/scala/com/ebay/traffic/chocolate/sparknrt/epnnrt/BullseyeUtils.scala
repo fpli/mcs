@@ -48,7 +48,7 @@ object BullseyeUtils {
   var token: String = generateToken2
 
   //may be retry here
-  def getData(fs: FileSystem, cguid: String, modelId: String, count: String, bullseyeUrl: String): Option[HttpResponse[String]] = {
+  def getData(cguid: String, modelId: String, count: String, bullseyeUrl: String): Option[HttpResponse[String]] = {
     try {
       logger.debug(s"Bullseye sending, cguid=$cguid")
       val response = Http(bullseyeUrl).method("GET")
@@ -76,9 +76,9 @@ object BullseyeUtils {
     }
   }
 
-  def getLastViewItem(fs: FileSystem, cguid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String) = {
+  def getLastViewItem(cguid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String) = {
     val start = System.currentTimeMillis
-    val result = getData(fs, cguid, modelId, count, bullseyeUrl)
+    val result = getData(cguid, modelId, count, bullseyeUrl)
     metrics.mean("BullsEyeLatency", System.currentTimeMillis - start)
 
     try {
