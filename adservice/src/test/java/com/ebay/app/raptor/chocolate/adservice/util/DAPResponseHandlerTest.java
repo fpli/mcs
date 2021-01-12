@@ -216,7 +216,6 @@ public class DAPResponseHandlerTest {
     assertTrue(dapUriBuilder.getQueryParams().isEmpty());
 
     map.put(Constants.IPN, new String[]{"test"});
-    map.put("cguid", new String[]{"test"});
     map.put("guid", new String[]{"test"});
     map.put("rover_userid", new String[]{"test"});
     Whitebox.<String>invokeMethod(dapResponseHandler, "setRequestParameters", dapUriBuilder, map);
@@ -246,18 +245,14 @@ public class DAPResponseHandlerTest {
   public void constructTrackingHeader() throws Exception {
     String head1 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "", "");
     assertTrue(head1.contains("guid="));
-    assertFalse(head1.contains("cguid="));
 
     String head2 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "1234", "");
-    assertTrue(head2.contains("cguid=1234"));
     assertTrue(head2.contains("guid="));
 
     String head3 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "", "5678");
-    assertFalse(head3.contains("cguid="));
     assertTrue(head3.contains("guid=5678"));
 
     String head4 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "1234", "5678");
-    assertTrue(head4.contains("cguid=1234"));
     assertTrue(head4.contains("guid=5678"));
   }
 
