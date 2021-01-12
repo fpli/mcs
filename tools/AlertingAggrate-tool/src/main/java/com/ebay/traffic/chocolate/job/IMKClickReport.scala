@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.job
 
 import java.text.SimpleDateFormat
+import java.util.Properties
 
 import com.ebay.traffic.chocolate.job.util.DateUtil._
 import com.ebay.traffic.chocolate.job.util.TableSchema
@@ -50,9 +51,6 @@ class IMKClickReport(inputdir: String,
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
-  @transient val schema_imk_click_table = TableSchema(schema_imk_click_dir)
-
-  lazy val delimiter = "\u007F"
   lazy val empty = ""
   lazy val click_cd = "1"
   lazy val roi_cd = "2"
@@ -64,15 +62,11 @@ class IMKClickReport(inputdir: String,
     * 2 for Paid Search
     * 4 for Display
     * 16 for Social Media
+    * 28 for Search Engine Free Listings
     */
-  lazy val imk_channel_list = List("3", "2", "4", "16")
+  var imk_channel_list = List[String]()
 
-  lazy val channelMap =
-    Map("0" -> "ROI",
-      "2" -> "PaidSearch",
-      "3" -> "NaturalSearch",
-      "4" -> "Display",
-      "16" -> "SocialMedia")
+  var channelMap =Map[String, String]()
 
   /**
     * Counter for the corrupt rows.
@@ -108,44 +102,14 @@ class IMKClickReport(inputdir: String,
     builder.getOrCreate()
   }
 
-  /**
-    * The spark context
-    */
-  @transient lazy val sc = {
-    spark.sparkContext
-  }
-
-  /**
-    * The java spark context
-    */
-  @transient lazy val jsc = {
-    JavaSparkContext.fromSparkContext(sc);
-  }
-
-  /**
-    * The sql context
-    */
-  @transient lazy val sqlsc = {
-    spark.sqlContext;
-  }
-
-  /**
-    * The hadoop conf
-    */
-  @transient lazy val hadoopConf = {
-    new Configuration()
-  }
-
-  /**
-    * The file system
-    */
-  @transient lazy val fs = {
-    val fs = FileSystem.get(hadoopConf)
-    sys.addShutdownHook(fs.close())
-    fs
+  @transient lazy val properties: Properties = {
+    val properties = new Properties()
+    properties.load(getClass.getClassLoader.getResourceAsStream("IMKClickReport.properties"))
+    properties
   }
 
   lazy val extractHourUdf: UserDefinedFunction = udf(extractHour(_: String))
+  lazy val extractDateUdf: UserDefinedFunction = udf(extracDate(_: String))
   lazy val getChannelNameUdf: UserDefinedFunction = udf(getChannelNamebyId(_: String))
   lazy val calculateDiffUdf: UserDefinedFunction = udf(calculateDiff(_:Int, _:Int))
 
@@ -162,11 +126,19 @@ class IMKClickReport(inputdir: String,
 
   def hourlyClickCount(header: String) = {
     logger.info("hourlyClickCount function")
+    imk_channel_list = properties.getProperty("imk_channel_list").split(",").toList
+    properties.getProperty("channelMap").split(",").map(channel => {
+      val tmp = channel.split(":");
+      channelMap += (tmp(0) -> tmp(1))
+    });
+    if(imk_channel_list.length <= 0 || channelMap.size <= 0){
+      throw new Exception("imk_channel_list or channelMap value is null,imk_channel_list:"+imk_channel_list+",channelMap:"+channelMap)
+    }
     val imkClickToday = onceClickCount(inputdir + "chocolate_date=" + current_date + "*")
     val imkClickYesterday = onceClickCount(inputdir + "chocolate_date=" + getDateBeforeNDay(current_date, -1) + "*")
     val imkClickBeforeYesterday = onceClickCount(inputdir + "chocolate_date=" + getDateBeforeNDay(current_date, -2) + "*")
 
-    val total = imkClickToday.union(imkClickYesterday).union(imkClickBeforeYesterday)
+    imkClickToday.union(imkClickYesterday).union(imkClickBeforeYesterday)
       .select("event_dt", "click_hour", "click_cnt", "channel_id", "distinct_click_cnt", "diff")
       .groupBy(col("channel_id"), col("event_dt"), col("click_hour"))
       .agg(sum(col("click_cnt")).as("click_count"), sum(col("distinct_click_cnt")).as("distinct_click_count"), sum(col("diff")).as("differences"))
@@ -180,92 +152,22 @@ class IMKClickReport(inputdir: String,
 
   def onceClickCount(dir: String): DataFrame ={
     logger.info("onceClickCount function:" + dir)
-    val imkClick = readSequenceFilesAsDF(dir, schema_imk_click_table.dfSchema, delimiter, false)
+    val imkClick = readParquetFilesAsDF(dir,false)
       .filter(((col("rvr_cmnd_type_cd") === click_cd) and(col("rvr_chnl_type_cd") isin(imk_channel_list:_*)))
         or((col("rvr_cmnd_type_cd") === roi_cd) and(col("rvr_chnl_type_cd") === roi_chl_cd)))
-      .withColumn("click_hour", extractHourUdf(col("event_ts")))
-
+      .withColumn("click_hour", extractHourUdf(col("event_ts"))).withColumn("event_dt",extractDateUdf(col("event_ts")))
+    imkClick.show()
     val imkClickCnt = imkClick.groupBy(col("rvr_chnl_type_cd").as("channel_id"), col("click_hour"),col("event_dt"))
       .agg(count(col("rvr_id")).as("click_cnt"), countDistinct(col("rvr_id")).as("distinct_click_cnt"))
       .withColumn("diff", calculateDiffUdf(col("click_cnt"), col("distinct_click_cnt")))
-
+    imkClickCnt.show()
     imkClickCnt
   }
 
-  /**
-    * Read table files as Dataframe.
-    *
-    * @param inputPaths    the input paths of table files
-    * @param schema        the dataframe schema of table
-    * @param delimiter     the delimiter for fields in the file,
-    *                      the value can be one of 'bel', 'tab', 'space', 'comma', 'del'.
-    * @param broadcastHint whether to broadcast the dataframe
-    * @return the dataframe
-    */
-  def readSequenceFilesAsDF(inputPaths: String, schema: StructType = null,
-                            delimiter: String, broadcastHint: Boolean = false): DataFrame = {
-
-    val df = spark.createDataFrame(sc.sequenceFile[String, String](inputPaths)
-          .values.map(asRow(_, delimiter))
-          .map(toDfRow(_, schema)).filter(_ != null), schema)
+  def readParquetFilesAsDF(inputPaths: String,
+                      broadcastHint: Boolean = false): DataFrame = {
+    val df = spark.read.parquet(inputPaths)
     if (broadcastHint) broadcast(df) else df
-  }
-
-  /**
-    * Split the row string to fields of string array using delimiter.
-    *
-    * @param line   the row string
-    * @param colSep the delimiter
-    * @return the fields
-    */
-  final def asRow(line: String, colSep: String): Array[String] = {
-    line.split(colSep, -1)
-  }
-
-  /**
-    * Convert string array of row fields to DataFrame row
-    * according to the table schema.
-    *
-    * @param values string array of row fields
-    * @param schema dataframe schema
-    * @return dataframe row
-    */
-  def toDfRow(values: Array[String], schema: StructType): Row = {
-//    require(values.length == schema.fields.length
-//      || values.length == schema.fields.length + 1)
-    if(values == null || ((values.length != schema.fields.length) && (values.length != schema.fields.length + 1))){
-      logger.warn(values.mkString("|"))
-      null
-    } else{
-      try {
-        Row(values zip schema map (e => {
-          if (e._1.length == 0) {
-            null
-          } else {
-            e._2.dataType match {
-              case _: StringType => e._1.trim
-              case _: LongType => e._1.trim.toLong
-              case _: IntegerType => e._1.trim.toInt
-              case _: ShortType => e._1.trim.toShort
-              case _: FloatType => e._1.trim.toFloat
-              case _: DoubleType => e._1.trim.toDouble
-              case _: ByteType => e._1.trim.toByte
-              case _: BooleanType => e._1.trim.toBoolean
-            }
-          }
-        }): _*)
-      } catch {
-        case ex: Exception => {
-          corruptRows.set(corruptRows.get + 1)
-          if (corruptRows.get() <= MAX_CORRUPT_ROWS) {
-            logger.warn("Failed to parse row: " + values.mkString("|"), ex)
-          } else {
-            logger.error("Two many corrupt rows.")
-          }
-          null
-        }
-      }
-    }
   }
 
   def extractHour(ts: String): String = {
@@ -275,6 +177,23 @@ class IMKClickReport(inputdir: String,
       }
       val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
       return simpleDateFormat.parse(ts).getHours.toString
+    } catch {
+      case ex: Exception => {
+        ex.printStackTrace()
+        logger.info("error ts: " + ts)
+        logger.info("exception===>:" + ex.getMessage)
+        return "999"
+      }
+    }
+  }
+
+  def extracDate(ts: String): String = {
+    try {
+      if (ts == null) {
+        return "999"
+      }
+      val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+      return new SimpleDateFormat("yyyy-MM-dd").format(simpleDateFormat.parse(ts))
     } catch {
       case ex: Exception => {
         ex.printStackTrace()
@@ -317,5 +236,4 @@ class IMKClickReport(inputdir: String,
   def getData(dir: String): DataFrame = {
     spark.read.option("header", "true").csv(dir)
   }
-
 }

@@ -6,6 +6,7 @@ import com.ebay.traffic.chocolate.html.HourlyClickCountTable;
 import com.ebay.traffic.chocolate.pojo.DailyClickTrend;
 import com.ebay.traffic.chocolate.pojo.DailyDomainTrend;
 import com.ebay.traffic.chocolate.pojo.HourlyClickCount;
+import com.ebay.traffic.chocolate.util.Constants;
 import com.ebay.traffic.chocolate.util.EPNDataSort;
 import com.ebay.traffic.chocolate.util.FileUtil;
 
@@ -14,8 +15,8 @@ import java.util.List;
 public class EPNReportUtil {
 
   public static String getDailyReport(){
-    String dailyClickTrendFile = "/datashare/mkttracking/tools/AlertingAggrate-tool/temp/daily_click_trend/dailyClickTrend.csv";
-     String dailyDomainTrendFile = "/datashare/mkttracking/tools/AlertingAggrate-tool/temp/daily_domain_trend/dailyDomainTrend.csv";
+    String dailyClickTrendFile = Constants.DAILY_CLICK_TREND_FILE;
+    String dailyDomainTrendFile = Constants.DAILY_DOMAIN_TREND_FILE;
     List<DailyClickTrend> dailyClickTrend = EPNDataSort.getDailyClickTrend(FileUtil.getDailyClickTrend(dailyClickTrendFile));
     List<DailyDomainTrend> dailyDomainTrend = EPNDataSort.getDailyDomainTrend(FileUtil.getDailyDomainTrend(dailyDomainTrendFile));
 
@@ -23,7 +24,7 @@ public class EPNReportUtil {
   }
 
   public static String getHourlyReport(){
-    String hourlyClickCountFile= "/datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_click_count/hourlyClickCount.csv";
+    String hourlyClickCountFile= Constants.HOURLY_CLICK_COUNT_FILE;
     List<HourlyClickCount> hourlyClickCount = EPNDataSort.getHourlyClickCount(hourlyClickCountFile);
 
     return parse(hourlyClickCount);
