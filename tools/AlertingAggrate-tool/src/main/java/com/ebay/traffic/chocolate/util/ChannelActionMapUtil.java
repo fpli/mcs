@@ -14,7 +14,7 @@ public class ChannelActionMapUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(ChannelActionMapUtil.class);
   private static ChannelActionMapUtil channelActionMapUtil = new ChannelActionMapUtil();
-  private static String config_path = "/datashare/mkttracking/tools/AlertingAggrate-tool/conf/";
+  private static String config_path = Constants.PREFIX_CONF_DIR;
   private HashMap<String, String> channelTypeMap = new HashMap<>();
   private HashMap<String, String> actionTypeMap = new HashMap<>();
 

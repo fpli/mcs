@@ -23,13 +23,13 @@
     <project name="Chocolate-ETL-Crab-to-rno" id="7">
         <metric name="crab dedupe processedFiles" value="crab.dedupe.processedFiles" source="crab-metrics" condition="" threshold="1" thresholdFactor="0.5" computeType="sum" alert="true"/>
         <metric name="crab transform messageLag" value="imk.transform.messageLag" source="crab-metrics" condition="" threshold="10800000" thresholdFactor="2.0" computeType="avg" alert="false"/>
-        <metric name="crab transform processedMeta" value="imk.transform.processedMete" source="crab-metrics" condition="" threshold="5" thresholdFactor="0.5" computeType="sum" alert="true"/>
+        <metric name="crab transform processedMeta" value="imk.transform.processedMete" source="crab-metrics" condition="" threshold="1" thresholdFactor="0.5" computeType="sum" alert="true"/>
     </project>
     <project name="Chocolate-ETL-Imk-to-rno" id="8">
-        <metric name="imk transform messageLag" value="imk.transform.messageLag" source="imk-metrics" condition="" threshold="3600000" thresholdFactor="2.0" computeType="avg" alert="false"/>
-        <metric name="imk transform processedMeta" value="imk.transform.processedMete" source="imk-metrics" condition="" threshold="5" thresholdFactor="0.5" computeType="sum" alert="true"/>
+        <metric name="imk transform messageLag" value="imk.transform.messageLag" source="imk-etl-metrics" condition="" threshold="3600000" thresholdFactor="2.0" computeType="avg" alert="false"/>
+        <metric name="imk transform processedMeta" value="imk.transform.processedMete" source="imk-etl-metrics" condition="" threshold="5" thresholdFactor="0.5" computeType="sum" alert="true"/>
     </project>
     <project name="Chocolate-ETL-EPN" id="9">
-        <metric name="EPN ETL processedMeta" value="MetaFileCount" source="chocolate-metrics" condition="" threshold="5" thresholdFactor="0.5" computeType="sum" alert="true"/>
+        <metric name="EPN ETL processedMeta" value="MetaFileCount" source="chocolate-metrics" condition="" threshold="5" thresholdFactor="0.1" computeType="sum" alert="true"/>
     </project>
 </projects>

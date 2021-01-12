@@ -35,6 +35,13 @@ public class DoneFileUtil {
     return doneFile;
   }
 
+  public static DoneFile getImkEventDoneFileDetailV2(String clusterName, String path) {
+    DoneFile doneFile = getDalayDelayInfo("imk_rvr_trckng_event_hourly", path);
+    doneFile.setDataSource("imk_rvr_trckng_event_v2_hourly");
+    doneFile.setClusterName(clusterName);
+    return doneFile;
+  }
+
   public static ArrayList<String> getParams(String pattern, String path) {
     List<String> list = getFileList(pattern, path);
     Collections.sort(list, Collections.reverseOrder());
@@ -73,9 +80,9 @@ public class DoneFileUtil {
 
   private static List<String> getFileList(String pattern, String path) {
     if (path.contains("apollo")) {
-      return ApolloHdfsClient.getDoneFileList(path, LocalDate.now().toString(), pattern);
+      return DoneFileReadUtil.getDoneFileList(Constants.APOLLO_DONE_FILES, pattern);
     } else if (path.contains("hercules")) {
-      return HerculesHdfsClient.getDoneFileList("/datashare/mkttracking/tools/AlertingAggrate-tool/temp/hercules_files/hercules_done_files.txt", LocalDate.now().toString(), pattern);
+      return DoneFileReadUtil.getDoneFileList(Constants.HERCULES_DONE_FILES, pattern);
     } else {
       return null;
     }
@@ -136,9 +143,11 @@ public class DoneFileUtil {
 
   public static ArrayList<DoneFile> getDoneFileInfos() {
     ArrayList<DoneFile> list = new ArrayList<>();
+    list.add(getImkEventDoneFileDetailV2("apollo-rno", "viewfs://apollo-rno/apps/b_marketing_tracking/watch-imk"));
     list.add(getImkEventDoneFileDetail("apollo-rno", "viewfs://apollo-rno/apps/b_marketing_tracking/watch"));
     list.add(getAmsClickDoneFileDetail("apollo-rno", "viewfs://apollo-rno/apps/b_marketing_tracking/watch"));
     list.add(getAmsImpressionDoneFileDetail("apollo-rno", "viewfs://apollo-rno/apps/b_marketing_tracking/watch"));
+    list.add(getImkEventDoneFileDetailV2("hercules-lvs", "hdfs://hercules/apps/b_marketing_tracking/watch-imk"));
     list.add(getImkEventDoneFileDetail("hercules-lvs", "hdfs://hercules/apps/b_marketing_tracking/watch"));
     list.add(getAmsClickDoneFileDetail("hercules-lvs", "hdfs://hercules/apps/b_marketing_tracking/watch"));
     list.add(getAmsImpressionDoneFileDetail("hercules-lvs", "hdfs://hercules/apps/b_marketing_tracking/watch"));

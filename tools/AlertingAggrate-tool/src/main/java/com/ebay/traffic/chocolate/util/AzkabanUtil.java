@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class AzkabanUtil {
 
   public static String getAzkabanReportHtml() {
-    String fileName = "/datashare/mkttracking/tools/AlertingAggrate-tool/conf/azkaban-hourly.xml";
+    String fileName = Constants.AZKABAN_HOURLY_XML;
     HashMap<String, ArrayList<Azkaban>> azkabanmap = XMLUtil.readAzkabanMap(fileName);
     HashMap<String, ArrayList<AzkabanFlow>> map = AzkabanReport.getInstance().getAzkabanFlowMap(azkabanmap);
 
