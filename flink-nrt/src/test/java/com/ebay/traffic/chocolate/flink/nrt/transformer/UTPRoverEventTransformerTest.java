@@ -56,6 +56,7 @@ public class UTPRoverEventTransformerTest {
     genericRecord.put("urlQueryString", new Utf8(MRKT_EMAIL_URL_QUERY_STRING));
     genericRecord.put("eventTimestamp", 123456789L);
     genericRecord.put("guid", new Utf8("test-guid"));
+    genericRecord.put("webServer", new Utf8("rover.ebay.com"));
     transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent);
   }
 
@@ -84,6 +85,7 @@ public class UTPRoverEventTransformerTest {
   public void getProducerEventId() {
     assertEquals("", transformer.getProducerEventId());
 
+    applicationMap.put(new Utf8("webServer"), new Utf8("rover.ebay.com"));
     applicationMap.put(new Utf8("euid"), new Utf8("1234546"));
     genericRecord.put("urlQueryString", new Utf8(MRKT_EMAIL_URL_QUERY_STRING));
     genericRecord.put("applicationPayload", applicationMap);

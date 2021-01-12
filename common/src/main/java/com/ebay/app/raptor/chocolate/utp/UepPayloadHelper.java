@@ -159,7 +159,7 @@ public class UepPayloadHelper {
     // tag_item, no need
     // tag_intrId, no need
     // tag_intrUnsub, no need
-    // TODO: cnv.id TBD
+    // cnv.id no need in open/click
     // tracking id
     String trackingId = getOrDefault(uriComponents.getQueryParams().getFirst(TRACKING_ID));
     payload.put(MessageConstantsEnum.TRACKING_ID.getValue(), trackingId);
@@ -188,9 +188,12 @@ public class UepPayloadHelper {
       RecoList recoList = new RecoList();
       recoList.recoId = uriComponents.getQueryParams().getFirst(RECO_ID);
       recoList.recoPos = uriComponents.getQueryParams().getFirst(RECO_POS);
-      List<RecoList> recoLists = new ArrayList<>();
-      recoLists.add(recoList);
-      mesgList.recoList = recoLists;
+      // only include reco.list when valid
+      if(StringUtils.isNotEmpty(recoList.recoId) && StringUtils.isNotEmpty(recoList.recoPos)) {
+        List<RecoList> recoLists = new ArrayList<>();
+        recoLists.add(recoList);
+        mesgList.recoList = recoLists;
+      }
     }
 
     MesgRoot root = new MesgRoot();

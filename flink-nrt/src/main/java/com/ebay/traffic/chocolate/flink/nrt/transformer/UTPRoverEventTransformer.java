@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
+import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
 import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
@@ -26,10 +27,7 @@ import org.apache.commons.lang3.Validate;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 
@@ -93,6 +91,9 @@ public class UTPRoverEventTransformer {
           .build();
 
   private static final String GET_METHOD_PREFIX = "get";
+
+  private static String[] coreSites = {"rover.ebay.com", "r.ebay.com", "internal.rover.vip.ebay.com"};
+  private static Set<String> roverCoreSites = new HashSet<>(Arrays.asList(coreSites));
 
   /**
    * Used to cache method object to improve reflect performance
@@ -165,6 +166,12 @@ public class UTPRoverEventTransformer {
       }
       if (pageId == PAGE_ID_EMAIL_OPEN && !PAGE_NAME_ROVER_EMAIL_OPEN.equals(pageName)) {
         SherlockioMetrics.getInstance().meter("NotRoveropen", 1, Field.of(TOPIC, sourceTopic));
+        return false;
+      }
+
+      // only keep core site rover events
+      String server = GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.WEB_SERVER);
+      if(!roverCoreSites.contains(server)) {
         return false;
       }
     }
