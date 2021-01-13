@@ -20,5 +20,5 @@ set hive.merge.size.per.task=128000000;
 SET hive.auto.convert.join=false;
 
 INSERT OVERWRITE LOCAL DIRECTORY '/datashare/mkttracking/jobs/imkReformate/diffTsCount'
-select count(*) FROM choco_data.imk_rvr_trckng_event_new
+select count(*) FROM choco_data.imk_rvr_trckng_event_v2
 WHERE dt='#{dt}' and substring(event_ts, 0, 10)<>'#{dt}';

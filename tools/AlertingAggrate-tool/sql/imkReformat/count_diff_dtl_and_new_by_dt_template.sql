@@ -1,5 +1,5 @@
 insert into table choco_data.IMK_RVR_TRCKNG_EVENT_DIFF_TMP
-select '#{dt}','dtl',count(*) FROM (select * from choco_data.imk_rvr_trckng_event_new where dt='#{dt}') new
+select '#{dt}','dtl',count(*) FROM (select * from choco_data.imk_rvr_trckng_event_v2 where dt='#{dt}') new
 FULL outer join (select * from choco_data.imk_rvr_trckng_event_dtl where dt='#{dt}') imk
 on new.rvr_id <=> imk.rvr_id and
 new.event_ts <=> imk.event_ts and
