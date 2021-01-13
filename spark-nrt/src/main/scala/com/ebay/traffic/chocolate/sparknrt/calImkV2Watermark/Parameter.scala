@@ -1,8 +1,8 @@
-package com.ebay.traffic.chocolate.sparknrt.calImkNewWatermark
+package com.ebay.traffic.chocolate.sparknrt.calImkV2Watermark
 
 import scopt.OptionParser
 
-case class Parameter(appName: String = "calImkNewWatermark",
+case class Parameter(appName: String = "calImkV2Watermark",
                      mode: String = "yarn",
                      imkCrabTransformDataDir: String = "",
                      dedupAndSinkKafkaLagDir: String = "",
@@ -12,8 +12,8 @@ case class Parameter(appName: String = "calImkNewWatermark",
 
 object Parameter {
 
-  private lazy val parser = new OptionParser[Parameter]("calImkNewWatermark") {
-    head("calImkNewWatermark")
+  private lazy val parser = new OptionParser[Parameter]("calImkV2Watermark") {
+    head("calImkV2Watermark")
 
     opt[String]("appName")
       .optional

@@ -1,5 +1,5 @@
 {
-  "table": "df_imk_new_apollo",
+  "table": "df_imk_v2_apollo",
   "description": "",
   "columns": [
     {
@@ -20,6 +20,11 @@
     {
       "name": "rvr_id",
       "dataType": "long",
+      "default": ""
+    },
+    {
+      "name": "event_dt",
+      "dataType": "string",
       "default": ""
     },
     {

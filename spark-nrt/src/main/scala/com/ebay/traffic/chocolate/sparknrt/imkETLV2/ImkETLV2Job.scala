@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.sparknrt.imkNewETL
+package com.ebay.traffic.chocolate.sparknrt.imkETLV2
 
 import java.net.{URI, URLDecoder}
 import java.text.SimpleDateFormat
@@ -27,18 +27,18 @@ import scala.io.Source
  * @Author yli19
  * @since 2020/11/31
  */
-object ImkNewETLJob extends App {
+object ImkETLV2Job extends App {
   override def main(args: Array[String]): Unit = {
     val params = Parameter(args)
 
-    val job = new ImkNewETLJob(params)
+    val job = new ImkETLV2Job(params)
 
     job.run()
     job.stop()
   }
 }
 
-class ImkNewETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, params.mode) {
+class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, params.mode) {
   // imk crabTransform output，for apollo job, the dir same with imkTransform job
   lazy val imkETLOutputDir: String = params.outPutDir + "/imkTransform/imkOutput/"
 
@@ -91,7 +91,7 @@ class ImkNewETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, pa
     "SEARCH_ENGINE_FREE_LISTINGS" -> ".imketl"
   )
 
-  @transient lazy val schema_apollo: TableSchema = TableSchema("df_imk_new_apollo.json")
+  @transient lazy val schema_apollo: TableSchema = TableSchema("df_imk_v2_apollo.json")
 
   @transient lazy val mfe_name_id_map: Map[String, String] = {
     val mapData = Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("mfe_name_id_map.txt")).getLines

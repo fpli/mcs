@@ -2,7 +2,7 @@
 
 # Put files from chocolate hadoop to Apollo RNO and Hercules. The input files will be deleted.
 # Input:    SLC Hadoop
-#           /apps/tracking-events/imkTransform/imkOutput_v2
+#           /apps/tracking-events-imk/imkTransform/imkOutput
 # Output:   Apollo RNO
 #           /apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_v2
 #           Hercules
@@ -35,7 +35,7 @@ echo "today ：${today}"
 echo "yesterday ：${yesterday}"
 
 ENV_PATH='/datashare/mkttracking/tools/cake'
-JOB_NAME='DistcpImkNewToRenoAndHerculesBatchJob'
+JOB_NAME='DistcpImkV2ToRenoAndHerculesBatchJob'
 echo "ENV_PATH:${ENV_PATH}"
 echo "JOB_NAME:${JOB_NAME}"
 

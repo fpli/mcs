@@ -1,8 +1,8 @@
-package com.ebay.traffic.chocolate.sparknrt.imkNewETL
+package com.ebay.traffic.chocolate.sparknrt.imkETLV2
 
 import java.io.File
 
-import com.ebay.traffic.chocolate.spark.{BaseFunSuite}
+import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import com.ebay.traffic.chocolate.sparknrt.utils.{MyIDV2, XIDResponseV2}
 import org.apache.hadoop.conf.Configuration
@@ -13,7 +13,7 @@ import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 
-class TestImkNewETLJob extends BaseFunSuite{
+class TestImkETLV2Job extends BaseFunSuite{
 
   private val tmpPath = createTempDir()
   private val workDir = tmpPath + "/apps/tracking-events-workdir"
@@ -38,7 +38,7 @@ class TestImkNewETLJob extends BaseFunSuite{
   }
 
   test("test imk etl job for parquet output") {
-    val job = new ImkNewETLJob(Parameter(Array(
+    val job = new ImkETLV2Job(Parameter(Array(
       "--mode", "local[8]",
       "--channel", "PAID_SEARCH,DISPLAY,ROI,SOCIAL_MEDIA",
       "--workDir", workDir,
@@ -80,7 +80,7 @@ class TestImkNewETLJob extends BaseFunSuite{
   }
 
   test("test parse mpre from rover url") {
-    val job = new ImkNewETLJob(Parameter(Array(
+    val job = new ImkETLV2Job(Parameter(Array(
       "--mode", "local[8]",
       "--channel", "PAID_SEARCH,DISPLAY,ROI,SOCIAL_MEDIA",
       "--workDir", workDir,
@@ -113,7 +113,7 @@ class TestImkNewETLJob extends BaseFunSuite{
   }
 
   test("test judegNotEbaySitesUdf") {
-    val job = new ImkNewETLJob(Parameter(Array(
+    val job = new ImkETLV2Job(Parameter(Array(
       "--mode", "local[8]",
       "--channel", "PAID_SEARCH,DISPLAY,ROI,SOCIAL_MEDIA",
       "--workDir", workDir,

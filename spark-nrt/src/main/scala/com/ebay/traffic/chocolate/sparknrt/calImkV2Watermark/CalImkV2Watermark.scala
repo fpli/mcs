@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.sparknrt.calImkNewWatermark
+package com.ebay.traffic.chocolate.sparknrt.calImkV2Watermark
 
 import java.io.ByteArrayOutputStream
 import java.net.URI
@@ -11,18 +11,18 @@ import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.functions.min
 
-object CalImkNewWatermark  extends App {
+object CalImkV2Watermark  extends App {
   override def main(args: Array[String]): Unit = {
     val params = Parameter(args)
 
-    val job = new CalImkNewWatermark(params)
+    val job = new CalImkV2Watermark(params)
 
     job.run()
     job.stop()
   }
 }
 
-class CalImkNewWatermark(params: Parameter)
+class CalImkV2Watermark(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode){
 
   implicit def dateTimeOrdering: Ordering[ZonedDateTime] = Ordering.fromLessThan(_ isBefore  _)
@@ -38,7 +38,7 @@ class CalImkNewWatermark(params: Parameter)
     sys.addShutdownHook(fs.close())
     fs
   }
-  @transient lazy val schema_apollo = TableSchema("df_imk_new_apollo.json")
+  @transient lazy val schema_apollo = TableSchema("df_imk_v2_apollo.json")
 
   // imk crab transform data dir
   lazy val imkCrabTransformDataDir: String = params.imkCrabTransformDataDir

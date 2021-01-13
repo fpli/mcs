@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN
 # imkCrabTransformDataDir:   SLC Imk CrabTransform Merged Output Merged Dir
-#           hdfs://slickha/apps/tracking-events/imkTransform/imkOutput_v2
+#           hdfs://slickha/apps/tracking-events/imkTransform/imkOutput
 # dedupAndSinkKafkaLagDir: LVS dedup and sink kafka lag dir
 #           hdfs://elvisha/apps/tracking-events-workdir-imk/last_ts
 # channel: currently, only PAID_SEARCH
@@ -12,7 +12,7 @@
 
 set -x
 
-usage="Usage: calImkNewWatermark.sh [imkCrabTransformDataDir] [dedupAndSinkKafkaLagDir] [channels] [outputDir]"
+usage="Usage: calImkV2Watermark.sh [imkCrabTransformDataDir] [dedupAndSinkKafkaLagDir] [channels] [outputDir]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
@@ -36,7 +36,7 @@ EXECUTOR_NUMBER=3
 EXECUTOR_MEMORY=1g
 EXECUTOR_CORES=1
 
-JOB_NAME="calImkNewWatermark"
+JOB_NAME="calImkV2Watermark"
 
 for f in $(find $bin/../../conf/prod-imk -name '*.*');
 do
@@ -45,7 +45,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.sparknrt.calImkNewWatermark.CalImkNewWatermark \
+    --class com.ebay.traffic.chocolate.sparknrt.calImkV2Watermark.CalImkV2Watermark \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \

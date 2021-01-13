@@ -1,4 +1,4 @@
 type=command
-dependencies=calImkNewWatermark
+dependencies=calImkV2Watermark
 command=bash distcpImkToRenoAndHercules_v2.sh
 failure.emails=jialili1@ebay.com, fechen@ebay.com, xiangli4@ebay.com, yliu29@ebay.com, huiclu@ebay.com, shuangxu@ebay.com, zhofan@ebay.com, zhiyuawang@ebay.com, zjian@ebay.com, yli19@ebay.com, yyang28@ebay.com

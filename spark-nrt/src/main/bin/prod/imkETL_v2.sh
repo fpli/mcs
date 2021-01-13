@@ -7,7 +7,7 @@
 #           /apps/tracking-events
 # Schedule: * * ? * *
 
-usage="Usage: imkNewETL.sh [channel] [workDir] [outPutDir]"
+usage="Usage: imkETL_v2.sh [channel] [workDir] [outPutDir]"
 
 set -x
 
@@ -43,7 +43,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
   --files ${FILES} \
-  --class com.ebay.traffic.chocolate.sparknrt.imkNewETL.ImkNewETLJob \
+  --class com.ebay.traffic.chocolate.sparknrt.imkETLV2.ImkETLV2Job \
   --name ${JOB_NAME} \
   --master yarn \
   --deploy-mode cluster \

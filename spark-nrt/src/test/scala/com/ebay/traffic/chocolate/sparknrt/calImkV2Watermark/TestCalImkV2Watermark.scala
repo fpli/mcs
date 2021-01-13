@@ -1,13 +1,13 @@
-package com.ebay.traffic.chocolate.sparknrt.calImkNewWatermark
+package com.ebay.traffic.chocolate.sparknrt.calImkV2Watermark
 
 import java.io.File
 
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
-import com.ebay.traffic.chocolate.sparknrt.calImkNewWatermark.{CalImkNewWatermark, Parameter}
+import com.ebay.traffic.chocolate.sparknrt.calImkV2Watermark.{CalImkV2Watermark, Parameter}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
-class TestCalImkNewWatermark extends BaseFunSuite {
+class TestCalImkV2Watermark extends BaseFunSuite {
   private val tmpPath = createTempDir()
   private val crabTransformDataDir = tmpPath + "/crabTransform/imkOutput"
   private val imkCrabTransformDataDir = tmpPath + "/imkTransformMerged/imkOutput"
@@ -37,7 +37,7 @@ class TestCalImkNewWatermark extends BaseFunSuite {
     createTestData()
   }
 
-  test("Test calCrabTransformWatermark") {
+  test("Test calImkV2mWatermark") {
     val args = Array(
       "--mode", "local[8]",
       "--imkCrabTransformDataDir", imkCrabTransformDataDir,
@@ -47,7 +47,7 @@ class TestCalImkNewWatermark extends BaseFunSuite {
       "--elasticsearchUrl", "http://10.148.181.34:9200"
     )
     val params = Parameter(args)
-    val job = new CalImkNewWatermark(params)
+    val job = new CalImkV2Watermark(params)
     job.run()
 
     assert(job.readFileContent(new Path(outPutDir + "/imkCrabTransformWatermark"), fs).equals("1577084400010"))
