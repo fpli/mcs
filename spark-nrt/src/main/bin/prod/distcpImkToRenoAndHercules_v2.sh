@@ -15,7 +15,7 @@ usage="Usage: distcpImkToRenoAndHercules_v2.sh"
 
 export HADOOP_USER_NAME=chocolate
 whoami
-IMK_SRC_DIR="/apps/tracking-events-imk/imkTransform/imkOutput_v2"
+IMK_SRC_DIR="/apps/tracking-events-imk/imkTransform/imkOutput"
 RENO_DEST_DIR="/apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_v2"
 HERCULES_DEST_DIR="/sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event_v2/snapshot"
 
