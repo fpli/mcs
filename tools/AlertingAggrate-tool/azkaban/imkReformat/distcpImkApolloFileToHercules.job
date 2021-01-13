@@ -1,0 +1,3 @@
+type=command
+command=bash distcpImkApolloFileToHercules.sh
+failure.emails=yli19@ebay.com

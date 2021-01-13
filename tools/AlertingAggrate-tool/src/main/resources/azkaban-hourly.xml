@@ -22,11 +22,7 @@
     <metric projectName="oracle_map_cb_epn_source_daily_batch" flowName="oracle_map_cb_epn_source_daily_batch" total="10" threshold="1"/>
     <metric projectName="epnNRT" flowName="epnnrt_scheduler" total="10" threshold="1"/>
     <metric projectName="epnNRT" flowName="sendAmsToEtl" total="10" threshold="1"/>
-<!--    <metric projectName="epnNRT" flowName="epnnrt_done" total="10" threshold="1"/>-->
-    <metric projectName="epnNRT" flowName="sendAmsClickToHerculesAndHourlyDone" total="10" threshold="1"/>
-    <metric projectName="epnNRT" flowName="sendAmsImpToHerculesAndHourlyDone" total="10" threshold="1"/>
-    <metric projectName="epnNRT" flowName="sendAmsClickToRenoAndHourlyDone" total="10" threshold="1"/>
-    <metric projectName="epnNRT" flowName="sendAmsImpToRenoAndHourlyDone" total="10" threshold="1"/>
+    <metric projectName="distcpAmsToRenoAndHercules" flowName="distcpAmsToRenoAndHercules" total="10" threshold="1"/>
   </project>
   <project name="imk-azkaban-monitor">
     <metric projectName="crabJob" flowName="rover_end" total="10" threshold="1"/>
@@ -39,7 +35,9 @@
     <metric projectName="IMK_DUMP_PAID_SEARCH" flowName="imkScpToETL" total="10" threshold="1"/>
     <metric projectName="IMK_DUMP_ROI" flowName="imkScpToETL_ROI" total="10" threshold="1"/>
     <metric projectName="imkETL" flowName="imkETL" total="10" threshold="1"/>
-    <metric projectName="PutImkToRenoAndHercules" flowName="putImkHourlyDoneToRenoAndHercules" total="10" threshold="1"/>
+    <metric projectName="imkETL_v2" flowName="imkETL_v2" total="10" threshold="1"/>
+    <metric projectName="distcpImkToRenoAndHercules" flowName="putImkHourlyDoneToRenoAndHercules" total="10" threshold="1"/>
+    <metric projectName="distcpImkToRenoAndHercules_v2" flowName="putImkHourlyDoneToRenoAndHercules" total="10" threshold="1"/>
   </project>
   <project name="rotation-azkaban-monitor">
     <metric projectName="rotation_daily_update" flowName="rotation_daily_update_end" total="10" threshold="3"/>

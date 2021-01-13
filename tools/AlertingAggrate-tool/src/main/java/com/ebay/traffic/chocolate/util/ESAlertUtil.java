@@ -23,13 +23,13 @@ public class ESAlertUtil {
 
     switch (runPeriod) {
       case "daily":
-        fileName = "/datashare/mkttracking/tools/AlertingAggrate-tool/conf/metric-daily.xml";
+        fileName = Constants.METRIC_DAILY_XML;
         break;
       case "hourly":
-        fileName = "/datashare/mkttracking/tools/AlertingAggrate-tool/conf/metric-hourly.xml";
+        fileName = Constants.METRIC_HOURLY_XML;
         break;
       default:
-        fileName = "/datashare/mkttracking/tools/AlertingAggrate-tool/conf/metric-daily.xml";
+        fileName = Constants.METRIC_DAILY_XML;
         break;
     }
 

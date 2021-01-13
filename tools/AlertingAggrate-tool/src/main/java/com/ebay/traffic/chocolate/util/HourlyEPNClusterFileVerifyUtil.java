@@ -10,7 +10,7 @@ import java.util.*;
 public class HourlyEPNClusterFileVerifyUtil {
   private static final Logger logger = LoggerFactory.getLogger(HourlyEPNClusterFileVerifyUtil.class);
 
-  private static String PREFIX_PATH = "/datashare/mkttracking/tools/AlertingAggrate-tool/temp/hourly_monitor_epn/";
+  private static String PREFIX_PATH = Constants.HOURLY_MONITOR_EPN;
 
   public static ArrayList<HourlyEPNClusterFileVerifyInfo> getHourlyEPNClusterFileVerifyInfos() {
     ArrayList<HourlyEPNClusterFileVerifyInfo> list = new ArrayList<>();

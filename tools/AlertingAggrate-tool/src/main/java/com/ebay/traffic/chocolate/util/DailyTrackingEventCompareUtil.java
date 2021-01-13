@@ -10,7 +10,7 @@ public class DailyTrackingEventCompareUtil {
     private static final Logger logger = LoggerFactory.getLogger(DailyTrackingEventCompareUtil.class);
 
     public static ArrayList<DailyTrackingEventCompare> getTrackingEvent(){
-        String path = "/home/_choco_admin/trackingEvent";
+        String path = Constants.TRACKING_EVENT_DIR;
         ArrayList<DailyTrackingEventCompare> list = new ArrayList<>();
         HashMap<String,String> herculesMap = getTrackingEventMap(path,"herculeslvs");
         HashMap<String,String> apolloMap = getTrackingEventMap(path,"apollorno");

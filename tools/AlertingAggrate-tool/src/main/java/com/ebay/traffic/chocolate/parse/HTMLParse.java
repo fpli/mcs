@@ -25,9 +25,6 @@ public class HTMLParse {
     html.append(DailyEmailHtml.getTDIMKCountHtml());
     html.append(DailyEmailHtml.getEPNDailyReportHtml());
     html.append(DailyEmailHtml.getDailyTrackingEventCompareHtml());
-//    html.append(DailyEmailHtml.getBenchMarkHtml());
-//    html.append(DailyEmailHtml.getOralceAndCouchbaseCountHtml());
-
     return html.toString();
   }
 
