@@ -83,7 +83,8 @@ RENO_DEST_PATH="viewfs://apollo-rno${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterd
 RNO_PATH="hdfs://apollo-rno${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}"
 HERCULES_PATH="hdfs://hercules${HERCULES_DEST_DIR}"
 meta_yesterday_files_nums=`hdfs dfs -ls ${META_PATH} | grep dw_ams | wc -l`
-reno_yesterday_files_nums=`/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls ${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday} | grep dw_ams | wc -l`
+#reno_yesterday_files_nums=`/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls ${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday} | grep dw_ams | wc -l`
+reno_yesterday_files_nums=`/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls "${HERCULES_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" |  grep dw_ams | wc -l`
 
 if [ ${meta_yesterday_files_nums} == ${reno_yesterday_files_nums} -a ${meta_yesterday_files_nums} -gt 0 ]
 then
@@ -122,7 +123,8 @@ RENO_DEST_PATH="viewfs://apollo-rno${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today}"
 RNO_PATH="hdfs://apollo-rno${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today}"
 HERCULES_PATH="hdfs://hercules${HERCULES_DEST_DIR}"
 meta_today_files_nums=`hdfs dfs -ls ${META_PATH} | grep dw_ams | wc -l`
-reno_today_files_nums=`/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls ${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today} |  grep dw_ams | wc -l`
+#reno_today_files_nums=`/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls ${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today} |  grep dw_ams | wc -l`
+reno_today_files_nums=`/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls "${HERCULES_DEST_DIR}/${DEST_DIR_PREFIX}=${today}" |  grep dw_ams | wc -l`
 
 if [ ${meta_today_files_nums} == ${reno_today_files_nums} -a ${meta_today_files_nums} -gt 0 ]
 then
