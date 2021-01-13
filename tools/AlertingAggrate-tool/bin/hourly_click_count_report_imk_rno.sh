@@ -8,14 +8,14 @@ EXECUTOR_NUMBER=40
 EXECUTOR_MEMORY=8g
 EXECUTOR_CORES=5
 SPARK_HOME=/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno
-FILES=/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v2/conf/df_imk_new_apollo.json,/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v2/conf/IMKClickReport.properties
+FILES=/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v2/conf/df_imk_v2_apollo.json,/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v2/conf/IMKClickReport.properties
 inputdir=viewfs://apollo-rno/apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_v2/*/
 echo "inputdir: ${inputdir}"
 outputdir=viewfs://apollo-rno/apps/b_marketing_tracking/alert/imk_v2/temp/hourlyClickCount
 echo "outputdir: ${outputdir}"
 jobtask=hourlyClickCount
 echo "jobtask: ${jobtask}"
-schema_imk_click_dir=df_imk_new_apollo.json
+schema_imk_click_dir=df_imk_v2_apollo.json
 echo "schema_imk_click_dir: ${schema_imk_click_dir}"
 header=false
 echo "header: ${header}"
