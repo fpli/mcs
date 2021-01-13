@@ -1,0 +1,29 @@
+insert into table choco_data.IMK_RVR_TRCKNG_EVENT_DIFF_TMP
+select '#{dt}','dtl',count(*) FROM (select * from choco_data.imk_rvr_trckng_event_new where dt='#{dt}') new
+FULL outer join (select * from choco_data.imk_rvr_trckng_event_dtl where dt='#{dt}') imk
+on new.rvr_id <=> imk.rvr_id and
+new.event_ts <=> imk.event_ts and
+new.flex_field_vrsn_num <=> imk.flex_field_vrsn_num and
+new.flex_field_1 <=> imk.flex_field_1 and
+new.flex_field_2 <=> imk.flex_field_2 and
+new.flex_field_3 <=> imk.flex_field_3 and
+new.flex_field_4 <=> imk.flex_field_4 and
+new.flex_field_5 <=> imk.flex_field_5 and
+new.flex_field_6 <=> imk.flex_field_6 and
+new.flex_field_7 <=> imk.flex_field_7 and
+new.flex_field_8 <=> imk.flex_field_8 and
+new.flex_field_9 <=> imk.flex_field_9 and
+new.flex_field_10 <=> imk.flex_field_10 and
+new.flex_field_11 <=> imk.flex_field_11 and
+new.flex_field_12 <=> imk.flex_field_12 and
+new.flex_field_13 <=> imk.flex_field_13 and
+new.flex_field_14 <=> imk.flex_field_14 and
+new.flex_field_15 <=> imk.flex_field_15 and
+new.flex_field_16 <=> imk.flex_field_16 and
+new.flex_field_17 <=> imk.flex_field_17 and
+new.flex_field_18 <=> imk.flex_field_18 and
+new.flex_field_19 <=> imk.flex_field_19 and
+new.flex_field_20 <=> imk.flex_field_20 and
+new.perf_track_name_value <=> imk.perf_track_name_value and
+new.dt<=>imk.dt
+WHERE new.rvr_id is null or imk.rvr_id is null
