@@ -1534,9 +1534,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
     try {
       if (StringUtils.isNotEmpty(uri)) {
-        val path = new URL(uri).getPath()
-        if (StringUtils.isNotEmpty(path)) {
-          isEbaySiteUrl = !path.contains(ROVER_TAG)
+        val host = new URL(uri).getHost()
+        if (StringUtils.isNotEmpty(host)) {
+          isEbaySiteUrl = !host.contains(ROVER_TAG)
         }
       }
     } catch {

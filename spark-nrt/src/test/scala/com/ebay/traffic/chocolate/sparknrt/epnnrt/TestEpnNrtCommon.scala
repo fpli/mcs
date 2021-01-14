@@ -406,7 +406,7 @@ class TestEpnNrtCommon extends BaseFunSuite{
   test("test rotation id from uri") {
     val roverUri = "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1"
     val roverInternalSitesUrl = "http://internal.rover.vip.ebay.com/rover/1/724-53478-19255-0/1?ff3=2&pub=5575376664&toolid=10044&campid=5338268676&customid=EAIaIQobChMI-9Phx5T67QIVRuJ3Ch0VwgLQEAsYASABEgLU8_D_BwE&lgeo=1&item=193804928834&udid=f406e74a172d504d32229b7001b577d2&nrd=1&mcs=1&dashenId=6750666959952285696&dashenCnt=0"
-    val mcsUri = "https://www.ebay.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556"
+    val mcsUri = "https://www.ebay.fr/itm/DAB-Autoradio-TNT-USB-3G-RDS-SD-iPod-BMW-3er-E46-318-320-M3-Rover-75-MG-ZT-Navi/233271587521?mkevt=1&mkcid=1&mkrid=709-53476-19255-0&campid=5338376269&customid=233271587521_131090&toolid=11000&pageci=d1797ccc-741f-4c6c-ac55-45daf8b96611"
     val adserviceUri = "https://www.ebayadservices.com/marketingtracking/v1/impression?mkevt=2&mkcid=1&mkrid=711-1245-1245-235&mksid=17382973291738213921738291&additional=chaotest"
     val invalidUri = "ebay"
 
@@ -418,7 +418,7 @@ class TestEpnNrtCommon extends BaseFunSuite{
 
     assert(roverRotation == "711-53200-19255-0")
     assert(roverInternalRotation == "724-53478-19255-0")
-    assert(mcsRotation == "4080-157294-765411-6")
+    assert(mcsRotation == "709-53476-19255-0")
     assert(adserviceRotation == "711-1245-1245-235")
     assert(invalidRotation == "")
   }
