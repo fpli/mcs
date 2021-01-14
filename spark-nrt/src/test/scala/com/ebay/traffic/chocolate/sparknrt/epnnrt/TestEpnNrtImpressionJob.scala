@@ -75,7 +75,7 @@ class TestEpnNrtImpressionJob extends BaseFunSuite{
     job.run()
 
     val impressionDf = job.readFilesAsDF(outputDir, TableSchema("df_epn_impression.json").dfSchema, "csv", "tab", false)
-    assert(impressionDf.count() == 10)
+    assert(impressionDf.count() == 8)
 
     // validate impression df
     assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7457493984045429249L).select("CRLTN_GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
