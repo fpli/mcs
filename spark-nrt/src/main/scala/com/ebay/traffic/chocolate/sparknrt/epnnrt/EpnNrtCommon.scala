@@ -1525,7 +1525,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   /**
-    * Determine if the click url is ebay sites url
+    * Determine if the url is ebay sites url
     * @param uri uri
     * @return isEbaySiteUrl
     */
