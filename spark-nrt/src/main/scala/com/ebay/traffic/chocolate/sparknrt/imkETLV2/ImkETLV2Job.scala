@@ -3,12 +3,11 @@ package com.ebay.traffic.chocolate.sparknrt.imkETLV2
 import java.net.{URI, URLDecoder}
 import java.text.SimpleDateFormat
 import java.util.{Date, Properties}
-
+import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import com.ebay.traffic.chocolate.sparknrt.imkDump.Tools
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import com.ebay.traffic.chocolate.sparknrt.utils.{MyIDV2, TableSchema, XIDResponseV2}
-import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
+import com.ebay.traffic.monitoring.{Field}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.compress.GzipCodec
@@ -44,8 +43,6 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
 
   lazy val imkETLTempDir: String = params.outPutDir + "/imkETL/imkTemp/"
 
-  lazy val METRICS_INDEX_PREFIX = "imk-etl-metrics-"
-
   @transient lazy val workDirFs = {
     val fs = FileSystem.get(URI.create(params.workDir), hadoopConf)
     sys.addShutdownHook(fs.close())
@@ -55,6 +52,7 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
   @transient lazy val properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("imk_etl.properties"))
+    properties.load(getClass.getClassLoader.getResourceAsStream("sherlockio.properties"))
     properties
   }
 
@@ -75,11 +73,11 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
 
   @transient lazy val schema_imk_table: TableSchema = TableSchema("df_imk.json")
 
-  @transient lazy val metrics: Metrics = {
-    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
-      ESMetrics.init(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
-      ESMetrics.getInstance()
-    } else null
+  @transient lazy val sherlockioMetrics: SherlockioMetrics = {
+    SherlockioMetrics.init(properties.getProperty("sherlockio.namespace"),properties.getProperty("sherlockio.endpoint"),properties.getProperty("sherlockio.user"))
+    val sherlockioMetrics = SherlockioMetrics.getInstance()
+    sherlockioMetrics.setJobName(params.appName)
+    sherlockioMetrics
   }
 
   // by default, no suffix
@@ -155,12 +153,9 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
         // metaFile is located in workDir
         workDirFs.delete(new Path(metaFile), true)
       })
-      metrics.meter("imk.transform.processedMete", kv._2.length, Field.of[String, AnyRef]("channelType", channel))
+      sherlockioMetrics.meter("imk_transform_processedMete", kv._2.length, Field.of[String, AnyRef]("channelType", channel))
     })
 
-    if (metrics != null) {
-      metrics.flush()
-    }
     if (tools.metrics != null) {
       tools.metrics.flush()
     }
@@ -193,9 +188,6 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
           import org.apache.spark.sql.catalyst.encoders.RowEncoder
           implicit val encoder: ExpressionEncoder[Row] = RowEncoder(imkDumpDf.schema)
           val imkDumpRepartitionDf = imkDumpDf.mapPartitions((iter: Iterator[Row]) => {
-            if (metrics != null) {
-              metrics.flush()
-            }
             if (tools.metrics != null) {
               tools.metrics.flush()
             }
@@ -282,8 +274,8 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
       return tools.judgeNotEbaySites(referer)
     }
     if(referer.startsWith("https://ebay.mtag.io/") || referer.startsWith("https://ebay.pissedconsumer.com/")) {
-      if (metrics != null) {
-        metrics.meter("imk.dump.judgeNotEbaySitesWhitelist", 1)
+      if (sherlockioMetrics != null) {
+        sherlockioMetrics.meter("imk_dump_judgeNotEbaySitesWhitelist", 1)
       }
       true
     } else {
@@ -360,7 +352,7 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
     imkDumpEx(imkDf)
   }
 
-  val tools: Tools = new Tools(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
+  val tools: Tools = new Tools(properties.getProperty("sherlockio.namespace"),properties.getProperty("sherlockio.endpoint"),properties.getProperty("sherlockio.user"), params.appName)
   val getQueryParamsUdf: UserDefinedFunction = udf((uri: String) => tools.getQueryString(uri))
   val getBatchIdUdf: UserDefinedFunction = udf(() => tools.getBatchId)
   val getCmndTypeUdf: UserDefinedFunction = udf((channelType: String) => tools.getCommandType(channelType))
@@ -396,8 +388,8 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
           .replace("mktype", "adtype")
       } catch {
         case e: Exception => {
-          if (metrics != null) {
-            metrics.meter("imk.dump.malformed", 1, Field.of[String, AnyRef]("channelType", channelType))
+          if (sherlockioMetrics != null) {
+            sherlockioMetrics.meter("imk_dump_malformed", 1, Field.of[String, AnyRef]("channelType", channelType))
           }
           logger.warn("MalformedUrl", e)
         }
@@ -424,8 +416,8 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
           newUri = URLDecoder.decode(landingPageUrl,"UTF-8")
         } catch {
           case e: Exception => {
-            if(metrics != null) {
-              metrics.meter("imk.dump.error.parseMpreFromRoverError", 1)
+            if(sherlockioMetrics != null) {
+              sherlockioMetrics.meter("imk_dump_error_parseMpreFromRoverError", 1)
             }
             logger.warn("MalformedUrl", e)
           }
@@ -492,9 +484,6 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
         import org.apache.spark.sql.catalyst.encoders.RowEncoder
         implicit val encoder: ExpressionEncoder[Row] = RowEncoder(imkTransformDf.schema)
         imkTransformDf = imkTransformDf.mapPartitions((iter: Iterator[Row]) => {
-          if (metrics != null) {
-            metrics.flush()
-          }
           iter
         })
 
@@ -551,7 +540,7 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
       try{
         val messageDt = dateFormat.parse(eventTs)
         val nowDt = new Date()
-        metrics.mean("imk.transform.messageLag", nowDt.getTime - messageDt.getTime, Field.of[String, AnyRef]("channelType", channelType))
+        sherlockioMetrics.mean("imk_transform_messageLag", nowDt.getTime - messageDt.getTime, Field.of[String, AnyRef]("channelType", channelType))
       } catch {
         case e:Exception => {
           logger.warn("parse event ts error", e)
@@ -578,10 +567,13 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
     if (StringUtils.isEmpty(userId) || userId.equals("0")) {
       if (StringUtils.isNotEmpty(guid)) {
         try{
-          metrics.meter("imk.transform.XidTryGetUserId", 1, Field.of[String, AnyRef]("channelType", channelType))
+          sherlockioMetrics.meter("imk_transform_XidTryGetUserId", 1, Field.of[String, AnyRef]("channelType", channelType))
+          val currentTimestamp = System.currentTimeMillis
           val xid = xidRequest("pguid", guid)
+          sherlockioMetrics.mean("imk_transform_XidGetUserId_latency", System.currentTimeMillis() - currentTimestamp, Field.of("channelType", channelType))
+          sherlockioMetrics.meanByHistogram("imk_transform_XidGetUserId_latency", System.currentTimeMillis() - currentTimestamp, Field.of("channelType", channelType))
           if (xid.accounts.nonEmpty) {
-            metrics.meter("imk.transform.XidGotUserId", 1, Field.of[String, AnyRef]("channelType", channelType))
+            sherlockioMetrics.meter("imk_transform_XidGotUserId", 1, Field.of[String, AnyRef]("channelType", channelType))
             result = xid.accounts.head
           }
         } catch {
