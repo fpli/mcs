@@ -10,11 +10,14 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
+import org.slf4j.LoggerFactory
 
 /**
   * Created by yliu29 on 3/23/18.
   */
 class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
+
+  @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
   lazy val DEDUPE_COMP_META = workDir + "/meta/" + channel + "/dedupe_comp.meta"
   lazy val DEDUPE_OUTPUT_META_DIR = workDir + "/meta/" + channel + "/output/" + usage + "/"
@@ -128,6 +131,7 @@ class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
   }
 
   private def writeMetaFiles(metaFiles: MetaFiles, file: String) = {
+    logger.info("writeMetaFiles: " + file + ",detail: " + jsonMapper.writeValueAsString(metaFiles));
     val out: OutputStream = fs.create(new Path(file), true)
     jsonMapper.writeValue(out, metaFiles)
     out.close()

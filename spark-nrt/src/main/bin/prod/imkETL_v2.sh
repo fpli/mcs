@@ -35,7 +35,7 @@ EXECUTOR_NUMBER=50
 EXECUTOR_MEMORY=8g
 EXECUTOR_CORES=2
 
-JOB_NAME="IMK_ETL_v2"
+JOB_NAME="IMK_ETL_V2"
 
 for f in $(find $bin/../../conf/prod-imk -name '*.*'); do
   FILES=${FILES},file://$f;
