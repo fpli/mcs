@@ -484,6 +484,9 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
         import org.apache.spark.sql.catalyst.encoders.RowEncoder
         implicit val encoder: ExpressionEncoder[Row] = RowEncoder(imkTransformDf.schema)
         imkTransformDf = imkTransformDf.mapPartitions((iter: Iterator[Row]) => {
+          if (sherlockioMetrics != null) {
+            sherlockioMetrics.flush()
+          }
           iter
         })
 
@@ -571,7 +574,7 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
           val currentTimestamp = System.currentTimeMillis
           val xid = xidRequest("pguid", guid)
           sherlockioMetrics.mean("imk_transform_XidGetUserId_latency", System.currentTimeMillis() - currentTimestamp, Field.of("channelType", channelType))
-          sherlockioMetrics.meanByHistogram("imk_transform_XidGetUserId_latency", System.currentTimeMillis() - currentTimestamp, Field.of("channelType", channelType))
+          sherlockioMetrics.meanByHistogram("imk_transform_XidGetUserId_latency_histogram", System.currentTimeMillis() - currentTimestamp, Field.of("channelType", channelType))
           if (xid.accounts.nonEmpty) {
             sherlockioMetrics.meter("imk_transform_XidGotUserId", 1, Field.of[String, AnyRef]("channelType", channelType))
             result = xid.accounts.head

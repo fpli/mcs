@@ -131,7 +131,7 @@ class Metadata(workDir: String, channel: String, usage: MetadataEnum.Value) {
   }
 
   private def writeMetaFiles(metaFiles: MetaFiles, file: String) = {
-    logger.info("writeMetaFiles: " + file + ",detail:" + jsonMapper.writeValueAsString(metaFiles));
+    logger.info("writeMetaFiles: " + file + ",detail: " + jsonMapper.writeValueAsString(metaFiles));
     val out: OutputStream = fs.create(new Path(file), true)
     jsonMapper.writeValue(out, metaFiles)
     out.close()
