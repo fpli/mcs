@@ -33,11 +33,7 @@ create external table choco_data.dw_imk_clients (
   upd_date timestamp,
   upd_user varchar(30)
 )
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY '\44'
-LINES TERMINATED BY '\n'
-NULL DEFINED AS ""
-STORED AS TEXTFILE
-LOCATION 'viewfs://apollo-rno/apps/b_marketing_tracking/rotation/static_table/dw_imk_clients/result';
+STORED AS PARQUET
+LOCATION 'viewfs://apollo-rno/apps/b_marketing_tracking/rotation/static_table/dw_imk_clients/result_parquet';
 
 msck repair table choco_data.dw_imk_clients;
