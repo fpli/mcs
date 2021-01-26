@@ -11,7 +11,7 @@
     </project>
     <project name="appdl-airflow-monitor">
         <metric dag="AppdlETL" total="1" threshold="1"/>
-        <metric dag="AppdlSendNorbToKafka" total="1" threshold="1"/>
+        <metric dag="SendNorbToKafaka" total="1" threshold="1"/>
         <metric dag="SendUseridFmToKafka" total="1" threshold="1"/>
     </project>
     <project name="EPN-airflow-monitor">
