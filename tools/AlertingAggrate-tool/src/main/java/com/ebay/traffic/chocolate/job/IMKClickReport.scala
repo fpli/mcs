@@ -156,11 +156,9 @@ class IMKClickReport(inputdir: String,
       .filter(((col("rvr_cmnd_type_cd") === click_cd) and(col("rvr_chnl_type_cd") isin(imk_channel_list:_*)))
         or((col("rvr_cmnd_type_cd") === roi_cd) and(col("rvr_chnl_type_cd") === roi_chl_cd)))
       .withColumn("click_hour", extractHourUdf(col("event_ts"))).withColumn("event_dt",extractDateUdf(col("event_ts")))
-    imkClick.show()
     val imkClickCnt = imkClick.groupBy(col("rvr_chnl_type_cd").as("channel_id"), col("click_hour"),col("event_dt"))
       .agg(count(col("rvr_id")).as("click_cnt"), countDistinct(col("rvr_id")).as("distinct_click_cnt"))
       .withColumn("diff", calculateDiffUdf(col("click_cnt"), col("distinct_click_cnt")))
-    imkClickCnt.show()
     imkClickCnt
   }
 
