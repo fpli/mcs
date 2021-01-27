@@ -321,6 +321,8 @@ public class RoverRheosTopicFilterTask extends Thread {
           }
           record.setLandingPageUrl(landingPageUrl);
 
+          logger.info("pageId is 3084, ListenerMessage record : {}", record);
+
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
 
@@ -330,7 +332,10 @@ public class RoverRheosTopicFilterTask extends Thread {
           String channelTypeStr = channelType.getLogicalChannel().getAvro().name();
           ESMetrics.getInstance().meter(INCOMING_ROVER_CLICK, 1, Field.of(Constants.CHANNEL_TYPE, channelTypeStr));
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_CLICK.getName(), ChannelAction.CLICK.name(), channelTypeStr);
+          logger.info("pageId is 3084, BehaviorMessage record : {}", record);
+
           if (record != null) {
+
             behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
           }
         }
@@ -436,11 +441,14 @@ public class RoverRheosTopicFilterTask extends Thread {
               rheosSentTimestamp,
               rheosInternalTimestamps));
         }
+        logger.info("pageId is 3086, ListenerMessage record : {}", record);
 
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
 
         // send roi to unified tracking topic
         BehaviorMessage roiRecord = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_ROI.getName(), ChannelActionEnum.ROI.getAvro().name(), ChannelIdEnum.ROI.getLogicalChannel().getAvro().name());
+        logger.info("pageId is 3086, BehaviorMessage roiRecord : {}", roiRecord);
+
         if (roiRecord != null) {
           /* set snapshot id to be the original one from ubi.
           since for ROI events, we requested rover team to record rvr_id */
@@ -460,6 +468,8 @@ public class RoverRheosTopicFilterTask extends Thread {
             String channelTypeStr = channelType.getLogicalChannel().getAvro().name();
             ESMetrics.getInstance().meter(INCOMING_ROVER_EMAIL_OPEN, 1, Field.of(Constants.CHANNEL_TYPE, channelTypeStr));
             BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_OPEN.getName(), ChannelAction.EMAIL_OPEN.name(), channelTypeStr);
+            logger.info("pageId is 3086, BehaviorMessage record : {}", record);
+
             if (record != null) {
               behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
             }
