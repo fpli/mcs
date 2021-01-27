@@ -77,6 +77,7 @@ public class UTPRoverEventTransformer {
           .put("euid", "euid")
           .put("exe", "exe")
           .put("ext", "ext")
+          .put("trkId", "trkId")
           .put("nqc", "nqc")
           .put("nqt", "nqt")
           .put("osub", "osub")
@@ -92,7 +93,7 @@ public class UTPRoverEventTransformer {
 
   private static final String GET_METHOD_PREFIX = "get";
 
-  private static String[] coreSites = {"rover.ebay.com", "r.ebay.com", "internal.rover.vip.ebay.com"};
+  private static String[] coreSites = {"rover.ebay.com", "r.ebay.com", "internal.rover.vip.ebay.com","rover.qa.ebay.com"};
   private static Set<String> roverCoreSites = new HashSet<>(Arrays.asList(coreSites));
 
   /**
