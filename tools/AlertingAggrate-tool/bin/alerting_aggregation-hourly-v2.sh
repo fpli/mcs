@@ -10,16 +10,12 @@ DATE1=`date +%Y%m%d`
 DATE2=`date --date=$DIFF" days ago" +%Y%m%d`
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls viewfs://apollo-rno/apps/b_marketing_tracking/watch/$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "apollo-rno" > ${TMP_DIR}/apollo_files/apollo_done_files.txt
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls viewfs://apollo-rno/apps/b_marketing_tracking/watch/$DATE2 | grep -v "^$" | awk '{print $NF}' | grep "apollo-rno" >> ${TMP_DIR}/apollo_files/apollo_done_files.txt
-/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls viewfs://apollo-rno/apps/b_marketing_tracking/watch-imk/$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "apollo-rno" >> ${TMP_DIR}/apollo_files/apollo_done_files.txt
-/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls viewfs://apollo-rno/apps/b_marketing_tracking/watch-imk/$DATE2 | grep -v "^$" | awk '{print $NF}' | grep "apollo-rno" >> ${TMP_DIR}/apollo_files/apollo_done_files.txt
 echo "Finish getting hourly done file for apollo-rno cluster."
 
 
 echo "Start getting hourly done file for hercules-lvs cluster."
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -ls hdfs://hercules/apps/b_marketing_tracking/watch/$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "hercules" > ${TMP_DIR}/hercules_files/hercules_done_files.txt
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -ls hdfs://hercules/apps/b_marketing_tracking/watch/$DATE2 | grep -v "^$" | awk '{print $NF}' | grep "hercules" >> ${TMP_DIR}/hercules_files/hercules_done_files.txt
-/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -ls hdfs://hercules/apps/b_marketing_tracking/watch-imk/$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "hercules" >> ${TMP_DIR}/hercules_files/hercules_done_files.txt
-/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hadoop fs -ls hdfs://hercules/apps/b_marketing_tracking/watch-imk/$DATE2 | grep -v "^$" | awk '{print $NF}' | grep "hercules" >> ${TMP_DIR}/hercules_files/hercules_done_files.txt
 echo "Finish getting hourly done file for hercules-lvs cluster."
 
 echo "Start getting epn report data."

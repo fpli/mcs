@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.xml;
 
+import com.ebay.traffic.chocolate.pojo.AirflowMetric;
 import com.ebay.traffic.chocolate.pojo.Azkaban;
 import com.ebay.traffic.chocolate.pojo.Metric;
 import com.ebay.traffic.chocolate.pojo.Project;
@@ -18,85 +19,116 @@ import java.util.*;
  */
 public class XMLUtil {
 
-  private static final Logger logger = LoggerFactory.getLogger(XMLUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(XMLUtil.class);
 
-  public static LinkedList<Project> read(String fileName) {
-    LinkedList<Project> projectList = new LinkedList<Project>();
+    public static LinkedList<Project> read(String fileName) {
+        LinkedList<Project> projectList = new LinkedList<Project>();
 
-    SAXReader reader = new SAXReader();
-    try {
-      Document document = reader.read(new File(fileName));
-      Element projects = document.getRootElement();
-      Iterator it = projects.elementIterator();
-      while (it.hasNext()) {
-        ArrayList<Metric> list = new ArrayList<Metric>();
-        Element project = (Element) it.next();
-        String project_name = project.attribute("name").getValue() + "_" + project.attribute("id").getValue();
-        Integer id = Integer.parseInt(project.attribute("id").getValue());
-        List<Element> metrics = project.elements("metric");
-        for (Element elem : metrics) {
-          Metric metric = new Metric();
-          metric.setProject_name(project_name);
-          metric.setName(elem.attribute("name").getValue());
-          metric.setValue(elem.attribute("value").getValue());
-          metric.setSource(elem.attribute("source").getValue());
-          metric.setCondition(getCondition(elem.attribute("condition").getValue()));
-          metric.setThreshold(Long.parseLong(elem.attribute("threshold").getValue()));
-          metric.setThresholdFactor(Double.parseDouble(elem.attribute("thresholdFactor").getValue()));
-          metric.setComputeType(elem.attribute("computeType").getValue());
-          metric.setAlert(elem.attribute("alert").getValue());
-          list.add(metric);
+        SAXReader reader = new SAXReader();
+        try {
+            Document document = reader.read(new File(fileName));
+            Element projects = document.getRootElement();
+            Iterator it = projects.elementIterator();
+            while (it.hasNext()) {
+                ArrayList<Metric> list = new ArrayList<Metric>();
+                Element project = (Element) it.next();
+                String project_name = project.attribute("name").getValue() + "_" + project.attribute("id").getValue();
+                Integer id = Integer.parseInt(project.attribute("id").getValue());
+                List<Element> metrics = project.elements("metric");
+                for (Element elem : metrics) {
+                    Metric metric = new Metric();
+                    metric.setProject_name(project_name);
+                    metric.setName(elem.attribute("name").getValue());
+                    metric.setValue(elem.attribute("value").getValue());
+                    metric.setSource(elem.attribute("source").getValue());
+                    metric.setCondition(getCondition(elem.attribute("condition").getValue()));
+                    metric.setThreshold(Long.parseLong(elem.attribute("threshold").getValue()));
+                    metric.setThresholdFactor(Double.parseDouble(elem.attribute("thresholdFactor").getValue()));
+                    metric.setComputeType(elem.attribute("computeType").getValue());
+                    metric.setAlert(elem.attribute("alert").getValue());
+                    list.add(metric);
+                }
+                Project pro = new Project();
+                pro.setName(project_name);
+                pro.setId(id);
+                pro.setList(list);
+                projectList.add(pro);
+            }
+        } catch (DocumentException e) {
+            e.printStackTrace();
         }
-        Project pro = new Project();
-        pro.setName(project_name);
-        pro.setId(id);
-        pro.setList(list);
-        projectList.add(pro);
-      }
-    } catch (DocumentException e) {
-      e.printStackTrace();
+
+        return projectList;
     }
 
-    return projectList;
-  }
+    public static HashMap<String, ArrayList<Azkaban>> readAzkabanMap(String fileName) {
+        HashMap<String, ArrayList<Azkaban>> map = new HashMap<>();
 
-  public static HashMap<String, ArrayList<Azkaban>> readAzkabanMap(String fileName) {
-    HashMap<String, ArrayList<Azkaban>> map = new HashMap<>();
-
-    SAXReader reader = new SAXReader();
-    try {
-      Document document = reader.read(new File(fileName));
-      Element projects = document.getRootElement();
-      Iterator it = projects.elementIterator();
-      while (it.hasNext()) {
-        ArrayList<Azkaban> list = new ArrayList<>();
-        Element project = (Element) it.next();
-        String subjectArea = project.attribute("name").getValue();
-        List<Element> metrics = project.elements("metric");
-        for (Element elem : metrics) {
-          Azkaban azkaban = new Azkaban();
-          azkaban.setSubjectArea(subjectArea);
-          azkaban.setProjectName(elem.attribute("projectName").getValue());
-          azkaban.setFlowName(elem.attribute("flowName").getValue());
-          azkaban.setTotal(elem.attribute("total").getValue());
-          azkaban.setThreshold(elem.attribute("threshold").getValue());
-          list.add(azkaban);
+        SAXReader reader = new SAXReader();
+        try {
+            Document document = reader.read(new File(fileName));
+            Element projects = document.getRootElement();
+            Iterator it = projects.elementIterator();
+            while (it.hasNext()) {
+                ArrayList<Azkaban> list = new ArrayList<>();
+                Element project = (Element) it.next();
+                String subjectArea = project.attribute("name").getValue();
+                List<Element> metrics = project.elements("metric");
+                for (Element elem : metrics) {
+                    Azkaban azkaban = new Azkaban();
+                    azkaban.setSubjectArea(subjectArea);
+                    azkaban.setProjectName(elem.attribute("projectName").getValue());
+                    azkaban.setFlowName(elem.attribute("flowName").getValue());
+                    azkaban.setTotal(elem.attribute("total").getValue());
+                    azkaban.setThreshold(elem.attribute("threshold").getValue());
+                    list.add(azkaban);
+                }
+                map.put(subjectArea, list);
+            }
+        } catch (DocumentException e) {
+            e.printStackTrace();
         }
-        map.put(subjectArea, list);
-      }
-    } catch (DocumentException e) {
-      e.printStackTrace();
+
+        return map;
     }
 
-    return map;
-  }
+    public static HashMap<String, ArrayList<AirflowMetric>> readAirflowMap(String fileName) {
+        HashMap<String, ArrayList<AirflowMetric>> map = new HashMap<>();
 
-  private static String getCondition(String condition) {
-    if (condition == null) {
-      return "";
-    } else {
-      return condition;
+        SAXReader reader = new SAXReader();
+        try {
+            Document document = reader.read(new File(fileName));
+            Element projects = document.getRootElement();
+            Iterator it = projects.elementIterator();
+            while (it.hasNext()) {
+                ArrayList<AirflowMetric> list = new ArrayList<>();
+                Element project = (Element) it.next();
+                String subjectArea = project.attribute("name").getValue();
+                List<Element> metrics = project.elements("metric");
+                for (Element elem : metrics) {
+                    AirflowMetric dag = new AirflowMetric();
+                    dag.setSubjectArea(subjectArea);
+                    dag.setDagName(elem.attribute("dag").getValue());
+                    dag.setTotal(elem.attribute("total").getValue());
+                    dag.setThreshold(elem.attribute("threshold").getValue());
+                    list.add(dag);
+                }
+                map.put(subjectArea, list);
+            }
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+
+        return map;
     }
-  }
+
+
+    private static String getCondition(String condition) {
+        if (condition == null) {
+            return "";
+        } else {
+            return condition;
+        }
+    }
 
 }

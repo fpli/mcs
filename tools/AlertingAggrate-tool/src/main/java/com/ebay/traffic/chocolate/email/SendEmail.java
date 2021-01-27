@@ -84,10 +84,10 @@ public class SendEmail {
       // Set Subject: header
       switch (runPeriod) {
         case "daily":
-          message.setSubject("Daily report for tracking (Chocolate team)! " + date);
+          message.setSubject("(v2)Daily report for tracking (Chocolate team)! " + date);
           break;
         case "hourly":
-          message.setSubject("Hourly report for tracking (Chocolate team)! " + time);
+          message.setSubject("(v2)Hourly report for tracking (Chocolate team)! " + time);
           break;
         default:
           message.setSubject("Wrong email message" + time);
