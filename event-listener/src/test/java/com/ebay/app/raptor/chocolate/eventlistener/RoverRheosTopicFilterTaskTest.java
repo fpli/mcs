@@ -298,36 +298,6 @@ public class RoverRheosTopicFilterTaskTest {
     }
 
     @Test
-    public void testProcessBotRecords() throws Exception {
-        initConsumer("behavior.pulsar.misc.bot");
-
-        RheosEvent roverClick = createRheosEvent(3084, "", "7", "/rover/xxx");
-
-        RheosEvent roveropen = createRheosEvent(3962, "roveropen", "7", "");
-
-        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 1L,
-                ByteBuffer.allocate(Long.BYTES).putLong((long) roverClick.get("eventTimestamp")).array(), roverClick));
-        consumerMcs.addRecord(new ConsumerRecord<>("behavior.pulsar.misc.bot", 0, 2L,
-                ByteBuffer.allocate(Long.BYTES).putLong((long) roveropen.get("eventTimestamp")).array(), roveropen));
-
-        roverRheosTopicFilterTask.processRecords(rheosConsumerWrapper, producer, behaviorProducer, "");
-
-        Thread.sleep(5000);
-        List<ProducerRecord<Long, BehaviorMessage>> history = behaviorProducer.history();
-
-        assertEquals("CLICK", history.get(0).value().getChannelAction());
-        assertEquals("/rover/xxx", history.get(0).value().getUrlQueryString());
-        assertEquals(Integer.valueOf(3084), history.get(0).value().getPageId());
-        assertEquals("Rover_Click_Bot", history.get(0).value().getPageName());
-        assertEquals("SITE_EMAIL", history.get(0).value().getChannelType());
-
-        assertEquals("EMAIL_OPEN", history.get(1).value().getChannelAction());
-        assertEquals(Integer.valueOf(3962), history.get(1).value().getPageId());
-        assertEquals("Rover_Open_Bot", history.get(1).value().getPageName());
-        assertEquals("SITE_EMAIL", history.get(1).value().getChannelType());
-    }
-
-    @Test
     public void parseChannelTypeFromUrlQueryString() {
         assertNull(roverRheosTopicFilterTask.parseChannelType(new Utf8("")));
         assertNull(roverRheosTopicFilterTask.parseChannelType(new Utf8("/roveropen/0/e12060/10?osub=-1%7E1rd%3Dcrd%2Cosub%3Dosub&ch=osgood&segname=12060&bu=43886848848&euid=942d35b23ee140b69989083c45abb869")));

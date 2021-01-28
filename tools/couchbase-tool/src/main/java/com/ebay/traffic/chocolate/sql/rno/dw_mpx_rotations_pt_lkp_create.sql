@@ -36,10 +36,7 @@ create external table choco_data.dw_mpx_rotations_pt_lkp (
   upd_date timestamp,
   upd_user char(10)
 )
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY '\44'
-LINES TERMINATED BY '\n'
-STORED AS TEXTFILE
-LOCATION 'viewfs://apollo-rno/apps/b_marketing_tracking/rotation/static_table/dw_mpx_rotations_pt_lkp/result';
+STORED AS PARQUET
+LOCATION 'viewfs://apollo-rno/apps/b_marketing_tracking/rotation/static_table/dw_mpx_rotations_pt_lkp/result_parquet';
 
 msck repair table choco_data.dw_mpx_rotations_pt_lkp;

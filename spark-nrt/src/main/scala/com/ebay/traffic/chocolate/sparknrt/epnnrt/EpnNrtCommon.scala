@@ -45,6 +45,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   lazy val CHOCO_TAG = "dashenId"
   lazy val CB_CHOCO_TAG_PREFIX = "DashenId_"
 
+  // if uri path contains 'rover', then mark it as rover sites url, else mark it as ebay sites url
+  lazy val ROVER_TAG = "rover"
+
   lazy val ERROR_URLDECODER_PARAM_PATTERN = "Error URLDecoder param %s param=%s%s"
 
   lazy val ERROR_QUERY_PARAMETERS_PATTERN = "Error query parameters %s param=%s%s"
@@ -571,7 +574,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getItemId(uri: String): String = {
-    if (uri != null && ebaysites.matcher(uri.toLowerCase()).find()) {
+    if (uri != null && isEbaySitesUrl(uri.toLowerCase())) {
       var path = ""
       try {
         path = new URL(uri).getPath
@@ -1413,13 +1416,12 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   /**
     * get related info from uri, like rotation_id and so on
     * for rover uri, get related info from rover.ebay.com/.../
-    * for mcs uri, get related info from query params
-    * for impression uri which is redirected from adservice, get related info from query params
+    * for ebay sites uri, get related info from query params
     * @param uri, index, key
     * @return channel id
     */
   def getRelatedInfoFromUri(uri: String, index: Int, key: String): String = {
-    if (uri != null && (ebaysites.matcher(uri.toLowerCase()).find() || ebayadservicesites.matcher(uri.toLowerCase()).find())) {
+    if (uri != null && isEbaySitesUrl(uri.toLowerCase())) {
       return getQueryParam(uri, key)
     } else {
       try {
@@ -1470,7 +1472,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     * @return is or not
     */
   def filterLongTermEbaySitesRef(uri: String, referrer: String): Boolean = {
-    if (uri != null && ebaysites.matcher(uri.toLowerCase()).find()
+    if (uri != null && isEbaySitesUrl(uri.toLowerCase())
         && referrer != null && refererEbaySites.matcher(referrer.toLowerCase()).find()) {
       if (metrics != null) {
         metrics.meter("epnLongTermInternalReferer")
@@ -1520,5 +1522,30 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
 
     fixedGuid
+  }
+
+  /**
+    * Determine if the url is ebay sites url
+    * @param uri uri
+    * @return isEbaySiteUrl
+    */
+  def isEbaySitesUrl(uri: String): Boolean = {
+    var isEbaySiteUrl = false
+
+    try {
+      if (StringUtils.isNotEmpty(uri)) {
+        val host = new URL(uri).getHost()
+        if (StringUtils.isNotEmpty(host)) {
+          isEbaySiteUrl = !host.contains(ROVER_TAG)
+        }
+      }
+    } catch {
+      case e: Exception => {
+        logger.error("Error determine url sites " + uri + e)
+        metrics.meter("DetermineUrlSitesError")
+      }
+    }
+
+    isEbaySiteUrl
   }
 }

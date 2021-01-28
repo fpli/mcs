@@ -29,12 +29,8 @@ create external table choco_data.dw_mpx_vendors (
   upd_date timestamp,
   upd_user varchar(10)
 )
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY '\|'
-LINES TERMINATED BY '\n'
-NULL DEFINED AS ""
-STORED AS TEXTFILE
-LOCATION 'viewfs://apollo-rno/apps/b_marketing_tracking/rotation/dw_mpx_vendors';
+STORED AS PARQUET
+LOCATION 'viewfs://apollo-rno/apps/b_marketing_tracking/rotation/dw_mpx_vendors_parquet';
 
 
 create table choco_data.dw_mpx_vendors_temp (
