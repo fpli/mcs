@@ -7,4 +7,4 @@ whoami
 cd /datashare/mkttracking/jobs/amsReformat/click
 pwd
 
-./historicalAMSClickDataReformat.sh 20201208 20201208
+./historicalAMSClickDataReformat.sh 20201111 20201111
