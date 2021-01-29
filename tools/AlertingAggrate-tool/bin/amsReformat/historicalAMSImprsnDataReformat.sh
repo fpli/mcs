@@ -105,7 +105,6 @@ while [[ $current_date -le $END_DATE ]]; do
     $COMMAND_HIVE_HERCULES -e "set hive.msck.path.validation=ignore; ALTER TABLE im_tracking.ams_imprsn_v2 ADD IF NOT EXISTS PARTITION (imprsn_dt='${imprsn_dt}')"
     # mv ams_imprsn_tmp files to ams_imprsn_v2's current partition
     $COMMAND_HDFS_APOLLO -mv ${AMS_TMP_PATH}/*.parquet "${AMS_NEW_PATH_APOLLO}/imprsn_dt=${imprsn_dt}/"
-    ./amsImprsnReformatCheck.sh $current_date $current_date
 
     RNO_PATH="hdfs://apollo-rno${AMS_NEW_PATH_APOLLO}/imprsn_dt=${imprsn_dt}"
     HERCULES_PATH="hdfs://hercules${AMS_NEW_PATH_HERCULES}"

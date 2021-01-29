@@ -7,4 +7,4 @@ whoami
 cd /datashare/mkttracking/jobs/amsReformat/imprsn
 pwd
 
-./historicalAMSImprsnDataReformat.sh 20201231 20201231
+./amsImprsnReformatCheck.sh 20201231 20201231
