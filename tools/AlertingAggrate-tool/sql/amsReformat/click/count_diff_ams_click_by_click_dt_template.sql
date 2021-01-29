@@ -1,8 +1,8 @@
 insert into table choco_data.ams_click_diff_tmp
-((select ams.click_id,ams.click_dt
-  FROM (select * from choco_data.ams_click_v2 where click_dt='#{click_dt}' and click_id is not  null) new
+select ams.click_id,ams.click_dt
+FROM (select * from choco_data.ams_click_v2 where click_dt='#{click_dt}' and click_id is not  null) new
     FULL outer join (select * from choco_data.ams_click where click_dt='#{click_dt}' and click_id is not  null) ams
-    on  ams.click_id = new.click_id where  !(
+on  ams.click_id = new.click_id where  !(
     ams.imprsn_cntnr_id          <=>     new.imprsn_cntnr_id          and
     ams.file_schm_vrsn_num       <=>     new.file_schm_vrsn_num       and
     ams.file_id                  <=>     new.file_id                  and
@@ -200,8 +200,8 @@ insert into table choco_data.ams_click_diff_tmp
     ams.nrt_rule_flag78          <=>     new.nrt_rule_flag78          and
     ams.nrt_rule_flag79          <=>     new.nrt_rule_flag79          and
     ams.nrt_rule_flag80          <=>     new.nrt_rule_flag80          and
-    new.click_id is not null and ams.click_id is not null))
-    UNION (
-    select null as click_id,'#{click_dt}' as click_dt
-    where (select count(*) as count from choco_data.ams_click_v2 where click_dt='#{click_dt}' and click_id is null) <>
-(select count(*) as count from choco_data.ams_click where click_dt='#{click_dt}' and click_id is null)))
+    new.click_id is not null and ams.click_id is not null)
+UNION
+select null as click_id,'#{click_dt}' as click_dt
+where (select count(*) as count from choco_data.ams_click_v2 where click_dt='#{click_dt}' and click_id is null) <>
+      (select count(*) as count from choco_data.ams_click where click_dt='#{click_dt}' and click_id is null)
