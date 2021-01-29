@@ -30,7 +30,7 @@ echo "current_date:$current_date";
 LOCAL_PATH='/datashare/mkttracking/jobs/amsReformat/imprsn'
 AMS_TMP_PATH='/apps/b_marketing_tracking/delta_test/ams_imprsn_tmp'
 
-AMS_NEW_PATH_APOLLO='/apps/b_marketing_tracking/chocolate/epnnrt/imprsn_v2'
+AMS_NEW_PATH_APOLLO='/apps/b_marketing_tracking/chocolate/epnnrt_v2/imp'
 COMMAND_HIVE_APOLLO="/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive "
 COMMAND_HDFS_APOLLO="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs "
 
