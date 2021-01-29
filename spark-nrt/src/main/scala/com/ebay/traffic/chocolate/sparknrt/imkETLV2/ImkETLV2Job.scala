@@ -82,11 +82,11 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
 
   // by default, no suffix
   @transient lazy val CHANNEL_META_POSTFIX_MAP = Map(
-    "PAID_SEARCH" -> ".imketl",
-    "DISPLAY" -> ".imketl",
-    "ROI" -> ".imketl",
-    "SOCIAL_MEDIA" -> ".imketl",
-    "SEARCH_ENGINE_FREE_LISTINGS" -> ".imketl"
+    "PAID_SEARCH" -> "",
+    "DISPLAY" -> "",
+    "ROI" -> "",
+    "SOCIAL_MEDIA" -> "",
+    "SEARCH_ENGINE_FREE_LISTINGS" -> ""
   )
 
   @transient lazy val schema_apollo: TableSchema = TableSchema("df_imk_v2_apollo.json")
