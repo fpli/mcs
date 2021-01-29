@@ -106,6 +106,7 @@ while [[ $current_date -le $END_DATE ]]; do
     $COMMAND_HIVE_HERCULES -e "set hive.msck.path.validation=ignore; ALTER TABLE im_tracking.ams_click_v2 ADD IF NOT EXISTS PARTITION (click_dt='${click_dt}')"
     # mv ams_click_tmp files to ams_click_v2's current partition
     $COMMAND_HDFS_APOLLO -mv ${AMS_TMP_PATH}/*.parquet "${AMS_NEW_PATH_APOLLO}/click_dt=${click_dt}/"
+    ./amsClickReformatCheck.sh $current_date $current_date;
 
     RNO_PATH="hdfs://apollo-rno${AMS_NEW_PATH_APOLLO}/click_dt=${click_dt}"
     HERCULES_PATH="hdfs://hercules${AMS_NEW_PATH_HERCULES}"

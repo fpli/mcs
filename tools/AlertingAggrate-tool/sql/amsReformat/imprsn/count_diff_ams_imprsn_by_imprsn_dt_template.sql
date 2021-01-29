@@ -1,5 +1,5 @@
-insert into table choco_data.ams_imprsn_diff_tmp
-select ams.imprsn_cntnr_id,ams.imprsn_dt
+insert into table choco_data.ams_imprsn_diff_tmp(
+(select ams.imprsn_cntnr_id,ams.imprsn_dt
 FROM (select * from choco_data.ams_imprsn_v2 where imprsn_dt='#{imprsn_dt}' and imprsn_cntnr_id is not  null) new
     FULL outer join (select * from choco_data.ams_imprsn where imprsn_dt='#{imprsn_dt}' and imprsn_cntnr_id is not  null) ams
 on  ams.imprsn_cntnr_id = new.imprsn_cntnr_id where  !(
@@ -171,8 +171,8 @@ on  ams.imprsn_cntnr_id = new.imprsn_cntnr_id where  !(
     ams.nrt_rule_flag70          <=>     new.nrt_rule_flag70          and
     ams.nrt_rule_flag71          <=>     new.nrt_rule_flag71          and
     ams.nrt_rule_flag72          <=>     new.nrt_rule_flag72          and
-    new.imprsn_cntnr_id is not null and ams.imprsn_cntnr_id is not null)
-UNION
+    new.imprsn_cntnr_id is not null and ams.imprsn_cntnr_id is not null))
+UNION(
 select null as imprsn_cntnr_id,'#{imprsn_dt}' as imprsn_dt
 where (select count(*) as count from choco_data.ams_imprsn_v2 where imprsn_dt='#{imprsn_dt}' and imprsn_cntnr_id is null) <>
-      (select count(*) as count from choco_data.ams_imprsn where imprsn_dt='#{imprsn_dt}' and imprsn_cntnr_id is null)
+      (select count(*) as count from choco_data.ams_imprsn where imprsn_dt='#{imprsn_dt}' and imprsn_cntnr_id is null)))
