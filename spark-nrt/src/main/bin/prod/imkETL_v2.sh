@@ -53,7 +53,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --executor-cores ${EXECUTOR_CORES} \
   ${SPARK_JOB_CONF} \
   --conf spark.yarn.executor.memoryOverhead=8192 \
-  ${bin}/../../lib_imk/chocolate-spark-nrt-3.7.0-RELEASE-fat.jar \
+  ${bin}/../../lib/chocolate-spark-nrt-*.jar \
   --appName ${JOB_NAME} \
   --mode yarn \
   --channel ${CHANNEL} \
