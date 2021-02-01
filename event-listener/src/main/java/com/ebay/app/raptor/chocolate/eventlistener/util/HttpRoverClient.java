@@ -44,9 +44,10 @@ public class HttpRoverClient {
   private static final String FLAG_TRUE = "1";
   private static final String GUID_CONNECTOR = "^";
   private static final String GUID = "guid";
+  private static final String CGUID = "cguid";
   private static final String NPII_PREFIX = "npii_";
   private static final String BTGUID_PREFIX = "btguid/";
-
+  private static final String CGUID_PREFIX = "cguid/";
 
   @PostConstruct
   public void postInit() {
@@ -114,6 +115,7 @@ public class HttpRoverClient {
       RequestBuilder requestBuilder = new RequestBuilder();
 
       String guid = "";
+      String cguid = "";
       String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
       if(!StringUtils.isEmpty(trackingHeader)) {
         for (String seg : trackingHeader.split(",")) {
@@ -122,15 +124,20 @@ public class HttpRoverClient {
             if (keyValue[0].equalsIgnoreCase(GUID)) {
               guid = keyValue[1];
             }
+            if (keyValue[0].equalsIgnoreCase(CGUID)) {
+              cguid = keyValue[1];
+            }
           }
         }
       }
       // add guid and cguid in request cookie header
-      if (!StringUtils.isBlank(guid)) {
+      if (!guid.isEmpty() || !cguid.isEmpty()) {
         String cookie = NPII_PREFIX;
         String timestamp = generateTimestampForCookie();
         if (!guid.isEmpty())
           cookie += BTGUID_PREFIX + guid + timestamp + GUID_CONNECTOR;
+        if (!cguid.isEmpty())
+          cookie += CGUID_PREFIX + cguid + timestamp + GUID_CONNECTOR;
         requestBuilder.addHeader("Cookie", cookie);
       }
 
