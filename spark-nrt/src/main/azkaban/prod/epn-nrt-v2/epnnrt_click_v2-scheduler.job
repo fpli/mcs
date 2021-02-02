@@ -1,3 +1,3 @@
 type=command
-command=bash ./SubmitJob.sh "SLC" "/datashare/mkttracking/jobs/tracking/epnnrt/bin/prod_v2" "./epnnrt_click_v2-scheduler.sh"
+command=bash ./SubmitJob.sh "SLC" "/datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod" "./epnnrt_click_v2-scheduler.sh"
 failure.emails=yuhxiao@ebay.com

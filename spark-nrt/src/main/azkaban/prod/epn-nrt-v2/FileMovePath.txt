@@ -1,0 +1,22 @@
+EpnNrtClickJob
+readDedupeOutputMeta   hdfs://elvisha/apps/tracking-events-workdir/meta/EPN/capping/*.epnnrtv2 -> df
+saveDfToFile           df -> hdfs://elvisha/apps/epn-nrt/tmp/click_v2
+renameFile             hdfs://elvisha/apps/epn-nrt/tmp/click_v2  ->   hdfs://elvisha/apps/epn-nrt/click_v2
+deleteMetaData:        -> hdfs://elvisha/apps/epn-nrt/tmp_result_meta_click_v2/  &  hdfs://elvisha/apps/epn-nrt/tmp_scp_meta_click_v2/
+writeMetaData:         df -> hdfs://elvisha/apps/epn-nrt/tmp_result_meta_click_v2/   &  hdfs://elvisha/apps/epn-nrt/tmp_scp_meta_click_v2/
+renameMetaData:        hdfs://elvisha/apps/epn-nrt/tmp_result_meta_click_v2/ ->  hdfs://elvisha/apps/tracking-events-workdir/meta/EPN/output/epnnrt_click_v2/
+
+
+distcpAmsToRenoAndHercules.sh 需要改成操作apollo_rno
+提交job的脚本需要改成提交到apollo
+所有的workdir和outputDir和archiveDir
+BaseSparkJob里初始化fs的hadoopConf是否需要修改，怎么修改
+
+DedupeAndSink logic
+将一个partition中的所有数据根据时间构造一个writer，并且通过cb进行去重 不重复的数据写到 workDir/Dedupe/EPN/tmp  循环完所有partition后的每个日期文件夹下面有好几个数据文件，每个文件代表一个partition
+将workDir/Dedupe/EPN/tmp的文件 转移到 workDir/Dedupe/EPN/ 删除tmp 并汇总当前partition出现的所有消息的日期
+对workDir/Dedupe/EPN/下每个时间文件夹下的文件进行去重 得到的结果存到 workDir/Dedupe/EPN/spark 转移到 outputDir/EPN/Dedupe/{date}
+每个日期对应的所有数据都去重完之后 最后写进meta hdfs://elvisha/apps/tracking-events-workdir/meta/EPN/dedupe_comp.meta      hdfs://elvisha/apps/tracking-events-workdir/meta/EPN/output/dedupe/dedupe_output_time.meta
+
+workDir   hdfs://elvisha/apps/tracking-events-workdir
+outputDir hdfs://elvisha/apps/tracking-events
