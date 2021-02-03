@@ -164,10 +164,22 @@ public class RoverRheosTopicFilterTask extends Thread {
     record.setCguid(coalesce(applicationPayload.get(new Utf8("n")), empty).toString());
 
     // remote ip
-    record.setRemoteIp(coalesce(applicationPayload.get(new Utf8("ForwardedFor")), empty).toString());
+    String forwardedFor = coalesce(applicationPayload.get(new Utf8("ForwardedFor")), empty).toString();
+    if (StringUtils.isBlank(forwardedFor)) {
+      forwardedFor = getField(genericRecord, "clientIP", "");
+    }
+    if (StringUtils.isBlank(forwardedFor)) {
+      forwardedFor = getField(genericRecord, "remoteIP", "");
+    }
+
+    record.setRemoteIp(forwardedFor);
 
     // user agent
-    record.setUserAgent(coalesce(applicationPayload.get(new Utf8("Agent")), empty).toString());
+    String agent = coalesce(applicationPayload.get(new Utf8("Agent")), empty).toString();
+    if (StringUtils.isBlank(agent)) {
+      agent = getField(genericRecord, "agentInfo", StringUtils.EMPTY);
+    }
+    record.setUserAgent(agent);
 
 
     // language code
@@ -184,7 +196,11 @@ public class RoverRheosTopicFilterTask extends Thread {
 
     //TODO: no referer in rheos
     // referer
-    record.setReferer(coalesce(applicationPayload.get(new Utf8("Referer")), empty).toString());
+    String referer = coalesce(applicationPayload.get(new Utf8("Referer")), empty).toString();
+    if (StringUtils.isBlank(referer)) {
+      referer = getField(genericRecord, "referrer", "");
+    }
+    record.setReferer(referer);
 
     //TODO: landing page url
     // landing page url
