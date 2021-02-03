@@ -32,6 +32,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.apache.commons.lang3.StringUtils;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -195,7 +196,9 @@ public class RoverRheosTopicFilterTask extends Thread {
     // Format record
     record.setRequestHeaders("");
     record.setResponseHeaders("");
-    long timestamp = Long.valueOf(coalesce(applicationPayload.get(new Utf8("timestamp")), empty).toString());
+    //eventTimestamp
+    String eventTimestamp = getField(genericRecord, "eventTimestamp", "");
+    long timestamp = Long.parseLong(eventTimestamp);
     record.setTimestamp(timestamp);
 
     // Get snapshotId from request
@@ -216,13 +219,13 @@ public class RoverRheosTopicFilterTask extends Thread {
   public void processRecords(RheosConsumerWrapper rheosConsumer, Producer<Long, ListenerMessage> producer, Producer behaviorProducer, String behaviorTopic) {
 
     ConsumerRecords<byte[], RheosEvent> consumerRecords;
-    consumerRecords = rheosConsumer.getConsumer().poll(interval);
+    consumerRecords = rheosConsumer.getConsumer().poll(Duration.ofMillis(interval));
     for (ConsumerRecord<byte[], RheosEvent> consumerRecord : consumerRecords) {
       String topic = consumerRecord.topic();
       ESMetrics.getInstance().meter(INCOMING);
       GenericRecord genericRecord = rheosConsumer.getDecoder().decode(consumerRecord.value());
       HashMap<Utf8, Utf8> data = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
-      int pageId = -1;
+      int pageId;
       if (genericRecord.get("pageId") != null) {
         pageId = (int) genericRecord.get("pageId");
       } else {
@@ -231,6 +234,7 @@ public class RoverRheosTopicFilterTask extends Thread {
 
       String pageName = getField(genericRecord, "pageName", null);
 
+      //EPN
       if (pageId == 3084) {
         ESMetrics.getInstance().meter(INCOMING_PAGE_ROVER);
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.EPN);
@@ -298,7 +302,7 @@ public class RoverRheosTopicFilterTask extends Thread {
             if (first == null) {
               throw new IllegalArgumentException("no campid");
             }
-            campaignId = Long.valueOf(first);
+            campaignId = Long.parseLong(first);
             if(campaignId == 5338380161l) {
               logger.info("Success5338380161: " + uri);
               ESMetrics.getInstance().meter("Success5338380161");
@@ -333,14 +337,11 @@ public class RoverRheosTopicFilterTask extends Thread {
           ESMetrics.getInstance().meter(INCOMING_ROVER_CLICK, 1, Field.of(Constants.CHANNEL_TYPE, channelTypeStr));
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_CLICK.getName(), ChannelAction.CLICK.name(), channelTypeStr);
           logger.info("pageId is 3084, BehaviorMessage record : {}", record);
-
           if (record != null) {
-
             behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
           }
         }
-      }
-      else if(pageId == 3086) {
+      } else if(pageId == 3086) {
         ESMetrics.getInstance().meter(INCOMING_PAGE_ROI);
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.ROI);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
@@ -459,8 +460,7 @@ public class RoverRheosTopicFilterTask extends Thread {
           roiRecord.setApplicationPayload(payload);
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, roiRecord.getSnapshotId().getBytes(), roiRecord), KafkaSink.callback);
         }
-      }
-        else if(pageId == PageIdEnum.EMAIL_OPEN.getId()) {
+      } else if(pageId == PageIdEnum.EMAIL_OPEN.getId()) {
         // EMAIL OPEN tracked by Rover
         if (ROVER_OPEN_PAGE_NAME.equals(pageName)) {
           ChannelIdEnum channelType = parseChannelType(genericRecord);
@@ -468,8 +468,7 @@ public class RoverRheosTopicFilterTask extends Thread {
             String channelTypeStr = channelType.getLogicalChannel().getAvro().name();
             ESMetrics.getInstance().meter(INCOMING_ROVER_EMAIL_OPEN, 1, Field.of(Constants.CHANNEL_TYPE, channelTypeStr));
             BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_OPEN.getName(), ChannelAction.EMAIL_OPEN.name(), channelTypeStr);
-            logger.info("pageId is 3086, BehaviorMessage record : {}", record);
-
+            logger.info("pageId is Email Open, BehaviorMessage record : {}", record);
             if (record != null) {
               behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
             }
@@ -509,6 +508,9 @@ public class RoverRheosTopicFilterTask extends Thread {
       record.setRefererHash(getField(genericRecord, "refererHash", null));
       // directly get from urlQueryString is not correct. should get from applicationPayload
       String urlQueryString = applicationPayload.get("urlQueryString");
+      if (StringUtils.isBlank(urlQueryString)) {
+        urlQueryString = getField(genericRecord, "urlQueryString", StringUtils.EMPTY);
+      }
       record.setUrlQueryString(urlQueryString);
       record.setWebServer(getField(genericRecord, "webServer", null));
       record.setClientIP(getField(genericRecord, "clientIP", null));
