@@ -24,7 +24,8 @@ outputDir hdfs://elvisha/apps/tracking-events
 
 
 DedupeAndSink workflow
-1.创建 /datashare/mkttracking/jobs/tracking/sparknrt/bin/prod 目录
+1.在airflow /mnt目录下创建 /datashare/mkttracking/jobs/tracking/sparknrt/bin/prod 目录
 2.修改dedupeAndSink.sh脚本 并放在上述目录下
-
-./dedupeAndSink.sh EPN marketing.tracking.ssl.filtered-epn hdfs://elvisha/apps/tracking-events-workdir hdfs://elvisha/apps/tracking-events http://chocolateclusteres-app-private-11.stratus.lvs.ebay.com:9200 1 true"
+3./datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir viewfs://apollo-rno/user/b_marketing_tracking/tracking-events-workdir
+  /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir viewfs://apollo-rno/user/b_marketing_tracking/tracking-events
+  /datashare/mkttracking/jobs/tracking/epnnrt/bin目录下创建chocolate-env.sh并修改初始内容
