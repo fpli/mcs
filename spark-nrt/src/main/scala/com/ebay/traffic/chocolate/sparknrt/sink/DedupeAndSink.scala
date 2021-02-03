@@ -21,6 +21,7 @@ import com.couchbase.client.java.document.json.JsonObject
 import rx.Observable
 import rx.functions.Func1
 import com.couchbase.client.java.document.JsonDocument
+import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
 import org.apache.commons.lang3.StringUtils
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
@@ -45,6 +46,7 @@ class DedupeAndSink(params: Parameter)
   @transient var properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("kafka.properties"))
+    properties.load(getClass.getClassLoader.getResourceAsStream("sherlockio.properties"))
     properties
   }
 
@@ -82,11 +84,11 @@ class DedupeAndSink(params: Parameter)
 
   val SHORT_SNAPSHOT_ID_COL = "short_snapshot_id"
 
-  @transient lazy val metrics: Metrics = {
-    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
-      ESMetrics.init(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
-      ESMetrics.getInstance()
-    } else null
+  @transient lazy val metrics: SherlockioMetrics = {
+    SherlockioMetrics.init(properties.getProperty("sherlockio.namespace"),properties.getProperty("sherlockio.endpoint"),properties.getProperty("sherlockio.user"))
+    val sherlockioMetrics = SherlockioMetrics.getInstance()
+    sherlockioMetrics.setJobName(params.appName)
+    sherlockioMetrics
   }
 
   import spark.implicits._
@@ -295,7 +297,7 @@ class DedupeAndSink(params: Parameter)
     */
   private def metric(message: FilterMessage) = {
     if (metrics != null) {
-      metrics.meter("DedupeInputCount", 1, message.getTimestamp,
+      metrics.meter("DedupeInputCount", 1,
         Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
         Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
     }
@@ -338,7 +340,7 @@ class DedupeAndSink(params: Parameter)
   def writeMessage(writer: ParquetWriter[GenericRecord], message: FilterMessage)  = {
     writer.write(message)
     if (metrics != null) {
-      metrics.meter("Dedupe-Temp-Output", 1, message.getTimestamp,
+      metrics.meter("Dedupe-Temp-Output", 1,
         Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
         Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
     }

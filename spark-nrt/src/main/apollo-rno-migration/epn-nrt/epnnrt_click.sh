@@ -24,14 +24,13 @@ EXECUTOR_NUMBER=40
 EXECUTOR_MEMORY=18g
 EXECUTOR_CORES=5
 
-JOB_NAME="Chocolate_EPN_NRT_CLICK_V2"
+JOB_NAME="Chocolate_EPN_NRT_CLICK"
 
 for f in $(find $bin/../../conf/prod -name '*.*');
 do
   FILES=${FILES},file://$f;
 done
-
-${SPARK_HOME}/bin/spark-submit \
+/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit  \
     --files ${FILES} \
     --class com.ebay.traffic.chocolate.sparknrt.epnnrt.EpnNrtClickJob \
     --name ${JOB_NAME} \
@@ -45,7 +44,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.yarn.executor.memoryOverhead=2048 \
     --conf spark.speculation=true \
     --conf spark.speculation.quantile=0.5 \
-    ${bin}/../../lib_v2/chocolate-spark-nrt-*.jar \
+    ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
       --workDir ${WORK_DIR} \

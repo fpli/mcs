@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - DedupeAndSink
 
-usage="Usage: dedupeAndSink.sh [channel] [kafkaTopic] [workDir] [outputDir] [elasticsearchUrl] [partitions] [couchbaseDedupe]"
+usage="Usage: dedupeAndSink.sh [channel] [kafkaTopic] [workDir] [outputDir] [partitions] [couchbaseDedupe]"
 
 # if no args specified, show usage
 if [ $# -le 3 ]; then
@@ -18,9 +18,8 @@ CHANNEL=$1
 KAFKA_TOPIC=$2
 WORK_DIR=$3
 OUTPUT_DIR=$4
-ES_URL=$5
-PARTITIONS=$6
-CB_DEDUPE=$7
+PARTITIONS=$5
+CB_DEDUPE=$6
 
 DRIVER_MEMORY=4g
 EXECUTOR_NUMBER=20
@@ -34,12 +33,13 @@ do
   FILES=${FILES},file://$f;
 done
 
-${SPARK_HOME}/bin/spark-submit \
+/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit  \
     --files ${FILES} \
     --class com.ebay.traffic.chocolate.sparknrt.sink.DedupeAndSink \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
+    --queue hdlq-commrce-default \
     --driver-memory ${DRIVER_MEMORY} \
     --num-executors ${EXECUTOR_NUMBER} \
     --executor-memory ${EXECUTOR_MEMORY} \
@@ -53,7 +53,6 @@ ${SPARK_HOME}/bin/spark-submit \
       --kafkaTopic ${KAFKA_TOPIC} \
       --workDir "${WORK_DIR}" \
       --outputDir ${OUTPUT_DIR} \
-      --elasticsearchUrl ${ES_URL} \
       --partitions ${PARTITIONS} \
       --maxConsumeSize 60000 \
       --couchbaseDedupe ${CB_DEDUPE}

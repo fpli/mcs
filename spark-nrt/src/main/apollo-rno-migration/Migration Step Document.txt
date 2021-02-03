@@ -1,4 +1,4 @@
-EpnNrtClickJob
+EpnNrtClickJob file move
 readDedupeOutputMeta   hdfs://elvisha/apps/tracking-events-workdir/meta/EPN/capping/*.epnnrtv2 -> df
 saveDfToFile           df -> hdfs://elvisha/apps/epn-nrt/tmp/click_v2
 renameFile             hdfs://elvisha/apps/epn-nrt/tmp/click_v2  ->   hdfs://elvisha/apps/epn-nrt/click_v2
@@ -8,9 +8,6 @@ renameMetaData:        hdfs://elvisha/apps/epn-nrt/tmp_result_meta_click_v2/ -> 
 
 
 distcpAmsToRenoAndHercules.sh 需要改成操作apollo_rno
-提交job的脚本需要改成提交到apollo
-所有的workdir和outputDir和archiveDir
-BaseSparkJob里初始化fs的hadoopConf是否需要修改，怎么修改
 
 DedupeAndSink logic
 将一个partition中的所有数据根据时间构造一个writer，并且通过cb进行去重 不重复的数据写到 workDir/Dedupe/EPN/tmp  循环完所有partition后的每个日期文件夹下面有好几个数据文件，每个文件代表一个partition
@@ -23,9 +20,14 @@ outputDir hdfs://elvisha/apps/tracking-events
           /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod
 
 
-DedupeAndSink workflow
+DedupeAndSink apollo migration steps
 1.在airflow /mnt目录下创建 /datashare/mkttracking/jobs/tracking/sparknrt/bin/prod 目录
 2.修改dedupeAndSink.sh脚本 并放在上述目录下
 3./datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir viewfs://apollo-rno/user/b_marketing_tracking/tracking-events-workdir
   /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir viewfs://apollo-rno/user/b_marketing_tracking/tracking-events
-  /datashare/mkttracking/jobs/tracking/epnnrt/bin目录下创建chocolate-env.sh并修改初始内容
+  /datashare/mkttracking/jobs/tracking/sparknrt/bin目录下创建chocolate-env.sh并修改初始内容
+  /datashare/mkttracking/jobs/tracking/sparknrt/lib下面放chocolate-spark-nrt-*.jar
+  /datashare/mkttracking/jobs/tracking/sparknrt/conf/prod下创建配置 dedupe_and_sink.properties  kafka.properties  couchbase.properties sherlockio.properties
+  /datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/下放spark-submit客户端???
+  /usr/hdp/current/hadoop-client/etc/hadoop/ssl-client.xml创建???
+  SPARK_EVENTLOG_DIR  and HISTORY_SERVER ??? 创建viewfs://apollo-rno/user/b_marketing_tracking/spark-history-logs/chocolate/logs ???
