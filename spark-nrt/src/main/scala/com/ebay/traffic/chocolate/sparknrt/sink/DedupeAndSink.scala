@@ -74,7 +74,6 @@ class DedupeAndSink(params: Parameter)
   var couchbaseDedupe = params.couchbaseDedupe
   lazy val couchbaseTTL = params.couchbaseTTL
   lazy val DEDUPE_KEY_PREFIX = "DEDUPE_"
-  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
   lazy val CHANNEL_ACTION = "channelAction"
   lazy val CHANNEL_TYPE = "channelType"
 
