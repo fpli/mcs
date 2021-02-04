@@ -46,7 +46,6 @@ rm -r ${TMP_DIR}/imk_hourly_count/*
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hadoop fs -get viewfs://apollo-rno/apps/b_marketing_tracking/alert/imk_v2/temp/hourlyClickCount/* ${TMP_DIR}/imk_hourly_count
 cat ${filePath}channel_name=ROI/*.csv > ${filePath}channel_name=ROI/hourlyClick.csv
 cat ${filePath}channel_name=PaidSearch/*.csv > ${filePath}channel_name=PaidSearch/hourlyClick.csv
-cat ${filePath}channel_name=NaturalSearch/*.csv > ${filePath}channel_name=NaturalSearch/hourlyClick.csv
 cat ${filePath}channel_name=Display/*.csv > ${filePath}channel_name=Display/hourlyClick.csv
 cat ${filePath}channel_name=SocialMedia/*.csv > ${filePath}channel_name=SocialMedia/hourlyClick.csv
 cat ${filePath}channel_name=SearchEngineFreeListings/*.csv > ${filePath}channel_name=SearchEngineFreeListings/hourlyClick.csv
