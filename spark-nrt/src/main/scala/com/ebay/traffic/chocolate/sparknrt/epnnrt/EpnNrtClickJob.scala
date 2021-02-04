@@ -25,14 +25,14 @@ object EpnNrtClickJob extends App {
 class EpnNrtClickJob(params: Parameter) extends BaseEpnNrtJob(params, params.appName, params.mode) {
 
   // meta tmp dir
-  lazy val epnNrtResultMetaClickTempDir = outputDir + "/tmp_result_meta_click_v2/"
-  lazy val epnNrtScpMetaClickTempDir = outputDir + "/tmp_scp_meta_click_v2/"
+  lazy val epnNrtResultMetaClickTempDir = outputDir + "/tmp_result_meta_click/"
+  lazy val epnNrtScpMetaClickTempDir = outputDir + "/tmp_scp_meta_click/"
 
   //meta final dir
-  lazy val epnNrtResultMetaClickDir = workDir + "/meta/EPN/output/epnnrt_click_v2/"
-  lazy val epnNrtScpMetaClickDir = workDir + "/meta/EPN/output/epnnrt_scp_click_v2/"
+  lazy val epnNrtResultMetaClickDir = workDir + "/meta/EPN/output/epnnrt_click/"
+  lazy val epnNrtScpMetaClickDir = workDir + "/meta/EPN/output/epnnrt_scp_click/"
 
-  lazy val clickDir = "/click_v2/"
+  lazy val clickDir = "/click/"
 
   @transient lazy val schema_epn_click_table = TableSchema("df_epn_click.json")
 
@@ -49,7 +49,7 @@ class EpnNrtClickJob(params: Parameter) extends BaseEpnNrtJob(params, params.app
     //1. load meta files
     logger.info("load metadata...")
 
-    var cappingMeta = metadata.readDedupeOutputMeta(".epnnrtv2")
+    var cappingMeta = metadata.readDedupeOutputMeta(".epnnrt")
 
     if (cappingMeta.length > batchSize) {
       cappingMeta = cappingMeta.slice(0, batchSize)
@@ -127,9 +127,9 @@ class EpnNrtClickJob(params: Parameter) extends BaseEpnNrtJob(params, params.app
           var clickDf = new ClickDataFrame(df_click, epnNrtCommon).build()
           clickDf = clickDf.repartition(params.partitions)
 
-          saveDFToFiles(clickDf, epnNrtTempDir + clickDir, "gzip", "parquet", "tab")
+          saveDFToFiles(clickDf, epnNrtTempDir + clickDir, "gzip", "csv", "tab")
 
-          val countClickDf = readFilesAsDF(epnNrtTempDir + clickDir, schema_epn_click_table.dfSchema, "parquet", "tab", false)
+          val countClickDf = readFilesAsDF(epnNrtTempDir + clickDir, schema_epn_click_table.dfSchema, "csv", "tab", false)
 
           metrics.meter("SuccessfulCount", countClickDf.count(), timestamp, Field.of[String, AnyRef]("channelAction", "CLICK"))
 

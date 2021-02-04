@@ -6,8 +6,8 @@ import java.{lang, util}
 import java.util.{Date, Properties}
 
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
-import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
-import com.ebay.traffic.chocolate.spark.kafka.{KafkaRDD, KafkaRDD_v2}
+import com.ebay.traffic.monitoring.Field
+import com.ebay.traffic.chocolate.spark.kafka.KafkaRDD_v2
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
