@@ -7,7 +7,7 @@ import java.util.{Date, Properties}
 
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
 import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
-import com.ebay.traffic.chocolate.spark.kafka.KafkaRDD
+import com.ebay.traffic.chocolate.spark.kafka.{KafkaRDD, KafkaRDD_v2}
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
@@ -110,8 +110,8 @@ class DedupeAndSink(params: Parameter)
       suffixArray = suffix.split(",")
     }
 
-    val kafkaRDD = new KafkaRDD[lang.Long, FilterMessage](
-      sc, params.kafkaTopic, properties, params.elasticsearchUrl, params.maxConsumeSize)
+    val kafkaRDD = new KafkaRDD_v2[lang.Long, FilterMessage](
+      sc, params.kafkaTopic, properties, params.appName, params.maxConsumeSize)
 
     val dates =
     kafkaRDD.mapPartitions(iter => {
