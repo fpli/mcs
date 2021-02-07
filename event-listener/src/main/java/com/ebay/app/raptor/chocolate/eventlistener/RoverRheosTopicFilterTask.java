@@ -166,12 +166,9 @@ public class RoverRheosTopicFilterTask extends Thread {
     // remote ip
     String forwardedFor = coalesce(applicationPayload.get(new Utf8("ForwardedFor")), empty).toString();
     if (StringUtils.isBlank(forwardedFor)) {
-      forwardedFor = getField(genericRecord, "clientIP", "");
+      Map<Utf8, Utf8> clientData = ((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA));
+      forwardedFor = clientData.getOrDefault(new Utf8("ForwardedFor"), new Utf8("")).toString();
     }
-    if (StringUtils.isBlank(forwardedFor)) {
-      forwardedFor = getField(genericRecord, "remoteIP", "");
-    }
-
     record.setRemoteIp(forwardedFor);
 
     // user agent
@@ -362,6 +359,9 @@ public class RoverRheosTopicFilterTask extends Thread {
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.ROI);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
         String urlQueryString = coalesce(applicationPayload.get(new Utf8("urlQueryString")), empty).toString();
+        if(StringUtils.isBlank(urlQueryString)) {
+          urlQueryString = getField(genericRecord, "urlQueryString", StringUtils.EMPTY);
+        }
         try {
           urlQueryString = URLDecoder.decode(urlQueryString, "UTF-8");
         } catch (Exception ex) {
@@ -458,14 +458,13 @@ public class RoverRheosTopicFilterTask extends Thread {
               rheosSentTimestamp,
               rheosInternalTimestamps));
         }
+
         logger.info("pageId is 3086, ListenerMessage record : {}", record);
 
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
 
         // send roi to unified tracking topic
         BehaviorMessage roiRecord = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_ROI.getName(), ChannelActionEnum.ROI.getAvro().name(), ChannelIdEnum.ROI.getLogicalChannel().getAvro().name());
-        logger.info("pageId is 3086, BehaviorMessage roiRecord : {}", roiRecord);
-
         if (roiRecord != null) {
           /* set snapshot id to be the original one from ubi.
           since for ROI events, we requested rover team to record rvr_id */
@@ -474,6 +473,8 @@ public class RoverRheosTopicFilterTask extends Thread {
           Map<String, String> payload = roiRecord.getApplicationPayload();
           payload.put("url_mpre", ROVER_HOST + roiRecord.getUrlQueryString());
           roiRecord.setApplicationPayload(payload);
+
+          logger.info("pageId is 3086, BehaviorMessage roiRecord : {}", roiRecord);
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, roiRecord.getSnapshotId().getBytes(), roiRecord), KafkaSink.callback);
         }
       } else if(pageId == PageIdEnum.EMAIL_OPEN.getId()) {
