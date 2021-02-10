@@ -84,6 +84,7 @@ class DedupeAndSink(params: Parameter)
   val SHORT_SNAPSHOT_ID_COL = "short_snapshot_id"
 
   @transient lazy val metrics: SherlockioMetrics = {
+    logger.info("sherlockio.namespace="+properties.getProperty("sherlockio.namespace")+"  sherlockio.endpoint="+properties.getProperty("sherlockio.endpoint")+"  sherlockio.user="+properties.getProperty("sherlockio.user"))
     SherlockioMetrics.init(properties.getProperty("sherlockio.namespace"),properties.getProperty("sherlockio.endpoint"),properties.getProperty("sherlockio.user"))
     val sherlockioMetrics = SherlockioMetrics.getInstance()
     sherlockioMetrics.setJobName(params.appName)
