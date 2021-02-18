@@ -43,7 +43,7 @@ object DedupeAndSink extends App {
 class DedupeAndSink(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
-  @transient var properties: Properties = {
+  var properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("kafka.properties"))
     properties.load(getClass.getClassLoader.getResourceAsStream("sherlockio.properties"))
@@ -84,9 +84,6 @@ class DedupeAndSink(params: Parameter)
   val SHORT_SNAPSHOT_ID_COL = "short_snapshot_id"
 
   @transient lazy val metrics: SherlockioMetrics = {
-    logger.info("properties"+properties+"==null")
-    logger.info("properties"+properties.getProperty("group.id"));
-    logger.info("sherlockio.namespace="+properties.getProperty("sherlockio.namespace")+"  sherlockio.endpoint="+properties.getProperty("sherlockio.endpoint")+"  sherlockio.user="+properties.getProperty("sherlockio.user"))
     SherlockioMetrics.init(properties.getProperty("sherlockio.namespace"),properties.getProperty("sherlockio.endpoint"),properties.getProperty("sherlockio.user"))
     val sherlockioMetrics = SherlockioMetrics.getInstance()
     sherlockioMetrics.setJobName(params.appName)

@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.sink
 
+import java.util.Properties
+
 import com.ebay.app.raptor.chocolate.avro.FilterMessage
 import com.ebay.traffic.chocolate.common.{KafkaTestHelper, MiniKafkaCluster, TestHelper}
 import com.ebay.traffic.chocolate.kafka.{FilterMessageDeserializer, FilterMessageSerializer}
@@ -43,8 +45,13 @@ class TestDedupeAndSink extends BaseFunSuite {
     kafkaCluster = KafkaTestHelper.newKafkaCluster()
     producer = kafkaCluster.createProducer[java.lang.Long, FilterMessage](
       classOf[LongSerializer], classOf[FilterMessageSerializer])
-    job.setProperties(kafkaCluster.getConsumerProperties(classOf[LongDeserializer],
-      classOf[FilterMessageDeserializer]))
+    //job.setProperties(kafkaCluster.getConsumerProperties(classOf[LongDeserializer],
+      //classOf[FilterMessageDeserializer]))
+      val properties: Properties = kafkaCluster.getConsumerProperties(classOf[LongDeserializer],
+        classOf[FilterMessageDeserializer])
+    properties.load(getClass.getClassLoader.getResourceAsStream("sherlockio.properties"))
+    job.setProperties(properties)
+    println
   }
 
   override def afterAll() = {
