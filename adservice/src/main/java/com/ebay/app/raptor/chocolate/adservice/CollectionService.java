@@ -6,6 +6,7 @@ import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.redirect.AdobeRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.redirect.RedirectContext;
 import com.ebay.app.raptor.chocolate.adservice.redirect.ThirdpartyRedirectStrategy;
+import com.ebay.app.raptor.chocolate.adservice.util.AdserviceCookie;
 import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -27,7 +28,6 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
@@ -45,9 +45,11 @@ public class CollectionService {
   private Metrics metrics;
   private static final String CLICK = "1";
 
-
   @Autowired
   private DAPResponseHandler dapResponseHandler;
+
+  @Autowired
+  private AdserviceCookie adserviceCookie;
 
   @PostConstruct
   public void postInit() {
@@ -61,25 +63,22 @@ public class CollectionService {
    * @return OK or Error message
    */
   public boolean collectAr(HttpServletRequest request, HttpServletResponse response,
-                           GdprConsentDomain gdprConsentDomain) throws Exception {
-    dapResponseHandler.sendDAPResponse(request, response, gdprConsentDomain);
+                           GdprConsentDomain gdprConsentDomain, String adguid) throws Exception {
+    dapResponseHandler.sendDAPResponse(request, response, gdprConsentDomain, adguid);
     return true;
   }
 
   /**
    * construct a tracking header. guid is mandatory, if guid is null, create a guid
-   * @param requestContext request context
    * @param guid guid from mapping if there is
    * @param adguid adguid from cookie
    * @param channelType channel type
    * @return a tracking header string
    */
-  public String constructTrackingHeader(ContainerRequestContext requestContext, String guid, String adguid,
-                                        String channelType) {
+  public String constructTrackingHeader(String guid, String adguid, String channelType) {
     String cookie = "";
-    String rawGuid = guid;
-    if (!StringUtils.isEmpty(rawGuid) && rawGuid.length() >= Constants.GUID_LENGTH) {
-      cookie += "guid=" + rawGuid.substring(0, Constants.GUID_LENGTH);
+    if (!StringUtils.isEmpty(guid) && guid.length() >= Constants.GUID_LENGTH) {
+      cookie += "guid=" + guid.substring(0, Constants.GUID_LENGTH);
     } else {
       try {
         cookie += "guid=" + new Guid().nextPaddedGUID();
@@ -103,14 +102,14 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public URI collectRedirect(HttpServletRequest request, ContainerRequestContext requestContext, Client mktClient,
-                             String endpoint) throws Exception {
+  public URI collectRedirect(HttpServletRequest request, Client mktClient, String endpoint, String adguid)
+      throws Exception {
 
     // verify the request
     MultiValueMap<String, String> parameters = verifyAndParseRequest(request);
 
     // execute redirect Strategy
-    return executeRedirectStrategy(request, getParam(parameters, Constants.MKPID), requestContext, mktClient, endpoint);
+    return executeRedirectStrategy(request, getParam(parameters, Constants.MKPID), mktClient, endpoint, adguid);
   }
 
   /**
@@ -156,8 +155,8 @@ public class CollectionService {
   /**
    * Send redirect response by Strategy Pattern
    */
-  private URI executeRedirectStrategy(HttpServletRequest request, String partnerId, ContainerRequestContext context,
-                                      Client mktClient, String endpoint) throws URISyntaxException{
+  private URI executeRedirectStrategy(HttpServletRequest request, String partnerId, Client mktClient,
+                                      String endpoint, String adguid) throws URISyntaxException{
     RedirectContext redirectContext;
     if (EmailPartnerIdEnum.ADOBE.getId().equals(partnerId)) {
       redirectContext = new RedirectContext(new AdobeRedirectStrategy());
@@ -165,8 +164,10 @@ public class CollectionService {
       redirectContext = new RedirectContext(new ThirdpartyRedirectStrategy());
     }
 
+    String guid = adserviceCookie.getGuid(request);
+
     try {
-      return redirectContext.execute(request, context, mktClient, endpoint);
+      return redirectContext.execute(request, mktClient, endpoint, guid, adguid);
     } catch (Exception e) {
       metrics.meter("RedirectionRuntimeError");
       logger.warn("Redirection runtime error: ", e);

@@ -143,10 +143,11 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     GdprConsentDomain gdprConsentDomain = gdprConsentHandler.handleGdprConsent(request);
 
     try {
+      String adguid = "";
       if (gdprConsentDomain.isAllowedSetCookie()) {
-        adserviceCookie.setAdguid(request, response);
+        adguid = adserviceCookie.setAdguid(request, response);
       }
-      collectionService.collectAr(request, response, gdprConsentDomain);
+      collectionService.collectAr(request, response, gdprConsentDomain, adguid);
       if (HttpServletResponse.SC_MOVED_PERMANENTLY == response.getStatus()) {
         Response.ResponseBuilder responseBuilder = Response.status(Response.Status.MOVED_PERMANENTLY);
         for (String headerName : response.getHeaderNames()) {
@@ -223,7 +224,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
         guid = adguid;
       }
       builder = builder.header("X-EBAY-C-TRACKING",
-          collectionService.constructTrackingHeader(requestContext, guid, adguid, channelType));
+          collectionService.constructTrackingHeader(guid, adguid, channelType));
 
       // add parameters separately to handle special characters
       URIBuilder uri = new URIBuilder(request.getRequestURL().toString());
@@ -287,7 +288,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   @Override
   public Response redirect(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "redirect"));
-    adserviceCookie.setAdguid(request, response);
+    String adguid = adserviceCookie.setAdguid(request, response);
     URI redirectUri = null;
     try {
       // assign home page as default redirect url
@@ -317,7 +318,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       redirectUri = uriBuilder.build();
 
       // get redirect url
-      redirectUri = collectionService.collectRedirect(request, requestContext, mktClient, endpoint);
+      redirectUri = collectionService.collectRedirect(request, mktClient, endpoint, adguid);
     } catch (Exception e) {
       // When exception happen, redirect to www.ebay.com
       logger.warn(e.getMessage(), e);
@@ -355,7 +356,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     // forward to mcs for writing ubi. The adguid in ubi is to help XID team build adguid into the linking system.
     // construct X-EBAY-C-TRACKING header
     builder = builder.header("X-EBAY-C-TRACKING",
-        collectionService.constructTrackingHeader(requestContext, guid, adguid,"sync"));
+        collectionService.constructTrackingHeader(guid, adguid,"sync"));
 
     // add uri and referer to marketing event body
     MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();

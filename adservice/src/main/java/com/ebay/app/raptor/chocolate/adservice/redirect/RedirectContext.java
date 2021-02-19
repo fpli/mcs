@@ -13,8 +13,8 @@ public class RedirectContext {
     this.strategy = strategy;
   }
 
-  public URI execute(HttpServletRequest request, ContainerRequestContext context, Client mktClient, String endpoint)
+  public URI execute(HttpServletRequest request, Client mktClient, String endpoint, String guid, String adguid)
       throws URISyntaxException {
-    return strategy.process(request, context, mktClient, endpoint);
+    return strategy.process(request, mktClient, endpoint, guid, adguid);
   }
 }
