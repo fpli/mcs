@@ -22,48 +22,44 @@ SET hive.auto.convert.join=false;
 
 
 create external table choco_data.dw_mpx_rotations (
-  ROTATION_ID DECIMAL(18,0),
-  PLACEMENT_ID DECIMAL(9,0),
-  CAMPAIGN_ID DECIMAL(18,0),
-  VENDOR_ID INT,
-  PORTL_BKT_ID INT,
-  PORTL_SUB_BKT_ID INT,
-  PORTL_PRTNR_GRP_ID SMALLINT,
-  ROTATION_STRING VARCHAR(200),
-  ROTATION_NAME VARCHAR(2000),
-  ROTATION_COST DECIMAL(18,2),
-  ROTATION_COUNT DECIMAL(9,0),
-  ROTATION_COUNT_TYPE CHAR(1),
-  ROTATION_DATE_START STRING, -- DATE FORMAT 'YYYY-MM-DD'
-  ROTATION_DATE_END STRING, --  DATE FORMAT 'YYYY-MM-DD'
-  PORTL_DSHBRD_FLAG_ID SMALLINT,
-  PORTL_INVC_FLAG_ID SMALLINT,
-  PORTL_SRC_CRE_DT STRING, -- DATE FORMAT 'YYYYMMDD'
-  ROTATION_CT_URL_NAME VARCHAR(4000),
-  ROTATION_STS_NAME VARCHAR(10),
-  ROTATION_DESC_TXT VARCHAR(4000),
-  MPX_PIXEL_DMNSN_SIZE_TXT VARCHAR(32),
-  MPX_ORGNZNG_TXT VARCHAR(255),
-  TRFC_ORDER_STNDRD_TXT VARCHAR(4000),
-  TRFC_ORDER_JAVA_SCRPT_TXT VARCHAR(4000),
-  TRFC_ORDER_LINK_TXT VARCHAR(4000),
-  TRFC_ORDER_TRCR_TXT VARCHAR(4000),
-  ROT_PT_ID DECIMAL(18,0),
-  MPX_CHNL_ID SMALLINT,
-  PORTL_APP_ID INT,
-  GEO_CLIENT_ID INT,
-  ROTATION_BRAND_IND INT,
-  CRE_DATE STRING,
-  CRE_USER VARCHAR(30),
-  UPD_DATE TIMESTAMP,
-  UPD_USER VARCHAR(30)
+    `rotation_id` decimal(18,0),
+    `placement_id` decimal(9,0),
+    `campaign_id` decimal(18,0),
+    `vendor_id` int,
+    `portl_bkt_id` int,
+    `portl_sub_bkt_id` int,
+    `portl_prtnr_grp_id` smallint,
+    `rotation_string` string,
+    `rotation_name` string,
+    `rotation_cost` decimal(18,2),
+    `rotation_count` decimal(9,0),
+    `rotation_count_type` string,
+    `rotation_date_start` string,
+    `rotation_date_end` string,
+    `portl_dshbrd_flag_id` smallint,
+    `portl_invc_flag_id` smallint,
+    `portl_src_cre_dt` string,
+    `rotation_ct_url_name` string,
+    `rotation_sts_name` string,
+    `rotation_desc_txt` string,
+    `mpx_pixel_dmnsn_size_txt` string,
+    `mpx_orgnzng_txt` string,
+    `trfc_order_stndrd_txt` string,
+    `trfc_order_java_scrpt_txt` string,
+    `trfc_order_link_txt` string,
+    `trfc_order_trcr_txt` string,
+    `rot_pt_id` decimal(18,0),
+    `mpx_chnl_id` smallint,
+    `portl_app_id` int,
+    `geo_client_id` int,
+    `rotation_brand_ind` int,
+    `cre_date` string,
+    `cre_user` string,
+    `upd_date` timestamp,
+    `upd_user` string
 )
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY '\|'
-LINES TERMINATED BY '\n'
-NULL DEFINED AS ""
-STORED AS TEXTFILE
-LOCATION 'viewfs://apollo-rno/apps/b_marketing_tracking/rotation/dw_mpx_rotations';
+STORED AS PARQUET
+LOCATION 'viewfs://apollo-rno/apps/b_marketing_tracking/rotation/dw_mpx_rotations_parquet';
 
 
 

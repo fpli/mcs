@@ -43,6 +43,7 @@ class TestImkETLV2Job extends BaseFunSuite{
       "--channel", "PAID_SEARCH,DISPLAY,ROI,SOCIAL_MEDIA",
       "--workDir", workDir,
       "--outPutDir", outPutDir,
+      "--appName", "IMK_ETL_V2",
       "--partitions", "1",
       "--elasticsearchUrl", "http://10.148.181.34:9200",
       "--transformedPrefix", "chocolate_",

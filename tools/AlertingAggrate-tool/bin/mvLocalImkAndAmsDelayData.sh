@@ -21,6 +21,8 @@ IMK_IMKTRANSFORM_PATH='hdfs://slickha/apps/tracking-events/imkTransform/imkOutpu
 DTL_CRABTRANSFORM_PATH='hdfs://slickha/apps/tracking-events/crabTransform/dtlOutput';
 DTL_IMKTRANSFORM_PATH='hdfs://slickha/apps/tracking-events/imkTransform/dtlOutput';
 
+IMK_V2_IMKTRANSFORM_PATH='hdfs://slickha/apps/tracking-events-imk/imkTransform/imkOutput';
+
 EPNNRT_SCP_CLICK='hdfs://elvisha/apps/tracking-events-workdir/meta/EPN/output/epnnrt_scp_click';
 EPNNRT_SCP_IMP='hdfs://elvisha/apps/tracking-events-workdir/meta/EPN/output/epnnrt_scp_imp';
 
@@ -55,6 +57,9 @@ function dealWithImkDelayData() {
       hdfs dfs -ls ${DTL_CRABTRANSFORM_PATH} | grep -v "^$" | awk '{print $NF}' | grep "chocolate_" > ${imk_tmp_file}
       hdfs dfs -ls ${DTL_IMKTRANSFORM_PATH} | grep -v "^$" | awk '{print $NF}' | grep "chocolate_" >> ${imk_tmp_file}
       DIST_DELAY_PATH="${IMK_DELAY_PATH}/dtl"
+  elif [ $type == 'imk_v2' ]; then
+      hdfs dfs -ls ${IMK_V2_IMKTRANSFORM_PATH} | grep -v "^$" | awk '{print $NF}' | grep "chocolate_" >> ${imk_tmp_file}
+      DIST_DELAY_PATH="${IMK_DELAY_PATH}/imk_v2"
   else
     exit 1;
   fi
@@ -141,6 +146,7 @@ function dealWithAmsDelayMeta() {
 
 dealWithImkDelayData imk;
 dealWithImkDelayData dtl;
+dealWithImkDelayData imk_v2;
 
 cd "$LOCAL_TMP_PATH/metafile"
 pwd

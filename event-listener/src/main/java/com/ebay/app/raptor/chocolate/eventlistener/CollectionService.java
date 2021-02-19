@@ -14,6 +14,7 @@ import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
+import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
@@ -29,6 +30,7 @@ import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import com.ebay.userlookup.UserLookup;
+import com.google.common.primitives.Longs;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -1188,6 +1190,9 @@ public class CollectionService {
           // email experienced treatment
           addTagFromUrlQuery(parameters, requestTracker, Constants.EXPRCD_TRTMT, "ext", String.class);
 
+          // decrypted user id
+          addDecrytpedUserIDFromBu(parameters, requestTracker);
+
         } catch (Exception e) {
           logger.warn("Error when tracking ubi for site email click tags", e);
           metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
@@ -1279,6 +1284,9 @@ public class CollectionService {
 
           // Yesmail mailing instance
           addTagFromUrlQuery(parameters, requestTracker, Constants.YM_INSTC, "yminstc", String.class);
+
+          // decrypted user id
+          addDecrytpedUserIDFromBu(parameters, requestTracker);
 
           // Adobe email redirect url
           if (parameters.containsKey(Constants.REDIRECT_URL_SOJ_TAG)
@@ -1637,6 +1645,14 @@ public class CollectionService {
                                          String urlParam, String tag, Class tagType) {
     if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
       requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
+    }
+  }
+
+  private static void addDecrytpedUserIDFromBu(MultiValueMap<String, String> parameters, IRequestScopeTracker requestTracker) {
+    String bu = parameters.get(Constants.BEST_GUESS_USER).get(0);
+    Long encryptedUserId = Longs.tryParse(bu);
+    if (encryptedUserId != null) {
+      requestTracker.addTag("u", String.valueOf(EncryptUtil.decryptUserId(encryptedUserId)), String.class);
     }
   }
 
