@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.sink
 
+import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.avro.FilterMessage
 import com.ebay.traffic.chocolate.common.{KafkaTestHelper, MiniKafkaCluster, TestHelper}
