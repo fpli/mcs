@@ -45,7 +45,6 @@ class DedupeAndSink(params: Parameter)
   @transient var properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("kafka.properties"))
-    properties.load(getClass.getClassLoader.getResourceAsStream("sherlockio.properties"))
     properties
   }
 

@@ -53,7 +53,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --kafkaTopic ${KAFKA_TOPIC} \
       --workDir "${WORK_DIR}" \
       --outputDir ${OUTPUT_DIR} \
-      --elasticsearchUrl ${ES_URL} \
       --maxConsumeSize 10000 \
+      --elasticsearchUrl ${ES_URL} \
       --partitions ${PARTITIONS} \
       --couchbaseDedupe ${CB_DEDUPE}

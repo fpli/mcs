@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.sparknrt.sink
+package com.ebay.traffic.chocolate.sparknrt.sink_v2
 
 import java.util.Properties
 
@@ -7,6 +7,7 @@ import com.ebay.traffic.chocolate.common.{KafkaTestHelper, MiniKafkaCluster, Tes
 import com.ebay.traffic.chocolate.kafka.{FilterMessageDeserializer, FilterMessageSerializer}
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
+import com.ebay.traffic.chocolate.sparknrt.sink.DedupeAndSink
 import org.apache.kafka.clients.producer.{Callback, Producer, ProducerRecord}
 import org.apache.kafka.common.serialization.{LongDeserializer, LongSerializer}
 
@@ -36,7 +37,7 @@ class TestDedupeAndSink_v2 extends BaseFunSuite {
 
   val params = Parameter(args)
 
-  val job = new DedupeAndSink(params)
+  val job = new DedupeAndSink_v2(params)
 
   var producer: Producer[java.lang.Long, FilterMessage] = null
   val callback: Callback = null
