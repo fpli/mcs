@@ -10,7 +10,7 @@ import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
 import com.ebay.traffic.chocolate.spark.kafka.KafkaRDD_v2
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
+import com.ebay.traffic.chocolate.sparknrt.couchbase_v2.CorpCouchbaseClient_v2
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import com.ebay.traffic.monitoring.Field
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
@@ -201,12 +201,12 @@ class DedupeAndSink_v2(params: Parameter)
     // couchbase dedupe only apply on click
     if ((message.getChannelAction == ChannelAction.CLICK || message.getChannelAction == ChannelAction.ROI) && couchbaseDedupe) {
       try {
-        val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+        val (cacheClient, bucket) = CorpCouchbaseClient_v2.getBucketFunc()
         val key = DEDUPE_KEY_PREFIX + message.getShortSnapshotId.toString
         if (!bucket.exists(key)) {
           writeMessage(writer, message)
         }
-        CorpCouchbaseClient.returnClient(cacheClient)
+        CorpCouchbaseClient_v2.returnClient(cacheClient)
       } catch {
         case e: Exception =>
           logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
@@ -240,7 +240,7 @@ class DedupeAndSink_v2(params: Parameter)
                 group => {
                   var shortSnapshotIdList = new ListBuffer[String]()
                   try {
-                    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+                    val (cacheClient, bucket) = CorpCouchbaseClient_v2.getBucketFunc()
                     group.foreach(record => shortSnapshotIdList += record.get(0).toString)
                     // async call couchbase batch api
                     Observable.from(shortSnapshotIdList.toArray).flatMap(new Func1[String, Observable[JsonDocument]]() {
