@@ -13,7 +13,7 @@ import org.apache.kafka.common.serialization.{LongDeserializer, LongSerializer}
 /**
   * Created by yliu29 on 3/12/18.
   */
-class TestDedupeAndSink extends BaseFunSuite {
+class TestDedupeAndSink_v2 extends BaseFunSuite {
   var kafkaCluster: MiniKafkaCluster = null
 
   val tmpPath = createTempPath()
@@ -45,8 +45,13 @@ class TestDedupeAndSink extends BaseFunSuite {
     kafkaCluster = KafkaTestHelper.newKafkaCluster()
     producer = kafkaCluster.createProducer[java.lang.Long, FilterMessage](
       classOf[LongSerializer], classOf[FilterMessageSerializer])
-    job.setProperties(kafkaCluster.getConsumerProperties(classOf[LongDeserializer],
-      classOf[FilterMessageDeserializer]))
+    //job.setProperties(kafkaCluster.getConsumerProperties(classOf[LongDeserializer],
+      //classOf[FilterMessageDeserializer]))
+      val properties: Properties = kafkaCluster.getConsumerProperties(classOf[LongDeserializer],
+        classOf[FilterMessageDeserializer])
+    properties.load(getClass.getClassLoader.getResourceAsStream("sherlockio.properties"))
+    job.setProperties(properties)
+    println
   }
 
   override def afterAll() = {

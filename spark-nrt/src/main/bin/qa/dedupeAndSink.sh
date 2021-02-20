@@ -18,8 +18,9 @@ CHANNEL=$1
 KAFKA_TOPIC=$2
 WORK_DIR=$3
 OUTPUT_DIR=$4
-PARTITIONS=$5
-CB_DEDUPE=$6
+ES_URL=$5
+PARTITIONS=$6
+CB_DEDUPE=$7
 
 DRIVER_MEMORY=1g
 EXECUTOR_NUMBER=3
@@ -52,6 +53,7 @@ ${SPARK_HOME}/bin/spark-submit \
       --kafkaTopic ${KAFKA_TOPIC} \
       --workDir "${WORK_DIR}" \
       --outputDir ${OUTPUT_DIR} \
+      --elasticsearchUrl ${ES_URL} \
       --maxConsumeSize 10000 \
       --partitions ${PARTITIONS} \
       --couchbaseDedupe ${CB_DEDUPE}

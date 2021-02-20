@@ -1,57 +1,58 @@
-package com.ebay.traffic.chocolate.sparknrt.sink
+package com.ebay.traffic.chocolate.sparknrt.sink_v2
 
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
-import java.{lang, util}
 import java.util.{Date, Properties}
+import java.{lang, util}
 
+import com.couchbase.client.java.document.JsonDocument
+import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
-import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
-import com.ebay.traffic.chocolate.spark.kafka.KafkaRDD
+import com.ebay.traffic.chocolate.spark.kafka.KafkaRDD_v2
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
+import com.ebay.traffic.monitoring.Field
+import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
 import org.apache.avro.generic.GenericRecord
+import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.apache.spark.TaskContext
-import com.couchbase.client.java.document.json.JsonObject
 import rx.Observable
 import rx.functions.Func1
-import com.couchbase.client.java.document.JsonDocument
-import org.apache.commons.lang3.StringUtils
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 /**
   * Created by yliu29 on 3/8/18.
   */
-object DedupeAndSink extends App {
+object DedupeAndSink_v2 extends App {
   override def main(args: Array[String]) = {
     val params = Parameter(args)
 
-    val job = new DedupeAndSink(params)
+    val job = new DedupeAndSink_v2(params)
 
     job.run()
     job.stop()
   }
 }
 
-class DedupeAndSink(params: Parameter)
+class DedupeAndSink_v2(params: Parameter)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
-  @transient var properties: Properties = {
+  var properties: Properties = {
     val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("kafka.properties"))
+    properties.load(getClass.getClassLoader.getResourceAsStream("kafka_v2.properties"))
     properties.load(getClass.getClassLoader.getResourceAsStream("sherlockio.properties"))
     properties
   }
 
   @transient var jobProperties: Properties = {
     val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("dedupe_and_sink.properties"))
+    properties.load(getClass.getClassLoader.getResourceAsStream("dedupe_and_sink_v2.properties"))
     properties
   }
 
@@ -73,7 +74,6 @@ class DedupeAndSink(params: Parameter)
   var couchbaseDedupe = params.couchbaseDedupe
   lazy val couchbaseTTL = params.couchbaseTTL
   lazy val DEDUPE_KEY_PREFIX = "DEDUPE_"
-  lazy val METRICS_INDEX_PREFIX = "chocolate-metrics-"
   lazy val CHANNEL_ACTION = "channelAction"
   lazy val CHANNEL_TYPE = "channelType"
 
@@ -83,11 +83,11 @@ class DedupeAndSink(params: Parameter)
 
   val SHORT_SNAPSHOT_ID_COL = "short_snapshot_id"
 
-  @transient lazy val metrics: Metrics = {
-    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
-      ESMetrics.init(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
-      ESMetrics.getInstance()
-    } else null
+  @transient lazy val metrics: SherlockioMetrics = {
+    SherlockioMetrics.init(properties.getProperty("sherlockio.namespace"),properties.getProperty("sherlockio.endpoint"),properties.getProperty("sherlockio.user"))
+    val sherlockioMetrics = SherlockioMetrics.getInstance()
+    sherlockioMetrics.setJobName(params.appName)
+    sherlockioMetrics
   }
 
   import spark.implicits._
@@ -109,8 +109,8 @@ class DedupeAndSink(params: Parameter)
       suffixArray = suffix.split(",")
     }
 
-    val kafkaRDD = new KafkaRDD[lang.Long, FilterMessage](
-      sc, params.kafkaTopic, properties, params.elasticsearchUrl, params.maxConsumeSize)
+    val kafkaRDD = new KafkaRDD_v2[lang.Long, FilterMessage](
+      sc, params.kafkaTopic, properties, params.appName, params.maxConsumeSize)
 
     val dates =
     kafkaRDD.mapPartitions(iter => {
@@ -296,7 +296,7 @@ class DedupeAndSink(params: Parameter)
     */
   private def metric(message: FilterMessage) = {
     if (metrics != null) {
-      metrics.meter("DedupeInputCount", 1, message.getTimestamp,
+      metrics.meter("dedupe_input_count", 1,
         Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
         Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
     }
@@ -339,7 +339,7 @@ class DedupeAndSink(params: Parameter)
   def writeMessage(writer: ParquetWriter[GenericRecord], message: FilterMessage)  = {
     writer.write(message)
     if (metrics != null) {
-      metrics.meter("Dedupe-Temp-Output", 1, message.getTimestamp,
+      metrics.meter("dedupe_temp_output", 1,
         Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
         Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
     }
