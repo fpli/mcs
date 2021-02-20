@@ -1,6 +1,5 @@
 package com.ebay.traffic.chocolate.sparknrt.sink
 
-
 import com.ebay.app.raptor.chocolate.avro.FilterMessage
 import com.ebay.traffic.chocolate.common.{KafkaTestHelper, MiniKafkaCluster, TestHelper}
 import com.ebay.traffic.chocolate.kafka.{FilterMessageDeserializer, FilterMessageSerializer}
