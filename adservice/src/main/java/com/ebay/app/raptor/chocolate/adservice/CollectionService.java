@@ -63,8 +63,8 @@ public class CollectionService {
    * @return OK or Error message
    */
   public boolean collectAr(HttpServletRequest request, HttpServletResponse response,
-                           GdprConsentDomain gdprConsentDomain, String adguid) throws Exception {
-    dapResponseHandler.sendDAPResponse(request, response, gdprConsentDomain, adguid);
+                           GdprConsentDomain gdprConsentDomain) throws Exception {
+    dapResponseHandler.sendDAPResponse(request, response, gdprConsentDomain);
     return true;
   }
 
@@ -102,14 +102,15 @@ public class CollectionService {
    * @param request raw request
    * @return OK or Error message
    */
-  public URI collectRedirect(HttpServletRequest request, Client mktClient, String endpoint, String adguid)
+  public URI collectRedirect(HttpServletRequest request, HttpServletResponse response, Client mktClient,
+                             String endpoint)
       throws Exception {
 
     // verify the request
     MultiValueMap<String, String> parameters = verifyAndParseRequest(request);
 
     // execute redirect Strategy
-    return executeRedirectStrategy(request, getParam(parameters, Constants.MKPID), mktClient, endpoint, adguid);
+    return executeRedirectStrategy(request, response, getParam(parameters, Constants.MKPID), mktClient, endpoint);
   }
 
   /**
@@ -155,8 +156,8 @@ public class CollectionService {
   /**
    * Send redirect response by Strategy Pattern
    */
-  private URI executeRedirectStrategy(HttpServletRequest request, String partnerId, Client mktClient,
-                                      String endpoint, String adguid) throws URISyntaxException{
+  private URI executeRedirectStrategy(HttpServletRequest request, HttpServletResponse response, String partnerId,
+                                      Client mktClient, String endpoint) throws URISyntaxException {
     RedirectContext redirectContext;
     if (EmailPartnerIdEnum.ADOBE.getId().equals(partnerId)) {
       redirectContext = new RedirectContext(new AdobeRedirectStrategy());
@@ -165,6 +166,7 @@ public class CollectionService {
     }
 
     String guid = adserviceCookie.getGuid(request);
+    String adguid = adserviceCookie.readAdguid(request, response);
 
     try {
       return redirectContext.execute(request, mktClient, endpoint, guid, adguid);

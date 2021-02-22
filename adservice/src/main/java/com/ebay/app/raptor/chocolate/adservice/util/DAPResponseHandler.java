@@ -97,8 +97,8 @@ public class DAPResponseHandler {
     }
   }
 
-  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, GdprConsentDomain consentDomain,
-                              String adguid) throws URISyntaxException {
+  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response,
+                              GdprConsentDomain consentDomain) throws URISyntaxException {
     ESMetrics.getInstance().meter("sendDAPResponse");
 
     LOGGER.debug("query string {}", request.getQueryString());
@@ -111,6 +111,7 @@ public class DAPResponseHandler {
     ESMetrics.getInstance().meter("AdtypeTraffic", 1, Field.of(Constants.ADTYPE, adtype));
 
     String guid = adserviceCookie.getGuid(request);
+    String adguid = adserviceCookie.readAdguid(request, response);
     String accountId = adserviceCookie.getUserId(request);
     // obtain userId from ersxid.
     if (StringUtils.isNotBlank(guid) && "0".equals(accountId)) {
