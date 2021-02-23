@@ -20,11 +20,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.net.*;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,7 +49,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   }
 
   @Override
-  public URI process(HttpServletRequest request, ContainerRequestContext context, Client mktClient, String endpoint)
+  public URI process(HttpServletRequest request, Client mktClient, String endpoint, String guid, String adguid)
       throws URISyntaxException {
     MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
 
@@ -69,7 +67,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     checkEbayDomain(redirectionEvent.getRedirectUrl(), parameters);
 
     if (!redirectionEvent.getIsEbayDomain()) {
-      callMcs(request, parameters, mktClient, endpoint);
+      callMcs(request, parameters, mktClient, endpoint, guid, adguid);
     }
 
     stopTimerAndLogData(startTime, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()),
@@ -135,7 +133,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
    * Generate a mcs click event and call mcs
    */
   private void callMcs(HttpServletRequest request, MultiValueMap<String, String> parameters, Client mktClient,
-                       String endpoint) throws URISyntaxException{
+                       String endpoint, String guid, String adguid) throws URISyntaxException{
     // build mcs target url, add all original parameter for ubi events except target url parameter
     URIBuilder uriBuilder = new URIBuilder(redirectionEvent.getRedirectUrl());
     parameters.forEach((key, val) -> {
@@ -164,7 +162,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
 
     // add Commerce-OS standard header
     builder = builder.header("X-EBAY-C-ENDUSERCTX", constructEndUserContextHeader(request))
-        .header("X-EBAY-C-TRACKING", constructCookieHeader());
+        .header("X-EBAY-C-TRACKING", constructTrackingHeader(guid, adguid));
 
     // call MCS
     builder.async().post(Entity.json(mktEvent), new MCSCallback());
@@ -209,15 +207,25 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   /**
    * Construct X-EBAY-C-TRACKING header with guid
    */
-  private String constructCookieHeader() {
-    String guid = "";
-    try {
-      guid = new Guid().nextPaddedGUID();
-    } catch (UnknownHostException e) {
-      logger.warn("Create guid failure: ", e);
-      metrics.meter("CreateGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()));
+  private String constructTrackingHeader(String guid, String adguid) {
+    String cookie = "";
+    if (!StringUtils.isEmpty(guid)) {
+      cookie += "guid=" + guid;
+    } else {
+      try {
+        cookie += "guid=" + new Guid().nextPaddedGUID();
+      } catch (UnknownHostException e) {
+        logger.warn("Create guid failure: ", e);
+        ESMetrics.getInstance().meter("CreateGuidFailed");
+      }
+      logger.warn("No guid");
     }
-    return "guid=" + guid;
+
+    if (!StringUtils.isEmpty(adguid)) {
+      cookie += ",adguid=" + adguid;
+    }
+
+    return cookie;
   }
 
   /**

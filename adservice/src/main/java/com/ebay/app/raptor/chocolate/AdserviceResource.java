@@ -223,7 +223,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
         guid = adguid;
       }
       builder = builder.header("X-EBAY-C-TRACKING",
-          collectionService.constructTrackingHeader(requestContext, guid, adguid, channelType));
+          collectionService.constructTrackingHeader(guid, adguid, channelType));
 
       // add parameters separately to handle special characters
       URIBuilder uri = new URIBuilder(request.getRequestURL().toString());
@@ -317,7 +317,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       redirectUri = uriBuilder.build();
 
       // get redirect url
-      redirectUri = collectionService.collectRedirect(request, requestContext, mktClient, endpoint);
+      redirectUri = collectionService.collectRedirect(request, response, mktClient, endpoint);
     } catch (Exception e) {
       // When exception happen, redirect to www.ebay.com
       logger.warn(e.getMessage(), e);
@@ -355,7 +355,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     // forward to mcs for writing ubi. The adguid in ubi is to help XID team build adguid into the linking system.
     // construct X-EBAY-C-TRACKING header
     builder = builder.header("X-EBAY-C-TRACKING",
-        collectionService.constructTrackingHeader(requestContext, guid, adguid,"sync"));
+        collectionService.constructTrackingHeader(guid, adguid,"sync"));
 
     // add uri and referer to marketing event body
     MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();

@@ -11,12 +11,15 @@ import java.net.URISyntaxException;
 public interface RedirectStrategy {
   /**
    * Handle the redirection request, get redirection url and call mcs to send ubi event if needed
-   * @param request http request
-   * @param context request context
-   * @return        redirection url
+   * @param request   http request
+   * @param mktClient http client to call MCS
+   * @param endpoint  MCS endpoint
+   * @param guid      Cookie guid
+   * @param adguid    Cookie adguid
+   * @return  redirection url
    * @throws URISyntaxException
    */
-  URI process(HttpServletRequest request, ContainerRequestContext context, Client mktClient, String endpoint)
+  URI process(HttpServletRequest request, Client mktClient, String endpoint, String guid, String adguid)
       throws URISyntaxException;
 
   /**
