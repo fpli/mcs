@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - DedupeAndSink
 
-usage="Usage: dedupeAndSink.sh [channel] [kafkaTopic] [workDir] [outputDir] [partitions] [couchbaseDedupe]"
+usage="Usage: dedupeAndSink_v2.sh [channel] [kafkaTopic] [workDir] [outputDir] [partitions] [couchbaseDedupe]"
 
 # if no args specified, show usage
 if [ $# -le 3 ]; then
@@ -35,7 +35,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.sparknrt.sink.DedupeAndSink \
+    --class com.ebay.traffic.chocolate.sparknrt.sink.DedupeAndSink_v2 \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \

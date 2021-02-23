@@ -7,7 +7,6 @@ import com.ebay.traffic.chocolate.common.{KafkaTestHelper, MiniKafkaCluster, Tes
 import com.ebay.traffic.chocolate.kafka.{FilterMessageDeserializer, FilterMessageSerializer}
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
-import com.ebay.traffic.chocolate.sparknrt.sink.DedupeAndSink
 import org.apache.kafka.clients.producer.{Callback, Producer, ProducerRecord}
 import org.apache.kafka.common.serialization.{LongDeserializer, LongSerializer}
 
@@ -31,7 +30,6 @@ class TestDedupeAndSink_v2 extends BaseFunSuite {
     "--kafkaTopic", topic,
     "--workDir", workDir,
     "--outputDir", outputDir,
-    "--elasticsearchUrl", "http://10.148.181.34:9200",
     "--couchbaseDedupe", "false"
   )
 
