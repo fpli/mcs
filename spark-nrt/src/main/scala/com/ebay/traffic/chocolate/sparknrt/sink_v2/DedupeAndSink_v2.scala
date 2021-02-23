@@ -27,7 +27,7 @@ import rx.functions.Func1
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 /**
-  * Created by yliu29 on 3/8/18.
+ * Created by yuhxiao on 23/02/21.
   */
 object DedupeAndSink_v2 extends App {
   override def main(args: Array[String]) = {

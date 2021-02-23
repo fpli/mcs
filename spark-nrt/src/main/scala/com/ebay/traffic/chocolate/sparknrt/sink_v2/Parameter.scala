@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.sink_v2
 import scopt.OptionParser
 
 /**
-  * Created by yliu29 on 3/8/18.
+ * Created by yuhxiao on 23/02/21.
   */
 case class Parameter(appName: String = "DedupeAndSink_v2",
                      mode: String = "yarn",

@@ -11,7 +11,7 @@ import org.apache.kafka.clients.producer.{Callback, Producer, ProducerRecord}
 import org.apache.kafka.common.serialization.{LongDeserializer, LongSerializer}
 
 /**
-  * Created by yliu29 on 3/12/18.
+  * Created by yuhxiao on 23/02/21.
   */
 class TestDedupeAndSink_v2 extends BaseFunSuite {
   var kafkaCluster: MiniKafkaCluster = null
