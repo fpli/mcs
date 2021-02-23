@@ -255,7 +255,7 @@ public class DAPResponseHandlerTest {
 
     String head4 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "1234", "5678");
     assertTrue(head4.contains("guid=1234"));
-    assertTrue(head4.contains("adguid=5678"));
+    assertTrue(head3.contains("adguid=5678"));
   }
 
   @Test

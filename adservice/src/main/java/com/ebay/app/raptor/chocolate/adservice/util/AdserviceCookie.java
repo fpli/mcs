@@ -2,11 +2,11 @@ package com.ebay.app.raptor.chocolate.adservice.util;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
+import com.ebay.app.raptor.chocolate.adservice.constant.StringConstants;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,8 +48,9 @@ public class AdserviceCookie {
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
   }
+
   /**
-   * Read adguid from cookie
+   * Read adguid from request cookie
    * @param request http request
    * @return adguid in String
    */
@@ -67,6 +68,23 @@ public class AdserviceCookie {
     }
     ESMetrics.getInstance().meter(METRIC_NO_ADGUID_IN_COOKIE);
     return null;
+  }
+
+  /**
+   * Read adguid from request and response cookie
+   * For first coming request, only response header has adguid
+   * @param request   http request
+   * @param response  http response
+   * @return adguid in String
+   */
+  public String readAdguid(HttpServletRequest request, HttpServletResponse response) {
+    String adguid = readAdguid(request);
+    if (StringUtils.isEmpty(adguid)) {
+      String cookie = response.getHeader("Set-Cookie");
+      adguid = getCookie(cookie, Constants.ADGUID);
+    }
+
+    return adguid;
   }
 
   /**
@@ -162,5 +180,24 @@ public class AdserviceCookie {
     }
 
     return decrypted;
+  }
+
+  /**
+   * Get specific cookie from header
+   * @param cookies cookie header
+   * @param name    cookie name
+   * @return cookie value
+   */
+  private String getCookie(String cookies, String name) {
+    if (!StringUtils.isEmpty(cookies)) {
+      String[] cookieArray = cookies.split(StringConstants.SEMICOLON);
+      for (String cookie : cookieArray) {
+        if (cookie.startsWith(name + StringConstants.EQUAL)) {
+          return cookie.substring(cookie.indexOf(StringConstants.EQUAL) + 1);
+        }
+      }
+    }
+
+    return null;
   }
 }

@@ -30,9 +30,9 @@ public class HttpRoverClientTest {
   @BeforeClass
   public static void init() {
     AsyncHttpClientConfig config = config()
-        .setRequestTimeout(5000)
-        .setConnectTimeout(5000)
-        .setReadTimeout(5000)
+        .setRequestTimeout(10000)
+        .setConnectTimeout(10000)
+        .setReadTimeout(10000)
         .build();
     AsyncHttpClient asyncHttpClient = asyncHttpClient(config);
     httpRoverClient.setAsyncHttpClient(asyncHttpClient);

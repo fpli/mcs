@@ -143,11 +143,10 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     GdprConsentDomain gdprConsentDomain = gdprConsentHandler.handleGdprConsent(request);
 
     try {
-      String adguid = "";
       if (gdprConsentDomain.isAllowedSetCookie()) {
-        adguid = adserviceCookie.setAdguid(request, response);
+        adserviceCookie.setAdguid(request, response);
       }
-      collectionService.collectAr(request, response, gdprConsentDomain, adguid);
+      collectionService.collectAr(request, response, gdprConsentDomain);
       if (HttpServletResponse.SC_MOVED_PERMANENTLY == response.getStatus()) {
         Response.ResponseBuilder responseBuilder = Response.status(Response.Status.MOVED_PERMANENTLY);
         for (String headerName : response.getHeaderNames()) {
@@ -288,7 +287,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   @Override
   public Response redirect(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
     metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "redirect"));
-    String adguid = adserviceCookie.setAdguid(request, response);
+    adserviceCookie.setAdguid(request, response);
     URI redirectUri = null;
     try {
       // assign home page as default redirect url
@@ -318,7 +317,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       redirectUri = uriBuilder.build();
 
       // get redirect url
-      redirectUri = collectionService.collectRedirect(request, mktClient, endpoint, adguid);
+      redirectUri = collectionService.collectRedirect(request, response, mktClient, endpoint);
     } catch (Exception e) {
       // When exception happen, redirect to www.ebay.com
       logger.warn(e.getMessage(), e);
