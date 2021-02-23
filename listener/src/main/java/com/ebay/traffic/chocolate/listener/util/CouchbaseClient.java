@@ -113,39 +113,6 @@ public class CouchbaseClient {
   }
 
   /**
-   * add mapping pair into couchbase
-   */
-  @Deprecated
-  public void addMappingRecord(String guid, String cguid) {
-    // in listener we don't want to hang if we have exception in CB
-    //flushBuffer();
-    try {
-      upsert(guid, cguid);
-    } catch (Exception e) {
-      logger.warn("Couchbase upsert operation exception", e);
-    }
-  }
-
-  /*get cguid by guid*/
-  public String getCguid(String guid) {
-    CacheClient cacheClient = null;
-    String cguid = "";
-    try {
-      cacheClient = factory.getClient(appdldevicesDatasourceName);
-      JsonDocument document = getBucket(cacheClient).get(guid, JsonDocument.class);
-      if (document != null) {
-        cguid = document.content().get("cguid").toString();
-        logger.debug("Get cguid. guid=" + guid + " cguid=" + cguid);
-      }
-    } catch (Exception e) {
-      logger.warn("Couchbase get operation exception", e);
-    } finally {
-      factory.returnClient(cacheClient);
-    }
-    return cguid;
-  }
-
-  /**
    *  get kafka global config
    */
   public int getKafkaGlobalConfig() {
