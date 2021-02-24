@@ -5,7 +5,7 @@ import scopt.OptionParser
 /**
  * Created by yuhxiao on 23/02/21.
   */
-case class Parameter(appName: String = "DedupeAndSink",
+case class Parameter(appName: String = "DedupeAndSink_v2",
                      mode: String = "yarn",
                      channel: String = "",
                      kafkaTopic: String = "",
@@ -18,8 +18,8 @@ case class Parameter(appName: String = "DedupeAndSink",
 
 object Parameter {
 
-  private lazy val parser = new OptionParser[Parameter]("DedupeAndSink") {
-    head("DedupeAndSink")
+  private lazy val parser = new OptionParser[Parameter]("DedupeAndSink_v2") {
+    head("DedupeAndSink_v2")
 
     opt[String]("appName")
       .optional
