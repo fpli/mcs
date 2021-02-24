@@ -39,7 +39,7 @@ dag = DAG(
 __config = {
     'name': dag_name,
     'java_class': 'com.ebay.traffic.chocolate.sparknrt.sink.DedupeAndSink_v2',
-    'application': '/mnt/jobs/tracking/sparknrt/lib/chocolate-spark-nrt-*.jar',
+    'application': '/mnt/jobs/tracking/spark-nrt/lib/chocolate-spark-nrt-*.jar',
     'executor_cores': 1,
     'driver_memory': '4G',
     'executor_memory': '6G',
@@ -64,10 +64,10 @@ spark_submit_operator = SparkSubmitOperator(
     task_id='dedupe_and_sink_epn',
     pool='spark_pool',
     conn_id='spark-hdlq-commrce-product-high-mem',
-    files='file:///mnt/jobs/tracking/sparknrt/conf/dedupe_and_sink.properties,'
-          'file:///mnt/jobs/tracking/sparknrt/conf/couchbase.properties,'
-          'file:///mnt/jobs/tracking/sparknrt/conf/kafka.properties,'
-          'file:///mnt/jobs/tracking/sparknrt/conf/sherlockio.properties,'
+    files='file:///mnt/jobs/tracking/spark-nrt/conf/dedupe_and_sink_v2.properties,'
+          'file:///mnt/jobs/tracking/spark-nrt/conf/couchbase_v2.properties,'
+          'file:///mnt/jobs/tracking/spark-nrt/conf/kafka_v2.properties,'
+          'file:///mnt/jobs/tracking/spark-nrt/conf/sherlockio.properties,'
           'file:///mnt/apache/confs/hive/conf/hive-site.xml,'
           'file:///mnt/apache/confs/hadoop/conf/ssl-client.xml',
     conf={
