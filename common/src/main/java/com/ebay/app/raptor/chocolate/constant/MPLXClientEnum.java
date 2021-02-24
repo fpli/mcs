@@ -48,7 +48,21 @@ public enum MPLXClientEnum {
   PE(21565, "Peru", 225),
   PR(21569, "Puerto Rico", 214),
   UY(21570, "Uruguay", 248),
-  VE(21571, "Venezuela", 252);
+  VE(21571, "Venezuela", 252),
+
+  // new client_id for GBH countries
+  IL(21572, "Israel", 206),
+  UA(21573, "UKRAINE", 232),
+  GR(21574, "GREECE", 200),
+  HU(21575, "HUNGARY", 202),
+  CZ(21576, "Czech Republic", 197),
+  DK(21577, "Denmark", 198),
+  NO(21578, "Norway", 209),
+  FI(21579, "Finland", 199),
+  RU(21580, "Russian Federation", 215),
+  JP(21581, "Japan", 104),
+  KR(21582, "Korea South", 226),
+  TH(21583, "Thailand", 219);
 
   private Integer mplxClientId;
   private String mplxClientName;
