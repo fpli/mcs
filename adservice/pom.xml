@@ -134,6 +134,22 @@
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-firemarshall-starter</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-actuator-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-iaf-token-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.standards</groupId>
+      <artifactId>standards-annotation-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.standards</groupId>
+      <artifactId>standards-exception-starter</artifactId>
+    </dependency>
 
     <!--global config-->
     <dependency>

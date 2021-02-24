@@ -120,6 +120,18 @@
             <groupId>com.ebay.raptorio.component</groupId>
             <artifactId>raptor-validateinternals-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-firemarshall-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-actuator-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-iaf-token-starter</artifactId>
+        </dependency>
         <!--COS Spec Implementation-->
         <dependency>
             <groupId>com.ebay.raptorio.component</groupId>
