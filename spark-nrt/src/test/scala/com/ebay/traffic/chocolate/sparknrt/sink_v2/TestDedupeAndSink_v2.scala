@@ -11,8 +11,8 @@ import org.apache.kafka.clients.producer.{Callback, Producer, ProducerRecord}
 import org.apache.kafka.common.serialization.{LongDeserializer, LongSerializer}
 
 /**
-  * Created by yuhxiao on 23/02/21.
-  */
+ * Created by yuhxiao on 23/02/21.
+ */
 class TestDedupeAndSink_v2 extends BaseFunSuite {
   var kafkaCluster: MiniKafkaCluster = null
 
@@ -44,10 +44,8 @@ class TestDedupeAndSink_v2 extends BaseFunSuite {
     kafkaCluster = KafkaTestHelper.newKafkaCluster()
     producer = kafkaCluster.createProducer[java.lang.Long, FilterMessage](
       classOf[LongSerializer], classOf[FilterMessageSerializer])
-    //job.setProperties(kafkaCluster.getConsumerProperties(classOf[LongDeserializer],
-      //classOf[FilterMessageDeserializer]))
-      val properties: Properties = kafkaCluster.getConsumerProperties(classOf[LongDeserializer],
-        classOf[FilterMessageDeserializer])
+    val properties: Properties = kafkaCluster.getConsumerProperties(classOf[LongDeserializer],
+      classOf[FilterMessageDeserializer])
     properties.load(getClass.getClassLoader.getResourceAsStream("sherlockio.properties"))
     job.setProperties(properties)
     println
@@ -90,9 +88,9 @@ class TestDedupeAndSink_v2 extends BaseFunSuite {
 
     val metadata = Metadata(workDir, channel, MetadataEnum.dedupe)
     val dom = metadata.readDedupeOutputMeta()
-    assert (dom.length == 1)
-    assert (dom(0)._2.contains(DATE_COL1))
-    assert (dom(0)._2.contains(DATE_COL2))
+    assert(dom.length == 1)
+    assert(dom(0)._2.contains(DATE_COL1))
+    assert(dom(0)._2.contains(DATE_COL2))
 
     // validate .imketl meta file exists
     assert(job.jobProperties.getProperty("meta.output.suffix").equals(".imketl"))
@@ -118,11 +116,11 @@ class TestDedupeAndSink_v2 extends BaseFunSuite {
 
     val df1 = job.readFilesAsDFEx(dom(0)._2.get(DATE_COL1).get)
     df1.show()
-    assert (df1.count() == 2)
+    assert(df1.count() == 2)
 
     val df2 = job.readFilesAsDFEx(dom(0)._2.get(DATE_COL2).get)
     df2.show()
-    assert (df2.count() == 1)
+    assert(df2.count() == 1)
 
     metadata.deleteDedupeOutputMeta(dom(0)._1)
 
@@ -136,17 +134,17 @@ class TestDedupeAndSink_v2 extends BaseFunSuite {
 
     val metadata1 = Metadata(workDir, channel, MetadataEnum.dedupe)
     val dom1 = metadata1.readDedupeOutputMeta()
-    assert (dom1.length == 1)
-    assert (dom1(0)._2.contains(DATE_COL1))
-    assert (dom1(0)._2.contains(DATE_COL2))
+    assert(dom1.length == 1)
+    assert(dom1(0)._2.contains(DATE_COL1))
+    assert(dom1(0)._2.contains(DATE_COL2))
 
     val df11 = job.readFilesAsDFEx(dom1(0)._2.get(DATE_COL1).get)
     df11.show()
-    assert (df11.count() == 1)
+    assert(df11.count() == 1)
 
     val df22 = job.readFilesAsDFEx(dom1(0)._2.get(DATE_COL2).get)
     df22.show()
-    assert (df22.count() == 1)
+    assert(df22.count() == 1)
 
     metadata.deleteDedupeOutputMeta(dom1(0)._1)
 

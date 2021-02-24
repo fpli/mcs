@@ -5,7 +5,7 @@ import scopt.OptionParser
 /**
  * Created by yuhxiao on 23/02/21.
   */
-case class Parameter(appName: String = "DedupeAndSink_v2",
+case class Parameter(appName: String = "DedupeAndSink",
                      mode: String = "yarn",
                      channel: String = "",
                      kafkaTopic: String = "",
