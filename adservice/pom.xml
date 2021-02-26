@@ -150,6 +150,15 @@
       <groupId>com.ebay.standards</groupId>
       <artifactId>standards-exception-starter</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-traffic-mirror-starter</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-trustfabric-handler-starter</artifactId>
+    </dependency>
 
     <!--global config-->
     <dependency>
