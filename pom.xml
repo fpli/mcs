@@ -287,6 +287,12 @@
         <groupId>com.ebay.raptor.dfp</groupId>
         <artifactId>DeviceFingerprintSvcClient</artifactId>
         <version>1.0.12</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.ebay.raptor.core</groupId>
+            <artifactId>ConfigWeb</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
