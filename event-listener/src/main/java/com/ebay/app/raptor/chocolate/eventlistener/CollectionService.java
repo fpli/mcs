@@ -1165,8 +1165,10 @@ public class CollectionService {
       eventEmitterPublisher.publishEvent(requestContext, parameters, uri, channelType, channelAction, snapshotId);
 
       // send click event to ubi
+      // Third party clicks should not be tracked into ubi
       // Don't track ubi if the click is a duplicate itm click
-      if (ChannelAction.CLICK.equals(channelAction) && !isDuplicateClick) {
+      if (ChannelAction.CLICK.equals(channelAction) && ebaysites.matcher(uri.toLowerCase()).find()
+          && !isDuplicateClick) {
         try {
           // Ubi tracking
           IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
@@ -1248,8 +1250,10 @@ public class CollectionService {
       eventEmitterPublisher.publishEvent(requestContext, parameters, uri, channelType, channelAction, snapshotId);
 
       // send click event to ubi
+      // Third party clicks should not be tracked into ubi
       // Don't track ubi if the click is a duplicate itm click
-      if (ChannelAction.CLICK.equals(channelAction) && !isDuplicateClick) {
+      if (ChannelAction.CLICK.equals(channelAction) && ebaysites.matcher(uri.toLowerCase()).find()
+          && !isDuplicateClick) {
         try {
           // Ubi tracking
           IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);

@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.ebay.traffic</groupId>
         <artifactId>chocolate</artifactId>
-        <version>3.7.0-RELEASE</version>
+        <version>3.7.1-RELEASE</version>
         <relativePath>..</relativePath>
     </parent>
     <groupId>com.ebay.traffic</groupId>
@@ -80,6 +80,42 @@
       <dependency>
         <groupId>com.ebay.raptorio.component</groupId>
         <artifactId>raptor-firemarshall-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-micrometer-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-service-discovery-client-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-hystrix-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-opentracing-cal-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-qualys-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-globalconfig-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-perfmon-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-tomcat-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.ebay.raptorio.component</groupId>
+        <artifactId>raptor-actuator-starter</artifactId>
       </dependency>
       <!-- spring boot jetty starter -->
       <dependency>

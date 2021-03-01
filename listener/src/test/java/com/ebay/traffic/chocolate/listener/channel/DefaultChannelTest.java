@@ -242,19 +242,6 @@ public class DefaultChannelTest {
   }
 
   @Test
-  public void processRoverSyncCommand() throws Exception{
-    String setCookie = "npii=btguid/75866c251690ab6af110f0bffffdb2535e69c89c^cguid/758674e91690a99b9634d24de79bcaad5e69c89c^;Domain=.ebay.co.uk;Expires=Thu, 12-Mar-2020 05:29:00 GMT;Path=/";
-    mockClientRequest.setRequestURI("rover.ebay.co.uk/roversync/?site=3&stg=1&cguid=758674e91690a99b9634d24de79bcaad&mpt=1552454939881");
-    mockProxyResponse.setHeader("Set-Cookie", setCookie);
-    when(mockMessageParser.getGuid(any(), any(), any(), eq("cguid"))).thenReturn("758674e91690a99b9634d24de79bcaad");
-    when(mockMessageParser.getGuid(any(), any(), any(), eq("tguid"))).thenReturn("75866c251690ab6af110f0bffffdb253");
-    channel.process(mockClientRequest, mockProxyResponse);
-    Thread.sleep(3000);
-    assertEquals("758674e91690a99b9634d24de79bcaad", CouchbaseClient.getInstance().getCguid("75866c251690ab6af110f0bffffdb253"));
-  }
-
-
-  @Test
   public void processUpsertChocoTagGuidMappingForClick() throws Exception{
       final long campaignId = TestHelper.positiveLong();
       final long snapshotId = TestHelper.positiveLong();
