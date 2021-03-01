@@ -13,8 +13,6 @@ public class Constants {
   public static final String MKCID = "mkcid";
   public static final String MKRID = "mkrid";
   public static final String MKSRID = "mksrid";
-  public static final String GUID = "guid";
-  public static final String ADGUID = "adguid";
   public static final String RVR_ID = "rvr_id";
   public static final String MKEVT = "mkevt";
   public static final String RVRID = "rvrid";
@@ -41,9 +39,13 @@ public class Constants {
   public static final String CONSENT_FLAG = "cf";
 
   // header name
+  public static final String GUID = "guid";
+  public static final String ADGUID = "adguid";
   public static final String USER_AGENT = "User-Agent";
   public static final String REFERER = "Referer";
   public static final String HTTP_ACCEPT_LANGUAGE = "Accept-Language";
+  public static final String TRACKING_HEADER = "X-EBAY-C-TRACKING";
+  public static final String END_USER_CONTEXT = "X-EBAY-C-ENDUSERCTX";
 
   public static final int GUID_LENGTH = 32;
 
