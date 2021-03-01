@@ -38,7 +38,7 @@ dag = DAG(
 
 __config = {
     'name': dag_name,
-    'java_class': 'com.ebay.traffic.chocolate.sparknrt.sink.DedupeAndSink_v2',
+    'java_class': 'com.ebay.traffic.chocolate.sparknrt.sink_v2.DedupeAndSink_v2',
     'application': '/mnt/jobs/tracking/spark-nrt/lib/chocolate-spark-nrt-*.jar',
     'executor_cores': 1,
     'driver_memory': '4G',
