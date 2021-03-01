@@ -8,14 +8,11 @@ import com.ebay.app.raptor.chocolate.adservice.redirect.RedirectContext;
 import com.ebay.app.raptor.chocolate.adservice.redirect.ThirdpartyRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.util.AdserviceCookie;
 import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
-import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
+import com.ebay.app.raptor.chocolate.adservice.util.HttpUtil;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
-import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.util.Map;
 
 
@@ -69,34 +65,6 @@ public class CollectionService {
   }
 
   /**
-   * construct a tracking header. guid is mandatory, if guid is null, create a guid
-   * @param guid guid from mapping if there is
-   * @param adguid adguid from cookie
-   * @param channelType channel type
-   * @return a tracking header string
-   */
-  public String constructTrackingHeader(String guid, String adguid, String channelType) {
-    String cookie = "";
-    if (!StringUtils.isEmpty(guid) && guid.length() >= Constants.GUID_LENGTH) {
-      cookie += "guid=" + guid.substring(0, Constants.GUID_LENGTH);
-    } else {
-      try {
-        cookie += "guid=" + new Guid().nextPaddedGUID();
-      } catch (UnknownHostException e) {
-        logger.warn("Create guid failure: ", e);
-        metrics.meter("CreateGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
-      }
-      logger.warn("No guid");
-      metrics.meter("NoGuid", 1, Field.of(Constants.CHANNEL_TYPE, channelType));
-    }
-    if (!StringUtils.isEmpty(adguid)) {
-      cookie += ",adguid=" + adguid;
-    }
-
-    return cookie;
-  }
-
-  /**
    * Collect email entry event(Adobe) and send redirect response
    *
    * @param request raw request
@@ -123,7 +91,7 @@ public class CollectionService {
       logError(Errors.REDIRECT_NO_QUERY_PARAMETER);
     }
 
-    MultiValueMap<String, String> parameters = ParametersParser.parse(params);
+    MultiValueMap<String, String> parameters = HttpUtil.parse(params);
     // no mkevt, redirect to home page
     if (!parameters.containsKey(Constants.MKEVT) || parameters.getFirst(Constants.MKEVT) == null) {
       logError(Errors.REDIRECT_NO_MKEVT);

@@ -18,7 +18,6 @@ import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.kernel.presentation.UrlUtils;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.RequestUtil;
-import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import org.apache.commons.collections.CollectionUtils;
@@ -45,7 +44,6 @@ import javax.ws.rs.core.Response;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -163,11 +161,6 @@ public class DAPResponseHandler {
 
     // call dap to get response
     MultivaluedMap<String, Object> dapResponseHeaders = callDAPResponse(dapUriBuilder.build().toString(), request, response);
-
-    // send to mcs with cguid equal to guid
-    if(StringUtils.isEmpty(guid)) {
-      guid = Constants.EMPTY_GUID;
-    }
 
     sendToMCS(request, dapRvrId, guid, adguid, dapResponseHeaders);
   }
@@ -424,27 +417,6 @@ public class DAPResponseHandler {
     return body;
   }
 
-  private String constructTrackingHeader(String guid, String adguid) {
-    String cookie = "";
-    if (!StringUtils.isEmpty(guid)) {
-      cookie += "guid=" + guid;
-    } else {
-      try {
-        cookie += "guid=" + new Guid().nextPaddedGUID();
-      } catch (UnknownHostException e) {
-        LOGGER.warn("Create guid failure: ", e);
-        ESMetrics.getInstance().meter("CreateGuidFailed");
-      }
-      LOGGER.warn("No guid");
-    }
-
-    if (!StringUtils.isEmpty(adguid)) {
-      cookie += ",adguid=" + adguid;
-    }
-
-    return cookie;
-  }
-
   /**
    * Send to MCS to track this request
    */
@@ -469,8 +441,8 @@ public class DAPResponseHandler {
     }
 
     // construct X-EBAY-C-TRACKING header
-    String trackingHeader = constructTrackingHeader(guid, adguid);
-    builder = builder.header("X-EBAY-C-TRACKING", trackingHeader);
+    String trackingHeader = HttpUtil.constructTrackingHeader(guid, adguid);
+    builder = builder.header(Constants.TRACKING_HEADER, trackingHeader);
     LOGGER.debug("set MCS X-EBAY-C-TRACKING {}", trackingHeader);
 
     // add uri and referer to marketing event body

@@ -217,13 +217,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       }
 
       // construct X-EBAY-C-TRACKING header
-      // if guid is empty, set adguid to be guid.
       String guid = adserviceCookie.getGuid(request);
-      if(StringUtils.isEmpty(guid)) {
-        guid = adguid;
-      }
-      builder = builder.header("X-EBAY-C-TRACKING",
-          collectionService.constructTrackingHeader(guid, adguid, channelType));
+      builder = builder.header(Constants.TRACKING_HEADER,
+          HttpUtil.constructTrackingHeader(guid, adguid));
 
       // add parameters separately to handle special characters
       URIBuilder uri = new URIBuilder(request.getRequestURL().toString());
@@ -293,7 +289,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       // assign home page as default redirect url
       URIBuilder uriBuilder = new URIBuilder(ApplicationOptions.getInstance().getRedirectHomepage());
       // add all parameters except landing page parameter to the home page
-      MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
+      MultiValueMap<String, String> parameters = HttpUtil.parse(request.getParameterMap());
       // make sure mkevt=1 to let home page go to mcs
       // no mkevt, then add mkevt=1
       if (!parameters.containsKey(Constants.MKEVT)) {
@@ -354,8 +350,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     }
     // forward to mcs for writing ubi. The adguid in ubi is to help XID team build adguid into the linking system.
     // construct X-EBAY-C-TRACKING header
-    builder = builder.header("X-EBAY-C-TRACKING",
-        collectionService.constructTrackingHeader(guid, adguid,"sync"));
+    builder = builder.header(Constants.TRACKING_HEADER,
+        HttpUtil.constructTrackingHeader(guid, adguid));
 
     // add uri and referer to marketing event body
     MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
