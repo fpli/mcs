@@ -135,7 +135,7 @@ public class CouchbaseClient {
       JsonDocument document = getBucket(cacheClient).get(IdMapable.ADGUID_GUID_PREFIX + adguid, JsonDocument.class);
       if (document != null) {
         guid = document.content().get(GUID_MAP_KEY).toString();
-        logger.debug("Get guid. adguid=" + adguid + " guid=" + guid);
+        logger.info("Get guid. adguid=" + adguid + " guid=" + guid);
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);

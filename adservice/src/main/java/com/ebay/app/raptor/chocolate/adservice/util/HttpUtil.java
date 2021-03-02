@@ -3,12 +3,16 @@ package com.ebay.app.raptor.chocolate.adservice.util;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.StringConstants;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.util.Map;
 
 public class HttpUtil {
+  private static final Logger logger = LoggerFactory.getLogger(HttpUtil.class);
+
   /**
    * Construct a tracking header.
    * @param guid    guid from mapping if there is
@@ -19,6 +23,8 @@ public class HttpUtil {
     String cookie = "";
     if (!StringUtils.isEmpty(guid) && guid.length() >= Constants.GUID_LENGTH) {
       cookie += Constants.GUID + StringConstants.EQUAL + guid.substring(0, Constants.GUID_LENGTH);
+    } else if (!StringUtils.isEmpty(guid)) {
+      logger.warn("Invalid guid {}", guid);
     }
 
     if (!StringUtils.isEmpty(adguid)) {
