@@ -83,6 +83,10 @@ public class Constants {
   public static final String CHANNEL_ACTION = "channelAction";
   public static final String CHANNEL_TYPE = "channelType";
 
+  // Promoted Listings url params
+  public static final String MKSRC = "mksrc";
+  public static final String PLRFR = "plrfr";
+
   /**
    * Email tag - param map
    */
