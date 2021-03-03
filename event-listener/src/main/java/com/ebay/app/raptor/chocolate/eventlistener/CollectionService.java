@@ -1033,6 +1033,21 @@ public class CollectionService {
       message.setShortSnapshotId(Long.valueOf(parameters.get(Constants.MKRVRID).get(0)));
     }
 
+    // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256
+    boolean isEPNClickFromPromotedListings = false;
+    try {
+      isEPNClickFromPromotedListings = CollectionServiceUtil.isEPNPromotedListingsClick(channelType, parameters, message.getReferer());
+
+      if (isEPNClickFromPromotedListings) {
+        String actualPromotedListingsClickReferer = URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), "UTF-8");
+        message.setReferer(actualPromotedListingsClickReferer);
+        metrics.meter("OverwriteRefererForPromotedListingsClick");
+      }
+    } catch (Exception e) {
+      logger.error("Determine whether the click is from promoted listings iframe error");
+      metrics.meter("DeterminePromotedListingsClickError", 1);
+    }
+
     if (channelType != ChannelIdEnum.EPN) {
       BehaviorMessage behaviorMessage = null;
       switch (channelAction) {
