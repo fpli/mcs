@@ -345,8 +345,7 @@ public class RoverRheosTopicFilterTask extends Thread {
             logger.warn("Decode EPN Mobile clicks landing page url error");
           }
           record.setLandingPageUrl(landingPageUrl);
-          //for test and will be removed
-          logger.info("pageId is 3084, EPN click, record is {}", record);
+
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
 
@@ -358,8 +357,6 @@ public class RoverRheosTopicFilterTask extends Thread {
           BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_CLICK.getName(),
                   ChannelAction.CLICK.name(), channelTypeStr, schemaVersion);
           if (record != null) {
-              //for test and will be removed
-            logger.info("pageId is 3084, rover click, BehaviorMessage is {}", record);
             behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
           }
         }
@@ -469,8 +466,6 @@ public class RoverRheosTopicFilterTask extends Thread {
               rheosSentTimestamp,
               rheosInternalTimestamps));
         }
-          //for test and will be removed
-          logger.info("pageId is 3086, roi, ListenerMessage is {}", record);
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
 
         // send roi to unified tracking topic
@@ -484,8 +479,6 @@ public class RoverRheosTopicFilterTask extends Thread {
           Map<String, String> payload = roiRecord.getApplicationPayload();
           payload.put("url_mpre", ROVER_HOST + roiRecord.getUrlQueryString());
           roiRecord.setApplicationPayload(payload);
-            //for test and will be removed
-            logger.info("pageId is 3086, rover roi, BehaviorMessage is {}", roiRecord);
           behaviorProducer.send(new ProducerRecord<>(behaviorTopic, roiRecord.getSnapshotId().getBytes(), roiRecord), KafkaSink.callback);
         }
       } else if(pageId == PageIdEnum.EMAIL_OPEN.getId()) {
@@ -498,8 +491,6 @@ public class RoverRheosTopicFilterTask extends Thread {
             BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_OPEN.getName(),
                     ChannelAction.EMAIL_OPEN.name(), channelTypeStr, schemaVersion);
             if (record != null) {
-                //for test and will be removed
-                logger.info("pageId is Email open, BehaviorMessage is {}", record);
               behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
             }
           }
