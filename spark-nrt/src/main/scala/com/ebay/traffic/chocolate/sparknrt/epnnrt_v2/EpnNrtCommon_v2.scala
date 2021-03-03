@@ -10,6 +10,7 @@ import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.epnnrt._
 import com.ebay.traffic.chocolate.sparknrt.utils.{MyID, MyIDV2, XIDResponse, XIDResponseV2}
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
+import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
 import com.google.gson.{Gson, JsonParser}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.conf.Configuration
@@ -81,12 +82,11 @@ class EpnNrtCommon_v2(params: Parameter, df: DataFrame) extends Serializable {
     properties
   }
 
-  @transient lazy val metrics: Metrics = {
-    val url = properties.getProperty("epnnrt.elasticsearchUrl")
-    if (url != null && url.nonEmpty) {
-      ESMetrics.init(METRICS_INDEX_PREFIX, url)
-      ESMetrics.getInstance()
-    } else null
+  @transient lazy val metrics: SherlockioMetrics = {
+    SherlockioMetrics.init(properties.getProperty("sherlockio.namespace"),properties.getProperty("sherlockio.endpoint"),properties.getProperty("sherlockio.user"))
+    val sherlockioMetrics = SherlockioMetrics.getInstance()
+    sherlockioMetrics.setJobName(params.appName)
+    sherlockioMetrics
   }
 
 
