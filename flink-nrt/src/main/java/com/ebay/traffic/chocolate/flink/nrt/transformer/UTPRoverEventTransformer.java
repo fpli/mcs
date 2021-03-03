@@ -313,7 +313,10 @@ public class UTPRoverEventTransformer {
   }
   
   protected String getTrackingId() {
-    if (actionTypeEnum == ActionTypeEnum.ROI) {
+    if (actionTypeEnum == ActionTypeEnum.ROI ) {
+      return null;
+    }
+    if (channelType == ChannelTypeEnum.EPN) {
       return null;
     }
     return PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, TransformerConstants.TRACKING_ID);
@@ -336,6 +339,9 @@ public class UTPRoverEventTransformer {
   @SuppressWarnings("UnstableApiUsage")
   protected long getEncryptedUserId() {
     if (actionTypeEnum == ActionTypeEnum.ROI) {
+      return 0L;
+    }
+    if (channelType == ChannelTypeEnum.EPN) {
       return 0L;
     }
     String encryptedUserId = sojTags.get(TransformerConstants.EMID);
@@ -395,12 +401,14 @@ public class UTPRoverEventTransformer {
     if (channelType == ChannelTypeEnum.MRKT_EMAIL) {
       return applicationPayload.get(TransformerConstants.SEGNAME);
     }
-    
+    if (channelType == ChannelTypeEnum.EPN) {
+      return PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, "campid");
+    }
     return PulsarParseUtils.substring(applicationPayload.get(TransformerConstants.SID), "e", ".mle");
   }
 
   protected String getRotationId() {
-    if (actionTypeEnum == ActionTypeEnum.ROI) {
+    if (actionTypeEnum == ActionTypeEnum.ROI || channelType == ChannelTypeEnum.EPN) {
       return urlQueryString.split("/").length > 3 ?
               urlQueryString.split("/")[3].split("\\?")[0].replace("-", "") : null;
     }
