@@ -431,33 +431,38 @@ public class CollectionService {
       metrics.meter("CheckoutAPIClick", 1);
     }
 
-
+    ListenerMessage listenerMessage = null;
     // add channel specific tags, and produce message for EPN and IMK
-    boolean processFlag = false;
-    if (channelType == ChannelIdEnum.EPN || channelType == ChannelIdEnum.PAID_SEARCH || channelType == ChannelIdEnum.DAP ||
-        channelType == ChannelIdEnum.SOCIAL_MEDIA || channelType == ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
-      processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType, channelAction,
-          request, startTime, endUserContext, raptorSecureContext, agentInfo, isDuplicateClick);
+    if (channelType == ChannelIdEnum.EPN || channelType == ChannelIdEnum.PAID_SEARCH
+        || channelType == ChannelIdEnum.DAP || channelType == ChannelIdEnum.SOCIAL_MEDIA
+        || channelType == ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
+      listenerMessage = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType,
+          channelAction, request, startTime, endUserContext, raptorSecureContext, agentInfo, isDuplicateClick);
     else if (channelType == ChannelIdEnum.SITE_EMAIL)
-      processFlag = processSiteEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
+      processSiteEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
           targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), isDuplicateClick);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
-      processFlag = processMrktEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
+       processMrktEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
           targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), isDuplicateClick);
     else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS)
-      processFlag = processSMSEvent(requestContext, referer, parameters, type, action, isDuplicateClick);
+      processSMSEvent(requestContext, referer, parameters, type, action, isDuplicateClick);
 
     // send to unified tracking topic
-    // send email channels first
     if (!isDuplicateClick) {
-      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-          targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-          null, 0L, 0L, utpEventId, startTime);
+      if(listenerMessage!=null) {
+        processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+            targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+            null, listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), null, startTime);
+      } else {
+        processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+            targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+            null, 0L, 0L, utpEventId, startTime);
+      }
     }
 
-    if (processFlag)
-      stopTimerAndLogData(eventProcessStartTime, startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-              Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+    stopTimerAndLogData(eventProcessStartTime, startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action),
+        Field.of(CHANNEL_TYPE, type), Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
+        Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
   }
@@ -719,24 +724,32 @@ public class CollectionService {
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
     // add channel specific tags, and produce message for EPN and IMK
-    boolean processFlag = false;
-    if (channelType == ChannelIdEnum.SITE_EMAIL)
-      processFlag = processSiteEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request,
+    ListenerMessage listenerMessage = null;
+    if (channelType == ChannelIdEnum.SITE_EMAIL) {
+      processSiteEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request,
           agentInfo, uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), false);
-    else if (channelType == ChannelIdEnum.MRKT_EMAIL)
-      processFlag = processMrktEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request,
+    }
+    else if (channelType == ChannelIdEnum.MRKT_EMAIL) {
+      processMrktEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request,
           agentInfo, uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), false);
-    else
-      processFlag = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
+    }
+    else {
+      listenerMessage = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext, agentInfo, false);
+    }
 
     // send to unified tracking topic
-    processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-        uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-        null, 0L, 0L, null, startTime);
+    if(listenerMessage!=null) {
+      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+          uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+          null, listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), null, startTime);
+    } else {
+      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+          uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+          null, 0L, 0L, null, startTime);
+    }
 
-    if (processFlag)
-      stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+    stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
     return true;
@@ -957,7 +970,7 @@ public class CollectionService {
   /**
    * Process AMS and IMK events
    */
-  private boolean processAmsAndImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
+  private ListenerMessage processAmsAndImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
                                         MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                         ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
                                         IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext, UserAgentInfo agentInfo, boolean isDuplicateClick) {
@@ -1138,9 +1151,9 @@ public class CollectionService {
         producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       }
 
-      return true;
+      return message;
     } else
-      return false;
+      return null;
   }
 
   /**
