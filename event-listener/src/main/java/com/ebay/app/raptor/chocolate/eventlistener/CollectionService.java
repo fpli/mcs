@@ -1443,7 +1443,7 @@ public class CollectionService {
 
         // utp event id
         if(!StringUtils.isEmpty(utpEventId)) {
-          requestTracker.addTag("utpId", utpEventId, String.class);
+          requestTracker.addTag("utpid", utpEventId, String.class);
         }
 
         // populate device info
