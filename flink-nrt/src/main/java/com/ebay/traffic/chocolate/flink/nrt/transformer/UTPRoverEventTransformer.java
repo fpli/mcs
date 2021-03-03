@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
 import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
@@ -402,7 +403,7 @@ public class UTPRoverEventTransformer {
       return applicationPayload.get(TransformerConstants.SEGNAME);
     }
     if (channelType == ChannelTypeEnum.EPN) {
-      return PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, "campid");
+      return PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, Constants.CAMP_ID);
     }
     return PulsarParseUtils.substring(applicationPayload.get(TransformerConstants.SID), "e", ".mle");
   }
@@ -513,6 +514,17 @@ public class UTPRoverEventTransformer {
       }
       return payload;
     }
+    if (channelType == ChannelTypeEnum.EPN) {
+      for (String key : Arrays.asList(TransformerConstants.RVRID, "url_mpre")) {
+        if (applicationPayload.containsKey(key)) {
+          payload.put(key, applicationPayload.get(key));
+        }
+      }
+      String toolId = PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, Constants.TOOL_ID);
+      if(StringUtils.isNotEmpty(toolId)) {
+        payload.put(Constants.TOOL_ID, PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, Constants.TOOL_ID));
+      }
+    }
     if (actionTypeEnum == ActionTypeEnum.ROI) {
       payload.put("p", String.valueOf(pageId));
       payload.put("itm", String.valueOf(pageId));
@@ -522,8 +534,8 @@ public class UTPRoverEventTransformer {
           payload.put(key, applicationPayload.get(key));
         }
       }
-      String rvrId = applicationPayload.getOrDefault("rvrid", StringConstants.EMPTY);
-      payload.put("rvrid", rvrId);
+      String rvrId = applicationPayload.getOrDefault(TransformerConstants.RVRID, StringConstants.EMPTY);
+      payload.put(TransformerConstants.RVRID, rvrId);
       payload.put("snapshotid", rvrId);
       return payload;
     }
