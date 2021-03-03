@@ -84,7 +84,9 @@ public class Constants {
   public static final String CHANNEL_TYPE = "channelType";
 
   // Promoted Listings url params
+  // mksrc is used to mark if the click is from promoted listings iframe on ebay partner site
   public static final String MKSRC = "mksrc";
+  // plrfr is the actual referer for the clicks from promoted listings iframe on ebay partner site
   public static final String PLRFR = "plrfr";
 
   /**
