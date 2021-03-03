@@ -16,6 +16,6 @@ public class EsrXidClientTest {
     @Test
     public void testGetUserId() {
         String userIdByGuid = esrXidClient.getUserIdByGuid("fc77ec531730a9c42defc807ffffea20");
-        assert userIdByGuid.equals("");
+        assert userIdByGuid.equals("0");
     }
 }
