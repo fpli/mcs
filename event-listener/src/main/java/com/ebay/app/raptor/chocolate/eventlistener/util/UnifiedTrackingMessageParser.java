@@ -382,7 +382,7 @@ public class UnifiedTrackingMessageParser {
     String partner = "";
     if (ChannelType.EPN.equals(channelType)) {
       if (StringUtils.isNumeric(parameters.getFirst(Constants.CAMPID))) {
-        // Do we really need to get publisher id here?
+        // TODO: Do we really need to get publisher id here?
       }
     } else if (ChannelType.PAID_SEARCH.equals(channelType)) {
       // partner definition unknown
@@ -493,6 +493,13 @@ public class UnifiedTrackingMessageParser {
 
     if (channelAction == ChannelAction.ROI) {
       addRoiSojTags(payload, roiEvent, String.valueOf(userId), snapshotId, shortSnapshotId);
+    }
+
+    if (channelType == ChannelType.EPN) {
+      String toolId = HttpRequestUtil.parseTagFromParams(parameters, Constants.TOOL_ID);
+      if(StringUtils.isNotEmpty(toolId)) {
+        payload.put(Constants.TOOL_ID, HttpRequestUtil.parseTagFromParams(parameters, Constants.TOOL_ID));
+      }
     }
 
     // add other tags

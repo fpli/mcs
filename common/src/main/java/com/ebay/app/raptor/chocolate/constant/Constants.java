@@ -34,6 +34,10 @@ public class Constants {
   public static final String MKRVRID = "mkrvrid";
   public static final String REFERRER = "referrer";
 
+  // EPN url params
+  public static final String TOOL_ID = "toolid";
+  public static final String CAMP_ID = "campid";
+
   // Email url params
   public static final String MKPID = "mkpid";
   public static final String SOJ_TAGS = "sojTags";
