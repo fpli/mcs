@@ -78,7 +78,7 @@ class EpnNrtCommon_v2(params: Parameter, df: DataFrame) extends Serializable {
 
   @transient lazy val properties: Properties = {
     val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
+    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt_v2.properties"))
     properties
   }
 
