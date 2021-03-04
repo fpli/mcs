@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.{Calendar, Properties}
 
 import com.ebay.traffic.chocolate.spark.BaseSparkJob
-import com.ebay.traffic.chocolate.sparknrt.capping_v2.{CappingRule, Parameter_v2}
+import com.ebay.traffic.chocolate.sparknrt.capping_v2.{CappingRule_v2, Parameter_v2}
 import com.ebay.traffic.chocolate.sparknrt.meta.DateFiles
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory
   * 6. Join current batch data with capping failed records df
   */
 abstract class GenericRule(params: Parameter_v2, bit: Long, dateFiles: DateFiles, cappingRuleJobObj: BaseSparkJob, window: String)
-  extends CappingRule with Serializable {
+  extends CappingRule_v2 with Serializable {
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
   @transient lazy val hadoopConf = {

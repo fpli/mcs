@@ -6,7 +6,7 @@ import scala.language.implicitConversions
 /**
  * Created by yuhxiao on 1/3/21.
   */
-trait CappingRule {
+trait CappingRule_v2 {
 
   // date col name
   def DATE_COL: String
