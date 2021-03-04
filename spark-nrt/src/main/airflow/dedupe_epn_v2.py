@@ -2,8 +2,8 @@ from airflow.contrib.operators.spark_submit_operator import SparkSubmitOperator
 from airflow import DAG
 from datetime import timedelta
 
-dag_name = 'dedupe_and_sink_epn'
-dag_id = 'dedupe_and_sink_epn'
+dag_name = 'dedupe_epn_v2'
+dag_id = 'dedupe_epn_v2'
 
 default_args = {
     'owner': 'yuhxiao',
@@ -25,7 +25,7 @@ dag = DAG(
 
 """
 {
-    "appName": "dedupe_and_sink_epn",
+    "appName": "dedupe_epn_v2",
     "channel": "EPN",
     "kafkaTopic": "marketing.tracking.ssl.filtered-epn",
     "workDir": "viewfs://apollo-rno/user/b_marketing_tracking/tracking-events-workdir",
@@ -61,7 +61,7 @@ __config = {
 }
 
 spark_submit_operator = SparkSubmitOperator(
-    task_id='dedupe_and_sink_epn',
+    task_id='dedupe_epn_v2',
     pool='spark_pool',
     conn_id='spark-hdlq-commrce-product-high-mem',
     files='file:///mnt/jobs/tracking/spark-nrt/conf/dedupe_and_sink_v2.properties,'
