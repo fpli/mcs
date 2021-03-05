@@ -53,6 +53,22 @@ public class SiteEmailCollector implements CustomerMarketingCollector {
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
   }
 
+  /**
+   *
+   * @param requestContext
+   * @param endUserContext
+   * @param referer
+   * @param parameters
+   * @param type
+   * @param action
+   * @param request
+   * @param agentInfo
+   * @param uri
+   * @param startTime
+   * @param channelType
+   * @param channelAction
+   * @param isDuplicateClick
+   */
   public void trackUbi(ContainerRequestContext requestContext, IEndUserContext endUserContext,
                        String referer, MultiValueMap<String, String> parameters, String type,
                        String action, HttpServletRequest request, UserAgentInfo agentInfo, String uri,
@@ -64,7 +80,8 @@ public class SiteEmailCollector implements CustomerMarketingCollector {
         && !isDuplicateClick) {
       try {
         // Ubi tracking
-        IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+        IRequestScopeTracker requestTracker =
+            (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
         // event family
         requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
@@ -95,15 +112,32 @@ public class SiteEmailCollector implements CustomerMarketingCollector {
     }
   }
 
+  /**
+   *
+   * @param requestContext
+   * @param endUserContext
+   * @param referer
+   * @param parameters
+   * @param type
+   * @param action
+   * @param request
+   * @param agentInfo
+   * @param uri
+   * @param startTime
+   * @param channelType
+   * @param channelAction
+   * @param snapshotId
+   * @param isDuplicateClick
+   * @return
+   */
   public BehaviorMessage parseBehaviorMessage(ContainerRequestContext requestContext, IEndUserContext endUserContext,
                                               String referer, MultiValueMap<String, String> parameters, String type,
-                                              String action, HttpServletRequest request, UserAgentInfo agentInfo, String uri,
-                                              Long startTime, ChannelType channelType, ChannelAction channelAction,
-                                              long snapshotId, boolean isDuplicateClick) {
+                                              String action, HttpServletRequest request, UserAgentInfo agentInfo,
+                                              String uri, Long startTime, ChannelType channelType,
+                                              ChannelAction channelAction, long snapshotId, boolean isDuplicateClick) {
     // send email open/click to chocolate topic
-    BehaviorMessage message = behaviorMessageParser.parse(request, requestContext, endUserContext, parameters,
+    return behaviorMessageParser.parse(request, requestContext, endUserContext, parameters,
         agentInfo, referer, uri, startTime, channelType, channelAction, snapshotId, 0);
-    return message;
   }
 
   /**

@@ -70,6 +70,20 @@ public class PerformanceMarketingCollector {
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
   }
 
+  /**
+   *
+   * @param requestContext
+   * @param targetUrl
+   * @param referer
+   * @param parameters
+   * @param channelType
+   * @param channelAction
+   * @param request
+   * @param startTime
+   * @param endUserContext
+   * @param raptorSecureContext
+   * @return
+   */
   public ListenerMessage parseListenerMessage(ContainerRequestContext requestContext, String targetUrl, String referer,
                                               MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                               ChannelActionEnum channelAction, HttpServletRequest request,
@@ -170,6 +184,18 @@ public class PerformanceMarketingCollector {
     return message;
   }
 
+  /**
+   *
+   * @param requestContext
+   * @param referer
+   * @param parameters
+   * @param channelType
+   * @param channelAction
+   * @param startTime
+   * @param endUserContext
+   * @param message
+   * @param isDuplicateClick
+   */
   public void trackUbi(ContainerRequestContext requestContext, String referer,
                        MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                        ChannelActionEnum channelAction, long startTime,
@@ -227,6 +253,22 @@ public class PerformanceMarketingCollector {
     }
   }
 
+  /**
+   *
+   * @param requestContext
+   * @param targetUrl
+   * @param referer
+   * @param parameters
+   * @param channelType
+   * @param channelAction
+   * @param request
+   * @param startTime
+   * @param endUserContext
+   * @param agentInfo
+   * @param message
+   * @param isDuplicateClick
+   * @return
+   */
   public BehaviorMessage parseBehaviorMessage(ContainerRequestContext requestContext, String targetUrl, String referer,
                                               MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                               ChannelActionEnum channelAction, HttpServletRequest request,

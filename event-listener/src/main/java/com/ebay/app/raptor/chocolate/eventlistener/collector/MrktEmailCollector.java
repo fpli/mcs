@@ -54,6 +54,22 @@ public class MrktEmailCollector implements CustomerMarketingCollector {
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
   }
 
+  /**
+   *
+   * @param requestContext
+   * @param endUserContext
+   * @param referer
+   * @param parameters
+   * @param type
+   * @param action
+   * @param request
+   * @param agentInfo
+   * @param uri
+   * @param startTime
+   * @param channelType
+   * @param channelAction
+   * @param isDuplicateClick
+   */
   public void trackUbi(ContainerRequestContext requestContext, IEndUserContext endUserContext,
                        String referer, MultiValueMap<String, String> parameters, String type,
                        String action, HttpServletRequest request, UserAgentInfo agentInfo, String uri,
@@ -123,6 +139,24 @@ public class MrktEmailCollector implements CustomerMarketingCollector {
     }
   }
 
+  /**
+   *
+   * @param requestContext
+   * @param endUserContext
+   * @param referer
+   * @param parameters
+   * @param type
+   * @param action
+   * @param request
+   * @param agentInfo
+   * @param uri
+   * @param startTime
+   * @param channelType
+   * @param channelAction
+   * @param snapshotId
+   * @param isDuplicateClick
+   * @return
+   */
   public BehaviorMessage parseBehaviorMessage(ContainerRequestContext requestContext, IEndUserContext endUserContext,
                                               String referer, MultiValueMap<String, String> parameters, String type,
                                               String action, HttpServletRequest request, UserAgentInfo agentInfo, String uri,
