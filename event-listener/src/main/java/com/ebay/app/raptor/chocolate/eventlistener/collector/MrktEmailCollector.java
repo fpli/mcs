@@ -38,11 +38,11 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.eb
  * Track
  * 1. Ubi message,
  * 2. Behavior message
- * for performance marketing channels
+ * for marketing email
  */
 @Component
 @DependsOn("EventListenerService")
-public class MrktEmailCollector {
+public class MrktEmailCollector implements CustomerMarketingCollector {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MrktEmailCollector.class);
   private Metrics metrics;
