@@ -240,25 +240,6 @@ public class DAPResponseHandlerTest {
   }
 
   @Test
-  public void constructTrackingHeader() throws Exception {
-    String head1 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "", "");
-    assertTrue(head1.contains("guid="));
-    assertFalse(head1.contains("adguid="));
-
-    String head2 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "1234", "");
-    assertTrue(head2.contains("guid=1234"));
-    assertFalse(head2.contains("adguid="));
-
-    String head3 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "", "5678");
-    assertTrue(head3.contains("guid="));
-    assertTrue(head3.contains("adguid=5678"));
-
-    String head4 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "1234", "5678");
-    assertTrue(head4.contains("guid=1234"));
-    assertTrue(head4.contains("adguid=5678"));
-  }
-
-  @Test
   public void setReferrer() throws Exception {
     URIBuilder dapUriBuilder = new URIBuilder();
 

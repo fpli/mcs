@@ -2,11 +2,10 @@ package com.ebay.app.raptor.chocolate.adservice.redirect;
 
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
+import com.ebay.app.raptor.chocolate.adservice.util.HttpUtil;
 import com.ebay.app.raptor.chocolate.adservice.util.MCSCallback;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
-import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
-import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
@@ -40,7 +39,6 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   private static final String REDIRECT_SERVER_DOMAIN = "www.ebayadservices.com";
   private static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   private static final String REDIRECT_SRC_SOJ_TAG = "adcamp_locationsrc";
-  private static final int REDIRECT_API_OFFSET = 3;
 
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
 
@@ -51,7 +49,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   @Override
   public URI process(HttpServletRequest request, Client mktClient, String endpoint, String guid, String adguid)
       throws URISyntaxException {
-    MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
+    MultiValueMap<String, String> parameters = HttpUtil.parse(request.getParameterMap());
 
     // build redirection event
     redirectionEvent = new RedirectionEvent(getParam(parameters, Constants.MKCID),
@@ -161,8 +159,8 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     }
 
     // add Commerce-OS standard header
-    builder = builder.header("X-EBAY-C-ENDUSERCTX", constructEndUserContextHeader(request))
-        .header("X-EBAY-C-TRACKING", constructTrackingHeader(guid, adguid));
+    builder = builder.header(Constants.END_USER_CONTEXT, constructEndUserContextHeader(request))
+        .header(Constants.TRACKING_HEADER, HttpUtil.constructTrackingHeader(guid, adguid));
 
     // call MCS
     builder.async().post(Entity.json(mktEvent), new MCSCallback());
@@ -202,30 +200,6 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
         redirectionEvent.setIsEbayDomain(false);
       }
     }
-  }
-
-  /**
-   * Construct X-EBAY-C-TRACKING header with guid
-   */
-  private String constructTrackingHeader(String guid, String adguid) {
-    String cookie = "";
-    if (!StringUtils.isEmpty(guid)) {
-      cookie += "guid=" + guid;
-    } else {
-      try {
-        cookie += "guid=" + new Guid().nextPaddedGUID();
-      } catch (UnknownHostException e) {
-        logger.warn("Create guid failure: ", e);
-        ESMetrics.getInstance().meter("CreateGuidFailed");
-      }
-      logger.warn("No guid");
-    }
-
-    if (!StringUtils.isEmpty(adguid)) {
-      cookie += ",adguid=" + adguid;
-    }
-
-    return cookie;
   }
 
   /**
