@@ -21,7 +21,8 @@
         <metric name="Capping Output: click" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:display,channelAction:click" threshold="10000" thresholdFactor="0.7" computeType="sum" alert="true"/>
     </project>
     <project name="Chocolate-roi-data" id="5">
-        <metric name="Collectionsvc Input: roi" value="IncomingPageRoi" source="chocolate-metrics" condition="" threshold="8000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+        <metric name="Collectionsvc Input: roi" value="NewROICountAPI" source="chocolate-metrics" condition="channelType:new-roi" threshold="8500000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+        <metric name="IncomingPageRoi" value="IncomingPageRoi" source="chocolate-metrics" condition="" threshold="3500000" thresholdFactor="0.7" computeType="sum" alert="true"/>
         <metric name="Capping Output: roi" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:roi,channelAction:roi" threshold="10000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
     </project>
     <project name="Rotation-data" id="6">
