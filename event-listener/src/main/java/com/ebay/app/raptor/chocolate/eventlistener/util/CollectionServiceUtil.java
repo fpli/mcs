@@ -72,7 +72,7 @@ public class CollectionServiceUtil {
   private static Pattern ebayItemNoTitlePage = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/(?=itm\\/[0-9]+\\?).*)", Pattern.CASE_INSENSITIVE);
 
   // referer pattern for the clicks from Promoted Listings iframe on ebay partner sites
-  private static Pattern promotedListsingsRefererWithEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?[\\w-.]+\\.(ebay)\\.[\\w-.]+(\\/gum\\/.*)", Pattern.CASE_INSENSITIVE);
+  private static Pattern promotedListsingsRefererWithEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/gum\\/.*)", Pattern.CASE_INSENSITIVE);
 
   /**
    * get app id from user agent info
