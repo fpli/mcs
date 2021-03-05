@@ -1039,8 +1039,8 @@ public class CollectionService {
       isEPNClickFromPromotedListings = CollectionServiceUtil.isEPNPromotedListingsClick(channelType, parameters, message.getReferer());
 
       if (isEPNClickFromPromotedListings) {
-        String actualPromotedListingsClickReferer = URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), "UTF-8");
-        message.setReferer(actualPromotedListingsClickReferer);
+        referer = URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), "UTF-8");
+        message.setReferer(referer);
         metrics.meter("OverwriteRefererForPromotedListingsClick");
       }
     } catch (Exception e) {
