@@ -6,6 +6,10 @@ package com.ebay.app.raptor.chocolate.constant;
 
 import com.google.common.collect.ImmutableMap;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author xiangli4
  */
@@ -86,6 +90,14 @@ public class Constants {
   // Metrics name
   public static final String CHANNEL_ACTION = "channelAction";
   public static final String CHANNEL_TYPE = "channelType";
+
+  /**
+   * Performance marketing channels
+   */
+  public static final Set<ChannelIdEnum> PM_CHANNELS = new HashSet<>(
+      Arrays.asList(ChannelIdEnum.EPN, ChannelIdEnum.PAID_SEARCH,
+          ChannelIdEnum.DAP, ChannelIdEnum.SOCIAL_MEDIA, ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
+  );
 
   /**
    * Email tag - param map

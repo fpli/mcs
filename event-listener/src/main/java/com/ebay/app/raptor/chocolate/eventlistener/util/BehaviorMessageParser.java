@@ -483,7 +483,7 @@ public class BehaviorMessageParser {
   /**
    * Parse tag from url query string and add to sojourner
    */
-  private static String parseTagFromParams(MultiValueMap<String, String> parameters, String param) {
+  public static String parseTagFromParams(MultiValueMap<String, String> parameters, String param) {
     if (parameters.containsKey(param) && parameters.get(param).get(0) != null) {
       return parameters.getFirst(param);
     }
