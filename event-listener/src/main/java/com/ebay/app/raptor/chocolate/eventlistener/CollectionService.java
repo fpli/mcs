@@ -411,6 +411,20 @@ public class CollectionService {
       metrics.meter("DetermineDuplicateItmClickError", 1);
     }
 
+    // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256, only for EPN channel
+    boolean isEPNClickFromPromotedListings = false;
+    try {
+      isEPNClickFromPromotedListings = CollectionServiceUtil.isEPNPromotedListingsClick(channelType, parameters, referer);
+
+      if (isEPNClickFromPromotedListings) {
+        referer = URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), "UTF-8");
+        metrics.meter("OverwriteRefererForPromotedListingsClick");
+      }
+    } catch (Exception e) {
+      logger.error("Determine whether the click is from promoted listings iframe error");
+      metrics.meter("DeterminePromotedListingsClickError", 1);
+    }
+
     // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
     String utpEventId = UUID.randomUUID().toString();
 
@@ -1047,21 +1061,6 @@ public class CollectionService {
     // Use the shot snapshot id from requests
     if (parameters.containsKey(Constants.MKRVRID) && parameters.get(Constants.MKRVRID).get(0) != null) {
       message.setShortSnapshotId(Long.valueOf(parameters.get(Constants.MKRVRID).get(0)));
-    }
-
-    // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256
-    boolean isEPNClickFromPromotedListings = false;
-    try {
-      isEPNClickFromPromotedListings = CollectionServiceUtil.isEPNPromotedListingsClick(channelType, parameters, message.getReferer());
-
-      if (isEPNClickFromPromotedListings) {
-        referer = URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), "UTF-8");
-        message.setReferer(referer);
-        metrics.meter("OverwriteRefererForPromotedListingsClick");
-      }
-    } catch (Exception e) {
-      logger.error("Determine whether the click is from promoted listings iframe error");
-      metrics.meter("DeterminePromotedListingsClickError", 1);
     }
 
     if (channelType != ChannelIdEnum.EPN) {
