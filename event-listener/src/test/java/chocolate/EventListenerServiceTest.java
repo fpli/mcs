@@ -976,7 +976,7 @@ public class EventListenerServiceTest {
   }
 
   @Test
-  public void testClickResourceFromEPNPromotedListings() {
+  public void testClickResourceFromEPNPromotedListings() throws InterruptedException {
     String marketingStatusCode = "200";
     Event event = new Event();
     event.setReferrer("https://www.ebay.co.uk/gum/v1/stick?q=carpet%20cleaner");
@@ -1028,6 +1028,26 @@ public class EventListenerServiceTest {
     event.setReferrer("https://www.ebay.com/itm/1234567");
     response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
     assertEquals(201, response.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerEpn = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
+            consumerEpn, Arrays.asList("dev_listened-epn"), 8, 30 * 1000);
+    consumerEpn.close();
+    assertEquals(8, listenerMessagesEpn.size());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
+            consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 2, 30 * 1000);
+    consumerPaidSearch.close();
+    assertEquals(1, listenerMessagesPaidSearch.size());
   }
 
   /**
