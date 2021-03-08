@@ -1035,7 +1035,7 @@ public class EventListenerServiceTest {
     Consumer<Long, ListenerMessage> consumerEpn = kafkaCluster.createConsumer(
             LongDeserializer.class, ListenerMessageDeserializer.class);
     Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
-            consumerEpn, Arrays.asList("dev_listened-epn"), 4, 30 * 1000);
+            consumerEpn, Arrays.asList("dev_listened-epn"), 8, 30 * 1000);
     consumerEpn.close();
     assertEquals(8, listenerMessagesEpn.size());
 
