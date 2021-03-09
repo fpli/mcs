@@ -54,6 +54,9 @@ public enum PageIdEnum {
   }
 
   public static int getPageIdByAction(ChannelAction channelAction) {
-    return MAP.get(channelAction);
+    if (MAP.containsKey(channelAction)) {
+      return MAP.get(channelAction);
+    }
+    return 0;
   }
 }
