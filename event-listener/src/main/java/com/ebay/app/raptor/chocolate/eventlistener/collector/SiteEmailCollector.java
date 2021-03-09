@@ -41,43 +41,33 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.eb
  */
 @Component
 @DependsOn("EventListenerService")
-public class SiteEmailCollector implements CustomerMarketingCollector {
+public class SiteEmailCollector extends CustomerMarketingCollector {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SiteEmailCollector.class);
-  private Metrics metrics;
-  private BehaviorMessageParser behaviorMessageParser;
 
   @PostConstruct
-  public void postInit() throws Exception {
-    this.metrics = ESMetrics.getInstance();
-    this.behaviorMessageParser = BehaviorMessageParser.getInstance();
+  @Override
+  public void postInit() {
+    super.postInit();
   }
 
   /**
-   *
-   * @param requestContext
-   * @param endUserContext
-   * @param referer
-   * @param parameters
-   * @param type
-   * @param action
-   * @param request
-   * @param agentInfo
-   * @param uri
-   * @param startTime
-   * @param channelType
-   * @param channelAction
-   * @param isDuplicateClick
+   * @param parameters    url parameters
+   * @param type          channel type
+   * @param action        action type
+   * @param request       http request
+   * @param uri           url
+   * @param channelAction channel action enum
    */
-  public void trackUbi(ContainerRequestContext requestContext, IEndUserContext endUserContext,
-                       String referer, MultiValueMap<String, String> parameters, String type,
-                       String action, HttpServletRequest request, UserAgentInfo agentInfo, String uri,
-                       Long startTime, ChannelType channelType, ChannelAction channelAction, boolean isDuplicateClick) {
+  @Override
+  public void trackUbi(ContainerRequestContext requestContext,
+                       MultiValueMap<String, String> parameters, String type,
+                       String action, HttpServletRequest request, String uri,
+                       ChannelAction channelAction) {
     // send click event to ubi
     // Third party clicks should not be tracked into ubi
     // Don't track ubi if the click is a duplicate itm click
-    if (ChannelAction.CLICK.equals(channelAction) && ebaysites.matcher(uri.toLowerCase()).find()
-        && !isDuplicateClick) {
+    if (ChannelAction.CLICK.equals(channelAction) && ebaysites.matcher(uri.toLowerCase()).find()) {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker =
@@ -87,8 +77,9 @@ public class SiteEmailCollector implements CustomerMarketingCollector {
         requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
 
         // fbprefetch
-        if (isFacebookPrefetchEnabled(request))
+        if (isFacebookPrefetchEnabled(request)) {
           requestTracker.addTag("fbprefetch", true, Boolean.class);
+        }
 
         // channel id
         addTagFromUrlQuery(parameters, requestTracker, Constants.MKCID, "chnl", String.class);
@@ -109,61 +100,6 @@ public class SiteEmailCollector implements CustomerMarketingCollector {
         LOGGER.warn("Error when tracking ubi for site email click tags", e);
         metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
       }
-    }
-  }
-
-  /**
-   *
-   * @param requestContext
-   * @param endUserContext
-   * @param referer
-   * @param parameters
-   * @param type
-   * @param action
-   * @param request
-   * @param agentInfo
-   * @param uri
-   * @param startTime
-   * @param channelType
-   * @param channelAction
-   * @param snapshotId
-   * @param isDuplicateClick
-   * @return
-   */
-  public BehaviorMessage parseBehaviorMessage(ContainerRequestContext requestContext, IEndUserContext endUserContext,
-                                              String referer, MultiValueMap<String, String> parameters, String type,
-                                              String action, HttpServletRequest request, UserAgentInfo agentInfo,
-                                              String uri, Long startTime, ChannelType channelType,
-                                              ChannelAction channelAction, long snapshotId, boolean isDuplicateClick) {
-    // send email open/click to chocolate topic
-    return behaviorMessageParser.parse(request, requestContext, endUserContext, parameters,
-        agentInfo, referer, uri, startTime, channelType, channelAction, snapshotId, 0);
-  }
-
-  /**
-   * Soj tag fbprefetch
-   */
-  private static boolean isFacebookPrefetchEnabled(HttpServletRequest request) {
-    String facebookprefetch = request.getHeader("X-Purpose");
-    return facebookprefetch != null && facebookprefetch.trim().equals("preview");
-  }
-
-  /**
-   * Parse tag from url query string and add to sojourner
-   */
-  private static void addTagFromUrlQuery(MultiValueMap<String, String> parameters, IRequestScopeTracker requestTracker,
-                                         String urlParam, String tag, Class tagType) {
-    if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
-      requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
-    }
-  }
-
-  private static void addDecrytpedUserIDFromBu(MultiValueMap<String, String> parameters,
-                                               IRequestScopeTracker requestTracker) {
-    String bu = parameters.get(Constants.BEST_GUESS_USER).get(0);
-    Long encryptedUserId = Longs.tryParse(bu);
-    if (encryptedUserId != null) {
-      requestTracker.addTag("u", String.valueOf(EncryptUtil.decryptUserId(encryptedUserId)), String.class);
     }
   }
 }

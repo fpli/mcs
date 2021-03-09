@@ -64,25 +64,24 @@ public class PerformanceMarketingCollector {
   private GdprConsentHandler gdprConsentHandler;
 
   @PostConstruct
-  public void postInit() throws Exception {
+  public void postInit() {
     this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
   }
 
   /**
-   *
-   * @param requestContext
-   * @param targetUrl
-   * @param referer
-   * @param parameters
-   * @param channelType
-   * @param channelAction
-   * @param request
-   * @param startTime
-   * @param endUserContext
-   * @param raptorSecureContext
-   * @return
+   * @param requestContext      wrapped request context
+   * @param targetUrl           landing page url
+   * @param referer             referer
+   * @param parameters          url parameters
+   * @param channelType         channel type
+   * @param channelAction       action type
+   * @param request             http request
+   * @param startTime           start timestamp of the request
+   * @param endUserContext      enduserctx header
+   * @param raptorSecureContext wrapped raptor secure context
+   * @return                    Listener message
    */
   public ListenerMessage parseListenerMessage(ContainerRequestContext requestContext, String targetUrl, String referer,
                                               MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
@@ -97,7 +96,7 @@ public class PerformanceMarketingCollector {
       int statusCode;
 
       try {
-        statusCode = Integer.valueOf(statusCodeStr);
+        statusCode = Integer.parseInt(statusCodeStr);
         if (statusCode == Response.Status.OK.getStatusCode()) {
           metrics.meter("CollectStatusOK", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
               Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
@@ -185,30 +184,27 @@ public class PerformanceMarketingCollector {
   }
 
   /**
-   *
-   * @param requestContext
-   * @param referer
-   * @param parameters
-   * @param channelType
-   * @param channelAction
-   * @param startTime
-   * @param endUserContext
-   * @param message
-   * @param isDuplicateClick
+   * @param requestContext  wrapped raptor request context
+   * @param referer         referer of the request
+   * @param parameters      url parameters
+   * @param channelType     channel type
+   * @param channelAction   action type
+   * @param startTime       start time of the request
+   * @param endUserContext  enduserctx header
+   * @param message         listener message
    */
   public void trackUbi(ContainerRequestContext requestContext, String referer,
                        MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                        ChannelActionEnum channelAction, long startTime,
                        IEndUserContext endUserContext,
-                       ListenerMessage message, boolean isDuplicateClick) {
+                       ListenerMessage message) {
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
     // Don't track ubi if it's AR
     // Don't track ubi if the click is from Checkout API
     // Don't track ubi if the click is a duplicate itm click
     Matcher m = ebaysites.matcher(referer.toLowerCase());
     if (!m.find() && !channelAction.equals(ChannelActionEnum.SERVE)
-        && !isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)
-        && !isDuplicateClick) {
+        && !isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)) {
       try {
         // Ubi tracking
         IRequestScopeTracker requestTracker =
@@ -222,7 +218,8 @@ public class PerformanceMarketingCollector {
 
         // keyword
         String searchKeyword = "";
-        if (parameters.containsKey(Constants.SEARCH_KEYWORD) && parameters.get(Constants.SEARCH_KEYWORD).get(0) != null) {
+        if (parameters.containsKey(Constants.SEARCH_KEYWORD)
+            && parameters.get(Constants.SEARCH_KEYWORD).get(0) != null) {
 
           searchKeyword = parameters.get(Constants.SEARCH_KEYWORD).get(0);
         }
@@ -254,36 +251,32 @@ public class PerformanceMarketingCollector {
   }
 
   /**
-   *
-   * @param requestContext
-   * @param targetUrl
-   * @param referer
-   * @param parameters
-   * @param channelType
-   * @param channelAction
-   * @param request
-   * @param startTime
-   * @param endUserContext
-   * @param agentInfo
-   * @param message
-   * @param isDuplicateClick
-   * @return
+   * @param requestContext  request context
+   * @param targetUrl       target url
+   * @param referer         referer of the request
+   * @param parameters      parameters of url
+   * @param channelType     channel type
+   * @param channelAction   action type
+   * @param request         http request
+   * @param startTime       start time of the request
+   * @param endUserContext  enduserctx header
+   * @param agentInfo       user agent
+   * @param message         listener message
+   * @return                behavior message
    */
   public BehaviorMessage parseBehaviorMessage(ContainerRequestContext requestContext, String targetUrl, String referer,
                                               MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                               ChannelActionEnum channelAction, HttpServletRequest request,
                                               long startTime, IEndUserContext endUserContext, UserAgentInfo agentInfo,
-                                              ListenerMessage message, boolean isDuplicateClick) {
+                                              ListenerMessage message) {
     BehaviorMessage behaviorMessage = null;
     switch (channelAction) {
       case CLICK:
-        if (!isDuplicateClick) {
-          behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext,
-              parameters, agentInfo, targetUrl, startTime, channelType.getLogicalChannel().getAvro(),
-              channelAction.getAvro(), message.getShortSnapshotId(), PageIdEnum.CLICK.getId(),
-              PageNameEnum.CLICK.getName(), 0, referer, message.getGuid(), message.getCguid(),
-              String.valueOf(message.getUserId()), String.valueOf(message.getDstRotationId()));
-        }
+        behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext,
+            parameters, agentInfo, targetUrl, startTime, channelType.getLogicalChannel().getAvro(),
+            channelAction.getAvro(), message.getShortSnapshotId(), PageIdEnum.CLICK.getId(),
+            PageNameEnum.CLICK.getName(), 0, referer, message.getGuid(), message.getCguid(),
+            String.valueOf(message.getUserId()), String.valueOf(message.getDstRotationId()));
         break;
       case SERVE:
         behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext,
