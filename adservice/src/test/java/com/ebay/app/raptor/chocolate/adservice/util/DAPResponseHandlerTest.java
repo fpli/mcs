@@ -1,7 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice.util;
 
 import com.ebay.app.raptor.chocolate.AdserviceResourceTest;
-import com.ebay.app.raptor.chocolate.adservice.component.EsrXidClient;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.LBSConstants;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
@@ -27,7 +26,6 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -57,13 +55,13 @@ public class DAPResponseHandlerTest {
   DAPResponseHandler dapResponseHandler;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     RuntimeContext.setConfigRoot(AdserviceResourceTest.class.getClassLoader().getResource("META-INF/configuration/Dev/"));
     ESMetrics.init("test", "localhost");
   }
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     dapResponseHandler = new DAPResponseHandler();
   }
 
@@ -239,21 +237,6 @@ public class DAPResponseHandlerTest {
         .filter(nameValuePair -> nameValuePair.getName().equals("test_key"))
         .collect(Collectors.toList());
     assertEquals("test_value", collect.get(0).getValue());
-  }
-
-  @Test
-  public void constructTrackingHeader() throws Exception {
-    String head1 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "");
-    assertTrue(head1.contains("guid="));
-
-    String head2 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "");
-    assertTrue(head2.contains("guid="));
-
-    String head3 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "5678");
-    assertTrue(head3.contains("guid=5678"));
-
-    String head4 = Whitebox.invokeMethod(dapResponseHandler, "constructTrackingHeader", "5678");
-    assertTrue(head4.contains("guid=5678"));
   }
 
   @Test
@@ -493,7 +476,7 @@ public class DAPResponseHandlerTest {
     MultivaluedHashMap<String, Object> dapResponseHeaders = new MultivaluedHashMap<>();
     dapResponseHeaders.put("ff1", Collections.singletonList("ff1"));
 
-    Whitebox.invokeMethod(dapResponseHandler, "sendToMCS", httpServletRequest, 1L, "", dapResponseHeaders);
+    Whitebox.invokeMethod(dapResponseHandler, "sendToMCS", httpServletRequest, 1L, "", "", dapResponseHeaders);
 
     Mockito.verify(asyncInvoker).post(anyObject(), any(InvocationCallback.class));
   }

@@ -18,7 +18,6 @@ import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.kernel.presentation.UrlUtils;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.RequestUtil;
-import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import org.apache.commons.collections.CollectionUtils;
@@ -39,14 +38,12 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.InvocationCallback;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -98,8 +95,8 @@ public class DAPResponseHandler {
     }
   }
 
-  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response, GdprConsentDomain consentDomain)
-          throws URISyntaxException {
+  public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response,
+                              GdprConsentDomain consentDomain) throws URISyntaxException {
     ESMetrics.getInstance().meter("sendDAPResponse");
 
     LOGGER.debug("query string {}", request.getQueryString());
@@ -112,9 +109,10 @@ public class DAPResponseHandler {
     ESMetrics.getInstance().meter("AdtypeTraffic", 1, Field.of(Constants.ADTYPE, adtype));
 
     String guid = adserviceCookie.getGuid(request);
+    String adguid = adserviceCookie.readAdguid(request, response);
     String accountId = adserviceCookie.getUserId(request);
     // obtain userId from ersxid.
-    if (StringUtils.isNotBlank(guid) && "0".equals(accountId)) {
+    if (StringUtils.isNotBlank(guid) && guid.length() >= 32 && "0".equals(accountId)) {
       accountId = esrXidClient.getUserIdByGuid(guid);
     }
 
@@ -164,11 +162,7 @@ public class DAPResponseHandler {
     // call dap to get response
     MultivaluedMap<String, Object> dapResponseHeaders = callDAPResponse(dapUriBuilder.build().toString(), request, response);
 
-    // send to mcs with cguid equal to guid
-    if(StringUtils.isEmpty(guid)) {
-      guid = Constants.EMPTY_GUID;
-    }
-    sendToMCS(request, dapRvrId, guid, dapResponseHeaders);
+    sendToMCS(request, dapRvrId, guid, adguid, dapResponseHeaders);
   }
 
   private String getUaPrime(Map<String, String[]> params) {
@@ -423,27 +417,12 @@ public class DAPResponseHandler {
     return body;
   }
 
-  private String constructTrackingHeader(String rawGuid) {
-    String cookie = "";
-    if (!StringUtils.isEmpty(rawGuid)) {
-      cookie += "guid=" + rawGuid;
-    } else {
-      try {
-        cookie += "guid=" + new Guid().nextPaddedGUID();
-      } catch (UnknownHostException e) {
-        LOGGER.warn("Create guid failure: ", e);
-        ESMetrics.getInstance().meter("CreateGuidFailed");
-      }
-      LOGGER.warn("No guid");
-    }
-    return cookie;
-  }
-
   /**
    * Send to MCS to track this request
    */
   @SuppressWarnings("unchecked")
-  private void sendToMCS(HttpServletRequest request, long dapRvrId, String guid, MultivaluedMap<String, Object> dapResponseHeaders) throws URISyntaxException {
+  private void sendToMCS(HttpServletRequest request, long dapRvrId, String guid, String adguid,
+                         MultivaluedMap<String, Object> dapResponseHeaders) throws URISyntaxException {
     ESMetrics.getInstance().meter("StartSendToMCS");
     Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
     Client mktClient = GingerClientBuilder.newClient(config);
@@ -462,8 +441,8 @@ public class DAPResponseHandler {
     }
 
     // construct X-EBAY-C-TRACKING header
-    String trackingHeader = constructTrackingHeader(guid);
-    builder = builder.header("X-EBAY-C-TRACKING", trackingHeader);
+    String trackingHeader = HttpUtil.constructTrackingHeader(guid, adguid);
+    builder = builder.header(Constants.TRACKING_HEADER, trackingHeader);
     LOGGER.debug("set MCS X-EBAY-C-TRACKING {}", trackingHeader);
 
     // add uri and referer to marketing event body
