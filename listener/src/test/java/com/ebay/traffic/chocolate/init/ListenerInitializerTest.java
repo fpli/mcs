@@ -17,8 +17,7 @@ public class ListenerInitializerTest {
     @BeforeClass
     public static void setUp() {
         Properties properties = new Properties();
-        properties.setProperty(ListenerOptions.FRONTIER_APP_SVC_NAME, "ListenerUTs");
-        properties.setProperty(ListenerOptions.FRONTIER_URL, "frontier://tenant=mp;env=qa;app_svc=%s@sherlock-ftr-qa.stratus.phx.qa.ebay.com");
+        properties.setProperty(ListenerOptions.ELASTICSEARCH_INDEX_PREFIX, "test-");
         ListenerOptions.init(properties);
     }
 

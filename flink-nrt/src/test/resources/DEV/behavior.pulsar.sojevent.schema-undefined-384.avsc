@@ -400,6 +400,13 @@
         "values": "string"
       },
       "doc": "Includes ForwardFor, ContentLength, Script, Server, Encoding, TMachine, TStamp, TName, TStatus, TDuration, TPayload"
+    },
+    {
+      "name": "referrer",
+      "type": [
+        "null",
+        "string"
+      ]
     }
   ]
 }

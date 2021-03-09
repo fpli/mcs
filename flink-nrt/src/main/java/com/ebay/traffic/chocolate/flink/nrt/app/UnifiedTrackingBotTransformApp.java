@@ -26,7 +26,7 @@ import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.util.Utf8;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.flink.api.common.functions.RichFlatMapFunction;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -37,6 +37,8 @@ import org.apache.flink.util.Collector;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.errors.SerializationException;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.Headers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,6 +163,15 @@ public class UnifiedTrackingBotTransformApp
 
     @Override
     public void flatMap(ConsumerRecord<byte[], byte[]> consumerRecord, Collector<Tuple3<String, Long, byte[]>> out) throws Exception {
+      Headers headers = consumerRecord.headers();
+      String schemaVersion = StringConstants.EMPTY;
+      if (headers != null) {
+        for (Header header : headers) {
+          if ("schemaVersion".equals(header.key())) {
+            schemaVersion = new String(header.value());
+          }
+        }
+      }
       RheosEvent sourceRheosEvent = deserializer.deserialize(consumerRecord.topic(), consumerRecord.value());
       GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
       boolean isValid = filter(sourceRecord);
@@ -182,7 +193,7 @@ public class UnifiedTrackingBotTransformApp
       String channelTypeStr = Objects.requireNonNull(channelType).getLogicalChannel().getAvro().name();
       sherlockioMetrics.meter(VALID_INCOMING, 1, Field.of(TransformerConstants.PAGE_ID, pageId), Field.of(TransformerConstants.PAGE_NAME, pageName), Field.of(TransformerConstants.CHANNEL_TYPE, channelTypeStr), Field.of(TransformerConstants.CHANNEL_ACTION, channelActionStr));
       Long currentTimestamp = System.currentTimeMillis();
-      BehaviorMessage behaviorMessage = buildMessage(sourceRecord, pageId, pageName, channelActionStr, channelTypeStr);
+      BehaviorMessage behaviorMessage = buildMessage(sourceRecord, pageId, pageName, channelActionStr, channelTypeStr, schemaVersion);
       sherlockioMetrics.mean(BOT_EVENT_LATENCY, currentTimestamp - behaviorMessage.getEventTimestamp(), Field.of(TransformerConstants.CHANNEL_TYPE, channelTypeStr), Field.of(TransformerConstants.CHANNEL_ACTION, channelActionStr));
       sherlockioMetrics.meanByHistogram(BOT_EVENT_LATENCY_HISTOGRAM, currentTimestamp - behaviorMessage.getEventTimestamp(), Field.of(TransformerConstants.CHANNEL_TYPE, channelTypeStr), Field.of(TransformerConstants.CHANNEL_ACTION, channelActionStr));
       RheosEvent rheosEvent = getRheosEvent(behaviorMessage);
@@ -250,7 +261,7 @@ public class UnifiedTrackingBotTransformApp
     }
 
     @SuppressWarnings("unchecked")
-    protected BehaviorMessage buildMessage(GenericRecord genericRecord, Integer pageId, String pageName, String channelAction, String channelType) {
+    protected BehaviorMessage buildMessage(GenericRecord genericRecord, Integer pageId, String pageName, String channelAction, String channelType, String schemaVersion) {
       BehaviorMessage record = new BehaviorMessage();
       Map<String, String> applicationPayload = convertMap(((Map<Utf8, Utf8>) genericRecord.get(TransformerConstants.APPLICATION_PAYLOAD)));
       record.setGuid(String.valueOf(genericRecord.get(TransformerConstants.GUID)));
@@ -268,8 +279,13 @@ public class UnifiedTrackingBotTransformApp
       record.setSeqNum(getField(genericRecord, TransformerConstants.SEQ_NUM, null));
       record.setRdt((Integer) genericRecord.get(TransformerConstants.RDT));
       record.setRefererHash(getField(genericRecord, TransformerConstants.REFERER_HASH, null));
-      // directly get from urlQueryString is not correct. should get from applicationPayload
-      String urlQueryString = applicationPayload.get(TransformerConstants.URL_QUERY_STRING);
+      // directly get from urlQueryString is not correct. should get from applicationPayload; it be changed in new topic(pulsar v2), we need directly get from urlQueryString
+      String urlQueryString;
+      if ("2".equals(schemaVersion)) {
+        urlQueryString = getField(genericRecord, TransformerConstants.URL_QUERY_STRING, null);
+      } else {
+        urlQueryString = applicationPayload.get(TransformerConstants.URL_QUERY_STRING);
+      }
       record.setUrlQueryString(urlQueryString);
       record.setWebServer(getField(genericRecord, TransformerConstants.WEB_SERVER, null));
       record.setClientIP(getField(genericRecord, TransformerConstants.CLIENT_IP, null));

@@ -51,10 +51,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -414,6 +411,23 @@ public class CollectionService {
       metrics.meter("DetermineDuplicateItmClickError", 1);
     }
 
+    // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256, only for EPN channel
+    boolean isEPNClickFromPromotedListings = false;
+    try {
+      isEPNClickFromPromotedListings = CollectionServiceUtil.isEPNPromotedListingsClick(channelType, parameters, referer);
+
+      if (isEPNClickFromPromotedListings) {
+        referer = URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), "UTF-8");
+        metrics.meter("OverwriteRefererForPromotedListingsClick");
+      }
+    } catch (Exception e) {
+      logger.error("Determine whether the click is from promoted listings iframe error");
+      metrics.meter("DeterminePromotedListingsClickError", 1);
+    }
+
+    // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
+    String utpEventId = UUID.randomUUID().toString();
+
     // add tags in url param "sojTags"
     // Don't track ubi if the click is a duplicate itm click
     if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null && !isDuplicateClick) {
@@ -425,38 +439,44 @@ public class CollectionService {
     if (!isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)) {
       // Don't track ubi if the click is a duplicate itm click
       if (!isDuplicateClick) {
-        addCommonTags(requestContext, targetUrl, referer, agentInfo, type, action, PageIdEnum.CLICK.getId());
+        addCommonTags(requestContext, targetUrl, referer, agentInfo, utpEventId, type, action, PageIdEnum.CLICK.getId());
       }
     } else {
       metrics.meter("CheckoutAPIClick", 1);
     }
 
-
+    ListenerMessage listenerMessage = null;
     // add channel specific tags, and produce message for EPN and IMK
-    boolean processFlag = false;
-    if (channelType == ChannelIdEnum.EPN || channelType == ChannelIdEnum.PAID_SEARCH || channelType == ChannelIdEnum.DAP ||
-        channelType == ChannelIdEnum.SOCIAL_MEDIA || channelType == ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
-      processFlag = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType, channelAction,
-          request, startTime, endUserContext, raptorSecureContext, agentInfo, isDuplicateClick);
+    if (channelType == ChannelIdEnum.EPN || channelType == ChannelIdEnum.PAID_SEARCH
+        || channelType == ChannelIdEnum.DAP || channelType == ChannelIdEnum.SOCIAL_MEDIA
+        || channelType == ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
+      listenerMessage = processAmsAndImkEvent(requestContext, targetUrl, referer, parameters, channelType,
+          channelAction, request, startTime, endUserContext, raptorSecureContext, agentInfo, isDuplicateClick);
     else if (channelType == ChannelIdEnum.SITE_EMAIL)
-      processFlag = processSiteEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
+      processSiteEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
           targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), isDuplicateClick);
     else if (channelType == ChannelIdEnum.MRKT_EMAIL)
-      processFlag = processMrktEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
+       processMrktEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
           targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), isDuplicateClick);
     else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS)
-      processFlag = processSMSEvent(requestContext, referer, parameters, type, action, isDuplicateClick);
+      processSMSEvent(requestContext, referer, parameters, type, action, isDuplicateClick);
 
     // send to unified tracking topic
-    // send email channels first
-    if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
-      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-          targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), null, 0L, 0L, startTime);
+    if (!isDuplicateClick) {
+      if(listenerMessage!=null) {
+        processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+            targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+            null, listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), utpEventId, startTime);
+      } else {
+        processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+            targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+            null, 0L, 0L, utpEventId, startTime);
+      }
     }
 
-    if (processFlag)
-      stopTimerAndLogData(eventProcessStartTime, startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-              Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+    stopTimerAndLogData(eventProcessStartTime, startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action),
+        Field.of(CHANNEL_TYPE, type), Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
+        Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
   }
@@ -718,26 +738,32 @@ public class CollectionService {
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
     // add channel specific tags, and produce message for EPN and IMK
-    boolean processFlag = false;
-    if (channelType == ChannelIdEnum.SITE_EMAIL)
-      processFlag = processSiteEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request,
+    ListenerMessage listenerMessage = null;
+    if (channelType == ChannelIdEnum.SITE_EMAIL) {
+      processSiteEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request,
           agentInfo, uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), false);
-    else if (channelType == ChannelIdEnum.MRKT_EMAIL)
-      processFlag = processMrktEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request,
+    }
+    else if (channelType == ChannelIdEnum.MRKT_EMAIL) {
+      processMrktEmailEvent(requestContext, endUserContext, referer, parameters, type, action, request,
           agentInfo, uri, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), false);
-    else
-      processFlag = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
+    }
+    else {
+      listenerMessage = processAmsAndImkEvent(requestContext, uri, referer, parameters, channelType, channelAction,
           request, startTime, endUserContext, raptorSecureContext, agentInfo, false);
-
-    // send to unified tracking topic
-    // send email channels first
-    if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
-      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-          uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), null, 0L, 0L, startTime);
     }
 
-    if (processFlag)
-      stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+    // send to unified tracking topic
+    if(listenerMessage!=null) {
+      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+          uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+          null, listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), null, startTime);
+    } else {
+      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
+          uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+          null, 0L, 0L, null, startTime);
+    }
+
+    stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
     return true;
@@ -776,7 +802,7 @@ public class CollectionService {
     // TODO Don't write into ubi if roi is from Checkout API, but still write into IMK
     processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
             targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-            roiEvent, message.getSnapshotId(), message.getShortSnapshotId(), startTime);
+            roiEvent, message.getSnapshotId(), message.getShortSnapshotId(), null, startTime);
 
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
     String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
@@ -814,7 +840,7 @@ public class CollectionService {
         Field.of(PLATFORM, platform), Field.of(PAGE_ID, pageId));
 
     // add tags all channels need
-    addCommonTags(requestContext, "", "", agentInfo, type, action, pageId);
+    addCommonTags(requestContext, "", "", agentInfo, null, type, action, pageId);
 
     // add channel specific tags
     processNotification(requestContext, payload, type, action, pageId);
@@ -930,13 +956,17 @@ public class CollectionService {
                                            IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
                                            UserAgentInfo agentInfo, MultiValueMap<String, String> parameters, String url,
                                            String referer, ChannelType channelType, ChannelAction channelAction,
-                                           ROIEvent roiEvent, long snapshotId, long shortSnapshotId, long startTime) {
+                                           ROIEvent roiEvent, long snapshotId, long shortSnapshotId, String eventId,
+                                           long startTime) {
     try {
       Matcher m = ebaysites.matcher(referer.toLowerCase());
       if (ChannelAction.EMAIL_OPEN.equals(channelAction) || ChannelAction.ROI.equals(channelAction) || !m.find()) {
         UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
                 raptorSecureContext, agentInfo, userLookup, parameters, url, referer, channelType, channelAction,
                 roiEvent, snapshotId, shortSnapshotId, startTime);
+        if(!StringUtils.isEmpty(eventId)) {
+          utpMessage.setEventId(eventId);
+        }
         if (utpMessage != null) {
           unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
                   utpMessage), UnifiedTrackingKafkaSink.callback);
@@ -954,7 +984,7 @@ public class CollectionService {
   /**
    * Process AMS and IMK events
    */
-  private boolean processAmsAndImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
+  private ListenerMessage processAmsAndImkEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
                                         MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                         ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
                                         IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext, UserAgentInfo agentInfo, boolean isDuplicateClick) {
@@ -1059,12 +1089,6 @@ public class CollectionService {
       }
     }
 
-    if (channelType != ChannelIdEnum.EPN && !isDuplicateClick) {
-      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-              targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-              null, message.getSnapshotId(), message.getShortSnapshotId(), startTime);
-    }
-
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
     // Don't track ubi if it's AR
     // Don't track ubi if the click is from Checkout API
@@ -1141,9 +1165,9 @@ public class CollectionService {
         producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
       }
 
-      return true;
+      return message;
     } else
-      return false;
+      return null;
   }
 
   /**
@@ -1165,8 +1189,10 @@ public class CollectionService {
       eventEmitterPublisher.publishEvent(requestContext, parameters, uri, channelType, channelAction, snapshotId);
 
       // send click event to ubi
+      // Third party clicks should not be tracked into ubi
       // Don't track ubi if the click is a duplicate itm click
-      if (ChannelAction.CLICK.equals(channelAction) && !isDuplicateClick) {
+      if (ChannelAction.CLICK.equals(channelAction) && ebaysites.matcher(uri.toLowerCase()).find()
+          && !isDuplicateClick) {
         try {
           // Ubi tracking
           IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
@@ -1248,8 +1274,10 @@ public class CollectionService {
       eventEmitterPublisher.publishEvent(requestContext, parameters, uri, channelType, channelAction, snapshotId);
 
       // send click event to ubi
+      // Third party clicks should not be tracked into ubi
       // Don't track ubi if the click is a duplicate itm click
-      if (ChannelAction.CLICK.equals(channelAction) && !isDuplicateClick) {
+      if (ChannelAction.CLICK.equals(channelAction) && ebaysites.matcher(uri.toLowerCase()).find()
+          && !isDuplicateClick) {
         try {
           // Ubi tracking
           IRequestScopeTracker requestTracker = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
@@ -1416,7 +1444,7 @@ public class CollectionService {
    * Add common tags all channels need
    */
   private void addCommonTags(ContainerRequestContext requestContext, String targetUrl, String referer,
-                             UserAgentInfo agentInfo, String type, String action, int pageId) {
+                             UserAgentInfo agentInfo, String utpEventId, String type, String action, int pageId) {
     // Tracking ubi only when refer domain is not ebay.
     Matcher m = ebaysites.matcher(referer.toLowerCase());
     if(!m.find()) {
@@ -1438,6 +1466,11 @@ public class CollectionService {
         // referer
         if (!StringUtils.isEmpty(referer)) {
           requestTracker.addTag("ref", referer, String.class);
+        }
+
+        // utp event id
+        if(!StringUtils.isEmpty(utpEventId)) {
+          requestTracker.addTag("utpid", utpEventId, String.class);
         }
 
         // populate device info

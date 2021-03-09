@@ -34,6 +34,10 @@ public class Constants {
   public static final String MKRVRID = "mkrvrid";
   public static final String REFERRER = "referrer";
 
+  // EPN url params
+  public static final String TOOL_ID = "toolid";
+  public static final String CAMP_ID = "campid";
+
   // Email url params
   public static final String MKPID = "mkpid";
   public static final String SOJ_TAGS = "sojTags";
@@ -82,6 +86,12 @@ public class Constants {
   // Metrics name
   public static final String CHANNEL_ACTION = "channelAction";
   public static final String CHANNEL_TYPE = "channelType";
+
+  // Promoted Listings url params
+  // mksrc is used to mark if the click is from promoted listings iframe on ebay partner site
+  public static final String MKSRC = "mksrc";
+  // plrfr is the actual referer for the clicks from promoted listings iframe on ebay partner site
+  public static final String PLRFR = "plrfr";
 
   /**
    * Email tag - param map
