@@ -31,6 +31,8 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.util.Collector;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.errors.SerializationException;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.Headers;
 
 import java.io.ByteArrayOutputStream;
 import java.util.*;
@@ -132,10 +134,19 @@ public class UTPRoverEventTransformApp
     @SuppressWarnings("unchecked")
     @Override
     public void flatMap(ConsumerRecord<byte[], byte[]> consumerRecord, Collector<Tuple3<String, Long, byte[]>> out) throws Exception {
+      Headers headers = consumerRecord.headers();
+      String schemaVersion = StringConstants.EMPTY;
+      if (headers != null) {
+        for (Header header : headers) {
+          if ("schemaVersion".equals(header.key())) {
+            schemaVersion = new String(header.value());
+          }
+        }
+      }
       String consumerTopic = consumerRecord.topic();
       RheosEvent sourceRheosEvent = deserializer.deserialize(consumerTopic, consumerRecord.value());
       GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
-      UTPRoverEventTransformer transformer = new UTPRoverEventTransformer(consumerRecord.topic(), consumerRecord.partition(), consumerRecord.offset(), sourceRecord, sourceRheosEvent);
+      UTPRoverEventTransformer transformer = new UTPRoverEventTransformer(consumerRecord.topic(), consumerRecord.partition(), consumerRecord.offset(), sourceRecord, sourceRheosEvent, schemaVersion);
       if (!transformer.isValid()) {
         return;
       }

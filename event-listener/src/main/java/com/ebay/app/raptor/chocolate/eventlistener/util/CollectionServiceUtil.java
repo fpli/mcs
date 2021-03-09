@@ -1,9 +1,11 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -58,6 +60,7 @@ public class CollectionServiceUtil {
   private static final String ROI_SOURCE = "roisrc";
   private static final String MPUID = "mpuid";
   private static final String BOT_USER_AGENT = "bot";
+  private static final String PROMOTED_LISTINGS_SOURCE= "PromotedListings";
 
   // do not dedupe the item clicks from ebay special sites
   private static Pattern ebaySpecialSites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(befr|benl+\\.)?(qa\\.)?ebay\\.(be|nl|pl|ie|ph|com\\.hk|com\\.my|com\\.sg)($|/.*)", Pattern.CASE_INSENSITIVE);
@@ -67,6 +70,9 @@ public class CollectionServiceUtil {
 
   // ebay item no title page
   private static Pattern ebayItemNoTitlePage = Pattern.compile("^(http[s]?:\\/\\/)?([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/(?=itm\\/[0-9]+\\?).*)", Pattern.CASE_INSENSITIVE);
+
+  // referer pattern for the clicks from Promoted Listings iframe on ebay partner sites
+  private static Pattern promotedListsingsRefererWithEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/gum\\/.*)", Pattern.CASE_INSENSITIVE);
 
   /**
    * get app id from user agent info
@@ -204,5 +210,35 @@ public class CollectionServiceUtil {
     }
 
     return isDulicateItemClick;
+  }
+
+  /**
+   * Determine whether the click is from Promoted Listings iframe on ebay partner sites
+   * 1. Channel : ePN
+   * 2. In the click URL, mksrc=PromotedListings
+   * 3. The parameter ‘plrfr’ exists in the URL
+   * 4. The original referrer of the click is eBay domain and the format is 'https://www.ebay.../gum/%'
+   */
+  public static boolean isEPNPromotedListingsClick(ChannelIdEnum channelType,
+                                                   MultiValueMap<String, String> parameters, String originalReferer) {
+    boolean isEPNPromotedListingClick = false;
+
+    if (channelType == ChannelIdEnum.EPN &&
+            parameters.containsKey(Constants.MKSRC) && parameters.get(Constants.MKSRC).get(0) != null &&
+            parameters.containsKey(Constants.PLRFR) && parameters.get(Constants.PLRFR).get(0) != null) {
+
+      // This flag is used to distinguish if the click is from Promoted Listings iframe on ebay partner sites
+      String mksrc = parameters.get(Constants.MKSRC).get(0);
+
+      // The actual referer for the clicks from Promoted Listings iframe on ebay partner sites (eg: https://www.gumtree.com%)
+      String actualPromotedListingsClickReferer = parameters.get(Constants.PLRFR).get(0);
+
+      if (mksrc.equals(PROMOTED_LISTINGS_SOURCE) &&
+              promotedListsingsRefererWithEbaySites.matcher(originalReferer.toLowerCase()).find() &&
+              (!StringUtils.isEmpty(actualPromotedListingsClickReferer))) {
+          isEPNPromotedListingClick = true;
+      }
+    }
+    return isEPNPromotedListingClick;
   }
 }

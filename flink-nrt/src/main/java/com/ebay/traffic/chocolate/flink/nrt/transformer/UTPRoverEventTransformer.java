@@ -1,6 +1,5 @@
 package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
-import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
@@ -38,8 +37,10 @@ public class UTPRoverEventTransformer {
   private final long offset;
   private final GenericRecord sourceRecord;
   private final RheosEvent sourceRheosEvent;
+  private final String schemaVersion;
   private Integer pageId;
   protected Map<String, String> applicationPayload;
+  protected Map<String, String> clientData;
   private String urlQueryString;
   private ChannelTypeEnum channelType;
   private ActionTypeEnum actionTypeEnum;
@@ -61,7 +62,8 @@ public class UTPRoverEventTransformer {
   private static final String ROVER_HOST = "https://rover.ebay.com";
   public static final String TOPIC = "topic";
 
-  public static final String REMOTE_IP = "RemoteIP";
+  private static final String REMOTE_IP = "RemoteIP";
+  private static final String FORWARDED_FOR = "ForwardedFor";
 
   private static final ImmutableMap<String, String> EMAIL_TAG_PARAM_MAP = new ImmutableMap.Builder<String, String>()
           .put("adcamp_landingpage", "adcamp_landingpage")
@@ -111,12 +113,13 @@ public class UTPRoverEventTransformer {
     return String.format("%s%s", GET_METHOD_PREFIX, upperCamelCase);
   };
 
-  public UTPRoverEventTransformer(String sourceTopic, int partition, long offset, GenericRecord sourceRecord, RheosEvent sourceRheosEvent) {
+  public UTPRoverEventTransformer(String sourceTopic, int partition, long offset, GenericRecord sourceRecord, RheosEvent sourceRheosEvent, String schemaVersion) {
     this.sourceTopic = sourceTopic;
     this.partition = partition;
     this.offset = offset;
     this.sourceRecord = sourceRecord;
     this.sourceRheosEvent = sourceRheosEvent;
+    this.schemaVersion = schemaVersion;
     this.isValid = validate();
     if (this.isValid) {
       initFields();
@@ -140,6 +143,7 @@ public class UTPRoverEventTransformer {
     }
 
     applicationPayload = GenericRecordUtils.getMap(sourceRecord, TransformerConstants.APPLICATION_PAYLOAD);
+    clientData = GenericRecordUtils.getMap(sourceRecord, TransformerConstants.CLIENT_DATA);
     urlQueryString = parseUrlQueryString();
     if (urlQueryString == null) {
       SherlockioMetrics.getInstance().meter("NoUrlQueryString", 1, Field.of(TOPIC, sourceTopic));
@@ -431,11 +435,19 @@ public class UTPRoverEventTransformer {
   }
 
   protected String getReferer() {
-    return applicationPayload.get(REFERER);
+    if ("2".equals(schemaVersion)) {
+      return GenericRecordUtils.getStringFieldOrNull(sourceRecord, "referrer");
+    } else {
+      return applicationPayload.get(REFERER);
+    }
   }
 
   protected String getUserAgent() {
-    return applicationPayload.get(TransformerConstants.AGENT);
+    if ("2".equals(schemaVersion)) {
+      return clientData.get(TransformerConstants.AGENT);
+    } else {
+      return applicationPayload.get(TransformerConstants.AGENT);
+    }
   }
 
   protected String getDeviceFamily() {
@@ -479,7 +491,11 @@ public class UTPRoverEventTransformer {
   }
 
   protected String getRemoteIp() {
-    return applicationPayload.getOrDefault(REMOTE_IP, StringConstants.EMPTY);
+    if ("2".equals(schemaVersion)) {
+      return clientData.getOrDefault(FORWARDED_FOR, StringConstants.EMPTY);
+    } else {
+      return applicationPayload.getOrDefault(REMOTE_IP, StringConstants.EMPTY);
+    }
   }
 
   protected int getPageId() {
