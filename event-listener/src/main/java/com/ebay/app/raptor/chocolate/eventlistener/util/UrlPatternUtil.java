@@ -7,6 +7,8 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import java.util.regex.Pattern;
 
 public class UrlPatternUtil {
+
+  // do not filter /ulk XC-1541
   public static final Pattern ebaysites = Pattern.compile(
       "^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)",
       Pattern.CASE_INSENSITIVE);

@@ -58,6 +58,7 @@ import static com.ebay.app.raptor.chocolate.constant.Constants.PM_CHANNELS;
 import static com.ebay.app.raptor.chocolate.constant.Constants.REFERRER;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 import static com.ebay.app.raptor.chocolate.constant.MetricsConstants.*;
+import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.*;
 
 /**
  * @author xiangli4
@@ -121,27 +122,6 @@ public class CollectionService {
   private static final String STR_NULL = "null";
   private static final String HTTPS_ENCODED = "https%3A%2F%2";
   private static final String HTTP_ENCODED = "http%3A%2F%2";
-
-  // do not filter /ulk XC-1541
-  private static final Pattern ebaysites = Pattern.compile(
-      "^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)",
-      Pattern.CASE_INSENSITIVE);
-  private static final Pattern roversites = Pattern.compile(
-      "^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)",
-      Pattern.CASE_INSENSITIVE);
-
-  // app deeplink sites XC-1797
-  private static final Pattern deeplinksites =
-      Pattern.compile("^ebay:\\/\\/link\\/([\\w-$%?&/.])?", Pattern.CASE_INSENSITIVE);
-  // determine whether the url belongs to ebay sites for app deep link, and don't do any filter
-  private static final Pattern deeplinkEbaySites = Pattern.compile(
-      "^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)",
-      Pattern.CASE_INSENSITIVE);
-
-  // e page target url sites
-  private static final Pattern ePageSites = Pattern.compile(
-      "^(http[s]?:\\/\\/)?c\\.([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+\\/marketingtracking\\/v1\\/pixel\\?(.*)",
-      Pattern.CASE_INSENSITIVE);
 
   @PostConstruct
   public void postInit() throws Exception {
@@ -456,7 +436,7 @@ public class CollectionService {
         metrics.meter("OverwriteRefererForPromotedListingsClick");
       }
     } catch (Exception e) {
-      logger.error("Determine whether the click is from promoted listings iframe error");
+      LOGGER.error("Determine whether the click is from promoted listings iframe error");
       metrics.meter("DeterminePromotedListingsClickError", 1);
     }
 
