@@ -13,7 +13,7 @@ default_args = {
     'email_on_success': True,
     'email_on_failure': True,
     'email_on_retry': True,
-    'retries': 0,
+    'retries': '0',
     'retry_delay': timedelta(minutes=5)
 }
 
@@ -23,64 +23,49 @@ dag = DAG(
     schedule_interval=None
 )
 
-"""
-{
-    "appName": "epn_nrt_impression_v2",
-    "channel": "EPN",
-    "workDir": "viewfs://apollo-rno/user/b_marketing_tracking/tracking-events-workdir",
-    "outputDir": "viewfs://apollo-rno/user/b_marketing_tracking/epn-nrt",
-    "resourceDir": "/user/b_marketing_tracking/tracking-resources",
-    "partitions": "3",
-    "filterTime": "0"
-    }
-"""
-
 __config = {
     'name': dag_name,
     'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrt_v2.EpnNrtImpressionJob_v2',
-    'application': '/mnt/jobs/tracking/spark-nrt/lib/chocolate-spark-nrt-*.jar',
-    'executor_cores': 1,
+    'application': '/mnt/jobs/tracking/epn-nrt/lib/chocolate-spark-nrt-*.jar',
+    'executor_cores': '1',
     'driver_memory': '4G',
     'executor_memory': '6G',
-    'num_executors': 20,
+    'num_executors': '20',
 
-    # NBA params
     'application_args': [
-        'channel',
-        '--appName', '{{dag_run.conf["appName"]}}',
-        '--channel', '{{dag_run.conf["channel"]}}',
-        '--workDir', '{{dag_run.conf["workDir"]}}',
-        '--outputDir', '{{dag_run.conf["outputDir"]}}',
-        '--resourceDir', '{{dag_run.conf["resourceDir"]}}',
-        '--partitions', '{{dag_run.conf["partitions"]}}',
-        '--filterTime', '{{dag_run.conf["filterTime"]}}',
-        '--debug'
+        '--appName', 'epn_nrt_impression_v2',
+        '--channel', 'EPN',
+        '--workDir', 'viewfs://apollo-rno/user/b_marketing_tracking/tracking-events-workdir',
+        '--outputDir', 'viewfs://apollo-rno/user/b_marketing_tracking/epn-nrt',
+        '--resourceDir', 'viewfs://apollo-rno/user/b_marketing_tracking/tracking-resources',
+        '--partitions', '3',
+        '--filterTime', '0'
     ]
 }
 
 spark_submit_operator = SparkSubmitOperator(
     task_id='epn_nrt_impression_v2',
-    pool='default_pool',
+    pool='spark_pool',
     conn_id='hdlq-commrce-mkt-high-mem',
     files='file:///mnt/jobs/tracking/spark-nrt/conf/epnnrt_v2.properties,'
           'file:///mnt/jobs/tracking/spark-nrt/conf/sherlockio.properties,'
-          'file:///apache/confs/hive/conf/hive-site.xml,'
-          'file:///apache/confs/hadoop/conf/ssl-client.xml',
+          'file:///mnt/exports/apache/confs/hive/conf/hive-site.xml,'
+          'file:///mnt/exports/apache/confs/hadoop/conf/ssl-client.xml',
     conf={
-        'spark.dynamicAllocation.maxExecutors': 80,
+        'spark.dynamicAllocation.maxExecutors': '80',
         'spark.ui.view.acls': '*',
-        'spark.yarn.executor.memoryOverhead': 8192,
+        'spark.yarn.executor.memoryOverhead': '8192',
         'spark.serializer': 'org.apache.spark.serializer.KryoSerializer',
         'spark.hadoop.yarn.timeline-service.enabled': 'false',
-        'spark.sql.autoBroadcastJoinThreshold': 33554432,
+        'spark.sql.autoBroadcastJoinThreshold': '33554432',
         'spark.sql.shuffle.partitions': '200',
         'spark.speculation': 'false',
-        'spark.yarn.maxAppAttempts': 3,
+        'spark.yarn.maxAppAttempts': '3',
         'spark.driver.maxResultSize': '10g',
         'spark.kryoserializer.buffer.max': '2040m',
         'spark.eventLog.enabled': 'true',
         'spark.eventLog.compress': 'false',
-        'spark.task.maxFailures': 3
+        'spark.task.maxFailures': '3'
     },
     dag=dag,
     **__config
