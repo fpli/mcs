@@ -159,6 +159,9 @@ public class UTPRoverEventTransformer {
         SherlockioMetrics.getInstance().meter("NoChannelId", 1, Field.of(TOPIC, sourceTopic));
         return false;
       }
+      if("1".equals(channelId)) {
+        SherlockioMetrics.getInstance().meter("ChannelId1");
+      }
 
       channelType = parseChannelType(channelId);
       if(channelType == ChannelTypeEnum.EPN) {
