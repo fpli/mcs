@@ -47,8 +47,8 @@ spark_submit_operator = SparkSubmitOperator(
     task_id='epn_nrt_impression_v2',
     pool='spark_pool',
     conn_id='hdlq-commrce-mkt-high-mem',
-    files='file:///mnt/jobs/tracking/spark-nrt/conf/epnnrt_v2.properties,'
-          'file:///mnt/jobs/tracking/spark-nrt/conf/sherlockio.properties,'
+    files='file:///mnt/jobs/tracking/epn-nrt/conf/epnnrt_v2.properties,'
+          'file:///mnt/jobs/tracking/epn-nrt/conf/sherlockio.properties,'
           'file:///mnt/exports/apache/confs/hive/conf/hive-site.xml,'
           'file:///mnt/exports/apache/confs/hadoop/conf/ssl-client.xml',
     conf={
