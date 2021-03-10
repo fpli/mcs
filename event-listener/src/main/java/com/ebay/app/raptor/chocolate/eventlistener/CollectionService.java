@@ -221,10 +221,9 @@ public class CollectionService {
       String originalReferer = "";
       String targetPath = "";
       UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-      if (uriComponents != null && uriComponents.getQueryParams() != null) {
-        originalReferer = uriComponents.getQueryParams().getFirst(Constants.EPAGE_REFERER);
-        targetPath = uriComponents.getQueryParams().getFirst(Constants.EPAGE_URL);
-      }
+      uriComponents.getQueryParams();
+      originalReferer = uriComponents.getQueryParams().getFirst(Constants.EPAGE_REFERER);
+      targetPath = uriComponents.getQueryParams().getFirst(Constants.EPAGE_URL);
 
       if (!StringUtils.isEmpty(targetPath)) {
         URIBuilder uriBuilder = new URIBuilder(URLDecoder.decode(targetPath, UTF_8));
@@ -261,7 +260,7 @@ public class CollectionService {
 
       try {
         if(deeplinkTargetUrl.startsWith(HTTPS_ENCODED) || deeplinkTargetUrl.startsWith(HTTP_ENCODED)) {
-          deeplinkTargetUrl = URLDecoder.decode(deeplinkTargetUrl, "UTF-8");
+          deeplinkTargetUrl = URLDecoder.decode(deeplinkTargetUrl, UTF_8);
         }
       } catch (Exception ex) {
         metrics.meter("DecodeDeepLinkTargetUrlError");
@@ -348,7 +347,7 @@ public class CollectionService {
 
     String landingPageType;
     List<String> pathSegments = uriComponents.getPathSegments();
-    if (pathSegments.size() == 0) {
+    if (pathSegments.isEmpty()) {
       landingPageType = "home";
     } else {
       landingPageType = pathSegments.get(0);
@@ -412,24 +411,28 @@ public class CollectionService {
           targetUrl, agentInfo.requestIsFromBot(), agentInfo.isMobile(), agentInfo.requestIsMobileWeb());
 
       // send duplicate click to a dedicate listener topic
-      Producer<Long, ListenerMessage> producer = KafkaSink.get();
-      ListenerMessage listenerMessage = parser.parse(request, requestContext, startTime, 0L,
-          channelType.getLogicalChannel().getAvro(), ChannelActionEnum.CLICK, "", endUserContext, targetUrl,
-          referer, 0L, "");
-      Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
-      listenerMessage.setSnapshotId(snapshotId);
-      listenerMessage.setShortSnapshotId(0L);
-      sendClickToDuplicateItmClickTopic(producer, listenerMessage);
+      if(isDuplicateClick) {
+        Producer<Long, ListenerMessage> producer = KafkaSink.get();
+        ListenerMessage listenerMessage = parser.parse(request, requestContext, startTime, 0L,
+            channelType.getLogicalChannel().getAvro(), ChannelActionEnum.CLICK, "", endUserContext, targetUrl,
+            referer, 0L, "");
+        Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
+        listenerMessage.setSnapshotId(snapshotId);
+        listenerMessage.setShortSnapshotId(0L);
+        sendClickToDuplicateItmClickTopic(producer, listenerMessage);
+      }
     } catch (Exception e) {
       LOGGER.error(e.getMessage());
       LOGGER.error("Determine whether the click is duplicate item click error.");
       metrics.meter("DetermineDuplicateItmClickError", 1);
     }
 
-    // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256, only for EPN channel
+    // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256
+    // only for EPN channel
     boolean isEPNClickFromPromotedListings = false;
     try {
-      isEPNClickFromPromotedListings = CollectionServiceUtil.isEPNPromotedListingsClick(channelType, parameters, referer);
+      isEPNClickFromPromotedListings
+          = CollectionServiceUtil.isEPNPromotedListingsClick(channelType, parameters, referer);
 
       if (isEPNClickFromPromotedListings) {
         referer = URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), "UTF-8");
@@ -494,6 +497,10 @@ public class CollectionService {
             null, 0L, 0L, utpEventId, startTime);
       }
     }
+
+    stopTimerAndLogData(eventProcessStartTime, startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action),
+        Field.of(CHANNEL_TYPE, type), Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
+        Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
   }
@@ -685,7 +692,8 @@ public class CollectionService {
 
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(uri).build();
 
-    // XC-1695. no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
+    // XC-1695
+    // no query parameter, rejected but return 201 accepted for clients since app team has started unconditionally call
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
     if (parameters.size() == 0) {
       LOGGER.warn(Errors.ERROR_NO_QUERY_PARAMETER);
@@ -949,6 +957,21 @@ public class CollectionService {
 
   /**
    * Process unified tracking user behavior events
+   * @param requestContext      wrapped request context
+   * @param request             http request
+   * @param endUserContext      enduserctx header
+   * @param raptorSecureContext wrapped raptor secure context
+   * @param agentInfo           user agent
+   * @param parameters          url parameters
+   * @param url                 url
+   * @param referer             referer
+   * @param channelType         channel type
+   * @param channelAction       action type
+   * @param roiEvent            roi event
+   * @param snapshotId          snapshot id
+   * @param shortSnapshotId     short snapshot id
+   * @param eventId             utp event id
+   * @param startTime           start time of the request
    */
   @SuppressWarnings("unchecked")
   private void processUnifiedTrackingEvent(ContainerRequestContext requestContext, HttpServletRequest request,

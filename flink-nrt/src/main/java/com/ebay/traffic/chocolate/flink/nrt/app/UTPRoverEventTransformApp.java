@@ -148,6 +148,7 @@ public class UTPRoverEventTransformApp
       GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
       UTPRoverEventTransformer transformer = new UTPRoverEventTransformer(consumerRecord.topic(), consumerRecord.partition(), consumerRecord.offset(), sourceRecord, sourceRheosEvent, schemaVersion);
       if (!transformer.isValid()) {
+        sherlockioMetrics.meter("UTPRoverEventInvalid");
         return;
       }
 

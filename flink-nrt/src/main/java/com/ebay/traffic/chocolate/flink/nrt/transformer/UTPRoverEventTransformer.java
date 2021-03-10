@@ -161,6 +161,9 @@ public class UTPRoverEventTransformer {
       }
 
       channelType = parseChannelType(channelId);
+      if(channelType == ChannelTypeEnum.EPN) {
+        SherlockioMetrics.getInstance().meter("EPN_DEBUG");
+      }
       if (channelType == null) {
         SherlockioMetrics.getInstance().meter("NotEmail", 1, Field.of(TOPIC, sourceTopic));
         return false;
@@ -299,7 +302,7 @@ public class UTPRoverEventTransformer {
     if (channelType == ChannelTypeEnum.SITE_EMAIL) {
       return applicationPayload.getOrDefault(TransformerConstants.EUID, StringConstants.EMPTY);
     }
-    if (actionTypeEnum == ActionTypeEnum.ROI) {
+    if (actionTypeEnum == ActionTypeEnum.ROI || channelType == ChannelTypeEnum.EPN) {
       return applicationPayload.getOrDefault(TransformerConstants.RVRID, StringConstants.EMPTY);
     }
     return StringConstants.EMPTY;
@@ -538,7 +541,7 @@ public class UTPRoverEventTransformer {
       }
       String toolId = PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, Constants.TOOL_ID);
       if(StringUtils.isNotEmpty(toolId)) {
-        payload.put(Constants.TOOL_ID, PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, Constants.TOOL_ID));
+        payload.put(Constants.TOOL_ID, toolId);
       }
     }
     if (actionTypeEnum == ActionTypeEnum.ROI) {
