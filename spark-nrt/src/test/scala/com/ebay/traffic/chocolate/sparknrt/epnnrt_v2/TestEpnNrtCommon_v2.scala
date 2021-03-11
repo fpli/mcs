@@ -3,7 +3,8 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt_v2
 import java.io.PrintWriter
 
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
-import com.ebay.traffic.chocolate.sparknrt.couchbase.{CorpCouchbaseClient, CouchbaseClientMock}
+import com.ebay.traffic.chocolate.sparknrt.couchbase.CouchbaseClientMock
+import com.ebay.traffic.chocolate.sparknrt.couchbase_v2.CorpCouchbaseClient_v2
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
@@ -74,7 +75,7 @@ class TestEpnNrtCommon_v2 extends BaseFunSuite{
 
   override def beforeAll(): Unit = {
     CouchbaseClientMock.startCouchbaseMock()
-    CorpCouchbaseClient.getBucketFunc = () => {
+    CorpCouchbaseClient_v2.getBucketFunc = () => {
       (None, CouchbaseClientMock.connect().openBucket("default"))
     }
     df = createTestChocolateData()
