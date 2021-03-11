@@ -5,16 +5,14 @@ import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
-import com.ebay.traffic.chocolate.sparknrt.epnnrt.Parameter
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
-import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
 import org.apache.hadoop.fs.Path
 
 /**
   * Created by zhofan on 6/18/20.
   */
-abstract class BaseEpnNrtJob_v2(params: Parameter,
+abstract class BaseEpnNrtJob_v2(params: Parameter_v2,
                                 override val jobName: String,
                                 override val mode: String = "yarn") extends BaseSparkNrtJob(jobName, mode) {
 

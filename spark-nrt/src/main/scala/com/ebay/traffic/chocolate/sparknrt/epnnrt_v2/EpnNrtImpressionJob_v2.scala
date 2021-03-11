@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt_v2
 
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
-import com.ebay.traffic.chocolate.sparknrt.epnnrt._
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles}
 import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import com.ebay.traffic.monitoring.Field
@@ -10,7 +9,7 @@ import org.apache.spark.sql.functions.col
 
 object EpnNrtImpressionJob_v2 extends App {
   override def main(args: Array[String]): Unit = {
-    val params = Parameter(args)
+    val params = Parameter_v2(args)
 
     val job = new EpnNrtImpressionJob_v2(params)
 
@@ -18,7 +17,7 @@ object EpnNrtImpressionJob_v2 extends App {
     job.stop()
   }
 }
-class EpnNrtImpressionJob_v2(params: Parameter) extends BaseEpnNrtJob_v2(params, params.appName, params.mode) {
+class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, params.appName, params.mode) {
 
   // meta tmp dir
   lazy val epnNrtResultMetaImpTempDir = outputDir + "/tmp_result_meta_imp/"
@@ -28,7 +27,7 @@ class EpnNrtImpressionJob_v2(params: Parameter) extends BaseEpnNrtJob_v2(params,
   lazy val epnNrtResultMetaImpDir = workDir + "/meta/EPN/output/epnnrt_imp/"
   lazy val epnNrtScpMetaImpDir = workDir + "/meta/EPN/output/epnnrt_scp_imp/"
 
-  lazy val IMPRESSION_DIR = "/impression/"
+  lazy val IMPRESSION_DIR = "/imp/"
 
   @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression.json")
 
@@ -70,7 +69,7 @@ class EpnNrtImpressionJob_v2(params: Parameter) extends BaseEpnNrtJob_v2(params,
           if (df.rdd.isEmpty)
             break
           df = df.repartition(properties.getProperty("epnnrt.impression.repartition").toInt)
-          val epnNrtCommon = new EpnNrtCommon(params, df)
+          val epnNrtCommon = new EpnNrtCommon_v2(params, df)
           logger.info("load DataFrame, date=" + date + ", with files=" + datesFile._2.mkString(","))
 
           timestamp = df.first().getAs[Long]("timestamp")
@@ -120,7 +119,7 @@ class EpnNrtImpressionJob_v2(params: Parameter) extends BaseEpnNrtJob_v2(params,
           }
 
           //3. build impression dataframe  save dataframe to files and rename files
-          var impressionDf = new ImpressionDataFrame(df_impression, epnNrtCommon).build()
+          var impressionDf = new ImpressionDataFrame_v2(df_impression, epnNrtCommon).build()
           impressionDf = impressionDf.repartition(params.partitions)
           saveDFToFiles(impressionDf, epnNrtTempDir + IMPRESSION_DIR, "gzip", "parquet", "tab")
 

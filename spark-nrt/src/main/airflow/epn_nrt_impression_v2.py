@@ -36,7 +36,7 @@ __config = {
         '--appName', 'epn_nrt_impression_v2',
         '--channel', 'EPN',
         '--workDir', 'viewfs://apollo-rno/user/b_marketing_tracking/tracking-events-workdir',
-        '--outputDir', 'viewfs://apollo-rno/user/b_marketing_tracking/epn-nrt',
+        '--outputDir', 'viewfs://apollo-rno/user/b_marketing_tracking/chocolate/epnnrt_v2',
         '--resourceDir', 'viewfs://apollo-rno/user/b_marketing_tracking/tracking-resources',
         '--partitions', '3',
         '--filterTime', '0'

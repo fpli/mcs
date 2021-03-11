@@ -27,7 +27,7 @@ import scala.collection.immutable.HashMap
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class EpnNrtCommon_v2(params: Parameter, df: DataFrame) extends Serializable {
+class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable {
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -79,6 +79,7 @@ class EpnNrtCommon_v2(params: Parameter, df: DataFrame) extends Serializable {
   @transient lazy val properties: Properties = {
     val properties = new Properties()
     properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt_v2.properties"))
+    properties.load(getClass.getClassLoader.getResourceAsStream("sherlockio.properties"))
     properties
   }
 
