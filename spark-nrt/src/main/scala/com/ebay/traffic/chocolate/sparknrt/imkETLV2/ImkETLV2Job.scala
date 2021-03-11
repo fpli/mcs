@@ -264,6 +264,16 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
   })
 
   /**
+   * Remove bot traffic. Currently, only works for SEARCH_ENGINE_FREE_LISTINGS
+   */
+  val judgeNonBotUdf: UserDefinedFunction = udf((channelType: String, brwsrName: String) => {
+    channelType match {
+      case "SEARCH_ENGINE_FREE_LISTINGS" => tools.judgeNotBot(brwsrName)
+      case _ => true
+    }
+  })
+
+  /**
    * The regex pattern will treat ebay.xxx.xx as ebay domain, for short term, just add ebay.mtag.io and
    * ebay.pissedconsumer.com to whitelist
    * @param referer referer
@@ -349,6 +359,7 @@ class ImkETLV2Job(params: Parameter) extends BaseSparkNrtJob(params.appName, par
     val imkDf = imkDumpSpecific(commonDf)
       .drop("lang_cd")
       .filter(judegNotEbaySitesUdf(col("channel_type"), col("referer")))
+      .filter(judgeNonBotUdf(col("channel_type"), col("brwsr_name")))
     imkDumpEx(imkDf)
   }
 

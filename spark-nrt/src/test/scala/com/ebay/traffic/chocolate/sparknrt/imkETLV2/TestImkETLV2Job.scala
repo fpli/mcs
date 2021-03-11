@@ -156,4 +156,47 @@ class TestImkETLV2Job extends BaseFunSuite{
     assert(list.get(3).getInt(0) == 5)
     assert(list.get(4).getInt(0) == 6)
   }
+
+  test("test judgeNotBotUdf") {
+    val job = new ImkETLV2Job(Parameter(Array(
+      "--mode", "local[8]",
+      "--channel", "DISPLAY,SEARCH_ENGINE_FREE_LISTINGS",
+      "--workDir", workDir,
+      "--outPutDir", outPutDir,
+      "--partitions", "1",
+      "--elasticsearchUrl", "http://10.148.181.34:9200",
+      "--transformedPrefix", "chocolate_",
+      "--outputFormat", "parquet",
+      "--compressOutPut", "false"
+    )))
+
+    val data = Seq(
+      Row(2, "DISPLAY", "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.112 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"),
+      Row(3, "DISPLAY", "Mozilla/5.0 (iPhone; CPU iPhone OS 14_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/137.2.345735309 Mobile/15E148 Safari/604.1"),
+      Row(4, "SEARCH_ENGINE_FREE_LISTINGS", "Mozilla/5.0 (iPhone; CPU iPhone OS 14_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/137.2.345735309 Mobile/15E148 Safari/604.1"),
+      Row(5, "SEARCH_ENGINE_FREE_LISTINGS", "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.112 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"),
+      Row(6, "DISPLAY", ""),
+      Row(7, "SEARCH_ENGINE_FREE_LISTINGS", "")
+    )
+
+    val schema = List(
+      StructField("id", IntegerType, nullable = true),
+      StructField("channel_type", StringType, nullable = true),
+      StructField("brwsr_name", StringType, nullable = true)
+    )
+
+    val df: DataFrame = job.spark.createDataFrame(
+      job.spark.sparkContext.parallelize(data),
+      StructType(schema)
+    )
+
+    val results = df.filter(job.judgeNonBotUdf(col("channel_type"), col("brwsr_name")))
+    results.show()
+    val list = results.select(col("id")).collectAsList();
+    assert(list.get(0).getInt(0) == 2)
+    assert(list.get(1).getInt(0) == 3)
+    assert(list.get(2).getInt(0) == 4)
+    assert(list.get(3).getInt(0) == 6)
+    assert(list.get(4).getInt(0) == 7)
+  }
 }
