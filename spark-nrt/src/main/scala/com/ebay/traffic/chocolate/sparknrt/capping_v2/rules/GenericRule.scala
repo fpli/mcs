@@ -40,7 +40,7 @@ abstract class GenericRule(params: Parameter_v2, bit: Long, dateFiles: DateFiles
   //get timeWindow
   @transient lazy val properties: Properties = {
     val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("capping_rule.properties"))
+    properties.load(getClass.getClassLoader.getResourceAsStream("capping_rule_v2.properties"))
     properties
   }
 
