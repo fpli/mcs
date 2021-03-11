@@ -34,7 +34,7 @@ __config = {
 
     'application_args': [
         '--appName', 'epn_nrt_click_v2',
-        '--channel', 'EPN',
+        '--mode', 'yarn',
         '--workDir', 'viewfs://apollo-rno/user/b_marketing_tracking/tracking-events-workdir',
         '--outputDir', 'viewfs://apollo-rno/user/b_marketing_tracking/chocolate/epnnrt_v2',
         '--resourceDir', 'viewfs://apollo-rno/user/b_marketing_tracking/tracking-resources',
