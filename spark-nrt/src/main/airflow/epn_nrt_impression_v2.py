@@ -49,6 +49,7 @@ spark_submit_operator = SparkSubmitOperator(
     conn_id='hdlq-commrce-mkt-high-mem',
     files='file:///mnt/jobs/tracking/epn-nrt/conf/epnnrt_v2.properties,'
           'file:///mnt/jobs/tracking/epn-nrt/conf/sherlockio.properties,'
+          'file:///mnt/jobs/tracking/epn-nrt/conf/couchbase_v2.properties,'
           'file:///mnt/exports/apache/confs/hive/conf/hive-site.xml,'
           'file:///mnt/exports/apache/confs/hadoop/conf/ssl-client.xml',
     conf={
