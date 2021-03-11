@@ -27,6 +27,8 @@ import org.apache.commons.lang3.Validate;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
@@ -159,14 +161,9 @@ public class UTPRoverEventTransformer {
         SherlockioMetrics.getInstance().meter("NoChannelId", 1, Field.of(TOPIC, sourceTopic));
         return false;
       }
-      if("1".equals(channelId)) {
-        SherlockioMetrics.getInstance().meter("ChannelId1");
-      }
+      SherlockioMetrics.getInstance().meter("ChannelId", 1, Field.of("chnl", URLEncoder.encode(channelId)));
 
       channelType = parseChannelType(channelId);
-      if(channelType == ChannelTypeEnum.EPN) {
-        SherlockioMetrics.getInstance().meter("EPN_DEBUG");
-      }
       if (channelType == null) {
         SherlockioMetrics.getInstance().meter("NotEmail", 1, Field.of(TOPIC, sourceTopic));
         return false;
