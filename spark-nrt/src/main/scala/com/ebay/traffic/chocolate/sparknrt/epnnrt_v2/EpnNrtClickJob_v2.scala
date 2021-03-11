@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt_v2
 
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
-import com.ebay.traffic.chocolate.sparknrt.epnnrt._
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles}
 import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import com.ebay.traffic.monitoring.Field
@@ -10,7 +9,7 @@ import org.apache.spark.sql.functions.col
 
 object EpnNrtClickJob_v2 extends App {
   override def main(args: Array[String]): Unit = {
-    val params = Parameter(args)
+    val params = Parameter_v2(args)
 
     val job = new EpnNrtClickJob_v2(params)
 
@@ -18,7 +17,7 @@ object EpnNrtClickJob_v2 extends App {
     job.stop()
   }
 }
-class EpnNrtClickJob_v2(params: Parameter) extends BaseEpnNrtJob_v2(params, params.appName, params.mode) {
+class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, params.appName, params.mode) {
 
   // meta tmp dir
   lazy val epnNrtResultMetaClickTempDir = outputDir + "/tmp_result_meta_click/"
