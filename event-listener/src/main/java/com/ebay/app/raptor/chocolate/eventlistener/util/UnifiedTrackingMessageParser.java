@@ -2,7 +2,8 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingMessage;
+import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
+import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
@@ -24,6 +25,9 @@ import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ServiceEnum;
 import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
+import com.ebay.traffic.chocolate.utp.lib.UnifiedTrackerFactory;
+import com.ebay.traffic.chocolate.utp.lib.cache.TrackingGovernanceTagCache;
+import com.ebay.traffic.chocolate.utp.lib.constants.EnvironmentEnum;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.userlookup.UserLookup;
 import com.ebay.userlookup.common.ClientException;
@@ -52,7 +56,9 @@ public class UnifiedTrackingMessageParser {
   private static CobrandParser cobrandParser = new CobrandParser();
   private static UepPayloadHelper uepPayloadHelper = new UepPayloadHelper();
 
-  private UnifiedTrackingMessageParser() {}
+  public UnifiedTrackingMessageParser() throws Exception{
+    UnifiedTrackerFactory.getUnifiedTracker(getEnv());
+  }
 
   /**
    * Parse message to unified tracking message
@@ -271,6 +277,9 @@ public class UnifiedTrackingMessageParser {
       fullPayload.putAll(uepPayload);
     }
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
+
+    // data governance
+    TrackingGovernanceTagCache.getInstance().govern(record);
 
     return record;
   }
@@ -547,8 +556,6 @@ public class UnifiedTrackingMessageParser {
       gclid = parameters.get(Constants.GCLID).get(0);
     }
     payload.put("gclid", gclid);
-
-    payload.put("producereventts", String.valueOf(eventTs));
   }
 
   /**
@@ -667,5 +674,33 @@ public class UnifiedTrackingMessageParser {
    */
   private static <T> T coalesce(T a, T b) {
     return a == null ? b : a;
+  }
+
+  /**
+   * Get environment for event emitter
+   */
+  private static EnvironmentEnum getEnv() throws Exception {
+    String env = ApplicationOptions.getInstance().getEnvironment();
+    logger.info("Platform Environment: {}", env);
+
+    EnvironmentEnum environment;
+    switch (env) {
+      case "dev":
+        environment = EnvironmentEnum.DEV;
+        break;
+      case "qa":
+        environment = EnvironmentEnum.STAGING;
+        break;
+      case "pre-production":
+        environment = EnvironmentEnum.PRE_PROD;
+        break;
+      case "production":
+        environment = EnvironmentEnum.PROD;
+        break;
+      default:
+        throw new Exception("No matched environment");
+    }
+
+    return environment;
   }
 }

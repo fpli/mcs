@@ -119,7 +119,6 @@ public class Constants {
       .put("rank", "rank")
       .put("rpp_cid", "rpp_cid")
       .put("segname", "segname")
-      .put("sid", "emsid")
       .put("yminstc", "yminstc")
       .put("ymmmid", "ymmmid")
       .put("ymsid", "ymsid")

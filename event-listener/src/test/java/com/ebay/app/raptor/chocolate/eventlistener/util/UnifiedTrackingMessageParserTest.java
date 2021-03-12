@@ -2,7 +2,9 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingMessage;
+import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
+import com.ebay.kernel.context.RuntimeContext;
+import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
@@ -13,6 +15,7 @@ import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
 import edu.emory.mathcs.backport.java.util.Arrays;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.util.LinkedMultiValueMap;
@@ -21,19 +24,24 @@ import org.springframework.util.MultiValueMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 
+import java.io.IOException;
 import java.util.Locale;
 
 import static org.junit.Assert.*;
 
 public class UnifiedTrackingMessageParserTest {
 
-  @Test
-  public void parse() {
+  @BeforeClass
+  public static void setUp() throws IOException {
+    RuntimeContext.setConfigRoot(UnifiedTrackingMessageParserTest.class.getClassLoader().getResource
+        ("META-INF/configuration/Dev/"));
+    ApplicationOptions.init();
   }
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testParse() {
+  public void testParse() throws Exception {
+    UnifiedTrackingMessageParser utpParser = new UnifiedTrackingMessageParser();
     long currentTimeMillis = System.currentTimeMillis();
     ContainerRequestContext requestContext = Mockito.mock(ContainerRequestContext.class);
     UserPrefsCtx userPrefsCtx = Mockito.mock(UserPrefsCtx.class);
@@ -68,7 +76,7 @@ public class UnifiedTrackingMessageParserTest {
     long snapshotId = 0L;
     long shortSnapshotId = 0L;
 
-    UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext, raptorSecureContext, agentInfo,
+    UnifiedTrackingMessage message = utpParser.parse(requestContext, request, endUserContext, raptorSecureContext, agentInfo,
             null, parameters, url, referer, channelType, channelAction, null,
             snapshotId, shortSnapshotId, currentTimeMillis);
 
