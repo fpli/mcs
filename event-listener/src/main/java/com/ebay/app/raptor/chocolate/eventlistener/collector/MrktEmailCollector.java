@@ -20,8 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URLDecoder;
 
-import static com.ebay.app.raptor.chocolate.constant.MetricsConstants.CHANNEL_ACTION;
-import static com.ebay.app.raptor.chocolate.constant.MetricsConstants.CHANNEL_TYPE;
+import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_ACTION;
+import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_TYPE;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.ebaysites;
 
 /**

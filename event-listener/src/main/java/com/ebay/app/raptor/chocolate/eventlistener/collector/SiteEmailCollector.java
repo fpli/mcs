@@ -4,20 +4,11 @@
 
 package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
-import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.constant.Constants;
-import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorMessageParser;
-import com.ebay.app.raptor.chocolate.util.EncryptUtil;
-import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
-import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
-import com.ebay.traffic.monitoring.Metrics;
-import com.google.common.primitives.Longs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
@@ -28,8 +19,8 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 
-import static com.ebay.app.raptor.chocolate.constant.MetricsConstants.CHANNEL_ACTION;
-import static com.ebay.app.raptor.chocolate.constant.MetricsConstants.CHANNEL_TYPE;
+import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_ACTION;
+import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_TYPE;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.ebaysites;
 
 /**

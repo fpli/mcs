@@ -766,7 +766,7 @@ public class EventListenerServiceTest {
     //invalid target url in deeplink case
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=http%3A%2F%2Frover.ebay.com%2Frover%2F1%2F710-53481-19255-0%2F1%3Fff3%3D2");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
-    assertEquals(201, response.getStatus());
+    assertEquals(200, response.getStatus());
 
     // no query parameter
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2F");

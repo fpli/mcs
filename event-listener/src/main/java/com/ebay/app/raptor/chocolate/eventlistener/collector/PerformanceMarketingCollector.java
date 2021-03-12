@@ -38,7 +38,8 @@ import javax.ws.rs.core.Response;
 import java.net.URLDecoder;
 import java.util.regex.Matcher;
 
-import static com.ebay.app.raptor.chocolate.constant.MetricsConstants.*;
+import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_ACTION;
+import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_TYPE;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.ebaysites;
 import static org.apache.commons.compress.utils.CharsetNames.UTF_8;
 
@@ -344,7 +345,7 @@ public class PerformanceMarketingCollector {
    * If so, don't track into ubi
    */
   private Boolean isClickFromCheckoutAPI(ChannelType channelType, IEndUserContext endUserContext) {
-    Boolean isClickFromCheckoutAPI = false;
+    boolean isClickFromCheckoutAPI = false;
     try {
       if (channelType == ChannelType.EPN && endUserContext.getUserAgent().equals(CHECKOUT_API_USER_AGENT)) {
         isClickFromCheckoutAPI = true;
