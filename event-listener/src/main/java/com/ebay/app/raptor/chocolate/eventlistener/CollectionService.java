@@ -11,6 +11,8 @@ import com.ebay.app.raptor.chocolate.eventlistener.collector.PerformanceMarketin
 import com.ebay.app.raptor.chocolate.eventlistener.collector.SiteEmailCollector;
 import com.ebay.app.raptor.chocolate.eventlistener.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
+import com.ebay.app.raptor.chocolate.eventlistener.request.CustomizedSchemeRequestHandler;
+import com.ebay.app.raptor.chocolate.eventlistener.request.StaticPageRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
@@ -31,7 +33,6 @@ import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import com.ebay.userlookup.UserLookup;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -52,12 +53,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.*;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import static com.ebay.app.raptor.chocolate.constant.Constants.PM_CHANNELS;
-import static com.ebay.app.raptor.chocolate.constant.Constants.REFERRER;
+import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
-import static com.ebay.app.raptor.chocolate.constant.MetricsConstants.*;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.*;
 
 /**
@@ -108,6 +106,12 @@ public class CollectionService {
   @Autowired
   private SiteEmailCollector siteEmailCollector;
 
+  @Autowired
+  private StaticPageRequestHandler staticPageRequestHandler;
+
+  @Autowired
+  private CustomizedSchemeRequestHandler customizedSchemeRequestHandler;
+
   private static final String PARTNER = "partner";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
@@ -120,8 +124,6 @@ public class CollectionService {
   private static final String ENDUSERCTX_HEADER = "X-EBAY-C-ENDUSERCTX";
   private static final String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
   private static final String STR_NULL = "null";
-  private static final String HTTPS_ENCODED = "https%3A%2F%2";
-  private static final String HTTP_ENCODED = "http%3A%2F%2";
 
   @PostConstruct
   public void postInit() throws Exception {
@@ -218,29 +220,9 @@ public class CollectionService {
     if (ePageSites.matcher(targetUrl.toLowerCase()).find()) {
       metrics.meter("ePageIncoming");
 
-      String originalReferer = "";
-      String targetPath = "";
-      UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-      uriComponents.getQueryParams();
-      originalReferer = uriComponents.getQueryParams().getFirst(Constants.EPAGE_REFERER);
-      targetPath = uriComponents.getQueryParams().getFirst(Constants.EPAGE_URL);
-
-      if (!StringUtils.isEmpty(targetPath)) {
-        URIBuilder uriBuilder = new URIBuilder(URLDecoder.decode(targetPath, UTF_8));
-        uriBuilder.addParameters(new URIBuilder(targetUrl).getQueryParams());
-        targetUrl = HttpRequestUtil.removeParam(uriBuilder.build().toString(), Constants.EPAGE_URL);
-      } else {
-        targetUrl = referer;
-      }
-
-      if (!StringUtils.isEmpty(originalReferer)) {
-        referer = URLDecoder.decode(originalReferer, UTF_8);
-        targetUrl = HttpRequestUtil.removeParam(targetUrl, Constants.EPAGE_REFERER);
-      } else {
-        LOGGER.warn(Errors.ERROR_NO_REFERER);
-        metrics.meter(Errors.ERROR_NO_REFERER);
-        referer = "";
-      }
+      Event staticPageEvent = staticPageRequestHandler.parseStaticPageEvent(targetUrl, referer);
+      targetUrl = staticPageEvent.getTargetUrl();
+      referer = staticPageEvent.getReferrer();
     }
 
     //XC-1797, for social app deeplink case, extract and decode actual target url from referrer parameter in targetUrl
@@ -249,32 +231,12 @@ public class CollectionService {
     if (deeplinkMatcher.find()) {
       metrics.meter("IncomingSocialAppDeepLink");
 
-      UriComponents deeplinkUriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-
-      MultiValueMap<String, String> deeplinkParameters = deeplinkUriComponents.getQueryParams();
-      if (deeplinkParameters.size() == 0 || !deeplinkParameters.containsKey(REFERRER)) {
+      Event customizedSchemeEvent = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetUrl, referer);
+      if(customizedSchemeEvent == null) {
         logError(Errors.ERROR_NO_TARGET_URL_DEEPLINK);
-      }
-
-      String deeplinkTargetUrl = deeplinkParameters.get(REFERRER).get(0);
-
-      try {
-        if(deeplinkTargetUrl.startsWith(HTTPS_ENCODED) || deeplinkTargetUrl.startsWith(HTTP_ENCODED)) {
-          deeplinkTargetUrl = URLDecoder.decode(deeplinkTargetUrl, UTF_8);
-        }
-      } catch (Exception ex) {
-        metrics.meter("DecodeDeepLinkTargetUrlError");
-        LOGGER.warn("Decode deeplink target url error." + ex.getMessage());
-      }
-
-      Matcher deeplinkEbaySitesMatcher = deeplinkEbaySites.matcher(deeplinkTargetUrl.toLowerCase());
-      if (deeplinkEbaySitesMatcher.find()) {
-        targetUrl = deeplinkTargetUrl;
-        metrics.meter("IncomingSocialAppDeepLinkSuccess");
       } else {
-        LOGGER.warn(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
-        metrics.meter(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
-        return true;
+        targetUrl = customizedSchemeEvent.getTargetUrl();
+        referer = customizedSchemeEvent.getReferrer();
       }
     }
 

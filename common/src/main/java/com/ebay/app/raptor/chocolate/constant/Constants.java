@@ -35,8 +35,12 @@ public class Constants {
   public static final String GUID = "guid";
   public static final String CGUID = "cguid";
 
+  // URL related
+
   public static final String MKRVRID = "mkrvrid";
   public static final String REFERRER = "referrer";
+  public static final String HTTPS_ENCODED = "https%3A%2F%2";
+  public static final String HTTP_ENCODED = "http%3A%2F%2";
 
   // EPN url params
   public static final String TOOL_ID = "toolid";
