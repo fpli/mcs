@@ -274,7 +274,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_trfc_src_cd_click_udf = udf((browser: String) => get_TRFC_SRC_CD(browser, "click"))
   val get_trfc_src_cd_impression_udf = udf((browser: String) => get_TRFC_SRC_CD(browser, "impression"))
 
-  val get_last_view_item_info_udf = udf((cguid: String, timestamp: String) => getLastViewItemInfo(cguid, timestamp))
+//  val get_last_view_item_info_udf = udf((cguid: String, timestamp: String) => getLastViewItemInfo(cguid, timestamp))
+
+  val get_last_view_item_info_udf = udf((cguid: String, guid: String, timestamp: String) => getLastViewItemInfoV3(cguid, guid, timestamp))
 
   val filter_specific_pub_udf = udf((referer: String, publisher: String) => filter_specific_pub(referer, publisher))
   val filter_longterm_ebaysites_ref_udf = udf((uri: String, referer: String) => filterLongTermEbaySitesRef(uri, referer))
@@ -301,6 +303,11 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   def getLastViewItemInfo(cguid: String, timestamp: String): Array[String] = {
     val res = BullseyeUtils.getLastViewItem(cguid, timestamp, properties.getProperty("epnnrt.modelId"), properties.getProperty("epnnrt.lastviewitemnum"), properties.getProperty("epnnrt.bullseyeUrl"))
+    Array(res._1, res._2)
+  }
+
+  def getLastViewItemInfoV3(cguid: String, guid: String, timestamp: String): Array[String] = {
+    val res = BullseyeUtils.getLastViewItemV3(cguid, guid, timestamp, properties.getProperty("epnnrt.modelId"), properties.getProperty("epnnrt.lastviewitemnum"), properties.getProperty("epnnrt.bullseyeUrlV3"))
     Array(res._1, res._2)
   }
 
