@@ -31,7 +31,7 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
   */
 object DedupeAndSink_v2 extends App {
   override def main(args: Array[String]) = {
-    val params = Parameter(args)
+    val params = Parameter_v2(args)
 
     val job = new DedupeAndSink_v2(params)
 
@@ -40,7 +40,7 @@ object DedupeAndSink_v2 extends App {
   }
 }
 
-class DedupeAndSink_v2(params: Parameter)
+class DedupeAndSink_v2(params: Parameter_v2)
   extends BaseSparkNrtJob(params.appName, params.mode) {
 
   var properties: Properties = {

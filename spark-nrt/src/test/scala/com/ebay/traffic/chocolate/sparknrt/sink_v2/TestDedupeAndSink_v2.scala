@@ -33,7 +33,7 @@ class TestDedupeAndSink_v2 extends BaseFunSuite {
     "--couchbaseDedupe", "false"
   )
 
-  val params = Parameter(args)
+  val params = Parameter_v2(args)
 
   val job = new DedupeAndSink_v2(params)
 
