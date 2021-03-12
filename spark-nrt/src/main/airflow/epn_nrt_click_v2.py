@@ -2,8 +2,8 @@ from airflow.contrib.operators.spark_submit_operator import SparkSubmitOperator
 from airflow import DAG
 from datetime import timedelta
 
-dag_name = 'epn_nrt_click_v2'
-dag_id = 'epn_nrt_click_v2'
+dag_name = 'epn_nrt_impression_v2'
+dag_id = 'epn_nrt_impression_v2'
 
 default_args = {
     'owner': 'yuhxiao',
@@ -25,15 +25,15 @@ dag = DAG(
 
 __config = {
     'name': dag_name,
-    'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrt_v2.EpnNrtClickJob_v2',
+    'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrt_v2.EpnNrtImpressionJob_v2',
     'application': '/mnt/jobs/tracking/epn-nrt/lib/chocolate-spark-nrt-*.jar',
-    'executor_cores': '1',
-    'driver_memory': '4G',
-    'executor_memory': '6G',
-    'num_executors': '20',
+    'executor_cores': '10',
+    'driver_memory': '15G',
+    'executor_memory': '30G',
+    'num_executors': '50',
 
     'application_args': [
-        '--appName', 'epn_nrt_click_v2',
+        '--appName', 'epn_nrt_impression_v2',
         '--mode', 'yarn',
         '--workDir', 'viewfs://apollo-rno/user/b_marketing_tracking/tracking-events-workdir',
         '--outputDir', 'viewfs://apollo-rno/user/b_marketing_tracking/chocolate/epnnrt_v2',
@@ -44,7 +44,7 @@ __config = {
 }
 
 spark_submit_operator = SparkSubmitOperator(
-    task_id='epn_nrt_click_v2',
+    task_id='epn_nrt_impression_v2',
     pool='spark_pool',
     conn_id='hdlq-commrce-mkt-high-mem',
     files='file:///mnt/jobs/tracking/epn-nrt/conf/epnnrt_v2.properties,'
