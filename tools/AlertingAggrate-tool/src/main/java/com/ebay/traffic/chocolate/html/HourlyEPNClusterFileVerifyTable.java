@@ -48,7 +48,7 @@ public class HourlyEPNClusterFileVerifyTable {
     if (Integer.parseInt(diff) == 0) {
       return "<td bgcolor=\"#FFFFFF\">" + "OK" + "</td>";
     } else {
-      return "<td bgcolor=\"#ff0000\">" + "Critical" + "</td>";
+      return "<td bgcolor=\"#ffcc00\">" + "Warning" + "</td>";
     }
   }
 

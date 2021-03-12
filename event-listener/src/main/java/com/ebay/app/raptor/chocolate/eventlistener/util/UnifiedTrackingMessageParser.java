@@ -300,6 +300,8 @@ public class UnifiedTrackingMessageParser {
         return ChannelTypeEnum.MRKT_EMAIL;
       case SITE_EMAIL:
         return ChannelTypeEnum.SITE_EMAIL;
+      case EPN:
+        return ChannelTypeEnum.EPN;
       default:
         return ChannelTypeEnum.GENERIC;
     }

@@ -40,7 +40,7 @@ if [ ${first_done_file_exists} -eq 1 ]; then
     rcode_add=1
     until [[ ${retry_add} -gt 3 ]]
     do
-        /datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; ALTER TABLE choco_data.imk_rvr_trckng_event_v2 ADD IF NOT EXISTS PARTITION (dt='${partition_date}')" &&
+        /datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; ALTER TABLE choco_data.imk_rvr_trckng_event ADD IF NOT EXISTS PARTITION (dt='${partition_date}')" &&
         /datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; ALTER TABLE im_tracking.imk_rvr_trckng_event_v2 ADD IF NOT EXISTS PARTITION (dt='${partition_date}')" &&
         rcode_add=$?
         if [ ${rcode_add} -eq 0 ]

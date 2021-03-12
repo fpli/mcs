@@ -419,6 +419,26 @@ class Tools(namespace: String, endpoint: String, user: String, appName: String) 
   }
 
   /**
+   * judge traffic is bot
+   * @param brwsrName user agent
+   * @return is or not
+   */
+  def judgeNotBot(brwsrName: String): Boolean = {
+    if(StringUtils.isEmpty(brwsrName)) {
+      return true
+    }
+    val lowerCase = brwsrName.toLowerCase
+    if (lowerCase.contains("bot") || lowerCase.contains("proxy") || lowerCase.contains("spider")) {
+      if (metrics != null) {
+        metrics.meter("imk_dump_bot", 1)
+      }
+      false
+    } else {
+      true
+    }
+  }
+
+  /**
     * Get ROI related fields from mpuid
     * @param index the index of field
     * @param query input uri query

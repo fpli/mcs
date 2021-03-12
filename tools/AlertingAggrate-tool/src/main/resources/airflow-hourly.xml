@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <projects>
     <project name="tools-airflow-monitor">
-        <metric dag="AlertingAggregation" total="1" threshold="1"/>
-        <metric dag="AlertingAggregationHourly" total="1" threshold="1"/>
         <metric dag="AlertingAggregation_v2" total="1" threshold="1"/>
         <metric dag="AlertingAggregationHourly_v2" total="1" threshold="1"/>
         <metric dag="HdfsDataClean" total="1" threshold="1"/>

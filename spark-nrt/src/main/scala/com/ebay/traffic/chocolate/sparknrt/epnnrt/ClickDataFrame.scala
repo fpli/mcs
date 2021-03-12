@@ -19,7 +19,7 @@ class ClickDataFrame(df: DataFrame, common: EpnNrtCommon) extends Serializable {
       .withColumn("google_fltr_do_flag", common.get_google_fltr_do_flag_udf(col("referer"), col("publisher_id")))
       .withColumn("traffic_source_code", common.get_trfc_src_cd_click_udf(col("user_agent")))
       .withColumn("ams_fltr_roi_value", common.get_roi_fltr_yn_ind_udf(col("uri"), col("publisher_id"), col("referer"), col("google_fltr_do_flag"), col("traffic_source_code"), col("rt_rule_flags")))
-      .withColumn("last_view_item", common.get_last_view_item_info_udf(col("cguid"), col("timestamp")))
+      .withColumn("last_view_item", common.get_last_view_item_info_udf(col("cguid"), col("guid"), col("timestamp")))
       .withColumn("CLICK_ID", col("short_snapshot_id"))
       .withColumn("CHNL_ID", common.getChannelIdUdf(col("channel_type")))
       .withColumn("CRLTN_GUID_TXT", col("cguid"))
