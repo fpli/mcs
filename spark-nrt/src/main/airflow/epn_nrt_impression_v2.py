@@ -27,11 +27,10 @@ __config = {
     'name': dag_name,
     'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrt_v2.EpnNrtImpressionJob_v2',
     'application': '/mnt/jobs/tracking/epn-nrt/lib/chocolate-spark-nrt-*.jar',
-    'executor_cores': '1',
-    'driver_memory': '4G',
-    'executor_memory': '6G',
-    'num_executors': '20',
-
+    'executor_cores': '10',
+    'driver_memory': '15G',
+    'executor_memory': '30G',
+    'num_executors': '50',
     'application_args': [
         '--appName', 'epn_nrt_impression_v2',
         '--mode', 'yarn',
