@@ -19,6 +19,7 @@ import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.auth.RaptorSecureContext;
+import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -36,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import java.net.URLDecoder;
+import java.util.Map;
 import java.util.regex.Matcher;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_ACTION;
@@ -72,7 +74,6 @@ public class PerformanceMarketingCollector {
   }
 
   /**
-   * @param requestContext      wrapped request context
    * @param targetUrl           landing page url
    * @param referer             referer
    * @param parameters          url parameters
@@ -84,11 +85,14 @@ public class PerformanceMarketingCollector {
    * @param raptorSecureContext wrapped raptor secure context
    * @return                    Listener message
    */
-  public ListenerMessage parseListenerMessage(ContainerRequestContext requestContext, String targetUrl, String referer,
+  public ListenerMessage parseListenerMessage(Map<String, String> requestHeaders,
+                                              UserPrefsCtx userPrefsCtx, String targetUrl, String referer,
                                               MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                               ChannelActionEnum channelAction, HttpServletRequest request,
                                               long startTime, IEndUserContext endUserContext,
                                               RaptorSecureContext raptorSecureContext) {
+
+
     // logic to filter internal redirection in node, https://jirap.corp.ebay.com/browse/XC-2361
     // currently we only observe the issue in vi pool in mweb case if the url does not contain title of the item
     // log metric here about the header which identifiers if there is a redirection
@@ -151,8 +155,9 @@ public class PerformanceMarketingCollector {
     }
 
     // Parse the response
-    ListenerMessage message = parser.parse(request, requestContext, startTime, campaignId, channelType
-        .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, rotationId, snid);
+    ListenerMessage message = parser.parse(requestHeaders, endUserContext, userPrefsCtx, startTime,
+        campaignId, channelType.getLogicalChannel().getAvro(), channelAction, userId, targetUrl,
+        referer, rotationId, snid);
 
     // Use the shot snapshot id from requests
     if (parameters.containsKey(Constants.MKRVRID) && parameters.get(Constants.MKRVRID).get(0) != null) {
@@ -185,7 +190,7 @@ public class PerformanceMarketingCollector {
   }
 
   /**
-   * @param requestContext  wrapped raptor request context
+   * @param requestTracker  site tracking tracker
    * @param referer         referer of the request
    * @param parameters      url parameters
    * @param channelType     channel type
@@ -194,7 +199,7 @@ public class PerformanceMarketingCollector {
    * @param endUserContext  enduserctx header
    * @param message         listener message
    */
-  public void trackUbi(ContainerRequestContext requestContext, String referer,
+  public void trackUbi(IRequestScopeTracker requestTracker, String referer,
                        MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                        ChannelActionEnum channelAction, long startTime,
                        IEndUserContext endUserContext,
@@ -207,9 +212,6 @@ public class PerformanceMarketingCollector {
     if (!m.find() && !channelAction.equals(ChannelActionEnum.SERVE)
         && !isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)) {
       try {
-        // Ubi tracking
-        IRequestScopeTracker requestTracker =
-            (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
         // event family
         requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);

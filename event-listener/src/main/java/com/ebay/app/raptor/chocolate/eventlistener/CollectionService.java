@@ -11,6 +11,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.collector.PerformanceMarketin
 import com.ebay.app.raptor.chocolate.eventlistener.collector.SiteEmailCollector;
 import com.ebay.app.raptor.chocolate.eventlistener.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
+import com.ebay.app.raptor.chocolate.eventlistener.request.CommonRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.request.CustomizedSchemeRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.request.StaticPageRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
@@ -33,6 +34,7 @@ import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import com.ebay.userlookup.UserLookup;
+import org.apache.catalina.User;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -51,6 +53,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 
@@ -112,6 +115,9 @@ public class CollectionService {
   @Autowired
   private CustomizedSchemeRequestHandler customizedSchemeRequestHandler;
 
+  @Autowired
+  private CommonRequestHandler commonRequestHandler;
+
   private static final String PARTNER = "partner";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
@@ -151,11 +157,13 @@ public class CollectionService {
   public boolean collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
           raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
 
-    if (request.getHeader(TRACKING_HEADER) == null) {
+    Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
+
+    if (requestHeaders.get(TRACKING_HEADER) == null) {
       logError(Errors.ERROR_NO_TRACKING);
     }
 
-    if (request.getHeader(ENDUSERCTX_HEADER) == null) {
+    if (requestHeaders.get(ENDUSERCTX_HEADER) == null) {
       logError(Errors.ERROR_NO_ENDUSERCTX);
     }
 
@@ -176,12 +184,12 @@ public class CollectionService {
       referer = endUserContext.getReferer();
     }
 
-    if(StringUtils.isEmpty(referer) && request.getHeader(Constants.REFERER_HEADER) != null) {
-      referer = request.getHeader(Constants.REFERER_HEADER);
+    if(StringUtils.isEmpty(referer) && requestHeaders.get(Constants.REFERER_HEADER) != null) {
+      referer = requestHeaders.get(Constants.REFERER_HEADER);
     }
 
-    if(StringUtils.isEmpty(referer) && request.getHeader(Constants.REFERER_HEADER_UPCASE) != null) {
-      referer = request.getHeader(Constants.REFERER_HEADER_UPCASE);
+    if(StringUtils.isEmpty(referer) && requestHeaders.get(Constants.REFERER_HEADER_UPCASE) != null) {
+      referer = requestHeaders.get(Constants.REFERER_HEADER_UPCASE);
     }
 
     // return 201 for now for the no referer case. Need investigation further.
@@ -362,6 +370,7 @@ public class CollectionService {
         }
       }
     }
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
 
     // Determine whether the click is a duplicate click
     // If duplicate click, then drop into duplicateItmClickTopic
@@ -375,8 +384,11 @@ public class CollectionService {
       // send duplicate click to a dedicate listener topic
       if(isDuplicateClick) {
         Producer<Long, ListenerMessage> producer = KafkaSink.get();
-        ListenerMessage listenerMessage = parser.parse(request, requestContext, startTime, 0L,
-            channelType.getLogicalChannel().getAvro(), ChannelActionEnum.CLICK, "", endUserContext, targetUrl,
+//        ListenerMessage listenerMessage = parser.parse(request, requestContext, startTime, 0L,
+//            channelType.getLogicalChannel().getAvro(), ChannelActionEnum.CLICK, "", endUserContext, targetUrl,
+//            referer, 0L, "");
+        ListenerMessage listenerMessage = parser.parse(requestHeaders, endUserContext, userPrefsCtx, startTime,
+            0L, channelType.getLogicalChannel().getAvro(), ChannelActionEnum.CLICK, "", targetUrl,
             referer, 0L, "");
         Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
         listenerMessage.setSnapshotId(snapshotId);
@@ -397,7 +409,7 @@ public class CollectionService {
           = CollectionServiceUtil.isEPNPromotedListingsClick(channelType, parameters, referer);
 
       if (isEPNClickFromPromotedListings) {
-        referer = URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), "UTF-8");
+        referer = URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), StandardCharsets.UTF_8.name());
         metrics.meter("OverwriteRefererForPromotedListingsClick");
       }
     } catch (Exception e) {
@@ -431,8 +443,8 @@ public class CollectionService {
       ListenerMessage listenerMessage = null;
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(channelType)) {
-        listenerMessage = processPMEvent(requestContext, targetUrl, referer, parameters, channelType, channelAction,
-            request, startTime, endUserContext, raptorSecureContext, agentInfo);
+        listenerMessage = processPMEvent(requestContext, requestHeaders, userPrefsCtx, targetUrl, referer, parameters,
+            channelType, channelAction, request, startTime, endUserContext, raptorSecureContext, agentInfo);
       }
       else if (channelType == ChannelIdEnum.SITE_EMAIL) {
         processCmEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
@@ -606,6 +618,8 @@ public class CollectionService {
   public boolean collectImpression(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
       raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
 
+    Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
+
     if (request.getHeader(TRACKING_HEADER) == null) {
       logError(Errors.ERROR_NO_TRACKING);
     }
@@ -729,6 +743,8 @@ public class CollectionService {
     String action = channelAction.getAvro().toString();
     String type = channelType.getLogicalChannel().getAvro().toString();
 
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
@@ -745,8 +761,8 @@ public class CollectionService {
           mrktEmailCollector);
     }
     else {
-      listenerMessage = processPMEvent(requestContext, uri, referer, parameters, channelType, channelAction,
-          request, startTime, endUserContext, raptorSecureContext, agentInfo);
+      listenerMessage = processPMEvent(requestContext, requestHeaders, userPrefsCtx, uri, referer, parameters,
+          channelType, channelAction, request, startTime, endUserContext, raptorSecureContext, agentInfo);
     }
 
     // send to unified tracking topic
@@ -788,6 +804,7 @@ public class CollectionService {
                                   IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
                                   UserAgentInfo agentInfo, ROIEvent roiEvent) {
 
+    Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
     // get user id from auth token if it's user token, else we get from end user ctx
     String userId;
     if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
@@ -796,10 +813,12 @@ public class CollectionService {
       userId = Long.toString(endUserContext.getOrigUserOracleId());
     }
 
-    // Parse the response
-    ListenerMessage message = parser.parse(request, requestContext, startTime, -1L, channelType
-        .getLogicalChannel().getAvro(), channelAction, userId, endUserContext, targetUrl, referer, 0L, "");
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
 
+    // Parse the response
+    ListenerMessage message = parser.parse(requestHeaders, endUserContext, userPrefsCtx, startTime,
+        -1L, channelType.getLogicalChannel().getAvro(), channelAction, userId, targetUrl,
+        referer, 0L, "");
 
     BehaviorMessage behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(request, requestContext, endUserContext,
         parameters, agentInfo, targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
@@ -978,7 +997,8 @@ public class CollectionService {
    * @param agentInfo           user agent
    * @return                    a listener message
    */
-  private ListenerMessage processPMEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
+  private ListenerMessage processPMEvent(ContainerRequestContext requestContext, Map<String, String> requestHeaders,
+                                         UserPrefsCtx userPrefsCtx, String targetUrl, String referer,
                                          MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                          ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
                                          IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
@@ -986,9 +1006,9 @@ public class CollectionService {
 
     ListenerMessage listenerMessage = null;
 
-
-    listenerMessage = performanceMarketingCollector.parseListenerMessage(requestContext, targetUrl, referer,
-        parameters, channelType, channelAction, request, startTime, endUserContext, raptorSecureContext);
+    listenerMessage = performanceMarketingCollector.parseListenerMessage(requestHeaders, userPrefsCtx,
+        targetUrl, referer, parameters, channelType, channelAction, request, startTime, endUserContext,
+        raptorSecureContext);
 
     // 1. send to chocolate topic
     // If the click is a duplicate click from itm page, then drop into duplicateItmClickTopic
@@ -1002,7 +1022,9 @@ public class CollectionService {
         KafkaSink.callback);
 
     // 2. track ubi
-    performanceMarketingCollector.trackUbi(requestContext, referer, parameters, channelType,
+    IRequestScopeTracker requestTracker =
+        (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+    performanceMarketingCollector.trackUbi(requestTracker, referer, parameters, channelType,
         channelAction, startTime, endUserContext, listenerMessage);
 
     // 3. send to behavior topic

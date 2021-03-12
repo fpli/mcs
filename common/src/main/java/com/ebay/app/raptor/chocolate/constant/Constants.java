@@ -35,8 +35,12 @@ public class Constants {
   public static final String GUID = "guid";
   public static final String CGUID = "cguid";
 
-  // URL related
+  // Request headers
+  public static final String TRACKING_HEADER = "X-EBAY-C-TRACKING";
+  public static final String ENDUSERCTX_HEADER = "X-EBAY-C-ENDUSERCTX";
+  public static final String AUTH_HEADER = "Authorization";
 
+  // URL related
   public static final String MKRVRID = "mkrvrid";
   public static final String REFERRER = "referrer";
   public static final String HTTPS_ENCODED = "https%3A%2F%2";
