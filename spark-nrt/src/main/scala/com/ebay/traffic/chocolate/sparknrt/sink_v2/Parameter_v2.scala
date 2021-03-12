@@ -5,20 +5,20 @@ import scopt.OptionParser
 /**
  * Created by yuhxiao on 23/02/21.
   */
-case class Parameter(appName: String = "DedupeAndSink_v2",
-                     mode: String = "yarn",
-                     channel: String = "",
-                     kafkaTopic: String = "",
-                     workDir: String = "",
-                     outputDir: String = "",
-                     partitions: Int = 3,
-                     maxConsumeSize: Long = 100000l,
-                     couchbaseDedupe: Boolean = true,
-                     couchbaseTTL: Int = 3 * 24 * 60 * 60)
+case class Parameter_v2(appName: String = "DedupeAndSink_v2",
+                        mode: String = "yarn",
+                        channel: String = "",
+                        kafkaTopic: String = "",
+                        workDir: String = "",
+                        outputDir: String = "",
+                        partitions: Int = 3,
+                        maxConsumeSize: Long = 100000l,
+                        couchbaseDedupe: Boolean = true,
+                        couchbaseTTL: Int = 3 * 24 * 60 * 60)
 
-object Parameter {
+object Parameter_v2 {
 
-  private lazy val parser = new OptionParser[Parameter]("DedupeAndSink_v2") {
+  private lazy val parser = new OptionParser[Parameter_v2]("DedupeAndSink_v2") {
     head("DedupeAndSink_v2")
 
     opt[String]("appName")
@@ -72,7 +72,7 @@ object Parameter {
       .action((cont, param) => param.copy(couchbaseTTL = cont))
   }
 
-  def apply(args: Array[String]): Parameter = parser.parse(args, Parameter()) match {
+  def apply(args: Array[String]): Parameter_v2 = parser.parse(args, Parameter_v2()) match {
     case Some(param) => param
     case None =>
       System.exit(1)
