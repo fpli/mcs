@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
@@ -26,10 +27,7 @@ import org.apache.commons.lang3.Validate;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 
@@ -39,8 +37,10 @@ public class UTPRoverEventTransformer {
   private final long offset;
   private final GenericRecord sourceRecord;
   private final RheosEvent sourceRheosEvent;
+  private final String schemaVersion;
   private Integer pageId;
   protected Map<String, String> applicationPayload;
+  protected Map<String, String> clientData;
   private String urlQueryString;
   private ChannelTypeEnum channelType;
   private ActionTypeEnum actionTypeEnum;
@@ -56,12 +56,14 @@ public class UTPRoverEventTransformer {
   private static final String PAGE_NAME_ROVER_EMAIL_OPEN = "roveropen";
   private static final String SITE_EMAIL_CHANNEL_ID = "7";
   private static final String MRKT_EMAIL_CHANNEL_ID = "8";
+  private static final String EPN_CHANNEL_ID = "1";
   public static final String BEHAVIOR_PULSAR_MISC_BOT = "behavior.pulsar.misc.bot";
   public static final String REFERER = "Referer";
   private static final String ROVER_HOST = "https://rover.ebay.com";
   public static final String TOPIC = "topic";
 
-  public static final String REMOTE_IP = "RemoteIP";
+  private static final String REMOTE_IP = "RemoteIP";
+  private static final String FORWARDED_FOR = "ForwardedFor";
 
   private static final ImmutableMap<String, String> EMAIL_TAG_PARAM_MAP = new ImmutableMap.Builder<String, String>()
           .put("adcamp_landingpage", "adcamp_landingpage")
@@ -79,6 +81,7 @@ public class UTPRoverEventTransformer {
           .put("euid", "euid")
           .put("exe", "exe")
           .put("ext", "ext")
+          .put("trkId", "trkId")
           .put("nqc", "nqc")
           .put("nqt", "nqt")
           .put("osub", "osub")
@@ -94,6 +97,9 @@ public class UTPRoverEventTransformer {
 
   private static final String GET_METHOD_PREFIX = "get";
 
+  private static String[] coreSites = {"rover.ebay.com", "r.ebay.com", "internal.rover.vip.ebay.com","rover.qa.ebay.com"};
+  private static Set<String> roverCoreSites = new HashSet<>(Arrays.asList(coreSites));
+
   /**
    * Used to cache method object to improve reflect performance
    */
@@ -107,12 +113,13 @@ public class UTPRoverEventTransformer {
     return String.format("%s%s", GET_METHOD_PREFIX, upperCamelCase);
   };
 
-  public UTPRoverEventTransformer(String sourceTopic, int partition, long offset, GenericRecord sourceRecord, RheosEvent sourceRheosEvent) {
+  public UTPRoverEventTransformer(String sourceTopic, int partition, long offset, GenericRecord sourceRecord, RheosEvent sourceRheosEvent, String schemaVersion) {
     this.sourceTopic = sourceTopic;
     this.partition = partition;
     this.offset = offset;
     this.sourceRecord = sourceRecord;
     this.sourceRheosEvent = sourceRheosEvent;
+    this.schemaVersion = schemaVersion;
     this.isValid = validate();
     if (this.isValid) {
       initFields();
@@ -136,6 +143,7 @@ public class UTPRoverEventTransformer {
     }
 
     applicationPayload = GenericRecordUtils.getMap(sourceRecord, TransformerConstants.APPLICATION_PAYLOAD);
+    clientData = GenericRecordUtils.getMap(sourceRecord, TransformerConstants.CLIENT_DATA);
     urlQueryString = parseUrlQueryString();
     if (urlQueryString == null) {
       SherlockioMetrics.getInstance().meter("NoUrlQueryString", 1, Field.of(TOPIC, sourceTopic));
@@ -165,6 +173,12 @@ public class UTPRoverEventTransformer {
       }
       if (pageId == PAGE_ID_EMAIL_OPEN && !PAGE_NAME_ROVER_EMAIL_OPEN.equals(pageName)) {
         SherlockioMetrics.getInstance().meter("NotRoveropen", 1, Field.of(TOPIC, sourceTopic));
+        return false;
+      }
+
+      // only keep core site rover events
+      String server = GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.WEB_SERVER);
+      if(!roverCoreSites.contains(server)) {
         return false;
       }
     }
@@ -197,6 +211,9 @@ public class UTPRoverEventTransformer {
     }
     if (MRKT_EMAIL_CHANNEL_ID.equals(channelId)) {
       return ChannelTypeEnum.MRKT_EMAIL;
+    }
+    if (EPN_CHANNEL_ID.equals(channelId)) {
+      return ChannelTypeEnum.EPN;
     }
     return null;
   }
@@ -301,7 +318,10 @@ public class UTPRoverEventTransformer {
   }
   
   protected String getTrackingId() {
-    if (actionTypeEnum == ActionTypeEnum.ROI) {
+    if (actionTypeEnum == ActionTypeEnum.ROI ) {
+      return null;
+    }
+    if (channelType == ChannelTypeEnum.EPN) {
       return null;
     }
     return PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, TransformerConstants.TRACKING_ID);
@@ -324,6 +344,9 @@ public class UTPRoverEventTransformer {
   @SuppressWarnings("UnstableApiUsage")
   protected long getEncryptedUserId() {
     if (actionTypeEnum == ActionTypeEnum.ROI) {
+      return 0L;
+    }
+    if (channelType == ChannelTypeEnum.EPN) {
       return 0L;
     }
     String encryptedUserId = sojTags.get(TransformerConstants.EMID);
@@ -383,12 +406,14 @@ public class UTPRoverEventTransformer {
     if (channelType == ChannelTypeEnum.MRKT_EMAIL) {
       return applicationPayload.get(TransformerConstants.SEGNAME);
     }
-    
+    if (channelType == ChannelTypeEnum.EPN) {
+      return PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, Constants.CAMP_ID);
+    }
     return PulsarParseUtils.substring(applicationPayload.get(TransformerConstants.SID), "e", ".mle");
   }
 
   protected String getRotationId() {
-    if (actionTypeEnum == ActionTypeEnum.ROI) {
+    if (actionTypeEnum == ActionTypeEnum.ROI || channelType == ChannelTypeEnum.EPN) {
       return urlQueryString.split("/").length > 3 ?
               urlQueryString.split("/")[3].split("\\?")[0].replace("-", "") : null;
     }
@@ -410,11 +435,19 @@ public class UTPRoverEventTransformer {
   }
 
   protected String getReferer() {
-    return applicationPayload.get(REFERER);
+    if ("2".equals(schemaVersion)) {
+      return GenericRecordUtils.getStringFieldOrNull(sourceRecord, "referrer");
+    } else {
+      return applicationPayload.get(REFERER);
+    }
   }
 
   protected String getUserAgent() {
-    return applicationPayload.get(TransformerConstants.AGENT);
+    if ("2".equals(schemaVersion)) {
+      return clientData.get(TransformerConstants.AGENT);
+    } else {
+      return applicationPayload.get(TransformerConstants.AGENT);
+    }
   }
 
   protected String getDeviceFamily() {
@@ -458,7 +491,11 @@ public class UTPRoverEventTransformer {
   }
 
   protected String getRemoteIp() {
-    return applicationPayload.getOrDefault(REMOTE_IP, StringConstants.EMPTY);
+    if ("2".equals(schemaVersion)) {
+      return clientData.getOrDefault(FORWARDED_FOR, StringConstants.EMPTY);
+    } else {
+      return applicationPayload.getOrDefault(REMOTE_IP, StringConstants.EMPTY);
+    }
   }
 
   protected int getPageId() {
@@ -493,6 +530,17 @@ public class UTPRoverEventTransformer {
       }
       return payload;
     }
+    if (channelType == ChannelTypeEnum.EPN) {
+      for (String key : Arrays.asList(TransformerConstants.RVRID, "url_mpre")) {
+        if (applicationPayload.containsKey(key)) {
+          payload.put(key, applicationPayload.get(key));
+        }
+      }
+      String toolId = PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, Constants.TOOL_ID);
+      if(StringUtils.isNotEmpty(toolId)) {
+        payload.put(Constants.TOOL_ID, PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, Constants.TOOL_ID));
+      }
+    }
     if (actionTypeEnum == ActionTypeEnum.ROI) {
       payload.put("p", String.valueOf(pageId));
       payload.put("itm", String.valueOf(pageId));
@@ -502,8 +550,8 @@ public class UTPRoverEventTransformer {
           payload.put(key, applicationPayload.get(key));
         }
       }
-      String rvrId = applicationPayload.getOrDefault("rvrid", StringConstants.EMPTY);
-      payload.put("rvrid", rvrId);
+      String rvrId = applicationPayload.getOrDefault(TransformerConstants.RVRID, StringConstants.EMPTY);
+      payload.put(TransformerConstants.RVRID, rvrId);
       payload.put("snapshotid", rvrId);
       return payload;
     }

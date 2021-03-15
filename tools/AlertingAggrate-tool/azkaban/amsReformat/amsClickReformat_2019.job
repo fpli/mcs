@@ -1,0 +1,3 @@
+type=command
+command=bash ./SubmitJob.sh "SLC" "/datashare/mkttracking/jobs/amsReformat/click" "./historicalAMSClickDataReformat.sh 20190101 20191231"
+failure.emails=yuhxiao@ebay.com

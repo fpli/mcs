@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<projects>
+    <project name="tools-airflow-monitor">
+        <metric dag="AlertingAggregation_v2" total="1" threshold="1"/>
+        <metric dag="AlertingAggregationHourly_v2" total="1" threshold="1"/>
+        <metric dag="HdfsDataClean" total="1" threshold="1"/>
+        <metric dag="airflow-db-cleanup" total="1" threshold="1"/>
+        <metric dag="airflow-log-cleanup" total="1" threshold="1"/>
+    </project>
+    <project name="appdl-airflow-monitor">
+        <metric dag="AppdlETL" total="1" threshold="1"/>
+        <metric dag="SendNorbToKafaka" total="1" threshold="1"/>
+        <metric dag="SendUseridFmToKafka" total="1" threshold="1"/>
+    </project>
+    <project name="EPN-airflow-monitor">
+        <metric dag="EPNDailyClick" total="1" threshold="1"/>
+        <metric dag="EPNHourlyClickCountReport" total="1" threshold="1"/>
+    </project>
+</projects>

@@ -263,7 +263,8 @@ public class UnifiedTrackingMessageParser {
     Map<String, String> uepPayload =
         uepPayloadHelper.getUepPayload(url, ActionTypeEnum.valueOf(actionType), channelTypeEnum);
     Map<String, String> fullPayload =
-        getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction, snapshotId, shortSnapshotId, roiEvent, userId, startTime);
+        getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction, snapshotId,
+            shortSnapshotId, roiEvent, userId, startTime, trackingHeader);
 
     // append UEP payload
     if(uepPayload != null && uepPayload.size() > 0) {
@@ -290,6 +291,8 @@ public class UnifiedTrackingMessageParser {
         return ChannelTypeEnum.MRKT_EMAIL;
       case SITE_EMAIL:
         return ChannelTypeEnum.SITE_EMAIL;
+      case EPN:
+        return ChannelTypeEnum.EPN;
       default:
         return ChannelTypeEnum.GENERIC;
     }
@@ -323,7 +326,10 @@ public class UnifiedTrackingMessageParser {
     record.setOsVersion(deviceInfoParser.getOsVersion());
 
     // app info
-    record.setAppId(CollectionServiceUtil.getAppIdFromUserAgent(agentInfo));
+    String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
+    if (!StringUtils.isEmpty(appId)) {
+      record.setAppId(appId);
+    }
     if (agentInfo.getAppInfo() != null) {
       record.setAppVersion(agentInfo.getAppInfo().getAppVersion());
     }
@@ -378,7 +384,7 @@ public class UnifiedTrackingMessageParser {
     String partner = "";
     if (ChannelType.EPN.equals(channelType)) {
       if (StringUtils.isNumeric(parameters.getFirst(Constants.CAMPID))) {
-        // Do we really need to get publisher id here?
+        // TODO: Do we really need to get publisher id here?
       }
     } else if (ChannelType.PAID_SEARCH.equals(channelType)) {
       // partner definition unknown
@@ -473,9 +479,8 @@ public class UnifiedTrackingMessageParser {
   private static Map<String, String> getPayload(Map<String, String> payload, MultiValueMap<String, String> parameters,
                                                 ContainerRequestContext requestContext, String url, String userAgent,
                                                 String appId, ChannelType channelType, ChannelAction channelAction,
-                                                long snapshotId,
-                                                long shortSnapshotId, ROIEvent roiEvent,
-                                                long userId, long eventTs) {
+                                                long snapshotId, long shortSnapshotId, ROIEvent roiEvent, long userId,
+                                                long eventTs, String trackingHeader) {
     // add tags from parameters
     for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
@@ -490,6 +495,13 @@ public class UnifiedTrackingMessageParser {
 
     if (channelAction == ChannelAction.ROI) {
       addRoiSojTags(payload, roiEvent, String.valueOf(userId), snapshotId, shortSnapshotId);
+    }
+
+    if (channelType == ChannelType.EPN) {
+      String toolId = HttpRequestUtil.parseTagFromParams(parameters, Constants.TOOL_ID);
+      if(StringUtils.isNotEmpty(toolId)) {
+        payload.put(Constants.TOOL_ID, HttpRequestUtil.parseTagFromParams(parameters, Constants.TOOL_ID));
+      }
     }
 
     // add other tags
@@ -512,6 +524,12 @@ public class UnifiedTrackingMessageParser {
     // landing page and tracking url
     if (ChannelAction.CLICK.equals(channelAction)) {
       payload.put("url_mpre", url);
+    }
+
+    // adguid
+    String adguid = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.ADGUID);
+    if (!StringUtils.isEmpty(adguid)) {
+      payload.put(Constants.ADGUID, adguid);
     }
 
     return encodeTags(payload);

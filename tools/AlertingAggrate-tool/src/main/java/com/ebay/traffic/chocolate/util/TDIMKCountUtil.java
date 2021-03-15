@@ -15,17 +15,6 @@ public class TDIMKCountUtil {
 
   public static ArrayList<TDIMKInfo> getTDIMKInfos() {
     ArrayList<TDIMKInfo> list = new ArrayList<>();
-    HashMap<Integer, Integer> mozartMap = getCountMap(getPath("imk_rvr_trckng_event", "mozart"));
-
-    for (ChannelType e : ChannelType.values()) {
-      TDIMKInfo tdimkInfo = new TDIMKInfo();
-      tdimkInfo.setChannelName(e.getName());
-      tdimkInfo.setMozartcount(Integer.toString(mozartMap.getOrDefault(e.getIndex(), 0)));
-
-      list.add(tdimkInfo);
-    }
-
-    list.add(getInfosByName("imk_rvr_trckng_event_dtl", "imk dtl"));
     list.add(getInfosByName("ams_click", "epn click"));
     list.add(getInfosByName("ams_imprsn", "epn impression"));
 
@@ -66,9 +55,9 @@ public class TDIMKCountUtil {
   }
 
   private static String getPath(String tableName, String TDType) {
-    logger.info("TDIMKCountUtil getPath: " + Constants.PREFIX_DIR + tableName + "_" + TDType + "_merge");
+    logger.info("TDIMKCountUtil getPath: " + Constants.TD_DIR + tableName + "_" + TDType + "_merge");
 
-    return Constants.PREFIX_DIR + tableName + "_" + TDType + "_merge";
+    return Constants.TD_DIR + tableName + "_" + TDType + "_merge";
   }
 
 }

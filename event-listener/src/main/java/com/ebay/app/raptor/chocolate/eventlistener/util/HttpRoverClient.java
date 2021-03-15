@@ -15,10 +15,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import javax.ws.rs.core.Response;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
@@ -48,7 +48,6 @@ public class HttpRoverClient {
   private static final String NPII_PREFIX = "npii_";
   private static final String BTGUID_PREFIX = "btguid/";
   private static final String CGUID_PREFIX = "cguid/";
-
 
   @PostConstruct
   public void postInit() {
@@ -179,7 +178,7 @@ public class HttpRoverClient {
       return asyncHttpClient.prepareRequest(roverRequest).execute(new AsyncHandler<Integer>() {
         private Integer status;
         @Override
-        public State onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+        public State onStatusReceived(HttpResponseStatus responseStatus) {
           status = responseStatus.getStatusCode();
           if (status == HttpConstants.ResponseStatusCodes.MOVED_PERMANENTLY_301) {
             metrics.meter("ForwardRoverRedirect");
@@ -194,7 +193,7 @@ public class HttpRoverClient {
         }
 
         @Override
-        public State onHeadersReceived(HttpHeaders httpHeaders) throws Exception {
+        public State onHeadersReceived(HttpHeaders httpHeaders) {
           return null;
         }
 

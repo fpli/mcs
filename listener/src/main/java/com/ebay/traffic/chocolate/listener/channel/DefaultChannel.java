@@ -10,14 +10,15 @@ import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.kernel.util.StringUtils;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import com.ebay.traffic.chocolate.listener.util.*;
+import com.ebay.traffic.chocolate.listener.util.CouchbaseClient;
+import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
+import com.ebay.traffic.chocolate.listener.util.MessageObjectParser;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
-import org.eclipse.jetty.server.Request;
 import org.springframework.http.server.ServletServerHttpRequest;
 
 import javax.servlet.http.HttpServletRequest;
@@ -60,16 +61,6 @@ public class DefaultChannel implements Channel {
     if (result.length >= 2)
       channelAction = ChannelActionEnum.parse(null, result[1]);
 
-    // handle rover sync separately
-    if(channelAction != null && channelAction.equals(ChannelActionEnum.SYNC)) {
-      String cookieResponseHeader = response.getHeader("Set-Cookie");
-      String cguid = parser.getGuid(null, cookieResponseHeader, null, "cguid");
-      String guid = parser.getGuid(null, cookieResponseHeader, null, "tguid");
-      if(guid.length() > 0) {
-        CouchbaseClient.getInstance().addMappingRecord(guid, cguid);
-      }
-      return;
-    }
     if (result.length == 5)
       channelType = ChannelIdEnum.parse(result[4]);
 

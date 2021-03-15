@@ -90,7 +90,7 @@ public class TrackingServlet extends HttpServlet {
    * Process the request, send to kafka topic
    */
   private synchronized void process(HttpServletRequest request, HttpServletResponse response, TrackingEvent event) {
-    String kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(event.getChannel());;
+    String kafkaTopic = ListenerOptions.getInstance().getSinkKafkaConfigs().get(event.getChannel());
     ListenerMessage message;
     Long campaignId = -1L;
     String snid = null;

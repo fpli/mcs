@@ -11,12 +11,13 @@ import org.asynchttpclient.ListenableFuture;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
+
 import javax.servlet.http.HttpServletRequest;
 import java.util.Vector;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 public class HttpRoverClientTest {
@@ -29,9 +30,9 @@ public class HttpRoverClientTest {
   @BeforeClass
   public static void init() {
     AsyncHttpClientConfig config = config()
-        .setRequestTimeout(5000)
-        .setConnectTimeout(5000)
-        .setReadTimeout(5000)
+        .setRequestTimeout(10000)
+        .setConnectTimeout(10000)
+        .setReadTimeout(10000)
         .build();
     AsyncHttpClient asyncHttpClient = asyncHttpClient(config);
     httpRoverClient.setAsyncHttpClient(asyncHttpClient);

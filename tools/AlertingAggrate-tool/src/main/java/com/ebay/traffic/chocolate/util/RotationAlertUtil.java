@@ -11,7 +11,7 @@ public class RotationAlertUtil {
   private static final Logger logger = LoggerFactory.getLogger(RotationAlertUtil.class);
 
   public static ArrayList<RotationAlert> getRotationAlertInfos() {
-    String path = "/home/_choco_admin/rotation/";
+    String path = Constants.ROTATION_DIR;
 
     ArrayList<RotationAlert> list = new ArrayList<>();
 

@@ -7,7 +7,7 @@ import java.util.regex.Pattern
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
-import com.ebay.traffic.chocolate.sparknrt.utils.{MyID, XIDResponse}
+import com.ebay.traffic.chocolate.sparknrt.utils.{MyID, MyIDV2, XIDResponse, XIDResponseV2}
 import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.google.gson.{Gson, JsonParser}
 import org.apache.commons.lang3.StringUtils
@@ -44,6 +44,9 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
 
   lazy val CHOCO_TAG = "dashenId"
   lazy val CB_CHOCO_TAG_PREFIX = "DashenId_"
+
+  // if uri path contains 'rover', then mark it as rover sites url, else mark it as ebay sites url
+  lazy val ROVER_TAG = "rover"
 
   lazy val ERROR_URLDECODER_PARAM_PATTERN = "Error URLDecoder param %s param=%s%s"
 
@@ -271,12 +274,14 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   val get_trfc_src_cd_click_udf = udf((browser: String) => get_TRFC_SRC_CD(browser, "click"))
   val get_trfc_src_cd_impression_udf = udf((browser: String) => get_TRFC_SRC_CD(browser, "impression"))
 
-  val get_last_view_item_info_udf = udf((cguid: String, timestamp: String) => getLastViewItemInfo(cguid, timestamp))
+//  val get_last_view_item_info_udf = udf((cguid: String, timestamp: String) => getLastViewItemInfo(cguid, timestamp))
+
+  val get_last_view_item_info_udf = udf((cguid: String, guid: String, timestamp: String) => getLastViewItemInfoV3(cguid, guid, timestamp))
 
   val filter_specific_pub_udf = udf((referer: String, publisher: String) => filter_specific_pub(referer, publisher))
   val filter_longterm_ebaysites_ref_udf = udf((uri: String, referer: String) => filterLongTermEbaySitesRef(uri, referer))
 
-  val getUserIdUdf = udf((userId: String, cguid: String) => getUserIdByCguid(userId, cguid))
+  val getUserIdUdf = udf((userId: String, guid: String) => getUserIdByGuid(userId, guid))
   val getRelatedInfoFromUriUdf = udf((uri: String, index: Int, key: String) => getRelatedInfoFromUri(uri, index, key))
   val getChannelIdUdf = udf((channelType: String) => getChannelId(channelType))
   val fixGuidUsingRoverLastClickUdf = udf((guid: String, uri: String) => fixGuidUsingRoverLastClick(guid, uri))
@@ -297,7 +302,12 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getLastViewItemInfo(cguid: String, timestamp: String): Array[String] = {
-    val res = BullseyeUtils.getLastViewItem(fs,cguid, timestamp, properties.getProperty("epnnrt.modelId"), properties.getProperty("epnnrt.lastviewitemnum"), properties.getProperty("epnnrt.bullseyeUrl"))
+    val res = BullseyeUtils.getLastViewItem(cguid, timestamp, properties.getProperty("epnnrt.modelId"), properties.getProperty("epnnrt.lastviewitemnum"), properties.getProperty("epnnrt.bullseyeUrl"))
+    Array(res._1, res._2)
+  }
+
+  def getLastViewItemInfoV3(cguid: String, guid: String, timestamp: String): Array[String] = {
+    val res = BullseyeUtils.getLastViewItemV3(cguid, guid, timestamp, properties.getProperty("epnnrt.modelId"), properties.getProperty("epnnrt.lastviewitemnum"), properties.getProperty("epnnrt.bullseyeUrlV3"))
     Array(res._1, res._2)
   }
 
@@ -571,14 +581,33 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   }
 
   def getItemId(uri: String): String = {
-    val array = Array("icep_item", "icep_itemid", "icep_item_id", "item", "itemid")
-    for (i <- 0 until array.length) {
-      val value = getQueryParam(uri, array(i))
-      if (!value.equals("")) {
-        if (StringUtils.isNumeric(value))
-          return value
-        logger.error("Error in parsing the item id: " + value)
-        return extractValidId(value)
+    if (uri != null && isEbaySitesUrl(uri.toLowerCase())) {
+      var path = ""
+      try {
+        path = new URL(uri).getPath
+        if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
+          val itemId = path.substring(path.lastIndexOf("/") + 1)
+          if (StringUtils.isNumeric(itemId)) {
+            return itemId
+          }
+        }
+      } catch {
+        case e: Exception => {
+            logger.error("Error parse the item id from " + uri + e)
+            metrics.meter("ParseItemIdFromUriError")
+            return ""
+        }
+      }
+    } else {
+      val array = Array("icep_item", "icep_itemid", "icep_item_id", "item", "itemid")
+      for (i <- 0 until array.length) {
+        val value = getQueryParam(uri, array(i))
+        if (!value.equals("")) {
+          if (StringUtils.isNumeric(value))
+            return value
+          logger.error("Error in parsing the item id: " + value)
+          return extractValidId(value)
+        }
       }
     }
     ""
@@ -639,6 +668,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     ""
   }
 
+  @Deprecated
   def getUserIdByCguid(userId: String, cguid: String): String = {
     var result = userId
     if (StringUtils.isEmpty(userId) || userId.equals("0") || userId.equals("-1")) {
@@ -661,6 +691,28 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     result
   }
 
+  def getUserIdByGuid(userId: String, guid: String): String = {
+    var result = userId
+    if (StringUtils.isEmpty(userId) || userId.equals("0") || userId.equals("-1")) {
+      if (StringUtils.isNotEmpty(guid)) {
+        try{
+          val xid = xidRequestV2("pguid", guid)
+          if (xid.accounts.nonEmpty) {
+            metrics.meter("epn.XidGotUserId", 1)
+            result = xid.accounts.head
+            logger.debug("get userId from Xid user_id=" + result)
+          }
+        } catch {
+          case e: Exception =>
+            metrics.meter("epn.XidTimeOut", 1)
+            logger.warn("call xid error" + e.printStackTrace())
+        }
+      }
+    }
+    result
+  }
+
+  @Deprecated
   def xidRequest(idType: String, id: String): MyID = {
     Http(s"http://$xidHost/anyid/v1/$idType/$id")
       .header("X-EBAY-CONSUMER-ID", xidConsumerId)
@@ -671,6 +723,18 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
       .parseJson
       .convertTo[XIDResponse]
       .toMyID()
+  }
+
+  def xidRequestV2(idType: String, id: String): MyIDV2 = {
+    Http(s"http://$xidHost/anyid/v2/$idType/$id")
+      .header("X-EBAY-CONSUMER-ID", xidConsumerId)
+      .header("X-EBAY-CLIENT-ID", xidClientId)
+      .timeout(xidConnectTimeout, xidReadTimeout)
+      .asString
+      .body
+      .parseJson
+      .convertTo[XIDResponseV2]
+      .toMyIDV2
   }
 
 
@@ -1359,13 +1423,12 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
   /**
     * get related info from uri, like rotation_id and so on
     * for rover uri, get related info from rover.ebay.com/.../
-    * for mcs uri, get related info from query params
-    * for impression uri which is redirected from adservice, get related info from query params
+    * for ebay sites uri, get related info from query params
     * @param uri, index, key
     * @return channel id
     */
   def getRelatedInfoFromUri(uri: String, index: Int, key: String): String = {
-    if (uri != null && (ebaysites.matcher(uri.toLowerCase()).find() || ebayadservicesites.matcher(uri.toLowerCase()).find())) {
+    if (uri != null && isEbaySitesUrl(uri.toLowerCase())) {
       return getQueryParam(uri, key)
     } else {
       try {
@@ -1416,7 +1479,7 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     * @return is or not
     */
   def filterLongTermEbaySitesRef(uri: String, referrer: String): Boolean = {
-    if (uri != null && ebaysites.matcher(uri.toLowerCase()).find()
+    if (uri != null && isEbaySitesUrl(uri.toLowerCase())
         && referrer != null && refererEbaySites.matcher(referrer.toLowerCase()).find()) {
       if (metrics != null) {
         metrics.meter("epnLongTermInternalReferer")
@@ -1466,5 +1529,30 @@ class EpnNrtCommon(params: Parameter, df: DataFrame) extends Serializable {
     }
 
     fixedGuid
+  }
+
+  /**
+    * Determine if the url is ebay sites url
+    * @param uri uri
+    * @return isEbaySiteUrl
+    */
+  def isEbaySitesUrl(uri: String): Boolean = {
+    var isEbaySiteUrl = false
+
+    try {
+      if (StringUtils.isNotEmpty(uri)) {
+        val host = new URL(uri).getHost()
+        if (StringUtils.isNotEmpty(host)) {
+          isEbaySiteUrl = !host.contains(ROVER_TAG)
+        }
+      }
+    } catch {
+      case e: Exception => {
+        logger.error("Error determine url sites " + uri + e)
+        metrics.meter("DetermineUrlSitesError")
+      }
+    }
+
+    isEbaySiteUrl
   }
 }

@@ -26,9 +26,40 @@ RENO_DEST_DIR=$3
 HERCULES_DEST_DIR=$4
 
 cd ${LOCAL_TMP_DIR}
-
 dt_hour=$(date -d '1 hour ago' +%Y%m%d%H)
 dt=${dt_hour:0:8}
+
+first_done_file=${RENO_DEST_DIR}/${dt}/imk_rvr_trckng_event_hourly.done.${dt}0000000000
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -test -e ${first_done_file}
+first_done_file_exists=$?
+if [ ${first_done_file_exists} -eq 1 ]; then
+    echo "${dt} first done file not exist: ${first_done_file}"
+    echo "======================== Add partition to Hive ========================"
+    partition_date=$(date +%Y-%m-%d)
+    retry_add=1
+    rcode_add=1
+    until [[ ${retry_add} -gt 3 ]]
+    do
+        /datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; ALTER TABLE choco_data.imk_rvr_trckng_event_v1 ADD IF NOT EXISTS PARTITION (dt='${partition_date}')" &&
+        /datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive -e "set hive.msck.path.validation=ignore; ALTER TABLE choco_data.imk_rvr_trckng_event_dtl ADD IF NOT EXISTS PARTITION (dt='${partition_date}')" &&
+        /datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; ALTER TABLE im_tracking.imk_rvr_trckng_event ADD IF NOT EXISTS PARTITION (dt='${partition_date}')" &&
+        /datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive -e "set hive.msck.path.validation=ignore; ALTER TABLE im_tracking.imk_rvr_trckng_event_dtl ADD IF NOT EXISTS PARTITION (dt='${partition_date}')"
+        rcode_add=$?
+        if [ ${rcode_add} -eq 0 ]
+        then
+            break
+        else
+            echo "Failed to add ${partition_date} partition to hive."
+            retry_add=$(expr ${retry_add} + 1)
+        fi
+    done
+    if [ ${rcode_add} -ne 0 ]
+    then
+        echo -e "Failed to add ${partition_date} partition on hive, please check!!!"
+        exit ${rcode_add}
+    fi
+fi
+
 done_file=${RENO_DEST_DIR}/${dt}/imk_rvr_trckng_event_hourly.done.${dt_hour}00000000
 
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -test -e ${done_file}
@@ -65,6 +96,8 @@ already_copied_done_size=`cat ${tmp_copied_done_file} | wc -l`
 echo "already copied done files size:${already_copied_done_size}"
 
 already_copied_done_files=`cat ${tmp_copied_done_file} | tr "\n" " "`
+
+
 
 for one_file in ${already_touched_done_files}
 do

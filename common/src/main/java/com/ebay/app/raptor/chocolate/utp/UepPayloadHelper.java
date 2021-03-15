@@ -9,6 +9,9 @@ import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.MessageConstantsEnum;
+import com.ebay.traffic.chocolate.utp.common.model.Message;
+import com.ebay.traffic.chocolate.utp.common.model.MessageRoot;
+import com.ebay.traffic.chocolate.utp.common.model.Recommendation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.Longs;
@@ -40,6 +43,7 @@ public class UepPayloadHelper {
   public static final String PLACEMENT_POS = "plmtPos";
   public static final String RECO_ID = "recoId";
   public static final String RECO_POS = "recoPos";
+  public static final String FEEDBACK = "fdbk";
   public static final String IS_UEP = "isUEP";
   // for ORS migration
   public static final String EMAIL = "EMAIL";
@@ -159,7 +163,7 @@ public class UepPayloadHelper {
     // tag_item, no need
     // tag_intrId, no need
     // tag_intrUnsub, no need
-    // TODO: cnv.id TBD
+    // cnv.id no need in open/click
     // tracking id
     String trackingId = getOrDefault(uriComponents.getQueryParams().getFirst(TRACKING_ID));
     payload.put(MessageConstantsEnum.TRACKING_ID.getValue(), trackingId);
@@ -176,26 +180,34 @@ public class UepPayloadHelper {
     payload.put("trt", getOrDefault(uriComponents.getQueryParams().getFirst(EXPERIMENT_TYPE)));
 
     // message list
-    MesgList mesgList = new MesgList();
-    mesgList.mobTrkId = uriComponents.getQueryParams().getFirst(MOB_TRK_ID);
+    Message message = new Message();
+    message.mobTrkId = uriComponents.getQueryParams().getFirst(MOB_TRK_ID);
     if (actionTypeEnum.equals(ActionTypeEnum.CLICK)) {
       // message level
-      mesgList.mesgId = uriComponents.getQueryParams().getFirst(MESSAGE_ID);
-      mesgList.plmtId = uriComponents.getQueryParams().getFirst(PLACEMENT_ID);
-      mesgList.plmtPos = uriComponents.getQueryParams().getFirst(PLACEMENT_POS);
+      message.mesgId = uriComponents.getQueryParams().getFirst(MESSAGE_ID);
+      message.plmtId = uriComponents.getQueryParams().getFirst(PLACEMENT_ID);
+      message.plmtPos = uriComponents.getQueryParams().getFirst(PLACEMENT_POS);
+      // feedback click
+      String feedback = uriComponents.getQueryParams().getFirst(FEEDBACK);
+      if(StringUtils.isNotEmpty(feedback)) {
+        message.mesgFdbk = feedback;
+      }
 
       // recommendation level
-      RecoList recoList = new RecoList();
-      recoList.recoId = uriComponents.getQueryParams().getFirst(RECO_ID);
-      recoList.recoPos = uriComponents.getQueryParams().getFirst(RECO_POS);
-      List<RecoList> recoLists = new ArrayList<>();
-      recoLists.add(recoList);
-      mesgList.recoList = recoLists;
+      Recommendation recommendation = new Recommendation();
+      recommendation.recoId = uriComponents.getQueryParams().getFirst(RECO_ID);
+      recommendation.recoPos = uriComponents.getQueryParams().getFirst(RECO_POS);
+      // only include reco.list when valid
+      if(StringUtils.isNotEmpty(recommendation.recoId) && StringUtils.isNotEmpty(recommendation.recoPos)) {
+        List<Recommendation> recoLists = new ArrayList<>();
+        recoLists.add(recommendation);
+        message.recoList = recoLists;
+      }
     }
 
-    MesgRoot root = new MesgRoot();
-    List<MesgList> mesgLists = new ArrayList<>();
-    mesgLists.add(mesgList);
+    MessageRoot root = new MessageRoot();
+    List<Message> mesgLists = new ArrayList<>();
+    mesgLists.add(message);
     root.mesgList = mesgLists;
     String msgListString = "[]";
     try {

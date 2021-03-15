@@ -87,7 +87,9 @@ class TestImkETLJob extends BaseFunSuite{
       Row(4, "DISPLAY", "https://ebay.pissedconsumer.com/"),
       Row(5, "DISPLAY", null),
       Row(6, "PAID_SEARCH", null),
-      Row(7, "PAID_SEARCH", "https://ebay.pissedconsumer.com/")
+      Row(7, "PAID_SEARCH", "https://ebay.pissedconsumer.com/"),
+      Row(8, "DISPLAY", "https://ebay.mtag.io/abcdefg"),
+      Row(9, "DISPLAY", "https://ebay.mtag.io?abcdefg")
     )
 
     val schema = List(
@@ -107,6 +109,8 @@ class TestImkETLJob extends BaseFunSuite{
     assert(results.get(2).getInt(0) == 4)
     assert(results.get(3).getInt(0) == 5)
     assert(results.get(4).getInt(0) == 6)
+    assert(results.get(5).getInt(0) == 8)
+    assert(results.get(6).getInt(0) == 9)
   }
 
   test("test imk etl job for sequence output") {
@@ -147,8 +151,8 @@ class TestImkETLJob extends BaseFunSuite{
       val usage = kv._2
 
       val metadataImkRTL = Metadata(workDir, channel, usage)
-      metadataImkRTL.writeDedupeOutputMeta(MetaFiles(Array(DateFiles("date=2019-12-23", Array(outPutDir + "/" + channel + "/" + usage + "/date=2019-12-23/part-00000.snappy.parquet")))))
-      metadataImkRTL.writeDedupeOutputMeta(MetaFiles(Array(DateFiles("date=2019-12-24", Array(outPutDir + "/" + channel + "/" + usage + "/date=2019-12-24/part-00000.snappy.parquet")))))
+      metadataImkRTL.writeDedupeOutputMeta(MetaFiles(Array(DateFiles("date=2019-12-23", Array(outPutDir + "/" + channel + "/" + usage + "/date=2019-12-23/part-00000.snappy.parquet")))),Array(".imketl"))
+      metadataImkRTL.writeDedupeOutputMeta(MetaFiles(Array(DateFiles("date=2019-12-24", Array(outPutDir + "/" + channel + "/" + usage + "/date=2019-12-24/part-00000.snappy.parquet")))),Array(".imketl"))
 
       fs.copyFromLocalFile(new Path(new File(localDir + "/" + channel + "/date=2019-12-23/part-00000.snappy.parquet").getAbsolutePath), new Path(outPutDir + "/" + channel + "/" + usage + "/date=2019-12-23/part-00000.snappy.parquet"))
       fs.copyFromLocalFile(new Path(new File(localDir + "/" + channel + "/date=2019-12-24/part-00000.snappy.parquet").getAbsolutePath), new Path(outPutDir + "/" + channel + "/" + usage + "/date=2019-12-24/part-00000.snappy.parquet"))

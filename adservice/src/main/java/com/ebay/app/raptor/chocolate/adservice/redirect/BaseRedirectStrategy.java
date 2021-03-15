@@ -2,11 +2,10 @@ package com.ebay.app.raptor.chocolate.adservice.redirect;
 
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
+import com.ebay.app.raptor.chocolate.adservice.util.HttpUtil;
 import com.ebay.app.raptor.chocolate.adservice.util.MCSCallback;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
-import com.ebay.app.raptor.chocolate.adservice.util.ParametersParser;
 import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
-import com.ebay.kernel.util.guid.Guid;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
@@ -20,11 +19,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.net.*;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,7 +39,6 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   private static final String REDIRECT_SERVER_DOMAIN = "www.ebayadservices.com";
   private static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   private static final String REDIRECT_SRC_SOJ_TAG = "adcamp_locationsrc";
-  private static final int REDIRECT_API_OFFSET = 3;
 
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
 
@@ -51,9 +47,9 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   }
 
   @Override
-  public URI process(HttpServletRequest request, ContainerRequestContext context, Client mktClient, String endpoint)
+  public URI process(HttpServletRequest request, Client mktClient, String endpoint, String guid, String adguid)
       throws URISyntaxException {
-    MultiValueMap<String, String> parameters = ParametersParser.parse(request.getParameterMap());
+    MultiValueMap<String, String> parameters = HttpUtil.parse(request.getParameterMap());
 
     // build redirection event
     redirectionEvent = new RedirectionEvent(getParam(parameters, Constants.MKCID),
@@ -69,7 +65,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     checkEbayDomain(redirectionEvent.getRedirectUrl(), parameters);
 
     if (!redirectionEvent.getIsEbayDomain()) {
-      callMcs(request, parameters, mktClient, endpoint);
+      callMcs(request, parameters, mktClient, endpoint, guid, adguid);
     }
 
     stopTimerAndLogData(startTime, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()),
@@ -135,7 +131,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
    * Generate a mcs click event and call mcs
    */
   private void callMcs(HttpServletRequest request, MultiValueMap<String, String> parameters, Client mktClient,
-                       String endpoint) throws URISyntaxException{
+                       String endpoint, String guid, String adguid) throws URISyntaxException{
     // build mcs target url, add all original parameter for ubi events except target url parameter
     URIBuilder uriBuilder = new URIBuilder(redirectionEvent.getRedirectUrl());
     parameters.forEach((key, val) -> {
@@ -163,8 +159,8 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     }
 
     // add Commerce-OS standard header
-    builder = builder.header("X-EBAY-C-ENDUSERCTX", constructEndUserContextHeader(request))
-        .header("X-EBAY-C-TRACKING", constructCookieHeader());
+    builder = builder.header(Constants.END_USER_CONTEXT, constructEndUserContextHeader(request))
+        .header(Constants.TRACKING_HEADER, HttpUtil.constructTrackingHeader(guid, adguid));
 
     // call MCS
     builder.async().post(Entity.json(mktEvent), new MCSCallback());
@@ -204,29 +200,6 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
         redirectionEvent.setIsEbayDomain(false);
       }
     }
-  }
-
-  /**
-   * Construct X-EBAY-C-TRACKING header with guid and cguid
-   */
-  private String constructCookieHeader() {
-    String cguid = "";
-    try {
-      cguid = new Guid().nextPaddedGUID();
-    } catch (UnknownHostException e) {
-      logger.warn("Create Cguid failure: ", e);
-      metrics.meter("CreateCGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()));
-    }
-
-    String guid = "";
-    try {
-      guid = new Guid().nextPaddedGUID();
-    } catch (UnknownHostException e) {
-      logger.warn("Create guid failure: ", e);
-      metrics.meter("CreateGuidFailure", 1, Field.of(Constants.CHANNEL_TYPE, redirectionEvent.getChannelType()));
-    }
-
-    return "guid=" + guid + "," + "cguid=" + cguid;
   }
 
   /**

@@ -43,9 +43,9 @@ public class TDRotationCountUtil {
   }
 
   private static String getPath(String tableName, String TDType){
-    logger.info("TDRotationCountUtil getPath: " + Constants.PREFIX_DIR + tableName+ "_" + TDType + "_merge");
+    logger.info("TDRotationCountUtil getPath: " + Constants.TD_DIR + tableName+ "_" + TDType + "_merge");
 
-    return Constants.PREFIX_DIR + tableName+ "_" + TDType + "_merge";
+    return Constants.TD_DIR + tableName+ "_" + TDType + "_merge";
   }
 
 }

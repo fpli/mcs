@@ -1,0 +1,4 @@
+type=command
+dependencies=calCrabTransformWatermark
+command=bash distcpImkToRenoAndHercules.sh
+failure.emails=jialili1@ebay.com, fechen@ebay.com, xiangli4@ebay.com, yliu29@ebay.com, huiclu@ebay.com, shuangxu@ebay.com, lxiong1@ebay.com, zhofan@ebay.com, zjian@ebay.com, zhiyuawang@ebay.com, yli19@ebay.com, yyang28@ebay.com
