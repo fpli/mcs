@@ -1148,23 +1148,6 @@ public class CollectionService {
   }
 
   /**
-   * Determine whether the click is from Checkout API
-   * If so, don't track into ubi
-   */
-  private Boolean isClickFromCheckoutAPI(ChannelType channelType, IEndUserContext endUserContext) {
-    Boolean isClickFromCheckoutAPI = false;
-    try {
-      if (channelType == ChannelType.EPN && endUserContext.getUserAgent().equals(CHECKOUT_API_USER_AGENT)) {
-        isClickFromCheckoutAPI = true;
-      }
-    } catch (Exception e) {
-      LOGGER.error("Determine whether the click from Checkout API error");
-      metrics.meter("DetermineCheckoutAPIClickError", 1);
-    }
-    return isClickFromCheckoutAPI;
-  }
-
-  /**
    * Determine whether the roi is from Checkout API
    * If so, don't track into ubi
    */
