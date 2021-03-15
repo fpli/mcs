@@ -26,7 +26,6 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
