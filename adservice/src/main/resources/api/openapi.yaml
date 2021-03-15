@@ -169,6 +169,102 @@ paths:
           description: Rejected
         '500':
           description: The call was unsuccessful due to exceptions on the Server
+  /placement:
+    get:
+      summary: Get Epn Personalization Ads
+      description: Get personalization ads for ebay parter network by placement parameters
+      tags:
+        - placement
+      operationId: placement
+      parameters:
+        - in: query
+          name: st
+          schema:
+            type: string
+          description: ePN campaign status
+        - in: query
+          name: cpid
+          schema:
+            type: string
+          required: true
+          description: ePN campaign id
+        - in: query
+          name: l
+          schema:
+            type: string
+          required: true
+          description: ePN style placementLayout
+        - in: query
+          name: ft
+          schema:
+            type: string
+          required: true
+          description: ePN style font
+        - in: query
+          name: tc
+          schema:
+            type: string
+          required: true
+          description: ePN style titleColor
+        - in: query
+          name: clp
+          schema:
+            type: string
+          description: ePN style collapse
+        - in: query
+          name: mi
+          schema:
+            type: integer
+          description: ePN style minNumberOfItems
+        - in: query
+          name: k
+          schema:
+            type: string
+          required: true
+          description: ePN search query keyword
+        - in: query
+          name: ctids
+          schema:
+            type: integer
+          description: ePN search query categoryIds
+        - in: query
+          name: mkpid
+          schema:
+            type: string
+          required: true
+          description: ePN search query marketplaceId
+        - in: query
+          name: ur
+          schema:
+            type: string
+          description: ePN userRetargeting
+        - in: query
+          name: cts
+          schema:
+            type: string
+          description: ePN contextual
+        - in: query
+          name: sf
+          schema:
+            type: string
+          description: ePN searchFallback
+        - in: query
+          name: pid
+          schema:
+            type: string
+          description:
+        - in: query
+          name: ad_v
+          schema:
+            type: integer
+          description:
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Rejected
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
 components:
   schemas:
     SyncEvent:
