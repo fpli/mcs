@@ -61,7 +61,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Path("/v1")
 @Consumes(MediaType.APPLICATION_JSON)
-public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, GuidApi, UseridApi, SyncApi {
+public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, GuidApi, UseridApi, SyncApi, EpntApi {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceResource.class);
   @Autowired
   private CollectionService collectionService;
@@ -404,6 +404,30 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     String adguid = adserviceCookie.readAdguid(request);
     String encryptedUserid = idMapping.getUidByAdguid(adguid);
     return Response.status(Response.Status.OK).entity(encryptedUserid).build();
+  }
+
+  /**
+   * Get personalization ads for ebay partner network by placement parameters
+   * @return response
+   */
+  @Override
+  public Response placement(String st, String cpid, String l, String ft, String tc, String clp, Integer mi,
+                            String k, Integer ctids, String mkpid, String ur, String cts, String sf, String pid, String ad_v) {
+    Response res = null;
+
+    try {
+      adserviceCookie.setAdguid(request, response);
+      res = collectionService.collectEpntPlacementRedirect(request, response);
+      } catch (Exception e) {
+      logger.warn(e.getMessage(), e);
+      try {
+        res = Response.status(Response.Status.BAD_REQUEST).build();
+      } catch (Exception ex) {
+        logger.warn(ex.getMessage(), ex);
+      }
+    }
+
+    return res;
   }
 
   private void sendOpenEventToAdobe(Map<String, String[]> params) {
