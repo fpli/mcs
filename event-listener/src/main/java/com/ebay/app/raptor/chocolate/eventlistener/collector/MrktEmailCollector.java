@@ -52,7 +52,7 @@ public class MrktEmailCollector extends CustomerMarketingCollector {
    * @param channelAction channel action enum
    */
   public void trackUbi(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters, String type,
-                       String action, HttpServletRequest request, String uri,
+                       String action, HttpServletRequest request, String uri, String referer, String utpEventId,
                        ChannelAction channelAction) {
     // send click event to ubi
     // Third party clicks should not be tracked into ubi
@@ -62,6 +62,9 @@ public class MrktEmailCollector extends CustomerMarketingCollector {
         // Ubi tracking
         IRequestScopeTracker requestTracker =
             (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+        // common tags and soj tags
+        super.trackUbi(requestContext, parameters, type, action, request, uri, referer, utpEventId, channelAction);
 
         // event family
         requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);

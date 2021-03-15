@@ -5,7 +5,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener.request;
 
 import com.ebay.app.raptor.chocolate.constant.Constants;
-import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.HttpRequestUtil;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
@@ -22,8 +21,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
-import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.ePageSites;
-
 /**
  * @author xiangli4
  * Handle static page specifically
@@ -33,7 +30,13 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.eP
 public class StaticPageRequestHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(StaticPageRequestHandler.class);
 
-
+  /**
+   * Parse real event object from pixel url
+   * @param targetUrl input target url
+   * @param referer input referer
+   * @return the real event to track
+   * @throws Exception unexpected exception
+   */
   public Event parseStaticPageEvent(String targetUrl, String referer) throws Exception {
     // For e page, the real target url is in the referer
     // Since Chrome strict policy, referer may be cut off, so use 'originalUrl' parameter first as target url
@@ -42,7 +45,6 @@ public class StaticPageRequestHandler {
     String originalReferer = "";
     String targetPath = "";
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    uriComponents.getQueryParams();
     originalReferer = uriComponents.getQueryParams().getFirst(Constants.EPAGE_REFERER);
     targetPath = uriComponents.getQueryParams().getFirst(Constants.EPAGE_URL);
 

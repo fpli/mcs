@@ -51,10 +51,9 @@ public class SiteEmailCollector extends CustomerMarketingCollector {
    * @param channelAction channel action enum
    */
   @Override
-  public void trackUbi(ContainerRequestContext requestContext,
-                       MultiValueMap<String, String> parameters, String type,
-                       String action, HttpServletRequest request, String uri,
-                       ChannelAction channelAction) {
+  public void trackUbi(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
+                       String type, String action, HttpServletRequest request, String uri, String referer,
+                       String utpEventId, ChannelAction channelAction) {
     // send click event to ubi
     // Third party clicks should not be tracked into ubi
     // Don't track ubi if the click is a duplicate itm click
@@ -63,6 +62,9 @@ public class SiteEmailCollector extends CustomerMarketingCollector {
         // Ubi tracking
         IRequestScopeTracker requestTracker =
             (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+        // soj tags
+        super.trackUbi(requestContext, parameters, type, action, request, uri, referer, utpEventId, channelAction);
 
         // event family
         requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);

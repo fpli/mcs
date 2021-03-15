@@ -34,6 +34,7 @@ public class Constants {
   public static final String ADGUID = "adguid";
   public static final String GUID = "guid";
   public static final String CGUID = "cguid";
+  public static final String STR_NULL = "null";
 
   // Request headers
   public static final String TRACKING_HEADER = "X-EBAY-C-TRACKING";
@@ -45,6 +46,7 @@ public class Constants {
   public static final String REFERRER = "referrer";
   public static final String HTTPS_ENCODED = "https%3A%2F%2";
   public static final String HTTP_ENCODED = "http%3A%2F%2";
+  public static final String SOJ_MPRE_TAG = "url_mpre";
 
   // EPN url params
   public static final String TOOL_ID = "toolid";
