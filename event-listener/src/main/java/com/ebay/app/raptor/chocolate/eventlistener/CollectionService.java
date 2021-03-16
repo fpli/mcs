@@ -5,10 +5,7 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
-import com.ebay.app.raptor.chocolate.eventlistener.collector.CustomerMarketingCollector;
-import com.ebay.app.raptor.chocolate.eventlistener.collector.MrktEmailCollector;
-import com.ebay.app.raptor.chocolate.eventlistener.collector.PerformanceMarketingCollector;
-import com.ebay.app.raptor.chocolate.eventlistener.collector.SiteEmailCollector;
+import com.ebay.app.raptor.chocolate.eventlistener.collector.*;
 import com.ebay.app.raptor.chocolate.eventlistener.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.request.CommonRequestHandler;
@@ -114,6 +111,9 @@ public class CollectionService {
 
   @Autowired
   private CommonRequestHandler commonRequestHandler;
+
+  @Autowired
+  private TrackingEntry trackingEntry;
 
   private static final String PARTNER = "partner";
   private static final String PLATFORM = "platform";
@@ -376,7 +376,11 @@ public class CollectionService {
     // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
     String utpEventId = UUID.randomUUID().toString();
 
-    if(!isDuplicateClick) {
+    // filter click whose referer is internal
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    boolean isInternalRef = m.find();
+
+    if(!isDuplicateClick && !isInternalRef) {
       ListenerMessage listenerMessage = null;
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(channelType)) {
@@ -898,7 +902,7 @@ public class CollectionService {
    * @param agentInfo           user agent
    * @return                    a listener message
    */
-  private ListenerMessage processPMEvent(ContainerRequestContext requestContext, Map<String, String> requestHeaders,
+  private ListenerMessage  processPMEvent(ContainerRequestContext requestContext, Map<String, String> requestHeaders,
                                          UserPrefsCtx userPrefsCtx, String targetUrl, String referer, String utpEventId,
                                          MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                          ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
@@ -912,8 +916,6 @@ public class CollectionService {
         raptorSecureContext);
 
     // 1. send to chocolate topic
-    // If the click is a duplicate click from itm page, then drop into duplicateItmClickTopic
-    // else drop into normal topic
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
     String kafkaTopic = ApplicationOptions.getInstance()
         .getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
@@ -923,8 +925,10 @@ public class CollectionService {
         KafkaSink.callback);
 
     // 2. track ubi
-    performanceMarketingCollector.trackUbi(requestContext, targetUrl, referer, utpEventId, parameters, channelType,
-        channelAction, startTime, endUserContext, listenerMessage);
+    if (!channelAction.equals(ChannelActionEnum.SERVE)) {
+      performanceMarketingCollector.trackUbi(requestContext, targetUrl, referer, utpEventId, parameters, channelType,
+          channelAction, startTime, endUserContext, listenerMessage);
+    }
 
     // 3. send to behavior topic
     if (channelType != ChannelIdEnum.EPN) {
@@ -942,22 +946,20 @@ public class CollectionService {
   }
 
   private boolean processCmEvent(ContainerRequestContext requestContext, IEndUserContext endUserContext,
-                                        String referer, MultiValueMap<String, String> parameters, String type,
-                                        String action, HttpServletRequest request, UserAgentInfo agentInfo, String uri,
-                                        Long startTime, ChannelType channelType, ChannelAction channelAction,
-                                        String utpEventId, CustomerMarketingCollector cmCollector) {
-    // Tracking ubi only when refer domain is not ebay.
-    Matcher m = ebaysites.matcher(referer.toLowerCase());
+                                 String referer, MultiValueMap<String, String> parameters, String type,
+                                 String action, HttpServletRequest request, UserAgentInfo agentInfo, String uri,
+                                 Long startTime, ChannelType channelType, ChannelAction channelAction,
+                                 String utpEventId, CustomerMarketingCollector cmCollector) {
 
-    // Email open should not be filtered by referer
-    if(ChannelAction.EMAIL_OPEN.equals(channelAction) || !m.find()) {
       long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
 
       // 0. temporary, send click and open event to message tracker
       eventEmitterPublisher.publishEvent(requestContext, parameters, uri, channelType, channelAction, snapshotId);
 
       // 1. track ubi
-      cmCollector.trackUbi(requestContext, parameters, type, action, request, uri, referer, utpEventId, channelAction);
+      if(ChannelAction.CLICK.equals(channelAction)){
+        cmCollector.trackUbi(requestContext, parameters, type, action, request, uri, referer, utpEventId, channelAction);
+      }
 
       // 2. send email open/click to behavior topic
       BehaviorMessage message = cmCollector.parseBehaviorMessage(requestContext, endUserContext, referer,
@@ -973,12 +975,6 @@ public class CollectionService {
       } else
         return false;
     }
-    else {
-      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
-    }
-
-    return true;
-  }
 
   /**
    * Process SMS event

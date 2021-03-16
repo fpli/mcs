@@ -63,7 +63,7 @@ public class SiteEmailCollector extends CustomerMarketingCollector {
         IRequestScopeTracker requestTracker =
             (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-        // soj tags
+        // common tags and soj tags
         super.trackUbi(requestContext, parameters, type, action, request, uri, referer, utpEventId, channelAction);
 
         // event family

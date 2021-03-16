@@ -81,7 +81,7 @@ public class PerformanceMarketingCollector {
    * @param startTime           start timestamp of the request
    * @param endUserContext      enduserctx header
    * @param raptorSecureContext wrapped raptor secure context
-   * @return                    Listener message
+   * @return Listener message
    */
   public ListenerMessage parseListenerMessage(Map<String, String> requestHeaders,
                                               UserPrefsCtx userPrefsCtx, String targetUrl, String referer,
@@ -188,16 +188,16 @@ public class PerformanceMarketingCollector {
   }
 
   /**
-   * @param requestContext  site tracking tracker
-   * @param targetUrl       target url
-   * @param referer         referer of the request
-   * @param utpEventId      utp eventid
-   * @param parameters      url parameters
-   * @param channelType     channel type
-   * @param channelAction   action type
-   * @param startTime       start time of the request
-   * @param endUserContext  enduserctx header
-   * @param message         listener message
+   * @param requestContext site tracking tracker
+   * @param targetUrl      target url
+   * @param referer        referer of the request
+   * @param utpEventId     utp eventid
+   * @param parameters     url parameters
+   * @param channelType    channel type
+   * @param channelAction  action type
+   * @param startTime      start time of the request
+   * @param endUserContext enduserctx header
+   * @param message        listener message
    */
 
   public void trackUbi(ContainerRequestContext requestContext, String targetUrl, String referer, String utpEventId,
@@ -205,98 +205,94 @@ public class PerformanceMarketingCollector {
                        ChannelActionEnum channelAction, long startTime,
                        IEndUserContext endUserContext, ListenerMessage message) {
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
-    // Don't track ubi if it's AR
     // Don't track ubi if the click is from Checkout API
-    // Don't track ubi if the click is a duplicate itm click
-    if ( !channelAction.equals(ChannelActionEnum.SERVE)) {
-      if(isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)) {
-        metrics.meter("CheckoutAPIClick", 1);
-      } else {
-        try {
+    if (isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)) {
+      metrics.meter("CheckoutAPIClick", 1);
+    } else {
+      try {
 
-          IRequestScopeTracker requestTracker
-              = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+        IRequestScopeTracker requestTracker
+            = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-          // page id
-          if(channelAction.equals(ChannelActionEnum.CLICK)) {
-            requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.CLICK.getId(), Integer.class);
-          } else if (channelAction.equals(ChannelActionEnum.ROI)) {
-            requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.ROI.getId(), Integer.class);
-          }
-
-          // event action
-          requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
-
-          // target url
-          if (!StringUtils.isEmpty(targetUrl)) {
-            requestTracker.addTag(SOJ_MPRE_TAG, targetUrl, String.class);
-          }
-
-          // referer
-          if (!StringUtils.isEmpty(referer)) {
-            requestTracker.addTag("ref", referer, String.class);
-          }
-
-          // utp event id
-          if(!StringUtils.isEmpty(utpEventId)) {
-            requestTracker.addTag("utpid", utpEventId, String.class);
-          }
-
-          // populate device info
-          CollectionServiceUtil.populateDeviceDetectionParams(
-              (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME), requestTracker);
-
-          // event family
-          requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
-
-          // rotation id
-          requestTracker.addTag("rotid", String.valueOf(message.getDstRotationId()), String.class);
-
-          // keyword
-          String searchKeyword = "";
-          if (parameters.containsKey(Constants.SEARCH_KEYWORD)
-              && parameters.get(Constants.SEARCH_KEYWORD).get(0) != null) {
-
-            searchKeyword = parameters.get(Constants.SEARCH_KEYWORD).get(0);
-          }
-          requestTracker.addTag("keyword", searchKeyword, String.class);
-
-          // rvr id
-          requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
-
-          // gclid
-          String gclid = "";
-          if (parameters.containsKey(Constants.GCLID) && parameters.get(Constants.GCLID).get(0) != null) {
-
-            gclid = parameters.get(Constants.GCLID).get(0);
-          }
-          requestTracker.addTag("gclid", gclid, String.class);
-
-          //producereventts
-          requestTracker.addTag("producereventts", startTime, Long.class);
-
-        } catch (Exception e) {
-          LOGGER.warn("Error when tracking ubi for imk", e);
-          metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
-              Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
+        // page id
+        if (channelAction.equals(ChannelActionEnum.CLICK)) {
+          requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.CLICK.getId(), Integer.class);
+        } else if (channelAction.equals(ChannelActionEnum.ROI)) {
+          requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.ROI.getId(), Integer.class);
         }
+
+        // event action
+        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
+
+        // target url
+        if (!StringUtils.isEmpty(targetUrl)) {
+          requestTracker.addTag(SOJ_MPRE_TAG, targetUrl, String.class);
+        }
+
+        // referer
+        if (!StringUtils.isEmpty(referer)) {
+          requestTracker.addTag("ref", referer, String.class);
+        }
+
+        // utp event id
+        if (!StringUtils.isEmpty(utpEventId)) {
+          requestTracker.addTag("utpid", utpEventId, String.class);
+        }
+
+        // populate device info
+        CollectionServiceUtil.populateDeviceDetectionParams(
+            (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME), requestTracker);
+
+        // event family
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
+
+        // rotation id
+        requestTracker.addTag("rotid", String.valueOf(message.getDstRotationId()), String.class);
+
+        // keyword
+        String searchKeyword = "";
+        if (parameters.containsKey(Constants.SEARCH_KEYWORD)
+            && parameters.get(Constants.SEARCH_KEYWORD).get(0) != null) {
+
+          searchKeyword = parameters.get(Constants.SEARCH_KEYWORD).get(0);
+        }
+        requestTracker.addTag("keyword", searchKeyword, String.class);
+
+        // rvr id
+        requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
+
+        // gclid
+        String gclid = "";
+        if (parameters.containsKey(Constants.GCLID) && parameters.get(Constants.GCLID).get(0) != null) {
+
+          gclid = parameters.get(Constants.GCLID).get(0);
+        }
+        requestTracker.addTag("gclid", gclid, String.class);
+
+        //producereventts
+        requestTracker.addTag("producereventts", startTime, Long.class);
+
+      } catch (Exception e) {
+        LOGGER.warn("Error when tracking ubi for imk", e);
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+            Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
       }
     }
   }
 
   /**
-   * @param requestContext  request context
-   * @param targetUrl       target url
-   * @param referer         referer of the request
-   * @param parameters      parameters of url
-   * @param channelType     channel type
-   * @param channelAction   action type
-   * @param request         http request
-   * @param startTime       start time of the request
-   * @param endUserContext  enduserctx header
-   * @param agentInfo       user agent
-   * @param message         listener message
-   * @return                behavior message
+   * @param requestContext request context
+   * @param targetUrl      target url
+   * @param referer        referer of the request
+   * @param parameters     parameters of url
+   * @param channelType    channel type
+   * @param channelAction  action type
+   * @param request        http request
+   * @param startTime      start time of the request
+   * @param endUserContext enduserctx header
+   * @param agentInfo      user agent
+   * @param message        listener message
+   * @return behavior message
    */
   public BehaviorMessage parseBehaviorMessage(ContainerRequestContext requestContext, String targetUrl, String referer,
                                               MultiValueMap<String, String> parameters, ChannelIdEnum channelType,

@@ -31,7 +31,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.ebaysites;
@@ -67,7 +66,6 @@ public abstract class CustomerMarketingCollector {
   public void trackUbi(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters, String type,
                        String action, HttpServletRequest request, String uri, String referer, String utpEventId,
                        ChannelAction channelAction) {
-
     // add common tags
     addCommonTags(requestContext, uri, referer,
         (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME), utpEventId, type, action,
