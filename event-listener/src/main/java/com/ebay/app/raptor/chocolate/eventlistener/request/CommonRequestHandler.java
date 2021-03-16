@@ -5,7 +5,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener.request;
 
 import com.ebay.app.raptor.chocolate.constant.Constants;
-import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -24,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 
@@ -38,7 +38,7 @@ public class CommonRequestHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(CommonRequestHandler.class);
 
   public Map<String, String> getHeaderMaps(HttpServletRequest clientRequest) {
-    Map<String, String> headers = new HashMap<>();
+    Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);;
     if(clientRequest.getHeaderNames() != null) {
       for (Enumeration<String> e = clientRequest.getHeaderNames(); e.hasMoreElements(); ) {
         String headerName = e.nextElement();

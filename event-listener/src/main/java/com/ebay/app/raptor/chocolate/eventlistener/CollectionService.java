@@ -112,17 +112,12 @@ public class CollectionService {
   @Autowired
   private CommonRequestHandler commonRequestHandler;
 
-  @Autowired
-  private TrackingEntry trackingEntry;
-
   private static final String PARTNER = "partner";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
   private static final String ADGUID_PARAM = "adguid";
   private static final String ROI_SOURCE = "roisrc";
   private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
-  private static final String TRACKING_HEADER = "X-EBAY-C-TRACKING";
-  private static final String ENDUSERCTX_HEADER = "X-EBAY-C-ENDUSERCTX";
   private static final String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
 
   @PostConstruct
@@ -331,6 +326,25 @@ public class CollectionService {
     }
     UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
 
+    // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256
+    // only for EPN channel
+    boolean isEPNClickFromPromotedListings;
+    try {
+      isEPNClickFromPromotedListings
+          = CollectionServiceUtil.isEPNPromotedListingsClick(channelType, parameters, referer);
+
+      if (isEPNClickFromPromotedListings) {
+        referer = URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), StandardCharsets.UTF_8.name());
+        metrics.meter("OverwriteRefererForPromotedListingsClick");
+      }
+    } catch (Exception e) {
+      LOGGER.error("Determine whether the click is from promoted listings iframe error");
+      metrics.meter("DeterminePromotedListingsClickError", 1);
+    }
+
+    // filter click whose referer is internal
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    boolean isInternalRef = m.find();
     // Determine whether the click is a duplicate click
     // If duplicate click, then drop into duplicateItmClickTopic
     // If not, drop into normal topic
@@ -341,7 +355,7 @@ public class CollectionService {
           targetUrl, agentInfo.requestIsFromBot(), agentInfo.isMobile(), agentInfo.requestIsMobileWeb());
 
       // send duplicate click to a dedicate listener topic
-      if(isDuplicateClick) {
+      if(isDuplicateClick || isInternalRef) {
         Producer<Long, ListenerMessage> producer = KafkaSink.get();
         ListenerMessage listenerMessage = parser.parse(requestHeaders, endUserContext, userPrefsCtx, startTime,
             0L, channelType.getLogicalChannel().getAvro(), ChannelActionEnum.CLICK, "", targetUrl,
@@ -357,28 +371,8 @@ public class CollectionService {
       metrics.meter("DetermineDuplicateItmClickError", 1);
     }
 
-    // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256
-    // only for EPN channel
-    boolean isEPNClickFromPromotedListings = false;
-    try {
-      isEPNClickFromPromotedListings
-          = CollectionServiceUtil.isEPNPromotedListingsClick(channelType, parameters, referer);
-
-      if (isEPNClickFromPromotedListings) {
-        referer = URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), StandardCharsets.UTF_8.name());
-        metrics.meter("OverwriteRefererForPromotedListingsClick");
-      }
-    } catch (Exception e) {
-      LOGGER.error("Determine whether the click is from promoted listings iframe error");
-      metrics.meter("DeterminePromotedListingsClickError", 1);
-    }
-
     // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
     String utpEventId = UUID.randomUUID().toString();
-
-    // filter click whose referer is internal
-    Matcher m = ebaysites.matcher(referer.toLowerCase());
-    boolean isInternalRef = m.find();
 
     if(!isDuplicateClick && !isInternalRef) {
       ListenerMessage listenerMessage = null;
@@ -951,30 +945,31 @@ public class CollectionService {
                                  Long startTime, ChannelType channelType, ChannelAction channelAction,
                                  String utpEventId, CustomerMarketingCollector cmCollector) {
 
-      long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
+    long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
 
-      // 0. temporary, send click and open event to message tracker
-      eventEmitterPublisher.publishEvent(requestContext, parameters, uri, channelType, channelAction, snapshotId);
+    // 0. temporary, send click and open event to message tracker
+    eventEmitterPublisher.publishEvent(requestContext, parameters, uri, channelType, channelAction, snapshotId);
 
-      // 1. track ubi
-      if(ChannelAction.CLICK.equals(channelAction)){
-        cmCollector.trackUbi(requestContext, parameters, type, action, request, uri, referer, utpEventId, channelAction);
-      }
-
-      // 2. send email open/click to behavior topic
-      BehaviorMessage message = cmCollector.parseBehaviorMessage(requestContext, endUserContext, referer,
-          parameters, request, agentInfo, uri, startTime, channelType, channelAction, snapshotId);
-
-      if (message != null) {
-        // If the click is a duplicate click from itm page, then drop into duplicateItmClickTopic
-        // else drop into normal topic
-        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
-            KafkaSink.callback);
-
-        return true;
-      } else
-        return false;
+    // 1. track ubi
+    if (ChannelAction.CLICK.equals(channelAction)) {
+      cmCollector.trackUbi(requestContext, parameters, type, action, request, uri, referer, utpEventId,
+          channelAction);
     }
+
+    // 2. send email open/click to behavior topic
+    BehaviorMessage message = cmCollector.parseBehaviorMessage(requestContext, endUserContext, referer,
+        parameters, request, agentInfo, uri, startTime, channelType, channelAction, snapshotId);
+
+    if (message != null) {
+      // If the click is a duplicate click from itm page, then drop into duplicateItmClickTopic
+      // else drop into normal topic
+      behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
+          KafkaSink.callback);
+
+      return true;
+    } else
+      return false;
+  }
 
   /**
    * Process SMS event
