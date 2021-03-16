@@ -279,7 +279,9 @@ public class UnifiedTrackingMessageParser {
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
 
     // data governance
+    long startTs = System.currentTimeMillis();
     TrackingGovernanceTagCache.getInstance().govern(record);
+    metrics.mean("DataGovernanceLatency", System.currentTimeMillis() - startTs);
 
     return record;
   }
