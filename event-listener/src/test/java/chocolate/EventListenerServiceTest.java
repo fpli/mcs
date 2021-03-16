@@ -982,7 +982,7 @@ public class EventListenerServiceTest {
     event.setReferrer("https://www.ebay.co.uk/gum/v1/stick?q=carpet%20cleaner");
     event.setTargetUrl("https://www.ebay.com/itm/233622232591?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&mksrc=PromotedListings&plrfr=https%3A%2F%2Fwww.gumtree.com%2Fv1%2Fstick%3Fq%3Dcarpet");
 
-    // click from promoted listing iframe on ebay partner site
+    // click from promoted listing iframe on ebay partner site, pass
     Response response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
     assertEquals(201, response.getStatus());
 
@@ -1014,7 +1014,7 @@ public class EventListenerServiceTest {
     // click with original referer="", pass
     event.setTargetUrl("https://www.ebay.com/itm/233622232591?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&mksrc=PromotedListings&plrfr=https%3A%2F%2Fwww.gumtree.com%2Fv1%2Fstick%3Fq%3Dcarpet");
     event.setReferrer("");
-    response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    response = postMcsResponseWithStatusCode(eventsPath, endUserCtxNoReferer, tracking, event, marketingStatusCode);
     assertEquals(201, response.getStatus());
 
     // click with original referer which is not ebay domain, pass
@@ -1038,7 +1038,7 @@ public class EventListenerServiceTest {
             consumerEpn, Arrays.asList("dev_listened-epn"), 8, 30 * 1000);
     consumerEpn.close();
     // only the no referer one and the valid one with correct plrfr can pass
-    assertEquals(2, listenerMessagesEpn.size());
+    assertEquals(3, listenerMessagesEpn.size());
 
     // validate kafka message
     Thread.sleep(3000);
