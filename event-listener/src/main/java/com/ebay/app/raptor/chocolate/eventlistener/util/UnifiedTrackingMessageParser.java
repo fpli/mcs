@@ -182,7 +182,7 @@ public class UnifiedTrackingMessageParser {
     record.setProducerEventId(getProducerEventId(parameters, channelType));
 
     // event timestamp
-    record.setProducerEventTs(System.currentTimeMillis());
+    record.setProducerEventTs(getProducerEventTs(channelAction, roiEvent));
 
     // rlog id
     record.setRlogId(tracingContext.getRlogId());
@@ -368,6 +368,14 @@ public class UnifiedTrackingMessageParser {
     }
 
     return "";
+  }
+
+  private static long getProducerEventTs(ChannelAction channelAction, ROIEvent roiEvent) {
+    if (ChannelAction.ROI.equals(channelAction) && isLongNumeric(roiEvent.getTransactionTimestamp())) {
+      return Long.parseLong(roiEvent.getTransactionTimestamp());
+    } else {
+      return System.currentTimeMillis();
+    }
   }
 
   /**
@@ -611,9 +619,6 @@ public class UnifiedTrackingMessageParser {
     }
     if (isLongNumeric(userId)) {
       payloadMap.put("userid", userId);
-    }
-    if (isLongNumeric(roiEvent.getTransactionTimestamp())) {
-      payloadMap.put("producereventts", roiEvent.getTransactionTimestamp());
     }
   }
 
