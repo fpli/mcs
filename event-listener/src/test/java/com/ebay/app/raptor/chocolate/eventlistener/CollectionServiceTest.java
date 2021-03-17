@@ -234,47 +234,6 @@ public class CollectionServiceTest {
 
   }
 
-  @Test (expected = Exception.class)
-  public void collectNotificationNoTracking() throws Exception {
-    HttpServletRequest mockHttpServletRequest = Mockito.mock(HttpServletRequest.class);
-    IEndUserContext mockIEndUserContext = Mockito.mock(IEndUserContext.class);
-    ContainerRequestContext mockContainerRequestContext = Mockito.mock(ContainerRequestContext.class);
-
-    Event event = new Event();
-
-    //no tracking, exception
-    Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-TRACKING")).thenReturn(null);
-    collectionService.collectNotification(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event, 123);
-  }
-
-  @Test (expected = Exception.class)
-  public void collectNotificationNoEndUser() throws Exception {
-    HttpServletRequest mockHttpServletRequest = Mockito.mock(HttpServletRequest.class);
-    IEndUserContext mockIEndUserContext = Mockito.mock(IEndUserContext.class);
-    ContainerRequestContext mockContainerRequestContext = Mockito.mock(ContainerRequestContext.class);
-
-    Event event = new Event();
-
-    // no enduserctx, exception
-    Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-TRACKING")).thenReturn("guid=8b34ef1d1740a4d724970d78eec8ee4c");
-    Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-ENDUSERCTX")).thenReturn(null);
-    collectionService.collectNotification(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event, 123);
-  }
-
-  @Test (expected = Exception.class)
-  public void collectNotificationNoUA() throws Exception {
-    HttpServletRequest mockHttpServletRequest = Mockito.mock(HttpServletRequest.class);
-    IEndUserContext mockIEndUserContext = Mockito.mock(IEndUserContext.class);
-    ContainerRequestContext mockContainerRequestContext = Mockito.mock(ContainerRequestContext.class);
-
-    Event event = new Event();
-
-    // no user agent, exception
-    Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-ENDUSERCTX")).thenReturn(endUserCtxNoReferer);
-    Mockito.when(mockIEndUserContext.getUserAgent()).thenReturn(null);
-    collectionService.collectNotification(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event, 123);
-  }
-
   @Test(expected = Exception.class)
   public void collectSyncNoTracking() throws Exception {
     HttpServletRequest mockHttpServletRequest = Mockito.mock(HttpServletRequest.class);
