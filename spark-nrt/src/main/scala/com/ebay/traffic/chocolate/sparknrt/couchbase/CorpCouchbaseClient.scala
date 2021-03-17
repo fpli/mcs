@@ -8,6 +8,7 @@ import com.couchbase.client.java.datastructures.MutationOptionBuilder
 import com.ebay.dukes.CacheClient
 import com.ebay.dukes.base.BaseDelegatingCacheClient
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient
+import com.ebay.kernel.context.RuntimeContext
 import org.slf4j.LoggerFactory
 
 object CorpCouchbaseClient {
@@ -24,6 +25,7 @@ object CorpCouchbaseClient {
 
   @transient private lazy val factory =
     com.ebay.dukes.builder.FountCacheFactoryBuilder.newBuilder()
+      .identityFileDirectoryLocation("spark-nrt/src/main/conf/identities")
       .cache(dataSource)
       .dbEnv(properties.getProperty("chocolate.corp.couchbase.dbEnv"))
       .deploymentSlot(properties.getProperty("chocolate.corp.couchbase.deploymentSlot"))
