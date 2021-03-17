@@ -27,6 +27,8 @@ import org.apache.commons.lang3.Validate;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
@@ -159,6 +161,7 @@ public class UTPRoverEventTransformer {
         SherlockioMetrics.getInstance().meter("NoChannelId", 1, Field.of(TOPIC, sourceTopic));
         return false;
       }
+      SherlockioMetrics.getInstance().meter("ChannelId", 1, Field.of("chnl", URLEncoder.encode(channelId)));
 
       channelType = parseChannelType(channelId);
       if (channelType == null) {
@@ -299,7 +302,7 @@ public class UTPRoverEventTransformer {
     if (channelType == ChannelTypeEnum.SITE_EMAIL) {
       return applicationPayload.getOrDefault(TransformerConstants.EUID, StringConstants.EMPTY);
     }
-    if (actionTypeEnum == ActionTypeEnum.ROI) {
+    if (actionTypeEnum == ActionTypeEnum.ROI || channelType == ChannelTypeEnum.EPN) {
       return applicationPayload.getOrDefault(TransformerConstants.RVRID, StringConstants.EMPTY);
     }
     return StringConstants.EMPTY;
@@ -538,7 +541,7 @@ public class UTPRoverEventTransformer {
       }
       String toolId = PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, Constants.TOOL_ID);
       if(StringUtils.isNotEmpty(toolId)) {
-        payload.put(Constants.TOOL_ID, PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, Constants.TOOL_ID));
+        payload.put(Constants.TOOL_ID, toolId);
       }
     }
     if (actionTypeEnum == ActionTypeEnum.ROI) {
