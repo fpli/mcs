@@ -76,15 +76,6 @@ public class Constants {
   public static final String REDIRECT_SRC_SOJ_SOURCE = "adcamp_locationsrc";
   public static final String ADOBE_CAMP_PUBLIC_USER_ID = "pu";
 
-  // Mobile Notification name and soj tags
-  public static final String NOTIFICATION_ID = "nid";
-  public static final String NOTIFICATION_TYPE = "ntype";
-  public static final String NOTIFICATION_ACTION = "pnact";
-  public static final String USER_NAME = "user_name";
-  public static final String MC3_MSSG_ID = "mc3id";
-  public static final String ITEM_ID = "itm";
-  public static final String NOTIFICATION_TYPE_EVT = "evt";
-
   // Redirection header name
   public static final String NODE_REDIRECTION_HEADER_NAME = "X-EBAY-TRACKING-MARKETING-STATUS-CODE";
   public static final String NODE_REDIRECTION_STATUS_CODE = "301";

@@ -584,14 +584,14 @@ public class UnifiedTrackingMessageParser {
         metrics.meter("ErrorEncodedSojTags", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
             Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
       }
-      if (!org.springframework.util.StringUtils.isEmpty(sojTags)) {
+      if (!StringUtils.isEmpty(sojTags)) {
         StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
         while (stToken.hasMoreTokens()) {
           StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
           if (sojNvp.countTokens() == 2) {
             String sojTag = sojNvp.nextToken().trim();
             String urlParam = sojNvp.nextToken().trim();
-            if (!org.springframework.util.StringUtils.isEmpty(urlParam) && !org.springframework.util.StringUtils.isEmpty(sojTag)) {
+            if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
               applicationPayload.put(sojTag, HttpRequestUtil.parseTagFromParams(parameters, urlParam));
             }
           }
@@ -603,15 +603,13 @@ public class UnifiedTrackingMessageParser {
   }
 
   private static void addRoiSojTags(Map<String, String> payloadMap, ROIEvent roiEvent, String userId, long snapshotId, long shortSnapshotId) {
-    payloadMap.put(TrackerTagValueUtil.PageIdTag, String.valueOf(PageIdEnum.ROI.getId()));
-
     payloadMap.put("rvrid", String.valueOf(shortSnapshotId));
     payloadMap.put("snapshotid", String.valueOf(snapshotId));
 
     if(isLongNumeric(roiEvent.getItemId())) {
       payloadMap.put("itm", roiEvent.getItemId());
     }
-    if (!org.springframework.util.StringUtils.isEmpty(roiEvent.getTransType())) {
+    if (!StringUtils.isEmpty(roiEvent.getTransType())) {
       payloadMap.put("tt", roiEvent.getTransType());
     }
     if (isLongNumeric(roiEvent.getUniqueTransactionId())) {

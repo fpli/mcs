@@ -86,18 +86,18 @@ public class UepPayloadHelper {
   public Map<String, String> getUepPayload(String url, ActionTypeEnum actionTypeEnum, ChannelTypeEnum channelTypeEnum) {
     Map<String, String> payload = new HashMap<>();
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(url).build();
-//    String bu = uriComponents.getQueryParams().getFirst(BEST_GUESS_USER);
-//    if (StringUtils.isNotEmpty(bu)) {
-//      Long encryptedUserId = Longs.tryParse(bu);
-//      if (encryptedUserId != null) {
-//        long userId = EncryptUtil.decryptUserId(encryptedUserId);
-//        payload.put(MessageConstantsEnum.USER_ID.getValue(), String.valueOf(userId));
-//      }
-//    } else {
-//      payload.put(MessageConstantsEnum.USER_ID.getValue(), "0");
-//    }
+    String bu = uriComponents.getQueryParams().getFirst(BEST_GUESS_USER);
+    if (StringUtils.isNotEmpty(bu)) {
+      Long encryptedUserId = Longs.tryParse(bu);
+      if (encryptedUserId != null) {
+        long userId = EncryptUtil.decryptUserId(encryptedUserId);
+        payload.put(MessageConstantsEnum.USER_ID.getValue(), String.valueOf(userId));
+      }
+    } else {
+      payload.put(MessageConstantsEnum.USER_ID.getValue(), "0");
+    }
 
-    // for ORS shor-tem migration
+    // for ORS short-term migration
 //    // channel.name
 //    if(channelTypeEnum.getValue().contains(EMAIL)) {
 //      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), EMAIL);
@@ -176,8 +176,8 @@ public class UepPayloadHelper {
 
     // experiment ids
     payload.put("exe", getOrDefault(uriComponents.getQueryParams().getFirst(EXPERIMENT_ID)));
-    payload.put("ext", getOrDefault(uriComponents.getQueryParams().getFirst(TREATMENT_ID)));
-    payload.put("trt", getOrDefault(uriComponents.getQueryParams().getFirst(EXPERIMENT_TYPE)));
+    payload.put("ext", getOrDefault(uriComponents.getQueryParams().getFirst(EXPERIMENT_TYPE)));
+    payload.put("trt", getOrDefault(uriComponents.getQueryParams().getFirst(TREATMENT_ID)));
 
     // message list
     Message message = new Message();
