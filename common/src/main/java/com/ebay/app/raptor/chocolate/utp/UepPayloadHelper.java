@@ -86,26 +86,26 @@ public class UepPayloadHelper {
   public Map<String, String> getUepPayload(String url, ActionTypeEnum actionTypeEnum, ChannelTypeEnum channelTypeEnum) {
     Map<String, String> payload = new HashMap<>();
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(url).build();
-    String bu = uriComponents.getQueryParams().getFirst(BEST_GUESS_USER);
-    if (StringUtils.isNotEmpty(bu)) {
-      Long encryptedUserId = Longs.tryParse(bu);
-      if (encryptedUserId != null) {
-        long userId = EncryptUtil.decryptUserId(encryptedUserId);
-        payload.put(MessageConstantsEnum.USER_ID.getValue(), String.valueOf(userId));
-      }
-    } else {
-      payload.put(MessageConstantsEnum.USER_ID.getValue(), "0");
-    }
+//    String bu = uriComponents.getQueryParams().getFirst(BEST_GUESS_USER);
+//    if (StringUtils.isNotEmpty(bu)) {
+//      Long encryptedUserId = Longs.tryParse(bu);
+//      if (encryptedUserId != null) {
+//        long userId = EncryptUtil.decryptUserId(encryptedUserId);
+//        payload.put(MessageConstantsEnum.USER_ID.getValue(), String.valueOf(userId));
+//      }
+//    } else {
+//      payload.put(MessageConstantsEnum.USER_ID.getValue(), "0");
+//    }
 
     // for ORS shor-tem migration
-    // channel.name
-    if(channelTypeEnum.getValue().contains(EMAIL)) {
-      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), EMAIL);
-    } else if(channelTypeEnum.getValue().contains(MESSAGE_CENTER)) {
-      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), MESSAGE_CENTER);
-    } else {
-      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), channelTypeEnum.getValue());
-    }
+//    // channel.name
+//    if(channelTypeEnum.getValue().contains(EMAIL)) {
+//      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), EMAIL);
+//    } else if(channelTypeEnum.getValue().contains(MESSAGE_CENTER)) {
+//      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), MESSAGE_CENTER);
+//    } else {
+//      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), channelTypeEnum.getValue());
+//    }
     // annotation.message.name
     String segmentCode = uriComponents.getQueryParams().getFirst(Constants.SEGMENT_NAME);
     if (segmentCode != null) {
@@ -144,8 +144,8 @@ public class UepPayloadHelper {
         || channelTypeEnum.equals(ChannelTypeEnum.MRKT_MESSAGE_CENTER)) {
       payload.put(ANNOTATION_CANVAS_UNIQ_ID, runDate);
     }
-    // interaction.type
-    payload.put(MessageConstantsEnum.INTERACTION_TYPE.getValue(), actionTypeEnum.getValue());
+//    // interaction.type
+//    payload.put(MessageConstantsEnum.INTERACTION_TYPE.getValue(), actionTypeEnum.getValue());
     // timestamp.created, use current ts
     long ts = System.currentTimeMillis();
     payload.put(TIMESTAMP_CREATED, String.valueOf(ts));
@@ -154,19 +154,19 @@ public class UepPayloadHelper {
     // status, all SENT for click/open
     payload.put(MessageConstantsEnum.STATUS.getValue(), STATUS_SENT);
 
-    // cUrl
-    try {
-      payload.put(C_URL, URLEncoder.encode(url, "UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      LOGGER.warn("Unsupported encoding: " + url, e);
-    }
+//    // cUrl
+//    try {
+//      payload.put(C_URL, URLEncoder.encode(url, "UTF-8"));
+//    } catch (UnsupportedEncodingException e) {
+//      LOGGER.warn("Unsupported encoding: " + url, e);
+//    }
     // tag_item, no need
     // tag_intrId, no need
     // tag_intrUnsub, no need
     // cnv.id no need in open/click
     // tracking id
     String trackingId = getOrDefault(uriComponents.getQueryParams().getFirst(TRACKING_ID));
-    payload.put(MessageConstantsEnum.TRACKING_ID.getValue(), trackingId);
+//    payload.put(MessageConstantsEnum.TRACKING_ID.getValue(), trackingId);
     // isUep
     if(StringUtils.isNotEmpty(trackingId)) {
       payload.put(IS_UEP, String.valueOf(true));
