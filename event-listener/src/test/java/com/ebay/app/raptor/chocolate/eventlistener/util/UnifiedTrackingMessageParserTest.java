@@ -14,6 +14,7 @@ import com.ebay.raptor.geo.context.GeoCtx;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
+import com.ebay.traffic.monitoring.ESMetrics;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,6 +37,7 @@ public class UnifiedTrackingMessageParserTest {
     RuntimeContext.setConfigRoot(UnifiedTrackingMessageParserTest.class.getClassLoader().getResource
         ("META-INF/configuration/Dev/"));
     ApplicationOptions.init();
+    ESMetrics.init("test", "localhost");
   }
 
   @SuppressWarnings("unchecked")
