@@ -89,10 +89,10 @@
         <groupId>com.ebay.raptorio.component</groupId>
         <artifactId>raptor-service-discovery-client-starter</artifactId>
       </dependency>
-      <dependency>
+      <!--<dependency>
         <groupId>com.ebay.raptorio.component</groupId>
         <artifactId>raptor-hystrix-starter</artifactId>
-      </dependency>
+      </dependency>-->
       <dependency>
         <groupId>com.ebay.raptorio.component</groupId>
         <artifactId>raptor-opentracing-cal-starter</artifactId>
