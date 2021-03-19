@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
 @ComponentScan(value = "com.ebay.traffic.chocolate")
@@ -16,6 +17,7 @@ import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
 @EnableConfigurationProperties({
         DatabaseProperties.class
 })
+@EnableAsync
 public class ListenerApplication extends AsyncConfigurerSupport {
 
   public static void main(String[] args) {
