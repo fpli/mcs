@@ -5,6 +5,7 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
@@ -275,5 +276,15 @@ public class CollectionServiceTest {
     // valid
     event.setTargetUrl("https://www.ebayadservices.com/marketingtracing/v1/sync?guid=abc&u=123e12");
     assertTrue(collectionService.collectSync(mockHttpServletRequest, mockRaptorSecureContext, mockContainerRequestContext, event));
+  }
+
+  @Test
+  public void inRefererWhitelist() {
+    assertFalse(collectionService.inRefererWhitelist(ChannelType.EPN, "http://www.ebay.com"));
+    assertFalse(collectionService.inRefererWhitelist(ChannelType.EPN, "https://ebay.mtag.io/"));
+    assertFalse(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "http://www.ebay.com"));
+    assertTrue(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "https://ebay.mtag.io/"));
+    assertTrue(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "https://ebay.pissedconsumer.com/"));
+    assertFalse(collectionService.inRefererWhitelist(ChannelType.PAID_SEARCH, "https://ebay.pissedconsumer.com/"));
   }
 }
