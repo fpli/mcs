@@ -54,8 +54,8 @@ public class UepPayloadHelper {
   public static final String C_URL = "cUrl";
   public static final String ANNOTATION_MESSAGE_NAME = "annotation.message.name";
   public static final String ANNOTATION_CANVAS_UNIQ_ID = "annotation.canvas.uniq.id";
-  private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMddHHmmss");
-  private static final SimpleDateFormat eventDateStringFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  private final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMddHHmmss");
+  private final SimpleDateFormat eventDateStringFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
   private static final String WHITELIST_PATTERN_MARKETING_EMAIL_PA = "TE1798";
   private static final String WHITELIST_PATTERN_MARKETING_EMAIL_ESPRESSO = "TE7";
