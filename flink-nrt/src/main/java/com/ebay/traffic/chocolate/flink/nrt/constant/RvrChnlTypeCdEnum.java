@@ -8,6 +8,7 @@ public enum RvrChnlTypeCdEnum {
   PAID_SOCIAL("20"),
   ROI("0"),
   NATURAL_SEARCH("3"),
+  SEARCH_ENGINE_FREE_LISTINGS("28"),
   DEFAULT("0");
 
   private final String cd;
