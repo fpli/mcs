@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.kafka;
 
-import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingMessage;
+import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.Schema;
 import org.apache.kafka.common.errors.SerializationException;
