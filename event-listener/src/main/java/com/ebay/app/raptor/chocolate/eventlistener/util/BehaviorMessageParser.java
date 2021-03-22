@@ -433,6 +433,11 @@ public class BehaviorMessageParser {
     // landing page and tracking url
     applicationPayload.put("url_mpre", uri);
 
+    // sid for DSS, just in tracking_event
+    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType)) {
+      applicationPayload.put("sid", parseTagFromParams(parameters, Constants.SOURCE_ID));
+    }
+
     // agent and payload
     applicationPayload.put(AGENT_TAG, agentInfo.getUserAgentRawData());
     applicationPayload.put("Payload", UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));

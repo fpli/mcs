@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosMessage;
+import com.ebay.traffic.chocolate.utp.common.model.rheos.UnifiedTrackingRheosMessage;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.RheosConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;

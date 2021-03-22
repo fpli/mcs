@@ -409,6 +409,17 @@
       <version>1.2.1</version>
     </dependency>
 
+    <!-- UTP -->
+    <dependency>
+      <groupId>com.ebay.traffic</groupId>
+      <artifactId>chocolate-utp-lib</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.traffic</groupId>
+      <artifactId>chocolate-utp-common</artifactId>
+    </dependency>
+
     <!-- kotlin -->
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>

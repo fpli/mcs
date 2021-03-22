@@ -1,6 +1,10 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
-import com.ebay.app.raptor.chocolate.avro.*;
+import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
+import com.ebay.app.raptor.chocolate.avro.ChannelAction;
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -78,6 +82,7 @@ public class CollectionService {
   private String duplicateItmClickTopic;
   private static CollectionService instance = null;
   private EventEmitterPublisher eventEmitterPublisher;
+  private UnifiedTrackingMessageParser utpParser;
 
   @Autowired
   private HttpRoverClient roverClient;
@@ -132,6 +137,7 @@ public class CollectionService {
     this.unifiedTrackingTopic = ApplicationOptions.getInstance().getUnifiedTrackingTopic();
     this.eventEmitterPublisher = new EventEmitterPublisher(tokenGenerator);
     this.duplicateItmClickTopic = ApplicationOptions.getInstance().getDuplicateItmClickTopic();
+    this.utpParser = new UnifiedTrackingMessageParser();
   }
 
   /**
@@ -825,7 +831,7 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, event.getActionType()),
         Field.of(CHANNEL_TYPE, event.getChannelType()));
 
-    UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(event, userLookup);
+    UnifiedTrackingMessage message = utpParser.parse(event, userLookup);
 
     if (message != null) {
       unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
@@ -864,7 +870,7 @@ public class CollectionService {
     try {
       Matcher m = ebaysites.matcher(referer.toLowerCase());
       if (ChannelAction.EMAIL_OPEN.equals(channelAction) || ChannelAction.ROI.equals(channelAction) || inRefererWhitelist(channelType, referer) || !m.find()) {
-        UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
+        UnifiedTrackingMessage utpMessage = utpParser.parse(requestContext, request, endUserContext,
                 raptorSecureContext, agentInfo, userLookup, parameters, url, referer, channelType, channelAction,
                 roiEvent, snapshotId, shortSnapshotId, startTime);
         if(!StringUtils.isEmpty(eventId)) {

@@ -30,7 +30,6 @@
         <dependency>
             <groupId>com.ebay.traffic</groupId>
             <artifactId>chocolate-utp-common</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
