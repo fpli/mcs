@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.listener;
 
+import com.ebay.raptorio.component.hystrix.autoconfigure.HystrixRequestServletFilterInitializer;
 import com.ebay.traffic.chocolate.listener.configuration.DatabaseProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,7 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = HystrixRequestServletFilterInitializer.class)
 @ComponentScan(value = "com.ebay.traffic.chocolate")
 @EntityScan("com.ebay.traffic.chocolate.jdbc.model")
 @EnableJpaRepositories("com.ebay.traffic.chocolate.jdbc.repo")
@@ -17,9 +18,7 @@ import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
         DatabaseProperties.class
 })
 public class ListenerApplication extends AsyncConfigurerSupport {
-
   public static void main(String[] args) {
     SpringApplication.run(ListenerApplication.class, args);
   }
-
 }
