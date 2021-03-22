@@ -119,6 +119,7 @@ public class CollectionService {
   private static final String ROI_SOURCE = "roisrc";
   private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
   private static final String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
+  private static final List<String> REFERER_WHITELIST = Arrays.asList("https://ebay.mtag.io/", "https://ebay.pissedconsumer.com/");
 
   @PostConstruct
   public void postInit() throws Exception {
@@ -862,7 +863,7 @@ public class CollectionService {
                                            long shortSnapshotId, String eventId, long startTime) {
     try {
       Matcher m = ebaysites.matcher(referer.toLowerCase());
-      if (ChannelAction.EMAIL_OPEN.equals(channelAction) || ChannelAction.ROI.equals(channelAction) || !m.find()) {
+      if (ChannelAction.EMAIL_OPEN.equals(channelAction) || ChannelAction.ROI.equals(channelAction) || inRefererWhitelist(channelType, referer) || !m.find()) {
         UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(requestContext, request, endUserContext,
                 raptorSecureContext, agentInfo, userLookup, parameters, url, referer, channelType, channelAction,
                 roiEvent, snapshotId, shortSnapshotId, startTime);
@@ -879,6 +880,26 @@ public class CollectionService {
       LOGGER.warn("UTP message process error.", e);
       metrics.meter("UTPMessageError");
     }
+  }
+
+  /**
+   * The ebaysites pattern will treat ebay.abcd.com as ebay site. So add a whitelist to handle these bad cases.
+   * @param channelType channel type
+   * @param referer referer
+   * @return in whitelist or not
+   */
+  protected boolean inRefererWhitelist(ChannelType channelType, String referer) {
+    // currently, this case only exists in display channel
+    if (ChannelType.DISPLAY != channelType) {
+      return false;
+    }
+    String lowerCase = referer.toLowerCase();
+    for (String referWhitelist : REFERER_WHITELIST) {
+      if (lowerCase.startsWith(referWhitelist)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
