@@ -177,7 +177,7 @@ public class UepPayloadHelper {
     // experiment ids
     payload.put("exe", getOrDefault(uriComponents.getQueryParams().getFirst(EXPERIMENT_ID)));
     payload.put("ext", getOrDefault(uriComponents.getQueryParams().getFirst(EXPERIMENT_TYPE)));
-    payload.put("trt", getOrDefault(uriComponents.getQueryParams().getFirst(TREATMENT_ID)));
+//    payload.put("trt", getOrDefault(uriComponents.getQueryParams().getFirst(TREATMENT_ID)));
 
     // message list
     Message message = new Message();
