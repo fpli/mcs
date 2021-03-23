@@ -19,8 +19,8 @@ import org.apache.flink.contrib.streaming.state.PredefinedOptions;
 import org.apache.flink.contrib.streaming.state.RocksDBStateBackend;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
-import org.apache.flink.formats.parquet.avro.ParquetAvroWriters;
 import org.apache.flink.streaming.api.CheckpointingMode;
+import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -33,21 +33,18 @@ import org.apache.flink.util.OutputTag;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Receive filter messages from Kafka topics, and sink parquet files to HDFS directly.
+ * Receive utp imk messages from Kafka topics, and sink parquet files to HDFS directly.
  *
  * @author Zhiyuan Wang
  * @since 2020/1/18
  */
 public class UTPImkSinkApp {
-  private static String cluster;
-
   public static final String CHECKPOINT_DATA_URI = "file:///data/checkpoint/utp-event-imk-sink";
 
   protected StreamExecutionEnvironment streamExecutionEnvironment;
@@ -79,27 +76,19 @@ public class UTPImkSinkApp {
   protected void run(String[] args) throws Exception {
     ParameterTool parameter = ParameterTool.fromArgs(args);
     String enableDedupe = parameter.get("enableDedupe", Boolean.TRUE.toString());
-    cluster = parameter.get("cluster");
 
     Properties sinkProperties = PropertyMgr.getInstance().loadProperty(PropertyConstants.UTP_IMK_SINK_APP_HDFS_PROPERTIES);
-    Path path;
-    Path dupPath;
-    if ("rno".equalsIgnoreCase(cluster)) {
-      path = new Path(sinkProperties.getProperty(RNO_PATH));
-      dupPath = new Path(sinkProperties.getProperty(RNO_DUP_PATH));
-    } else if ("hercules".equalsIgnoreCase(cluster)) {
-      path = new Path(sinkProperties.getProperty(HERCULES_PATH));
-      dupPath = new Path(sinkProperties.getProperty(HERCULES_DUP_PATH));
-    } else {
-      throw new IllegalArgumentException("Please set cluster rno or hercules firstly!");
-    }
+    Path rnoPath = new Path(sinkProperties.getProperty(RNO_PATH));
+    Path rnoDupPath = new Path(sinkProperties.getProperty(RNO_DUP_PATH));
+    Path herculesPath = new Path(sinkProperties.getProperty(HERCULES_PATH));
+    Path herculesDupPath = new Path(sinkProperties.getProperty(HERCULES_DUP_PATH));
 
-    String jobName = String.format("%s-%s", this.getClass().getSimpleName(), cluster);
+    String jobName = this.getClass().getSimpleName();
 
     streamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment();
     streamExecutionEnvironment.enableCheckpointing(CHECK_POINT_PERIOD);
     streamExecutionEnvironment.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
-    RocksDBStateBackend stateBackend = new RocksDBStateBackend(String.format("%s/%s", CHECKPOINT_DATA_URI, cluster), true);
+    RocksDBStateBackend stateBackend = new RocksDBStateBackend(CHECKPOINT_DATA_URI, true);
     stateBackend.setPredefinedOptions(PredefinedOptions.FLASH_SSD_OPTIMIZED);
     streamExecutionEnvironment.setStateBackend(stateBackend);
     streamExecutionEnvironment.getCheckpointConfig().setMinPauseBetweenCheckpoints(MIN_PAUSE_BETWEEN_CHECK_POINTS);
@@ -114,9 +103,12 @@ public class UTPImkSinkApp {
             .keyBy(UnifiedTrackingImkMessage::getRvrId)
             .process(new FilterDuplicatedEventsByRvrId(jobName, Boolean.parseBoolean(enableDedupe), DUP_TAG)).name("dedupe").uid("dedupe");
 
-    mainStream.addSink(getSink(path));
+    mainStream.addSink(getSink(rnoPath)).name("sink-rno").uid("sink-rno");
+    mainStream.addSink(getSink(herculesPath)).name("sink-hercules").uid("sink-hercules");
 
-    mainStream.getSideOutput(DUP_TAG).addSink(getSink(dupPath)).name("sink-dup").uid("sink-dup");
+    DataStream<UnifiedTrackingImkMessage> dupOutput = mainStream.getSideOutput(DUP_TAG);
+    dupOutput.addSink(getSink(rnoDupPath)).name("sink-rno-dup").uid("sink-rno-dup");
+    dupOutput.addSink(getSink(herculesDupPath)).name("sink-hercules-dup").uid("sink-hercules-dup");
     streamExecutionEnvironment.execute(jobName);
   }
 
@@ -134,12 +126,7 @@ public class UTPImkSinkApp {
   }
 
   protected Properties getConsumerProperties() {
-    Properties properties = PropertyMgr.getInstance().loadProperty(PropertyConstants.UTP_IMK_SINK_APP_RHEOS_CONSUMER_PROPERTIES);
-    if ("hercules".equalsIgnoreCase(cluster)) {
-      String property = properties.getProperty("group.id");
-      properties.setProperty("group.id", String.format("%s-%s", property, cluster));
-    }
-    return properties;
+    return PropertyMgr.getInstance().loadProperty(PropertyConstants.UTP_IMK_SINK_APP_RHEOS_CONSUMER_PROPERTIES);
   }
 
   protected FlinkKafkaConsumer<ConsumerRecord<byte[], byte[]>> getKafkaConsumer() {

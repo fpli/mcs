@@ -50,7 +50,7 @@ public class FilterDuplicatedEventsByRvrId extends KeyedProcessFunction<Long, Un
 
   @Override
   public void open(Configuration parameters) throws Exception {
-    StateTtlConfig ttlConfig = StateTtlConfig.newBuilder(Time.hours(6))
+    StateTtlConfig ttlConfig = StateTtlConfig.newBuilder(Time.hours(24))
             .setUpdateType(StateTtlConfig.UpdateType.OnCreateAndWrite)
             .setStateVisibility(StateTtlConfig.StateVisibility.NeverReturnExpired)
             .build();
