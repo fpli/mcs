@@ -70,7 +70,9 @@ public class ListenerMessageParser {
         ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
 
     // user id
-    record.setUserId(Long.valueOf(userId));
+    if (!StringUtils.isEmpty(userId)) {
+      record.setUserId(Long.valueOf(userId));
+    }
 
     String trackingHeader = headers.get(TRACKING_HEADER);
     // guid, cguid from tracking header
