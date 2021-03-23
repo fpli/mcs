@@ -1,13 +1,11 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
 import com.codahale.metrics.SlidingTimeWindowArrayReservoir;
-import com.codahale.metrics.SlidingWindowReservoir;
 import com.ebay.app.raptor.chocolate.avro.RheosHeader;
 import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage;
 import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosMessage;
-import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
-import com.ebay.traffic.chocolate.flink.nrt.constant.RheosConstants;
-import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
+import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
+import com.ebay.traffic.chocolate.flink.nrt.constant.*;
 import com.ebay.traffic.chocolate.flink.nrt.function.FilterDuplicatedEventsByRvrId;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaSerializationSchema;
@@ -15,6 +13,7 @@ import com.ebay.traffic.chocolate.flink.nrt.provider.ersxid.ErsXidRequest;
 import com.ebay.traffic.chocolate.flink.nrt.transformer.utp.UTPImkTransformer;
 import com.ebay.traffic.chocolate.flink.nrt.transformer.utp.UTPImkTransformerMetrics;
 import com.ebay.traffic.chocolate.flink.nrt.transformer.utp.UTPRoiTransformer;
+import com.ebay.traffic.chocolate.flink.nrt.util.GdprConsentHandler;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
@@ -298,6 +297,7 @@ public class UTPImkTransformApp {
     private transient Map<Tuple2<String, String>, Histogram> latencyByChannel;
     private transient Map<Tuple2<String, String>, Meter> numUTPImkRecordsInRateByChannel;
     private transient Map<String, Meter> etlMeters;
+    private transient Map<String, Meter> gdprMetrics;
 
     @Override
     public void open(Configuration parameters) throws Exception {
@@ -413,6 +413,23 @@ public class UTPImkTransformApp {
       etlMeters.put(UTPImkTransformerMetrics.NUM_ERROR_PARSE_CLIENT_ID_RATE,
               getRuntimeContext().getMetricGroup().meter(UTPImkTransformerMetrics.NUM_ERROR_PARSE_CLIENT_ID_RATE,
                       new DropwizardMeterWrapper(new com.codahale.metrics.Meter())));
+
+      gdprMetrics = new HashMap<>();
+      gdprMetrics.put(UTPImkTransformerMetrics.NUM_GDPR_RECORDS_IN_RATE,
+              getRuntimeContext().getMetricGroup().meter(UTPImkTransformerMetrics.NUM_GDPR_RECORDS_IN_RATE,
+                      new DropwizardMeterWrapper(new com.codahale.metrics.Meter())));
+      gdprMetrics.put(UTPImkTransformerMetrics.NUM_GDPR_URL_DECODE_ERROR_RATE,
+              getRuntimeContext().getMetricGroup().meter(UTPImkTransformerMetrics.NUM_GDPR_URL_DECODE_ERROR_RATE,
+                      new DropwizardMeterWrapper(new com.codahale.metrics.Meter())));
+      gdprMetrics.put(UTPImkTransformerMetrics.NUM_GDPR_CONSENT_DECODE_ERROR_RATE,
+              getRuntimeContext().getMetricGroup().meter(UTPImkTransformerMetrics.NUM_GDPR_CONSENT_DECODE_ERROR_RATE,
+                      new DropwizardMeterWrapper(new com.codahale.metrics.Meter())));
+      gdprMetrics.put(UTPImkTransformerMetrics.NUM_GDPR_ALLOW_CONTEXTUAL_RATE,
+              getRuntimeContext().getMetricGroup().meter(UTPImkTransformerMetrics.NUM_GDPR_ALLOW_CONTEXTUAL_RATE,
+                      new DropwizardMeterWrapper(new com.codahale.metrics.Meter())));
+      gdprMetrics.put(UTPImkTransformerMetrics.NUM_GDPR_ALLOW_PERSONALIZED_RATE,
+              getRuntimeContext().getMetricGroup().meter(UTPImkTransformerMetrics.NUM_GDPR_ALLOW_PERSONALIZED_RATE,
+                      new DropwizardMeterWrapper(new com.codahale.metrics.Meter())));
     }
 
     @Override
@@ -444,6 +461,27 @@ public class UTPImkTransformApp {
 
       UnifiedTrackingImkMessage message = new UnifiedTrackingImkMessage();
       transformer.transform(message);
+
+      if (RvrChnlTypeCdEnum.DISPLAY.getCd().equals(message.getRvrChnlTypeCd())) {
+        GdprConsentDomain gdprConsentDomain = GdprConsentHandler.handleGdprConsent(message.getRvrUrl(), gdprMetrics);
+        boolean allowedStoredPersonalizedData = gdprConsentDomain.isAllowedStoredPersonalizedData();
+        boolean allowedStoredContextualData = gdprConsentDomain.isAllowedStoredContextualData();
+
+        if (!allowedStoredContextualData) {
+          message.setClntRemoteIp(StringConstants.EMPTY);
+          message.setBrwsrTypeId(UserAgentEnum.UNKNOWN_USERAGENT.getId());
+          message.setBrwsrName(StringConstants.EMPTY);
+          message.setRfrrDmnName(StringConstants.EMPTY);
+          message.setRfrrUrl(StringConstants.EMPTY);
+          message.setGeoId(StringConstants.ZERO);
+        }
+        if (!allowedStoredPersonalizedData) {
+          message.setUserId(0L);
+          message.setGuid(StringConstants.EMPTY);
+          message.setUserMapInd(StringConstants.ZERO);
+        }
+      }
+
       message.setRheosHeader(getRheosHeader(currentTimeMillis));
       return message;
     }

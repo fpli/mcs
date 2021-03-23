@@ -602,7 +602,7 @@ public class UTPImkTransformer {
   public String getGeoId() {
     Integer geoId = (Integer) sourceRecord.get("geoId");
     if (geoId == null) {
-      return StringConstants.EMPTY;
+      return StringConstants.ZERO;
     }
     return String.valueOf(geoId);
   }
