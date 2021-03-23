@@ -117,4 +117,9 @@ public class PropertyConstants {
   public static final String UTP_IMK_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "utp-imk-sink-app.rheos.consumer.properties";
   public static final String UTP_IMK_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "utp-imk-sink-app.rheos.consumer.topic.properties";
   public static final String UTP_IMK_SINK_APP_HDFS_PROPERTIES = "utp-imk-sink-app.hdfs.properties";
+
+  public static final String UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_CONSUMER_PROPERTIES = "utp-rover-event-bot-transform-app.rheos.consumer.properties";
+  public static final String UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "utp-rover-event-bot-transform-app.rheos.consumer.topic.properties";
+  public static final String UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES = "utp-rover-event-bot-transform-app.rheos.producer.properties";
+  public static final String UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES = "utp-rover-event-bot-transform-app.rheos.producer.topic.properties";
 }

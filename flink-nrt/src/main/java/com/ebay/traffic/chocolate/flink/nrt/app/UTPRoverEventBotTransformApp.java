@@ -43,27 +43,27 @@ import java.util.*;
  * @author Zhiyuan Wang
  * @since 2020/1/18
  */
-public class UTPRoverEventTransformApp
+public class UTPRoverEventBotTransformApp
         extends AbstractRheosCompatibleApp<ConsumerRecord<byte[], byte[]>, Tuple3<String, Long, byte[]>> {
 
   private static final long DEFAULT_SNAPSHOT_ID = -1L;
 
   public static void main(String[] args) throws Exception {
-    UTPRoverEventTransformApp transformApp = new UTPRoverEventTransformApp();
+    UTPRoverEventBotTransformApp transformApp = new UTPRoverEventBotTransformApp();
     transformApp.run();
   }
 
   @Override
   protected List<String> getConsumerTopics() {
     return Arrays.asList(PropertyMgr.getInstance()
-            .loadProperty(PropertyConstants.UTP_ROVER_EVENT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
+            .loadProperty(PropertyConstants.UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
             .getProperty(PropertyConstants.TOPIC).split(StringConstants.COMMA));
   }
 
   @Override
   protected Properties getConsumerProperties() {
     return PropertyMgr.getInstance()
-            .loadProperty(PropertyConstants.UTP_ROVER_EVENT_TRANSFORM_APP_RHEOS_CONSUMER_PROPERTIES);
+            .loadProperty(PropertyConstants.UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_CONSUMER_PROPERTIES);
   }
 
   @Override
@@ -86,7 +86,7 @@ public class UTPRoverEventTransformApp
   @Override
   protected Properties getProducerProperties() {
     return PropertyMgr.getInstance()
-            .loadProperty(PropertyConstants.UTP_ROVER_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES);
+            .loadProperty(PropertyConstants.UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES);
   }
 
   @Override
@@ -110,13 +110,13 @@ public class UTPRoverEventTransformApp
       deserializer = new RheosEventDeserializer();
       Map<String, Object> config = new HashMap<>();
       Properties consumerProperties = PropertyMgr.getInstance()
-              .loadProperty(PropertyConstants.UTP_ROVER_EVENT_TRANSFORM_APP_RHEOS_CONSUMER_PROPERTIES);
+              .loadProperty(PropertyConstants.UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_CONSUMER_PROPERTIES);
       String rheosServiceUrl = consumerProperties.getProperty(StreamConnectorConfig.RHEOS_SERVICES_URLS);
       config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, rheosServiceUrl);
       decoder = new GenericRecordDomainDataDecoder(config);
       encoderFactory = EncoderFactory.get();
       Properties producerProperties = PropertyMgr.getInstance()
-              .loadProperty(PropertyConstants.UTP_ROVER_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES);
+              .loadProperty(PropertyConstants.UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES);
       config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, rheosServiceUrl);
       SchemaRegistryAwareAvroSerializerHelper<GenericRecord> serializerHelper =
               new SchemaRegistryAwareAvroSerializerHelper<>(config, GenericRecord.class);
@@ -125,10 +125,10 @@ public class UTPRoverEventTransformApp
       schema = serializerHelper.getSchema(schemaName);
       producer = (String) producerProperties.get(RheosConstants.RHEOS_PRODUCER);
       Properties topicProperties = PropertyMgr.getInstance()
-              .loadProperty(PropertyConstants.UTP_ROVER_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES);
+              .loadProperty(PropertyConstants.UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES);
       topic = topicProperties.getProperty(PropertyConstants.TOPIC);
       sherlockioMetrics = SherlockioMetrics.getInstance();
-      sherlockioMetrics.setJobName("UTPRoverEventTransformApp");
+      sherlockioMetrics.setJobName("UTPRoverEventBotTransformApp");
     }
 
     @SuppressWarnings("unchecked")
@@ -148,7 +148,6 @@ public class UTPRoverEventTransformApp
       GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
       UTPRoverEventTransformer transformer = new UTPRoverEventTransformer(consumerRecord.topic(), consumerRecord.partition(), consumerRecord.offset(), sourceRecord, sourceRheosEvent, schemaVersion);
       if (!transformer.isValid()) {
-        sherlockioMetrics.meter("UTPRoverEventInvalid");
         return;
       }
 

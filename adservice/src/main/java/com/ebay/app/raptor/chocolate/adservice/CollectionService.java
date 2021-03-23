@@ -8,6 +8,7 @@ import com.ebay.app.raptor.chocolate.adservice.redirect.RedirectContext;
 import com.ebay.app.raptor.chocolate.adservice.redirect.ThirdpartyRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.util.AdserviceCookie;
 import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
+import com.ebay.app.raptor.chocolate.adservice.util.EpntResponseHandler;
 import com.ebay.app.raptor.chocolate.adservice.util.HttpUtil;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
@@ -25,6 +26,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -46,6 +48,9 @@ public class CollectionService {
 
   @Autowired
   private AdserviceCookie adserviceCookie;
+
+  @Autowired
+  private EpntResponseHandler epntResponseHandler;
 
   @PostConstruct
   public void postInit() {
@@ -167,6 +172,16 @@ public class CollectionService {
     }
     else
       return null;
+  }
+
+  /**
+   * Call epnt placement api and return response
+   *
+   * @param request
+   * @return response
+   */
+  public Response collectEpntPlacementRedirect(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    return epntResponseHandler.callEpntPlacementResponse(request, response);
   }
 
 }
