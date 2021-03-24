@@ -166,7 +166,7 @@ public class EventEmitterPublisher {
   private Map<String, String> addTags(Map<String, String> emailData, MultiValueMap<String, String> parameters,
                                                     ContainerRequestContext requestContext, String targetUrl,
                                                     ChannelType channelType, ChannelAction channelAction) {
-    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
+    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entries()) {
       addEmailTag(emailData, parameters, entry.getKey(), entry.getValue());
     }
 

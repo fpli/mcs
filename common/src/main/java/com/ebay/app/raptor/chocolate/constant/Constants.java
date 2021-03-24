@@ -5,6 +5,7 @@
 package com.ebay.app.raptor.chocolate.constant;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -109,7 +110,7 @@ public class Constants {
   /**
    * Email tag - param map
    */
-  public static final ImmutableMap<String, String> emailTagParamMap = new ImmutableMap.Builder<String, String>()
+  public static final ImmutableMultimap<String, String> emailTagParamMap = new ImmutableMultimap.Builder<String, String>()
       .put("adcamp_landingpage", "adcamp_landingpage")
       .put("adcamp_locationsrc", "adcamp_locationsrc")
       .put("adcamppu", "pu")
@@ -129,9 +130,11 @@ public class Constants {
       .put("nqt", "nqt")
       .put("osub", "osub")
       .put("placement-type", "placement-type")
+      .put("placement-type", "pt")
       .put("rank", "rank")
       .put("rpp_cid", "rpp_cid")
       .put("segname", "segname")
+      .put("segname", "seg")
       .put("yminstc", "yminstc")
       .put("ymmmid", "ymmmid")
       .put("ymsid", "ymsid")

@@ -20,7 +20,6 @@ import com.ebay.raptor.domain.request.api.DomainRequestData;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
-import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ServiceEnum;
@@ -501,7 +500,7 @@ public class UnifiedTrackingMessageParser {
                                                 long snapshotId, long shortSnapshotId, ROIEvent roiEvent, long userId,
                                                 long eventTs, String trackingHeader) {
     // add tags from parameters
-    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
+    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entries()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
         payload.put(entry.getKey(), HttpRequestUtil.parseTagFromParams(parameters, entry.getValue()));
       }
