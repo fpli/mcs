@@ -109,9 +109,6 @@ public class CollectionService {
   private SiteEmailCollector siteEmailCollector;
 
   @Autowired
-  private SMSCollector smsCollector;
-
-  @Autowired
   private StaticPageRequestHandler staticPageRequestHandler;
 
   @Autowired
@@ -402,9 +399,7 @@ public class CollectionService {
             mrktEmailCollector);
       }
       else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS) {
-        processCmEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
-            targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), utpEventId,
-            smsCollector);
+        processSMSEvent(requestContext, referer, targetUrl, agentInfo, parameters, type, action);
       }
 
       // send to unified tracking topic
@@ -874,8 +869,7 @@ public class CollectionService {
                                            long shortSnapshotId, String eventId, long startTime) {
     try {
       Matcher m = ebaysites.matcher(referer.toLowerCase());
-      if (ChannelAction.EMAIL_OPEN.equals(channelAction) || ChannelAction.ROI.equals(channelAction) ||
-          inRefererWhitelist(channelType, referer) || !m.find()) {
+      if (ChannelAction.EMAIL_OPEN.equals(channelAction) || ChannelAction.ROI.equals(channelAction) || inRefererWhitelist(channelType, referer) || !m.find()) {
         UnifiedTrackingMessage utpMessage = utpParser.parse(requestContext, request, endUserContext,
                 raptorSecureContext, agentInfo, userLookup, parameters, url, referer, channelType, channelAction,
                 roiEvent, snapshotId, shortSnapshotId, startTime);
@@ -980,10 +974,8 @@ public class CollectionService {
 
     long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
 
-    // 0. temporary, send email click and open event to message tracker
-    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType)) {
-      eventEmitterPublisher.publishEvent(requestContext, parameters, uri, channelType, channelAction, snapshotId);
-    }
+    // 0. temporary, send click and open event to message tracker
+    eventEmitterPublisher.publishEvent(requestContext, parameters, uri, channelType, channelAction, snapshotId);
 
     // 1. track ubi
     if (ChannelAction.CLICK.equals(channelAction)) {
@@ -1004,6 +996,64 @@ public class CollectionService {
       return true;
     } else
       return false;
+  }
+
+  /**
+   * Process SMS event
+   * @param requestContext  request context
+   * @param referer         referer of the request
+   * @param parameters      url parameters
+   * @param type            channel type
+   * @param action          action type
+   * @return                success or failure
+   */
+  private boolean processSMSEvent(ContainerRequestContext requestContext, String referer, String targetUrl,
+                                  UserAgentInfo agentInfo, MultiValueMap<String, String> parameters, String type,
+                                  String action) {
+
+    // Tracking ubi only when refer domain is not ebay.
+    // Don't track ubi if the click is a duplicate itm click
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    if(!m.find()) {
+      try {
+        // Ubi tracking
+        IRequestScopeTracker requestTracker
+            = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+        // page id
+        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.CLICK.getId(), Integer.class);
+
+        // event action
+        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
+
+        // target url
+        if (!StringUtils.isEmpty(targetUrl)) {
+          requestTracker.addTag(SOJ_MPRE_TAG, targetUrl, String.class);
+        }
+
+        // referer
+        if (!StringUtils.isEmpty(referer)) {
+          requestTracker.addTag("ref", referer, String.class);
+        }
+
+        // populate device info
+        CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
+
+        // event family
+        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
+
+        // sms unique id
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SMS_ID, "smsid", String.class);
+
+      } catch (Exception e) {
+        LOGGER.warn("Error when tracking ubi for sms click tags", e);
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      }
+    } else {
+      metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+    }
+
+    return true;
   }
 
   /**
