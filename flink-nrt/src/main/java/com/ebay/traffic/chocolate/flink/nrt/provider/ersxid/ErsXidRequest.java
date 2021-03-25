@@ -5,10 +5,10 @@
 package com.ebay.traffic.chocolate.flink.nrt.provider.ersxid;
 
 import com.codahale.metrics.SlidingTimeWindowArrayReservoir;
-import com.codahale.metrics.SlidingWindowReservoir;
 import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.RvrCmndTypeCdEnum;
+import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.Longs;
@@ -20,6 +20,8 @@ import org.apache.flink.metrics.Histogram;
 import org.apache.flink.metrics.Meter;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
 import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.Dsl;
 import org.asynchttpclient.Response;
 
 import java.io.IOException;
@@ -48,6 +50,15 @@ public class ErsXidRequest extends RichAsyncFunction<UnifiedTrackingImkMessage, 
   private transient Meter numErsXidSuccessRate;
   private transient Meter numErsXidAsyncIOTimeoutRate;
 
+  private static final String PATH = "pguid";
+  private static final String X_EBAY_CONSUMER_ID = "X-EBAY-CONSUMER-ID";
+  private static final String X_EBAY_CLIENT_ID = "X-EBAY-CLIENT-ID";
+
+  private String consumerId;
+  private String clientId;
+  private transient AsyncHttpClient asyncHttpClient;
+  private String endpointUri;
+
   @Override
   public void open(Configuration parameters) throws Exception {
     numErsXidRate = getRuntimeContext().getMetricGroup().meter("numErsXidRate",
@@ -73,6 +84,15 @@ public class ErsXidRequest extends RichAsyncFunction<UnifiedTrackingImkMessage, 
             new DropwizardHistogramWrapper(
                     new com.codahale.metrics.Histogram(
                             new SlidingTimeWindowArrayReservoir(1, TimeUnit.MINUTES))));
+
+    Properties properties = PropertyMgr.getInstance()
+            .loadProperty(PropertyConstants.APPLICATION_PROPERTIES);
+
+    endpointUri = properties.getProperty(PropertyConstants.ERSXID_ENDPOINT);
+    consumerId = properties.getProperty(PropertyConstants.ERSXID_CONSUMERID);
+    clientId = properties.getProperty(PropertyConstants.ERSXID_CLIENTID);
+
+    asyncHttpClient = Dsl.asyncHttpClient();
   }
 
   @Override
@@ -93,7 +113,10 @@ public class ErsXidRequest extends RichAsyncFunction<UnifiedTrackingImkMessage, 
     numErsXidRate.markEvent();
 
     long start = System.currentTimeMillis();
-    Future<Response> responseFuture = ErsXidService.getInstance().call(input.getGuid());
+    Future<Response> responseFuture = asyncHttpClient
+            .prepareGet(String.format("%s%s%s%s", endpointUri, PATH, StringConstants.SLASH, input.getGuid()))
+            .addHeader(X_EBAY_CONSUMER_ID, consumerId)
+            .addHeader(X_EBAY_CLIENT_ID, clientId).execute();
 
     CompletableFuture.supplyAsync(() -> {
       try {
@@ -159,5 +182,11 @@ public class ErsXidRequest extends RichAsyncFunction<UnifiedTrackingImkMessage, 
   public void timeout(UnifiedTrackingImkMessage input, ResultFuture<UnifiedTrackingImkMessage> resultFuture) throws Exception {
     numErsXidAsyncIOTimeoutRate.markEvent();
     resultFuture.complete(Collections.singleton(input));
+  }
+
+  @Override
+  public void close() throws Exception {
+    super.close();
+    asyncHttpClient.close();
   }
 }

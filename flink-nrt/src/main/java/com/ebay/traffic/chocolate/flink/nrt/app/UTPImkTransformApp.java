@@ -106,7 +106,7 @@ public class UTPImkTransformApp {
     SingleOutputStreamOperator<UnifiedTrackingImkMessage> mainStream = utpImkStream
             .keyBy(new GetRvrId())
             .process(new FilterDuplicatedEventsByRvrId(jobName, Boolean.parseBoolean(enableDedupe), DUP_TAG)).name("dedupe").uid("dedupe");
-    AsyncDataStream.unorderedWait(mainStream, new ErsXidRequest(), 10000, TimeUnit.MILLISECONDS, 1000)
+    AsyncDataStream.unorderedWait(mainStream, new ErsXidRequest(), 500, TimeUnit.MILLISECONDS, 1000)
             .name("ersxid").uid("ersxid")
             .map(new SerializeRheosEvent(topic)).name("serialize").uid("serialize")
             .addSink(getKafkaProducer()).name("sink").name("sink");
