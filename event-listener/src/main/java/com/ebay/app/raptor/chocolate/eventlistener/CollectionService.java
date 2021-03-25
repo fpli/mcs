@@ -399,7 +399,7 @@ public class CollectionService {
             mrktEmailCollector);
       }
       else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS) {
-        processSMSEvent(requestContext, referer, parameters, type, action);
+        processSMSEvent(requestContext, referer, targetUrl, agentInfo, parameters, type, action);
       }
 
       // send to unified tracking topic
@@ -1007,8 +1007,9 @@ public class CollectionService {
    * @param action          action type
    * @return                success or failure
    */
-  private boolean processSMSEvent(ContainerRequestContext requestContext, String referer,
-                                  MultiValueMap<String, String> parameters, String type, String action) {
+  private boolean processSMSEvent(ContainerRequestContext requestContext, String referer, String targetUrl,
+                                  UserAgentInfo agentInfo, MultiValueMap<String, String> parameters, String type,
+                                  String action) {
 
     // Tracking ubi only when refer domain is not ebay.
     // Don't track ubi if the click is a duplicate itm click
@@ -1018,6 +1019,25 @@ public class CollectionService {
         // Ubi tracking
         IRequestScopeTracker requestTracker
             = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+        // page id
+        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.CLICK.getId(), Integer.class);
+
+        // event action
+        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
+
+        // target url
+        if (!StringUtils.isEmpty(targetUrl)) {
+          requestTracker.addTag(SOJ_MPRE_TAG, targetUrl, String.class);
+        }
+
+        // referer
+        if (!StringUtils.isEmpty(referer)) {
+          requestTracker.addTag("ref", referer, String.class);
+        }
+
+        // populate device info
+        CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
 
         // event family
         requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
