@@ -41,34 +41,34 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-dt_hour=$(date -d '1 hour ago' +%Y%m%d%H)
-dt=${dt_hour:0:8}
+current_date=$(date)
+done_dt=$(date -d "${current_date}" '+%Y%m%d')
+partition_dt=$(date -d "${current_date}" '+%Y-%m-%d')
 
-first_done_file=${DONE_FILE_DIR}/${dt}/imk_rvr_trckng_event_hourly.done.${dt}0000000000
+first_done_file=${DONE_FILE_DIR}/${done_dt}/imk_rvr_trckng_event_hourly.done.${done_dt}0000000000
 
 ${HDFS_PATH} dfs -test -e ${first_done_file}
 first_done_file_exists=$?
 if [ ${first_done_file_exists} -eq 1 ]; then
-    echo "${dt} first done file not exist: ${first_done_file}"
+    echo "${done_dt} first done file not exist: ${first_done_file}"
     echo "======================== Add partition to Hive ========================"
-    partition_date=$(date +%Y-%m-%d)
     retry_add=1
     rcode_add=1
     until [[ ${retry_add} -gt 3 ]]
     do
-        ${HIVE_PATH} -e "set hive.msck.path.validation=ignore; ALTER TABLE ${INPUT_SOURCE} ADD IF NOT EXISTS PARTITION (dt='${partition_date}')"
+        ${HIVE_PATH} -e "set hive.msck.path.validation=ignore; ALTER TABLE ${INPUT_SOURCE} ADD IF NOT EXISTS PARTITION (dt='${partition_dt}')"
         rcode_add=$?
         if [ ${rcode_add} -eq 0 ]
         then
             break
         else
-            echo "Failed to add ${partition_date} partition to hive."
+            echo "Failed to add ${partition_dt} partition to hive."
             retry_add=$(expr ${retry_add} + 1)
         fi
     done
     if [ ${rcode_add} -ne 0 ]
     then
-        echo -e "Failed to add ${partition_date} partition on hive, please check!!!"
+        echo -e "Failed to add ${partition_dt} partition on hive, please check!!!"
         exit ${rcode_add}
     fi
 fi
