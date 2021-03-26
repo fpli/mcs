@@ -62,12 +62,12 @@ public class Constants {
   public static final String BEST_GUESS_USER = "bu";
   public static final String CAMP_RUN_DT = "crd";
   public static final String SEGMENT_NAME = "segname";
+  public static final String SEGMENT_NAME_S = "seg";
   public static final String YM_MSSG_MSTR_ID = "ymmmid";
   public static final String YM_MSSG_ID = "ymsid";
   public static final String YM_INSTC = "yminstc";
   public static final String SMS_ID = "smsid";
   public static final String CHOCO_BUYER_ACCESS_SITE_ID = "choco_bs";
-  public static final String TRACKING_ID = "tracking.id";
 
   public static final String REFERER_HEADER = "referer";
   public static final String REFERER_HEADER_UPCASE = "Referer";

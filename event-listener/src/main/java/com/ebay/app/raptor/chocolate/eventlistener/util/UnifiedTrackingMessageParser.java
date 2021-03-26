@@ -187,7 +187,8 @@ public class UnifiedTrackingMessageParser {
     record.setRlogId(tracingContext.getRlogId());
 
     // tracking id
-    record.setTrackingId(parameters.getFirst(UepPayloadHelper.TRACKING_ID));
+    record.setTrackingId(HttpRequestUtil.parseFromTwoParams(parameters, UepPayloadHelper.TRACKING_ID,
+        UepPayloadHelper.TRACKING_ID_S));
 
     // user id
     String bu = parameters.getFirst(Constants.BEST_GUESS_USER);
@@ -427,8 +428,10 @@ public class UnifiedTrackingMessageParser {
     } else if (ChannelType.SITE_EMAIL.equals(channelType)) {
       campaignId = StringUtils.substringBetween(parameters.getFirst(Constants.SOURCE_ID), "e", ".");
     } else if (ChannelType.MRKT_EMAIL.equals(channelType)) {
-      if (StringUtils.isNotEmpty(parameters.getFirst(Constants.SEGMENT_NAME))) {
-        campaignId = Objects.requireNonNull(parameters.getFirst(Constants.SEGMENT_NAME)).trim();
+      if (StringUtils.isNotEmpty(HttpRequestUtil.parseFromTwoParams(parameters, Constants.SEGMENT_NAME,
+          Constants.SEGMENT_NAME_S))) {
+        campaignId = Objects.requireNonNull(HttpRequestUtil.parseFromTwoParams(parameters, Constants.SEGMENT_NAME,
+            Constants.SEGMENT_NAME_S)).trim();
       }
     }
 
