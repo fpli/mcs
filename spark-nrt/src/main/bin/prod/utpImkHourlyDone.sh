@@ -5,6 +5,8 @@ CLUSTER=${1}
 
 if [ "${CLUSTER}" == "rno" ]
 then
+    HDFS_PATH="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs"
+    HIVE_PATH="/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive"
     SPARK_PATH="/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit"
     QUEUE="hdlq-commrce-product-high-mem"
     INPUT_SOURCE="choco_data.utp_imk_trckng_event"
@@ -14,6 +16,8 @@ then
     JOB_DIR="viewfs://apollo-rno/apps/b_marketing_tracking/work/UTPImkHourlyDoneJob"
 elif [ "${CLUSTER}" == "hercules" ]
 then
+    HDFS_PATH="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs"
+    HIVE_PATH="/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive"
     SPARK_PATH="/datashare/mkttracking/tools/hercules_lvs/spark-hercules/bin/spark-submit"
     QUEUE="hdlq-data-default"
     INPUT_SOURCE="im_tracking.utp_imk_trckng_event"
@@ -35,6 +39,38 @@ bin=$(
 if [[ $? -ne 0 ]]; then
   echo "get latest path failed"
   exit 1
+fi
+
+dt_hour=$(date -d '1 hour ago' +%Y%m%d%H)
+dt=${dt_hour:0:8}
+
+first_done_file=${DONE_FILE_DIR}/${dt}/imk_rvr_trckng_event_hourly.done.${dt}0000000000
+
+${HDFS_PATH} dfs -test -e ${first_done_file}
+first_done_file_exists=$?
+if [ ${first_done_file_exists} -eq 1 ]; then
+    echo "${dt} first done file not exist: ${first_done_file}"
+    echo "======================== Add partition to Hive ========================"
+    partition_date=$(date +%Y-%m-%d)
+    retry_add=1
+    rcode_add=1
+    until [[ ${retry_add} -gt 3 ]]
+    do
+        ${HIVE_PATH} -e "set hive.msck.path.validation=ignore; ALTER TABLE ${INPUT_SOURCE} ADD IF NOT EXISTS PARTITION (dt='${partition_date}')"
+        rcode_add=$?
+        if [ ${rcode_add} -eq 0 ]
+        then
+            break
+        else
+            echo "Failed to add ${partition_date} partition to hive."
+            retry_add=$(expr ${retry_add} + 1)
+        fi
+    done
+    if [ ${rcode_add} -ne 0 ]
+    then
+        echo -e "Failed to add ${partition_date} partition on hive, please check!!!"
+        exit ${rcode_add}
+    fi
 fi
 
 for f in $(find $bin/../../conf/prod -name '*.*'); do
