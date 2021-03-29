@@ -94,6 +94,6 @@ public class HttpRequestUtil {
       return parameters.getFirst(shortenedParam);
     }
 
-    return "";
+    return null;
   }
 }
