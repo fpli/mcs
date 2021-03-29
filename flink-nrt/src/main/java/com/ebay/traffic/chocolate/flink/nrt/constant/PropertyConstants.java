@@ -75,6 +75,9 @@ public class PropertyConstants {
   public static final String OAUTH_ENDPOINT = "oauth.endpointUri";
 
   public static final String MTID_ENDPOINT = "mtid.endpointUri";
+  public static final String ERSXID_ENDPOINT = "ersxid.endpointUri";
+  public static final String ERSXID_CONSUMERID = "ersxid.consumerId";
+  public static final String ERSXID_CLIENTID = "ersxid.clientId";
   public static final String PATH = "path";
   public static final String IMK_RVR_TRCKNG_EVENT_HOURLY_DONE_APP_HDFS_PROPERTIES = "imk-rvr-trckng-event-hourly-done-app.hdfs.properties";
   public static final String DATA_PATH = "data.path";
@@ -105,6 +108,15 @@ public class PropertyConstants {
   public static final String UTP_ROVER_EVENT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "utp-rover-event-transform-app.rheos.consumer.topic.properties";
   public static final String UTP_ROVER_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES = "utp-rover-event-transform-app.rheos.producer.properties";
   public static final String UTP_ROVER_EVENT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES = "utp-rover-event-transform-app.rheos.producer.topic.properties";
+
+  public static final String UTP_IMK_TRANSFORM_APP_RHEOS_CONSUMER_PROPERTIES = "utp-imk-transform-app.rheos.consumer.properties";
+  public static final String UTP_IMK_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "utp-imk-transform-app.rheos.consumer.topic.properties";
+  public static final String UTP_IMK_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES = "utp-imk-transform-app.rheos.producer.properties";
+  public static final String UTP_IMK_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES = "utp-imk-transform-app.rheos.producer.topic.properties";
+
+  public static final String UTP_IMK_SINK_APP_RHEOS_CONSUMER_PROPERTIES = "utp-imk-sink-app.rheos.consumer.properties";
+  public static final String UTP_IMK_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "utp-imk-sink-app.rheos.consumer.topic.properties";
+  public static final String UTP_IMK_SINK_APP_HDFS_PROPERTIES = "utp-imk-sink-app.hdfs.properties";
 
   public static final String UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_CONSUMER_PROPERTIES = "utp-rover-event-bot-transform-app.rheos.consumer.properties";
   public static final String UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "utp-rover-event-bot-transform-app.rheos.consumer.topic.properties";
