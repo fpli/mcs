@@ -33,9 +33,9 @@ import java.util.Properties;
  */
 public abstract class AbstractRheosEventSinkApp extends AbstractRheosHDFSCompatibleApp<GenericRecord, GenericRecord> {
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRheosEventSinkApp.class);
-  private Schema schema;
-  private String rheosServicesUrls;
-  private String schemaName;
+  protected Schema schema;
+  protected String rheosServicesUrls;
+  protected String schemaName;
 
   @Override
   protected void run() throws Exception {
@@ -83,7 +83,7 @@ public abstract class AbstractRheosEventSinkApp extends AbstractRheosHDFSCompati
    * Get the latest schema by name by default.
    * @return schema
    */
-  private Schema getSchema() {
+  protected Schema getSchema() {
     Map<String, Object> map = new HashMap<>();
     map.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, rheosServicesUrls);
     SchemaRegistryAwareAvroSerializerHelper<GenericRecord> serializerHelper =
