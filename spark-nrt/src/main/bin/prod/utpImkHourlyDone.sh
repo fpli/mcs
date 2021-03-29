@@ -9,10 +9,10 @@ then
     HIVE_PATH="/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive"
     SPARK_PATH="/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit"
     QUEUE="hdlq-commrce-product-high-mem"
-    INPUT_SOURCE="choco_data.utp_imk_trckng_event"
+    INPUT_SOURCE="choco_data.imk_rvr_trckng_event"
     CACHE_TABLE="choco_data.utp_imk_hourly_done_cache"
     CACHE_DIR="viewfs://apollo-rno/apps/b_marketing_tracking/work/UTPImkHourlyDoneJob/cache"
-    DONE_FILE_DIR="viewfs://apollo-rno/apps/b_marketing_tracking/work/UTPImkHourlyDoneJob/watch"
+    DONE_FILE_DIR="viewfs://apollo-rno/apps/b_marketing_tracking/watch"
     JOB_DIR="viewfs://apollo-rno/apps/b_marketing_tracking/work/UTPImkHourlyDoneJob"
 elif [ "${CLUSTER}" == "hercules" ]
 then
@@ -20,10 +20,10 @@ then
     HIVE_PATH="/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive"
     SPARK_PATH="/datashare/mkttracking/tools/hercules_lvs/spark-hercules/bin/spark-submit"
     QUEUE="hdlq-data-default"
-    INPUT_SOURCE="im_tracking.utp_imk_trckng_event"
+    INPUT_SOURCE="im_tracking.imk_rvr_trckng_event_v2"
     CACHE_TABLE="im_tracking.utp_imk_hourly_done_cache"
     CACHE_DIR="/apps/b_marketing_tracking/work/UTPImkHourlyDoneJob/cache"
-    DONE_FILE_DIR="/apps/b_marketing_tracking/work/UTPImkHourlyDoneJob/watch"
+    DONE_FILE_DIR="/apps/b_marketing_tracking/watch"
     JOB_DIR="/apps/b_marketing_tracking/work/UTPImkHourlyDoneJob"
 else
     echo "Wrong cluster to send data!"
