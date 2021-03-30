@@ -8,7 +8,7 @@ then
     HDFS_PATH="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs"
     HIVE_PATH="/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive"
     SPARK_PATH="/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit"
-    QUEUE="hdlq-commrce-product-high-mem"
+    QUEUE="hdlq-commrce-mkt-tracking-high-mem"
     INPUT_SOURCE="choco_data.imk_rvr_trckng_event"
     CACHE_TABLE="choco_data.utp_imk_hourly_done_cache"
     CACHE_DIR="viewfs://apollo-rno/apps/b_marketing_tracking/work/UTPImkHourlyDoneJob/cache"
