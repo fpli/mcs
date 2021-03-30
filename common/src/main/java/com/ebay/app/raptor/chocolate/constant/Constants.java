@@ -4,7 +4,6 @@
 
 package com.ebay.app.raptor.chocolate.constant;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 
 import java.util.Arrays;
