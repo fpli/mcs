@@ -10,8 +10,8 @@ import java.io.Serializable;
  * safe integer in JavaScript (2^53 - 1)
  * -- the way this works is:
  * - Representation is a 53 bits
- * - first 42 bits are for system time (max year is 2109)
- * - middle 6 bits for driver (node) ID (max nodes is 63)
+ * - first 41 bits are for system time (max year is 2039)
+ * - middle 7 bits for driver (node) ID (max nodes is 127)
  * - end 5 bits for sequence ID (max sequence number is 31)
  */
 public class DAPRvrId implements Serializable, Comparable<DAPRvrId> {
@@ -20,11 +20,11 @@ public class DAPRvrId implements Serializable, Comparable<DAPRvrId> {
   // MAX sequence number 5bits=31
   private static final int MAX_SEQ_NUM = ((1 << 5) - 1);
   private static final long MAX_SEQ_NUM_BITS = Long.toBinaryString(MAX_SEQ_NUM).length();
-  // MAX driver id 6bits = 63
-  private static final int MAX_DRIVER_ID = ((1 << 6) - 1);
+  // MAX driver id 7bits = 127
+  private static final int MAX_DRIVER_ID = ((1 << 7) - 1);
   private static final long MAX_DRIVER_BITS = Long.toBinaryString(MAX_DRIVER_ID).length();
-  // MAX timestamp 42bits = 4398046511103
-  private static final long MAX_TIMESTAMP = (1L << 42) - 1;
+  // MAX timestamp 41bits = 2199023255551
+  private static final long MAX_TIMESTAMP = (1L << 41) - 1;
   // Length of driverId + sequenceNumber
   private static final long MAX_DS_BITS = MAX_DRIVER_BITS + MAX_SEQ_NUM_BITS;
   // The representation for this dap rvr id.
