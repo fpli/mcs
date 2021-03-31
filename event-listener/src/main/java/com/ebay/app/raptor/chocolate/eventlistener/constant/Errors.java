@@ -18,7 +18,9 @@ public class Errors {
   public static final String ERROR_INVALID_ENDUSERCTX="InvalidEndUserCtx";
   public static final String ERROR_INTERNAL_SERVICE = "InternalServiceError";
   public static final String ERROR_NO_TARGET_URL_DEEPLINK = "NoTargetUrlDeeplink";
+  public static final String ERROR_NO_VALID_TRACKING_PARAMS_DEEPLINK = "NoValidTrackingParamsDeeplink";
   public static final String ERROR_INVALID_TARGET_URL_DEEPLINK = "InvalidTargetUrlDeeplink";
+  public static final String ERROR_INVALID_NATIVE_URI_DEEPLINK = "InvalidNativeUriDeeplink";
   public static final String ERROR_NO_PAGE_ID = "NoPageId";
 
   public static final String ERROR_NO_MKCID = "No mkcid";

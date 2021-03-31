@@ -5,14 +5,18 @@ import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
+import org.apache.http.client.utils.URIBuilder;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 
 /**
  * @author xiangli4
@@ -240,5 +244,51 @@ public class CollectionServiceUtil {
       }
     }
     return isEPNPromotedListingClick;
+  }
+
+  /**
+   * for native uri with Chocolate parameters, re-construct Chocolate url bases on native uri (only support /itm page)
+   */
+  public static String constructViewItemChocolateURLForDeepLink(MultiValueMap<String, String> deeplinkParamMap) {
+    String viewItemChocolateURL = "";
+
+    try {
+      String rotationId = deeplinkParamMap.get(MKRID).get(0);
+      String clientId = parseClientIdFromRotation(rotationId);
+      String urlHost = clientIdHostMap.get(clientId);
+
+      if (!urlHost.isEmpty()) {
+        URIBuilder deeplinkURIBuilder = new URIBuilder(urlHost);
+        deeplinkURIBuilder.setPath(ITEM_TAG);
+        deeplinkURIBuilder.setPath(deeplinkParamMap.get(ID).get(0));
+
+        for (String key: deeplinkParamMap.keySet()) {
+          if (!key.equals(NAV) && !key.equals(ID)) {
+            deeplinkURIBuilder.addParameter(key, deeplinkParamMap.get(key).get(0));
+          }
+        }
+
+        viewItemChocolateURL = deeplinkURIBuilder.toString();
+      }
+    } catch (URISyntaxException e) {
+      viewItemChocolateURL = "";
+    }
+    return viewItemChocolateURL;
+  }
+
+  /**
+   * extract client id from rotation id
+   */
+  public static String parseClientIdFromRotation(String rotationId) {
+    String clientId = "999";
+
+    if (!rotationId.isEmpty()) {
+      String[] rotationParts = rotationId.split("-");
+      if (rotationParts.length == 4) {
+        clientId = rotationParts[0];
+      }
+    }
+
+    return clientId;
   }
 }
