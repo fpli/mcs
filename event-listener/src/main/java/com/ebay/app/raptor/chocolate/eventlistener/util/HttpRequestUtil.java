@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021. eBay inc. All rights reserved.
+ */
+
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.kernel.util.HeaderMultiValue;

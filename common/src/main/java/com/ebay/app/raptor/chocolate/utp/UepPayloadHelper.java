@@ -54,8 +54,8 @@ public class UepPayloadHelper {
   public static final String C_URL = "cUrl";
   public static final String ANNOTATION_MESSAGE_NAME = "annotation.message.name";
   public static final String ANNOTATION_CANVAS_UNIQ_ID = "annotation.canvas.uniq.id";
-  private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMddHHmmss");
-  private static final SimpleDateFormat eventDateStringFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  private final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMddHHmmss");
+  private final SimpleDateFormat eventDateStringFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
   private static final String WHITELIST_PATTERN_MARKETING_EMAIL_PA = "TE1798";
   private static final String WHITELIST_PATTERN_MARKETING_EMAIL_ESPRESSO = "TE7";
@@ -97,15 +97,15 @@ public class UepPayloadHelper {
       payload.put(MessageConstantsEnum.USER_ID.getValue(), "0");
     }
 
-    // for ORS shor-tem migration
-    // channel.name
-    if(channelTypeEnum.getValue().contains(EMAIL)) {
-      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), EMAIL);
-    } else if(channelTypeEnum.getValue().contains(MESSAGE_CENTER)) {
-      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), MESSAGE_CENTER);
-    } else {
-      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), channelTypeEnum.getValue());
-    }
+    // for ORS short-term migration
+//    // channel.name
+//    if(channelTypeEnum.getValue().contains(EMAIL)) {
+//      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), EMAIL);
+//    } else if(channelTypeEnum.getValue().contains(MESSAGE_CENTER)) {
+//      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), MESSAGE_CENTER);
+//    } else {
+//      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), channelTypeEnum.getValue());
+//    }
     // annotation.message.name
     String segmentCode = uriComponents.getQueryParams().getFirst(Constants.SEGMENT_NAME);
     if (segmentCode != null) {
@@ -144,8 +144,8 @@ public class UepPayloadHelper {
         || channelTypeEnum.equals(ChannelTypeEnum.MRKT_MESSAGE_CENTER)) {
       payload.put(ANNOTATION_CANVAS_UNIQ_ID, runDate);
     }
-    // interaction.type
-    payload.put(MessageConstantsEnum.INTERACTION_TYPE.getValue(), actionTypeEnum.getValue());
+//    // interaction.type
+//    payload.put(MessageConstantsEnum.INTERACTION_TYPE.getValue(), actionTypeEnum.getValue());
     // timestamp.created, use current ts
     long ts = System.currentTimeMillis();
     payload.put(TIMESTAMP_CREATED, String.valueOf(ts));
@@ -154,19 +154,19 @@ public class UepPayloadHelper {
     // status, all SENT for click/open
     payload.put(MessageConstantsEnum.STATUS.getValue(), STATUS_SENT);
 
-    // cUrl
-    try {
-      payload.put(C_URL, URLEncoder.encode(url, "UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      LOGGER.warn("Unsupported encoding: " + url, e);
-    }
+//    // cUrl
+//    try {
+//      payload.put(C_URL, URLEncoder.encode(url, "UTF-8"));
+//    } catch (UnsupportedEncodingException e) {
+//      LOGGER.warn("Unsupported encoding: " + url, e);
+//    }
     // tag_item, no need
     // tag_intrId, no need
     // tag_intrUnsub, no need
     // cnv.id no need in open/click
     // tracking id
     String trackingId = getOrDefault(uriComponents.getQueryParams().getFirst(TRACKING_ID));
-    payload.put(MessageConstantsEnum.TRACKING_ID.getValue(), trackingId);
+//    payload.put(MessageConstantsEnum.TRACKING_ID.getValue(), trackingId);
     // isUep
     if(StringUtils.isNotEmpty(trackingId)) {
       payload.put(IS_UEP, String.valueOf(true));
@@ -176,8 +176,8 @@ public class UepPayloadHelper {
 
     // experiment ids
     payload.put("exe", getOrDefault(uriComponents.getQueryParams().getFirst(EXPERIMENT_ID)));
-    payload.put("ext", getOrDefault(uriComponents.getQueryParams().getFirst(TREATMENT_ID)));
-    payload.put("trt", getOrDefault(uriComponents.getQueryParams().getFirst(EXPERIMENT_TYPE)));
+    payload.put("ext", getOrDefault(uriComponents.getQueryParams().getFirst(EXPERIMENT_TYPE)));
+//    payload.put("trt", getOrDefault(uriComponents.getQueryParams().getFirst(TREATMENT_ID)));
 
     // message list
     Message message = new Message();

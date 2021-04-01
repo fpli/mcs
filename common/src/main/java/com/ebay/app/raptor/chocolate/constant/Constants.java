@@ -6,6 +6,10 @@ package com.ebay.app.raptor.chocolate.constant;
 
 import com.google.common.collect.ImmutableMap;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author xiangli4
  */
@@ -30,9 +34,19 @@ public class Constants {
   public static final String ADGUID = "adguid";
   public static final String GUID = "guid";
   public static final String CGUID = "cguid";
+  public static final String STR_NULL = "null";
 
+  // Request headers
+  public static final String TRACKING_HEADER = "X-EBAY-C-TRACKING";
+  public static final String ENDUSERCTX_HEADER = "X-EBAY-C-ENDUSERCTX";
+  public static final String AUTH_HEADER = "Authorization";
+
+  // URL related
   public static final String MKRVRID = "mkrvrid";
   public static final String REFERRER = "referrer";
+  public static final String HTTPS_ENCODED = "https%3A%2F%2";
+  public static final String HTTP_ENCODED = "http%3A%2F%2";
+  public static final String SOJ_MPRE_TAG = "url_mpre";
 
   // EPN url params
   public static final String TOOL_ID = "toolid";
@@ -62,15 +76,6 @@ public class Constants {
   public static final String REDIRECT_SRC_SOJ_SOURCE = "adcamp_locationsrc";
   public static final String ADOBE_CAMP_PUBLIC_USER_ID = "pu";
 
-  // Mobile Notification name and soj tags
-  public static final String NOTIFICATION_ID = "nid";
-  public static final String NOTIFICATION_TYPE = "ntype";
-  public static final String NOTIFICATION_ACTION = "pnact";
-  public static final String USER_NAME = "user_name";
-  public static final String MC3_MSSG_ID = "mc3id";
-  public static final String ITEM_ID = "itm";
-  public static final String NOTIFICATION_TYPE_EVT = "evt";
-
   // Redirection header name
   public static final String NODE_REDIRECTION_HEADER_NAME = "X-EBAY-TRACKING-MARKETING-STATUS-CODE";
   public static final String NODE_REDIRECTION_STATUS_CODE = "301";
@@ -92,6 +97,14 @@ public class Constants {
   public static final String MKSRC = "mksrc";
   // plrfr is the actual referer for the clicks from promoted listings iframe on ebay partner site
   public static final String PLRFR = "plrfr";
+
+  /**
+   * Performance marketing channels
+   */
+  public static final Set<ChannelIdEnum> PM_CHANNELS = new HashSet<>(
+      Arrays.asList(ChannelIdEnum.EPN, ChannelIdEnum.PAID_SEARCH,
+          ChannelIdEnum.DAP, ChannelIdEnum.SOCIAL_MEDIA, ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
+  );
 
   /**
    * Email tag - param map
@@ -119,7 +132,6 @@ public class Constants {
       .put("rank", "rank")
       .put("rpp_cid", "rpp_cid")
       .put("segname", "segname")
-      .put("sid", "emsid")
       .put("yminstc", "yminstc")
       .put("ymmmid", "ymmmid")
       .put("ymsid", "ymsid")

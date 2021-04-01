@@ -2,7 +2,8 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingMessage;
+import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
+import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
@@ -24,6 +25,9 @@ import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ServiceEnum;
 import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
+import com.ebay.traffic.chocolate.utp.lib.UnifiedTrackerFactory;
+import com.ebay.traffic.chocolate.utp.lib.cache.TrackingGovernanceTagCache;
+import com.ebay.traffic.chocolate.utp.lib.constants.EnvironmentEnum;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.userlookup.UserLookup;
 import com.ebay.userlookup.common.ClientException;
@@ -52,7 +56,9 @@ public class UnifiedTrackingMessageParser {
   private static CobrandParser cobrandParser = new CobrandParser();
   private static UepPayloadHelper uepPayloadHelper = new UepPayloadHelper();
 
-  private UnifiedTrackingMessageParser() {}
+  public UnifiedTrackingMessageParser() throws Exception{
+    UnifiedTrackerFactory.getUnifiedTracker(getEnv());
+  }
 
   /**
    * Parse message to unified tracking message
@@ -176,7 +182,7 @@ public class UnifiedTrackingMessageParser {
     record.setProducerEventId(getProducerEventId(parameters, channelType));
 
     // event timestamp
-    record.setProducerEventTs(System.currentTimeMillis());
+    record.setProducerEventTs(getProducerEventTs(channelAction, roiEvent));
 
     // rlog id
     record.setRlogId(tracingContext.getRlogId());
@@ -272,6 +278,11 @@ public class UnifiedTrackingMessageParser {
     }
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
 
+    // data governance
+    long startTs = System.currentTimeMillis();
+    TrackingGovernanceTagCache.getInstance().govern(record);
+    metrics.mean("DataGovernanceLatency", System.currentTimeMillis() - startTs);
+
     return record;
   }
 
@@ -359,6 +370,14 @@ public class UnifiedTrackingMessageParser {
     return "";
   }
 
+  private static long getProducerEventTs(ChannelAction channelAction, ROIEvent roiEvent) {
+    if (ChannelAction.ROI.equals(channelAction) && isLongNumeric(roiEvent.getTransactionTimestamp())) {
+      return Long.parseLong(roiEvent.getTransactionTimestamp());
+    } else {
+      return System.currentTimeMillis();
+    }
+  }
+
   /**
    * Get public user id
    */
@@ -409,8 +428,8 @@ public class UnifiedTrackingMessageParser {
     } else if (ChannelType.SITE_EMAIL.equals(channelType)) {
       campaignId = StringUtils.substringBetween(parameters.getFirst(Constants.SOURCE_ID), "e", ".");
     } else if (ChannelType.MRKT_EMAIL.equals(channelType)) {
-      if (!StringUtils.isEmpty(parameters.getFirst(Constants.SEGMENT_NAME))) {
-        campaignId = parameters.getFirst(Constants.SEGMENT_NAME).trim();
+      if (StringUtils.isNotEmpty(parameters.getFirst(Constants.SEGMENT_NAME))) {
+        campaignId = Objects.requireNonNull(parameters.getFirst(Constants.SEGMENT_NAME)).trim();
       }
     }
 
@@ -549,8 +568,6 @@ public class UnifiedTrackingMessageParser {
       gclid = parameters.get(Constants.GCLID).get(0);
     }
     payload.put("gclid", gclid);
-
-    payload.put("producereventts", String.valueOf(eventTs));
   }
 
   /**
@@ -567,14 +584,14 @@ public class UnifiedTrackingMessageParser {
         metrics.meter("ErrorEncodedSojTags", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
             Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
       }
-      if (!org.springframework.util.StringUtils.isEmpty(sojTags)) {
+      if (!StringUtils.isEmpty(sojTags)) {
         StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
         while (stToken.hasMoreTokens()) {
           StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
           if (sojNvp.countTokens() == 2) {
             String sojTag = sojNvp.nextToken().trim();
             String urlParam = sojNvp.nextToken().trim();
-            if (!org.springframework.util.StringUtils.isEmpty(urlParam) && !org.springframework.util.StringUtils.isEmpty(sojTag)) {
+            if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
               applicationPayload.put(sojTag, HttpRequestUtil.parseTagFromParams(parameters, urlParam));
             }
           }
@@ -586,15 +603,13 @@ public class UnifiedTrackingMessageParser {
   }
 
   private static void addRoiSojTags(Map<String, String> payloadMap, ROIEvent roiEvent, String userId, long snapshotId, long shortSnapshotId) {
-    payloadMap.put(TrackerTagValueUtil.PageIdTag, String.valueOf(PageIdEnum.ROI.getId()));
-
     payloadMap.put("rvrid", String.valueOf(shortSnapshotId));
     payloadMap.put("snapshotid", String.valueOf(snapshotId));
 
     if(isLongNumeric(roiEvent.getItemId())) {
       payloadMap.put("itm", roiEvent.getItemId());
     }
-    if (!org.springframework.util.StringUtils.isEmpty(roiEvent.getTransType())) {
+    if (!StringUtils.isEmpty(roiEvent.getTransType())) {
       payloadMap.put("tt", roiEvent.getTransType());
     }
     if (isLongNumeric(roiEvent.getUniqueTransactionId())) {
@@ -602,9 +617,6 @@ public class UnifiedTrackingMessageParser {
     }
     if (isLongNumeric(userId)) {
       payloadMap.put("userid", userId);
-    }
-    if (isLongNumeric(roiEvent.getTransactionTimestamp())) {
-      payloadMap.put("producereventts", roiEvent.getTransactionTimestamp());
     }
   }
 
@@ -669,5 +681,33 @@ public class UnifiedTrackingMessageParser {
    */
   private static <T> T coalesce(T a, T b) {
     return a == null ? b : a;
+  }
+
+  /**
+   * Get environment for event emitter
+   */
+  private static EnvironmentEnum getEnv() throws Exception {
+    String env = ApplicationOptions.getInstance().getEnvironment();
+    logger.info("Platform Environment: {}", env);
+
+    EnvironmentEnum environment;
+    switch (env) {
+      case "dev":
+        environment = EnvironmentEnum.DEV;
+        break;
+      case "qa":
+        environment = EnvironmentEnum.STAGING;
+        break;
+      case "pre-production":
+        environment = EnvironmentEnum.PRE_PROD;
+        break;
+      case "production":
+        environment = EnvironmentEnum.PROD;
+        break;
+      default:
+        throw new Exception("No matched environment");
+    }
+
+    return environment;
   }
 }

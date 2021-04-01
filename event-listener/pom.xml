@@ -5,7 +5,7 @@
   <parent>
     <artifactId>chocolate</artifactId>
     <groupId>com.ebay.traffic</groupId>
-    <version>3.7.1-RELEASE</version>
+    <version>3.8.0-RELEASE</version>
     <relativePath>..</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -151,7 +151,7 @@
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>ads-tracking-handler-starter</artifactId>
-      <version>1.0.7-RELEASE</version>
+      <version>1.0.8-RELEASE</version>
     </dependency>
 
     <!--global config-->
@@ -407,6 +407,17 @@
       <groupId>com.typesafe</groupId>
       <artifactId>config</artifactId>
       <version>1.2.1</version>
+    </dependency>
+
+    <!-- UTP -->
+    <dependency>
+      <groupId>com.ebay.traffic</groupId>
+      <artifactId>chocolate-utp-lib</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.traffic</groupId>
+      <artifactId>chocolate-utp-common</artifactId>
     </dependency>
 
     <!-- kotlin -->

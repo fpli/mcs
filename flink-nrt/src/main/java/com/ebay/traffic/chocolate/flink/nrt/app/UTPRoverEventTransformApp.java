@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosMessage;
+import com.ebay.traffic.chocolate.utp.common.model.rheos.UnifiedTrackingRheosMessage;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.RheosConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
@@ -148,6 +148,7 @@ public class UTPRoverEventTransformApp
       GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
       UTPRoverEventTransformer transformer = new UTPRoverEventTransformer(consumerRecord.topic(), consumerRecord.partition(), consumerRecord.offset(), sourceRecord, sourceRheosEvent, schemaVersion);
       if (!transformer.isValid()) {
+        sherlockioMetrics.meter("UTPRoverEventInvalid");
         return;
       }
 
