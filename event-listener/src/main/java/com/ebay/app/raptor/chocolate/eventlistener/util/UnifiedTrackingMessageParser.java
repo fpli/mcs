@@ -20,7 +20,6 @@ import com.ebay.raptor.domain.request.api.DomainRequestData;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
-import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ServiceEnum;
@@ -188,7 +187,8 @@ public class UnifiedTrackingMessageParser {
     record.setRlogId(tracingContext.getRlogId());
 
     // tracking id
-    record.setTrackingId(parameters.getFirst(UepPayloadHelper.TRACKING_ID));
+    record.setTrackingId(HttpRequestUtil.parseFromTwoParams(parameters, UepPayloadHelper.TRACKING_ID,
+        UepPayloadHelper.TRACKING_ID_S));
 
     // user id
     String bu = parameters.getFirst(Constants.BEST_GUESS_USER);
@@ -428,8 +428,10 @@ public class UnifiedTrackingMessageParser {
     } else if (ChannelType.SITE_EMAIL.equals(channelType)) {
       campaignId = StringUtils.substringBetween(parameters.getFirst(Constants.SOURCE_ID), "e", ".");
     } else if (ChannelType.MRKT_EMAIL.equals(channelType)) {
-      if (StringUtils.isNotEmpty(parameters.getFirst(Constants.SEGMENT_NAME))) {
-        campaignId = Objects.requireNonNull(parameters.getFirst(Constants.SEGMENT_NAME)).trim();
+      if (StringUtils.isNotEmpty(HttpRequestUtil.parseFromTwoParams(parameters, Constants.SEGMENT_NAME,
+          Constants.SEGMENT_NAME_S))) {
+        campaignId = Objects.requireNonNull(HttpRequestUtil.parseFromTwoParams(parameters, Constants.SEGMENT_NAME,
+            Constants.SEGMENT_NAME_S)).trim();
       }
     }
 
@@ -501,7 +503,7 @@ public class UnifiedTrackingMessageParser {
                                                 long snapshotId, long shortSnapshotId, ROIEvent roiEvent, long userId,
                                                 long eventTs, String trackingHeader) {
     // add tags from parameters
-    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
+    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entries()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
         payload.put(entry.getKey(), HttpRequestUtil.parseTagFromParams(parameters, entry.getValue()));
       }

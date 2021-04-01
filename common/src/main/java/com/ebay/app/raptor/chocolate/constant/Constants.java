@@ -4,7 +4,7 @@
 
 package com.ebay.app.raptor.chocolate.constant;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -61,12 +61,12 @@ public class Constants {
   public static final String BEST_GUESS_USER = "bu";
   public static final String CAMP_RUN_DT = "crd";
   public static final String SEGMENT_NAME = "segname";
+  public static final String SEGMENT_NAME_S = "seg";
   public static final String YM_MSSG_MSTR_ID = "ymmmid";
   public static final String YM_MSSG_ID = "ymsid";
   public static final String YM_INSTC = "yminstc";
   public static final String SMS_ID = "smsid";
   public static final String CHOCO_BUYER_ACCESS_SITE_ID = "choco_bs";
-  public static final String TRACKING_ID = "tracking.id";
 
   public static final String REFERER_HEADER = "referer";
   public static final String REFERER_HEADER_UPCASE = "Referer";
@@ -109,7 +109,7 @@ public class Constants {
   /**
    * Email tag - param map
    */
-  public static final ImmutableMap<String, String> emailTagParamMap = new ImmutableMap.Builder<String, String>()
+  public static final ImmutableMultimap<String, String> emailTagParamMap = new ImmutableMultimap.Builder<String, String>()
       .put("adcamp_landingpage", "adcamp_landingpage")
       .put("adcamp_locationsrc", "adcamp_locationsrc")
       .put("adcamppu", "pu")
@@ -129,9 +129,11 @@ public class Constants {
       .put("nqt", "nqt")
       .put("osub", "osub")
       .put("placement-type", "placement-type")
+      .put("placement-type", "pt")
       .put("rank", "rank")
       .put("rpp_cid", "rpp_cid")
       .put("segname", "segname")
+      .put("segname", "seg")
       .put("yminstc", "yminstc")
       .put("ymmmid", "ymmmid")
       .put("ymsid", "ymsid")
