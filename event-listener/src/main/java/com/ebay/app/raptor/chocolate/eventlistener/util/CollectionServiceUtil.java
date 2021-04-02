@@ -241,4 +241,49 @@ public class CollectionServiceUtil {
     }
     return isEPNPromotedListingClick;
   }
+
+  /**
+   * Get the substring between start and end. Compatible with com.ebay.hadoop.udf.soj.StrBetweenEndList
+   * @param url source string
+   * @param start start string
+   * @param end end string
+   * @return substring
+   */
+  public static String substring(String url, String start, String end) {
+    if (StringUtils.isEmpty(url)) {
+      return null;
+    }
+    int startPos;
+    int endPos;
+
+    if (!StringUtils.isEmpty(start)) {
+      startPos = url.indexOf(start);
+      if (startPos < 0) {
+        return null;
+      } else {
+        startPos += start.length();
+        if (startPos == url.length()) {
+          return null;
+        }
+      }
+    } else {
+      startPos = 0;
+    }
+
+    if (StringUtils.isEmpty(end)) {
+      return url.substring(startPos);
+    }
+
+    endPos = url.length();
+    int len = end.length();
+    for (int i = 0; i < len; ++i) {
+      char c = end.charAt(i);
+      int l = url.indexOf(c, startPos);
+      if (l != -1 && l < endPos) {
+        endPos = l;
+      }
+    }
+
+    return endPos > startPos ? url.substring(startPos, endPos) : null;
+  }
 }
