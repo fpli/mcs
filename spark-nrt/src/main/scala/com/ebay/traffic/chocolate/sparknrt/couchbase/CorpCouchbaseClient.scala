@@ -8,7 +8,6 @@ import com.couchbase.client.java.datastructures.MutationOptionBuilder
 import com.ebay.dukes.CacheClient
 import com.ebay.dukes.base.BaseDelegatingCacheClient
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient
-import com.ebay.kernel.context.RuntimeContext
 import org.slf4j.LoggerFactory
 
 object CorpCouchbaseClient {
