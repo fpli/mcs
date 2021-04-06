@@ -259,18 +259,19 @@ public class CollectionServiceUtil {
 
       if (!urlHost.isEmpty()) {
         URIBuilder deeplinkURIBuilder = new URIBuilder(urlHost);
-        deeplinkURIBuilder.setPath(ITEM_TAG);
-        deeplinkURIBuilder.setPath(deeplinkParamMap.get(ID).get(0));
+        String deeplinkURIPath = ITEM_TAG + "/" + deeplinkParamMap.get(ID).get(0);
+        deeplinkURIBuilder.setPath(deeplinkURIPath);
 
         for (String key: deeplinkParamMap.keySet()) {
           if (!key.equals(NAV) && !key.equals(ID)) {
             deeplinkURIBuilder.addParameter(key, deeplinkParamMap.get(key).get(0));
           }
         }
-
+        // this parameter is used to mark the click whose original url is custom uri with Chocolate parameters
+        deeplinkURIBuilder.addParameter(DEEP_LINK_WITH_CHOCO_PARAMS_FLAG, "1");
         viewItemChocolateURL = deeplinkURIBuilder.toString();
       }
-    } catch (URISyntaxException e) {
+    } catch (Exception e) {
       viewItemChocolateURL = "";
     }
     return viewItemChocolateURL;

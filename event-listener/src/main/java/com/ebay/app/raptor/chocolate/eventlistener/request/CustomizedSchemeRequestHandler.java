@@ -4,10 +4,13 @@
 
 package com.ebay.app.raptor.chocolate.eventlistener.request;
 
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
@@ -40,21 +43,35 @@ public class CustomizedSchemeRequestHandler {
 
     MultiValueMap<String, String> deeplinkParameters = deeplinkUriComponents.getQueryParams();
 
-    if (deeplinkParameters.containsKey(MKEVT)
-            && deeplinkParameters.containsKey(MKCID) && deeplinkParameters.containsKey(MKRID)){
-      if (deeplinkParameters.get(NAV).get(0).equals(VIEWITEM) && !deeplinkParameters.get(ID).get(0).isEmpty()) {
-        String viewItemChocolateURL = CollectionServiceUtil.constructViewItemChocolateURLForDeepLink(deeplinkParameters);
-        if (!viewItemChocolateURL.isEmpty()) {
-          ESMetrics.getInstance().meter("IncomingAppDeepLinkWithValidNativeURISuccess");
-          Event event = constructDeeplinkEvent(viewItemChocolateURL, referer);
-          return event;
-        } else {
-          LOGGER.warn(Errors.ERROR_INVALID_NATIVE_URI_DEEPLINK);
-          ESMetrics.getInstance().meter(Errors.ERROR_INVALID_NATIVE_URI_DEEPLINK);
-          return null;
+    if (deeplinkParameters.containsKey(MKEVT) && deeplinkParameters.containsKey(MKCID)){
+      ChannelIdEnum channelType = ChannelIdEnum.parse(deeplinkParameters.get(Constants.MKCID).get(0));
+
+      if (channelType != null) {
+        ESMetrics.getInstance().meter("IncomingAppDeepLinkWithChocolateParams", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
+      } else {
+        return null;
+      }
+
+      if (deeplinkParameters.containsKey(MKRID) && deeplinkParameters.containsKey(NAV) && deeplinkParameters.containsKey(ID)) {
+
+        String pageType = deeplinkParameters.get(NAV).get(0);
+        String itemId = deeplinkParameters.get(ID).get(0);
+
+        if (pageType.equals(VIEWITEM) && !itemId.isEmpty()) {
+          String viewItemChocolateURL = CollectionServiceUtil.constructViewItemChocolateURLForDeepLink(deeplinkParameters);
+          if (!viewItemChocolateURL.isEmpty()) {
+            ESMetrics.getInstance().meter("IncomingAppDeepLinkWithChocolateParamsSuccess", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
+            Event event = constructDeeplinkEvent(viewItemChocolateURL, referer);
+            return event;
+          } else {
+            LOGGER.warn(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
+            ESMetrics.getInstance().meter(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
+            return null;
+          }
         }
       }
     } else if (deeplinkParameters.containsKey(REFERRER)) {
+      ESMetrics.getInstance().meter("IncomingAppDeepLinkWithReferrerParams", 1);
       String deeplinkTargetUrl = deeplinkParameters.get(REFERRER).get(0);
 
       try {
