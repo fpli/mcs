@@ -212,10 +212,12 @@ public abstract class CustomerMarketingCollector {
 
   static void addDecrytpedUserIDFromBu(MultiValueMap<String, String> parameters,
                                        IRequestScopeTracker requestTracker) {
-    String bu = parameters.get(Constants.BEST_GUESS_USER).get(0);
-    Long encryptedUserId = Longs.tryParse(bu);
-    if (encryptedUserId != null) {
-      requestTracker.addTag("u", String.valueOf(EncryptUtil.decryptUserId(encryptedUserId)), String.class);
+    if (parameters.containsKey(Constants.BEST_GUESS_USER)) {
+      String bu = parameters.get(Constants.BEST_GUESS_USER).get(0);
+      Long encryptedUserId = Longs.tryParse(bu);
+      if (encryptedUserId != null) {
+        requestTracker.addTag("u", String.valueOf(EncryptUtil.decryptUserId(encryptedUserId)), String.class);
+      }
     }
   }
 }
