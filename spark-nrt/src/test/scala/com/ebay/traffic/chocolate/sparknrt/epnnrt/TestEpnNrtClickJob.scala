@@ -75,7 +75,6 @@ class TestEpnNrtClickJob extends BaseFunSuite{
     job.run()
 
     val clickDf = job.readFilesAsDF(outputDir, TableSchema("df_epn_click.json").dfSchema, "csv", "tab", false)
-    clickDf.show(false)
     assert(clickDf.count() == 11)
 
     // validate click df
