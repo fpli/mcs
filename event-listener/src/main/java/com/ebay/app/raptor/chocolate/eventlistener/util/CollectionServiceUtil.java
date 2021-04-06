@@ -256,7 +256,7 @@ public class CollectionServiceUtil {
       String clientId = parseClientIdFromRotation(rotationId);
       String urlHost = clientIdHostMap.get(clientId);
 
-      if (!urlHost.isEmpty()) {
+      if (!StringUtils.isEmpty(urlHost)) {
         URIBuilder deeplinkURIBuilder = new URIBuilder(urlHost);
         String deeplinkURIPath = ITEM_TAG + "/" + deeplinkParamMap.get(ID).get(0);
         deeplinkURIBuilder.setPath(deeplinkURIPath);
@@ -282,7 +282,7 @@ public class CollectionServiceUtil {
   public static String parseClientIdFromRotation(String rotationId) {
     String clientId = "999";
 
-    if (!rotationId.isEmpty()) {
+    if (!StringUtils.isEmpty(rotationId)) {
       String[] rotationParts = rotationId.split("-");
       if (rotationParts.length == 4) {
         clientId = rotationParts[0];

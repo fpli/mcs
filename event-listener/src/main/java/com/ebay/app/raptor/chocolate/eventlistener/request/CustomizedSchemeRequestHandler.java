@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -36,6 +37,7 @@ public class CustomizedSchemeRequestHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomizedSchemeRequestHandler.class);
 
   private static final String VIEWITEM = "item.view";
+  private static final String CLICKEVENTFLAG = "1";
 
   public Event parseCustomizedSchemeEvent(String targetUrl, String referer) {
 
@@ -44,9 +46,10 @@ public class CustomizedSchemeRequestHandler {
     MultiValueMap<String, String> deeplinkParameters = deeplinkUriComponents.getQueryParams();
 
     if (deeplinkParameters.containsKey(MKEVT) && deeplinkParameters.containsKey(MKCID)){
+      String mkevt = deeplinkParameters.get(Constants.MKEVT).get(0);
       ChannelIdEnum channelType = ChannelIdEnum.parse(deeplinkParameters.get(Constants.MKCID).get(0));
 
-      if (channelType != null) {
+      if (mkevt.equals(CLICKEVENTFLAG) && channelType != null) {
         ESMetrics.getInstance().meter("IncomingAppDeepLinkWithChocolateParams", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
       } else {
         return null;
@@ -57,9 +60,9 @@ public class CustomizedSchemeRequestHandler {
         String pageType = deeplinkParameters.get(NAV).get(0);
         String itemId = deeplinkParameters.get(ID).get(0);
 
-        if (pageType.equals(VIEWITEM) && !itemId.isEmpty()) {
+        if (pageType.equals(VIEWITEM) && !StringUtils.isEmpty(itemId)) {
           String viewItemChocolateURL = CollectionServiceUtil.constructViewItemChocolateURLForDeepLink(deeplinkParameters);
-          if (!viewItemChocolateURL.isEmpty()) {
+          if (!StringUtils.isEmpty(viewItemChocolateURL)) {
             ESMetrics.getInstance().meter("IncomingAppDeepLinkWithChocolateParamsSuccess", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
             Event event = constructDeeplinkEvent(viewItemChocolateURL, referer);
             return event;
