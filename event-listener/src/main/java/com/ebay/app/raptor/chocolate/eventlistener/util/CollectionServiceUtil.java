@@ -10,7 +10,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.regex.Matcher;
