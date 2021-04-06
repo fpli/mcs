@@ -63,21 +63,20 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
     val clickDf = job.readFilesAsDF(outputDir, TableSchema("df_epn_click.json").dfSchema, "parquet", "tab", false)
     assert(clickDf.count() == 11)
 
-    // validate click df
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("CRLTN_GUID_TXT").first().getString(0) == "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("GUID_TXT").first().getString(0) == "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("USER_ID").first().getString(0) == "1")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("CLNT_RMT_IP").first().getString(0) == "127.0.0.1")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("RFR_URL_NAME").first().getString(0) == "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("PLCMNT_DATA_TXT").first().getString(0) == "711-53200-19255-0")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("PBLSHR_ID").first().getString(0) == "7000001262")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("AMS_PBLSHR_CMPGN_ID").first().getString(0) == "435453655")
+    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("PBLSHR_ID").first().getLong(0) == 7000001262L)
+    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("AMS_PBLSHR_CMPGN_ID").first().getLong(0) == 435453655L)
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("AMS_TOOL_ID").first().getString(0) == "10044")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("CSTM_ID").first().getString(0) == "1")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("USER_QUERY_TXT").first().getString(0) == "292832042631")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("SRC_PLCMNT_DATA_TXT").first().getString(0) == "711-53200-19255-0")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("ITEM_ID").first().getString(0) == "292832042631")
-//    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("CLICK_TS").first().getString(0) == "2017-03-10 17:13:40.000")
+    //    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("CLICK_TS").first().getString(0) == "2017-03-10 17:13:40.000")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("ROVER_URL").first().getString(0) == "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1")
 
     // validate special case
@@ -91,8 +90,8 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429247L).count() == 0)
 
     // rover guid fixed case
-//    assert(clickDf.filter(col("CLICK_ID") === 2902129817128329241L).select("GUID_TXT").first().getString(0) == "abcdefg3212412445")
-//    assert(clickDf.filter(col("CLICK_ID") === 2902129817128329242L).select("GUID_TXT").first().getString(0) == "abcdefg3212412446")
+    //    assert(clickDf.filter(col("CLICK_ID") === 2902129817128329241L).select("GUID_TXT").first().getString(0) == "abcdefg3212412445")
+    //    assert(clickDf.filter(col("CLICK_ID") === 2902129817128329242L).select("GUID_TXT").first().getString(0) == "abcdefg3212412446")
     assert(clickDf.filter(col("CLICK_ID") === 2902129817128329243L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
     assert(clickDf.filter(col("CLICK_ID") === 2902129817128329244L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
     assert(clickDf.filter(col("CLICK_ID") === 2902129817128329245L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
