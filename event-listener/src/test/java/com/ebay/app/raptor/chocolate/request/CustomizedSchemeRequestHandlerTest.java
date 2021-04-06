@@ -43,7 +43,7 @@ public class CustomizedSchemeRequestHandlerTest {
         //valid Chocolate params in native uri
         targetURL = "ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1&mkrid=710-53481-19255-0&campid=5337369893&toolid=11800&customid=test&referrer=https%3A%2F%2Frover.ebay.com%2Frover%2F1%2F711-53200-19255-0%2F1";
         event = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetURL, referer);
-        assertEquals("https://www.ebay.co.uk/itm/154347659933?mkevt=1&mkcid=1&mkrid=710-53481-19255-0&campid=5337369893&toolid=11800&customid=test&referrer=https%253A%252F%252Frover.ebay.com%252Frover%252F1%252F711-53200-19255-0%252F1&mkdeeplink=1", event.getTargetUrl());
+        assertEquals("https://www.ebay.co.uk/itm/154347659933?mkevt=1&mkcid=1&mkrid=710-53481-19255-0&campid=5337369893&toolid=11800&customid=test&mkdeeplink=1", event.getTargetUrl());
         assertEquals(referer, event.getReferrer());
 
         //no valid tracking parameters in deeplink url

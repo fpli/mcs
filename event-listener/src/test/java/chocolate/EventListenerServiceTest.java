@@ -771,7 +771,7 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(200, response.getStatus());
     ErrorType errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4009, errorMessage.getErrorCode());
+    assertEquals(4012, errorMessage.getErrorCode());
 
     //invalid target url in deeplink case
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=http%3A%2F%2Frover.ebay.com%2Frover%2F1%2F710-53481-19255-0%2F1%3Fff3%3D2");
@@ -807,7 +807,7 @@ public class EventListenerServiceTest {
 
     // custom uri with Chocolate parameters
     // success request (custom uri with valid Chocolate parameters)
-    event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1&mkrid=710-53481-19255-0&campid=5337369893&toolid=11800&customid=test&referrer=https%3A%2F%2Frover.ebay.com%2Frover%2F1%2F711-53200-19255-0%2F1");
+    event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1&mkrid=710-53481-19255-0&campid=5337369893&toolid=11800&customid=chocolatetest&referrer=https%3A%2F%2Frover.ebay.com%2Frover%2F1%2F711-53200-19255-0%2F1");
     event.setReferrer("");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(201, response.getStatus());
@@ -817,37 +817,37 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4009, errorMessage.getErrorCode());
+    assertEquals(4012, errorMessage.getErrorCode());
 
     event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4009, errorMessage.getErrorCode());
+    assertEquals(4012, errorMessage.getErrorCode());
 
     event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4009, errorMessage.getErrorCode());
+    assertEquals(4012, errorMessage.getErrorCode());
 
     event.setTargetUrl("ebay://link?nav=item.view&mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4009, errorMessage.getErrorCode());
+    assertEquals(4012, errorMessage.getErrorCode());
 
     event.setTargetUrl("ebay://link?nav=item.view&id=mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4009, errorMessage.getErrorCode());
+    assertEquals(4012, errorMessage.getErrorCode());
 
     event.setTargetUrl("ebay://link?nav=home&id=154347659933&mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4009, errorMessage.getErrorCode());
+    assertEquals(4012, errorMessage.getErrorCode());
 
     // validate kafka message
     Thread.sleep(3000);

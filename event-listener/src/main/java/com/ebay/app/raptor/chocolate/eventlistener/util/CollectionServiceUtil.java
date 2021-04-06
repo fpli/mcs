@@ -263,7 +263,7 @@ public class CollectionServiceUtil {
         deeplinkURIBuilder.setPath(deeplinkURIPath);
 
         for (String key: deeplinkParamMap.keySet()) {
-          if (!key.equals(NAV) && !key.equals(ID)) {
+          if (!key.equals(NAV) && !key.equals(ID) && !key.equals(REFERRER)) {
             deeplinkURIBuilder.addParameter(key, deeplinkParamMap.get(key).get(0));
           }
         }
