@@ -112,7 +112,7 @@ public class DAPResponseHandler {
     String adguid = adserviceCookie.readAdguid(request, response);
     String accountId = adserviceCookie.getUserId(request);
     // obtain userId from ersxid.
-    if (StringUtils.isNotBlank(guid) && "0".equals(accountId)) {
+    if (StringUtils.isNotBlank(guid) && guid.length() >= 32 && "0".equals(accountId)) {
       accountId = esrXidClient.getUserIdByGuid(guid);
     }
 

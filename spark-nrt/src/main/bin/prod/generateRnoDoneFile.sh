@@ -35,7 +35,7 @@ fi
 CURRENT_DT_HOUR=$(date +%Y-%m-%d' '%H:%M:%S -d "`date`")
 CURRENT_TIMESTAMP=$(date +%s -d "$CURRENT_DT_HOUR")000
 
-ALERT_DT_HOUR=$(date +%Y-%m-%d' '01:00:00 -d "`date`")
+ALERT_DT_HOUR=$(date +%Y-%m-%d' '03:00:00 -d "`date`")
 ALERT_TIMESTAMP=$(date +%s -d "$ALERT_DT_HOUR")000
 
 echo "CURRENT_TIMESTAMP=${CURRENT_TIMESTAMP}"

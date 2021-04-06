@@ -2,7 +2,8 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingMessage;
+import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
+import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
@@ -19,11 +20,13 @@ import com.ebay.raptor.domain.request.api.DomainRequestData;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
-import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ServiceEnum;
 import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
+import com.ebay.traffic.chocolate.utp.lib.UnifiedTrackerFactory;
+import com.ebay.traffic.chocolate.utp.lib.cache.TrackingGovernanceTagCache;
+import com.ebay.traffic.chocolate.utp.lib.constants.EnvironmentEnum;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.userlookup.UserLookup;
 import com.ebay.userlookup.common.ClientException;
@@ -52,7 +55,9 @@ public class UnifiedTrackingMessageParser {
   private static CobrandParser cobrandParser = new CobrandParser();
   private static UepPayloadHelper uepPayloadHelper = new UepPayloadHelper();
 
-  private UnifiedTrackingMessageParser() {}
+  public UnifiedTrackingMessageParser() throws Exception{
+    UnifiedTrackerFactory.getUnifiedTracker(getEnv());
+  }
 
   /**
    * Parse message to unified tracking message
@@ -176,13 +181,14 @@ public class UnifiedTrackingMessageParser {
     record.setProducerEventId(getProducerEventId(parameters, channelType));
 
     // event timestamp
-    record.setProducerEventTs(System.currentTimeMillis());
+    record.setProducerEventTs(getProducerEventTs(channelAction, roiEvent));
 
     // rlog id
     record.setRlogId(tracingContext.getRlogId());
 
     // tracking id
-    record.setTrackingId(parameters.getFirst(UepPayloadHelper.TRACKING_ID));
+    record.setTrackingId(HttpRequestUtil.parseFromTwoParams(parameters, UepPayloadHelper.TRACKING_ID,
+        UepPayloadHelper.TRACKING_ID_S));
 
     // user id
     String bu = parameters.getFirst(Constants.BEST_GUESS_USER);
@@ -272,6 +278,11 @@ public class UnifiedTrackingMessageParser {
     }
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
 
+    // data governance
+    long startTs = System.currentTimeMillis();
+    TrackingGovernanceTagCache.getInstance().govern(record);
+    metrics.mean("DataGovernanceLatency", System.currentTimeMillis() - startTs);
+
     return record;
   }
 
@@ -291,6 +302,8 @@ public class UnifiedTrackingMessageParser {
         return ChannelTypeEnum.MRKT_EMAIL;
       case SITE_EMAIL:
         return ChannelTypeEnum.SITE_EMAIL;
+      case EPN:
+        return ChannelTypeEnum.EPN;
       default:
         return ChannelTypeEnum.GENERIC;
     }
@@ -357,6 +370,14 @@ public class UnifiedTrackingMessageParser {
     return "";
   }
 
+  private static long getProducerEventTs(ChannelAction channelAction, ROIEvent roiEvent) {
+    if (ChannelAction.ROI.equals(channelAction) && isLongNumeric(roiEvent.getTransactionTimestamp())) {
+      return Long.parseLong(roiEvent.getTransactionTimestamp());
+    } else {
+      return System.currentTimeMillis();
+    }
+  }
+
   /**
    * Get public user id
    */
@@ -382,7 +403,7 @@ public class UnifiedTrackingMessageParser {
     String partner = "";
     if (ChannelType.EPN.equals(channelType)) {
       if (StringUtils.isNumeric(parameters.getFirst(Constants.CAMPID))) {
-        // Do we really need to get publisher id here?
+        // TODO: Do we really need to get publisher id here?
       }
     } else if (ChannelType.PAID_SEARCH.equals(channelType)) {
       // partner definition unknown
@@ -407,8 +428,10 @@ public class UnifiedTrackingMessageParser {
     } else if (ChannelType.SITE_EMAIL.equals(channelType)) {
       campaignId = StringUtils.substringBetween(parameters.getFirst(Constants.SOURCE_ID), "e", ".");
     } else if (ChannelType.MRKT_EMAIL.equals(channelType)) {
-      if (!StringUtils.isEmpty(parameters.getFirst(Constants.SEGMENT_NAME))) {
-        campaignId = parameters.getFirst(Constants.SEGMENT_NAME).trim();
+      if (StringUtils.isNotEmpty(HttpRequestUtil.parseFromTwoParams(parameters, Constants.SEGMENT_NAME,
+          Constants.SEGMENT_NAME_S))) {
+        campaignId = Objects.requireNonNull(HttpRequestUtil.parseFromTwoParams(parameters, Constants.SEGMENT_NAME,
+            Constants.SEGMENT_NAME_S)).trim();
       }
     }
 
@@ -480,7 +503,7 @@ public class UnifiedTrackingMessageParser {
                                                 long snapshotId, long shortSnapshotId, ROIEvent roiEvent, long userId,
                                                 long eventTs, String trackingHeader) {
     // add tags from parameters
-    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
+    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entries()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
         payload.put(entry.getKey(), HttpRequestUtil.parseTagFromParams(parameters, entry.getValue()));
       }
@@ -493,6 +516,13 @@ public class UnifiedTrackingMessageParser {
 
     if (channelAction == ChannelAction.ROI) {
       addRoiSojTags(payload, roiEvent, String.valueOf(userId), snapshotId, shortSnapshotId);
+    }
+
+    if (channelType == ChannelType.EPN) {
+      String toolId = HttpRequestUtil.parseTagFromParams(parameters, Constants.TOOL_ID);
+      if(StringUtils.isNotEmpty(toolId)) {
+        payload.put(Constants.TOOL_ID, HttpRequestUtil.parseTagFromParams(parameters, Constants.TOOL_ID));
+      }
     }
 
     // add other tags
@@ -540,8 +570,6 @@ public class UnifiedTrackingMessageParser {
       gclid = parameters.get(Constants.GCLID).get(0);
     }
     payload.put("gclid", gclid);
-
-    payload.put("producereventts", String.valueOf(eventTs));
   }
 
   /**
@@ -558,14 +586,14 @@ public class UnifiedTrackingMessageParser {
         metrics.meter("ErrorEncodedSojTags", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
             Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
       }
-      if (!org.springframework.util.StringUtils.isEmpty(sojTags)) {
+      if (!StringUtils.isEmpty(sojTags)) {
         StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
         while (stToken.hasMoreTokens()) {
           StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
           if (sojNvp.countTokens() == 2) {
             String sojTag = sojNvp.nextToken().trim();
             String urlParam = sojNvp.nextToken().trim();
-            if (!org.springframework.util.StringUtils.isEmpty(urlParam) && !org.springframework.util.StringUtils.isEmpty(sojTag)) {
+            if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
               applicationPayload.put(sojTag, HttpRequestUtil.parseTagFromParams(parameters, urlParam));
             }
           }
@@ -577,15 +605,13 @@ public class UnifiedTrackingMessageParser {
   }
 
   private static void addRoiSojTags(Map<String, String> payloadMap, ROIEvent roiEvent, String userId, long snapshotId, long shortSnapshotId) {
-    payloadMap.put(TrackerTagValueUtil.PageIdTag, String.valueOf(PageIdEnum.ROI.getId()));
-
     payloadMap.put("rvrid", String.valueOf(shortSnapshotId));
     payloadMap.put("snapshotid", String.valueOf(snapshotId));
 
     if(isLongNumeric(roiEvent.getItemId())) {
       payloadMap.put("itm", roiEvent.getItemId());
     }
-    if (!org.springframework.util.StringUtils.isEmpty(roiEvent.getTransType())) {
+    if (!StringUtils.isEmpty(roiEvent.getTransType())) {
       payloadMap.put("tt", roiEvent.getTransType());
     }
     if (isLongNumeric(roiEvent.getUniqueTransactionId())) {
@@ -593,9 +619,6 @@ public class UnifiedTrackingMessageParser {
     }
     if (isLongNumeric(userId)) {
       payloadMap.put("userid", userId);
-    }
-    if (isLongNumeric(roiEvent.getTransactionTimestamp())) {
-      payloadMap.put("producereventts", roiEvent.getTransactionTimestamp());
     }
   }
 
@@ -660,5 +683,33 @@ public class UnifiedTrackingMessageParser {
    */
   private static <T> T coalesce(T a, T b) {
     return a == null ? b : a;
+  }
+
+  /**
+   * Get environment for event emitter
+   */
+  private static EnvironmentEnum getEnv() throws Exception {
+    String env = ApplicationOptions.getInstance().getEnvironment();
+    logger.info("Platform Environment: {}", env);
+
+    EnvironmentEnum environment;
+    switch (env) {
+      case "dev":
+        environment = EnvironmentEnum.DEV;
+        break;
+      case "qa":
+        environment = EnvironmentEnum.STAGING;
+        break;
+      case "pre-production":
+        environment = EnvironmentEnum.PRE_PROD;
+        break;
+      case "production":
+        environment = EnvironmentEnum.PROD;
+        break;
+      default:
+        throw new Exception("No matched environment");
+    }
+
+    return environment;
   }
 }

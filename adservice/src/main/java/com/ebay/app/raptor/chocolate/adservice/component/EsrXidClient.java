@@ -18,6 +18,8 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 
 @Component
@@ -39,15 +41,25 @@ public class EsrXidClient {
     }
 
     public String getUserIdByGuid(String guid) {
-        String userId = StringUtils.EMPTY;
-        if (StringUtils.isBlank(guid)) {
+        String userId = "0";
+        if (StringUtils.isBlank(guid) || guid.length() < 32) {
             return userId;
         }
 
         ESMetrics.getInstance().meter("totalRequestEsrxidCount");
 
         //pguid equals guid here
-        HttpGet httpGet = new HttpGet(esrXidEndpointUrl + "pguid/" + guid);
+        URI uri = null;
+        try {
+            uri = new URI(esrXidEndpointUrl + "pguid/" + guid);
+        } catch (URISyntaxException e) {
+            logger.error("call esrXid error, " + e);
+            ESMetrics.getInstance().meter("FailedGetUidFromEsrxid");
+        }
+        if (uri == null) {
+            return userId;
+        }
+        HttpGet httpGet = new HttpGet(uri);
         try (CloseableHttpResponse response = closeableHttpClient.execute(httpGet)) {
             String jsonString = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
             JSONObject jsonObject = new JSONObject(jsonString);

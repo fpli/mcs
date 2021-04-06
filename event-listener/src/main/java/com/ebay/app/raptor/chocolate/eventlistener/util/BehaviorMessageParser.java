@@ -46,6 +46,8 @@ public class BehaviorMessageParser {
 
   private static BehaviorMessageParser INSTANCE;
 
+  private static final String AGENT_TAG = "Agent";
+
   /**
    * Singleton class
    */
@@ -191,8 +193,9 @@ public class BehaviorMessageParser {
 
   public BehaviorMessage parse(final HttpServletRequest request, ContainerRequestContext requestContext,
                                IEndUserContext endUserContext, MultiValueMap<String, String> parameters,
-                               UserAgentInfo agentInfo, String referrer, String uri, Long startTime, final ChannelType channelType,
-                               final ChannelAction channelAction, Long snapshotId, int rdt) {
+                               UserAgentInfo agentInfo, String referrer, String uri, Long startTime,
+                               final ChannelType channelType, final ChannelAction channelAction,
+                               Long snapshotId, int rdt) {
 
     Map<String, String> applicationPayload = new HashMap<>();
     Map<String, String> clientData = new HashMap<>();
@@ -203,7 +206,8 @@ public class BehaviorMessageParser {
         null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
         null, applicationPayload, null, clientData, "", "", "", data);
 
-    RequestTracingContext tracingContext = (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
+    RequestTracingContext tracingContext =
+        (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
     DomainRequestData domainRequest = (DomainRequestData) requestContext.getProperty(DomainRequestData.NAME);
 
     // guid
@@ -321,7 +325,8 @@ public class BehaviorMessageParser {
    * Get client data
    */
   private Map<String, String> getClientData(Map<String, String> clientData, DomainRequestData domainRequest,
-                                            IEndUserContext endUserContext, HttpServletRequest request, String referrer) {
+                                            IEndUserContext endUserContext, HttpServletRequest request,
+                                            String referrer) {
     clientData.put("ForwardedFor", domainRequest.getXForwardedFor());
     clientData.put("Script", domainRequest.getServletPath());
     clientData.put("Server", domainRequest.getHost());
@@ -330,7 +335,7 @@ public class BehaviorMessageParser {
       clientData.put("TMachine", netAddress.getHostAddress());
     }
     clientData.put("TName", domainRequest.getCommandName());
-    clientData.put("Agent", endUserContext.getUserAgent());
+    clientData.put(AGENT_TAG, endUserContext.getUserAgent());
     clientData.put("RemoteIP", getRemoteIp(request));
     clientData.put("ContentLength", String.valueOf(domainRequest.getContentLength()));
     String ref = referrer;
@@ -375,7 +380,7 @@ public class BehaviorMessageParser {
                                                     ChannelType channelType, ChannelAction channelAction, String guid,
                                                     int pageId) {
     // add tags from parameters
-    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
+    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entries()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
         applicationPayload.put(entry.getKey(), parseTagFromParams(parameters, entry.getValue()));
       }
@@ -428,8 +433,13 @@ public class BehaviorMessageParser {
     // landing page and tracking url
     applicationPayload.put("url_mpre", uri);
 
+    // sid for DSS, just in tracking_event
+    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType)) {
+      applicationPayload.put("sid", parseTagFromParams(parameters, Constants.SOURCE_ID));
+    }
+
     // agent and payload
-    applicationPayload.put("Agent", agentInfo.getUserAgentRawData());
+    applicationPayload.put(AGENT_TAG, agentInfo.getUserAgentRawData());
     applicationPayload.put("Payload", UrlProcessHelper.getMaskedUrl(uri, domainRequest.isSecure(), false));
 
     return encodeTags(deleteNullOrEmptyValue(applicationPayload));
@@ -483,7 +493,7 @@ public class BehaviorMessageParser {
   /**
    * Parse tag from url query string and add to sojourner
    */
-  private static String parseTagFromParams(MultiValueMap<String, String> parameters, String param) {
+  public static String parseTagFromParams(MultiValueMap<String, String> parameters, String param) {
     if (parameters.containsKey(param) && parameters.get(param).get(0) != null) {
       return parameters.getFirst(param);
     }
@@ -526,7 +536,7 @@ public class BehaviorMessageParser {
   private Map<String, String> encodeTags(Map<String, String> inputMap) {
     Map<String, String> outputMap = new HashMap<>();
     for (Map.Entry<String, String> entry : inputMap.entrySet()) {
-      if ("Agent".equals(entry.getKey()) || "Payload".equals(entry.getKey())) {
+      if (AGENT_TAG.equals(entry.getKey()) || "Payload".equals(entry.getKey())) {
         outputMap.put(entry.getKey(), entry.getValue());
       } else {
         outputMap.put(entry.getKey(), FastURLEncoder.encode(entry.getValue(), "UTF-8"));

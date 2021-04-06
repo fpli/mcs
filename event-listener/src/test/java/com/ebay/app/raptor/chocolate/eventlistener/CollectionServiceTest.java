@@ -5,6 +5,7 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
@@ -234,47 +235,6 @@ public class CollectionServiceTest {
 
   }
 
-  @Test (expected = Exception.class)
-  public void collectNotificationNoTracking() throws Exception {
-    HttpServletRequest mockHttpServletRequest = Mockito.mock(HttpServletRequest.class);
-    IEndUserContext mockIEndUserContext = Mockito.mock(IEndUserContext.class);
-    ContainerRequestContext mockContainerRequestContext = Mockito.mock(ContainerRequestContext.class);
-
-    Event event = new Event();
-
-    //no tracking, exception
-    Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-TRACKING")).thenReturn(null);
-    collectionService.collectNotification(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event, 123);
-  }
-
-  @Test (expected = Exception.class)
-  public void collectNotificationNoEndUser() throws Exception {
-    HttpServletRequest mockHttpServletRequest = Mockito.mock(HttpServletRequest.class);
-    IEndUserContext mockIEndUserContext = Mockito.mock(IEndUserContext.class);
-    ContainerRequestContext mockContainerRequestContext = Mockito.mock(ContainerRequestContext.class);
-
-    Event event = new Event();
-
-    // no enduserctx, exception
-    Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-TRACKING")).thenReturn("guid=8b34ef1d1740a4d724970d78eec8ee4c");
-    Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-ENDUSERCTX")).thenReturn(null);
-    collectionService.collectNotification(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event, 123);
-  }
-
-  @Test (expected = Exception.class)
-  public void collectNotificationNoUA() throws Exception {
-    HttpServletRequest mockHttpServletRequest = Mockito.mock(HttpServletRequest.class);
-    IEndUserContext mockIEndUserContext = Mockito.mock(IEndUserContext.class);
-    ContainerRequestContext mockContainerRequestContext = Mockito.mock(ContainerRequestContext.class);
-
-    Event event = new Event();
-
-    // no user agent, exception
-    Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-ENDUSERCTX")).thenReturn(endUserCtxNoReferer);
-    Mockito.when(mockIEndUserContext.getUserAgent()).thenReturn(null);
-    collectionService.collectNotification(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event, 123);
-  }
-
   @Test(expected = Exception.class)
   public void collectSyncNoTracking() throws Exception {
     HttpServletRequest mockHttpServletRequest = Mockito.mock(HttpServletRequest.class);
@@ -316,5 +276,15 @@ public class CollectionServiceTest {
     // valid
     event.setTargetUrl("https://www.ebayadservices.com/marketingtracing/v1/sync?guid=abc&u=123e12");
     assertTrue(collectionService.collectSync(mockHttpServletRequest, mockRaptorSecureContext, mockContainerRequestContext, event));
+  }
+
+  @Test
+  public void inRefererWhitelist() {
+    assertFalse(collectionService.inRefererWhitelist(ChannelType.EPN, "http://www.ebay.com"));
+    assertFalse(collectionService.inRefererWhitelist(ChannelType.EPN, "https://ebay.mtag.io/"));
+    assertFalse(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "http://www.ebay.com"));
+    assertTrue(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "https://ebay.mtag.io/"));
+    assertTrue(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "https://ebay.pissedconsumer.com/"));
+    assertFalse(collectionService.inRefererWhitelist(ChannelType.PAID_SEARCH, "https://ebay.pissedconsumer.com/"));
   }
 }

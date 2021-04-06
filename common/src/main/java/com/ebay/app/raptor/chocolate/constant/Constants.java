@@ -4,7 +4,11 @@
 
 package com.ebay.app.raptor.chocolate.constant;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author xiangli4
@@ -30,9 +34,23 @@ public class Constants {
   public static final String ADGUID = "adguid";
   public static final String GUID = "guid";
   public static final String CGUID = "cguid";
+  public static final String STR_NULL = "null";
 
+  // Request headers
+  public static final String TRACKING_HEADER = "X-EBAY-C-TRACKING";
+  public static final String ENDUSERCTX_HEADER = "X-EBAY-C-ENDUSERCTX";
+  public static final String AUTH_HEADER = "Authorization";
+
+  // URL related
   public static final String MKRVRID = "mkrvrid";
   public static final String REFERRER = "referrer";
+  public static final String HTTPS_ENCODED = "https%3A%2F%2";
+  public static final String HTTP_ENCODED = "http%3A%2F%2";
+  public static final String SOJ_MPRE_TAG = "url_mpre";
+
+  // EPN url params
+  public static final String TOOL_ID = "toolid";
+  public static final String CAMP_ID = "campid";
 
   // Email url params
   public static final String MKPID = "mkpid";
@@ -43,12 +61,12 @@ public class Constants {
   public static final String BEST_GUESS_USER = "bu";
   public static final String CAMP_RUN_DT = "crd";
   public static final String SEGMENT_NAME = "segname";
+  public static final String SEGMENT_NAME_S = "seg";
   public static final String YM_MSSG_MSTR_ID = "ymmmid";
   public static final String YM_MSSG_ID = "ymsid";
   public static final String YM_INSTC = "yminstc";
   public static final String SMS_ID = "smsid";
   public static final String CHOCO_BUYER_ACCESS_SITE_ID = "choco_bs";
-  public static final String TRACKING_ID = "tracking.id";
 
   public static final String REFERER_HEADER = "referer";
   public static final String REFERER_HEADER_UPCASE = "Referer";
@@ -57,15 +75,6 @@ public class Constants {
   public static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   public static final String REDIRECT_SRC_SOJ_SOURCE = "adcamp_locationsrc";
   public static final String ADOBE_CAMP_PUBLIC_USER_ID = "pu";
-
-  // Mobile Notification name and soj tags
-  public static final String NOTIFICATION_ID = "nid";
-  public static final String NOTIFICATION_TYPE = "ntype";
-  public static final String NOTIFICATION_ACTION = "pnact";
-  public static final String USER_NAME = "user_name";
-  public static final String MC3_MSSG_ID = "mc3id";
-  public static final String ITEM_ID = "itm";
-  public static final String NOTIFICATION_TYPE_EVT = "evt";
 
   // Redirection header name
   public static final String NODE_REDIRECTION_HEADER_NAME = "X-EBAY-TRACKING-MARKETING-STATUS-CODE";
@@ -83,10 +92,24 @@ public class Constants {
   public static final String CHANNEL_ACTION = "channelAction";
   public static final String CHANNEL_TYPE = "channelType";
 
+  // Promoted Listings url params
+  // mksrc is used to mark if the click is from promoted listings iframe on ebay partner site
+  public static final String MKSRC = "mksrc";
+  // plrfr is the actual referer for the clicks from promoted listings iframe on ebay partner site
+  public static final String PLRFR = "plrfr";
+
+  /**
+   * Performance marketing channels
+   */
+  public static final Set<ChannelIdEnum> PM_CHANNELS = new HashSet<>(
+      Arrays.asList(ChannelIdEnum.EPN, ChannelIdEnum.PAID_SEARCH,
+          ChannelIdEnum.DAP, ChannelIdEnum.SOCIAL_MEDIA, ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
+  );
+
   /**
    * Email tag - param map
    */
-  public static final ImmutableMap<String, String> emailTagParamMap = new ImmutableMap.Builder<String, String>()
+  public static final ImmutableMultimap<String, String> emailTagParamMap = new ImmutableMultimap.Builder<String, String>()
       .put("adcamp_landingpage", "adcamp_landingpage")
       .put("adcamp_locationsrc", "adcamp_locationsrc")
       .put("adcamppu", "pu")
@@ -106,10 +129,11 @@ public class Constants {
       .put("nqt", "nqt")
       .put("osub", "osub")
       .put("placement-type", "placement-type")
+      .put("placement-type", "pt")
       .put("rank", "rank")
       .put("rpp_cid", "rpp_cid")
       .put("segname", "segname")
-      .put("sid", "emsid")
+      .put("segname", "seg")
       .put("yminstc", "yminstc")
       .put("ymmmid", "ymmmid")
       .put("ymsid", "ymsid")

@@ -7,6 +7,7 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.kernel.util.StringUtils;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -21,6 +22,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.ebay.app.raptor.chocolate.constant.Constants.TRACKING_HEADER;
+
 /**
  * Utility class for parsing the POJOs
  *
@@ -31,7 +34,7 @@ public class ListenerMessageParser {
   /**
    * Logging instance
    */
-  private static final Logger logger = LoggerFactory.getLogger(ListenerMessageParser.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ListenerMessageParser.class);
   private static ListenerMessageParser INSTANCE;
   private static final long DEFAULT_PUBLISHER_ID = -1L;
 
@@ -42,41 +45,45 @@ public class ListenerMessageParser {
   /**
    * Convert a HTTP request to a listener message for Kafka.
    *
-   * @param clientRequest  raw client request
-   * @param requestContext raptor request context
+   * @param headers        raw client request headers
+   * @param endUserContext raptor enduserctx
+   * @param userPrefsCtx   user prefs context
    * @param startTime      as start time of the request
    * @param campaignId     campaign id
    * @param channelType    channel type
    * @param action         action
-   * @param endUserContext X-C-EBAY-ENDUSERCTX
+   * @param userId         oracle id
    * @param uri            landing page url
    * @param referer        ad referer
    * @param rotationId     rotation id
    * @param snid           snid
    * @return ListenerMessage object
    */
-  public ListenerMessage parse(final HttpServletRequest clientRequest, final ContainerRequestContext requestContext,
-                               Long startTime, Long campaignId, final ChannelType channelType, final ChannelActionEnum action,
-                               String userId, IEndUserContext endUserContext, String uri, String referer, long rotationId, String snid) {
+  public ListenerMessage parse(Map<String, String> headers, IEndUserContext endUserContext,
+                               UserPrefsCtx userPrefsCtx, Long startTime, Long campaignId,
+                               final ChannelType channelType, final ChannelActionEnum action, String userId,
+                               String uri, String referer, long rotationId, String snid) {
     // set default values to prevent unable to serialize message exception
     ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "",
-            "", "", "", "", 0L, "", "", -1L, -1L,
-            0L, "", 0L, 0L, "", "", "",
-            ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
+        "", "", "", "", 0L, "", "", -1L, -1L,
+        0L, "", 0L, 0L, "", "", "",
+        ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
 
     // user id
-    record.setUserId(Long.valueOf(userId));
+    if (!StringUtils.isEmpty(userId)) {
+      record.setUserId(Long.valueOf(userId));
+    }
 
+    String trackingHeader = headers.get(TRACKING_HEADER);
     // guid, cguid from tracking header
-    String trackingHeader = clientRequest.getHeader("X-EBAY-C-TRACKING");
     if (!org.springframework.util.StringUtils.isEmpty(trackingHeader)) {
       for (String seg : trackingHeader.split(",")) {
         String[] keyValue = seg.split("=");
         if (keyValue.length == 2) {
-          if (keyValue[0].equalsIgnoreCase("guid")) {
+          if (keyValue[0].equalsIgnoreCase(Constants.GUID)) {
             record.setGuid(keyValue[1]);
           }
-          if (keyValue[0].equalsIgnoreCase("cguid")) {
+          if (keyValue[0].equalsIgnoreCase(Constants.CGUID)) {
             record.setCguid(keyValue[1]);
           }
         }
@@ -95,9 +102,6 @@ public class ListenerMessageParser {
     // parse user prefs
     try {
 
-      // get geo info
-      UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-
       // language code
       record.setLangCd(userPrefsCtx.getLangLocale().toLanguageTag());
 
@@ -108,7 +112,7 @@ public class ListenerMessageParser {
       record.setSiteId((long) userPrefsCtx.getGeoContext().getSiteId());
 
     } catch (Exception e) {
-      logger.error("Parse geo info error");
+      LOGGER.error("Parse geo info error");
     }
 
     // udid
@@ -134,7 +138,7 @@ public class ListenerMessageParser {
     record.setHttpMethod(HttpMethod.GET);
     record.setChannelAction(action.getAvro());
     // Format record
-    record.setRequestHeaders(serializeRequestHeaders(clientRequest));
+    record.setRequestHeaders(serializeRequestHeaders(headers));
     record.setResponseHeaders("");
     record.setTimestamp(startTime);
 
@@ -150,6 +154,39 @@ public class ListenerMessageParser {
     record.setIsTracked(false);
 
     return record;
+  }
+
+
+
+  /**
+   * Serialize the headers, except Authorization
+   *
+   * @param headers request headerss
+   * @return headers string
+   */
+  private String serializeRequestHeaders(Map<String, String> headers) {
+
+    StringBuilder headersBuilder = new StringBuilder();
+
+    if(!headers.isEmpty()) {
+
+      for (Map.Entry<String, String> entry : headers.entrySet()) {
+        String headerName = entry.getKey();
+        // skip auth header
+        if (headerName.equalsIgnoreCase("Authorization")) {
+          continue;
+        }
+        String headerValue = entry.getValue();
+        headers.put(headerName, headerValue);
+        headersBuilder.append("|").append(headerName).append(": ").append(headerValue);
+      }
+    }
+
+    if (!StringUtils.isEmpty(headersBuilder.toString())) {
+      headersBuilder.deleteCharAt(0);
+    }
+
+    return headersBuilder.toString();
   }
 
   /**

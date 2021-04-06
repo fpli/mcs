@@ -766,7 +766,7 @@ public class EventListenerServiceTest {
     //invalid target url in deeplink case
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=http%3A%2F%2Frover.ebay.com%2Frover%2F1%2F710-53481-19255-0%2F1%3Fff3%3D2");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
-    assertEquals(201, response.getStatus());
+    assertEquals(200, response.getStatus());
 
     // no query parameter
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2F");
@@ -973,6 +973,82 @@ public class EventListenerServiceTest {
     marketingStatusCode = "404";
     Response invalidClickResponse = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
     assertEquals(201, invalidClickResponse.getStatus());
+  }
+
+  @Test
+  public void testClickResourceFromEPNPromotedListings() throws InterruptedException {
+    String marketingStatusCode = "200";
+    Event event = new Event();
+    event.setReferrer("https://www.ebay.co.uk/gum/v1/stick?q=carpet%20cleaner");
+    event.setTargetUrl("https://www.ebay.com/itm/233622232591?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&mksrc=PromotedListings&plrfr=https%3A%2F%2Fwww.gumtree.com%2Fv1%2Fstick%3Fq%3Dcarpet");
+
+    // click from promoted listing iframe on ebay partner site, pass
+    Response response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, response.getStatus());
+
+    // click from non-epn channel
+    event.setTargetUrl("https://www.ebay.com/itm/233622232591?mkevt=1&mkcid=2&mkrid=711-53200-19255-0&mksrc=PromotedListings&plrfr=https%3A%2F%2Fwww.gumtree.com%2Fv1%2Fstick%3Fq%3Dcarpet");
+    response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, response.getStatus());
+
+    // click with no mksrc parameter
+    event.setTargetUrl("https://www.ebay.com/itm/233622232591?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&plrfr=https%3A%2F%2Fwww.gumtree.com%2Fv1%2Fstick%3Fq%3Dcarpet");
+    response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, response.getStatus());
+
+    // click with mksrc<>"PromotedListings"
+    event.setTargetUrl("https://www.ebay.com/itm/233622232591?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&mksrc=Promoted&plrfr=https%3A%2F%2Fwww.gumtree.com%2Fv1%2Fstick%3Fq%3Dcarpet");
+    response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, response.getStatus());
+
+    // click with no plrfr
+    event.setTargetUrl("https://www.ebay.com/itm/233622232591?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&mksrc=PromotedListings");
+    response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, response.getStatus());
+
+    // click with plrfr=""
+    event.setTargetUrl("https://www.ebay.com/itm/233622232591?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&mksrc=PromotedListings&plrfr=");
+    response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, response.getStatus());
+
+    // click with original referer="", pass
+    event.setTargetUrl("https://www.ebay.com/itm/233622232591?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&mksrc=PromotedListings&plrfr=https%3A%2F%2Fwww.gumtree.com%2Fv1%2Fstick%3Fq%3Dcarpet");
+    event.setReferrer("");
+    response = postMcsResponseWithStatusCode(eventsPath, endUserCtxNoReferer, tracking, event, marketingStatusCode);
+    assertEquals(201, response.getStatus());
+
+    // click with original referer which is not ebay domain, pass
+    event.setTargetUrl("https://www.ebay.com/itm/233622232591?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&mksrc=PromotedListings&plrfr=https%3A%2F%2Fwww.gumtree.com%2Fv1%2Fstick%3Fq%3Dcarpet");
+    event.setReferrer("https://www.gumtree.com/v1/stick?q=carpet");
+    response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, response.getStatus());
+
+    // click with original referer which is ebay domain but doesn't contain '%/gum/%', the referer will be internal
+    event.setTargetUrl("https://www.ebay.com/itm/233622232591?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&mksrc=PromotedListings&plrfr=https%3A%2F%2Fwww.gumtree.com%2Fv1%2Fstick%3Fq%3Dcarpet");
+    event.setReferrer("https://www.ebay.com/itm/1234567");
+    response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
+    assertEquals(201, response.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerEpn = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
+            consumerEpn, Arrays.asList("dev_listened-epn"), 8, 30 * 1000);
+    consumerEpn.close();
+    // only the no referer one and the valid one with correct plrfr can pass
+    assertEquals(3, listenerMessagesEpn.size());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
+            consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 2, 30 * 1000);
+    consumerPaidSearch.close();
+    assertEquals(0, listenerMessagesPaidSearch.size());
   }
 
   /**

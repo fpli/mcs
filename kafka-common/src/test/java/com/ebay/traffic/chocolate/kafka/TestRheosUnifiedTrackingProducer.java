@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.kafka;
 
-import com.ebay.app.raptor.chocolate.avro.UnifiedTrackingMessage;
+import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
