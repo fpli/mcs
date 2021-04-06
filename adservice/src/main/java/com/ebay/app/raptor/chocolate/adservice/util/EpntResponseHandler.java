@@ -174,21 +174,11 @@ public class EpntResponseHandler {
     }
 
     private void setUserId(URIBuilder uriBuilder, String userId) {
-        addParameter(uriBuilder, Constants.USER_ID, userId);
+        uriBuilder.addParameter(Constants.USER_ID, FastURLEncoder.encode(userId.trim(), KernelConstants.UTF8_ENCODING));
     }
 
     private void setGuid(URIBuilder uriBuilder, String guid) {
-        addParameter(uriBuilder, Constants.GUID, guid);
-    }
-
-    private void addParameter(URIBuilder uriBuilder, String key, String value) {
-        if (StringUtils.isEmpty(key)) {
-            return;
-        }
-        if (StringUtils.isEmpty(value)) {
-            return;
-        }
-        uriBuilder.addParameter(key, FastURLEncoder.encode(value.trim(), KernelConstants.UTF8_ENCODING));
+        uriBuilder.addParameter(Constants.GUID, FastURLEncoder.encode(guid.trim(), KernelConstants.UTF8_ENCODING));
     }
 }
 

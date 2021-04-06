@@ -18,11 +18,10 @@ import com.google.common.primitives.Longs;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -34,15 +33,21 @@ import java.util.*;
 public class UepPayloadHelper {
   public static final String BEST_GUESS_USER = "bu";
   public static final String TRACKING_ID = "trkId";
+  public static final String TRACKING_ID_S = "trid";
   public static final String EXPERIMENT_ID = "exe";
   public static final String TREATMENT_ID = "trt";
   public static final String EXPERIMENT_TYPE = "ext";
   public static final String MOB_TRK_ID = "osub";
   public static final String MESSAGE_ID = "mesgId";
+  public static final String MESSAGE_ID_S = "mid";
   public static final String PLACEMENT_ID = "plmtId";
+  public static final String PLACEMENT_ID_S = "pid";
   public static final String PLACEMENT_POS = "plmtPos";
+  public static final String PLACEMENT_POS_S = "ppo";
   public static final String RECO_ID = "recoId";
+  public static final String RECO_ID_S = "rid";
   public static final String RECO_POS = "recoPos";
+  public static final String RECO_POS_S = "rpo";
   public static final String FEEDBACK = "fdbk";
   public static final String IS_UEP = "isUEP";
   // for ORS migration
@@ -86,7 +91,8 @@ public class UepPayloadHelper {
   public Map<String, String> getUepPayload(String url, ActionTypeEnum actionTypeEnum, ChannelTypeEnum channelTypeEnum) {
     Map<String, String> payload = new HashMap<>();
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(url).build();
-    String bu = uriComponents.getQueryParams().getFirst(BEST_GUESS_USER);
+    MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
+    String bu = parameters.getFirst(BEST_GUESS_USER);
     if (StringUtils.isNotEmpty(bu)) {
       Long encryptedUserId = Longs.tryParse(bu);
       if (encryptedUserId != null) {
@@ -107,7 +113,7 @@ public class UepPayloadHelper {
 //      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), channelTypeEnum.getValue());
 //    }
     // annotation.message.name
-    String segmentCode = uriComponents.getQueryParams().getFirst(Constants.SEGMENT_NAME);
+    String segmentCode = parseFromTwoParams(parameters, Constants.SEGMENT_NAME, Constants.SEGMENT_NAME_S);
     if (segmentCode != null) {
       if (segmentCode.contains(WHITELIST_PATTERN_MARKETING_EMAIL_PA)) {
         payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_PA);
@@ -126,7 +132,7 @@ public class UepPayloadHelper {
     String actualRunDateString = "";
     String runDate = "";
     try {
-      actualRunDateString = uriComponents.getQueryParams().getFirst("crd");
+      actualRunDateString = parameters.getFirst("crd");
       if(StringUtils.isNotEmpty(actualRunDateString)) {
         Date tempRunDate = dateFormatter.parse(actualRunDateString);
         runDate = eventDateStringFormatter.format(tempRunDate);
@@ -139,7 +145,7 @@ public class UepPayloadHelper {
     if(channelTypeEnum.equals(ChannelTypeEnum.SITE_EMAIL)
         || channelTypeEnum.equals(ChannelTypeEnum.SITE_MESSAGE_CENTER)) {
       payload.put(ANNOTATION_CANVAS_UNIQ_ID,
-          getOrDefault(uriComponents.getQueryParams().getFirst(Constants.EMAIL_UNIQUE_ID)));
+          getOrDefault(parameters.getFirst(Constants.EMAIL_UNIQUE_ID)));
     } else if(channelTypeEnum.equals(ChannelTypeEnum.MRKT_EMAIL)
         || channelTypeEnum.equals(ChannelTypeEnum.MRKT_MESSAGE_CENTER)) {
       payload.put(ANNOTATION_CANVAS_UNIQ_ID, runDate);
@@ -165,7 +171,8 @@ public class UepPayloadHelper {
     // tag_intrUnsub, no need
     // cnv.id no need in open/click
     // tracking id
-    String trackingId = getOrDefault(uriComponents.getQueryParams().getFirst(TRACKING_ID));
+    String trackingId = getOrDefault(parseFromTwoParams(parameters, UepPayloadHelper.TRACKING_ID,
+        UepPayloadHelper.TRACKING_ID_S));
 //    payload.put(MessageConstantsEnum.TRACKING_ID.getValue(), trackingId);
     // isUep
     if(StringUtils.isNotEmpty(trackingId)) {
@@ -175,28 +182,28 @@ public class UepPayloadHelper {
     }
 
     // experiment ids
-    payload.put("exe", getOrDefault(uriComponents.getQueryParams().getFirst(EXPERIMENT_ID)));
-    payload.put("ext", getOrDefault(uriComponents.getQueryParams().getFirst(EXPERIMENT_TYPE)));
-//    payload.put("trt", getOrDefault(uriComponents.getQueryParams().getFirst(TREATMENT_ID)));
+    payload.put("exe", getOrDefault(parameters.getFirst(EXPERIMENT_ID)));
+    payload.put("ext", getOrDefault(parameters.getFirst(EXPERIMENT_TYPE)));
+//    payload.put("trt", getOrDefault(parameters.getFirst(TREATMENT_ID)));
 
     // message list
     Message message = new Message();
-    message.mobTrkId = uriComponents.getQueryParams().getFirst(MOB_TRK_ID);
+    message.mobTrkId = parameters.getFirst(MOB_TRK_ID);
     if (actionTypeEnum.equals(ActionTypeEnum.CLICK)) {
       // message level
-      message.mesgId = uriComponents.getQueryParams().getFirst(MESSAGE_ID);
-      message.plmtId = uriComponents.getQueryParams().getFirst(PLACEMENT_ID);
-      message.plmtPos = uriComponents.getQueryParams().getFirst(PLACEMENT_POS);
+      message.mesgId = parseFromTwoParams(parameters, MESSAGE_ID, MESSAGE_ID_S);
+      message.plmtId = parseFromTwoParams(parameters, PLACEMENT_ID, PLACEMENT_ID_S);
+      message.plmtPos = parseFromTwoParams(parameters, PLACEMENT_POS, PLACEMENT_POS_S);
       // feedback click
-      String feedback = uriComponents.getQueryParams().getFirst(FEEDBACK);
+      String feedback = parameters.getFirst(FEEDBACK);
       if(StringUtils.isNotEmpty(feedback)) {
         message.mesgFdbk = feedback;
       }
 
       // recommendation level
       Recommendation recommendation = new Recommendation();
-      recommendation.recoId = uriComponents.getQueryParams().getFirst(RECO_ID);
-      recommendation.recoPos = uriComponents.getQueryParams().getFirst(RECO_POS);
+      recommendation.recoId = parseFromTwoParams(parameters, RECO_ID, RECO_ID_S);
+      recommendation.recoPos = parseFromTwoParams(parameters, RECO_POS, RECO_POS_S);
       // only include reco.list when valid
       if(StringUtils.isNotEmpty(recommendation.recoId) && StringUtils.isNotEmpty(recommendation.recoPos)) {
         List<Recommendation> recoLists = new ArrayList<>();
@@ -218,5 +225,16 @@ public class UepPayloadHelper {
     }
     payload.put("annotation.mesg.list", msgListString);
     return payload;
+  }
+
+  private static String parseFromTwoParams(MultiValueMap<String, String> parameters, String param,
+                                          String shortenedParam) {
+    if (parameters.containsKey(param) && parameters.getFirst(param) != null) {
+      return parameters.getFirst(param);
+    } else if (parameters.containsKey(shortenedParam) && parameters.getFirst(shortenedParam) != null) {
+      return parameters.getFirst(shortenedParam);
+    }
+
+    return null;
   }
 }

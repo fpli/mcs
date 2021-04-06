@@ -88,6 +88,9 @@ public class MrktEmailCollector extends CustomerMarketingCollector {
         // segment name
         addTagFromUrlQuery(parameters, requestTracker, Constants.SEGMENT_NAME, "segname", String.class);
 
+        // shortened segment name
+        addTagFromUrlQuery(parameters, requestTracker, Constants.SEGMENT_NAME_S, "segname", String.class);
+
         // Yesmail message master id
         addTagFromUrlQuery(parameters, requestTracker, Constants.YM_MSSG_MSTR_ID, "ymmmid", String.class);
 

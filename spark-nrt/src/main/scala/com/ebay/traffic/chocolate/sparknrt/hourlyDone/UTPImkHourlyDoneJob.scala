@@ -64,6 +64,7 @@ class UTPImkHourlyDoneJob(params: Parameter, override val enableHiveSupport: Boo
   def getLastDoneFileDatetimeFromDoneFiles(fileStatus: Array[FileStatus]): ZonedDateTime = {
     fileStatus
       .map(status => status.getPath.getName)
+      .filter(fileName => fileName.contains(doneFilePrefix))
       .map(fileName =>  {
         val str = fileName.substring(doneFilePrefix.length, fileName.length - doneFilePostfix.length)
         ZonedDateTime.parse(str, doneFileDatetimeFormatter)
@@ -88,9 +89,17 @@ class UTPImkHourlyDoneJob(params: Parameter, override val enableHiveSupport: Boo
     var lastDone: ZonedDateTime = idealDone
     var delays = 0L
 
-    // if today done file dir already exist, just check today's done, otherwise, check yesterday
+    // if today done file doesn't exist, check yesterday
     if (fs.exists(todayDoneDir) && fs.listStatus(todayDoneDir).length != 0) {
-      lastDone = getLastDoneFileDatetimeFromDoneFiles(fs.listStatus(todayDoneDir))
+      val todayDoneFiles = fs.listStatus(todayDoneDir)
+        .map(status => status.getPath.getName)
+        .filter(fileName => fileName.contains(doneFilePrefix))
+      if (!todayDoneFiles.isEmpty) {
+        lastDone = getLastDoneFileDatetimeFromDoneFiles(fs.listStatus(todayDoneDir))
+      } else {
+        fs.mkdirs(todayDoneDir)
+        lastDone = getLastDoneFileDatetimeFromDoneFiles(fs.listStatus(yesterdayDoneDir))
+      }
     } else {
       fs.mkdirs(todayDoneDir)
       lastDone = getLastDoneFileDatetimeFromDoneFiles(fs.listStatus(yesterdayDoneDir))
