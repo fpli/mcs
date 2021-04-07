@@ -6,7 +6,7 @@ function start_job(){
     host=$1
     ssh -o ServerAliveInterval=180 -o ServerAliveCountMax=10 -T -i /usr/azkaban/id_rsa_spark _choco_admin@${host} <<EOSSH
     hostname
-    cd /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod
+    cd /datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod
     pwd
     export HADOOP_USER_NAME=chocolate
     echo $HADOOP_USER_NAME
