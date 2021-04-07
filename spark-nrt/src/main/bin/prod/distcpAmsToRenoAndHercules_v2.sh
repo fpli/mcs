@@ -3,22 +3,22 @@
 # Put files from chocolate hadoop to Apollo RNO and Hercules. The input files will be deleted.
 # Input:    lvs Hadoop
 #           /apps/tracking-events-workdir-v2/meta/EPN/output/epnnrt_scp_click
-#           hdfs://slickha/apps/epn-nrt/click/date=
+#           hdfs://slickha/apps/epn-nrt-v2/click/date=
 # Output:   Apollo RNO
-#           /apps/b_marketing_tracking/chocolate/epnnrt/click/click_dt=
+#           /apps/b_marketing_tracking/chocolate/epnnrt_v2/click/click_dt=
 #           Hercules
-#           /sys/edw/imk/im_tracking/epn/ams_click/snapshot/click_dt=
+#           /sys/edw/imk/im_tracking/epn/ams_click_v2/snapshot/click_dt=
 # Input:    lvs Hadoop
 #           /apps/tracking-events-workdir-v2/meta/EPN/output/epnnrt_scp_imp
-#           hdfs://slickha/apps/epn-nrt/impression/date=
+#           hdfs://slickha/apps/epn-nrt-v2/impression/date=
 # Output:   Apollo RNO
-#           /apps/b_marketing_tracking/chocolate/epnnrt/imp/imprsn_dt=
+#           /apps/b_marketing_tracking/chocolate/epnnrt_v2/imp/imprsn_dt=
 #           Hercules
-#           /sys/edw/imk/im_tracking/epn/ams_impression/snapshot/imprsn_dt=
+#           /sys/edw/imk/im_tracking/epn/ams_impression_v2/snapshot/imprsn_dt=
 # Schedule: /3 * ? * *
 # case：
-#./distcpAmsToRenoAndHercules_v2.sh /apps/epn-nrt_v2/click /apps/b_marketing_tracking/chocolate/epnnrt/click /sys/edw/imk/im_tracking/epn/ams_click_v2/snapshot click
-#./distcpAmsToRenoAndHercules_v2.sh /apps/epn-nrt_v2/impression /apps/b_marketing_tracking/chocolate/epnnrt/imp /sys/edw/imk/im_tracking/epn/ams_impression_v2/snapshot imp
+#./distcpAmsToRenoAndHercules_v2.sh /apps/epn-nrt-v2/click /apps/b_marketing_tracking/chocolate/epnnrt_v2/click /sys/edw/imk/im_tracking/epn/ams_click_v2/snapshot click
+#./distcpAmsToRenoAndHercules_v2.sh /apps/epn-nrt-v2/impression /apps/b_marketing_tracking/chocolate/epnnrt_v2/imp /sys/edw/imk/im_tracking/epn/ams_impression_v2/snapshot imp
 
 set -x
 
@@ -52,7 +52,7 @@ echo "HERCULES_DEST_DIR:${HERCULES_DEST_DIR}"
 
 HOST_NAME=`hostname -f`
 RENO_DISTCP_DIR='/datashare/mkttracking/tools/apache/distcp/apollo'
-LOCAL_TMP_DIR='/datashare/mkttracking/data/epn-nrt/distcpTmp'
+LOCAL_TMP_DIR='/datashare/mkttracking/data/epn-nrt-v2/distcpTmp'
 echo "HOST_NAME ：${HOST_NAME}"
 echo "RENO_DISTCP_DIR ：${RENO_DISTCP_DIR}"
 dt_hour=$(date +%Y-%m-%d%H)
@@ -170,7 +170,7 @@ function process_meta_file(){
       if [ ! -f "${meta_file_name}" ]; then
         continue;
       fi
-      python /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/readMetaFile.py ${meta_file_name} ${output_file}
+      python /datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod/readMetaFile.py ${meta_file_name} ${output_file}
       rcode=$?
       if [ ${rcode} -ne 0 ]
       then
@@ -204,9 +204,9 @@ function process_meta_file(){
   done
 }
 
-cd /datashare/mkttracking/jobs/tracking/epnnrt/bin/prod
+cd /datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod
 
-./putAmsHourlyDoneToRenoAndHercules.sh ${TYPE}
+./putAmsHourlyDoneToRenoAndHercules_v2.sh ${TYPE}
 
 cd ${LOCAL_TMP_DIR}
 

@@ -6,7 +6,7 @@ bin=`dirname "$0"`
 bin=`cd "$bin">/dev/null; pwd`
 
 ##################### SPARK NRT Job Parameters ##################
-WORK_DIR=hdfs://elvisha/apps/tracking-events-workdir-v2
+WORK_DIR=hdfs://slickha/apps/tracking-events-workdir-v2
 RESOURCE_DIR=/apps/tracking-resources-v2
 FILTER_HOUR=1     # 1:00am
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
