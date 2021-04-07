@@ -40,5 +40,4 @@ echo "FILTER_TIME="${FILTER_TIME} | tee -a ${log_file}
 ##################### Spark Submit ##################
 export HADOOP_USER_NAME=chocolate
 echo $HADOOP_USER_NAME
-#/datashare/mkttracking/jobs/tracking/epnnrt/bin/prod/epnnrt.sh ${WORK_DIR} ${RESOURCE_DIR} ${FILTER_TIME}
 /datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod/epnnrt_impression_v2.sh ${WORK_DIR} ${RESOURCE_DIR} "0"

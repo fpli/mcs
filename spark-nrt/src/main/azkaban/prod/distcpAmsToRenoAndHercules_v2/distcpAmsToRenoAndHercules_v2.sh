@@ -10,8 +10,8 @@ function start_job(){
     pwd
     export HADOOP_USER_NAME=chocolate
     echo $HADOOP_USER_NAME
-    ./distcpAmsToRenoAndHercules.sh /apps/epn-nrt-v2/click /apps/b_marketing_tracking/chocolate/epnnrt_v2/click /sys/edw/imk/im_tracking/epn/ams_click_v2/snapshot click &&
-    ./distcpAmsToRenoAndHercules.sh /apps/epn-nrt-v2/impression /apps/b_marketing_tracking/chocolate/epnnrt_v2/imp /sys/edw/imk/im_tracking/epn/ams_impression_v2/snapshot imp
+    ./distcpAmsToRenoAndHercules_v2.sh /apps/epn-nrt-v2/click /apps/b_marketing_tracking/chocolate/epnnrt_v2/click /sys/edw/imk/im_tracking/epn/ams_click_v2/snapshot click &&
+    ./distcpAmsToRenoAndHercules_v2.sh /apps/epn-nrt-v2/impression /apps/b_marketing_tracking/chocolate/epnnrt_v2/imp /sys/edw/imk/im_tracking/epn/ams_impression_v2/snapshot imp
 EOSSH
 }
 
