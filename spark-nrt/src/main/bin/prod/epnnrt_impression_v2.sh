@@ -14,8 +14,8 @@ bin=`cd "$bin">/dev/null; pwd`
 
 . ${bin}/../chocolate-env.sh
 
-SLC_WORK_DIR=$1
-LVS_WORK_DIR=$2
+INPUT_WORK_DIR=$1
+OUTPUT_WORK_DIR=$2
 RESOURCE_DIR=$3
 FILTER_TIME=$4
 OUTPUT_DIR=hdfs://slickha/apps/epn-nrt-v2
@@ -49,8 +49,8 @@ ${SPARK_HOME}/bin/spark-submit \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
-      --lvsWorkDir ${LVS_WORK_DIR} \
-      --slcWorkDir ${SLC_WORK_DIR} \
+      --inputWorkDir ${INPUT_WORK_DIR} \
+      --outputWorkDir ${OUTPUT_WORK_DIR} \
       --partitions 3 \
       --resourceDir ${RESOURCE_DIR} \
       --filterTime ${FILTER_TIME} \

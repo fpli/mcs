@@ -6,15 +6,15 @@ bin=`dirname "$0"`
 bin=`cd "$bin">/dev/null; pwd`
 
 ##################### SPARK NRT Job Parameters ##################
-SLC_WORK_DIR=hdfs://slickha/apps/tracking-events-workdir-v2
-LVS_WORK_DIR=hdfs://elvisha/apps/tracking-events-workdir-v2
+INPUT_WORK_DIR=hdfs://elvisha/apps/tracking-events-workdir
+OUTPUT_WORK_DIR=hdfs://slickha/apps/tracking-events-workdir-v2
 RESOURCE_DIR=/apps/tracking-resources-v2
 FILTER_HOUR=1     # 1:00am
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
-log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/scheduler_${log_dt}.log"
+log_file="/datashare/mkttracking/logs/chocolate/epn-nrt-v2/scheduler_${log_dt}.log"
 
-echo "SLC_WORK_DIR="${SLC_WORK_DIR} | tee -a ${log_file}
-echo "LVS_WORK_DIR="${LVS_WORK_DIR} | tee -a ${log_file}
+echo "INPUT_WORK_DIR="${INPUT_WORK_DIR} | tee -a ${log_file}
+echo "OUTPUT_WORK_DIR="${OUTPUT_WORK_DIR} | tee -a ${log_file}
 
 echo "RESOURCE_DIR="${RESOURCE_DIR} | tee -a ${log_file}
 echo "FILTER_HOUR="${FILTER_HOUR} | tee -a ${log_file}
@@ -43,4 +43,4 @@ echo "FILTER_TIME="${FILTER_TIME} | tee -a ${log_file}
 ##################### Spark Submit ##################
 export HADOOP_USER_NAME=chocolate
 echo $HADOOP_USER_NAME
-/datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod/epnnrt_impression_v2.sh ${SLC_WORK_DIR} ${LVS_WORK_DIR} ${RESOURCE_DIR} "0"
+/datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod/epnnrt_impression_v2.sh ${INPUT_WORK_DIR} ${OUTPUT_WORK_DIR} ${RESOURCE_DIR} "0"

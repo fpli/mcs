@@ -20,10 +20,10 @@ abstract class BaseEpnNrtJob_v2(params: Parameter_v2,
     * epnnrt job dir
     */
   lazy val outputDir = params.outputDir
-  lazy val slcWorkDir = params.slcWorkDir
-  lazy val lvsWorkDir = params.lvsWorkDir
+  lazy val inputWorkDir = params.inputWorkDir
+  lazy val outputWorkDir = params.outputWorkDir
   lazy val epnNrtTempDir = outputDir + "/tmp/"
-  lazy val archiveDir = lvsWorkDir + "/meta/EPN/output/archive/"
+  lazy val archiveDir = inputWorkDir + "/meta/EPN/output/archive/"
 
   /**
     * epnnrt job properties
@@ -36,19 +36,19 @@ abstract class BaseEpnNrtJob_v2(params: Parameter_v2,
   }
 
   /**
-    * epnnrt job metadata--slc
+    * epnnrt job metadata--input
     */
-  @transient lazy val slcMetadata: Metadata = {
+  @transient lazy val inputMetadata: Metadata = {
     val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
-    Metadata(params.slcWorkDir, ChannelType.EPN.toString, usage)
+    Metadata(params.inputWorkDir, ChannelType.EPN.toString, usage)
   }
 
   /**
-   * epnnrt job metadata--lvs
+   * epnnrt job metadata--output
    */
-  @transient lazy val lvsMetadata: Metadata = {
+  @transient lazy val outputMetadata: Metadata = {
     val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
-    Metadata(params.lvsWorkDir, ChannelType.EPN.toString, usage)
+    Metadata(params.outputWorkDir, ChannelType.EPN.toString, usage)
   }
 
   /**
