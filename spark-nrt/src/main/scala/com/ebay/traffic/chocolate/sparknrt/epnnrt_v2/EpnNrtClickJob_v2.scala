@@ -24,8 +24,8 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
   lazy val epnNrtScpMetaClickTempDir = outputDir + "/tmp_scp_meta_click/"
 
   //meta final dir
-  lazy val epnNrtResultMetaClickDir = workDir + "/meta/EPN/output/epnnrt_click/"
-  lazy val epnNrtScpMetaClickDir = workDir + "/meta/EPN/output/epnnrt_scp_click/"
+  lazy val epnNrtResultMetaClickDir = slcWorkDir + "/meta/EPN/output/ epnnrt_click/"
+  lazy val epnNrtScpMetaClickDir = slcWorkDir + "/meta/EPN/output/epnnrt_scp_click/"
 
   lazy val clickDir = "/click/"
 
@@ -44,7 +44,7 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
     //1. load meta files
     logger.info("load metadata...")
 
-    var cappingMeta = metadata.readDedupeOutputMeta(".epnnrt_v2")
+    var cappingMeta = lvsMetadata.readDedupeOutputMeta(".epnnrt_v2")
 
     if (cappingMeta.length > batchSize) {
       cappingMeta = cappingMeta.slice(0, batchSize)
@@ -136,9 +136,9 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
 
           retry(3) {
             deleteMetaTmpDir(epnNrtResultMetaClickTempDir)
-            metadata.writeOutputMeta(click_metaFile, epnNrtResultMetaClickTempDir, "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
+            slcMetadata.writeOutputMeta(click_metaFile, epnNrtResultMetaClickTempDir, "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
             deleteMetaTmpDir(epnNrtScpMetaClickTempDir)
-            metadata.writeOutputMeta(click_metaFile, epnNrtScpMetaClickTempDir, "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            slcMetadata.writeOutputMeta(click_metaFile, epnNrtScpMetaClickTempDir, "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
             metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
             logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
           }
@@ -155,7 +155,7 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
 
       // 7.delete the finished meta files
       logger.info(s"delete metafile=$file")
-      metadata.deleteDedupeOutputMeta(file)
+      lvsMetadata.deleteDedupeOutputMeta(file)
 
       logger.info("Successfully processed the meta file: + " + file)
       metrics.meter("MetaFileCount", 1,  Field.of[String, AnyRef]("channelAction", "CLICK"))
