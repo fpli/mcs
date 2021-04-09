@@ -5,7 +5,7 @@ import scopt.OptionParser
 /**
  * Created by jialili1 on 06/21/19.
  */
-case class Parameter_v2(appName: String = "AMSHourlyMinTs",
+case class Parameter_v2(appName: String = "AMSHourlyMinTs_v2",
                      mode: String = "yarn",
                      workDir: String = "",
                      channel: String = "",
@@ -15,8 +15,8 @@ case class Parameter_v2(appName: String = "AMSHourlyMinTs",
 
 object Parameter_v2 {
 
-  private lazy val parser = new OptionParser[Parameter_v2]("AMSHourlyMinTs") {
-    head("AMSHourlyMinTs")
+  private lazy val parser = new OptionParser[Parameter_v2]("AMSHourlyMinTs_v2") {
+    head("AMSHourlyMinTs_v2")
 
     opt[String]("appName")
       .optional

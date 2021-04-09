@@ -27,14 +27,12 @@ USAGE_CLICK=epnnrt_scp_click
 USAGE_IMP=epnnrt_scp_imp
 
 RENO_META_SUFFIX=.epnnrt_reno
-RENO_DIR=/apps/b_marketing_tracking/chocolate/epnnrt_v2
 RENO_LOCAL_DONE_DATE_FILE_CLICK=/datashare/mkttracking/data/epn-nrt-v2/local_done_date_rno_click.txt
 RENO_LOCAL_DONE_DATE_FILE_IMP=/datashare/mkttracking/data/epn-nrt-v2/local_done_date_rno_imp.txt
 RENO_MIN_TS_FILE_CLICK=/apps/epn-nrt-v2/min_ts_rno_click.txt
 RENO_MIN_TS_FILE_IMP=/apps/epn-nrt-v2/min_ts_rno_imp.txt
 
 HERCULES_META_SUFFIX=.epnnrt_hercules
-HERCULES_DIR=/sys/edw/imk/im_tracking/epn
 HERCULES_LOCAL_DONE_DATE_FILE_CLICK=/datashare/mkttracking/data/epn-nrt-v2/local_done_date_hercules_click.txt
 HERCULES_LOCAL_DONE_DATE_FILE_IMP=/datashare/mkttracking/data/epn-nrt-v2/local_done_date_hercules_imp.txt
 HERCULES_MIN_TS_FILE_CLICK=/apps/epn-nrt-v2/min_ts_hercules_click.txt
