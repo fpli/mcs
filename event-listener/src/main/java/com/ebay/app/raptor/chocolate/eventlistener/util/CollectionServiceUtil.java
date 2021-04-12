@@ -5,6 +5,7 @@ import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
+import org.apache.http.client.utils.URIBuilder;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
@@ -13,6 +14,8 @@ import java.net.URLEncoder;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 
 /**
  * @author xiangli4
@@ -240,5 +243,97 @@ public class CollectionServiceUtil {
       }
     }
     return isEPNPromotedListingClick;
+  }
+
+  /**
+   * Get the substring between start and end. Compatible with com.ebay.hadoop.udf.soj.StrBetweenEndList
+   * @param url source string
+   * @param start start string
+   * @param end end string
+   * @return substring
+   */
+  public static String substring(String url, String start, String end) {
+    if (StringUtils.isEmpty(url)) {
+      return null;
+    }
+    int startPos;
+    int endPos;
+
+    if (!StringUtils.isEmpty(start)) {
+      startPos = url.indexOf(start);
+      if (startPos < 0) {
+        return null;
+      } else {
+        startPos += start.length();
+        if (startPos == url.length()) {
+          return null;
+        }
+      }
+    } else {
+      startPos = 0;
+    }
+
+    if (StringUtils.isEmpty(end)) {
+      return url.substring(startPos);
+    }
+
+    endPos = url.length();
+    int len = end.length();
+    for (int i = 0; i < len; ++i) {
+      char c = end.charAt(i);
+      int l = url.indexOf(c, startPos);
+      if (l != -1 && l < endPos) {
+        endPos = l;
+      }
+    }
+
+    return endPos > startPos ? url.substring(startPos, endPos) : null;
+  }
+
+  /**
+   * for native uri with Chocolate parameters, re-construct Chocolate url bases on native uri (only support /itm page)
+   */
+  public static String constructViewItemChocolateURLForDeepLink(MultiValueMap<String, String> deeplinkParamMap) {
+    String viewItemChocolateURL = "";
+
+    try {
+      String rotationId = deeplinkParamMap.get(MKRID).get(0);
+      String clientId = parseClientIdFromRotation(rotationId);
+      String urlHost = clientIdHostMap.get(clientId);
+
+      if (!StringUtils.isEmpty(urlHost)) {
+        URIBuilder deeplinkURIBuilder = new URIBuilder(urlHost);
+        String deeplinkURIPath = ITEM_TAG + "/" + deeplinkParamMap.get(ID).get(0);
+        deeplinkURIBuilder.setPath(deeplinkURIPath);
+
+        for (String key: deeplinkParamMap.keySet()) {
+          if (!key.equals(NAV) && !key.equals(ID) && !key.equals(REFERRER)) {
+            deeplinkURIBuilder.addParameter(key, deeplinkParamMap.get(key).get(0));
+          }
+        }
+        // this parameter is used to mark the click whose original url is custom uri with Chocolate parameters
+        deeplinkURIBuilder.addParameter(DEEP_LINK_WITH_CHOCO_PARAMS_FLAG, "1");
+        viewItemChocolateURL = deeplinkURIBuilder.toString();
+      }
+    } catch (Exception e) {
+      viewItemChocolateURL = "";
+    }
+    return viewItemChocolateURL;
+  }
+
+  /**
+   * extract client id from rotation id
+   */
+  public static String parseClientIdFromRotation(String rotationId) {
+    String clientId = "999";
+
+    if (!StringUtils.isEmpty(rotationId)) {
+      String[] rotationParts = rotationId.split("-");
+      if (rotationParts.length == 4) {
+        clientId = rotationParts[0];
+      }
+    }
+
+    return clientId;
   }
 }
