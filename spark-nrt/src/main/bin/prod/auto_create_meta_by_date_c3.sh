@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 
 set -x
-usage="Usage:auto_create_meta_by_date_c3.sh"1
+usage="Usage:auto_create_meta_by_date_c3.sh [date]"
 
-date=${date -d '2 days ago' +%Y-%m-%d}
+#date=${date -d '2 days ago' +%Y-%m-%d}
+if [ $# -lt 1 ]; then
+  exit 1
+fi
+
+date=$1;
 echo "date:${date}"
 
 export HADOOP_USER_NAME=chocolate
-work_path="hdfs://elvisha/apps/b_marketing_tracking/tracking-events"
+work_path="hdfs://elvisha/apps/tracking-events"
 local_path="/datashare/mkttracking/test"
 cd $local_path;
 channel_file_list_file="${local_path}/channel_file_list_file.txt"
@@ -15,9 +20,8 @@ channel_file_list_file="${local_path}/channel_file_list_file.txt"
 function createMeta() {
     channel=$1;
     local_channel_path="${local_path}/${date}/${channel}"
-    work_channel_path="${work_path}/${channel}/capping/date=${date}"
-    dest_channel_path_old_test="hdfs://slickha/apps/b_marketing_tracking/tracking-events-workdir-old-test/meta/EPN/output/capping"
-    dest_channel_path_new_test="hdfs://slickha/apps/b_marketing_tracking/tracking-events-workdir-new-test/meta/EPN/output/capping"
+    dest_channel_path_old_test="hdfs://slickha/apps/tracking-events-workdir-old-test/meta/EPN/output/capping"
+    dest_channel_path_new_test="hdfs://slickha/apps/tracking-events-workdir-new-test/meta/EPN/output/capping"
     if [ ! -d "${local_channel_path}" ]; then
       mkdir -p "${local_channel_path}"
     fi
