@@ -12,6 +12,8 @@ INPUT_WORK_DIR_NEW=hdfs://slickha/apps/tracking-events-workdir-new-test
 OUTPUT_WORK_DIR_NEW=hdfs://slickha/apps/tracking-events-workdir-new-test
 
 RESOURCE_DIR=/apps/tracking-resources-test
+OUTPUT_DIR_OLD=hdfs://slickha/apps/epn-nrt-old-test
+OUTPUT_DIR_OLD=hdfs://slickha/apps/epn-nrt-old-test
 FILTER_HOUR=1     # 1:00am
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
 log_file="/datashare/mkttracking/logs/chocolate/epn-nrt/scheduler_${log_dt}.log"
