@@ -10,7 +10,8 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 class TestEpnNrtCommon_v2 extends BaseFunSuite{
 
   private val tmpPath = createTempPath()
-  private val workDir = tmpPath + "/workDir/"
+  private val inputWorkDir = tmpPath + "/inputWorkDir/"
+  private val outputWorkDir = tmpPath + "/outputWorkDir/"
   private val resourceDir = tmpPath
 
   val schema = StructType(
@@ -35,7 +36,8 @@ class TestEpnNrtCommon_v2 extends BaseFunSuite{
 
   val args = Array(
     "--mode", "local[8]",
-    "--workDir", workDir,
+    "--inputWorkDir", inputWorkDir,
+    "--outputWorkDir", outputWorkDir,
     "--resourceDir", resourceDir,
     "--filterTime", "0",
     "--outputDir", tmpPath

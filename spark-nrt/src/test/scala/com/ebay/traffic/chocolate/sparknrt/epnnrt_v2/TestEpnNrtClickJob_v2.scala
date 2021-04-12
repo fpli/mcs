@@ -17,9 +17,9 @@ import org.apache.spark.sql.functions.col
 
 class TestEpnNrtClickJob_v2 extends BaseFunSuite{
   private val tmpPath = createTempPath()
-
   private val inputDir = tmpPath + "/inputDir/"
-  private val workDir = tmpPath + "/workDir/"
+  private val inputWorkDir = tmpPath + "/inputWorkDir/"
+  private val outputWorkDir = tmpPath + "/outputWorkDir/"
   private val outputDir = tmpPath + "/outputDir/"
   private val resourceDir = tmpPath
 
@@ -43,7 +43,8 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
 
     val args = Array(
       "--mode", "local[8]",
-      "--workDir", workDir,
+      "--inputWorkDir", inputWorkDir,
+      "--outputWorkDir", outputWorkDir,
       "--resourceDir", resourceDir,
       "--filterTime", "0",
       "--outputDir", outputDir
@@ -51,8 +52,10 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
     val params = Parameter_v2(args)
     val job = new EpnNrtClickJob_v2(params)
 
-    val metadata1 = Metadata(workDir, "EPN", MetadataEnum.capping)
-    val dedupeMeta = metadata1.readDedupeOutputMeta(".epnnrt_v2")
+    val inputMetadata = Metadata(inputWorkDir, "EPN", MetadataEnum.capping)
+    val outputMetadata = Metadata(outputWorkDir, "EPN", MetadataEnum.capping)
+
+    val dedupeMeta = inputMetadata.readDedupeOutputMeta(".epnnrt_v2")
     val dedupeMetaPath = new Path(dedupeMeta(0)._1)
 
     assert (fs.exists(dedupeMetaPath))
@@ -102,7 +105,7 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
   }
 
   def createTestDataForEPN(): Unit = {
-    val metadata = Metadata(workDir, "EPN", MetadataEnum.capping)
+    val metadata = Metadata(inputWorkDir, "EPN", MetadataEnum.capping)
     val dateFiles1 = DateFiles("date=2018-05-01", Array("file://" + inputDir + "/date=2018-05-01/part-00000.snappy.parquet",
       "file://" + inputDir + "/date=2018-05-01/part-00001.snappy.parquet",
       "file://" + inputDir + "/date=2018-05-01/part-00002.snappy.parquet"))
