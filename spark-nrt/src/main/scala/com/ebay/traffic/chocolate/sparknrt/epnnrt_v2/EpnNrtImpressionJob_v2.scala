@@ -121,9 +121,9 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
           //3. build impression dataframe  save dataframe to files and rename files
           var impressionDf = new ImpressionDataFrame_v2(df_impression, epnNrtCommon).build()
           impressionDf = impressionDf.repartition(params.partitions)
-          saveDFToFiles(impressionDf, epnNrtTempDir + IMPRESSION_DIR, "gzip", "parquet", "tab")
+          saveDFToFiles(impressionDf, epnNrtTempDir + IMPRESSION_DIR)
 
-          val countImpDf = readFilesAsDF(epnNrtTempDir + IMPRESSION_DIR, schema_epn_impression_table.dfSchema, "parquet", "tab", false)
+          val countImpDf = readFilesAsDF(epnNrtTempDir + IMPRESSION_DIR, schema_epn_impression_table.dfSchema)
 
           metrics.meter("SuccessfulCount", countImpDf.count(), Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 

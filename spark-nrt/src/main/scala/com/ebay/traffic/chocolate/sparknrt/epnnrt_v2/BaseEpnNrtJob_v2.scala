@@ -117,7 +117,7 @@ abstract class BaseEpnNrtJob_v2(params: Parameter_v2,
         val src = swi._1.getPath
         val seq = ("%5d" format max + 1 + swi._2).replace(" ", "0")
         val target = new Path(dateOutputPath, prefix +
-          date.replaceAll("-", "") + "_" + sc.applicationId + "_" + seq + ".dat.gz")
+          date.replaceAll("-", "") + "_" + sc.applicationId + "_" + seq + ".snappy.parquet")
         fs.rename(src, target)
         target.toString
       })

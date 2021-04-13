@@ -54,7 +54,7 @@ class AmsHourlyMinTsJob_v2(params: Parameter_v2) extends
         val datesFiles = metaIter._2
 
         datesFiles.foreach(datesFile => {
-          val df = readFilesAsDFEx(datesFile._2, schema.dfSchema, "parquet", "tab", false)
+          val df = readFilesAsDFEx(datesFile._2, schema.dfSchema)
             .select(ts_col)
 
           val head = df.take(1)
