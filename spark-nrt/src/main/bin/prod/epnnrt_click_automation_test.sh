@@ -25,7 +25,7 @@ EXECUTOR_NUMBER=40
 EXECUTOR_MEMORY=18g
 EXECUTOR_CORES=5
 
-JOB_NAME="Chocolate_EPN_NRT_CLICK"
+JOB_NAME="Chocolate_EPN_NRT_CLICK_AUTOMATION_TEST"
 
 for f in $(find $bin/../../conf/prod -name '*.*');
 do
