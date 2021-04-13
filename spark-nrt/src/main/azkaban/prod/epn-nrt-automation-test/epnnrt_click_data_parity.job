@@ -1,3 +1,4 @@
 type=command
-command=bash ./SubmitJob.sh "SLC" "/datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod" "./epnnrt_impression_automation_test-scheduler.sh"
+dependencies=epnnrt_click_new_scheduler,epnnrt_click_old_scheduler
+command=bash ./SubmitJob.sh "SLC" "/datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod" "./epnnrt_click_data_parity.sh"
 failure.emails=marketing-tracking-low-priority-incidents@ebay-cpt.pagerduty.com, jialili1@ebay.com, fechen@ebay.com, xiangli4@ebay.com, yliu29@ebay.com, huiclu@ebay.com, shuangxu@ebay.com, lxiong1@ebay.com, zhofan@ebay.com, zhiyuawang@ebay.com, zjian@ebay.com

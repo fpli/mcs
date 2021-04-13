@@ -19,9 +19,10 @@ class EpnNrtDataParityJob(params: Parameter, override val enableHiveSupport: Boo
     import scala.io.Source
     logger.info("epnnrt data parity begin")
     logger.info(params.sqlFile)
-    val file: BufferedSource = Source.fromFile(params.sqlFile)
-    sqlsc.sql(file.mkString)
-    file.close()
+    sqlsc.sql(params.sqlFile)
+    //val file: BufferedSource = Source.fromFile(params.sqlFile)
+    //sqlsc.sql(file.mkString)
+    //file.close()
     logger.info("epnnrt data parity end")
   }
 }

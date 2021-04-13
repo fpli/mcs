@@ -18,7 +18,7 @@ INPUT_WORK_DIR=$1
 OUTPUT_WORK_DIR=$2
 RESOURCE_DIR=$3
 FILTER_TIME=$4
-OUTPUT_DIR=hdfs://slickha/apps/epn-nrt-old-test
+OUTPUT_DIR=$5
 
 DRIVER_MEMORY=15g
 EXECUTOR_NUMBER=40
@@ -49,7 +49,8 @@ ${SPARK_HOME}/bin/spark-submit \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
-      --workDir ${WORK_DIR} \
+      --inputWorkDir ${INPUT_WORK_DIR} \
+      --outputWorkDir ${OUTPUT_WORK_DIR} \
       --partitions 3 \
       --resourceDir ${RESOURCE_DIR} \
       --filterTime ${FILTER_TIME} \
