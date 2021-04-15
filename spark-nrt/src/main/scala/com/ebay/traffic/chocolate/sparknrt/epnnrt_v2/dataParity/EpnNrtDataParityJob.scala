@@ -1,4 +1,4 @@
-package com.ebay.traffic.chocolate.sparknrt.epnnrt.dataParity
+package com.ebay.traffic.chocolate.sparknrt.epnnrt_v2.dataParity
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 
