@@ -34,7 +34,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.sparknrt.epnnrt.EpnNrtClickJob \
+    --class com.ebay.traffic.chocolate.sparknrt.epnnrt_v2.EpnNrtClickJob_v2 \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
