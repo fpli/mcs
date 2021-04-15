@@ -85,4 +85,15 @@ public class HttpRequestUtil {
 
     return "";
   }
+
+  public static String parseFromTwoParams(MultiValueMap<String, String> parameters, String param,
+                                          String shortenedParam) {
+    if (parameters.containsKey(param) && parameters.getFirst(param) != null) {
+      return parameters.getFirst(param);
+    } else if (parameters.containsKey(shortenedParam) && parameters.getFirst(shortenedParam) != null) {
+      return parameters.getFirst(shortenedParam);
+    }
+
+    return null;
+  }
 }

@@ -83,14 +83,15 @@ public class EventEmitterPublisher {
 
     // user id
     String userId;
-    if (parameters.containsKey("bu") && parameters.getFirst("bu") != null) {
-      userId = parameters.getFirst("bu");
+    if (parameters.containsKey(Constants.BEST_GUESS_USER) && parameters.getFirst(Constants.BEST_GUESS_USER) != null) {
+      userId = parameters.getFirst(Constants.BEST_GUESS_USER);
       emailData.put(MessageConstantsEnum.ENCRYPTED_USER_ID.getValue(), userId);
     }
 
     // tags from parameters
-    addEmailTag(emailData, parameters, MessageConstantsEnum.SEGMENT.getValue(), "segname");
-    addEmailTag(emailData, parameters, MessageConstantsEnum.RUN_DATE.getValue(), "crd");
+    addEmailTag(emailData, parameters, MessageConstantsEnum.SEGMENT.getValue(), Constants.SEGMENT_NAME);
+    addEmailTag(emailData, parameters, MessageConstantsEnum.SEGMENT.getValue(), Constants.SEGMENT_NAME_S);
+    addEmailTag(emailData, parameters, MessageConstantsEnum.RUN_DATE.getValue(), Constants.CAMP_RUN_DT);
 
     emailData.put(MessageConstantsEnum.STATUS.getValue(), EventTypeEnum.SENT.getValue());
 
@@ -166,7 +167,7 @@ public class EventEmitterPublisher {
   private Map<String, String> addTags(Map<String, String> emailData, MultiValueMap<String, String> parameters,
                                                     ContainerRequestContext requestContext, String targetUrl,
                                                     ChannelType channelType, ChannelAction channelAction) {
-    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
+    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entries()) {
       addEmailTag(emailData, parameters, entry.getKey(), entry.getValue());
     }
 
@@ -176,7 +177,7 @@ public class EventEmitterPublisher {
     // add other tags
     if (ChannelAction.CLICK.equals(channelAction)) {
       try {
-        emailData.put("url_mpre", URLEncoder.encode(targetUrl, "UTF-8"));
+        emailData.put(Constants.SOJ_MPRE_TAG, URLEncoder.encode(targetUrl, "UTF-8"));
       } catch (UnsupportedEncodingException e) {
         logger.warn("Tag url_mpre encoding failed", e);
         metrics.meter("UrlMpreEncodeError", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
