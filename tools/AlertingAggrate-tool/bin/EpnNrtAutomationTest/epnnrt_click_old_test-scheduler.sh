@@ -42,4 +42,4 @@ echo "FILTER_TIME="${FILTER_TIME} | tee -a ${log_file}
 export HADOOP_USER_NAME=chocolate
 echo $HADOOP_USER_NAME
 /datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod/epnnrt_click_automation_test.sh ${INPUT_WORK_DIR} ${OUTPUT_WORK_DIR} ${RESOURCE_DIR} "0" ${OUTPUT_DIR}
-/datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod/distcpAmsToRenoForAutomation.sh /apps/epn-nrt-old-test/click /apps/b_marketing_tracking/chocolate/epnnrt-old-test/click click 2021-04-11
+/datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod/distcpAmsToRenoForAutomation.sh /apps/epn-nrt-old-test/click /apps/b_marketing_tracking/chocolate/epnnrt-old-test/click click 2021-04-09

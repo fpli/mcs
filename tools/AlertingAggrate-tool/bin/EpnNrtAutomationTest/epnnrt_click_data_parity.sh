@@ -8,7 +8,7 @@ bin=$(
   pwd
 )
 
-JOB_NAME="EpnnrtClickDataParity"
+JOB_NAME="EpnnrtClickAutomationParity"
 click_dt='2021-04-09'
 sql_file="./tmp/count_diff_ams_click_by_click_dt_${click_dt}.sql";
 sed "s/#{click_dt}/${click_dt}/g" count_diff_ams_click_by_click_dt_template.sql > "$sql_file";
@@ -16,7 +16,7 @@ sed "s/#{click_dt}/${click_dt}/g" count_diff_ams_click_by_click_dt_template.sql 
 sql=`cat $sqlFile`;
 
 /datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit  \
---class com.ebay.traffic.chocolate.sparknrt.epnnrt.dataParity.EpnNrtDataParityJob \
+--class com.ebay.traffic.chocolate.sparknrt.epnnrt_v2.dataParity.EpnNrtDataParityJob \
 --master yarn \
 --deploy-mode cluster \
 --queue hdlq-commrce-default \
