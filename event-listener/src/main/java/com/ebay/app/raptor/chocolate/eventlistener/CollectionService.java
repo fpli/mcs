@@ -1234,7 +1234,7 @@ public class CollectionService {
    */
   private boolean isVodInternal(ChannelIdEnum channelType, String referer, List<String> pathSegments) {
     if (ChannelIdEnum.MRKT_EMAIL.equals(channelType) || ChannelIdEnum.SITE_EMAIL.equals(channelType)) {
-      if (VOD_PAGE.equalsIgnoreCase(pathSegments.get(0)) && VOD_SUB_PAGE.equalsIgnoreCase(pathSegments.get(1))
+      if (!pathSegments.isEmpty() && VOD_PAGE.equalsIgnoreCase(pathSegments.get(0)) && VOD_SUB_PAGE.equalsIgnoreCase(pathSegments.get(1))
           && SIGN_IN_REFERER.equals(referer)) {
         return true;
       }
