@@ -384,7 +384,7 @@ public class CollectionService {
     // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
     String utpEventId = UUID.randomUUID().toString();
 
-    Boolean vodInternal = isVodInternal(channelType, landingPageType, referer, pathSegments);
+    Boolean vodInternal = isVodInternal(channelType, referer, pathSegments);
     if(!isDuplicateClick && !isInternalRef || vodInternal) {
       ListenerMessage listenerMessage = null;
       // add channel specific tags, and produce message for EPN and IMK
@@ -1232,9 +1232,9 @@ public class CollectionService {
   /**
    * Bug fix: for email vod page, exclude signin referer
    */
-  private boolean isVodInternal(ChannelIdEnum channelType, String landingPageType, String referer, List<String> pathSegments) {
+  private boolean isVodInternal(ChannelIdEnum channelType, String referer, List<String> pathSegments) {
     if (ChannelIdEnum.MRKT_EMAIL.equals(channelType) || ChannelIdEnum.SITE_EMAIL.equals(channelType)) {
-      if (VOD_PAGE.equals(landingPageType) && VOD_SUB_PAGE.equalsIgnoreCase(pathSegments.get(1))
+      if (VOD_PAGE.equalsIgnoreCase(pathSegments.get(0)) && VOD_SUB_PAGE.equalsIgnoreCase(pathSegments.get(1))
           && SIGN_IN_REFERER.equals(referer)) {
         return true;
       }
