@@ -125,6 +125,9 @@ public class CollectionService {
   private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
   private static final String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
   private static final List<String> REFERER_WHITELIST = Arrays.asList("https://ebay.mtag.io/", "https://ebay.pissedconsumer.com/");
+  private static final String SIGN_IN_REFERER = "https://signin.ebay.com/";
+  private static final String VOD_PAGE = "vod";
+  private static final String VOD_SUB_PAGE = "FetchOrderDetails";
 
   @PostConstruct
   public void postInit() throws Exception {
@@ -381,7 +384,8 @@ public class CollectionService {
     // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
     String utpEventId = UUID.randomUUID().toString();
 
-    if(!isDuplicateClick && !isInternalRef) {
+    Boolean vodInternal = isVodInternal(channelType, referer, pathSegments);
+    if(!isDuplicateClick && !isInternalRef || vodInternal) {
       ListenerMessage listenerMessage = null;
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(channelType)) {
@@ -406,11 +410,12 @@ public class CollectionService {
       if (listenerMessage != null) {
         processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
             targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-            null, listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), utpEventId, startTime);
+            null, listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), utpEventId, startTime,
+            vodInternal);
       } else {
         processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
             targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-            null, 0L, 0L, utpEventId, startTime);
+            null, 0L, 0L, utpEventId, startTime, vodInternal);
       }
     }
 
@@ -680,11 +685,12 @@ public class CollectionService {
     if(listenerMessage!=null) {
       processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
           uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-          null, listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), null, startTime);
+          null, listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), null, startTime,
+          false);
     } else {
       processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
           uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-          null, 0L, 0L, null, startTime);
+          null, 0L, 0L, null, startTime, false);
     }
 
     stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action),
@@ -738,7 +744,7 @@ public class CollectionService {
 
     processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
             targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-            roiEvent, message.getSnapshotId(), message.getShortSnapshotId(), null, startTime);
+            roiEvent, message.getSnapshotId(), message.getShortSnapshotId(), null, startTime, false);
 
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
     String kafkaTopic
@@ -866,10 +872,11 @@ public class CollectionService {
                                            UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
                                            String url, String referer, ChannelType channelType,
                                            ChannelAction channelAction, ROIEvent roiEvent, long snapshotId,
-                                           long shortSnapshotId, String eventId, long startTime) {
+                                           long shortSnapshotId, String eventId, long startTime, Boolean vodInternal) {
     try {
       Matcher m = ebaysites.matcher(referer.toLowerCase());
-      if (ChannelAction.EMAIL_OPEN.equals(channelAction) || ChannelAction.ROI.equals(channelAction) || inRefererWhitelist(channelType, referer) || !m.find()) {
+      if (ChannelAction.EMAIL_OPEN.equals(channelAction) || ChannelAction.ROI.equals(channelAction)
+          || inRefererWhitelist(channelType, referer) || !m.find() || vodInternal) {
         UnifiedTrackingMessage utpMessage = utpParser.parse(requestContext, request, endUserContext,
                 raptorSecureContext, agentInfo, userLookup, parameters, url, referer, channelType, channelAction,
                 roiEvent, snapshotId, shortSnapshotId, startTime);
@@ -1220,5 +1227,19 @@ public class CollectionService {
    */
   public Producer getBehaviorProducer() {
     return behaviorProducer;
+  }
+
+  /**
+   * Bug fix: for email vod page, exclude signin referer
+   */
+  private boolean isVodInternal(ChannelIdEnum channelType, String referer, List<String> pathSegments) {
+    if (ChannelIdEnum.MRKT_EMAIL.equals(channelType) || ChannelIdEnum.SITE_EMAIL.equals(channelType)) {
+      if (VOD_PAGE.equalsIgnoreCase(pathSegments.get(0)) && VOD_SUB_PAGE.equalsIgnoreCase(pathSegments.get(1))
+          && SIGN_IN_REFERER.equals(referer)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
