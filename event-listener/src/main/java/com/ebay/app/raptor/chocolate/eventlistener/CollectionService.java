@@ -194,16 +194,15 @@ public class CollectionService {
       referer = staticPageEvent.getReferrer();
     }
 
-    // Now we support to track two kind of deeplink cases
-    // XC-1797, extract and decode actual target url from referrer parameter in targetUrl, only accept the url when the domain of referrer parameter belongs to ebay sites
-    // XC-3349, for native uri with Chocolate parameters, re-construct Chocolate url based on native uri and track (only support /itm page)
+    //XC-1797, for social app deeplink case, extract and decode actual target url from referrer parameter in targetUrl
+    //only accept the url when referrer domain belongs to ebay sites
     Matcher deeplinkMatcher = deeplinksites.matcher(targetUrl.toLowerCase());
     if (deeplinkMatcher.find()) {
-      metrics.meter("IncomingAppDeepLink");
+      metrics.meter("IncomingSocialAppDeepLink");
 
       Event customizedSchemeEvent = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetUrl, referer);
       if(customizedSchemeEvent == null) {
-        logError(Errors.ERROR_NO_VALID_TRACKING_PARAMS_DEEPLINK);
+        logError(Errors.ERROR_NO_TARGET_URL_DEEPLINK);
       } else {
         targetUrl = customizedSchemeEvent.getTargetUrl();
         referer = customizedSchemeEvent.getReferrer();
