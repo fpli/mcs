@@ -106,6 +106,9 @@ public class Constants {
   // DEEP_LINK_WITH_CHOCO_PARAMS_FLAG is used to mark the click whose original url is custom uri with Chocolate parameters
   public static final String DEEP_LINK_WITH_CHOCO_PARAMS_FLAG = "mkdeeplink";
 
+  // UFES header
+  public static final String IS_FROM_UFES = "x-ufes-mcs-int";
+
   /**
    * Performance marketing channels
    */

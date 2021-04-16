@@ -285,6 +285,11 @@ public class CollectionService {
       landingPageType = pathSegments.get(0);
     }
 
+    // UFES metrics
+    metrics.meter("UFESTraffic", 1, Field.of("isUFES", isFromUFES(requestHeaders)),
+        Field.of(LANDING_PAGE_TYPE, landingPageType),
+        Field.of("statusCode", request.getHeader(Constants.NODE_REDIRECTION_HEADER_NAME)));
+
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
     String platform = getPlatform(agentInfo);
@@ -1214,6 +1219,17 @@ public class CollectionService {
     producer.send(new ProducerRecord<>(duplicateItmClickTopic, message.getSnapshotId(), message), KafkaSink.callback);
     metrics.meter("DuplicateItmClick", 1, Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
             Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
+  }
+
+  /**
+   * Check if the click is from UFES
+   */
+  private String isFromUFES(Map<String, String> headers) {
+    if (headers.containsKey(Constants.IS_FROM_UFES) && "true".equals(headers.get(Constants.IS_FROM_UFES))) {
+      return "true";
+    } else {
+      return "false";
+    }
   }
 
   /**
