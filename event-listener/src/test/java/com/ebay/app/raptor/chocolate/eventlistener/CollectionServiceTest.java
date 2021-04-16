@@ -7,6 +7,7 @@ package com.ebay.app.raptor.chocolate.eventlistener;
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -27,10 +28,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -286,5 +284,41 @@ public class CollectionServiceTest {
     assertTrue(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "https://ebay.mtag.io/"));
     assertTrue(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "https://ebay.pissedconsumer.com/"));
     assertFalse(collectionService.inRefererWhitelist(ChannelType.PAID_SEARCH, "https://ebay.pissedconsumer.com/"));
+  }
+
+  @Test
+  public void isVodInternal() {
+    String referer = "https://signin.ebay.com/";
+    List<String> pathSegments = Arrays.asList("vod", "FetchOrderDetails");
+    // not email channel
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.EPN, referer, pathSegments));
+
+    // email channel success
+    assertTrue(collectionService.isVodInternal(ChannelIdEnum.MRKT_EMAIL, referer, pathSegments));
+    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+
+    // international signin sites
+    referer = "https://signin.ebay.de/";
+    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+    referer = "https://signin.ebay.co.uk/";
+    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+    referer = "https://signin.qa.ebay.com/";
+    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+    referer = "https://signin.benl.ebay.be/";
+    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+    referer = "https://signin.benl.qa.ebay.com/";
+    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+
+    // path length < 2
+    pathSegments = new ArrayList<>();
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+    pathSegments.add("test");
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+
+    // not vod page
+    pathSegments = Arrays.asList("test", "FetchOrderDetails");
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+    pathSegments = Arrays.asList("vod", "test");
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
   }
 }
