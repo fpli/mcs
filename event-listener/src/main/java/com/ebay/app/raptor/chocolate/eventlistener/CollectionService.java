@@ -125,7 +125,7 @@ public class CollectionService {
   private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
   private static final String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
   private static final List<String> REFERER_WHITELIST = Arrays.asList("https://ebay.mtag.io/", "https://ebay.pissedconsumer.com/");
-  private static final String SIGN_IN_REFERER = "https://signin.ebay.com/";
+  private static final Set<String> SIGN_IN_REFERER = new HashSet<>(Arrays.asList("https://signin.ebay.com/", "https://signin.qa.ebay.com/"));
   private static final String VOD_PAGE = "vod";
   private static final String VOD_SUB_PAGE = "FetchOrderDetails";
 
@@ -1234,8 +1234,9 @@ public class CollectionService {
    */
   private boolean isVodInternal(ChannelIdEnum channelType, String referer, List<String> pathSegments) {
     if (ChannelIdEnum.MRKT_EMAIL.equals(channelType) || ChannelIdEnum.SITE_EMAIL.equals(channelType)) {
-      if (VOD_PAGE.equalsIgnoreCase(pathSegments.get(0)) && VOD_SUB_PAGE.equalsIgnoreCase(pathSegments.get(1))
-          && SIGN_IN_REFERER.equals(referer)) {
+      if (pathSegments.size() >= 2 && VOD_PAGE.equalsIgnoreCase(pathSegments.get(0)) && VOD_SUB_PAGE.equalsIgnoreCase(pathSegments.get(1))
+          && SIGN_IN_REFERER.contains(referer)) {
+        metrics.meter("VodInternal");
         return true;
       }
     }
