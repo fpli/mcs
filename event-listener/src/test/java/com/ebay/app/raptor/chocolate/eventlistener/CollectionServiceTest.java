@@ -291,34 +291,22 @@ public class CollectionServiceTest {
     String referer = "https://signin.ebay.com/";
     List<String> pathSegments = Arrays.asList("vod", "FetchOrderDetails");
     // not email channel
-    assertFalse(collectionService.isVodInternal(ChannelIdEnum.EPN, referer, pathSegments));
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.EPN, pathSegments));
 
     // email channel success
-    assertTrue(collectionService.isVodInternal(ChannelIdEnum.MRKT_EMAIL, referer, pathSegments));
-    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
-
-    // international signin sites
-    referer = "https://signin.ebay.de/";
-    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
-    referer = "https://signin.ebay.co.uk/";
-    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
-    referer = "https://signin.qa.ebay.com/";
-    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
-    referer = "https://signin.benl.ebay.be/";
-    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
-    referer = "https://signin.benl.qa.ebay.com/";
-    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+    assertTrue(collectionService.isVodInternal(ChannelIdEnum.MRKT_EMAIL, pathSegments));
+    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, pathSegments));
 
     // path length < 2
     pathSegments = new ArrayList<>();
-    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, pathSegments));
     pathSegments.add("test");
-    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, pathSegments));
 
     // not vod page
     pathSegments = Arrays.asList("test", "FetchOrderDetails");
-    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, pathSegments));
     pathSegments = Arrays.asList("vod", "test");
-    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, referer, pathSegments));
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, pathSegments));
   }
 }
