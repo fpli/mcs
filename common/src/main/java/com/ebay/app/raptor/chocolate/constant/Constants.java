@@ -98,6 +98,9 @@ public class Constants {
   // plrfr is the actual referer for the clicks from promoted listings iframe on ebay partner site
   public static final String PLRFR = "plrfr";
 
+  // UFES header
+  public static final String IS_FROM_UFES = "x-ufes-mcs-int";
+
   /**
    * Performance marketing channels
    */

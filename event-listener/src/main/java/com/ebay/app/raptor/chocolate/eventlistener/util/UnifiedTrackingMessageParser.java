@@ -55,7 +55,7 @@ public class UnifiedTrackingMessageParser {
   private static CobrandParser cobrandParser = new CobrandParser();
   private static UepPayloadHelper uepPayloadHelper = new UepPayloadHelper();
 
-  public UnifiedTrackingMessageParser() throws Exception{
+  public UnifiedTrackingMessageParser() throws Exception {
     UnifiedTrackerFactory.getUnifiedTracker(getEnv());
   }
 
