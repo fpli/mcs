@@ -13,6 +13,8 @@ RESOURCE_DIR=/apps/tracking-resources-old-test
 
 OUTPUT_DIR=hdfs://slickha/apps/epn-nrt-old-test
 
+DATE=`date -d '5 days ago' +%Y-%m-%d`
+
 FILTER_HOUR=1     # 1:00am
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
 log_file="/datashare/mkttracking/logs/chocolate/epn-nrt-old-test/scheduler_${log_dt}.log"
@@ -42,4 +44,4 @@ echo "FILTER_TIME="${FILTER_TIME} | tee -a ${log_file}
 export HADOOP_USER_NAME=chocolate
 echo $HADOOP_USER_NAME
 /datashare/mkttracking/jobs/tracking/epnnrt_old_test/bin/prod/epnnrt_click_automation_test.sh ${INPUT_WORK_DIR} ${OUTPUT_WORK_DIR} ${RESOURCE_DIR} "0" ${OUTPUT_DIR}
-/datashare/mkttracking/jobs/tracking/epnnrt_old_test/bin/prod/distcpAmsToRenoForAutomation.sh /apps/epn-nrt-old-test/click /apps/b_marketing_tracking/chocolate/epnnrt-old-test/click click 2021-04-09
+/datashare/mkttracking/jobs/tracking/epnnrt_old_test/bin/prod/distcpAmsToRenoForAutomation.sh /apps/epn-nrt-old-test/click /apps/b_marketing_tracking/chocolate/epnnrt-old-test/click click ${DATE}

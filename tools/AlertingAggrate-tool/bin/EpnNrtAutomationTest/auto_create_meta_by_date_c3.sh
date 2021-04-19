@@ -3,7 +3,7 @@
 set -x
 usage="Usage:auto_create_meta_by_date_c3.sh"
 
-date=`date -d '2 days ago' +%Y-%m-%d`
+date=`date -d '5 days ago' +%Y-%m-%d`
 
 export HADOOP_USER_NAME=chocolate
 work_path="hdfs://elvisha/apps/tracking-events"
