@@ -287,7 +287,7 @@ public class CollectionService {
     }
 
     // UFES metrics
-    metrics.meter("UFESTraffic", 1, Field.of("isUFES", isFromUFES(requestHeaders)),
+    metrics.meter("UFESTraffic", 1, Field.of("isUFES", isFromUFES(requestHeaders).toString()),
         Field.of(LANDING_PAGE_TYPE, landingPageType),
         Field.of("statusCode", request.getHeader(Constants.NODE_REDIRECTION_HEADER_NAME)));
 
@@ -1229,12 +1229,8 @@ public class CollectionService {
   /**
    * Check if the click is from UFES
    */
-  private String isFromUFES(Map<String, String> headers) {
-    if (headers.containsKey(Constants.IS_FROM_UFES) && "true".equals(headers.get(Constants.IS_FROM_UFES))) {
-      return "true";
-    } else {
-      return "false";
-    }
+  private Boolean isFromUFES(Map<String, String> headers) {
+    return headers.containsKey(Constants.IS_FROM_UFES) && "true".equals(headers.get(Constants.IS_FROM_UFES));
   }
 
   /**
