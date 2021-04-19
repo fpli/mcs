@@ -29,8 +29,6 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
 
   lazy val clickDir = "/click/"
 
-  @transient lazy val schema_epn_click_table = TableSchema("df_epn_click.json")
-
   @transient lazy val batchSize: Int = {
     val batchSize = properties.getProperty("epnnrt.click.metafile.batchsize")
     if (StringUtils.isNumeric(batchSize)) {
@@ -124,7 +122,7 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
 
           saveDFToFiles(clickDf, epnNrtTempDir + clickDir)
 
-          val countClickDf = readFilesAsDF(epnNrtTempDir + clickDir, schema_epn_click_table.dfSchema)
+          val countClickDf = readFilesAsDF(epnNrtTempDir + clickDir)
 
           metrics.meter("SuccessfulCount", countClickDf.count(),  Field.of[String, AnyRef]("channelAction", "CLICK"))
 

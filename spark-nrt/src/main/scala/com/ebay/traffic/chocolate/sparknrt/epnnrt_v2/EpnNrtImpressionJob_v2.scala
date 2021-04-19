@@ -29,7 +29,6 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
 
   lazy val IMPRESSION_DIR = "/imp/"
 
-  @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression.json")
 
   @transient lazy val batchSize: Int = {
     val batchSize = properties.getProperty("epnnrt.impression.metafile.batchsize")
@@ -123,7 +122,7 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
           impressionDf = impressionDf.repartition(params.partitions)
           saveDFToFiles(impressionDf, epnNrtTempDir + IMPRESSION_DIR)
 
-          val countImpDf = readFilesAsDF(epnNrtTempDir + IMPRESSION_DIR, schema_epn_impression_table.dfSchema)
+          val countImpDf = readFilesAsDF(epnNrtTempDir + IMPRESSION_DIR)
 
           metrics.meter("SuccessfulCount", countImpDf.count(), Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 

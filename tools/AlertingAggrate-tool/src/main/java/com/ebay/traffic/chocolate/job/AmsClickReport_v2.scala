@@ -2,8 +2,6 @@ package com.ebay.traffic.chocolate.job
 
 import java.text.SimpleDateFormat
 import java.util.Date
-
-import com.ebay.traffic.chocolate.job.util.DateUtil_v2._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.spark.api.java.JavaSparkContext
@@ -11,6 +9,7 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import org.slf4j.LoggerFactory
+import com.ebay.traffic.chocolate.job.util.DateUtil._
 
 object AmsClickReport_v2 extends App {
 
@@ -123,9 +122,9 @@ class AmsClickReport_v2(val inputdir: String, val outputdir: String, val jobtask
 
   def hourlyClickCount = {
     logger.info("hourlyClickCount function")
-    val epnClickToday = onceClickCount(inputdir + "click_dt=" + getToady(isTest) + "/part-*.snappy.parquet").withColumn("count_dt", lit(getToady(isTest)))
-    val epnClickYesterday = onceClickCount(inputdir + "click_dt=" + getYesterday(isTest) + "/part-*.snappy.parquet").withColumn("count_dt", lit(getYesterday(isTest)))
-    val epnClickBeforeYesterday = onceClickCount(inputdir + "click_dt=" + getBeforeYesterday(isTest) + "/part-*.snappy.parquet").withColumn("count_dt", lit(getBeforeYesterday(isTest)))
+    val epnClickToday = onceClickCount(inputdir + "click_dt=" + getToady(isTest) + "/dw_ams.ams_clicks_cs_*.snappy.parquet").withColumn("count_dt", lit(getToady(isTest)))
+    val epnClickYesterday = onceClickCount(inputdir + "click_dt=" + getYesterday(isTest) + "/dw_ams.ams_clicks_cs_*.snappy.parquet").withColumn("count_dt", lit(getYesterday(isTest)))
+    val epnClickBeforeYesterday = onceClickCount(inputdir + "click_dt=" + getBeforeYesterday(isTest) + "/dw_ams.ams_clicks_cs_*.snappy.parquet").withColumn("count_dt", lit(getBeforeYesterday(isTest)))
 
     val total = epnClickToday.union(epnClickYesterday).union(epnClickBeforeYesterday)
     total.select("count_dt", "click_hour", "click_count", "rsn_cd", "roi_fltr_yn_ind")
@@ -167,7 +166,7 @@ class AmsClickReport_v2(val inputdir: String, val outputdir: String, val jobtask
 
   def dailyClickTrend = {
     logger.info("dailyClickTrend function" + inputdir)
-    val detailDir = getHalfMonthYesterday(inputdir, isTest)
+    val detailDir = getHalfMonthYesterdayParquet(inputdir, isTest)
     val dir = detailDir.split(",")
     val epnClick = spark.read
       .parquet(dir(0), dir(1), dir(2), dir(3), dir(4), dir(5), dir(6), dir(7), dir(8), dir(9), dir(10), dir(11), dir(12), dir(13), dir(14))
