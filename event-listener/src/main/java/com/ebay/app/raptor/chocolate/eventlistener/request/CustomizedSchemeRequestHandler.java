@@ -4,14 +4,19 @@
 
 package com.ebay.app.raptor.chocolate.eventlistener.request;
 
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
+import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -31,40 +36,78 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.de
 public class CustomizedSchemeRequestHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomizedSchemeRequestHandler.class);
 
-  public Event parseCustomizedSchemeEvent(String targetUrl, String referer) {
+  private static final String VIEWITEM = "item.view";
+  private static final String CLICKEVENTFLAG = "1";
 
+  public Event parseCustomizedSchemeEvent(String targetUrl, String referer) {
 
     UriComponents deeplinkUriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
 
     MultiValueMap<String, String> deeplinkParameters = deeplinkUriComponents.getQueryParams();
-    if (deeplinkParameters.size() == 0 || !deeplinkParameters.containsKey(REFERRER)) {
-      LOGGER.warn(Errors.ERROR_NO_TARGET_URL_DEEPLINK);
-      return null;
-    }
 
-    String deeplinkTargetUrl = deeplinkParameters.get(REFERRER).get(0);
+    if (deeplinkParameters.containsKey(MKEVT) && deeplinkParameters.containsKey(MKCID)){
+      String mkevt = deeplinkParameters.get(Constants.MKEVT).get(0);
+      ChannelIdEnum channelType = ChannelIdEnum.parse(deeplinkParameters.get(Constants.MKCID).get(0));
 
-    try {
-      if(deeplinkTargetUrl.startsWith(HTTPS_ENCODED) || deeplinkTargetUrl.startsWith(HTTP_ENCODED)) {
-        deeplinkTargetUrl = URLDecoder.decode(deeplinkTargetUrl, StandardCharsets.UTF_8.name());
+      if (mkevt.equals(CLICKEVENTFLAG) && channelType != null) {
+        ESMetrics.getInstance().meter("IncomingAppDeepLinkWithChocolateParams", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
+      } else {
+        return null;
       }
-    } catch (Exception ex) {
-      ESMetrics.getInstance().meter("DecodeDeepLinkTargetUrlError");
-      LOGGER.warn("Decode deeplink target url error." + ex.getMessage());
-    }
 
-    Matcher deeplinkEbaySitesMatcher = deeplinkEbaySites.matcher(deeplinkTargetUrl.toLowerCase());
-    if (deeplinkEbaySitesMatcher.find()) {
-      Event event = new Event();
-      targetUrl = deeplinkTargetUrl;
-      ESMetrics.getInstance().meter("IncomingSocialAppDeepLinkSuccess");
-      event.setTargetUrl(targetUrl);
-      event.setReferrer(referer);
-      return event;
+      if (deeplinkParameters.containsKey(MKRID) && deeplinkParameters.containsKey(NAV) && deeplinkParameters.containsKey(ID)) {
+
+        String pageType = deeplinkParameters.get(NAV).get(0);
+        String itemId = deeplinkParameters.get(ID).get(0);
+
+        if (pageType.equals(VIEWITEM) && !StringUtils.isEmpty(itemId)) {
+          String viewItemChocolateURL = CollectionServiceUtil.constructViewItemChocolateURLForDeepLink(deeplinkParameters);
+          if (!StringUtils.isEmpty(viewItemChocolateURL)) {
+            ESMetrics.getInstance().meter("IncomingAppDeepLinkWithChocolateParamsSuccess", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
+            Event event = constructDeeplinkEvent(viewItemChocolateURL, referer);
+            return event;
+          } else {
+            LOGGER.warn(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
+            ESMetrics.getInstance().meter(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
+            return null;
+          }
+        }
+      }
+    } else if (deeplinkParameters.containsKey(REFERRER)) {
+      ESMetrics.getInstance().meter("IncomingAppDeepLinkWithReferrerParams", 1);
+      String deeplinkTargetUrl = deeplinkParameters.get(REFERRER).get(0);
+
+      try {
+        if(deeplinkTargetUrl.startsWith(HTTPS_ENCODED) || deeplinkTargetUrl.startsWith(HTTP_ENCODED)) {
+          deeplinkTargetUrl = URLDecoder.decode(deeplinkTargetUrl, StandardCharsets.UTF_8.name());
+        }
+      } catch (Exception ex) {
+        ESMetrics.getInstance().meter("DecodeDeepLinkTargetUrlError");
+        LOGGER.warn("Decode deeplink target url error." + ex.getMessage());
+      }
+
+      Matcher deeplinkEbaySitesMatcher = deeplinkEbaySites.matcher(deeplinkTargetUrl.toLowerCase());
+      if (deeplinkEbaySitesMatcher.find()) {
+        ESMetrics.getInstance().meter("IncomingAppDeepLinkWithValidTargetURLSuccess");
+        Event event = constructDeeplinkEvent(deeplinkTargetUrl, referer);
+        return event;
+      } else {
+        LOGGER.warn(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
+        ESMetrics.getInstance().meter(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
+        return null;
+      }
     } else {
-      LOGGER.warn(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
-      ESMetrics.getInstance().meter(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
+      LOGGER.warn(Errors.ERROR_NO_VALID_TRACKING_PARAMS_DEEPLINK);
       return null;
     }
+
+    return null;
+  }
+
+  private Event constructDeeplinkEvent (String targetUrl, String referer) {
+    Event event = new Event();
+    event.setTargetUrl(targetUrl);
+    event.setReferrer(referer);
+    return event;
   }
 }

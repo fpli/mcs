@@ -291,7 +291,7 @@ public class CollectionServiceUtil {
   }
 
   /**
-   * For native uri with Chocolate parameters, re-construct Chocolate url bases on native uri (only support /itm page)
+   * for native uri with Chocolate parameters, re-construct Chocolate url bases on native uri (only support /itm page)
    */
   public static String constructViewItemChocolateURLForDeepLink(MultiValueMap<String, String> deeplinkParamMap) {
     String viewItemChocolateURL = "";

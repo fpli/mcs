@@ -5,6 +5,7 @@
 package com.ebay.app.raptor.chocolate.constant;
 
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableMap;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -47,6 +48,7 @@ public class Constants {
   public static final String HTTPS_ENCODED = "https%3A%2F%2";
   public static final String HTTP_ENCODED = "http%3A%2F%2";
   public static final String SOJ_MPRE_TAG = "url_mpre";
+  public static final String ITEM_TAG = "itm";
 
   // EPN url params
   public static final String TOOL_ID = "toolid";
@@ -101,45 +103,74 @@ public class Constants {
   // UFES header
   public static final String IS_FROM_UFES = "x-ufes-mcs-int";
 
+  // Deep Link native uri params
+  public static final String NAV = "nav";
+  public static final String ID = "id";
+  // DEEP_LINK_WITH_CHOCO_PARAMS_FLAG is used to mark the click whose original url is custom uri with Chocolate parameters
+  public static final String DEEP_LINK_WITH_CHOCO_PARAMS_FLAG = "mkdeeplink";
+
   /**
    * Performance marketing channels
    */
   public static final Set<ChannelIdEnum> PM_CHANNELS = new HashSet<>(
-      Arrays.asList(ChannelIdEnum.EPN, ChannelIdEnum.PAID_SEARCH,
-          ChannelIdEnum.DAP, ChannelIdEnum.SOCIAL_MEDIA, ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
+          Arrays.asList(ChannelIdEnum.EPN, ChannelIdEnum.PAID_SEARCH,
+                  ChannelIdEnum.DAP, ChannelIdEnum.SOCIAL_MEDIA, ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
   );
 
   /**
    * Email tag - param map
    */
   public static final ImmutableMultimap<String, String> emailTagParamMap = new ImmutableMultimap.Builder<String, String>()
-      .put("adcamp_landingpage", "adcamp_landingpage")
-      .put("adcamp_locationsrc", "adcamp_locationsrc")
-      .put("adcamppu", "pu")
-      .put("bu", "bu")
-      .put("cbtrack", "cbtrack")
-      .put("chnl", "mkcid")
-      .put("crd", "crd")
-      .put("cs", "cs")
-      .put("ec", "ec")
-      .put("emid", "bu")
-      .put("emsid", "emsid")
-      .put("es", "es")
-      .put("euid", "euid")
-      .put("exe", "exe")
-      .put("ext", "ext")
-      .put("nqc", "nqc")
-      .put("nqt", "nqt")
-      .put("osub", "osub")
-      .put("placement-type", "placement-type")
-      .put("placement-type", "pt")
-      .put("rank", "rank")
-      .put("rpp_cid", "rpp_cid")
-      .put("segname", "segname")
-      .put("segname", "seg")
-      .put("yminstc", "yminstc")
-      .put("ymmmid", "ymmmid")
-      .put("ymsid", "ymsid")
-      .build();
+          .put("adcamp_landingpage", "adcamp_landingpage")
+          .put("adcamp_locationsrc", "adcamp_locationsrc")
+          .put("adcamppu", "pu")
+          .put("bu", "bu")
+          .put("cbtrack", "cbtrack")
+          .put("chnl", "mkcid")
+          .put("crd", "crd")
+          .put("cs", "cs")
+          .put("ec", "ec")
+          .put("emid", "bu")
+          .put("emsid", "emsid")
+          .put("es", "es")
+          .put("euid", "euid")
+          .put("exe", "exe")
+          .put("ext", "ext")
+          .put("nqc", "nqc")
+          .put("nqt", "nqt")
+          .put("osub", "osub")
+          .put("placement-type", "placement-type")
+          .put("placement-type", "pt")
+          .put("rank", "rank")
+          .put("rpp_cid", "rpp_cid")
+          .put("segname", "segname")
+          .put("segname", "seg")
+          .put("yminstc", "yminstc")
+          .put("ymmmid", "ymmmid")
+          .put("ymsid", "ymsid")
+          .build();
+
+  /**
+   * client id - host map
+   */
+  public static final ImmutableMap<String, String> clientIdHostMap = new ImmutableMap.Builder<String, String>()
+          .put("5282", "https://www.ebay.ie")
+          .put("705", "https://www.ebay.com.au")
+          .put("709", "https://www.ebay.fr")
+          .put("1346", "https://www.ebay.nl")
+          .put("3422", "https://www.ebay.com.hk")
+          .put("1553", "https://www.ebay.be")
+          .put("710", "https://www.ebay.co.uk")
+          .put("5221", "https://www.ebay.at")
+          .put("5222", "https://www.ebay.ch")
+          .put("8971", "https://www.ebay.com")
+          .put("724", "https://www.ebay.it")
+          .put("707", "https://www.ebay.de")
+          .put("3423", "https://www.ebay.com.sg")
+          .put("1185", "https://www.ebay.es")
+          .put("711", "https://www.ebay.com")
+          .put("706", "https://www.ebay.ca")
+          .put("4686", "https://www.ebay.com")
+          .build();
 
 }
