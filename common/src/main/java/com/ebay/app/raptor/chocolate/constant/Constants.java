@@ -113,42 +113,42 @@ public class Constants {
    * Performance marketing channels
    */
   public static final Set<ChannelIdEnum> PM_CHANNELS = new HashSet<>(
-          Arrays.asList(ChannelIdEnum.EPN, ChannelIdEnum.PAID_SEARCH,
-                  ChannelIdEnum.DAP, ChannelIdEnum.SOCIAL_MEDIA, ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
+      Arrays.asList(ChannelIdEnum.EPN, ChannelIdEnum.PAID_SEARCH,
+          ChannelIdEnum.DAP, ChannelIdEnum.SOCIAL_MEDIA, ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
   );
 
   /**
    * Email tag - param map
    */
   public static final ImmutableMultimap<String, String> emailTagParamMap = new ImmutableMultimap.Builder<String, String>()
-          .put("adcamp_landingpage", "adcamp_landingpage")
-          .put("adcamp_locationsrc", "adcamp_locationsrc")
-          .put("adcamppu", "pu")
-          .put("bu", "bu")
-          .put("cbtrack", "cbtrack")
-          .put("chnl", "mkcid")
-          .put("crd", "crd")
-          .put("cs", "cs")
-          .put("ec", "ec")
-          .put("emid", "bu")
-          .put("emsid", "emsid")
-          .put("es", "es")
-          .put("euid", "euid")
-          .put("exe", "exe")
-          .put("ext", "ext")
-          .put("nqc", "nqc")
-          .put("nqt", "nqt")
-          .put("osub", "osub")
-          .put("placement-type", "placement-type")
-          .put("placement-type", "pt")
-          .put("rank", "rank")
-          .put("rpp_cid", "rpp_cid")
-          .put("segname", "segname")
-          .put("segname", "seg")
-          .put("yminstc", "yminstc")
-          .put("ymmmid", "ymmmid")
-          .put("ymsid", "ymsid")
-          .build();
+      .put("adcamp_landingpage", "adcamp_landingpage")
+      .put("adcamp_locationsrc", "adcamp_locationsrc")
+      .put("adcamppu", "pu")
+      .put("bu", "bu")
+      .put("cbtrack", "cbtrack")
+      .put("chnl", "mkcid")
+      .put("crd", "crd")
+      .put("cs", "cs")
+      .put("ec", "ec")
+      .put("emid", "bu")
+      .put("emsid", "emsid")
+      .put("es", "es")
+      .put("euid", "euid")
+      .put("exe", "exe")
+      .put("ext", "ext")
+      .put("nqc", "nqc")
+      .put("nqt", "nqt")
+      .put("osub", "osub")
+      .put("placement-type", "placement-type")
+      .put("placement-type", "pt")
+      .put("rank", "rank")
+      .put("rpp_cid", "rpp_cid")
+      .put("segname", "segname")
+      .put("segname", "seg")
+      .put("yminstc", "yminstc")
+      .put("ymmmid", "ymmmid")
+      .put("ymsid", "ymsid")
+      .build();
 
   /**
    * client id - host map
