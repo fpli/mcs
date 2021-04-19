@@ -1,15 +1,9 @@
 #!/usr/bin/env bash
 
 set -x
-usage="Usage:auto_create_meta_by_date_c3.sh [date]"
+usage="Usage:auto_create_meta_by_date_c3.sh"
 
-#date=${date -d '2 days ago' +%Y-%m-%d}
-if [ $# -lt 1 ]; then
-  exit 1
-fi
-
-date=$1;
-echo "date:${date}"
+date=`date -d '2 days ago' +%Y-%m-%d`
 
 export HADOOP_USER_NAME=chocolate
 work_path="hdfs://elvisha/apps/tracking-events"
