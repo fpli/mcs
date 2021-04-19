@@ -18,14 +18,18 @@ public class UrlPatternUtil {
 
   // app deeplink sites XC-1797
   public static final Pattern deeplinksites =
-      Pattern.compile("^ebay:\\/\\/link([\\w-$%?&/.])?", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("^ebay:\\/\\/link\\/([\\w-$%?&/.])?", Pattern.CASE_INSENSITIVE);
   // determine whether the url belongs to ebay sites for app deep link, and don't do any filter
   public static final Pattern deeplinkEbaySites = Pattern.compile(
-      "^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|.*)",
+      "^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)",
       Pattern.CASE_INSENSITIVE);
 
   // e page target url sites
   public static final Pattern ePageSites = Pattern.compile(
       "^(http[s]?:\\/\\/)?c\\.([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+\\/marketingtracking\\/v1\\/pixel\\?(.*)",
+      Pattern.CASE_INSENSITIVE);
+
+  // signin pattern
+  public static final Pattern signinsites = Pattern.compile("^(http[s]?:\\/\\/)?signin\\.([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)",
       Pattern.CASE_INSENSITIVE);
 }
