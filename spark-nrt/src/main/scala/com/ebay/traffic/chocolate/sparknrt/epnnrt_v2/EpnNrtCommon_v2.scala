@@ -676,13 +676,13 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
         try{
           val xid = xidRequest("cguid", cguid)
           if (xid.accounts.nonEmpty) {
-            metrics.meter("epn.XidGotUserId", 1)
+            metrics.meter("epn_XidGotUserId", 1)
             result = xid.accounts.head
             logger.debug("get userid from Xid user_id=" + result)
           }
         } catch {
           case e: Exception => {
-            metrics.meter("epn.XidTimeOut", 1)
+            metrics.meter("epn_XidTimeOut", 1)
             logger.warn("call xid error" + e.printStackTrace())
           }
         }
@@ -698,13 +698,13 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
         try{
           val xid = xidRequestV2("pguid", guid)
           if (xid.accounts.nonEmpty) {
-            metrics.meter("epn.XidGotUserId", 1)
+            metrics.meter("epn_XidGotUserId", 1)
             result = xid.accounts.head
             logger.debug("get userId from Xid user_id=" + result)
           }
         } catch {
           case e: Exception =>
-            metrics.meter("epn.XidTimeOut", 1)
+            metrics.meter("epn_XidTimeOut", 1)
             logger.warn("call xid error" + e.printStackTrace())
         }
       }
