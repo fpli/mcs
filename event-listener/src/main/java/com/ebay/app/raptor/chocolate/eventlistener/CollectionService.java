@@ -1230,7 +1230,7 @@ public class CollectionService {
    * Check if the click is from UFES
    */
   private Boolean isFromUFES(Map<String, String> headers) {
-    return headers.containsKey(Constants.IS_FROM_UFES) && "true".equals(headers.get(Constants.IS_FROM_UFES));
+    return headers.containsKey(Constants.IS_FROM_UFES_HEADER) && "true".equals(headers.get(Constants.IS_FROM_UFES_HEADER));
   }
 
   /**

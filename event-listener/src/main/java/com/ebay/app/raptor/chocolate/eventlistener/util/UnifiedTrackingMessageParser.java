@@ -553,6 +553,20 @@ public class UnifiedTrackingMessageParser {
       payload.put(Constants.ADGUID, adguid);
     }
 
+    // is from ufes
+    String isUfes = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.IS_FROM_UFES_HEADER);
+    if (StringUtils.isEmpty(isUfes)) {
+      payload.put(Constants.TAG_IS_UFES, "false");
+    } else {
+      payload.put(Constants.TAG_IS_UFES, "true");
+    }
+
+    // status code
+    String statusCode = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.NODE_REDIRECTION_HEADER_NAME);
+    if (!StringUtils.isEmpty(statusCode)) {
+      payload.put(Constants.TAG_STATUS_CODE, statusCode);
+    }
+
     return encodeTags(payload);
   }
 

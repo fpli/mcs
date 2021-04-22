@@ -35,6 +35,8 @@ public class Constants {
   public static final String GUID = "guid";
   public static final String CGUID = "cguid";
   public static final String STR_NULL = "null";
+  public static final String TAG_IS_UFES = "isUfes";
+  public static final String TAG_STATUS_CODE = "statusCode";
 
   // Request headers
   public static final String TRACKING_HEADER = "X-EBAY-C-TRACKING";
@@ -99,7 +101,7 @@ public class Constants {
   public static final String PLRFR = "plrfr";
 
   // UFES header
-  public static final String IS_FROM_UFES = "x-ufes-mcs-int";
+  public static final String IS_FROM_UFES_HEADER = "x-ufes-mcs-int";
 
   /**
    * Performance marketing channels
