@@ -191,22 +191,24 @@ public class CollectionServiceUtil {
    * No filter for native app user clicks
    * Filter 301 for user clicks from non-special sites and mobile phone web
    */
-   public static boolean isDuplicateItmClick(String marketingStatusCode, String userAgent,
-                                             String targetUrl, boolean requestIsFromBot, boolean requestIsMobile, boolean requestIsMobileWeb) {
+  public static boolean isDuplicateItmClick(String marketingStatusCode, String userAgent, String targetUrl,
+                                            boolean requestIsFromBot, boolean requestIsMobile,
+                                            boolean requestIsMobileWeb) {
     boolean isDulicateItemClick = false;
 
     if (ebayItemNoTitlePage.matcher(targetUrl).find()) {
-       Matcher ebaySpecialSitesMatcher = ebaySpecialSites.matcher(targetUrl);
+      Matcher ebaySpecialSitesMatcher = ebaySpecialSites.matcher(targetUrl);
 
-       if (!userAgent.toLowerCase().contains(BOT_USER_AGENT) && !requestIsFromBot &&
-               !ebaySpecialSitesMatcher.find() &&
-               requestIsMobile && requestIsMobileWeb) {
+      if (!userAgent.toLowerCase().contains(BOT_USER_AGENT) && !requestIsFromBot &&
+          !ebaySpecialSitesMatcher.find() &&
+          requestIsMobile && requestIsMobileWeb) {
 
-         if (!StringUtils.isEmpty(marketingStatusCode) && marketingStatusCode.equals(Constants.NODE_REDIRECTION_STATUS_CODE)) {
-           isDulicateItemClick = true;
-         }
+        if (!StringUtils.isEmpty(marketingStatusCode)
+            && marketingStatusCode.equals(Constants.NODE_REDIRECTION_STATUS_CODE)) {
+          isDulicateItemClick = true;
+        }
 
-       }
+      }
     }
 
     return isDulicateItemClick;

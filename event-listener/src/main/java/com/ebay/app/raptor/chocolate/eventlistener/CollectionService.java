@@ -133,18 +133,10 @@ public class CollectionService {
     this.duplicateItmClickTopic = ApplicationOptions.getInstance().getDuplicateItmClickTopic();
   }
 
-  /**
-   * Collect event and publish to kafka
-   * @param request             raw request
-   * @param endUserContext      wrapped end user context
-   * @param raptorSecureContext wrapped secure header context
-   * @param requestContext      wrapped raptor request context
-   * @param event               post body event
-   * @return OK or Error message
-   * @throws Exception when there is an unhandled error
-   */
-  public boolean collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
-          raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
+  private UnifiedTrackingEvent initRefererAndUrl(HttpServletRequest request, IEndUserContext endUserContext, Event event)
+      throws Exception {
+
+    UnifiedTrackingEvent utpEvent = new UnifiedTrackingEvent();
 
     Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
 
@@ -162,7 +154,162 @@ public class CollectionService {
     if (null == userAgent) {
       logError(Errors.ERROR_NO_USER_AGENT);
     }
+    utpEvent.setUrl(event.getTargetUrl());
+    utpEvent.setReferer(referer);
+    return utpEvent;
+  }
 
+  private UnifiedTrackingEvent annotateMandatoryParameters(UnifiedTrackingEvent event,
+                                                           ContainerRequestContext requestContext) {
+
+    String targetUrl = event.getUrl();
+
+    // parse channel from uri
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+
+    // XC-1695. no query parameter,
+    // rejected but return 201 accepted for clients since app team has started unconditionally call
+    MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
+    if (parameters.size() == 0) {
+      LOGGER.warn(Errors.ERROR_NO_QUERY_PARAMETER);
+      metrics.meter(Errors.ERROR_NO_QUERY_PARAMETER);
+      return null;
+    }
+
+    // XC-1695. no mkevt, rejected but return 201 accepted for clients since app team has started unconditionally call
+    if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
+      LOGGER.warn(Errors.ERROR_NO_MKEVT);
+      metrics.meter(Errors.ERROR_NO_MKEVT);
+      return null;
+    }
+
+    // XC-1695. mkevt != 1, rejected but return 201 accepted for clients
+    String mkevt = parameters.get(Constants.MKEVT).get(0);
+    if (!mkevt.equals(Constants.VALID_MKEVT_CLICK)) {
+      LOGGER.warn(Errors.ERROR_INVALID_MKEVT);
+      metrics.meter(Errors.ERROR_INVALID_MKEVT);
+      return null;
+    }
+
+    // parse channel from query mkcid
+    // no mkcid, rejected but return 201 accepted for clients
+    if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
+      LOGGER.warn(Errors.ERROR_NO_MKCID);
+      metrics.meter("NoMkcidParameter");
+      return null;
+    }
+
+    ChannelIdEnum channelType;
+
+    // invalid mkcid, show error and accept
+    channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
+    if (channelType == null) {
+      LOGGER.warn(Errors.ERROR_INVALID_MKCID + " {}", targetUrl);
+      metrics.meter("InvalidMkcid");
+      return null;
+    }
+
+    // for search engine free listings, append mkrid
+    if (channelType == ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS) {
+      String rotationId = getSearchEngineFreeListingsRotationId(requestContext);
+      targetUrl = targetUrl + "&" + Constants.MKRID + "=" + rotationId;
+      event.setUrl(targetUrl);
+      parameters = UriComponentsBuilder.fromUriString(targetUrl).build().getQueryParams();
+    }
+
+    // check partner for email click
+    String partner;
+    if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
+      // no mkpid, accepted
+      if (!parameters.containsKey(Constants.MKPID) || parameters.get(Constants.MKPID).get(0) == null) {
+        LOGGER.warn(Errors.ERROR_NO_MKPID);
+        metrics.meter("NoMkpidParameter");
+      } else {
+        // invalid mkpid, accepted
+        partner = EmailPartnerIdEnum.parse(parameters.get(Constants.MKPID).get(0));
+        if (StringUtils.isEmpty(partner)) {
+          LOGGER.warn(Errors.ERROR_INVALID_MKPID);
+          metrics.meter("InvalidMkpid");
+        }
+        else {
+          event.setPartner(partner);
+        }
+      }
+    }
+
+    return event;
+
+  }
+
+  private UnifiedTrackingEvent annotateUrlAndReferer(UnifiedTrackingEvent event) throws Exception {
+
+    String targetUrl = event.getUrl();
+    String referer = event.getReferer();
+
+    // For e page, the real target url is in the referer
+    // Since Chrome strict policy, referer may be cut off, so use 'originalUrl' parameter first as target url
+    // if referer is existed, it will be in the target url (request body) parameter
+    if (ePageSites.matcher(targetUrl.toLowerCase()).find()) {
+      metrics.meter("ePageIncoming");
+
+      Event staticPageEvent = staticPageRequestHandler.parseStaticPageEvent(targetUrl, referer);
+      targetUrl = staticPageEvent.getTargetUrl();
+      referer = staticPageEvent.getReferrer();
+    }
+
+    //XC-1797, for social app deeplink case, extract and decode actual target url from referrer parameter in targetUrl
+    //only accept the url when referrer domain belongs to ebay sites
+    Matcher deeplinkMatcher = deeplinksites.matcher(targetUrl.toLowerCase());
+    if (deeplinkMatcher.find()) {
+      metrics.meter("IncomingSocialAppDeepLink");
+
+      Event customizedSchemeEvent = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetUrl, referer);
+      if(customizedSchemeEvent == null) {
+        logError(Errors.ERROR_NO_TARGET_URL_DEEPLINK);
+      } else {
+        targetUrl = customizedSchemeEvent.getTargetUrl();
+        referer = customizedSchemeEvent.getReferrer();
+      }
+    }
+    event.setUrl(targetUrl);
+    event.setReferer(referer);
+    return event;
+  }
+
+  private UnifiedTrackingEvent initClickEvent(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
+      raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
+
+    UnifiedTrackingEvent utpEvent = initRefererAndUrl(request, endUserContext, event);
+
+    Matcher roverSitesMatcher = roversites.matcher(utpEvent.getReferer().toLowerCase());
+    if (roverSitesMatcher.find()) {
+      roverClient.forwardRequestToRover(utpEvent.getReferer(), ROVER_INTERNAL_VIP, request);
+      return null;
+    }
+
+    utpEvent = annotateUrlAndReferer(utpEvent);
+
+    utpEvent = annotateMandatoryParameters(utpEvent, requestContext);
+
+    return utpEvent;
+  }
+
+  /**
+   * Collect event and publish to kafka
+   * @param request             raw request
+   * @param endUserContext      wrapped end user context
+   * @param raptorSecureContext wrapped secure header context
+   * @param requestContext      wrapped raptor request context
+   * @param event               post body event
+   * @return OK or Error message
+   * @throws Exception when there is an unhandled error
+   */
+  public boolean collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
+          raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
+
+    UnifiedTrackingEvent utpEvent = initClickEvent(request, endUserContext, raptorSecureContext, requestContext, event);
+
+    String referer = utpEvent.getReferer();
     // legacy rover deeplink case. Forward it to rover. We control this at our backend in case mobile app miss it
     Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
     if (roverSitesMatcher.find()) {
@@ -174,7 +321,7 @@ public class CollectionService {
     ChannelActionEnum channelAction = ChannelActionEnum.CLICK;
 
     // targetUrl is from post body
-    String targetUrl = event.getTargetUrl();
+    String targetUrl = utpEvent.getUrl();
 
     // For e page, the real target url is in the referer
     // Since Chrome strict policy, referer may be cut off, so use 'originalUrl' parameter first as target url
@@ -269,17 +416,8 @@ public class CollectionService {
       }
     }
 
-    String landingPageType;
-    List<String> pathSegments = uriComponents.getPathSegments();
-    if (pathSegments.isEmpty()) {
-      landingPageType = "home";
-    } else {
-      landingPageType = pathSegments.get(0);
-    }
-
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
-    String platform = getPlatform(agentInfo);
 
     String action = ChannelActionEnum.CLICK.toString();
     String type = channelType.getLogicalChannel().getAvro().toString();
@@ -296,9 +434,7 @@ public class CollectionService {
       }
     }
 
-    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
-        Field.of(LANDING_PAGE_TYPE, landingPageType));
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
 
     // this attribute is used to log actual process time for incoming event in mcs
     long eventProcessStartTime = startTime;
@@ -408,8 +544,7 @@ public class CollectionService {
     }
 
     stopTimerAndLogData(eventProcessStartTime, startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action),
-        Field.of(CHANNEL_TYPE, type), Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
-        Field.of(LANDING_PAGE_TYPE, landingPageType));
+        Field.of(CHANNEL_TYPE, type));
 
     return true;
   }
