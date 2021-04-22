@@ -10,20 +10,16 @@
     </project>
     <project name="Chocolate-PaidSearch-data" id="2">
         <metric name="Collectionsvc Input: click" value="CollectionServiceIncoming" source="chocolate-metrics" condition="channelType:paid_search" threshold="10000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
-        <metric name="Capping Output: click" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:paid_search,channelAction:click" threshold="10000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
     </project>
     <project name="Chocolate-SocialMedia-data" id="3">
         <metric name="Collectionsvc Input: click" value="CollectionServiceIncoming" source="chocolate-metrics" condition="channelType:social_media" threshold="10000" thresholdFactor="0.5" computeType="sum" alert="true"/>
-        <metric name="Capping Output: click" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:social_media,channelAction:click" threshold="10000" thresholdFactor="0.5" computeType="sum" alert="true"/>
     </project>
     <project name="Chocolate-Display-data" id="4">
         <metric name="Collectionsvc Input: click" value="CollectionServiceIncoming" source="chocolate-metrics" condition="channelType:display" threshold="10000" thresholdFactor="0.7" computeType="sum" alert="true"/>
-        <metric name="Capping Output: click" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:display,channelAction:click" threshold="10000" thresholdFactor="0.7" computeType="sum" alert="true"/>
     </project>
     <project name="Chocolate-roi-data" id="5">
         <metric name="Collectionsvc Input: roi" value="NewROICountAPI" source="chocolate-metrics" condition="channelType:new-roi" threshold="8500000" thresholdFactor="0.7" computeType="sum" alert="true"/>
         <metric name="IncomingPageRoi" value="IncomingPageRoi" source="chocolate-metrics" condition="" threshold="2000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
-        <metric name="Capping Output: roi" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:roi,channelAction:roi" threshold="10000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
     </project>
     <project name="Rotation-data" id="6">
         <metric name="Rotation create fail" value="RotationCreateFail" source="mkttracksvc-metrics" condition="" threshold="0" thresholdFactor="2" computeType="sum" alert="false"/>

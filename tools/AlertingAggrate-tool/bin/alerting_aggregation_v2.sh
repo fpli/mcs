@@ -8,13 +8,13 @@ TMP_DIR="/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v2/temp"
 
 echo "Start getting cluster file list."
 DATE1=`date --date=$DIFF" days ago" +%Y-%m-%d`
-/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls hdfs://hercules/sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event_v2/snapshot/dt=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "hercules" > ${TMP_DIR}/hercules_files/imk_rvr_trckng_event_v2.txt
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls hdfs://hercules/sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event_v2/snapshot/dt=$DATE1/utp* | grep -v "^$" | awk '{print $NF}' | grep "hercules" > ${TMP_DIR}/hercules_files/imk_rvr_trckng_event_v2.txt
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls hdfs://hercules/sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event/snapshot/dt=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "hercules" > ${TMP_DIR}/hercules_files/imk_rvr_trckng_event.txt
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls hdfs://hercules/sys/edw/imk/im_tracking/imk/imk_rvr_trckng_event_dtl/snapshot/dt=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "hercules" > ${TMP_DIR}/hercules_files/imk_rvr_trckng_event_dtl.txt
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls hdfs://hercules/sys/edw/imk/im_tracking/epn/ams_click/snapshot/click_dt=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "hercules" > ${TMP_DIR}/hercules_files/ams_click.txt
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls hdfs://hercules/sys/edw/imk/im_tracking/epn/ams_impression/snapshot/imprsn_dt=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "hercules" > ${TMP_DIR}/hercules_files/ams_impression.txt
 
-/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls viewfs://apollo-rno/apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_v2/dt=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "apollo" > ${TMP_DIR}/apollo_files/imk_rvr_trckng_event_v2.txt
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls viewfs://apollo-rno/apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_v2/dt=$DATE1/utp* | grep -v "^$" | awk '{print $NF}' | grep "apollo" > ${TMP_DIR}/apollo_files/imk_rvr_trckng_event_v2.txt
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls viewfs://apollo-rno/apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event/dt=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "apollo" > ${TMP_DIR}/apollo_files/imk_rvr_trckng_event.txt
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls viewfs://apollo-rno/apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_dtl/dt=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "apollo" > ${TMP_DIR}/apollo_files/imk_rvr_trckng_event_dtl.txt
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt/click/click_dt=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "apollo" > ${TMP_DIR}/apollo_files/ams_click.txt
