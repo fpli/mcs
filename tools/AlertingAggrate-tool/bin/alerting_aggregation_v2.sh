@@ -47,5 +47,5 @@ mv ${TMP_DIR}/daily_domain_trend/part-*.csv ${TMP_DIR}/daily_domain_trend/dailyD
 echo "Finish getting epn report data."
 
 echo "Start AAMain application."
-java -cp /datashare/mkttracking/tools/AlertingAggrate-tool-imk-v2/lib/AlertingAggrate-tool-*.jar com.ebay.traffic.chocolate.AAMain $DATE mx.vip.ebay.com lli5@ebay.com,zhofan@ebay.com,yliu29@ebay.com,shuangxu@ebay.com,jialili1@ebay.com,xiangli4@ebay.com,fechen@ebay.com,zhiyuawang@ebay.com,zjian@ebay.com,yyang28@ebay.com,yli19@ebay.com,yuhxiao@ebay.com,xuanwwang@ebay.com daily
+java -cp /datashare/mkttracking/tools/AlertingAggrate-tool-imk-v2/lib/AlertingAggrate-tool-*.jar com.ebay.traffic.chocolate.AAMain $DATE mx.vip.ebay.com lli5@ebay.com,zhofan@ebay.com,yliu29@ebay.com,shuangxu@ebay.com,jialili1@ebay.com,xiangli4@ebay.com,fechen@ebay.com,zhiyuawang@ebay.com,zjian@ebay.com,yyang28@ebay.com,yli19@ebay.com,yuhxiao@ebay.com,xuanwwang@ebay.com,Marketing-Tracking-oncall@ebay.com daily
 echo "AAMain application end."
