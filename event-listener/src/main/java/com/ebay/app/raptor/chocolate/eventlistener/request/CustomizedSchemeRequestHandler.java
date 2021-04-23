@@ -39,6 +39,8 @@ public class CustomizedSchemeRequestHandler {
   private static final String VIEWITEM = "item.view";
   private static final String CLICKEVENTFLAG = "1";
 
+  // XC-1797, extract and decode actual target url from referrer parameter in targetUrl, only accept the url when the domain of referrer parameter belongs to ebay sites
+  // XC-3349, for native uri with Chocolate parameters, re-construct Chocolate url based on native uri and track (only support /itm page)
   public Event parseCustomizedSchemeEvent(String targetUrl, String referer) {
 
     UriComponents deeplinkUriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();

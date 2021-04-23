@@ -152,6 +152,8 @@ public class Constants {
 
   /**
    * client id - host map
+   * this is used to construct Chocolate final landing page url when we receive the click whose original url is custom uri with Chocolate parameters
+   * only support /itm page
    */
   public static final ImmutableMap<String, String> clientIdHostMap = new ImmutableMap.Builder<String, String>()
           .put("5282", "https://www.ebay.ie")
