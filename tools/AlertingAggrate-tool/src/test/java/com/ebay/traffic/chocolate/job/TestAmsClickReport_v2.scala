@@ -4,8 +4,6 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 
 class TestAmsClickReport_v2 extends BaseFunSuite {
-  val schema_epn_click_dir = "df_epn_click.json"
-
   @transient lazy val hadoopConf = {
     new Configuration()
   }

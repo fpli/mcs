@@ -1,0 +1,987 @@
+{
+  "table": "df_epn_click",
+  "description": "This is EPN Click schema",
+  "columns": [
+    {
+      "name": "IMPRSN_CNTNR_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FILE_SCHM_VRSN_NUM",
+      "dataType": "string",
+      "default": "4"
+    },
+    {
+      "name": "FILE_ID",
+      "dataType": "string",
+      "default": "1995"
+    },
+    {
+      "name": "BATCH_ID",
+      "dataType": "string",
+      "default": "1994"
+    },
+    {
+      "name": "CLICK_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "CHNL_ID",
+      "dataType": "string",
+      "default": "1"
+    },
+    {
+      "name": "CRLTN_GUID_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "GUID_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "USER_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "CLNT_RMT_IP",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "BRWSR_TYPE_NUM",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "BRWSR_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "RFR_URL_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "ENCRYPTD_IND",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "PLCMNT_DATA_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "PBLSHR_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "AMS_PBLSHR_CMPGN_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "AMS_TOOL_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "CSTM_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "LND_PAGE_URL_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "USER_QUERY_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_VRSN_NUM",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "FLEX_FLD_1_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_2_TXT",
+      "dataType": "string",
+      "default": "4"
+    },
+    {
+      "name": "FLEX_FLD_3_TXT",
+      "dataType": "string",
+      "default": "4"
+    },
+    {
+      "name": "FLEX_FLD_4_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "IMPRSN_TS",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "CLICK_TS",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "LAST_VWD_ITEM_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "LAST_VWD_ITEM_TS",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "LAST_ADN_CLICK_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "LAST_ADN_CLICK_TS",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_5_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_6_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_7_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_8_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_9_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_10_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_11_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_12_TXT",
+      "dataType": "string",
+      "default": ""
+    }, {
+      "name": "FLEX_FLD_13_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_14_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_15_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_16_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_17_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_18_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_19_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "FLEX_FLD_20_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "ICEP_FLEX_FLD_VRSN_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "ICEP_FLEX_FLD_1_TXT",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "ICEP_FLEX_FLD_2_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "ICEP_FLEX_FLD_3_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "ICEP_FLEX_FLD_4_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "ICEP_FLEX_FLD_5_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "ICEP_FLEX_FLD_6_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "AMS_PRGRM_ID",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "ADVRTSR_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "AMS_CLICK_FLTR_TYPE_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "IMPRSN_LOOSE_MATCH_IND",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "FLTR_YN_IND",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "AMS_TRANS_RSN_CD",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "AMS_PAGE_TYPE_MAP_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "RFRNG_DMN_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "TFS_RFRNG_DMN_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "GEO_TRGTD_RSN_CD",
+      "dataType": "int",
+      "default": 7
+    },
+    {
+      "name": "SRC_PLCMNT_DATA_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "GEO_TRGTD_CNTRY_CD",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "TOOL_LVL_OPTN_IND",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "ACNT_LVL_OPTN_IND",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "GEO_TRGTD_IND",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "PBLSHR_ACPTD_PRGRM_IND",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "INCMNG_CLICK_URL_VCTR_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "STR_NAME_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "ITEM_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "CTGRY_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "KEYWORD_TXT",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "PRGRM_EXCPTN_LIST_IND",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "ROI_FLTR_YN_IND",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "SELLER_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "ROVER_URL",
+      "dataType": "string",
+      "default": ""
+    }, {
+      "name": "MPLX_TIMEOUT_FLAG",
+      "dataType": "string",
+      "default": "0"
+    },
+    {
+      "name": "APP_ID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "APP_PACKAGE_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "APP_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "APP_VERSION",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "DEVICE_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "OS_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "OS_VERSION",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "UDID",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "SDK_NAME",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "SDK_VERSION",
+      "dataType": "string",
+      "default": ""
+    },
+    {
+      "name": "TRFC_SRC_CD",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "ROI_RULE_VALUE",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG1",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG2",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG3",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG4",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG5",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG6",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG7",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG8",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG9",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG10",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG11",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG12",
+      "dataType": "int",
+      "default": 0
+    },{
+      "name": "RT_RULE_FLAG13",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG14",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG15",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG16",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG17",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG18",
+      "dataType": "int",
+      "default": 0
+    },{
+      "name": "RT_RULE_FLAG19",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG20",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG21",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG22",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG23",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "RT_RULE_FLAG24",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG1",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG2",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG3",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG4",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG5",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG6",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG7",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG8",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG9",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG10",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG11",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG12",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG13",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG14",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG15",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG16",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG17",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG18",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG19",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG20",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG21",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG22",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG23",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG24",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG25",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG26",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG27",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG28",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG29",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG30",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG31",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG32",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG33",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG34",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG35",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG36",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG37",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG38",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG39",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG40",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG41",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG42",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG43",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG44",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG45",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG46",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG47",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG48",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG49",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG50",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG51",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG52",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG53",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG54",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG55",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG56",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG57",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG58",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG59",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG60",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG61",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG62",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG63",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG64",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG65",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG66",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG67",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG68",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG69",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG70",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG71",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG72",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG73",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG74",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG75",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG76",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG77",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG78",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG79",
+      "dataType": "int",
+      "default": 0
+    },
+    {
+      "name": "NRT_RULE_FLAG80",
+      "dataType": "int",
+      "default": 0
+    }
+  ]
+}

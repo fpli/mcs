@@ -28,20 +28,15 @@ class AmsHourlyMinTsJob_v2(params: Parameter_v2) extends
     Metadata(params.workDir, params.channel, MetadataEnum.convertToMetadataEnum(params.usage))
   }
 
-  var schema_file = ""
   var ts_col = ""
   if (params.usage == "epnnrt_scp_click") {
-    schema_file = "df_epn_click.json"
     ts_col = "CLICK_TS"
   }
   else if (params.usage == "epnnrt_scp_imp") {
-    schema_file = "df_epn_impression.json"
     ts_col = "IMPRSN_TS"
   }
   else
     logger.warn("Wrong usage!")
-
-  @transient lazy val schema = TableSchema(schema_file)
 
   override def run(): Unit = {
     val epnnrtResult = metadata.readDedupeOutputMeta(params.metaSuffix)
@@ -54,7 +49,7 @@ class AmsHourlyMinTsJob_v2(params: Parameter_v2) extends
         val datesFiles = metaIter._2
 
         datesFiles.foreach(datesFile => {
-          val df = readFilesAsDFEx(datesFile._2, schema.dfSchema)
+          val df = readFilesAsDFEx(datesFile._2)
             .select(ts_col)
 
           val head = df.take(1)
