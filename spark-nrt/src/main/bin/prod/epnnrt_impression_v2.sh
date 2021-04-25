@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - EPN Nrt Job
 
-usage="Usage: epnnrt_impression_v2.sh [workDir] [resourceDir] [filterTime]"
+usage="Usage: epnnrt_impression_v2.sh [workDir] [resourceDir] [filterTime] [outputDir]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
@@ -18,12 +18,12 @@ INPUT_WORK_DIR=$1
 OUTPUT_WORK_DIR=$2
 RESOURCE_DIR=$3
 FILTER_TIME=$4
-OUTPUT_DIR=hdfs://slickha/apps/epn-nrt-v2
+OUTPUT_DIR=$5
 
-DRIVER_MEMORY=15g
-EXECUTOR_NUMBER=40
-EXECUTOR_MEMORY=20g
-EXECUTOR_CORES=5
+DRIVER_MEMORY=1g
+EXECUTOR_NUMBER=3
+EXECUTOR_MEMORY=1g
+EXECUTOR_CORES=1
 
 JOB_NAME="Chocolate_EPN_NRT_IMPRESSION_v2"
 
@@ -43,7 +43,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
     ${SPARK_JOB_CONF} \
-    --conf spark.yarn.executor.memoryOverhead=2048 \
+    --conf spark.yarn.executor.memoryOverhead=1024 \
     --conf spark.speculation=true \
     --conf spark.speculation.quantile=0.5 \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \

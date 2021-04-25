@@ -62,7 +62,7 @@ class TestEpnNrtImpressionJob_v2 extends BaseFunSuite{
 
     job.run()
 
-    val impressionDf = job.readFilesAsDF(outputDir, TableSchema("df_epn_impression.json").dfSchema, "parquet", "tab", false)
+    val impressionDf = job.readFilesAsDF(outputDir)
     assert(impressionDf.count() == 8)
 
     // validate impression df

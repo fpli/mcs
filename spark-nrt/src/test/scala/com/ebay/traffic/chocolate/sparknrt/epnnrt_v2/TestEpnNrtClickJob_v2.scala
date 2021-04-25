@@ -63,7 +63,7 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
     //job.properties = properties
     job.run()
 
-    val clickDf = job.readFilesAsDF(outputDir, TableSchema("df_epn_click.json").dfSchema, "parquet", "tab", false)
+    val clickDf = job.readFilesAsDF(outputDir)
     assert(clickDf.count() == 11)
 
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("CRLTN_GUID_TXT").first().getString(0) == "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")

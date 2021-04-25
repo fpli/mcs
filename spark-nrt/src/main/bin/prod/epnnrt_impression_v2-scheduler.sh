@@ -10,6 +10,7 @@ INPUT_WORK_DIR=hdfs://elvisha/apps/tracking-events-workdir
 OUTPUT_WORK_DIR=hdfs://slickha/apps/tracking-events-workdir-v2
 RESOURCE_DIR=/apps/tracking-resources-v2
 FILTER_HOUR=1     # 1:00am
+OUTPUT_DIR=hdfs://slickha/apps/epn-nrt-v2
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
 log_file="/datashare/mkttracking/logs/chocolate/epn-nrt-v2/scheduler_${log_dt}.log"
 
@@ -43,4 +44,4 @@ echo "FILTER_TIME="${FILTER_TIME} | tee -a ${log_file}
 ##################### Spark Submit ##################
 export HADOOP_USER_NAME=chocolate
 echo $HADOOP_USER_NAME
-/datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod/epnnrt_impression_v2.sh ${INPUT_WORK_DIR} ${OUTPUT_WORK_DIR} ${RESOURCE_DIR} "0"
+/datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod/epnnrt_impression_v2.sh ${INPUT_WORK_DIR} ${OUTPUT_WORK_DIR} ${RESOURCE_DIR} "0" ${OUTPUT_DIR}
