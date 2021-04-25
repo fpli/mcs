@@ -2,7 +2,6 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt_v2
 
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles}
-import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import com.ebay.traffic.monitoring.Field
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.functions.col
