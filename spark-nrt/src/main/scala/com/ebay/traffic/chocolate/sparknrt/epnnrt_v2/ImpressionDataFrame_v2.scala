@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 
 class ImpressionDataFrame_v2(df: DataFrame, common: EpnNrtCommon_v2) extends Serializable {
 
-  @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression.json")
+  @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression_v2.json")
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
