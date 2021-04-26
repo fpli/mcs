@@ -25,8 +25,8 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
   lazy val epnNrtScpMetaImpTempDir = outputDir + "/tmp_scp_meta_imp/"
 
   // meta final dir
-  lazy val epnNrtResultMetaImpDir = workDir + "/meta/EPN/output/epnnrt_imp/"
-  lazy val epnNrtScpMetaImpDir = workDir + "/meta/EPN/output/epnnrt_scp_imp/"
+  lazy val epnNrtResultMetaImpDir = outputWorkDir + "/meta/EPN/output/epnnrt_imp/"
+  lazy val epnNrtScpMetaImpDir = outputWorkDir + "/meta/EPN/output/epnnrt_scp_imp/"
 
   lazy val IMPRESSION_DIR = "/imp/"
 
@@ -45,7 +45,7 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
     //1. load meta files
     logger.info("load metadata...")
 
-    var cappingMeta = metadata.readDedupeOutputMeta(".epnnrtimp_v2")
+    var cappingMeta = inputMetadata.readDedupeOutputMeta(".epnnrtimp_v2")
 
     if (cappingMeta.length > batchSize) {
       cappingMeta = cappingMeta.slice(0, batchSize)
@@ -134,9 +134,9 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
 
           retry(3) {
             deleteMetaTmpDir(epnNrtResultMetaImpTempDir)
-            metadata.writeOutputMeta(imp_metaFile, epnNrtResultMetaImpTempDir, "epnnrt_imp", Array(".epnnrt"))
+            outputMetadata.writeOutputMeta(imp_metaFile, epnNrtResultMetaImpTempDir, "epnnrt_imp", Array(".epnnrt"))
             deleteMetaTmpDir(epnNrtScpMetaImpTempDir)
-            metadata.writeOutputMeta(imp_metaFile, epnNrtScpMetaImpTempDir, "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            outputMetadata.writeOutputMeta(imp_metaFile, epnNrtScpMetaImpTempDir, "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
             logger.info("successfully write EPN NRT impression output meta to HDFS")
             metrics.meter("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
           }
@@ -153,7 +153,7 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
 
       // 7.delete the finished meta files
       logger.info(s"delete metafile=$file")
-      metadata.deleteDedupeOutputMeta(file)
+      inputMetadata.deleteDedupeOutputMeta(file)
 
       logger.info("Successfully processed the meta file: + " + file)
       metrics.meter("MetaFileCount", 1,  Field.of[String, AnyRef]("channelAction", "IMPRESSION"))

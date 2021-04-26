@@ -112,9 +112,7 @@ public class ImkTrckngEventTransformApp
   @Override
   protected DataStream<Tuple3<String, Long, byte[]>> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
     SingleOutputStreamOperator<FilterMessageV5> filterMessageStream = dataStreamSource.map(new DecodeFilterMessageFunction());
-    SingleOutputStreamOperator<FilterMessageV5> filter = filterMessageStream.filter(new FilterEbaySites());
-    DataStream<FilterMessageV5> resultStream =
-            AsyncDataStream.unorderedWait(filter, new AsyncDataRequest(), 10000, TimeUnit.MILLISECONDS, 100);
+    SingleOutputStreamOperator<FilterMessageV5> resultStream = filterMessageStream.filter(new FilterEbaySites());
     return resultStream.map(new TransformFunction());
   }
 

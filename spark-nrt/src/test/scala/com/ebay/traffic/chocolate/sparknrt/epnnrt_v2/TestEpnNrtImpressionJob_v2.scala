@@ -19,7 +19,8 @@ class TestEpnNrtImpressionJob_v2 extends BaseFunSuite{
   private val tmpPath = createTempPath()
 
   private val inputDir = tmpPath + "/inputDir/"
-  private val workDir = tmpPath + "/workDir/"
+  private val inputWorkDir = tmpPath + "/inputWorkDir/"
+  private val outputWorkDir = tmpPath + "/outputWorkDir/"
   private val outputDir = tmpPath + "/outputDir/"
   private val resourceDir = tmpPath
 
@@ -43,7 +44,8 @@ class TestEpnNrtImpressionJob_v2 extends BaseFunSuite{
 
     val args = Array(
       "--mode", "local[8]",
-      "--workDir", workDir,
+      "--inputWorkDir", inputWorkDir,
+      "--outputWorkDir", outputWorkDir,
       "--resourceDir", resourceDir,
       "--filterTime", "0",
       "--outputDir", outputDir
@@ -51,8 +53,9 @@ class TestEpnNrtImpressionJob_v2 extends BaseFunSuite{
     val params = Parameter_v2(args)
     val job = new EpnNrtImpressionJob_v2(params)
 
-    val metadata1 = Metadata(workDir, "EPN", MetadataEnum.capping)
-    val dedupeMeta = metadata1.readDedupeOutputMeta(".epnnrtimp_v2")
+    val inputMetadata = Metadata(inputWorkDir, "EPN", MetadataEnum.capping)
+    val outputMetadata = Metadata(outputWorkDir, "EPN", MetadataEnum.capping)
+    val dedupeMeta = inputMetadata.readDedupeOutputMeta(".epnnrtimp_v2")
     val dedupeMetaPath = new Path(dedupeMeta(0)._1)
 
     assert (fs.exists(dedupeMetaPath))
@@ -75,7 +78,7 @@ class TestEpnNrtImpressionJob_v2 extends BaseFunSuite{
     assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7457493984045429249L).select("AMS_TOOL_ID").first().getString(0) == "10044")
     assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7457493984045429249L).select("CSTM_ID").first().getString(0) == "1")
     assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7457493984045429249L).select("USER_QUERY_TXT").first().getString(0) == "292832042631")
-//    assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7457493984045429249L).select("IMPRSN_TS").first().getString(0) == "2017-03-10 06:20:20.000")
+    //    assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7457493984045429249L).select("IMPRSN_TS").first().getString(0) == "2017-03-10 06:20:20.000")
     assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7457493984045429249L).select("ROVER_URL_TXT").first().getString(0) == "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1")
 
     // validate special case
@@ -85,11 +88,10 @@ class TestEpnNrtImpressionJob_v2 extends BaseFunSuite{
     // rover guid fixed case
     assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7457493984045429250L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
     assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7457493984045429251L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
-
   }
 
   def createTestDataForEPN(): Unit = {
-    val metadata = Metadata(workDir, "EPN", MetadataEnum.capping)
+    val metadata = Metadata(inputWorkDir, "EPN", MetadataEnum.capping)
     val dateFiles1 = DateFiles("date=2018-05-01", Array("file://" + inputDir + "/date=2018-05-01/part-00000.snappy.parquet",
       "file://" + inputDir + "/date=2018-05-01/part-00001.snappy.parquet",
       "file://" + inputDir + "/date=2018-05-01/part-00002.snappy.parquet"))

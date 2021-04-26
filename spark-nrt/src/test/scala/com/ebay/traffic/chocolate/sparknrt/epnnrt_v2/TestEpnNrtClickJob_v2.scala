@@ -17,9 +17,9 @@ import org.apache.spark.sql.functions.col
 
 class TestEpnNrtClickJob_v2 extends BaseFunSuite{
   private val tmpPath = createTempPath()
-
   private val inputDir = tmpPath + "/inputDir/"
-  private val workDir = tmpPath + "/workDir/"
+  private val inputWorkDir = tmpPath + "/inputWorkDir/"
+  private val outputWorkDir = tmpPath + "/outputWorkDir/"
   private val outputDir = tmpPath + "/outputDir/"
   private val resourceDir = tmpPath
 
@@ -43,7 +43,8 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
 
     val args = Array(
       "--mode", "local[8]",
-      "--workDir", workDir,
+      "--inputWorkDir", inputWorkDir,
+      "--outputWorkDir", outputWorkDir,
       "--resourceDir", resourceDir,
       "--filterTime", "0",
       "--outputDir", outputDir
@@ -51,8 +52,10 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
     val params = Parameter_v2(args)
     val job = new EpnNrtClickJob_v2(params)
 
-    val metadata1 = Metadata(workDir, "EPN", MetadataEnum.capping)
-    val dedupeMeta = metadata1.readDedupeOutputMeta(".epnnrt_v2")
+    val inputMetadata = Metadata(inputWorkDir, "EPN", MetadataEnum.capping)
+    val outputMetadata = Metadata(outputWorkDir, "EPN", MetadataEnum.capping)
+
+    val dedupeMeta = inputMetadata.readDedupeOutputMeta(".epnnrt_v2")
     val dedupeMetaPath = new Path(dedupeMeta(0)._1)
 
     assert (fs.exists(dedupeMetaPath))
@@ -63,7 +66,6 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
     val clickDf = job.readFilesAsDF(outputDir, TableSchema("df_epn_click.json").dfSchema, "parquet", "tab", false)
     assert(clickDf.count() == 11)
 
-    // validate click df
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("CRLTN_GUID_TXT").first().getString(0) == "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("GUID_TXT").first().getString(0) == "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("USER_ID").first().getString(0) == "1")
@@ -77,7 +79,7 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("USER_QUERY_TXT").first().getString(0) == "292832042631")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("SRC_PLCMNT_DATA_TXT").first().getString(0) == "711-53200-19255-0")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("ITEM_ID").first().getString(0) == "292832042631")
-//    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("CLICK_TS").first().getString(0) == "2017-03-10 17:13:40.000")
+    //    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("CLICK_TS").first().getString(0) == "2017-03-10 17:13:40.000")
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("ROVER_URL").first().getString(0) == "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1")
 
     // validate special case
@@ -91,8 +93,8 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
     assert(clickDf.filter(col("CLICK_ID") === 6457493984045429247L).count() == 0)
 
     // rover guid fixed case
-//    assert(clickDf.filter(col("CLICK_ID") === 2902129817128329241L).select("GUID_TXT").first().getString(0) == "abcdefg3212412445")
-//    assert(clickDf.filter(col("CLICK_ID") === 2902129817128329242L).select("GUID_TXT").first().getString(0) == "abcdefg3212412446")
+    //    assert(clickDf.filter(col("CLICK_ID") === 2902129817128329241L).select("GUID_TXT").first().getString(0) == "abcdefg3212412445")
+    //    assert(clickDf.filter(col("CLICK_ID") === 2902129817128329242L).select("GUID_TXT").first().getString(0) == "abcdefg3212412446")
     assert(clickDf.filter(col("CLICK_ID") === 2902129817128329243L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
     assert(clickDf.filter(col("CLICK_ID") === 2902129817128329244L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
     assert(clickDf.filter(col("CLICK_ID") === 2902129817128329245L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
@@ -103,7 +105,7 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
   }
 
   def createTestDataForEPN(): Unit = {
-    val metadata = Metadata(workDir, "EPN", MetadataEnum.capping)
+    val metadata = Metadata(inputWorkDir, "EPN", MetadataEnum.capping)
     val dateFiles1 = DateFiles("date=2018-05-01", Array("file://" + inputDir + "/date=2018-05-01/part-00000.snappy.parquet",
       "file://" + inputDir + "/date=2018-05-01/part-00001.snappy.parquet",
       "file://" + inputDir + "/date=2018-05-01/part-00002.snappy.parquet"))

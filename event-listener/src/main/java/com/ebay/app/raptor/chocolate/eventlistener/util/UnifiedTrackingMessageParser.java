@@ -55,7 +55,7 @@ public class UnifiedTrackingMessageParser {
   private static CobrandParser cobrandParser = new CobrandParser();
   private static UepPayloadHelper uepPayloadHelper = new UepPayloadHelper();
 
-  public UnifiedTrackingMessageParser() throws Exception{
+  public UnifiedTrackingMessageParser() throws Exception {
     UnifiedTrackerFactory.getUnifiedTracker(getEnv());
   }
 
@@ -426,7 +426,7 @@ public class UnifiedTrackingMessageParser {
     } else if (ChannelType.PAID_SEARCH.equals(channelType)) {
       campaignId = parameters.getFirst(Constants.CAMPAIGN_ID);
     } else if (ChannelType.SITE_EMAIL.equals(channelType)) {
-      campaignId = StringUtils.substringBetween(parameters.getFirst(Constants.SOURCE_ID), "e", ".");
+      campaignId = CollectionServiceUtil.substring(parameters.getFirst(Constants.SOURCE_ID), "e", ".mle");
     } else if (ChannelType.MRKT_EMAIL.equals(channelType)) {
       if (StringUtils.isNotEmpty(HttpRequestUtil.parseFromTwoParams(parameters, Constants.SEGMENT_NAME,
           Constants.SEGMENT_NAME_S))) {

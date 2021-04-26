@@ -6,7 +6,8 @@ import scopt.OptionParser
 case class Parameter_v2(appName: String = "epnnrt_v2",
                         mode: String = "yarn",
                         partitions: Int = 1,
-                        workDir: String = "",
+                        inputWorkDir: String = "",
+                        outputWorkDir: String = "",
                         resourceDir: String = "",
                         filterTime: String = "",
                         outputDir: String = "")
@@ -29,10 +30,15 @@ object Parameter_v2 {
       .valueName("partitions")
       .action((cont, param) => param.copy(partitions = cont))
 
-    opt[String]("workDir")
+    opt[String]("inputWorkDir")
       .required
-      .valueName("workDir")
-      .action((cont, param) => param.copy(workDir = cont))
+      .valueName("inputWorkDir")
+      .action((cont, param) => param.copy(inputWorkDir = cont))
+
+    opt[String]("outputWorkDir")
+      .required
+      .valueName("outputWorkDir")
+      .action((cont, param) => param.copy(outputWorkDir = cont))
 
     opt[String]("resourceDir")
       .required
