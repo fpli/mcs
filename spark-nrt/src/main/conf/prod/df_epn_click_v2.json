@@ -249,7 +249,7 @@
     {
       "name": "ICEP_FLEX_FLD_1_TXT",
       "dataType": "string",
-      "default": "0"
+      "default": ""
     },
     {
       "name": "ICEP_FLEX_FLD_2_TXT",
@@ -354,7 +354,7 @@
     {
       "name": "PBLSHR_ACPTD_PRGRM_IND",
       "dataType": "string",
-      "default": "0"
+      "default": ""
     },
     {
       "name": "INCMNG_CLICK_URL_VCTR_ID",
@@ -384,7 +384,7 @@
     {
       "name": "PRGRM_EXCPTN_LIST_IND",
       "dataType": "string",
-      "default": "0"
+      "default": ""
     },
     {
       "name": "ROI_FLTR_YN_IND",
@@ -400,10 +400,11 @@
       "name": "ROVER_URL",
       "dataType": "string",
       "default": ""
-    }, {
+    },
+    {
       "name": "MPLX_TIMEOUT_FLAG",
-      "dataType": "string",
-      "default": "0"
+      "dataType": "int",
+      "default": ""
     },
     {
       "name": "APP_ID",

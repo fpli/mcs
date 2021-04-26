@@ -251,8 +251,8 @@
     },
     {
       "name": "MPLX_TIMEOUT_FLAG",
-      "dataType": "string",
-      "default": ""
+      "dataType": "int",
+      "default": 0
     },
     {
       "name": "CB_KW",
