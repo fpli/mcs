@@ -50,7 +50,7 @@
     {
       "name": "BRWSR_TYPE_NUM",
       "dataType": "int",
-      "default": ""
+      "default": 0
     },
     {
       "name": "BRWSR_NAME",
