@@ -8,7 +8,6 @@ bin=`cd "$bin">/dev/null; pwd`
 ##################### SPARK NRT Job Parameters ##################
 INPUT_WORK_DIR=hdfs://slickha/apps/tracking-events-workdir-old-test
 OUTPUT_WORK_DIR=hdfs://slickha/apps/tracking-events-workdir-old-test
-
 RESOURCE_DIR=/apps/tracking-resources-old-test
 
 OUTPUT_DIR=hdfs://slickha/apps/epn-nrt-old-test

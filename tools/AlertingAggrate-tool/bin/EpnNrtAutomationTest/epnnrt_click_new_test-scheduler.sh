@@ -11,10 +11,13 @@ OUTPUT_WORK_DIR=hdfs://slickha/apps/tracking-events-workdir-new-test
 RESOURCE_DIR=/apps/tracking-resources-new-test
 
 OUTPUT_DIR=hdfs://slickha/apps/epn-nrt-new-test
+
+DATE=`date -d '5 days ago' +%Y-%m-%d`
+
 FILTER_HOUR=1     # 1:00am
 log_dt=${HOSTNAME}_$(date +%Y%m%d%H%M%S)
 log_file="/datashare/mkttracking/logs/chocolate/epn-nrt-new-test/scheduler_${log_dt}.log"
-DATE=`date -d '5 days ago' +%Y-%m-%d`
+
 
 ##################### Generate FILTER_TIME ##################
 HOUR=$(date +%_H)
