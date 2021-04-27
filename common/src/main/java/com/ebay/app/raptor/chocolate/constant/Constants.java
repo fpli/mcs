@@ -108,8 +108,8 @@ public class Constants {
   // Deep Link native uri params
   public static final String NAV = "nav";
   public static final String ID = "id";
-  // DEEP_LINK_WITH_CHOCO_PARAMS_FLAG is used to mark the click whose original url is custom uri with Chocolate parameters
-  public static final String DEEP_LINK_WITH_CHOCO_PARAMS_FLAG = "mkdeeplink";
+  // FLEX_FLD_17_TXT is used to mark the click whose original url is custom uri with Chocolate parameters
+  public static final String FLEX_FLD_17_TXT = "ff17";
 
   /**
    * Performance marketing channels

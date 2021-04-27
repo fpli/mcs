@@ -91,6 +91,7 @@ public class CustomizedSchemeRequestHandler {
       Matcher deeplinkEbaySitesMatcher = deeplinkEbaySites.matcher(deeplinkTargetUrl.toLowerCase());
       if (deeplinkEbaySitesMatcher.find()) {
         ESMetrics.getInstance().meter("IncomingAppDeepLinkWithValidTargetURLSuccess");
+        deeplinkTargetUrl = CollectionServiceUtil.constructReferrerChocolateURLForDeepLink(deeplinkTargetUrl);
         Event event = constructDeeplinkEvent(deeplinkTargetUrl, referer);
         return event;
       } else {
