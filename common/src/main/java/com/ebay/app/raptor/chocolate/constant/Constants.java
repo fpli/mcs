@@ -108,7 +108,7 @@ public class Constants {
   // Deep Link native uri params
   public static final String NAV = "nav";
   public static final String ID = "id";
-  // FLEX_FLD_17_TXT is used to mark the click whose original url is custom uri with Chocolate parameters
+  // FLEX_FLD_17_TXT is used to mark the click whose original url is custom uri (ebay://)
   public static final String FLEX_FLD_17_TXT = "ff17";
 
   /**
