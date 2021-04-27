@@ -322,6 +322,7 @@ public class CollectionServiceUtil {
       }
     } catch (Exception e) {
       LOGGER.error("Construct view item chocolate URL for deeplink error." + e.getMessage());
+      return "";
     }
 
     return viewItemChocolateURL;
@@ -339,6 +340,7 @@ public class CollectionServiceUtil {
       targetURL = targetUriBuilder.build().toString();
     } catch (Exception e) {
       LOGGER.error("Construct referrer chocolate URL for deeplink error." + e.getMessage());
+      return originalChocolateURL;
     }
 
     return targetURL;
