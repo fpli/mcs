@@ -219,7 +219,7 @@ public class CollectionServiceUtilTest {
         MultiValueMap<String, String> deeplinkParameters = deeplinkUriComponents.getQueryParams();
 
         String viewItemChocolateURL = CollectionServiceUtil.constructViewItemChocolateURLForDeepLink(deeplinkParameters);
-        assertEquals("https://www.ebay.fr/itm/154347659933?mkevt=1&mkcid=1&mkrid=709-53481-19255-0&campid=5337369893&toolid=11800&customid=test&mkdeeplink=1", viewItemChocolateURL);
+        assertEquals("https://www.ebay.fr/itm/154347659933?mkevt=1&mkcid=1&mkrid=709-53481-19255-0&campid=5337369893&toolid=11800&customid=test&ff17=chocodeeplink", viewItemChocolateURL);
     }
 
     public MultiValueMap<String, String> getTargetUrlParameters(String targetUrl) {

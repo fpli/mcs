@@ -6,6 +6,8 @@ import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import org.apache.http.client.utils.URIBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
@@ -50,6 +52,7 @@ import static com.ebay.app.raptor.chocolate.constant.Constants.*;
  * dm
  */
 public class CollectionServiceUtil {
+  private static final Logger LOGGER = LoggerFactory.getLogger(CollectionServiceUtil.class);
 
   private static String MOBILE_PHONE_WEB_APPID = "3564";
   private static String MOBILE_TABLET_WEB_APPID = "1115";
@@ -64,6 +67,8 @@ public class CollectionServiceUtil {
   private static final String MPUID = "mpuid";
   private static final String BOT_USER_AGENT = "bot";
   private static final String PROMOTED_LISTINGS_SOURCE= "PromotedListings";
+  private static final String DEEP_LINK_WITH_CHOCO_PARAMS = "chocodeeplink";
+  private static final String DEEP_LINK_WITH_REFERRER_PARAMS = "referrerdeeplink";
 
   // do not dedupe the item clicks from ebay special sites
   private static Pattern ebaySpecialSites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(befr|benl+\\.)?(qa\\.)?ebay\\.(be|nl|pl|ie|ph|com\\.hk|com\\.my|com\\.sg)($|/.*)", Pattern.CASE_INSENSITIVE);
@@ -312,13 +317,33 @@ public class CollectionServiceUtil {
           }
         }
         // this parameter is used to mark the click whose original url is custom uri with Chocolate parameters
-        deeplinkURIBuilder.addParameter(DEEP_LINK_WITH_CHOCO_PARAMS_FLAG, "1");
-        viewItemChocolateURL = deeplinkURIBuilder.toString();
+        deeplinkURIBuilder.addParameter(FLEX_FLD_17_TXT, DEEP_LINK_WITH_CHOCO_PARAMS);
+        viewItemChocolateURL = deeplinkURIBuilder.build().toString();
       }
     } catch (Exception e) {
-      viewItemChocolateURL = "";
+      LOGGER.error("Construct view item chocolate URL for deeplink error." + e.getMessage());
+      return "";
     }
+
     return viewItemChocolateURL;
+  }
+
+  /**
+   * for native uri which has valid chocolate url in referrer parameter, append special flag to mark this kind of clicks
+   */
+  public static String constructReferrerChocolateURLForDeepLink(String originalChocolateURL) {
+    String targetURL = originalChocolateURL;
+
+    try {
+      URIBuilder targetUriBuilder = new URIBuilder(originalChocolateURL);
+      targetUriBuilder.addParameter(FLEX_FLD_17_TXT, DEEP_LINK_WITH_REFERRER_PARAMS);
+      targetURL = targetUriBuilder.build().toString();
+    } catch (Exception e) {
+      LOGGER.error("Construct referrer chocolate URL for deeplink error." + e.getMessage());
+      return originalChocolateURL;
+    }
+
+    return targetURL;
   }
 
   /**
