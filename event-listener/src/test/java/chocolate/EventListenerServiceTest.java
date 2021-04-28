@@ -777,6 +777,8 @@ public class EventListenerServiceTest {
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=http%3A%2F%2Frover.ebay.com%2Frover%2F1%2F710-53481-19255-0%2F1%3Fff3%3D2");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
 
     // no query parameter
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2F");
@@ -831,6 +833,18 @@ public class EventListenerServiceTest {
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4012, errorMessage.getErrorCode());
 
+    event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=2&mkcid=1");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
+    event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=99");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
     event.setTargetUrl("ebay://link?nav=item.view&mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
@@ -844,6 +858,12 @@ public class EventListenerServiceTest {
     assertEquals(4012, errorMessage.getErrorCode());
 
     event.setTargetUrl("ebay://link?nav=home&id=154347659933&mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
+    event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1&mkrid=999-53481-19255-0");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);

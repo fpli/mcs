@@ -304,7 +304,7 @@ public class CollectionServiceUtil {
     try {
       String rotationId = deeplinkParamMap.get(MKRID).get(0);
       String clientId = parseClientIdFromRotation(rotationId);
-      String urlHost = clientIdHostMap.get(clientId);
+      String urlHost = clientIdHostMap.getOrDefault(clientId, "");
 
       if (!StringUtils.isEmpty(urlHost)) {
         URIBuilder deeplinkURIBuilder = new URIBuilder(urlHost);
