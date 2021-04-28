@@ -21,7 +21,7 @@ class TableSchema (val table: String,
                    val aliases: Array[AliasSchema]) extends Serializable {
 
   @transient lazy val types = Map(
-    "string" -> StringType, "decimal"-> StringType, "long" -> LongType,
+    "string" -> StringType, "decimal"-> DecimalType(18,0), "long" -> LongType,
     "integer" -> IntegerType, "short" -> ShortType, "float" -> FloatType,
     "double" -> DoubleType, "byte" -> ByteType, "boolean" -> BooleanType,
     "date" -> DateType, "timestamp" -> TimestampType
@@ -60,6 +60,14 @@ class TableSchema (val table: String,
     */
   @transient lazy val defaultValues: Map[String, Any] = if (columns != null) {
     columns.map(e => (e.name, e.default)).toMap
+  } else null
+
+
+  /**
+   * Default types of the table columns
+   */
+  @transient lazy val defaultTypes: Map[String, String] = if (columns != null) {
+    columns.map(e => (e.name, e.dataType)).toMap
   } else null
 
   /**

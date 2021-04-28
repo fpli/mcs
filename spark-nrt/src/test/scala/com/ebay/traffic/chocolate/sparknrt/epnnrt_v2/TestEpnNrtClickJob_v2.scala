@@ -6,7 +6,6 @@ import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ChannelType, FilterMes
 import com.ebay.traffic.chocolate.common.TestHelper
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
-import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -59,49 +58,50 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
     val dedupeMetaPath = new Path(dedupeMeta(0)._1)
 
     assert (fs.exists(dedupeMetaPath))
-
     //job.properties = properties
     job.run()
-
     val clickDf = job.readFilesAsDF(outputDir)
     assert(clickDf.count() == 11)
 
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("CRLTN_GUID_TXT").first().getString(0) == "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("GUID_TXT").first().getString(0) == "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("USER_ID").first().getString(0) == "1")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("CLNT_RMT_IP").first().getString(0) == "127.0.0.1")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("RFR_URL_NAME").first().getString(0) == "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("PLCMNT_DATA_TXT").first().getString(0) == "711-53200-19255-0")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("PBLSHR_ID").first().getLong(0) == 7000001262L)
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("AMS_PBLSHR_CMPGN_ID").first().getLong(0) == 435453655L)
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("AMS_TOOL_ID").first().getString(0) == "10044")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("CSTM_ID").first().getString(0) == "1")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("USER_QUERY_TXT").first().getString(0) == "292832042631")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("SRC_PLCMNT_DATA_TXT").first().getString(0) == "711-53200-19255-0")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("ITEM_ID").first().getString(0) == "292832042631")
-    //    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("CLICK_TS").first().getString(0) == "2017-03-10 17:13:40.000")
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429249L).select("ROVER_URL").first().getString(0) == "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1")
+    clickDf.printSchema()
+
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("CRLTN_GUID_TXT").first().getString(0) == "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("GUID_TXT").first().getString(0) == "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("USER_ID").first().getDecimal(0).longValue()== 1L)
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("USER_ID").first().getDecimal(0)== BigDecimal(1).bigDecimal)
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("CLNT_RMT_IP").first().getString(0) == "127.0.0.1")
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("RFR_URL_NAME").first().getString(0) == "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de")
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("PLCMNT_DATA_TXT").first().getString(0) == "711-53200-19255-0")
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("PBLSHR_ID").first().getDecimal(0).longValue() == 7000001262L)
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("AMS_PBLSHR_CMPGN_ID").first().getDecimal(0).longValue() == 435453655L)
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("AMS_TOOL_ID").first().getDecimal(0).longValue() == 10044L)
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("CSTM_ID").first().getString(0) == "1")
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("USER_QUERY_TXT").first().getString(0) == "292832042631")
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("SRC_PLCMNT_DATA_TXT").first().getString(0) == "711-53200-19255-0")
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("ITEM_ID").first().getDecimal(0).longValue() == 292832042631L)
+    //    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("CLICK_TS").first().getString(0) == "2017-03-10 17:13:40.000")
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("ROVER_URL").first().getString(0) == "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1")
 
     // validate special case
     // filter click from special publisher
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429241L).count() == 0)
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429242L).count() == 0)
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429243L).count() == 0)
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429241L).count() == 0)
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429242L).count() == 0)
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429243L).count() == 0)
 
     // filter click whose uri && referrer are ebay sites
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429246L).count() == 0)
-    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429247L).count() == 0)
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429246L).count() == 0)
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429247L).count() == 0)
 
     // rover guid fixed case
-    //    assert(clickDf.filter(col("CLICK_ID") === 2902129817128329241L).select("GUID_TXT").first().getString(0) == "abcdefg3212412445")
-    //    assert(clickDf.filter(col("CLICK_ID") === 2902129817128329242L).select("GUID_TXT").first().getString(0) == "abcdefg3212412446")
-    assert(clickDf.filter(col("CLICK_ID") === 2902129817128329243L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
-    assert(clickDf.filter(col("CLICK_ID") === 2902129817128329244L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
-    assert(clickDf.filter(col("CLICK_ID") === 2902129817128329245L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
+    //    assert(clickDf.filter(col("CLICK_ID") === 2909817128329241L).select("GUID_TXT").first().getString(0) == "abcdefg3412445")
+    //    assert(clickDf.filter(col("CLICK_ID") === 2909817128329242L).select("GUID_TXT").first().getString(0) == "abcdefg3412446")
+    assert(clickDf.filter(col("CLICK_ID") === 2909817128329243L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
+    assert(clickDf.filter(col("CLICK_ID") === 2909817128329244L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
+    assert(clickDf.filter(col("CLICK_ID") === 2909817128329245L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
 
 //    // bullseye token validation
-//    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429251L).select("LAST_VWD_ITEM_ID").first().getString(0) == "250012780462")
-//    assert(clickDf.filter(col("CLICK_ID") === 6457493984045429251L).select("LAST_VWD_ITEM_TS").first().getString(0) == "2020-06-03 15:29:37.92")
+//    assert(clickDf.filter(col("CLICK_ID") === 6453984045429251L).select("LAST_VWD_ITEM_ID").first().getString(0) == "250012780462")
+//    assert(clickDf.filter(col("CLICK_ID") === 6453984045429251L).select("LAST_VWD_ITEM_TS").first().getString(0) == "2020-06-03 15:29:37.92")
   }
 
   def createTestDataForEPN(): Unit = {
@@ -145,54 +145,54 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
     val timestamp = getTimestamp("2018-05-01")
 
     // Desktop
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429241L, 5574651234L, 435453655L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489151020000L, writer1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429242L, 5574651234L, 435453655L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489166020000L, writer1)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6453984045429241L, 5574651234L, 435453655L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489151020000L, writer1)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6453984045429242L, 5574651234L, 435453655L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489166020000L, writer1)
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7457493984045429241L, 7000001564L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", 1489189020000L, writer1)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7457493984045429242L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  writer1)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7453984045429241L, 7000001564L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", 1489189020000L, writer1)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7453984045429242L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  writer1)
     writer1.close()
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429243L, 5574651234L, -1L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489998020000L, writer2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6453984045429243L, 5574651234L, -1L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489998020000L, writer2)
     writeFilterMessage(ChannelType.EPN, ChannelAction.SERVE, 1109090984045429247L, 7000001262L, -1L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489156070000L, writer2)
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7457493984045429243L, 7000001564L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", 1489998020000L, writer2)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 2902129817128329247L, 7000001538L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489159020000L,  writer2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7453984045429243L, 7000001564L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", 1489998020000L, writer2)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.VIEWABLE, 2909817128329247L, 7000001538L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489159020000L,  writer2)
     writer2.close()
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429244L, 7000001262L, -1L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489100020000L, writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429245L, 7000001531L, -1L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489999020000L, writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6453984045429244L, 7000001262L, -1L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489100020000L, writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.CLICK, 6453984045429245L, 7000001531L, -1L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489999020000L, writer3)
 
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7457493984045429244L, 7000001285L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", timestamp - 8, writer3)
-    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7457493984045429245L, 7000001727L, 9000052575L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 7,  writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7453984045429244L, 7000001285L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", timestamp - 8, writer3)
+    writeFilterMessage(ChannelType.EPN, ChannelAction.IMPRESSION, 7453984045429245L, 7000001727L, 9000052575L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", timestamp - 7,  writer3)
     writer3.close()
 
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429246L, 7000001262L, 435453655L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489151020000L, "https://www.ebay.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556&item=292832042631&toolid=10044&customid=1&ff3=2&campid=5336203178&lgeo=1&vectorid=229466", "http://www.ebay.de/?mkevt=1&mkcid=1&mkrid=707-53477-19255-0&campid=5338586075&customid=dede-edge-ntp-topsites-affiliates", writer4)
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429247L, 7000001262L, 435453655L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489151020000L, "https://www.ebay.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556&item=292832042631&toolid=10044&customid=1&ff3=2&campid=5336203178&lgeo=1&vectorid=229466", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429250L, 7000001262L, 435453655L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489151020000L, "https://www.ebay.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556&item=292832042631&toolid=10044&customid=1&ff3=2&campid=5336203178&lgeo=1&vectorid=229466", "http://www.google.com", writer4)
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429248L, 7000001262L, 435453655L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489166020000L, "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://www.ebay.de/?mkevt=1&mkcid=1&mkrid=707-53477-19255-0&campid=5338586075&customid=dede-edge-ntp-topsites-affiliates", writer4)
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429249L, 7000001262L, 435453655L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489166020000L, "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 6457493984045429251L, 7000001262L, 435453655L, "6018ed8b1720a9cc5e628468f7d256a5", 1591169377921L, "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 6453984045429246L, 7000001262L, 435453655L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489151020000L, "https://www.ebay.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556&item=292832042631&toolid=10044&customid=1&ff3=2&campid=5336203178&lgeo=1&vectorid=229466", "http://www.ebay.de/?mkevt=1&mkcid=1&mkrid=707-53477-19255-0&campid=5338586075&customid=dede-edge-ntp-topsites-affiliates", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 6453984045429247L, 7000001262L, 435453655L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489151020000L, "https://www.ebay.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556&item=292832042631&toolid=10044&customid=1&ff3=2&campid=5336203178&lgeo=1&vectorid=229466", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 6453984045429250L, 7000001262L, 435453655L, "76cbd9ea15b0a93d12831833fff1c1065ad49dd7^", 1489151020000L, "https://www.ebay.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556&item=292832042631&toolid=10044&customid=1&ff3=2&campid=5336203178&lgeo=1&vectorid=229466", "http://www.google.com", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 6453984045429248L, 7000001262L, 435453655L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489166020000L, "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://www.ebay.de/?mkevt=1&mkcid=1&mkrid=707-53477-19255-0&campid=5338586075&customid=dede-edge-ntp-topsites-affiliates", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 6453984045429249L, 7000001262L, 435453655L, "12cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489166020000L, "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 6453984045429251L, 7000001262L, 435453655L, "6018ed8b1720a9cc5e628468f7d256a5", 1591169377921L, "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
 
 
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 7457493984045429246L, 7000001564L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", 1489189020000L, "https://www.ebayadservices.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556&item=292832042631&toolid=10044&customid=1", "http://www.ebay.de/?mkevt=1&mkcid=1&mkrid=707-53477-19255-0&campid=5338586075&customid=dede-edge-ntp-topsites-affiliates", writer4)
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 7457493984045429247L, 7000001564L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", 1489189020000L, "https://www.ebayadservices.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556&item=292832042631&toolid=10044&customid=1", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 7457493984045429248L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://www.ebay.de/?mkevt=1&mkcid=1&mkrid=707-53477-19255-0&campid=5338586075&customid=dede-edge-ntp-topsites-affiliates", writer4)
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 7457493984045429249L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 7453984045429246L, 7000001564L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", 1489189020000L, "https://www.ebayadservices.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556&item=292832042631&toolid=10044&customid=1", "http://www.ebay.de/?mkevt=1&mkcid=1&mkrid=707-53477-19255-0&campid=5338586075&customid=dede-edge-ntp-topsites-affiliates", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 7453984045429247L, 7000001564L, -1L, "34cbd9iqoiwjddws09ydwa33fff1c1065ad49dd7^", 1489189020000L, "https://www.ebayadservices.com/p/216444975?iid=392337788578&rt=nc&mkevt=1&mkcid=1&mkrid=4080-157294-765411-6&mksid=1234556&item=292832042631&toolid=10044&customid=1", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 7453984045429248L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://www.ebay.de/?mkevt=1&mkcid=1&mkrid=707-53477-19255-0&campid=5338586075&customid=dede-edge-ntp-topsites-affiliates", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 7453984045429249L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
 
     // replace guid for click
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 2902129817128329241L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1&dashenId=3212412445", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 2902129817128329242L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1&dashenId=3212412446", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 2909817128329241L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1&dashenId=3412445", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 2909817128329242L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1&dashenId=3412446", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
 
-    // no chocotag guid mapping in cb for dashenId 3212412441, keep original guid
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 2902129817128329243L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1&dashenId=3212412441", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
+    // no chocotag guid mapping in cb for dashenId 3412441, keep original guid
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 2909817128329243L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1&dashenId=3412441", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
 
     // no dashenId, keep original guid
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 2902129817128329244L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 2902129817128329245L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 2909817128329244L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.CLICK, 2909817128329245L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
 
     // keep original guid for impression
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 7457493984045429250L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1&dashenId=3212412448", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
-    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 7457493984045429251L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1&dashenId=3212412449", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 7453984045429250L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1&dashenId=3412448", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
+    writeFilterMessageWithSpecificUri(ChannelType.EPN, ChannelAction.IMPRESSION, 7453984045429251L, 7000000007L, -1L, "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^", 1489098020000L,  "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1&dashenId=3412449", "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de", writer4)
     writer4.close()
 
 
