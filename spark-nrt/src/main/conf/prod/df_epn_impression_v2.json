@@ -4,28 +4,28 @@
   "columns": [
     {
       "name": "IMPRSN_CNTNR_ID",
-      "dataType": "Long",
+      "dataType": "decimal",
       "default": 0
     },
     {
       "name": "FILE_SCHM_VRSN_NUM",
-      "dataType": "int",
+      "dataType": "short",
       "default": 4
     },
     {
       "name": "FILE_ID",
-      "dataType": "string",
-      "default": "1995"
+      "dataType": "decimal",
+      "default": "1995L"
     },
     {
       "name": "BATCH_ID",
-      "dataType": "string",
-      "default": "1994"
+      "dataType": "decimal",
+      "default": "1994L"
     },
     {
       "name": "CHNL_ID",
-      "dataType": "string",
-      "default": ""
+      "dataType": "integer",
+      "default": 0
     },
     {
       "name": "CRLTN_GUID_TXT",
@@ -39,8 +39,8 @@
     },
     {
       "name": "USER_ID",
-      "dataType": "string",
-      "default": ""
+      "dataType": "decimal",
+      "default": 0
     },
     {
       "name": "CLNT_RMT_IP",
@@ -49,7 +49,7 @@
     },
     {
       "name": "BRWSR_TYPE_NUM",
-      "dataType": "int",
+      "dataType": "integer",
       "default": 0
     },
     {
@@ -79,18 +79,18 @@
     },
     {
       "name": "PBLSHR_ID",
-      "dataType": "Long",
+      "dataType": "decimal",
       "default": 0
     },
     {
       "name": "AMS_PBLSHR_CMPGN_ID",
-      "dataType": "Long",
+      "dataType": "decimal",
       "default": 0
     },
     {
       "name": "AMS_TOOL_ID",
-      "dataType": "string",
-      "default": ""
+      "dataType": "decimal",
+      "default": 0
     },
     {
       "name": "CSTM_ID",
@@ -99,7 +99,7 @@
     },
     {
       "name": "FLEX_FLD_VRSN_NUM",
-      "dataType": "int",
+      "dataType": "integer",
       "default": 0
     },
     {
@@ -200,7 +200,8 @@
       "name": "FLEX_FLD_20_TXT",
       "dataType": "string",
       "default": ""
-    }, {
+    },
+    {
       "name": "CTX_TXT",
       "dataType": "string",
       "default": ""
@@ -222,26 +223,27 @@
     },
     {
       "name": "IMPRSN_TS",
-      "dataType": "string",
+      "dataType": "timestamp",
       "default": ""
     },
     {
       "name": "AMS_PRGRM_ID",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "ADVRTSR_ID",
-      "dataType": "string",
-      "default": ""
+      "dataType": "byte",
+      "default": 0
     },
     {
       "name": "AMS_CLICK_FLTR_TYPE_ID",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 3
-    }, {
+    },
+    {
       "name": "FILTER_YN_IND",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
@@ -251,7 +253,7 @@
     },
     {
       "name": "MPLX_TIMEOUT_FLAG",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
@@ -278,7 +280,8 @@
       "name": "FB_USED",
       "dataType": "string",
       "default": ""
-    }, {
+    },
+    {
       "name": "AD_FORMAT",
       "dataType": "string",
       "default": "7"
@@ -290,8 +293,8 @@
     },
     {
       "name": "LOAD_TIME",
-      "dataType": "string",
-      "default": ""
+      "dataType": "decimal",
+      "default": 0
     },
     {
       "name": "APP_ID",
@@ -344,490 +347,490 @@
     },
     {
       "name": "AMS_TRANS_RSN_CD",
-      "dataType": "string",
-      "default": ""
+      "dataType": "byte",
+      "default": 0
     },
     {
       "name": "TRFC_SRC_CD",
-      "dataType": "string",
-      "default": ""
+      "dataType": "byte",
+      "default": 0
     },
     {
       "name": "RT_RULE_FLAG1",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG2",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG3",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG4",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG5",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG6",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG7",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG8",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG9",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG10",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG11",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG12",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },{
       "name": "RT_RULE_FLAG13",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG14",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG15",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG16",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG17",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG18",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },{
       "name": "RT_RULE_FLAG19",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG20",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG21",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG22",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG23",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "RT_RULE_FLAG24",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG1",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG2",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG3",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG4",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG5",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG6",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG7",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG8",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG9",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG10",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG11",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG12",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG13",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG14",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG15",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG16",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG17",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG18",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG19",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG20",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG21",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG22",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG23",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG24",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG25",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG26",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG27",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG28",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG29",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG30",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG31",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG32",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG33",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG34",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG35",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG36",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG37",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG38",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG39",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG40",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG41",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG42",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG43",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG44",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG45",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG46",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG47",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG48",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG49",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG50",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG51",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG52",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG53",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG54",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG55",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG56",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG57",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG58",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG59",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG60",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG61",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG62",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG63",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG64",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG65",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG66",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG67",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG68",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG69",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG70",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG71",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     },
     {
       "name": "NRT_RULE_FLAG72",
-      "dataType": "int",
+      "dataType": "byte",
       "default": 0
     }
   ]
