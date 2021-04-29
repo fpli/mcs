@@ -15,12 +15,12 @@
     {
       "name": "FILE_ID",
       "dataType": "decimal",
-      "default": "1995L"
+      "default": 1995
     },
     {
       "name": "BATCH_ID",
       "dataType": "decimal",
-      "default": "1994L"
+      "default": 1994
     },
     {
       "name": "CHNL_ID",

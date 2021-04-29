@@ -2,7 +2,7 @@
   "table": "df_epn_impression",
   "description": "This is EPN Impression schema",
   "columns": [
-    {
+    {aaa
       "name": "IMPRSN_CNTNR_ID",
       "dataType": "decimal",
       "default": 0
@@ -22,12 +22,12 @@
       "dataType": "decimal",
       "default": 1994
     },
-    {
+    {aaa
       "name": "CHNL_ID",
       "dataType": "integer",
       "default": 0
     },
-    {
+    {aaa
       "name": "CRLTN_GUID_TXT",
       "dataType": "string",
       "default": ""
@@ -37,27 +37,27 @@
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "USER_ID",
       "dataType": "decimal",
       "default": 0
     },
-    {
+    {aaa
       "name": "CLNT_RMT_IP",
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "BRWSR_TYPE_NUM",
       "dataType": "integer",
       "default": 0
     },
-    {
+    {aaa
       "name": "BRWSR_NAME",
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "RFR_URL_NAME",
       "dataType": "string",
       "default": ""
@@ -67,32 +67,32 @@
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "USER_QUERY_TXT",
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "PLCMNT_DATA_TXT",
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "PBLSHR_ID",
       "dataType": "decimal",
       "default": 0
     },
-    {
+    {aaa
       "name": "AMS_PBLSHR_CMPGN_ID",
       "dataType": "decimal",
       "default": 0
     },
-    {
+    {aaa
       "name": "AMS_TOOL_ID",
       "dataType": "decimal",
       "default": 0
     },
-    {
+    {aaa
       "name": "CSTM_ID",
       "dataType": "string",
       "default": ""
@@ -201,12 +201,12 @@
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "CTX_TXT",
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "CTX_CLD_TXT",
       "dataType": "string",
       "default": ""
@@ -216,22 +216,22 @@
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "RFR_DMN_NAME",
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "IMPRSN_TS",
       "dataType": "timestamp",
       "default": ""
     },
-    {
+    {aaa
       "name": "AMS_PRGRM_ID",
       "dataType": "byte",
       "default": 0
     },
-    {
+    {aaa
       "name": "ADVRTSR_ID",
       "dataType": "byte",
       "default": 0
@@ -241,12 +241,12 @@
       "dataType": "byte",
       "default": 3
     },
-    {
+    {aaa
       "name": "FILTER_YN_IND",
       "dataType": "byte",
       "default": 0
     },
-    {
+    {aaa
       "name": "ROVER_URL_TXT",
       "dataType": "string",
       "default": ""
@@ -256,7 +256,7 @@
       "dataType": "byte",
       "default": 0
     },
-    {
+    {aaa
       "name": "CB_KW",
       "dataType": "string",
       "default": ""
@@ -271,27 +271,27 @@
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "CB_EX_CAT",
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "FB_USED",
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "AD_FORMAT",
       "dataType": "string",
       "default": "7"
     },
-    {
+    {aaa
       "name": "AD_CONTENT_TYPE",
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "LOAD_TIME",
       "dataType": "decimal",
       "default": 0
@@ -330,7 +330,7 @@
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "UDID",
       "dataType": "string",
       "default": ""
@@ -345,12 +345,12 @@
       "dataType": "string",
       "default": ""
     },
-    {
+    {aaa
       "name": "AMS_TRANS_RSN_CD",
       "dataType": "byte",
       "default": 0
     },
-    {
+    {aaa
       "name": "TRFC_SRC_CD",
       "dataType": "byte",
       "default": 0
