@@ -62,14 +62,6 @@ class TableSchema (val table: String,
     columns.map(e => (e.name, e.default)).toMap
   } else null
 
-
-  /**
-   * Default types of the table columns
-   */
-  @transient lazy val defaultTypes: Map[String, String] = if (columns != null) {
-    columns.map(e => (e.name, e.dataType)).toMap
-  } else null
-
   /**
     * Filter not the unwanted column names
     *
