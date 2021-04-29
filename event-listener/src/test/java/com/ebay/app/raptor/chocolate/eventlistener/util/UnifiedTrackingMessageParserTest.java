@@ -2,6 +2,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
@@ -27,6 +28,8 @@ import javax.ws.rs.container.ContainerRequestContext;
 
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static org.junit.Assert.*;
 
@@ -77,10 +80,13 @@ public class UnifiedTrackingMessageParserTest {
     boolean isROIFromCheckoutAPI = false;
     long snapshotId = 0L;
     long shortSnapshotId = 0L;
+    Map<String, String> requestHeaders = new TreeMap<>();
+    requestHeaders.put(Constants.IS_FROM_UFES_HEADER, "true");
+    requestHeaders.put(Constants.NODE_REDIRECTION_HEADER_NAME, "301");
 
-    UnifiedTrackingMessage message = utpParser.parse(requestContext, request, endUserContext, raptorSecureContext, agentInfo,
-            null, parameters, url, referer, channelType, channelAction, null,
-            snapshotId, shortSnapshotId, currentTimeMillis);
+    UnifiedTrackingMessage message = utpParser.parse(requestContext, request, endUserContext, raptorSecureContext,
+        requestHeaders, agentInfo, parameters, url, referer, channelType, channelAction, null,
+        snapshotId, shortSnapshotId, currentTimeMillis);
 
     assertNotNull(message.getEventId());
     assertEquals("", message.getProducerEventId());
@@ -116,6 +122,9 @@ public class UnifiedTrackingMessageParserTest {
     assertEquals(Integer.valueOf(101), message.getGeoId());
     assertFalse(message.getIsBot());
     assertEquals("xx-YY", message.getPayload().get("lang_cd"));
+    assertEquals("true", message.getPayload().get("isUfes"));
+    assertEquals("301", message.getPayload().get("statusCode"));
+
   }
 
   @Test
