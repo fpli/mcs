@@ -421,7 +421,7 @@ public class CollectionService {
       ListenerMessage listenerMessage = null;
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(urlRefChannel.getRight())) {
-        listenerMessage = processPMEvent(requestContext, requestHeaders, userPrefsCtx, targetUrl, referer, utpEventId,
+        listenerMessage = processPMEvent(requestContext, requestHeaders, userPrefsCtx, urlRefChannel.getLeft(), referer, utpEventId,
             parameters, urlRefChannel.getRight(), channelAction, request, startTime, endUserContext, raptorSecureContext, agentInfo);
       }
       else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL) {
