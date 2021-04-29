@@ -176,7 +176,7 @@ public class UnifiedTrackingBotTransformApp
       GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
       boolean isValid = filter(sourceRecord);
       if (!isValid) {
-        sherlockioMetrics.meter(INVALID_INCOMING);
+        sherlockioMetrics.meter(INVALID_INCOMING, 1);
         return;
       }
       int pageId = (int) sourceRecord.get(TransformerConstants.PAGE_ID);
@@ -207,7 +207,7 @@ public class UnifiedTrackingBotTransformApp
      */
     private boolean filter(GenericRecord sourceRecord) {
       if (sourceRecord.get(TransformerConstants.PAGE_ID) == null) {
-        sherlockioMetrics.meter(EMPTY_PAGE_ID);
+        sherlockioMetrics.meter(EMPTY_PAGE_ID, 1);
         return false;
       }
       int pageId = (int) sourceRecord.get(TransformerConstants.PAGE_ID);
@@ -215,7 +215,7 @@ public class UnifiedTrackingBotTransformApp
       ChannelIdEnum channelType = parseChannelType(sourceRecord);
       // only need site_email and marketing_email events
       if (ChannelIdEnum.SITE_EMAIL != channelType && ChannelIdEnum.MRKT_EMAIL != channelType) {
-        sherlockioMetrics.meter(OTHER_CHANNEL_EVENTS);
+        sherlockioMetrics.meter(OTHER_CHANNEL_EVENTS, 1);
         return false;
       }
       // only need rover click

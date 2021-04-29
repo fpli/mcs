@@ -4,6 +4,7 @@
 
 package com.ebay.app.raptor.chocolate.constant;
 
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMap;
 
 import java.util.Arrays;
@@ -35,6 +36,8 @@ public class Constants {
   public static final String GUID = "guid";
   public static final String CGUID = "cguid";
   public static final String STR_NULL = "null";
+  public static final String TAG_IS_UFES = "isUfes";
+  public static final String TAG_STATUS_CODE = "statusCode";
 
   // Request headers
   public static final String TRACKING_HEADER = "X-EBAY-C-TRACKING";
@@ -47,6 +50,7 @@ public class Constants {
   public static final String HTTPS_ENCODED = "https%3A%2F%2";
   public static final String HTTP_ENCODED = "http%3A%2F%2";
   public static final String SOJ_MPRE_TAG = "url_mpre";
+  public static final String ITEM_TAG = "itm";
 
   // EPN url params
   public static final String TOOL_ID = "toolid";
@@ -61,12 +65,12 @@ public class Constants {
   public static final String BEST_GUESS_USER = "bu";
   public static final String CAMP_RUN_DT = "crd";
   public static final String SEGMENT_NAME = "segname";
+  public static final String SEGMENT_NAME_S = "seg";
   public static final String YM_MSSG_MSTR_ID = "ymmmid";
   public static final String YM_MSSG_ID = "ymsid";
   public static final String YM_INSTC = "yminstc";
   public static final String SMS_ID = "smsid";
   public static final String CHOCO_BUYER_ACCESS_SITE_ID = "choco_bs";
-  public static final String TRACKING_ID = "tracking.id";
 
   public static final String REFERER_HEADER = "referer";
   public static final String REFERER_HEADER_UPCASE = "Referer";
@@ -75,15 +79,6 @@ public class Constants {
   public static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   public static final String REDIRECT_SRC_SOJ_SOURCE = "adcamp_locationsrc";
   public static final String ADOBE_CAMP_PUBLIC_USER_ID = "pu";
-
-  // Mobile Notification name and soj tags
-  public static final String NOTIFICATION_ID = "nid";
-  public static final String NOTIFICATION_TYPE = "ntype";
-  public static final String NOTIFICATION_ACTION = "pnact";
-  public static final String USER_NAME = "user_name";
-  public static final String MC3_MSSG_ID = "mc3id";
-  public static final String ITEM_ID = "itm";
-  public static final String NOTIFICATION_TYPE_EVT = "evt";
 
   // Redirection header name
   public static final String NODE_REDIRECTION_HEADER_NAME = "X-EBAY-TRACKING-MARKETING-STATUS-CODE";
@@ -107,6 +102,15 @@ public class Constants {
   // plrfr is the actual referer for the clicks from promoted listings iframe on ebay partner site
   public static final String PLRFR = "plrfr";
 
+  // UFES header
+  public static final String IS_FROM_UFES_HEADER = "x-ufes-mcs-int";
+
+  // Deep Link native uri params
+  public static final String NAV = "nav";
+  public static final String ID = "id";
+  // DEEP_LINK_WITH_CHOCO_PARAMS_FLAG is used to mark the click whose original url is custom uri with Chocolate parameters
+  public static final String DEEP_LINK_WITH_CHOCO_PARAMS_FLAG = "mkdeeplink";
+
   /**
    * Performance marketing channels
    */
@@ -118,7 +122,7 @@ public class Constants {
   /**
    * Email tag - param map
    */
-  public static final ImmutableMap<String, String> emailTagParamMap = new ImmutableMap.Builder<String, String>()
+  public static final ImmutableMultimap<String, String> emailTagParamMap = new ImmutableMultimap.Builder<String, String>()
       .put("adcamp_landingpage", "adcamp_landingpage")
       .put("adcamp_locationsrc", "adcamp_locationsrc")
       .put("adcamppu", "pu")
@@ -138,13 +142,37 @@ public class Constants {
       .put("nqt", "nqt")
       .put("osub", "osub")
       .put("placement-type", "placement-type")
+      .put("placement-type", "pt")
       .put("rank", "rank")
       .put("rpp_cid", "rpp_cid")
       .put("segname", "segname")
-      .put("sid", "emsid")
+      .put("segname", "seg")
       .put("yminstc", "yminstc")
       .put("ymmmid", "ymmmid")
       .put("ymsid", "ymsid")
       .build();
+
+  /**
+   * client id - host map
+   */
+  public static final ImmutableMap<String, String> clientIdHostMap = new ImmutableMap.Builder<String, String>()
+          .put("5282", "https://www.ebay.ie")
+          .put("705", "https://www.ebay.com.au")
+          .put("709", "https://www.ebay.fr")
+          .put("1346", "https://www.ebay.nl")
+          .put("3422", "https://www.ebay.com.hk")
+          .put("1553", "https://www.ebay.be")
+          .put("710", "https://www.ebay.co.uk")
+          .put("5221", "https://www.ebay.at")
+          .put("5222", "https://www.ebay.ch")
+          .put("8971", "https://www.ebay.com")
+          .put("724", "https://www.ebay.it")
+          .put("707", "https://www.ebay.de")
+          .put("3423", "https://www.ebay.com.sg")
+          .put("1185", "https://www.ebay.es")
+          .put("711", "https://www.ebay.com")
+          .put("706", "https://www.ebay.ca")
+          .put("4686", "https://www.ebay.com")
+          .build();
 
 }

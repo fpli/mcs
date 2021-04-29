@@ -380,7 +380,7 @@ public class BehaviorMessageParser {
                                                     ChannelType channelType, ChannelAction channelAction, String guid,
                                                     int pageId) {
     // add tags from parameters
-    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entrySet()) {
+    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entries()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
         applicationPayload.put(entry.getKey(), parseTagFromParams(parameters, entry.getValue()));
       }
@@ -432,6 +432,11 @@ public class BehaviorMessageParser {
 
     // landing page and tracking url
     applicationPayload.put("url_mpre", uri);
+
+    // sid for DSS, just in tracking_event
+    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType)) {
+      applicationPayload.put("sid", parseTagFromParams(parameters, Constants.SOURCE_ID));
+    }
 
     // agent and payload
     applicationPayload.put(AGENT_TAG, agentInfo.getUserAgentRawData());

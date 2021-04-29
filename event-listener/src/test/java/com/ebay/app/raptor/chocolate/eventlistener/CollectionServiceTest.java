@@ -5,7 +5,9 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -26,10 +28,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -275,5 +274,39 @@ public class CollectionServiceTest {
     // valid
     event.setTargetUrl("https://www.ebayadservices.com/marketingtracing/v1/sync?guid=abc&u=123e12");
     assertTrue(collectionService.collectSync(mockHttpServletRequest, mockRaptorSecureContext, mockContainerRequestContext, event));
+  }
+
+  @Test
+  public void inRefererWhitelist() {
+    assertFalse(collectionService.inRefererWhitelist(ChannelType.EPN, "http://www.ebay.com"));
+    assertFalse(collectionService.inRefererWhitelist(ChannelType.EPN, "https://ebay.mtag.io/"));
+    assertFalse(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "http://www.ebay.com"));
+    assertTrue(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "https://ebay.mtag.io/"));
+    assertTrue(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "https://ebay.pissedconsumer.com/"));
+    assertFalse(collectionService.inRefererWhitelist(ChannelType.PAID_SEARCH, "https://ebay.pissedconsumer.com/"));
+  }
+
+  @Test
+  public void isVodInternal() {
+    String referer = "https://signin.ebay.com/";
+    List<String> pathSegments = Arrays.asList("vod", "FetchOrderDetails");
+    // not email channel
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.EPN, pathSegments));
+
+    // email channel success
+    assertTrue(collectionService.isVodInternal(ChannelIdEnum.MRKT_EMAIL, pathSegments));
+    assertTrue(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, pathSegments));
+
+    // path length < 2
+    pathSegments = new ArrayList<>();
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, pathSegments));
+    pathSegments.add("test");
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, pathSegments));
+
+    // not vod page
+    pathSegments = Arrays.asList("test", "FetchOrderDetails");
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, pathSegments));
+    pathSegments = Arrays.asList("vod", "test");
+    assertFalse(collectionService.isVodInternal(ChannelIdEnum.SITE_EMAIL, pathSegments));
   }
 }
