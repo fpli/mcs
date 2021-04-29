@@ -324,7 +324,7 @@ public class CollectionService {
     String platform = getPlatform(agentInfo);
 
     String action = ChannelActionEnum.CLICK.toString();
-    String type = channelType.getLogicalChannel().getAvro().toString();
+    String type = urlRefChannel.getRight().getLogicalChannel().getAvro().toString();
 
     // Self-service events, send them to couchbase
     if (parameters.containsKey(Constants.SELF_SERVICE) && parameters.containsKey(Constants.SELF_SERVICE_ID)) {
@@ -332,7 +332,7 @@ public class CollectionService {
           parameters.getFirst(Constants.SELF_SERVICE_ID) != null) {
         metrics.meter("SelfServiceIncoming");
         CouchbaseClient.getInstance().addSelfServiceRecord(parameters.getFirst(Constants.SELF_SERVICE_ID),
-            finalUrlAndRef.getLeft());
+            urlRefChannel.getLeft());
         metrics.meter("SelfServiceSuccess");
 
         return true;
@@ -348,7 +348,7 @@ public class CollectionService {
 
     // update startTime if the click comes from checkoutAPI
     boolean checkoutAPIClickFlag = false;
-    if (channelType == ChannelIdEnum.EPN) {
+    if (urlRefChannel.getRight() == ChannelIdEnum.EPN) {
       EventPayload payload = event.getPayload();
       if (payload != null) {
         String checkoutAPIClickTs = payload.getCheckoutAPIClickTs();
@@ -367,14 +367,13 @@ public class CollectionService {
         }
       }
     }
-    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
 
     // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256
     // only for EPN channel
     boolean isEPNClickFromPromotedListings;
     try {
       isEPNClickFromPromotedListings
-          = CollectionServiceUtil.isEPNPromotedListingsClick(channelType, parameters, referer);
+          = CollectionServiceUtil.isEPNPromotedListingsClick(urlRefChannel.getRight(), parameters, referer);
 
       if (isEPNClickFromPromotedListings) {
         referer = URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), StandardCharsets.UTF_8.name());
@@ -395,13 +394,13 @@ public class CollectionService {
     try {
       isDuplicateClick = CollectionServiceUtil.isDuplicateItmClick(
           request.getHeader(Constants.NODE_REDIRECTION_HEADER_NAME), endUserContext.getUserAgent(),
-          targetUrl, agentInfo.requestIsFromBot(), agentInfo.isMobile(), agentInfo.requestIsMobileWeb());
+          urlRefChannel.getLeft(), agentInfo.requestIsFromBot(), agentInfo.isMobile(), agentInfo.requestIsMobileWeb());
 
       // send duplicate click to a dedicate listener topic
       if(isDuplicateClick || isInternalRef) {
         Producer<Long, ListenerMessage> producer = KafkaSink.get();
         ListenerMessage listenerMessage = parser.parse(requestHeaders, endUserContext, userPrefsCtx, startTime,
-            0L, channelType.getLogicalChannel().getAvro(), ChannelActionEnum.CLICK, "", targetUrl,
+            0L, urlRefChannel.getRight().getLogicalChannel().getAvro(), ChannelActionEnum.CLICK, "", urlRefChannel.getLeft(),
             referer, 0L, "");
         Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
         listenerMessage.setSnapshotId(snapshotId);
@@ -417,37 +416,37 @@ public class CollectionService {
     // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
     String utpEventId = UUID.randomUUID().toString();
 
-    Boolean vodInternal = isVodInternal(channelType, pathSegments);
+    Boolean vodInternal = isVodInternal(urlRefChannel.getRight(), pathSegments);
     if(!isDuplicateClick && !isInternalRef || vodInternal) {
       ListenerMessage listenerMessage = null;
       // add channel specific tags, and produce message for EPN and IMK
-      if (PM_CHANNELS.contains(channelType)) {
+      if (PM_CHANNELS.contains(urlRefChannel.getRight())) {
         listenerMessage = processPMEvent(requestContext, requestHeaders, userPrefsCtx, targetUrl, referer, utpEventId,
-            parameters, channelType, channelAction, request, startTime, endUserContext, raptorSecureContext, agentInfo);
+            parameters, urlRefChannel.getRight(), channelAction, request, startTime, endUserContext, raptorSecureContext, agentInfo);
       }
-      else if (channelType == ChannelIdEnum.SITE_EMAIL) {
+      else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL) {
         processCmEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
-            targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), utpEventId,
+            urlRefChannel.getLeft(), startTime, urlRefChannel.getRight().getLogicalChannel().getAvro(), channelAction.getAvro(), utpEventId,
             siteEmailCollector);
       }
-      else if (channelType == ChannelIdEnum.MRKT_EMAIL) {
+      else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_EMAIL) {
         processCmEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
-            targetUrl, startTime, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(), utpEventId,
+            urlRefChannel.getLeft(), startTime, urlRefChannel.getRight().getLogicalChannel().getAvro(), channelAction.getAvro(), utpEventId,
             mrktEmailCollector);
       }
-      else if (channelType == ChannelIdEnum.MRKT_SMS || channelType == ChannelIdEnum.SITE_SMS) {
-        processSMSEvent(requestContext, referer, targetUrl, agentInfo, parameters, type, action);
+      else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_SMS || urlRefChannel.getRight() == ChannelIdEnum.SITE_SMS) {
+        processSMSEvent(requestContext, referer, urlRefChannel.getLeft(), agentInfo, parameters, type, action);
       }
 
       // send to unified tracking topic
       if (listenerMessage != null) {
         processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-            targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+            urlRefChannel.getLeft(), referer, urlRefChannel.getRight().getLogicalChannel().getAvro(), channelAction.getAvro(),
             null, listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), utpEventId, startTime,
             vodInternal);
       } else {
         processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-            targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+            urlRefChannel.getLeft(), referer, urlRefChannel.getRight().getLogicalChannel().getAvro(), channelAction.getAvro(),
             null, 0L, 0L, utpEventId, startTime, vodInternal);
       }
     }
