@@ -18,9 +18,9 @@ import scala.reflect.ClassTag
   *
   * Basic class for chocolate spark jobs
   */
-abstract class BaseSparkJob(val jobName: String,
-                            val mode: String = "yarn",
-                            val enableHiveSupport: Boolean = false) extends Serializable {
+abstract class BaseSparkJob_v2(val jobName: String,
+                               val mode: String = "yarn",
+                               val enableHiveSupport: Boolean = false) extends Serializable {
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -49,6 +49,7 @@ abstract class BaseSparkJob(val jobName: String,
         .config("spark.sql.shuffle.partitions", "1")
         .config("spark.driver.bindAddress", "127.0.0.1")
         .config("spark.sql.warehouse.dir", System.getProperty("java.io.tmpdir"))
+        .config("spark.sql.parquet.writeLegacyFormat","true")
       // for test, hive support is not enabled. Use in-memory catalog implementation
     } else if (enableHiveSupport) {
       builder.enableHiveSupport()

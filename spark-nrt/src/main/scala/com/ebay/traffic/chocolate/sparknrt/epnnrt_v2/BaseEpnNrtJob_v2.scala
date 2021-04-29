@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Properties
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType
-import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
+import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob_v2
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
 import org.apache.hadoop.fs.Path
@@ -14,7 +14,7 @@ import org.apache.hadoop.fs.Path
   */
 abstract class BaseEpnNrtJob_v2(params: Parameter_v2,
                                 override val jobName: String,
-                                override val mode: String = "yarn") extends BaseSparkNrtJob(jobName, mode) {
+                                override val mode: String = "yarn") extends BaseSparkNrtJob_v2(jobName, mode) {
 
   /**
     * epnnrt job dir

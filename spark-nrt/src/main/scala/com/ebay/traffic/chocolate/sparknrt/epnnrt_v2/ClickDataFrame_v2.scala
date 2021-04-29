@@ -1,14 +1,14 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt_v2
 
-import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
+import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema_v2
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.{col, lit}
-import org.apache.spark.sql.types.{ByteType, DecimalType, IntegerType, ShortType, StringType, TimestampType}
+import org.apache.spark.sql.types.{ByteType, DecimalType, IntegerType, ShortType, TimestampType}
 import org.slf4j.LoggerFactory
 
 class ClickDataFrame_v2(df: DataFrame, common: EpnNrtCommon_v2) extends Serializable {
 
-  @transient lazy val schema_epn_click_table = TableSchema("df_epn_click_v2.json")
+  @transient lazy val schema_epn_click_table = TableSchema_v2("df_epn_click_v2.json")
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 

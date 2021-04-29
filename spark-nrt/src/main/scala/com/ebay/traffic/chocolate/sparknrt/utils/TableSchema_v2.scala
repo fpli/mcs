@@ -16,12 +16,12 @@ import org.apache.spark.sql.types._
   * Usage:
   *   lazy val schema_tableA = TableSchema("schema_tableA.json")
   */
-class TableSchema (val table: String,
-                   val columns: Array[ColumnSchema],
-                   val aliases: Array[AliasSchema]) extends Serializable {
+class TableSchema_v2 (val table: String,
+                   val columns: Array[ColumnSchema_v2],
+                   val aliases: Array[AliasSchema_v2]) extends Serializable {
 
   @transient lazy val types = Map(
-    "string" -> StringType, "decimal"-> StringType, "long" -> LongType,
+    "string" -> StringType, "decimal"-> DecimalType(18,0), "long" -> LongType,
     "integer" -> IntegerType, "short" -> ShortType, "float" -> FloatType,
     "double" -> DoubleType, "byte" -> ByteType, "boolean" -> BooleanType,
     "date" -> DateType, "timestamp" -> TimestampType
@@ -84,17 +84,17 @@ class TableSchema (val table: String,
 /**
   * Construct TableSchema from table schema json file.
   */
-object TableSchema {
+object TableSchema_v2 {
   private val jsonMapper = new ObjectMapper()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     .registerModule(DefaultScalaModule)
 
-  def apply(file: String): TableSchema = {
+  def apply(file: String): TableSchema_v2 = {
     val url = getClassLoader.getResource(file)
     if (url != null) {
-      jsonMapper.readValue(url, classOf[TableSchema])
+      jsonMapper.readValue(url, classOf[TableSchema_v2])
     } else {
-      new TableSchema(null, null, null)
+      new TableSchema_v2(null, null, null)
     }
   }
 
@@ -111,6 +111,6 @@ object TableSchema {
 /**
   * Table Column schema
   */
-case class ColumnSchema(name: String, dataType: String, default: Any)
+case class ColumnSchema_v2(name: String, dataType: String, default: Any)
 
-case class AliasSchema(name: String, alias: String)
+case class AliasSchema_v2(name: String, alias: String)

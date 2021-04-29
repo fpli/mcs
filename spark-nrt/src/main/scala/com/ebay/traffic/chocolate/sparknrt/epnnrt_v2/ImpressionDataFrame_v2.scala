@@ -1,7 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt_v2
 
-import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
-import org.apache.avro.generic.GenericData.StringType
+import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema_v2
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{ByteType, DecimalType, IntegerType, TimestampType}
@@ -9,7 +8,7 @@ import org.slf4j.LoggerFactory
 
 class ImpressionDataFrame_v2(df: DataFrame, common: EpnNrtCommon_v2) extends Serializable {
 
-  @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression_v2.json")
+  @transient lazy val schema_epn_impression_table = TableSchema_v2("df_epn_impression_v2.json")
 
   @transient lazy val logger = LoggerFactory.getLogger(this.getClass)
 
