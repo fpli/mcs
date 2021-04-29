@@ -413,14 +413,14 @@ public class CollectionService {
 
       // send to unified tracking topic
       if (listenerMessage != null) {
-        processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-            targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-            null, listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), utpEventId, startTime,
-            vodInternal);
+        processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders,
+            agentInfo, parameters, targetUrl, referer, channelType.getLogicalChannel().getAvro(),
+            channelAction.getAvro(), null, listenerMessage.getSnapshotId(),
+            listenerMessage.getShortSnapshotId(), utpEventId, startTime, vodInternal);
       } else {
-        processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-            targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-            null, 0L, 0L, utpEventId, startTime, vodInternal);
+        processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders,
+            agentInfo, parameters, targetUrl, referer, channelType.getLogicalChannel().getAvro(),
+            channelAction.getAvro(), null, 0L, 0L, utpEventId, startTime, vodInternal);
       }
     }
 
@@ -688,13 +688,13 @@ public class CollectionService {
 
     // send to unified tracking topic
     if(listenerMessage!=null) {
-      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-          uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders,
+          agentInfo, parameters, uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
           null, listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), null, startTime,
           false);
     } else {
-      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-          uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders,
+          agentInfo, parameters, uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
           null, 0L, 0L, null, startTime, false);
     }
 
@@ -747,9 +747,9 @@ public class CollectionService {
               behaviorMessage), KafkaSink.callback);
     }
 
-    processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-            targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-            roiEvent, message.getSnapshotId(), message.getShortSnapshotId(), null, startTime, false);
+    processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders, agentInfo,
+        parameters, targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+        roiEvent, message.getSnapshotId(), message.getShortSnapshotId(), null, startTime, false);
 
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
     String kafkaTopic
@@ -874,6 +874,7 @@ public class CollectionService {
   @SuppressWarnings("unchecked")
   private void processUnifiedTrackingEvent(ContainerRequestContext requestContext, HttpServletRequest request,
                                            IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
+                                           Map<String, String> requestHeaders,
                                            UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
                                            String url, String referer, ChannelType channelType,
                                            ChannelAction channelAction, ROIEvent roiEvent, long snapshotId,
@@ -883,7 +884,7 @@ public class CollectionService {
       if (ChannelAction.EMAIL_OPEN.equals(channelAction) || ChannelAction.ROI.equals(channelAction)
           || inRefererWhitelist(channelType, referer) || !m.find() || vodInternal) {
         UnifiedTrackingMessage utpMessage = utpParser.parse(requestContext, request, endUserContext,
-                raptorSecureContext, agentInfo, userLookup, parameters, url, referer, channelType, channelAction,
+                raptorSecureContext, requestHeaders, agentInfo, parameters, url, referer, channelType, channelAction,
                 roiEvent, snapshotId, shortSnapshotId, startTime);
         if(!StringUtils.isEmpty(eventId)) {
           utpMessage.setEventId(eventId);

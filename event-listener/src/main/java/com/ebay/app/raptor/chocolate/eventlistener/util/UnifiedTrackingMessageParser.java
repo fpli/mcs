@@ -141,11 +141,12 @@ public class UnifiedTrackingMessageParser {
 
   /**
    * Bot detection by device type
+   *
    * @param userAgent user agent
    */
-  public static boolean isBot(String userAgent)  {
+  public static boolean isBot(String userAgent) {
     // isBot. Basic bot detection by user agent.
-    if(StringUtils.isNotEmpty(userAgent) && (
+    if (StringUtils.isNotEmpty(userAgent) && (
         userAgent.toLowerCase().contains("bot") ||
             userAgent.toLowerCase().contains("proxy") ||
             userAgent.toLowerCase().contains("spider")
@@ -161,7 +162,7 @@ public class UnifiedTrackingMessageParser {
    */
   public static UnifiedTrackingMessage parse(ContainerRequestContext requestContext, HttpServletRequest request,
                                              IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
-                                             UserAgentInfo agentInfo, UserLookup userLookup,
+                                             Map<String, String> requestHeaders, UserAgentInfo agentInfo,
                                              MultiValueMap<String, String> parameters, String url, String referer,
                                              ChannelType channelType, ChannelAction channelAction,
                                              ROIEvent roiEvent, long snapshotId,
@@ -241,7 +242,7 @@ public class UnifiedTrackingMessageParser {
     record.setReferer(referer);
 
     // service. Rover send all clicks covered in IMK TFS to chocolate.
-    if(url.startsWith("https://rover.ebay.com") || url.startsWith("http://rover.ebay.com")) {
+    if (url.startsWith("https://rover.ebay.com") || url.startsWith("http://rover.ebay.com")) {
       record.setService(ServiceEnum.ROVER.getValue());
     } else {
       record.setService(ServiceEnum.CHOCOLATE.getValue());
@@ -269,11 +270,11 @@ public class UnifiedTrackingMessageParser {
     Map<String, String> uepPayload =
         uepPayloadHelper.getUepPayload(url, ActionTypeEnum.valueOf(actionType), channelTypeEnum);
     Map<String, String> fullPayload =
-        getPayload(payload, parameters, requestContext, url, userAgent, appId, channelType, channelAction, snapshotId,
-            shortSnapshotId, roiEvent, userId, startTime, trackingHeader);
+        getPayload(payload, parameters, requestHeaders, requestContext, url, userAgent, appId, channelType,
+            channelAction, snapshotId, shortSnapshotId, roiEvent, userId, startTime, trackingHeader);
 
     // append UEP payload
-    if(uepPayload != null && uepPayload.size() > 0) {
+    if (uepPayload != null && uepPayload.size() > 0) {
       fullPayload.putAll(uepPayload);
     }
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
@@ -449,7 +450,7 @@ public class UnifiedTrackingMessageParser {
         // decode rotationId if rotation is encoded
         // add decodeCnt to avoid looping infinitely
         int decodeCnt = 0;
-        while (rawRotationId.contains("%") && decodeCnt<5) {
+        while (rawRotationId.contains("%") && decodeCnt < 5) {
           rawRotationId = URLDecoder.decode(rawRotationId, "UTF-8");
           decodeCnt = decodeCnt + 1;
         }
@@ -498,10 +499,12 @@ public class UnifiedTrackingMessageParser {
    * Get payload
    */
   private static Map<String, String> getPayload(Map<String, String> payload, MultiValueMap<String, String> parameters,
+                                                Map<String, String> requestHeaders,
                                                 ContainerRequestContext requestContext, String url, String userAgent,
                                                 String appId, ChannelType channelType, ChannelAction channelAction,
                                                 long snapshotId, long shortSnapshotId, ROIEvent roiEvent, long userId,
                                                 long eventTs, String trackingHeader) {
+
     // add tags from parameters
     for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entries()) {
       if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
@@ -520,7 +523,7 @@ public class UnifiedTrackingMessageParser {
 
     if (channelType == ChannelType.EPN) {
       String toolId = HttpRequestUtil.parseTagFromParams(parameters, Constants.TOOL_ID);
-      if(StringUtils.isNotEmpty(toolId)) {
+      if (StringUtils.isNotEmpty(toolId)) {
         payload.put(Constants.TOOL_ID, HttpRequestUtil.parseTagFromParams(parameters, Constants.TOOL_ID));
       }
     }
@@ -554,7 +557,7 @@ public class UnifiedTrackingMessageParser {
     }
 
     // is from ufes
-    String isUfes = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.IS_FROM_UFES_HEADER);
+    String isUfes = requestHeaders.get(Constants.IS_FROM_UFES_HEADER);
     if (StringUtils.isEmpty(isUfes)) {
       payload.put(Constants.TAG_IS_UFES, "false");
     } else {
@@ -562,7 +565,7 @@ public class UnifiedTrackingMessageParser {
     }
 
     // status code
-    String statusCode = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.NODE_REDIRECTION_HEADER_NAME);
+    String statusCode = requestHeaders.get(Constants.NODE_REDIRECTION_HEADER_NAME);
     if (!StringUtils.isEmpty(statusCode)) {
       payload.put(Constants.TAG_STATUS_CODE, statusCode);
     }
@@ -590,8 +593,8 @@ public class UnifiedTrackingMessageParser {
    * Add tags in param sojTags
    */
   private static Map<String, String> addSojTags(Map<String, String> applicationPayload, MultiValueMap<String, String> parameters,
-                                         ChannelType channelType, ChannelAction channelAction) {
-    if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
+                                                ChannelType channelType, ChannelAction channelAction) {
+    if (parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
       String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
       try {
         sojTags = URLDecoder.decode(sojTags, "UTF-8");
@@ -622,7 +625,7 @@ public class UnifiedTrackingMessageParser {
     payloadMap.put("rvrid", String.valueOf(shortSnapshotId));
     payloadMap.put("snapshotid", String.valueOf(snapshotId));
 
-    if(isLongNumeric(roiEvent.getItemId())) {
+    if (isLongNumeric(roiEvent.getItemId())) {
       payloadMap.put("itm", roiEvent.getItemId());
     }
     if (!StringUtils.isEmpty(roiEvent.getTransType())) {
@@ -667,7 +670,7 @@ public class UnifiedTrackingMessageParser {
     Set<Map.Entry<String, String>> entrySet = map.entrySet();
     Iterator<Map.Entry<String, String>> iterator = entrySet.iterator();
 
-    while(iterator.hasNext()) {
+    while (iterator.hasNext()) {
       Map.Entry<String, String> entry = iterator.next();
       if (StringUtils.isEmpty(entry.getValue())) {
         iterator.remove();
