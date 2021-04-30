@@ -36,6 +36,8 @@ public class Constants {
   public static final String GUID = "guid";
   public static final String CGUID = "cguid";
   public static final String STR_NULL = "null";
+  public static final String TAG_IS_UFES = "isUfes";
+  public static final String TAG_STATUS_CODE = "statusCode";
 
   // Request headers
   public static final String TRACKING_HEADER = "X-EBAY-C-TRACKING";
@@ -100,11 +102,14 @@ public class Constants {
   // plrfr is the actual referer for the clicks from promoted listings iframe on ebay partner site
   public static final String PLRFR = "plrfr";
 
+  // UFES header
+  public static final String IS_FROM_UFES_HEADER = "x-ufes-mcs-int";
+
   // Deep Link native uri params
   public static final String NAV = "nav";
   public static final String ID = "id";
-  // DEEP_LINK_WITH_CHOCO_PARAMS_FLAG is used to mark the click whose original url is custom uri with Chocolate parameters
-  public static final String DEEP_LINK_WITH_CHOCO_PARAMS_FLAG = "mkdeeplink";
+  // FLEX_FLD_17_TXT is used to mark the click whose original url is custom uri (ebay://)
+  public static final String FLEX_FLD_17_TXT = "ff17";
 
   /**
    * Performance marketing channels
@@ -147,9 +152,10 @@ public class Constants {
       .put("ymsid", "ymsid")
       .build();
 
-
   /**
    * client id - host map
+   * this is used to construct Chocolate final landing page url when we receive the click whose original url is custom uri with Chocolate parameters
+   * only support /itm page
    */
   public static final ImmutableMap<String, String> clientIdHostMap = new ImmutableMap.Builder<String, String>()
           .put("5282", "https://www.ebay.ie")
@@ -170,4 +176,5 @@ public class Constants {
           .put("706", "https://www.ebay.ca")
           .put("4686", "https://www.ebay.com")
           .build();
+
 }

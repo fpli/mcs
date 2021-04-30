@@ -26,14 +26,13 @@ IMK_V2_IMKTRANSFORM_PATH='hdfs://slickha/apps/tracking-events-imk/imkTransform/i
 EPNNRT_SCP_CLICK='hdfs://elvisha/apps/tracking-events-workdir/meta/EPN/output/epnnrt_scp_click';
 EPNNRT_SCP_IMP='hdfs://elvisha/apps/tracking-events-workdir/meta/EPN/output/epnnrt_scp_imp';
 
+date;
+
 today=$(date +%Y-%m-%d);
 yesterday=$(date --date="${today} -1days" +%Y-%m-%d);
-tomorrow=$(date --date="${today} 1days" +%Y-%m-%d);
 
 echo "today:$today";
 echo "yesterday:$yesterday";
-echo "tomorrow:$tomorrow";
-
 export HADOOP_USER_NAME=chocolate
 
 cd $LOCAL_PATH;
@@ -70,7 +69,7 @@ function dealWithImkDelayData() {
     file_name=$(basename "$one_file");
     echo "file_name:${file_name}";
     orgDate=${file_name:15:10}
-    if [ $orgDate == $today -o $orgDate == $yesterday -o $orgDate == $tomorrow ]
+    if [ $orgDate == $today -o $orgDate == $yesterday ]
     then
       echo "$file_name need not mv"
       continue;
@@ -128,7 +127,7 @@ function dealWithAmsDelayMeta() {
         else
           exit 1;
         fi
-        if [ $orgDate == $today -o $orgDate == $yesterday -o $orgDate == $tomorrow ]
+        if [ $orgDate == $today -o $orgDate == $yesterday ]
         then
           echo "$file_name need not mv"
           continue;

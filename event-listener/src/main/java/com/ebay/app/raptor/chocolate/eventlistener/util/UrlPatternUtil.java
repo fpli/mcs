@@ -28,4 +28,8 @@ public class UrlPatternUtil {
   public static final Pattern ePageSites = Pattern.compile(
       "^(http[s]?:\\/\\/)?c\\.([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+\\/marketingtracking\\/v1\\/pixel\\?(.*)",
       Pattern.CASE_INSENSITIVE);
+
+  // signin pattern
+  public static final Pattern signinsites = Pattern.compile("^(http[s]?:\\/\\/)?signin\\.([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)",
+      Pattern.CASE_INSENSITIVE);
 }
