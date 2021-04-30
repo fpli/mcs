@@ -124,7 +124,7 @@ public class CollectionService {
   private static final String ROI_SOURCE = "roisrc";
   private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
   private static final String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
-  private static final List<String> REFERER_WHITELIST = Arrays.asList("https://ebay.mtag.io/", "https://ebay.pissedconsumer.com/");
+  private static final List<String> REFERER_WHITELIST = Arrays.asList("https://ebay.mtag.io/", "https://ebay.pissedconsumer.com/", "https://secureir.ebaystatic.com/");
   private static final String VOD_PAGE = "vod";
   private static final String VOD_SUB_PAGE = "FetchOrderDetails";
 
