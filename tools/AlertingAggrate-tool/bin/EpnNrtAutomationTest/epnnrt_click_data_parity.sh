@@ -15,15 +15,16 @@ sed "s/#{click_dt}/${click_dt}/g" count_diff_ams_click_by_click_dt_template.sql 
 
 sql=`cat $sqlFile`;
 
+#--class com.ebay.traffic.chocolate.sparknrt.epnnrt_v2.dataParity.EpnNrtDataParityJob \
 /datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit  \
---class com.ebay.traffic.chocolate.sparknrt.epnnrt_v2.dataParity.EpnNrtDataParityJob \
+--class com.ebay.traffic.chocolate.sparknrt.imkReformat.ImkReformatJob \
 --master yarn \
 --deploy-mode cluster \
---queue hdlq-commrce-default \
+--queue hdlq-commrce-mkt-tracking-high-mem \
 --num-executors 160 \
 --executor-memory 32G \
 --executor-cores 8 \
-${bin}/lib/chocolate-spark-nrt-3.6.1-RELEASE-fat.jar \
+${bin}/lib/chocolate-spark-nrt-*.jar \
 --sqlFile "${sql}"
 
 spark_result_code=$?;
