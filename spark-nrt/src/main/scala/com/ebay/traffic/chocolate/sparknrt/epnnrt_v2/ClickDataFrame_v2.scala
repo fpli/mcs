@@ -65,7 +65,7 @@ class ClickDataFrame_v2(df: DataFrame, common: EpnNrtCommon_v2) extends Serializ
       .withColumn("AMS_CLICK_FLTR_TYPE_ID", common.get_ams_clk_fltr_type_id_udf(col("publisher_id"), col("uri")).cast(ByteType))
       .withColumn("FLTR_YN_IND", common.get_filter_yn_ind_udf(col("rt_rule_flags"), col("nrt_rule_flags"), lit("click")).cast(ByteType))
       .withColumn("AMS_TRANS_RSN_CD", common.get_click_reason_code_udf(col("uri"), col("publisher_id"), col("campaign_id"), col("rt_rule_flags"), col("nrt_rule_flags"), col("ams_fltr_roi_value"), col("google_fltr_do_flag")).cast(ShortType))
-      .withColumn("AMS_PAGE_TYPE_MAP_ID", common.get_page_id_udf(col("LND_PAGE_URL_NAME"), col("uri")).cast(DecimalType(18,0)))
+      .withColumn("AMS_PAGE_TYPE_MAP_ID", common.get_page_id_udf(col("LNDNG_PAGE_URL_NAME"), col("uri")).cast(DecimalType(18,0)))
       .withColumn("RFRNG_DMN_NAME", common.getRefererHostUdf(col("referer")))
       .withColumn("SRC_PLCMNT_DATA_TXT", common.getRelatedInfoFromUriUdf(col("uri"), lit(3), lit("mkrid")))
       .withColumn("GEO_TRGTD_CNTRY_CD", common.get_country_locale_udf(col("request_headers"), col("lang_cd")))

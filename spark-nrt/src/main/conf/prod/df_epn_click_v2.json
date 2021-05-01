@@ -98,7 +98,7 @@
       "default": ""
     },
     {
-      "name": "LND_PAGE_URL_NAME",
+      "name": "LNDNG_PAGE_URL_NAME",
       "dataType": "string",
       "default": ""
     },
@@ -397,7 +397,7 @@
       "default": ""
     },
     {
-      "name": "ROVER_URL",
+      "name": "ROVER_URL_TXT",
       "dataType": "string",
       "default": ""
     },
@@ -462,7 +462,7 @@
       "default": 0
     },
     {
-      "name": "ROI_RULE_VALUE",
+      "name": "ROI_RULE_VALUES",
       "dataType": "integer",
       "default": 0
     },
