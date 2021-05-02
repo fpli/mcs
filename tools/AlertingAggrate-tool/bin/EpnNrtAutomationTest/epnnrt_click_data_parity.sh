@@ -10,8 +10,8 @@ bin=$(
 
 JOB_NAME="EpnnrtClickAutomationParity"
 click_dt=`date -d '5 days ago' +%Y-%m-%d`
-sql_file="./tmp/count_diff_ams_click_by_click_dt_${click_dt}.sql";
-sed "s/#{click_dt}/${click_dt}/g" count_diff_ams_click_by_click_dt_template.sql > "$sql_file";
+sql_file="../../sql/tmp/count_diff_epnnrt_automation_by_click_dt_${click_dt}.sql";
+sed "s/#{click_dt}/${click_dt}/g" ../../sql/count_diff_epnnrt_automation_by_click_dt_template.sql > "$sql_file";
 
 sql=`cat $sqlFile`;
 
