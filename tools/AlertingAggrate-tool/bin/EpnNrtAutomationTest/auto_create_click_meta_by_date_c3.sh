@@ -7,13 +7,14 @@ date=`date -d '5 days ago' +%Y-%m-%d`
 
 export HADOOP_USER_NAME=chocolate
 work_path="hdfs://elvisha/apps/tracking-events"
-local_path="/datashare/mkttracking/test"
+local_path="/datashare/mkttracking/test/EPN/click"
 cd $local_path;
 channel_file_list_file="${local_path}/channel_file_list_file.txt"
 
 function createMeta() {
     channel=$1;
-    local_channel_path="${local_path}/${date}/${channel}"
+    rm -r ${local_path}/EPN/click/*
+    local_channel_path="${local_path}/${date}"
     dest_channel_path_old_test="hdfs://slickha/apps/tracking-events-workdir-old-test/meta/EPN/output/capping"
     dest_channel_path_new_test="hdfs://slickha/apps/tracking-events-workdir-new-test/meta/EPN/output/capping"
     if [ ! -d "${local_channel_path}" ]; then
