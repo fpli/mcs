@@ -43,5 +43,5 @@ echo "FILTER_TIME="${FILTER_TIME} | tee -a ${log_file}
 export HADOOP_USER_NAME=hdfs
 echo $HADOOP_USER_NAME
 /datashare/mkttracking/jobs/tracking/epnnrt_new_test/bin/prod/epnnrt_imprsn_automation_test.sh ${INPUT_WORK_DIR} ${OUTPUT_WORK_DIR} ${RESOURCE_DIR} "0" ${OUTPUT_DIR}
-/datashare/mkttracking/jobs/tracking/epnnrt_new_test/bin/prod/distcpAmsToRenoForAutomation.sh /apps/epn-nrt-new-test/imprsn /apps/b_marketing_tracking/chocolate/epnnrt-new-test/imp imp ${DATE}
+/datashare/mkttracking/jobs/tracking/epnnrt_new_test/bin/prod/distcpAmsToRenoForAutomation.sh /apps/epn-nrt-new-test/imp /apps/b_marketing_tracking/chocolate/epnnrt-new-test/imp imp ${DATE}
 

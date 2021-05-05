@@ -7,9 +7,10 @@ date=`date -d '5 days ago' +%Y-%m-%d`
 
 export HADOOP_USER_NAME=chocolate
 work_path="hdfs://elvisha/apps/tracking-events"
-local_path="/datashare/mkttracking/test/EPN"
+local_path="/datashare/mkttracking/test/EPN/imprsn"
 cd $local_path;
 channel_file_list_file="${local_path}/channel_file_list_file.txt"
+
 function createMeta() {
     channel=$1;
     rm -r ${local_path}/EPN/imprsn/*
@@ -26,11 +27,15 @@ function createMeta() {
     file_total_count=`cat ${channel_file_list_file} | grep -v "^$" | wc -l`
     file_count=0
     file_index=0
+     meta_file_count=0
     meta_file_header="{\"metaFiles\":[{\"date\":\"date=${date}\",\"files\":["
     meta_file_footer="]}]}"
     timestamp=`date +%s`
     for one_file in ${channel_files}
     do
+      if [[ $meta_file_count -gt 9 ]]; then
+        break
+      fi
       file_index=$[file_index+1];
       file_count=$[file_count+1];
       if [ $file_index -eq 1 ]; then
@@ -42,6 +47,7 @@ function createMeta() {
       else
         meta_file_detail="${meta_file_detail}${meta_file_footer}"
         file_index=0
+        meta_file_count=$[meta_file_count+1];
         echo "$meta_file_detail" > "capping_output_${timestamp}${file_count}.meta.epnnrtimp_v2"
       fi
     done
@@ -49,12 +55,12 @@ function createMeta() {
     echo "hdfs dfs -rm ${dest_channel_path_old_test}/capping_output_*.meta.epnnrtimp_v2"
     hdfs dfs -rm "${dest_channel_path_old_test}/capping_output_*.meta.epnnrtimp_v2"
     echo "hdfs dfs -put capping_output_*.meta.epnnrtimp_v2 ${dest_channel_path_old_test}"
-    hdfs dfs -put capping_output_*.meta.epnnrt_v2 ${dest_channel_path_old_test}
+    hdfs dfs -put capping_output_*.meta.epnnrtimp_v2 ${dest_channel_path_old_test}
 
     echo "hdfs dfs -rm ${dest_channel_path_new_test}/capping_output_*.meta.epnnrtimp_v2"
     hdfs dfs -rm "${dest_channel_path_new_test}/capping_output_*.meta.epnnrtimp_v2"
     echo "hdfs dfs -put capping_output_*.meta.epnnrtimp_v2 ${dest_channel_path_new_test}"
-    hdfs dfs -put capping_output_*.meta.epnnrt_v2 ${dest_channel_path_new_test}
+    hdfs dfs -put capping_output_*.meta.epnnrtimp_v2 ${dest_channel_path_new_test}
 }
 
 createMeta EPN

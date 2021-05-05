@@ -10,12 +10,12 @@ bin=$(
 
 JOB_NAME="EpnnrtImpressionAutomationParity"
 imprsn_dt=`date -d '5 days ago' +%Y-%m-%d`
-sql_file="./tmp/count_diff_ams_imprsn_by_imprsn_dt_${imprsn_dt}.sql";
-sed "s/#{imprsn_dt}/${imprsn_dt}/g" count_diff_epnnrt_automation_by_imprsn_dt_template.sql > "$sql_file";
+sql_file="../../sql/tmp/count_diff_ams_imprsn_by_imprsn_dt_${imprsn_dt}.sql";
+sed "s/#{imprsn_dt}/${imprsn_dt}/g" ../../sql/count_diff_epnnrt_automation_by_imprsn_dt_template.sql > "$sql_file";
 
 sql=`cat $sqlFile`;
 
-/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -r /apps/b_marketing_tracking/epnnrt-automation-diff/imprsn/*
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -r /apps/b_marketing_tracking/epnnrt-automation-diff/imp/*
 
 /datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit  \
 --class com.ebay.traffic.chocolate.sparknrt.imkReformat.ImkReformatJob \
