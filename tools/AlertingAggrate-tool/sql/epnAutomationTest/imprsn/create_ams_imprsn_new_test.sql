@@ -175,6 +175,6 @@ STORED AS INPUTFORMAT
 OUTPUTFORMAT
   'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
 LOCATION
-  'viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt_new_test/imp'
+  'viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt-new-test/imp'
 TBLPROPERTIES (
   'transient_lastDdlTime'='1601444855')

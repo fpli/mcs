@@ -1,4 +1,4 @@
-CREATE EXTERNAL TABLE choco_data.ams_click_new_test(
+CREATE EXTERNAL TABLE choco_data.ams_click_old_test(
   `imprsn_cntnr_id` decimal(18),
   `file_schm_vrsn_num` smallint,
   `file_id` decimal(18),
@@ -205,6 +205,6 @@ STORED AS INPUTFORMAT
 OUTPUTFORMAT
   'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
 LOCATION
-  'viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt-new-test/click'
+  'viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt-old-test/click'
 TBLPROPERTIES (
   'transient_lastDdlTime'='1601444855')
