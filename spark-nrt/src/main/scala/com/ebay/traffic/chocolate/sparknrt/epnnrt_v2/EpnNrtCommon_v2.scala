@@ -15,8 +15,8 @@ import com.google.gson.{Gson, JsonParser}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.{DataFrame, functions}
+import org.apache.spark.sql.functions.{regexp_replace, udf}
 import org.slf4j.LoggerFactory
 import rx.Observable
 import rx.functions.Func1
@@ -285,7 +285,9 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
   val getRelatedInfoFromUriUdf = udf((uri: String, index: Int, key: String) => getRelatedInfoFromUri(uri, index, key))
   val getChannelIdUdf = udf((channelType: String) => getChannelId(channelType))
   val fixGuidUsingRoverLastClickUdf = udf((guid: String, uri: String) => fixGuidUsingRoverLastClick(guid, uri))
-
+  def filterTab(e: org.apache.spark.sql.Column): org.apache.spark.sql.Column = {
+    regexp_replace(functions.trim(e), "\\r|\\n|\\r\\n", "")
+  }
   def filter_specific_pub(referer: String, publisher: String): Int = {
     if (publisher.equals("5574651234") && getRefererURLAndDomain(referer, true).endsWith(".bid"))
       return 1

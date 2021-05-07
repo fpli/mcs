@@ -80,7 +80,7 @@ class TestEpnNrtClickJob_v2 extends BaseFunSuite{
     assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("SRC_PLCMNT_DATA_TXT").first().getString(0) == "711-53200-19255-0")
     assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("ITEM_ID").first().getDecimal(0).longValue() == 292832042631L)
     //    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("CLICK_TS").first().getString(0) == "2017-03-10 17:13:40.000")
-    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("ROVER_URL").first().getString(0) == "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1")
+    assert(clickDf.filter(col("CLICK_ID") === 6453984045429249L).select("ROVER_URL_TXT").first().getString(0) == "http://rover.ebay.com/rover/1/711-53200-19255-0/1?ff3=2&toolid=10044&campid=5336203178&customid=1&lgeo=1&vectorid=229466&item=292832042631&raptor=1")
 
     // validate special case
     // filter click from special publisher
