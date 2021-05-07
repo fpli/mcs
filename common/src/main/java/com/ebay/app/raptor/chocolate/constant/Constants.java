@@ -5,6 +5,7 @@
 package com.ebay.app.raptor.chocolate.constant;
 
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableMap;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -35,6 +36,8 @@ public class Constants {
   public static final String GUID = "guid";
   public static final String CGUID = "cguid";
   public static final String STR_NULL = "null";
+  public static final String TAG_IS_UFES = "isUfes";
+  public static final String TAG_STATUS_CODE = "statusCode";
 
   // Request headers
   public static final String TRACKING_HEADER = "X-EBAY-C-TRACKING";
@@ -47,6 +50,7 @@ public class Constants {
   public static final String HTTPS_ENCODED = "https%3A%2F%2";
   public static final String HTTP_ENCODED = "http%3A%2F%2";
   public static final String SOJ_MPRE_TAG = "url_mpre";
+  public static final String ITEM_TAG = "itm";
 
   // EPN url params
   public static final String TOOL_ID = "toolid";
@@ -98,6 +102,15 @@ public class Constants {
   // plrfr is the actual referer for the clicks from promoted listings iframe on ebay partner site
   public static final String PLRFR = "plrfr";
 
+  // UFES header
+  public static final String IS_FROM_UFES_HEADER = "x-ufes-mcs-int";
+
+  // Deep Link native uri params
+  public static final String NAV = "nav";
+  public static final String ID = "id";
+  // FLEX_FLD_17_TXT is used to mark the click whose original url is custom uri (ebay://)
+  public static final String FLEX_FLD_17_TXT = "ff17";
+
   /**
    * Performance marketing channels
    */
@@ -138,5 +151,30 @@ public class Constants {
       .put("ymmmid", "ymmmid")
       .put("ymsid", "ymsid")
       .build();
+
+  /**
+   * client id - host map
+   * this is used to construct Chocolate final landing page url when we receive the click whose original url is custom uri with Chocolate parameters
+   * only support /itm page
+   */
+  public static final ImmutableMap<String, String> clientIdHostMap = new ImmutableMap.Builder<String, String>()
+          .put("5282", "https://www.ebay.ie")
+          .put("705", "https://www.ebay.com.au")
+          .put("709", "https://www.ebay.fr")
+          .put("1346", "https://www.ebay.nl")
+          .put("3422", "https://www.ebay.com.hk")
+          .put("1553", "https://www.ebay.be")
+          .put("710", "https://www.ebay.co.uk")
+          .put("5221", "https://www.ebay.at")
+          .put("5222", "https://www.ebay.ch")
+          .put("8971", "https://www.ebay.com")
+          .put("724", "https://www.ebay.it")
+          .put("707", "https://www.ebay.de")
+          .put("3423", "https://www.ebay.com.sg")
+          .put("1185", "https://www.ebay.es")
+          .put("711", "https://www.ebay.com")
+          .put("706", "https://www.ebay.ca")
+          .put("4686", "https://www.ebay.com")
+          .build();
 
 }
