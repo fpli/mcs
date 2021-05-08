@@ -48,7 +48,7 @@ ${SPARK_HOME}/bin/spark-submit \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
-      --WorkDir ${WORK_DIR} \
+      --workDir ${WORK_DIR} \
       --partitions 3 \
       --resourceDir ${RESOURCE_DIR} \
       --filterTime ${FILTER_TIME} \

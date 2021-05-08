@@ -41,5 +41,5 @@ echo "FILTER_TIME="${FILTER_TIME} | tee -a ${log_file}
 ##################### Spark Submit ##################
 export HADOOP_USER_NAME=hdfs
 echo $HADOOP_USER_NAME
-/datashare/mkttracking/jobs/tracking/epnnrt_old_test/bin/prod/epnnrt_imprsn_automation_test.sh ${WORK_DIR}  ${RESOURCE_DIR} "0" ${OUTPUT_DIR}
-/datashare/mkttracking/jobs/tracking/epnnrt_old_test/bin/prod/distcpAmsToRenoForAutomation.sh /apps/epn-nrt-old-test/imp /apps/b_marketing_tracking/chocolate/epnnrt-old-test/imp imp ${DATE}
+/datashare/mkttracking/jobs/tracking/epnnrt_old_test/bin/prod/epnnrt_imprsn_automation_test_csv.sh ${WORK_DIR}  ${RESOURCE_DIR} "0" ${OUTPUT_DIR}
+/datashare/mkttracking/jobs/tracking/epnnrt_old_test/bin/prod/distcpAmsToRenoForAutomation.sh /apps/epn-nrt-old-test/impression /apps/b_marketing_tracking/chocolate/epnnrt-old-test/imp imp ${DATE}
