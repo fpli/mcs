@@ -1,0 +1,4 @@
+type=command
+dependencies=epnnrt_click_new_scheduler,epnnrt_click_old_scheduler
+command=
+failure.emails=yuhxiao@ebay.com
