@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - EPN Nrt Job
 
-usage="Usage: epnnrt_click_automation_test.sh [WorkDir] [resourceDir] [filterTime] [outputDir]"
+usage="Usage: epnnrt_imprsn_automation_test.sh [inputWorkDir] [outputWorkDir] [resourceDir] [filterTime] [outputDir]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
@@ -14,17 +14,18 @@ bin=`cd "$bin">/dev/null; pwd`
 
 . ${bin}/../chocolate-env.sh
 
-WORK_DIR=$1
-RESOURCE_DIR=$2
-FILTER_TIME=$3
-OUTPUT_DIR=$4
+INPUT_WORK_DIR=$1
+OUTPUT_WORK_DIR=$2
+RESOURCE_DIR=$3
+FILTER_TIME=$4
+OUTPUT_DIR=$5
 
 DRIVER_MEMORY=15g
 EXECUTOR_NUMBER=40
 EXECUTOR_MEMORY=18g
 EXECUTOR_CORES=5
 
-JOB_NAME="Chocolate_EPN_NRT_CLICK_AUTOMATION_TEST"
+JOB_NAME="Chocolate_EPN_NRT_IMPRSN_AUTOMATION_TEST"
 
 for f in $(find $bin/../../conf/prod -name '*.*');
 do
@@ -33,7 +34,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.sparknrt.epnnrt.EpnNrtClickJob \
+    --class com.ebay.traffic.chocolate.sparknrt.epnnrt_v2.EpnNrtImpressionJob_v2 \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
@@ -48,7 +49,8 @@ ${SPARK_HOME}/bin/spark-submit \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
-      --workDir ${WORK_DIR} \
+      --inputWorkDir ${INPUT_WORK_DIR} \
+      --outputWorkDir ${OUTPUT_WORK_DIR} \
       --partitions 3 \
       --resourceDir ${RESOURCE_DIR} \
       --filterTime ${FILTER_TIME} \

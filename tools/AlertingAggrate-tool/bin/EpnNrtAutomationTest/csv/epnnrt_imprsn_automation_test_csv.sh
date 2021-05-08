@@ -1,7 +1,7 @@
 #!/bin/bash
 # run spark job on YARN - EPN Nrt Job
 
-usage="Usage: epnnrt_click_automation_test.sh [WorkDir] [resourceDir] [filterTime] [outputDir]"
+usage="Usage: epnnrt_imprsn_automation_test_csv.sh [WorkDir] [resourceDir] [filterTime] [outputDir]"
 
 # if no args specified, show usage
 if [ $# -le 1 ]; then
@@ -24,7 +24,7 @@ EXECUTOR_NUMBER=40
 EXECUTOR_MEMORY=18g
 EXECUTOR_CORES=5
 
-JOB_NAME="Chocolate_EPN_NRT_CLICK_AUTOMATION_TEST"
+JOB_NAME="Chocolate_EPN_NRT_IMPRSN_AUTOMATION_TEST"
 
 for f in $(find $bin/../../conf/prod -name '*.*');
 do
@@ -33,7 +33,7 @@ done
 
 ${SPARK_HOME}/bin/spark-submit \
     --files ${FILES} \
-    --class com.ebay.traffic.chocolate.sparknrt.epnnrt.EpnNrtClickJob \
+    --class com.ebay.traffic.chocolate.sparknrt.epnnrt.EpnNrtImpressionJob \
     --name ${JOB_NAME} \
     --master yarn \
     --deploy-mode cluster \
@@ -48,7 +48,7 @@ ${SPARK_HOME}/bin/spark-submit \
     ${bin}/../../lib/chocolate-spark-nrt-*.jar \
       --appName ${JOB_NAME} \
       --mode yarn \
-      --workDir ${WORK_DIR} \
+      --WorkDir ${WORK_DIR} \
       --partitions 3 \
       --resourceDir ${RESOURCE_DIR} \
       --filterTime ${FILTER_TIME} \
