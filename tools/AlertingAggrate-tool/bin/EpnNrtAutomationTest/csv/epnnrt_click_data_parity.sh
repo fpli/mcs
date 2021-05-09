@@ -15,7 +15,7 @@ sed "s/#{click_dt}/${click_dt}/g" ../../sql/count_diff_epnnrt_automation_by_clic
 
 sql=`cat $sql_file`;
 echo "$sql"
-/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -r /apps/b_marketing_tracking/epnnrt-automation-diff/click/*
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -r /apps/b_marketing_tracking/epnnrt-automation-diff/click-tmp/*
 
 /datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit  \
 --class com.ebay.traffic.chocolate.sparknrt.imkReformat.ImkReformatJob \
@@ -30,7 +30,7 @@ ${bin}/../../lib/chocolate-spark-nrt-*.jar \
 --sqlFile "${sql}"
 
 spark_sql_result_code=$?;
-echo "spark_sql_result_code:$spark_sql_result_code";
+echo "spark_result_code:$spark_sql_result_code";
 if [ $spark_sql_result_code -ne 0 ]; then
     echo "data parity fail:${click_dt}";
     exit $spark_sql_result_code;
