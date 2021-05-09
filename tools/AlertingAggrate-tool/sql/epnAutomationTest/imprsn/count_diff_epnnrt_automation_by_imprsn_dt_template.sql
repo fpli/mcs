@@ -1,4 +1,4 @@
-insert into table choco_data.epnnrt_imprsn_automation_diff
+insert into table choco_data.epnnrt_imprsn_automation_diff_tmp
 select
     new.imprsn_cntnr_id           as new_imprsn_cntnr_id           , old.imprsn_cntnr_id           as old_imprsn_cntnr_id           ,
     new.file_schm_vrsn_num        as new_file_schm_vrsn_num        , old.file_schm_vrsn_num        as old_file_schm_vrsn_num        ,
