@@ -357,9 +357,7 @@ public class CollectionService {
       metrics.meter("DeterminePromotedListingsClickError", 1);
     }
 
-    // filter click whose referer is internal
-    Matcher m = ebaysites.matcher(referer.toLowerCase());
-    boolean isInternalRef = m.find();
+    boolean isInternalRef = isInternalRef(channelType.getLogicalChannel().getAvro(), referer);
     // Determine whether the click is a duplicate click
     // If duplicate click, then drop into duplicateItmClickTopic
     // If not, drop into normal topic
@@ -429,6 +427,15 @@ public class CollectionService {
         Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
+  }
+
+  protected boolean isInternalRef(ChannelType channelType, String referer) {
+    if (inRefererWhitelist(channelType, referer)) {
+      return false;
+    }
+    // filter click whose referer is internal
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    return m.find();
   }
 
   /**
@@ -902,7 +909,7 @@ public class CollectionService {
   }
 
   /**
-   * The ebaysites pattern will treat ebay.abcd.com as ebay site. So add a whitelist to handle these bad cases.
+   * The ebaysites pattern will treat ebay.abcd.com and ebaystatic as ebay site. So add a whitelist to handle these bad cases.
    * @param channelType channel type
    * @param referer referer
    * @return in whitelist or not
