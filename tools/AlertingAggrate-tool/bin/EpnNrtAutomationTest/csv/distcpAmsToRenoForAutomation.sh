@@ -57,8 +57,8 @@ echo "JOB_NAME:${JOB_NAME}"
 cd ${RENO_DISTCP_DIR}
 
 pwd
-#kinit -kt b_marketing_tracking_clients_PROD.keytab b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM
-#klist
+kinit -kt b_marketing_tracking_clients_PROD.keytab b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM
+klist
 
 META_PATH="hdfs://slickha${META_DIR}/date=${today}"
 RENO_DEST_PATH="viewfs://apollo-rno${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today}"
