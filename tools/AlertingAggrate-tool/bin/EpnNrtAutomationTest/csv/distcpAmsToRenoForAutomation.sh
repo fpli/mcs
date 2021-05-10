@@ -62,8 +62,8 @@ klist
 
 META_PATH="hdfs://slickha${META_DIR}/date=${today}"
 RENO_DEST_PATH="viewfs://apollo-rno${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today}"
-/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -r "${RENO_DEST_DIR}/*"
-/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p "${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today}"
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -r "${RENO_DEST_PATH}/*"
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p "${RENO_DEST_PATH}"
 hadoop jar chocolate-distcp-1.0-SNAPSHOT.jar -files core-site-target.xml,hdfs-site-target.xml,b_marketing_tracking_clients_PROD.keytab -copyFromInsecureToSecure -targetprinc b_marketing_tracking/${HOST_NAME}@PROD.EBAY.COM -targetkeytab b_marketing_tracking_clients_PROD.keytab -skipcrccheck -update ${META_PATH} ${RENO_DEST_PATH}
 distcp_result_code=$?
 echo "distcp_result_code:${distcp_result_code}"

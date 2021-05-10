@@ -331,7 +331,8 @@ CREATE EXTERNAL TABLE choco_data.epnnrt_imprsn_automation_diff(
     `new_nrt_rule_flag70` tinyint,
     `old_nrt_rule_flag71` tinyint,
     `new_nrt_rule_flag71` tinyint,
-    `old_nrt_rule_flag72` tinyint
+    `old_nrt_rule_flag72` tinyint,
+    `new_nrt_rule_flag72` tinyint
 )
 PARTITIONED BY (
   `imprsn_dt` string)

@@ -169,12 +169,20 @@ CREATE EXTERNAL TABLE choco_data.ams_imprsn_old_test(
 PARTITIONED BY (
   `imprsn_dt` string)
 ROW FORMAT SERDE
-  'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
-STORED AS INPUTFORMAT
-  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
-OUTPUTFORMAT
-  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+WITH SERDEPROPERTIES (
+  'serialization.format' = '	',
+  'line.delim' = '
+',
+  'field.delim' = '	'
+)
+STORED AS
+  INPUTFORMAT
+  'org.apache.hadoop.mapred.TextInputFormat'
+  OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 LOCATION
   'viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt-old-test/imp'
 TBLPROPERTIES (
-  'transient_lastDdlTime'='1601444855')
+  'transient_lastDdlTime' = '1620619723'
+)

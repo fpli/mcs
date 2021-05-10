@@ -387,7 +387,8 @@ CREATE EXTERNAL TABLE choco_data.epnnrt_click_automation_diff(
     `new_nrt_rule_flag78` tinyint,
     `old_nrt_rule_flag79` tinyint,
     `new_nrt_rule_flag79` tinyint,
-    `old_nrt_rule_flag80` tinyint
+    `old_nrt_rule_flag80` tinyint,
+    `new_nrt_rule_flag80` tinyint
 )
 PARTITIONED BY (
   `click_dt` string)
