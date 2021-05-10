@@ -146,7 +146,6 @@ select
     new.nrt_rule_flag49           as new_nrt_rule_flag49           , old.nrt_rule_flag49           as old_nrt_rule_flag49           ,
     new.nrt_rule_flag50           as new_nrt_rule_flag50           , old.nrt_rule_flag50           as old_nrt_rule_flag50           ,
     new.nrt_rule_flag51           as new_nrt_rule_flag51           , old.nrt_rule_flag51           as old_nrt_rule_flag51           ,
-    new.nrt_rule_flag51           as new_nrt_rule_flag51           , old.nrt_rule_flag51           as old_nrt_rule_flag51           ,
     new.nrt_rule_flag52           as new_nrt_rule_flag52           , old.nrt_rule_flag52           as old_nrt_rule_flag52           ,
     new.nrt_rule_flag53           as new_nrt_rule_flag53           , old.nrt_rule_flag53           as old_nrt_rule_flag53           ,
     new.nrt_rule_flag54           as new_nrt_rule_flag54           , old.nrt_rule_flag54           as old_nrt_rule_flag54           ,
@@ -318,7 +317,6 @@ where  !(
             (old.nrt_rule_flag48           is null or new.nrt_rule_flag48            <=>     old.nrt_rule_flag48           ) and
             (old.nrt_rule_flag49           is null or new.nrt_rule_flag49            <=>     old.nrt_rule_flag49           ) and
             (old.nrt_rule_flag50           is null or new.nrt_rule_flag50            <=>     old.nrt_rule_flag50           ) and
-            (old.nrt_rule_flag51           is null or new.nrt_rule_flag51            <=>     old.nrt_rule_flag51           ) and
             (old.nrt_rule_flag51           is null or new.nrt_rule_flag51            <=>     old.nrt_rule_flag51           ) and
             (old.nrt_rule_flag52           is null or new.nrt_rule_flag52            <=>     old.nrt_rule_flag52           ) and
             (old.nrt_rule_flag53           is null or new.nrt_rule_flag53            <=>     old.nrt_rule_flag53           ) and
