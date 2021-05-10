@@ -1,4 +1,4 @@
 type=command
 dependencies=epnnrt_click_new_scheduler,epnnrt_click_old_scheduler
-command=command=bash ./SubmitJob.sh "SLC" "/datashare/mkttracking/jobs/tracking/epnnrt_new_test/bin/prod" "./epnnrt_click_data_parity.sh"
+command=bash ./SubmitJob.sh "SLC" "/datashare/mkttracking/jobs/tracking/epnnrt_new_test/bin/prod" "./epnnrt_click_data_parity.sh"
 failure.emails=yuhxiao@ebay.com
