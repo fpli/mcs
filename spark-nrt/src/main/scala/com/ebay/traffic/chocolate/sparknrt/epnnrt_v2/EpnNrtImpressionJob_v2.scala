@@ -26,7 +26,7 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
   lazy val epnNrtResultMetaImpDir = outputWorkDir + "/meta/EPN/output/epnnrt_imp/"
   lazy val epnNrtScpMetaImpDir = outputWorkDir + "/meta/EPN/output/epnnrt_scp_imp/"
 
-  lazy val IMPRESSION_DIR = "/imp/"
+  lazy val IMPRESSION_DIR = "/impression/"
 
 
   @transient lazy val batchSize: Int = {
