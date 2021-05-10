@@ -2,6 +2,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
@@ -183,6 +184,29 @@ public class CollectionServiceUtil {
 
   private static boolean isEncodedUrl(String url) {
     return (url.startsWith("https%3A%2F%2F") || url.startsWith("http%3A%2F%2F"));
+  }
+
+  public static boolean isDuplicateItmClick(BaseEvent baseEvent) {
+    boolean isDulicateItemClick = false;
+
+    if (ebayItemNoTitlePage.matcher(baseEvent.getUrl()).find()) {
+      Matcher ebaySpecialSitesMatcher = ebaySpecialSites.matcher(baseEvent.getUrl());
+
+      if (!baseEvent.getUserAgentInfo().getUserAgentRawData().toLowerCase().contains(BOT_USER_AGENT)
+          && !baseEvent.getUserAgentInfo().requestIsFromBot()
+          && !ebaySpecialSitesMatcher.find()
+          && baseEvent.getUserAgentInfo().isMobile()
+          && baseEvent.getUserAgentInfo().requestIsMobileWeb()) {
+
+        String statusCode = baseEvent.getRequestHeaders().get(Constants.NODE_REDIRECTION_HEADER_NAME);
+        if (!StringUtils.isEmpty(statusCode)
+            && statusCode.equals(Constants.NODE_REDIRECTION_STATUS_CODE)) {
+          isDulicateItemClick = true;
+        }
+      }
+    }
+
+    return isDulicateItemClick;
   }
 
   /**

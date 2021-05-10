@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
@@ -34,9 +35,7 @@ import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import com.ebay.userlookup.UserLookup;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -77,7 +76,7 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.*;
 public class CollectionService {
   private static final Logger LOGGER = LoggerFactory.getLogger(CollectionService.class);
   private Metrics metrics;
-  private ListenerMessageParser parser;
+  private ListenerMessageParser listenerMessageParser;
   private BehaviorMessageParser behaviorMessageParser;
   private Producer behaviorProducer;
   private String behaviorTopic;
@@ -136,7 +135,7 @@ public class CollectionService {
   @PostConstruct
   public void postInit() throws Exception {
     this.metrics = ESMetrics.getInstance();
-    this.parser = ListenerMessageParser.getInstance();
+    this.listenerMessageParser = ListenerMessageParser.getInstance();
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
     this.behaviorProducer = BehaviorKafkaSink.get();
     this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
@@ -202,8 +201,10 @@ public class CollectionService {
     }
 
     // Now we support to track two kind of deeplink cases
-    // XC-1797, extract and decode actual target url from referrer parameter in targetUrl, only accept the url when the domain of referrer parameter belongs to ebay sites
-    // XC-3349, for native uri with Chocolate parameters, re-construct Chocolate url based on native uri and track (only support /itm page)
+    // XC-1797, extract and decode actual target url from referrer parameter in targetUrl,
+    // only accept the url when the domain of referrer parameter belongs to ebay sites
+    // XC-3349, for native uri with Chocolate parameters,
+    // re-construct Chocolate url based on native uri and track (only support /itm page)
     Matcher deeplinkMatcher = deeplinksites.matcher(targetUrl.toLowerCase());
     if (deeplinkMatcher.find()) {
       metrics.meter("IncomingAppDeepLink");
@@ -244,8 +245,35 @@ public class CollectionService {
       finalUrl = finalUrl + "&" + Constants.MKRID + "=" + rotationId;
     }
 
-    Triple<String, String, ChannelIdEnum> urlRefChannel = new ImmutableTriple<>(finalUrl, finalRef, channelType);
-    return urlRefChannel;
+    return new ImmutableTriple<>(finalUrl, finalRef, channelType);
+  }
+
+  /**
+   * Set flag from checkout api
+   * @param baseEvent base event
+   */
+  BaseEvent setCheckoutApiFlag(BaseEvent baseEvent) {
+    // update startTime if the click comes from checkoutAPI
+    if (baseEvent.getChannelType() == ChannelIdEnum.EPN) {
+      EventPayload payload = baseEvent.getPayload();
+      if (payload != null) {
+        String checkoutAPIClickTs = payload.getCheckoutAPIClickTs();
+        if (!StringUtils.isEmpty(checkoutAPIClickTs)) {
+          try {
+            long checkoutAPIClickTimestamp = Long.parseLong(checkoutAPIClickTs);
+            if (checkoutAPIClickTimestamp > 0) {
+              baseEvent.setCheckoutApi(true);
+              baseEvent.setTimestamp(checkoutAPIClickTimestamp);
+            }
+          } catch (Exception e) {
+            LOGGER.warn(e.getMessage());
+            LOGGER.warn("Error click timestamp from Checkout API " + checkoutAPIClickTs);
+            metrics.meter("ErrorCheckoutAPIClickTimestamp", 1);
+          }
+        }
+      }
+    }
+    return baseEvent;
   }
 
   /**
@@ -343,29 +371,30 @@ public class CollectionService {
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
         Field.of(LANDING_PAGE_TYPE, landingPageType));
 
+    // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
+    BaseEvent baseEvent = new BaseEvent();
+    baseEvent.setTimestamp(startTime);
+    baseEvent.setUrl(urlRefChannel.getLeft());
+    baseEvent.setReferer(urlRefChannel.getMiddle());
+    baseEvent.setActionType(ChannelActionEnum.CLICK);
+    baseEvent.setChannelType(urlRefChannel.getRight());
+    baseEvent.setUriComponents(uriComponents);
+    baseEvent.setUrlParameters(parameters);
+    baseEvent.setRequestHeaders(requestHeaders);
+    baseEvent.setUserAgentInfo(agentInfo);
+    baseEvent.setUserPrefsCtx(userPrefsCtx);
+    baseEvent.setEndUserContext(endUserContext);
+
     // this attribute is used to log actual process time for incoming event in mcs
     long eventProcessStartTime = startTime;
 
     // update startTime if the click comes from checkoutAPI
-    boolean checkoutAPIClickFlag = false;
-    if (urlRefChannel.getRight() == ChannelIdEnum.EPN) {
-      EventPayload payload = event.getPayload();
-      if (payload != null) {
-        String checkoutAPIClickTs = payload.getCheckoutAPIClickTs();
-        if (!StringUtils.isEmpty(checkoutAPIClickTs)) {
-          try {
-            long checkoutAPIClickTimestamp = Long.parseLong(checkoutAPIClickTs);
-            if (checkoutAPIClickTimestamp > 0) {
-              checkoutAPIClickFlag = true;
-              startTime = checkoutAPIClickTimestamp;
-            }
-          } catch (Exception e) {
-            LOGGER.warn(e.getMessage());
-            LOGGER.warn("Error click timestamp from Checkout API " + checkoutAPIClickTs);
-            metrics.meter("ErrorCheckoutAPIClickTimestamp", 1);
-          }
-        }
-      }
+    try {
+      baseEvent = setCheckoutApiFlag(baseEvent);
+    } catch (Exception e) {
+      LOGGER.warn(e.getMessage());
+      LOGGER.warn("Error click timestamp from Checkout API " + baseEvent.getTimestamp());
+      metrics.meter("ErrorCheckoutAPIClickTimestamp", 1);
     }
 
     // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256
@@ -373,10 +402,10 @@ public class CollectionService {
     boolean isEPNClickFromPromotedListings;
     try {
       isEPNClickFromPromotedListings
-          = CollectionServiceUtil.isEPNPromotedListingsClick(urlRefChannel.getRight(), parameters, referer);
+          = CollectionServiceUtil.isEPNPromotedListingsClick(urlRefChannel.getRight(), parameters, baseEvent.getReferer());
 
       if (isEPNClickFromPromotedListings) {
-        referer = URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), StandardCharsets.UTF_8.name());
+        baseEvent.setReferer(URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), StandardCharsets.UTF_8.name()));
         metrics.meter("OverwriteRefererForPromotedListingsClick");
       }
     } catch (Exception e) {
@@ -392,16 +421,12 @@ public class CollectionService {
     // If not, drop into normal topic
     boolean isDuplicateClick = false;
     try {
-      isDuplicateClick = CollectionServiceUtil.isDuplicateItmClick(
-          request.getHeader(Constants.NODE_REDIRECTION_HEADER_NAME), endUserContext.getUserAgent(),
-          urlRefChannel.getLeft(), agentInfo.requestIsFromBot(), agentInfo.isMobile(), agentInfo.requestIsMobileWeb());
+      isDuplicateClick = CollectionServiceUtil.isDuplicateItmClick(baseEvent);
 
       // send duplicate click to a dedicate listener topic
       if(isDuplicateClick || isInternalRef) {
         Producer<Long, ListenerMessage> producer = KafkaSink.get();
-        ListenerMessage listenerMessage = parser.parse(requestHeaders, endUserContext, userPrefsCtx, startTime,
-            0L, urlRefChannel.getRight().getLogicalChannel().getAvro(), ChannelActionEnum.CLICK, "", urlRefChannel.getLeft(),
-            referer, 0L, "");
+        ListenerMessage listenerMessage = listenerMessageParser.parse(baseEvent);
         Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
         listenerMessage.setSnapshotId(snapshotId);
         listenerMessage.setShortSnapshotId(0L);
@@ -415,14 +440,15 @@ public class CollectionService {
 
     // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
     String utpEventId = UUID.randomUUID().toString();
+    baseEvent.setUuid(utpEventId);
 
     Boolean vodInternal = isVodInternal(urlRefChannel.getRight(), pathSegments);
     if(!isDuplicateClick && !isInternalRef || vodInternal) {
       ListenerMessage listenerMessage = null;
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(urlRefChannel.getRight())) {
-        listenerMessage = processPMEvent(requestContext, requestHeaders, userPrefsCtx, urlRefChannel.getLeft(), referer, utpEventId,
-            parameters, urlRefChannel.getRight(), channelAction, request, startTime, endUserContext, raptorSecureContext, agentInfo);
+
+        listenerMessage = processPMEvent(baseEvent, requestContext, request);
       }
       else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL) {
         processCmEvent(requestContext, endUserContext, referer, parameters, type, action, request, agentInfo,
@@ -451,7 +477,7 @@ public class CollectionService {
       }
     }
 
-    stopTimerAndLogData(eventProcessStartTime, startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action),
+    stopTimerAndLogData(eventProcessStartTime, startTime, baseEvent.isCheckoutApi(), Field.of(CHANNEL_ACTION, action),
         Field.of(CHANNEL_TYPE, type), Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
         Field.of(LANDING_PAGE_TYPE, landingPageType));
 
@@ -617,16 +643,20 @@ public class CollectionService {
 
     Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
 
-    if (request.getHeader(TRACKING_HEADER) == null) {
+    // validate mandatory cos headers
+    if (requestHeaders.get(TRACKING_HEADER) == null) {
       logError(Errors.ERROR_NO_TRACKING);
+    }
+
+    if (requestHeaders.get(ENDUSERCTX_HEADER) == null) {
+      logError(Errors.ERROR_NO_ENDUSERCTX);
     }
 
     String referer = commonRequestHandler.getReferer(event, requestHeaders, endUserContext);
 
     String userAgent = request.getHeader("User-Agent");
     if (null == userAgent) {
-      LOGGER.warn(Errors.ERROR_NO_USER_AGENT);
-      metrics.meter(Errors.ERROR_NO_USER_AGENT);
+      logError(Errors.ERROR_NO_USER_AGENT);
     }
 
     ChannelIdEnum channelType;
@@ -703,6 +733,22 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
+
+    // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
+    BaseEvent baseEvent = new BaseEvent();
+    baseEvent.setTimestamp(startTime);
+    baseEvent.setUrl(uri);
+    baseEvent.setReferer(referer);
+    baseEvent.setActionType(channelAction);
+    baseEvent.setChannelType(channelType);
+    baseEvent.setUriComponents(uriComponents);
+    baseEvent.setUrlParameters(parameters);
+    baseEvent.setRequestHeaders(requestHeaders);
+    baseEvent.setUserAgentInfo(agentInfo);
+    baseEvent.setUserPrefsCtx(userPrefsCtx);
+    baseEvent.setEndUserContext(endUserContext);
+
+
     // add channel specific tags, and produce message for EPN and IMK
     ListenerMessage listenerMessage = null;
     if (channelType == ChannelIdEnum.SITE_EMAIL) {
@@ -716,8 +762,7 @@ public class CollectionService {
           mrktEmailCollector);
     }
     else {
-      listenerMessage = processPMEvent(requestContext, requestHeaders, userPrefsCtx, uri, referer, null, parameters,
-          channelType, channelAction, request, startTime, endUserContext, raptorSecureContext, agentInfo);
+      listenerMessage = processPMEvent(baseEvent, requestContext, request);
     }
 
     // send to unified tracking topic
@@ -767,7 +812,7 @@ public class CollectionService {
     UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
 
     // Parse the response
-    ListenerMessage message = parser.parse(requestHeaders, endUserContext, userPrefsCtx, startTime,
+    ListenerMessage message = listenerMessageParser.parse(requestHeaders, endUserContext, userPrefsCtx, startTime,
         -1L, channelType.getLogicalChannel().getAvro(), channelAction, userId, targetUrl,
         referer, 0L, "");
 
@@ -969,39 +1014,39 @@ public class CollectionService {
    * @param agentInfo           user agent
    * @return                    a listener message
    */
-  private ListenerMessage  processPMEvent(ContainerRequestContext requestContext, Map<String, String> requestHeaders,
-                                         UserPrefsCtx userPrefsCtx, String targetUrl, String referer, String utpEventId,
-                                         MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
-                                         ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
-                                         IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
-                                         UserAgentInfo agentInfo) {
+  /**
+   * Process PM events
+   * @param baseEvent base event
+   * @param requestContext request context
+   * @param request http request
+   * @return listener message
+   */
+  private ListenerMessage processPMEvent(BaseEvent baseEvent, ContainerRequestContext requestContext,
+                                          HttpServletRequest request) {
 
     ListenerMessage listenerMessage;
 
-    listenerMessage = performanceMarketingCollector.parseListenerMessage(requestHeaders, userPrefsCtx,
-        targetUrl, referer, parameters, channelType, channelAction, request, startTime, endUserContext,
-        raptorSecureContext);
+    listenerMessage = performanceMarketingCollector.parseListenerMessage(baseEvent);
 
     // 1. send to chocolate topic
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
     String kafkaTopic = ApplicationOptions.getInstance()
-        .getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
+        .getSinkKafkaConfigs().get(baseEvent.getChannelType().getLogicalChannel().getAvro());
 
     producer.send(
         new ProducerRecord<>(kafkaTopic, listenerMessage.getSnapshotId(), listenerMessage),
         KafkaSink.callback);
 
     // 2. track ubi
-    if (!channelAction.equals(ChannelActionEnum.SERVE)) {
-      performanceMarketingCollector.trackUbi(requestContext, targetUrl, referer, utpEventId, parameters, channelType,
-          channelAction, startTime, endUserContext, listenerMessage);
+    if (!baseEvent.getActionType().equals(ChannelActionEnum.SERVE)) {
+      performanceMarketingCollector.trackUbi(requestContext, baseEvent, listenerMessage);
     }
 
     // 3. send to behavior topic
-    if (channelType != ChannelIdEnum.EPN) {
-      BehaviorMessage behaviorMessage = performanceMarketingCollector.parseBehaviorMessage(requestContext, targetUrl,
-          referer, parameters, channelType, channelAction, request, startTime, endUserContext, agentInfo,
-          listenerMessage);
+    if (baseEvent.getChannelType() != ChannelIdEnum.EPN) {
+
+      BehaviorMessage behaviorMessage = behaviorMessageParser.parseAmsAndImkEvent(baseEvent, listenerMessage,
+          requestContext, request, PageIdEnum.CLICK.getId(), PageNameEnum.CLICK.getName());
       if (behaviorMessage != null) {
         behaviorProducer.send(
             new ProducerRecord<>(behaviorTopic, behaviorMessage.getSnapshotId().getBytes(), behaviorMessage),
