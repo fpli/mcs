@@ -18,6 +18,8 @@ SOURCE_PATH=/apps/b_marketing_tracking/epnnrt-automation-diff/imp-tmp
 DEST_PATH=/apps/b_marketing_tracking/epnnrt-automation-diff/imp/imprsn_dt=${imprsn_dt}
 
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -r ${SOURCE_PATH}/*
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${DEST_PATH}
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -r ${DEST_PATH}/*
 
 /datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit  \
 --class com.ebay.traffic.chocolate.sparknrt.imkReformat.ImkReformatJob \
@@ -37,6 +39,5 @@ if [ $spark_sql_result_code -ne 0 ]; then
     echo "data parity fail:${imprsn_dt}";
     exit $spark_sql_result_code;
 fi
-/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${DEST_PATH}
-/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -r ${DEST_PATH}/*
-/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mv ${SOURCE_PATH}/* ${DEST_PATH}
+
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -cp ${SOURCE_PATH}/* ${DEST_PATH}
