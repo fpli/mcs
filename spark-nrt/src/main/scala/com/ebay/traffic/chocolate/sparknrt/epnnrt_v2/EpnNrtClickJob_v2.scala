@@ -23,7 +23,7 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
   lazy val epnNrtScpMetaClickTempDir = outputDir + "/tmp_scp_meta_click/"
 
   //meta final dir
-  lazy val epnNrtResultMetaClickDir = outputWorkDir + "/meta/EPN/output/ epnnrt_click/"
+  lazy val epnNrtResultMetaClickDir = outputWorkDir + "/meta/EPN/output/epnnrt_click/"
   lazy val epnNrtScpMetaClickDir = outputWorkDir + "/meta/EPN/output/epnnrt_scp_click/"
 
   lazy val clickDir = "/click/"
