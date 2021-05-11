@@ -128,7 +128,7 @@ public class Constants {
   );
 
   /**
-   * Performance marketing channels
+   * Pre-install ROI transaction types
    */
   public static final Set<RoiTransactionEnum> PRE_INSTALL_ROI_TRANS_TYPES = new HashSet<>(
           Arrays.asList(RoiTransactionEnum.BID_MOBILEAPP, RoiTransactionEnum.BIN_MOBILEAPP,

@@ -959,7 +959,7 @@ public class EventListenerServiceTest {
   }
 
   @Test
-  public void testCheckoutAPIClickAndRoiEventsResource() {
+  public void testCheckoutAPIClickAndRoiEventsResource() throws InterruptedException {
     // Test Checkout api click
     Event event = new Event();
     event.setReferrer("");
@@ -993,6 +993,16 @@ public class EventListenerServiceTest {
             .accept(MediaType.APPLICATION_JSON_TYPE)
             .post(Entity.json(roiEvent));
     assertEquals(201, response1.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerROI = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesROI = pollFromKafkaTopic(
+            consumerROI, Arrays.asList("dev_listened-roi"), 1, 30 * 1000);
+    consumerROI.close();
+    assertEquals(1, listenerMessagesROI.size());
   }
 
   @Test

@@ -552,10 +552,6 @@ public class CollectionService {
       // Log the roi lag between transation time and receive time
       metrics.mean("RoiTransationLag", startTime - transTimestamp, Field.of(CHANNEL_ACTION, "ROI"),
           Field.of(CHANNEL_TYPE, "ROI"));
-      // Log mock click for pre-install ROI by transaction type
-      metrics.meter("PreInstallMockClick", 1, Field.of(CHANNEL_ACTION, ChannelActionEnum.CLICK.toString()),
-              Field.of(CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()),
-              Field.of(ROI_TRANS_TYPE, roiEvent.getTransType()));
       stopTimerAndLogData(startTime, startTime, false,
           Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
           ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
@@ -1096,37 +1092,49 @@ public class CollectionService {
                                             IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
                                             UserAgentInfo agentInfo, Map<String, String> payloadMap, ROIEvent roiEvent, long transTimestamp) {
 
-    boolean isPreInstallROI = CollectionServiceUtil.isPreinstallROI(payloadMap, roiEvent.getTransType());
+    try {
+      boolean isPreInstallROI = CollectionServiceUtil.isPreinstallROI(payloadMap, roiEvent.getTransType());
 
-    if (isPreInstallROI) {
-      UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-      Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
+      if (isPreInstallROI) {
+        UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+        Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
 
-      // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
-      String utpEventId = UUID.randomUUID().toString();
+        // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
+        String utpEventId = UUID.randomUUID().toString();
 
-      String clickUrl = CollectionServiceUtil.createPrmClickUrl(payloadMap, endUserContext);
+        String clickUrl = CollectionServiceUtil.createPrmClickUrl(payloadMap, endUserContext);
 
-      UriComponents clickUriComponents = UriComponentsBuilder.fromUriString(clickUrl).build();
+        if (!StringUtils.isEmpty(clickUrl)) {
+          UriComponents clickUriComponents = UriComponentsBuilder.fromUriString(clickUrl).build();
 
-      MultiValueMap<String, String> clickParameters = clickUriComponents.getQueryParams();
+          MultiValueMap<String, String> clickParameters = clickUriComponents.getQueryParams();
 
-      ListenerMessage listenerMessage = performanceMarketingCollector.parseListenerMessage(requestHeaders, userPrefsCtx,
-              clickUrl, referer, clickParameters, ChannelIdEnum.DAP, ChannelActionEnum.CLICK, request, transTimestamp, endUserContext,
-              raptorSecureContext);
+          ListenerMessage listenerMessage = performanceMarketingCollector.parseListenerMessage(requestHeaders, userPrefsCtx,
+                  clickUrl, referer, clickParameters, ChannelIdEnum.DAP, ChannelActionEnum.CLICK, request, transTimestamp, endUserContext,
+                  raptorSecureContext);
 
-      Producer<Long, ListenerMessage> producer = KafkaSink.get();
-      String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelIdEnum.DAP.getLogicalChannel().getAvro());
+          Producer<Long, ListenerMessage> producer = KafkaSink.get();
+          String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelIdEnum.DAP.getLogicalChannel().getAvro());
 
-      producer.send(
-              new ProducerRecord<>(kafkaTopic, listenerMessage.getSnapshotId(), listenerMessage),
-              KafkaSink.callback);
+          producer.send(
+                  new ProducerRecord<>(kafkaTopic, listenerMessage.getSnapshotId(), listenerMessage),
+                  KafkaSink.callback);
 
-      // send to unified tracking topic
-      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders,
-              agentInfo, clickParameters, clickUrl, referer, ChannelType.DISPLAY,
-              ChannelAction.CLICK, null, listenerMessage.getSnapshotId(),
-              listenerMessage.getShortSnapshotId(), utpEventId, transTimestamp, false);
+          // send to unified tracking topic
+          processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders,
+                  agentInfo, clickParameters, clickUrl, referer, ChannelType.DISPLAY,
+                  ChannelAction.CLICK, null, listenerMessage.getSnapshotId(),
+                  listenerMessage.getShortSnapshotId(), utpEventId, transTimestamp, false);
+
+          // Log mock click for pre-install ROI by transaction type
+          metrics.meter("PreInstallMockClick", 1, Field.of(CHANNEL_ACTION, ChannelActionEnum.CLICK.toString()),
+                  Field.of(CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()),
+                  Field.of(ROI_TRANS_TYPE, roiEvent.getTransType()));
+        }
+      }
+    } catch (Exception ex) {
+      LOGGER.error("Error when processing pre-install ROI events", ex);
+      metrics.meter("ErrorProcessPreinstallROIEvent", 1);
     }
 
     return true;

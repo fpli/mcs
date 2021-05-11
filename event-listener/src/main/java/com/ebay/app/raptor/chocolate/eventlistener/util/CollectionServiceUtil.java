@@ -404,12 +404,12 @@ public class CollectionServiceUtil {
         clickURIBuilder.addParameter(MKEVT, CLICK_EVENT_FLAG);
         clickURIBuilder.addParameter(MKCID, ChannelIdEnum.DAP.getValue());
         clickURIBuilder.addParameter(MKRID, PRM_CLICK_ROTATION_ID);
-        clickURIBuilder.addParameter(MPPID, mppid);
+        clickURIBuilder.addParameter(MPPID, URLEncoder.encode(mppid, "UTF-8"));
         clickURIBuilder.addParameter(RLUTYPE, PRE_INSTALL_APP_RLUTYPE);
-        clickURIBuilder.addParameter(SITE, siteId);
+        clickURIBuilder.addParameter(SITE, URLEncoder.encode(siteId, "UTF-8"));
 
         if (endUserContext.getDeviceId() != null) {
-          clickURIBuilder.addParameter(UDID, endUserContext.getDeviceId());
+          clickURIBuilder.addParameter(UDID, URLEncoder.encode(endUserContext.getDeviceId(), "UTF-8"));
         }
 
         prmClickUrl = clickURIBuilder.build().toString();
