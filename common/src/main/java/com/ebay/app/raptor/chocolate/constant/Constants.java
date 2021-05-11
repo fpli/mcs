@@ -116,6 +116,8 @@ public class Constants {
   public static final String RLUTYPE = "rlutype";
   public static final String USECASE = "usecase";
   public static final String SITEID = "siteId";
+
+  // Pre-install App dummy click params
   public static final String UDID = "udid";
   public static final String SITE = "site";
 
