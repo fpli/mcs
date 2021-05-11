@@ -19,7 +19,7 @@ echo "$sql"
 SOURCE_PATH=/apps/b_marketing_tracking/epnnrt-automation-diff/click-tmp
 DEST_PATH=/apps/b_marketing_tracking/epnnrt-automation-diff/click/click_dt=${click_dt}
 
-/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -r -r ${SOURCE_PATH}/*
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -r ${SOURCE_PATH}/*
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -mkdir -p ${DEST_PATH}
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -rm -r ${DEST_PATH}/*
 

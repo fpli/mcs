@@ -35,7 +35,7 @@ ${bin}/../../lib/chocolate-spark-nrt-*.jar \
 --sqlFile "${sql}"
 
 spark_sql_result_code=$?;
-echo "spark_result_code:$spark_sql_result_code";
+echo "spark_sql_result_code:$spark_sql_result_code";
 if [ $spark_sql_result_code -ne 0 ]; then
     echo "data parity fail:${click_dt}";
     exit $spark_sql_result_code;

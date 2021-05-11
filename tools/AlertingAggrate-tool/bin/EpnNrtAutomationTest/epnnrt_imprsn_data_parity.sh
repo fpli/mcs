@@ -27,7 +27,7 @@ DEST_PATH=/apps/b_marketing_tracking/epnnrt-automation-diff/imp/imprsn_dt=${impr
 --master yarn \
 --name ${JOB_NAME} \
 --deploy-mode cluster \
---queue hdlq-commrce-mkt-tracking-high-mem\
+--queue hdlq-commrce-mkt-tracking-high-mem \
 --num-executors 160 \
 --executor-memory 32G \
 --executor-cores 8 \
@@ -35,7 +35,7 @@ ${bin}/../../lib/chocolate-spark-nrt-*.jar \
 --sqlFile "${sql}"
 
 spark_sql_result_code=$?;
-echo "spark_result_code:$spark_sql_result_code";
+echo "spark_sql_result_code:$spark_sql_result_code";
 if [ $spark_sql_result_code -ne 0 ]; then
     echo "data parity fail:${imprsn_dt}";
     exit $spark_sql_result_code;
