@@ -141,6 +141,7 @@ public class PerformanceMarketingCollector {
     // get user id from auth token if it's user token, else we get from end user ctx
     String userId;
     if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
+      metrics.meter("ExtractUserIdFromAuthToken", 1);
       userId = raptorSecureContext.getSubjectImmutableId();
     } else {
       userId = Long.toString(endUserContext.getOrigUserOracleId());
