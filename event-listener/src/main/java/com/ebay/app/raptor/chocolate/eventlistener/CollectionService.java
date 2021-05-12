@@ -17,7 +17,6 @@ import com.ebay.app.raptor.chocolate.eventlistener.request.CustomizedSchemeReque
 import com.ebay.app.raptor.chocolate.eventlistener.request.StaticPageRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
-import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -432,10 +431,10 @@ public class CollectionService {
 
       // send to unified tracking topic
       if (listenerMessage != null) {
-        submitUtpEvent(baseEvent, requestContext, request, raptorSecureContext, null,
+        submitChocolateUtpEvent(baseEvent, requestContext, null,
             listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), utpEventId, startTime, vodInternal);
       } else {
-        submitUtpEvent(baseEvent, requestContext, request, raptorSecureContext, null, 0L,
+        submitChocolateUtpEvent(baseEvent, requestContext, null, 0L,
             0L, utpEventId, startTime, vodInternal);
       }
     }
@@ -705,10 +704,10 @@ public class CollectionService {
 
     // send to unified tracking topic
     if(listenerMessage!=null) {
-      submitUtpEvent(baseEvent, requestContext, request, raptorSecureContext, null,
-          listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), null, startTime, false);
+      submitChocolateUtpEvent(baseEvent, requestContext, null, listenerMessage.getSnapshotId(),
+          listenerMessage.getShortSnapshotId(), null, startTime, false);
     } else {
-      submitUtpEvent(baseEvent, requestContext, request, raptorSecureContext, null, 0L,
+      submitChocolateUtpEvent(baseEvent, requestContext, null, 0L,
           0L, null, startTime, false);
     }
 
@@ -767,7 +766,7 @@ public class CollectionService {
         -1L, channelType.getLogicalChannel().getAvro(), channelAction, userId, targetUrl,
         referer, 0L, "");
 
-    submitUtpEvent(baseEvent, requestContext, request, raptorSecureContext, roiEvent,
+    submitChocolateUtpEvent(baseEvent, requestContext, roiEvent,
         message.getSnapshotId(), message.getShortSnapshotId(), null, startTime, false);
 
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
@@ -861,7 +860,7 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, event.getActionType()),
         Field.of(CHANNEL_TYPE, event.getChannelType()));
 
-    UnifiedTrackingMessage message = utpParser.parse(event, userLookup);
+    UnifiedTrackingMessage message = utpParser.parse(event);
 
     if (message != null) {
       unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
@@ -872,9 +871,20 @@ public class CollectionService {
       }
   }
 
-  private void submitUtpEvent(BaseEvent baseEvent, ContainerRequestContext requestContext, HttpServletRequest request,
-                                           RaptorSecureContext raptorSecureContext, ROIEvent roiEvent, long snapshotId,
-                                           long shortSnapshotId, String eventId, long startTime, Boolean vodInternal) {
+  /**
+   * Submit chocolate tracked user behavior into utp event
+   * @param baseEvent       base event
+   * @param requestContext  request context
+   * @param roiEvent        roi event
+   * @param snapshotId      snapshot id
+   * @param shortSnapshotId short snapshot id
+   * @param eventId         utp event id
+   * @param startTime       start time
+   * @param vodInternal     is void internal
+   */
+  private void submitChocolateUtpEvent(BaseEvent baseEvent, ContainerRequestContext requestContext,
+                                       ROIEvent roiEvent, long snapshotId,
+                                       long shortSnapshotId, String eventId, long startTime, Boolean vodInternal) {
     try {
       Matcher m = ebaysites.matcher(baseEvent.getReferer().toLowerCase());
       if (ChannelActionEnum.EMAIL_OPEN.equals(baseEvent.getActionType())
@@ -883,8 +893,8 @@ public class CollectionService {
               baseEvent.getReferer())
           || !m.find()
           || vodInternal) {
-        UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, request,
-            raptorSecureContext, roiEvent, snapshotId, shortSnapshotId, startTime);
+        UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, roiEvent, snapshotId,
+            shortSnapshotId, startTime);
         if(!StringUtils.isEmpty(eventId)) {
           utpMessage.setEventId(eventId);
         }
