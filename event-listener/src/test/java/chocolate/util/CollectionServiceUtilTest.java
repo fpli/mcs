@@ -261,11 +261,13 @@ public class CollectionServiceUtilTest {
 
         Map<String, String> roiPayloadMap = new HashMap<>();
         roiPayloadMap.put("mppid", "92");
-
         assertEquals(CollectionServiceUtil.createPrmClickUrl(roiPayloadMap, mockIEndUserContext), "https://www.ebay.com?mkevt=1&mkcid=4&mkrid=14362-130847-18990-0&mppid=92&rlutype=1&site=0&udid=023b4ffe1711e42a157a2480012d3864");
 
         roiPayloadMap.put("siteId", "3");
         assertEquals(CollectionServiceUtil.createPrmClickUrl(roiPayloadMap, mockIEndUserContext), "https://www.ebay.co.uk?mkevt=1&mkcid=4&mkrid=14362-130847-18990-0&mppid=92&rlutype=1&site=3&udid=023b4ffe1711e42a157a2480012d3864");
+
+        roiPayloadMap.put("siteId", "999");
+        assertEquals(CollectionServiceUtil.createPrmClickUrl(roiPayloadMap, mockIEndUserContext), "https://www.ebay.com?mkevt=1&mkcid=4&mkrid=14362-130847-18990-0&mppid=92&rlutype=1&site=999&udid=023b4ffe1711e42a157a2480012d3864");
     }
 
     public MultiValueMap<String, String> getTargetUrlParameters(String targetUrl) {
