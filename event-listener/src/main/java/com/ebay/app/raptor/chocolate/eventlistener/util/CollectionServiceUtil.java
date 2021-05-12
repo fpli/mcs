@@ -396,7 +396,7 @@ public class CollectionServiceUtil {
 
     String mppid = roiPayloadMap.getOrDefault(MPPID, "");
     String siteId = roiPayloadMap.getOrDefault(SITEID, "0");
-    String clickUrlHost = siteIdHostMap.get(siteId);
+    String clickUrlHost = siteIdHostMap.getOrDefault(siteId, "https://www.ebay.com");
 
     try {
       if (!StringUtils.isEmpty(clickUrlHost)) {
