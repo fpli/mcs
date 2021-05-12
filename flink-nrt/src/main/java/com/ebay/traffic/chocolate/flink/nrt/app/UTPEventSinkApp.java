@@ -51,7 +51,7 @@ public class UTPEventSinkApp extends AbstractRheosEventSinkApp {
     return new AbstractEventDateTimeBucketAssigner<GenericRecord>() {
       @Override
       protected long getEventTimestamp(GenericRecord element) {
-        return (Long) element.get("eventTs");
+        return (Long) element.get("producerEventTs");
       }
     };
   }

@@ -69,13 +69,14 @@ public class UnifiedTrackingMessageParser {
     Map<String, String> payload = new HashMap<>();
 
     // set default value
-    UnifiedTrackingMessage record = setDefaultAndCommonValues(payload, new UserAgentParser().parse(event.getUserAgent()), System.currentTimeMillis());
+    long eventTs = System.currentTimeMillis();
+    UnifiedTrackingMessage record = setDefaultAndCommonValues(payload, new UserAgentParser().parse(event.getUserAgent()), eventTs);
 
     // event id
     record.setProducerEventId(coalesce(event.getProducerEventId(), ""));
 
     // event timestamp
-    record.setProducerEventTs(coalesce(event.getProducerEventTs(), 0L));
+    record.setProducerEventTs(coalesce(event.getProducerEventTs(), eventTs));
 
     // rlogid
     record.setRlogId(event.getRlogId());
@@ -182,7 +183,7 @@ public class UnifiedTrackingMessageParser {
     record.setProducerEventId(getProducerEventId(parameters, channelType));
 
     // event timestamp
-    record.setProducerEventTs(getProducerEventTs(channelAction, roiEvent));
+    record.setProducerEventTs(getProducerEventTs(channelAction, roiEvent, startTime));
 
     // rlog id
     record.setRlogId(tracingContext.getRlogId());
@@ -371,11 +372,11 @@ public class UnifiedTrackingMessageParser {
     return "";
   }
 
-  private static long getProducerEventTs(ChannelAction channelAction, ROIEvent roiEvent) {
+  private static long getProducerEventTs(ChannelAction channelAction, ROIEvent roiEvent, long startTime) {
     if (ChannelAction.ROI.equals(channelAction) && isLongNumeric(roiEvent.getTransactionTimestamp())) {
       return Long.parseLong(roiEvent.getTransactionTimestamp());
     } else {
-      return System.currentTimeMillis();
+      return startTime;
     }
   }
 
