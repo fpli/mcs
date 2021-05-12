@@ -4,8 +4,9 @@
 
 package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
-import com.ebay.app.raptor.chocolate.avro.ChannelAction;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.monitoring.Field;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URLDecoder;
 
@@ -44,33 +44,33 @@ public class MrktEmailCollector extends CustomerMarketingCollector {
   }
 
   /**
-   * @param parameters    url parameters
-   * @param type          channel type
-   * @param action        action type
-   * @param request       http request
-   * @param uri           url
-   * @param channelAction channel action enum
+   * Track ubi
+   * @param requestContext  request context
+   * @param baseEvent       base event
    */
-  public void trackUbi(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters, String type,
-                       String action, HttpServletRequest request, String uri, String referer, String utpEventId,
-                       ChannelAction channelAction) {
+  @Override
+  public void trackUbi(ContainerRequestContext requestContext, BaseEvent baseEvent) {
     // send click event to ubi
     // Third party clicks should not be tracked into ubi
     // Don't track ubi if the click is a duplicate itm click
-    if (ChannelAction.CLICK.equals(channelAction) && ebaysites.matcher(uri.toLowerCase()).find()) {
+    if (ChannelActionEnum.CLICK.equals(baseEvent.getActionType())
+        && ebaysites.matcher(baseEvent.getUrl().toLowerCase()).find()) {
       try {
+
+        MultiValueMap<String, String> parameters = baseEvent.getUrlParameters();
+
         // Ubi tracking
         IRequestScopeTracker requestTracker =
             (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
         // common tags and soj tags
-        super.trackUbi(requestContext, parameters, type, action, request, uri, referer, utpEventId, channelAction);
+        super.trackUbi(requestContext, baseEvent);
 
         // event family
         requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
 
         // fbprefetch
-        if (isFacebookPrefetchEnabled(request))
+        if (isFacebookPrefetchEnabled(baseEvent.getRequestHeaders()))
           requestTracker.addTag("fbprefetch", true, Boolean.class);
 
         // channel id
@@ -119,7 +119,8 @@ public class MrktEmailCollector extends CustomerMarketingCollector {
 
       } catch (Exception e) {
         LOGGER.warn("Error when tracking ubi for marketing email click tags", e);
-        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
+            Field.of(CHANNEL_TYPE, baseEvent.getChannelType()));
       }
     }
   }

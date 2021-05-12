@@ -40,7 +40,7 @@
     <sonar.core.codeCoveragePlugin>scoverage</sonar.core.codeCoveragePlugin>
     <logback.kafkaAppender.version>0.1.0</logback.kafkaAppender.version>
     <logback.encoder.version>4.11</logback.encoder.version>
-    <utp.version>1.1.1-RELEASE</utp.version>
+    <utp.version>1.1.2-RELEASE</utp.version>
     <docker.image.prefix>hub.tess.io/raptorontess</docker.image.prefix>
     <tracking.component.version>0.12.0-RELEASE</tracking.component.version>
     <ddsclient.component.version>0.12.0-RELEASE</ddsclient.component.version>
@@ -233,6 +233,8 @@
         <scope>test</scope>
       </dependency>
 
+
+
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
@@ -336,12 +338,6 @@
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.compat.version}</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
 

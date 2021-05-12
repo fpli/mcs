@@ -5,7 +5,6 @@
 
 package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
-import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
@@ -13,17 +12,15 @@ import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.CommonConstant;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.component.GdprConsentHandler;
-import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
+import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
-import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
-import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
@@ -32,18 +29,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
-import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
-
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
-import java.net.URLDecoder;
-import java.util.Map;
-
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
-import static org.apache.commons.compress.utils.CharsetNames.UTF_8;
 
 /**
  * @author xiangli4
@@ -78,7 +68,7 @@ public class PerformanceMarketingCollector {
    * @param baseEvent base event
    * @return ListenerMessage
    */
-  public ListenerMessage parseListenerMessage(BaseEvent baseEvent) {
+  public ListenerMessage decorateListenerMessageAndHandleGDPR(BaseEvent baseEvent) {
 
     ChannelIdEnum channelIdEnum = baseEvent.getChannelType();
     ChannelActionEnum channelActionEnum = baseEvent.getActionType();
@@ -233,99 +223,6 @@ public class PerformanceMarketingCollector {
   }
 
   /**
-   * @param requestContext site tracking tracker
-   * @param targetUrl      target url
-   * @param referer        referer of the request
-   * @param utpEventId     utp eventid
-   * @param parameters     url parameters
-   * @param channelType    channel type
-   * @param channelAction  action type
-   * @param startTime      start time of the request
-   * @param endUserContext enduserctx header
-   * @param message        listener message
-   */
-
-  public void trackUbi(ContainerRequestContext requestContext, String targetUrl, String referer, String utpEventId,
-                       MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
-                       ChannelActionEnum channelAction, long startTime,
-                       IEndUserContext endUserContext, ListenerMessage message) {
-    // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
-    // Don't track ubi if the click is from Checkout API
-    if (isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)) {
-      metrics.meter("CheckoutAPIClick", 1);
-    } else {
-      try {
-
-        IRequestScopeTracker requestTracker
-            = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
-
-        // page id
-        if (channelAction.equals(ChannelActionEnum.CLICK)) {
-          requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.CLICK.getId(), Integer.class);
-        } else if (channelAction.equals(ChannelActionEnum.ROI)) {
-          requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.ROI.getId(), Integer.class);
-        }
-
-        // event action
-        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
-
-        // target url
-        if (!StringUtils.isEmpty(targetUrl)) {
-          requestTracker.addTag(SOJ_MPRE_TAG, targetUrl, String.class);
-        }
-
-        // referer
-        if (!StringUtils.isEmpty(referer)) {
-          requestTracker.addTag("ref", referer, String.class);
-        }
-
-        // utp event id
-        if (!StringUtils.isEmpty(utpEventId)) {
-          requestTracker.addTag("utpid", utpEventId, String.class);
-        }
-
-        // populate device info
-        CollectionServiceUtil.populateDeviceDetectionParams(
-            (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME), requestTracker);
-
-        // event family
-        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
-
-        // rotation id
-        requestTracker.addTag("rotid", String.valueOf(message.getDstRotationId()), String.class);
-
-        // keyword
-        String searchKeyword = "";
-        if (parameters.containsKey(Constants.SEARCH_KEYWORD)
-            && parameters.get(Constants.SEARCH_KEYWORD).get(0) != null) {
-
-          searchKeyword = parameters.get(Constants.SEARCH_KEYWORD).get(0);
-        }
-        requestTracker.addTag("keyword", searchKeyword, String.class);
-
-        // rvr id
-        requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
-
-        // gclid
-        String gclid = "";
-        if (parameters.containsKey(Constants.GCLID) && parameters.get(Constants.GCLID).get(0) != null) {
-
-          gclid = parameters.get(Constants.GCLID).get(0);
-        }
-        requestTracker.addTag("gclid", gclid, String.class);
-
-        //producereventts
-        requestTracker.addTag("producereventts", startTime, Long.class);
-
-      } catch (Exception e) {
-        LOGGER.warn("Error when tracking ubi for imk", e);
-        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
-            Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
-      }
-    }
-  }
-
-  /**
    * Determine whether the click is from Checkout API
    * If so, don't track into ubi
    */
@@ -340,5 +237,38 @@ public class PerformanceMarketingCollector {
       metrics.meter("DetermineCheckoutAPIClickError", 1);
     }
     return isClickFromCheckoutAPI;
+  }
+
+  public String getSearchEngineFreeListingsRotationId(UserPrefsCtx userPrefsCtx) {
+    int siteId = userPrefsCtx.getGeoContext().getSiteId();
+    return SearchEngineFreeListingsRotationEnum.parse(siteId).getRotation();
+  }
+
+  /**
+   * Set flag from checkout api
+   * @param baseEvent base event
+   */
+  public BaseEvent setCheckoutApiFlag(BaseEvent baseEvent) {
+    // update startTime if the click comes from checkoutAPI
+    if (baseEvent.getChannelType() == ChannelIdEnum.EPN) {
+      EventPayload payload = baseEvent.getPayload();
+      if (payload != null) {
+        String checkoutAPIClickTs = payload.getCheckoutAPIClickTs();
+        if (!StringUtils.isEmpty(checkoutAPIClickTs)) {
+          try {
+            long checkoutAPIClickTimestamp = Long.parseLong(checkoutAPIClickTs);
+            if (checkoutAPIClickTimestamp > 0) {
+              baseEvent.setCheckoutApi(true);
+              baseEvent.setTimestamp(checkoutAPIClickTimestamp);
+            }
+          } catch (Exception e) {
+            LOGGER.warn(e.getMessage());
+            LOGGER.warn("Error click timestamp from Checkout API " + checkoutAPIClickTs);
+            metrics.meter("ErrorCheckoutAPIClickTimestamp", 1);
+          }
+        }
+      }
+    }
+    return baseEvent;
   }
 }
