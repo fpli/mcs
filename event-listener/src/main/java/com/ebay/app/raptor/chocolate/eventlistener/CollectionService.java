@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
@@ -83,6 +84,8 @@ public class CollectionService {
   private static CollectionService instance = null;
   private EventEmitterPublisher eventEmitterPublisher;
   private UnifiedTrackingMessageParser utpParser;
+  private static final String TYPE_INFO = "Info";
+  private static final String STATUS_OK = "0";
 
   @Autowired
   private HttpRoverClient roverClient;
@@ -855,6 +858,10 @@ public class CollectionService {
         Field.of(CHANNEL_TYPE, event.getChannelType()));
 
     UnifiedTrackingMessage message = utpParser.parse(event, userLookup);
+    SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, message.getEventId());
+    SpanEventHelper.writeEvent(TYPE_INFO, "producerEventId", STATUS_OK, message.getProducerEventId());
+    SpanEventHelper.writeEvent(TYPE_INFO, "service", STATUS_OK, message.getService());
+    SpanEventHelper.writeEvent(TYPE_INFO, "server", STATUS_OK, message.getServer());
 
     if (message != null) {
       unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),

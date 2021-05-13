@@ -3,7 +3,6 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
-import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
@@ -52,8 +51,6 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionService
  */
 public class UnifiedTrackingMessageParser {
   private static final Logger logger = LoggerFactory.getLogger(UnifiedTrackingMessageParser.class);
-  private static final String TYPE_INFO = "Info";
-  private static final String STATUS_OK = "0";
   private static Metrics metrics = ESMetrics.getInstance();
   private static CobrandParser cobrandParser = new CobrandParser();
   private static UepPayloadHelper uepPayloadHelper = new UepPayloadHelper();
@@ -74,11 +71,9 @@ public class UnifiedTrackingMessageParser {
     // set default value
     long eventTs = System.currentTimeMillis();
     UnifiedTrackingMessage record = setDefaultAndCommonValues(payload, new UserAgentParser().parse(event.getUserAgent()), eventTs);
-    SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, record.getEventId());
 
     // event id
     record.setProducerEventId(coalesce(event.getProducerEventId(), ""));
-    SpanEventHelper.writeEvent(TYPE_INFO, "producerEventId", STATUS_OK, record.getProducerEventId());
 
     // event timestamp
     record.setProducerEventTs(coalesce(event.getProducerEventTs(), eventTs));
@@ -126,11 +121,9 @@ public class UnifiedTrackingMessageParser {
 
     // service
     record.setService(event.getService());
-    SpanEventHelper.writeEvent(TYPE_INFO, "service", STATUS_OK, record.getService());
 
     // server
     record.setServer(event.getServer());
-    SpanEventHelper.writeEvent(TYPE_INFO, "server", STATUS_OK, record.getServer());
 
     // remote ip
     record.setRemoteIp(event.getRemoteIp());
