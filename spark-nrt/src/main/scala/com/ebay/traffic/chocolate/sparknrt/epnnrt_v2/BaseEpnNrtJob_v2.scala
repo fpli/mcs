@@ -23,7 +23,7 @@ abstract class BaseEpnNrtJob_v2(params: Parameter_v2,
   lazy val inputWorkDir = params.inputWorkDir
   lazy val outputWorkDir = params.outputWorkDir
   lazy val epnNrtTempDir = outputDir + "/tmp/"
-  lazy val archiveDir = inputWorkDir + "/meta/EPN/output/archive/"
+  lazy val archiveDir = outputWorkDir + "/meta/EPN/output/archive/"
 
   /**
     * epnnrt job properties
