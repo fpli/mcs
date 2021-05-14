@@ -22,7 +22,6 @@ import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
-import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
@@ -81,7 +80,6 @@ public class CollectionService {
   // collect duplicate click
   private String duplicateItmClickTopic;
   private static CollectionService instance = null;
-  private EventEmitterPublisher eventEmitterPublisher;
   private UnifiedTrackingMessageParser utpParser;
 
   @Autowired
@@ -136,7 +134,6 @@ public class CollectionService {
     this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
     this.unifiedTrackingProducer = UnifiedTrackingKafkaSink.get();
     this.unifiedTrackingTopic = ApplicationOptions.getInstance().getUnifiedTrackingTopic();
-    this.eventEmitterPublisher = new EventEmitterPublisher(tokenGenerator);
     this.duplicateItmClickTopic = ApplicationOptions.getInstance().getDuplicateItmClickTopic();
     this.utpParser = new UnifiedTrackingMessageParser();
   }
@@ -247,14 +244,13 @@ public class CollectionService {
    * Collect event and publish to kafka
    * @param request             raw request
    * @param endUserContext      wrapped end user context
-   * @param raptorSecureContext wrapped secure header context
    * @param requestContext      wrapped raptor request context
    * @param event               post body event
    * @return OK or Error message
    * @throws Exception when there is an unhandled error
    */
-  public boolean collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
-          raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
+  public boolean collect(HttpServletRequest request, IEndUserContext endUserContext,
+      ContainerRequestContext requestContext, Event event) throws Exception {
 
     Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
 
@@ -282,8 +278,6 @@ public class CollectionService {
     if (null == userAgent) {
       logError(Errors.ERROR_NO_USER_AGENT);
     }
-
-    ChannelActionEnum channelAction = ChannelActionEnum.CLICK;
 
     UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
 
@@ -351,9 +345,6 @@ public class CollectionService {
     baseEvent.setUserAgentInfo(agentInfo);
     baseEvent.setUserPrefsCtx(userPrefsCtx);
     baseEvent.setEndUserContext(endUserContext);
-
-    // this attribute is used to log actual process time for incoming event in mcs
-    long eventProcessStartTime = startTime;
 
     // update startTime if the click comes from checkoutAPI
     try {
@@ -436,8 +427,7 @@ public class CollectionService {
             0L, utpEventId, startTime);
       }
     }
-
-    stopTimerAndLogData(eventProcessStartTime, startTime, baseEvent.isCheckoutApi(), Field.of(CHANNEL_ACTION, action),
+    stopTimerAndLogData(baseEvent, Field.of(CHANNEL_ACTION, action),
         Field.of(CHANNEL_TYPE, type), Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
         Field.of(LANDING_PAGE_TYPE, landingPageType));
 
@@ -448,14 +438,13 @@ public class CollectionService {
    * Collect roi event and publish to kafka
    * @param request             raw request
    * @param endUserContext      wrapped end user context
-   * @param raptorSecureContext wrapped raptor secure context
    * @param requestContext      wrapped  request context
    * @param roiEvent            roi event body
    * @return                    success or failure
    * @throws Exception          when unhandled exception
    */
-  public boolean collectROIEvent(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
-      raptorSecureContext, ContainerRequestContext requestContext, ROIEvent roiEvent) throws Exception {
+  public boolean collectROIEvent(HttpServletRequest request, IEndUserContext endUserContext,
+                                 ContainerRequestContext requestContext, ROIEvent roiEvent) throws Exception {
 
     if (request.getHeader(TRACKING_HEADER) == null) {
       logError(Errors.ERROR_NO_TRACKING);
@@ -467,7 +456,7 @@ public class CollectionService {
 
     String localTimestamp = Long.toString(System.currentTimeMillis());
 
-    String userId = commonRequestHandler.getUserId(raptorSecureContext, endUserContext);
+    String userId = String.valueOf(endUserContext.getOrigUserOracleId());
 
     try {
       long itemId = Long.parseLong(roiEvent.getItemId());
@@ -552,7 +541,7 @@ public class CollectionService {
 
     // Write roi event to kafka output topic
     boolean processFlag = fireROIEvent(requestContext, targetUrl, referer, parameters, ChannelIdEnum.ROI,
-        ChannelActionEnum.ROI, request, transTimestamp, endUserContext, raptorSecureContext, agentInfo, roiEvent);
+        ChannelActionEnum.ROI, request, transTimestamp, endUserContext, agentInfo, roiEvent);
 
     if (processFlag) {
       metrics.meter("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"),
@@ -560,7 +549,7 @@ public class CollectionService {
       // Log the roi lag between transation time and receive time
       metrics.mean("RoiTransationLag", startTime - transTimestamp, Field.of(CHANNEL_ACTION, "ROI"),
           Field.of(CHANNEL_TYPE, "ROI"));
-      stopTimerAndLogData(startTime, startTime, false,
+      stopTimerAndLogData(startTime,
           Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
           ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
     }
@@ -571,14 +560,13 @@ public class CollectionService {
    * Collect impression event and send pixel response
    * @param request             raw request
    * @param endUserContext      end user context header
-   * @param raptorSecureContext wrapped raptor secure context
    * @param requestContext      wrapped request context
    * @param event               impression event body
    * @return                    success or failure
    * @throws Exception          when unhandled exception
    */
-  public boolean collectImpression(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
-      raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
+  public boolean collectImpression(HttpServletRequest request, IEndUserContext endUserContext,
+                                   ContainerRequestContext requestContext, Event event) throws Exception {
 
     Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
 
@@ -709,7 +697,7 @@ public class CollectionService {
           0L, null, startTime);
     }
 
-    stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action),
+    stopTimerAndLogData(baseEvent, Field.of(CHANNEL_ACTION, action),
         Field.of(CHANNEL_TYPE, type), Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
     return true;
@@ -726,7 +714,6 @@ public class CollectionService {
    * @param request             http request
    * @param startTime           start timestamp
    * @param endUserContext      end user context header
-   * @param raptorSecureContext wrapped raptor secure context
    * @param agentInfo           user agent
    * @param roiEvent            input roi event body
    * @return                    success or failure
@@ -734,12 +721,11 @@ public class CollectionService {
   private boolean fireROIEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
                                MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
                                ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
-                               IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
-                               UserAgentInfo agentInfo, ROIEvent roiEvent) {
+                               IEndUserContext endUserContext, UserAgentInfo agentInfo, ROIEvent roiEvent) {
 
     Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
 
-    String userId = commonRequestHandler.getUserId(raptorSecureContext, endUserContext);
+    String userId = String.valueOf(endUserContext.getOrigUserOracleId());
 
     UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
 
@@ -779,12 +765,11 @@ public class CollectionService {
    * Collect sync event and publish to ubi only
    *
    * @param request             raw request
-   * @param raptorSecureContext wrapped secure header context
    * @param event               post body event
    * @return OK or Error message
    */
-  public boolean collectSync(HttpServletRequest request, RaptorSecureContext
-      raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
+  public boolean collectSync(HttpServletRequest request, ContainerRequestContext requestContext,
+                             Event event) throws Exception {
 
     if (request.getHeader(TRACKING_HEADER) == null) {
       logError(Errors.ERROR_NO_TRACKING);
@@ -864,7 +849,7 @@ public class CollectionService {
       unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
           UnifiedTrackingKafkaSink.callback);
 
-      stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, event.getActionType()),
+      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, event.getActionType()),
           Field.of(CHANNEL_TYPE, event.getChannelType()));
       }
   }
@@ -1052,19 +1037,23 @@ public class CollectionService {
    * Stops the timer and logs relevant debugging messages
    *
    * @param eventProcessStartTime     actual process start time for incoming event, so that latency can be calculated
-   * @param eventProducerStartTime    actual producer event time, add this to distinguish the click from checkout api
-   * @param checkoutAPIClickFlag  checkoutAPIClickFlag, if true, add another metrics to distinguish from other events
    * @param additionalFields channelAction, channelType, platform, landing page type
    */
-  private void stopTimerAndLogData(long eventProcessStartTime, long eventProducerStartTime,
-                                   boolean checkoutAPIClickFlag, Field<String, Object>... additionalFields) {
+  private void stopTimerAndLogData(long eventProcessStartTime, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     LOGGER.debug(String.format("EndTime: %d", endTime));
     metrics.meter("CollectionServiceSuccess", 1, eventProcessStartTime, additionalFields);
-    if (checkoutAPIClickFlag) {
-      metrics.mean("CollectionServiceCheckoutAPIClickAndROIAverageLatency", endTime - eventProducerStartTime);
+    metrics.mean("CollectionServiceAverageLatency", endTime - eventProcessStartTime);
+  }
+
+  private void stopTimerAndLogData(BaseEvent baseEvent, Field<String, Object>... additionalFields) {
+    long endTime = System.currentTimeMillis();
+    LOGGER.debug(String.format("EndTime: %d", endTime));
+    metrics.meter("CollectionServiceSuccess", 1, baseEvent.getTimestamp(), additionalFields);
+    if (baseEvent.isCheckoutApi()) {
+      metrics.mean("CollectionServiceCheckoutAPIClickAndROIAverageLatency", endTime - baseEvent.getTimestamp());
     } else {
-      metrics.mean("CollectionServiceAverageLatency", endTime - eventProcessStartTime);
+      metrics.mean("CollectionServiceAverageLatency", endTime - baseEvent.getTimestamp());
     }
   }
 

@@ -76,7 +76,7 @@ public class CollectionServiceTest {
 
     // no tracking header
     Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-TRACKING")).thenReturn(null);
-    collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, roiEvent);
+    collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, roiEvent);
   }
 
   @Test(expected = Exception.class)
@@ -91,7 +91,7 @@ public class CollectionServiceTest {
     // no enduserctx
     Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-TRACKING")).thenReturn("guid=8b34ef1d1740a4d724970d78eec8ee4c");
     Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-ENDUSERCTX")).thenReturn(null);
-    collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, roiEvent);
+    collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, roiEvent);
   }
 
   @Test
@@ -129,33 +129,33 @@ public class CollectionServiceTest {
 //    Producer<Long, ListenerMessage> producer = Mockito.mock(Producer<Long, ListenerMessage.class);
 //    Mockito.when(KafkaSink.get()).thenReturn(producer);
 
-    assertTrue(collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, roiEvent));
+    assertTrue(collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, roiEvent));
 
     //invalid item id
     Mockito.when(mockRaptorSecureContext.getSubjectDomain()).thenReturn("EBAY");
     roiEvent.setItemId("abc");
-    assertTrue(collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, roiEvent));
+    assertTrue(collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, roiEvent));
     assertEquals("", roiEvent.getItemId());
 
     //invalid timestamp
     roiEvent.setTransactionTimestamp("-12423232");
-    assertTrue(collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, roiEvent));
+    assertTrue(collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, roiEvent));
     assertTrue(Long.valueOf(roiEvent.getTransactionTimestamp()) > 0);
 
     // invalid transid
     roiEvent.setUniqueTransactionId("-12312312");
-    assertTrue(collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, roiEvent));
+    assertTrue(collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, roiEvent));
     assertEquals("", roiEvent.getUniqueTransactionId());
 
     //no referrer in header, header in payload encoded
     Map<String, String> payload = new HashedMap();
     payload.put("referrer", "https%3A%2F%2Fwww.google.com");
     roiEvent.setPayload(payload);
-    assertTrue(collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, roiEvent));
+    assertTrue(collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, roiEvent));
 
     // null referer in payload
     payload.put("referrer", "");
-    assertTrue(collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, roiEvent));
+    assertTrue(collectionService.collectROIEvent(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, roiEvent));
 
   }
 
@@ -171,7 +171,7 @@ public class CollectionServiceTest {
 
     // no tracking header, exception
     Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-TRACKING")).thenReturn(null);
-    collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, event);
+    collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event);
 
   }
 
@@ -215,27 +215,27 @@ public class CollectionServiceTest {
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=2&mkcid=1");
     // no referrer
     event.setReferrer("");
-    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, event));
+    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event));
 
     // encoded referrer
     event.setReferrer("https%3A%2F%2Fwww.google.com");
-    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, event));
+    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event));
 
     // no user agent
     Mockito.when(mockHttpServletRequest.getHeader("User-Agent")).thenReturn(null);
-    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, event));
+    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event));
 
     //non display channel
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=2&mkcid=1&gdpr=1");
-    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, event));
+    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event));
 
     //display channel no consent
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=2&mkcid=4&gdpr=1");
-    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, event));
+    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event));
 
      //display channel and valid consent
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=2&mkcid=4&gdpr=1&gdpr_consent=CO9hy3tO9hy3tKpAAAENAwCAAPJAAAAAAAAAALAAABAAAAAA.IGLtV_T9fb2vj-_Z99_tkeYwf95y3p-wzhheMs-8NyZeH_B4Wv2MyvBX4JiQKGRgksjLBAQdtHGlcTQgBwIlViTLMYk2MjzNKJrJEilsbO2dYGD9Pn8HT3ZCY70-vv__7v3ff_3g");
-    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, event));
+    assertTrue(collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event));
   }
 
   @Test(expected = Exception.class)
@@ -249,7 +249,7 @@ public class CollectionServiceTest {
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=2&mkcid=1");
     // invalid mkevt, exception
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=1&mkcid=1");
-    collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockRaptorSecureContext, mockContainerRequestContext, event);
+    collectionService.collectImpression(mockHttpServletRequest, mockIEndUserContext, mockContainerRequestContext, event);
 
   }
 
@@ -264,7 +264,7 @@ public class CollectionServiceTest {
 
     //no tracking, exception
     Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-TRACKING")).thenReturn(null);
-    collectionService.collectSync(mockHttpServletRequest, mockRaptorSecureContext, mockContainerRequestContext, event);
+    collectionService.collectSync(mockHttpServletRequest, mockContainerRequestContext, event);
   }
 
   @Test()
@@ -289,10 +289,10 @@ public class CollectionServiceTest {
     Event event = new Event();
     // no parameters
     event.setTargetUrl("https://www.ebayadservices.com/marketingtracing/v1/sync");
-    assertTrue(collectionService.collectSync(mockHttpServletRequest, mockRaptorSecureContext, mockContainerRequestContext, event));
+    assertTrue(collectionService.collectSync(mockHttpServletRequest, mockContainerRequestContext, event));
 
     // valid
     event.setTargetUrl("https://www.ebayadservices.com/marketingtracing/v1/sync?guid=abc&u=123e12");
-    assertTrue(collectionService.collectSync(mockHttpServletRequest, mockRaptorSecureContext, mockContainerRequestContext, event));
+    assertTrue(collectionService.collectSync(mockHttpServletRequest, mockContainerRequestContext, event));
   }
 }

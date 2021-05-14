@@ -102,20 +102,4 @@ public class CommonRequestHandler {
     }
     return referer;
   }
-
-  /**
-   * get user id from auth token if it's user token, else we get from end user ctx
-   * @param raptorSecureContext raptor secure context to parse auth token
-   * @param endUserContext enduserctx header
-   * @return user id
-   */
-  public String getUserId(RaptorSecureContext raptorSecureContext, IEndUserContext endUserContext) {
-    String userId;
-    if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
-      userId = raptorSecureContext.getSubjectImmutableId();
-    } else {
-      userId = Long.toString(endUserContext.getOrigUserOracleId());
-    }
-    return userId;
-  }
 }

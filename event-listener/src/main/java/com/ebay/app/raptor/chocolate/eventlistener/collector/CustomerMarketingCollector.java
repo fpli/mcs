@@ -60,29 +60,9 @@ public abstract class CustomerMarketingCollector {
 
   /**
    * Super class handles common tags and sojtags in CM urls
-   *
-   * @param parameters    url parameters
-   * @param type          channel type
-   * @param action        action type
-   * @param request       http request
-   * @param uri           url
-   * @param channelAction channel action enum
+   * @param requestContext request context
+   * @param baseEvent base event
    */
-//  public void trackUbi(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters, String type,
-//                       String action, HttpServletRequest request, String uri, String referer, String utpEventId,
-//                       ChannelAction channelAction) {
-//    // add common tags
-//    addCommonTags(requestContext, uri, referer,
-//        (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME), utpEventId, type, action,
-//        PageIdEnum.CLICK.getId());
-//
-//    // add tags in url param "sojTags"
-//    // Don't track ubi if the click is a duplicate itm click
-//    if (parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
-//      addGenericSojTags(requestContext, parameters, type, action);
-//    }
-//  }
-
   public void trackUbi(ContainerRequestContext requestContext, BaseEvent baseEvent) {
     // add common tags
     addCommonTags(requestContext, baseEvent, PageIdEnum.CLICK.getId());
@@ -304,20 +284,5 @@ public abstract class CustomerMarketingCollector {
       }
     }
     return partner;
-  }
-
-  /**
-   * Bug fix: for email vod page, exclude signin referer
-   */
-  public boolean isVodInternal(ChannelIdEnum channelType, List<String> pathSegments) {
-    if (ChannelIdEnum.MRKT_EMAIL.equals(channelType) || ChannelIdEnum.SITE_EMAIL.equals(channelType)) {
-      if (pathSegments.size() >= 2 && VOD_PAGE.equalsIgnoreCase(pathSegments.get(0))
-          && VOD_SUB_PAGE.equalsIgnoreCase(pathSegments.get(1))) {
-        metrics.meter("VodInternal");
-        return true;
-      }
-    }
-
-    return false;
   }
 }

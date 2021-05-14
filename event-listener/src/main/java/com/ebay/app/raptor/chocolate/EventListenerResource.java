@@ -1,8 +1,6 @@
 package com.ebay.app.raptor.chocolate;
 
-import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.error.LocalizedErrorFactoryV3;
-import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
@@ -119,8 +117,7 @@ public class EventListenerResource implements EventsApi {
       Response res = null;
       try {
         // click events
-        collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(),
-                requestContext, body);
+        collectionService.collect(request, userCtxProvider.get(), requestContext, body);
 
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
@@ -159,8 +156,7 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res = null;
       try {
-        collectionService.collectImpression(request, userCtxProvider.get(), raptorSecureContextProvider.get(),
-            requestContext, body);
+        collectionService.collectImpression(request, userCtxProvider.get(), requestContext, body);
         res = Response.status(Response.Status.OK).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
@@ -186,7 +182,7 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res = null;
       try {
-        collectionService.collectROIEvent(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
+        collectionService.collectROIEvent(request, userCtxProvider.get(), requestContext, body);
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
@@ -215,7 +211,7 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res = null;
       try {
-        collectionService.collectSync(request, raptorSecureContextProvider.get(), requestContext, body);
+        collectionService.collectSync(request, requestContext, body);
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {

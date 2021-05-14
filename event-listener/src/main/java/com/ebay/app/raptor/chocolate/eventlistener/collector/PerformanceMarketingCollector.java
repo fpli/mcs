@@ -50,7 +50,6 @@ public class PerformanceMarketingCollector {
   private static final Logger LOGGER = LoggerFactory.getLogger(PerformanceMarketingCollector.class);
   private Metrics metrics;
   private ListenerMessageParser parser;
-  private BehaviorMessageParser behaviorMessageParser;
   private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
 
   @Autowired
@@ -60,7 +59,6 @@ public class PerformanceMarketingCollector {
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
-    this.behaviorMessageParser = BehaviorMessageParser.getInstance();
   }
 
   /**
