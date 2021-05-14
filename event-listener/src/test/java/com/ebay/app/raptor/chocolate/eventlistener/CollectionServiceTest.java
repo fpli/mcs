@@ -13,6 +13,9 @@ import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.auth.RaptorSecureContext;
+import com.ebay.raptor.geo.context.UserPrefsCtx;
+import com.ebay.raptor.kernel.util.RaptorConstants;
+import com.ebay.raptorio.request.tracing.RequestTracingContext;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import org.apache.commons.collections.map.HashedMap;
@@ -184,6 +187,23 @@ public class CollectionServiceTest {
     Mockito.when(mockContainerRequestContext.getProperty(UserAgentInfo.NAME)).thenReturn(agentInfo);
     Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-TRACKING")).thenReturn("guid=8b34ef1d1740a4d724970d78eec8ee4c");
     Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-ENDUSERCTX")).thenReturn(endUserCtxiPhone);
+
+    Map<String, String> requestHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    Vector<String> headerVector = new Vector<>();
+    headerVector.add("X-EBAY-C-TRACKING");
+    headerVector.add("X-EBAY-C-ENDUSERCTX");
+    Enumeration<String> headerNames = headerVector.elements();
+    Mockito.when(mockHttpServletRequest.getHeaderNames()).thenReturn(headerNames);
+    Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-TRACKING")).thenReturn("guid=8b34ef1d1740a4d724970d78eec8ee4c");
+    Mockito.when(mockHttpServletRequest.getHeader("X-EBAY-C-ENDUSERCTX")).thenReturn(endUserCtxiPhone);
+    UserPrefsCtx mockUserPrefsCtx = Mockito.mock(UserPrefsCtx.class);
+    Mockito.when(mockContainerRequestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(mockUserPrefsCtx);
+    RequestTracingContext requestTracingContext = Mockito.mock(RequestTracingContext.class);
+    Mockito.when(requestTracingContext.getRlogId()).thenReturn("123456");
+    Mockito.when(mockContainerRequestContext.getProperty(RequestTracingContext.NAME)).thenReturn(requestTracingContext);
+
+    Locale locale = new Locale("zh", "CN");
+    Mockito.when(mockUserPrefsCtx.getLangLocale()).thenReturn(locale);
 
     IRequestScopeTracker requestTracker = Mockito.mock(IRequestScopeTracker.class);
     Mockito.when(mockContainerRequestContext.getProperty(IRequestScopeTracker.NAME)).thenReturn(requestTracker);

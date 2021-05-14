@@ -46,7 +46,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -382,7 +381,7 @@ public class CollectionService {
     }
 
     // filter click whose referer is internal
-    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    Matcher m = ebaysites.matcher(baseEvent.getReferer().toLowerCase());
     boolean isInternalRef = m.find();
     // Determine whether the click is a duplicate click
     // If duplicate click, then drop into duplicateItmClickTopic
@@ -410,8 +409,7 @@ public class CollectionService {
     String utpEventId = UUID.randomUUID().toString();
     baseEvent.setUuid(utpEventId);
 
-    Boolean vodInternal = siteEmailCollector.isVodInternal(baseEvent.getChannelType(), pathSegments);
-    if(!isDuplicateClick && !isInternalRef || vodInternal) {
+    if(!isDuplicateClick && !isInternalRef ) {
       ListenerMessage listenerMessage = null;
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
@@ -432,10 +430,10 @@ public class CollectionService {
       // send to unified tracking topic
       if (listenerMessage != null) {
         submitChocolateUtpEvent(baseEvent, requestContext, null,
-            listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), utpEventId, startTime, vodInternal);
+            listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), utpEventId, startTime);
       } else {
         submitChocolateUtpEvent(baseEvent, requestContext, null, 0L,
-            0L, utpEventId, startTime, vodInternal);
+            0L, utpEventId, startTime);
       }
     }
 
@@ -595,7 +593,7 @@ public class CollectionService {
 
     String referer = commonRequestHandler.getReferer(event, requestHeaders, endUserContext);
 
-    String userAgent = request.getHeader("User-Agent");
+    String userAgent = endUserContext.getUserAgent();
     if (null == userAgent) {
       logError(Errors.ERROR_NO_USER_AGENT);
     }
@@ -705,10 +703,10 @@ public class CollectionService {
     // send to unified tracking topic
     if(listenerMessage!=null) {
       submitChocolateUtpEvent(baseEvent, requestContext, null, listenerMessage.getSnapshotId(),
-          listenerMessage.getShortSnapshotId(), null, startTime, false);
+          listenerMessage.getShortSnapshotId(), null, startTime);
     } else {
       submitChocolateUtpEvent(baseEvent, requestContext, null, 0L,
-          0L, null, startTime, false);
+          0L, null, startTime);
     }
 
     stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action),
@@ -767,7 +765,7 @@ public class CollectionService {
         referer, 0L, "");
 
     submitChocolateUtpEvent(baseEvent, requestContext, roiEvent,
-        message.getSnapshotId(), message.getShortSnapshotId(), null, startTime, false);
+        message.getSnapshotId(), message.getShortSnapshotId(), null, startTime);
 
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
     String kafkaTopic
@@ -880,19 +878,17 @@ public class CollectionService {
    * @param shortSnapshotId short snapshot id
    * @param eventId         utp event id
    * @param startTime       start time
-   * @param vodInternal     is void internal
    */
   private void submitChocolateUtpEvent(BaseEvent baseEvent, ContainerRequestContext requestContext,
                                        ROIEvent roiEvent, long snapshotId,
-                                       long shortSnapshotId, String eventId, long startTime, Boolean vodInternal) {
+                                       long shortSnapshotId, String eventId, long startTime) {
     try {
       Matcher m = ebaysites.matcher(baseEvent.getReferer().toLowerCase());
       if (ChannelActionEnum.EMAIL_OPEN.equals(baseEvent.getActionType())
           || ChannelActionEnum.ROI.equals(baseEvent.getActionType())
           || CollectionServiceUtil.inRefererWhitelist(baseEvent.getChannelType().getLogicalChannel().getAvro(),
               baseEvent.getReferer())
-          || !m.find()
-          || vodInternal) {
+          || !m.find()) {
         UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, roiEvent, snapshotId,
             shortSnapshotId, startTime);
         if(!StringUtils.isEmpty(eventId)) {

@@ -38,7 +38,7 @@ public class CommonRequestHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(CommonRequestHandler.class);
 
   public Map<String, String> getHeaderMaps(HttpServletRequest clientRequest) {
-    Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);;
+    Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     if(clientRequest.getHeaderNames() != null) {
       for (Enumeration<String> e = clientRequest.getHeaderNames(); e.hasMoreElements(); ) {
         String headerName = e.nextElement();
