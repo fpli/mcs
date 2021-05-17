@@ -58,7 +58,7 @@ class TestSchemaSparkCompatible extends BaseFunSuite {
       val cguid1 = "3dc2b6951630aa4763d4a844f4b212f8"
 
       val writer1_0 = AvroParquetWriter.
-        builder[GenericRecord](new Path(tmpPath + "/part-00000.snappy.parquet"))
+        builder[GenericRecord](new Path(tmpPath + "/amsClickSample_v2.snappy.parquet"))
         .withSchema(FilterMessageV2.getClassSchema())
         .withConf(hadoopConf)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
@@ -77,7 +77,7 @@ class TestSchemaSparkCompatible extends BaseFunSuite {
       writeFilterMessageV1(ChannelType.EPN, ChannelAction.CLICK, 100L, 11L, 111L, cguid1, timestamp2, writer1_0_v1)
       writer1_0_v1.close()
 
-      val df = readFilesAsDFEx(Array(tmpPath + "/part-00000.snappy.parquet", tmpPath + "/part-00000_v1.snappy.parquet"))
+      val df = readFilesAsDFEx(Array(tmpPath + "/amsClickSample_v2.snappy.parquet", tmpPath + "/part-00000_v1.snappy.parquet"))
       df.show()
 
       assert (df.count() == 2)

@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt_v2
 
+import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Properties
 
@@ -7,7 +8,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob_v2
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FileSystem, Path}
 
 /**
   * Created by zhofan on 6/18/20.
@@ -23,7 +24,7 @@ abstract class BaseEpnNrtJob_v2(params: Parameter_v2,
   lazy val inputWorkDir = params.inputWorkDir
   lazy val outputWorkDir = params.outputWorkDir
   lazy val epnNrtTempDir = outputDir + "/tmp/"
-  lazy val archiveDir = outputWorkDir + "/meta/EPN/output/archive/"
+  lazy val archiveDir = inputWorkDir + "/meta/EPN/output/archive/"
 
   /**
     * epnnrt job properties
@@ -49,6 +50,12 @@ abstract class BaseEpnNrtJob_v2(params: Parameter_v2,
   @transient lazy val outputMetadata: Metadata = {
     val usage = MetadataEnum.convertToMetadataEnum(properties.getProperty("epnnrt.upstream.epn"))
     Metadata(params.outputWorkDir, ChannelType.EPN.toString, usage)
+  }
+
+  @transient lazy val archiveMetaFs = {
+    val archiveMetaFs = FileSystem.get(URI.create(params.inputWorkDir),hadoopConf)
+    sys.addShutdownHook(archiveMetaFs.close())
+    archiveMetaFs
   }
 
   /**
@@ -140,6 +147,16 @@ abstract class BaseEpnNrtJob_v2(params: Parameter_v2,
         0L
       }
     }
+  }
+  def archiveMetafile(metafile: String, archiveDir: String): Unit = {
+    val outputPath = new Path(URI.create(archiveDir))
+    if (!archiveMetaFs.exists(outputPath)) {
+      archiveMetaFs.mkdirs(outputPath)
+    }
+
+    val src = new Path(metafile)
+    val target = new Path(archiveDir, src.getName)
+    archiveMetaFs.rename(src, target)
   }
 }
 

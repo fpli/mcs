@@ -56,7 +56,7 @@ class AmsHourlyMinTsJob_v2(params: Parameter_v2) extends
           if (head.length == 0) {
             logger.info("No data!")
           } else {
-            val minTsInThisFile = getTimestamp(df.agg(min(df.col(ts_col))).head().getString(0))
+            val minTsInThisFile = getTimestamp(df.agg(min(df.col(ts_col))).head().getTimestamp(0).toString)
             minTsArray :+= minTsInThisFile
           }
         })

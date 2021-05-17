@@ -48,15 +48,4 @@ abstract class BaseSparkNrtJob_v2(override val jobName: String,
     files
   }
 
-  def archiveMetafile(metafile: String, archiveDir: String): Unit = {
-    val outputPath = new Path(archiveDir)
-    if (!fs.exists(outputPath)) {
-      fs.mkdirs(outputPath)
-    }
-
-    val src = new Path(metafile)
-    val target = new Path(archiveDir, src.getName)
-    fs.rename(src, target)
-  }
-
 }

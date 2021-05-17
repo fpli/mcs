@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.spark
 
+import java.net.URI
 import java.sql.{Date, Timestamp}
 
 import org.apache.hadoop.conf.Configuration
