@@ -48,8 +48,8 @@ import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 @DependsOn("EventListenerService")
 public class PerformanceMarketingCollector {
   private static final Logger LOGGER = LoggerFactory.getLogger(PerformanceMarketingCollector.class);
-  private Metrics metrics;
-  private ListenerMessageParser parser;
+  Metrics metrics;
+  ListenerMessageParser parser;
   private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
 
   @Autowired

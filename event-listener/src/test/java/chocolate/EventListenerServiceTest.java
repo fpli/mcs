@@ -26,6 +26,7 @@ import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
 import com.ebay.traffic.monitoring.ESMetrics;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.LongDeserializer;
@@ -558,14 +559,80 @@ public class EventListenerServiceTest {
         .accept(MediaType.APPLICATION_JSON_TYPE)
         .post(Entity.json(event));
     assertEquals(201, response1.getStatus());
-//    Response response2 = client.target(svcEndPoint).path(roiPath)
-//        .request()
-//        .header("X-EBAY-C-ENDUSERCTX", endUserCtx)
-//        .header("X-EBAY-C-TRACKING", tracking)
-//        .header("Authorization", token)
-//        .accept(MediaType.APPLICATION_JSON_TYPE)
-//        .post(Entity.json(event2));
-//    assertEquals(201, response2.getStatus());
+
+    // no enduserctx
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event));
+    assertEquals(200, response1.getStatus());
+
+    // no tracking
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event));
+    assertEquals(200, response1.getStatus());
+
+    //invalid item id
+    event.setItemId("abc");
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event));
+    assertEquals(201, response1.getStatus());
+
+    //assertEquals("", event.getItemId());
+
+    //invalid timestamp
+    event.setTransactionTimestamp("-12423232");
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event));
+    assertEquals(201, response1.getStatus());
+
+    //assertTrue(Long.valueOf(event.getTransactionTimestamp()) > 0);
+
+    // invalid transid
+    event.setUniqueTransactionId("-12312312");
+
+    //assertEquals("", event.getUniqueTransactionId());
+
+    //no referrer in header, header in payload encoded
+    Map<String, String> payload = new HashedMap();
+    payload.put("referrer", "https%3A%2F%2Fwww.google.com");
+    event.setPayload(payload);
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event));
+    assertEquals(201, response1.getStatus());
+
+    // null referer in payload
+    payload.put("referrer", "");
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event));
+    assertEquals(201, response1.getStatus());
+
   }
 
   @Test

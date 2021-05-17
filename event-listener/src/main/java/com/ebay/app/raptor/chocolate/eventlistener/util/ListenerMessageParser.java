@@ -15,13 +15,11 @@ import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.kernel.util.StringUtils;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
-import com.ebay.raptor.kernel.util.RaptorConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -94,7 +92,7 @@ public class ListenerMessageParser {
         ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
 
     // user id
-    String userId = Long.toString(baseEvent.getEndUserContext().getOrigUserOracleId());
+    String userId = baseEvent.getUid();
     if (!StringUtils.isEmpty(userId)) {
       record.setUserId(Long.valueOf(userId));
     }

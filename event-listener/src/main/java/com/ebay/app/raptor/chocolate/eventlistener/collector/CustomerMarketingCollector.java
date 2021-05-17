@@ -4,7 +4,6 @@
 
 package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
-import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
@@ -28,11 +27,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -47,8 +44,6 @@ import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 public abstract class CustomerMarketingCollector {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerMarketingCollector.class);
-  private static final String VOD_PAGE = "vod";
-  private static final String VOD_SUB_PAGE = "FetchOrderDetails";
 
   private BehaviorMessageParser behaviorMessageParser;
   Metrics metrics;
@@ -197,40 +192,6 @@ public abstract class CustomerMarketingCollector {
           LOGGER.warn("Error when tracking ubi for common tags", e);
           metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
               Field.of(CHANNEL_TYPE, baseEvent.getChannelType()));
-        }
-      }
-    }
-  }
-
-  void addGenericSojTags(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
-                         String type, String action) {
-
-    // Ubi tracking
-    IRequestScopeTracker requestTracker
-        = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
-
-    String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
-    try {
-      sojTags = URLDecoder.decode(sojTags, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      LOGGER.warn("Param sojTags is wrongly encoded", e);
-      metrics.meter("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
-    }
-    if (!StringUtils.isEmpty(sojTags)) {
-      StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
-      while (stToken.hasMoreTokens()) {
-        try {
-          StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
-          if (sojNvp.countTokens() == 2) {
-            String sojTag = sojNvp.nextToken().trim();
-            String urlParam = sojNvp.nextToken().trim();
-            if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
-              addTagFromUrlQuery(parameters, requestTracker, urlParam, sojTag, String.class);
-            }
-          }
-        } catch (Exception e) {
-          LOGGER.warn("Error when tracking ubi for common tags", e);
-          metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
         }
       }
     }

@@ -22,6 +22,7 @@ import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
+import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
@@ -32,6 +33,7 @@ import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import com.ebay.userlookup.UserLookup;
+import com.google.common.primitives.Longs;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.kafka.clients.producer.Producer;
@@ -45,6 +47,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -55,7 +58,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
-import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.*;
 
 /**
@@ -84,37 +86,20 @@ public class CollectionService {
 
   @Autowired
   private HttpRoverClient roverClient;
-
-  @Autowired
-  private HttpClientConnectionManager httpClientConnectionManager;
-
-  @Inject
-  private ISecureTokenManager tokenGenerator;
-
-  @Inject
-  private UserLookup userLookup;
-
-  @Autowired
-  private GdprConsentHandler gdprConsentHandler;
-
   @Autowired
   private PerformanceMarketingCollector performanceMarketingCollector;
-
   @Autowired
   private MrktEmailCollector mrktEmailCollector;
-
   @Autowired
   private SiteEmailCollector siteEmailCollector;
-
+  @Autowired
+  private ROICollector roiCollector;
   @Autowired
   private SMSCollector smsCollector;
-
   @Autowired
   private StaticPageRequestHandler staticPageRequestHandler;
-
   @Autowired
   private CustomizedSchemeRequestHandler customizedSchemeRequestHandler;
-
   @Autowired
   private CommonRequestHandler commonRequestHandler;
 
@@ -244,24 +229,19 @@ public class CollectionService {
    * Collect event and publish to kafka
    * @param request             raw request
    * @param endUserContext      wrapped end user context
+   * @param raptorSecureContext wrapped secure header context. only click and roi need this.
    * @param requestContext      wrapped raptor request context
    * @param event               post body event
    * @return OK or Error message
    * @throws Exception when there is an unhandled error
    */
-  public boolean collect(HttpServletRequest request, IEndUserContext endUserContext,
-      ContainerRequestContext requestContext, Event event) throws Exception {
+  public boolean collect(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
+          raptorSecureContext, ContainerRequestContext requestContext, Event event) throws Exception {
 
     Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
 
-    // validate mandatory cos headers
-    if (requestHeaders.get(TRACKING_HEADER) == null) {
-      logError(Errors.ERROR_NO_TRACKING);
-    }
-
-    if (requestHeaders.get(ENDUSERCTX_HEADER) == null) {
-      logError(Errors.ERROR_NO_ENDUSERCTX);
-    }
+    validateTrackingHeader(request.getHeader(TRACKING_HEADER));
+    validateEndUserCtxHeader(request.getHeader(ENDUSERCTX_HEADER));
 
     // get original referer from different sources
     String referer = commonRequestHandler.getReferer(event, requestHeaders, endUserContext);
@@ -328,6 +308,8 @@ public class CollectionService {
       }
     }
 
+    String userId = commonRequestHandler.getUserId(raptorSecureContext, endUserContext);
+
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
         Field.of(LANDING_PAGE_TYPE, landingPageType));
@@ -345,6 +327,7 @@ public class CollectionService {
     baseEvent.setUserAgentInfo(agentInfo);
     baseEvent.setUserPrefsCtx(userPrefsCtx);
     baseEvent.setEndUserContext(endUserContext);
+    baseEvent.setUid(userId);
 
     // update startTime if the click comes from checkoutAPI
     try {
@@ -434,73 +417,54 @@ public class CollectionService {
     return true;
   }
 
+  private void validateTrackingHeader(String trackingHeader) throws Exception {
+    // validate mandatory cos headers
+    if (trackingHeader == null) {
+      logError(Errors.ERROR_NO_TRACKING);
+    }
+  }
+
+  private void validateEndUserCtxHeader(String enduserctxHeader) throws Exception {
+    // validate mandatory cos headers
+    if (enduserctxHeader == null) {
+      logError(Errors.ERROR_NO_ENDUSERCTX);
+    }
+  }
+
   /**
    * Collect roi event and publish to kafka
    * @param request             raw request
    * @param endUserContext      wrapped end user context
+   * @param raptorSecureContext wrapped raptor secure context
    * @param requestContext      wrapped  request context
    * @param roiEvent            roi event body
    * @return                    success or failure
    * @throws Exception          when unhandled exception
    */
-  public boolean collectROIEvent(HttpServletRequest request, IEndUserContext endUserContext,
-                                 ContainerRequestContext requestContext, ROIEvent roiEvent) throws Exception {
+  public boolean collectROIEvent(HttpServletRequest request, IEndUserContext endUserContext, RaptorSecureContext
+      raptorSecureContext, ContainerRequestContext requestContext, ROIEvent roiEvent) throws Exception {
 
-    if (request.getHeader(TRACKING_HEADER) == null) {
-      logError(Errors.ERROR_NO_TRACKING);
-    }
+    validateTrackingHeader(request.getHeader(TRACKING_HEADER));
+    validateEndUserCtxHeader(request.getHeader(ENDUSERCTX_HEADER));
 
-    if (request.getHeader(ENDUSERCTX_HEADER) == null) {
-      logError(Errors.ERROR_NO_ENDUSERCTX);
-    }
+    Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
 
     String localTimestamp = Long.toString(System.currentTimeMillis());
 
-    String userId = String.valueOf(endUserContext.getOrigUserOracleId());
+    String userId = commonRequestHandler.getUserId(raptorSecureContext, endUserContext);
 
-    try {
-      long itemId = Long.parseLong(roiEvent.getItemId());
-      if (itemId < 0) {
-        roiEvent.setItemId("");
-      }
-    } catch (Exception e) {
-      LOGGER.warn("Error itemId " + roiEvent.getItemId());
-      metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
-      roiEvent.setItemId("");
-    }
-    // Parse timestamp if it null or invalid, change it to localTimestamp
-    long transTimestamp = 0;
-    try {
-      transTimestamp = Long.parseLong(roiEvent.getTransactionTimestamp());
-      if(transTimestamp <= 0) {
-        roiEvent.setTransactionTimestamp(localTimestamp);
-        transTimestamp = Long.parseLong(localTimestamp);
-      }
-    } catch (Exception e) {
-      LOGGER.warn("Error timestamp " + roiEvent.getTransactionTimestamp());
-      metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
-      roiEvent.setTransactionTimestamp(localTimestamp);
-      transTimestamp = Long.parseLong(localTimestamp);
-    }
+    roiCollector.setItemId(roiEvent);
+    roiCollector.setTransTimestamp(roiEvent);
+    roiCollector.setTransId(roiEvent);
+
     // Parse payload fields
     Map<String, String> payloadMap = roiEvent.getPayload();
     if(payloadMap == null) {
       payloadMap = new HashMap<>();
     }
 
-    // Parse transId
-    try {
-      String transId = roiEvent.getUniqueTransactionId();
-      if (Long.parseLong(transId) < 0) {
-        roiEvent.setUniqueTransactionId("");
-      }
-    } catch (Exception e) {
-      LOGGER.warn("Error transactionId " + roiEvent.getUniqueTransactionId());
-      metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
-      roiEvent.setUniqueTransactionId("");
-    }
-
     // platform check by user agent
+    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
     String platform = CollectionServiceUtil.getPlatform(agentInfo);
 
@@ -533,26 +497,42 @@ public class CollectionService {
     // write roi event tags into ubi
     // Don't write into ubi if roi is from Checkout API
     boolean isRoiFromCheckoutAPI = CollectionServiceUtil.isROIFromCheckoutAPI(payloadMap, endUserContext);
-    if (!isRoiFromCheckoutAPI) {
-      addRoiSojTags(requestContext, roiEvent, userId);
-    } else {
+    if(isRoiFromCheckoutAPI) {
       metrics.meter("CheckoutAPIROI", 1);
     }
 
-    // Write roi event to kafka output topic
-    boolean processFlag = fireROIEvent(requestContext, targetUrl, referer, parameters, ChannelIdEnum.ROI,
-        ChannelActionEnum.ROI, request, transTimestamp, endUserContext, agentInfo, roiEvent);
+    // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
+    BaseEvent baseEvent = new BaseEvent();
+    baseEvent.setTimestamp(Long.parseLong(roiEvent.getTransactionTimestamp()));
+    baseEvent.setUrl(targetUrl);
+    baseEvent.setReferer(referer);
+    baseEvent.setActionType(ChannelActionEnum.ROI);
+    baseEvent.setChannelType(ChannelIdEnum.ROI);
+    baseEvent.setUriComponents(uriComponents);
+    baseEvent.setUrlParameters(parameters);
+    baseEvent.setRequestHeaders(requestHeaders);
+    baseEvent.setUserAgentInfo(agentInfo);
+    baseEvent.setUserPrefsCtx(userPrefsCtx);
+    baseEvent.setEndUserContext(endUserContext);
+    baseEvent.setUid(userId);
+    baseEvent.setCheckoutApi(isRoiFromCheckoutAPI);
+    baseEvent.setRoiEvent(roiEvent);
 
-    if (processFlag) {
-      metrics.meter("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"),
-          Field.of(CHANNEL_TYPE, "New-ROI"), Field.of(ROI_SOURCE, String.valueOf(payloadMap.get(ROI_SOURCE))));
-      // Log the roi lag between transation time and receive time
-      metrics.mean("RoiTransationLag", startTime - transTimestamp, Field.of(CHANNEL_ACTION, "ROI"),
-          Field.of(CHANNEL_TYPE, "ROI"));
-      stopTimerAndLogData(startTime,
-          Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
-          ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
-    }
+    // Write roi event to kafka output topic
+    ListenerMessage listenerMessage = fireROIEvent(baseEvent, requestContext);
+
+    metrics.meter("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"),
+        Field.of(CHANNEL_TYPE, "New-ROI"), Field.of(ROI_SOURCE, String.valueOf(payloadMap.get(ROI_SOURCE))));
+    // Log the roi lag between transation time and receive time
+    metrics.mean("RoiTransationLag", startTime - Longs.tryParse(roiEvent.getTransactionTimestamp()),
+        Field.of(CHANNEL_ACTION, "ROI"), Field.of(CHANNEL_TYPE, "ROI"));
+    stopTimerAndLogData(startTime,
+        Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
+            ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
+
+    submitChocolateUtpEvent(baseEvent, requestContext, roiEvent,
+        listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), null, startTime);
+
     return true;
   }
 
@@ -566,18 +546,12 @@ public class CollectionService {
    * @throws Exception          when unhandled exception
    */
   public boolean collectImpression(HttpServletRequest request, IEndUserContext endUserContext,
-                                   ContainerRequestContext requestContext, Event event) throws Exception {
+      ContainerRequestContext requestContext, Event event) throws Exception {
 
     Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
 
-    // validate mandatory cos headers
-    if (requestHeaders.get(TRACKING_HEADER) == null) {
-      logError(Errors.ERROR_NO_TRACKING);
-    }
-
-    if (requestHeaders.get(ENDUSERCTX_HEADER) == null) {
-      logError(Errors.ERROR_NO_ENDUSERCTX);
-    }
+    // validate tracking header only, adservice does not construct enduserctx
+    validateTrackingHeader(request.getHeader(TRACKING_HEADER));
 
     String referer = commonRequestHandler.getReferer(event, requestHeaders, endUserContext);
 
@@ -705,60 +679,28 @@ public class CollectionService {
 
   /**
    *
-   * @param requestContext      wrapped raptor request
-   * @param targetUrl           targe url
-   * @param referer             referer of the request
-   * @param parameters          url parameters
-   * @param channelType         channel type
-   * @param channelAction       action type
-   * @param request             http request
-   * @param startTime           start timestamp
-   * @param endUserContext      end user context header
-   * @param agentInfo           user agent
-   * @param roiEvent            input roi event body
-   * @return                    success or failure
+   * @param baseEvent           base event
+   * @return                    roi listener message
    */
-  private boolean fireROIEvent(ContainerRequestContext requestContext, String targetUrl, String referer,
-                               MultiValueMap<String, String> parameters, ChannelIdEnum channelType,
-                               ChannelActionEnum channelAction, HttpServletRequest request, long startTime,
-                               IEndUserContext endUserContext, UserAgentInfo agentInfo, ROIEvent roiEvent) {
-
-    Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
-
-    String userId = String.valueOf(endUserContext.getOrigUserOracleId());
-
-    UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-
-    UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-
-    // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
-    BaseEvent baseEvent = new BaseEvent();
-    baseEvent.setTimestamp(startTime);
-    baseEvent.setUrl(targetUrl);
-    baseEvent.setReferer(referer);
-    baseEvent.setActionType(channelAction);
-    baseEvent.setChannelType(channelType);
-    baseEvent.setUriComponents(uriComponents);
-    baseEvent.setUrlParameters(parameters);
-    baseEvent.setRequestHeaders(requestHeaders);
-    baseEvent.setUserAgentInfo(agentInfo);
-    baseEvent.setUserPrefsCtx(userPrefsCtx);
-    baseEvent.setEndUserContext(endUserContext);
+  private ListenerMessage fireROIEvent(BaseEvent baseEvent,
+                                       ContainerRequestContext containerRequestContext) {
 
     // Parse the response
-    ListenerMessage message = listenerMessageParser.parse(requestHeaders, endUserContext, userPrefsCtx, startTime,
-        -1L, channelType.getLogicalChannel().getAvro(), channelAction, userId, targetUrl,
-        referer, 0L, "");
+    ListenerMessage message = listenerMessageParser.parse(baseEvent);
 
-    submitChocolateUtpEvent(baseEvent, requestContext, roiEvent,
-        message.getSnapshotId(), message.getShortSnapshotId(), null, startTime);
-
+    // 1. send to listener topic
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
     String kafkaTopic
-        = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(channelType.getLogicalChannel().getAvro());
+        = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(baseEvent.getChannelType().getLogicalChannel()
+        .getAvro());
 
     producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
-    return true;
+
+    // 2. track uibi
+    if(!baseEvent.isCheckoutApi()) {
+      roiCollector.trackUbi(containerRequestContext, baseEvent);
+    }
+    return message;
   }
 
   /**
@@ -771,9 +713,7 @@ public class CollectionService {
   public boolean collectSync(HttpServletRequest request, ContainerRequestContext requestContext,
                              Event event) throws Exception {
 
-    if (request.getHeader(TRACKING_HEADER) == null) {
-      logError(Errors.ERROR_NO_TRACKING);
-    }
+    validateTrackingHeader(request.getHeader(TRACKING_HEADER));
 
     String referer = null;
     if (!StringUtils.isEmpty(event.getReferrer())) {
@@ -956,54 +896,6 @@ public class CollectionService {
       return true;
     } else
       return false;
-  }
-
-  /**
-   * Add roi sjo tags
-   * @param requestContext  request context
-   * @param roiEvent        roi event body
-   * @param userId          user id
-   */
-  private void addRoiSojTags(ContainerRequestContext requestContext, ROIEvent roiEvent,
-                             String userId) {
-    try {
-      // Ubi tracking
-      IRequestScopeTracker requestTracker =
-          (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
-
-      // page id
-      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.ROI.getId(), Integer.class);
-
-      // site ID is embedded in IRequestScopeTracker default commit tags
-
-      // Item ID
-      if(isLongNumeric(roiEvent.getItemId())) {
-        requestTracker.addTag("itm", roiEvent.getItemId(), String.class);
-      }
-
-      // Transation Type
-      if (!StringUtils.isEmpty(roiEvent.getTransType())) {
-        requestTracker.addTag("tt", roiEvent.getTransType(), String.class);
-      }
-
-      // Transation ID
-      if (isLongNumeric(roiEvent.getUniqueTransactionId())) {
-        requestTracker.addTag("roi_bti", roiEvent.getUniqueTransactionId(), String.class);
-      }
-
-      // user ID
-      if (isLongNumeric(userId)) {
-        requestTracker.addTag("userid", userId, String.class);
-      }
-
-      // Transaction Time
-      if (isLongNumeric(roiEvent.getTransactionTimestamp())) {
-        requestTracker.addTag("producereventts", Long.parseLong(roiEvent.getTransactionTimestamp()), Long.class);
-      }
-    } catch (Exception e) {
-      LOGGER.warn("Error when tracking ubi for roi event", e);
-      metrics.meter("ErrorWriteRoiEventToUBI");
-    }
   }
 
   /**

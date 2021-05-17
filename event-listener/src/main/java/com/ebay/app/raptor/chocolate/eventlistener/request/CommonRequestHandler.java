@@ -21,7 +21,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -35,6 +34,7 @@ import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 @DependsOn("EventListenerService")
 public class CommonRequestHandler {
 
+  public static final String EBAYUSER = "EBAYUSER";
   private static final Logger LOGGER = LoggerFactory.getLogger(CommonRequestHandler.class);
 
   public Map<String, String> getHeaderMaps(HttpServletRequest clientRequest) {
@@ -102,4 +102,24 @@ public class CommonRequestHandler {
     }
     return referer;
   }
+
+  /**
+   * Get user id from auth token if it's user token, else we get from end user ctx
+   * For internal application calls, enduserctx has user id. For native app calls, enduserctx does not contain userid,
+   * so that have to fetch from auth token.
+   * @param raptorSecureContext raptor secure context to parse auth token
+   * @param endUserContext enduserctx header
+   * @return user id
+   */
+  public String getUserId(RaptorSecureContext raptorSecureContext, IEndUserContext endUserContext) {
+    String userId;
+    if (EBAYUSER.equals(raptorSecureContext.getSubjectDomain())) {
+      userId = raptorSecureContext.getSubjectImmutableId();
+    } else {
+      userId = Long.toString(endUserContext.getOrigUserOracleId());
+    }
+    return userId;
+  }
+
+
 }

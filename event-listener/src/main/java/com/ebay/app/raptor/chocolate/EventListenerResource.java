@@ -117,14 +117,12 @@ public class EventListenerResource implements EventsApi {
       Response res = null;
       try {
         // click events
-        collectionService.collect(request, userCtxProvider.get(), requestContext, body);
+        collectionService.collect(request, userCtxProvider.get(), raptorSecureContextProvider.get(),
+                requestContext, body);
 
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
-        // do not write log here for short term. As current native app sends seo deeplinking which leads log blast.
-        //logger.warn(e.getMessage(), e);
-        // Tags.STATUS.set(span, e.getMessage());
         Tags.STATUS.set(span, "0");
         // show warning in cal
         SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
@@ -160,8 +158,6 @@ public class EventListenerResource implements EventsApi {
         res = Response.status(Response.Status.OK).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {
-        // logger.warn(e.getMessage(), e);
-        // Tags.STATUS.set(span, e.getMessage());
         Tags.STATUS.set(span, "0");
         // show warning in cal
         SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
@@ -182,7 +178,7 @@ public class EventListenerResource implements EventsApi {
       Span span = scope.span();
       Response res = null;
       try {
-        collectionService.collectROIEvent(request, userCtxProvider.get(), requestContext, body);
+        collectionService.collectROIEvent(request, userCtxProvider.get(), raptorSecureContextProvider.get(), requestContext, body);
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {

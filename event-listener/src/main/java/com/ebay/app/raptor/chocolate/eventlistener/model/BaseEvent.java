@@ -6,13 +6,12 @@ package com.ebay.app.raptor.chocolate.eventlistener.model;
 
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
-import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
+import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 
 import java.util.Map;
@@ -27,6 +26,9 @@ public class BaseEvent {
 
   // guid
   private String guid;
+
+  // user id
+  private String uid;
 
   // raw incoming body info
   private String url;
@@ -53,6 +55,9 @@ public class BaseEvent {
 
   // flag of setting timestamp from caller
   private boolean isCheckoutApi;
+
+  // roi event
+  private ROIEvent roiEvent;
 
   public String getUrl() {
     return url;
@@ -172,5 +177,21 @@ public class BaseEvent {
 
   public void setGuid(String guid) {
     this.guid = guid;
+  }
+
+  public String getUid() {
+    return uid;
+  }
+
+  public void setUid(String uid) {
+    this.uid = uid;
+  }
+
+  public ROIEvent getRoiEvent() {
+    return roiEvent;
+  }
+
+  public void setRoiEvent(ROIEvent roiEvent) {
+    this.roiEvent = roiEvent;
   }
 }
