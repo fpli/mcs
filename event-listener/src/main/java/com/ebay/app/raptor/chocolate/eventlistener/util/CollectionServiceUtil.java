@@ -2,7 +2,9 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.constant.RoiTransactionEnum;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import org.apache.http.client.utils.URIBuilder;
@@ -69,6 +71,10 @@ public class CollectionServiceUtil {
   private static final String PROMOTED_LISTINGS_SOURCE= "PromotedListings";
   private static final String DEEP_LINK_WITH_CHOCO_PARAMS = "chocodeeplink";
   private static final String DEEP_LINK_WITH_REFERRER_PARAMS = "referrerdeeplink";
+  private static final String PRE_INSTALL_APP_RLUTYPE = "1";
+  private static final String PRE_INSTALL_APP_USECASE = "prm";
+  private static final String CLICK_EVENT_FLAG = "1";
+  private static final String PRM_CLICK_ROTATION_ID = "14362-130847-18990-0";
 
   // do not dedupe the item clicks from ebay special sites
   private static Pattern ebaySpecialSites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(befr|benl+\\.)?(qa\\.)?ebay\\.(be|nl|pl|ie|ph|com\\.hk|com\\.my|com\\.sg)($|/.*)", Pattern.CASE_INSENSITIVE);
@@ -360,5 +366,59 @@ public class CollectionServiceUtil {
     }
 
     return clientId;
+  }
+
+  /**
+   * determine if the ROI is generated from pre-install App on Android
+   */
+  public static boolean isPreinstallROI(Map<String, String> roiPayloadMap, String transType) {
+    boolean isPreInstallROI = false;
+
+    String mppid = roiPayloadMap.getOrDefault(MPPID, "");
+    String rlutype = roiPayloadMap.getOrDefault(RLUTYPE, "");
+    String usecase = roiPayloadMap.getOrDefault(USECASE, "");
+
+    RoiTransactionEnum roiTransactionEnum = RoiTransactionEnum.getByTransTypeName(transType);
+
+    if (!StringUtils.isEmpty(mppid) && rlutype.equals(PRE_INSTALL_APP_RLUTYPE)
+         && usecase.equals(PRE_INSTALL_APP_USECASE) && PRE_INSTALL_ROI_TRANS_TYPES.contains(roiTransactionEnum)) {
+      isPreInstallROI = true;
+    }
+
+    return isPreInstallROI;
+  }
+
+  /**
+   * Mock click URL if we receive ROI event from pre-install App on Android (XC-3464)
+   */
+  public static String createPrmClickUrl(Map<String, String> roiPayloadMap, IEndUserContext endUserContext) {
+    String prmClickUrl = "";
+
+    String mppid = roiPayloadMap.getOrDefault(MPPID, "");
+    String siteId = roiPayloadMap.getOrDefault(SITEID, "0");
+    String clickUrlHost = siteIdHostMap.getOrDefault(siteId, "https://www.ebay.com");
+
+    try {
+      if (!StringUtils.isEmpty(clickUrlHost)) {
+        URIBuilder clickURIBuilder = new URIBuilder(clickUrlHost);
+        clickURIBuilder.addParameter(MKEVT, CLICK_EVENT_FLAG);
+        clickURIBuilder.addParameter(MKCID, ChannelIdEnum.DAP.getValue());
+        clickURIBuilder.addParameter(MKRID, PRM_CLICK_ROTATION_ID);
+        clickURIBuilder.addParameter(MPPID, URLEncoder.encode(mppid, "UTF-8"));
+        clickURIBuilder.addParameter(RLUTYPE, PRE_INSTALL_APP_RLUTYPE);
+        clickURIBuilder.addParameter(SITE, URLEncoder.encode(siteId, "UTF-8"));
+
+        if (endUserContext.getDeviceId() != null) {
+          clickURIBuilder.addParameter(UDID, URLEncoder.encode(endUserContext.getDeviceId(), "UTF-8"));
+        }
+
+        prmClickUrl = clickURIBuilder.build().toString();
+      }
+    } catch (Exception ex) {
+      LOGGER.error("Construct dummy click for pre-install App ROI error." + ex.getMessage());
+      return "";
+    }
+
+    return prmClickUrl;
   }
 }

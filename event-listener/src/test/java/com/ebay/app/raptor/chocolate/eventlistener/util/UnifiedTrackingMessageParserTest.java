@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -27,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
@@ -41,6 +43,18 @@ public class UnifiedTrackingMessageParserTest {
         ("META-INF/configuration/Dev/"));
     ApplicationOptions.init();
     ESMetrics.init("test", "localhost");
+  }
+
+  @Test
+  public void testParseUEPEvents() throws Exception {
+    UnifiedTrackingEvent unifiedTrackingEvent = new UnifiedTrackingEvent();
+    unifiedTrackingEvent.setPayload(new HashMap<>());
+    UnifiedTrackingMessage parse = UnifiedTrackingMessageParser.parse(unifiedTrackingEvent, null);
+    assertEquals(parse.getProducerEventTs(), parse.getEventTs());
+    unifiedTrackingEvent.setProducerEventTs(1L);
+    parse = UnifiedTrackingMessageParser.parse(unifiedTrackingEvent, null);
+    assertEquals(Long.valueOf(1L), parse.getProducerEventTs());
+    assertNotEquals(parse.getProducerEventTs(), parse.getEventTs());
   }
 
   @SuppressWarnings("unchecked")
@@ -91,6 +105,7 @@ public class UnifiedTrackingMessageParserTest {
     assertNotNull(message.getEventId());
     assertEquals("", message.getProducerEventId());
     assertEquals(message.getEventTs(), Long.valueOf(currentTimeMillis));
+    assertEquals(message.getProducerEventTs(), Long.valueOf(currentTimeMillis));
     assertEquals("123456", message.getRlogId());
     assertNull(message.getTrackingId());
     assertEquals(Long.valueOf(0), message.getUserId());
